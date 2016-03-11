@@ -271,15 +271,7 @@ var showTiles = function() {
   tiles = document.createElement('div');
 
   if (impressionUrl) {
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(impressionUrl);
-    } else {
-      // if sendBeacon is not enabled, we fallback to "a ping".
-      var a = document.createElement('a');
-      a.href = '#';
-      a.ping = impressionUrl;
-      a.click();
-    }
+    navigator.sendBeacon(impressionUrl);
     impressionUrl = null;
   }
 };
@@ -327,6 +319,17 @@ var blacklistTile = function(tile) {
 
 
 /**
+ * Returns whether the given URL has a known, safe scheme.
+ * @param {string} url URL to check.
+ */
+var isSchemeAllowed = function(url) {
+  return url.startsWith('http://') || url.startsWith('https://') ||
+         url.startsWith('ftp://') || url.startsWith('file://') ||
+         url.startsWith('chrome-extension://');
+};
+
+
+/**
  * Renders a MostVisited tile to the DOM.
  * @param {object} data Object containing rid, url, title, favicon, thumbnail.
  *     data is null if you want to construct an empty tile.
@@ -343,31 +346,25 @@ var renderTile = function(data) {
 
   tile.className = 'mv-tile';
   tile.setAttribute('data-tid', data.tid);
-  var tooltip = queryArgs['removeTooltip'] || '';
   var html = [];
   if (!USE_ICONS) {
     html.push('<div class="mv-favicon"></div>');
   }
   html.push('<div class="mv-title"></div><div class="mv-thumb"></div>');
-  html.push('<div title="' + tooltip + '" class="mv-x"></div>');
+  html.push('<div class="mv-x"></div>');
   tile.innerHTML = html.join('');
+  tile.lastElementChild.title = queryArgs['removeTooltip'] || '';
 
-  tile.href = data.url;
+  if (isSchemeAllowed(data.url)) {
+    tile.href = data.url;
+  }
   tile.title = data.title;
   if (data.impressionUrl) {
     impressionUrl = data.impressionUrl;
   }
   if (data.pingUrl) {
     tile.addEventListener('click', function(ev) {
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(data.pingUrl);
-      } else {
-        // if sendBeacon is not enabled, we fallback to "a ping".
-        var a = document.createElement('a');
-        a.href = '#';
-        a.ping = data.pingUrl;
-        a.click();
-      }
+      navigator.sendBeacon(data.pingUrl);
     });
   }
   // For local suggestions, we use navigateContentWindow instead of the default
