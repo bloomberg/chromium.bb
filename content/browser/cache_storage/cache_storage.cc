@@ -484,6 +484,10 @@ void CacheStorage::OpenCache(const std::string& cache_name,
   if (!initialized_)
     LazyInit();
 
+  quota_manager_proxy_->NotifyStorageAccessed(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::kStorageTypeTemporary);
+
   CacheAndErrorCallback pending_callback =
       base::Bind(&CacheStorage::PendingCacheAndErrorCallback,
                  weak_factory_.GetWeakPtr(), callback);
@@ -498,6 +502,10 @@ void CacheStorage::HasCache(const std::string& cache_name,
 
   if (!initialized_)
     LazyInit();
+
+  quota_manager_proxy_->NotifyStorageAccessed(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::kStorageTypeTemporary);
 
   BoolAndErrorCallback pending_callback =
       base::Bind(&CacheStorage::PendingBoolAndErrorCallback,
@@ -514,6 +522,10 @@ void CacheStorage::DeleteCache(const std::string& cache_name,
   if (!initialized_)
     LazyInit();
 
+  quota_manager_proxy_->NotifyStorageAccessed(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::kStorageTypeTemporary);
+
   BoolAndErrorCallback pending_callback =
       base::Bind(&CacheStorage::PendingBoolAndErrorCallback,
                  weak_factory_.GetWeakPtr(), callback);
@@ -527,6 +539,10 @@ void CacheStorage::EnumerateCaches(const StringsAndErrorCallback& callback) {
 
   if (!initialized_)
     LazyInit();
+
+  quota_manager_proxy_->NotifyStorageAccessed(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::kStorageTypeTemporary);
 
   StringsAndErrorCallback pending_callback =
       base::Bind(&CacheStorage::PendingStringsAndErrorCallback,
@@ -545,6 +561,10 @@ void CacheStorage::MatchCache(
   if (!initialized_)
     LazyInit();
 
+  quota_manager_proxy_->NotifyStorageAccessed(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::kStorageTypeTemporary);
+
   CacheStorageCache::ResponseCallback pending_callback =
       base::Bind(&CacheStorage::PendingResponseCallback,
                  weak_factory_.GetWeakPtr(), callback);
@@ -560,6 +580,10 @@ void CacheStorage::MatchAllCaches(
 
   if (!initialized_)
     LazyInit();
+
+  quota_manager_proxy_->NotifyStorageAccessed(
+      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::kStorageTypeTemporary);
 
   CacheStorageCache::ResponseCallback pending_callback =
       base::Bind(&CacheStorage::PendingResponseCallback,

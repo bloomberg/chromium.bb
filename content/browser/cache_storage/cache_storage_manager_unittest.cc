@@ -313,6 +313,15 @@ class CacheStorageManagerTest : public testing::Test {
     return callback_usage_;
   }
 
+  int64_t Size(const GURL& origin) {
+    base::RunLoop loop;
+    CacheStorage* cache_storage = CacheStorageForOrigin(origin);
+    cache_storage->Size(base::Bind(&CacheStorageManagerTest::UsageCallback,
+                                   base::Unretained(this), &loop));
+    loop.Run();
+    return callback_usage_;
+  }
+
  protected:
   // Temporary directory must be allocated first so as to be destroyed last.
   base::ScopedTempDir temp_dir_;
@@ -705,6 +714,56 @@ TEST_F(CacheStorageManagerTest, DeleteUnreferencedCacheDirectories) {
 
   // Verify that the unreferenced cache is gone.
   EXPECT_FALSE(base::DirectoryExists(unreferenced_path));
+}
+
+TEST_P(CacheStorageManagerTestP, OpenCacheStorageAccessed) {
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_EQ(1, quota_manager_proxy_->notify_storage_accessed_count());
+}
+
+TEST_P(CacheStorageManagerTestP, HasStorageAccessed) {
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
+  EXPECT_FALSE(Has(origin1_, "foo"));
+  EXPECT_EQ(1, quota_manager_proxy_->notify_storage_accessed_count());
+}
+
+TEST_P(CacheStorageManagerTestP, DeleteStorageAccessed) {
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
+  EXPECT_FALSE(Delete(origin1_, "foo"));
+  EXPECT_EQ(1, quota_manager_proxy_->notify_storage_accessed_count());
+}
+
+TEST_P(CacheStorageManagerTestP, KeysStorageAccessed) {
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
+  EXPECT_TRUE(Keys(origin1_));
+  EXPECT_EQ(1, quota_manager_proxy_->notify_storage_accessed_count());
+}
+
+TEST_P(CacheStorageManagerTestP, MatchCacheStorageAccessed) {
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
+  EXPECT_FALSE(StorageMatch(origin1_, "foo", GURL("http://example.com/foo")));
+  EXPECT_EQ(1, quota_manager_proxy_->notify_storage_accessed_count());
+}
+
+TEST_P(CacheStorageManagerTestP, MatchAllCachesStorageAccessed) {
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
+  EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
+  EXPECT_EQ(1, quota_manager_proxy_->notify_storage_accessed_count());
+}
+
+TEST_P(CacheStorageManagerTestP, SizeStorageAccessed) {
+  EXPECT_EQ(0, Size(origin1_));
+  // Size is not part of the web API and should not notify the quota manager of
+  // an access.
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
+}
+
+TEST_P(CacheStorageManagerTestP, SizeThenCloseStorageAccessed) {
+  EXPECT_EQ(0, GetSizeThenCloseAllCaches(origin1_));
+  // GetSizeThenCloseAllCaches is not part of the web API and should not notify
+  // the quota manager of an access.
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
 }
 
 class CacheStorageMigrationTest : public CacheStorageManagerTest {
