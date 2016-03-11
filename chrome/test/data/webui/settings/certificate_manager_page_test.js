@@ -15,8 +15,9 @@ cr.define('certificate_manager_page', function() {
     /** @private {!Map<string, !PromiseResolver>} */
     this.resolverMap_ = new Map();
     var wrapperMethods = [
-      'getCaCertificateTrust',
+      'deleteCertificate',
       'editCaCertificateTrust',
+      'getCaCertificateTrust',
     ];
     wrapperMethods.forEach(this.resetResolver, this);
 
@@ -60,6 +61,12 @@ cr.define('certificate_manager_page', function() {
       this.resolverMap_.get('editCaCertificateTrust').resolve({
         id: id, ssl: ssl, email: email, objSign: objSign,
       });
+      return Promise.resolve();
+    },
+
+    /** @override */
+    deleteCertificate: function(id) {
+      this.resolverMap_.get('deleteCertificate').resolve(id);
       return Promise.resolve();
     },
   };
@@ -136,7 +143,51 @@ cr.define('certificate_manager_page', function() {
     });
   }
 
+  function registerDeleteDialogTests() {
+    /** @type {?SettingsCertificateDeleteConfirmationDialogElement} */
+    var dialog = null;
+
+    /** @type {?TestCertificatesBrowserProxy} */
+    var browserProxy = null;
+
+    /** @type {!CertificateSubnode} */
+    var model = createSampleCertificateSubnode();
+
+    suite('CertificateDeleteConfirmationDialogTests', function() {
+      setup(function() {
+        browserProxy = new TestCertificatesBrowserProxy();
+        settings.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+        dialog = document.createElement(
+            'settings-certificate-delete-confirmation-dialog');
+        dialog.model = model;
+        dialog.certificateType = settings.CertificateType.PERSONAL;
+        document.body.appendChild(dialog);
+      });
+
+      teardown(function() { dialog.remove(); });
+
+      test('DeleteSuccess', function() {
+        assertTrue(dialog.$.dialog.opened);
+        // Check that the dialog title includes the certificate name.
+        var titleEl = Polymer.dom(dialog.$.dialog).querySelector('.title');
+        assertTrue(titleEl.textContent.includes(model.name));
+
+        // Simulate clicking 'OK'.
+        MockInteractions.tap(dialog.$.ok);
+
+        return browserProxy.whenCalled('deleteCertificate').then(
+            function(id) {
+              assertEquals(model.id, id);
+              // Check that the dialog is closed.
+              assertFalse(dialog.$.dialog.opened);
+            });
+      });
+    });
+  }
+
   return {
     registerCaTrustEditDialogTests: registerCaTrustEditDialogTests,
+    registerDeleteDialogTests: registerDeleteDialogTests,
   };
 });

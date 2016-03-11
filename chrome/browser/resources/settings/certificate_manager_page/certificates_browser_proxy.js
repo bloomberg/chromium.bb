@@ -64,6 +64,17 @@ var CertificatesError;
 var CertificatesImportError;
 
 cr.define('settings', function() {
+  /**
+   * Enumeration of all possible certificate types.
+   * @enum {string}
+   */
+  var CertificateType = {
+    CA: 'ca',
+    OTHER: 'other',
+    PERSONAL: 'personal',
+    SERVER: 'server',
+  };
+
   /** @interface */
   function CertificatesBrowserProxy() {}
 
@@ -83,7 +94,8 @@ cr.define('settings', function() {
 
     /**
      * @param {string} id
-     * @return {!Promise}
+     * @return {!Promise} A promise resolved when the certificate has been
+     *     deleted successfully or rejected with a CertificatesError.
      */
     deleteCertificate: function(id) {},
 
@@ -250,5 +262,6 @@ cr.define('settings', function() {
 
   return {
     CertificatesBrowserProxyImpl: CertificatesBrowserProxyImpl,
+    CertificateType: CertificateType,
   };
 });

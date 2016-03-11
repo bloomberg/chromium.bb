@@ -239,7 +239,7 @@
     You have certificates from these organizations that identify you:
   </message>
 
-  <!-- Certificate Manager Page, Edit Certificate Authority Trust dialog-->
+  <!-- Certificate Manager Page, edit certificate authority trust dialog-->
   <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_TITLE" desc="Title of the certificate manager edit trust dialog">
     Certificate authority
   </message>
@@ -257,6 +257,29 @@
   </message>
   <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_OBJ_SIGN" desc="Description in Certification Authority trust dialog for the Code Signing trust checkbox.">
     Trust this certificate for identifying software makers.
+  </message>
+
+  <!-- Certificate Manager Page, delete certificate confirmation dialog -->
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_USER_TITLE" desc="Title of a certificate manager dialog for confirming deletion of a user certificate">
+    Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>VeriSign Browser Certificate</ex></ph>"?
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_USER_DESCRIPTION" desc="Description of impact of deleting a user certificate">
+    If you delete one of your own certificates, you can no longer use it to identify yourself.
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_SERVER_TITLE" desc="Title of a certificate manager dialog for confirming deletion of a server certificate">
+    Delete server certificate "<ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>"?
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_SERVER_DESCRIPTION" desc="Description of impact of deleting a user certificate">
+    If you delete a server certificate, you restore the usual security checks for that server and require it uses a valid certificate.
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_CA_TITLE" desc="Title of a certificate manager dialog for confirming deletion of a certification authority certificate">
+    Delete CA certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>"?
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_CA_DESCRIPTION" desc="Description of impact of deleting a user certificate">
+    If you delete a Certification Authority (CA) certificate, your browser will no longer trust any certificates issued by that CA.
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_OTHER_TITLE" desc="Title of a certificate manager dialog for confirming deletion of a certificate of other type">
+    Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph>"?
   </message>
 
   <!-- Clear Browsing Data -->
