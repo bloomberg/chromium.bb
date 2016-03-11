@@ -86,11 +86,16 @@ PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(const String& entr
 ScriptValue PerformanceEntry::toJSONForBinding(ScriptState* scriptState) const
 {
     V8ObjectBuilder result(scriptState);
-    result.addString("name", name());
-    result.addString("entryType", entryType());
-    result.addNumber("startTime", startTime());
-    result.addNumber("duration", duration());
+    buildJSONValue(result);
     return result.scriptValue();
+}
+
+void PerformanceEntry::buildJSONValue(V8ObjectBuilder& builder) const
+{
+    builder.addString("name", name());
+    builder.addString("entryType", entryType());
+    builder.addNumber("startTime", startTime());
+    builder.addNumber("duration", duration());
 }
 
 } // namespace blink

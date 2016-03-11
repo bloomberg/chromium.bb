@@ -69,6 +69,9 @@ public:
     double responseStart() const;
     double responseEnd() const;
 
+protected:
+    void buildJSONValue(V8ObjectBuilder&) const override;
+
 private:
     PerformanceResourceTiming(const ResourceTimingInfo&, double timeOrigin, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
     ~PerformanceResourceTiming() override;

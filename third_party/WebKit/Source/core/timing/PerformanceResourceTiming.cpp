@@ -31,6 +31,7 @@
 
 #include "core/timing/PerformanceResourceTiming.h"
 
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/timing/PerformanceBase.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -210,6 +211,24 @@ double PerformanceResourceTiming::responseEnd() const
         return responseStart();
 
     return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_finishTime);
+}
+
+void PerformanceResourceTiming::buildJSONValue(V8ObjectBuilder& builder) const
+{
+    PerformanceEntry::buildJSONValue(builder);
+    builder.addString("initiatorType", initiatorType());
+    builder.addNumber("workerStart", workerStart());
+    builder.addNumber("redirectStart", redirectStart());
+    builder.addNumber("redirectEnd", redirectEnd());
+    builder.addNumber("fetchStart", fetchStart());
+    builder.addNumber("domainLookupStart", domainLookupStart());
+    builder.addNumber("domainLookupEnd", domainLookupEnd());
+    builder.addNumber("connectStart", connectStart());
+    builder.addNumber("connectEnd", connectEnd());
+    builder.addNumber("secureConnectionStart", secureConnectionStart());
+    builder.addNumber("requestStart", requestStart());
+    builder.addNumber("responseStart", responseStart());
+    builder.addNumber("responseEnd", responseEnd());
 }
 
 } // namespace blink

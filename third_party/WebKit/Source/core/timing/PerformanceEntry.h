@@ -41,6 +41,7 @@ namespace blink {
 
 class ScriptState;
 class ScriptValue;
+class V8ObjectBuilder;
 
 using PerformanceEntryType = unsigned char;
 using PerformanceEntryTypeMask = unsigned char;
@@ -85,6 +86,7 @@ public:
 
 protected:
     PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime);
+    virtual void buildJSONValue(V8ObjectBuilder&) const;
 
 private:
     const String m_name;

@@ -53,6 +53,9 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+protected:
+    void buildJSONValue(V8ObjectBuilder&) const override;
+
 private:
     PerformanceCompositeTiming(Document* requestingDocument, unsigned sourceFrame, double startTime);
     ~PerformanceCompositeTiming() override;

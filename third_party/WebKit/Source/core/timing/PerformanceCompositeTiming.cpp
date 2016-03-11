@@ -31,6 +31,7 @@
 
 #include "core/timing/PerformanceCompositeTiming.h"
 
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
 
@@ -56,6 +57,12 @@ PerformanceCompositeTiming::~PerformanceCompositeTiming()
 unsigned PerformanceCompositeTiming::sourceFrame() const
 {
     return m_sourceFrame;
+}
+
+void PerformanceCompositeTiming::buildJSONValue(V8ObjectBuilder& builder) const
+{
+    PerformanceEntry::buildJSONValue(builder);
+    builder.addNumber("sourceFrame", sourceFrame());
 }
 
 DEFINE_TRACE(PerformanceCompositeTiming)
