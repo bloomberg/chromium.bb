@@ -3,10 +3,42 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for media-router-container specifically related
- * to the filter view. */
+ * to the filter view.
+ */
 cr.define('media_router_container_filter', function() {
   function registerTests() {
     suite('MediaRouterContainerFilter', function() {
+      /**
+       * Checks whether |view| matches the current view of |container|.
+       *
+       * @param {!media_router.MediaRouterView} view Expected view type.
+       */
+      var checkCurrentView;
+
+      /**
+       * Checks whether the elements specified in |elementIdList| are visible.
+       * Checks whether all other elements are not visible. Throws an assertion
+       * error if this is not true.
+       *
+       * @param {!Array<!string>} elementIdList List of id's of elements that
+       *     should be visible.
+       */
+      var checkElementsVisibleWithId;
+
+      /**
+       * Checks whether |expected| and the text in the |element| are equal.
+       *
+       * @param {!string} expected Expected text.
+       * @param {!Element} element Element whose text will be checked.
+       */
+      var checkElementText;
+
+      /**
+       * Media Router Container created before each test.
+       * @type {?MediaRouterContainer}
+       */
+      var container;
+
       /**
        * The list of current routes.
        * @type {!Array<!media_router.Route>}
@@ -20,72 +52,22 @@ cr.define('media_router_container_filter', function() {
       var fakeSinkList = [];
 
       /**
-       * The list of elements to check for visibility.
-       * @const {!Array<string>}
-       */
-      var hiddenCheckElementIdList = [
-        'cast-mode-list',
-        'container-header',
-        'device-missing',
-        'first-run-flow',
-        'first-run-flow-cloud-pref',
-        'issue-banner',
-        'no-search-matches',
-        'route-details',
-        'search-results',
-        'sink-list',
-        'sink-list-view',
-      ];
-
-      /**
        * Search text that will match all sinks.
-       * @type {string}
+       * @type {?string}
        */
       var searchTextAll;
 
       /**
        * Search text that won't match any sink in fakeSinkList.
-       * @type {string}
+       * @type {?string}
        */
       var searchTextNone;
 
       /**
        * Search text that will match exactly one sink.
-       * @type {string}
+       * @type {?string}
        */
       var searchTextOne;
-
-      // Checks whether |view| matches the current view of |container|.
-      var checkCurrentView = function(view) {
-        assertEquals(view, container.currentView_);
-      };
-
-      // Checks whether the elements specified in |elementIdList| are visible.
-      // Checks whether all other elements are not visible.
-      var checkElementsVisibleWithId = function(elementIdList) {
-        for (var i = 0; i < elementIdList.length; i++)
-          checkElementVisibleWithId(true, elementIdList[i]);
-
-        for (var j = 0; j < hiddenCheckElementIdList.length; j++) {
-          if (elementIdList.indexOf(hiddenCheckElementIdList[j]) == -1)
-            checkElementVisibleWithId(false, hiddenCheckElementIdList[j]);
-        }
-      };
-
-      // Checks the visibility of an element with |elementId| in |container|.
-      // An element is considered visible if it exists and its |hidden| property
-      // is |false|.
-      var checkElementVisibleWithId = function(visible, elementId) {
-        var element = container.$$('#' + elementId);
-        var elementVisible = !!element && !element.hidden &&
-            element.style.display != 'none';
-        assertEquals(visible, elementVisible, elementId);
-      };
-
-      // Checks whether |expected| and the text in the |element| are equal.
-      var checkElementText = function(expected, element) {
-        assertEquals(expected.trim(), element.textContent.trim());
-      };
 
       // Import media_router_container.html before running suite.
       suiteSetup(function() {
@@ -94,49 +76,25 @@ cr.define('media_router_container_filter', function() {
             'media_router_container.html');
       });
 
-      // Initialize a media-router-container before each test.
       setup(function(done) {
         PolymerTest.clearBody();
+        // Initialize a media-router-container before each test.
         container = document.createElement('media-router-container');
         document.body.appendChild(container);
 
-        // Initialize local variables.
-        container.castModeList = [
-          new media_router.CastMode(0x1, 'Description 0', 'google.com'),
-          new media_router.CastMode(0x2, 'Description 1', null),
-          new media_router.CastMode(0x4, 'Description 2', null),
-        ];
+        // Get common functions and variables.
+        var test_base = media_router_container_test_base.init(container);
 
-        fakeRouteList = [
-          new media_router.Route('id 1', 'sink id 1',
-                                 'Title 1', 0, true, false),
-          new media_router.Route('id 2', 'sink id 2',
-                                 'Title 2', 1, false, true),
-        ];
+        checkCurrentView = test_base.checkCurrentView;
+        checkElementsVisibleWithId = test_base.checkElementsVisibleWithId;
+        checkElementText = test_base.checkElementText;
+        fakeRouteList = test_base.fakeRouteList;
+        fakeSinkList = test_base.fakeSinkList;
+        searchTextAll = test_base.searchTextAll;
+        searchTextNone = test_base.searchTextNone;
+        searchTextOne = test_base.searchTextOne;
 
-        fakeRouteListWithLocalRoutesOnly = [
-          new media_router.Route('id 1', 'sink id 1',
-                                 'Title 1', 0, true, false),
-          new media_router.Route('id 2', 'sink id 2',
-                                 'Title 2', 1, true, false),
-        ];
-
-        var castModeBitset = 0x2 | 0x4 | 0x8;
-        fakeSinkList = [
-          new media_router.Sink('sink id 1', 'Sink 1', null, null,
-              media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, castModeBitset),
-          new media_router.Sink('sink id 2', 'Sink 2', null, null,
-              media_router.SinkIconType.CAST,
-              media_router.SinkStatus.ACTIVE, castModeBitset),
-          new media_router.Sink('sink id 3', 'Sink 3', null, null,
-              media_router.SinkIconType.CAST,
-              media_router.SinkStatus.PENDING, castModeBitset),
-        ];
-
-        searchTextAll = 'sink';
-        searchTextNone = 'abc';
-        searchTextOne = 'sink 1';
+        container.castModeList = test_base.fakeCastModeList;
 
         // Allow for the media router container to be created and attached.
         setTimeout(done);

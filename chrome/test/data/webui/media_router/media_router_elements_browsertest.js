@@ -34,15 +34,19 @@ MediaRouterElementsBrowserTest.prototype = {
     switchName: 'media-router', switchValue: '1'
   }],
 
-  // List tests for individual elements. The media_router_container tests are
-  // split between media_router_container_tests.js and
-  // media_router_container_filter_tests.js.
+  // List tests for individual elements. The media-router-container tests are
+  // split between several files and use common functionality from
+  // media_router_container_test_base.js.
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'issue_banner_tests.js',
-    'media_router_container_tests.js',
+    'media_router_container_cast_mode_list_tests.js',
     'media_router_container_filter_tests.js',
+    'media_router_container_first_run_flow_tests.js',
+    'media_router_container_route_tests.js',
+    'media_router_container_sink_list_tests.js',
+    'media_router_container_test_base.js',
     'media_router_header_tests.js',
-    'media_router_search_highlighter.js',
+    'media_router_search_highlighter_tests.js',
     'route_details_tests.js',
   ]),
 
@@ -82,62 +86,61 @@ MediaRouterElementsBrowserTest.prototype = {
   },
 };
 
-TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterElementsTestIssueBanner',
-    function() {
-  // Register mocha tests for the issue banner.
+TEST_F('MediaRouterElementsBrowserTest', 'IssueBanner', function() {
   issue_banner.registerTests();
-
-  // Run all registered tests.
   mocha.run();
 });
 
-// See bugs.chromium.org issue 591227
+// The media-router-container tests are being split into multiple parts due to
+// timeout issues on bots.
 TEST_F('MediaRouterElementsBrowserTest',
-    'DISABLED_MediaRouterElementsTestMediaRouterContainer',
+    'MediaRouterContainerCastModeList',
     function() {
-  // Register mocha tests for the container.
-  media_router_container.registerTests();
-
-  // Run all registered tests.
+  media_router_container_cast_mode_list.registerTests();
   mocha.run();
 });
 
 TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterElementsTestMediaRouterContainerFilter',
+    'MediaRouterContainerFirstRunFlow',
     function() {
-  // Register mocha tests for the container filter.
+  media_router_container_first_run_flow.registerTests();
+  mocha.run();
+});
+
+TEST_F('MediaRouterElementsBrowserTest',
+    'MediaRouterContainerRoute',
+    function() {
+  media_router_container_route.registerTests();
+  mocha.run();
+});
+
+TEST_F('MediaRouterElementsBrowserTest',
+    'MediaRouterContainerSinkList',
+    function() {
+  media_router_container_sink_list.registerTests();
+  mocha.run();
+});
+
+TEST_F('MediaRouterElementsBrowserTest',
+    'MediaRouterContainerFilter',
+    function() {
   media_router_container_filter.registerTests();
-
-  // Run all registered tests.
   mocha.run();
 });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterElementsTestMediaRouterHeader',
-    function() {
-  // Register mocha tests for the header.
+TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterHeader', function() {
   media_router_header.registerTests();
-
-  // Run all registered tests.
   mocha.run();
 });
 
 TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterElementsTestMediaRouterSearchHighlighter',
+    'MediaRouterSearchHighlighter',
     function() {
-  // Register mocha tests for the search highlighter.
   media_router_search_highlighter.registerTests();
-
-  // Run all registered tests.
   mocha.run();
 });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterElementsTestMediaRouterRouteDetails',
-    function() {
-  // Register mocha tests for the route details.
+TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterRouteDetails', function() {
   route_details.registerTests();
-
-  // Run all registered tests.
   mocha.run();
 });
