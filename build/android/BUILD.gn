@@ -80,9 +80,9 @@ group("devil_py") {
   data = [
     "devil_chromium.json",
     "devil_chromium.py",
-    "//third_party/android_tools/sdk/build-tools/23.0.0/aapt",
-    "//third_party/android_tools/sdk/build-tools/23.0.0/dexdump",
-    "//third_party/android_tools/sdk/build-tools/23.0.0/split-select",
+    "//third_party/android_tools/sdk/build-tools/23.0.1/aapt",
+    "//third_party/android_tools/sdk/build-tools/23.0.1/dexdump",
+    "//third_party/android_tools/sdk/build-tools/23.0.1/split-select",
     "//third_party/android_tools/sdk/platform-tools/adb",
     "//third_party/catapult/catapult_base/catapult_base/",
     "//third_party/catapult/dependency_manager/dependency_manager/",
