@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
@@ -337,7 +338,9 @@ public class ChromeBrowserInitializer {
             ThreadUtils.assertOnUiThread();
             mApplication.initCommandLine();
             LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
             libraryLoader.ensureInitialized(mApplication);
+            StrictMode.setThreadPolicy(oldPolicy);
             libraryLoader.asyncPrefetchLibrariesToMemory();
             // The policies are used by browser startup, so we need to register the policy providers
             // before starting the browser process.

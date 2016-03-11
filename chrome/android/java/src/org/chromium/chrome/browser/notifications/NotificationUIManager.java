@@ -226,7 +226,7 @@ public class NotificationUIManager {
             return;
         }
 
-        // Use the application context because it lives longer. When using he given context, it
+        // Use the application context because it lives longer. When using the given context, it
         // may be stopped before the preferences intent is handled.
         Context applicationContext = context.getApplicationContext();
 
@@ -328,8 +328,9 @@ public class NotificationUIManager {
      * @param tag A string identifier for this notification.
      * @return The generated platform tag.
      */
-    private static String makePlatformTag(long persistentNotificationId, String origin,
-                                          @Nullable String tag) {
+    @VisibleForTesting
+    static String makePlatformTag(
+            long persistentNotificationId, String origin, @Nullable String tag) {
         // The given tag may contain the separator character, so add it last to make reading the
         // preceding origin token reliable. If no tag was specified (it is the default empty
         // string), make the platform tag unique by appending the notification id.

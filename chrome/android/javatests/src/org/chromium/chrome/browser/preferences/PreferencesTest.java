@@ -212,9 +212,6 @@ public class PreferencesTest extends NativeLibraryTestBase {
         return locationPermission;
     }
 
-    // TODO(mvanouwerkerk): Write new preference intent tests for notification settings.
-    // https://crbug.com/461885
-
     /**
      * Tests setting FontScaleFactor and ForceEnableZoom in AccessibilityPreferences and ensures
      * that ForceEnableZoom changes corresponding to FontScaleFactor.
