@@ -27,6 +27,8 @@ class CastPage(page.Page):
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('LaunchDialog'):
+      # Wait for 5s after Chrome is opened in order to get consistent results.
+      action_runner.Wait(5)
       action_runner.TapElement(selector='#start_session_button')
       action_runner.Wait(5)
 
