@@ -12,7 +12,7 @@ regression sheriff role is now entirely focused on performance.
  * [Follow up on Performance Regressions](#followup)
  * [Give Feedback on our Infrastructure](#feedback)
 
-###<a name="triage"></a> Triage Regressions on the Perf Dashboard
+##<a name="triage"></a> Triage Regressions on the Perf Dashboard
 
 Open the perf dashboard [alerts page](https://chromeperf.appspot.com/alerts).
 
@@ -73,7 +73,7 @@ below it the dashboard shows graphs of all the alerts checked in that table.
    bisects as you feel are necessary to investigate; [give feedback](#feedback)
    below if you feel that is not the case.
 
-###<a name="datastoppage"></a> Triaging data stoppage alerts
+##<a name="datastoppage"></a> Triaging data stoppage alerts
 
 Data stoppage alerts are listed on the
 [perf dashboard alerts page](https://chromeperf.appspot.com/alerts). Whenever
@@ -108,7 +108,7 @@ some diagnosis:
      sent to the perf dashboard. Are there null values? Sometimes it lists a
      reason as well. Please put your finding in the bug.
 
-###<a name="followup"></a> Follow up on Performance Regressions
+##<a name="followup"></a> Follow up on Performance Regressions
 
 During your shift, you should try to follow up on each of the bugs you filed.
 Once you've triaged all the alerts, check to see if the bisects have come back,
@@ -129,7 +129,7 @@ culprit follow up to ensure the CL author addresses the problem. If you are
 certain that a specific CL caused a performance regression, and the author does
 not have an immediate plan to address the problem, please revert the CL.
 
-###<a name="feedback"></a> Give Feedback on our Infrastructure
+##<a name="feedback"></a> Give Feedback on our Infrastructure
 
 Perf regression sheriffs have their eyes on the perf dashboard and bisects
 more than anyone else, and their feedback is invaluable for making sure these

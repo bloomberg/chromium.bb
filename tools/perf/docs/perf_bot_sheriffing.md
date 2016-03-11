@@ -5,17 +5,11 @@ waterfall up and running, and triaging performance test failures and flakes.
 
 ## Key Responsibilities
 
-  * [Keeping the chromium.perf waterfall green](#chromiumperf)
-     * [Handling Test Failures](#testfailures)
-     * [Handling Device and Bot Failures](#botfailures)
-     * [Follow up on failures](#followup)
+  * [Handle Device and Bot Failures](#botfailures)
+  * [Handle Test Failures](#testfailures)
+  * [Follow up on failures](#followup)
 
-###<a name="chromiumperf"></a> Keeping the chromium.perf waterfall green
-
-The primary responsibility of the perfbot health sheriff is to keep the
-chromium.perf waterfall green.
-
-####<a name="waterfallstate"></a> Understanding the Waterfall State
+##<a name="waterfallstate"></a> Understanding the Waterfall State
 
 Everyone can view the chromium.perf waterfall at
 https://build.chromium.org/p/chromium.perf/, but for Googlers it is recommended
@@ -49,20 +43,74 @@ optionally be used to easily track the different issues and associate
 them with specific bugs.
 
 You can see a list of all previously filed bugs using the
-**[Performance-BotHealth](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth)**
+**[Performance-BotHealth](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth)**
 label in crbug.
 
 Please also check the recent
 **[perf-sheriffs@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/perf-sheriffs)**
 postings for important announcements about bot turndowns and other known issues.
 
-####<a name="testfailures"></a> Handling Test Failures
+##<a name="botfailures"></a> Handle Device and Bot Failures
+
+###<a name="purplebots"></a> Purple bots
+
+When a bot goes purple, it's it's usually because of an infrastructure failure
+outside of the tests. But you should first check the logs of a purple bot to
+try to better understand the problem. Sometimes a telemetry test failure can
+turn the bot purple, for example.
+
+If the bot goes purple and you believe it's an infrastructure issue, file a bug
+with
+[this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Link+to+buildbot+status+page:&summary=Purple+Bot+on+chromium.perf),
+which will automatically add the bug to the trooper queue. Be sure to note
+which step is failing, and paste any relevant info from the logs into the bug.
+
+###<a name="devicefailures"></a> Android Device failures
+
+There are two types of device failures:
+
+1. A device is blacklisted in the `device_status_check` step. You can look at
+   the buildbot status page to see how many devices were listed as online during
+   this step. You should always see 7 devices online. If you see fewer than 7
+   devices online, there is a problem in the lab.
+2. A device is passing `device_status_check` but still in poor health. The
+   symptom of this is that all the tests are failing on it. You can see that on
+   the buildbot status page by looking at the `Device Affinity`. If all tests
+   with the same device affinity number are failing, it's probably a device
+   failure.
+
+For both types of failures, please file a bug with [this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Labs,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
+which will add an issue to the infra labs queue.
+
+If you need help triaging, here are the common labels you should use:
+
+   * **Performance-BotHealth** should go on all bugs you file about the bots;
+     it's the label we use to track all the issues.
+   * **Infra-Troopers** adds the bug to the trooper queue. This is for high
+     priority issues, like a build breakage. Please add a comment explaining
+     what you want the trooper to do.
+   * **Infra-Labs** adds the bug to the labs queue. If there is a hardware
+     problem, like an android device not responding or a bot that likely needs
+     a restart, please use this label. Make sure you set the **OS-** label
+     correctly as well, and add a comment explaining what you want the labs
+     team to do.
+   * **Infra** label is appropriate for bugs that are not high priority, but we
+     need infra team's help to triage. For example, the buildbot status page
+     UI is weird or we are getting some infra-related log spam. The infra team
+     works to triage these bugs within 24 hours, so you should ping if you do
+     not get a response.
+   * **Cr-Tests-Telemetry** for telemetry failures.
+   * **Cr-Tests-AutoBisect** for bisect and perf try job failures.
+
+ If you still need help, ask the speed infra chat, or escalate to sullivan@.
+
+##<a name="testfailures"></a> Handle Test Failures
 
 You want to keep the waterfall green! So any bot that is red or purple needs to
 be investigated. When a test fails:
 
 1. File a bug using
-   [this template](https://code.google.com/p/chromium/issues/entry?labels=Performance-BotHealth,Pri-1,Type-Bug-Regression,OS-?&comment=Revision+range+first+seen:%0ALink+to+failing+step+log:%0A%0A%0AIf%20the%20test%20is%20disabled,%20please%20downgrade%20to%20Pri-2.&summary=%3Ctest%3E+failure+on+chromium.perf+at+%3Crevisionrange%3E).
+   [this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Performance-BotHealth,Pri-1,Type-Bug-Regression,OS-?&comment=Revision+range+first+seen:%0ALink+to+failing+step+log:%0A%0A%0AIf%20the%20test%20is%20disabled,%20please%20downgrade%20to%20Pri-2.&summary=%3Ctest%3E+failure+on+chromium.perf+at+%3Crevisionrange%3E).
    You'll want to be sure to include:
    * Link to buildbot status page of failing build.
    * Copy and paste of relevant failure snippet from the stdio.
@@ -97,11 +145,11 @@ be investigated. When a test fails:
      the tab did not crash.
 
 
-#####<a name="telemetryfailures"></a> Disabling Telemetry Tests
+###<a name="telemetryfailures"></a> Disabling Telemetry Tests
 
 If the test is a telemetry test, its name will have a '.' in it, such as
-thread_times.key_mobile_sites, or page_cycler.top_10. The part before the first
-dot will be a python file in [tools/perf/benchmarks](
+`thread_times.key_mobile_sites`, or `page_cycler.top_10`. The part before the
+first dot will be a python file in [tools/perf/benchmarks](
 https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/benchmarks/).
 
 If a telemetry test is failing and there is no clear culprit to revert
@@ -134,80 +182,26 @@ and example of disabling a benchmark which OOMs on svelte.
 Disabling CLs can be TBR-ed to anyone in tools/perf/OWNERS, but please do **not**
 submit with NOTRY=true.
 
-#####<a name="otherfailures"></a> Disabling Other Tests
+###<a name="otherfailures"></a> Disabling Other Tests
 
 Non-telemetry tests are configured in [chromium.perf.json](https://code.google.com/p/chromium/codesearch#chromium/src/testing/buildbot/chromium.perf.json).
 You can TBR any of the per-file OWNERS, but please do **not** submit with
 NOTRY=true.
 
-####<a name="botfailures"></a> Handling Device and Bot Failures
+##<a name="followup"></a> Follow up on failures
 
-#####<a name="purplebots"></a> Purple bots
-
-When a bot goes purple, it's it's usually because of an infrastructure failure
-outside of the tests. But you should first check the logs of a purple bot to
-try to better understand the problem. Sometimes a telemetry test failure can
-turn the bot purple, for example.
-
-If the bot goes purple and you believe it's an infrastructure issue, file a bug
-with
-[this template](https://code.google.com/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Link+to+buildbot+status+page:&summary=Purple+Bot+on+chromium.perf),
-which will automatically add the bug to the trooper queue. Be sure to note
-which step is failing, and paste any relevant info from the logs into the bug.
-
-#####<a name="devicefailures"></a> Android Device failures
-
-There are two types of device failures:
-
-1. A device is blacklisted in the `device_status_check` step. You can look at
-   the buildbot status page to see how many devices were listed as online during
-   this step. You should always see 7 devices online. If you see fewer than 7
-   devices online, there is a problem in the lab.
-2. A device is passing `device_status_check` but still in poor health. The
-   symptom of this is that all the tests are failing on it. You can see that on
-   the buildbot status page by looking at the `Device Affinity`. If all tests
-   with the same device affinity number are failing, it's probably a device
-   failure.
-
-For both types of failures, please file a bug with [this template](https://code.google.com/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Labs,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
-which will add an issue to the infra labs queue.
-
-If you need help triaging, here are the common labels you should use:
-
-   * **Performance-BotHealth** should go on all bugs you file about the bots;
-     it's the label we use to track all the issues.
-   * **Infra-Troopers** adds the bug to the trooper queue. This is for high
-     priority issues, like a build breakage. Please add a comment explaining
-     what you want the trooper to do.
-   * **Infra-Labs** adds the bug to the labs queue. If there is a hardware
-     problem, like an android device not responding or a bot that likely needs
-     a restart, please use this label. Make sure you set the **OS-** label
-     correctly as well, and add a comment explaining what you want the labs
-     team to do.
-   * **Infra** label is appropriate for bugs that are not high priority, but we
-     need infra team's help to triage. For example, the buildbot status page
-     UI is weird or we are getting some infra-related log spam. The infra team
-     works to triage these bugs within 24 hours, so you should ping if you do
-     not get a response.
-   * **Cr-Tests-Telemetry** for telemetry failures.
-   * **Cr-Tests-AutoBisect** for bisect and perf try job failures.
-
- If you still need help, ask the speed infra chat, or escalate to sullivan@.
-
-####<a name="followup"></a> Follow up on failures
-
-**[Pri-0 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-0)**
+**[Pri-0 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-0)**
 should have an owner or contact on speed infra team and be worked on as top
 priority. Pri-0 generally implies an entire waterfall is down.
 
-**[Pri-1 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-1)**
+**[Pri-1 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-1)**
 should be pinged daily, and checked to make sure someone is following up. Pri-1
 bugs are for a red test (not yet disabled), purple bot, or failing device.
 
-**[Pri-2 bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-2)**
+**[Pri-2 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-2)**
 are for disabled tests. These should be pinged weekly, and work towards fixing
 should be ongoing when the sheriff is not working on a Pri-1 issue. Here is the
-[list of Pri-2 bugs that have not been pinged in a week](https://code.google.com/p/chromium/issues/list?can=2&q=label:Performance-BotHealth%20label:Pri-2%20modified-before:today-7&sort=modified)
+[list of Pri-2 bugs that have not been pinged in a week](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label:Performance-BotHealth%20label:Pri-2%20modified-before:today-7&sort=modified)
 
 <!-- Unresolved issues:
 1. Do perf sheriffs watch the bisect waterfall?
