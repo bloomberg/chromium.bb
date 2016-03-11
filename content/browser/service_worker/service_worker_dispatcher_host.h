@@ -171,25 +171,21 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                             ServiceWorkerStatusCode status,
                             const std::string& status_message,
                             int64_t registration_id);
-
   void UpdateComplete(int thread_id,
                       int provider_id,
                       int request_id,
                       ServiceWorkerStatusCode status,
                       const std::string& status_message,
                       int64_t registration_id);
-
   void UnregistrationComplete(int thread_id,
                               int request_id,
                               ServiceWorkerStatusCode status);
-
   void GetRegistrationComplete(
       int thread_id,
       int provider_id,
       int request_id,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
-
   void GetRegistrationsComplete(
       int thread_id,
       int provider_id,
@@ -197,38 +193,15 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
           registrations);
-
   void GetRegistrationForReadyComplete(
       int thread_id,
       int request_id,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
 
-  void SendRegistrationError(int thread_id,
-                             int request_id,
-                             ServiceWorkerStatusCode status,
-                             const std::string& status_message);
-
-  void SendUpdateError(int thread_id,
-                       int request_id,
-                       ServiceWorkerStatusCode status,
-                       const std::string& status_message);
-
-  void SendUnregistrationError(int thread_id,
-                               int request_id,
-                               ServiceWorkerStatusCode status);
-
-  void SendGetRegistrationError(int thread_id,
-                                int request_id,
-                                ServiceWorkerStatusCode status);
-
-  void SendGetRegistrationsError(int thread_id,
-                                 int request_id,
-                                 ServiceWorkerStatusCode status);
-
   ServiceWorkerContextCore* GetContext();
 
-  int render_process_id_;
+  const int render_process_id_;
   MessagePortMessageFilter* const message_port_message_filter_;
   ResourceContext* resource_context_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;

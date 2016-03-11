@@ -245,7 +245,7 @@ ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
       return handle;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 ServiceWorkerRegistrationHandle*
@@ -880,7 +880,13 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
     return;  // The provider has already been destroyed.
 
   if (status != SERVICE_WORKER_OK) {
-    SendRegistrationError(thread_id, request_id, status, status_message);
+    base::string16 error_message;
+    blink::WebServiceWorkerError::ErrorType error_type;
+    GetServiceWorkerRegistrationStatusResponse(status, status_message,
+                                               &error_type, &error_message);
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id, request_id, error_type,
+        base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) + error_message));
     return;
   }
 
@@ -916,7 +922,13 @@ void ServiceWorkerDispatcherHost::UpdateComplete(
     return;  // The provider has already been destroyed.
 
   if (status != SERVICE_WORKER_OK) {
-    SendUpdateError(thread_id, request_id, status, status_message);
+    base::string16 error_message;
+    blink::WebServiceWorkerError::ErrorType error_type;
+    GetServiceWorkerRegistrationStatusResponse(status, status_message,
+                                               &error_type, &error_message);
+    Send(new ServiceWorkerMsg_ServiceWorkerUpdateError(
+        thread_id, request_id, error_type,
+        base::ASCIIToUTF16(kServiceWorkerUpdateErrorPrefix) + error_message));
     return;
   }
 
@@ -1133,7 +1145,14 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
                          "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
                          request_id, "Status", status);
   if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
-    SendUnregistrationError(thread_id, request_id, status);
+    base::string16 error_message;
+    blink::WebServiceWorkerError::ErrorType error_type;
+    GetServiceWorkerRegistrationStatusResponse(status, std::string(),
+                                               &error_type, &error_message);
+    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
+        thread_id, request_id, error_type,
+        base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) +
+            error_message));
     return;
   }
   const bool is_success = (status == SERVICE_WORKER_OK);
@@ -1161,7 +1180,15 @@ void ServiceWorkerDispatcherHost::GetRegistrationComplete(
     return;  // The provider has already been destroyed.
 
   if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
-    SendGetRegistrationError(thread_id, request_id, status);
+    base::string16 error_message;
+    blink::WebServiceWorkerError::ErrorType error_type;
+    GetServiceWorkerRegistrationStatusResponse(status, std::string(),
+                                               &error_type, &error_message);
+    Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
+        thread_id, request_id, error_type,
+        base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
+            error_message));
+
     return;
   }
 
@@ -1198,7 +1225,14 @@ void ServiceWorkerDispatcherHost::GetRegistrationsComplete(
     return;  // The provider has already been destroyed.
 
   if (status != SERVICE_WORKER_OK) {
-    SendGetRegistrationsError(thread_id, request_id, status);
+    base::string16 error_message;
+    blink::WebServiceWorkerError::ErrorType error_type;
+    GetServiceWorkerRegistrationStatusResponse(status, std::string(),
+                                               &error_type, &error_message);
+    Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationsError(
+        thread_id, request_id, error_type,
+        base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
+            error_message));
     return;
   }
 
@@ -1241,75 +1275,6 @@ void ServiceWorkerDispatcherHost::GetRegistrationForReadyComplete(
       provider_host, registration, &info, &attrs);
   Send(new ServiceWorkerMsg_DidGetRegistrationForReady(
         thread_id, request_id, info, attrs));
-}
-
-void ServiceWorkerDispatcherHost::SendRegistrationError(
-    int thread_id,
-    int request_id,
-    ServiceWorkerStatusCode status,
-    const std::string& status_message) {
-  base::string16 error_message;
-  blink::WebServiceWorkerError::ErrorType error_type;
-  GetServiceWorkerRegistrationStatusResponse(status, status_message,
-                                             &error_type, &error_message);
-  Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-      thread_id, request_id, error_type,
-      base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) + error_message));
-}
-
-void ServiceWorkerDispatcherHost::SendUpdateError(
-    int thread_id,
-    int request_id,
-    ServiceWorkerStatusCode status,
-    const std::string& status_message) {
-  base::string16 error_message;
-  blink::WebServiceWorkerError::ErrorType error_type;
-  GetServiceWorkerRegistrationStatusResponse(status, status_message,
-                                             &error_type, &error_message);
-  Send(new ServiceWorkerMsg_ServiceWorkerUpdateError(
-      thread_id, request_id, error_type,
-      base::ASCIIToUTF16(kServiceWorkerUpdateErrorPrefix) + error_message));
-}
-
-void ServiceWorkerDispatcherHost::SendUnregistrationError(
-    int thread_id,
-    int request_id,
-    ServiceWorkerStatusCode status) {
-  base::string16 error_message;
-  blink::WebServiceWorkerError::ErrorType error_type;
-  GetServiceWorkerRegistrationStatusResponse(status, std::string(), &error_type,
-                                             &error_message);
-  Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-      thread_id, request_id, error_type,
-      base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) + error_message));
-}
-
-void ServiceWorkerDispatcherHost::SendGetRegistrationError(
-    int thread_id,
-    int request_id,
-    ServiceWorkerStatusCode status) {
-  base::string16 error_message;
-  blink::WebServiceWorkerError::ErrorType error_type;
-  GetServiceWorkerRegistrationStatusResponse(status, std::string(), &error_type,
-                                             &error_message);
-  Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
-      thread_id, request_id, error_type,
-      base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
-          error_message));
-}
-
-void ServiceWorkerDispatcherHost::SendGetRegistrationsError(
-    int thread_id,
-    int request_id,
-    ServiceWorkerStatusCode status) {
-  base::string16 error_message;
-  blink::WebServiceWorkerError::ErrorType error_type;
-  GetServiceWorkerRegistrationStatusResponse(status, std::string(), &error_type,
-                                             &error_message);
-  Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationsError(
-      thread_id, request_id, error_type,
-      base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
-          error_message));
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {
