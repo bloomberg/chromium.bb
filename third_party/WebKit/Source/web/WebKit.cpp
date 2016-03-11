@@ -30,32 +30,22 @@
 
 #include "public/web/WebKit.h"
 
-#include "bindings/core/v8/ScriptStreamerThread.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/Init.h"
 #include "core/animation/AnimationClock.h"
 #include "core/dom/Microtask.h"
-#include "core/frame/Settings.h"
 #include "core/page/Page.h"
-#include "core/workers/WorkerGlobalScopeProxy.h"
 #include "gin/public/v8_platform.h"
 #include "modules/InitModules.h"
-#include "platform/Histogram.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
-#include "platform/RuntimeEnabledFeatures.h"
-#include "platform/ThreadSafeFunctional.h"
-#include "platform/graphics/ImageDecodingStore.h"
-#include "platform/heap/GCTaskRunner.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebThread.h"
 #include "web/IndexedDBClientImpl.h"
 #include "wtf/Assertions.h"
-#include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
 #include "wtf/WTF.h"
@@ -84,11 +74,6 @@ public:
 } // namespace
 
 static WebThread::TaskObserver* s_endOfTaskRunner = nullptr;
-static GCTaskRunner* s_gcTaskRunner = nullptr;
-
-// Make sure we are not re-initialized in the same address space.
-// Doing so may cause hard to reproduce crashes.
-static bool s_webKitInitialized = false;
 
 static ModulesInitializer& modulesInitializer()
 {
@@ -98,7 +83,7 @@ static ModulesInitializer& modulesInitializer()
 
 void initialize(Platform* platform)
 {
-    initializeWithoutV8(platform);
+    Platform::initialize(platform);
 
     modulesInitializer().init();
     setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
@@ -118,42 +103,10 @@ v8::Isolate* mainThreadIsolate()
     return V8PerIsolateData::mainThreadIsolate();
 }
 
-static void maxObservedSizeFunction(size_t sizeInMB)
-{
-    const size_t supportedMaxSizeInMB = 4 * 1024;
-    if (sizeInMB >= supportedMaxSizeInMB)
-        sizeInMB = supportedMaxSizeInMB - 1;
-
-    // Send a UseCounter only when we see the highest memory usage
-    // we've ever seen.
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, committedSizeHistogram, ("PartitionAlloc.CommittedSize", supportedMaxSizeInMB));
-    committedSizeHistogram.count(sizeInMB);
-}
-
-static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
-{
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(function, AllowCrossThreadAccess(context)));
-}
-
+// TODO(haraken): Remove this function.
 void initializeWithoutV8(Platform* platform)
 {
-    ASSERT(!s_webKitInitialized);
-    s_webKitInitialized = true;
-
-    WTF::Partitions::initialize(maxObservedSizeFunction);
-    WTF::initialize();
-    WTF::initializeMainThread(callOnMainThreadFunction);
-
-    ASSERT(platform);
     Platform::initialize(platform);
-    Heap::init();
-
-    ThreadState::attachMainThread();
-    // currentThread() is null if we are running on a thread without a message loop.
-    if (WebThread* currentThread = platform->currentThread()) {
-        ASSERT(!s_gcTaskRunner);
-        s_gcTaskRunner = new GCTaskRunner(currentThread);
-    }
 }
 
 void shutdown()
@@ -188,30 +141,13 @@ void shutdown()
 
     modulesInitializer().shutdown();
 
-    shutdownWithoutV8();
+    Platform::shutdown();
 }
 
+// TODO(haraken): Remove this function.
 void shutdownWithoutV8()
 {
-    ASSERT(isMainThread());
-    // currentThread() is null if we are running on a thread without a message loop.
-    if (Platform::current()->currentThread()) {
-        ASSERT(s_gcTaskRunner);
-        delete s_gcTaskRunner;
-        s_gcTaskRunner = nullptr;
-    }
-
-    // Detach the main thread before starting the shutdown sequence
-    // so that the main thread won't get involved in a GC during the shutdown.
-    ThreadState::detachMainThread();
-
-    ASSERT(!s_endOfTaskRunner);
-    Heap::shutdown();
     Platform::shutdown();
-
-    WTF::shutdown();
-    WebPrerenderingSupport::shutdown();
-    WTF::Partitions::shutdown();
 }
 
 // TODO(tkent): The following functions to wrap LayoutTestSupport should be
