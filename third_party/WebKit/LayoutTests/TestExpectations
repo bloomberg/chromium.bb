@@ -1461,6 +1461,10 @@ crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scro
 
 crbug.com/591825 [ Mac10.11 Debug ] fast/text/selection-multiple-runs.html [ Failure ]
 
+crbug.com/594230 [ Linux Debug ] fast/files/workers/worker-read-blob-async-crash.html [ Crash Pass ]
+crbug.com/594230 [ Linux Debug ] http/tests/fetch/serviceworker/fetch.html [ Crash Pass ]
+crbug.com/594230 [ Linux Debug ] http/tests/fetch/serviceworker/fetch-base-https-other-https.html [ Crash Pass ]
+
 crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Failure ] 
 crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
 crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
