@@ -1726,6 +1726,8 @@ void HttpStreamFactoryImpl::Job::MaybeMarkAlternativeServiceBroken() {
     return;
   }
 
+  session_->quic_stream_factory()->OnTcpJobCompleted(job_status_ ==
+                                                     STATUS_SUCCEEDED);
   if (job_status_ == STATUS_SUCCEEDED && other_job_status_ == STATUS_BROKEN) {
     HistogramBrokenAlternateProtocolLocation(
         BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_MAIN);

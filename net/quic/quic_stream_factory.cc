@@ -647,6 +647,7 @@ QuicStreamFactory::QuicStreamFactory(
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
       num_push_streams_created_(0),
+      status_(OPEN),
       task_runner_(nullptr),
       weak_factory_(this) {
   if (disable_quic_on_timeout_with_open_streams)
@@ -999,9 +1000,8 @@ const char* QuicStreamFactory::QuicDisabledReasonString() const {
   }
 }
 
-bool QuicStreamFactory::IsQuicDisabled(uint16_t port) {
-  return QuicDisabledReason(port) !=
-         QuicChromiumClientSession::QUIC_DISABLED_NOT;
+bool QuicStreamFactory::IsQuicDisabled(uint16_t port) const {
+  return status_ != OPEN;
 }
 
 bool QuicStreamFactory::OnHandshakeConfirmed(QuicChromiumClientSession* session,
@@ -1030,6 +1030,8 @@ bool QuicStreamFactory::OnHandshakeConfirmed(QuicChromiumClientSession* session,
                  max_number_of_lossy_connections_));
   }
 
+  MaybeDisableQuic(port);
+
   bool is_quic_disabled = IsQuicDisabled(port);
   if (is_quic_disabled) {
     // Close QUIC connection if Quic is disabled for this port.
@@ -1041,6 +1043,22 @@ bool QuicStreamFactory::OnHandshakeConfirmed(QuicChromiumClientSession* session,
       UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicStreamFactory.QuicIsDisabled", port);
   }
   return is_quic_disabled;
+}
+
+void QuicStreamFactory::OnTcpJobCompleted(bool succeeded) {
+  if (status_ != CLOSED)
+    return;
+
+  // If QUIC connections are failing while TCP connections are working,
+  // then stop using QUIC. On the other hand if both QUIC and TCP are
+  // failing, then attempt to use QUIC again.
+  if (succeeded) {
+    status_ = DISABLED;
+    return;
+  }
+
+  status_ = OPEN;
+  num_timeouts_with_open_streams_ = 0;
 }
 
 void QuicStreamFactory::OnIdleSession(QuicChromiumClientSession* session) {}
@@ -1113,6 +1131,7 @@ void QuicStreamFactory::MaybeDisableQuic(QuicChromiumClientSession* session) {
         num_public_resets_post_handshake_, 0, 20, 10);
   }
 
+  MaybeDisableQuic(port);
   if (IsQuicDisabled(port)) {
     if (disabled_reason ==
         QuicChromiumClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE) {
@@ -1127,6 +1146,35 @@ void QuicStreamFactory::MaybeDisableQuic(QuicChromiumClientSession* session) {
                               disabled_reason,
                               QuicChromiumClientSession::QUIC_DISABLED_MAX);
   }
+}
+
+void QuicStreamFactory::MaybeDisableQuic(uint16_t port) {
+  if (status_ == DISABLED)
+    return;
+
+  QuicChromiumClientSession::QuicDisabledReason disabled_reason =
+      QuicDisabledReason(port);
+  if (disabled_reason == QuicChromiumClientSession::QUIC_DISABLED_NOT) {
+    DCHECK_EQ(OPEN, status_);
+    return;
+  }
+
+  if (disabled_reason ==
+      QuicChromiumClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS) {
+    // When QUIC there are too many timeouts with open stream, the factory
+    // should be closed. When TCP jobs complete, they will move the factory
+    // to either fully disabled or back to open.
+    status_ = CLOSED;
+    DCHECK(IsQuicDisabled(port));
+    DCHECK_NE(QuicChromiumClientSession::QuicDisabledReason(port),
+              QuicChromiumClientSession::QUIC_DISABLED_NOT);
+    return;
+  }
+
+  status_ = DISABLED;
+  DCHECK(IsQuicDisabled(port));
+  DCHECK_NE(QuicChromiumClientSession::QuicDisabledReason(port),
+            QuicChromiumClientSession::QUIC_DISABLED_NOT);
 }
 
 void QuicStreamFactory::OnSessionClosed(QuicChromiumClientSession* session) {
@@ -1215,12 +1263,14 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig() {
 
 void QuicStreamFactory::OnIPAddressChanged() {
   num_timeouts_with_open_streams_ = 0;
+  status_ = OPEN;
   CloseAllSessions(ERR_NETWORK_CHANGED, QUIC_IP_ADDRESS_CHANGED);
   set_require_confirmation(true);
 }
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
   num_timeouts_with_open_streams_ = 0;
+  status_ = OPEN;
 }
 
 void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {}

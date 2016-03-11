@@ -2893,6 +2893,13 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
   EXPECT_EQ(QuicChromiumClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS,
             factory_->QuicDisabledReason(host_port_pair_.port()));
 
+  // Verify that QUIC is un-disabled after a TCP job fails.
+  factory_->OnTcpJobCompleted(/*succeeded=*/false);
+  EXPECT_EQ(
+      0, QuicStreamFactoryPeer::GetNumTimeoutsWithOpenStreams(factory_.get()));
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                     host_port_pair_.port()));
+
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
@@ -3132,6 +3139,14 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
 
   scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
   EXPECT_TRUE(stream2.get());
+
+  // Verify that QUIC is un-disabled after a network change.
+  factory_->OnIPAddressChanged();
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                     host_port_pair_.port()));
+  EXPECT_EQ(
+      0, QuicStreamFactoryPeer::GetNumTimeoutsWithOpenStreams(factory_.get()));
+
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
@@ -3195,6 +3210,16 @@ TEST_P(QuicStreamFactoryTest, DisableQuicWhenTimeoutsWithOpenStreams) {
 
   EXPECT_EQ(QuicChromiumClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS,
             factory_->QuicDisabledReason(host_port_pair_.port()));
+
+  // Verify that QUIC is fully disabled after a TCP job succeeds.
+  factory_->OnTcpJobCompleted(/*succeeded=*/true);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                    host_port_pair_.port()));
+
+  // Verify that QUIC stays disabled after a TCP job succeeds.
+  factory_->OnTcpJobCompleted(/*succeeded=*/false);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(factory_.get(),
+                                                    host_port_pair_.port()));
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
@@ -3484,6 +3509,7 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   EXPECT_TRUE(stream2.get());
   scoped_ptr<QuicHttpStream> stream3 = request3.ReleaseStream();
   EXPECT_TRUE(stream3.get());
+
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());

@@ -188,8 +188,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool OnHandshakeConfirmed(QuicChromiumClientSession* session,
                             float packet_loss_rate);
 
+  // Called when a TCP job completes for an origin that QUIC potentially
+  // could be used for.
+  void OnTcpJobCompleted(bool succeeded);
+
   // Returns true if QUIC is disabled for this port.
-  bool IsQuicDisabled(uint16_t port);
+  bool IsQuicDisabled(uint16_t port) const;
 
   // Returns reason QUIC is disabled for this port, or QUIC_DISABLED_NOT if not.
   QuicChromiumClientSession::QuicDisabledReason QuicDisabledReason(
@@ -332,6 +336,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::deque<enum QuicChromiumClientSession::QuicDisabledReason>
       DisabledReasonsQueue;
 
+  enum FactoryStatus {
+    OPEN,     // New streams may be created.
+    CLOSED,   // No new streams may be created temporarily.
+    DISABLED  // No more streams may be created until the network changes.
+  };
+
   // Creates a job which doesn't wait for server config to be loaded from the
   // disk cache. This job is started via a PostTask.
   void CreateAuxilaryJob(const QuicServerId server_id,
@@ -390,6 +400,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Collect stats from recent connections, possibly disabling Quic.
   void MaybeDisableQuic(QuicChromiumClientSession* session);
+
+  void MaybeDisableQuic(uint16_t port);
 
   bool require_confirmation_;
   HostResolver* host_resolver_;
@@ -532,6 +544,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int num_push_streams_created_;
 
   QuicClientPushPromiseIndex push_promise_index_;
+
+  // Current status of the factory's ability to create streams.
+  FactoryStatus status_;
 
   base::TaskRunner* task_runner_;
 

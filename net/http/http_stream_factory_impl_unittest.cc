@@ -768,6 +768,8 @@ TEST_P(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad) {
 
   session->quic_stream_factory()->number_of_lossy_connections_[99] =
       params.quic_max_number_of_lossy_connections;
+  session->quic_stream_factory()->MaybeDisableQuic(99);
+  ASSERT_TRUE(session->quic_stream_factory()->IsQuicDisabled(99));
 
   StaticSocketDataProvider socket_data2;
   socket_data2.set_connect_data(MockConnect(ASYNC, OK));
