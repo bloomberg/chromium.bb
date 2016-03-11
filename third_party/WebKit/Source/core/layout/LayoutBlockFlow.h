@@ -44,6 +44,7 @@
 
 namespace blink {
 
+class BlockChildrenLayoutInfo;
 class ClipScope;
 class MarginInfo;
 class LineBreaker;
@@ -319,8 +320,8 @@ private:
     void layoutBlockChildren(bool relayoutChildren, SubtreeLayoutScope&, LayoutUnit beforeEdge, LayoutUnit afterEdge);
 
     void markDescendantsWithFloatsForLayoutIfNeeded(LayoutBlockFlow& child, LayoutUnit newLogicalTop, LayoutUnit previousFloatLogicalBottom);
-    bool positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit newLogicalTop, LayoutUnit& previousFloatLogicalBottom);
-    void layoutBlockChild(LayoutBox& child, MarginInfo&, LayoutUnit& previousFloatLogicalBottom);
+    bool positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit newLogicalTop, BlockChildrenLayoutInfo&);
+    void layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo&);
     void adjustPositionedBlock(LayoutBox& child, const MarginInfo&);
     void adjustFloatingBlock(const MarginInfo&);
 
@@ -533,7 +534,7 @@ private:
     LayoutUnit applyBeforeBreak(LayoutBox& child, LayoutUnit logicalOffset); // If the child has a before break, then return a new yPos that shifts to the top of the next page/column.
     LayoutUnit applyAfterBreak(LayoutBox& child, LayoutUnit logicalOffset, MarginInfo&); // If the child has an after break, then return a new offset that shifts to the top of the next page/column.
 
-    LayoutUnit adjustBlockChildForPagination(LayoutUnit logicalTop, LayoutBox& child, bool atBeforeSideOfBlock);
+    LayoutUnit adjustBlockChildForPagination(LayoutUnit logicalTop, LayoutBox& child, BlockChildrenLayoutInfo&, bool atBeforeSideOfBlock);
     // Computes a deltaOffset value that put a line at the top of the next page if it doesn't fit on the current page.
     void adjustLinePositionForPagination(RootInlineBox&, LayoutUnit& deltaOffset);
     // If the child is unsplittable and can't fit on the current page, return the top of the next page/column.

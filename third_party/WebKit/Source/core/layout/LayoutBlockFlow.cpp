@@ -69,6 +69,7 @@ struct SameSizeAsMarginInfo {
 
 static_assert(sizeof(LayoutBlockFlow::MarginValues) == sizeof(LayoutUnit[4]), "MarginValues should stay small");
 
+// Caches all our current margin collapsing state.
 class MarginInfo {
     // Collapsing flags for whether we can collapse our margins with our children's margins.
     bool m_canCollapseWithChildren : 1;
@@ -152,6 +153,28 @@ public:
     LayoutUnit margin() const { return m_positiveMargin - m_negativeMargin; }
     void setLastChildIsSelfCollapsingBlockWithClearance(bool value) { m_lastChildIsSelfCollapsingBlockWithClearance = value; }
     bool lastChildIsSelfCollapsingBlockWithClearance() const { return m_lastChildIsSelfCollapsingBlockWithClearance; }
+};
+
+// Some features, such as floats, margin collapsing and fragmentation, require some knowledge about
+// things that happened when laying out previous block child siblings. Only looking at the object
+// currently being laid out isn't always enough.
+class BlockChildrenLayoutInfo {
+public:
+    BlockChildrenLayoutInfo(LayoutBlockFlow* blockFlow, LayoutUnit beforeEdge, LayoutUnit afterEdge)
+        : m_marginInfo(blockFlow, beforeEdge, afterEdge)
+        , m_isAtFirstInFlowChild(true) { }
+
+    const MarginInfo& marginInfo() const { return m_marginInfo; }
+    MarginInfo& marginInfo() { return m_marginInfo; }
+    LayoutUnit& previousFloatLogicalBottom() { return m_previousFloatLogicalBottom; }
+
+    bool isAtFirstInFlowChild() const { return m_isAtFirstInFlowChild; }
+    void clearIsAtFirstInFlowChild() { m_isAtFirstInFlowChild = false; }
+
+private:
+    MarginInfo m_marginInfo;
+    LayoutUnit m_previousFloatLogicalBottom;
+    bool m_isAtFirstInFlowChild;
 };
 
 LayoutBlockFlow::LayoutBlockFlow(ContainerNode* node)
@@ -523,9 +546,10 @@ void LayoutBlockFlow::markDescendantsWithFloatsForLayoutIfNeeded(LayoutBlockFlow
         child.markAllDescendantsWithFloatsForLayout();
 }
 
-bool LayoutBlockFlow::positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit newLogicalTop, LayoutUnit& previousFloatLogicalBottom)
+bool LayoutBlockFlow::positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit newLogicalTop, BlockChildrenLayoutInfo& layoutInfo)
 {
     if (child.isLayoutBlockFlow()) {
+        LayoutUnit& previousFloatLogicalBottom = layoutInfo.previousFloatLogicalBottom();
         LayoutBlockFlow& childBlockFlow = toLayoutBlockFlow(child);
         if (childBlockFlow.containsFloats() || containsFloats())
             markDescendantsWithFloatsForLayoutIfNeeded(childBlockFlow, newLogicalTop, previousFloatLogicalBottom);
@@ -556,8 +580,9 @@ bool LayoutBlockFlow::positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit
     return true;
 }
 
-void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, MarginInfo& marginInfo, LayoutUnit& previousFloatLogicalBottom)
+void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo)
 {
+    MarginInfo& marginInfo = layoutInfo.marginInfo();
     LayoutBlockFlow* childLayoutBlockFlow = child.isLayoutBlockFlow() ? toLayoutBlockFlow(&child) : nullptr;
     LayoutUnit oldPosMarginBefore = maxPositiveMarginBefore();
     LayoutUnit oldNegMarginBefore = maxNegativeMarginBefore();
@@ -577,7 +602,7 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, MarginInfo& marginInfo,
     // Use the estimated block position and lay out the child if needed. After child layout, when
     // we have enough information to perform proper margin collapsing, float clearing and
     // pagination, we may have to reposition and lay out again if the estimate was wrong.
-    bool childNeededLayout = positionAndLayoutOnceIfNeeded(child, logicalTopEstimate, previousFloatLogicalBottom);
+    bool childNeededLayout = positionAndLayoutOnceIfNeeded(child, logicalTopEstimate, layoutInfo);
 
     // Cache if we are at the top of the block right now.
     bool atBeforeSideOfBlock = marginInfo.atBeforeSideOfBlock();
@@ -600,10 +625,10 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, MarginInfo& marginInfo,
             // We got a new position due to clearance or margin collapsing. Before we attempt to
             // paginate (which may result in the position changing again), let's try again at the
             // new position (since a new position may result in a new logical height).
-            positionAndLayoutOnceIfNeeded(child, newLogicalTop, previousFloatLogicalBottom);
+            positionAndLayoutOnceIfNeeded(child, newLogicalTop, layoutInfo);
         }
 
-        newLogicalTop = adjustBlockChildForPagination(newLogicalTop, child, atBeforeSideOfBlock && logicalTopBeforeClear == newLogicalTop);
+        newLogicalTop = adjustBlockChildForPagination(newLogicalTop, child, layoutInfo, atBeforeSideOfBlock && logicalTopBeforeClear == newLogicalTop);
     }
 
     // Clearance, margin collapsing or pagination may have given us a new logical top, in which
@@ -612,7 +637,7 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, MarginInfo& marginInfo,
     if (newLogicalTop != logicalTopEstimate
         || child.needsLayout()
         || (paginated && childLayoutBlockFlow && childLayoutBlockFlow->shouldBreakAtLineToAvoidWidow())) {
-        positionAndLayoutOnceIfNeeded(child, newLogicalTop, previousFloatLogicalBottom);
+        positionAndLayoutOnceIfNeeded(child, newLogicalTop, layoutInfo);
     }
 
     // If we previously encountered a self-collapsing sibling of this child that had clearance then
@@ -662,7 +687,7 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, MarginInfo& marginInfo,
     }
 }
 
-LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop, LayoutBox& child, bool atBeforeSideOfBlock)
+LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop, LayoutBox& child, BlockChildrenLayoutInfo& layoutInfo, bool atBeforeSideOfBlock)
 {
     LayoutBlockFlow* childBlockFlow = child.isLayoutBlockFlow() ? toLayoutBlockFlow(&child) : 0;
 
@@ -696,9 +721,11 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
     LayoutUnit newLogicalTop = logicalTop;
     if (LayoutUnit paginationStrut = logicalTopAfterPagination - logicalTop) {
         ASSERT(paginationStrut > 0);
-        // We are willing to propagate out to our parent block as long as we were at the top of the block prior
-        // to collapsing our margins, and as long as we didn't clear or move as a result of other pagination.
-        if (atBeforeSideOfBlock && logicalTopAfterForcedBreak == logicalTop && allowsPaginationStrut()) {
+        // If we're not at the first in-flow child, there's a class A break point before the child. If we *are* at the
+        // first in-flow child, but the child isn't flush with the content edge of its container, due to e.g. clearance,
+        // there's a class C break point before the child. Otherwise we should propagate the strut to our parent block,
+        // and attempt to break there instead. See https://drafts.csswg.org/css-break/#possible-breaks
+        if (layoutInfo.isAtFirstInFlowChild() && atBeforeSideOfBlock && logicalTopAfterForcedBreak == logicalTop && allowsPaginationStrut()) {
             // FIXME: Should really check if we're exceeding the page height before propagating the strut, but we don't
             // have all the information to do so (the strut only has the remaining amount to push). Gecko gets this wrong too
             // and pushes to the next page anyway, so not too concerned about it.
@@ -998,15 +1025,13 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
 {
     dirtyForLayoutFromPercentageHeightDescendants(layoutScope);
 
-    // The margin struct caches all our current margin collapsing state. The compact struct caches state when we encounter compacts,
-    MarginInfo marginInfo(this, beforeEdge, afterEdge);
+    BlockChildrenLayoutInfo layoutInfo(this, beforeEdge, afterEdge);
+    MarginInfo& marginInfo = layoutInfo.marginInfo();
 
     // Fieldsets need to find their legend and position it inside the border of the object.
     // The legend then gets skipped during normal layout. The same is true for ruby text.
     // It doesn't get included in the normal layout process but is instead skipped.
     LayoutObject* childToExclude = layoutSpecialExcludedChild(relayoutChildren, layoutScope);
-
-    LayoutUnit previousFloatLogicalBottom;
 
     LayoutBox* next = firstChildBox();
     LayoutBox* lastNormalFlowChild = nullptr;
@@ -1046,7 +1071,8 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
         }
 
         // Lay out the child.
-        layoutBlockChild(*child, marginInfo, previousFloatLogicalBottom);
+        layoutBlockChild(*child, layoutInfo);
+        layoutInfo.clearIsAtFirstInFlowChild();
         lastNormalFlowChild = child;
     }
 
