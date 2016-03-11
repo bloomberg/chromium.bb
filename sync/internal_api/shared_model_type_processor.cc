@@ -271,6 +271,7 @@ void SharedModelTypeProcessor::Delete(
   }
 
   entity->Delete();
+
   metadata_change_list->UpdateMetadata(tag, entity->metadata());
   FlushPendingCommitRequests();
 }
@@ -326,10 +327,13 @@ void SharedModelTypeProcessor::OnCommitCompleted(
     entity->ReceiveCommitResponse(data.id, data.sequence_number,
                                   data.response_version,
                                   data_type_state_.encryption_key_name());
-    // TODO(stanisc): crbug.com/573333: Delete case.
-    // This might be the right place to clear a metadata entry that has
-    // been deleted locally and confirmed deleted by the server.
-    change_list->UpdateMetadata(entity->client_tag(), entity->metadata());
+
+    if (entity->CanClearMetadata()) {
+      change_list->ClearMetadata(entity->client_tag());
+      entities_.erase(entity->metadata().client_tag_hash());
+    } else {
+      change_list->UpdateMetadata(entity->client_tag(), entity->metadata());
+    }
   }
 
   // TODO(stanisc): crbug.com/570085: Error handling.
@@ -382,13 +386,6 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     }
 
     entity->ApplyUpdateFromServer(update);
-    // TODO(stanisc): crbug.com/573333: Delete case.
-    // This might be the right place to clear metadata entry instead of
-    // updating it.
-    metadata_changes->UpdateMetadata(entity->client_tag(), entity->metadata());
-
-    // TODO(stanisc): crbug.com/521867: Do something special when conflicts are
-    // detected.
 
     // If the received entity has out of date encryption, we schedule another
     // commit to fix it.
@@ -399,6 +396,16 @@ void SharedModelTypeProcessor::OnUpdateReceived(
       auto it2 = entities_.find(client_tag_hash);
       it2->second->UpdateDesiredEncryptionKey(
           data_type_state_.encryption_key_name());
+    }
+
+    if (entity->CanClearMetadata()) {
+      metadata_changes->ClearMetadata(entity->client_tag());
+      entities_.erase(entity->metadata().client_tag_hash());
+    } else {
+      // TODO(stanisc): crbug.com/521867: Do something special when conflicts
+      // are detected.
+      metadata_changes->UpdateMetadata(entity->client_tag(),
+                                       entity->metadata());
     }
   }
 

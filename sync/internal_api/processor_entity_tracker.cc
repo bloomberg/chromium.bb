@@ -78,6 +78,10 @@ bool ProcessorEntityTracker::RequiresCommitData() const {
   return RequiresCommitRequest() && !HasCommitData() && !metadata_.is_deleted();
 }
 
+bool ProcessorEntityTracker::CanClearMetadata() const {
+  return metadata_.is_deleted() && !IsUnsynced();
+}
+
 bool ProcessorEntityTracker::UpdateIsReflection(int64_t update_version) const {
   return metadata_.server_version() >= update_version;
 }
@@ -103,6 +107,7 @@ void ProcessorEntityTracker::ApplyUpdateFromServer(
   metadata_.set_acked_sequence_number(metadata_.sequence_number());
   commit_requested_sequence_number_ = metadata_.sequence_number();
 
+  metadata_.set_is_deleted(response_data.entity->is_deleted());
   metadata_.set_server_version(response_data.response_version);
   metadata_.set_modification_time(
       syncer::TimeToProtoTime(response_data.entity->modification_time));

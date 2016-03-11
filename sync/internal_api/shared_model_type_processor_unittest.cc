@@ -224,6 +224,19 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     }
   }
 
+  // Wipes existing DB and simulates one commited item.
+  void ResetStateWriteAckedItem(const std::string& tag,
+                                const std::string& value) {
+    clear_change_processor();
+    db_.Reset();
+    InitializeToReadyState();
+    EXPECT_EQ(0U, ProcessorEntityCount());
+    WriteItemAndAck(tag, "acked-value");
+    WriteItem(tag, value);
+    EXPECT_EQ(1U, ProcessorEntityCount());
+    clear_change_processor();
+  }
+
   // Wipes existing DB and simulates one uncommited item.
   void ResetStateWriteItem(const std::string& tag, const std::string& value) {
     clear_change_processor();
@@ -552,8 +565,9 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
 }
 
 // This test covers race conditions during loading pending data. All cases
-// start with no processor and one item with a pending commit. There are three
-// different events that can occur in any order once metadata is loaded:
+// start with no processor and one acked (committed to the server) item with a
+// pending commit. There are three different events that can occur in any order
+// once metadata is loaded:
 //
 // - Pending commit data is loaded.
 // - Sync gets connected.
@@ -562,7 +576,7 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
 // This results in 2 + 12 = 14 orderings of the events.
 TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   // Data, connect.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnDataLoaded();
   OnSyncStarting();
@@ -570,7 +584,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "value1");
 
   // Connect, data.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnSyncStarting();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
@@ -579,7 +593,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "value1");
 
   // Data, connect, put.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnDataLoaded();
   OnSyncStarting();
@@ -589,7 +603,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(1, "tag1", "value2");
 
   // Data, put, connect.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnDataLoaded();
   WriteItem("tag1", "value2");
@@ -598,7 +612,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "value2");
 
   // Connect, data, put.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnSyncStarting();
   OnDataLoaded();
@@ -608,7 +622,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(1, "tag1", "value2");
 
   // Connect, put, data.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnSyncStarting();
   WriteItem("tag1", "value2");
@@ -618,7 +632,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "value2");
 
   // Put, data, connect.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   WriteItem("tag1", "value2");
   OnDataLoaded();
@@ -627,7 +641,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "value2");
 
   // Put, connect, data.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   WriteItem("tag1", "value2");
   OnSyncStarting();
@@ -637,7 +651,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "value2");
 
   // Data, connect, delete.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnDataLoaded();
   OnSyncStarting();
@@ -647,7 +661,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(1, "tag1", "");
 
   // Data, delete, connect.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnDataLoaded();
   DeleteItem("tag1");
@@ -656,7 +670,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "");
 
   // Connect, data, delete.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnSyncStarting();
   OnDataLoaded();
@@ -666,7 +680,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(1, "tag1", "");
 
   // Connect, delete, data.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   OnSyncStarting();
   DeleteItem("tag1");
@@ -676,7 +690,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "");
 
   // Delete, data, connect.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   DeleteItem("tag1");
   OnDataLoaded();
@@ -685,7 +699,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ExpectNthCommitRequestList(0, "tag1", "");
 
   // Delete, connect, data.
-  ResetStateWriteItem("tag1", "value1");
+  ResetStateWriteAckedItem("tag1", "value1");
   InitializeToMetadataLoaded();
   DeleteItem("tag1");
   OnSyncStarting();
@@ -753,10 +767,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingDelete) {
 // Test that loading a committed item does not queue another commit.
 TEST_F(SharedModelTypeProcessorTest, LoadCommited) {
   InitializeToReadyState();
-  WriteItem("tag1", "value1");
-  // Complete the commit.
-  EXPECT_TRUE(HasCommitRequestForTag("tag1"));
-  SuccessfulCommitResponse(GetLatestCommitRequestForTag("tag1"));
+  WriteItemAndAck("tag1", "value1");
   clear_change_processor();
 
   // Test that a new processor loads the metadata without committing.
@@ -910,35 +921,24 @@ TEST_F(SharedModelTypeProcessorTest, CreateAndModifyLocalItem) {
   EXPECT_NE(metadata_v1.specifics_hash(), metadata_v2.specifics_hash());
 }
 
-// Deletes an item we've never seen before.
-// Should have no effect and not crash.
-TEST_F(SharedModelTypeProcessorTest, DeleteUnknown) {
-  InitializeToReadyState();
-  DeleteItem("tag1");
-  EXPECT_EQ(0U, GetNumCommitRequestLists());
-  EXPECT_EQ(0U, db().MetadataCount());
-}
-
 // Creates an item locally then deletes it.
 //
-// In this test, no commit responses are received, so the deleted item is
-// server-unknown as far as the model thread is concerned.  That behavior
-// is race-dependent; other tests are used to test other races.
-TEST_F(SharedModelTypeProcessorTest, DeleteServerUnknown) {
+// The item is created locally then enqueued for commit.  The sync thread
+// successfully commits it, but, before the commit response is picked up
+// by the model thread, the item is deleted by the model thread. Commit
+// responses for both commits are then generated to ensure things are handled
+// correctly.
+TEST_F(SharedModelTypeProcessorTest, DeleteItem) {
   InitializeToReadyState();
-
-  // TODO(stanisc): crbug.com/573333: Review this case. If the flush of
-  // all locally modified items was scheduled to run on a separate task, than
-  // the correct behavior would be to commit just the detele, or perhaps no
-  // commit at all.
-
   WriteItem("tag1", "value1");
-  EXPECT_EQ(1U, db().MetadataCount());
   ExpectCommitRequests({"tag1"});
   const CommitRequestData& data_v1 = GetLatestCommitRequestForTag("tag1");
   const sync_pb::EntityMetadata metadata_v1 = db().GetMetadata("tag1");
 
   DeleteItem("tag1");
+  EXPECT_EQ(0U, db().DataCount());
+  // A commit was queued so the metadata should still exist.
+  EXPECT_EQ(1U, ProcessorEntityCount());
   EXPECT_EQ(1U, db().MetadataCount());
   ExpectCommitRequests({"tag1", "tag1"});
   const CommitRequestData& data_v2 = GetLatestCommitRequestForTag("tag1");
@@ -955,63 +955,44 @@ TEST_F(SharedModelTypeProcessorTest, DeleteServerUnknown) {
   EXPECT_EQ(0, metadata_v1.acked_sequence_number());
   EXPECT_EQ(kUncommittedVersion, metadata_v1.server_version());
 
-  // TODO(stanisc): crbug.com/573333: Review this case. Depending on the
-  // implementation the second action performed on metadata change list might
-  // be CLEAR_METADATA. For a real implementation of MetadataChangeList this
-  // might also mean that the change list wouldn't contain any metadata
-  // records at all - the first call would create an entry and the second would
-  // remove it.
-
   EXPECT_TRUE(metadata_v2.is_deleted());
   EXPECT_EQ(2, metadata_v2.sequence_number());
   EXPECT_EQ(0, metadata_v2.acked_sequence_number());
   EXPECT_EQ(kUncommittedVersion, metadata_v2.server_version());
-}
 
-// Creates an item locally then deletes it.
-//
-// The item is created locally then enqueued for commit.  The sync thread
-// successfully commits it, but, before the commit response is picked up
-// by the model thread, the item is deleted by the model thread.
-TEST_F(SharedModelTypeProcessorTest, DeleteServerUnknown_RacyCommitResponse) {
-  InitializeToReadyState();
-
-  WriteItem("tag1", "value1");
-  EXPECT_EQ(1U, db().DataCount());
-  EXPECT_EQ(1U, db().MetadataCount());
-  ExpectCommitRequests({"tag1"});
-  const CommitRequestData& data_v1 = GetLatestCommitRequestForTag("tag1");
-  EXPECT_FALSE(db().GetMetadata("tag1").is_deleted());
-
-  DeleteItem("tag1");
-  EXPECT_EQ(0U, db().DataCount());
-  EXPECT_EQ(1U, db().MetadataCount());
-  ExpectCommitRequests({"tag1", "tag1"});
-  EXPECT_TRUE(db().GetMetadata("tag1").is_deleted());
-
-  // This commit happened while the deletion was in progress, but the commit
-  // response didn't arrive on our thread until after the delete was issued to
-  // the sync thread.  It will update some metadata, but won't do much else.
+  // A response for the first commit doesn't change much.
   SuccessfulCommitResponse(data_v1);
   EXPECT_EQ(0U, db().DataCount());
+  EXPECT_EQ(1U, ProcessorEntityCount());
   EXPECT_EQ(1U, db().MetadataCount());
 
-  // In reality the change list used to commit local changes should never
-  // overlap with the changelist used to deliver commit confirmation. In this
-  // test setup the two change lists are isolated - one is on the stack and
-  // another is the class member.
+  SuccessfulCommitResponse(data_v2);
+  // The delete was acked so the metadata should now be cleared.
+  EXPECT_EQ(0U, ProcessorEntityCount());
+  EXPECT_EQ(0U, db().MetadataCount());
+}
 
-  const sync_pb::EntityMetadata metadata_v2 = db().GetMetadata("tag1");
-  // Deleted from the second local modification.
-  EXPECT_TRUE(metadata_v2.is_deleted());
-  // sequence_number = 2 from the second local modification.
-  EXPECT_EQ(2, metadata_v2.sequence_number());
-  // acked_sequence_number = 1 from the first commit response.
-  EXPECT_EQ(1, metadata_v2.acked_sequence_number());
+TEST_F(SharedModelTypeProcessorTest, ServerDeleteItem) {
+  InitializeToReadyState();
+  WriteItemAndAck("tag1", "value1");
+  EXPECT_EQ(1U, ProcessorEntityCount());
+  EXPECT_EQ(1U, db().MetadataCount());
+  EXPECT_EQ(1U, db().DataCount());
 
-  // TODO(rlarocque): Verify the state of the item is correct once we get
-  // storage hooked up in these tests.  For example, verify the item is still
-  // marked as deleted.
+  TombstoneFromServer(5, "tag1");
+  // Delete from server should clear the data and all the metadata.
+  EXPECT_EQ(0U, db().DataCount());
+  EXPECT_EQ(0U, ProcessorEntityCount());
+  EXPECT_EQ(0U, db().MetadataCount());
+}
+
+// Deletes an item we've never seen before.
+// Should have no effect and not crash.
+TEST_F(SharedModelTypeProcessorTest, DeleteUnknown) {
+  InitializeToReadyState();
+  DeleteItem("tag1");
+  EXPECT_EQ(0U, GetNumCommitRequestLists());
+  EXPECT_EQ(0U, db().MetadataCount());
 }
 
 // Creates two different sync items.

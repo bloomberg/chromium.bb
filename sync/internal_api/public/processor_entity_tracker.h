@@ -61,6 +61,11 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // created. Note that deletions do not require cached data.
   bool RequiresCommitData() const;
 
+  // Whether it's safe to clear the metadata for this entity. This means that
+  // the entity is deleted and either knowledge of this entity has never left
+  // this client or it is up to date with the server.
+  bool CanClearMetadata() const;
+
   // Returns true if the specified update version does not contain new data.
   bool UpdateIsReflection(int64_t update_version) const;
 
@@ -117,6 +122,12 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // The constructor swaps the data from the passed metadata.
   ProcessorEntityTracker(const std::string& client_tag,
                          sync_pb::EntityMetadata* metadata);
+
+  // Whether knowledge of this entity has never gone past the processor. This
+  // means that no commits have been queued and it did not originate at the
+  // server. This is used to determine whether it is safe to delete the tracker
+  // and metadata for this entity.
+  bool IsLocalOnly() const;
 
   // Increment sequence number in the metadata.
   void IncrementSequenceNumber();
