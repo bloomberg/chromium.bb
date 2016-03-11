@@ -608,6 +608,7 @@ void AudioVideoPipelineDeviceTest::Initialize() {
 
 void AudioVideoPipelineDeviceTest::AddPause(base::TimeDelta delay,
                                             base::TimeDelta length) {
+  DCHECK_EQ(MediaPipelineDeviceParams::kModeSyncPts, sync_type_);
   pause_pattern_.push_back(PauseInfo(delay, length));
 }
 
@@ -645,6 +646,7 @@ void AudioVideoPipelineDeviceTest::AddEffectsStreams() {
 
 void AudioVideoPipelineDeviceTest::SetPausePattern(
     const std::vector<PauseInfo> pattern) {
+  DCHECK_EQ(MediaPipelineDeviceParams::kModeSyncPts, sync_type_);
   pause_pattern_ = pattern;
 }
 
@@ -951,7 +953,7 @@ TEST_F(AudioVideoPipelineDeviceTest, H264Playback) {
 TEST_F(AudioVideoPipelineDeviceTest, WebmPlaybackWithPause) {
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
-  set_sync_type(MediaPipelineDeviceParams::kModeIgnorePts);
+  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   // Setup to pause for 100ms every 500ms
   AddPause(base::TimeDelta::FromMilliseconds(500),
            base::TimeDelta::FromMilliseconds(100));
@@ -1133,7 +1135,7 @@ TEST_F(AudioVideoPipelineDeviceTest, H264Playback_WithEffectsStreams) {
 TEST_F(AudioVideoPipelineDeviceTest, WebmPlaybackWithPause_WithEffectsStreams) {
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
-  set_sync_type(MediaPipelineDeviceParams::kModeIgnorePts);
+  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   // Setup to pause for 100ms every 500ms
   AddPause(base::TimeDelta::FromMilliseconds(500),
            base::TimeDelta::FromMilliseconds(100));
