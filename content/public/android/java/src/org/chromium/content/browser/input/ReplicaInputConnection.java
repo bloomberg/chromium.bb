@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser.input;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
@@ -464,6 +466,15 @@ public class ReplicaInputConnection
     @Override
     public Handler getHandler() {
         return mHandler;
+    }
+
+    /**
+     * @see BaseInputConnection#requestCursorUpdates(int)
+     */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public boolean requestCursorUpdates(int cursorUpdateMode) {
+        return mImeAdapter.onRequestCursorUpdates(cursorUpdateMode);
     }
 
     @VisibleForTesting

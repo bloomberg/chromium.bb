@@ -58,14 +58,14 @@ public class ImeTest extends ContentShellTestBase {
             + "<br/><p><span id=\"plain_text\">This is Plain Text One</span></p>"
             + "</form></body></html>");
 
-    private ChromiumBaseInputConnection mConnection;
+    protected ChromiumBaseInputConnection mConnection;
     private TestInputConnectionFactory mConnectionFactory;
     private ImeAdapter mImeAdapter;
 
     private ContentViewCore mContentViewCore;
     private WebContents mWebContents;
     private TestCallbackHelperContainer mCallbackContainer;
-    private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
+    protected TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     @Override
     public void setUp() throws Exception {
@@ -1261,7 +1261,7 @@ public class ImeTest extends ContentShellTestBase {
         });
     }
 
-    private boolean setComposingText(final CharSequence text, final int newCursorPosition)
+    protected boolean setComposingText(final CharSequence text, final int newCursorPosition)
             throws Exception {
         final ChromiumBaseInputConnection connection = mConnection;
         return runBlockingOnImeThread(new Callable<Boolean>() {

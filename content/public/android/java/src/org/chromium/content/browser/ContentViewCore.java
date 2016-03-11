@@ -2317,7 +2317,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             float contentWidth, float contentHeight,
             float viewportWidth, float viewportHeight,
             float controlsOffsetYCss, float contentOffsetYCss,
-            boolean isMobileOptimizedHint) {
+            boolean isMobileOptimizedHint,
+            boolean hasInsertionMarker, boolean isInsertionMarkerVisible,
+            float insertionMarkerHorizontal, float insertionMarkerTop,
+            float insertionMarkerBottom) {
         TraceEvent.begin("ContentViewCore:updateFrameInfo");
         mIsMobileOptimizedHint = isMobileOptimizedHint;
         // Adjust contentWidth/Height to be always at least as big as
@@ -2384,6 +2387,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();
         }
+
+        mImeAdapter.onUpdateFrameInfo(mRenderCoordinates, hasInsertionMarker,
+                isInsertionMarkerVisible, insertionMarkerHorizontal, insertionMarkerTop,
+                insertionMarkerBottom);
+
         TraceEvent.end("ContentViewCore:updateFrameInfo");
     }
 

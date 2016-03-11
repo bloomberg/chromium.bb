@@ -789,7 +789,11 @@ void RenderWidgetHostViewAndroid::ImeCancelComposition() {
 void RenderWidgetHostViewAndroid::ImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
-  // TODO(yukawa): Implement this.
+  std::vector<gfx::RectF> character_bounds_float;
+  for (const gfx::Rect& rect : character_bounds) {
+    character_bounds_float.emplace_back(rect);
+  }
+  ime_adapter_android_.SetCharacterBounds(character_bounds_float);
 }
 
 void RenderWidgetHostViewAndroid::FocusedNodeChanged(bool is_editable_node) {
@@ -1308,7 +1312,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.scrollable_viewport_size,
       frame_metadata.location_bar_offset,
       frame_metadata.location_bar_content_translation,
-      is_mobile_optimized);
+      is_mobile_optimized,
+      frame_metadata.selection.start);
 #if defined(VIDEO_HOLE)
   if (host_) {
     WebContents* web_contents =

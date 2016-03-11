@@ -1578,10 +1578,6 @@ ui::TextInputType RenderWidget::GetTextInputType() {
 }
 
 void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
-#if defined(OS_ANDROID)
-// TODO(yukawa): Start sending character bounds when the browser side
-// implementation becomes ready (crbug.com/424866).
-#else
   TRACE_EVENT0("renderer", "RenderWidget::UpdateCompositionInfo");
   gfx::Range range = gfx::Range();
   if (should_update_range) {
@@ -1598,7 +1594,6 @@ void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
   composition_range_ = range;
   Send(new InputHostMsg_ImeCompositionRangeChanged(
       routing_id(), composition_range_, composition_character_bounds_));
-#endif
 }
 
 void RenderWidget::convertViewportToWindow(blink::WebRect* rect) {

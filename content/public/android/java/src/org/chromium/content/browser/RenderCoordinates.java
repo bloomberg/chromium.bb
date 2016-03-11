@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import org.chromium.base.VisibleForTesting;
+
 /**
  * Cached copy of all positions and scales (CSS-to-DIP-to-physical pixels)
  * reported from the renderer.
@@ -72,6 +74,18 @@ public class RenderCoordinates {
         mLastFrameViewportHeightCss = viewportHeightCss;
 
         mHasFrameInfo = true;
+    }
+
+    /**
+     * Sets several fields for unit test. (used by {@link CursorAnchorInfoControllerTest}).
+     * @param deviceScaleFactor Device scale factor (maps DIP pixels to physical pixels).
+     * @param contentOffsetYPix Physical on-screen Y offset amount below the top controls.
+     */
+    @VisibleForTesting
+    public void setFrameInfoForTest(float deviceScaleFactor, float contentOffsetYPix) {
+        reset();
+        mDeviceScaleFactor = deviceScaleFactor;
+        mContentOffsetYPix = contentOffsetYPix;
     }
 
     /**

@@ -19,6 +19,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/viewport_selection_bound.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
@@ -420,7 +421,8 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::SizeF& viewport_size,
     const gfx::Vector2dF& controls_offset,
     const gfx::Vector2dF& content_offset,
-    bool is_mobile_optimized_hint) {
+    bool is_mobile_optimized_hint,
+    const cc::ViewportSelectionBound& selection_start) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null() || !window_android_)
@@ -430,6 +432,18 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       gfx::ScaleVector2d(content_offset, dpi_scale_));
 
   page_scale_ = page_scale_factor;
+
+  // The CursorAnchorInfo API in Android only supports zero width selection
+  // bounds.
+  const jboolean has_insertion_marker =
+      selection_start.type == cc::SELECTION_BOUND_CENTER;
+  const jboolean is_insertion_marker_visible = selection_start.visible;
+  const jfloat insertion_marker_horizontal =
+      has_insertion_marker ? selection_start.edge_top.x() : 0.0f;
+  const jfloat insertion_marker_top =
+      has_insertion_marker ? selection_start.edge_top.y() : 0.0f;
+  const jfloat insertion_marker_bottom =
+      has_insertion_marker ? selection_start.edge_bottom.y() : 0.0f;
 
   Java_ContentViewCore_updateFrameInfo(
       env, obj.obj(),
@@ -444,7 +458,12 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       viewport_size.height(),
       controls_offset.y(),
       content_offset.y(),
-      is_mobile_optimized_hint);
+      is_mobile_optimized_hint,
+      has_insertion_marker,
+      is_insertion_marker_visible,
+      insertion_marker_horizontal,
+      insertion_marker_top,
+      insertion_marker_bottom);
 }
 
 void ContentViewCoreImpl::SetTitle(const base::string16& title) {

@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Pair;
 import android.view.View;
+import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -34,6 +35,8 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
     private final Range mComposition = new Range(-1, -1);
     private boolean mIsShowWithoutHideOutstanding;
     private final List<Pair<Range, Range>> mUpdateSelectionList;
+    private int mUpdateCursorAnchorInfoCounter;
+    private CursorAnchorInfo mLastCursorAnchorInfo;
 
     public TestInputMethodManagerWrapper(ContentViewCore contentViewCore) {
         super(null);
@@ -107,6 +110,12 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         return mRestartInputCounter;
     }
 
+    @Override
+    public void updateCursorAnchorInfo(View view, CursorAnchorInfo cursorAnchorInfo) {
+        mUpdateCursorAnchorInfoCounter++;
+        mLastCursorAnchorInfo = cursorAnchorInfo;
+    }
+
     public int getShowSoftInputCounter() {
         Log.d(TAG, "getShowSoftInputCounter: %d", mShowSoftInputCounter);
         return mShowSoftInputCounter;
@@ -138,5 +147,17 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
 
     public boolean isShowWithoutHideOutstanding() {
         return mIsShowWithoutHideOutstanding;
+    }
+
+    public int getUpdateCursorAnchorInfoCounter() {
+        return mUpdateCursorAnchorInfoCounter;
+    }
+
+    public void clearLastCursorAnchorInfo() {
+        mLastCursorAnchorInfo = null;
+    }
+
+    public CursorAnchorInfo getLastCursorAnchorInfo() {
+        return mLastCursorAnchorInfo;
     }
 }

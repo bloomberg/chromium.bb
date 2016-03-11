@@ -28,6 +28,10 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
+namespace cc {
+struct ViewportSelectionBound;
+}
+
 namespace ui {
 class WindowAndroid;
 }
@@ -316,7 +320,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const gfx::SizeF& viewport_size,
                        const gfx::Vector2dF& controls_offset,
                        const gfx::Vector2dF& content_offset,
-                       bool is_mobile_optimized_hint);
+                       bool is_mobile_optimized_hint,
+                       const cc::ViewportSelectionBound& selection_start);
 
   void ForceUpdateImeAdapter(long native_ime_adapter);
   void UpdateImeAdapter(long native_ime_adapter,

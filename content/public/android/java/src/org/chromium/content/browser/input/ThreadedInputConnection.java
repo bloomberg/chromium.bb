@@ -601,9 +601,15 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
      * @see InputConnection#requestCursorUpdates(int)
      */
     @Override
-    public boolean requestCursorUpdates(int cursorUpdateMode) {
+    public boolean requestCursorUpdates(final int cursorUpdateMode) {
         if (DEBUG_LOGS) Log.w(TAG, "requestCursorUpdates [%x]", cursorUpdateMode);
         assertOnImeThread();
-        return false;
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mImeAdapter.onRequestCursorUpdates(cursorUpdateMode);
+            }
+        });
+        return true;
     }
 }
