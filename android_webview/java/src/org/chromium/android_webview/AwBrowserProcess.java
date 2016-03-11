@@ -5,6 +5,7 @@
 package org.chromium.android_webview;
 
 import android.content.Context;
+import android.os.StrictMode;
 
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.CommandLine;
@@ -93,20 +94,26 @@ public abstract class AwBrowserProcess {
     }
 
     private static void tryObtainingDataDirLockOrDie(Context context) {
-        String dataPath = PathUtils.getDataDirectory(context);
-        File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
-        boolean success = false;
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
         try {
-            // Note that the file is not closed intentionally.
-            RandomAccessFile file = new RandomAccessFile(lockFile, "rw");
-            sExclusiveFileLock = file.getChannel().tryLock();
-            success = sExclusiveFileLock != null;
-        } catch (IOException e) {
-            Log.w(TAG, "Failed to create lock file " + lockFile, e);
-        }
-        if (!success) {
-            Log.w(TAG, "The app may have another WebView opened in a separate process. "
-                    + "This is not recommended and may stop working in future versions.");
+            String dataPath = PathUtils.getDataDirectory(context);
+            File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
+            boolean success = false;
+            try {
+                // Note that the file is not closed intentionally.
+                RandomAccessFile file = new RandomAccessFile(lockFile, "rw");
+                sExclusiveFileLock = file.getChannel().tryLock();
+                success = sExclusiveFileLock != null;
+            } catch (IOException e) {
+                Log.w(TAG, "Failed to create lock file " + lockFile, e);
+            }
+            if (!success) {
+                Log.w(TAG, "The app may have another WebView opened in a separate process. "
+                        + "This is not recommended and may stop working in future versions.");
+            }
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 }
