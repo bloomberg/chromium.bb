@@ -242,8 +242,12 @@ void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
 }
 
 void InputMethodWin::CancelComposition(const TextInputClient* client) {
-  if (enabled_ && IsTextInputClientFocused(client))
+  if (enabled_ && IsTextInputClientFocused(client)) {
     imm32_manager_.CancelIME(toplevel_window_handle_);
+
+    if (GetEngine())
+      GetEngine()->Reset();
+  }
 }
 
 void InputMethodWin::OnInputLocaleChanged() {

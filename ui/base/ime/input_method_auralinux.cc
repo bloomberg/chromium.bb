@@ -259,6 +259,10 @@ void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
 void InputMethodAuraLinux::CancelComposition(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
+
+  if (GetEngine())
+    GetEngine()->Reset();
+
   ResetContext();
 }
 
