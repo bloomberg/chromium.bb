@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 namespace password_manager {
 
@@ -18,11 +18,8 @@ namespace {
 
 bool ShouldAffiliationBasedMatchingBeActive(
     sync_driver::SyncService* sync_service) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!IsAffiliationBasedMatchingEnabled(*command_line))
-    return false;
-
-  return sync_service && sync_service->CanSyncStart() &&
+  return base::FeatureList::IsEnabled(features::kAffiliationBasedMatching) &&
+         sync_service && sync_service->CanSyncStart() &&
          sync_service->IsSyncActive() &&
          sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
          !sync_service->IsUsingSecondaryPassphrase();
@@ -46,8 +43,7 @@ void ActivateAffiliationBasedMatching(
   password_store->SetAffiliatedMatchHelper(std::move(affiliated_match_helper));
 
   password_store->enable_propagating_password_changes_to_web_credentials(
-      IsPropagatingPasswordChangesToWebCredentialsEnabled(
-          *base::CommandLine::ForCurrentProcess()));
+      base::FeatureList::IsEnabled(features::kAffiliationBasedMatching));
 }
 
 base::FilePath GetAffiliationDatabasePath(const base::FilePath& profile_path) {

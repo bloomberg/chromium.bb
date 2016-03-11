@@ -212,8 +212,6 @@
         'password_manager/core/common/password_manager_features.h',
         'password_manager/core/common/password_manager_pref_names.cc',
         'password_manager/core/common/password_manager_pref_names.h',
-        'password_manager/core/common/password_manager_switches.cc',
-        'password_manager/core/common/password_manager_switches.h',
         'password_manager/core/common/password_manager_ui.h',
       ],
     },

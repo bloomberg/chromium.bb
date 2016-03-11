@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -12,7 +11,6 @@
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/web_contents.h"
 
 class PasswordManagerInternalsWebUIBrowserTest : public WebUIBrowserTest {

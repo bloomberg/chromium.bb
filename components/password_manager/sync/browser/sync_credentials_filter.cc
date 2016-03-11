@@ -6,12 +6,12 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
@@ -88,25 +88,33 @@ void SyncCredentialsFilter::ReportFormUsed(
 // static
 SyncCredentialsFilter::AutofillForSyncCredentialsState
 SyncCredentialsFilter::GetAutofillForSyncCredentialsState() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName("AutofillSyncCredential");
+  bool protect_sync_credential_enabled =
+      base::FeatureList::IsEnabled(features::kProtectSyncCredential);
+  bool protect_sync_credential_on_reauth_enabled =
+      base::FeatureList::IsEnabled(features::kProtectSyncCredentialOnReauth);
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAllowAutofillSyncCredential))
-    return ALLOW_SYNC_CREDENTIALS;
-  if (command_line->HasSwitch(
-          switches::kDisallowAutofillSyncCredentialForReauth)) {
+  if (protect_sync_credential_enabled) {
+    if (protect_sync_credential_on_reauth_enabled) {
+      // Both the features are enabled, do not ever fill the sync credential.
+      return DISALLOW_SYNC_CREDENTIALS;
+    }
+
+    // Only 'protect-sync-credential-on-reauth' feature is kept disabled. This
+    // is "illegal", emit a warning and do not ever fill the sync credential.
+    LOG(WARNING) << "This is illegal! Feature "
+                    "'protect-sync-credential-on-reauth' cannot be kept "
+                    "disabled if 'protect-sync-credential' feature is enabled. "
+                    "We shall not ever fill the sync credential is such cases.";
+    return DISALLOW_SYNC_CREDENTIALS;
+  }
+
+  if (protect_sync_credential_on_reauth_enabled) {
+    // Only 'protect-sync-credential-on-reauth' feature is kept enabled, fill
+    // the sync credential everywhere but on reauth.
     return DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH;
   }
-  if (command_line->HasSwitch(switches::kDisallowAutofillSyncCredential))
-    return DISALLOW_SYNC_CREDENTIALS;
 
-  if (group_name == "DisallowSyncCredentialsForReauth")
-    return DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH;
-  if (group_name == "DisallowSyncCredentials")
-    return DISALLOW_SYNC_CREDENTIALS;
-
-  // Allow by default.
+  // Both the features are disabled, fill the sync credential everywhere.
   return ALLOW_SYNC_CREDENTIALS;
 }
 

@@ -8,7 +8,6 @@
 #include <map>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -29,8 +28,8 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -51,21 +50,6 @@ const char kSpdyProxyRealm[] = "/SpdyProxy";
 // Shorten the name to spare line breaks. The code provides enough context
 // already.
 typedef autofill::SavePasswordProgressLogger Logger;
-
-bool ShouldDropSyncCredential() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName("PasswordManagerDropSyncCredential");
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDropSyncCredential))
-    return true;
-
-  if (command_line->HasSwitch(switches::kDisableDropSyncCredential))
-    return false;
-
-  // Default to not saving.
-  return group_name != "Disabled";
-}
 
 bool URLsEqualUpToScheme(const GURL& a, const GURL& b) {
   return (a.GetContent() == b.GetContent());
@@ -674,7 +658,7 @@ void PasswordManager::OnLoginSuccessful() {
     logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
   }
 
-  if (ShouldDropSyncCredential() &&
+  if (base::FeatureList::IsEnabled(features::kDropSyncCredential) &&
       !client_->GetStoreResultFilter()->ShouldSave(
           provisional_save_manager_->pending_credentials())) {
     provisional_save_manager_->WipeStoreCopyIfOutdated();

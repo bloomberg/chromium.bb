@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -65,7 +64,6 @@
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"

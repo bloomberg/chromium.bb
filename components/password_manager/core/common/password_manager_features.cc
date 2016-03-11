@@ -8,6 +8,16 @@ namespace password_manager {
 
 namespace features {
 
+// Enable affiliation based matching, so that credentials stored for an Android
+// application will also be considered matches for, and be filled into
+// corresponding Web applications.
+const base::Feature kAffiliationBasedMatching = {
+    "affiliation-based-matching", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Drop the sync credential if captured for saving, do not offer it for saving.
+const base::Feature kDropSyncCredential = {"drop-sync-credential",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Disables the save-password prompt. Passwords are then saved automatically,
 // without asking the user.
 const base::Feature kEnableAutomaticPasswordSaving = {
@@ -26,6 +36,15 @@ const base::Feature kEnablePasswordForceSaving = {
 // Enable the user to trigger password generation manually.
 extern const base::Feature kEnableManualPasswordGeneration = {
     "enable-manual-password-generation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Disallow autofilling of the sync credential.
+const base::Feature kProtectSyncCredential = {
+    "protect-sync-credential", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Disallow autofilling of the sync credential only for transactional reauth
+// pages.
+const base::Feature kProtectSyncCredentialOnReauth = {
+    "protect-sync-credential-on-reauth", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 

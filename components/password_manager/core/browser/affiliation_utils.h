@@ -180,20 +180,6 @@ bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
 // A shorter way to spell FacetURI::IsValidAndroidFacetURI().
 bool IsValidAndroidFacetURI(const std::string& uri);
 
-// Returns whether or not affiliation based matching is enabled. The feature is
-// enabled by default, but can be disabled either via command line flags or
-// field trials. The command line flag, if present, always takes precedence.
-bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line);
-
-// Returns whether or not propagating password changes to affiliated saved web
-// credentials is enabled. It is enabled by default, but can be disabled
-// separately via variation parameters while leaving the rest of the
-// affiliation-based matching enabled. If the main feature is forced
-// enabled/disabled via the command line, this sub-feature will be force
-// enabled/disabled correspondingly.
-bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
-    const base::CommandLine& command_line);
-
 // Returns the origin URI in a format which can be presented to a user based of
 // |password_from| field values. For web URIs |languages| is using in order to
 // determine whether a URI is 'comprehensible' to a user who understands

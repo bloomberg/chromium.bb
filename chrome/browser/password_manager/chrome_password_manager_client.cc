@@ -46,7 +46,6 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"

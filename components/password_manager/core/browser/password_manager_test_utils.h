@@ -8,6 +8,7 @@
 #include <iosfwd>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -72,6 +73,13 @@ MATCHER_P(UnorderedPasswordFormElementsAre, expectations, "") {
   return ContainsEqualPasswordFormsUnordered(expectations, arg,
                                              result_listener->stream());
 }
+
+// Helper function to initialize feature overrides via command-line flags
+// supplied as |enable_features| and |disable_features| using the
+// |feature_list|.
+void SetFeatures(const std::vector<const base::Feature*>& enable_features,
+                 const std::vector<const base::Feature*>& disable_features,
+                 scoped_ptr<base::FeatureList> feature_list);
 
 class MockPasswordStoreObserver : public PasswordStore::Observer {
  public:

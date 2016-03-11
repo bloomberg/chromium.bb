@@ -47,7 +47,6 @@
 #include "components/offline_pages/offline_page_switches.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
 #include "components/security_state/switches.h"
@@ -357,16 +356,6 @@ const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
   { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_ENFORCE_STRICT,
     switches::kExtensionContentVerification,
     switches::kExtensionContentVerificationEnforceStrict },
-};
-
-const FeatureEntry::Choice kAutofillSyncCredentialChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-  { IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL,
-    password_manager::switches::kAllowAutofillSyncCredential, ""},
-  { IDS_DISALLOW_AUTOFILL_SYNC_CREDENTIAL_FOR_REAUTH,
-    password_manager::switches::kDisallowAutofillSyncCredentialForReauth, ""},
-  { IDS_DISALLOW_AUTOFILL_SYNC_CREDENTIAL,
-    password_manager::switches::kDisallowAutofillSyncCredential, ""},
 };
 
 const FeatureEntry::Choice kFillOnAccountSelectChoices[] = {
@@ -770,8 +759,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"enable-system-download-manager",
      IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_NAME,
-     IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_DESCRIPTION,
-     kOsAndroid,
+     IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kSystemDownloadManager)},
 #endif
 #if defined(OS_CHROMEOS)
@@ -933,13 +921,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MANUAL_PASSWORD_GENERATION_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableManualPasswordGeneration)},
-    {"enable-affiliation-based-matching",
-     IDS_FLAGS_AFFILIATION_BASED_MATCHING_NAME,
+    {"affiliation-based-matching", IDS_FLAGS_AFFILIATION_BASED_MATCHING_NAME,
      IDS_FLAGS_AFFILIATION_BASED_MATCHING_DESCRIPTION,
      kOsWin | kOsLinux | kOsCrOS | kOsMac | kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(
-         password_manager::switches::kEnableAffiliationBasedMatching,
-         password_manager::switches::kDisableAffiliationBasedMatching)},
+     FEATURE_VALUE_TYPE(password_manager::features::kAffiliationBasedMatching)},
     {"wallet-service-use-sandbox", IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME,
      IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_DESCRIPTION, kOsAndroid | kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
@@ -1302,10 +1287,8 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SETTINGS_WINDOW_DESCRIPTION, kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSettingsWindow,
                                switches::kDisableSettingsWindow)},
-    {"inert-visual-viewport",
-     IDS_FLAGS_INERT_VISUAL_VIEWPORT_NAME,
-     IDS_FLAGS_INERT_VISUAL_VIEWPORT_DESCRIPTION,
-     kOsAll,
+    {"inert-visual-viewport", IDS_FLAGS_INERT_VISUAL_VIEWPORT_NAME,
+     IDS_FLAGS_INERT_VISUAL_VIEWPORT_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kInertVisualViewport)},
 #if defined(OS_MACOSX)
     {"enable-save-password-bubble", IDS_FLAGS_SAVE_PASSWORD_BUBBLE_NAME,
@@ -1361,20 +1344,15 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_WEB_APP_FRAME_DESCRIPTION, kOsWin | kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableWebAppFrame)},
 #endif
-    {"enable-drop-sync-credential", IDS_FLAGS_DROP_SYNC_CREDENTIAL_NAME,
+    {"drop-sync-credential", IDS_FLAGS_DROP_SYNC_CREDENTIAL_NAME,
      IDS_FLAGS_DROP_SYNC_CREDENTIAL_DESCRIPTION, kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(
-         password_manager::switches::kEnableDropSyncCredential,
-         password_manager::switches::kDisableDropSyncCredential)},
+     FEATURE_VALUE_TYPE(password_manager::features::kDropSyncCredential)},
 #if defined(ENABLE_EXTENSIONS)
     {"enable-extension-action-redesign",
      IDS_FLAGS_EXTENSION_ACTION_REDESIGN_NAME,
      IDS_FLAGS_EXTENSION_ACTION_REDESIGN_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableExtensionActionRedesign)},
 #endif
-    {"autofill-sync-credential", IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_NAME,
-     IDS_FLAGS_AUTOFILL_SYNC_CREDENTIAL_DESCRIPTION, kOsAll,
-     MULTI_VALUE_TYPE(kAutofillSyncCredentialChoices)},
 #if !defined(OS_ANDROID)
     {"enable-message-center-always-scroll-up-upon-notification-removal",
      IDS_FLAGS_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_NAME,
@@ -1704,8 +1682,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableTabSwitcherInDocumentMode)},
 #endif  // OS_ANDROID
     {"enable-md-history", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_NAME,
-     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_DESCRIPTION,
-     kOsDesktop,
+     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_HISTORY_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignHistory)},
 #if defined(OS_WIN)
     {"enable-windows-desktop-search-redirection",
@@ -1782,8 +1759,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kScrollAnchoring)},
     {"enable-audio-support-for-desktop-share",
      IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE,
-     IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION,
-     kOsAll,
+     IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableAudioSupportForDesktopShare)},
 #if defined(ENABLE_EXTENSIONS)
     {"enable-tab-for-desktop-share", IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE,
@@ -1798,14 +1774,12 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
     {"enable-webrtc-h264-with-openh264-ffmpeg",
      IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_NAME,
-     IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_DESCRIPTION,
-     kOsDesktop,
+     IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(content::kWebRtcH264WithOpenH264FFmpeg)},
 #endif  // defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
 #if defined(OS_ANDROID)
-    {"ime-thread", IDS_FLAGS_IME_THREAD_NAME,
-     IDS_FLAGS_IME_THREAD_DESCRIPTION, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kImeThread)},
+    {"ime-thread", IDS_FLAGS_IME_THREAD_NAME, IDS_FLAGS_IME_THREAD_DESCRIPTION,
+     kOsAndroid, FEATURE_VALUE_TYPE(features::kImeThread)},
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
     {"offline-pages-ntp", IDS_FLAGS_NTP_OFFLINE_PAGES_NAME,
@@ -1815,6 +1789,14 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_OFFLINING_RECENT_PAGES_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},
 #endif  // defined(OS_ANDROID)
+    {"protect-sync-credential", IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_NAME,
+     IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kProtectSyncCredential)},
+    {"protect-sync-credential-on-reauth",
+     IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_ON_REAUTH_NAME,
+     IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_ON_REAUTH_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kProtectSyncCredentialOnReauth)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

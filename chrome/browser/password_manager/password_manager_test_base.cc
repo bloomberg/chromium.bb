@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -25,7 +24,6 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"

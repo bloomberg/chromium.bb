@@ -6,16 +6,17 @@
 
 #include <stddef.h>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/user_action_tester.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/sync/browser/sync_username_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -135,9 +136,14 @@ TEST_F(CredentialsFilterTest, FilterResults_AllowAll) {
 }
 
 TEST_F(CredentialsFilterTest, FilterResults_DisallowSyncOnReauth) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(
-      switches::kDisallowAutofillSyncCredentialForReauth);
+  // Only 'protect-sync-credential-on-reauth' feature is kept enabled, fill the
+  // sync credential everywhere but on reauth.
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::vector<const base::Feature*> enabled_features;
+  std::vector<const base::Feature*> disabled_features;
+  disabled_features.push_back(&features::kProtectSyncCredential);
+  enabled_features.push_back(&features::kProtectSyncCredentialOnReauth);
+  SetFeatures(enabled_features, disabled_features, std::move(feature_list));
 
   const TestCase kTestCases[] = {
       // Reauth URL, not sync username.
@@ -176,8 +182,14 @@ TEST_F(CredentialsFilterTest, FilterResults_DisallowSyncOnReauth) {
 }
 
 TEST_F(CredentialsFilterTest, FilterResults_DisallowSync) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
+  // Both features are kept enabled, should cause sync credential to be
+  // filtered.
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::vector<const base::Feature*> enabled_features;
+  std::vector<const base::Feature*> disabled_features;
+  enabled_features.push_back(&features::kProtectSyncCredential);
+  enabled_features.push_back(&features::kProtectSyncCredentialOnReauth);
+  SetFeatures(enabled_features, disabled_features, std::move(feature_list));
 
   const TestCase kTestCases[] = {
       // Reauth URL, not sync username.
@@ -248,9 +260,14 @@ TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
 }
 
 TEST_F(CredentialsFilterTest, ShouldFilterOneForm) {
-  // Adding disallow switch should cause sync credential to be filtered.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
+  // Both features are kept enabled, should cause sync credential to be
+  // filtered.
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::vector<const base::Feature*> enabled_features;
+  std::vector<const base::Feature*> disabled_features;
+  enabled_features.push_back(&features::kProtectSyncCredential);
+  enabled_features.push_back(&features::kProtectSyncCredentialOnReauth);
+  SetFeatures(enabled_features, disabled_features, std::move(feature_list));
 
   ScopedVector<autofill::PasswordForm> results;
   results.push_back(new PasswordForm(SimpleGaiaForm("test1@gmail.com")));

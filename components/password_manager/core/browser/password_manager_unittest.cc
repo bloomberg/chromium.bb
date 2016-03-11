@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -22,7 +21,6 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

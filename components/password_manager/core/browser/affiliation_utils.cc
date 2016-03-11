@@ -8,12 +8,9 @@
 #include <ostream>
 
 #include "base/base64.h"
-#include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
@@ -26,9 +23,6 @@ namespace {
 
 // The scheme used for identifying Android applications.
 const char kAndroidAppScheme[] = "android";
-
-// The name of the field trial controlling affiliation-based matching.
-const char kFieldTrialName[] = "AffiliationBasedMatching";
 
 // Returns a StringPiece corresponding to |component| in |uri|, or the empty
 // string in case there is no such component.
@@ -292,35 +286,6 @@ bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
   std::sort(a_sorted.begin(), a_sorted.end());
   std::sort(b_sorted.begin(), b_sorted.end());
   return std::equal(a_sorted.begin(), a_sorted.end(), b_sorted.begin());
-}
-
-bool IsAffiliationBasedMatchingEnabled(const base::CommandLine& command_line) {
-  // Note: It is important to always query the field trial state, to ensure that
-  // UMA reports the correct group.
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kFieldTrialName);
-
-  if (command_line.HasSwitch(switches::kDisableAffiliationBasedMatching))
-    return false;
-  if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
-    return true;
-  return !base::StartsWith(group_name, "Disabled",
-                           base::CompareCase::INSENSITIVE_ASCII);
-}
-
-bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
-    const base::CommandLine& command_line) {
-  // Note: It is important to always query the variation param first, which, in
-  // turn, queries the field trial state, which ensures that UMA reports the
-  // correct group if it is forced by a command line flag.
-  const std::string update_enabled = variations::GetVariationParamValue(
-      kFieldTrialName, "propagate_password_changes_to_web");
-
-  if (command_line.HasSwitch(switches::kDisableAffiliationBasedMatching))
-    return false;
-  if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
-    return true;
-  return !base::LowerCaseEqualsASCII(update_enabled, "disabled");
 }
 
 bool IsValidAndroidFacetURI(const std::string& url) {
