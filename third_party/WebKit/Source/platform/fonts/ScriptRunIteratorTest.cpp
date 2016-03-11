@@ -325,7 +325,6 @@ protected:
             ASSERT_EQ(expect[runCount].code, code);
             ++runCount;
         }
-        WTF_LOG_ERROR("Expected %zu runs, got %lu ", expect.size(), runCount);
         ASSERT_EQ(expect.size(), runCount);
     }
 };
