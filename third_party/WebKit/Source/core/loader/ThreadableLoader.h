@@ -36,9 +36,7 @@
 #include "platform/CrossThreadCopier.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -128,7 +126,7 @@ struct CrossThreadCopier<ThreadableLoaderOptions> {
 // - ResourceLoaderOptions argument will be passed to the FetchRequest
 //   that this ThreadableLoader creates. It can be altered e.g. when
 //   redirect happens.
-class CORE_EXPORT ThreadableLoader : public RefCounted<ThreadableLoader> {
+class CORE_EXPORT ThreadableLoader {
     WTF_MAKE_NONCOPYABLE(ThreadableLoader);
 public:
     // ThreadableLoaderClient methods may not destroy the ThreadableLoader
@@ -168,8 +166,8 @@ public:
     // ThreadableLoaderClient methods:
     // - may call cancel()
     // - can destroy the ThreadableLoader instance in them (by clearing
-    //   RefPtr<ThreadableLoader>).
-    static PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+    //   OwnPtr<ThreadableLoader>).
+    static PassOwnPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
     // The methods on the ThreadableLoaderClient passed on create() call
     // may be called synchronous to start() call.

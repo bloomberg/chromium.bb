@@ -122,7 +122,7 @@ private:
 
     KURL m_urlForReading;
     bool m_urlForReadingIsStream;
-    RefPtr<ThreadableLoader> m_loader;
+    OwnPtr<ThreadableLoader> m_loader;
 
     OwnPtr<ArrayBufferBuilder> m_rawData;
     bool m_isRawDataConverted;

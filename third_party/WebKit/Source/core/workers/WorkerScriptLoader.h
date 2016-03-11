@@ -37,6 +37,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/StringBuilder.h"
@@ -109,7 +110,7 @@ private:
     OwnPtr<SameThreadClosure> m_responseCallback;
     OwnPtr<SameThreadClosure> m_finishedCallback;
 
-    RefPtr<ThreadableLoader> m_threadableLoader;
+    OwnPtr<ThreadableLoader> m_threadableLoader;
     String m_responseEncoding;
     OwnPtr<TextResourceDecoder> m_decoder;
     StringBuilder m_script;

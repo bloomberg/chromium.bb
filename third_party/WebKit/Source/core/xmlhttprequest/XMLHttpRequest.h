@@ -264,7 +264,7 @@ private:
     Member<Blob> m_responseBlob;
     Member<Stream> m_responseLegacyStream;
 
-    RefPtr<ThreadableLoader> m_loader;
+    OwnPtr<ThreadableLoader> m_loader;
     State m_state;
 
     ResourceResponse m_response;

@@ -18,6 +18,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include <string.h>
@@ -51,7 +52,12 @@ using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
 
 class MockLoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
-    MOCK_METHOD4(create, PassRefPtr<ThreadableLoader>(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&));
+    PassOwnPtr<ThreadableLoader> create(ExecutionContext& executionContext, ThreadableLoaderClient* client, const ThreadableLoaderOptions& threadableLoaderOptions, const ResourceLoaderOptions& resourceLoaderOptions) override
+    {
+        return adoptPtr(createInternal(executionContext, client, threadableLoaderOptions, resourceLoaderOptions));
+    }
+
+    MOCK_METHOD4(createInternal, ThreadableLoader*(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&));
 };
 
 PassRefPtr<BlobDataHandle> createBlobDataHandle(const char* s)
@@ -93,17 +99,18 @@ TEST_F(FetchBlobDataConsumerHandleTest, CreateLoader)
     ThreadableLoaderOptions options;
     ResourceLoaderOptions resourceLoaderOptions;
 
-    RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    MockThreadableLoader* loaderPtr = loader.get();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(
+    EXPECT_CALL(*factory, createInternal(Ref(document()), _, _, _)).WillOnce(DoAll(
         SaveArg<2>(&options),
         SaveArg<3>(&resourceLoaderOptions),
-        Return(loader.get())));
-    EXPECT_CALL(*loader, start(_)).WillOnce(SaveArg<0>(&request));
+        Return(loader.leakPtr())));
+    EXPECT_CALL(*loaderPtr, start(_)).WillOnce(SaveArg<0>(&request));
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(*loader, cancel());
+    EXPECT_CALL(*loaderPtr, cancel());
 
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
     OwnPtr<WebDataConsumerHandle> handle
@@ -137,14 +144,15 @@ TEST_F(FetchBlobDataConsumerHandleTest, CancelLoaderWhenStopped)
     auto factory = new StrictMock<MockLoaderFactory>;
     Checkpoint checkpoint;
 
-    RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    MockThreadableLoader* loaderPtr = loader.get();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(Return(loader.get()));
-    EXPECT_CALL(*loader, start(_));
+    EXPECT_CALL(*factory, createInternal(Ref(document()), _, _, _)).WillOnce(Return(loader.leakPtr()));
+    EXPECT_CALL(*loaderPtr, start(_));
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(*loader, cancel());
+    EXPECT_CALL(*loaderPtr, cancel());
     EXPECT_CALL(checkpoint, Call(3));
 
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
@@ -166,15 +174,16 @@ TEST_F(FetchBlobDataConsumerHandleTest, CancelLoaderWhenDestinationDetached)
     auto factory = new StrictMock<MockLoaderFactory>;
     Checkpoint checkpoint;
 
-    RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    MockThreadableLoader* loaderPtr = loader.get();
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(Return(loader.get()));
-    EXPECT_CALL(*loader, start(_));
+    EXPECT_CALL(*factory, createInternal(Ref(document()), _, _, _)).WillOnce(Return(loader.leakPtr()));
+    EXPECT_CALL(*loaderPtr, start(_));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(checkpoint, Call(3));
-    EXPECT_CALL(*loader, cancel());
+    EXPECT_CALL(*loaderPtr, cancel());
     EXPECT_CALL(checkpoint, Call(4));
 
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
@@ -200,15 +209,16 @@ TEST_F(FetchBlobDataConsumerHandleTest, ReadTest)
     auto factory = new StrictMock<MockLoaderFactory>;
     Checkpoint checkpoint;
 
-    RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    MockThreadableLoader* loaderPtr = loader.get();
     ThreadableLoaderClient* client = nullptr;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
-    EXPECT_CALL(*loader, start(_));
+    EXPECT_CALL(*factory, createInternal(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.leakPtr())));
+    EXPECT_CALL(*loaderPtr, start(_));
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(*loader, cancel());
+    EXPECT_CALL(*loaderPtr, cancel());
 
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
     OwnPtr<WebDataConsumerHandle> handle
@@ -238,15 +248,16 @@ TEST_F(FetchBlobDataConsumerHandleTest, TwoPhaseReadTest)
     auto factory = new StrictMock<MockLoaderFactory>;
     Checkpoint checkpoint;
 
-    RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    MockThreadableLoader* loaderPtr = loader.get();
     ThreadableLoaderClient* client = nullptr;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
-    EXPECT_CALL(*loader, start(_));
+    EXPECT_CALL(*factory, createInternal(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.leakPtr())));
+    EXPECT_CALL(*loaderPtr, start(_));
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(*loader, cancel());
+    EXPECT_CALL(*loaderPtr, cancel());
 
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
     OwnPtr<WebDataConsumerHandle> handle
@@ -276,13 +287,14 @@ TEST_F(FetchBlobDataConsumerHandleTest, LoadErrorTest)
     auto factory = new StrictMock<MockLoaderFactory>;
     Checkpoint checkpoint;
 
-    RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    MockThreadableLoader* loaderPtr = loader.get();
     ThreadableLoaderClient* client = nullptr;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
-    EXPECT_CALL(*loader, start(_));
+    EXPECT_CALL(*factory, createInternal(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.leakPtr())));
+    EXPECT_CALL(*loaderPtr, start(_));
     EXPECT_CALL(checkpoint, Call(2));
 
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
@@ -305,15 +317,16 @@ TEST_F(FetchBlobDataConsumerHandleTest, BodyLoadErrorTest)
     auto factory = new StrictMock<MockLoaderFactory>;
     Checkpoint checkpoint;
 
-    RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+    MockThreadableLoader* loaderPtr = loader.get();
     ThreadableLoaderClient* client = nullptr;
 
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*factory, create(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.get())));
-    EXPECT_CALL(*loader, start(_));
+    EXPECT_CALL(*factory, createInternal(Ref(document()), _, _, _)).WillOnce(DoAll(SaveArg<1>(&client), Return(loader.leakPtr())));
+    EXPECT_CALL(*loaderPtr, start(_));
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(*loader, cancel());
+    EXPECT_CALL(*loaderPtr, cancel());
 
     RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
     OwnPtr<WebDataConsumerHandle> handle

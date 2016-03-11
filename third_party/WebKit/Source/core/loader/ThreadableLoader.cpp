@@ -40,7 +40,7 @@
 
 namespace blink {
 
-PassRefPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext& context, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+PassOwnPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext& context, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
     ASSERT(client);
 

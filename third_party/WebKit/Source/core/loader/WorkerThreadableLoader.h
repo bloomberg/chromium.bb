@@ -61,9 +61,9 @@ class WorkerThreadableLoader final : public ThreadableLoader, private Threadable
     USING_FAST_MALLOC(WorkerThreadableLoader);
 public:
     static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-    static PassRefPtr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+    static PassOwnPtr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
     {
-        return adoptRef(new WorkerThreadableLoader(workerGlobalScope, client, options, resourceLoaderOptions, LoadAsynchronously));
+        return adoptPtr(new WorkerThreadableLoader(workerGlobalScope, client, options, resourceLoaderOptions, LoadAsynchronously));
     }
 
     ~WorkerThreadableLoader() override;
@@ -148,7 +148,7 @@ private:
         void mainThreadCancel(ExecutionContext*);
 
         // Only to be used on the main thread.
-        RefPtr<ThreadableLoader> m_mainThreadLoader;
+        OwnPtr<ThreadableLoader> m_mainThreadLoader;
 
         // ThreadableLoaderClientWrapper is to be used on the worker context thread.
         // The ref counting is done on either thread:

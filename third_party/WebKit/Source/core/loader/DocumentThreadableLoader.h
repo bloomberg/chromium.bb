@@ -38,11 +38,13 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -57,7 +59,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
     USING_FAST_MALLOC(DocumentThreadableLoader);
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        static PassRefPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+        static PassOwnPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         ~DocumentThreadableLoader() override;
 
         void start(const ResourceRequest&) override;
@@ -230,6 +232,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         int m_corsRedirectLimit;
 
         WebURLRequest::FetchRedirectMode m_redirectMode;
+
+        WeakPtrFactory<DocumentThreadableLoader> m_weakFactory;
     };
 
 } // namespace blink

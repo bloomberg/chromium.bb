@@ -39,6 +39,7 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -167,7 +168,7 @@ private:
     Member<FetchManager> m_fetchManager;
     Member<ScriptPromiseResolver> m_resolver;
     Member<FetchRequestData> m_request;
-    RefPtr<ThreadableLoader> m_loader;
+    OwnPtr<ThreadableLoader> m_loader;
     bool m_failed;
     bool m_finished;
     int m_responseHttpStatusCode;

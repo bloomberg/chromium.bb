@@ -73,7 +73,7 @@ WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalSc
 
 void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& workerGlobalScope, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    RefPtr<WorkerThreadableLoader> loader = adoptRef(new WorkerThreadableLoader(workerGlobalScope, &client, options, resourceLoaderOptions, LoadSynchronously));
+    OwnPtr<WorkerThreadableLoader> loader = adoptPtr(new WorkerThreadableLoader(workerGlobalScope, &client, options, resourceLoaderOptions, LoadSynchronously));
     loader->start(request);
 }
 

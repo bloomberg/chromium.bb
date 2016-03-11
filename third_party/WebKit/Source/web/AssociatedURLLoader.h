@@ -31,6 +31,7 @@
 #ifndef AssociatedURLLoader_h
 #define AssociatedURLLoader_h
 
+#include "platform/heap/Handle.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/web/WebURLLoaderOptions.h"
 #include "wtf/Noncopyable.h"
@@ -64,7 +65,7 @@ private:
     WebURLLoaderOptions m_options;
     WebURLLoaderClient* m_client;
     OwnPtr<ClientAdapter> m_clientAdapter;
-    RefPtr<DocumentThreadableLoader> m_loader;
+    OwnPtr<DocumentThreadableLoader> m_loader;
 };
 
 } // namespace blink

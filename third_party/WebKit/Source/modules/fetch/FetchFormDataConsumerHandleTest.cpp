@@ -15,6 +15,7 @@
 #include "platform/weborigin/KURL.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -52,11 +53,11 @@ public:
     explicit LoaderFactory(PassOwnPtr<WebDataConsumerHandle> handle)
         : m_client(nullptr)
         , m_handle(handle) {}
-    PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient* client, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
+    PassOwnPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient* client, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
     {
         m_client = client;
 
-        RefPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
+        OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
         EXPECT_CALL(*loader, start(_)).WillOnce(InvokeWithoutArgs(this, &LoaderFactory::handleDidReceiveResponse));
         EXPECT_CALL(*loader, cancel()).Times(1);
         return loader.release();

@@ -106,14 +106,13 @@ static const int kMaxCORSRedirects = 20;
 void DocumentThreadableLoader::loadResourceSynchronously(Document& document, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
     // The loader will be deleted as soon as this function exits.
-    RefPtr<DocumentThreadableLoader> loader = adoptRef(new DocumentThreadableLoader(document, &client, LoadSynchronously, options, resourceLoaderOptions));
+    OwnPtr<DocumentThreadableLoader> loader = adoptPtr(new DocumentThreadableLoader(document, &client, LoadSynchronously, options, resourceLoaderOptions));
     loader->start(request);
-    ASSERT(loader->hasOneRef());
 }
 
-PassRefPtr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document& document, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+PassOwnPtr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document& document, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    return adoptRef(new DocumentThreadableLoader(document, client, LoadAsynchronously, options, resourceLoaderOptions));
+    return adoptPtr(new DocumentThreadableLoader(document, client, LoadAsynchronously, options, resourceLoaderOptions));
 }
 
 DocumentThreadableLoader::DocumentThreadableLoader(Document& document, ThreadableLoaderClient* client, BlockingBehavior blockingBehavior, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
@@ -132,6 +131,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_requestStartedSeconds(0.0)
     , m_corsRedirectLimit(kMaxCORSRedirects)
     , m_redirectMode(WebURLRequest::FetchRedirectModeFollow)
+    , m_weakFactory(this)
 {
     ASSERT(client);
 }
@@ -412,7 +412,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     if (m_redirectMode == WebURLRequest::FetchRedirectModeManual) {
         // Keep |this| alive even if the client release a reference in
         // responseReceived().
-        RefPtr<DocumentThreadableLoader> protect(this);
+        WeakPtr<DocumentThreadableLoader> self(m_weakFactory.createWeakPtr());
 
         // We use |m_redirectMode| to check the original redirect mode.
         // |request| is a new request for redirect. So we don't set the redirect
@@ -425,6 +425,11 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         // will have to read the body. And also HTTPCache changes will be needed
         // because it doesn't store the body of redirect responses.
         responseReceived(resource, redirectResponse, adoptPtr(new EmptyDataHandle()));
+
+        if (!self) {
+            request = ResourceRequest();
+            return;
+        }
 
         if (m_client) {
             ASSERT(m_actualRequest.isNull());

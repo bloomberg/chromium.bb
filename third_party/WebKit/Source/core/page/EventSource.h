@@ -41,7 +41,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -114,7 +114,7 @@ private:
     State m_state;
 
     Member<EventSourceParser> m_parser;
-    RefPtr<ThreadableLoader> m_loader;
+    OwnPtr<ThreadableLoader> m_loader;
     Timer<EventSource> m_connectTimer;
 
     unsigned long long m_reconnectDelay;

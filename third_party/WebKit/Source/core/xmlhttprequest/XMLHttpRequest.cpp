@@ -1019,7 +1019,7 @@ bool XMLHttpRequest::internalAbort()
     // If, window.onload contains open() and send(), m_loader will be set to
     // non 0 value. So, we cannot continue the outer open(). In such case,
     // just abort the outer open() by returning false.
-    RefPtr<ThreadableLoader> loader = m_loader.release();
+    OwnPtr<ThreadableLoader> loader = m_loader.release();
     loader->cancel();
 
     // If abort() called internalAbort() and a nested open() ended up
