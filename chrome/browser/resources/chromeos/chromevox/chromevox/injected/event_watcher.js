@@ -1151,7 +1151,8 @@ cvox.ChromeVoxEventWatcher.handleControlChanged = function(control) {
     announceChange = true;
   }
 
-  if (announceChange && !cvox.ChromeVoxEventSuspender.areEventsSuspended()) {
+  if (newValue && announceChange &&
+      !cvox.ChromeVoxEventSuspender.areEventsSuspended()) {
     cvox.ChromeVox.tts.speak(newValue,
                              cvox.ChromeVoxEventWatcher.queueMode_(),
                              null);

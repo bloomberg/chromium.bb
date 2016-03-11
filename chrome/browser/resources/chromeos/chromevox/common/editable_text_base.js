@@ -293,6 +293,9 @@ cvox.ChromeVoxEditableTextBase.prototype.shouldDescribeChange = function(evt) {
  */
 cvox.ChromeVoxEditableTextBase.prototype.speak =
     function(str, opt_triggeredByUser, opt_personality) {
+  if (!str) {
+    return;
+  }
   var queueMode = cvox.QueueMode.QUEUE;
   if (opt_triggeredByUser === true) {
     queueMode = cvox.QueueMode.FLUSH;
