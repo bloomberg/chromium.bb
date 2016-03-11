@@ -139,6 +139,10 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
 {
     ASSERT(m_destructionInProgress);
+#if USE_IOSURFACE_FOR_2D_CANVAS
+    clearCHROMIUMImageCache();
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
+
     m_layer.clear();
     ASSERT(m_mailboxes.size() == 0);
 #ifndef NDEBUG
@@ -201,24 +205,126 @@ GLenum Canvas2DLayerBridge::getGLFilter()
     return m_filterQuality == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
 }
 
-Canvas2DLayerBridge::MailboxInfo& Canvas2DLayerBridge::createMailboxInfo()
+#if USE_IOSURFACE_FOR_2D_CANVAS
+bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, WebExternalTextureMailbox* outMailbox)
+{
+    // Need to flush skia's internal queue because texture is about to be accessed directly
+    GrContext* grContext = m_contextProvider->grContext();
+    grContext->flush();
+
+    ImageInfo imageInfo = createIOSurfaceBackedTexture();
+    if (imageInfo.empty())
+        return false;
+
+    GLuint imageTexture = skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))->fID;
+    context()->copySubTextureCHROMIUM(imageTexture, imageInfo.m_textureId, 0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
+
+    MailboxInfo& info = m_mailboxes.first();
+    info.m_mailbox.textureTarget = GC3D_TEXTURE_RECTANGLE_ARB;
+    context()->genMailboxCHROMIUM(info.m_mailbox.name);
+    context()->produceTextureDirectCHROMIUM(imageInfo.m_textureId, info.m_mailbox.textureTarget, info.m_mailbox.name);
+    info.m_mailbox.allowOverlay = true;
+
+    const WGC3Duint64 fenceSync = context()->insertFenceSyncCHROMIUM();
+    context()->flush();
+    info.m_mailbox.validSyncToken = context()->genSyncTokenCHROMIUM(fenceSync, info.m_mailbox.syncToken);
+
+    info.m_imageInfo = imageInfo;
+    *outMailbox = info.m_mailbox;
+
+    context()->bindTexture(GC3D_TEXTURE_RECTANGLE_ARB, 0);
+
+    // Because we are changing the texture binding without going through skia,
+    // we must dirty the context.
+    grContext->resetContext(kTextureBinding_GrGLBackendState);
+
+    return true;
+}
+
+Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture()
+{
+    if (!m_imageInfoCache.isEmpty()) {
+        Canvas2DLayerBridge::ImageInfo info = m_imageInfoCache.last();
+        m_imageInfoCache.removeLast();
+        return info;
+    }
+
+    WebGraphicsContext3D* webContext = context();
+    GLuint imageId = webContext->createGpuMemoryBufferImageCHROMIUM(m_size.width(), m_size.height(), GL_BGRA_EXT, GC3D_SCANOUT_CHROMIUM);
+    if (!imageId)
+        return Canvas2DLayerBridge::ImageInfo();
+
+    GLuint textureId= webContext->createTexture();
+    if (!textureId) {
+        webContext->destroyImageCHROMIUM(imageId);
+        return Canvas2DLayerBridge::ImageInfo();
+    }
+
+    GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
+    webContext->bindTexture(target, textureId);
+    webContext->texParameteri(target, GL_TEXTURE_MAG_FILTER, getGLFilter());
+    webContext->texParameteri(target, GL_TEXTURE_MIN_FILTER, getGLFilter());
+    webContext->texParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    webContext->texParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    webContext->bindTexImage2DCHROMIUM(target, imageId);
+
+    return Canvas2DLayerBridge::ImageInfo(imageId, textureId);
+}
+
+void Canvas2DLayerBridge::deleteCHROMIUMImage(ImageInfo info)
+{
+    WebGraphicsContext3D* webContext = context();
+    if (webContext->isContextLost())
+        return;
+
+    GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
+    webContext->bindTexture(target, info.m_textureId);
+    webContext->releaseTexImage2DCHROMIUM(target, info.m_imageId);
+    webContext->destroyImageCHROMIUM(info.m_imageId);
+    webContext->deleteTexture(info.m_textureId);
+    webContext->bindTexture(target, 0);
+
+    resetSkiaTextureBinding();
+}
+
+void Canvas2DLayerBridge::clearCHROMIUMImageCache()
+{
+    for (const auto& it : m_imageInfoCache) {
+        deleteCHROMIUMImage(it);
+    }
+    m_imageInfoCache.clear();
+}
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
+
+void Canvas2DLayerBridge::createMailboxInfo()
 {
     MailboxInfo tmp;
     tmp.m_parentLayerBridge = this;
     m_mailboxes.prepend(tmp);
-    MailboxInfo& mailboxInfo = m_mailboxes.first();
-    return mailboxInfo;
 }
 
 bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, WebExternalTextureMailbox* outMailbox)
 {
-    MailboxInfo& mailboxInfo = createMailboxInfo();
+    createMailboxInfo();
+    MailboxInfo& mailboxInfo = m_mailboxes.first();
     mailboxInfo.m_mailbox.nearestNeighbor = getGLFilter() == GL_NEAREST;
-    mailboxInfo.m_image = image;
 
     GrContext* grContext = m_contextProvider->grContext();
-    if (!grContext)
+    if (!grContext) {
+        mailboxInfo.m_image = image;
         return true; // for testing: skip gl stuff when using a mock graphics context.
+    }
+
+#if USE_IOSURFACE_FOR_2D_CANVAS
+    if (RuntimeEnabledFeatures::canvas2dImageChromiumEnabled()) {
+        if (prepareIOSurfaceMailboxFromImage(image.get(), outMailbox))
+            return true;
+        // Note: if IOSurface backed texture creation failed we fall back to the
+        // non-IOSurface path.
+    }
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
+
+    mailboxInfo.m_image = image;
 
     if (RuntimeEnabledFeatures::forceDisable2dCanvasCopyOnWriteEnabled())
         m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
@@ -269,6 +375,13 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
 
     *outMailbox = mailboxInfo.m_mailbox;
     return true;
+}
+
+void Canvas2DLayerBridge::resetSkiaTextureBinding()
+{
+    GrContext* grContext = m_contextProvider->grContext();
+    if (grContext)
+        grContext->resetContext(kTextureBinding_GrGLBackendState);
 }
 
 static void hibernateWrapper(WeakPtr<Canvas2DLayerBridge> bridge, double /*idleDeadline*/)
@@ -334,8 +447,10 @@ void Canvas2DLayerBridge::hibernate()
     m_hibernationImage = adoptRef(tempHibernationSurface->newImageSnapshot());
     m_surface.clear(); // destroy the GPU-backed buffer
     m_layer->clearTexture();
+#if USE_IOSURFACE_FOR_2D_CANVAS
+    clearCHROMIUMImageCache();
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
     m_logger->didStartHibernating();
-
 }
 
 void Canvas2DLayerBridge::reportSurfaceCreationFailure()
@@ -723,6 +838,9 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
     if (!contextLost) {
         // Invalidate texture state in case the compositor altered it since the copy-on-write.
         if (releasedMailboxInfo->m_image) {
+#if USE_IOSURFACE_FOR_2D_CANVAS
+            ASSERT(releasedMailboxInfo->m_imageInfo.empty());
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
             if (mailbox.validSyncToken) {
                 context()->waitSyncTokenCHROMIUM(mailbox.syncToken);
             }
@@ -735,6 +853,12 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
                 }
             }
         }
+
+#if USE_IOSURFACE_FOR_2D_CANVAS
+        if (!releasedMailboxInfo->m_imageInfo.empty() && !lostResource) {
+            m_imageInfoCache.append(releasedMailboxInfo->m_imageInfo);
+        }
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
     }
 
     RefPtr<Canvas2DLayerBridge> selfRef;
@@ -842,11 +966,27 @@ void Canvas2DLayerBridge::willOverwriteCanvas()
     skipQueuedDrawCommands();
 }
 
+#if USE_IOSURFACE_FOR_2D_CANVAS
+Canvas2DLayerBridge::ImageInfo::ImageInfo(GLuint imageId, GLuint textureId) : m_imageId(imageId), m_textureId(textureId)
+{
+    ASSERT(imageId);
+    ASSERT(textureId);
+}
+
+bool Canvas2DLayerBridge::ImageInfo::empty()
+{
+    return m_imageId == 0;
+}
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
+
 Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other)
 {
     memcpy(&m_mailbox, &other.m_mailbox, sizeof(m_mailbox));
     m_image = other.m_image;
     m_parentLayerBridge = other.m_parentLayerBridge;
+#if USE_IOSURFACE_FOR_2D_CANVAS
+    m_imageInfo = other.m_imageInfo;
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
 }
 
 void Canvas2DLayerBridge::Logger::reportHibernationEvent(HibernationEvent event)

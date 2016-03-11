@@ -40,6 +40,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 
 class SkPictureRecorder;
@@ -57,8 +58,12 @@ class SharedContextRateLimiter;
 // Canvas hibernation is currently disabled on MacOS X due to a bug that causes content loss
 // TODO: Find a better fix for crbug.com/588434
 #define CANVAS2D_HIBERNATION_ENABLED 0
+
+// IOSurfaces are a primitive only present on OS X.
+#define USE_IOSURFACE_FOR_2D_CANVAS 1
 #else
 #define CANVAS2D_HIBERNATION_ENABLED 1
+#define USE_IOSURFACE_FOR_2D_CANVAS 0
 #endif
 
 class PLATFORM_EXPORT Canvas2DLayerBridge : public WebExternalTextureLayerClient, public WebThread::TaskObserver, public RefCounted<Canvas2DLayerBridge> {
@@ -134,11 +139,34 @@ public:
     void setLoggerForTesting(PassOwnPtr<Logger>);
 
 private:
+#if USE_IOSURFACE_FOR_2D_CANVAS
+    // All information associated with a CHROMIUM image.
+    struct ImageInfo {
+        ImageInfo() {}
+        ImageInfo(GLuint imageId, GLuint textureId);
+
+        // Whether this structure holds references to a CHROMIUM image.
+        bool empty();
+
+        // The id of the CHROMIUM image.
+        GLuint m_imageId = 0;
+
+        // The id of the texture bound to the CHROMIUM image.
+        GLuint m_textureId = 0;
+    };
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
+
     struct MailboxInfo {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         WebExternalTextureMailbox m_mailbox;
         RefPtr<SkImage> m_image;
         RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;
+
+#if USE_IOSURFACE_FOR_2D_CANVAS
+        // If this mailbox wraps an IOSurface-backed texture, the ids of the
+        // CHROMIUM image and the texture.
+        ImageInfo m_imageInfo;
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
 
         MailboxInfo(const MailboxInfo&);
         MailboxInfo() {}
@@ -162,14 +190,35 @@ private:
     // Returns the GL filter associated with |m_filterQuality|.
     GLenum getGLFilter();
 
-    // Prepends a new MailboxInfo object to |m_mailboxes|, and returns a
-    // reference. The reference is no longer valid after |m_mailboxes| is
-    // mutated.
-    MailboxInfo& createMailboxInfo();
+#if USE_IOSURFACE_FOR_2D_CANVAS
+    // Creates an IOSurface-backed texture. Copies |image| into the texture.
+    // Prepares a mailbox from the texture. The caller must have created a new
+    // MailboxInfo, and prepended it to |m_mailboxs|. Returns whether the
+    // mailbox was successfully prepared. |mailbox| is an out parameter only
+    // populated on success.
+    bool prepareIOSurfaceMailboxFromImage(SkImage*, WebExternalTextureMailbox*);
+
+    // Creates an IOSurface-backed texture. Returns an ImageInfo, which is empty
+    // on failure. The caller takes ownership of both the texture and the image.
+    ImageInfo createIOSurfaceBackedTexture();
+
+    // Releases all resources associated with a CHROMIUM image.
+    void deleteCHROMIUMImage(ImageInfo);
+
+    // Releases all resources in the CHROMIUM image cache.
+    void clearCHROMIUMImageCache();
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
+
+    // Prepends a new MailboxInfo object to |m_mailboxes|.
+    void createMailboxInfo();
 
     // Returns whether the mailbox was successfully prepared from the SkImage.
     // The mailbox is an out parameter only populated on success.
     bool prepareMailboxFromImage(PassRefPtr<SkImage>, WebExternalTextureMailbox*);
+
+    // Resets Skia's texture bindings. This method should be called after
+    // changing texture bindings.
+    void resetSkiaTextureBinding();
 
     OwnPtr<SkPictureRecorder> m_recorder;
     RefPtr<SkSurface> m_surface;
@@ -208,8 +257,15 @@ private:
     GLenum m_lastFilter;
     AccelerationMode m_accelerationMode;
     OpacityMode m_opacityMode;
-    IntSize m_size;
+    const IntSize m_size;
     int m_recordingPixelCount;
+
+#if USE_IOSURFACE_FOR_2D_CANVAS
+    // Each element in this vector represents an IOSurface backed texture that
+    // is ready to be reused.
+    // Elements in this vector can safely be purged in low memory conditions.
+    Vector<ImageInfo> m_imageInfoCache;
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
 };
 
 } // namespace blink

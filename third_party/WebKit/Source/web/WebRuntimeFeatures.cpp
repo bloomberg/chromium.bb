@@ -65,6 +65,11 @@ void WebRuntimeFeatures::enableAudioOutputDevices(bool enable)
     RuntimeEnabledFeatures::setAudioOutputDevicesEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableCanvas2dImageChromium(bool enable)
+{
+    RuntimeEnabledFeatures::setCanvas2dImageChromiumEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableCompositedSelectionUpdate(bool enable)
 {
     RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(enable);

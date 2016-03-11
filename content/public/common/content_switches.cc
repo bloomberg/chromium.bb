@@ -73,6 +73,9 @@ const char kDefaultTileHeight[]             = "default-tile-height";
 // Disable antialiasing on 2d canvas.
 const char kDisable2dCanvasAntialiasing[]   = "disable-canvas-aa";
 
+// Disables Canvas2D rendering into a scanout buffer for overlay support.
+const char kDisable2dCanvasImageChromium[] = "disable-2d-canvas-image-chromium";
+
 // Disables client-visible 3D APIs, in particular WebGL and Pepper 3D.
 // This is controlled by policy and is kept separate from the other
 // enable/disable switches to avoid accidentally regressing the policy

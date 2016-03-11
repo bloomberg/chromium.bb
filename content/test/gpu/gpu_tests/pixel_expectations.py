@@ -23,3 +23,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(ccameron): Remove suppression after rebaseline.
     self.Fail('Pixel.CSS3DBlueBox', ['mac'], bug=533690)
     self.Fail('Pixel.CSS3DBlueBoxES3', ['mac'], bug=533690)
+
+    # TODO(erikchen): Remove suppression after generating reference images.
+    self.Fail('Pixel.IOSurface2DCanvas', ['mac'], bug=579664)

@@ -36,6 +36,15 @@ class PixelTestsES3SharedPageState(gpu_test_base.GpuSharedPageState):
       ['--enable-unsafe-es3-apis'])
 
 
+class IOSurface2DCanvasSharedPageState(gpu_test_base.GpuSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(IOSurface2DCanvasSharedPageState, self).__init__(
+      test, finder_options, story_set)
+    finder_options.browser_options.AppendExtraBrowserArgs(
+      ['--enable-accelerated-2d-canvas',
+       '--disable-display-list-2d-canvas'])
+
+
 class PixelTestsStorySet(story_set_module.StorySet):
 
   """ Some basic test cases for GPU. """
@@ -51,6 +60,17 @@ class PixelTestsStorySet(story_set_module.StorySet):
       # side-effect of enabling the Core Profile rendering path on Mac
       # OS.
       self._AddAllPages(expectations, base_name, True)
+
+    # On OS X, test the IOSurface 2D Canvas compositing path.
+    if sys.platform.startswith('darwin'):
+      self.AddStory(PixelTestsPage(
+        url='file://../../data/gpu/pixel_canvas2d_accelerated.html',
+        name=base_name + '.IOSurface2DCanvas',
+        test_rect=[0, 0, 400, 400],
+        revision=1,
+        story_set=self,
+        shared_page_state_class=IOSurface2DCanvasSharedPageState,
+        expectations=expectations))
 
   def _AddAllPages(self, expectations, base_name, use_es3):
     if use_es3:

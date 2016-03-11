@@ -107,6 +107,17 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
     WebRuntimeFeatures::enableWebGLDraftExtensions(true);
 
+#if defined(OS_MACOSX)
+  bool enable_canvas_2d_image_chromium = command_line.HasSwitch(
+      switches::kEnableGpuMemoryBufferCompositorResources) &&
+      !command_line.HasSwitch(switches::kDisable2dCanvasImageChromium) &&
+      !command_line.HasSwitch(switches::kDisableGpu);
+#else
+  bool enable_canvas_2d_image_chromium = false;
+#endif
+  WebRuntimeFeatures::enableCanvas2dImageChromium(
+      enable_canvas_2d_image_chromium);
+
   if (command_line.HasSwitch(switches::kEnableWebGLImageChromium))
     WebRuntimeFeatures::enableWebGLImageChromium(true);
 
