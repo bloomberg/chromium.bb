@@ -153,10 +153,15 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
       goto failure;
     }
 
+    // The DER encoding of a NULL.
+    static const uint8_t kNullDer[] = {0x05, 0x00};
+
     // Fill in and DER-encode the PublicKeyAndChallenge:
     SignedPublicKeyAndChallenge spkac;
     memset(&spkac, 0, sizeof(spkac));
     spkac.pkac.spki.algorithm.algorithm = CSSMOID_RSA;
+    spkac.pkac.spki.algorithm.parameters.Data = const_cast<uint8_t*>(kNullDer);
+    spkac.pkac.spki.algorithm.parameters.Length = sizeof(kNullDer);
     spkac.pkac.spki.subjectPublicKey.Length =
         CFDataGetLength(key_data) * 8;  // interpreted as a _bit_ count
     spkac.pkac.spki.subjectPublicKey.Data =
@@ -180,6 +185,8 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
     spkac.signature.Data = signature.Data;
     spkac.signature.Length = signature.Length * 8;  // a _bit_ count
     spkac.signature_algorithm.algorithm = CSSMOID_MD5WithRSA;
+    spkac.signature_algorithm.parameters.Data = const_cast<uint8_t*>(kNullDer);
+    spkac.signature_algorithm.parameters.Length = sizeof(kNullDer);
     // TODO(snej): MD5 is weak. Can we use SHA1 instead?
     // See <https://bugzilla.mozilla.org/show_bug.cgi?id=549460>
 

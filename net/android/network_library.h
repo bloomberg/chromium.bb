@@ -36,15 +36,10 @@ void AddTestRootCertificate(const uint8_t* cert, size_t len);
 // Removes all root certificates added by |AddTestRootCertificate| calls.
 void ClearTestRootCertificates();
 
-// Helper for the <keygen> handler. Passes the DER-encoded key  pair via
-// JNI to the Credentials store. Note that the public key must be a DER
-// encoded SubjectPublicKeyInfo (X.509), as returned by i2d_PUBKEY()
-// (and *not* i2d_PublicKey(), which returns a PKCS#1 key).
-//
-// Also, the private key must be in PKCS#8 format, as returned by
-// i2d_PKCS8_PRIV_KEY_INFO(EVP_PKEY2PKCS8(pkey)), which is a different
-// format than what i2d_PrivateKey() returns, so don't use it either.
-//
+// Helper for the <keygen> handler. Passes the DER-encoded key pair via JNI to
+// the Credentials store. The public key should be a DER-encoded
+// SubjectPublicKeyInfo (X.509) and the private key a DER-encode PrivateKeyInfo
+// (PKCS#8).
 bool StoreKeyPair(const uint8_t* public_key,
                   size_t public_len,
                   const uint8_t* private_key,

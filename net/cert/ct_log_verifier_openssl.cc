@@ -4,8 +4,8 @@
 
 #include "net/cert/ct_log_verifier.h"
 
+#include <openssl/bytestring.h>
 #include <openssl/evp.h>
-#include <openssl/x509.h>
 
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
@@ -50,10 +50,11 @@ CTLogVerifier::~CTLogVerifier() {
 bool CTLogVerifier::Init(const base::StringPiece& public_key) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const uint8_t* ptr = reinterpret_cast<const uint8_t*>(public_key.data());
-  const uint8_t* end = ptr + public_key.size();
-  public_key_ = d2i_PUBKEY(nullptr, &ptr, public_key.size());
-  if (!public_key_ || ptr != end)
+  CBS cbs;
+  CBS_init(&cbs, reinterpret_cast<const uint8_t*>(public_key.data()),
+           public_key.size());
+  public_key_ = EVP_parse_public_key(&cbs);
+  if (!public_key_ || CBS_len(&cbs) != 0)
     return false;
 
   key_id_ = crypto::SHA256HashString(public_key);

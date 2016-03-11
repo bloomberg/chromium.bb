@@ -29,12 +29,12 @@ bool VerifySignedData(const SignatureAlgorithm& signature_algorithm,
 
 #else
 
+#include <openssl/bytestring.h>
 #include <openssl/digest.h>
 #include <openssl/ec.h>
 #include <openssl/ec_key.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
-#include <openssl/x509.h>
 
 #include "base/compiler_specific.h"
 #include "crypto/openssl_util.h"
@@ -97,9 +97,10 @@ WARN_UNUSED_RESULT bool ImportPkeyFromSpki(const der::Input& spki,
                                            crypto::ScopedEVP_PKEY* pkey) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const uint8_t* ptr = spki.UnsafeData();
-  pkey->reset(d2i_PUBKEY(nullptr, &ptr, spki.Length()));
-  if (!pkey->get() || ptr != spki.UnsafeData() + spki.Length() ||
+  CBS cbs;
+  CBS_init(&cbs, spki.UnsafeData(), spki.Length());
+  pkey->reset(EVP_parse_public_key(&cbs));
+  if (!*pkey || CBS_len(&cbs) != 0 ||
       EVP_PKEY_id(pkey->get()) != expected_pkey_id) {
     pkey->reset();
     return false;

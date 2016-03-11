@@ -9,7 +9,6 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
-#include <openssl/x509.h>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -23,6 +22,7 @@
 #include "base/files/scoped_file.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "crypto/auto_cbb.h"
 #include "crypto/openssl_util.h"
 #include "net/android/keystore.h"
 #include "net/android/keystore_openssl.h"
@@ -128,18 +128,16 @@ EVP_PKEY* ImportPrivateKeyFile(const char* filename) {
 // Returns true on success, false otherwise.
 bool GetPrivateKeyPkcs8Bytes(const crypto::ScopedEVP_PKEY& pkey,
                              std::string* pkcs8) {
-  // Convert to PKCS#8 object.
-  ScopedPKCS8_PRIV_KEY_INFO p8_info(EVP_PKEY2PKCS8(pkey.get()));
-  if (!p8_info.get()) {
-    LOG(ERROR) << "Can't get PKCS#8 private key from EVP_PKEY: "
-               << GetOpenSSLErrorString();
+  uint8_t* der;
+  size_t der_len;
+  crypto::AutoCBB cbb;
+  if (!CBB_init(cbb.get(), 0) ||
+      !EVP_marshal_private_key(cbb.get(), pkey.get()) ||
+      !CBB_finish(cbb.get(), &der, &der_len)) {
     return false;
   }
-
-  // Then convert it
-  int len = i2d_PKCS8_PRIV_KEY_INFO(p8_info.get(), NULL);
-  unsigned char* p = OpenSSLWriteInto(pkcs8, static_cast<size_t>(len));
-  i2d_PKCS8_PRIV_KEY_INFO(p8_info.get(), &p);
+  pkcs8->assign(reinterpret_cast<const char*>(der), der_len);
+  OPENSSL_free(der);
   return true;
 }
 

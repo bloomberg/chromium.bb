@@ -21,8 +21,6 @@ inline void FreeX509NameStack(STACK_OF(X509_NAME)* ptr) {
   sk_X509_NAME_pop_free(ptr, X509_NAME_free);
 }
 
-using ScopedPKCS8_PRIV_KEY_INFO =
-    crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>;
 using ScopedSSL = crypto::ScopedOpenSSL<SSL, SSL_free>;
 using ScopedSSL_CTX = crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free>;
 using ScopedSSL_SESSION = crypto::ScopedOpenSSL<SSL_SESSION, SSL_SESSION_free>;

@@ -5,10 +5,10 @@
 #include "net/cert/jwk_serializer.h"
 
 #include <openssl/bn.h>
+#include <openssl/bytestring.h>
 #include <openssl/ec.h>
 #include <openssl/ec_key.h>
 #include <openssl/evp.h>
-#include <openssl/x509.h>
 
 #include "base/base64url.h"
 #include "base/logging.h"
@@ -96,10 +96,11 @@ bool ConvertSpkiFromDerToJwk(
   crypto::EnsureOpenSSLInit();
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const uint8_t *data = reinterpret_cast<const uint8_t*>(spki_der.data());
-  const uint8_t *ptr = data;
-  crypto::ScopedEVP_PKEY pubkey(d2i_PUBKEY(NULL, &ptr, spki_der.size()));
-  if (!pubkey || ptr != data + spki_der.size())
+  CBS cbs;
+  CBS_init(&cbs, reinterpret_cast<const uint8_t*>(spki_der.data()),
+           spki_der.size());
+  crypto::ScopedEVP_PKEY pubkey(EVP_parse_public_key(&cbs));
+  if (!pubkey || CBS_len(&cbs) != 0)
     return false;
 
   if (pubkey->type == EVP_PKEY_EC) {

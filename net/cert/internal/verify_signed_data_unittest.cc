@@ -101,9 +101,7 @@ TEST(VerifySignedDataTest, Rsa2048Pkcs1Sha512) {
 }
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha256KeyEncodedBer) {
-  // TODO(eroman): This should fail! (SPKI should be DER-encoded). See
-  // https://crbug.com/522228
-  RunTestCase(SUCCESS, "rsa-pkcs1-sha256-key-encoded-ber.pem");
+  RunTestCase(FAILURE, "rsa-pkcs1-sha256-key-encoded-ber.pem");
 }
 
 TEST(VerifySignedDataTest, EcdsaSecp384r1Sha256) {
