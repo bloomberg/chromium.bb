@@ -26,7 +26,7 @@ import java.util.Set;
  * Access gate to C++ side offline pages functionalities.
  */
 @JNINamespace("offline_pages::android")
-public final class OfflinePageBridge {
+public class OfflinePageBridge {
     public static final String BOOKMARK_NAMESPACE = "bookmark";
     public static final long INVALID_OFFLINE_ID = 0;
 
@@ -155,8 +155,9 @@ public final class OfflinePageBridge {
 
     /**
      * Creates an offline page bridge for a given profile.
+     * Accessible by the package for testability.
      */
-    private OfflinePageBridge(long nativeOfflinePageBridge) {
+    OfflinePageBridge(long nativeOfflinePageBridge) {
         mNativeOfflinePageBridge = nativeOfflinePageBridge;
     }
 
@@ -224,7 +225,7 @@ public final class OfflinePageBridge {
      * @return A list of all offline ids that match a particular
      * (namespace, client_id)
      */
-    private Set<Long> getOfflineIdsForClientId(ClientId clientId) {
+    Set<Long> getOfflineIdsForClientId(ClientId clientId) {
         assert mIsNativeOfflinePageModelLoaded;
         long[] offlineIds = nativeGetOfflineIdsForClientId(
                 mNativeOfflinePageBridge, clientId.getNamespace(), clientId.getId());
@@ -464,7 +465,7 @@ public final class OfflinePageBridge {
     }
 
     @CalledByNative
-    private void offlinePageModelLoaded() {
+    void offlinePageModelLoaded() {
         mIsNativeOfflinePageModelLoaded = true;
         for (OfflinePageModelObserver observer : mObservers) {
             observer.offlinePageModelLoaded();
@@ -520,7 +521,7 @@ public final class OfflinePageBridge {
 
     private native void nativeGetAllPages(
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
-    private native long[] nativeGetOfflineIdsForClientId(
+    protected native long[] nativeGetOfflineIdsForClientId(
             long nativeOfflinePageBridge, String clientNamespace, String clientId);
     private native OfflinePageItem nativeGetPageByOfflineId(
             long nativeOfflinePageBridge, long offlineId);
