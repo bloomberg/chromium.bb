@@ -171,28 +171,30 @@ void MojoContextState::FetchModule(const std::string& id) {
                  blink::WebURLRequest::FrameTypeNone,
                  ResourceFetcher::PLATFORM_LOADER,
                  base::Bind(&MojoContextState::OnFetchModuleComplete,
-                            base::Unretained(this), fetcher));
+                            base::Unretained(this), fetcher, id));
 }
 
 void MojoContextState::OnFetchModuleComplete(
     ResourceFetcher* fetcher,
+    const std::string& id,
     const blink::WebURLResponse& response,
     const std::string& data) {
-  DCHECK_EQ(module_prefix_,
-            response.url().string().utf8().substr(0, module_prefix_.size()));
-  const std::string module =
-      response.url().string().utf8().substr(module_prefix_.size());
+  if (response.isNull()) {
+    LOG(ERROR) << "Failed to fetch source for module \"" << id << "\"";
+    return;
+  }
+  DCHECK_EQ(module_prefix_ + id, response.url().string().utf8());
   // We can't delete fetch right now as the arguments to this function come from
   // it and are used below. Instead use a scope_ptr to cleanup.
   scoped_ptr<ResourceFetcher> deleter(fetcher);
   module_fetchers_.weak_erase(
       std::find(module_fetchers_.begin(), module_fetchers_.end(), fetcher));
   if (data.empty()) {
-    NOTREACHED();
-    return;  // TODO(sky): log something?
+    LOG(ERROR) << "Fetched empty source for module \"" << id << "\"";
+    return;
   }
 
-  runner_->Run(data, module);
+  runner_->Run(data, id);
 }
 
 void MojoContextState::OnDidAddPendingModule(

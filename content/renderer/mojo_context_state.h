@@ -55,6 +55,7 @@ class MojoContextState : public gin::ModuleRegistryObserver {
 
   // Callback once a module has finished downloading. Passes data to |runner_|.
   void OnFetchModuleComplete(ResourceFetcher* fetcher,
+                             const std::string& id,
                              const blink::WebURLResponse& response,
                              const std::string& data);
 
