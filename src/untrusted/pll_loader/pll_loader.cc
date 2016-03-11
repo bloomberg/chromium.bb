@@ -4,11 +4,24 @@
 
 #include "native_client/src/untrusted/pll_loader/pll_loader.h"
 
+#include <stdlib.h>
 #include <string.h>
+
+#include <algorithm>
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/untrusted/pnacl_dynloader/dynloader.h"
 
+namespace {
+
+// This is a simple implementation that does not support multiple threads.
+// It demonstrates how we can optimize if we know that pthread_create()
+// will never be called.
+void *TLSBlockGetter(PLLTLSBlockGetter *closure) {
+  return closure->arg;
+}
+
+}  // namespace
 
 uint32_t PLLModule::HashString(const char *sp) {
   uint32_t h = 5381;
@@ -57,6 +70,20 @@ void *PLLModule::GetExportedSym(const char *name) {
   return NULL;
 }
 
+void *PLLModule::InstantiateTLSBlock() {
+  // posix_memalign() requires its alignment arg to be at least sizeof(void *).
+  size_t alignment = std::max(root_->tls_template_alignment, sizeof(void *));
+  void *base;
+  if (posix_memalign(&base, alignment, root_->tls_template_total_size) != 0) {
+    NaClLog(LOG_FATAL, "InstantiateTLSBlock: Allocation failed\n");
+  }
+  memcpy(base, root_->tls_template, root_->tls_template_data_size);
+  size_t bss_size = (root_->tls_template_total_size -
+                     root_->tls_template_data_size);
+  memset((char *) base + root_->tls_template_data_size, 0, bss_size);
+  return base;
+}
+
 void ModuleSet::AddByFilename(const char *filename) {
   void *pso_root;
   int err = pnacl_load_elf_file(filename, &pso_root);
@@ -84,6 +111,12 @@ void ModuleSet::ResolveRefs() {
         NaClLog(LOG_FATAL, "Undefined symbol: \"%s\"\n", sym_name);
       }
       *(uintptr_t *) module.root()->imported_ptrs[index] += sym_value;
+    }
+
+    // Initialize TLS.
+    if (PLLTLSBlockGetter *tls_block_getter = module.root()->tls_block_getter) {
+      tls_block_getter->func = TLSBlockGetter;
+      tls_block_getter->arg = module.InstantiateTLSBlock();
     }
   }
 }

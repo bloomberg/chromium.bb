@@ -33,6 +33,7 @@ class PLLModule {
   bool IsMaybeExported(uint32_t hash);
 
   void *GetExportedSym(const char *name);
+  void *InstantiateTLSBlock();
 
  private:
   const PLLRoot *root_;

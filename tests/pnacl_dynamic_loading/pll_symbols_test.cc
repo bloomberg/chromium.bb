@@ -150,15 +150,7 @@ void ResolveReferenceToSym(const PLLRoot *pll_root,
   ASSERT(found);
 }
 
-}  // namespace
-
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: dynloader_test <ELF file>...\n");
-    return 1;
-  }
-  const char *test_dso_file = argv[1];
-
+const PLLRoot *LoadTranslatedPLL(const char *test_dso_file) {
   printf("Testing %s...\n", test_dso_file);
   void *pso_root;
   int err = pnacl_load_elf_file(test_dso_file, &pso_root);
@@ -172,6 +164,12 @@ int main(int argc, char **argv) {
   // The bloom filter bitmask must be one less than a power of 2.
   ASSERT_EQ((pll_root->bloom_filter_maskwords_bitmask + 1) &
             pll_root->bloom_filter_maskwords_bitmask, 0);
+
+  return pll_root;
+}
+
+void TestCoreFunctionality(const char *test_dso_file) {
+  const PLLRoot *pll_root = LoadTranslatedPLL(test_dso_file);
 
   // Test exports.
 
@@ -264,6 +262,67 @@ int main(int argc, char **argv) {
 
   ASSERT_EQ(pll_root->export_count, expected_exports);
   ASSERT_EQ(pll_root->import_count, expected_imports);
+}
+
+PLLTLSBlockGetter *g_tls_block_getter;
+const uintptr_t kTlsBase = 0xabcd;  // Dummy pointer value for testing.
+
+void *TLSGetter(PLLTLSBlockGetter *closure) {
+  // Check that the PLL passes the correct pointer.
+  ASSERT_EQ(closure, g_tls_block_getter);
+  return (void *) kTlsBase;
+}
+
+void TestTLSVar(const PLLRoot *pll_root, const char *func_name, size_t offset) {
+  printf("Testing TLS var returned by \"%s\"\n", func_name);
+  auto getter_func =
+    (void *(*)()) (uintptr_t) GetExportedSym(pll_root, func_name);
+  ASSERT_NE(getter_func, NULL);
+  ASSERT_EQ((uintptr_t) getter_func() - kTlsBase, offset);
+}
+
+void TestTLS(const char *test_dso_file) {
+  const PLLRoot *pll_root = LoadTranslatedPLL(test_dso_file);
+
+  // Test thread-local variables (TLS).
+
+  // Fill out the function that the module will call back to for locating
+  // TLS variables.
+  ASSERT_NE(pll_root->tls_block_getter, NULL);
+  pll_root->tls_block_getter->func = TLSGetter;
+  pll_root->tls_block_getter->arg = (void *) 0x6543;
+  g_tls_block_getter = pll_root->tls_block_getter;
+
+  // Check that TLS variables are given the correct offsets from the TLS
+  // block's base, which is returned by TLSGetter.
+  TestTLSVar(pll_root, "get_tls_var1", 0);
+  TestTLSVar(pll_root, "get_tls_var1_addend", 4);
+  TestTLSVar(pll_root, "get_tls_var2", 4);
+  TestTLSVar(pll_root, "get_tls_var_aligned", 256);
+  TestTLSVar(pll_root, "get_tls_bss_var1", 256 + 4);
+  TestTLSVar(pll_root, "get_tls_bss_var_aligned", 512);
+
+  // Check that the template for the TLS block has the correct size,
+  // alignment and contents.
+  ASSERT_EQ(pll_root->tls_template_data_size, 256 + 4);
+  ASSERT_EQ(pll_root->tls_template_total_size, 512 + 4);
+  ASSERT_EQ(pll_root->tls_template_alignment, 256);
+  char *tls_template = (char *) pll_root->tls_template;
+  ASSERT_EQ(*(int *) tls_template, 123);  // Value of tls_var1
+  ASSERT_EQ(*(int *) (tls_template + 4), 0);  // Addend for tls_var2
+  ASSERT_EQ(*(int *) (tls_template + 256), 345);  // Value of tls_var_aligned
+}
+
+}  // namespace
+
+int main(int argc, char **argv) {
+  if (argc != 3) {
+    fprintf(stderr, "Usage: pll_symbols_test <ELF file> <ELF file>\n");
+    return 1;
+  }
+
+  TestCoreFunctionality(argv[1]);
+  TestTLS(argv[2]);
 
   return 0;
 }
