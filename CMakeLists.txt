@@ -85,12 +85,35 @@ if (MSVC OR HAVE_CXX11)
         return 0;
       }"
       HAVE_DELETED_MEMBER_FUNCTIONS)
+
+  # auto&
+  check_cxx_source_compiles("
+      int main(int argc, const char* argv[]) {
+        int a;
+        auto& b = a;
+        (void)b;
+        return 0;
+      }"
+      HAVE_AUTO_REF)
+
+  # ranged for
+  check_cxx_source_compiles("
+      int main(int argc, const char* argv[]) {
+        int a[4];
+        for (int& b : a) {
+          b = 0;
+        }
+        return 0;
+      }"
+      HAVE_RANGED_FOR)
 endif ()
 
 if (NOT HAVE_UNIQUE_PTR
     OR NOT HAVE_DEFAULT_MEMBER_VALUES
     OR NOT HAVE_DEFAULTED_MEMBER_FUNCTIONS
-    OR NOT HAVE_DELETED_MEMBER_FUNCTIONS)
+    OR NOT HAVE_DELETED_MEMBER_FUNCTIONS
+    OR NOT HAVE_AUTO_REF
+    OR NOT HAVE_RANGED_FOR)
   set(ENABLE_TESTS OFF)
   set(ENABLE_WEBMTS OFF)
   message(WARNING "C++11 feature(s) not supported, tests and webmts disabled.")
@@ -160,10 +183,12 @@ if (ENABLE_WEBMTS)
   add_library(webmts
               "${LIBWEBM_SRC_DIR}/common/libwebm_util.cc"
               "${LIBWEBM_SRC_DIR}/common/libwebm_util.h"
-              "${LIBWEBM_SRC_DIR}/m2ts/webm2pes.cc"
-              "${LIBWEBM_SRC_DIR}/m2ts/webm2pes.h"
               "${LIBWEBM_SRC_DIR}/m2ts/vpxpes2ts.cc"
-              "${LIBWEBM_SRC_DIR}/m2ts/vpxpes2ts.h")
+              "${LIBWEBM_SRC_DIR}/m2ts/vpxpes2ts.h"
+              "${LIBWEBM_SRC_DIR}/m2ts/vpxpes_parser.cc"
+              "${LIBWEBM_SRC_DIR}/m2ts/vpxpes_parser.h"
+              "${LIBWEBM_SRC_DIR}/m2ts/webm2pes.cc"
+              "${LIBWEBM_SRC_DIR}/m2ts/webm2pes.h")
 
   # webm2pes section.
   add_executable(webm2pes
