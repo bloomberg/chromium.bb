@@ -429,6 +429,10 @@ def parse_args(args):
                 default="DUMMY_BUILD_NAME",
                 help="The name of the builder used in its path, e.g. webkit-rel."),
             optparse.make_option(
+                "--step-name",
+                default="webkit_tests",
+                help="The name of the step in a build running this script."),
+            optparse.make_option(
                 "--build-number",
                 default="DUMMY_BUILD_NUMBER",
                 help="The build number of the builder running this script."),
