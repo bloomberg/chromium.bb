@@ -6,11 +6,15 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
+#include "extensions/common/feature_switch.h"
 
 using ExtensionInstalledBubbleBrowserTest = ExtensionBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
                        DoNotShowHowToUseForSynthesizedActions) {
+  extensions::FeatureSwitch::ScopedOverride enable_redesign(
+      extensions::FeatureSwitch::extension_action_redesign(),
+      true);
   const SkBitmap kEmptyBitmap;
   {
     scoped_refptr<const extensions::Extension> extension =
