@@ -306,79 +306,82 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   explicit WebTestProxy(Args... args) : Base(args...) {}
 
   // WebWidgetClient implementation.
-  virtual blink::WebScreenInfo screenInfo() {
+  blink::WebScreenInfo screenInfo() override {
     blink::WebScreenInfo info = Base::screenInfo();
     WebTestProxyBase::GetScreenOrientationForTesting(info);
     return info;
   }
 
   // WebViewClient implementation.
-  virtual void scheduleAnimation() { WebTestProxyBase::ScheduleAnimation(); }
-  virtual void startDragging(blink::WebLocalFrame* frame,
-                             const blink::WebDragData& data,
-                             blink::WebDragOperationsMask mask,
-                             const blink::WebImage& image,
-                             const blink::WebPoint& point) {
+  void scheduleAnimation() override { WebTestProxyBase::ScheduleAnimation(); }
+  void startDragging(blink::WebLocalFrame* frame,
+                     const blink::WebDragData& data,
+                     blink::WebDragOperationsMask mask,
+                     const blink::WebImage& image,
+                     const blink::WebPoint& point) override {
     WebTestProxyBase::StartDragging(frame, data, mask, image, point);
     // Don't forward this call to Base because we don't want to do a real
     // drag-and-drop.
   }
-  virtual void didChangeContents() {
+  void didChangeContents() override {
     WebTestProxyBase::DidChangeContents();
     Base::didChangeContents();
   }
-  virtual blink::WebView* createView(blink::WebLocalFrame* creator,
-                                     const blink::WebURLRequest& request,
-                                     const blink::WebWindowFeatures& features,
-                                     const blink::WebString& frame_name,
-                                     blink::WebNavigationPolicy policy,
-                                     bool suppress_opener) {
+  blink::WebView* createView(blink::WebLocalFrame* creator,
+                             const blink::WebURLRequest& request,
+                             const blink::WebWindowFeatures& features,
+                             const blink::WebString& frame_name,
+                             blink::WebNavigationPolicy policy,
+                             bool suppress_opener) override {
     if (!WebTestProxyBase::CreateView(
             creator, request, features, frame_name, policy, suppress_opener))
       return 0;
     return Base::createView(
         creator, request, features, frame_name, policy, suppress_opener);
   }
-  virtual void setStatusText(const blink::WebString& text) {
+  void setStatusText(const blink::WebString& text) override {
     WebTestProxyBase::SetStatusText(text);
     Base::setStatusText(text);
   }
-  virtual void printPage(blink::WebLocalFrame* frame) {
+  void printPage(blink::WebLocalFrame* frame) override {
     WebTestProxyBase::PrintPage(frame);
   }
-  virtual blink::WebSpeechRecognizer* speechRecognizer() {
+  blink::WebSpeechRecognizer* speechRecognizer() override {
     return WebTestProxyBase::GetSpeechRecognizer();
   }
-  virtual bool requestPointerLock() {
+  bool requestPointerLock() override {
     return WebTestProxyBase::RequestPointerLock();
   }
-  virtual void requestPointerUnlock() {
+  void requestPointerUnlock() override {
     WebTestProxyBase::RequestPointerUnlock();
   }
-  virtual bool isPointerLocked() { return WebTestProxyBase::IsPointerLocked(); }
-  virtual void didFocus() {
+  bool isPointerLocked() override {
+    return WebTestProxyBase::IsPointerLocked();
+  }
+  void didFocus() override {
     WebTestProxyBase::DidFocus();
     Base::didFocus();
   }
-  virtual void setToolTipText(const blink::WebString& text,
-                              blink::WebTextDirection hint) {
+  void setToolTipText(const blink::WebString& text,
+                      blink::WebTextDirection hint) override {
     WebTestProxyBase::SetToolTipText(text, hint);
     Base::setToolTipText(text, hint);
   }
-  virtual void resetInputMethod() { WebTestProxyBase::ResetInputMethod(); }
-  virtual bool runFileChooser(const blink::WebFileChooserParams& params,
-                              blink::WebFileChooserCompletion* completion) {
+  void resetInputMethod() override { WebTestProxyBase::ResetInputMethod(); }
+  bool runFileChooser(const blink::WebFileChooserParams& params,
+                      blink::WebFileChooserCompletion* completion) override {
     return WebTestProxyBase::RunFileChooser(params, completion);
   }
-  virtual void showValidationMessage(const blink::WebRect& anchor_in_root_view,
-                                     const blink::WebString& main_message,
-                                     blink::WebTextDirection main_message_hint,
-                                     const blink::WebString& sub_message,
-                                     blink::WebTextDirection sub_message_hint) {
+  void showValidationMessage(
+      const blink::WebRect& anchor_in_root_view,
+      const blink::WebString& main_message,
+      blink::WebTextDirection main_message_hint,
+      const blink::WebString& sub_message,
+      blink::WebTextDirection sub_message_hint) override {
     WebTestProxyBase::ShowValidationMessage(main_message, main_message_hint,
                                             sub_message, sub_message_hint);
   }
-  virtual blink::WebString acceptLanguages() {
+  blink::WebString acceptLanguages() override {
     return WebTestProxyBase::acceptLanguages();
   }
 
