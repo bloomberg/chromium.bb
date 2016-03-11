@@ -156,18 +156,18 @@ def main():
           vc_bin_dir = os.path.realpath(path)
           break
 
-    # The Windows SDK include directories must be first. They both have a sal.h,
-    # and the SDK one is newer and the SDK uses some newer features from it not
-    # present in the Visual Studio one.
-    # Having the Windows SDK first is also the only way to control which SDK
-    # version is used.
-
-    if win_sdk_path:
-      additional_includes = [
-        os.path.join(win_sdk_path, 'Include', '10.0.10586.0', p)
-        for p in ['shared', 'um', 'winrt']]
-      additional_includes = os.path.pathsep.join(additional_includes)
-      env['INCLUDE'] = additional_includes + os.path.pathsep + env['INCLUDE']
+    # Add extra include directories here that need to be in front of the
+    # installed and packaged include directories. This may be needed in
+    # order to force a particular SDK version, such as to get VS 2013 to use
+    # the Windows 10 SDK. Beware of making the INCLUDE variable excessively
+    # long and be sure to make corresponding changes to build\common.gypi.
+    # Not currently used.
+    #if win_sdk_path:
+    #  additional_includes = [
+    #    os.path.join(win_sdk_path, 'Include', '10.0.10586.0', p)
+    #    for p in ['shared', 'um', 'winrt']]
+    #  additional_includes = os.path.pathsep.join(additional_includes)
+    #  env['INCLUDE'] = additional_includes + os.path.pathsep + env['INCLUDE']
     env_block = _FormatAsEnvironmentBlock(env)
     with open('environment.' + cpu, 'wb') as f:
       f.write(env_block)
