@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -90,6 +91,20 @@ void ExtensionActionPlatformDelegateCocoa::CloseOverflowMenu() {
           toolbarController] appMenuController];
   if ([appMenuController isMenuOpen])
     [appMenuController cancel];
+}
+
+void ExtensionActionPlatformDelegateCocoa::ShowContextMenu() {
+  // We should only use this code path for extensions shown in the toolbar.
+  DCHECK(controller_->extension_action()->action_type() ==
+             extensions::ActionInfo::TYPE_BROWSER ||
+         extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
+  BrowserWindowController* windowController = [BrowserWindowController
+      browserWindowControllerForWindow:controller_->browser()
+                                           ->window()
+                                           ->GetNativeWindow()];
+  BrowserActionsController* actionsController =
+      [[windowController toolbarController] browserActionsController];
+  [[actionsController mainButtonForId:controller_->GetId()] showContextMenu];
 }
 
 NSPoint ExtensionActionPlatformDelegateCocoa::GetPopupPoint() const {

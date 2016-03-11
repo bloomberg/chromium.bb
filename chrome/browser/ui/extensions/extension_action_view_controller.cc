@@ -184,6 +184,15 @@ void ExtensionActionViewController::OnContextMenuClosed() {
 }
 
 bool ExtensionActionViewController::ExecuteAction(bool by_user) {
+  if (!ExtensionIsValid())
+    return false;
+
+  if (!IsEnabled(view_delegate_->GetCurrentWebContents())) {
+    if (DisabledClickOpensMenu())
+      GetPreferredPopupViewController()->platform_delegate_->ShowContextMenu();
+    return false;
+  }
+
   return ExecuteAction(SHOW_POPUP, by_user);
 }
 

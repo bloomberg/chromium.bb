@@ -32,6 +32,7 @@ class ExtensionActionPlatformDelegateCocoa
       bool grant_tab_permissions,
       ExtensionActionViewController::PopupShowAction show_action) override;
   void CloseOverflowMenu() override;
+  void ShowContextMenu() override;
 
   // content::NotificationObserver:
   void Observe(int type,

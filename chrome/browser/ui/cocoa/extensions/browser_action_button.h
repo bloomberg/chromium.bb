@@ -87,6 +87,9 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 // cell image drawn into it.
 - (NSImage*)compositedImage;
 
+// Shows the context menu for the action.
+- (void)showContextMenu;
+
 @property(readonly, nonatomic) BOOL isBeingDragged;
 
 @end

@@ -39,6 +39,9 @@ class ExtensionActionPlatformDelegate {
 
   // Closes the overflow menu, if it was open.
   virtual void CloseOverflowMenu() = 0;
+
+  // Shows the context menu for the extension.
+  virtual void ShowContextMenu() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_H_

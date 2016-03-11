@@ -97,6 +97,12 @@ void ExtensionActionPlatformDelegateViews::CloseOverflowMenu() {
     app_menu_button->CloseMenu();
 }
 
+void ExtensionActionPlatformDelegateViews::ShowContextMenu() {
+  views::View* view = GetDelegateViews()->GetAsView();
+  view->context_menu_controller()->ShowContextMenuForView(
+      view, view->GetKeyboardContextMenuLocation(), ui::MENU_SOURCE_NONE);
+}
+
 void ExtensionActionPlatformDelegateViews::Observe(
     int type,
     const content::NotificationSource& source,

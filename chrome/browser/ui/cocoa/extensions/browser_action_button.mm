@@ -111,10 +111,15 @@ ToolbarActionViewDelegateBridge::~ToolbarActionViewDelegateBridge() {
 }
 
 void ToolbarActionViewDelegateBridge::ShowContextMenu() {
-  // We should only be showing the context menu in this way if we're doing so
-  // for an overflowed action.
-  DCHECK(![owner_ superview]);
+  DCHECK(![controller_ toolbarActionsBar]->in_overflow_mode());
+  if ([owner_ superview]) {
+    // If the button is already visible on the toolbar, we can skip ahead to
+    // just showing the menu.
+    DoShowContextMenu();
+    return;
+  }
 
+  // Otherwise, we have to slide the button out.
   contextMenuRunning_ = true;
   AppMenuController* appMenuController =
       [[[BrowserWindowController browserWindowControllerForWindow:
@@ -331,21 +336,7 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
                                fromView:nil];
   // Only perform the click if we didn't drag the button.
   if (NSPointInRect(location, [self bounds]) && !isBeingDragged_) {
-    // There's also a chance that the action is disabled, and the left click
-    // should show the context menu.
-    if (!viewController_->IsEnabled(
-            [browserActionsController_ currentWebContents]) &&
-        viewController_->DisabledClickOpensMenu()) {
-      // No menus-in-menus; see comment in -rightMouseDown:.
-      if ([browserActionsController_ isOverflow]) {
-        [browserActionsController_ mainButtonForId:viewController_->GetId()]->
-            viewControllerDelegate_->ShowContextMenu();
-      } else {
-        [NSMenu popUpContextMenu:[self menu] withEvent:theEvent forView:self];
-      }
-    } else {
-      [self performClick:self];
-    }
+    [self performClick:self];
   } else {
     // Make sure an ESC to end a drag doesn't trigger 2 endDrags.
     if (isBeingDragged_) {
@@ -487,6 +478,10 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 
   [image unlockFocus];
   return image;
+}
+
+- (void)showContextMenu {
+  viewControllerDelegate_->ShowContextMenu();
 }
 
 - (NSMenu*)menu {

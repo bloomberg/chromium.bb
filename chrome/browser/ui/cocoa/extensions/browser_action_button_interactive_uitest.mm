@@ -531,3 +531,60 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
                                ui_controls::DOWN | ui_controls::UP);
   runLoop.Run();
 }
+
+// Test that activating an action that doesn't want to run on the page via the
+// mouse and the keyboard works.
+IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
+                       OpenMenuOnDisabledActionWithMouseOrKeyboard) {
+  // Add an extension with a page action.
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "page action", extensions::extension_action_test_util::PAGE_ACTION);
+  extension_service()->AddExtension(extension.get());
+  ASSERT_EQ(1u, model()->toolbar_items().size());
+
+  BrowserActionsController* actionsController =
+      [toolbarController() browserActionsController];
+  BrowserActionButton* actionButton = [actionsController buttonWithIndex:0];
+  ASSERT_TRUE(actionButton);
+
+  // Stub out the action button's normal context menu with a fake one so we
+  // can track when it opens.
+  base::scoped_nsobject<NSMenu> testContextMenu(
+      [[NSMenu alloc] initWithTitle:@""]);
+  base::scoped_nsobject<MenuHelper> menuHelper([[MenuHelper alloc] init]);
+  [testContextMenu setDelegate:menuHelper.get()];
+  [actionButton setTestContextMenu:testContextMenu.get()];
+
+  // The button should be attached.
+  EXPECT_TRUE([actionButton superview]);
+
+  // Move the mouse and click on the button. The menu should open.
+  MoveMouseToCenter(actionButton);
+  {
+    EXPECT_FALSE([menuHelper menuOpened]);
+    base::RunLoop runLoop;
+    ui_controls::SendMouseEventsNotifyWhenDone(
+        ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+        runLoop.QuitClosure());
+    runLoop.Run();
+    EXPECT_TRUE([menuHelper menuOpened]);
+  }
+
+  // Reset the menu helper so we can use it again.
+  [menuHelper setMenuOpened:NO];
+
+  // Send the 'space' key to the button with it as the first responder. The menu
+  // should open.
+  [[actionButton window] makeFirstResponder:actionButton];
+  EXPECT_TRUE([[actionButton window] firstResponder] == actionButton);
+  {
+    EXPECT_FALSE([menuHelper menuOpened]);
+    base::RunLoop runLoop;
+    ui_controls::SendKeyPressNotifyWhenDone([actionButton window],
+                                            ui::VKEY_SPACE, false, false, false,
+                                            false, runLoop.QuitClosure());
+    runLoop.Run();
+    EXPECT_TRUE([menuHelper menuOpened]);
+  }
+}
