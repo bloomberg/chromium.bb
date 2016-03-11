@@ -35,6 +35,16 @@ const char kFormat_Help[] =
     "\n"
     "  Formats .gn file to a standard format.\n"
     "\n"
+    "  The contents of some lists ('sources', 'deps', etc.) will be sorted to\n"
+    "  a canonical order. To suppress this, you can add a comment of the form\n"
+    "  \"# NOSORT\" immediately preceeding the assignment. e.g.\n"
+    "\n"
+    "  # NOSORT\n"
+    "  sources = [\n"
+    "    \"z.cc\",\n"
+    "    \"a.cc\",\n"
+    "  ]\n"
+    "\n"
     "Arguments\n"
     "  --dry-run\n"
     "      Does not change or output anything, but sets the process exit code\n"
@@ -315,6 +325,12 @@ void Printer::AnnotatePreferredMultilineAssignment(const BinaryOpNode* binop) {
 }
 
 void Printer::SortIfSourcesOrDeps(const BinaryOpNode* binop) {
+  if (binop && binop->comments() && !binop->comments()->before().empty() &&
+      binop->comments()->before()[0].value().as_string() == "# NOSORT") {
+    // Allow disabling of sort for specific actions that might be
+    // order-sensitive.
+    return;
+  }
   const IdentifierNode* ident = binop->left()->AsIdentifier();
   const ListNode* list = binop->right()->AsList();
   if ((binop->op().value() == "=" || binop->op().value() == "+=" ||
