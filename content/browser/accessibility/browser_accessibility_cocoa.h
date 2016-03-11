@@ -22,8 +22,8 @@
 }
 
 // This creates a cocoa browser accessibility object around
-// the cross platform BrowserAccessibility object, which can't be null.
-- (id)initWithObject:(content::BrowserAccessibility*)accessibility;
+// the cross platform BrowserAccessibility object, which can't be nullptr.
+- (instancetype)initWithObject:(content::BrowserAccessibility*)accessibility;
 
 // Clear this object's pointer to the wrapped BrowserAccessibility object
 // because the wrapped object has been deleted, but this object may
@@ -39,7 +39,7 @@
 
 // Convenience method to determine if this object should expose its
 // accessible name in AXValue (as opposed to AXTitle/AXDescription).
-- (bool)shouldExposeNameInAXValue;
+- (BOOL)shouldExposeNameInAXValue;
 
 // Convenience method to get the BrowserAccessibilityDelegate from
 // the manager.
@@ -47,6 +47,9 @@
 
 // Get the BrowserAccessibility that this object wraps.
 - (content::BrowserAccessibility*)browserAccessibility;
+
+// Determines if this object is alive, i.e. it hasn't been detached.
+- (BOOL)instanceActive;
 
 // Convert the local objet's origin to a global point.
 - (NSPoint)pointInScreen:(NSPoint)origin
@@ -61,16 +64,16 @@
 // Returns the requested text range from this object's value attribute.
 - (NSString*)valueForRange:(NSRange)range;
 
-// Internally-used method.
+// Internally-used property.
 @property(nonatomic, readonly) NSPoint origin;
 
-// Children is an array of BrowserAccessibility objects, representing
-// the accessibility children of this object.
 @property(nonatomic, readonly) NSString* accessKey;
 @property(nonatomic, readonly) NSNumber* ariaAtomic;
 @property(nonatomic, readonly) NSNumber* ariaBusy;
 @property(nonatomic, readonly) NSString* ariaLive;
+@property(nonatomic, readonly) NSNumber* ariaPosInSet;
 @property(nonatomic, readonly) NSString* ariaRelevant;
+@property(nonatomic, readonly) NSNumber* ariaSetSize;
 @property(nonatomic, readonly) NSArray* children;
 @property(nonatomic, readonly) NSArray* columns;
 @property(nonatomic, readonly) NSArray* columnHeaders;
@@ -87,13 +90,17 @@
 @property(nonatomic, readonly) id endTextMarker;
 @property(nonatomic, readonly) NSNumber* expanded;
 @property(nonatomic, readonly) NSNumber* focused;
+@property(nonatomic, readonly) NSNumber* grabbed;
+@property(nonatomic, readonly) id header;
 @property(nonatomic, readonly) NSString* help;
 // isIgnored returns whether or not the accessibility object
 // should be ignored by the accessibility hierarchy.
 @property(nonatomic, readonly, getter=isIgnored) BOOL ignored;
 // Index of a row, column, or tree item.
 @property(nonatomic, readonly) NSNumber* index;
+@property(nonatomic, readonly) NSNumber* insertionPointLineNumber;
 @property(nonatomic, readonly) NSString* invalid;
+@property(nonatomic, readonly) NSNumber* isMultiSelectable;
 @property(nonatomic, readonly) NSString* placeholderValue;
 @property(nonatomic, readonly) NSNumber* loaded;
 @property(nonatomic, readonly) NSNumber* loadingProgress;
@@ -111,9 +118,14 @@
 @property(nonatomic, readonly) NSArray* rowHeaders;
 @property(nonatomic, readonly) NSValue* rowIndexRange;
 @property(nonatomic, readonly) NSArray* rows;
+// The object is selected as a whole.
+@property(nonatomic, readonly) NSNumber* selected;
 @property(nonatomic, readonly) NSArray* selectedChildren;
+@property(nonatomic, readonly) NSString* selectedText;
+@property(nonatomic, readonly) NSValue* selectedTextRange;
 @property(nonatomic, readonly) id selectedTextMarkerRange;
 @property(nonatomic, readonly) NSValue* size;
+@property(nonatomic, readonly) NSString* sortDirection;
 // Returns a text marker that points to the first character in the document that
 // can be selected with Voiceover.
 @property(nonatomic, readonly) id startTextMarker;

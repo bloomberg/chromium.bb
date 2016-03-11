@@ -1255,7 +1255,7 @@ AXObject* AXLayoutObject::ancestorForWhichThisIsAPresentationalChild() const
             break;
 
         // The descendants of a AXMenuList that are AXLayoutObjects are all
-        // presentational. (The real descendants are a AXMenuListPopup and
+        // presentational. (The real descendants are an AXMenuListPopup and
         // AXMenuListOptions, which are not AXLayoutObjects.)
         if (parent->isMenuList())
             break;

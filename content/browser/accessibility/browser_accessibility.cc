@@ -792,21 +792,48 @@ bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
   return parent->GetRole() == ui::AX_ROLE_IFRAME_PRESENTATIONAL;
 }
 
+bool BrowserAccessibility::IsClickable() const {
+  switch (GetRole()) {
+    case ui::AX_ROLE_BUTTON:
+    case ui::AX_ROLE_CHECK_BOX:
+    case ui::AX_ROLE_COLOR_WELL:
+    case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
+    case ui::AX_ROLE_IMAGE_MAP_LINK:
+    case ui::AX_ROLE_LINK:
+    case ui::AX_ROLE_LIST_BOX_OPTION:
+    case ui::AX_ROLE_MENU_BUTTON:
+    case ui::AX_ROLE_MENU_ITEM:
+    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+    case ui::AX_ROLE_MENU_ITEM_RADIO:
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+    case ui::AX_ROLE_MENU_LIST_POPUP:
+    case ui::AX_ROLE_POP_UP_BUTTON:
+    case ui::AX_ROLE_RADIO_BUTTON:
+    case ui::AX_ROLE_SWITCH:
+    case ui::AX_ROLE_TAB:
+    case ui::AX_ROLE_TOGGLE_BUTTON:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool BrowserAccessibility::IsControl() const {
   switch (GetRole()) {
     case ui::AX_ROLE_BUTTON:
-    case ui::AX_ROLE_BUTTON_DROP_DOWN:
     case ui::AX_ROLE_CHECK_BOX:
     case ui::AX_ROLE_COLOR_WELL:
     case ui::AX_ROLE_COMBO_BOX:
     case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
     case ui::AX_ROLE_LIST_BOX:
+    case ui::AX_ROLE_MENU:
     case ui::AX_ROLE_MENU_BAR:
     case ui::AX_ROLE_MENU_BUTTON:
     case ui::AX_ROLE_MENU_ITEM:
     case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
     case ui::AX_ROLE_MENU_ITEM_RADIO:
-    case ui::AX_ROLE_MENU:
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+    case ui::AX_ROLE_MENU_LIST_POPUP:
     case ui::AX_ROLE_POP_UP_BUTTON:
     case ui::AX_ROLE_RADIO_BUTTON:
     case ui::AX_ROLE_SCROLL_BAR:
@@ -818,6 +845,22 @@ bool BrowserAccessibility::IsControl() const {
     case ui::AX_ROLE_TEXT_FIELD:
     case ui::AX_ROLE_TOGGLE_BUTTON:
     case ui::AX_ROLE_TREE:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool BrowserAccessibility::IsMenuRelated() const {
+  switch (GetRole()) {
+    case ui::AX_ROLE_MENU:
+    case ui::AX_ROLE_MENU_BAR:
+    case ui::AX_ROLE_MENU_BUTTON:
+    case ui::AX_ROLE_MENU_ITEM:
+    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+    case ui::AX_ROLE_MENU_ITEM_RADIO:
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+    case ui::AX_ROLE_MENU_LIST_POPUP:
       return true;
     default:
       return false;

@@ -76,7 +76,7 @@
     // TODO(nektar): Remove busy_indicator because it's used nowhere.
     busy_indicator,
     button,
-    button_drop_down,
+    button_drop_down,  // Not used on Web.
     canvas,
     caption,
     cell,
@@ -132,6 +132,7 @@
     mark,
     marquee,
     math,
+    menu,
     menu_bar,
     menu_button,
     menu_item,
@@ -139,7 +140,6 @@
     menu_item_radio,
     menu_list_option,
     menu_list_popup,
-    menu,
     meter,
     navigation,
     note,

@@ -302,7 +302,10 @@ class CONTENT_EXPORT BrowserAccessibility {
   // True if this is a web area, and its grandparent is a presentational iframe.
   bool IsWebAreaForPresentationalIframe() const;
 
+  virtual bool IsClickable() const;
   bool IsControl() const;
+  bool IsMenuRelated() const;
+  bool IsRangeControl() const;
   bool IsSimpleTextControl() const;
   // Indicates if this object is at the root of a rich edit text control.
   bool IsRichTextControl() const;

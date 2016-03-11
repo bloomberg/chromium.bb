@@ -25,7 +25,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   bool IsCheckable() const;
   bool IsChecked() const;
-  bool IsClickable() const;
+  bool IsClickable() const override;
   bool IsCollection() const;
   bool IsCollectionItem() const;
   bool IsContentInvalid() const;

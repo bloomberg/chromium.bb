@@ -135,6 +135,8 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
   if (!PlatformIsLeaf())
     return false;
 
+  // We are very aggressive about returning true with IsClickable on Android
+  // because there is no way to know for sure what might have a click handler.
   return IsFocusable() || !GetText().empty();
 }
 
