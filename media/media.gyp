@@ -329,8 +329,6 @@
         'base/djb2.cc',
         'base/djb2.h',
         'base/eme_constants.h',
-        'base/encryption_scheme.cc',
-        'base/encryption_scheme.h',
         'base/key_system_info.cc',
         'base/key_system_info.h',
         'base/key_systems.cc',

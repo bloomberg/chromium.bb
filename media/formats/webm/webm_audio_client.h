@@ -16,7 +16,6 @@
 
 namespace media {
 class AudioDecoderConfig;
-class EncryptionScheme;
 
 // Helper class used to parse an Audio element inside a TrackEntry element.
 class WebMAudioClient : public WebMParserClient {
@@ -28,8 +27,8 @@ class WebMAudioClient : public WebMParserClient {
   void Reset();
 
   // Initialize |config| with the data in |codec_id|, |codec_private|,
-  // |encryption_scheme| and the fields parsed from the last audio track element
-  // this object was used to parse.
+  // |is_encrypted| and the fields parsed from the last audio track element this
+  // object was used to parse.
   // Returns true if |config| was successfully initialized.
   // Returns false if there was unexpected values in the provided parameters or
   // audio track element fields.
@@ -37,7 +36,7 @@ class WebMAudioClient : public WebMParserClient {
                         const std::vector<uint8_t>& codec_private,
                         const int64_t seek_preroll,
                         const int64_t codec_delay,
-                        const EncryptionScheme& encryption_scheme,
+                        bool is_encrypted,
                         AudioDecoderConfig* config);
 
  private:

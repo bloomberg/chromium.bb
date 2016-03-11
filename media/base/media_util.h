@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include "media/base/encryption_scheme.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -16,11 +15,6 @@ namespace media {
 // Simply returns an empty vector. {Audio|Video}DecoderConfig are often
 // constructed with empty extra data.
 MEDIA_EXPORT std::vector<uint8_t> EmptyExtraData();
-
-// The following helper functions return new instances of EncryptionScheme that
-// indicate widely used settings.
-MEDIA_EXPORT EncryptionScheme Unencrypted();
-MEDIA_EXPORT EncryptionScheme AesCtrEncryptionScheme();
 
 }  // namespace media
 

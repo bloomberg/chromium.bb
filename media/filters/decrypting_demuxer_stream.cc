@@ -12,7 +12,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
-#include "media/base/media_util.h"
 
 namespace media {
 
@@ -348,12 +347,14 @@ void DecryptingDemuxerStream::InitializeDecoderConfig() {
     case AUDIO: {
       AudioDecoderConfig input_audio_config =
           demuxer_stream_->audio_decoder_config();
-      audio_config_.Initialize(
-          input_audio_config.codec(), input_audio_config.sample_format(),
-          input_audio_config.channel_layout(),
-          input_audio_config.samples_per_second(),
-          input_audio_config.extra_data(), Unencrypted(),
-          input_audio_config.seek_preroll(), input_audio_config.codec_delay());
+      audio_config_.Initialize(input_audio_config.codec(),
+                               input_audio_config.sample_format(),
+                               input_audio_config.channel_layout(),
+                               input_audio_config.samples_per_second(),
+                               input_audio_config.extra_data(),
+                               false,  // Output audio is not encrypted.
+                               input_audio_config.seek_preroll(),
+                               input_audio_config.codec_delay());
       break;
     }
 
@@ -365,7 +366,7 @@ void DecryptingDemuxerStream::InitializeDecoderConfig() {
           input_video_config.format(), input_video_config.color_space(),
           input_video_config.coded_size(), input_video_config.visible_rect(),
           input_video_config.natural_size(), input_video_config.extra_data(),
-          Unencrypted());
+          false);  // Output video is not encrypted.
       break;
     }
 

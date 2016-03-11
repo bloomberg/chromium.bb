@@ -15,7 +15,6 @@
 #include "media/formats/webm/webm_parser.h"
 
 namespace media {
-class EncryptionScheme;
 class VideoDecoderConfig;
 
 // Helper class used to parse a Video element inside a TrackEntry element.
@@ -28,15 +27,15 @@ class WebMVideoClient : public WebMParserClient {
   void Reset();
 
   // Initialize |config| with the data in |codec_id|, |codec_private|,
-  // |encryption_scheme| and the fields parsed from the last video track element
-  // this object was used to parse.
+  // |is_encrypted| and the fields parsed from the last video track element this
+  // object was used to parse.
   // Returns true if |config| was successfully initialized.
   // Returns false if there was unexpected values in the provided parameters or
   // video track element fields. The contents of |config| are undefined in this
   // case and should not be relied upon.
   bool InitializeConfig(const std::string& codec_id,
                         const std::vector<uint8_t>& codec_private,
-                        const EncryptionScheme& encryption_scheme,
+                        bool is_encrypted,
                         VideoDecoderConfig* config);
 
  private:

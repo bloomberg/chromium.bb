@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "media/base/encryption_scheme.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
@@ -39,7 +38,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
                      const std::vector<uint8_t>& extra_data,
-                     const EncryptionScheme& encryption_scheme);
+                     bool is_encrypted);
 
   VideoDecoderConfig(const VideoDecoderConfig& other);
 
@@ -54,7 +53,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                   const gfx::Rect& visible_rect,
                   const gfx::Size& natural_size,
                   const std::vector<uint8_t>& extra_data,
-                  const EncryptionScheme& encryption_scheme);
+                  bool is_encrypted);
 
   // Returns true if this object has appropriate configuration values, false
   // otherwise.
@@ -101,12 +100,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // Whether the video stream is potentially encrypted.
   // Note that in a potentially encrypted video stream, individual buffers
   // can be encrypted or not encrypted.
-  bool is_encrypted() const { return encryption_scheme_.is_encrypted(); }
-
-  // Encryption scheme used for encrypted buffers.
-  const EncryptionScheme& encryption_scheme() const {
-    return encryption_scheme_;
-  }
+  bool is_encrypted() const { return is_encrypted_; }
 
  private:
   VideoCodec codec_;
@@ -121,7 +115,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   std::vector<uint8_t> extra_data_;
 
-  EncryptionScheme encryption_scheme_;
+  bool is_encrypted_;
 
   // Not using DISALLOW_COPY_AND_ASSIGN here intentionally to allow the compiler
   // generated copy constructor and assignment operator. Since the extra data is

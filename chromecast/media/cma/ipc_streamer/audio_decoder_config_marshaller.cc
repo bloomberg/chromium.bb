@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "chromecast/media/cma/ipc/media_message.h"
-#include "chromecast/media/cma/ipc_streamer/encryption_scheme_marshaller.h"
 #include "media/base/audio_decoder_config.h"
 
 namespace chromecast {
@@ -28,7 +27,7 @@ void AudioDecoderConfigMarshaller::Write(
   CHECK(msg->WritePod(config.channel_layout()));
   CHECK(msg->WritePod(config.samples_per_second()));
   CHECK(msg->WritePod(config.sample_format()));
-  EncryptionSchemeMarshaller::Write(config.encryption_scheme(), msg);
+  CHECK(msg->WritePod(config.is_encrypted()));
   CHECK(msg->WritePod(config.extra_data().size()));
   if (!config.extra_data().empty())
     CHECK(msg->WriteBuffer(&config.extra_data()[0],
@@ -42,15 +41,15 @@ void AudioDecoderConfigMarshaller::Write(
   ::media::SampleFormat sample_format;
   ::media::ChannelLayout channel_layout;
   int samples_per_second;
+  bool is_encrypted;
   size_t extra_data_size;
   std::vector<uint8_t> extra_data;
-  ::media::EncryptionScheme encryption_scheme;
 
   CHECK(msg->ReadPod(&codec));
   CHECK(msg->ReadPod(&channel_layout));
   CHECK(msg->ReadPod(&samples_per_second));
   CHECK(msg->ReadPod(&sample_format));
-  encryption_scheme = EncryptionSchemeMarshaller::Read(msg);
+  CHECK(msg->ReadPod(&is_encrypted));
   CHECK(msg->ReadPod(&extra_data_size));
 
   CHECK_GE(codec, ::media::kUnknownAudioCodec);
@@ -68,7 +67,7 @@ void AudioDecoderConfigMarshaller::Write(
   return ::media::AudioDecoderConfig(
       codec, sample_format,
       channel_layout, samples_per_second,
-      extra_data, encryption_scheme);
+      extra_data, is_encrypted);
 }
 
 }  // namespace media

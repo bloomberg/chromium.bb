@@ -12,7 +12,6 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bit_reader.h"
 #include "media/base/channel_layout.h"
-#include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/common/offset_byte_queue.h"
@@ -171,8 +170,12 @@ bool EsParserMpeg1Audio::UpdateAudioConfiguration(
   // TODO(damienv): Verify whether Android playback requires the extra data
   // field for Mpeg1 audio. If yes, we should generate this field.
   AudioDecoderConfig audio_decoder_config(
-      kCodecMP3, kSampleFormatS16, header.channel_layout, header.sample_rate,
-      EmptyExtraData(), Unencrypted());
+      kCodecMP3,
+      kSampleFormatS16,
+      header.channel_layout,
+      header.sample_rate,
+      std::vector<uint8_t>(),
+      false);
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
     DVLOG(1) << "Sampling frequency: " << header.sample_rate;

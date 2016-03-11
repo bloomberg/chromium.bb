@@ -229,8 +229,6 @@
         'cma/ipc_streamer/decoder_buffer_base_marshaller.h',
         'cma/ipc_streamer/decrypt_config_marshaller.cc',
         'cma/ipc_streamer/decrypt_config_marshaller.h',
-        'cma/ipc_streamer/encryption_scheme_marshaller.cc',
-        'cma/ipc_streamer/encryption_scheme_marshaller.h',
         'cma/ipc_streamer/video_decoder_config_marshaller.cc',
         'cma/ipc_streamer/video_decoder_config_marshaller.h',
       ],

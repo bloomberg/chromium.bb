@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/media_tracks.h"
-#include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"
@@ -206,9 +205,14 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
   }
 
   if (!config_.IsValidConfig()) {
-    config_.Initialize(audio_codec_, kSampleFormatF32, channel_layout,
-                       sample_rate, std::vector<uint8_t>(), Unencrypted(),
-                       base::TimeDelta(), codec_delay_);
+    config_.Initialize(audio_codec_,
+                       kSampleFormatF32,
+                       channel_layout,
+                       sample_rate,
+                       std::vector<uint8_t>(),
+                       false,
+                       base::TimeDelta(),
+                       codec_delay_);
 
     base::TimeDelta base_timestamp;
     if (timestamp_helper_)

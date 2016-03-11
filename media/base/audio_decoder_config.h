@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/channel_layout.h"
-#include "media/base/encryption_scheme.h"
 #include "media/base/media_export.h"
 #include "media/base/sample_format.h"
 
@@ -35,7 +34,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
                      ChannelLayout channel_layout,
                      int samples_per_second,
                      const std::vector<uint8_t>& extra_data,
-                     const EncryptionScheme& encryption_scheme);
+                     bool is_encrypted);
 
   AudioDecoderConfig(const AudioDecoderConfig& other);
 
@@ -47,7 +46,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
                   ChannelLayout channel_layout,
                   int samples_per_second,
                   const std::vector<uint8_t>& extra_data,
-                  const EncryptionScheme& encryption_scheme,
+                  bool is_encrypted,
                   base::TimeDelta seek_preroll,
                   int codec_delay);
 
@@ -80,12 +79,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // Whether the audio stream is potentially encrypted.
   // Note that in a potentially encrypted audio stream, individual buffers
   // can be encrypted or not encrypted.
-  bool is_encrypted() const { return encryption_scheme_.is_encrypted(); }
-
-  // Encryption scheme used for encrypted buffers.
-  const EncryptionScheme& encryption_scheme() const {
-    return encryption_scheme_;
-  }
+  bool is_encrypted() const { return is_encrypted_; }
 
  private:
   AudioCodec codec_;
@@ -95,7 +89,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
   int samples_per_second_;
   int bytes_per_frame_;
   std::vector<uint8_t> extra_data_;
-  EncryptionScheme encryption_scheme_;
+  bool is_encrypted_;
 
   // |seek_preroll_| is the duration of the data that the decoder must decode
   // before the decoded data is valid.

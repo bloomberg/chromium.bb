@@ -59,7 +59,7 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
     return true;
   }
 
-  if (config.is_encrypted() || !CreateSoftwareDecoder(config))
+  if (config.is_encrypted || !CreateSoftwareDecoder(config))
     return false;
 
   output_config_.codec = media::kCodecPCM;
@@ -67,7 +67,7 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
   output_config_.channel_number = 2;
   output_config_.bytes_per_channel = 2;
   output_config_.samples_per_second = config.samples_per_second;
-  output_config_.encryption_scheme = Unencrypted();
+  output_config_.is_encrypted = false;
   return backend_decoder_->SetConfig(output_config_);
 }
 

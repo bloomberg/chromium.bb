@@ -13,7 +13,6 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bit_reader.h"
 #include "media/base/channel_layout.h"
-#include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/common/offset_byte_queue.h"
@@ -228,9 +227,12 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header) {
   extra_data.push_back(static_cast<uint8_t>(extra_data_int & 0xff));
 
   AudioDecoderConfig audio_decoder_config(
-      kCodecAAC, kSampleFormatS16,
+      kCodecAAC,
+      kSampleFormatS16,
       kADTSChannelLayoutTable[channel_configuration],
-      extended_samples_per_second, extra_data, Unencrypted());
+      extended_samples_per_second,
+      extra_data,
+      false);
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
     DVLOG(1) << "Sampling frequency: " << samples_per_second;

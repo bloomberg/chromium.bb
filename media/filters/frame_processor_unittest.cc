@@ -294,7 +294,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
         audio_.reset(new ChunkDemuxerStream(DemuxerStream::AUDIO, true));
         AudioDecoderConfig decoder_config(kCodecVorbis, kSampleFormatPlanarF32,
                                           CHANNEL_LAYOUT_STEREO, 1000,
-                                          EmptyExtraData(), Unencrypted());
+                                          EmptyExtraData(), false);
         frame_processor_->OnPossibleAudioConfigUpdate(decoder_config);
         ASSERT_TRUE(audio_->UpdateAudioConfig(decoder_config, new MediaLog()));
         break;

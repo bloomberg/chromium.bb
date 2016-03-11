@@ -12,7 +12,6 @@
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/encryption_scheme.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
@@ -30,16 +29,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 
 namespace IPC {
 
-template <>
-struct ParamTraits<media::EncryptionScheme::Pattern> {
-  typedef media::EncryptionScheme::Pattern param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m, base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-
 void ParamTraits<media::AudioDecoderConfig>::Write(
     base::Pickle* m,
     const media::AudioDecoderConfig& p) {
@@ -47,7 +36,7 @@ void ParamTraits<media::AudioDecoderConfig>::Write(
   WriteParam(m, p.sample_format());
   WriteParam(m, p.channel_layout());
   WriteParam(m, p.samples_per_second());
-  WriteParam(m, p.encryption_scheme());
+  WriteParam(m, p.is_encrypted());
   WriteParam(m, p.extra_data());
 }
 
@@ -59,17 +48,15 @@ bool ParamTraits<media::AudioDecoderConfig>::Read(
   media::SampleFormat sample_format;
   media::ChannelLayout channel_layout;
   int samples_per_second;
-  media::EncryptionScheme encryption_scheme;
+  bool is_encrypted;
   std::vector<uint8_t> extra_data;
   if (!ReadParam(m, iter, &codec) || !ReadParam(m, iter, &sample_format) ||
       !ReadParam(m, iter, &channel_layout) ||
       !ReadParam(m, iter, &samples_per_second) ||
-      !ReadParam(m, iter, &encryption_scheme) ||
-      !ReadParam(m, iter, &extra_data))
+      !ReadParam(m, iter, &is_encrypted) || !ReadParam(m, iter, &extra_data))
     return false;
   *r = media::AudioDecoderConfig(codec, sample_format, channel_layout,
-                                 samples_per_second, extra_data,
-                                 encryption_scheme);
+                                 samples_per_second, extra_data, is_encrypted);
   return true;
 }
 
@@ -88,7 +75,7 @@ void ParamTraits<media::VideoDecoderConfig>::Write(
   WriteParam(m, p.coded_size());
   WriteParam(m, p.visible_rect());
   WriteParam(m, p.natural_size());
-  WriteParam(m, p.encryption_scheme());
+  WriteParam(m, p.is_encrypted());
   WriteParam(m, p.extra_data());
 }
 
@@ -103,65 +90,23 @@ bool ParamTraits<media::VideoDecoderConfig>::Read(
   gfx::Size coded_size;
   gfx::Rect visible_rect;
   gfx::Size natural_size;
-  media::EncryptionScheme encryption_scheme;
+  bool is_encrypted;
   std::vector<uint8_t> extra_data;
   if (!ReadParam(m, iter, &codec) || !ReadParam(m, iter, &profile) ||
       !ReadParam(m, iter, &format) || !ReadParam(m, iter, &color_space) ||
       !ReadParam(m, iter, &coded_size) || !ReadParam(m, iter, &visible_rect) ||
       !ReadParam(m, iter, &natural_size) ||
-      !ReadParam(m, iter, &encryption_scheme) ||
-      !ReadParam(m, iter, &extra_data))
+      !ReadParam(m, iter, &is_encrypted) || !ReadParam(m, iter, &extra_data))
     return false;
   *r = media::VideoDecoderConfig(codec, profile, format, color_space,
                                  coded_size, visible_rect, natural_size,
-                                 extra_data, encryption_scheme);
+                                 extra_data, is_encrypted);
   return true;
 }
 
 void ParamTraits<media::VideoDecoderConfig>::Log(
     const media::VideoDecoderConfig& p, std::string* l) {
   l->append(base::StringPrintf("<VideoDecoderConfig>"));
-}
-
-void ParamTraits<media::EncryptionScheme>::Write(
-    base::Pickle* m, const param_type& p) {
-  WriteParam(m, p.mode());
-  WriteParam(m, p.pattern());
-}
-
-bool ParamTraits<media::EncryptionScheme>::Read(
-    const base::Pickle* m, base::PickleIterator* iter, param_type* r) {
-  media::EncryptionScheme::CipherMode mode;
-  media::EncryptionScheme::Pattern pattern;
-  if (!ReadParam(m, iter, &mode) || !ReadParam(m, iter, &pattern))
-    return false;
-  *r = media::EncryptionScheme(mode, pattern);
-  return true;
-}
-
-void ParamTraits<media::EncryptionScheme>::Log(
-    const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("<EncryptionScheme>"));
-}
-
-void ParamTraits<media::EncryptionScheme::Pattern>::Write(
-    base::Pickle* m, const param_type& p) {
-  WriteParam(m, p.encrypt_blocks());
-  WriteParam(m, p.skip_blocks());
-}
-
-bool ParamTraits<media::EncryptionScheme::Pattern>::Read(
-    const base::Pickle* m, base::PickleIterator* iter, param_type* r) {
-  uint32_t encrypt_blocks, skip_blocks;
-  if (!ReadParam(m, iter, &encrypt_blocks) || !ReadParam(m, iter, &skip_blocks))
-    return false;
-  *r = media::EncryptionScheme::Pattern(encrypt_blocks, skip_blocks);
-  return true;
-}
-
-void ParamTraits<media::EncryptionScheme::Pattern>::Log(
-    const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("<Pattern>"));
 }
 
 }  // namespace IPC

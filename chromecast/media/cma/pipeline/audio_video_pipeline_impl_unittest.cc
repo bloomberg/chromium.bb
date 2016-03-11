@@ -66,7 +66,7 @@ class AudioVideoPipelineImplTest
       ::media::AudioDecoderConfig audio_config(
           ::media::kCodecMP3, ::media::kSampleFormatS16,
           ::media::CHANNEL_LAYOUT_STEREO, 44100, ::media::EmptyExtraData(),
-          ::media::Unencrypted());
+          false);
       AvPipelineClient client;
       client.eos_cb = base::Bind(&AudioVideoPipelineImplTest::OnEos,
                                  base::Unretained(this), STREAM_AUDIO);
@@ -80,7 +80,7 @@ class AudioVideoPipelineImplTest
           ::media::kCodecH264, ::media::H264PROFILE_MAIN,
           ::media::PIXEL_FORMAT_I420, ::media::COLOR_SPACE_UNSPECIFIED,
           gfx::Size(640, 480), gfx::Rect(0, 0, 640, 480), gfx::Size(640, 480),
-          ::media::EmptyExtraData(), ::media::Unencrypted()));
+          ::media::EmptyExtraData(), false));
       VideoPipelineClient client;
       client.av_pipeline_client.eos_cb =
           base::Bind(&AudioVideoPipelineImplTest::OnEos, base::Unretained(this),

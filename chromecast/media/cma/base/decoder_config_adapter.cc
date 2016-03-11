@@ -85,7 +85,7 @@ VideoCodec ToVideoCodec(const ::media::VideoCodec video_codec) {
 
 // Converts ::media::VideoCodecProfile to chromecast::media::VideoProfile.
 VideoProfile ToVideoProfile(const ::media::VideoCodecProfile codec_profile) {
-  switch (codec_profile) {
+  switch(codec_profile) {
     case ::media::H264PROFILE_BASELINE:
       return kH264Baseline;
     case ::media::H264PROFILE_MAIN:
@@ -183,62 +183,6 @@ VideoProfile ToVideoProfile(const ::media::VideoCodecProfile codec_profile) {
   }
 }
 
-::media::EncryptionScheme::CipherMode ToMediaCipherMode(
-    EncryptionScheme::CipherMode mode) {
-  switch (mode) {
-    case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
-      return ::media::EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-    case EncryptionScheme::CIPHER_MODE_AES_CTR:
-      return ::media::EncryptionScheme::CIPHER_MODE_AES_CTR;
-    case EncryptionScheme::CIPHER_MODE_AES_CBC:
-      return ::media::EncryptionScheme::CIPHER_MODE_AES_CBC;
-    default:
-      NOTREACHED();
-      return ::media::EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-  }
-}
-
-EncryptionScheme::CipherMode ToCipherMode(
-    ::media::EncryptionScheme::CipherMode mode) {
-  switch (mode) {
-    case ::media::EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
-      return EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-    case ::media::EncryptionScheme::CIPHER_MODE_AES_CTR:
-      return EncryptionScheme::CIPHER_MODE_AES_CTR;
-    case ::media::EncryptionScheme::CIPHER_MODE_AES_CBC:
-      return EncryptionScheme::CIPHER_MODE_AES_CBC;
-    default:
-      NOTREACHED();
-      return EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-  }
-}
-
-EncryptionScheme::Pattern ToPatternSpec(
-    const ::media::EncryptionScheme::Pattern& pattern) {
-  return EncryptionScheme::Pattern(
-      pattern.encrypt_blocks(), pattern.skip_blocks());
-}
-
-::media::EncryptionScheme::Pattern ToMediaPatternSpec(
-    const EncryptionScheme::Pattern& pattern) {
-  return ::media::EncryptionScheme::Pattern(
-      pattern.encrypt_blocks, pattern.skip_blocks);
-}
-
-EncryptionScheme ToEncryptionScheme(
-    const ::media::EncryptionScheme& scheme) {
-  return EncryptionScheme(
-    ToCipherMode(scheme.mode()),
-    ToPatternSpec(scheme.pattern()));
-}
-
-::media::EncryptionScheme ToMediaEncryptionScheme(
-    const EncryptionScheme& scheme) {
-  return ::media::EncryptionScheme(
-    ToMediaCipherMode(scheme.mode),
-    ToMediaPatternSpec(scheme.pattern));
-}
-
 }  // namespace
 
 // static
@@ -257,8 +201,7 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
       ::media::ChannelLayoutToChannelCount(config.channel_layout()),
   audio_config.samples_per_second = config.samples_per_second();
   audio_config.extra_data = config.extra_data();
-  audio_config.encryption_scheme = ToEncryptionScheme(
-      config.encryption_scheme());
+  audio_config.is_encrypted = config.is_encrypted();
   return audio_config;
 }
 
@@ -269,8 +212,7 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
       ToMediaAudioCodec(config.codec),
       ToMediaSampleFormat(config.sample_format),
       ToMediaChannelLayout(config.channel_number), config.samples_per_second,
-      config.extra_data,
-      ToMediaEncryptionScheme(config.encryption_scheme));
+      config.extra_data, config.is_encrypted);
 }
 
 // static
@@ -286,8 +228,7 @@ VideoConfig DecoderConfigAdapter::ToCastVideoConfig(
   video_config.codec = ToVideoCodec(config.codec());
   video_config.profile = ToVideoProfile(config.profile());
   video_config.extra_data = config.extra_data();
-  video_config.encryption_scheme = ToEncryptionScheme(
-      config.encryption_scheme());
+  video_config.is_encrypted = config.is_encrypted();
   return video_config;
 }
 

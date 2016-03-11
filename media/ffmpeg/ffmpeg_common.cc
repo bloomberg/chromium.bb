@@ -13,23 +13,11 @@
 #include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/encryption_scheme.h"
-#include "media/base/media_util.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_util.h"
 #include "media/media_features.h"
 
 namespace media {
-
-namespace {
-
-EncryptionScheme GetEncryptionScheme(const AVStream* stream) {
-  AVDictionaryEntry* key =
-      av_dict_get(stream->metadata, "enc_key_id", nullptr, 0);
-  return key ? AesCtrEncryptionScheme() : Unencrypted();
-}
-
-}  // namespace
 
 // Why FF_INPUT_BUFFER_PADDING_SIZE? FFmpeg assumes all input buffers are
 // padded. Check here to ensure FFmpeg only receives data padded to its
@@ -315,10 +303,9 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
   return AV_SAMPLE_FMT_NONE;
 }
 
-bool AVCodecContextToAudioDecoderConfig(
-    const AVCodecContext* codec_context,
-    const EncryptionScheme& encryption_scheme,
-    AudioDecoderConfig* config) {
+bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
+                                        bool is_encrypted,
+                                        AudioDecoderConfig* config) {
   DCHECK_EQ(codec_context->codec_type, AVMEDIA_TYPE_AUDIO);
 
   AudioCodec codec = CodecIDToAudioCodec(codec_context->codec_id);
@@ -384,9 +371,13 @@ bool AVCodecContextToAudioDecoderConfig(
     extra_data.assign(codec_context->extradata,
                       codec_context->extradata + codec_context->extradata_size);
   }
-
-  config->Initialize(codec, sample_format, channel_layout, sample_rate,
-                     extra_data, encryption_scheme, seek_preroll,
+  config->Initialize(codec,
+                     sample_format,
+                     channel_layout,
+                     sample_rate,
+                     extra_data,
+                     is_encrypted,
+                     seek_preroll,
                      codec_context->delay);
 
   // Verify that AudioConfig.bits_per_channel was calculated correctly for
@@ -409,8 +400,13 @@ bool AVCodecContextToAudioDecoderConfig(
 
 bool AVStreamToAudioDecoderConfig(const AVStream* stream,
                                   AudioDecoderConfig* config) {
-  return AVCodecContextToAudioDecoderConfig(
-      stream->codec, GetEncryptionScheme(stream), config);
+  bool is_encrypted = false;
+  AVDictionaryEntry* key =
+      av_dict_get(stream->metadata, "enc_key_id", nullptr, 0);
+  if (key)
+    is_encrypted = true;
+  return AVCodecContextToAudioDecoderConfig(stream->codec, is_encrypted,
+                                            config);
 }
 
 void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
@@ -501,6 +497,12 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
       coded_size.set_height((coded_size.height() + 1) / 2 * 2);
   }
 
+  bool is_encrypted = false;
+  AVDictionaryEntry* key =
+      av_dict_get(stream->metadata, "enc_key_id", nullptr, 0);
+  if (key)
+    is_encrypted = true;
+
   AVDictionaryEntry* webm_alpha =
       av_dict_get(stream->metadata, "alpha_mode", nullptr, 0);
   if (webm_alpha && !strcmp(webm_alpha->value, "1")) {
@@ -533,8 +535,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
                       stream->codec->extradata + stream->codec->extradata_size);
   }
   config->Initialize(codec, profile, format, color_space, coded_size,
-                     visible_rect, natural_size, extra_data,
-                     GetEncryptionScheme(stream));
+                     visible_rect, natural_size, extra_data, is_encrypted);
   return true;
 }
 

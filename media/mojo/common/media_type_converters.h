@@ -16,7 +16,6 @@ class AudioBuffer;
 class AudioDecoderConfig;
 class DecoderBuffer;
 class DecryptConfig;
-class EncryptionScheme;
 class VideoDecoderConfig;
 class VideoFrame;
 struct CdmConfig;
@@ -27,19 +26,6 @@ struct SubsampleEntry;
 // These are specializations of mojo::TypeConverter and have to be in the mojo
 // namespace.
 namespace mojo {
-
-template <>
-struct TypeConverter<media::interfaces::EncryptionSchemePtr,
-                     media::EncryptionScheme> {
-  static media::interfaces::EncryptionSchemePtr Convert(
-      const media::EncryptionScheme& input);
-};
-template <>
-struct TypeConverter<media::EncryptionScheme,
-                     media::interfaces::EncryptionSchemePtr> {
-  static media::EncryptionScheme Convert(
-      const media::interfaces::EncryptionSchemePtr& input);
-};
 
 template <>
 struct TypeConverter<media::interfaces::SubsampleEntryPtr,
