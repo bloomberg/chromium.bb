@@ -335,13 +335,19 @@ class SSLServerSocketTest : public PlatformTest {
       : socket_factory_(ClientSocketFactory::GetDefaultFactory()),
         cert_verifier_(new MockCertVerifier()),
         client_cert_verifier_(new MockClientCertVerifier()),
-        transport_security_state_(new TransportSecurityState) {
+        transport_security_state_(new TransportSecurityState) {}
+
+  void SetUp() override {
+    PlatformTest::SetUp();
+
     cert_verifier_->set_default_result(ERR_CERT_AUTHORITY_INVALID);
     client_cert_verifier_->set_default_result(ERR_CERT_AUTHORITY_INVALID);
 
     server_cert_ =
         ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
+    ASSERT_TRUE(server_cert_);
     server_private_key_ = ReadTestKey("unittest.key.bin");
+    ASSERT_TRUE(server_private_key_);
 
     client_ssl_config_.false_start_enabled = false;
     client_ssl_config_.channel_id_enabled = false;
@@ -350,8 +356,8 @@ class SSLServerSocketTest : public PlatformTest {
     SSLConfig::CertAndStatus cert_and_status;
     cert_and_status.cert_status = CERT_STATUS_AUTHORITY_INVALID;
     std::string server_cert_der;
-    CHECK(X509Certificate::GetDEREncoded(server_cert_->os_cert_handle(),
-                                         &server_cert_der));
+    ASSERT_TRUE(X509Certificate::GetDEREncoded(server_cert_->os_cert_handle(),
+                                               &server_cert_der));
     cert_and_status.der_cert = server_cert_der;
     client_ssl_config_.allowed_bad_certs.push_back(cert_and_status);
   }
@@ -382,12 +388,15 @@ class SSLServerSocketTest : public PlatformTest {
     SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
+
     client_socket_ = socket_factory_->CreateSSLClientSocket(
         std::move(client_connection), host_and_pair, client_ssl_config_,
         context);
+    ASSERT_TRUE(client_socket_);
 
     server_socket_ =
         server_context_->CreateSSLServerSocket(std::move(server_socket));
+    ASSERT_TRUE(server_socket_);
   }
 
 #if defined(USE_OPENSSL)
@@ -397,8 +406,10 @@ class SSLServerSocketTest : public PlatformTest {
     client_ssl_config_.client_cert =
         ImportCertFromFile(GetTestCertsDirectory(), cert_file_name);
     ASSERT_TRUE(client_ssl_config_.client_cert);
+
     scoped_ptr<crypto::RSAPrivateKey> key = ReadTestKey(private_key_file_name);
     ASSERT_TRUE(key);
+
     client_ssl_config_.client_private_key = WrapOpenSSLPrivateKey(
         crypto::ScopedEVP_PKEY(EVP_PKEY_up_ref(key->key())));
   }
@@ -413,9 +424,12 @@ class SSLServerSocketTest : public PlatformTest {
                                     .MaybeAsASCII()
                                     .c_str()));
     ASSERT_TRUE(cert_names);
+
     for (size_t i = 0; i < sk_X509_NAME_num(cert_names.get()); ++i) {
       uint8_t* str = nullptr;
       int length = i2d_X509_NAME(sk_X509_NAME_value(cert_names.get(), i), &str);
+      ASSERT_LT(0, length);
+
       server_ssl_config_.cert_authorities_.push_back(std::string(
           reinterpret_cast<const char*>(str), static_cast<size_t>(length)));
       OPENSSL_free(str);
@@ -423,6 +437,8 @@ class SSLServerSocketTest : public PlatformTest {
 
     scoped_refptr<X509Certificate> expected_client_cert(
         ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName));
+    ASSERT_TRUE(expected_client_cert);
+
     client_cert_verifier_->AddResultForCert(expected_client_cert.get(), OK);
 
     server_ssl_config_.client_cert_verifier = client_cert_verifier_.get();
@@ -463,16 +479,16 @@ class SSLServerSocketTest : public PlatformTest {
 // test that creation of sockets doesn't crash and have minimal code to run
 // under valgrind in order to help debugging memory problems.
 TEST_F(SSLServerSocketTest, Initialize) {
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 }
 
 // This test executes Connect() on SSLClientSocket and Handshake() on
 // SSLServerSocket to make sure handshaking between the two sockets is
 // completed successfully.
 TEST_F(SSLServerSocketTest, Handshake) {
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback handshake_callback;
   int server_ret = server_socket_->Handshake(handshake_callback.callback());
@@ -509,8 +525,8 @@ TEST_F(SSLServerSocketTest, Handshake) {
 
 // This test makes sure the session cache is working.
 TEST_F(SSLServerSocketTest, HandshakeCached) {
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback handshake_callback;
   int server_ret = server_socket_->Handshake(handshake_callback.callback());
@@ -533,7 +549,7 @@ TEST_F(SSLServerSocketTest, HandshakeCached) {
   EXPECT_EQ(ssl_server_info.handshake_type, SSLInfo::HANDSHAKE_FULL);
 
   // Make sure the second connection is cached.
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
   TestCompletionCallback handshake_callback2;
   int server_ret2 = server_socket_->Handshake(handshake_callback2.callback());
 
@@ -557,8 +573,8 @@ TEST_F(SSLServerSocketTest, HandshakeCached) {
 
 // This test makes sure the session cache separates out by server context.
 TEST_F(SSLServerSocketTest, HandshakeCachedContextSwitch) {
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback handshake_callback;
   int server_ret = server_socket_->Handshake(handshake_callback.callback());
@@ -581,8 +597,8 @@ TEST_F(SSLServerSocketTest, HandshakeCachedContextSwitch) {
   EXPECT_EQ(ssl_server_info.handshake_type, SSLInfo::HANDSHAKE_FULL);
 
   // Make sure the second connection is NOT cached when using a new context.
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback handshake_callback2;
   int server_ret2 = server_socket_->Handshake(handshake_callback2.callback());
@@ -611,10 +627,11 @@ TEST_F(SSLServerSocketTest, HandshakeCachedContextSwitch) {
 TEST_F(SSLServerSocketTest, HandshakeWithClientCert) {
   scoped_refptr<X509Certificate> client_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName);
-  ConfigureClientCertsForClient(kClientCertFileName, kClientPrivateKeyFileName);
-  ConfigureClientCertsForServer();
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForClient(
+      kClientCertFileName, kClientPrivateKeyFileName));
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForServer());
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback handshake_callback;
   int server_ret = server_socket_->Handshake(handshake_callback.callback());
@@ -633,7 +650,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCert) {
   client_socket_->GetSSLInfo(&ssl_info);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, ssl_info.cert_status);
   server_socket_->GetSSLInfo(&ssl_info);
-  EXPECT_TRUE(ssl_info.cert.get());
+  ASSERT_TRUE(ssl_info.cert.get());
   EXPECT_TRUE(client_cert->Equals(ssl_info.cert.get()));
 }
 
@@ -644,10 +661,11 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCert) {
 TEST_F(SSLServerSocketTest, HandshakeWithClientCertCached) {
   scoped_refptr<X509Certificate> client_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName);
-  ConfigureClientCertsForClient(kClientCertFileName, kClientPrivateKeyFileName);
-  ConfigureClientCertsForServer();
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForClient(
+      kClientCertFileName, kClientPrivateKeyFileName));
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForServer());
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback handshake_callback;
   int server_ret = server_socket_->Handshake(handshake_callback.callback());
@@ -674,7 +692,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertCached) {
   client_socket_->Disconnect();
 
   // Create the connection again.
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
   TestCompletionCallback handshake_callback2;
   int server_ret2 = server_socket_->Handshake(handshake_callback2.callback());
 
@@ -699,9 +717,9 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertCached) {
 }
 
 TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSupplied) {
-  ConfigureClientCertsForServer();
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForServer());
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
   // Use the default setting for the client socket, which is to not send
   // a client certificate. This will cause the client to receive an
   // ERR_SSL_CLIENT_AUTH_CERT_NEEDED error, and allow for inspecting the
@@ -723,6 +741,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSupplied) {
   // handshake message is as expected.
   scoped_refptr<X509Certificate> client_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName);
+  ASSERT_TRUE(client_cert);
   EXPECT_TRUE(client_cert->IsIssuedByEncoded(request_info->cert_authorities));
 
   client_socket_->Disconnect();
@@ -731,9 +750,9 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSupplied) {
 }
 
 TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
-  ConfigureClientCertsForServer();
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForServer());
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
   // Use the default setting for the client socket, which is to not send
   // a client certificate. This will cause the client to receive an
   // ERR_SSL_CLIENT_AUTH_CERT_NEEDED error, and allow for inspecting the
@@ -755,6 +774,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
   // handshake message is as expected.
   scoped_refptr<X509Certificate> client_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName);
+  ASSERT_TRUE(client_cert);
   EXPECT_TRUE(client_cert->IsIssuedByEncoded(request_info->cert_authorities));
 
   client_socket_->Disconnect();
@@ -763,7 +783,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
   server_socket_->Disconnect();
 
   // Below, check that the cache didn't store the result of a failed handshake.
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
   TestCompletionCallback handshake_callback2;
   int server_ret2 = server_socket_->Handshake(handshake_callback2.callback());
 
@@ -787,11 +807,13 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
 TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSupplied) {
   scoped_refptr<X509Certificate> client_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName);
-  ConfigureClientCertsForClient(kWrongClientCertFileName,
-                                kWrongClientPrivateKeyFileName);
-  ConfigureClientCertsForServer();
-  CreateContext();
-  CreateSockets();
+  ASSERT_TRUE(client_cert);
+
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForClient(
+      kWrongClientCertFileName, kWrongClientPrivateKeyFileName));
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForServer());
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback handshake_callback;
   int server_ret = server_socket_->Handshake(handshake_callback.callback());
@@ -808,11 +830,13 @@ TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSupplied) {
 TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSuppliedCached) {
   scoped_refptr<X509Certificate> client_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName);
-  ConfigureClientCertsForClient(kWrongClientCertFileName,
-                                kWrongClientPrivateKeyFileName);
-  ConfigureClientCertsForServer();
-  CreateContext();
-  CreateSockets();
+  ASSERT_TRUE(client_cert);
+
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForClient(
+      kWrongClientCertFileName, kWrongClientPrivateKeyFileName));
+  ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForServer());
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback handshake_callback;
   int server_ret = server_socket_->Handshake(handshake_callback.callback());
@@ -829,7 +853,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSuppliedCached) {
   server_socket_->Disconnect();
 
   // Below, check that the cache didn't store the result of a failed handshake.
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
   TestCompletionCallback handshake_callback2;
   int server_ret2 = server_socket_->Handshake(handshake_callback2.callback());
 
@@ -844,8 +868,8 @@ TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSuppliedCached) {
 #endif  // defined(USE_OPENSSL)
 
 TEST_F(SSLServerSocketTest, DataTransfer) {
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   // Establish connection.
   TestCompletionCallback connect_callback;
@@ -928,8 +952,8 @@ TEST_F(SSLServerSocketTest, DataTransfer) {
 // the client's Write() call should not cause an infinite loop.
 // NOTE: this is a test for SSLClientSocket rather than SSLServerSocket.
 TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   // Establish connection.
   TestCompletionCallback connect_callback;
@@ -979,8 +1003,8 @@ TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
 // after connecting them, and verifies that the results match.
 // This test will fail if False Start is enabled (see crbug.com/90208).
 TEST_F(SSLServerSocketTest, ExportKeyingMaterial) {
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback connect_callback;
   int client_ret = client_socket_->Connect(connect_callback.callback());
@@ -1040,8 +1064,8 @@ TEST_F(SSLServerSocketTest, RequireEcdheFlag) {
   // Require ECDHE on the server.
   server_ssl_config_.require_ecdhe = true;
 
-  CreateContext();
-  CreateSockets();
+  ASSERT_NO_FATAL_FAILURE(CreateContext());
+  ASSERT_NO_FATAL_FAILURE(CreateSockets());
 
   TestCompletionCallback connect_callback;
   int client_ret = client_socket_->Connect(connect_callback.callback());
