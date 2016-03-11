@@ -35,9 +35,9 @@ public interface ReaderModeManagerDelegate {
     void createNewTab(String url);
 
     /**
-     * Notify the manager that the panel was closed using the "x" icon.
+     * Notify the manager that the panel has completely closed.
      */
-    void onCloseButtonPressed();
+    void onClosed(StateChangeReason reason);
 
     /**
      * Get the WebContents of the page that is being distilled.

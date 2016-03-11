@@ -172,7 +172,6 @@ public class ReaderModePanel extends OverlayPanel {
         super.handleBarClick(time, x, y);
         if (isCoordinateInsideCloseButton(x)) {
             closePanel(StateChangeReason.CLOSE_BUTTON, true);
-            mManagerDelegate.onCloseButtonPressed();
         } else {
             maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
         }
@@ -262,6 +261,13 @@ public class ReaderModePanel extends OverlayPanel {
         if (mTimerRunning) {
             onTimerEnded();
         }
+    }
+
+    @Override
+    protected void onClosed(StateChangeReason reason) {
+        super.onClosed(reason);
+        if (mManagerDelegate == null) return;
+        mManagerDelegate.onClosed(reason);
     }
 
     /**

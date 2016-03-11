@@ -314,11 +314,21 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     }
 
     @Override
-    public void onCloseButtonPressed() {
+    public void onClosed(StateChangeReason reason) {
         if (mReaderModePanel == null) return;
-        RecordHistogram.recordBooleanHistogram("DomDistiller.BarCloseButtonUsage",
-                mReaderModePanel.getPanelState() == PanelState.EXPANDED
-                || mReaderModePanel.getPanelState() == PanelState.MAXIMIZED);
+
+        // Only dismiss the panel if the close was a result of user interaction.
+        if (reason != StateChangeReason.FLING && reason != StateChangeReason.SWIPE
+                && reason != StateChangeReason.CLOSE_BUTTON) {
+            return;
+        }
+
+        // Record close button usage.
+        if (reason == StateChangeReason.CLOSE_BUTTON) {
+            RecordHistogram.recordBooleanHistogram("DomDistiller.BarCloseButtonUsage",
+                    mReaderModePanel.getPanelState() == PanelState.EXPANDED
+                    || mReaderModePanel.getPanelState() == PanelState.MAXIMIZED);
+        }
 
         int currentTabId = mTabModelSelector.getCurrentTabId();
         if (!mTabStatusMap.containsKey(currentTabId)) return;
