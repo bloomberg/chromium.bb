@@ -24,7 +24,7 @@ Polymer({
      * null corresponds to an empty string when the arrays are being combined.
      * So both examples reproduce the text 'living room', but with different
      * words highlighted.
-     * @type {{highlightedText: Array<string>, plainText: Array<string>}}
+     * @type {{highlightedText: !Array<?string>, plainText: !Array<?string>}}
      */
     data: {
       type: Object,
@@ -36,7 +36,7 @@ Polymer({
      * The text that this element is displaying as a plain string. The primary
      * purpose for this property is to make getting this element's textContent
      * easy for testing.
-     * @type {string}
+     * @type {?string}
      */
     text: {
       type: String,
@@ -52,7 +52,8 @@ Polymer({
    * The order the strings are combined is plainText[0] highlightedText[0]
    * plainText[1] highlightedText[1] etc.
    *
-   * @param {{highlightedText: Array<string>, plainText: Array<string>}} data
+   * @param {{highlightedText: !Array<?string>, plainText: !Array<?string>}}
+   *    data
    * Parameters in |data|:
    *   highlightedText - Array of strings that should be displayed highlighted.
    *   plainText - Array of strings that should be displayed normally.
@@ -65,11 +66,13 @@ Polymer({
     var text = '';
     for (var i = 0; i < data.highlightedText.length; ++i) {
       if (data.plainText[i]) {
-        text += HTMLEscape(data.plainText[i]);
+        text +=
+            HTMLEscape(/** @type {!string} */ (data.plainText[i]));
       }
       if (data.highlightedText[i]) {
         text += '<span class="highlight">' +
-            HTMLEscape(data.highlightedText[i]) + '</span>';
+            HTMLEscape(/** @type {!string} */ (data.highlightedText[i])) +
+                '</span>';
       }
     }
     this.$.text.innerHTML = text;

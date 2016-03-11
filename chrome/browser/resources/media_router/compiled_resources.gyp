@@ -43,6 +43,7 @@
           'elements/route_details/route_details.js',
           'elements/media_router_header/media_router_header.js',
           'elements/media_router_container/media_router_container.js',
+          'elements/media_router_search_highlighter/media_router_search_highlighter.js',
         ],
         'externs': [
           '<(EXTERNS_DIR)/chrome_send.js',
