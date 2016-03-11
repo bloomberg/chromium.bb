@@ -100,10 +100,7 @@ class CC_EXPORT InputHandler {
   };
 
   enum ScrollInputType {
-    // TODO(dtapuska): crbug.com/593017; Remove GESTURE and just use
-    // TOUCHSCREEN.
-    GESTURE,
-    TOUCHSCREEN = GESTURE,
+    TOUCHSCREEN,
     WHEEL,
     ANIMATED_WHEEL,
     NON_BUBBLING_GESTURE

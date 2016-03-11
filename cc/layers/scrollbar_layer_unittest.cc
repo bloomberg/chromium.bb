@@ -168,7 +168,7 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   // responded to on the main thread as the compositor does not yet implement
   // scrollbar scrolling.
   InputHandler::ScrollStatus status = layer_tree_host_->host_impl()->TryScroll(
-      gfx::PointF(), InputHandler::GESTURE, scroll_tree, scroll_node);
+      gfx::PointF(), InputHandler::TOUCHSCREEN, scroll_tree, scroll_node);
   EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kScrollbarScrolling,
             status.main_thread_scrolling_reasons);
@@ -189,7 +189,7 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   // The user shouldn't be able to drag an overlay scrollbar and the scroll
   // may be handled in the compositor.
   status = layer_tree_host_->host_impl()->TryScroll(
-      gfx::PointF(), InputHandler::GESTURE, scroll_tree, scroll_node);
+      gfx::PointF(), InputHandler::TOUCHSCREEN, scroll_tree, scroll_node);
   EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
             status.main_thread_scrolling_reasons);

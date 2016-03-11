@@ -3199,7 +3199,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   bool scroll_on_main_thread = false;
   uint32_t main_thread_scrolling_reasons;
   LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
-      device_viewport_point, InputHandler::GESTURE, layer_impl,
+      device_viewport_point, InputHandler::TOUCHSCREEN, layer_impl,
       &scroll_on_main_thread, &main_thread_scrolling_reasons);
   if (scroll_layer_impl == InnerViewportScrollLayer())
     scroll_layer_impl = OuterViewportScrollLayer();
