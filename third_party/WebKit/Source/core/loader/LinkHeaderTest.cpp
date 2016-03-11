@@ -93,6 +93,10 @@ struct SingleTestCase {
     {"<simple.css>; rel='prefetch", "simple.css", "", "", false},
     {"<simple.css>; rel=\"prefetch", "simple.css", "", "", false},
     {"<simple.css>; rel=\"", "simple.css", "", "", false},
+    {"<http://whatever.com>; rel=preconnect; valid!", "http://whatever.com", "preconnect", "", true},
+    {"<http://whatever.com>; rel=preconnect; valid$", "http://whatever.com", "preconnect", "", true},
+    {"<http://whatever.com>; rel=preconnect; invalid@", "http://whatever.com", "preconnect", "", false},
+    {"<http://whatever.com>; rel=preconnect; invalid*", "http://whatever.com", "preconnect", "", false},
 };
 
 void PrintTo(const SingleTestCase& test, std::ostream* os)
@@ -107,10 +111,11 @@ TEST_P(SingleLinkHeaderTest, Single)
 {
     const SingleTestCase testCase = GetParam();
     LinkHeaderSet headerSet(testCase.headerValue);
+    ASSERT_EQ(1u, headerSet.size());
     LinkHeader& header = headerSet[0];
-    ASSERT_STREQ(testCase.url, header.url().ascii().data());
-    ASSERT_STREQ(testCase.rel, header.rel().ascii().data());
-    ASSERT_EQ(testCase.valid, header.valid());
+    EXPECT_STREQ(testCase.url, header.url().ascii().data());
+    EXPECT_STREQ(testCase.rel, header.rel().ascii().data());
+    EXPECT_EQ(testCase.valid, header.valid());
 }
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest, SingleLinkHeaderTest, testing::ValuesIn(singleTestCases));
@@ -140,14 +145,15 @@ TEST_P(DoubleLinkHeaderTest, Double)
 {
     const DoubleTestCase testCase = GetParam();
     LinkHeaderSet headerSet(testCase.headerValue);
+    ASSERT_EQ(2u, headerSet.size());
     LinkHeader& header1 = headerSet[0];
     LinkHeader& header2 = headerSet[1];
-    ASSERT_STREQ(testCase.url, header1.url().ascii().data());
-    ASSERT_STREQ(testCase.rel, header1.rel().ascii().data());
-    ASSERT_EQ(testCase.valid, header1.valid());
-    ASSERT_STREQ(testCase.url2, header2.url().ascii().data());
-    ASSERT_STREQ(testCase.rel2, header2.rel().ascii().data());
-    ASSERT_EQ(testCase.valid2, header2.valid());
+    EXPECT_STREQ(testCase.url, header1.url().ascii().data());
+    EXPECT_STREQ(testCase.rel, header1.rel().ascii().data());
+    EXPECT_EQ(testCase.valid, header1.valid());
+    EXPECT_STREQ(testCase.url2, header2.url().ascii().data());
+    EXPECT_STREQ(testCase.rel2, header2.rel().ascii().data());
+    EXPECT_EQ(testCase.valid2, header2.valid());
 }
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest, DoubleLinkHeaderTest, testing::ValuesIn(doubleTestCases));
@@ -169,13 +175,9 @@ struct CrossOriginTestCase {
     {"<http://whatever.com>; rel=preconnect; crossorigin,<http://whatever2.com>; rel=preconnect", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
     {"<http://whatever.com>; rel=preconnect; crossorigin=anonymous", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
     {"<http://whatever.com>; rel=preconnect; crossorigin=use-credentials", "http://whatever.com", "preconnect", CrossOriginAttributeUseCredentials, true},
-    {"<http://whatever.com>; rel=preconnect; crossorigin=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous,  true},
-    {"<http://whatever.com>; rel=preconnect; crossorig|in=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  true},
-    {"<http://whatever.com>; rel=preconnect; crossorigin|=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  true},
-    {"<http://whatever.com>; rel=preconnect; valid!", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  true},
-    {"<http://whatever.com>; rel=preconnect; valid$", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  true},
-    {"<http://whatever.com>; rel=preconnect; invalid@", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  false},
-    {"<http://whatever.com>; rel=preconnect; invalid*", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet,  false},
+    {"<http://whatever.com>; rel=preconnect; crossorigin=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeAnonymous, true},
+    {"<http://whatever.com>; rel=preconnect; crossorig|in=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet, true},
+    {"<http://whatever.com>; rel=preconnect; crossorigin|=whatever", "http://whatever.com", "preconnect", CrossOriginAttributeNotSet, true},
 };
 
 void PrintTo(const CrossOriginTestCase& test, std::ostream* os)
@@ -189,11 +191,12 @@ TEST_P(CrossOriginLinkHeaderTest, CrossOrigin)
 {
     const CrossOriginTestCase testCase = GetParam();
     LinkHeaderSet headerSet(testCase.headerValue);
+    ASSERT_GE(headerSet.size(), 1u);
     LinkHeader& header = headerSet[0];
-    ASSERT_STREQ(testCase.url, header.url().ascii().data());
-    ASSERT_STREQ(testCase.rel, header.rel().ascii().data());
-    ASSERT_EQ(testCase.crossorigin, header.crossOrigin());
-    ASSERT_EQ(testCase.valid, header.valid());
+    EXPECT_STREQ(testCase.url, header.url().ascii().data());
+    EXPECT_STREQ(testCase.rel, header.rel().ascii().data());
+    EXPECT_EQ(testCase.crossorigin, header.crossOrigin());
+    EXPECT_EQ(testCase.valid, header.valid());
 }
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest, CrossOriginLinkHeaderTest, testing::ValuesIn(crossOriginTestCases));

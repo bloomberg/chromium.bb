@@ -300,6 +300,7 @@ LinkHeader::LinkHeader(CharType*& position, CharType* end)
 
         setValue(parameterName, parameterValue);
     }
+    findNextHeader(position, end);
 }
 
 LinkHeaderSet::LinkHeaderSet(const String& header)
