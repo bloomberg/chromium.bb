@@ -18,14 +18,27 @@
 // an error. The |completion_handler| can be nil.
 namespace web {
 
+// The domain for JS evaluation NSErrors in web.
+extern NSString* const kJSEvaluationErrorDomain;
+
+// The type of errors that can occur while evaluating JS.
+enum JSEvaluationErrorCode {
+  // No web view present to evaluate JS.
+  JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW = 1,
+};
+
+// The error code for JS evaluation NSErrors.
+extern const NSInteger kJSEvaluationErrorCode;
+
 // Asynchronous adaptor to evaluate JavaScript on UIWebView. Provides evaluation
 // result as it is, without modifications.
 void EvaluateJavaScript(UIWebView* web_view,
                         NSString* script,
                         JavaScriptCompletion completion_handler);
 
-// Evaluates JavaScript on WKWebView. Provides evaluation result is the same
-// format as UIWebView.
+// Evaluates JavaScript on WKWebView. Provides evaluation result in the same
+// format as UIWebView. If the web view cannot evaluate JS at the moment,
+// |completion_handler| is called with an NSError.
 void EvaluateJavaScript(WKWebView* web_view,
                         NSString* script,
                         JavaScriptCompletion completion_handler);

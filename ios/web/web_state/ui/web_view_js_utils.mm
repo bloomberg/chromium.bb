@@ -40,6 +40,8 @@ NSString* UIResultFromWKResult(id result) {
 
 namespace web {
 
+NSString* const kJSEvaluationErrorDomain = @"JSEvaluationError";
+
 void EvaluateJavaScript(UIWebView* web_view,
                         NSString* script,
                         JavaScriptCompletion completion_handler) {
@@ -56,6 +58,19 @@ void EvaluateJavaScript(WKWebView* web_view,
                         NSString* script,
                         JavaScriptCompletion completion_handler) {
   DCHECK([script length]);
+  if (!web_view && completion_handler) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      NSString* error_message =
+          @"JS evaluation failed because there is no web view.";
+      base::scoped_nsobject<NSError> error([[NSError alloc]
+          initWithDomain:kJSEvaluationErrorDomain
+                    code:JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW
+                userInfo:@{NSLocalizedDescriptionKey : error_message}]);
+      completion_handler(nil, error);
+    });
+    return;
+  }
+
   void (^web_view_completion_handler)(id, NSError*) = nil;
   // Do not create a web_view_completion_handler if no |completion_handler| is
   // passed to this function. WKWebView guarantees to call all completion
