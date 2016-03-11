@@ -287,6 +287,8 @@ TEST_F(ConnectTest, CapabilityClasses) {
 }
 
 // Tests that we can expose an interface to targets on outbound connections.
+// TODO(beng): Currently all interfaces on outbound connections are exposed.
+//             See ConnectorImpl::Connect().
 TEST_F(ConnectTest, LocalInterface) {
   // Connect to a standalone application.
   {

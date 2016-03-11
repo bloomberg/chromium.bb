@@ -32,6 +32,7 @@ base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path);
 // should be called on the same thread as |LoadNativeApplication()|. Returns
 // true if |MojoMain()| was called (even if it returns an error), and false
 // otherwise.
+// TODO(vtl): Maybe this should also have a |MojoResult| as an out parameter?
 bool RunNativeApplication(base::NativeLibrary app_library,
                           InterfaceRequest<mojom::ShellClient> request);
 

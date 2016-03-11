@@ -21,9 +21,9 @@
 #include "mojo/common/url_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/services/catalog/catalog.h"
+#include "mojo/services/catalog/loader.h"
 #include "mojo/shell/connect_util.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/public/cpp/names.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
@@ -35,7 +35,6 @@ namespace mojo {
 namespace shell {
 namespace {
 const char kCatalogName[] = "mojo:catalog";
-const char kShellName[] = "mojo:shell";
 
 void EmptyResolverCallback(const String& resolved_name,
                            const String& resolved_instance,
@@ -45,7 +44,7 @@ void EmptyResolverCallback(const String& resolved_name,
 }
 
 Identity CreateShellIdentity() {
-  return Identity(kShellName, mojom::kRootUserID);
+  return Identity("mojo:shell", mojom::kRootUserID);
 }
 
 CapabilitySpec GetPermissiveCapabilities() {
@@ -110,7 +109,7 @@ class Shell::Instance : public mojom::Connector,
       shell_client_(std::move(shell_client)),
       pid_receiver_binding_(this),
       weak_factory_(this) {
-    if (identity_.name() == kShellName ||
+    if (identity_.name() == "mojo:shell" ||
         shell_->GetLoaderForName(identity_.name())) {
       pid_ = base::Process::Current().Pid();
     }
@@ -207,9 +206,6 @@ class Shell::Instance : public mojom::Connector,
     // - a non-null client_process_connection.
     if (!ValidateCapabilities(target, callback))
       return;
-
-    if (target.user_id() == mojom::kInheritUserID)
-      target.set_user_id(identity_.user_id());
 
     scoped_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
@@ -356,7 +352,6 @@ Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
   mojom::ShellClientRequest request;
   CreateInstance(CreateShellIdentity(), GetPermissiveCapabilities(), &request);
   shell_connection_.reset(new ShellConnection(this, std::move(request)));
-  shell_connection_->WaitForInitialize();
 
   InitCatalog(std::move(catalog_store));
 }
@@ -378,8 +373,17 @@ void Shell::Connect(scoped_ptr<ConnectParams> params) {
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        params->target().name());
   DCHECK(IsValidName(params->target().name()));
-  DCHECK(base::IsValidGUID(params->target().user_id()));
-  DCHECK_NE(mojom::kInheritUserID, params->target().user_id());
+
+  if (params->target().user_id() == mojom::kInheritUserID) {
+    Instance* source = GetExistingInstance(params->source());
+    Identity target = params->target();
+    // TODO(beng): we should CHECK source.
+    target.set_user_id(source ? source->identity().user_id()
+                              : mojom::kRootUserID);
+    params->set_target(target);
+  }
+
+  CHECK(params->target().user_id() != mojom::kInheritUserID);
 
   // Connect to an existing matching instance, if possible.
   if (ConnectToExistingInstance(&params))
@@ -438,23 +442,26 @@ bool Shell::AcceptConnection(Connection* connection) {
 // Shell, private:
 
 void Shell::InitCatalog(scoped_ptr<catalog::Store> store) {
-  mojom::ShellClientRequest request;
-  Identity identity(kCatalogName, mojom::kRootUserID);
-  CreateInstance(identity, CapabilitySpec(), &request);
+  scoped_ptr<Loader> loader(
+      new catalog::Loader(file_task_runner_, std::move(store)));
+  Loader* loader_raw = loader.get();
+  std::string name = kCatalogName;
+  SetLoaderForName(std::move(loader), name);
 
-  catalog_shell_client_.reset(
-      new catalog::Catalog(file_task_runner_, std::move(store)));
-  catalog_connection_.reset(
-      new ShellConnection(catalog_shell_client_.get(), std::move(request)));
-  shell_connection_->connector()->ConnectToInterface(
-      kCatalogName, &shell_resolver_);
+  mojom::ShellClientRequest request;
+  // TODO(beng): Does the catalog actually have to be run with a permissive
+  //             filter?
+  Identity identity(name, mojom::kRootUserID);
+  CreateInstance(identity, GetPermissiveCapabilities(), &request);
+  loader_raw->Load(name, std::move(request));
+
+  ConnectToInterface(this, CreateShellIdentity(), name, &shell_resolver_);
 
   // Seed the catalog with manifest info for the shell & catalog.
   if (file_task_runner_) {
-    shell_resolver_->ResolveMojoName(
-        kCatalogName, base::Bind(&EmptyResolverCallback));
-    shell_resolver_->ResolveMojoName(
-        kShellName, base::Bind(&EmptyResolverCallback));
+    shell_resolver_->ResolveMojoName(name, base::Bind(&EmptyResolverCallback));
+    shell_resolver_->ResolveMojoName("mojo:shell",
+                                     base::Bind(&EmptyResolverCallback));
   }
 }
 
@@ -553,6 +560,7 @@ mojom::ShellClientFactory* Shell::GetShellClientFactory(
     return it->second.get();
 
   mojom::ShellClientFactoryPtr factory;
+  // TODO(beng): we should forward the original source identity!
   ConnectToInterface(this, source_identity, shell_client_factory_identity,
                      &factory);
   mojom::ShellClientFactory* factory_interface = factory.get();

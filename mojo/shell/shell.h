@@ -34,7 +34,6 @@ class SequencedWorkerPool;
 }
 
 namespace mojo {
-class ShellClient;
 class ShellConnection;
 namespace shell {
 
@@ -192,8 +191,6 @@ class Shell : public ShellClient {
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;
   scoped_ptr<ShellConnection> shell_connection_;
-  scoped_ptr<ShellConnection> catalog_connection_;
-  scoped_ptr<ShellClient> catalog_shell_client_;
   base::WeakPtrFactory<Shell> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);

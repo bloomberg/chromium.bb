@@ -106,6 +106,7 @@ class AppContext : public edk::ProcessDelegate {
     io_runner_ = io_thread_.task_runner().get();
     CHECK(io_runner_.get());
 
+    // TODO(vtl): This should be SLAVE, not NONE.
     // This must be created before controller_thread_ since MessagePumpMojo will
     // create a message pipe which requires this code to be run first.
     edk::InitIPCSupport(this, io_runner_);

@@ -21,6 +21,8 @@ source_set("lib") {
     "catalog.h",
     "entry.cc",
     "entry.h",
+    "loader.cc",
+    "loader.h",
     "store.cc",
     "store.h",
   ]

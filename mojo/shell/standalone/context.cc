@@ -134,6 +134,7 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
   blocking_pool_ =
       new base::SequencedWorkerPool(kMaxBlockingPoolThreads, "blocking_pool");
 
+  // TODO(vtl): This should be MASTER, not NONE.
   edk::InitIPCSupport(this, io_thread_->task_runner().get());
 
   scoped_ptr<NativeRunnerFactory> runner_factory;
@@ -163,7 +164,7 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
 
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
-  params->set_target(Identity("mojo:tracing", mojom::kRootUserID));
+  params->set_target(Identity("mojo:tracing", mojom::kInheritUserID));
   params->set_remote_interfaces(GetProxy(&tracing_remote_interfaces));
   params->set_local_interfaces(std::move(tracing_local_interfaces));
   shell_->Connect(std::move(params));
