@@ -33,6 +33,11 @@ using blink::WebInputEvent;
 
 namespace {
 
+// This value has to be larger than the height of the device this test is
+// executed on, otherwise the device will be unable to scroll thus failing
+// tests.
+const int kWebsiteHeight = 10000;
+
 const char kNonBlockingEventDataURL[] =
     "data:text/html;charset=utf-8,"
     "<!DOCTYPE html>"
@@ -41,7 +46,7 @@ const char kNonBlockingEventDataURL[] =
     "html, body {"
     "  margin: 0;"
     "}"
-    ".spacer { height: 1000px; }"
+    ".spacer { height: 10000px; }"
     "</style>"
     "<div class=spacer></div>"
     "<script>"
@@ -110,7 +115,7 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
 
     int scrollHeight =
         ExecuteScriptAndExtractInt("document.documentElement.scrollHeight");
-    EXPECT_EQ(1000, scrollHeight);
+    EXPECT_EQ(kWebsiteHeight, scrollHeight);
 
     scoped_refptr<FrameWatcher> frame_watcher(new FrameWatcher());
     frame_watcher->AttachTo(shell()->web_contents());
@@ -135,7 +140,7 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
 
     int scrollHeight =
         ExecuteScriptAndExtractInt("document.documentElement.scrollHeight");
-    EXPECT_EQ(1000, scrollHeight);
+    EXPECT_EQ(kWebsiteHeight, scrollHeight);
 
     scoped_refptr<FrameWatcher> frame_watcher(new FrameWatcher());
     frame_watcher->AttachTo(shell()->web_contents());
