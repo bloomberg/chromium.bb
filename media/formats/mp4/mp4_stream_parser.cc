@@ -11,6 +11,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
@@ -187,6 +188,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   has_audio_ = false;
   has_video_ = false;
 
+  scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
   AudioDecoderConfig audio_config;
   VideoDecoderConfig video_config;
 
@@ -307,6 +309,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                               is_audio_track_encrypted_, base::TimeDelta(), 0);
       has_audio_ = true;
       audio_track_id_ = track->header.track_id;
+      media_tracks->AddAudioTrack(
+          audio_config, base::UintToString(audio_track_id_), "main",
+          track->media.handler.name, track->media.header.language());
     }
     if (track->media.handler.type == kVideo && !video_config.IsValidConfig()) {
       RCHECK(!samp_descr.video_entries.empty());
@@ -348,21 +353,15 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           std::vector<uint8_t>(), is_video_track_encrypted_);
       has_video_ = true;
       video_track_id_ = track->header.track_id;
+      media_tracks->AddVideoTrack(
+          video_config, base::UintToString(video_track_id_), "main",
+          track->media.handler.name, track->media.header.language());
     }
   }
 
   if (!moov_->pssh.empty())
     OnEncryptedMediaInitData(moov_->pssh);
 
-  scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
-  // TODO(servolk): Implement proper sourcing of media track info as described
-  // in crbug.com/590085
-  if (audio_config.IsValidConfig()) {
-    media_tracks->AddAudioTrack(audio_config, "audio", "", "", "");
-  }
-  if (video_config.IsValidConfig()) {
-    media_tracks->AddVideoTrack(video_config, "video", "", "", "");
-  }
   RCHECK(config_cb_.Run(std::move(media_tracks), TextTrackConfigMap()));
 
   StreamParser::InitParameters params(kInfiniteDuration());

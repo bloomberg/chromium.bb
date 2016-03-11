@@ -27,6 +27,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
+#include "media/base/media_tracks.h"
 #include "media/base/timestamp_constants.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_aac_bitstream_converter.h"
@@ -1089,6 +1090,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     }
   }
 
+  scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
   AVStream* audio_stream = NULL;
   AudioDecoderConfig audio_config;
   AVStream* video_stream = NULL;
@@ -1158,6 +1160,19 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       continue;
     }
 
+    std::string track_id = base::IntToString(stream->id);
+    std::string track_label = streams_[i]->GetMetadata("handler_name");
+    std::string track_language = streams_[i]->GetMetadata("language");
+
+    // Some metadata is named differently in FFmpeg for webm files.
+    if (strstr(format_context->iformat->name, "webm") ||
+        strstr(format_context->iformat->name, "matroska")) {
+      // TODO(servolk): FFmpeg doesn't set stream->id correctly for webm files.
+      // Need to fix that and use it as track id. crbug.com/323183
+      track_id = base::UintToString(media_tracks->tracks().size() + 1);
+      track_label = streams_[i]->GetMetadata("title");
+    }
+
     // Note when we find our audio/video stream (we only want one of each) and
     // record src= playback UMA stats for the stream's decoder config.
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
@@ -1165,11 +1180,17 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       audio_stream = stream;
       audio_config = streams_[i]->audio_decoder_config();
       RecordAudioCodecStats(audio_config);
+
+      media_tracks->AddAudioTrack(audio_config, track_id, "main", track_label,
+                                  track_language);
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       CHECK(!video_stream);
       video_stream = stream;
       video_config = streams_[i]->video_decoder_config();
       RecordVideoCodecStats(video_config, stream->codec->color_range);
+
+      media_tracks->AddVideoTrack(video_config, track_id, "main", track_label,
+                                  track_language);
     }
 
     max_duration = std::max(max_duration, streams_[i]->duration());
@@ -1339,6 +1360,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   media_log_->SetTimeProperty("max_duration", max_duration);
   media_log_->SetTimeProperty("start_time", start_time_);
   media_log_->SetIntegerProperty("bitrate", bitrate_);
+
+  media_tracks_updated_cb_.Run(std::move(media_tracks));
 
   status_cb.Run(PIPELINE_OK);
 }

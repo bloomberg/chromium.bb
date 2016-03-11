@@ -69,6 +69,7 @@ class MP4StreamParserTest : public testing::Test {
   scoped_refptr<StrictMock<MockMediaLog>> media_log_;
   scoped_ptr<MP4StreamParser> parser_;
   bool configs_received_;
+  scoped_ptr<MediaTracks> media_tracks_;
   AudioDecoderConfig audio_decoder_config_;
   VideoDecoderConfig video_decoder_config_;
   DecodeTimestamp lower_bound_;
@@ -102,9 +103,11 @@ class MP4StreamParserTest : public testing::Test {
   bool NewConfigF(scoped_ptr<MediaTracks> tracks,
                   const StreamParser::TextTrackConfigMap& tc) {
     configs_received_ = true;
-    audio_decoder_config_ = tracks->getFirstAudioConfig();
-    video_decoder_config_ = tracks->getFirstVideoConfig();
-    DVLOG(1) << "NewConfigF: track count=" << tracks->tracks().size()
+    CHECK(tracks.get());
+    media_tracks_ = std::move(tracks);
+    audio_decoder_config_ = media_tracks_->getFirstAudioConfig();
+    video_decoder_config_ = media_tracks_->getFirstVideoConfig();
+    DVLOG(1) << "NewConfigF: track count=" << media_tracks_->tracks().size()
              << " audio=" << audio_decoder_config_.IsValidConfig()
              << " video=" << video_decoder_config_.IsValidConfig();
     return true;
@@ -415,6 +418,27 @@ TEST_F(MP4StreamParserTest, FourCCToString) {
 
   // Invalid FORCC with non-printable values should not give error message.
   EXPECT_EQ("0x66616b00", FourCCToString(static_cast<FourCC>(0x66616b00)));
+}
+
+TEST_F(MP4StreamParserTest, MediaTrackInfoSourcing) {
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
+  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
+  ParseMP4File("bear-1280x720-av_frag.mp4", 4096);
+
+  EXPECT_EQ(media_tracks_->tracks().size(), 2u);
+  const MediaTrack& video_track = *(media_tracks_->tracks()[0]);
+  EXPECT_EQ(video_track.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track.id(), "1");
+  EXPECT_EQ(video_track.kind(), "main");
+  EXPECT_EQ(video_track.label(), "VideoHandler");
+  EXPECT_EQ(video_track.language(), "und");
+
+  const MediaTrack& audio_track = *(media_tracks_->tracks()[1]);
+  EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track.id(), "2");
+  EXPECT_EQ(audio_track.kind(), "main");
+  EXPECT_EQ(audio_track.label(), "SoundHandler");
+  EXPECT_EQ(audio_track.language(), "und");
 }
 
 }  // namespace mp4

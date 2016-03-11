@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/media_track.h"
 #include "media/base/media_tracks.h"
 #include "media/base/timestamp_constants.h"
@@ -224,15 +225,8 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8_t* data, int size) {
   if (video_config.is_encrypted())
     OnEncryptedMediaInitData(tracks_parser.video_encryption_key_id());
 
-  scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
-  // TODO(servolk): Implement proper sourcing of media track info as described
-  // in crbug.com/590085
-  if (audio_config.IsValidConfig()) {
-    media_tracks->AddAudioTrack(audio_config, "audio", "", "", "");
-  }
-  if (video_config.IsValidConfig()) {
-    media_tracks->AddVideoTrack(video_config, "video", "", "", "");
-  }
+  scoped_ptr<MediaTracks> media_tracks = tracks_parser.media_tracks();
+  CHECK(media_tracks.get());
   if (!config_cb_.Run(std::move(media_tracks), tracks_parser.text_tracks())) {
     DVLOG(1) << "New config data isn't allowed.";
     return -1;

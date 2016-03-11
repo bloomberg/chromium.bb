@@ -1279,6 +1279,7 @@
         'formats/webm/webm_cluster_parser_unittest.cc',
         'formats/webm/webm_content_encodings_client_unittest.cc',
         'formats/webm/webm_parser_unittest.cc',
+        'formats/webm/webm_stream_parser_unittest.cc',
         'formats/webm/webm_tracks_parser_unittest.cc',
         'formats/webm/webm_webvtt_parser_unittest.cc',
         'muxers/webm_muxer_unittest.cc',

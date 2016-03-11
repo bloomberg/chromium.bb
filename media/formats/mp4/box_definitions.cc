@@ -434,8 +434,29 @@ FourCC HandlerReference::BoxType() const { return FOURCC_HDLR; }
 
 bool HandlerReference::Parse(BoxReader* reader) {
   FourCC hdlr_type;
-  RCHECK(reader->SkipBytes(8) && reader->ReadFourCC(&hdlr_type));
-  // Note: remaining fields in box ignored
+  RCHECK(reader->ReadFullBoxHeader() && reader->SkipBytes(4) &&
+         reader->ReadFourCC(&hdlr_type) && reader->SkipBytes(12));
+
+  // Now we should be at the beginning of the |name| field of HDLR box. The
+  // |name| is a zero-terminated ASCII string in ISO BMFF, but it was a
+  // Pascal-style counted string in older QT/Mov formats. So we'll read the
+  // remaining box bytes first, then if the last one is zero, we strip the last
+  // zero byte, otherwise we'll string the first byte (containing the length of
+  // the Pascal-style string).
+  std::vector<uint8_t> name_bytes;
+  RCHECK(reader->ReadVec(&name_bytes, reader->size() - reader->pos()));
+  if (name_bytes.size() == 0) {
+    name = "";
+  } else if (name_bytes.back() == 0) {
+    // This is a zero-terminated C-style string, exclude the last byte.
+    name = std::string(name_bytes.begin(), name_bytes.end() - 1);
+  } else {
+    // Check that the length of the Pascal-style string is correct.
+    RCHECK(name_bytes[0] == (name_bytes.size() - 1));
+    // Skip the first byte, containing the length of the Pascal-string.
+    name = std::string(name_bytes.begin() + 1, name_bytes.end());
+  }
+
   if (hdlr_type == FOURCC_VIDE) {
     type = kVideo;
   } else if (hdlr_type == FOURCC_SOUN) {
@@ -691,7 +712,8 @@ MediaHeader::MediaHeader()
     : creation_time(0),
       modification_time(0),
       timescale(0),
-      duration(0) {}
+      duration(0),
+      language_code(0) {}
 MediaHeader::~MediaHeader() {}
 FourCC MediaHeader::BoxType() const { return FOURCC_MDHD; }
 
@@ -699,18 +721,43 @@ bool MediaHeader::Parse(BoxReader* reader) {
   RCHECK(reader->ReadFullBoxHeader());
 
   if (reader->version() == 1) {
-    RCHECK(reader->Read8(&creation_time) &&
-           reader->Read8(&modification_time) &&
-           reader->Read4(&timescale) &&
-           reader->Read8(&duration));
+    RCHECK(reader->Read8(&creation_time) && reader->Read8(&modification_time) &&
+           reader->Read4(&timescale) && reader->Read8(&duration) &&
+           reader->Read2(&language_code));
   } else {
     RCHECK(reader->Read4Into8(&creation_time) &&
            reader->Read4Into8(&modification_time) &&
-           reader->Read4(&timescale) &&
-           reader->Read4Into8(&duration));
+           reader->Read4(&timescale) && reader->Read4Into8(&duration) &&
+           reader->Read2(&language_code));
   }
-  // Skip language information
-  return reader->SkipBytes(4);
+  // ISO 639-2/T language code only uses 15 lower bits, so reset the 16th bit.
+  language_code &= 0x7fff;
+  // Skip playback quality information
+  return reader->SkipBytes(2);
+}
+
+std::string MediaHeader::language() const {
+  if (language_code == 0x7fff || language_code < 0x400) {
+    return "und";
+  }
+  char lang_chars[4];
+  lang_chars[3] = 0;
+  lang_chars[2] = 0x60 + (language_code & 0x1f);
+  lang_chars[1] = 0x60 + ((language_code >> 5) & 0x1f);
+  lang_chars[0] = 0x60 + ((language_code >> 10) & 0x1f);
+
+  if (lang_chars[0] < 'a' || lang_chars[0] > 'z' || lang_chars[1] < 'a' ||
+      lang_chars[1] > 'z' || lang_chars[2] < 'a' || lang_chars[2] > 'z') {
+    // Got unexpected characteds in ISO 639-2/T language code. Something must be
+    // wrong with the input file, report 'und' language to be safe.
+    DVLOG(2) << "Ignoring MDHD language_code (non ISO 639-2 compliant): "
+             << lang_chars;
+    lang_chars[0] = 'u';
+    lang_chars[1] = 'n';
+    lang_chars[2] = 'd';
+  }
+
+  return lang_chars;
 }
 
 MediaInformation::MediaInformation() {}

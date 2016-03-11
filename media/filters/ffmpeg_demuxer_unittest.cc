@@ -208,7 +208,10 @@ class FFmpegDemuxerTest : public testing::Test {
                void(EmeInitDataType init_data_type,
                     const std::vector<uint8_t>& init_data));
 
-  void OnMediaTracksUpdated(scoped_ptr<MediaTracks> tracks) {}
+  void OnMediaTracksUpdated(scoped_ptr<MediaTracks> tracks) {
+    CHECK(tracks.get());
+    media_tracks_ = std::move(tracks);
+  }
 
   // Accessor to demuxer internals.
   void set_duration_known(bool duration_known) {
@@ -225,6 +228,7 @@ class FFmpegDemuxerTest : public testing::Test {
   scoped_ptr<FileDataSource> data_source_;
   scoped_ptr<FFmpegDemuxer> demuxer_;
   StrictMock<MockDemuxerHost> host_;
+  scoped_ptr<MediaTracks> media_tracks_;
   base::MessageLoop message_loop_;
 
   AVFormatContext* format_context() {
@@ -1190,6 +1194,48 @@ TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
 #endif
 }
 
+TEST_F(FFmpegDemuxerTest, Read_Mp4_Media_Track_Info) {
+  CreateDemuxer("bear.mp4");
+  InitializeDemuxer();
+
+  EXPECT_EQ(media_tracks_->tracks().size(), 2u);
+
+  const MediaTrack& audio_track = *(media_tracks_->tracks()[0]);
+  EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track.id(), "1");
+  EXPECT_EQ(audio_track.kind(), "main");
+  EXPECT_EQ(audio_track.label(), "GPAC ISO Audio Handler");
+  EXPECT_EQ(audio_track.language(), "und");
+
+  const MediaTrack& video_track = *(media_tracks_->tracks()[1]);
+  EXPECT_EQ(video_track.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track.id(), "2");
+  EXPECT_EQ(video_track.kind(), "main");
+  EXPECT_EQ(video_track.label(), "GPAC ISO Video Handler");
+  EXPECT_EQ(video_track.language(), "und");
+}
+
 #endif  // defined(USE_PROPRIETARY_CODECS)
+
+TEST_F(FFmpegDemuxerTest, Read_Webm_Media_Track_Info) {
+  CreateDemuxer("bear.webm");
+  InitializeDemuxer();
+
+  EXPECT_EQ(media_tracks_->tracks().size(), 2u);
+
+  const MediaTrack& video_track = *(media_tracks_->tracks()[0]);
+  EXPECT_EQ(video_track.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track.id(), "1");
+  EXPECT_EQ(video_track.kind(), "main");
+  EXPECT_EQ(video_track.label(), "");
+  EXPECT_EQ(video_track.language(), "");
+
+  const MediaTrack& audio_track = *(media_tracks_->tracks()[1]);
+  EXPECT_EQ(audio_track.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track.id(), "2");
+  EXPECT_EQ(audio_track.kind(), "main");
+  EXPECT_EQ(audio_track.label(), "");
+  EXPECT_EQ(audio_track.language(), "");
+}
 
 }  // namespace media

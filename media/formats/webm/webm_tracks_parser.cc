@@ -77,6 +77,7 @@ int WebMTracksParser::Parse(const uint8_t* buf, int size) {
   video_decoder_config_ = VideoDecoderConfig();
   text_tracks_.clear();
   ignored_tracks_.clear();
+  media_tracks_.reset(new MediaTracks());
 
   WebMListParser parser(kWebMIdTracks, this);
   int result = parser.Parse(buf, size);
@@ -210,6 +211,9 @@ bool WebMTracksParser::OnListEnd(int id) {
                 !audio_encryption_key_id_.empty(), &audio_decoder_config_)) {
           return false;
         }
+        media_tracks_->AddAudioTrack(audio_decoder_config_,
+                                     base::Uint64ToString(track_num_), "main",
+                                     track_name_, track_language_);
       } else {
         MEDIA_LOG(DEBUG, media_log_) << "Ignoring audio track " << track_num_;
         ignored_tracks_.insert(track_num_);
@@ -232,6 +236,9 @@ bool WebMTracksParser::OnListEnd(int id) {
                 &video_decoder_config_)) {
           return false;
         }
+        media_tracks_->AddVideoTrack(video_decoder_config_,
+                                     base::Uint64ToString(track_num_), "main",
+                                     track_name_, track_language_);
       } else {
         MEDIA_LOG(DEBUG, media_log_) << "Ignoring video track " << track_num_;
         ignored_tracks_.insert(track_num_);
@@ -335,7 +342,15 @@ bool WebMTracksParser::OnString(int id, const std::string& str) {
   }
 
   if (id == kWebMIdLanguage) {
-    track_language_ = str;
+    // Check that the language string is in ISO 639-2 format (3 letter code of a
+    // language, all lower-case letters).
+    if (str.size() != 3 || str[0] < 'a' || str[0] > 'z' || str[1] < 'a' ||
+        str[1] > 'z' || str[2] < 'a' || str[2] > 'z') {
+      VLOG(2) << "Ignoring kWebMIdLanguage (not ISO 639-2 compliant): " << str;
+      track_language_ = "und";
+    } else {
+      track_language_ = str;
+    }
     return true;
   }
 

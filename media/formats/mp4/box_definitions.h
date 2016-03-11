@@ -197,6 +197,7 @@ struct MEDIA_EXPORT HandlerReference : Box {
   DECLARE_BOX_METHODS(HandlerReference);
 
   TrackType type;
+  std::string name;
 };
 
 struct MEDIA_EXPORT AVCDecoderConfigurationRecord : Box {
@@ -310,10 +311,13 @@ struct MEDIA_EXPORT SampleTable : Box {
 struct MEDIA_EXPORT MediaHeader : Box {
   DECLARE_BOX_METHODS(MediaHeader);
 
+  std::string language() const;
+
   uint64_t creation_time;
   uint64_t modification_time;
   uint32_t timescale;
   uint64_t duration;
+  uint16_t language_code;
 };
 
 struct MEDIA_EXPORT MediaInformation : Box {

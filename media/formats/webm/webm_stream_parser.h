@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/byte_queue.h"
+#include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
 #include "media/base/video_decoder_config.h"
 
@@ -19,7 +20,7 @@ namespace media {
 
 class WebMClusterParser;
 
-class WebMStreamParser : public StreamParser {
+class MEDIA_EXPORT WebMStreamParser : public StreamParser {
  public:
   WebMStreamParser();
   ~WebMStreamParser() override;
