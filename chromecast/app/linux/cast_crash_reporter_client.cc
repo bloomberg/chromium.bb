@@ -52,7 +52,8 @@ bool CastCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return process_type == switches::kRendererProcess ||
          process_type == switches::kZygoteProcess ||
-         process_type == switches::kGpuProcess;
+         process_type == switches::kGpuProcess ||
+         process_type == switches::kUtilityProcess;
 }
 
 bool CastCrashReporterClient::HandleCrashDump(const char* crashdump_filename) {

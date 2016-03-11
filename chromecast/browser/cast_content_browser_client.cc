@@ -458,7 +458,8 @@ int CastContentBrowserClient::GetCrashSignalFD(
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
   if (process_type == switches::kRendererProcess ||
-      process_type == switches::kGpuProcess) {
+      process_type == switches::kGpuProcess ||
+      process_type == switches::kUtilityProcess) {
     breakpad::CrashHandlerHostLinux* crash_handler =
         crash_handlers_[process_type];
     if (!crash_handler) {
