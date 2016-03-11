@@ -223,18 +223,20 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     if (m_options.premultiplyAlpha() == "none")
         alphaOp = ImageDecoder::AlphaNotPremultiplied;
     OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*sharedBuffer, alphaOp, ImageDecoder::GammaAndColorProfileApplied));
-    if (decoder)
+    RefPtr<SkImage> frame;
+    if (decoder) {
         decoder->setData(sharedBuffer.get(), true);
-    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, AllowCrossThreadAccess(this), decoder.release()));
+        frame = ImageBitmap::getSkImageFromDecoder(decoder.release());
+    }
+    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, AllowCrossThreadAccess(this), frame.release()));
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(PassOwnPtr<ImageDecoder> decoder)
+void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(PassRefPtr<SkImage> frame)
 {
-    if (!decoder) {
+    if (!frame) {
         rejectPromise();
         return;
     }
-    RefPtr<SkImage> frame = ImageBitmap::getSkImageFromDecoder(decoder);
     ASSERT(!frame || (frame->width() && frame->height()));
     if (!frame) {
         rejectPromise();

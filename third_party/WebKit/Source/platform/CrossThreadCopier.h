@@ -42,6 +42,8 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
 
+class SkRefCnt;
+
 namespace blink {
 
 class IntRect;
@@ -111,7 +113,10 @@ struct CrossThreadCopier : public CrossThreadCopierBase<
     std::is_arithmetic<T>::value || std::is_enum<T>::value,
     WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, RefPtr>::Type, ThreadSafeRefCounted>::value
     || WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, ThreadSafeRefCounted>::value
-    || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value,
+    || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value
+    || std::is_base_of<SkRefCnt, typename WTF::RemoveTemplate<T, RefPtr>::Type>::value
+    || std::is_base_of<SkRefCnt, typename std::remove_pointer<T>::type>::value
+    || std::is_base_of<SkRefCnt, typename WTF::RemoveTemplate<T, PassRefPtr>::Type>::value,
     WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, GarbageCollected>::value> {
     STATIC_ONLY(CrossThreadCopier);
 };

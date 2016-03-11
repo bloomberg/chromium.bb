@@ -40,6 +40,7 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
+#include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
 
@@ -94,7 +95,7 @@ private:
 
         void scheduleAsyncImageBitmapDecoding();
         void decodeImageOnDecoderThread(WebTaskRunner*);
-        void resolvePromiseOnOriginalThread(PassOwnPtr<ImageDecoder>);
+        void resolvePromiseOnOriginalThread(PassRefPtr<SkImage>);
 
         // FileReaderLoaderClient
         void didStartLoading() override { }

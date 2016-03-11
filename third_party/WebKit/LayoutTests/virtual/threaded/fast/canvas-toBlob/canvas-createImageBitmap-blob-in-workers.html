@@ -64,13 +64,17 @@ newImg.onload = function() {
 
 canvas1.toBlob(function(blob) {
     worker.postMessage(blob);
+    var setImgSrc = false;
     for (var i = 0; i < numOfBitmaps; i++) {
         createImageBitmap(blob).then(imageBitmap => {
             bitmapArray.push(imageBitmap);
+            if (i >= numOfBitmaps - 1 && setImgSrc == false) {
+                var url = URL.createObjectURL(blob);
+                newImg.src = url;
+                setImgSrc = true;
+            }
         });
     }
-    url = URL.createObjectURL(blob);
-    newImg.src = url;
 });
 
 </script>
