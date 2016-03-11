@@ -153,16 +153,10 @@ void Canvas::DrawDashedRect(const Rect& rect, SkColor color) {
     }
   }
 
-  // Make a shader for the bitmap with an origin of the box we'll draw. This
-  // shader is refcounted and will have an initial refcount of 1.
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(
-      SkShader::CreateBitmapShader(
-          *dots, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
-  // Assign the shader to the paint & release our reference. The paint will
-  // now own the shader and the shader will be destroyed when the paint goes
-  // out of scope.
+  // Make a shader for the bitmap with an origin of the box we'll draw.
   SkPaint paint;
-  paint.setShader(shader.get());
+  paint.setShader(SkShader::MakeBitmapShader(*dots, SkShader::kRepeat_TileMode,
+                                             SkShader::kRepeat_TileMode));
 
   DrawRect(Rect(rect.x(), rect.y(), rect.width(), 1), paint);
   DrawRect(Rect(rect.x(), rect.y() + rect.height() - 1, rect.width(), 1),

@@ -76,12 +76,9 @@ void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   SkMatrix local_matrix;
   local_matrix.setTranslate(SkIntToScalar(align_rect.left),
                             SkIntToScalar(align_rect.top));
-  skia::RefPtr<SkShader> shader =
-      skia::AdoptRef(SkShader::CreateBitmapShader(bitmap,
-                                                  SkShader::kRepeat_TileMode,
-                                                  SkShader::kRepeat_TileMode,
-                                                  &local_matrix));
-  paint->setShader(shader.get());
+  paint->setShader(
+      SkShader::MakeBitmapShader(bitmap, SkShader::kRepeat_TileMode,
+                                 SkShader::kRepeat_TileMode, &local_matrix));
 }
 
 //    <-a->

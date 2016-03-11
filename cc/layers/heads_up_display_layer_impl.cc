@@ -573,9 +573,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(SkCanvas* canvas,
   const SkScalar pos[] = {SkFloatToScalar(0.2f), SkFloatToScalar(0.4f),
                           SkFloatToScalar(0.6f), SkFloatToScalar(0.8f),
                           SkFloatToScalar(1.0f)};
-  skia::RefPtr<SkShader> gradient_shader =
-      skia::AdoptRef(SkGradientShader::CreateSweep(cx, cy, colors, pos, 5));
-  paint.setShader(gradient_shader.get());
+  paint.setShader(SkGradientShader::MakeSweep(cx, cy, colors, pos, 5));
   paint.setFlags(SkPaint::kAntiAlias_Flag);
 
   // Draw current status.

@@ -82,9 +82,8 @@ void FillRoundRect(gfx::Canvas* canvas,
   } else {
     p[1].iset(x, y + h);
   }
-  skia::RefPtr<SkShader> s = skia::AdoptRef(SkGradientShader::CreateLinear(
-      p, colors, points, count, SkShader::kClamp_TileMode));
-  paint.setShader(s.get());
+  paint.setShader(SkGradientShader::MakeLinear(p, colors, points, count,
+                                               SkShader::kClamp_TileMode));
 
   canvas->DrawPath(path, paint);
 }
@@ -296,11 +295,9 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
             std::max(0, progress_width - kHighlightWidth - kBorderWidth);
         p[0].iset(highlight_left, 0);
         p[1].iset(progress_width, 0);
-        skia::RefPtr<SkShader> s =
-            skia::AdoptRef(SkGradientShader::CreateLinear(
-                p, highlight_colors, highlight_points,
-                arraysize(highlight_colors), SkShader::kClamp_TileMode));
-        paint.setShader(s.get());
+        paint.setShader(SkGradientShader::MakeLinear(
+            p, highlight_colors, highlight_points, arraysize(highlight_colors),
+            SkShader::kClamp_TileMode));
         paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         canvas->DrawRect(gfx::Rect(highlight_left, 0,
                                    kHighlightWidth + kBorderWidth, bar_height),

@@ -42,14 +42,12 @@ void ShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   points[0].iset(0, 0);
   points[1].iset(kShadowThick, 0);
 
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(
-      SkGradientShader::CreateLinear(points, kShadowColors, NULL,
-          arraysize(points), SkShader::kRepeat_TileMode));
-
   gfx::Rect paint_rect = gfx::Rect(0, 0, kShadowThick,
                                    layer_->bounds().height());
   SkPaint paint;
-  paint.setShader(shader.get());
+  paint.setShader(SkGradientShader::MakeLinear(points, kShadowColors, NULL,
+                                               arraysize(points),
+                                               SkShader::kRepeat_TileMode));
   ui::PaintRecorder recorder(context, layer_->size());
   recorder.canvas()->DrawRect(paint_rect, paint);
 }

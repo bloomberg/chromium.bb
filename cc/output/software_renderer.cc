@@ -529,12 +529,10 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     SkMatrix mask_mat;
     mask_mat.setRectToRect(mask_rect, dest_rect, SkMatrix::kFill_ScaleToFit);
 
-    skia::RefPtr<SkShader> mask_shader = skia::AdoptRef(
-        SkShader::CreateBitmapShader(*mask, SkShader::kClamp_TileMode,
-                                     SkShader::kClamp_TileMode, &mask_mat));
-
     SkPaint mask_paint;
-    mask_paint.setShader(mask_shader.get());
+    mask_paint.setShader(
+        SkShader::MakeBitmapShader(*mask, SkShader::kClamp_TileMode,
+                                   SkShader::kClamp_TileMode, &mask_mat));
 
     SkLayerRasterizer::Builder builder;
     builder.addLayer(mask_paint);

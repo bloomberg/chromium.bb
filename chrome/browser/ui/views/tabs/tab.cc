@@ -134,12 +134,11 @@ void DrawHighlight(gfx::Canvas* canvas,
                    SkScalar radius,
                    SkColor color) {
   const SkColor colors[2] = { color, SkColorSetA(color, 0) };
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(SkGradientShader::CreateRadial(
-      p, radius, colors, nullptr, 2, SkShader::kClamp_TileMode));
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
-  paint.setShader(shader.get());
+  paint.setShader(SkGradientShader::MakeRadial(p, radius, colors, nullptr, 2,
+                                               SkShader::kClamp_TileMode));
   canvas->sk_canvas()->drawRect(
       SkRect::MakeXYWH(p.x() - radius, p.y() - radius, radius * 2, radius * 2),
       paint);

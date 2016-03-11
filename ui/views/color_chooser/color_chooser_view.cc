@@ -103,11 +103,9 @@ void DrawGradientRect(const gfx::Rect& rect, SkColor start_color,
     points[1].iset(rect.width() + 1, 0);
   else
     points[1].iset(0, rect.height() + 1);
-  skia::RefPtr<SkShader> shader(skia::AdoptRef(
-      SkGradientShader::CreateLinear(points, colors, NULL, 2,
-                                     SkShader::kClamp_TileMode)));
   SkPaint paint;
-  paint.setShader(shader.get());
+  paint.setShader(SkGradientShader::MakeLinear(points, colors, NULL, 2,
+                                               SkShader::kClamp_TileMode));
   canvas->DrawRect(rect, paint);
 }
 

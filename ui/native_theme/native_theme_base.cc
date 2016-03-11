@@ -616,12 +616,10 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
   else /* kNormal */
     startEndColors = kCheckboxGradientColors;
   SkColor colors[3] = {startEndColors[0], startEndColors[0], startEndColors[1]};
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(
-      SkGradientShader::CreateLinear(
-          gradient_bounds, colors, NULL, 3, SkShader::kClamp_TileMode));
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setShader(shader.get());
+  paint.setShader(SkGradientShader::MakeLinear(gradient_bounds, colors, NULL, 3,
+                                               SkShader::kClamp_TileMode));
   paint.setStyle(SkPaint::kFill_Style);
   canvas->drawRoundRect(skrect, borderRadius, borderRadius, paint);
   paint.setShader(NULL);
