@@ -380,7 +380,7 @@ const char kPasswordManagerLearnMoreURL[] =
 #endif
 
 const char kUpgradeHelpCenterBaseURL[] =
-    "http://support.google.com/installer/?product="
+    "https://support.google.com/installer/?product="
     "{8A69D345-D564-463c-AFF1-A69D9E530F96}&error=";
 
 const char kSmartLockHelpPage[] =
@@ -517,7 +517,7 @@ const char kEnhancedPlaybackNotificationLearnMoreURL[] =
     "https://support.google.com/chrome/?p=mobile_protected_content";
 #endif
 
-const char kChromiumProjectURL[] = "http://www.chromium.org/";
+const char kChromiumProjectURL[] = "https://www.chromium.org/";
 
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
@@ -760,7 +760,7 @@ const char kLinuxWheezyPreciseDeprecationURL[] =
 // TODO(mark): Change to a Help Center URL when one is available.
 // https://crbug.com/555044
 const char kMac10_678_DeprecationURL[] =
-    "http://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
+    "https://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
 #endif
 
 #if defined(OS_WIN)
