@@ -24,6 +24,10 @@ class USER_MANAGER_EXPORT UserImage {
   // TODO(ivankr): replace with RefCountedMemory to prevent copying.
   typedef std::vector<unsigned char> Bytes;
 
+  // Encodes the given bitmap to bytes representation for WebUI. Returns null
+  // on failure.
+  static scoped_ptr<Bytes> Encode(const SkBitmap& bitmap);
+
   // Creates a new instance from a given still frame and tries to encode it
   // to bytes representation for WebUI.
   // TODO(ivankr): remove eventually.

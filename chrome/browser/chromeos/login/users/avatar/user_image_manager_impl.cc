@@ -150,23 +150,27 @@ int ImageIndexToHistogramIndex(int image_index) {
 
 bool SaveImage(const user_manager::UserImage& user_image,
                const base::FilePath& image_path) {
-  user_manager::UserImage safe_image;
-  const user_manager::UserImage::Bytes* encoded_image = NULL;
+  // This should always be true, because of the following reasons:
+  //
+  // 1) Profile image from Google account -> UserImage is created with
+  //    CreateAndEncode() that generates safe bytes representation.
+  // 2) Profile image from user-specified image -> The bytes representation
+  //    is regenerated after the original image is decoded and cropped.
+  // 3) Profile image from policy (via OnExternalDataFetched()) -> JPEG is
+  //    only allowed and ROBUST_JPEG_CODEC is used.
+  //
+  // However, check the value just in case because an unsafe image should
+  // never be saved.
   if (!user_image.is_safe_format()) {
-    safe_image = user_manager::UserImage::CreateAndEncode(user_image.image());
-    encoded_image = &safe_image.image_bytes();
-    UMA_HISTOGRAM_MEMORY_KB("UserImage.RecodedJpegSize", encoded_image->size());
-  } else if (user_image.has_image_bytes()) {
-    encoded_image = &user_image.image_bytes();
-  } else {
-    NOTREACHED() << "image data bytes missing.";
+    LOG(ERROR) << "User image is not in safe format";
     return false;
   }
 
-  if (!encoded_image->size() ||
+  const user_manager::UserImage::Bytes& image_bytes = user_image.image_bytes();
+  if (image_bytes.empty() ||
       base::WriteFile(image_path,
-                      reinterpret_cast<const char*>(&(*encoded_image)[0]),
-                      encoded_image->size()) == -1) {
+                      reinterpret_cast<const char*>(image_bytes.data()),
+                      image_bytes.size()) == -1) {
     LOG(ERROR) << "Failed to save image to file.";
     return false;
   }

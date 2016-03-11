@@ -15,30 +15,35 @@ namespace {
 // Default quality for encoding user images.
 const int kDefaultEncodingQuality = 90;
 
-bool EncodeImageSkia(const gfx::ImageSkia& image,
-                     UserImage::Bytes* output) {
-  TRACE_EVENT2("oobe", "EncodeImageSkia",
-               "width", image.width(), "height", image.height());
-  if (image.isNull())
-    return false;
-  const SkBitmap& bitmap = *image.bitmap();
-  SkAutoLockPixels lock_image(bitmap);
-  return gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_SkBitmap,
-      bitmap.width(),
-      bitmap.height(),
-      bitmap.width() * bitmap.bytesPerPixel(),
-      kDefaultEncodingQuality, output);
-}
-
 }  // namespace
 
 // static
+scoped_ptr<UserImage::Bytes> UserImage::Encode(const SkBitmap& bitmap) {
+  TRACE_EVENT2("oobe", "UserImage::Encode",
+               "width", bitmap.width(), "height", bitmap.height());
+  SkAutoLockPixels lock_bitmap(bitmap);
+  scoped_ptr<Bytes> output(new Bytes);
+  if (gfx::JPEGCodec::Encode(
+          reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+          gfx::JPEGCodec::FORMAT_SkBitmap,
+          bitmap.width(),
+          bitmap.height(),
+          bitmap.width() * bitmap.bytesPerPixel(),
+          kDefaultEncodingQuality, output.get())) {
+    return output;
+  } else {
+    return nullptr;
+  }
+}
+
+// static
 UserImage UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
-  Bytes image_bytes;
-  if (EncodeImageSkia(image, &image_bytes)) {
-    UserImage result(image, image_bytes);
+  if (image.isNull())
+    return UserImage();
+
+  scoped_ptr<Bytes> image_bytes = Encode(*image.bitmap());
+  if (image_bytes) {
+    UserImage result(image, *image_bytes);
     result.MarkAsSafe();
     return result;
   }
