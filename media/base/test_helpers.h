@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
@@ -90,7 +91,16 @@ class TestVideoConfig {
   static gfx::Size LargeCodedSize();
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(TestVideoConfig);
+  DISALLOW_COPY_AND_ASSIGN(TestVideoConfig);
+};
+
+// Provides pre-canned AudioParameters objects.
+class TestAudioParameters {
+ public:
+  static AudioParameters Normal();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestAudioParameters);
 };
 
 // Create an AudioBuffer containing |frames| frames of data, where each sample

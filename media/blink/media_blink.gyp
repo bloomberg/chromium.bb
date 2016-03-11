@@ -148,6 +148,7 @@
         'url_index_unittest.cc',
         'video_frame_compositor_unittest.cc',
         'webaudiosourceprovider_impl_unittest.cc',
+        'webmediaplayer_impl_unittest.cc',
       ],
     },
   ],
