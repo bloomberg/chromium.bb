@@ -27,35 +27,33 @@ public:
     ~WorkerInspectorProxy();
     DECLARE_TRACE();
 
-    class PageInspector : public NoBaseWillBeGarbageCollectedFinalized<PageInspector> {
+    class CORE_EXPORT PageInspector {
     public:
         virtual ~PageInspector() { }
-        virtual void dispatchMessageFromWorker(const String&) = 0;
-        virtual void workerConsoleAgentEnabled(WorkerGlobalScopeProxy*) = 0;
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
+        virtual void dispatchMessageFromWorker(WorkerInspectorProxy*, const String&) = 0;
+        virtual void workerConsoleAgentEnabled(WorkerInspectorProxy*) = 0;
     };
 
     WorkerThreadStartMode workerStartMode(ExecutionContext*);
     void workerThreadCreated(ExecutionContext*, WorkerThread*, const KURL&);
     void workerThreadTerminated();
+    void dispatchMessageFromWorker(const String&);
+    void workerConsoleAgentEnabled();
 
     void connectToInspector(PageInspector*);
-    void disconnectFromInspector();
+    void disconnectFromInspector(PageInspector*);
     void sendMessageToInspector(const String&);
     void writeTimelineStartedEvent(const String& sessionId, const String& workerId);
 
-    PageInspector* pageInspector() const { return m_pageInspector; }
-
-    void setWorkerGlobalScopeProxy(WorkerGlobalScopeProxy* proxy) { m_workerGlobalScopeProxy = proxy; }
-    WorkerGlobalScopeProxy* workerGlobalScopeProxy() const { return m_workerGlobalScopeProxy; }
+    const String& url() { return m_url; }
 
 private:
     WorkerInspectorProxy();
 
     WorkerThread* m_workerThread;
     RawPtrWillBeMember<ExecutionContext> m_executionContext;
-    RawPtrWillBeMember<WorkerInspectorProxy::PageInspector> m_pageInspector;
-    WorkerGlobalScopeProxy* m_workerGlobalScopeProxy;
+    PageInspector* m_pageInspector;
+    String m_url;
 };
 
 } // namespace blink

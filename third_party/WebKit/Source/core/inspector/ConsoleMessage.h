@@ -20,7 +20,7 @@ namespace blink {
 class ScriptArguments;
 class ScriptCallStack;
 class ScriptState;
-class WorkerGlobalScopeProxy;
+class WorkerInspectorProxy;
 
 class CORE_EXPORT ConsoleMessage final: public RefCountedWillBeGarbageCollectedFinalized<ConsoleMessage> {
 public:
@@ -48,8 +48,8 @@ public:
     void setRequestIdentifier(unsigned long);
     double timestamp() const;
     void setTimestamp(double);
-    WorkerGlobalScopeProxy* workerGlobalScopeProxy() { return m_workerProxy; }
-    void setWorkerGlobalScopeProxy(WorkerGlobalScopeProxy* proxy) { m_workerProxy = proxy; }
+    WorkerInspectorProxy* workerInspectorProxy() { return m_workerProxy; }
+    void setWorkerInspectorProxy(WorkerInspectorProxy* proxy) { m_workerProxy = proxy; }
     unsigned assignMessageId();
     unsigned messageId() const { return m_messageId; }
     unsigned relatedMessageId() const { return m_relatedMessageId; }
@@ -83,7 +83,7 @@ private:
     RefPtrWillBeMember<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     double m_timestamp;
-    WorkerGlobalScopeProxy* m_workerProxy;
+    RawPtrWillBeMember<WorkerInspectorProxy> m_workerProxy;
     unsigned m_messageId;
     unsigned m_relatedMessageId;
 };

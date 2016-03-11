@@ -64,6 +64,7 @@ DEFINE_TRACE(PageConsoleAgent)
 {
     visitor->trace(m_inspectorDOMAgent);
     visitor->trace(m_inspectedFrames);
+    visitor->trace(m_workersWithEnabledConsole);
     InspectorConsoleAgent::trace(visitor);
 }
 
@@ -86,9 +87,9 @@ void PageConsoleAgent::clearMessages(ErrorString* errorString)
     messageStorage()->clear(m_inspectedFrames->root()->document());
 }
 
-void PageConsoleAgent::workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy)
+void PageConsoleAgent::workerConsoleAgentEnabled(WorkerInspectorProxy* workerInspectorProxy)
 {
-    m_workersWithEnabledConsole.add(proxy);
+    m_workersWithEnabledConsole.add(workerInspectorProxy);
 }
 
 ConsoleMessageStorage* PageConsoleAgent::messageStorage()
@@ -98,21 +99,15 @@ ConsoleMessageStorage* PageConsoleAgent::messageStorage()
 
 void PageConsoleAgent::workerTerminated(WorkerInspectorProxy* workerInspectorProxy)
 {
-    WorkerGlobalScopeProxy* proxy = workerInspectorProxy->workerGlobalScopeProxy();
-    if (!proxy)
-        return;
-
-    HashSet<WorkerGlobalScopeProxy*>::iterator iterator = m_workersWithEnabledConsole.find(proxy);
-    bool workerAgentWasEnabled = iterator != m_workersWithEnabledConsole.end();
-    if (workerAgentWasEnabled)
+    if (m_workersWithEnabledConsole.find(workerInspectorProxy) != m_workersWithEnabledConsole.end())
         return;
 
     ConsoleMessageStorage* storage = messageStorage();
     size_t messageCount = storage->size();
     for (size_t i = 0; i < messageCount; ++i) {
         ConsoleMessage* message = storage->at(i);
-        if (message->workerGlobalScopeProxy() == proxy) {
-            message->setWorkerGlobalScopeProxy(nullptr);
+        if (message->workerInspectorProxy() == workerInspectorProxy) {
+            message->setWorkerInspectorProxy(nullptr);
             sendConsoleMessageToFrontend(message, false);
         }
     }
