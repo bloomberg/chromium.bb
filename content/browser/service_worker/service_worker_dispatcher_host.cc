@@ -336,11 +336,9 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     return;
   }
 
-  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
-                           "ServiceWorkerDispatcherHost::RegisterServiceWorker",
-                           request_id,
-                           "Pattern", pattern.spec(),
-                           "Script URL", script_url.spec());
+  TRACE_EVENT_ASYNC_BEGIN2(
+      "ServiceWorker", "ServiceWorkerDispatcherHost::RegisterServiceWorker",
+      request_id, "Scope", pattern.spec(), "Script URL", script_url.spec());
   GetContext()->RegisterServiceWorker(
       pattern,
       script_url,
@@ -426,6 +424,9 @@ void ServiceWorkerDispatcherHost::OnUpdateServiceWorker(
     return;
   }
 
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerDispatcherHost::UpdateServiceWorker",
+                           request_id, "Scope", registration->pattern().spec());
   GetContext()->UpdateServiceWorker(
       registration, false /* force_bypass_cache */,
       false /* skip_script_comparison */, provider_host,
@@ -495,7 +496,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
 
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker", "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
-      request_id, "Pattern", registration->pattern().spec());
+      request_id, "Scope", registration->pattern().spec());
   GetContext()->UnregisterServiceWorker(
       registration->pattern(),
       base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete, this,
@@ -507,10 +508,9 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
     int request_id,
     int provider_id,
     const GURL& document_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnGetRegistration");
-
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!GetContext()) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
@@ -565,12 +565,9 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
     return;
   }
 
-  TRACE_EVENT_ASYNC_BEGIN1(
-      "ServiceWorker",
-      "ServiceWorkerDispatcherHost::GetRegistration",
-      request_id,
-      "Document URL", document_url.spec());
-
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerDispatcherHost::GetRegistration",
+                           request_id, "Document URL", document_url.spec());
   GetContext()->storage()->FindRegistrationForDocument(
       document_url,
       base::Bind(&ServiceWorkerDispatcherHost::GetRegistrationComplete,
@@ -584,6 +581,8 @@ void ServiceWorkerDispatcherHost::OnGetRegistrations(int thread_id,
                                                      int request_id,
                                                      int provider_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnGetRegistrations");
 
   if (!GetContext()) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationsError(
@@ -636,7 +635,6 @@ void ServiceWorkerDispatcherHost::OnGetRegistrations(int thread_id,
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerDispatcherHost::GetRegistrations",
                            request_id);
-
   GetContext()->storage()->GetRegistrationsForOrigin(
       provider_host->document_url().GetOrigin(),
       base::Bind(&ServiceWorkerDispatcherHost::GetRegistrationsComplete, this,
@@ -662,10 +660,8 @@ void ServiceWorkerDispatcherHost::OnGetRegistrationForReady(
     return;
 
   TRACE_EVENT_ASYNC_BEGIN0(
-      "ServiceWorker",
-      "ServiceWorkerDispatcherHost::GetRegistrationForReady",
+      "ServiceWorker", "ServiceWorkerDispatcherHost::GetRegistrationForReady",
       request_id);
-
   if (!provider_host->GetRegistrationForReady(base::Bind(
           &ServiceWorkerDispatcherHost::GetRegistrationForReadyComplete,
           this, thread_id, request_id, provider_host->AsWeakPtr()))) {
@@ -872,6 +868,9 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
     ServiceWorkerStatusCode status,
     const std::string& status_message,
     int64_t registration_id) {
+  TRACE_EVENT_ASYNC_END2(
+      "ServiceWorker", "ServiceWorkerDispatcherHost::RegisterServiceWorker",
+      request_id, "Status", status, "Registration ID", registration_id);
   if (!GetContext())
     return;
 
@@ -896,11 +895,6 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
       thread_id, request_id, info, attrs));
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerDispatcherHost::RegisterServiceWorker",
-                         request_id,
-                         "Registration ID",
-                         registration_id);
 }
 
 void ServiceWorkerDispatcherHost::UpdateComplete(
@@ -910,6 +904,9 @@ void ServiceWorkerDispatcherHost::UpdateComplete(
     ServiceWorkerStatusCode status,
     const std::string& status_message,
     int64_t registration_id) {
+  TRACE_EVENT_ASYNC_END2(
+      "ServiceWorker", "ServiceWorkerDispatcherHost::UpdateServiceWorker",
+      request_id, "Status", status, "Registration ID", registration_id);
   if (!GetContext())
     return;
 
@@ -933,9 +930,6 @@ void ServiceWorkerDispatcherHost::UpdateComplete(
                                                 registration, &info, &attrs);
 
   Send(new ServiceWorkerMsg_ServiceWorkerUpdated(thread_id, request_id));
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerDispatcherHost::UpdateServiceWorker",
-                         request_id, "Registration ID", registration_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(
@@ -1135,6 +1129,9 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
     int thread_id,
     int request_id,
     ServiceWorkerStatusCode status) {
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
+                         request_id, "Status", status);
   if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
     SendUnregistrationError(thread_id, request_id, status);
     return;
@@ -1143,11 +1140,6 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
   Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id,
                                                       request_id,
                                                       is_success));
-  TRACE_EVENT_ASYNC_END1(
-      "ServiceWorker",
-      "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
-      request_id,
-      "Status", status);
 }
 
 void ServiceWorkerDispatcherHost::GetRegistrationComplete(
@@ -1156,13 +1148,10 @@ void ServiceWorkerDispatcherHost::GetRegistrationComplete(
     int request_id,
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerDispatcherHost::GetRegistration",
-                         request_id,
-                         "Registration ID",
-                         registration.get() ? registration->id()
-                             : kInvalidServiceWorkerRegistrationId);
-
+  TRACE_EVENT_ASYNC_END2(
+      "ServiceWorker", "ServiceWorkerDispatcherHost::GetRegistration",
+      request_id, "Status", status, "Registration ID",
+      registration ? registration->id() : kInvalidServiceWorkerRegistrationId);
   if (!GetContext())
     return;
 
@@ -1197,9 +1186,9 @@ void ServiceWorkerDispatcherHost::GetRegistrationsComplete(
     ServiceWorkerStatusCode status,
     const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
         registrations) {
-  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerDispatcherHost::GetRegistrations",
-                         request_id);
+                         request_id, "Status", status);
   if (!GetContext())
     return;
 
@@ -1239,13 +1228,10 @@ void ServiceWorkerDispatcherHost::GetRegistrationForReadyComplete(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration) {
   DCHECK(registration);
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerDispatcherHost::GetRegistrationForReady",
-                         request_id,
-                         "Registration ID",
-                         registration ? registration->id()
-                             : kInvalidServiceWorkerRegistrationId);
-
+  TRACE_EVENT_ASYNC_END1(
+      "ServiceWorker", "ServiceWorkerDispatcherHost::GetRegistrationForReady",
+      request_id, "Registration ID",
+      registration ? registration->id() : kInvalidServiceWorkerRegistrationId);
   if (!GetContext())
     return;
 
