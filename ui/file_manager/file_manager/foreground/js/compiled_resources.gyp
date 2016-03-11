@@ -147,6 +147,7 @@
           './ui/scrollbar.js',
           './ui/search_box.js',
           './ui/share_dialog.js',
+          './ui/single_file_details.js',
           './ui/suggest_apps_dialog.js',
           './main_window_component.js',
           './volume_manager_wrapper.js',

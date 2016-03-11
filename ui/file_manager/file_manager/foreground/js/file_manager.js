@@ -833,12 +833,17 @@ FileManager.prototype = /** @struct */ {
         this.metadataModel_,
         this.volumeManager_,
         this.historyLoader_);
+    var singlePanel = queryRequiredElement('#single-file-details', dom);
+    SingleFileDetailsPanel.decorate(
+        assertInstanceof(singlePanel, HTMLDivElement),
+        this.metadataModel_);
 
     this.addHistoryObserver_();
 
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable),
         assertInstanceof(grid, FileGrid),
+        assertInstanceof(singlePanel, SingleFileDetailsPanel),
         new LocationLine(
             queryRequiredElement('#location-breadcrumbs', dom),
             this.volumeManager_));

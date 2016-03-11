@@ -15,6 +15,7 @@
       "file_manager/copy_between_windows.js",
       "file_manager/create_new_folder.js",
       "file_manager/delete.js",
+      "file_manager/details_panel.js",
       "file_manager/directory_tree_context_menu.js",
       "file_manager/drive_specific.js",
       "file_manager/file_dialog.js",

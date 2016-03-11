@@ -4,13 +4,15 @@
 
 /**
  * @param {!HTMLElement} element
+ * @param {!SingleFileDetailsPanel} singlePanel
  * @param {!Element} splitter
  * @param {!Element} button
  * @param {!FilesToggleRipple} toggleRipple
  * @constructor
  * @struct
  */
-function DetailsContainer(element, splitter, button, toggleRipple) {
+function DetailsContainer(element, singlePanel, splitter, button,
+    toggleRipple) {
   /**
    * Container element.
    * @private {!HTMLElement}
@@ -36,6 +38,12 @@ function DetailsContainer(element, splitter, button, toggleRipple) {
    */
   this.toggleRipple_ = toggleRipple;
   /**
+   * Details panel for a single file.
+   * @private {!SingleFileDetailsPanel}
+   * @const
+   */
+  this.singlePanel_ = singlePanel;
+  /**
    * @type {boolean}
    */
   this.visible = false;
@@ -43,7 +51,17 @@ function DetailsContainer(element, splitter, button, toggleRipple) {
 }
 
 DetailsContainer.prototype.onFileSelectionChanged = function(event) {
-  var selection = event.target.selection;
+  var entries = event.target.selection.entries;
+  if (entries.length === 0) {
+    this.singlePanel_.removeAttribute('activated');
+    this.singlePanel_.classList.toggle('activated', false);
+    // TODO(ryoh): make a panel for empty selection
+  } else if (entries.length === 1) {
+    this.singlePanel_.setAttribute('activated', '');
+    this.singlePanel_.onFileSelectionChanged(entries[0]);
+  } else {
+    // TODO(ryoh): make a panel for multiple selection
+  }
 };
 
 /**

@@ -163,6 +163,7 @@
 //<include src="ui/scrollbar.js">
 //<include src="ui/search_box.js">
 //<include src="ui/share_dialog.js">
+//<include src="ui/single_file_details.js">
 //<include src="ui/suggest_apps_dialog.js">
 //<include src="main_window_component.js">
 //<include src="volume_manager_wrapper.js">

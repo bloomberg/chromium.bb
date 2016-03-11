@@ -127,11 +127,13 @@ a:focus {
 /* Details pane */
 .details-container {
   background-color: rgb(250, 250, 250);
+  display: flex;
   flex: none;
   max-width: 30%;
   min-width: 100px;
   overflow: hidden;
   position: relative;
+  width: 240px;
 }
 
 #list-details-splitter:not([activated]) {
@@ -140,6 +142,22 @@ a:focus {
 
 .details-container:not([activated]) {
   display: none;
+}
+
+.details-container > div:not([activated]) {
+  display: none !important;
+}
+
+.details-container > #single-file-details {
+  display: flex;
+  flex: auto;
+  flex-direction: row;
+  width: 100%;
+}
+
+#single-file-details > .details-list {
+  flex: auto;
+  width: 100%;
 }
 
 /* Directory tree at the left. */

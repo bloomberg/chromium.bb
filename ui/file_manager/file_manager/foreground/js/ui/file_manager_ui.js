@@ -338,10 +338,11 @@ function FileManagerUI(providersModel, element, launchParam) {
  *
  * @param {!FileTable} table
  * @param {!FileGrid} grid
+ * @param {!SingleFileDetailsPanel} singlePanel
  * @param {!LocationLine} locationLine
  */
 FileManagerUI.prototype.initAdditionalUI = function(
-    table, grid, locationLine) {
+    table, grid, singlePanel, locationLine) {
   // List container.
   this.listContainer = new ListContainer(
       queryRequiredElement('#list-container', this.element), table, grid);
@@ -357,9 +358,10 @@ FileManagerUI.prototype.initAdditionalUI = function(
       this.detailsButton.style.display = 'block';
       var listDetailsSplitter =
           queryRequiredElement('#list-details-splitter', this.element);
-      this.decorateSplitter_(listDetailsSplitter);
+      this.decorateSplitter_(listDetailsSplitter, true);
       this.detailsContainer = new DetailsContainer(
           queryRequiredElement('#details-container', this.element),
+          singlePanel,
           listDetailsSplitter,
           this.detailsButton,
           this.detailsButtonToggleRipple_);
@@ -515,9 +517,11 @@ FileManagerUI.prototype.onExternalLinkClick_ = function(event) {
 /**
  * Decorates the given splitter element.
  * @param {!HTMLElement} splitterElement
+ * @param {boolean=} opt_resizeNextElement
  * @private
  */
-FileManagerUI.prototype.decorateSplitter_ = function(splitterElement) {
+FileManagerUI.prototype.decorateSplitter_ = function(splitterElement,
+    opt_resizeNextElement) {
   var self = this;
   var Splitter = cr.ui.Splitter;
   var customSplitter = cr.ui.define('div');
@@ -542,4 +546,5 @@ FileManagerUI.prototype.decorateSplitter_ = function(splitterElement) {
   };
 
   customSplitter.decorate(splitterElement);
+  splitterElement.resizeNextElement = !!opt_resizeNextElement;
 };
