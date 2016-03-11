@@ -12,7 +12,7 @@ namespace gin {
 
 // Runs any pending v8 Microtasks each time a task is completed.
 // TODO(hansmuller); At some point perhaps this can be replaced with
-// the (currently experimental) Isolate::SetAutorunMicrotasks() method.
+// the (currently experimental) v8::MicrotasksPolicy::kAuto method.
 
 class RunMicrotasksObserver : public base::MessageLoop::TaskObserver {
  public:

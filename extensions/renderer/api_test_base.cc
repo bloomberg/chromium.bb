@@ -214,7 +214,7 @@ void ApiTestEnvironment::RunTestInner(const std::string& test_name,
 }
 
 void ApiTestEnvironment::RunPromisesAgain() {
-  env()->isolate()->RunMicrotasks();
+  v8::MicrotasksScope::PerformCheckpoint(env()->isolate());
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ApiTestEnvironment::RunPromisesAgain,
                             base::Unretained(this)));

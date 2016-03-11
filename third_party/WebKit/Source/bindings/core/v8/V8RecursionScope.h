@@ -59,63 +59,39 @@ class CORE_EXPORT V8RecursionScope {
     STACK_ALLOCATED();
 public:
     explicit V8RecursionScope(v8::Isolate* isolate)
-        : m_isolate(isolate)
+        : m_scope(isolate, v8::MicrotasksScope::kRunMicrotasks)
     {
-        V8PerIsolateData::from(m_isolate)->incrementRecursionLevel();
-        // If you want V8 to autorun microtasks, this class needs to have a
-        // v8::Isolate::SuppressMicrotaskExecutionScope member.
-        ASSERT(!isolate->WillAutorunMicrotasks());
+        ASSERT(isolate->GetMicrotasksPolicy() == v8::MicrotasksPolicy::kScoped);
     }
 
     ~V8RecursionScope()
     {
-        if (!V8PerIsolateData::from(m_isolate)->decrementRecursionLevel())
-            didLeaveScriptContext();
     }
 
     static int recursionLevel(v8::Isolate* isolate)
     {
-        return V8PerIsolateData::from(isolate)->recursionLevel();
+        return v8::MicrotasksScope::GetCurrentDepth(isolate);
     }
-
-#if ENABLE(ASSERT)
-    static bool properlyUsed(v8::Isolate* isolate)
-    {
-        return recursionLevel(isolate) > 0 || V8PerIsolateData::from(isolate)->internalScriptRecursionLevel() > 0;
-    }
-#endif
 
     class MicrotaskSuppression {
         USING_FAST_MALLOC(MicrotaskSuppression);
         WTF_MAKE_NONCOPYABLE(MicrotaskSuppression);
     public:
-        MicrotaskSuppression(v8::Isolate* isolate)
-#if ENABLE(ASSERT)
-            : m_isolate(isolate)
-#endif
+        explicit MicrotaskSuppression(v8::Isolate* isolate)
+            : m_scope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks)
         {
-#if ENABLE(ASSERT)
-            V8PerIsolateData::from(m_isolate)->incrementInternalScriptRecursionLevel();
-#endif
         }
 
         ~MicrotaskSuppression()
         {
-#if ENABLE(ASSERT)
-            V8PerIsolateData::from(m_isolate)->decrementInternalScriptRecursionLevel();
-#endif
         }
 
     private:
-#if ENABLE(ASSERT)
-        v8::Isolate* m_isolate;
-#endif
+        v8::MicrotasksScope m_scope;
     };
 
 private:
-    void didLeaveScriptContext();
-
-    v8::Isolate* m_isolate;
+    v8::MicrotasksScope m_scope;
 };
 
 } // namespace blink

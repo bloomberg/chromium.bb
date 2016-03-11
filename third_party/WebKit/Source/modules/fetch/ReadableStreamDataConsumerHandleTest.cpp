@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
@@ -59,6 +60,7 @@ public:
     {
         v8::Local<v8::String> source;
         v8::Local<v8::Script> script;
+        V8RecursionScope::MicrotaskSuppression microtasks(isolate());
         if (!v8Call(v8::String::NewFromUtf8(isolate(), s, v8::NewStringType::kNormal), source)) {
             ADD_FAILURE();
             return v8::MaybeLocal<v8::Value>();

@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -172,6 +173,7 @@ inline bool CallFunction(v8::Local<v8::Context> context,
                          int argc,
                          v8::Local<v8::Value> argv[],
                          v8::Local<v8::Value>* out) {
+  blink::WebScopedMicrotaskSuppression microtasks_scope;
   return function->Call(context, recv, argc, argv).ToLocal(out);
 }
 

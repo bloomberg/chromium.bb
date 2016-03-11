@@ -15,7 +15,7 @@ void RunMicrotasksObserver::WillProcessTask(const base::PendingTask& task) {
 
 void RunMicrotasksObserver::DidProcessTask(const base::PendingTask& task) {
   v8::Isolate::Scope scope(isolate_);
-  isolate_->RunMicrotasks();
+  v8::MicrotasksScope::PerformCheckpoint(isolate_);
 }
 
 }  // namespace gin
