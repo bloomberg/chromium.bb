@@ -174,7 +174,7 @@ static String messageLevelValue(MessageLevel level)
 
 void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* consoleMessage, bool generatePreview)
 {
-    if (consoleMessage->workerInspectorProxy())
+    if (consoleMessage->workerGlobalScopeProxy())
         return;
 
     OwnPtr<protocol::Console::ConsoleMessage> jsonObj = protocol::Console::ConsoleMessage::create()

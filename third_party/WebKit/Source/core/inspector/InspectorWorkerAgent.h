@@ -43,10 +43,7 @@ class PageConsoleAgent;
 class KURL;
 class WorkerInspectorProxy;
 
-class CORE_EXPORT InspectorWorkerAgent final
-    : public InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>
-    , public protocol::Dispatcher::WorkerCommandHandler
-    , public WorkerInspectorProxy::PageInspector {
+class CORE_EXPORT InspectorWorkerAgent final : public InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>, public protocol::Dispatcher::WorkerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create(InspectedFrames*, PageConsoleAgent*);
@@ -60,7 +57,7 @@ public:
 
     // Called from InspectorInstrumentation
     bool shouldWaitForDebuggerOnWorkerStart();
-    void didStartWorker(WorkerInspectorProxy*, bool waitingForDebugger);
+    void didStartWorker(WorkerInspectorProxy*, const KURL&, bool waitingForDebugger);
     void workerTerminated(WorkerInspectorProxy*);
 
     // Called from Dispatcher
@@ -70,21 +67,51 @@ public:
 
     void setTracingSessionId(const String&);
 
+    class WorkerAgentClient final : public WorkerInspectorProxy::PageInspector {
+        USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorWorkerAgent::WorkerAgentClient);
+    public:
+        static PassOwnPtrWillBeRawPtr<WorkerAgentClient> create(protocol::Frontend::Worker*, WorkerInspectorProxy*, const String& id, PageConsoleAgent*);
+        WorkerAgentClient(protocol::Frontend::Worker*, WorkerInspectorProxy*, const String& id, PageConsoleAgent*);
+        ~WorkerAgentClient() override;
+        DECLARE_VIRTUAL_TRACE();
+
+        String id() const { return m_id; }
+        WorkerInspectorProxy* proxy() const { return m_proxy; }
+
+        void connectToWorker();
+        void dispose();
+
+    private:
+        // WorkerInspectorProxy::PageInspector implementation
+        void dispatchMessageFromWorker(const String& message) override;
+        void workerConsoleAgentEnabled(WorkerGlobalScopeProxy*) override;
+
+        protocol::Frontend::Worker* m_frontend;
+        RawPtrWillBeMember<WorkerInspectorProxy> m_proxy;
+        String m_id;
+        bool m_connected;
+        RawPtrWillBeMember<PageConsoleAgent> m_consoleAgent;
+    };
+
 private:
     InspectorWorkerAgent(InspectedFrames*, PageConsoleAgent*);
-    bool enabled();
-    void connectToAllProxies();
-    void connectToProxy(WorkerInspectorProxy*, const String& id, bool waitingForDebugger);
+    void createWorkerAgentClientsForExistingWorkers();
+    void createWorkerAgentClient(WorkerInspectorProxy*, const String& url, const String& id, bool waitingForDebugger);
+    void destroyWorkerAgentClients();
 
-    // WorkerInspectorProxy::PageInspector implementation.
-    void dispatchMessageFromWorker(WorkerInspectorProxy*, const String& message) override;
-    void workerConsoleAgentEnabled(WorkerInspectorProxy*) override;
+    class WorkerInfo {
+    public:
+        WorkerInfo() { }
+        WorkerInfo(const String& url, const String& id) : url(url), id(id) { }
+        String url;
+        String id;
+    };
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    using IdToProxyMap = WillBeHeapHashMap<String, RawPtrWillBeMember<WorkerInspectorProxy>>;
-    IdToProxyMap m_idToProxy;
-    using ProxyToIdMap = WillBeHeapHashMap<RawPtrWillBeMember<WorkerInspectorProxy>, String>;
-    ProxyToIdMap m_proxyToId;
+    using WorkerClients = WillBeHeapHashMap<String, OwnPtrWillBeMember<WorkerAgentClient>>;
+    WorkerClients m_idToClient;
+    using WorkerInfos = WillBeHeapHashMap<RawPtrWillBeMember<WorkerInspectorProxy>, WorkerInfo>;
+    WorkerInfos m_workerInfos;
     String m_tracingSessionId;
     RawPtrWillBeMember<PageConsoleAgent> m_consoleAgent;
 };

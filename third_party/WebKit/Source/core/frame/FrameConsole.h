@@ -44,7 +44,7 @@ class DocumentLoader;
 class ResourceError;
 class ResourceResponse;
 class ScriptCallStack;
-class WorkerInspectorProxy;
+class WorkerGlobalScopeProxy;
 
 // FrameConsole takes per-frame console messages and routes them up through the FrameHost to the ChromeClient and Inspector.
 // It's meant as an abstraction around ChromeClient calls and the way that Blink core/ can add messages to the console.
@@ -58,7 +58,7 @@ public:
     }
 
     void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
-    void adoptWorkerMessagesAfterTermination(WorkerInspectorProxy*);
+    void adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy*);
 
     void reportResourceResponseReceived(DocumentLoader*, unsigned long requestIdentifier, const ResourceResponse&);
 

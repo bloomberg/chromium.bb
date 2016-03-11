@@ -67,6 +67,7 @@ public:
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL);
     void postMessageToPageInspector(const String&);
     void postWorkerConsoleAgentEnabled();
+    WorkerInspectorProxy* workerInspectorProxy();
     void confirmMessageFromWorkerObject(bool hasPendingActivity);
     void reportPendingActivity(bool hasPendingActivity);
     void workerGlobalScopeClosed();

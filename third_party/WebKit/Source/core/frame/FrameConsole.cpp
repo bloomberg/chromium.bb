@@ -160,7 +160,7 @@ void FrameConsole::clearMessages()
         storage->clear(m_frame->document());
 }
 
-void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerInspectorProxy* proxy)
+void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy* proxy)
 {
     ConsoleMessageStorage* storage = messageStorage();
     if (storage)
