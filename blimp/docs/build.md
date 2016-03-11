@@ -3,10 +3,12 @@ Blimp only supports building using [GN](../../tools/gn/README.md). A quick
 overview over how to use GN can be found in the GN
 [quick start guide](../../tools/gn/docs/quick_start.md).
 
-There are three different build configurations depending on what you want to
+## Building
+
+There are two different build configurations depending on what you want to
 build:
 
-## Android client
+### Android client
 
 Create an out-directory and set the GN args:
 
@@ -35,7 +37,7 @@ To add your own build preferences
 gn args out-android/Debug
 ```
 
-## Engine
+### Engine
 
 Create another out-directory and set the GN args:
 
@@ -56,3 +58,24 @@ To add your own build preferences
 ```bash
 gn args out-android/Debug
 ```
+
+## Adding new build arguments
+
+Adding new build arguments should be fairly rare. Arguments first need to be
+[declared](../../tools/gn/docs/quick_start.md#Add-a-new-build-argument).
+
+They can then be used to change how the binary is built or passed through to
+code as a
+[defines](../../tools/gn/docs/reference.md#defines_C-preprocessor-defines).
+
+Finally the Blimp argument templates should be updated to reflect the
+(non-default for Chrome) behavior desired by Blimp (see below).
+
+## Updating bulid arguments in templates
+
+Build argument templates exist for the client and engine at
+[`build/args/blimp_client.gn`](../../build/args/blimp_client.gn) and
+[`build/args/blimp_engine.gn`](../../build/args/blimp_engine.gn).
+
+These can be updated as in the same manner as your personal `args.gn` files
+to override default argument values.

@@ -182,3 +182,43 @@ Use `source_set` rather than `static_library` unless you have a reason
 to do otherwise. A static library is a standalone library which can be
 slow to generate. A source set just links all the object files from that
 target into the targets depending on it, which saves the "lib" step.
+
+## Build arguments
+
+### Scope
+
+Build arguments should be scoped to a unit of behavior, e.g. enabling a feature.
+Typically an argument would be declared in an imported file to share it with
+the subset of the build that could make use of it.
+
+### Type
+
+Arguments support all the [GN language types](language.md#Language).
+
+In the vast majority of cases `boolean` is the preferred type, since most
+arguments are enabling or disabling features or includes.
+
+`String`s are typically used for filepaths. They are also used for enumerated
+types, though `integer`s are sometimes used as well.
+
+### Naming conventions
+
+While there are no hard and fast rules around argument naming there are
+many common conventions. If you ever want to see the current list of argument
+names and default values for your current checkout use
+`gn args out/Debug --list --short`.
+
+`use_foo` - indicates dependencies or major codepaths to include (e.g.
+`use_open_ssl`, `use_ozone`, `use_cups`)
+
+`enable_foo` - indicates feature or tools to be enabled (e.g.
+`enable_google_now`, `enable_nacl`, `enable_remoting`, `enable_pdf`)
+
+`disable_foo` - _NOT_ recommended, use `enable_foo` instead with swapped default
+value
+
+`is_foo` - usually a global state descriptor (e.g. `is_chrome_branded`,
+`is_desktop_linux`); poor choice for non-globals
+
+`foo_use_bar` - prefixes can be used to indicate a limited scope for an argument
+(e.g. `rtc_use_h264`, `v8_use_snapshot`)

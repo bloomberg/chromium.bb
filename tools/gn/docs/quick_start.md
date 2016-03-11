@@ -72,7 +72,6 @@ See [GNCrossCompiles](cross_compiles.md) for more info.
 
 ## Configuring goma
 
-
 Run `gn args out/Default` (substituting your build directory as needed).
 Add:
 
@@ -281,6 +280,24 @@ ninja: Entering directory 'out/Default'
 > out/Default/say_hello
 Hello, Bill and Joy.
 ```
+
+## Add a new build argument
+
+You declare which arguments you accept and specify default values via
+`declare_args`.
+
+```
+declare_args() {
+  enable_teleporter = true
+  enable_doom_melon = false
+}
+```
+
+See `gn help buildargs` for an overview of how this works.
+See `gn help declare_args` for specifics on declaring them.
+
+It is an error to declare a given argument more than once in a given scope, so
+care should be used in scoping and naming arguments.
 
 ## Don't know what's going on?
 
