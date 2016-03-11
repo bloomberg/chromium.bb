@@ -669,16 +669,16 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // without showing an actual dialog.
   MockRenderProcessHost* ntp_process_host = ntp_rfh->GetProcess();
   ntp_process_host->sink().ClearMessages();
-  const base::string16 msg = base::ASCIIToUTF16("Message");
   bool result = false;
   base::string16 unused;
   FrameHostMsg_RunBeforeUnloadConfirm before_unload_msg(
-      ntp_rfh->GetRoutingID(), kChromeURL, msg, false, &result, &unused);
+      ntp_rfh->GetRoutingID(), kChromeURL, false, &result, &unused);
   EXPECT_TRUE(ntp_rfh->OnMessageReceived(before_unload_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
 
   // Also test RunJavaScriptMessage.
   ntp_process_host->sink().ClearMessages();
+  const base::string16 msg = base::ASCIIToUTF16("Message");
   FrameHostMsg_RunJavaScriptMessage js_msg(
       ntp_rfh->GetRoutingID(), msg, msg, kChromeURL,
       JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);

@@ -111,7 +111,7 @@ public:
     void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) override {}
 
     bool canOpenBeforeUnloadConfirmPanel() override { return false; }
-    bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, const String&, bool) override { return true; }
+    bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, bool) override { return true; }
 
     void closeWindowSoon() override {}
 

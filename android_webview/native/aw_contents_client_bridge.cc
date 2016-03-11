@@ -17,12 +17,14 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/scoped_openssl_types.h"
+#include "grit/components_strings.h"
 #include "jni/AwContentsClientBridge_jni.h"
 #include "net/android/keystore_openssl.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/openssl_client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_client_cert_type.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -318,7 +320,6 @@ void AwContentsClientBridge::RunJavaScriptDialog(
 
 void AwContentsClientBridge::RunBeforeUnloadDialog(
     const GURL& origin_url,
-    const base::string16& message_text,
     const content::JavaScriptDialogManager::DialogClosedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
@@ -328,6 +329,9 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
     callback.Run(false, base::string16());
     return;
   }
+
+  const base::string16 message_text =
+      l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE);
 
   int callback_id = pending_js_dialog_callbacks_.Add(
       new content::JavaScriptDialogManager::DialogClosedCallback(callback));

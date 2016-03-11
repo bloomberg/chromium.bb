@@ -3882,7 +3882,6 @@ void WebContentsImpl::RunJavaScriptMessage(
 
 void WebContentsImpl::RunBeforeUnloadConfirm(
     RenderFrameHost* render_frame_host,
-    const base::string16& message,
     bool is_reload,
     IPC::Message* reply_msg) {
   RenderFrameHostImpl* rfhi =
@@ -3903,7 +3902,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   is_showing_before_unload_dialog_ = true;
   dialog_manager_ = delegate_->GetJavaScriptDialogManager(this);
   dialog_manager_->RunBeforeUnloadDialog(
-      this, message, is_reload,
+      this, is_reload,
       base::Bind(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
                  render_frame_host->GetProcess()->GetID(),
                  render_frame_host->GetRoutingID(), reply_msg,

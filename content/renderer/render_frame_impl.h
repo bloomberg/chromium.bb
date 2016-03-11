@@ -522,8 +522,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool runModalPromptDialog(const blink::WebString& message,
                             const blink::WebString& default_value,
                             blink::WebString* actual_value) override;
-  bool runModalBeforeUnloadDialog(bool is_reload,
-                                  const blink::WebString& message) override;
+  bool runModalBeforeUnloadDialog(bool is_reload) override;
   void showContextMenu(const blink::WebContextMenuData& data) override;
   void clearContextMenu() override;
   void willSendRequest(blink::WebLocalFrame* frame,

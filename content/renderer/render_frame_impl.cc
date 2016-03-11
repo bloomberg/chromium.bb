@@ -3627,9 +3627,7 @@ bool RenderFrameImpl::runModalPromptDialog(
   return ok;
 }
 
-bool RenderFrameImpl::runModalBeforeUnloadDialog(
-    bool is_reload,
-    const blink::WebString& message) {
+bool RenderFrameImpl::runModalBeforeUnloadDialog(bool is_reload) {
   // If we are swapping out, we have already run the beforeunload handler.
   // TODO(creis): Fix OnSwapOut to clear the frame without running beforeunload
   // at all, to avoid running it twice.
@@ -3647,7 +3645,7 @@ bool RenderFrameImpl::runModalBeforeUnloadDialog(
   base::string16 ignored_result;
   render_view()->SendAndRunNestedMessageLoop(
       new FrameHostMsg_RunBeforeUnloadConfirm(
-          routing_id_, frame_->document().url(), message, is_reload,
+          routing_id_, frame_->document().url(), is_reload,
           &success, &ignored_result));
   return success;
 }

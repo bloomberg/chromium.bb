@@ -52,7 +52,6 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
                            const DialogClosedCallback& callback,
                            bool* did_suppress_message) override;
   void RunBeforeUnloadDialog(content::WebContents* web_contents,
-                             const base::string16& message_text,
                              bool is_reload,
                              const DialogClosedCallback& callback) override;
   bool HandleJavaScriptDialog(content::WebContents* web_contents,

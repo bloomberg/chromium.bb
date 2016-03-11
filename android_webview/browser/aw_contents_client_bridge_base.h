@@ -59,7 +59,6 @@ class AwContentsClientBridgeBase {
 
   virtual void RunBeforeUnloadDialog(
       const GURL& origin_url,
-      const base::string16& message_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       = 0;
 

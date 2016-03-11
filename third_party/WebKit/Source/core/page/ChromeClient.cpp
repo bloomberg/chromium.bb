@@ -93,8 +93,8 @@ static bool openJavaScriptDialog(LocalFrame* frame, const String& message, Chrom
 bool ChromeClient::openBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame, bool isReload)
 {
     ASSERT(frame);
-    return openJavaScriptDialog(frame, message, ChromeClient::HTMLDialog, [this, frame, &message, isReload]() {
-        return openBeforeUnloadConfirmPanelDelegate(frame, message, isReload);
+    return openJavaScriptDialog(frame, message, ChromeClient::HTMLDialog, [this, frame, isReload]() {
+        return openBeforeUnloadConfirmPanelDelegate(frame, isReload);
     });
 }
 

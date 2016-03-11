@@ -39,7 +39,6 @@ void AwJavaScriptDialogManager::RunJavaScriptDialog(
 
 void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
-    const base::string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
   AwContentsClientBridgeBase* bridge =
@@ -50,7 +49,6 @@ void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
   }
 
   bridge->RunBeforeUnloadDialog(web_contents->GetURL(),
-                                message_text,
                                 callback);
 }
 

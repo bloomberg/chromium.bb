@@ -18,6 +18,7 @@
         '../../components/components.gyp:autofill_content_browser',
         '../../components/components.gyp:devtools_http_handler',
         '../../components/components.gyp:web_contents_delegate_android',
+        '../../components/components_strings.gyp:components_strings',
         '../../content/content.gyp:content_common',
         '../../media/media.gyp:player_android',
         '../../net/net.gyp:net',

@@ -83,10 +83,14 @@ const int kMessageTextMaxSlots = 2000;
 - (NSAlert*)alert {
   if (!alert_) {
     alert_.reset([[NSAlert alloc] init]);
-    // Set a blank icon.
-    NSImage* image =
-        [[[NSImage alloc] initWithSize:NSMakeSize(1, 1)] autorelease];
-    [alert_ setIcon:image];
+    if (!nativeDialog_->dialog()->is_before_unload_dialog()) {
+      // Set a blank icon for dialogs with text provided by the page.
+      // "onbeforeunload" dialogs don't have text provided by the page, so it's
+      // OK to use the app icon.
+      NSImage* image =
+          [[[NSImage alloc] initWithSize:NSMakeSize(1, 1)] autorelease];
+      [alert_ setIcon:image];
+    }
   }
   return alert_;
 }

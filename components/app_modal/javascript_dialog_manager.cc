@@ -57,30 +57,15 @@ bool ShouldDisplaySuppressCheckbox(
   return extra_data->has_already_shown_a_dialog_;
 }
 
-enum class DialogType {
-  JAVASCRIPT,
-  ON_BEFORE_UNLOAD,
-};
-
-void LogUMAMessageLengthStats(const base::string16& message, DialogType type) {
-  if (type == DialogType::JAVASCRIPT) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfJSDialogMessageCharacters",
-                         static_cast<int32_t>(message.length()));
-  } else {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfOnBeforeUnloadMessageCharacters",
-                         static_cast<int32_t>(message.length()));
-  }
+void LogUMAMessageLengthStats(const base::string16& message) {
+  UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfJSDialogMessageCharacters",
+                       static_cast<int32_t>(message.length()));
 
   int32_t newline_count =
       std::count_if(message.begin(), message.end(),
                     [](const base::char16& c) { return c == '\n'; });
-  if (type == DialogType::JAVASCRIPT) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfJSDialogMessageNewlines",
-                         newline_count);
-  } else {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfOnBeforeUnloadMessageNewlines",
-                         newline_count);
-  }
+  UMA_HISTOGRAM_COUNTS("JSDialogs.CountOfJSDialogMessageNewlines",
+                       newline_count);
 }
 
 }  // namespace
@@ -172,7 +157,7 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
 
   extensions_client_->OnDialogOpened(web_contents);
 
-  LogUMAMessageLengthStats(message_text, DialogType::JAVASCRIPT);
+  LogUMAMessageLengthStats(message_text);
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
       &javascript_dialog_extra_data_,
@@ -189,7 +174,6 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
 
 void JavaScriptDialogManager::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
-    const base::string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
   ChromeJavaScriptDialogExtraData* extra_data =
@@ -202,23 +186,33 @@ void JavaScriptDialogManager::RunBeforeUnloadDialog(
     return;
   }
 
+  // Build the dialog message. We explicitly do _not_ allow the webpage to
+  // specify the contents of this dialog, because most of the time nowadays it's
+  // used for scams.
+  //
+  // This does not violate the spec. Per
+  // https://html.spec.whatwg.org/#prompt-to-unload-a-document, step 7:
+  //
+  // "The prompt shown by the user agent may include the string of the
+  // returnValue attribute, or some leading subset thereof."
+  //
+  // The prompt MAY include the string. It doesn't any more. Scam web page
+  // authors have abused this, so we're taking away the toys from everyone. This
+  // is why we can't have nice things.
+
   const base::string16 title = l10n_util::GetStringUTF16(is_reload ?
       IDS_BEFORERELOAD_MESSAGEBOX_TITLE : IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE);
-  const base::string16 footer = l10n_util::GetStringUTF16(is_reload ?
-      IDS_BEFORERELOAD_MESSAGEBOX_FOOTER : IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER);
-
-  base::string16 full_message =
-      message_text + base::ASCIIToUTF16("\n\n") + footer;
+  const base::string16 message =
+      l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE);
 
   extensions_client_->OnDialogOpened(web_contents);
 
-  LogUMAMessageLengthStats(message_text, DialogType::ON_BEFORE_UNLOAD);
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
       &javascript_dialog_extra_data_,
       title,
       content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
-      full_message,
+      message,
       base::string16(),  // default_prompt_text
       ShouldDisplaySuppressCheckbox(extra_data),
       true,        // is_before_unload_dialog

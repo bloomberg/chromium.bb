@@ -51,7 +51,6 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
       override;
   void RunBeforeUnloadDialog(
       const GURL& origin_url,
-      const base::string16& message_text,
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       override;
   bool ShouldOverrideUrlLoading(const base::string16& url,

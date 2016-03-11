@@ -81,7 +81,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                     IPC::Message* reply_msg) {}
 
   virtual void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
-                                      const base::string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) {}
 

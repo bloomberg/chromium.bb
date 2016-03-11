@@ -419,7 +419,6 @@ class CONTENT_EXPORT WebContentsImpl
                             JavaScriptMessageType type,
                             IPC::Message* reply_msg) override;
   void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
-                              const base::string16& message,
                               bool is_reload,
                               IPC::Message* reply_msg) override;
   void DidAccessInitialDocument() override;

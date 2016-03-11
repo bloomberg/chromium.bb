@@ -18134,6 +18134,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="JSDialogs.CountOfOnBeforeUnloadMessageCharacters">
+  <obsolete>
+    Deprecated 2016-02.
+  </obsolete>
   <owner>avi@chromium.org</owner>
   <summary>
     The count of the number of characters in onbeforeunload messages.
@@ -18141,6 +18144,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="JSDialogs.CountOfOnBeforeUnloadMessageNewlines">
+  <obsolete>
+    Deprecated 2016-02.
+  </obsolete>
   <owner>avi@chromium.org</owner>
   <summary>
     The count of the number of newlines in onbeforeunload messages. (This does

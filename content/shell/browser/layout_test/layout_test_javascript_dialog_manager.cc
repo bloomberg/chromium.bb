@@ -35,7 +35,6 @@ void LayoutTestJavaScriptDialogManager::RunJavaScriptDialog(
 
 void LayoutTestJavaScriptDialogManager::RunBeforeUnloadDialog(
     WebContents* web_contents,
-    const base::string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
   callback.Run(true, base::string16());

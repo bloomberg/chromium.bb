@@ -400,12 +400,10 @@ public:
         const WebString& message, const WebString& defaultValue,
         WebString* actualValue) { return false; }
 
-    // Displays a modal confirmation dialog containing the given message as
-    // description and OK/Cancel choices, where 'OK' means that it is okay
-    // to proceed with closing the view. Returns true if the user selects
-    // 'OK' or false otherwise.
-    virtual bool runModalBeforeUnloadDialog(
-        bool isReload, const WebString& message) { return true; }
+    // Displays a modal confirmation dialog with OK/Cancel choices, where 'OK'
+    // means that it is okay to proceed with closing the view. Returns true if
+    // the user selects 'OK' or false otherwise.
+    virtual bool runModalBeforeUnloadDialog(bool isReload) { return true; }
 
 
     // UI ------------------------------------------------------------------

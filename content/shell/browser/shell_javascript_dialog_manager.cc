@@ -66,7 +66,6 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
 
 void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
     WebContents* web_contents,
-    const base::string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
   if (!dialog_request_callback_.is_null()) {
@@ -83,16 +82,15 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
     return;
   }
 
-  base::string16 new_message_text =
-      message_text +
-      base::ASCIIToUTF16("\n\nIs it OK to leave/reload this page?");
+  base::string16 message_text =
+      base::ASCIIToUTF16("Is it OK to leave/reload this page?");
 
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
 
   dialog_.reset(new ShellJavaScriptDialog(this,
                                           parent_window,
                                           JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
-                                          new_message_text,
+                                          message_text,
                                           base::string16(),  // default
                                           callback));
 #else

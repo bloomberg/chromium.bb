@@ -1,4 +1,4 @@
-CONFIRM NAVIGATION: beforeunload in javascriptDialogEvents
+CONFIRM NAVIGATION
 ALERT: alert
 CONFIRM: confirm
 PROMPT: prompt, default text: 

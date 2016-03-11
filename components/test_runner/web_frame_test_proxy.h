@@ -167,10 +167,9 @@ class WebFrameTestProxy : public Base {
     return true;
   }
 
-  bool runModalBeforeUnloadDialog(bool is_reload,
-                                  const blink::WebString& message) override {
+  bool runModalBeforeUnloadDialog(bool is_reload) override {
     base_proxy_->GetDelegate()->PrintMessage(
-        std::string("CONFIRM NAVIGATION: ") + message.utf8().data() + "\n");
+        std::string("CONFIRM NAVIGATION\n"));
     return !base_proxy_->GetInterfaces()
                 ->TestRunner()
                 ->ShouldStayOnPageAfterHandlingBeforeUnload();

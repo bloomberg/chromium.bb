@@ -20,30 +20,27 @@
 
   <!-- "Before Unload" Dialog Box strings -->
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog.">
-    Confirm Navigation
+    Do you want to leave this site?
   </message>
-  <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER" desc="Text shown at the bottom of the dialog, after the message provided by the script.">
-    Are you sure you want to leave this page?
+  <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE" desc="Text shown as the message of the 'before unload' dialog.">
+    Changes you made may not be saved.
   </message>
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which navigates the user away from the page.">
-    Leave this Page
+    Leave
   </message>
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL" desc="The text on the button which cancels the navigation away from the page.">
-    Stay on this Page
+    Stay
   </message>
 
   <!-- "Before Reload" Dialog Box strings (same as "Before Unload" but when reloading rather than unloading the page -->
-  <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before reload' dialog.">
-    Confirm Reload
-  </message>
-  <message name="IDS_BEFORERELOAD_MESSAGEBOX_FOOTER" desc="Text shown at the bottom of the dialog, after the message provided by the script.">
-    Are you sure you want to reload this page?
+  <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog for reloads.">
+    Do you want to reload this site?
   </message>
   <message name="IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which reloads the page.">
-    Reload this Page
+    Reload
   </message>
   <message name="IDS_BEFORERELOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL" desc="The text on the button which cancels the page reload.">
-    Don't Reload
+    Don’t Reload
   </message>
 
 </grit-part>

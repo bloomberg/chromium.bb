@@ -3408,7 +3408,6 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager {
   };
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
-                             const base::string16& message_text,
                              bool is_reload,
                              const DialogClosedCallback& callback) override {}
 

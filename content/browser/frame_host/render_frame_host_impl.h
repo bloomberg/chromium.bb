@@ -623,7 +623,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                               JavaScriptMessageType type,
                               IPC::Message* reply_msg);
   void OnRunBeforeUnloadConfirm(const GURL& frame_url,
-                                const base::string16& message,
                                 bool is_reload,
                                 IPC::Message* reply_msg);
   void OnTextSurroundingSelectionResponse(const base::string16& content,
