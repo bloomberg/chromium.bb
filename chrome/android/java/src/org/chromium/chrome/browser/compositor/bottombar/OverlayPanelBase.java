@@ -328,7 +328,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return Whether the Overlay Panel is opened. That is, whether it is EXPANDED or MAXIMIZED.
      */
     public boolean isPanelOpened() {
-        return mPanelState == PanelState.EXPANDED || mPanelState == PanelState.MAXIMIZED;
+        return mHeight > mBarHeightPeeking;
     }
 
     /**
