@@ -26,6 +26,7 @@ namespace content {
 class RenderWidgetHostViewAndroid;
 class SynchronousCompositorStreamTextureFactoryImpl;
 class WebContents;
+struct DidOverscrollParams;
 
 class SynchronousCompositorBase : public SynchronousCompositor {
  public:
@@ -38,6 +39,7 @@ class SynchronousCompositorBase : public SynchronousCompositor {
   virtual void BeginFrame(const cc::BeginFrameArgs& args) = 0;
   virtual InputEventAckState HandleInputEvent(
       const blink::WebInputEvent& input_event) = 0;
+  virtual void DidOverscroll(const DidOverscrollParams& over_scroll_params) = 0;
   virtual bool OnMessageReceived(const IPC::Message& message) = 0;
 
   virtual void DidBecomeCurrent() = 0;

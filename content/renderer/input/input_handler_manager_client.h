@@ -44,9 +44,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void SetBoundHandler(const Handler& handler) = 0;
 
   // Called from the compositor thread.
-  virtual void DidAddInputHandler(
-      int routing_id,
-      ui::SynchronousInputHandlerProxy* synchronous_handler) = 0;
+  virtual void DidAddInputHandler(int routing_id) = 0;
   virtual void DidRemoveInputHandler(int routing_id) = 0;
   virtual void DidOverscroll(int routing_id,
                              const DidOverscrollParams& params) = 0;
@@ -60,6 +58,22 @@ class CONTENT_EXPORT InputHandlerManagerClient {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputHandlerManagerClient);
+};
+
+class CONTENT_EXPORT SynchronousInputHandlerProxyClient {
+ public:
+  virtual ~SynchronousInputHandlerProxyClient() {}
+
+  virtual void DidAddSynchronousHandlerProxy(
+      int routing_id,
+      ui::SynchronousInputHandlerProxy* synchronous_handler) = 0;
+  virtual void DidRemoveSynchronousHandlerProxy(int routing_id) = 0;
+
+ protected:
+  SynchronousInputHandlerProxyClient() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SynchronousInputHandlerProxyClient);
 };
 
 }  // namespace content

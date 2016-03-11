@@ -66,11 +66,13 @@ scoped_ptr<SynchronousCompositorBase> SynchronousCompositorBase::Create(
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kIPCSyncCompositing)) {
+    bool async_input =
+        !command_line->HasSwitch(switches::kSyncInputForSyncCompositor);
     bool use_in_proc_software_draw =
         command_line->HasSwitch(switches::kSingleProcess);
     return make_scoped_ptr(new SynchronousCompositorHost(
         rwhva, web_contents_android->synchronous_compositor_client(),
-        use_in_proc_software_draw));
+        async_input, use_in_proc_software_draw));
   }
   return make_scoped_ptr(new SynchronousCompositorImpl(
       rwhva, web_contents_android->synchronous_compositor_client()));

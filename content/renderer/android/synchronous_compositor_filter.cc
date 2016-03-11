@@ -210,32 +210,13 @@ void SynchronousCompositorFilter::SetBoundHandler(const Handler& handler) {
           handler));
 }
 
+void SynchronousCompositorFilter::DidAddInputHandler(int routing_id) {}
+void SynchronousCompositorFilter::DidRemoveInputHandler(int routing_id) {}
+
 void SynchronousCompositorFilter::SetBoundHandlerOnCompositorThread(
     const Handler& handler) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   input_handler_ = handler;
-}
-
-void SynchronousCompositorFilter::DidAddInputHandler(
-    int routing_id,
-    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  DCHECK(synchronous_input_handler_proxy);
-  Entry& entry = entry_map_[routing_id];
-  DCHECK(!entry.synchronous_input_handler_proxy);
-  entry.synchronous_input_handler_proxy = synchronous_input_handler_proxy;
-  CheckIsReady(routing_id);
-}
-
-void SynchronousCompositorFilter::DidRemoveInputHandler(int routing_id) {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  DCHECK(ContainsKey(entry_map_, routing_id));
-  Entry& entry = entry_map_[routing_id];
-
-  if (entry.IsReady())
-    UnregisterObjects(routing_id);
-  entry.synchronous_input_handler_proxy = nullptr;
-  RemoveEntryIfNeeded(routing_id);
 }
 
 void SynchronousCompositorFilter::DidOverscroll(
@@ -258,6 +239,29 @@ void SynchronousCompositorFilter::DidStopFlinging(int routing_id) {
 void SynchronousCompositorFilter::NonBlockingInputEventHandled(
     int routing_id,
     blink::WebInputEvent::Type type) {}
+
+void SynchronousCompositorFilter::DidAddSynchronousHandlerProxy(
+    int routing_id,
+    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  DCHECK(synchronous_input_handler_proxy);
+  Entry& entry = entry_map_[routing_id];
+  DCHECK(!entry.synchronous_input_handler_proxy);
+  entry.synchronous_input_handler_proxy = synchronous_input_handler_proxy;
+  CheckIsReady(routing_id);
+}
+
+void SynchronousCompositorFilter::DidRemoveSynchronousHandlerProxy(
+    int routing_id) {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  DCHECK(ContainsKey(entry_map_, routing_id));
+  Entry& entry = entry_map_[routing_id];
+
+  if (entry.IsReady())
+    UnregisterObjects(routing_id);
+  entry.synchronous_input_handler_proxy = nullptr;
+  RemoveEntryIfNeeded(routing_id);
+}
 
 SynchronousCompositorFilter::Entry::Entry()
     : begin_frame_source(nullptr),

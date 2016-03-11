@@ -279,7 +279,7 @@ void SynchronousCompositorImpl::UpdateNeedsBeginFrames() {
   rwhva_->OnSetNeedsBeginFrames(is_active_ && renderer_needs_begin_frames_);
 }
 
-void SynchronousCompositorImpl::DidOverscroll(
+void SynchronousCompositorImpl::DidOverscrollInProcess(
     const DidOverscrollParams& params) {
   if (registered_with_client_) {
     compositor_client_->DidOverscroll(params.accumulated_overscroll,
@@ -301,6 +301,13 @@ InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
   DCHECK(CalledOnValidThread());
   return g_factory.Get().synchronous_input_event_filter()->HandleInputEvent(
       routing_id_, input_event);
+}
+
+void SynchronousCompositorImpl::DidOverscroll(
+    const DidOverscrollParams& params) {
+  // SynchronousCompositorImpl uses synchronous DidOverscrollInProcess for
+  // overscroll instead of this async path.
+  NOTREACHED();
 }
 
 bool SynchronousCompositorImpl::OnMessageReceived(const IPC::Message& message) {

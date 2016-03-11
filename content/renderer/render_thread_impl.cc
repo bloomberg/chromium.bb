@@ -1177,10 +1177,13 @@ void RenderThreadImpl::InitializeCompositorThread() {
 #if defined(OS_ANDROID)
   SynchronousCompositorFactory* sync_compositor_factory =
       SynchronousCompositorFactory::GetInstance();
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   bool using_ipc_sync_compositing =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIPCSyncCompositing);
+      cmd_line->HasSwitch(switches::kIPCSyncCompositing);
+  bool sync_input_for_sync_compositing =
+      cmd_line->HasSwitch(switches::kSyncInputForSyncCompositor);
   DCHECK(!sync_compositor_factory || !using_ipc_sync_compositing);
+  DCHECK(!sync_input_for_sync_compositing || using_ipc_sync_compositing);
 
   if (sync_compositor_factory) {
     compositor_task_runner_ =
@@ -1201,16 +1204,23 @@ void RenderThreadImpl::InitializeCompositorThread() {
                    false));
   }
 
-  InputHandlerManagerClient* input_handler_manager_client = NULL;
+  InputHandlerManagerClient* input_handler_manager_client = nullptr;
+  SynchronousInputHandlerProxyClient* synchronous_input_handler_proxy_client =
+      nullptr;
 #if defined(OS_ANDROID)
   if (using_ipc_sync_compositing) {
     sync_compositor_message_filter_ =
         new SynchronousCompositorFilter(compositor_task_runner_);
     AddFilter(sync_compositor_message_filter_.get());
-    input_handler_manager_client = sync_compositor_message_filter_.get();
+    if (sync_input_for_sync_compositing)
+      input_handler_manager_client = sync_compositor_message_filter_.get();
+    synchronous_input_handler_proxy_client =
+        sync_compositor_message_filter_.get();
   } else if (sync_compositor_factory) {
     input_handler_manager_client =
         sync_compositor_factory->GetInputHandlerManagerClient();
+    synchronous_input_handler_proxy_client =
+        sync_compositor_factory->GetSynchronousInputHandlerProxyClient();
   }
 #endif
   if (!input_handler_manager_client) {
@@ -1223,7 +1233,7 @@ void RenderThreadImpl::InitializeCompositorThread() {
   }
   input_handler_manager_.reset(new InputHandlerManager(
       compositor_task_runner_, input_handler_manager_client,
-      renderer_scheduler_.get()));
+      synchronous_input_handler_proxy_client, renderer_scheduler_.get()));
 }
 
 void RenderThreadImpl::EnsureWebKitInitialized() {

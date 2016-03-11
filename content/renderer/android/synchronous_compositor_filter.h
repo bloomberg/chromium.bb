@@ -23,10 +23,12 @@ namespace content {
 
 class SynchronousCompositorProxy;
 
-class SynchronousCompositorFilter : public IPC::MessageFilter,
-                                    public IPC::Sender,
-                                    public SynchronousCompositorRegistry,
-                                    public InputHandlerManagerClient {
+class SynchronousCompositorFilter
+    : public IPC::MessageFilter,
+      public IPC::Sender,
+      public SynchronousCompositorRegistry,
+      public InputHandlerManagerClient,
+      public SynchronousInputHandlerProxyClient {
  public:
   SynchronousCompositorFilter(const scoped_refptr<base::SingleThreadTaskRunner>&
                                   compositor_task_runner);
@@ -58,16 +60,20 @@ class SynchronousCompositorFilter : public IPC::MessageFilter,
 
   // InputHandlerManagerClient overrides.
   void SetBoundHandler(const Handler& handler) override;
-  void DidAddInputHandler(
-      int routing_id,
-      ui::SynchronousInputHandlerProxy*
-          synchronous_input_handler_proxy) override;
+  void DidAddInputHandler(int routing_id) override;
   void DidRemoveInputHandler(int routing_id) override;
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;
   void DidStopFlinging(int routing_id) override;
   void NonBlockingInputEventHandled(int routing_id,
                                     blink::WebInputEvent::Type type) override;
+
+  // SynchronousInputHandlerProxyClient overrides.
+  void DidAddSynchronousHandlerProxy(
+      int routing_id,
+      ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy)
+      override;
+  void DidRemoveSynchronousHandlerProxy(int routing_id) override;
 
  private:
   ~SynchronousCompositorFilter() override;

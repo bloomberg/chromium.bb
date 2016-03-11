@@ -31,6 +31,7 @@ class WebGraphicsContext3DInProcessCommandBufferImpl;
 namespace content {
 
 class InputHandlerManagerClient;
+class SynchronousInputHandlerProxyClient;
 class StreamTextureFactory;
 class FrameSwapMessageQueue;
 
@@ -55,6 +56,8 @@ class SynchronousCompositorFactory {
 
   // The factory maintains ownership of the returned interface.
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() = 0;
+  virtual SynchronousInputHandlerProxyClient*
+  GetSynchronousInputHandlerProxyClient() = 0;
 
   virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) = 0;

@@ -48,9 +48,11 @@ InputEventAckState InputEventDispositionToAck(
 InputHandlerManager::InputHandlerManager(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     InputHandlerManagerClient* client,
+    SynchronousInputHandlerProxyClient* sync_handler_client,
     scheduler::RendererScheduler* renderer_scheduler)
     : task_runner_(task_runner),
       client_(client),
+      synchronous_handler_proxy_client_(sync_handler_client),
       renderer_scheduler_(renderer_scheduler) {
   DCHECK(client_);
   client_->SetBoundHandler(base::Bind(&InputHandlerManager::HandleInputEvent,
@@ -105,7 +107,11 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
   scoped_ptr<InputHandlerWrapper> wrapper(new InputHandlerWrapper(
       this, routing_id, main_task_runner, input_handler, render_view_impl,
       enable_smooth_scrolling, enable_wheel_gestures));
-  client_->DidAddInputHandler(routing_id, wrapper->input_handler_proxy());
+  client_->DidAddInputHandler(routing_id);
+  if (synchronous_handler_proxy_client_) {
+    synchronous_handler_proxy_client_->DidAddSynchronousHandlerProxy(
+        routing_id, wrapper->input_handler_proxy());
+  }
   input_handlers_.add(routing_id, std::move(wrapper));
 }
 
@@ -116,6 +122,10 @@ void InputHandlerManager::RemoveInputHandler(int routing_id) {
   TRACE_EVENT0("input", "InputHandlerManager::RemoveInputHandler");
 
   client_->DidRemoveInputHandler(routing_id);
+  if (synchronous_handler_proxy_client_) {
+    synchronous_handler_proxy_client_->DidRemoveSynchronousHandlerProxy(
+        routing_id);
+  }
   input_handlers_.erase(routing_id);
 }
 

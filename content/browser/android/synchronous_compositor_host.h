@@ -51,6 +51,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   // SynchronousCompositorBase overrides.
   InputEventAckState HandleInputEvent(
       const blink::WebInputEvent& input_event) override;
+  void DidOverscroll(const DidOverscrollParams& over_scroll_params) override;
   void BeginFrame(const cc::BeginFrameArgs& args) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidBecomeCurrent() override;
@@ -63,6 +64,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
 
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
                             SynchronousCompositorClient* client,
+                            bool async_input,
                             bool use_in_proc_software_draw);
   void PopulateCommonParams(SyncCompositorCommonBrowserParams* params);
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
@@ -81,6 +83,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const int routing_id_;
   IPC::Sender* const sender_;
+  const bool async_input_;
   const bool use_in_process_zero_copy_software_draw_;
 
   bool is_active_;

@@ -950,6 +950,12 @@ const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 // Block ChildProcessMain thread of the renderer's ChildProcessService until a
 // Java debugger is attached.
 const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
+
+// Use synchronous input code path for IPC-synchronous compositing. This is the
+// legacy input code path used by the in-process synchronous compositor.
+// Maintaining this code path in case there are compatibility bugs with the
+// standard async input path. Remove tracked as part of crbug.com/545628.
+const char kSyncInputForSyncCompositor[]    = "sync-input-for-sync-compositor";
 #endif
 
 // Enable the aggressive flushing of DOM Storage to minimize data loss.

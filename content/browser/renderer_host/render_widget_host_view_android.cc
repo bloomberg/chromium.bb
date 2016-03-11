@@ -1717,6 +1717,9 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 
 void RenderWidgetHostViewAndroid::DidOverscroll(
     const DidOverscrollParams& params) {
+  if (sync_compositor_)
+    sync_compositor_->DidOverscroll(params);
+
   if (!content_view_core_ || !layer_.get() || !is_showing_)
     return;
 

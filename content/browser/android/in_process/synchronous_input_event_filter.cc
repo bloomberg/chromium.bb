@@ -40,24 +40,13 @@ void SynchronousInputEventFilter::SetBoundHandler(const Handler& handler) {
                  base::Unretained(this), handler));
 }
 
+void SynchronousInputEventFilter::DidAddInputHandler(int routing_id) {}
+void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {}
+
 void SynchronousInputEventFilter::SetBoundHandlerOnUIThread(
     const Handler& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   handler_ = handler;
-}
-
-void SynchronousInputEventFilter::DidAddInputHandler(
-    int routing_id,
-    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SynchronousCompositorRegistryInProc::GetInstance()->RegisterInputHandler(
-      routing_id, synchronous_input_handler_proxy);
-}
-
-void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SynchronousCompositorRegistryInProc::GetInstance()->UnregisterInputHandler(
-      routing_id);
 }
 
 void SynchronousInputEventFilter::DidOverscroll(
@@ -68,7 +57,7 @@ void SynchronousInputEventFilter::DidOverscroll(
   SynchronousCompositorImpl* compositor =
       SynchronousCompositorImpl::FromRoutingID(routing_id);
   if (compositor)
-    compositor->DidOverscroll(params);
+    compositor->DidOverscrollInProcess(params);
 }
 
 void SynchronousInputEventFilter::DidStopFlinging(int routing_id) {
@@ -83,5 +72,20 @@ void SynchronousInputEventFilter::DidStopFlinging(int routing_id) {
 void SynchronousInputEventFilter::NonBlockingInputEventHandled(
     int routing_id,
     blink::WebInputEvent::Type type) {}
+
+void SynchronousInputEventFilter::DidAddSynchronousHandlerProxy(
+    int routing_id,
+    ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  SynchronousCompositorRegistryInProc::GetInstance()->RegisterInputHandler(
+      routing_id, synchronous_input_handler_proxy);
+}
+
+void SynchronousInputEventFilter::DidRemoveSynchronousHandlerProxy(
+    int routing_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  SynchronousCompositorRegistryInProc::GetInstance()->UnregisterInputHandler(
+      routing_id);
+}
 
 }  // namespace content

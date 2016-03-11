@@ -19,7 +19,6 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 using blink::WebInputEvent;
@@ -59,10 +58,7 @@ void InputEventFilter::SetBoundHandler(const Handler& handler) {
   handler_ = handler;
 }
 
-void InputEventFilter::DidAddInputHandler(
-    int routing_id,
-    ui::SynchronousInputHandlerProxy*
-        synchronous_input_handler_proxy) {
+void InputEventFilter::DidAddInputHandler(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
   route_queues_[routing_id].reset(new NonBlockingEventQueue(routing_id, this));

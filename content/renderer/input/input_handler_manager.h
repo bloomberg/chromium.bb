@@ -33,6 +33,7 @@ class RendererScheduler;
 namespace content {
 
 class InputHandlerWrapper;
+class SynchronousInputHandlerProxyClient;
 class InputHandlerManagerClient;
 struct DidOverscrollParams;
 
@@ -47,6 +48,7 @@ class CONTENT_EXPORT InputHandlerManager {
   InputHandlerManager(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       InputHandlerManagerClient* client,
+      SynchronousInputHandlerProxyClient* sync_handler_client,
       scheduler::RendererScheduler* renderer_scheduler);
   ~InputHandlerManager();
 
@@ -106,9 +108,11 @@ class CONTENT_EXPORT InputHandlerManager {
       InputHandlerMap;
   InputHandlerMap input_handlers_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  InputHandlerManagerClient* client_;
-  scheduler::RendererScheduler* renderer_scheduler_;  // Not owned.
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  InputHandlerManagerClient* const client_;
+  // May be null.
+  SynchronousInputHandlerProxyClient* const synchronous_handler_proxy_client_;
+  scheduler::RendererScheduler* const renderer_scheduler_;  // Not owned.
 };
 
 }  // namespace content

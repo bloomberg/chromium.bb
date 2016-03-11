@@ -26,7 +26,9 @@ namespace content {
 // The provided |handler| process WebInputEvents synchronously on the merged
 // UI and compositing thread. If the event goes unhandled, that is reflected in
 // the InputEventAckState; no forwarding is performed.
-class SynchronousInputEventFilter : public InputHandlerManagerClient {
+class SynchronousInputEventFilter
+    : public InputHandlerManagerClient,
+      public SynchronousInputHandlerProxyClient {
  public:
   SynchronousInputEventFilter();
   ~SynchronousInputEventFilter() override;
@@ -36,16 +38,20 @@ class SynchronousInputEventFilter : public InputHandlerManagerClient {
 
   // InputHandlerManagerClient implementation.
   void SetBoundHandler(const Handler& handler) override;
-  void DidAddInputHandler(
-      int routing_id,
-      ui::SynchronousInputHandlerProxy*
-          synchronous_input_handler_proxy) override;
+  void DidAddInputHandler(int routing_id) override;
   void DidRemoveInputHandler(int routing_id) override;
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;
   void DidStopFlinging(int routing_id) override;
   void NonBlockingInputEventHandled(int routing_id,
                                     blink::WebInputEvent::Type type) override;
+
+  // SynchronousInputHandlerProxyClient overrides.
+  void DidAddSynchronousHandlerProxy(
+      int routing_id,
+      ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy)
+      override;
+  void DidRemoveSynchronousHandlerProxy(int routing_id) override;
 
  private:
   void SetBoundHandlerOnUIThread(const Handler& handler);

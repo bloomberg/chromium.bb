@@ -118,6 +118,11 @@ SynchronousCompositorFactoryImpl::GetInputHandlerManagerClient() {
   return synchronous_input_event_filter();
 }
 
+SynchronousInputHandlerProxyClient*
+SynchronousCompositorFactoryImpl::GetSynchronousInputHandlerProxyClient() {
+  return synchronous_input_event_filter();
+}
+
 scoped_ptr<cc::BeginFrameSource>
 SynchronousCompositorFactoryImpl::CreateExternalBeginFrameSource(
     int routing_id) {

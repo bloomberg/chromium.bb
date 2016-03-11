@@ -61,10 +61,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   // InputHostMsg_HandleInputEvent_ACK.
   //
   void SetBoundHandler(const Handler& handler) override;
-  void DidAddInputHandler(
-      int routing_id,
-      ui::SynchronousInputHandlerProxy*
-          synchronous_input_handler_proxy) override;
+  void DidAddInputHandler(int routing_id) override;
   void DidRemoveInputHandler(int routing_id) override;
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;

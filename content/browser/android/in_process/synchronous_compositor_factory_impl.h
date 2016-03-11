@@ -45,6 +45,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       const scoped_refptr<cc::ContextProvider>& onscreen_context,
       const scoped_refptr<cc::ContextProvider>& worker_context) override;
   InputHandlerManagerClient* GetInputHandlerManagerClient() override;
+  SynchronousInputHandlerProxyClient* GetSynchronousInputHandlerProxyClient()
+      override;
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
 

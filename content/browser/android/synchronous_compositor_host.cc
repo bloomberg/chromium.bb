@@ -30,6 +30,7 @@ namespace content {
 SynchronousCompositorHost::SynchronousCompositorHost(
     RenderWidgetHostViewAndroid* rwhva,
     SynchronousCompositorClient* client,
+    bool async_input,
     bool use_in_proc_software_draw)
     : rwhva_(rwhva),
       client_(client),
@@ -37,6 +38,7 @@ SynchronousCompositorHost::SynchronousCompositorHost(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
       sender_(rwhva_->GetRenderWidgetHost()),
+      async_input_(async_input),
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       is_active_(false),
       bytes_limit_(0u),
@@ -338,6 +340,8 @@ void SynchronousCompositorHost::OnComputeScroll(
 
 InputEventAckState SynchronousCompositorHost::HandleInputEvent(
     const blink::WebInputEvent& input_event) {
+  if (async_input_)
+    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   SyncCompositorCommonBrowserParams common_browser_params;
   PopulateCommonParams(&common_browser_params);
   SyncCompositorCommonRendererParams common_renderer_params;
@@ -351,8 +355,15 @@ InputEventAckState SynchronousCompositorHost::HandleInputEvent(
   return ack;
 }
 
+void SynchronousCompositorHost::DidOverscroll(
+    const DidOverscrollParams& over_scroll_params) {
+  client_->DidOverscroll(over_scroll_params.accumulated_overscroll,
+                         over_scroll_params.latest_overscroll_delta,
+                         over_scroll_params.current_fling_velocity);
+}
+
 void SynchronousCompositorHost::BeginFrame(const cc::BeginFrameArgs& args) {
-  if (!is_active_ || !need_begin_frame_)
+  if (!is_active_)
     return;
 
   SyncCompositorCommonBrowserParams common_browser_params;
@@ -370,9 +381,7 @@ void SynchronousCompositorHost::OnOverScroll(
     const SyncCompositorCommonRendererParams& params,
     const DidOverscrollParams& over_scroll_params) {
   ProcessCommonParams(params);
-  client_->DidOverscroll(over_scroll_params.accumulated_overscroll,
-                         over_scroll_params.latest_overscroll_delta,
-                         over_scroll_params.current_fling_velocity);
+  DidOverscroll(over_scroll_params);
 }
 
 void SynchronousCompositorHost::PopulateCommonParams(

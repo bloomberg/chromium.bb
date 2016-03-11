@@ -8,8 +8,6 @@ import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.util.concurrent.CountDownLatch;
-
 /**
  * A touch utility class that injects the events directly into the view.
  * TODO(mkosiba): Merge with TestTouchUtils.
@@ -59,20 +57,15 @@ public class AwTestTouchUtils {
      * @param fromY The relative y-coordinate of the start point of the drag.
      * @param toY The relative y-coordinate of the end point of the drag.
      * @param stepCount The total number of motion events that should be generated during the drag.
-     * @param completionLatch The .countDown method is called on this latch once the drag finishes.
      */
     public static void dragCompleteView(final View view, final int fromX, final int toX,
-            final int fromY, final int toY, final int stepCount,
-            final CountDownLatch completionLatch) {
+            final int fromY, final int toY, final int stepCount) {
         view.post(new Runnable() {
             @Override
             public void run() {
                 long downTime = dragStart(view, fromX, fromY);
                 dragTo(view, fromX, toX, fromY, toY, stepCount, downTime);
                 dragEnd(view, toX, toY, downTime);
-                if (completionLatch != null) {
-                    completionLatch.countDown();
-                }
             }
         });
     }

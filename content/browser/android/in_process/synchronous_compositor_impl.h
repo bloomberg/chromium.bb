@@ -79,6 +79,7 @@ class SynchronousCompositorImpl
   void BeginFrame(const cc::BeginFrameArgs& args) override;
   InputEventAckState HandleInputEvent(
       const blink::WebInputEvent& input_event) override;
+  void DidOverscroll(const DidOverscrollParams& params) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidBecomeCurrent() override;
 
@@ -91,7 +92,7 @@ class SynchronousCompositorImpl
                             float min_page_scale_factor,
                             float max_page_scale_factor) override;
 
-  void DidOverscroll(const DidOverscrollParams& params);
+  void DidOverscrollInProcess(const DidOverscrollParams& params);
   void DidStopFlinging();
 
  private:
