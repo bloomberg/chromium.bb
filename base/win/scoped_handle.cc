@@ -41,15 +41,10 @@ struct Info {
 };
 typedef std::unordered_map<HANDLE, Info, HandleHash> HandleMap;
 
-// g_lock protects the handle map and setting g_active_verifier.
+// g_lock protects the handle map and setting g_active_verifier within this
+// module.
 typedef base::internal::LockImpl NativeLock;
 base::LazyInstance<NativeLock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
-
-bool CloseHandleWrapper(HANDLE handle) {
-  if (!::CloseHandle(handle))
-    CHECK(false);  // CloseHandle failed.
-  return true;
-}
 
 // Simple automatic locking using a native critical section so it supports
 // recursive locking.
@@ -113,11 +108,30 @@ ActiveVerifier* ActiveVerifier::Get() {
   return g_active_verifier;
 }
 
+bool CloseHandleWrapper(HANDLE handle) {
+  if (!::CloseHandle(handle))
+    CHECK(false);  // CloseHandle failed.
+  return true;
+}
+
+// Assigns the g_active_verifier global within the g_lock lock.
+// If |existing_verifier| is non-null then |enabled| is ignored.
+void ThreadSafeAssignOrCreateActiveVerifier(ActiveVerifier* existing_verifier,
+                                            bool enabled) {
+  AutoNativeLock lock(g_lock.Get());
+  // Another thread in this module might be trying to assign the global
+  // verifier, so check that within the lock here.
+  if (g_active_verifier)
+    return;
+  g_active_verifier =
+      existing_verifier ? existing_verifier : new ActiveVerifier(enabled);
+}
+
 // static
 void ActiveVerifier::InstallVerifier() {
 #if defined(COMPONENT_BUILD)
-  AutoNativeLock lock(g_lock.Get());
-  g_active_verifier = new ActiveVerifier(true);
+  // Component build has one Active Verifier per module.
+  ThreadSafeAssignOrCreateActiveVerifier(nullptr, true);
 #else
   // If you are reading this, wondering why your process seems deadlocked, take
   // a look at your DllMain code and remove things that should not be done
@@ -128,17 +142,27 @@ void ActiveVerifier::InstallVerifier() {
       reinterpret_cast<GetHandleVerifierFn>(::GetProcAddress(
           main_module, "GetHandleVerifier"));
 
+  // This should only happen if running in a DLL is linked with base but the
+  // hosting EXE is not. In this case, create an ActiveVerifier for the current
+  // module but leave it disabled.
   if (!get_handle_verifier) {
-    g_active_verifier = new ActiveVerifier(false);
+    ThreadSafeAssignOrCreateActiveVerifier(nullptr, false);
     return;
   }
 
-  ActiveVerifier* verifier =
+  // Check if in the main module.
+  if (get_handle_verifier == GetHandleVerifier) {
+    ThreadSafeAssignOrCreateActiveVerifier(nullptr, true);
+    return;
+  }
+
+  ActiveVerifier* main_module_verifier =
       reinterpret_cast<ActiveVerifier*>(get_handle_verifier());
 
-  // This lock only protects against races in this module, which is fine.
-  AutoNativeLock lock(g_lock.Get());
-  g_active_verifier = verifier ? verifier : new ActiveVerifier(true);
+  // Main module should always on-demand create a verifier.
+  DCHECK(main_module_verifier);
+
+  ThreadSafeAssignOrCreateActiveVerifier(main_module_verifier, false);
 #endif
 }
 
@@ -221,7 +245,7 @@ void ActiveVerifier::OnHandleBeingClosed(HANDLE handle) {
 }  // namespace
 
 void* GetHandleVerifier() {
-  return g_active_verifier;
+  return ActiveVerifier::Get();
 }
 
 namespace base {
