@@ -149,46 +149,55 @@ void SetStringIfNonEmpty(base::DictionaryValue* value,
 }  // namespace
 
 MidiManagerAlsa::MidiManagerAlsa()
-    : udev_(device::udev_new()),
-      send_thread_("MidiSendThread"),
-      event_thread_("MidiEventThread") {
-  // Initialize decoder.
-  snd_midi_event_t* decoder;
-  snd_midi_event_new(0, &decoder);
-  decoder_.reset(decoder);
-  snd_midi_event_no_status(decoder_.get(), 1);
+    : event_thread_("MidiEventThread"), send_thread_("MidiSendThread") {}
+
+MidiManagerAlsa::~MidiManagerAlsa() {
+  // Take lock to ensure that the members initialized on the IO thread
+  // are not destructed here.
+  base::AutoLock lock(lazy_init_member_lock_);
+
+  // Extra DCHECK to verify all members are already reset.
+  DCHECK(!initialization_thread_checker_);
+  DCHECK(!in_client_);
+  DCHECK(!out_client_);
+  DCHECK(!decoder_);
+  DCHECK(!udev_);
+  DCHECK(!udev_monitor_);
 }
 
-MidiManagerAlsa::~MidiManagerAlsa() = default;
-
 void MidiManagerAlsa::StartInitialization() {
-  // Create client handles.
-  snd_seq_t* in_client;
-  int err =
-      snd_seq_open(&in_client, kAlsaHw, SND_SEQ_OPEN_INPUT, SND_SEQ_NONBLOCK);
-  if (err != 0) {
-    VLOG(1) << "snd_seq_open fails: " << snd_strerror(err);
-    return CompleteInitialization(Result::INITIALIZATION_ERROR);
-  }
-  in_client_.reset(in_client);
-  in_client_id_ = snd_seq_client_id(in_client_.get());
+  base::AutoLock lock(lazy_init_member_lock_);
 
-  snd_seq_t* out_client;
-  err = snd_seq_open(&out_client, kAlsaHw, SND_SEQ_OPEN_OUTPUT, 0);
+  initialization_thread_checker_.reset(new base::ThreadChecker());
+
+  // Create client handles.
+  snd_seq_t* tmp_seq = nullptr;
+  int err =
+      snd_seq_open(&tmp_seq, kAlsaHw, SND_SEQ_OPEN_INPUT, SND_SEQ_NONBLOCK);
   if (err != 0) {
     VLOG(1) << "snd_seq_open fails: " << snd_strerror(err);
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
-  out_client_.reset(out_client);
-  out_client_id_ = snd_seq_client_id(out_client_.get());
+  ScopedSndSeqPtr in_client(tmp_seq);
+  tmp_seq = nullptr;
+  in_client_id_ = snd_seq_client_id(in_client.get());
+
+  err = snd_seq_open(&tmp_seq, kAlsaHw, SND_SEQ_OPEN_OUTPUT, 0);
+  if (err != 0) {
+    VLOG(1) << "snd_seq_open fails: " << snd_strerror(err);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
+  }
+  ScopedSndSeqPtr out_client(tmp_seq);
+  tmp_seq = nullptr;
+  out_client_id_ = snd_seq_client_id(out_client.get());
 
   // Name the clients.
-  err = snd_seq_set_client_name(in_client_.get(), "Chrome (input)");
+  err = snd_seq_set_client_name(in_client.get(), "Chrome (input)");
   if (err != 0) {
     VLOG(1) << "snd_seq_set_client_name fails: " << snd_strerror(err);
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
-  err = snd_seq_set_client_name(out_client_.get(), "Chrome (output)");
+  err = snd_seq_set_client_name(out_client.get(), "Chrome (output)");
   if (err != 0) {
     VLOG(1) << "snd_seq_set_client_name fails: " << snd_strerror(err);
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
@@ -196,7 +205,7 @@ void MidiManagerAlsa::StartInitialization() {
 
   // Create input port.
   in_port_id_ = snd_seq_create_simple_port(
-      in_client_.get(), NULL, kCreateInputPortCaps, kCreatePortType);
+      in_client.get(), NULL, kCreateInputPortCaps, kCreatePortType);
   if (in_port_id_ < 0) {
     VLOG(1) << "snd_seq_create_simple_port fails: "
             << snd_strerror(in_port_id_);
@@ -214,51 +223,76 @@ void MidiManagerAlsa::StartInitialization() {
   announce_dest.port = in_port_id_;
   snd_seq_port_subscribe_set_sender(subs, &announce_sender);
   snd_seq_port_subscribe_set_dest(subs, &announce_dest);
-  err = snd_seq_subscribe_port(in_client_.get(), subs);
+  err = snd_seq_subscribe_port(in_client.get(), subs);
   if (err != 0) {
     VLOG(1) << "snd_seq_subscribe_port on the announce port fails: "
             << snd_strerror(err);
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
 
-  // Generate hotplug events for existing ports.
-  // TODO(agoode): Check the return value for failure.
-  EnumerateAlsaPorts();
+  // Initialize decoder.
+  snd_midi_event_t* tmp_decoder = nullptr;
+  snd_midi_event_new(0, &tmp_decoder);
+  ScopedSndMidiEventPtr decoder(tmp_decoder);
+  tmp_decoder = nullptr;
+  snd_midi_event_no_status(decoder.get(), 1);
 
-  // Initialize udev monitor.
-  udev_monitor_.reset(
-      device::udev_monitor_new_from_netlink(udev_.get(), kUdev));
-  if (!udev_monitor_.get()) {
+  // Initialize udev and monitor.
+  device::ScopedUdevPtr udev(device::udev_new());
+  device::ScopedUdevMonitorPtr udev_monitor(
+      device::udev_monitor_new_from_netlink(udev.get(), kUdev));
+  if (!udev_monitor.get()) {
     VLOG(1) << "udev_monitor_new_from_netlink fails";
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
   err = device::udev_monitor_filter_add_match_subsystem_devtype(
-      udev_monitor_.get(), kUdevSubsystemSound, nullptr);
+      udev_monitor.get(), kUdevSubsystemSound, nullptr);
   if (err != 0) {
     VLOG(1) << "udev_monitor_add_match_subsystem fails: "
             << base::safe_strerror(-err);
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
-  err = device::udev_monitor_enable_receiving(udev_monitor_.get());
+  err = device::udev_monitor_enable_receiving(udev_monitor.get());
   if (err != 0) {
     VLOG(1) << "udev_monitor_enable_receiving fails: "
             << base::safe_strerror(-err);
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
 
-  // Generate hotplug events for existing udev devices.
+  // Success! Now, initialize members from the temporaries. Do not
+  // initialize these earlier, since they need to be destroyed by the
+  // thread that calls Finalize(), not the destructor thread (and we
+  // check this in the destructor).
+  in_client_.reset(in_client.release());
+  out_client_.reset(out_client.release());
+  decoder_.reset(decoder.release());
+  udev_.reset(udev.release());
+  udev_monitor_.reset(udev_monitor_.release());
+
+  // Generate hotplug events for existing ports.
+  // TODO(agoode): Check the return value for failure.
+  EnumerateAlsaPorts();
+
+  // Generate hotplug events for existing udev devices. This must be done
+  // after udev_monitor_enable_receiving() is called. See the algorithm
+  // at http://www.signal11.us/oss/udev/.
   EnumerateUdevCards();
 
-  // Start processing events.
+  // Start processing events. Don't do this before enumeration of both
+  // ALSA and udev.
   event_thread_.Start();
   event_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&MidiManagerAlsa::ScheduleEventLoop, base::Unretained(this)));
+  send_thread_.Start();
 
   CompleteInitialization(Result::OK);
 }
 
 void MidiManagerAlsa::Finalize() {
+  base::AutoLock lock(lazy_init_member_lock_);
+  DCHECK(initialization_thread_checker_->CalledOnValidThread());
+
   // Tell the event thread it will soon be time to shut down. This gives
   // us assurance the thread will stop in case the SND_SEQ_EVENT_CLIENT_EXIT
   // message is lost.
@@ -272,20 +306,23 @@ void MidiManagerAlsa::Finalize() {
 
   // Close the out client. This will trigger the event thread to stop,
   // because of SND_SEQ_EVENT_CLIENT_EXIT.
-  if (out_client_.get())
-    snd_seq_close(out_client_.release());
+  out_client_.reset();
 
   // Wait for the event thread to stop.
   event_thread_.Stop();
+
+  // Destruct the other stuff we initialized in StartInitialization().
+  udev_monitor_.reset();
+  udev_.reset();
+  decoder_.reset();
+  in_client_.reset();
+  initialization_thread_checker_.reset();
 }
 
 void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
                                            uint32_t port_index,
                                            const std::vector<uint8_t>& data,
                                            double timestamp) {
-  if (!send_thread_.IsRunning())
-    send_thread_.Start();
-
   base::TimeDelta delay;
   if (timestamp != 0.0) {
     base::TimeTicks time_to_send =

@@ -22,6 +22,10 @@
 #include "media/midi/midi_export.h"
 #include "media/midi/midi_manager.h"
 
+namespace base {
+class ThreadChecker;
+}
+
 namespace media {
 namespace midi {
 
@@ -362,8 +366,11 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     };
   };
 
-  typedef base::hash_map<int, uint32_t> SourceMap;
-  typedef base::hash_map<uint32_t, int> OutPortMap;
+  using SourceMap = base::hash_map<int, uint32_t>;
+  using OutPortMap = base::hash_map<uint32_t, int>;
+  using ScopedSndSeqPtr = scoped_ptr<snd_seq_t, SndSeqDeleter>;
+  using ScopedSndMidiEventPtr =
+      scoped_ptr<snd_midi_event_t, SndMidiEventDeleter>;
 
   // An internal callback that runs on MidiSendThread.
   void SendMidiData(uint32_t port_index, const std::vector<uint8_t>& data);
@@ -392,19 +399,14 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // Returns true if successful.
   bool Subscribe(uint32_t port_index, int client_id, int port_id);
 
+  // Members initialized in the constructor are below.
+  // Our copies of the internal state of the ports of seq and udev.
   AlsaSeqState alsa_seq_state_;
   MidiPortState port_state_;
 
-  // ALSA seq handles.
-  scoped_ptr<snd_seq_t, SndSeqDeleter> in_client_;
-  int in_client_id_ = -1;
-  scoped_ptr<snd_seq_t, SndSeqDeleter> out_client_;
-  int out_client_id_ = -1;
-
   // One input port, many output ports.
-  int in_port_id_ = -1;
-  OutPortMap out_ports_;       // guarded by out_ports_lock_
   base::Lock out_ports_lock_;  // guards out_ports_
+  OutPortMap out_ports_;       // guarded by out_ports_lock_
 
   // Mapping from ALSA client:port to our index.
   SourceMap source_map_;
@@ -418,18 +420,37 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // wait for our information from ALSA and udev to get back in sync.
   int alsa_card_midi_count_ = 0;
 
+  base::Lock shutdown_lock_;            // guards event_thread_shutdown_
+  bool event_thread_shutdown_ = false;  // guarded by shutdown_lock_
+
+  // This lock is needed to ensure that members destroyed in Finalize
+  // will be visibly destroyed before the destructor is run in the
+  // other thread. Otherwise, the same objects may have their destructors
+  // run multiple times in different threads.
+  base::Lock lazy_init_member_lock_;  // guards members below
+
+  // Members initialized in StartInitialization() are below.
+  // Make sure to destroy these in Finalize()!
+  scoped_ptr<base::ThreadChecker> initialization_thread_checker_;
+
+  // ALSA seq handles and ids.
+  ScopedSndSeqPtr in_client_;
+  int in_client_id_;
+  ScopedSndSeqPtr out_client_;
+  int out_client_id_;
+  int in_port_id_;
+
   // ALSA event -> MIDI coder.
-  scoped_ptr<snd_midi_event_t, SndMidiEventDeleter> decoder_;
+  ScopedSndMidiEventPtr decoder_;
 
   // udev, for querying hardware devices.
   device::ScopedUdevPtr udev_;
   device::ScopedUdevMonitorPtr udev_monitor_;
 
-  base::Thread send_thread_;
+  // Threads for sending and receiving. These are initialized in the
+  // constructor, but are started at the end of StartInitialization.
   base::Thread event_thread_;
-
-  bool event_thread_shutdown_ = false;  // guarded by shutdown_lock_
-  base::Lock shutdown_lock_;            // guards event_thread_shutdown_
+  base::Thread send_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerAlsa);
 };
