@@ -34,7 +34,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextFrameType,
                           content::REQUEST_CONTEXT_FRAME_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
                           blink::WebContentSecurityPolicyTypeLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebAddressSpace, blink::WebAddressSpaceLast);
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebAddressSpace, blink::WebAddressSpaceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebSharedWorkerCreationContextType,
                           blink::WebSharedWorkerCreationContextTypeLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
