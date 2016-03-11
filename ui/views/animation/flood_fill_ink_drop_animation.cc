@@ -158,6 +158,12 @@ FloodFillInkDropAnimation::~FloodFillInkDropAnimation() {
   AbortAllAnimations();
 }
 
+void FloodFillInkDropAnimation::SnapToActivated() {
+  InkDropAnimation::SnapToActivated();
+  SetOpacity(kVisibleOpacity);
+  painted_layer_.SetTransform(GetActivatedTargetTransform());
+}
+
 ui::Layer* FloodFillInkDropAnimation::GetRootLayer() {
   return &root_layer_;
 }
@@ -209,7 +215,10 @@ void FloodFillInkDropAnimation::AnimateStateChange(
     case InkDropState::QUICK_ACTION: {
       DCHECK(old_ink_drop_state == InkDropState::HIDDEN ||
              old_ink_drop_state == InkDropState::ACTION_PENDING);
-
+      if (old_ink_drop_state == InkDropState::HIDDEN) {
+        AnimateStateChange(old_ink_drop_state, InkDropState::ACTION_PENDING,
+                           animation_observer);
+      }
       AnimateToOpacity(kHiddenOpacity,
                        GetAnimationDuration(QUICK_ACTION_FADE_OUT),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
@@ -240,9 +249,8 @@ void FloodFillInkDropAnimation::AnimateStateChange(
       AnimateToOpacity(kVisibleOpacity, GetAnimationDuration(ACTIVATED_FADE_IN),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN, animation_observer);
-      const gfx::Transform transform = CalculateTransform(
-          CalculateLargestDistanceToCorners(size_, center_point_));
-      AnimateToTransform(transform, GetAnimationDuration(ACTIVATED_TRANSFORM),
+      AnimateToTransform(GetActivatedTargetTransform(),
+                         GetAnimationDuration(ACTIVATED_TRANSFORM),
                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
@@ -326,6 +334,11 @@ gfx::Transform FloodFillInkDropAnimation::CalculateTransform(
   transform.Translate(-drawn_center_point.x(), -drawn_center_point.y());
 
   return transform;
+}
+
+gfx::Transform FloodFillInkDropAnimation::GetActivatedTargetTransform() const {
+  return CalculateTransform(
+      CalculateLargestDistanceToCorners(size_, center_point_));
 }
 
 }  // namespace views

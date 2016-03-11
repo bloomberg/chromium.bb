@@ -54,6 +54,7 @@ class VIEWS_EXPORT FloodFillInkDropAnimation : public InkDropAnimation {
   ~FloodFillInkDropAnimation() override;
 
   // InkDropAnimation:
+  void SnapToActivated() override;
   ui::Layer* GetRootLayer() override;
   bool IsVisible() const override;
 
@@ -96,6 +97,9 @@ class VIEWS_EXPORT FloodFillInkDropAnimation : public InkDropAnimation {
   // Returns the Transform to be applied to the |painted_layer_| for the given
   // |target_radius|.
   gfx::Transform CalculateTransform(float target_radius) const;
+
+  // Returns the target Transform for the ACTIVATED animation.
+  gfx::Transform GetActivatedTargetTransform() const;
 
   // The clip Size.
   const gfx::Size size_;

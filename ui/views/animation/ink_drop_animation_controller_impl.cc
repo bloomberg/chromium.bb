@@ -54,6 +54,7 @@ InkDropAnimationControllerImpl::InkDropAnimationControllerImpl(
     InkDropHost* ink_drop_host)
     : ink_drop_host_(ink_drop_host),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
+      is_hovered_(false),
       hover_after_animation_timer_(nullptr) {
   root_layer_->set_name("InkDropAnimationControllerImpl:RootLayer");
   ink_drop_host_->AddInkDropLayer(root_layer_.get());
@@ -86,21 +87,34 @@ void InkDropAnimationControllerImpl::AnimateToState(
                                   kHoverFadeOutBeforeAnimationDurationInMs));
   }
 
-  // Make sure the ink drop starts from the HIDDEN state it was going to auto
-  // transition to it.
-  if (ink_drop_animation_->target_ink_drop_state() == InkDropState::HIDDEN ||
-      ShouldAnimateToHidden(ink_drop_animation_->target_ink_drop_state())) {
-    ink_drop_animation_->HideImmediately();
-  }
+  CompleteHiddenTargetedAnimations();
   ink_drop_animation_->AnimateToState(ink_drop_state);
 }
 
+void InkDropAnimationControllerImpl::SnapToActivated() {
+  if (!ink_drop_animation_)
+    CreateInkDropAnimation();
+
+  SetHoveredInternal(false, base::TimeDelta());
+
+  CompleteHiddenTargetedAnimations();
+  ink_drop_animation_->SnapToActivated();
+}
+
 void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
+  is_hovered_ = is_hovered;
   SetHoveredInternal(is_hovered,
                      is_hovered ? base::TimeDelta::FromMilliseconds(
                                       kHoverFadeInFromUserInputDurationInMs)
                                 : base::TimeDelta::FromMilliseconds(
                                       kHoverFadeOutFromUserInputDurationInMs));
+}
+
+void InkDropAnimationControllerImpl::CompleteHiddenTargetedAnimations() {
+  if (ink_drop_animation_->target_ink_drop_state() == InkDropState::HIDDEN ||
+      ShouldAnimateToHidden(ink_drop_animation_->target_ink_drop_state())) {
+    ink_drop_animation_->HideImmediately();
+  }
 }
 
 void InkDropAnimationControllerImpl::CreateInkDropAnimation() {
@@ -149,7 +163,8 @@ void InkDropAnimationControllerImpl::InkDropAnimationEnded(
   if (ShouldAnimateToHidden(ink_drop_state)) {
     ink_drop_animation_->AnimateToState(views::InkDropState::HIDDEN);
   } else if (ink_drop_state == views::InkDropState::HIDDEN) {
-    StartHoverAfterAnimationTimer();
+    if (is_hovered_)
+      StartHoverAfterAnimationTimer();
     // TODO(bruthig): Investigate whether creating and destroying
     // InkDropAnimations is expensive and consider creating an
     // InkDropAnimationPool. See www.crbug.com/522175.

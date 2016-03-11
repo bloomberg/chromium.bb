@@ -295,6 +295,10 @@ void CustomButton::ShowContextMenu(const gfx::Point& p,
   // we won't get a mouse exited and reset state. Reset it now to be sure.
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
+  if (ink_drop_delegate_) {
+    ink_drop_delegate_->SetHovered(false);
+    ink_drop_delegate_->OnAction(InkDropState::HIDDEN);
+  }
   View::ShowContextMenu(p, source_type);
 }
 

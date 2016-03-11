@@ -29,6 +29,9 @@ class VIEWS_EXPORT InkDropDelegate {
   // as well as a NONE value.
   virtual void OnAction(InkDropState state) = 0;
 
+  // Immediately snaps the InkDropState to ACTIVATED.
+  virtual void SnapToActivated() = 0;
+
   // Enables or disables the hover state.
   virtual void SetHovered(bool is_hovered) = 0;
 

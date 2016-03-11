@@ -64,6 +64,11 @@ class VIEWS_EXPORT InkDropAnimation {
   // state transition to HIDDEN!
   void HideImmediately();
 
+  // Immediately snaps the ink drop to the ACTIVATED target state. All pending
+  // animations are aborted. Events will be raised for the pending animations
+  // as well as the transition to the ACTIVATED state.
+  virtual void SnapToActivated();
+
   // The root Layer that can be added in to a Layer tree.
   virtual ui::Layer* GetRootLayer() = 0;
 

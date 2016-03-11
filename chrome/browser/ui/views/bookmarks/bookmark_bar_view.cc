@@ -94,6 +94,8 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
+#include "ui/views/animation/flood_fill_ink_drop_animation.h"
+#include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -188,7 +190,7 @@ int GetHorizontalMargin() {
 
 // BookmarkButtonBase -----------------------------------------------
 
-// Base class for buttons used on the bookmark bar.
+// Base class for non-menu hosting buttons used on the bookmark bar.
 
 class BookmarkButtonBase : public views::LabelButton {
  public:
@@ -227,9 +229,26 @@ class BookmarkButtonBase : public views::LabelButton {
            event_utils::IsPossibleDispositionEvent(e);
   }
 
+  scoped_ptr<views::InkDropAnimation> CreateInkDropAnimation() const override {
+    return make_scoped_ptr(new views::FloodFillInkDropAnimation(
+        size(), GetInkDropCenter(), GetInkDropBaseColor()));
+  }
+
+  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override {
+    if (!ShouldShowInkDropHover())
+      return nullptr;
+    return make_scoped_ptr(new views::InkDropHover(
+        size(), 0, GetInkDropCenter(), GetInkDropBaseColor()));
+  }
+
   SkColor GetInkDropBaseColor() const override {
-    return GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+    // TODO(bruthig): Inject the color instead of assuming a ThemeProvider is
+    // always available. Fall back on LabelButton::GetInkDropBaseColor() so as
+    // to avoid difficult to track down crashes.
+    return GetThemeProvider()
+               ? GetThemeProvider()->GetColor(
+                     ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
+               : views::LabelButton::GetInkDropBaseColor();
   }
 
  private:
@@ -300,16 +319,55 @@ class ShortcutButton : public BookmarkButtonBase {
 // static
 const char ShortcutButton::kViewClassName[] = "ShortcutButton";
 
+// BookmarkMenuButtonBase -----------------------------------------------------
+
+// Base class for menu hosting buttons used on the bookmark bar.
+class BookmarkMenuButtonBase : public views::MenuButton {
+ public:
+  BookmarkMenuButtonBase(const base::string16& title,
+                         views::MenuButtonListener* menu_button_listener,
+                         bool show_menu_marker)
+      : MenuButton(title, menu_button_listener, show_menu_marker),
+        ink_drop_delegate_(this, this) {
+    set_ink_drop_delegate(&ink_drop_delegate_);
+  }
+
+  scoped_ptr<views::InkDropAnimation> CreateInkDropAnimation() const override {
+    return make_scoped_ptr(new views::FloodFillInkDropAnimation(
+        size(), GetInkDropCenter(), GetInkDropBaseColor()));
+  }
+
+  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override {
+    if (!ShouldShowInkDropHover())
+      return nullptr;
+    return make_scoped_ptr(new views::InkDropHover(
+        size(), 0, GetInkDropCenter(), GetInkDropBaseColor()));
+  }
+
+  SkColor GetInkDropBaseColor() const override {
+    return GetThemeProvider()
+               ? GetThemeProvider()->GetColor(
+                     ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
+               : views::LabelButton::GetInkDropBaseColor();
+  }
+
+ private:
+  // Controls the visual feedback for the button state.
+  views::ButtonInkDropDelegate ink_drop_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkMenuButtonBase);
+};
+
 // BookmarkFolderButton -------------------------------------------------------
 
 // Buttons used for folders on the bookmark bar, including the 'other folders'
 // button.
-class BookmarkFolderButton : public views::MenuButton {
+class BookmarkFolderButton : public BookmarkMenuButtonBase {
  public:
   BookmarkFolderButton(const base::string16& title,
                        views::MenuButtonListener* menu_button_listener,
                        bool show_menu_marker)
-      : MenuButton(title, menu_button_listener, show_menu_marker) {
+      : BookmarkMenuButtonBase(title, menu_button_listener, show_menu_marker) {
     SetElideBehavior(kElideBehavior);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -328,13 +386,23 @@ class BookmarkFolderButton : public views::MenuButton {
     return !tooltip->empty();
   }
 
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    if (event.IsOnlyLeftMouseButton()) {
+      // TODO(bruthig): The ACTION_PENDING triggering logic should be in
+      // MenuButton::OnPressed() however there is a bug with the pressed state
+      // logic in MenuButton. See http://crbug.com/567252.
+      ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
+    }
+    return MenuButton::OnMousePressed(event);
+  }
+
   bool IsTriggerableEventType(const ui::Event& e) override {
     // Bookmark folders handle normal menu button events (i.e., left click) as
     // well as clicks to open bookmarks in new tabs that would otherwise be
     // ignored.
-    return views::MenuButton::IsTriggerableEventType(e) ||
+    return BookmarkMenuButtonBase::IsTriggerableEventType(e) ||
            (e.IsMouseEvent() &&
-                ui::DispositionFromEventFlags(e.flags()) != CURRENT_TAB);
+            ui::DispositionFromEventFlags(e.flags()) != CURRENT_TAB);
   }
 
  private:
@@ -345,14 +413,14 @@ class BookmarkFolderButton : public views::MenuButton {
 
 // OverflowButton (chevron) --------------------------------------------------
 
-class OverflowButton : public views::MenuButton {
+class OverflowButton : public BookmarkMenuButtonBase {
  public:
   explicit OverflowButton(BookmarkBarView* owner)
-      : MenuButton(base::string16(), owner, false), owner_(owner) {}
+      : BookmarkMenuButtonBase(base::string16(), owner, false), owner_(owner) {}
 
   bool OnMousePressed(const ui::MouseEvent& e) override {
     owner_->StopThrobbing(true);
-    return views::MenuButton::OnMousePressed(e);
+    return BookmarkMenuButtonBase::OnMousePressed(e);
   }
 
  private:

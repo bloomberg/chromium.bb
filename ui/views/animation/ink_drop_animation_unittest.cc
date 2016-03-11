@@ -269,6 +269,52 @@ TEST_P(InkDropAnimationTest, HideImmediatelyWithActiveAnimations) {
   EXPECT_FALSE(ink_drop_animation_->IsVisible());
 }
 
+TEST_P(InkDropAnimationTest, SnapToActivatedWithoutActiveAnimations) {
+  ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);
+  test_api_->CompleteAnimations();
+  EXPECT_EQ(1, observer_.last_animation_started_ordinal());
+  EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
+
+  EXPECT_FALSE(test_api_->HasActiveAnimations());
+  EXPECT_NE(InkDropState::ACTIVATED,
+            ink_drop_animation_->target_ink_drop_state());
+
+  ink_drop_animation_->SnapToActivated();
+
+  EXPECT_FALSE(test_api_->HasActiveAnimations());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            ink_drop_animation_->target_ink_drop_state());
+  EXPECT_EQ(3, observer_.last_animation_started_ordinal());
+  EXPECT_EQ(4, observer_.last_animation_ended_ordinal());
+
+  EXPECT_EQ(InkDropAnimation::kVisibleOpacity, test_api_->GetCurrentOpacity());
+  EXPECT_TRUE(ink_drop_animation_->IsVisible());
+}
+
+// Verifies all active animations are aborted and the InkDropState is set to
+// ACTIVATED after invoking SnapToActivated().
+TEST_P(InkDropAnimationTest, SnapToActivatedWithActiveAnimations) {
+  ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);
+  EXPECT_TRUE(test_api_->HasActiveAnimations());
+  EXPECT_NE(InkDropState::ACTIVATED,
+            ink_drop_animation_->target_ink_drop_state());
+  EXPECT_EQ(1, observer_.last_animation_started_ordinal());
+
+  ink_drop_animation_->SnapToActivated();
+
+  EXPECT_FALSE(test_api_->HasActiveAnimations());
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            ink_drop_animation_->target_ink_drop_state());
+  EXPECT_EQ(3, observer_.last_animation_started_ordinal());
+  EXPECT_EQ(4, observer_.last_animation_ended_ordinal());
+  EXPECT_EQ(InkDropState::ACTIVATED, observer_.last_animation_state_ended());
+  EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::SUCCESS,
+            observer_.last_animation_ended_reason());
+
+  EXPECT_EQ(InkDropAnimation::kVisibleOpacity, test_api_->GetCurrentOpacity());
+  EXPECT_TRUE(ink_drop_animation_->IsVisible());
+}
+
 TEST_P(InkDropAnimationTest, AnimateToVisibleFromHidden) {
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_animation_->target_ink_drop_state());
   ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);

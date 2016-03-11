@@ -59,6 +59,7 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
   ~SquareInkDropAnimation() override;
 
   // InkDropAnimation:
+  void SnapToActivated() override;
   ui::Layer* GetRootLayer() override;
   bool IsVisible() const override;
 
@@ -137,6 +138,10 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
   // Updates all of the Transforms in |transforms_out| to the current Transforms
   // of the painted shape Layers.
   void GetCurrentTransforms(InkDropTransforms* transforms_out) const;
+
+  // Updates all of the Transforms in |transforms_out| with the target
+  // Transforms for the ACTIVATED animation.
+  void GetActivatedTargetTransforms(InkDropTransforms* transforms_out) const;
 
   // Adds and configures a new |painted_shape| layer to |painted_layers_|.
   void AddPaintLayer(PaintedShape painted_shape);

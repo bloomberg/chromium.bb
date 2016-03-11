@@ -30,6 +30,7 @@ class VIEWS_EXPORT ButtonInkDropDelegate : public InkDropDelegate,
 
   // InkDropDelegate:
   void OnAction(InkDropState state) override;
+  void SnapToActivated() override;
   void SetHovered(bool is_hovered) override;
 
   // ui::EventHandler:

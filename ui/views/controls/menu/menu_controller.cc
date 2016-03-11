@@ -1451,7 +1451,8 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
   // There is a sibling menu, update the button state, hide the current menu
   // and show the new one.
-  pressed_lock_.reset(new MenuButton::PressedLock(button));
+  pressed_lock_.reset(
+      new MenuButton::PressedLock(button, true /* is_sibling_menu_show */));
 
   // Need to reset capture when we show the menu again, otherwise we aren't
   // going to get any events.

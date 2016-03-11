@@ -29,6 +29,10 @@ void ButtonInkDropDelegate::OnAction(InkDropState state) {
   ink_drop_animation_controller_->AnimateToState(state);
 }
 
+void ButtonInkDropDelegate::SnapToActivated() {
+  ink_drop_animation_controller_->SnapToActivated();
+}
+
 void ButtonInkDropDelegate::SetHovered(bool is_hovered) {
   ink_drop_animation_controller_->SetHovered(is_hovered);
 }

@@ -70,8 +70,19 @@ TEST_F(InkDropAnimationControllerImplTest, SetHoveredIsFadingInOrVisible) {
 }
 
 TEST_F(InkDropAnimationControllerImplTest,
-       HoveredStateAfterHoverTimerFiresWhenHostIsHovered) {
+       HoverDoesntFadeInAfterAnimationIfHoverNotSet) {
   ink_drop_host_.set_should_show_hover(true);
+  ink_drop_animation_controller_.SetHovered(false);
+  ink_drop_animation_controller_.AnimateToState(InkDropState::QUICK_ACTION);
+
+  EXPECT_FALSE(task_runner_->HasPendingTask());
+  EXPECT_FALSE(is_hover_fading_in_or_visible());
+}
+
+TEST_F(InkDropAnimationControllerImplTest,
+       HoverFadesInAfterAnimationWhenHostIsHovered) {
+  ink_drop_host_.set_should_show_hover(true);
+  ink_drop_animation_controller_.SetHovered(true);
   ink_drop_animation_controller_.AnimateToState(InkDropState::QUICK_ACTION);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
@@ -82,8 +93,9 @@ TEST_F(InkDropAnimationControllerImplTest,
 }
 
 TEST_F(InkDropAnimationControllerImplTest,
-       HoveredStateAfterHoverTimerFiresWhenHostIsNotHovered) {
+       HoverDoesntFadeInAfterAnimationWhenHostIsNotHovered) {
   ink_drop_host_.set_should_show_hover(false);
+  ink_drop_animation_controller_.SetHovered(true);
   ink_drop_animation_controller_.AnimateToState(InkDropState::QUICK_ACTION);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
@@ -113,6 +125,17 @@ TEST_F(InkDropAnimationControllerImplTest,
   EXPECT_FALSE(hover());
   ink_drop_animation_controller_.SetHovered(false);
   EXPECT_FALSE(hover());
+}
+
+TEST_F(InkDropAnimationControllerImplTest, HoverFadesOutOnSnapToActivated) {
+  ink_drop_host_.set_should_show_hover(true);
+  ink_drop_animation_controller_.SetHovered(true);
+
+  EXPECT_TRUE(is_hover_fading_in_or_visible());
+
+  ink_drop_animation_controller_.SnapToActivated();
+
+  EXPECT_FALSE(is_hover_fading_in_or_visible());
 }
 
 }  // namespace views

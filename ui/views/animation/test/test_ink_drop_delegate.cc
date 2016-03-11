@@ -16,6 +16,10 @@ void TestInkDropDelegate::OnAction(InkDropState state) {
   state_ = state;
 }
 
+void TestInkDropDelegate::SnapToActivated() {
+  state_ = InkDropState::ACTIVATED;
+}
+
 void TestInkDropDelegate::SetHovered(bool is_hovered) {
   is_hovered_ = is_hovered;
 }

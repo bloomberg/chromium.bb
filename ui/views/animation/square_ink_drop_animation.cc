@@ -195,6 +195,14 @@ SquareInkDropAnimation::~SquareInkDropAnimation() {
   AbortAllAnimations();
 }
 
+void SquareInkDropAnimation::SnapToActivated() {
+  InkDropAnimation::SnapToActivated();
+  SetOpacity(kVisibleOpacity);
+  InkDropTransforms transforms;
+  GetActivatedTargetTransforms(&transforms);
+  SetTransforms(transforms);
+}
+
 ui::Layer* SquareInkDropAnimation::GetRootLayer() {
   return &root_layer_;
 }
@@ -269,6 +277,10 @@ void SquareInkDropAnimation::AnimateStateChange(
     case InkDropState::QUICK_ACTION: {
       DCHECK(old_ink_drop_state == InkDropState::HIDDEN ||
              old_ink_drop_state == InkDropState::ACTION_PENDING);
+      if (old_ink_drop_state == InkDropState::HIDDEN) {
+        AnimateStateChange(old_ink_drop_state, InkDropState::ACTION_PENDING,
+                           animation_observer);
+      }
       AnimateToOpacity(kHiddenOpacity,
                        GetAnimationDuration(QUICK_ACTION_FADE_OUT),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
@@ -333,7 +345,7 @@ void SquareInkDropAnimation::AnimateStateChange(
             ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
       }
 
-      CalculateRectTransforms(small_size_, small_corner_radius_, &transforms);
+      GetActivatedTargetTransforms(&transforms);
       AnimateToTransforms(transforms,
                           GetAnimationDuration(ACTIVATED_RECT_TRANSFORM),
                           rect_transform_preemption_strategy,
@@ -496,6 +508,11 @@ void SquareInkDropAnimation::GetCurrentTransforms(
     InkDropTransforms* transforms_out) const {
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     (*transforms_out)[i] = painted_layers_[i]->transform();
+}
+
+void SquareInkDropAnimation::GetActivatedTargetTransforms(
+    InkDropTransforms* transforms_out) const {
+  CalculateRectTransforms(small_size_, small_corner_radius_, transforms_out);
 }
 
 void SquareInkDropAnimation::AddPaintLayer(PaintedShape painted_shape) {

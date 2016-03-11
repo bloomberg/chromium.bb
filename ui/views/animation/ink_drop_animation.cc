@@ -68,6 +68,23 @@ void InkDropAnimation::AnimateToState(InkDropState ink_drop_state) {
   // AnimationEndedCallback which can delete |this|.
 }
 
+void InkDropAnimation::SnapToActivated() {
+  AbortAllAnimations();
+  // |animation_observer| will be deleted when AnimationEndedCallback() returns
+  // true.
+  // TODO(bruthig): Implement a safer ownership model for the
+  // |animation_observer|.
+  ui::CallbackLayerAnimationObserver* animation_observer =
+      new ui::CallbackLayerAnimationObserver(
+          base::Bind(&InkDropAnimation::AnimationStartedCallback,
+                     base::Unretained(this), InkDropState::ACTIVATED),
+          base::Bind(&InkDropAnimation::AnimationEndedCallback,
+                     base::Unretained(this), InkDropState::ACTIVATED));
+  GetRootLayer()->SetVisible(true);
+  target_ink_drop_state_ = InkDropState::ACTIVATED;
+  animation_observer->SetActive();
+}
+
 void InkDropAnimation::HideImmediately() {
   AbortAllAnimations();
   SetStateToHidden();

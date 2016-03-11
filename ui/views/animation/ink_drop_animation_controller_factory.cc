@@ -28,6 +28,7 @@ class InkDropAnimationControllerStub
   InkDropState GetTargetInkDropState() const override;
   bool IsVisible() const override;
   void AnimateToState(InkDropState state) override;
+  void SnapToActivated() override;
   void SetHovered(bool is_hovered) override;
 
  private:
@@ -47,6 +48,8 @@ bool InkDropAnimationControllerStub::IsVisible() const {
 }
 
 void InkDropAnimationControllerStub::AnimateToState(InkDropState state) {}
+
+void InkDropAnimationControllerStub::SnapToActivated() {}
 
 void InkDropAnimationControllerStub::SetHovered(bool is_hovered) {}
 

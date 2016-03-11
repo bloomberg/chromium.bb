@@ -37,11 +37,16 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   InkDropState GetTargetInkDropState() const override;
   bool IsVisible() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
+  void SnapToActivated() override;
   void SetHovered(bool is_hovered) override;
 
  private:
   friend class InkDropAnimationControllerFactoryTest;
   friend class InkDropAnimationControllerImplTest;
+
+  // Forcibly transition to the HIDDEN state if completing the current animation
+  // sequence would eventually be HIDDEN.
+  void CompleteHiddenTargetedAnimations();
 
   // Creates a new InkDropAnimation and sets it to |ink_drop_animation_|. If
   // |ink_drop_animation_| wasn't null then it will be destroyed using
@@ -93,6 +98,10 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
 
   // The current InkDropHover. Lazily created using CreateInkDropHover();
   scoped_ptr<InkDropHover> hover_;
+
+  // Tracks the logical hovered state of |this| as manipulated by the public
+  // SetHovered() function.
+  bool is_hovered_;
 
   // The current InkDropAnimation. Created on demand using
   // CreateInkDropAnimation().

@@ -47,8 +47,12 @@ const int MenuButton::kMenuMarkerPaddingRight = -1;
 ////////////////////////////////////////////////////////////////////////////////
 
 MenuButton::PressedLock::PressedLock(MenuButton* menu_button)
+    : PressedLock(menu_button, false) {}
+
+MenuButton::PressedLock::PressedLock(MenuButton* menu_button,
+                                     bool is_sibling_menu_show)
     : menu_button_(menu_button->weak_factory_.GetWeakPtr()) {
-  menu_button_->IncrementPressedLocked();
+  menu_button_->IncrementPressedLocked(is_sibling_menu_show);
 }
 
 MenuButton::PressedLock::~PressedLock() {
@@ -368,13 +372,17 @@ void MenuButton::NotifyClick(const ui::Event& event) {
   Activate(&event);
 }
 
-void MenuButton::IncrementPressedLocked() {
+void MenuButton::IncrementPressedLocked(bool snap_ink_drop_to_activated) {
   ++pressed_lock_count_;
   if (increment_pressed_lock_called_)
     *increment_pressed_lock_called_ = true;
   should_disable_after_press_ = state() == STATE_DISABLED;
-  if (state() != STATE_PRESSED && ink_drop_delegate())
-    ink_drop_delegate()->OnAction(InkDropState::ACTIVATED);
+  if (state() != STATE_PRESSED && ink_drop_delegate()) {
+    if (snap_ink_drop_to_activated)
+      ink_drop_delegate()->SnapToActivated();
+    else
+      ink_drop_delegate()->OnAction(InkDropState::ACTIVATED);
+  }
   SetState(STATE_PRESSED);
 }
 
