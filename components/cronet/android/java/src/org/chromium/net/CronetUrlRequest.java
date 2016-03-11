@@ -211,10 +211,15 @@ final class CronetUrlRequest implements UrlRequest {
                                 "Requests with upload data must have a Content-Type.");
                     }
                     mStarted = true;
-                    mUploadDataStream.attachToRequest(this, mUrlRequestAdapter, new Runnable() {
+                    mUploadDataStream.postTaskToExecutor(new Runnable() {
                         @Override
                         public void run() {
+                            mUploadDataStream.initializeWithRequest(CronetUrlRequest.this);
                             synchronized (mUrlRequestAdapterLock) {
+                                if (isDoneLocked()) {
+                                    return;
+                                }
+                                mUploadDataStream.attachNativeAdapterToRequest(mUrlRequestAdapter);
                                 startInternalLocked();
                             }
                         }
@@ -232,6 +237,10 @@ final class CronetUrlRequest implements UrlRequest {
         }
     }
 
+    /*
+     * Starts fully configured request. Could execute on UploadDataProvider executor.
+     * Caller is expected to ensure that request isn't canceled and mUrlRequestAdapter is valid.
+     */
     @GuardedBy("mUrlRequestAdapterLock")
     private void startInternalLocked() {
         if (mDisableCache) {

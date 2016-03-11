@@ -232,7 +232,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     /**
      * Posts task to application Executor.
      */
-    private void postTaskToExecutor(Runnable task) {
+    void postTaskToExecutor(Runnable task) {
         try {
             mExecutor.execute(task);
         } catch (Throwable e) {
@@ -293,34 +293,35 @@ final class CronetUploadDataStream implements UploadDataSink {
     }
 
     /**
-     * Creates native objects and attaches them to the underlying request
-     * adapter object.
-     * TODO(mmenke):  If more types of native upload streams are needed, create
-     * an interface with just this method, to minimize CronetURLRequest's
-     * dependencies on each upload stream type.
+     * Initializes upload length by getting it from data provider. Always called
+     * on executor thread to allow getLength() to block and/or report errors.
+     * If data provider throws an exception, then it is reported to the request.
+     * No native calls to urlRequest are allowed as this is done before request
+     * start, so native object may not exist.
      */
-    void attachToRequest(final CronetUrlRequest request, final long requestAdapter,
-            final Runnable afterAttachCallback) {
-        mRequest = request;
-        postTaskToExecutor(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mLock) {
-                    mInWhichUserCallback = UserCallback.GET_LENGTH;
-                }
-                try {
-                    mLength = mDataProvider.getLength();
-                } catch (Throwable t) {
-                    onError(t);
-                }
-                synchronized (mLock) {
-                    mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
-                    mUploadDataStreamAdapter =
-                            nativeAttachUploadDataToRequest(requestAdapter, mLength);
-                }
-                afterAttachCallback.run();
-            }
-        });
+    void initializeWithRequest(final CronetUrlRequest urlRequest) {
+        synchronized (mLock) {
+            mRequest = urlRequest;
+            mInWhichUserCallback = UserCallback.GET_LENGTH;
+        }
+        try {
+            mLength = mDataProvider.getLength();
+        } catch (Throwable t) {
+            onError(t);
+        }
+        synchronized (mLock) {
+            mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
+        }
+    }
+
+    /**
+     * Creates native objects and attaches them to the underlying request
+     * adapter object. Always called on executor thread.
+     */
+    void attachNativeAdapterToRequest(final long requestAdapter) {
+        synchronized (mLock) {
+            mUploadDataStreamAdapter = nativeAttachUploadDataToRequest(requestAdapter, mLength);
+        }
     }
 
     /**
@@ -330,10 +331,11 @@ final class CronetUploadDataStream implements UploadDataSink {
      */
     @VisibleForTesting
     long createUploadDataStreamForTesting() throws IOException {
-        mUploadDataStreamAdapter = nativeCreateAdapterForTesting();
-        mLength = mDataProvider.getLength();
-        return nativeCreateUploadDataStreamForTesting(mLength,
-                mUploadDataStreamAdapter);
+        synchronized (mLock) {
+            mUploadDataStreamAdapter = nativeCreateAdapterForTesting();
+            mLength = mDataProvider.getLength();
+            return nativeCreateUploadDataStreamForTesting(mLength, mUploadDataStreamAdapter);
+        }
     }
 
     @VisibleForTesting

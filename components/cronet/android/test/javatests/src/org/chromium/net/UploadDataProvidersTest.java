@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.os.ConditionVariable;
 import android.os.ParcelFileDescriptor;
 import android.os.StrictMode;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -13,6 +14,8 @@ import org.chromium.base.test.util.Feature;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /** Test the default provided implementations of {@link UploadDataProvider} */
 public class UploadDataProvidersTest extends CronetTestBase {
@@ -136,5 +139,71 @@ public class UploadDataProvidersTest extends CronetTestBase {
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals(LOREM, callback.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testNoErrorWhenCanceledDuringStart() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        final ConditionVariable first = new ConditionVariable();
+        final ConditionVariable second = new ConditionVariable();
+        builder.addHeader("Content-Type", "useless/string");
+        builder.setUploadDataProvider(new UploadDataProvider() {
+            @Override
+            public long getLength() throws IOException {
+                first.open();
+                second.block();
+                return 0;
+            }
+
+            @Override
+            public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
+                    throws IOException {}
+
+            @Override
+            public void rewind(UploadDataSink uploadDataSink) throws IOException {}
+        }, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        first.block();
+        urlRequest.cancel();
+        second.open();
+        callback.blockForDone();
+        assertTrue(callback.mOnCanceledCalled);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testNoErrorWhenExceptionDuringStart() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        final ConditionVariable first = new ConditionVariable();
+        final String exceptionMessage = "Bad Length";
+        builder.addHeader("Content-Type", "useless/string");
+        builder.setUploadDataProvider(new UploadDataProvider() {
+            @Override
+            public long getLength() throws IOException {
+                first.open();
+                throw new IOException(exceptionMessage);
+            }
+
+            @Override
+            public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
+                    throws IOException {}
+
+            @Override
+            public void rewind(UploadDataSink uploadDataSink) throws IOException {}
+        }, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        first.block();
+        callback.blockForDone();
+        assertFalse(callback.mOnCanceledCalled);
+        assertEquals(UrlRequestError.LISTENER_EXCEPTION_THROWN, callback.mError.getErrorCode());
+        assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertEquals(exceptionMessage, callback.mError.getCause().getMessage());
     }
 }
