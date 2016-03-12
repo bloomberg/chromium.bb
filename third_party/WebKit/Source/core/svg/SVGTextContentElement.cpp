@@ -253,7 +253,7 @@ bool SVGTextContentElement::selfHasRelativeLengths() const
 
 SVGTextContentElement* SVGTextContentElement::elementFromLineLayoutItem(LineLayoutItem lineLayoutItem)
 {
-    if (lineLayoutItem.isNull() || (!lineLayoutItem.isSVGText() && !lineLayoutItem.isSVGInline()))
+    if (!lineLayoutItem || (!lineLayoutItem.isSVGText() && !lineLayoutItem.isSVGInline()))
         return nullptr;
 
     SVGElement* element = toSVGElement(lineLayoutItem.node());

@@ -47,16 +47,8 @@ public:
 
     LineLayoutItem() : m_layoutObject(0) { }
 
-    // TODO(pilgrim): Remove this. It's only here to make things compile before
-    // switching all of core/layout/line to using the API.
-    // https://crbug.com/499321
-    operator LayoutObject*() const { return m_layoutObject; }
-
-    // TODO(dgrogan): Remove this when we replace the operator above with UnspecifiedBoolType.
-    bool isNull() const
-    {
-        return !m_layoutObject;
-    }
+    typedef LayoutObject* LineLayoutItem::*UnspecifiedBoolType;
+    operator UnspecifiedBoolType() const { return m_layoutObject ? &LineLayoutItem::m_layoutObject : nullptr; }
 
     bool isEqual(const LayoutObject* layoutObject) const
     {
