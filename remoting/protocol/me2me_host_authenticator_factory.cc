@@ -119,13 +119,14 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
   if (!local_cert_.empty() && key_pair_.get()) {
     if (token_validator_factory_) {
       return NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
-          local_cert_, key_pair_,
-          token_validator_factory_->CreateTokenValidator(
-              local_jid, remote_jid));
+          local_jid, remote_jid, local_cert_, key_pair_,
+          token_validator_factory_->CreateTokenValidator(local_jid,
+                                                         remote_jid));
     }
 
     return NegotiatingHostAuthenticator::CreateWithPin(
-        local_cert_, key_pair_, pin_hash_, pairing_registry_);
+        local_jid, remote_jid, local_cert_, key_pair_, pin_hash_,
+        pairing_registry_);
   }
 
   return make_scoped_ptr(

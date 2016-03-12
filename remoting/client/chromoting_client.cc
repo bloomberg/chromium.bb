@@ -215,6 +215,7 @@ void ChromotingClient::StartConnection() {
       session_manager_->Connect(
           host_jid_,
           make_scoped_ptr(new protocol::NegotiatingClientAuthenticator(
+              signal_strategy_->GetLocalJid(), host_jid_,
               client_auth_config_))),
       transport_context_, this);
 }

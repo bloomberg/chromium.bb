@@ -30,6 +30,8 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
 
   // Creates a host authenticator for It2Me host.
   static scoped_ptr<Authenticator> CreateForIt2Me(
+      const std::string& local_id,
+      const std::string& remote_id,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& access_code);
@@ -38,6 +40,8 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   // non-nullptr then the paired methods will be offered, supporting
   // PIN-less authentication.
   static scoped_ptr<Authenticator> CreateWithPin(
+      const std::string& local_id,
+      const std::string& remote_id,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& pin_hash,
@@ -45,6 +49,8 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
 
   // Creates a host authenticator, using third party authentication.
   static scoped_ptr<Authenticator> CreateWithThirdPartyAuth(
+      const std::string& local_id,
+      const std::string& remote_id,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       scoped_ptr<TokenValidator> token_validator);
@@ -55,7 +61,9 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   scoped_ptr<buzz::XmlElement> GetNextMessage() override;
 
  private:
-  NegotiatingHostAuthenticator(const std::string& local_cert,
+  NegotiatingHostAuthenticator(const std::string& local_id,
+                               const std::string& remote_id,
+                               const std::string& local_cert,
                                scoped_refptr<RsaKeyPair> key_pair);
 
   // (Asynchronously) creates an authenticator, and stores it in
@@ -64,6 +72,9 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   // |resume_callback| is called after |current_authenticator_| is set.
   void CreateAuthenticator(Authenticator::State preferred_initial_state,
                            const base::Closure& resume_callback);
+
+  std::string local_id_;
+  std::string remote_id_;
 
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> local_key_pair_;

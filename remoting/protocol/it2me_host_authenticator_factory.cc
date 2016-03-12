@@ -45,8 +45,8 @@ scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
     }
   }
 
-  return NegotiatingHostAuthenticator::CreateForIt2Me(local_cert_, key_pair_,
-                                                      access_code_);
+  return NegotiatingHostAuthenticator::CreateForIt2Me(
+      local_jid, remote_jid, local_cert_, key_pair_, access_code_);
 }
 
 }  // namespace protocol

@@ -66,10 +66,25 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   // Method represents an authentication algorithm.
   enum class Method {
     INVALID,
-    SPAKE2_SHARED_SECRET_PLAIN,
-    SPAKE2_SHARED_SECRET_HMAC,
-    SPAKE2_PAIR,
-    THIRD_PARTY,
+
+    // SPAKE2 with P224 using access code in plain-text. Used for It2Me.
+    // TODO(sergeyu): Remove and use SHARED_SECRET_SPAKE2_CURVE25519.
+    SHARED_SECRET_PLAIN_SPAKE2_P224,
+
+    // SPAKE2 PIN or access code hashed with host_id using HMAC-SHA256.
+    SHARED_SECRET_SPAKE2_P224,
+    SHARED_SECRET_SPAKE2_CURVE25519,
+
+    // SPAKE2 using shared pairing secret. Falls back to PIN-based
+    // authentication when pairing fails.
+    // TODO(sergeyu): Add CURVE25519 variant. crbug.com/593123
+    PAIRED_SPAKE2_P224,
+
+    // Authentication using third-party authentication server.
+    // SPAKE2 with P224 using shared pairing secret. Falls back to PIN-based
+    // authentication when it fails to authenticate using paired secret.
+    THIRD_PARTY_SPAKE2_P224,
+    THIRD_PARTY_SPAKE2_CURVE25519,
   };
 
   ~NegotiatingAuthenticatorBase() override;

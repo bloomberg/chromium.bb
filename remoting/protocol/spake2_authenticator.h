@@ -35,9 +35,9 @@ class Spake2Authenticator : public Authenticator {
   static scoped_ptr<Authenticator> CreateForHost(
       const std::string& local_id,
       const std::string& remote_id,
-      const std::string& shared_secret,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
+      const std::string& shared_secret,
       State initial_state);
 
   ~Spake2Authenticator() override;

@@ -93,9 +93,9 @@ scoped_ptr<Authenticator> Spake2Authenticator::CreateForClient(
 scoped_ptr<Authenticator> Spake2Authenticator::CreateForHost(
     const std::string& local_id,
     const std::string& remote_id,
-    const std::string& shared_secret,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
+    const std::string& shared_secret,
     Authenticator::State initial_state) {
   scoped_ptr<Spake2Authenticator> result(new Spake2Authenticator(
       local_id, remote_id, shared_secret, true, initial_state));

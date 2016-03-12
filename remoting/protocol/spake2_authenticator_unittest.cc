@@ -42,8 +42,8 @@ class Spake2AuthenticatorTest : public AuthenticatorTestBase {
  protected:
   void InitAuthenticators(const std::string& client_secret,
                           const std::string& host_secret) {
-    host_ = Spake2Authenticator::CreateForHost(kHostId, kClientId, host_secret,
-                                               host_cert_, key_pair_,
+    host_ = Spake2Authenticator::CreateForHost(kHostId, kClientId, host_cert_,
+                                               key_pair_, host_secret,
                                                Authenticator::WAITING_MESSAGE);
     client_ = Spake2Authenticator::CreateForClient(
         kClientId, kHostId, client_secret, Authenticator::MESSAGE_READY);

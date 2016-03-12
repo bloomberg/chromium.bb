@@ -37,6 +37,9 @@ const char kTestClientName[] = "client-name";
 const char kTestClientId[] = "client-id";
 const char kTestHostId[] = "12345678910123456";
 
+const char kClientJid[] = "alice@gmail.com/abc";
+const char kHostJid[] = "alice@gmail.com/123";
+
 const char kTestPairedSecret[] = "1111-2222-3333";
 const char kTestPairedSecretBad[] = "4444-5555-6666";
 const char kTestPin[] = "123456";
@@ -57,14 +60,14 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
                           bool it2me) {
     if (it2me) {
       host_ = NegotiatingHostAuthenticator::CreateForIt2Me(
-          host_cert_, key_pair_, host_secret);
+          kHostJid, kClientJid, host_cert_, key_pair_, host_secret);
     } else {
       std::string host_secret_hash =
           GetSharedSecretHash(kTestHostId, host_secret);
       host_ = NegotiatingHostAuthenticator::CreateWithPin(
-          host_cert_, key_pair_, host_secret_hash, pairing_registry_);
+          kHostJid, kClientJid, host_cert_, key_pair_, host_secret_hash,
+          pairing_registry_);
     }
-
 
     protocol::ClientAuthenticationConfig client_auth_config;
     client_auth_config.host_id = kTestHostId;
@@ -74,8 +77,8 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
     client_auth_config.fetch_secret_callback =
         base::Bind(&NegotiatingAuthenticatorTest::FetchSecret,
                    client_interactive_pin, pairing_expected);
-    client_as_negotiating_authenticator_ =
-        new NegotiatingClientAuthenticator(client_auth_config);
+    client_as_negotiating_authenticator_ = new NegotiatingClientAuthenticator(
+        kClientJid, kHostJid, client_auth_config);
     client_.reset(client_as_negotiating_authenticator_);
   }
 
@@ -145,14 +148,14 @@ TEST_F(NegotiatingAuthenticatorTest, SuccessfulAuthMe2MePin) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(kNoClientId, kNoPairedSecret,
                                              kTestPin, kTestPin, false));
   VerifyAccepted(
-      NegotiatingAuthenticatorBase::Method::SPAKE2_SHARED_SECRET_HMAC);
+      NegotiatingAuthenticatorBase::Method::SHARED_SECRET_SPAKE2_CURVE25519);
 }
 
 TEST_F(NegotiatingAuthenticatorTest, SuccessfulAuthIt2me) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(kNoClientId, kNoPairedSecret,
                                              kTestPin, kTestPin, true));
   VerifyAccepted(
-      NegotiatingAuthenticatorBase::Method::SPAKE2_SHARED_SECRET_PLAIN);
+      NegotiatingAuthenticatorBase::Method::SHARED_SECRET_PLAIN_SPAKE2_P224);
 }
 
 TEST_F(NegotiatingAuthenticatorTest, InvalidMe2MePin) {
@@ -178,7 +181,7 @@ TEST_F(NegotiatingAuthenticatorTest, IncompatibleMethods) {
       &(client_as_negotiating_authenticator_->methods_);
   methods->erase(std::find(
       methods->begin(), methods->end(),
-      NegotiatingAuthenticatorBase::Method::SPAKE2_SHARED_SECRET_PLAIN));
+      NegotiatingAuthenticatorBase::Method::SHARED_SECRET_PLAIN_SPAKE2_P224));
 
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
 
@@ -190,7 +193,7 @@ TEST_F(NegotiatingAuthenticatorTest, PairingNotSupported) {
                                              kTestPin, kTestPin, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
   VerifyAccepted(
-      NegotiatingAuthenticatorBase::Method::SPAKE2_SHARED_SECRET_HMAC);
+      NegotiatingAuthenticatorBase::Method::SHARED_SECRET_SPAKE2_CURVE25519);
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingSupportedButNotPaired) {
@@ -198,7 +201,7 @@ TEST_F(NegotiatingAuthenticatorTest, PairingSupportedButNotPaired) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(kNoClientId, kNoPairedSecret,
                                              kTestPin, kTestPin, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  VerifyAccepted(NegotiatingAuthenticatorBase::Method::SPAKE2_PAIR);
+  VerifyAccepted(NegotiatingAuthenticatorBase::Method::PAIRED_SPAKE2_P224);
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinOkay) {
@@ -206,7 +209,7 @@ TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinOkay) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(kTestClientId, kTestPairedSecret,
                                              kTestPin, kTestPin, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  VerifyAccepted(NegotiatingAuthenticatorBase::Method::SPAKE2_PAIR);
+  VerifyAccepted(NegotiatingAuthenticatorBase::Method::PAIRED_SPAKE2_P224);
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinBad) {
@@ -222,7 +225,7 @@ TEST_F(NegotiatingAuthenticatorTest, PairingSucceeded) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(kTestClientId, kTestPairedSecret,
                                              kTestPinBad, kTestPin, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  VerifyAccepted(NegotiatingAuthenticatorBase::Method::SPAKE2_PAIR);
+  VerifyAccepted(NegotiatingAuthenticatorBase::Method::PAIRED_SPAKE2_P224);
 }
 
 TEST_F(NegotiatingAuthenticatorTest,
@@ -231,7 +234,7 @@ TEST_F(NegotiatingAuthenticatorTest,
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecretBad, kTestPin, kTestPin, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
-  VerifyAccepted(NegotiatingAuthenticatorBase::Method::SPAKE2_PAIR);
+  VerifyAccepted(NegotiatingAuthenticatorBase::Method::PAIRED_SPAKE2_P224);
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingFailedInvalidSecretAndPin) {

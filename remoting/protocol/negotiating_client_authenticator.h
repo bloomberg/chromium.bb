@@ -41,6 +41,8 @@ struct ClientAuthenticationConfig {
 class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
  public:
   explicit NegotiatingClientAuthenticator(
+      const std::string& local_id,
+      const std::string& remote_id,
       const ClientAuthenticationConfig& config);
   ~NegotiatingClientAuthenticator() override;
 
@@ -69,12 +71,14 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
   // message.
   void CreatePreferredAuthenticator();
 
-  // Creates a V2Authenticator in state |initial_state| with the given
-  // |shared_secret|, then runs |resume_callback|.
-  void CreateV2AuthenticatorWithSecret(
-      Authenticator::State initial_state,
-      const base::Closure& resume_callback,
-      const std::string& shared_secret);
+  // Creates a shared-secret authenticator in state |initial_state| with the
+  // given |shared_secret|, then runs |resume_callback|.
+  void CreateSharedSecretAuthenticator(Authenticator::State initial_state,
+                                       const base::Closure& resume_callback,
+                                       const std::string& shared_secret);
+
+  std::string local_id_;
+  std::string remote_id_;
 
   ClientAuthenticationConfig config_;
 

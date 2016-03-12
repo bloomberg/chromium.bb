@@ -16,6 +16,7 @@
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/pairing_host_authenticator.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/spake2_authenticator.h"
 #include "remoting/protocol/token_validator.h"
 #include "remoting/protocol/v2_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -24,37 +25,48 @@ namespace remoting {
 namespace protocol {
 
 NegotiatingHostAuthenticator::NegotiatingHostAuthenticator(
+    const std::string& local_id,
+    const std::string& remote_id,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair)
     : NegotiatingAuthenticatorBase(WAITING_MESSAGE),
+      local_id_(local_id),
+      remote_id_(remote_id),
       local_cert_(local_cert),
       local_key_pair_(key_pair) {}
 
 // static
 scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateForIt2Me(
+    const std::string& local_id,
+    const std::string& remote_id,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& access_code) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
-      new NegotiatingHostAuthenticator(local_cert, key_pair));
+      new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
+                                       key_pair));
   result->shared_secret_hash_ = access_code;
-  result->AddMethod(Method::SPAKE2_SHARED_SECRET_PLAIN);
+  result->AddMethod(Method::SHARED_SECRET_PLAIN_SPAKE2_P224);
   return std::move(result);
 }
 
 // static
 scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithPin(
+    const std::string& local_id,
+    const std::string& remote_id,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& pin_hash,
     scoped_refptr<PairingRegistry> pairing_registry) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
-      new NegotiatingHostAuthenticator(local_cert, key_pair));
+      new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
+                                       key_pair));
   result->shared_secret_hash_ = pin_hash;
   result->pairing_registry_ = pairing_registry;
-  result->AddMethod(Method::SPAKE2_SHARED_SECRET_HMAC);
+  result->AddMethod(Method::SHARED_SECRET_SPAKE2_CURVE25519);
+  result->AddMethod(Method::SHARED_SECRET_SPAKE2_P224);
   if (pairing_registry.get()) {
-    result->AddMethod(Method::SPAKE2_PAIR);
+    result->AddMethod(Method::PAIRED_SPAKE2_P224);
   }
   return std::move(result);
 }
@@ -62,18 +74,21 @@ scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithPin(
 // static
 scoped_ptr<Authenticator>
 NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
+    const std::string& local_id,
+    const std::string& remote_id,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     scoped_ptr<TokenValidator> token_validator) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
-      new NegotiatingHostAuthenticator(local_cert, key_pair));
+      new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
+                                       key_pair));
   result->token_validator_ = std::move(token_validator);
-  result->AddMethod(Method::THIRD_PARTY);
+  result->AddMethod(Method::THIRD_PARTY_SPAKE2_CURVE25519);
+  result->AddMethod(Method::THIRD_PARTY_SPAKE2_P224);
   return std::move(result);
 }
 
-NegotiatingHostAuthenticator::~NegotiatingHostAuthenticator() {
-}
+NegotiatingHostAuthenticator::~NegotiatingHostAuthenticator() {}
 
 void NegotiatingHostAuthenticator::ProcessMessage(
     const buzz::XmlElement* message,
@@ -167,7 +182,7 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
     const base::Closure& resume_callback) {
   DCHECK(current_method_ != Method::INVALID);
 
-  if (current_method_ == Method::THIRD_PARTY) {
+  if (current_method_ == Method::THIRD_PARTY_SPAKE2_P224) {
     // |ThirdPartyHostAuthenticator| takes ownership of |token_validator_|.
     // The authentication method negotiation logic should guarantee that only
     // one |ThirdPartyHostAuthenticator| will need to be created per session.
@@ -176,7 +191,20 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
         base::Bind(&V2Authenticator::CreateForHost, local_cert_,
                    local_key_pair_),
         std::move(token_validator_)));
-  } else if (current_method_ == Method::SPAKE2_PAIR &&
+  } else if (current_method_ == Method::THIRD_PARTY_SPAKE2_CURVE25519) {
+    // |ThirdPartyHostAuthenticator| takes ownership of |token_validator_|.
+    // The authentication method negotiation logic should guarantee that only
+    // one |ThirdPartyHostAuthenticator| will need to be created per session.
+    DCHECK(token_validator_);
+    current_authenticator_.reset(new ThirdPartyHostAuthenticator(
+        base::Bind(&Spake2Authenticator::CreateForHost, local_id_, remote_id_,
+                   local_cert_, local_key_pair_),
+        std::move(token_validator_)));
+  } else if (current_method_ == Method::SHARED_SECRET_SPAKE2_CURVE25519) {
+    current_authenticator_ = Spake2Authenticator::CreateForHost(
+        local_id_, remote_id_, local_cert_, local_key_pair_,
+        shared_secret_hash_, preferred_initial_state);
+  } else if (current_method_ == Method::PAIRED_SPAKE2_P224 &&
              preferred_initial_state == WAITING_MESSAGE) {
     // If the client requested Spake2Pair and sent an initial message, attempt
     // the paired connection protocol.
@@ -191,9 +219,9 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
     // Spake2Pair so that the client knows that the host supports pairing and
     // that it can therefore present the option to the user when they enter
     // the PIN.
-    DCHECK(current_method_ == Method::SPAKE2_SHARED_SECRET_PLAIN ||
-           current_method_ == Method::SPAKE2_SHARED_SECRET_HMAC ||
-           current_method_ == Method::SPAKE2_PAIR);
+    DCHECK(current_method_ == Method::SHARED_SECRET_PLAIN_SPAKE2_P224 ||
+           current_method_ == Method::SHARED_SECRET_SPAKE2_P224 ||
+           current_method_ == Method::PAIRED_SPAKE2_P224);
     current_authenticator_ = V2Authenticator::CreateForHost(
         local_cert_, local_key_pair_, shared_secret_hash_,
         preferred_initial_state);
