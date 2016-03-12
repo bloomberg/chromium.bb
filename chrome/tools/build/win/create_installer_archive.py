@@ -502,9 +502,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
                                 'crcrypto.dll',
                                 'icui18n.dll',
                                 'icuuc.dll',
-                                'msvc*.dll',
-                                'api-ms-win-*.dll',
-                                'vcruntime*.dll' ]
+                                'msvc*.dll' ]
   for setup_component_dll_glob in setup_component_dll_globs:
     setup_component_dlls = glob.glob(os.path.join(build_dir,
                                                   setup_component_dll_glob))
