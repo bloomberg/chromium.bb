@@ -1063,7 +1063,8 @@ void BrowserOptionsHandler::InitializePage() {
 
   if (!arc::ArcBridgeService::GetEnabled(
           base::CommandLine::ForCurrentProcess()) ||
-      arc::ArcAuthService::IsOptInVerificationDisabled()) {
+      arc::ArcAuthService::IsOptInVerificationDisabled() ||
+      profile->IsLegacySupervised()) {
     web_ui()->CallJavascriptFunction("BrowserOptions.hideAndroidAppsSection");
   }
 #endif

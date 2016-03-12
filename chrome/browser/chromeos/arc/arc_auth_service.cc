@@ -150,6 +150,11 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   Shutdown();
 
+  if (profile->IsLegacySupervised()) {
+    VLOG(2) << "Supervised profiles are not supported in Arc.";
+    return;
+  }
+
   profile_ = profile;
   // Reuse storage used in ARC OptIn platform app.
   const std::string site_url =
