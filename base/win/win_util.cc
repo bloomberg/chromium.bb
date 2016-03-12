@@ -12,14 +12,20 @@
 #include <shlobj.h>
 #include <shobjidl.h>  // Must be before propkey.
 #include <initguid.h>
+#include <inspectable.h>
 #include <propkey.h>
 #include <propvarutil.h>
 #include <psapi.h>
+#include <roapi.h>
 #include <sddl.h>
 #include <setupapi.h>
 #include <signal.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <uiviewsettingsinterop.h>
+#include <windows.ui.viewmanagement.h>
+#include <winstring.h>
+#include <wrl/wrappers/corewrappers.h>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -33,6 +39,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
@@ -107,6 +114,82 @@ POWER_PLATFORM_ROLE GetPlatformRole() {
   return PowerDeterminePlatformRoleEx(POWER_PLATFORM_ROLE_V2);
 }
 
+// Uses the Windows 10 WRL API's to query the current system state. The API's
+// we are using in the function below are supported in Win32 apps as per msdn.
+// It looks like the API implementation is buggy at least on Surface 4 causing
+// it to always return UserInteractionMode_Touch which as per documentation
+// indicates tablet mode.
+bool IsWindows10TabletDevice() {
+  if (GetVersion() < VERSION_WIN10)
+    return false;
+
+  using RoGetActivationFactoryFunction = decltype(&RoGetActivationFactory);
+  using WindowsCreateStringFunction = decltype(&WindowsCreateString);
+
+  static RoGetActivationFactoryFunction get_factory = nullptr;
+  static WindowsCreateStringFunction create_string = nullptr;
+
+  if (!get_factory) {
+    DCHECK_EQ(create_string, static_cast<WindowsCreateStringFunction>(
+        nullptr));
+
+    HMODULE combase_dll = ::LoadLibrary(L"combase.dll");
+    if (!combase_dll)
+      return false;
+
+    get_factory = reinterpret_cast<RoGetActivationFactoryFunction>(
+        ::GetProcAddress(combase_dll, "RoGetActivationFactory"));
+    if (!get_factory) {
+      CHECK(false);
+      return false;
+    }
+
+    create_string = reinterpret_cast<WindowsCreateStringFunction>(
+        ::GetProcAddress(combase_dll, "WindowsCreateString"));
+    if (!create_string) {
+      CHECK(false);
+      return false;
+    }
+  }
+
+  HRESULT hr = E_FAIL;
+  // This HSTRING is allocated on the heap and is leaked.
+  static HSTRING view_settings_guid = NULL;
+  if (!view_settings_guid) {
+    hr = create_string(
+        RuntimeClass_Windows_UI_ViewManagement_UIViewSettings,
+        static_cast<UINT32>(
+            wcslen(RuntimeClass_Windows_UI_ViewManagement_UIViewSettings)),
+        &view_settings_guid);
+    if (FAILED(hr))
+      return false;
+  }
+
+  base::win::ScopedComPtr<IUIViewSettingsInterop> view_settings_interop;
+  hr = get_factory(view_settings_guid,
+                   __uuidof(IUIViewSettingsInterop),
+                   view_settings_interop.ReceiveVoid());
+  if (FAILED(hr))
+    return false;
+
+  base::win::ScopedComPtr<ABI::Windows::UI::ViewManagement::IUIViewSettings>
+      view_settings;
+  // TODO(ananta)
+  // Avoid using GetForegroundWindow here and pass in the HWND of the window
+  // intiating the request to display the keyboard.
+  hr = view_settings_interop->GetForWindow(
+      ::GetForegroundWindow(),
+      __uuidof(ABI::Windows::UI::ViewManagement::IUIViewSettings),
+      view_settings.ReceiveVoid());
+  if (FAILED(hr))
+    return false;
+
+  ABI::Windows::UI::ViewManagement::UserInteractionMode mode =
+      ABI::Windows::UI::ViewManagement::UserInteractionMode_Mouse;
+  view_settings->get_UserInteractionMode(&mode);
+  return mode == ABI::Windows::UI::ViewManagement::UserInteractionMode_Touch;
+}
+
 }  // namespace
 
 // Returns true if a physical keyboard is detected on Windows 8 and up.
@@ -141,10 +224,11 @@ bool IsKeyboardPresentOnSlate(std::string* reason) {
     }
   }
 
+  // If it is a tablet device we assume that there is no keyboard attached.
   if (IsTabletDevice(reason)) {
     if (reason)
       *reason += "Tablet device.\n";
-    return true;
+    return false;
   } else {
     if (reason) {
       *reason += "Not a tablet device";
@@ -391,6 +475,9 @@ bool IsTabletDevice(std::string* reason) {
     return false;
   }
 
+  if (IsWindows10TabletDevice())
+    return true;
+
   if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0) {
     if (reason) {
       *reason += "Device does not support touch.\n";
@@ -414,8 +501,9 @@ bool IsTabletDevice(std::string* reason) {
   bool slate_power_profile = (role == PlatformRoleSlate);
 
   bool is_tablet = false;
-
+  bool is_tablet_pc = false;
   if (mobile_power_profile || slate_power_profile) {
+    is_tablet_pc = !GetSystemMetrics(SM_TABLETPC);
     is_tablet = !GetSystemMetrics(SM_CONVERTIBLESLATEMODE);
     if (!is_tablet) {
       if (reason) {
@@ -433,7 +521,7 @@ bool IsTabletDevice(std::string* reason) {
     if (reason)
       *reason += "Device role is not mobile or slate.\n";
   }
-  return is_tablet;
+  return is_tablet && is_tablet_pc;
 }
 
 bool DisplayVirtualKeyboard() {
