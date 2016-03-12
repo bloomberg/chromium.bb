@@ -70,8 +70,8 @@ class PaygenNoPaygenConfigForBoard(failures_lib.StepFailure):
   """Paygen can't run with a release.conf config for the board."""
 
 
-class SigningStage(artifact_stages.ArchivingStage):
-  """Stage that waits for image signing.
+class PaygenStage(artifact_stages.ArchivingStage):
+  """Stage that generates release payloads.
 
   If this stage is created with a 'channels' argument, it can run
   independently. Otherwise, it's dependent on values queued up by
@@ -86,32 +86,49 @@ class SigningStage(artifact_stages.ArchivingStage):
   # Timeout for the signing process. 2 hours in seconds.
   SIGNING_TIMEOUT = 2 * 60 * 60
 
-  def __init__(self, builder_run, board, archive_stage, **kwargs):
+  FINISHED = 'finished'
+
+  def __init__(self, builder_run, board, archive_stage, channels=None,
+               **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchivingStage.
       board: See board on ArchivingStage.
       archive_stage: See archive_stage on ArchivingStage.
+      channels: Explicit list of channels to generate payloads for.
+                If empty, will instead wait on values from push_image.
+                Channels is normally None in release builds, and normally set
+                for trybot 'payloads' builds.
     """
-    super(SigningStage, self).__init__(builder_run, board, archive_stage,
-                                       **kwargs)
-
-    # Used to remember partial results between retries.
+    super(PaygenStage, self).__init__(builder_run, board, archive_stage,
+                                      **kwargs)
     self.signing_results = {}
+    self.channels = channels
 
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    exc_type, _exc_value, _exc_tb = exc_info
+    exc_type, exc_value, _exc_tb = exc_info
 
-    # Notify stages blocked on us if we error out.
-    self.board_runattrs.SetParallel('signed_images_ready', None)
+    # If Paygen fails to find anything needed in release.conf, treat it
+    # as a warning, not a failure. This is common during new board bring up.
+    if issubclass(exc_type, PaygenNoPaygenConfigForBoard):
+      return self._HandleExceptionAsWarning(exc_info)
 
     # Warn so people look at ArchiveStage for the real error.
     if issubclass(exc_type, MissingInstructionException):
       return self._HandleExceptionAsWarning(exc_info)
 
-    return super(SigningStage, self)._HandleStageException(exc_info)
+    # If the exception is a TestLabFailure that means we couldn't schedule the
+    # test. We don't fail the build for that. We do the CompoundFailure dance,
+    # because that's how we'll get failures from background processes returned
+    # to us.
+    if (issubclass(exc_type, failures_lib.TestLabFailure) or
+        (issubclass(exc_type, failures_lib.CompoundFailure) and
+         exc_value.MatchesFailureType(failures_lib.TestLabFailure))):
+      return self._HandleExceptionAsWarning(exc_info)
+
+    return super(PaygenStage, self)._HandleStageException(exc_info)
 
   def _JsonFromUrl(self, gs_ctx, url):
     """Fetch a GS Url, and parse it as Json.
@@ -151,14 +168,15 @@ class SigningStage(artifact_stages.ArchivingStage):
     return (signer_json or {}).get('status', {}).get('status', '')
 
   def _CheckForResults(self, gs_ctx, instruction_urls_per_channel,
-                       channel_notifier=None):
+                       channel_notifier):
     """timeout_util.WaitForSuccess func to check a list of signer results.
 
     Args:
       gs_ctx: Google Storage Context.
       instruction_urls_per_channel: Urls of the signer result files
                                     we're expecting.
-      channel_notifier: Method to call when a channel is ready or None.
+      channel_notifier: BackgroundTaskRunner into which we push channels for
+                        processing.
 
     Returns:
       Number of results not yet collected.
@@ -209,8 +227,8 @@ class SigningStage(artifact_stages.ArchivingStage):
         if self._SigningStatusFromJson(signer_result) != 'passed':
           channel_success = False
 
-      # If we successfully completed the channel, inform someone.
-      if channel_success and channel_notifier:
+      # If we successfully completed the channel, inform paygen.
+      if channel_success:
         channel_notifier(channel)
 
     return results_completed
@@ -238,12 +256,13 @@ class SigningStage(artifact_stages.ArchivingStage):
 
   def _WaitForSigningResults(self,
                              instruction_urls_per_channel,
-                             channel_notifier=None):
+                             channel_notifier):
     """Do the work of waiting for signer results and logging them.
 
     Args:
       instruction_urls_per_channel: push_image data (see _WaitForPushImage).
-      channel_notifier: Method to call with channel name when ready or None.
+      channel_notifier: BackgroundTaskRunner into which we push channels for
+                        processing.
 
     Raises:
       ValueError: If the signer result isn't valid json.
@@ -290,78 +309,6 @@ class SigningStage(artifact_stages.ArchivingStage):
     version = self._run.attrs.release_tag
 
     assert version, "We can't generate payloads without a release_tag."
-    logging.info("Waiting for image uploads for: %s, %s", board, version)
-
-    instruction_urls_per_channel = self._WaitForPushImage()
-
-    logging.info("Waiting for image signing for: %s, %s", board, version)
-    logging.info("GS errors are a normal part of the polling for results.")
-    self._WaitForSigningResults(instruction_urls_per_channel)
-
-    # Notify stages blocked on us that images are for the given channel list.
-    channels = instruction_urls_per_channel.keys()
-    self.board_runattrs.SetParallel('signed_images_ready', channels)
-
-
-class PaygenStage(artifact_stages.ArchivingStage):
-  """Stage that generates release payloads.
-
-  If this stage is created with a 'channels' argument, it can run
-  independently. Otherwise, it's dependent on values queued up by
-  the ArchiveStage (push_image).
-  """
-  option_name = 'paygen'
-  config_name = 'paygen'
-
-  def __init__(self, builder_run, board, archive_stage, channels=None,
-               **kwargs):
-    """Init that accepts the channels argument, if present.
-
-    Args:
-      builder_run: See builder_run on ArchivingStage.
-      board: See board on ArchivingStage.
-      archive_stage: See archive_stage on ArchivingStage.
-      channels: Explicit list of channels to generate payloads for.
-                If empty, will instead wait on values from push_image.
-                Channels is normally None in release builds, and normally set
-                for trybot 'payloads' builds.
-    """
-    super(PaygenStage, self).__init__(builder_run, board, archive_stage,
-                                      **kwargs)
-    self.channels = channels
-
-  def _HandleStageException(self, exc_info):
-    """Override and don't set status to FAIL but FORGIVEN instead."""
-    exc_type, exc_value, _exc_tb = exc_info
-
-    # If Paygen fails to find anything needed in release.conf, treat it
-    # as a warning. This is common during new board bring up.
-    if issubclass(exc_type, PaygenNoPaygenConfigForBoard):
-      return self._HandleExceptionAsWarning(exc_info)
-
-    # If the SigningStage failed, we warn that we didn't run, but don't fail
-    # outright. Let SigningStage decide if this should kill the build.
-    if issubclass(exc_type, SignerFailure):
-      return self._HandleExceptionAsWarning(exc_info)
-
-    # If the exception is a TestLabFailure that means we couldn't schedule the
-    # test. We don't fail the build for that. We do the CompoundFailure dance,
-    # because that's how we'll get failures from background processes returned
-    # to us.
-    if (issubclass(exc_type, failures_lib.TestLabFailure) or
-        (issubclass(exc_type, failures_lib.CompoundFailure) and
-         exc_value.MatchesFailureType(failures_lib.TestLabFailure))):
-      return self._HandleExceptionAsWarning(exc_info)
-
-    return super(PaygenStage, self)._HandleStageException(exc_info)
-
-  def PerformStage(self):
-    """Do the work of generating our release payloads."""
-    # Convert to release tools naming for boards.
-    board = self._current_board.replace('_', '-')
-    version = self._run.attrs.release_tag
-
-    assert version, "We can't generate payloads without a release_tag."
     logging.info("Generating payloads for: %s, %s", board, version)
 
     # Test to see if the current board has a Paygen configuration. We do
@@ -374,22 +321,21 @@ class PaygenStage(artifact_stages.ArchivingStage):
           'Golden Eye (%s) has no entry for board %s. Get a TPM to fix.' %
           (paygen_build_lib.BOARDS_URI, board))
 
-
-    # If we did not get an explicit channel list, we wait on the signing
-    # stage to give us a list, and so signal that signing is done.
-    if self.channels is None:
-      # Wait for channels from signing stage.
-      self.channels = self.board_runattrs.GetParallel('signed_images_ready')
-      if self.channels is None:
-        raise SignerFailure('SigningStage failed, no payloads generated.')
-
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
-      logging.info("Using channels: %s", self.channels)
-      # If we have an explicit list of channels, use it.
-      for channel in self.channels:
+      def channel_notifier(channel):
         per_channel.put((channel, board, version, self._run.debug,
                          self._run.config.paygen_skip_testing,
                          self._run.config.paygen_skip_delta_payloads))
+
+      if self.channels:
+        logging.info("Using explicit channels: %s", self.channels)
+        # If we have an explicit list of channels, use it.
+        for channel in self.channels:
+          channel_notifier(channel)
+      else:
+        instruction_urls_per_channel = self._WaitForPushImage()
+        self._WaitForSigningResults(instruction_urls_per_channel,
+                                    channel_notifier)
 
   def _RunPaygenInProcess(self, channel, board, version, debug,
                           disable_tests, skip_delta_payloads):

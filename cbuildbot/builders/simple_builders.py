@@ -193,7 +193,6 @@ class SimpleBuilder(generic_builders.Builder):
 
     stage_list += [
         [release_stages.SignerTestStage, board, archive_stage],
-        [release_stages.SigningStage, board, archive_stage],
         [release_stages.PaygenStage, board, archive_stage],
         [test_stages.ImageTestStage, board],
         [test_stages.UnitTestStage, board],
