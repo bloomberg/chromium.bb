@@ -252,9 +252,13 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest, ShouldUseWebAppFrame) {
   EXPECT_FALSE(browser()->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME));
   EXPECT_FALSE(
       dev_tools_browser->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME));
-  EXPECT_EQ(browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH,
-            bookmark_app_browser->SupportsWindowFeature(
-                Browser::FEATURE_WEBAPPFRAME));
+#if defined(USE_ASH)
+  const bool kIsAsh = true;
+#else
+  const bool kIsAsh = false;
+#endif  // USE_ASH
+  EXPECT_EQ(kIsAsh, bookmark_app_browser->SupportsWindowFeature(
+                        Browser::FEATURE_WEBAPPFRAME));
   EXPECT_FALSE(packaged_app_browser->SupportsWindowFeature(
       Browser::FEATURE_WEBAPPFRAME));
 

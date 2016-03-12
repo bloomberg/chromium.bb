@@ -34,10 +34,12 @@ bool IsSameOriginOrMoreSecure(const GURL& app_url, const GURL& page_url) {
          app_url.port() == page_url.port();
 }
 
+#if defined(USE_ASH)
 bool IsWebAppFrameEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebAppFrame);
 }
+#endif  // USE_ASH
 
 }  // namespace
 
@@ -59,10 +61,12 @@ HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
       ExtensionRegistry::Get(browser->profile())->GetExtensionById(
           extension_id_, ExtensionRegistry::EVERYTHING);
   DCHECK(extension);
+#if defined(USE_ASH)
   should_use_web_app_frame_ =
-      extension->from_bookmark() &&
-      browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
-      IsWebAppFrameEnabled();
+      extension->from_bookmark() && IsWebAppFrameEnabled();
+#else
+  should_use_web_app_frame_ = false;
+#endif
 }
 
 HostedAppBrowserController::~HostedAppBrowserController() {
