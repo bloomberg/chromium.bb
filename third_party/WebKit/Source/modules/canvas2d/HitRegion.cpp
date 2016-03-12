@@ -10,7 +10,7 @@
 namespace blink {
 
 HitRegion::HitRegion(const Path& path, const HitRegionOptions& options)
-    : m_id(options.id())
+    : m_id(options.id().isEmpty() ? String() : options.id())
     , m_control(options.control())
     , m_path(path)
 {

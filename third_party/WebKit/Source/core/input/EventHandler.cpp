@@ -56,6 +56,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameSetElement.h"
@@ -288,6 +289,7 @@ DEFINE_TRACE(EventHandler)
     visitor->trace(m_frameSetBeingResized);
     visitor->trace(m_scrollbarHandlingScrollGesture);
     visitor->trace(m_targetForTouchID);
+    visitor->trace(m_regionForTouchID);
     visitor->trace(m_touchSequenceDocument);
     visitor->trace(m_scrollGestureHandlingNode);
     visitor->trace(m_previousGestureScrolledNode);
@@ -1045,7 +1047,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
 
     m_frame->selection().setCaretBlinkingSuspended(true);
 
-    WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mouseEvent);
+    WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mousedown, mev.innerNode(), m_clickCount, mev.event());
 
     if (eventResult == WebInputEventResult::NotHandled && m_frame->view()) {
         FrameView* view = m_frame->view();
@@ -1069,7 +1071,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     InputDeviceCapabilities* sourceCapabilities = mouseEvent.getSyntheticEventType() == PlatformMouseEvent::FromTouch ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() :
         InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities();
     if (eventResult == WebInputEventResult::NotHandled)
-        eventResult = handleMouseFocus(MouseEventWithHitTestResults(mouseEvent, hitTestResult), sourceCapabilities);
+        eventResult = handleMouseFocus(MouseEventWithHitTestResults(mev.event(), hitTestResult), sourceCapabilities);
     m_capturesDragging = eventResult == WebInputEventResult::NotHandled || mev.scrollbar();
 
     // If the hit testing originally determined the event was in a scrollbar, refetch the MouseEventWithHitTestResults
@@ -1235,7 +1237,7 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMous
     Scrollbar* scrollbar = nullptr;
 
     if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode()) {
-        m_resizeScrollableArea->resize(mouseEvent, m_offsetFromResizeCorner);
+        m_resizeScrollableArea->resize(mev.event(), m_offsetFromResizeCorner);
     } else {
         if (!scrollbar)
             scrollbar = mev.scrollbar();
@@ -1250,11 +1252,11 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMous
 
     // We want mouseouts to happen first, from the inside out.  First send a move event to the last subframe so that it will fire mouseouts.
     if (m_lastMouseMoveEventSubframe && m_lastMouseMoveEventSubframe->tree().isDescendantOf(m_frame) && m_lastMouseMoveEventSubframe != newSubframe)
-        m_lastMouseMoveEventSubframe->eventHandler().handleMouseLeaveEvent(mouseEvent);
+        m_lastMouseMoveEventSubframe->eventHandler().handleMouseLeaveEvent(mev.event());
 
     if (newSubframe) {
         // Update over/out state before passing the event to the subframe.
-        updateMouseEventTargetNode(mev.innerNode(), mouseEvent);
+        updateMouseEventTargetNode(mev.innerNode(), mev.event());
 
         // Event dispatch in updateMouseEventTargetNode may have caused the subframe of the target
         // node to be detached from its FrameView, in which case the event should not be passed.
@@ -1262,7 +1264,7 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMous
             eventResult = passMouseMoveEventToSubframe(mev, newSubframe.get(), hoveredNode);
     } else {
         if (scrollbar && !m_mousePressed)
-            scrollbar->mouseMoved(mouseEvent); // Handle hover effects on platforms that support visual feedback on scrollbar hovering.
+            scrollbar->mouseMoved(mev.event()); // Handle hover effects on platforms that support visual feedback on scrollbar hovering.
         if (FrameView* view = m_frame->view()) {
             OptionalCursor optionalCursor = selectCursor(mev.hitTestResult());
             if (optionalCursor.isCursorChange()) {
@@ -1276,7 +1278,7 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMous
     if (eventResult != WebInputEventResult::NotHandled)
         return eventResult;
 
-    eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mousemove, mev.innerNode(), 0, mouseEvent);
+    eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mousemove, mev.innerNode(), 0, mev.event());
     if (eventResult != WebInputEventResult::NotHandled)
         return eventResult;
 
@@ -1349,7 +1351,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
     if (subframe)
         return passMouseReleaseEventToSubframe(mev, subframe);
 
-    WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mouseup, mev.innerNode(), m_clickCount, mouseEvent);
+    WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mouseup, mev.innerNode(), m_clickCount, mev.event());
 
     // TODO(crbug/545647): This state should reset with pointercancel too.
     m_pointerEventManager.conditionallyEnableMouseEventForPointerTypeMouse(
@@ -1377,7 +1379,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
             // because the mouseup dispatch above has already updated it
             // correctly. Moreover, clickTargetNode is different from
             // mev.innerNode at drag-release.
-            clickEventResult = toWebInputEventResult(clickTargetNode->dispatchMouseEvent(mouseEvent,
+            clickEventResult = toWebInputEventResult(clickTargetNode->dispatchMouseEvent(mev.event(),
                 EventTypeNames::click, m_clickCount));
         }
     }
@@ -3647,7 +3649,8 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
             touchInfo.adjustedPagePoint,
             touchInfo.adjustedRadius,
             point.rotationAngle(),
-            point.force());
+            point.force(),
+            touchInfo.region);
 
         // Ensure this target's touch list exists, even if it ends up empty, so
         // it can always be passed to TouchEvent::Create below.
@@ -3773,6 +3776,13 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
             if (!node)
                 continue;
 
+            if (isHTMLCanvasElement(node)) {
+                std::pair<Element*, String> regionInfo = toHTMLCanvasElement(node)->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
+                if (regionInfo.first)
+                    node = regionInfo.first;
+                m_regionForTouchID.set(point.id(), regionInfo.second);
+            }
+
             // Touch events should not go to text nodes
             if (node->isTextNode())
                 node = FlatTreeTraversal::parent(*node);
@@ -3819,16 +3829,19 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
         const PlatformTouchPoint& point = points[i];
         PlatformTouchPoint::TouchState pointState = point.state();
         RefPtrWillBeRawPtr<EventTarget> touchTarget = nullptr;
+        String regionID;
 
         if (pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled) {
             // The target should be the original target for this touch, so get
             // it from the hashmap. As it's a release or cancel we also remove
             // it from the map.
             touchTarget = m_targetForTouchID.take(point.id());
+            regionID = m_regionForTouchID.take(point.id());
         } else {
             // No hittest is performed on move or stationary, since the target
             // is not allowed to change anyway.
             touchTarget = m_targetForTouchID.get(point.id());
+            regionID = m_regionForTouchID.get(point.id());
         }
 
         LocalFrame* targetFrame = nullptr;
@@ -3874,6 +3887,7 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
         touchInfo.adjustedRadius = point.radius().scaledBy(scaleFactor);
         touchInfo.knownTarget = knownTarget;
         touchInfo.consumed = false;
+        touchInfo.region = regionID;
     }
 
     if (!m_inPointerCanceledState) {

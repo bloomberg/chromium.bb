@@ -29,6 +29,7 @@
 #include "platform/PlatformEvent.h"
 #include "platform/geometry/IntPoint.h"
 #include "public/platform/WebPointerProperties.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -87,6 +88,9 @@ public:
     bool fromTouch() const { return m_synthesized == FromTouch; }
     SyntheticEventType getSyntheticEventType() const { return m_synthesized; }
 
+    const String& region() const { return m_region; }
+    void setRegion(const String& region) { m_region = region; }
+
 protected:
     WebPointerProperties m_pointerProperties;
 
@@ -101,6 +105,12 @@ protected:
     MouseButton m_button;
     int m_clickCount;
     SyntheticEventType m_synthesized;
+
+    // For canvas hit region.
+    // TODO(zino): This might make more sense to put in HitTestResults or
+    // some other part of MouseEventWithHitTestResults, but for now it's
+    // most convenient to stash it here. Please see: http://crbug.com/592947.
+    String m_region;
 };
 
 } // namespace blink

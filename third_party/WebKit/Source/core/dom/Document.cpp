@@ -3246,6 +3246,15 @@ MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& r
     if (!request.readOnly())
         updateHoverActiveState(request, result.innerElement());
 
+    if (isHTMLCanvasElement(result.innerNode())) {
+        PlatformMouseEvent eventWithRegion = event;
+        std::pair<Element*, String> regionInfo = toHTMLCanvasElement(result.innerNode())->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
+        if (regionInfo.first)
+            result.setInnerNode(regionInfo.first);
+        eventWithRegion.setRegion(regionInfo.second);
+        return MouseEventWithHitTestResults(eventWithRegion, result);
+    }
+
     return MouseEventWithHitTestResults(event, result);
 }
 
@@ -5464,7 +5473,7 @@ PassRefPtrWillBeRawPtr<Touch> Document::createTouch(DOMWindow* window, EventTarg
     // when this method should throw and nor is it by inspection of iOS behavior. It would be nice to verify any cases where it throws under iOS
     // and implement them here. See https://bugs.webkit.org/show_bug.cgi?id=47819
     LocalFrame* frame = window && window->isLocalDOMWindow() ? toLocalDOMWindow(window)->frame() : this->frame();
-    return Touch::create(frame, target, identifier, FloatPoint(screenX, screenY), FloatPoint(pageX, pageY), FloatSize(radiusX, radiusY), rotationAngle, force);
+    return Touch::create(frame, target, identifier, FloatPoint(screenX, screenY), FloatPoint(pageX, pageY), FloatSize(radiusX, radiusY), rotationAngle, force, String());
 }
 
 PassRefPtrWillBeRawPtr<TouchList> Document::createTouchList(WillBeHeapVector<RefPtrWillBeMember<Touch>>& touches) const

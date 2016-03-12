@@ -135,6 +135,7 @@ public:
     void willProcessTask() override { }
 
     void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) override;
+    std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint& location) override;
 
     // SVGResourceClient implementation
     void filterNeedsInvalidation() override;

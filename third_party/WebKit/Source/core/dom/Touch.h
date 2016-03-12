@@ -43,15 +43,15 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT Touch final : public RefCountedWillBeGarbageCollected<Touch>, public ScriptWrappable {
+class CORE_EXPORT Touch final : public RefCountedWillBeGarbageCollectedFinalized<Touch>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
         int identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,
-        const FloatSize& radius, float rotationAngle, float force)
+        const FloatSize& radius, float rotationAngle, float force, String region)
     {
         return adoptRefWillBeNoop(
-            new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force));
+            new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force, region));
     }
 
     static PassRefPtrWillBeRawPtr<Touch> create(const Document& document, const TouchInit& initializer)
@@ -72,6 +72,7 @@ public:
     float radiusY() const { return m_radius.height(); }
     float rotationAngle() const { return m_rotationAngle; }
     float force() const { return m_force; }
+    const String& region() const { return m_region; }
 
     // Blink-internal methods
     const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
@@ -83,11 +84,11 @@ public:
 private:
     Touch(LocalFrame*, EventTarget*, int identifier,
         const FloatPoint& screenPos, const FloatPoint& pagePos,
-        const FloatSize& radius, float rotationAngle, float force);
+        const FloatSize& radius, float rotationAngle, float force, String region);
 
     Touch(EventTarget*, int identifier, const FloatPoint& clientPos,
         const FloatPoint& screenPos, const FloatPoint& pagePos,
-        const FloatSize& radius, float rotationAngle, float force, LayoutPoint absoluteLocation);
+        const FloatSize& radius, float rotationAngle, float force, String region, LayoutPoint absoluteLocation);
 
     Touch(LocalFrame*, const TouchInit&);
 
@@ -103,6 +104,7 @@ private:
     FloatSize m_radius;
     float m_rotationAngle;
     float m_force;
+    String m_region;
     // FIXME(rbyers): Shouldn't we be able to migrate callers to relying on screenPos, pagePos
     // or clientPos? absoluteLocation appears to be the same as pagePos but without browser
     // scale applied.

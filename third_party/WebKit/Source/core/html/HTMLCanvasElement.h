@@ -183,6 +183,7 @@ public:
     void notifyListenersCanvasChanged();
 
     bool isSupportedInteractiveCanvasFallback(const Element&);
+    std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint&);
 
 protected:
     void didMoveToNewDocument(Document& oldDocument) override;

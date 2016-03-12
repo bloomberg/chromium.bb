@@ -49,7 +49,8 @@ public:
         short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
         double platformTimeStamp,
-        PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable);
+        PlatformMouseEvent::SyntheticEventType,
+        const String& region);
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtrWillBeRawPtr<Node> relatedTarget);
 
@@ -75,6 +76,8 @@ public:
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
     void setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
     PlatformMouseEvent::SyntheticEventType getSyntheticEventType() const { return m_syntheticEventType; }
+    const String& region() const { return m_region; }
+    void setRegion(const String& region) { m_region = region; }
 
     Node* toElement() const;
     Node* fromElement() const;
@@ -106,7 +109,8 @@ protected:
         PlatformEvent::Modifiers, short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
         double platformTimeStamp,
-        PlatformMouseEvent::SyntheticEventType);
+        PlatformMouseEvent::SyntheticEventType,
+        const String& region);
 
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 
@@ -125,6 +129,7 @@ private:
     unsigned short m_buttons;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
     PlatformMouseEvent::SyntheticEventType m_syntheticEventType;
+    String m_region;
 };
 
 class MouseEventDispatchMediator final : public EventDispatchMediator {

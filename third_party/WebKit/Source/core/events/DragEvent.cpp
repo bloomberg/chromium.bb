@@ -46,7 +46,10 @@ DragEvent::DragEvent(const AtomicString& eventType, bool canBubble, bool cancela
     PlatformMouseEvent::SyntheticEventType syntheticEventType)
     : MouseEvent(eventType, canBubble, cancelable, view, detail, screenX, screenY,
         windowX, windowY, movementX, movementY, modifiers, button, buttons, relatedTarget,
-        platformTimeStamp, syntheticEventType)
+        platformTimeStamp, syntheticEventType,
+        // TODO(zino): Should support canvas hit region because the drag event
+        // is a kind of mouse event. Please see http://crbug.com/594073
+        String())
     , m_dataTransfer(dataTransfer)
 
 {

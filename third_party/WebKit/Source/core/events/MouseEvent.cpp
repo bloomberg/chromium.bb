@@ -51,7 +51,7 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& eventT
         event.movementDelta().x(), event.movementDelta().y(),
         event.getModifiers(), event.button(),
         platformModifiersToButtons(event.getModifiers()),
-        relatedTarget, event.timestamp(), event.getSyntheticEventType());
+        relatedTarget, event.timestamp(), event.getSyntheticEventType(), event.region());
 }
 
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
@@ -61,12 +61,13 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, 
     short button, unsigned short buttons,
     PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
     double platformTimeStamp,
-    PlatformMouseEvent::SyntheticEventType syntheticEventType)
+    PlatformMouseEvent::SyntheticEventType syntheticEventType,
+    const String& region)
 {
     return adoptRefWillBeNoop(new MouseEvent(type, canBubble, cancelable, view,
         detail, screenX, screenY, windowX, windowY,
         movementX, movementY,
-        modifiers, button, buttons, relatedTarget, platformTimeStamp, syntheticEventType));
+        modifiers, button, buttons, relatedTarget, platformTimeStamp, syntheticEventType, region));
 }
 
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtrWillBeRawPtr<Event> underlyingEvent, SimulatedClickCreationScope creationScope)
@@ -89,7 +90,7 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& eventT
     double timestamp = underlyingEvent ? underlyingEvent->platformTimeStamp() : monotonicallyIncreasingTime();
     RefPtrWillBeRawPtr<MouseEvent> createdEvent = MouseEvent::create(eventType, true, true, view,
         0, screenX, screenY, 0, 0, 0, 0, modifiers, 0, 0, nullptr,
-        timestamp, syntheticType);
+        timestamp, syntheticType, String());
 
     createdEvent->setTrusted(creationScope == SimulatedClickCreationScope::FromUserAgent);
     createdEvent->setUnderlyingEvent(underlyingEvent);
@@ -116,7 +117,8 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     short button, unsigned short buttons,
     PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
     double platformTimeStamp,
-    PlatformMouseEvent::SyntheticEventType syntheticEventType)
+    PlatformMouseEvent::SyntheticEventType syntheticEventType,
+    const String& region)
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
         IntPoint(windowX, windowY), IntPoint(movementX, movementY), modifiers,
         platformTimeStamp,
@@ -126,6 +128,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     , m_buttons(buttons)
     , m_relatedTarget(relatedTarget)
     , m_syntheticEventType(syntheticEventType)
+    , m_region(region)
 {
 }
 
@@ -135,6 +138,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& init
     , m_buttons(initializer.buttons())
     , m_relatedTarget(initializer.relatedTarget())
     , m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable)
+    , m_region(initializer.region())
 {
 }
 

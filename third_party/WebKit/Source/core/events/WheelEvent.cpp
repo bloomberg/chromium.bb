@@ -76,7 +76,10 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
     : MouseEvent(EventTypeNames::wheel, true, true, view, 0, screenLocation.x(), screenLocation.y(),
         windowLocation.x(), windowLocation.y(), 0, 0, modifiers, 0, buttons,
-        nullptr, platformTimeStamp, PlatformMouseEvent::RealOrIndistinguishable)
+        nullptr, platformTimeStamp, PlatformMouseEvent::RealOrIndistinguishable,
+        // TODO(zino): Should support canvas hit region because the wheel event
+        // is a kind of mouse event. Please see http://crbug.com/594075
+        String())
     , m_wheelDelta(wheelTicks.x() * TickMultiplier, wheelTicks.y() * TickMultiplier)
     , m_deltaX(-rawDelta.x())
     , m_deltaY(-rawDelta.y())

@@ -232,6 +232,7 @@ public:
         FloatSize adjustedRadius;
         bool knownTarget;
         bool consumed;
+        String region;
     };
 
 private:
@@ -439,6 +440,8 @@ private:
     // The target of each active touch point indexed by the touch ID.
     using TouchTargetMap = WillBeHeapHashMap<unsigned, RefPtrWillBeMember<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
     TouchTargetMap m_targetForTouchID;
+    using TouchRegionMap = WillBeHeapHashMap<unsigned, String, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+    TouchRegionMap m_regionForTouchID;
 
     // If set, the document of the active touch sequence. Unset if no touch sequence active.
     RefPtrWillBeMember<Document> m_touchSequenceDocument;

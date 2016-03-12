@@ -118,8 +118,8 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
     p0.rotationAngle = p1.rotationAngle = 1.f;
     p0.force = p1.force = 25.f;
 
-    RefPtrWillBeRawPtr<Touch> touch0 = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), p0.id, p0.screenPosition, p0.position, FloatSize(p0.radiusX, p0.radiusY), p0.rotationAngle, p0.force);
-    RefPtrWillBeRawPtr<Touch> touch1 = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), p1.id, p1.screenPosition, p1.position, FloatSize(p1.radiusX, p1.radiusY), p1.rotationAngle, p1.force);
+    RefPtrWillBeRawPtr<Touch> touch0 = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), p0.id, p0.screenPosition, p0.position, FloatSize(p0.radiusX, p0.radiusY), p0.rotationAngle, p0.force, String());
+    RefPtrWillBeRawPtr<Touch> touch1 = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), p1.id, p1.screenPosition, p1.position, FloatSize(p1.radiusX, p1.radiusY), p1.rotationAngle, p1.force, String());
 
     // Test touchstart.
     {
@@ -216,7 +216,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         RefPtrWillBeRawPtr<TouchList> changedTouchList = TouchList::create();
         for (int i = 0; i <= static_cast<int>(WebTouchEvent::touchesLengthCap) * 2; ++i) {
-            RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), i, p0.screenPosition, p0.position, FloatSize(p0.radiusX, p0.radiusY), p0.rotationAngle, p0.force);
+            RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), i, p0.screenPosition, p0.position, FloatSize(p0.radiusX, p0.radiusY), p0.rotationAngle, p0.force, String());
             touchList->append(touch);
             changedTouchList->append(touch);
         }
@@ -464,7 +464,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     }
 
     {
-        RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), 0, FloatPoint(10, 9.5), FloatPoint(3.5, 2), FloatSize(4, 4.5), 0, 0);
+        RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), 0, FloatPoint(10, 9.5), FloatPoint(3.5, 2), FloatSize(4, 4.5), 0, 0, String());
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         touchList->append(touch);
         RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), EventTypeNames::touchmove, domWindow, PlatformEvent::NoModifiers, false, false, 0);

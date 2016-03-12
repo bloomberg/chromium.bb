@@ -42,6 +42,7 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
+#include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/TextMetrics.h"
 #include "core/html/canvas/CanvasFontCache.h"
@@ -582,6 +583,27 @@ ImageBuffer* CanvasRenderingContext2D::imageBuffer() const
 bool CanvasRenderingContext2D::parseColorOrCurrentColor(Color& color, const String& colorString) const
 {
     return ::blink::parseColorOrCurrentColor(color, colorString, canvas());
+}
+
+std::pair<Element*, String> CanvasRenderingContext2D::getControlAndIdIfHitRegionExists(const LayoutPoint& location)
+{
+    if (hitRegionsCount() <= 0)
+        return std::make_pair(nullptr, String());
+
+    LayoutBox* box = canvas()->layoutBox();
+    FloatPoint localPos = box->absoluteToLocal(FloatPoint(location), UseTransforms);
+    if (box->hasBorderOrPadding())
+        localPos.move(-box->contentBoxOffset());
+    localPos.scale(canvas()->width() / box->contentWidth(), canvas()->height() / box->contentHeight());
+
+    HitRegion* hitRegion = hitRegionAtPoint(localPos);
+    if (hitRegion) {
+        Element* control = hitRegion->control();
+        if (control && canvas()->isSupportedInteractiveCanvasFallback(*control))
+            return std::make_pair(hitRegion->control(), hitRegion->id());
+        return std::make_pair(nullptr, hitRegion->id());
+    }
+    return std::make_pair(nullptr, String());
 }
 
 String CanvasRenderingContext2D::textAlign() const
