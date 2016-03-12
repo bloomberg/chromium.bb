@@ -499,4 +499,21 @@ TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize)
     }
 }
 
+TEST(GIFImageDecoderTest, verifyRepetitionCount)
+{
+    const int expectedRepetitionCount = 2;
+    OwnPtr<ImageDecoder> decoder = createDecoder();
+    RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "full2loop.gif");
+    ASSERT_TRUE(data.get());
+    decoder->setData(data.get(), true);
+    EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount()); // Default value before decode.
+
+    for (size_t i = 0; i < decoder->frameCount(); ++i) {
+        ImageFrame* frame = decoder->frameBufferAtIndex(i);
+        EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
+    }
+
+    EXPECT_EQ(expectedRepetitionCount, decoder->repetitionCount()); // Expected value after decode.
+}
+
 } // namespace blink

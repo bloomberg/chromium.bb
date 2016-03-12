@@ -115,6 +115,16 @@ public:
         m_image->advanceAnimation(0);
     }
 
+    int repetitionCount()
+    {
+        return m_image->repetitionCount(true);
+    }
+
+    int animationFinished()
+    {
+        return m_image->m_animationFinished;
+    }
+
     PassRefPtr<Image> imageForDefaultFrame()
     {
         return m_image->imageForDefaultFrame();
@@ -165,6 +175,22 @@ TEST_F(BitmapImageTest, maybeAnimated)
         advanceAnimation();
     }
     EXPECT_FALSE(m_image->maybeAnimated());
+}
+
+TEST_F(BitmapImageTest, animationRepetitions)
+{
+    loadImage("/LayoutTests/fast/images/resources/full2loop.gif");
+    int expectedRepetitionCount = 2;
+    EXPECT_EQ(expectedRepetitionCount, repetitionCount());
+
+    // We actually loop once more than stored repetition count.
+    for (int repeat = 0; repeat < expectedRepetitionCount + 1; ++repeat) {
+        for (size_t i = 0; i < frameCount(); ++i) {
+            EXPECT_FALSE(animationFinished());
+            advanceAnimation();
+        }
+    }
+    EXPECT_TRUE(animationFinished());
 }
 
 TEST_F(BitmapImageTest, isAllDataReceived)
