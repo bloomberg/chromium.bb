@@ -40,9 +40,6 @@ int g_bubble_appearance_wait_time = 5;
 
 namespace extensions {
 
-ExtensionMessageBubbleView*
-    ExtensionMessageBubbleView::active_bubble_for_testing_ = nullptr;
-
 ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow_location,
@@ -80,8 +77,6 @@ void ExtensionMessageBubbleView::Show() {
 }
 
 void ExtensionMessageBubbleView::OnWidgetDestroying(views::Widget* widget) {
-  if (active_bubble_for_testing_ == this)
-    active_bubble_for_testing_ = nullptr;
   // To catch Esc, we monitor destroy message. Unless the link has been clicked,
   // we assume Dismiss was the action taken.
   if (!link_clicked_ && !action_taken_) {
@@ -101,7 +96,6 @@ void ExtensionMessageBubbleView::set_bubble_appearance_wait_time_for_testing(
 ExtensionMessageBubbleView::~ExtensionMessageBubbleView() {}
 
 void ExtensionMessageBubbleView::ShowBubble() {
-  active_bubble_for_testing_ = this;
   // Since we delay in showing the bubble, the applicable extension(s) may
   // have been removed.
   if (controller_->ShouldShow()) {

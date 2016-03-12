@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -47,8 +46,7 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
 
 void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
 #if !defined(OS_WIN)
-  if (!ExtensionMessageBubbleFactory::is_enabled_for_testing())
-    return;
+  return;
 #endif
 
   // The bubble will try to anchor itself against the home button
@@ -65,8 +63,7 @@ void MaybeShowExtensionControlledSearchNotification(
     content::WebContents* web_contents,
     AutocompleteMatch::Type match_type) {
 #if !defined(OS_WIN)
-  if (!ExtensionMessageBubbleFactory::is_enabled_for_testing())
-    return;
+  return;
 #endif
 
   if (AutocompleteMatch::IsSearchType(match_type) &&
@@ -83,8 +80,7 @@ void MaybeShowExtensionControlledSearchNotification(
 void MaybeShowExtensionControlledNewTabPage(
     Browser* browser, content::WebContents* web_contents) {
 #if !defined(OS_WIN)
-  if (!ExtensionMessageBubbleFactory::is_enabled_for_testing())
-    return;
+  return;
 #endif
 
   content::NavigationEntry* entry =
