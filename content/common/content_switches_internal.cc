@@ -25,11 +25,7 @@ static bool g_win32k_renderer_lockdown_disabled = false;
 #endif
 
 bool IsUseZoomForDSFEnabledByDefault() {
-#if defined(OS_CHROMEOS)
-  return true;
-#else
   return false;
-#endif
 }
 
 }  // namespace
