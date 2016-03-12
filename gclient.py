@@ -1378,6 +1378,9 @@ been automagically updated.  The previous version is available at %s.old.
       client = GClient('.', options)
       client.SetConfig(options.spec)
     else:
+      if options.verbose:
+        print('Looking for %s starting from %s\n' % (
+            options.config_filename, os.getcwd()))
       path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
       if not path:
         return None
@@ -1696,6 +1699,12 @@ been automagically updated.  The previous version is available at %s.old.
     """No DEPS to parse for a .gclient file."""
     raise gclient_utils.Error('Internal error')
 
+  def PrintLocationAndContents(self):
+    # Print out the .gclient file.  This is longer than if we just printed the
+    # client dict, but more legible, and it might contain helpful comments.
+    print('Loaded .gclient config in %s:\n%s' % (
+        self.root_dir, self.config_content))
+
   @property
   def root_dir(self):
     """Root directory of gclient checkout."""
@@ -1738,9 +1747,7 @@ def CMDcleanup(parser, args):
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
-    # Print out the .gclient file.  This is longer than if we just printed the
-    # client dict, but more legible, and it might contain helpful comments.
-    print(client.config_content)
+    client.PrintLocationAndContents()
   return client.RunOnDeps('cleanup', args)
 
 
@@ -1929,9 +1936,7 @@ def CMDpack(parser, args):
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
-    # Print out the .gclient file.  This is longer than if we just printed the
-    # client dict, but more legible, and it might contain helpful comments.
-    print(client.config_content)
+    client.PrintLocationAndContents()
   return client.RunOnDeps('pack', args)
 
 
@@ -1946,9 +1951,7 @@ def CMDstatus(parser, args):
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
-    # Print out the .gclient file.  This is longer than if we just printed the
-    # client dict, but more legible, and it might contain helpful comments.
-    print(client.config_content)
+    client.PrintLocationAndContents()
   return client.RunOnDeps('status', args)
 
 
@@ -2061,9 +2064,7 @@ def CMDsync(parser, args):
     print('Warning: you cannot use both --head and --revision')
 
   if options.verbose:
-    # Print out the .gclient file.  This is longer than if we just printed the
-    # client dict, but more legible, and it might contain helpful comments.
-    print(client.config_content)
+    client.PrintLocationAndContents()
   ret = client.RunOnDeps('update', args)
   if options.output_json:
     slns = {}
@@ -2093,9 +2094,7 @@ def CMDdiff(parser, args):
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
-    # Print out the .gclient file.  This is longer than if we just printed the
-    # client dict, but more legible, and it might contain helpful comments.
-    print(client.config_content)
+    client.PrintLocationAndContents()
   return client.RunOnDeps('diff', args)
 
 
@@ -2138,9 +2137,7 @@ def CMDrunhooks(parser, args):
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
   if options.verbose:
-    # Print out the .gclient file.  This is longer than if we just printed the
-    # client dict, but more legible, and it might contain helpful comments.
-    print(client.config_content)
+    client.PrintLocationAndContents()
   options.force = True
   options.nohooks = False
   return client.RunOnDeps('runhooks', args)
