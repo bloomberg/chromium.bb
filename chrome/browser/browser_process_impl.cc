@@ -46,6 +46,7 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -1259,7 +1260,8 @@ void BrowserProcessImpl::CacheDefaultWebClientState() {
 bool BrowserProcessImpl::CanAutorestartForUpdate() const {
   // Check if browser is in the background and if it needs to be restarted to
   // apply a pending update.
-  return chrome::GetTotalBrowserCount() == 0 && chrome::WillKeepAlive() &&
+  return chrome::GetTotalBrowserCount() == 0 &&
+         KeepAliveRegistry::GetInstance()->IsKeepingAlive() &&
          upgrade_util::IsUpdatePendingRestart();
 }
 

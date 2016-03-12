@@ -61,6 +61,7 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
@@ -701,7 +702,8 @@ void Browser::OnWindowClosing() {
   // AppController on the Mac, or BackgroundContentsService for background
   // pages).
   bool should_quit_if_last_browser =
-      browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive();
+      browser_shutdown::IsTryingToQuit() ||
+      !KeepAliveRegistry::GetInstance()->IsKeepingAlive();
 
   if (should_quit_if_last_browser && ShouldStartShutdown())
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);

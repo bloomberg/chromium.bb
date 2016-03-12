@@ -771,7 +771,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
     content::WindowedNotificationObserver close_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::Source<Browser>(browser()));
-    chrome::IncrementKeepAliveCount();
     chrome::CloseAllBrowsers();
     AcceptModalDialog();
     AcceptModalDialog();

@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -528,9 +529,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowHiddenKeepAliveTest, ShownThenHidden) {
   for (auto* browser : *BrowserList::GetInstance())
     browser->window()->Close();
 
-  EXPECT_TRUE(chrome::WillKeepAlive());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
   GetFirstAppWindow()->Hide();
-  EXPECT_FALSE(chrome::WillKeepAlive());
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
 }
 
 // A window that is hidden but re-shown should still keep Chrome alive.
@@ -540,10 +541,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowHiddenKeepAliveTest, ShownThenHiddenThenShown) {
   app_window->Hide();
   app_window->Show(AppWindow::SHOW_ACTIVE);
 
-  EXPECT_TRUE(chrome::WillKeepAlive());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
   for (auto* browser : *BrowserList::GetInstance())
     browser->window()->Close();
-  EXPECT_TRUE(chrome::WillKeepAlive());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
   app_window->GetBaseWindow()->Close();
 }
 
@@ -577,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowHiddenKeepAliveTest, HiddenThenShown) {
   launched_listener.Reply("");
   EXPECT_TRUE(shown_listener.WaitUntilSatisfied());
   EXPECT_FALSE(app_window->is_hidden());
-  EXPECT_TRUE(chrome::WillKeepAlive());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
   app_window->GetBaseWindow()->Close();
 }
 

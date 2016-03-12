@@ -141,6 +141,8 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetRapporService(rappor::RapporService* rappor_service);
   void ShutdownBrowserPolicyConnector();
 
+  unsigned int module_ref_count() const { return module_ref_count_; }
+
  private:
   // See CreateInstance() and DestoryInstance() above.
   TestingBrowserProcess();

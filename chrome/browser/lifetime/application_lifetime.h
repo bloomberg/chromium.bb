@@ -56,26 +56,14 @@ void CloseAllBrowsersAndQuit();
 // browser windows keeping it alive or the application is quitting.
 void CloseAllBrowsers();
 
+// If there are no browsers open and we aren't already shutting down,
+// initiate a shutdown. Also skips shutdown if this is a unit test.
+// (MessageLoop::current() == null or explicitly disabled).
+void CloseAllBrowsersIfNeeded();
+
 // Begins shutdown of the application when the desktop session is ending.
 void SessionEnding();
 
-// Tells the BrowserList to keep the application alive after the last Browser
-// closes. This is implemented as a count, so callers should pair their calls
-// to IncrementKeepAliveCount() with matching calls to DecrementKeepAliveCount()
-// when they no
-// longer need to keep the application running.
-void IncrementKeepAliveCount();
-
-// Stops keeping the application alive after the last Browser is closed.
-// Should match a previous call to IncrementKeepAliveCount().
-void DecrementKeepAliveCount();
-
-// Returns the current keep alive count.
-int GetKeepAliveCountForTesting();
-
-// Returns true if application will continue running after the last Browser
-// closes.
-bool WillKeepAlive();
 #endif  // !defined(OS_ANDROID)
 
 // Emits APP_TERMINATING notification. It is guaranteed that the

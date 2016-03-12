@@ -29,6 +29,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -648,7 +649,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
       // Background mode must already be enabled (as otherwise this menu would
       // not be visible).
       DCHECK(IsBackgroundModePrefEnabled());
-      DCHECK(chrome::WillKeepAlive());
+      DCHECK(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
 
       RecordMenuItemClick(MENU_ITEM_KEEP_RUNNING);
 

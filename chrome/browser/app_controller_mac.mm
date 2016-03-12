@@ -34,6 +34,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -520,7 +522,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Tell BrowserList not to keep the browser process alive. Once all the
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
-  chrome::DecrementKeepAliveCount();
+  keep_alive_.reset();
 
   // Reset all pref watching, as this object outlives the prefs system.
   profilePrefRegistrar_.reset();
@@ -728,7 +730,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
-  chrome::IncrementKeepAliveCount();
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::APP_CONTROLLER,
+                                        KeepAliveRestartOption::DISABLED));
 
   [self setUpdateCheckInterval];
 

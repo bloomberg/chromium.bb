@@ -11,7 +11,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -85,7 +86,8 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
 IN_PROC_BROWSER_TEST_F(WindowSizerTest,
                        MAYBE_OpenBrowserUsingShelfOnOtherDisplay) {
   // Don't shutdown when closing the last browser window.
-  chrome::IncrementKeepAliveCount();
+  ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
+                                  KeepAliveRestartOption::DISABLED);
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
@@ -116,9 +118,6 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest,
   EXPECT_EQ(root_windows[0],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
-
-  // Balanced with the chrome::IncrementKeepAliveCount above.
-  chrome::DecrementKeepAliveCount();
 }
 
 namespace {
@@ -171,7 +170,8 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root_window) {
 IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
                        MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay) {
   // Don't shutdown when closing the last browser window.
-  chrome::IncrementKeepAliveCount();
+  ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
+                                  KeepAliveRestartOption::DISABLED);
 
   views::MenuController::TurnOffMenuSelectionHoldForTest();
 
@@ -198,7 +198,4 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
   EXPECT_EQ(root_windows[0],
             browser_list->get(1)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
-
-  // Balanced with the chrome::IncrementKeepAliveCount above.
-  chrome::DecrementKeepAliveCount();
 }

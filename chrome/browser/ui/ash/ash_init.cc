@@ -26,6 +26,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
@@ -93,7 +95,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableZeroBrowsersOpenForTests)) {
-    chrome::IncrementKeepAliveCount();
+    g_browser_process->platform_part()->RegisterKeepAlive();
   }
 #endif
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();

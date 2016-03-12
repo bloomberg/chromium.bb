@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/system/device_disabling_manager_default_delegate.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
@@ -89,6 +91,17 @@ void BrowserProcessPlatformPart::ShutdownSessionManager() {
 session_manager::SessionManager* BrowserProcessPlatformPart::SessionManager() {
   DCHECK(CalledOnValidThread());
   return session_manager_.get();
+}
+
+void BrowserProcessPlatformPart::RegisterKeepAlive() {
+  DCHECK(!keep_alive_);
+  keep_alive_.reset(
+      new ScopedKeepAlive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
+                          KeepAliveRestartOption::DISABLED));
+}
+
+void BrowserProcessPlatformPart::UnregisterKeepAlive() {
+  keep_alive_.reset();
 }
 
 chromeos::ProfileHelper* BrowserProcessPlatformPart::profile_helper() {

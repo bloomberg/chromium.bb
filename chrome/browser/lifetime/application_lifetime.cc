@@ -17,6 +17,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
+#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -70,7 +71,6 @@ bool AreAllBrowsersCloseable() {
   return true;
 }
 
-int g_keep_alive_count = 0;
 bool g_disable_shutdown_for_testing = false;
 #endif  // !defined(OS_ANDROID)
 
@@ -113,7 +113,8 @@ void CloseAllBrowsers() {
   // application, send the APP_TERMINATING action here. Otherwise, it will be
   // sent by RemoveBrowser() when the last browser has closed.
   if (chrome::GetTotalBrowserCount() == 0 &&
-      (browser_shutdown::IsTryingToQuit() || !chrome::WillKeepAlive())) {
+      (browser_shutdown::IsTryingToQuit() ||
+       !KeepAliveRegistry::GetInstance()->IsKeepingAlive())) {
     // Tell everyone that we are shutting down.
     browser_shutdown::SetTryingToQuit(true);
 
@@ -275,18 +276,7 @@ void SessionEnding() {
   base::Process::Current().Terminate(0, false);
 }
 
-void IncrementKeepAliveCount() {
-  // Increment the browser process refcount as long as we're keeping the
-  // application alive.
-  if (!WillKeepAlive())
-    g_browser_process->AddRefModule();
-  ++g_keep_alive_count;
-}
-
 void CloseAllBrowsersIfNeeded() {
-  // If there are no browsers open and we aren't already shutting down,
-  // initiate a shutdown. Also skips shutdown if this is a unit test.
-  // (MessageLoop::current() == null or explicitly disabled).
   if (chrome::GetTotalBrowserCount() == 0 &&
       !browser_shutdown::IsTryingToQuit() && base::MessageLoop::current() &&
       !g_disable_shutdown_for_testing) {
@@ -294,27 +284,6 @@ void CloseAllBrowsersIfNeeded() {
   }
 }
 
-void DecrementKeepAliveCount() {
-  DCHECK_GT(g_keep_alive_count, 0);
-  --g_keep_alive_count;
-  // Although we should have a browser process, if there is none,
-  // there is nothing to do.
-  if (!g_browser_process) return;
-
-  // Allow the app to shutdown again.
-  if (!WillKeepAlive()) {
-    g_browser_process->ReleaseModule();
-    CloseAllBrowsersIfNeeded();
-  }
-}
-
-int GetKeepAliveCountForTesting() {
-  return g_keep_alive_count;
-}
-
-bool WillKeepAlive() {
-  return g_keep_alive_count > 0;
-}
 #endif  // !defined(OS_ANDROID)
 
 void NotifyAppTerminating() {
@@ -377,7 +346,8 @@ void OnAppExiting() {
 
 void DisableShutdownForTesting(bool disable_shutdown_for_testing) {
   g_disable_shutdown_for_testing = disable_shutdown_for_testing;
-  if (!g_disable_shutdown_for_testing && !WillKeepAlive())
+  if (!g_disable_shutdown_for_testing &&
+      !KeepAliveRegistry::GetInstance()->IsKeepingAlive())
     CloseAllBrowsersIfNeeded();
 }
 #endif  // !defined(OS_ANDROID)

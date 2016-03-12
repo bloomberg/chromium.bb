@@ -40,6 +40,7 @@ class SessionManager;
 }
 
 class Profile;
+class ScopedKeepAlive;
 
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
                                    public base::NonThreadSafe {
@@ -69,6 +70,11 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   // start user sessions as well as responsible on launching pre-session UI like
   // out-of-box or login.
   virtual session_manager::SessionManager* SessionManager();
+
+  // Used to register a KeepAlive when Ash is initialized, and release it
+  // when until Chrome starts exiting. Ensure we stay running the whole time.
+  void RegisterKeepAlive();
+  void UnregisterKeepAlive();
 
   // Returns the ProfileHelper instance that is used to identify
   // users and their profiles in Chrome OS multi user session.
@@ -119,6 +125,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   scoped_ptr<chromeos::TimeZoneResolver> timezone_resolver_;
 
   scoped_ptr<chromeos::system::SystemClock> system_clock_;
+
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };

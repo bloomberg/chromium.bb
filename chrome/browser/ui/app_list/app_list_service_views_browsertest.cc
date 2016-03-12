@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
@@ -119,13 +119,13 @@ IN_PROC_BROWSER_TEST_F(AppListServiceViewsBrowserTest, MAYBE_AcceleratorClose) {
   generator.PressKey(ui::VKEY_ESCAPE, 0);
 
 #if !defined(OS_CHROMEOS)
-  EXPECT_TRUE(chrome::WillKeepAlive());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
 #endif
 
   base::RunLoop().RunUntilIdle();
 
 #if !defined(OS_CHROMEOS)
-  EXPECT_FALSE(chrome::WillKeepAlive());
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
 #endif
   EXPECT_FALSE(service->GetAppListWindow());
 }

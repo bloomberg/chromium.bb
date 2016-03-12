@@ -35,6 +35,7 @@
 #include "ui/wm/public/scoped_drag_drop_disabler.h"
 
 class PrefService;
+class ScopedKeepAlive;
 
 namespace content {
 class RenderFrameHost;
@@ -217,6 +218,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Demo app launcher.
   scoped_ptr<DemoAppLauncher> demo_app_launcher_;
+
+  // Make sure chrome won't exit while we are at login/oobe screen.
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 
   // Has ShutdownDisplayHost() already been called?  Used to avoid posting our
   // own deletion to the message loop twice if the user logs out while we're

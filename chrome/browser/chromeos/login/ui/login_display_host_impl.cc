@@ -54,7 +54,8 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -311,8 +312,9 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   DCHECK(default_host() == nullptr);
   default_host_ = this;
 
-  // Make sure chrome won't exit while we are at login/oobe screen.
-  chrome::IncrementKeepAliveCount();
+  keep_alive_.reset(
+      new ScopedKeepAlive(KeepAliveOrigin::LOGIN_DISPLAY_HOST_IMPL,
+                          KeepAliveRestartOption::DISABLED));
 
   bool is_registered = StartupUtils::IsDeviceRegistered();
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
@@ -401,8 +403,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   views::FocusManager::set_arrow_key_traversal_enabled(false);
   ResetLoginWindowAndView();
 
-  // Let chrome process exit after login/oobe screen if needed.
-  chrome::DecrementKeepAliveCount();
+  keep_alive_.reset();
 
   default_host_ = nullptr;
   // TODO(tengs): This should be refactored. See crbug.com/314934.

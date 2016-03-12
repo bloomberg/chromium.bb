@@ -29,6 +29,7 @@ class PanelCollection;
 class PanelHost;
 class PanelManager;
 class Profile;
+class ScopedKeepAlive;
 class StackedPanelCollection;
 
 namespace content {
@@ -410,6 +411,8 @@ class Panel : public ui::BaseWindow,
 
   // Icon showed in the task bar.
   gfx::Image app_icon_;
+
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 
   base::WeakPtrFactory<Panel> image_loader_ptr_factory_;
 

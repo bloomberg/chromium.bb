@@ -21,6 +21,8 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_management/web_contents_tags.h"
@@ -166,10 +168,6 @@ bool PanelExtensionWindowController::IsVisibleToExtension(
 
 Panel::~Panel() {
   DCHECK(!collection_);
-#if !defined(USE_AURA)
-  // Invoked by native panel destructor. Do not access native_panel_ here.
-  chrome::DecrementKeepAliveCount();  // Remove shutdown prevention.
-#endif
 }
 
 PanelManager* Panel::manager() const {
@@ -558,10 +556,13 @@ void Panel::Initialize(const GURL& url,
                  content::Source<ThemeService>(
                     ThemeServiceFactory::GetForProfile(profile_)));
 
+// TODO(dgn): Should keep_alive be always registered regardless of the platform
+// here? (https://crbug.com/590173)
 #if !defined(USE_AURA)
   // Keep alive for AURA has been moved to panel_view.
   // Prevent the browser process from shutting down while this window is open.
-  chrome::IncrementKeepAliveCount();
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::PANEL,
+                                        KeepAliveRestartOption::DISABLED));
 #endif
 
   UpdateAppIcon();

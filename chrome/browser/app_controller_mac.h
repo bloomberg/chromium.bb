@@ -29,6 +29,7 @@ class HistoryMenuBridge;
 class Profile;
 @class ProfileMenuController;
 class QuitWithAppsController;
+class ScopedKeepAlive;
 
 namespace ui {
 class WorkAreaWatcherObserver;
@@ -107,6 +108,9 @@ class WorkAreaWatcherObserver;
 
   // This will be true after receiving a NSWorkspaceWillPowerOffNotification.
   BOOL isPoweringOff_;
+
+  // Request to keep the browser alive during that object's lifetime.
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;

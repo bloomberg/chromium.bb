@@ -14,14 +14,22 @@
 
 // Refers to the what the KeepAlive's lifetime is tied to, to help debugging.
 enum class KeepAliveOrigin {
+  // c/b
+  APP_CONTROLLER,
+  BROWSER_PROCESS_CHROMEOS,
+
   // c/b/background
   BACKGROUND_MODE_MANAGER,
   BACKGROUND_MODE_MANAGER_STARTUP,
+
+  // c/b/chromeos
+  LOGIN_DISPLAY_HOST_IMPL,
 
   // c/b/ui
   APP_LIST_SERVICE_VIEWS,
   APP_LIST_SHOWER,
   CHROME_APP_DELEGATE,
+  PANEL,
   PANEL_VIEW,
   PROFILE_LOADER,
   USER_MANAGER_VIEW

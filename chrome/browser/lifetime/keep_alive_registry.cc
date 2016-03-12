@@ -4,6 +4,7 @@
 
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
@@ -39,9 +40,8 @@ KeepAliveRegistry::KeepAliveRegistry()
     : registered_count_(0), restart_allowed_count_(0) {}
 
 KeepAliveRegistry::~KeepAliveRegistry() {
-  DCHECK_EQ(0, registered_count_);
-  DCHECK_EQ(0u, registered_keep_alives_.size());
-  DCHECK_EQ(0, restart_allowed_count_);
+  DLOG_IF(ERROR, registered_count_ > 0 || registered_keep_alives_.size() > 0)
+      << "KeepAliveRegistry not empty at destruction time. State: " << *this;
 }
 
 void KeepAliveRegistry::Register(KeepAliveOrigin origin,
@@ -96,12 +96,18 @@ void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
 }
 
 void KeepAliveRegistry::OnKeepingAliveChanged(bool new_keeping_alive) {
+  // Although we should have a browser process, if there is none,
+  // there is nothing to do.
+  if (!g_browser_process)
+    return;
+
   if (new_keeping_alive) {
     DVLOG(1) << "KeepAliveRegistry is now keeping the browser alive.";
-    chrome::IncrementKeepAliveCount();
+    g_browser_process->AddRefModule();
   } else {
     DVLOG(1) << "KeepAliveRegistry stopped keeping the browser alive.";
-    chrome::DecrementKeepAliveCount();
+    g_browser_process->ReleaseModule();
+    chrome::CloseAllBrowsersIfNeeded();
   }
 }
 
@@ -114,8 +120,9 @@ void KeepAliveRegistry::OnRestartAllowedChanged(bool new_restart_allowed) {
 
 #ifndef NDEBUG
 std::ostream& operator<<(std::ostream& out, const KeepAliveRegistry& registry) {
-  out << "{KeepingAlive=" << registry.IsKeepingAlive()
-      << ", RestartAllowed=" << registry.IsRestartAllowed() << ", KeepAlives=[";
+  out << "{registered_count_=" << registry.registered_count_
+      << ", restart_allowed_count_=" << registry.restart_allowed_count_
+      << ", KeepAlives=[";
   for (auto counts_per_origin_it : registry.registered_keep_alives_) {
     if (counts_per_origin_it != *registry.registered_keep_alives_.begin())
       out << ", ";

@@ -19,7 +19,8 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
@@ -317,8 +318,10 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
                                          bool close_all_windows) {
     Profile* profile = browser->profile();
 
+    ScopedKeepAlive test_keep_alive(KeepAliveOrigin::PANEL_VIEW,
+                                    KeepAliveRestartOption::DISABLED);
+
     // Close the browser.
-    chrome::IncrementKeepAliveCount();
     if (close_all_windows)
       CloseAllBrowsers();
     else
@@ -334,7 +337,6 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     ui_test_utils::BrowserAddedObserver window_observer;
     chrome::NewEmptyWindow(profile);
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-    chrome::DecrementKeepAliveCount();
 
     return new_browser;
   }

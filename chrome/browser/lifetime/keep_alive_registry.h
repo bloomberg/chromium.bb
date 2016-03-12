@@ -21,8 +21,8 @@ class KeepAliveRegistry {
 
   // Methods to query the state of the registry.
   // TODO(dgn): This currently does not give a complete picture. It has no
-  // information about the many places that rely on IncrementKeepAliveCount and
-  // AddRefModule to keep the browser alive. Tracked by https://crbug.com/587926
+  // information about the many places that rely on AddRefModule to keep the
+  // browser alive. Tracked by https://crbug.com/587926
   bool IsKeepingAlive() const;
   bool IsRestartAllowed() const;
 

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/client/capture_client.h"
@@ -40,8 +41,8 @@ void HandleAppExitingForPlatform() {
 #if defined(OS_CHROMEOS)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableZeroBrowsersOpenForTests)) {
-    // App is exiting, call DecrementKeepAliveCount() on behalf of Aura Shell.
-    DecrementKeepAliveCount();
+    // App is exiting, release the keep alive on behalf of Aura Shell.
+    g_browser_process->platform_part()->UnregisterKeepAlive();
     // Make sure we have notified the session manager that we are exiting.
     // This might be called from FastShutdown() or CloseAllBrowsers(), but not
     // if something prevents a browser from closing before SetTryingToQuit()

@@ -9,6 +9,7 @@
 #include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class KeepAliveRegistryTest : public testing::Test,
@@ -45,7 +46,9 @@ class KeepAliveRegistryTest : public testing::Test,
 // Test the IsKeepingAlive state and when we interact with the browser with
 // a KeepAlive registered.
 TEST_F(KeepAliveRegistryTest, BasicKeepAliveTest) {
-  const int base_keep_alive_count = chrome::GetKeepAliveCountForTesting();
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  const unsigned int base_module_ref_count =
+      browser_process->module_ref_count();
   KeepAliveRegistry* registry = KeepAliveRegistry::GetInstance();
 
   EXPECT_FALSE(registry->IsKeepingAlive());
@@ -56,39 +59,41 @@ TEST_F(KeepAliveRegistryTest, BasicKeepAliveTest) {
                                     KeepAliveRestartOption::DISABLED);
 
     // We should require the browser to stay alive
-    EXPECT_EQ(base_keep_alive_count + 1, chrome::GetKeepAliveCountForTesting());
+    EXPECT_EQ(base_module_ref_count + 1, browser_process->module_ref_count());
     EXPECT_TRUE(registry_->IsKeepingAlive());
   }
 
   // We should be back to normal now.
-  EXPECT_EQ(base_keep_alive_count, chrome::GetKeepAliveCountForTesting());
+  EXPECT_EQ(base_module_ref_count, browser_process->module_ref_count());
   EXPECT_FALSE(registry_->IsKeepingAlive());
 }
 
 // Test the IsKeepingAlive state and when we interact with the browser with
 // more than one KeepAlive registered.
 TEST_F(KeepAliveRegistryTest, DoubleKeepAliveTest) {
-  const int base_keep_alive_count = chrome::GetKeepAliveCountForTesting();
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  const unsigned int base_module_ref_count =
+      browser_process->module_ref_count();
   scoped_ptr<ScopedKeepAlive> keep_alive_1, keep_alive_2;
 
   keep_alive_1.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
                                          KeepAliveRestartOption::DISABLED));
-  EXPECT_EQ(base_keep_alive_count + 1, chrome::GetKeepAliveCountForTesting());
+  EXPECT_EQ(base_module_ref_count + 1, browser_process->module_ref_count());
   EXPECT_TRUE(registry_->IsKeepingAlive());
 
   keep_alive_2.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
                                          KeepAliveRestartOption::DISABLED));
   // We should not increment the count twice
-  EXPECT_EQ(base_keep_alive_count + 1, chrome::GetKeepAliveCountForTesting());
+  EXPECT_EQ(base_module_ref_count + 1, browser_process->module_ref_count());
   EXPECT_TRUE(registry_->IsKeepingAlive());
 
   keep_alive_1.reset();
   // We should not decrement the count before the last keep alive is released.
-  EXPECT_EQ(base_keep_alive_count + 1, chrome::GetKeepAliveCountForTesting());
+  EXPECT_EQ(base_module_ref_count + 1, browser_process->module_ref_count());
   EXPECT_TRUE(registry_->IsKeepingAlive());
 
   keep_alive_2.reset();
-  EXPECT_EQ(base_keep_alive_count, chrome::GetKeepAliveCountForTesting());
+  EXPECT_EQ(base_module_ref_count, browser_process->module_ref_count());
   EXPECT_FALSE(registry_->IsKeepingAlive());
 }
 
