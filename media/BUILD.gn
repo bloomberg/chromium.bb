@@ -862,6 +862,8 @@ fuzzer_test("media_vp8_parser_fuzzer") {
     ":media",
     "//base",
   ]
+  libfuzzer_options = "filters/vp8_parser_fuzzertest.options"
+  dict = "test/vp8.dict"
 }
 
 fuzzer_test("media_vp9_parser_fuzzer") {
@@ -872,4 +874,5 @@ fuzzer_test("media_vp9_parser_fuzzer") {
     ":media",
     "//base",
   ]
+  libfuzzer_options = "filters/vp9_parser_fuzzertest.options"
 }
