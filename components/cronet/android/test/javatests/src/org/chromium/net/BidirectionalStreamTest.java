@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
 import org.chromium.net.TestBidirectionalStreamCallback.FailureType;
@@ -550,6 +551,8 @@ public class BidirectionalStreamTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    // Disabled due to timeout. See crbug.com/591112
+    @DisabledTest
     public void testReadAndWrite() throws Exception {
         String url = Http2TestServer.getEchoStreamUrl();
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {
