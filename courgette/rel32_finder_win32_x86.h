@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#if COURGETTE_HISTOGRAM_TARGETS
 #include <map>
+#endif
 #include <vector>
 
 #include "courgette/image_utils.h"
@@ -17,21 +19,25 @@ namespace courgette {
 // A helper class to scan through a section of code to extract RVAs.
 class Rel32FinderWin32X86 {
  public:
-  Rel32FinderWin32X86(RVA relocs_start_rva, RVA relocs_end_rva);
+  Rel32FinderWin32X86(RVA relocs_start_rva, RVA relocs_end_rva,
+                      RVA image_end_rva);
   virtual ~Rel32FinderWin32X86();
 
-  // Swaps data in |rel32_locations_| with |dest|.
+  // Subsumes rva != kUnassignedRVA.
+  bool IsValidRVA(RVA rva) const { return rva < image_end_rva_; }
+
+  // Swaps data in |rel32_locations_| to |dest|.
   void SwapRel32Locations(std::vector<RVA>* dest);
 
 #if COURGETTE_HISTOGRAM_TARGETS
-  // Swaps data in |rel32_target_rvas_| with |dest|.
+  // Swaps data in |rel32_target_rvas_| to |dest|.
   void SwapRel32TargetRVAs(std::map<RVA, int>* dest);
 #endif
 
   // Scans through [|start_pointer|, |end_pointer|) for rel32 addresses. Seeks
   // RVAs that satisfy the following:
-  // - Do not overlap with |abs32_locations| (assumed sorted).
-  // - Do not overlap with [relocs_start_rva, relocs_end_rva).
+  // - Do not collide with |abs32_pos| (assumed sorted).
+  // - Do not collide with |base_relocation_table|'s RVA range,
   // - Whose targets are in [|start_rva|, |end_rva|).
   // The sorted results are written to |rel32_locations_|.
   virtual void Find(const uint8_t* start_pointer,
@@ -43,6 +49,7 @@ class Rel32FinderWin32X86 {
  protected:
   const RVA relocs_start_rva_;
   const RVA relocs_end_rva_;
+  const RVA image_end_rva_;
 
   std::vector<RVA> rel32_locations_;
 
@@ -55,7 +62,8 @@ class Rel32FinderWin32X86 {
 // (excluding JPO/JPE) disregarding instruction alignment.
 class Rel32FinderWin32X86_Basic : public Rel32FinderWin32X86 {
  public:
-  Rel32FinderWin32X86_Basic(RVA relocs_start_rva, RVA relocs_end_rva);
+  Rel32FinderWin32X86_Basic(RVA relocs_start_rva, RVA relocs_end_rva,
+                            RVA image_end_rva);
   virtual ~Rel32FinderWin32X86_Basic();
 
   // Rel32FinderWin32X86 implementation.

@@ -8,73 +8,37 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <iostream>
+#include <string>
+#include <vector>
 
 #include "base/logging.h"
+
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
+#include "courgette/encoded_program.h"
 #include "courgette/rel32_finder_win32_x86.h"
 
 namespace courgette {
 
 DisassemblerWin32X86::DisassemblerWin32X86(const void* start, size_t length)
-    : Disassembler(start, length),
-      incomplete_disassembly_(false),
-      is_PE32_plus_(false),
-      optional_header_(nullptr),
-      size_of_optional_header_(0),
-      offset_of_data_directories_(0),
-      machine_type_(0),
-      number_of_sections_(0),
-      sections_(nullptr),
-      has_text_section_(false),
-      size_of_code_(0),
-      size_of_initialized_data_(0),
-      size_of_uninitialized_data_(0),
-      base_of_code_(0),
-      base_of_data_(0),
-      image_base_(0),
-      size_of_image_(0),
-      number_of_data_directories_(0) {
-}
-
-FileOffset DisassemblerWin32X86::RVAToFileOffset(RVA rva) const {
-  const Section* section = RVAToSection(rva);
-  if (section != nullptr) {
-    FileOffset offset_in_section = rva - section->virtual_address;
-    // Need this extra check, since an |rva| may be valid for a section, but is
-    // non-existent in an image (e.g. uninit data).
-    if (offset_in_section >= section->size_of_raw_data)
-      return kNoFileOffset;
-
-    return static_cast<FileOffset>(section->file_offset_of_raw_data +
-                                   offset_in_section);
-  }
-
-  // Small RVA values point into the file header in the loaded image.
-  // RVA 0 is the module load address which Windows uses as the module handle.
-  // RVA 2 sometimes occurs, I'm not sure what it is, but it would map into the
-  // DOS header.
-  if (rva == 0 || rva == 2)
-    return static_cast<FileOffset>(rva);
-
-  NOTREACHED();
-  return kNoFileOffset;
-}
-
-RVA DisassemblerWin32X86::FileOffsetToRVA(FileOffset file_offset) const {
-  for (int i = 0; i < number_of_sections_; ++i) {
-    const Section* section = &sections_[i];
-    if (file_offset >= section->file_offset_of_raw_data) {
-      FileOffset offset_in_section =
-          file_offset - section->file_offset_of_raw_data;
-      if (offset_in_section < section->size_of_raw_data)
-        return static_cast<RVA>(section->virtual_address + offset_in_section);
-    }
-  }
-
-  NOTREACHED();
-  return kNoRVA;
+  : Disassembler(start, length),
+    incomplete_disassembly_(false),
+    is_PE32_plus_(false),
+    optional_header_(NULL),
+    size_of_optional_header_(0),
+    offset_of_data_directories_(0),
+    machine_type_(0),
+    number_of_sections_(0),
+    sections_(NULL),
+    has_text_section_(false),
+    size_of_code_(0),
+    size_of_initialized_data_(0),
+    size_of_uninitialized_data_(0),
+    base_of_code_(0),
+    base_of_data_(0),
+    image_base_(0),
+    size_of_image_(0),
+    number_of_data_directories_(0) {
 }
 
 // ParseHeader attempts to match up the buffer with the Windows data
@@ -93,19 +57,18 @@ bool DisassemblerWin32X86::ParseHeader() {
     return Bad("Not MZ");
 
   // offset from DOS header to PE header is stored in DOS header.
-  FileOffset file_offset = static_cast<FileOffset>(
-      ReadU32(start(), kOffsetOfFileAddressOfNewExeHeader));
+  uint32_t offset = ReadU32(start(), kOffsetOfFileAddressOfNewExeHeader);
 
-  if (file_offset >= length())
+  if (offset >= length())
     return Bad("Bad offset to PE header");
 
-  const uint8_t* const pe_header = FileOffsetToPointer(file_offset);
+  const uint8_t* const pe_header = OffsetToPointer(offset);
   const size_t kMinPEHeaderSize = 4 /*signature*/ + kSizeOfCoffHeader;
   if (pe_header <= start() ||
       pe_header >= end() - kMinPEHeaderSize)
-    return Bad("Bad file offset to PE header");
+    return Bad("Bad offset to PE header");
 
-  if (file_offset % 8 != 0)
+  if (offset % 8 != 0)
     return Bad("Misaligned PE header");
 
   // The 'PE' header is an IMAGE_NT_HEADERS structure as defined in WINNT.H.
@@ -206,7 +169,7 @@ bool DisassemblerWin32X86::ParseHeader() {
                                        size_of_optional_header_);
   size_t detected_length = 0;
 
-  for (int i = 0; i < number_of_sections_; ++i) {
+  for (int i = 0;  i < number_of_sections_;  ++i) {
     const Section* section = &sections_[i];
 
     // TODO(sra): consider using the 'characteristics' field of the section
@@ -330,19 +293,48 @@ bool DisassemblerWin32X86::ParseRelocs(std::vector<RVA> *relocs) {
 }
 
 const Section* DisassemblerWin32X86::RVAToSection(RVA rva) const {
-  for (int i = 0; i < number_of_sections_; ++i) {
+  for (int i = 0; i < number_of_sections_; i++) {
     const Section* section = &sections_[i];
-    if (rva >= section->virtual_address) {
-      FileOffset offset_in_section = rva - section->virtual_address;
-      if (offset_in_section < section->virtual_size)
-        return section;
+    uint32_t offset = rva - section->virtual_address;
+    if (offset < section->virtual_size) {
+      return section;
     }
   }
-  return nullptr;
+  return NULL;
+}
+
+int DisassemblerWin32X86::RVAToFileOffset(RVA rva) const {
+  const Section* section = RVAToSection(rva);
+  if (section) {
+    uint32_t offset = rva - section->virtual_address;
+    if (offset < section->size_of_raw_data) {
+      return section->file_offset_of_raw_data + offset;
+    } else {
+      return kNoOffset;  // In section but not in file (e.g. uninit data).
+    }
+  }
+
+  // Small RVA values point into the file header in the loaded image.
+  // RVA 0 is the module load address which Windows uses as the module handle.
+  // RVA 2 sometimes occurs, I'm not sure what it is, but it would map into the
+  // DOS header.
+  if (rva == 0 || rva == 2)
+    return rva;
+
+  NOTREACHED();
+  return kNoOffset;
+}
+
+const uint8_t* DisassemblerWin32X86::RVAToPointer(RVA rva) const {
+  int file_offset = RVAToFileOffset(rva);
+  if (file_offset == kNoOffset)
+    return NULL;
+  else
+    return OffsetToPointer(file_offset);
 }
 
 std::string DisassemblerWin32X86::SectionName(const Section* section) {
-  if (section == nullptr)
+  if (section == NULL)
     return "<none>";
   char name[9];
   memcpy(name, section->name, 8);
@@ -352,25 +344,24 @@ std::string DisassemblerWin32X86::SectionName(const Section* section) {
 
 CheckBool DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
   // Walk all the bytes in the file, whether or not in a section.
-  FileOffset file_offset = 0;
+  uint32_t file_offset = 0;
   while (file_offset < length()) {
     const Section* section = FindNextSection(file_offset);
-    if (section == nullptr) {
-      // No more sections. There should not be extra stuff following last
+    if (section == NULL) {
+      // No more sections.  There should not be extra stuff following last
       // section.
       //   ParseNonSectionFileRegion(file_offset, pe_info().length(), program);
       break;
     }
     if (file_offset < section->file_offset_of_raw_data) {
-      FileOffset section_start_offset = section->file_offset_of_raw_data;
-      if (!ParseNonSectionFileRegion(file_offset, section_start_offset,
-                                     program)) {
+      uint32_t section_start_offset = section->file_offset_of_raw_data;
+      if(!ParseNonSectionFileRegion(file_offset, section_start_offset,
+                                    program))
         return false;
-      }
 
       file_offset = section_start_offset;
     }
-    FileOffset end = file_offset + section->size_of_raw_data;
+    uint32_t end = file_offset + section->size_of_raw_data;
     if (!ParseFileRegion(section, file_offset, end, program))
       return false;
     file_offset = end;
@@ -390,7 +381,7 @@ bool DisassemblerWin32X86::ParseAbs32Relocs() {
     return false;
 
 #if COURGETTE_HISTOGRAM_TARGETS
-  for (size_t i = 0; i < abs32_locations_.size(); ++i) {
+  for (size_t i = 0;  i < abs32_locations_.size(); ++i) {
     RVA rva = abs32_locations_[i];
     // The 4 bytes at the relocation are a reference to some address.
     uint32_t target_address = Read32LittleEndian(RVAToPointer(rva));
@@ -401,10 +392,10 @@ bool DisassemblerWin32X86::ParseAbs32Relocs() {
 }
 
 void DisassemblerWin32X86::ParseRel32RelocsFromSections() {
-  FileOffset file_offset = 0;
+  uint32_t file_offset = 0;
   while (file_offset < length()) {
     const Section* section = FindNextSection(file_offset);
-    if (section == nullptr)
+    if (section == NULL)
       break;
     if (file_offset < section->file_offset_of_raw_data)
       file_offset = section->file_offset_of_raw_data;
@@ -426,11 +417,11 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSections() {
   std::map<RVA, int>::iterator rel32_iter = rel32_target_rvas_.begin();
   while (abs32_iter != abs32_target_rvas_.end() &&
          rel32_iter != rel32_target_rvas_.end()) {
-    if (abs32_iter->first < rel32_iter->first) {
+    if (abs32_iter->first < rel32_iter->first)
       ++abs32_iter;
-    } else if (rel32_iter->first < abs32_iter->first) {
+    else if (rel32_iter->first < abs32_iter->first)
       ++rel32_iter;
-    } else {
+    else {
       ++common;
       ++abs32_iter;
       ++rel32_iter;
@@ -446,18 +437,19 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSection(const Section* section) {
   if (!isCode)
     return;
 
-  FileOffset start_file_offset = section->file_offset_of_raw_data;
-  FileOffset end_file_offset = start_file_offset + section->size_of_raw_data;
+  uint32_t start_file_offset = section->file_offset_of_raw_data;
+  uint32_t end_file_offset = start_file_offset + section->size_of_raw_data;
 
-  const uint8_t* start_pointer = FileOffsetToPointer(start_file_offset);
-  const uint8_t* end_pointer = FileOffsetToPointer(end_file_offset);
+  const uint8_t* start_pointer = OffsetToPointer(start_file_offset);
+  const uint8_t* end_pointer = OffsetToPointer(end_file_offset);
 
   RVA start_rva = FileOffsetToRVA(start_file_offset);
   RVA end_rva = start_rva + section->virtual_size;
 
   Rel32FinderWin32X86_Basic finder(
       base_relocation_table().address_,
-      base_relocation_table().address_ + base_relocation_table().size_);
+      base_relocation_table().address_ + base_relocation_table().size_,
+      size_of_image_);
   finder.Find(start_pointer, end_pointer, start_rva, end_rva, abs32_locations_);
   finder.SwapRel32Locations(&rel32_locations_);
 
@@ -468,14 +460,14 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSection(const Section* section) {
 }
 
 CheckBool DisassemblerWin32X86::ParseNonSectionFileRegion(
-    FileOffset start_file_offset,
-    FileOffset end_file_offset,
+    uint32_t start_file_offset,
+    uint32_t end_file_offset,
     AssemblyProgram* program) {
   if (incomplete_disassembly_)
     return true;
 
   if (end_file_offset > start_file_offset) {
-    if (!program->EmitBytesInstruction(FileOffsetToPointer(start_file_offset),
+    if (!program->EmitBytesInstruction(OffsetToPointer(start_file_offset),
                                        end_file_offset - start_file_offset)) {
       return false;
     }
@@ -485,13 +477,13 @@ CheckBool DisassemblerWin32X86::ParseNonSectionFileRegion(
 }
 
 CheckBool DisassemblerWin32X86::ParseFileRegion(const Section* section,
-                                                FileOffset start_file_offset,
-                                                FileOffset end_file_offset,
+                                                uint32_t start_file_offset,
+                                                uint32_t end_file_offset,
                                                 AssemblyProgram* program) {
   RVA relocs_start_rva = base_relocation_table().address_;
 
-  const uint8_t* start_pointer = FileOffsetToPointer(start_file_offset);
-  const uint8_t* end_pointer = FileOffsetToPointer(end_file_offset);
+  const uint8_t* start_pointer = OffsetToPointer(start_file_offset);
+  const uint8_t* end_pointer = OffsetToPointer(end_file_offset);
 
   RVA start_rva = FileOffsetToRVA(start_file_offset);
   RVA end_rva = start_rva + section->virtual_size;
@@ -600,7 +592,7 @@ void DisassemblerWin32X86::HistogramTargets(const char* kind,
       size_t count = p->second.size();
       std::cout << std::dec << p->first << ": " << count;
       if (count <= 2) {
-        for (size_t i = 0; i < count; ++i)
+        for (size_t i = 0;  i < count;  ++i)
           std::cout << "  " << DescribeRVA(p->second[i]);
       }
       std::cout << std::endl;
@@ -611,6 +603,7 @@ void DisassemblerWin32X86::HistogramTargets(const char* kind,
   }
 }
 #endif  // COURGETTE_HISTOGRAM_TARGETS
+
 
 // DescribeRVA is for debugging only.  I would put it under #ifdef DEBUG except
 // that during development I'm finding I need to call it when compiled in
@@ -630,12 +623,12 @@ std::string DisassemblerWin32X86::DescribeRVA(RVA rva) const {
 }
 
 const Section* DisassemblerWin32X86::FindNextSection(
-    FileOffset file_offset) const {
+    uint32_t fileOffset) const {
   const Section* best = 0;
-  for (int i = 0; i < number_of_sections_; ++i) {
+  for (int i = 0; i < number_of_sections_; i++) {
     const Section* section = &sections_[i];
     if (section->size_of_raw_data > 0) {  // i.e. has data in file.
-      if (file_offset <= section->file_offset_of_raw_data) {
+      if (fileOffset <= section->file_offset_of_raw_data) {
         if (best == 0 ||
             section->file_offset_of_raw_data < best->file_offset_of_raw_data) {
           best = section;
@@ -646,15 +639,26 @@ const Section* DisassemblerWin32X86::FindNextSection(
   return best;
 }
 
+RVA DisassemblerWin32X86::FileOffsetToRVA(uint32_t file_offset) const {
+  for (int i = 0; i < number_of_sections_; i++) {
+    const Section* section = &sections_[i];
+    uint32_t offset = file_offset - section->file_offset_of_raw_data;
+    if (offset < section->size_of_raw_data) {
+      return section->virtual_address + offset;
+    }
+  }
+  return 0;
+}
+
 bool DisassemblerWin32X86::ReadDataDirectory(
     int index,
     ImageDataDirectory* directory) {
 
   if (index < number_of_data_directories_) {
-    FileOffset file_offset = index * 8 + offset_of_data_directories_;
-    if (file_offset >= size_of_optional_header_)
+    size_t offset = index * 8 + offset_of_data_directories_;
+    if (offset >= size_of_optional_header_)
       return Bad("number of data directories inconsistent");
-    const uint8_t* data_directory = optional_header_ + file_offset;
+    const uint8_t* data_directory = optional_header_ + offset;
     if (data_directory < start() ||
         data_directory + 8 >= end())
       return Bad("data directory outside image");

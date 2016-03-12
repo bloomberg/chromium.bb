@@ -33,7 +33,8 @@ class Rel32FinderWin32X86TestCase {
   }
 
   void RunTestBasic(std::string name) {
-    Rel32FinderWin32X86_Basic finder(relocs_start_rva_, relocs_end_rva_);
+    Rel32FinderWin32X86_Basic finder(relocs_start_rva_, relocs_end_rva_,
+                                     image_end_rva_);
     ASSERT_FALSE(text_data_.empty());
     finder.Find(&text_data_[0], &text_data_[0] + text_data_.size(),
         text_start_rva_, text_end_rva_, abs32_locations_);

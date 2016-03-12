@@ -16,34 +16,32 @@ namespace courgette {
 
 class AssemblyProgram;
 
-class Disassembler : public AddressTranslator {
+class Disassembler {
  public:
   virtual ~Disassembler();
 
-  // AddressTranslator interfaces.
-  virtual RVA FileOffsetToRVA(FileOffset file_offset) const override = 0;
-  virtual FileOffset RVAToFileOffset(RVA rva) const override = 0;
-  const uint8_t* FileOffsetToPointer(FileOffset file_offset) const override;
-  const uint8_t* RVAToPointer(RVA rva) const override;
+  virtual ExecutableType kind() { return EXE_UNKNOWN; }
 
-  virtual ExecutableType kind() const = 0;
+  // ok() may always be called but returns 'true' only after ParseHeader
+  // succeeds.
+  bool ok() const { return failure_reason_ == NULL; }
 
-  // Returns true if the buffer appears to be a valid executable of the expected
-  // type, and false otherwise. This needs not be called before Disassemble().
+  // Returns 'true' if the buffer appears to be a valid executable of the
+  // expected type. It is not required that this be called before Disassemble.
   virtual bool ParseHeader() = 0;
 
   // Disassembles the item passed to the factory method into the output
   // parameter 'program'.
   virtual bool Disassemble(AssemblyProgram* program) = 0;
 
-  // ok() may always be called but returns true only after ParseHeader()
-  // succeeds.
-  bool ok() const { return failure_reason_ == nullptr; }
-
-  // Returns the length of the image. May reduce after ParseHeader().
+  // Returns the length of the source executable. May reduce after ParseHeader.
   size_t length() const { return length_; }
   const uint8_t* start() const { return start_; }
   const uint8_t* end() const { return end_; }
+
+  // Returns a pointer into the memory copy of the file format.
+  // FileOffsetToPointer(0) returns a pointer to the start of the file format.
+  const uint8_t* OffsetToPointer(size_t offset) const;
 
  protected:
   Disassembler(const void* start, size_t length);
@@ -57,16 +55,16 @@ class Disassembler : public AddressTranslator {
   }
 
   // Reduce the length of the image in memory. Does not actually free
-  // (or realloc) any memory. Usually only called via ParseHeader().
+  // (or realloc) any memory. Usually only called via ParseHeader()
   void ReduceLength(size_t reduced_length);
 
  private:
   const char* failure_reason_;
 
   //
-  // Basic information that is always valid after construction, although
-  // ParseHeader() may shorten |length_| if the executable is shorter than the
-  // total data.
+  // Basic information that is always valid after Construction, though
+  // ParseHeader may shorten the length if the executable is shorter than
+  // the total data.
   //
   size_t length_;         // In current memory.
   const uint8_t* start_;  // In current memory, base for 'file offsets'.
