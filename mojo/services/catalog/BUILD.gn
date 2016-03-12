@@ -21,6 +21,8 @@ source_set("lib") {
     "catalog.h",
     "entry.cc",
     "entry.h",
+    "owner.cc",
+    "owner.h",
     "store.cc",
     "store.h",
   ]
@@ -31,7 +33,6 @@ source_set("lib") {
     "//mojo/services/catalog/public/interfaces",
     "//mojo/shell/public/cpp",
     "//mojo/util:filename_util",
-    "//net",
   ]
 
   data_deps = [

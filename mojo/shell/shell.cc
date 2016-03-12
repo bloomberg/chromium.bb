@@ -21,7 +21,6 @@
 #include "mojo/common/url_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/services/catalog/catalog.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/names.h"
@@ -30,6 +29,7 @@
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "mojo/util/filename_util.h"
+#include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
@@ -388,17 +388,18 @@ bool Shell::TestAPI::HasRunningInstanceForName(const std::string& name) const {
 // Shell, public:
 
 Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
-             base::TaskRunner* file_task_runner,
-             scoped_ptr<catalog::Store> catalog_store)
-    : file_task_runner_(file_task_runner),
-      native_runner_factory_(std::move(native_runner_factory)),
+             mojom::ShellClientPtr catalog)
+    : native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
-  mojom::ShellClientRequest request;
-  CreateInstance(CreateShellIdentity(), GetPermissiveCapabilities(), &request);
+  mojom::ShellClientPtr client;
+  mojom::ShellClientRequest request = GetProxy(&client);
+  CreateInstance(CreateShellIdentity(), GetPermissiveCapabilities(),
+                 std::move(client));
   shell_connection_.reset(new ShellConnection(this, std::move(request)));
   shell_connection_->WaitForInitialize();
 
-  InitCatalog(std::move(catalog_store));
+  if (catalog)
+    InitCatalog(std::move(catalog));
 }
 
 Shell::~Shell() {
@@ -439,9 +440,10 @@ mojom::ShellClientRequest Shell::InitInstanceForEmbedder(
   Identity target(name, mojom::kRootUserID);
   DCHECK(!GetExistingInstance(target));
 
-  mojom::ShellClientRequest request;
+  mojom::ShellClientPtr client;
+  mojom::ShellClientRequest request = GetProxy(&client);
   embedder_instance_ =
-      CreateInstance(target, GetPermissiveCapabilities(), &request);
+      CreateInstance(target, GetPermissiveCapabilities(), std::move(client));
   DCHECK(embedder_instance_);
 
   return request;
@@ -477,25 +479,17 @@ bool Shell::AcceptConnection(Connection* connection) {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
-void Shell::InitCatalog(scoped_ptr<catalog::Store> store) {
-  mojom::ShellClientRequest request;
+void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
   Identity identity(kCatalogName, mojom::kRootUserID);
-  CreateInstance(identity, CapabilitySpec(), &request);
-
-  catalog_shell_client_.reset(
-      new catalog::Catalog(file_task_runner_, std::move(store)));
-  catalog_connection_.reset(
-      new ShellConnection(catalog_shell_client_.get(), std::move(request)));
+  CreateInstance(identity, CapabilitySpec(), std::move(catalog));
   shell_connection_->connector()->ConnectToInterface(
       kCatalogName, &shell_resolver_);
 
   // Seed the catalog with manifest info for the shell & catalog.
-  if (file_task_runner_) {
-    shell_resolver_->ResolveMojoName(
-        kCatalogName, base::Bind(&EmptyResolverCallback));
-    shell_resolver_->ResolveMojoName(
-        kShellName, base::Bind(&EmptyResolverCallback));
-  }
+  shell_resolver_->ResolveMojoName(
+      kCatalogName, base::Bind(&EmptyResolverCallback));
+  shell_resolver_->ResolveMojoName(
+      kShellName, base::Bind(&EmptyResolverCallback));
 }
 
 void Shell::TerminateShellConnections() {
@@ -546,17 +540,14 @@ bool Shell::ConnectToExistingInstance(scoped_ptr<ConnectParams>* params) {
   return !!instance;
 }
 
-Shell::Instance* Shell::CreateInstance(const Identity& target_id,
-                                       const CapabilitySpec& capabilities,
-                                       mojom::ShellClientRequest* request) {
-  CHECK(target_id.user_id() != mojom::kInheritUserID);
-  mojom::ShellClientPtr shell_client;
-  *request = GetProxy(&shell_client);
-  Instance* instance =
-      new Instance(std::move(shell_client), this, target_id, capabilities);
-  DCHECK(identity_to_instance_.find(target_id) ==
+Shell::Instance* Shell::CreateInstance(const Identity& target,
+                                       const CapabilitySpec& spec,
+                                       mojom::ShellClientPtr client) {
+  CHECK(target.user_id() != mojom::kInheritUserID);
+  Instance* instance = new Instance(std::move(client), this, target, spec);
+  DCHECK(identity_to_instance_.find(target) ==
          identity_to_instance_.end());
-  identity_to_instance_[target_id] = instance;
+  identity_to_instance_[target] = instance;
   mojom::InstanceInfoPtr info = instance->CreateInstanceInfo();
   instance_listeners_.ForAllPtrs(
       [this, &info](mojom::InstanceListener* listener) {
@@ -640,8 +631,9 @@ void Shell::OnGotResolvedName(scoped_ptr<ConnectParams> params,
 
   mojom::ClientProcessConnectionPtr client_process_connection =
       params->TakeClientProcessConnection();
-  mojom::ShellClientRequest request;
-  Instance* instance = CreateInstance(target, capabilities, &request);
+  mojom::ShellClientPtr client;
+  mojom::ShellClientRequest request = GetProxy(&client);
+  Instance* instance = CreateInstance(target, capabilities, std::move(client));
   instance->ConnectToClient(std::move(params));
 
   if (LoadWithLoader(target, &request))

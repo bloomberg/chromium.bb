@@ -20,6 +20,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace catalog {
+class Owner;
 class Store;
 }
 
@@ -69,6 +70,7 @@ class Context : public edk::ProcessDelegate {
   // Ensure this is destructed before task_runners_ since it owns a message pipe
   // that needs the IO thread to destruct cleanly.
   Tracer tracer_;
+  scoped_ptr<catalog::Owner> catalog_;
   scoped_ptr<Shell> shell_;
   base::Time main_entry_time_;
 

@@ -16,6 +16,10 @@
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/shell.h"
 
+namespace catalog {
+class Owner;
+}
+
 namespace mojo {
 class ShellClient;
 }
@@ -58,6 +62,7 @@ class CONTENT_EXPORT MojoShellContext {
 
   static base::LazyInstance<scoped_ptr<Proxy>> proxy_;
 
+  scoped_ptr<catalog::Owner> catalog_;
   scoped_ptr<mojo::shell::Shell> shell_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellContext);

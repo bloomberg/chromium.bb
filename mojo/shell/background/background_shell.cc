@@ -12,7 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/services/catalog/catalog.h"
+#include "mojo/services/catalog/store.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/shell_client.h"

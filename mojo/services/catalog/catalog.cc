@@ -14,7 +14,6 @@
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/names.h"
 #include "mojo/util/filename_util.h"
-#include "net/base/filename_util.h"
 #include "url/url_util.h"
 
 namespace catalog {
@@ -172,8 +171,7 @@ void Catalog::AddNameToCatalog(const std::string& name,
 
   std::string type = mojo::GetNameType(name);
   CHECK(type == "mojo" || type == "exe");
-  base::FilePath manifest_path;
-  CHECK(net::FileURLToFilePath(manifest_url, &manifest_path));
+  base::FilePath manifest_path = mojo::util::UrlToFilePath(manifest_url);
   base::PostTaskAndReplyWithResult(
       blocking_pool_, FROM_HERE, base::Bind(&ReadManifest, manifest_path),
       base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),

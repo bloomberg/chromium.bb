@@ -13,6 +13,8 @@
       'services/catalog/catalog.h',
       'services/catalog/entry.cc',
       'services/catalog/entry.h',
+      'services/catalog/owner.cc',
+      'services/catalog/owner.h',
       'services/catalog/store.cc',
       'services/catalog/store.h',
       'shell/loader.h',

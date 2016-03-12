@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "mojo/services/catalog/catalog.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
@@ -28,13 +27,7 @@
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
 
-namespace base {
-class FilePath;
-class SequencedWorkerPool;
-}
-
 namespace mojo {
-class ShellClient;
 class ShellConnection;
 namespace shell {
 
@@ -65,8 +58,7 @@ class Shell : public ShellClient {
   // operations on. This may be null only in testing environments where
   // applications are loaded via Loader implementations.
   Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
-        base::TaskRunner* file_task_runner,
-        scoped_ptr<catalog::Store> catalog_store);
+        mojom::ShellClientPtr catalog);
   ~Shell() override;
 
   // Provide a callback to be notified whenever an instance is destroyed.
@@ -104,7 +96,7 @@ class Shell : public ShellClient {
   // ShellClient:
   bool AcceptConnection(Connection* connection) override;
 
-  void InitCatalog(scoped_ptr<catalog::Store> store);
+  void InitCatalog(mojom::ShellClientPtr catalog);
 
   // Destroys all Shell-ends of connections established with Applications.
   // Applications connected by this Shell will observe pipe errors and have a
@@ -127,9 +119,9 @@ class Shell : public ShellClient {
   // and this function returns true.
   bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
 
-  Instance* CreateInstance(const Identity& target_id,
-                           const CapabilitySpec& capabilities,
-                           mojom::ShellClientRequest* request);
+  Instance* CreateInstance(const Identity& target,
+                           const CapabilitySpec& spec,
+                           mojom::ShellClientPtr client);
 
   // Called from the instance implementing mojom::Shell.
   void AddInstanceListener(mojom::InstanceListenerPtr listener);
@@ -188,12 +180,9 @@ class Shell : public ShellClient {
   InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
 
   base::Callback<void(const Identity&)> instance_quit_callback_;
-  base::TaskRunner* file_task_runner_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;
   scoped_ptr<ShellConnection> shell_connection_;
-  scoped_ptr<ShellConnection> catalog_connection_;
-  scoped_ptr<ShellClient> catalog_shell_client_;
   base::WeakPtrFactory<Shell> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
