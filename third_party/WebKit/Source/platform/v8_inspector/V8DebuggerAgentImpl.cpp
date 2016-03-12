@@ -1062,7 +1062,7 @@ void V8DebuggerAgentImpl::traceAsyncCallbackStarting(int operationId)
 
         // Current AsyncCallChain corresponds to the bottommost JS call frame.
         ASSERT(!m_currentAsyncCallChain);
-        m_currentAsyncCallChain = V8StackTraceImpl::clone(chain, m_maxAsyncCallStackDepth - 1);
+        m_currentAsyncCallChain = chain->clone();
         m_currentAsyncOperationId = operationId;
         m_pendingTraceAsyncOperationCompleted = false;
         m_nestedAsyncCallCount = 1;
@@ -1303,16 +1303,12 @@ PassOwnPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
     if (m_pausedContext.IsEmpty() || !trackingAsyncCalls() || !m_currentAsyncCallChain)
         return nullptr;
 
-    return m_currentAsyncCallChain->buildInspectorObject();
+    return m_currentAsyncCallChain->buildInspectorObjectForTail(this);
 }
 
-PassOwnPtr<V8StackTraceImpl> V8DebuggerAgentImpl::currentAsyncStackTraceForRuntime()
+V8StackTraceImpl* V8DebuggerAgentImpl::currentAsyncCallChain()
 {
-    if (!trackingAsyncCalls())
-        return nullptr;
-
-    // TODO(dgozman): -1 is here to not exceed max async depth. Clean this up between V8StackTraceImpl and agent.
-    return V8StackTraceImpl::clone(m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth - 1);
+    return trackingAsyncCalls() ? m_currentAsyncCallChain.get() : nullptr;
 }
 
 void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScript)

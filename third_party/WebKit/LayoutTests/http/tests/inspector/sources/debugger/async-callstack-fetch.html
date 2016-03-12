@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../../inspector-test.js"></script>
+<script src="../../debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    setTimeout(doFetch, 0);
+}
+
+function doFetch()
+{
+    fetch("../debugger/resources/script1.js").then(function chained1() {
+    }).then(function chained2() {
+    }).then(function chained3() {
+        throw Error("thrown from chained3");
+    }).then(function chained4() {
+    }).then(function chained5() {
+    }).then(function chained6() {
+    }).catch(function catchCallback() {
+        debugger;
+    });
+}
+
+var test = function()
+{
+    var totalDebuggerStatements = 1;
+    var maxAsyncCallStackDepth = 4;
+    InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+    Tests asynchronous call stacks for fetch.
+</p>
+
+</body>
+</html>

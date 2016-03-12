@@ -17,7 +17,7 @@ namespace blink {
 
 namespace {
 
-V8StackTraceImpl::Frame toCallFrame(v8::Local<v8::StackFrame> frame)
+V8StackTraceImpl::Frame toFrame(v8::Local<v8::StackFrame> frame)
 {
     String16 scriptId = String16::number(frame->GetScriptId());
     String16 sourceName;
@@ -35,7 +35,7 @@ V8StackTraceImpl::Frame toCallFrame(v8::Local<v8::StackFrame> frame)
     return V8StackTraceImpl::Frame(functionName, scriptId, sourceName, sourceLineNumber, sourceColumn);
 }
 
-void toCallFramesVector(v8::Local<v8::StackTrace> stackTrace, protocol::Vector<V8StackTraceImpl::Frame>& scriptCallFrames, size_t maxStackSize, v8::Isolate* isolate)
+void toFramesVector(v8::Local<v8::StackTrace> stackTrace, protocol::Vector<V8StackTraceImpl::Frame>& frames, size_t maxStackSize, v8::Isolate* isolate)
 {
     ASSERT(isolate->InContext());
     int frameCount = stackTrace->GetFrameCount();
@@ -43,7 +43,7 @@ void toCallFramesVector(v8::Local<v8::StackTrace> stackTrace, protocol::Vector<V
         frameCount = maxStackSize;
     for (int i = 0; i < frameCount; i++) {
         v8::Local<v8::StackFrame> stackFrame = stackTrace->GetFrame(i);
-        scriptCallFrames.append(toCallFrame(stackFrame));
+        frames.append(toFrame(stackFrame));
     }
 }
 
@@ -88,18 +88,36 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
-    protocol::Vector<V8StackTraceImpl::Frame> scriptCallFrames;
+    protocol::Vector<V8StackTraceImpl::Frame> frames;
     if (!stackTrace.IsEmpty())
-        toCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, isolate);
+        toFramesVector(stackTrace, frames, maxStackSize, isolate);
 
-    OwnPtr<V8StackTraceImpl> asyncCallStack;
-    if (agent && agent->trackingAsyncCalls() && maxStackSize > 1)
-        asyncCallStack = agent->currentAsyncStackTraceForRuntime();
+    int maxAsyncCallChainDepth = 1;
+    V8StackTraceImpl* asyncCallChain = nullptr;
+    if (agent && maxStackSize > 1) {
+        asyncCallChain = agent->currentAsyncCallChain();
+        maxAsyncCallChainDepth = agent->maxAsyncCallChainDepth();
+    }
 
-    if (stackTrace.IsEmpty() && !asyncCallStack)
+    // Only the top stack in the chain may be empty, so ensure that second stack is non-empty (it's the top of appended chain).
+    if (asyncCallChain && asyncCallChain->isEmpty())
+        asyncCallChain = asyncCallChain->m_parent.get();
+
+    if (stackTrace.IsEmpty() && !asyncCallChain)
         return nullptr;
 
-    return V8StackTraceImpl::create(description, scriptCallFrames, asyncCallStack.release());
+    OwnPtr<V8StackTraceImpl> result = adoptPtr(new V8StackTraceImpl(description, frames, asyncCallChain ? asyncCallChain->clone() : nullptr));
+
+    // Crop to not exceed maxAsyncCallChainDepth.
+    V8StackTraceImpl* deepest = result.get();
+    while (deepest && maxAsyncCallChainDepth) {
+        deepest = deepest->m_parent.get();
+        maxAsyncCallChainDepth--;
+    }
+    if (deepest)
+        deepest->m_parent.clear();
+
+    return result.release();
 }
 
 PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agent, size_t maxStackSize, const String16& description)
@@ -114,26 +132,10 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agen
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize, description);
 }
 
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(const String16& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::clone()
 {
-    return adoptPtr(new V8StackTraceImpl(description, frames, parent));
-}
-
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::clone(V8StackTraceImpl* origin, size_t maxStackSize)
-{
-    if (!origin)
-        return nullptr;
-
-    // TODO(dgozman): move this check to call-site.
-    if (!origin->m_frames.size())
-        return V8StackTraceImpl::clone(origin->m_parent.get(), maxStackSize);
-
-    OwnPtr<V8StackTraceImpl> parent;
-    if (origin->m_parent && maxStackSize)
-        parent = V8StackTraceImpl::clone(origin->m_parent.get(), maxStackSize - 1);
-
-    protocol::Vector<Frame> frames(origin->m_frames);
-    return adoptPtr(new V8StackTraceImpl(origin->m_description, frames, parent.release()));
+    protocol::Vector<Frame> framesCopy(m_frames);
+    return adoptPtr(new V8StackTraceImpl(m_description, framesCopy, m_parent ? m_parent->clone() : nullptr));
 }
 
 V8StackTraceImpl::V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
@@ -190,6 +192,16 @@ PassOwnPtr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObject
     if (m_parent)
         stackTrace->setParent(m_parent->buildInspectorObject());
     return stackTrace.release();
+}
+
+PassOwnPtr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObjectForTail(V8DebuggerAgentImpl* agent) const
+{
+    v8::HandleScope handleScope(v8::Isolate::GetCurrent());
+    // Next call collapses possible empty stack and ensures maxAsyncCallChainDepth.
+    OwnPtr<V8StackTraceImpl> fullChain = V8StackTraceImpl::create(agent, v8::Local<v8::StackTrace>(), V8StackTrace::maxCallStackSizeToCapture);
+    if (!fullChain || !fullChain->m_parent)
+        return nullptr;
+    return fullChain->m_parent->buildInspectorObject();
 }
 
 String16 V8StackTraceImpl::toString() const

@@ -187,7 +187,8 @@ public:
     void didReceiveV8PromiseEvent(v8::Local<v8::Context>, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status);
 
     v8::Isolate* isolate() { return m_isolate; }
-    PassOwnPtr<V8StackTraceImpl> currentAsyncStackTraceForRuntime();
+    int maxAsyncCallChainDepth() { return m_maxAsyncCallStackDepth; }
+    V8StackTraceImpl* currentAsyncCallChain();
 
 private:
     bool checkEnabled(ErrorString*);
@@ -270,7 +271,7 @@ private:
     protocol::HashSet<int> m_asyncOperationNotifications;
     protocol::HashSet<int> m_asyncOperationBreakpoints;
     protocol::HashSet<int> m_pausingAsyncOperations;
-    unsigned m_maxAsyncCallStackDepth;
+    int m_maxAsyncCallStackDepth;
     OwnPtr<V8StackTraceImpl> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     int m_currentAsyncOperationId;

@@ -1,0 +1,8 @@
+Tests asynchronous call stacks for fetch.
+
+Set timer for test function.
+Captured call stacks in no particular order:
+Call stack:
+    0) catchCallback (async-callstack-fetch.html:22)
+
+
