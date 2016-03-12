@@ -404,7 +404,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite)
 TEST(AnimatedWebPTests, parseAndDecodeByteByByte)
 {
     testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp", 3u, cAnimationLoopInfinite);
-    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u, 31999);
+    testByteByByteDecode(&createDecoder, "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u, 32000);
 }
 
 TEST(AnimatedWebPTests, invalidImages)
@@ -654,7 +654,7 @@ TEST(AnimatedWebPTests, isSizeAvailable)
 {
     testByteByByteSizeAvailable("/LayoutTests/fast/images/resources/webp-animated.webp", 142u, false, cAnimationLoopInfinite);
     // FIXME: Add color profile support for animated webp images.
-    testByteByByteSizeAvailable("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 1404u, false, 31999);
+    testByteByByteSizeAvailable("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 1404u, false, 32000);
 }
 
 TEST(StaticWebPTests, truncatedImage)

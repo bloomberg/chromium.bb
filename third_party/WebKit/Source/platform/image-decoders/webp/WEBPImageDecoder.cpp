@@ -227,12 +227,8 @@ bool WEBPImageDecoder::updateDemuxer()
             m_repetitionCount = WebPDemuxGetI(m_demux, WEBP_FF_LOOP_COUNT);
             // Repetition count is always <= 16 bits.
             ASSERT(m_repetitionCount == (m_repetitionCount & 0xffff));
-            // Repetition count is the number of animation cycles to show,
-            // where 0 means "infinite". But ImageSource::repetitionCount()
-            // returns -1 for "infinite", and 0 and up for "show the image
-            // animation one cycle more than the value". Subtract one here
-            // to correctly handle the finite and infinite cases.
-            --m_repetitionCount;
+            if (!m_repetitionCount)
+                m_repetitionCount = cAnimationLoopInfinite;
             // FIXME: Implement ICC profile support for animated images.
             m_formatFlags &= ~ICCP_FLAG;
         }
