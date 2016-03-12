@@ -16,6 +16,8 @@ android_library("cast_emulator") {
     "src/org/chromium/chrome/browser/media/remote/RemoteSessionManager.java",
     "src/org/chromium/chrome/browser/media/remote/TestMediaRouteProvider.java",
     "src/org/chromium/chrome/browser/media/remote/TestMediaRouteProviderService.java",
+    "src/org/chromium/chrome/browser/media/router/DummyMediaRouteProvider.java",
+    "src/org/chromium/chrome/browser/media/router/DummyMediaRouteProviderService.java",
   ]
   deps = [
     "//base:base_java",

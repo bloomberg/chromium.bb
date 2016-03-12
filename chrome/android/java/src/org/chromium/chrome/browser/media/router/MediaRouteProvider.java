@@ -4,11 +4,19 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import android.content.Context;
+
 /**
  * An interface components providing media sinks and routes need to implement to hooks up into
  * {@link ChromeMediaRouter}.
  */
 public interface MediaRouteProvider {
+    /**
+     * Builder for {@link MediaRouteProvider}.
+     */
+    interface Builder {
+        MediaRouteProvider create(Context applicationContext, MediaRouteManager manager);
+    }
     /**
      * @param sourceId The id of the source to check.
      * @return if the specified source is supported by this route provider.

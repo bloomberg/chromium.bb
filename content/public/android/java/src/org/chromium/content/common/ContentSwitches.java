@@ -63,6 +63,10 @@ public abstract class ContentSwitches {
     public static final String DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK =
             "disable-gesture-requirement-for-media-playback";
 
+    // Native switch kDisableGestureRequirementForPresentation
+    public static final String DISABLE_GESTURE_REQUIREMENT_FOR_PRESENTATION =
+            "disable-gesture-requirement-for-presentation";
+
     // Native switch kRendererProcessLimit
     public static final String RENDER_PROCESS_LIMIT = "renderer-process-limit";
 

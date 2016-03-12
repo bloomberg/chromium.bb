@@ -19,6 +19,7 @@
           '<(DEPTH)/chrome/test/data/push_messaging/',
           '<(DEPTH)/chrome/test/data/translate/',
           '<(DEPTH)/chrome/test/data/webapps/',
+          '<(DEPTH)/chrome/test/media_router/resources/',
           '<(DEPTH)/content/test/data/android/geolocation.html',
           '<(DEPTH)/content/test/data/android/media/',
           '<(DEPTH)/content/test/data/media/getusermedia.html',

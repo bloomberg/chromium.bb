@@ -10,9 +10,18 @@
 var startSessionPromise = null;
 var startedConnection = null;
 var reconnectedSession = null;
-var presentationUrl = "http://www.google.com/#__testprovider__=true";
+var presentationUrl = null;
+if (window.location.href.indexOf('__is_android__=true') >= 0) {
+  // For android, "google.com/cast" is required in presentation URL.
+  // TODO(zqzhang): this requirement may be removed in the future.
+  presentationUrl = "http://google.com/cast#__castAppId__=CCCCCCCC/";
+} else {
+  presentationUrl = "http://www.google.com/#__testprovider__=true";
+}
 var startSessionRequest = new PresentationRequest(presentationUrl);
 var defaultRequestSessionId = null;
+var lastExecutionResult = null;
+var useDomAutomationController = !!window.domAutomationController;
 
 window.navigator.presentation.defaultRequest = startSessionRequest;
 window.navigator.presentation.defaultRequest.onconnectionavailable = function(e)
@@ -198,8 +207,15 @@ function reconnectSessionAndExpectFailure(sessionId, expectedErrorMessage) {
  *                      fails.
  */
 function sendResult(passed, errorMessage) {
-  window.domAutomationController.send(JSON.stringify({
-    passed: passed,
-    errorMessage: errorMessage
-  }));
+  if (useDomAutomationController) {
+    window.domAutomationController.send(JSON.stringify({
+      passed: passed,
+      errorMessage: errorMessage
+    }));
+  } else {
+    lastExecutionResult = JSON.stringify({
+      passed: passed,
+      errorMessage: errorMessage
+    });
+  }
 }

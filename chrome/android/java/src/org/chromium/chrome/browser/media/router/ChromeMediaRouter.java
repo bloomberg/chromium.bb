@@ -31,6 +31,9 @@ public class ChromeMediaRouter implements MediaRouteManager {
 
     private static final String TAG = "MediaRouter";
 
+    private static MediaRouteProvider.Builder sRouteProviderBuilder =
+            new CastMediaRouteProvider.Builder();
+
     // The pointer to the native object. Can be null only during tests.
     private final long mNativeMediaRouterAndroid;
     private final List<MediaRouteProvider> mRouteProviders = new ArrayList<MediaRouteProvider>();
@@ -40,6 +43,11 @@ public class ChromeMediaRouter implements MediaRouteManager {
             new HashMap<String, Map<MediaRouteProvider, List<MediaSink>>>();
     private final Map<String, List<MediaSink>> mSinksPerSource =
             new HashMap<String, List<MediaSink>>();
+
+    @VisibleForTesting
+    public static void setRouteProviderBuilderForTest(MediaRouteProvider.Builder builder) {
+        sRouteProviderBuilder = builder;
+    }
 
     @VisibleForTesting
     protected List<MediaRouteProvider> getRouteProvidersForTest() {
@@ -149,7 +157,7 @@ public class ChromeMediaRouter implements MediaRouteManager {
     public static ChromeMediaRouter create(long nativeMediaRouterAndroid,
             Context applicationContext) {
         ChromeMediaRouter router = new ChromeMediaRouter(nativeMediaRouterAndroid);
-        MediaRouteProvider provider = CastMediaRouteProvider.create(applicationContext, router);
+        MediaRouteProvider provider = sRouteProviderBuilder.create(applicationContext, router);
         if (provider != null) router.addMediaRouteProvider(provider);
 
         return router;
@@ -232,7 +240,8 @@ public class ChromeMediaRouter implements MediaRouteManager {
             int requestId) {
         MediaRouteProvider provider = getProviderForSource(sourceId);
         if (provider == null) {
-            onRouteRequestError("Presentation URL is not supported", requestId);
+            onRouteRequestError("No provider supports createRoute with source: " + sourceId
+                                + " and sink: " + sinkId, requestId);
             return;
         }
 
