@@ -1645,6 +1645,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_ANDROID)
       switches::kEnableOfflinePagesAsBookmarks,
 #endif
+      switches::kEnableWasm,
 #if !defined(DISABLE_NACL)
       switches::kForcePNaClSubzero,
 #endif

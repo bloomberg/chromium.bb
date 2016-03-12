@@ -690,6 +690,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-javascript-harmony", IDS_FLAGS_JAVASCRIPT_HARMONY_NAME,
      IDS_FLAGS_JAVASCRIPT_HARMONY_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kJavaScriptHarmony)},
+    {"enable-webassembly", IDS_FLAGS_ENABLE_WASM_NAME,
+     IDS_FLAGS_ENABLE_WASM_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableWasm)},
     {"disable-software-rasterizer", IDS_FLAGS_SOFTWARE_RASTERIZER_NAME,
      IDS_FLAGS_SOFTWARE_RASTERIZER_DESCRIPTION,
 #if defined(ENABLE_SWIFTSHADER)

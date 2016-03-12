@@ -256,6 +256,11 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
   }
 
+  if (command_line.HasSwitch(switches::kEnableWasm)) {
+    std::string flag("--expose-wasm");
+    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
+  }
+
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());

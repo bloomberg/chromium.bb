@@ -154,6 +154,7 @@ extern const char kEnableSupervisedUserManagedBookmarksFolder[];
 extern const char kEnableTabAudioMuting[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableUserAlternateProtocolPorts[];
+extern const char kEnableWasm[];
 extern const char kEnableWebAppFrame[];
 extern const char kEnableWebNotificationCustomLayouts[];
 extern const char kExtensionContentVerificationBootstrap[];

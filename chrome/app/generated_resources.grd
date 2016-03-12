@@ -5644,6 +5644,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_JAVASCRIPT_HARMONY_DESCRIPTION" desc="Description for the flag to enable JavaScript Harmony features.">
         Enable web pages to use experimental JavaScript features.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WASM_NAME" desc="Title for the flag to enable WebAssembly.">
+        Experimental WebAssembly
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WASM_DESCRIPTION" desc="Description for the flag to enable WebAssembly.">
+        Enable web pages to use experimental WebAssembly.
+      </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_ENABLE_SYSTEM_DOWNLOAD_MANAGER_NAME" desc="Title for the flag to use system download manager.">
           Use system download manager when applicable.
