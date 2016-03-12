@@ -17,7 +17,6 @@
       '<(PRODUCT_DIR)/forwarder_dist/',
       '<(PRODUCT_DIR)/md5sum_bin_host',
       '<(PRODUCT_DIR)/md5sum_dist/',
-      'devil/',
       'devil_chromium.json',
       'devil_chromium.py',
       'gyp/util/',
