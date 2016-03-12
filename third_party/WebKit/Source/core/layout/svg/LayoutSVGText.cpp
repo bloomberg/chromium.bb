@@ -273,17 +273,12 @@ void LayoutSVGText::subtreeTextDidChange(LayoutSVGInlineText* text)
         return;
     }
 
-    // Always protect the cache before clearing text positioning elements when the cache will subsequently be rebuilt.
-    FontCachePurgePreventer fontCachePurgePreventer;
-
-    // The positioning elements cache depends on the size of each text layoutObject in the
-    // subtree. If this changes, clear the cache. It's going to be rebuilt below.
+    // The positioning elements cache depends on the size of each text object in
+    // the subtree. If this changes, clear the cache and mark it for rebuilding
+    // in the next layout.
     m_layoutAttributesBuilder.clearTextPositioningElements();
-
-    for (LayoutObject* descendant = text; descendant; descendant = descendant->nextInPreOrder(text)) {
-        if (descendant->isSVGInlineText())
-            m_layoutAttributesBuilder.buildLayoutAttributesForText(toLayoutSVGInlineText(descendant));
-    }
+    setNeedsPositioningValuesUpdate();
+    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextChanged);
 }
 
 static inline void updateFontInAllDescendants(LayoutObject* start, SVGTextLayoutAttributesBuilder* builder = nullptr)
