@@ -631,6 +631,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailers) {
   trailers_block["key1"] = "value1";
   trailers_block["key2"] = "value2";
   trailers_block["key3"] = "value3";
+  trailers_block[kFinalOffsetHeaderKey] = "0";
   string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
   stream_->OnStreamHeaders(trailers);
   stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
@@ -707,6 +708,44 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterBodyWithFin) {
                                 QUIC_INVALID_HEADERS_STREAM_DATA, _))
       .Times(1);
   stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
+}
+
+TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithOffset) {
+  // Test that when receiving trailing headers with an offset before response
+  // body, stream is closed at the right offset.
+  Initialize(kShouldProcessData);
+
+  // Receive initial headers.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(false, headers.size());
+  stream_->MarkHeadersConsumed(stream_->decompressed_headers().size());
+
+  const string body = "this is the body";
+  // Receive trailing headers.
+  SpdyHeaderBlock trailers_block;
+  trailers_block["key1"] = "value1";
+  trailers_block["key2"] = "value2";
+  trailers_block["key3"] = "value3";
+  trailers_block[kFinalOffsetHeaderKey] = base::IntToString(body.size());
+  string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
+  stream_->OnStreamHeaders(trailers);
+  stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
+
+  // The trailers should be decompressed, and readable from the stream.
+  EXPECT_TRUE(stream_->trailers_decompressed());
+  const string decompressed_trailers = stream_->decompressed_trailers();
+  EXPECT_EQ(trailers, decompressed_trailers);
+  // Consuming the trailers erases them from the stream.
+  stream_->MarkTrailersConsumed(decompressed_trailers.size());
+  EXPECT_EQ("", stream_->decompressed_trailers());
+
+  EXPECT_FALSE(stream_->IsDoneReading());
+  // Receive and consume body.
+  QuicStreamFrame frame(kClientDataStreamId1, /*fin=*/false, 0, body);
+  stream_->OnStreamFrame(frame);
+  EXPECT_EQ(body, stream_->data());
+  EXPECT_TRUE(stream_->IsDoneReading());
 }
 
 TEST_P(QuicSpdyStreamTest, ClosingStreamWithNoTrailers) {

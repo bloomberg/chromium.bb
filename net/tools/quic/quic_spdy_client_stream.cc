@@ -72,20 +72,8 @@ void QuicSpdyClientStream::OnInitialHeadersComplete(bool fin,
 
 void QuicSpdyClientStream::OnTrailingHeadersComplete(bool fin,
                                                      size_t frame_len) {
-  size_t final_byte_offset = 0;
-  if (!SpdyUtils::ParseTrailers(decompressed_trailers().data(),
-                                decompressed_trailers().length(),
-                                &final_byte_offset, &response_trailers_)) {
-    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-    return;
-  }
+  QuicSpdyStream::OnTrailingHeadersComplete(fin, frame_len);
   MarkTrailersConsumed(decompressed_trailers().length());
-
-  // The data on this stream ends at |final_byte_offset|.
-  DVLOG(1) << "Stream ends at byte offset: " << final_byte_offset
-           << "  currently read: " << stream_bytes_read();
-  OnStreamFrame(
-      QuicStreamFrame(id(), /*fin=*/true, final_byte_offset, StringPiece()));
 }
 
 void QuicSpdyClientStream::OnPromiseHeadersComplete(QuicStreamId promised_id,

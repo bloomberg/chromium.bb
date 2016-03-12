@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -580,6 +581,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   SpdyHeaderBlock trailers;
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
+  trailers[kFinalOffsetHeaderKey] = base::IntToString(strlen(kResponseBody));
   ProcessPacket(ConstructResponseTrailersPacket(
       4, kFin, trailers, &spdy_trailers_frame_length, &offset));
 

@@ -141,6 +141,11 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
     return decompressed_trailers_;
   }
 
+  // Returns whatever trailers have been received for this stream.
+  const SpdyHeaderBlock& response_trailers() const {
+    return response_trailers_;
+  }
+
   virtual SpdyPriority priority() const;
 
   // Sets priority_ to priority.  This should only be called before bytes are
@@ -182,6 +187,8 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // Contains a copy of the decompressed trailers until they are consumed
   // via ProcessData or Readv.
   std::string decompressed_trailers_;
+  // The parsed trailers received from the peer.
+  SpdyHeaderBlock response_trailers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyStream);
 };

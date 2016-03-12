@@ -434,7 +434,8 @@ void QuicClient::OnClose(QuicSpdyStream* stream) {
     latest_response_code_ = headers.parsed_response_code();
     headers.DumpHeadersToString(&latest_response_headers_);
     latest_response_body_ = client_stream->data();
-    latest_response_trailers_ = client_stream->trailers().DebugString();
+    latest_response_trailers_ =
+        client_stream->response_trailers().DebugString();
   }
 }
 

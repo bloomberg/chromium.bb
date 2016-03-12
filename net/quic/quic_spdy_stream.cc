@@ -10,6 +10,7 @@
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
+#include "net/quic/spdy_utils.h"
 
 using base::StringPiece;
 using std::min;
@@ -213,7 +214,22 @@ void QuicSpdyStream::OnTrailingHeadersComplete(bool fin, size_t /*frame_len*/) {
     return;
   }
 
-  OnStreamFrame(QuicStreamFrame(id(), fin, stream_bytes_read(), StringPiece()));
+  size_t final_byte_offset = 0;
+  SpdyHeaderBlock trailers;
+  if (!SpdyUtils::ParseTrailers(decompressed_trailers().data(),
+                                decompressed_trailers().length(),
+                                &final_byte_offset, &response_trailers_)) {
+    DLOG(ERROR) << "Trailers are malformed: " << id();
+    session()->connection()->SendConnectionCloseWithDetails(
+        QUIC_INVALID_HEADERS_STREAM_DATA, "Trailers are malformed");
+    return;
+  }
+
+  // The data on this stream ends at |final_byte_offset|.
+  DVLOG(1) << "Stream ends at byte offset: " << final_byte_offset
+           << "  currently read: " << stream_bytes_read();
+
+  OnStreamFrame(QuicStreamFrame(id(), fin, final_byte_offset, StringPiece()));
   trailers_decompressed_ = true;
 }
 

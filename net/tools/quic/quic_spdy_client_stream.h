@@ -64,9 +64,6 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   // Returns whatever headers have been received for this stream.
   const SpdyHeaderBlock& headers() { return response_headers_; }
 
-  // Returns whatever trailers have been received for this stream.
-  const SpdyHeaderBlock& trailers() { return response_trailers_; }
-
   size_t header_bytes_read() const { return header_bytes_read_; }
 
   size_t header_bytes_written() const { return header_bytes_written_; }
@@ -88,9 +85,6 @@ class QuicSpdyClientStream : public QuicSpdyStream {
  private:
   // The parsed headers received from the server.
   SpdyHeaderBlock response_headers_;
-
-  // The parsed trailers received from the server.
-  SpdyHeaderBlock response_trailers_;
 
   // The parsed content-length, or -1 if none is specified.
   int content_length_;

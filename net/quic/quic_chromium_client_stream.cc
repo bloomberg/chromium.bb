@@ -36,35 +36,27 @@ QuicChromiumClientStream::~QuicChromiumClientStream() {
 void QuicChromiumClientStream::OnStreamHeadersComplete(bool fin,
                                                        size_t frame_len) {
   QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
-  SpdyHeaderBlock headers;
-  SpdyFramer framer(HTTP2);
-
-  size_t headers_len;
-  const char* header_data;
   if (decompressed_headers().empty() && !decompressed_trailers().empty()) {
     DCHECK(trailers_decompressed());
-    headers_len = decompressed_trailers().length();
-    header_data = decompressed_trailers().data();
+    // The delegate will read the trailers via a posted task.
+    NotifyDelegateOfHeadersCompleteLater(response_trailers(), frame_len);
   } else {
     DCHECK(!headers_delivered_);
-    headers_len = decompressed_headers().length();
-    header_data = decompressed_headers().data();
-  }
-  if (!framer.ParseHeaderBlockInBuffer(header_data, headers_len, &headers)) {
-    DLOG(WARNING) << "Invalid headers";
-    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-    return;
-  }
-
-  if (!headers_delivered_) {
+    SpdyHeaderBlock headers;
+    SpdyFramer framer(HTTP2);
+    size_t headers_len = decompressed_headers().length();
+    const char* header_data = decompressed_headers().data();
+    if (!framer.ParseHeaderBlockInBuffer(header_data, headers_len, &headers)) {
+      DLOG(WARNING) << "Invalid headers";
+      Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+      return;
+    }
     MarkHeadersConsumed(headers_len);
     session_->OnInitialHeadersComplete(id(), headers);
-  } else {
-    MarkTrailersConsumed(headers_len);
-  }
 
-  // The delegate will read the headers via a posted task.
-  NotifyDelegateOfHeadersCompleteLater(headers, frame_len);
+    // The delegate will read the headers via a posted task.
+    NotifyDelegateOfHeadersCompleteLater(headers, frame_len);
+  }
 }
 
 void QuicChromiumClientStream::OnPromiseHeadersComplete(
@@ -194,6 +186,9 @@ void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
     size_t frame_len) {
   if (!delegate_)
     return;
+  // Only mark trailers consumed when we are about to notify delegate.
+  if (headers_delivered_)
+    MarkTrailersConsumed(decompressed_trailers().length());
 
   headers_delivered_ = true;
   delegate_->OnHeadersAvailable(headers, frame_len);
