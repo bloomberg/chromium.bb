@@ -1422,7 +1422,3 @@ bool ChromeContentRendererClient::ShouldEnforceWebRTCRoutingPreferences() {
   return true;
 #endif
 }
-
-base::StringPiece ChromeContentRendererClient::GetOriginTrialPublicKey() {
-  return origin_trial_key_manager_.GetPublicKey();
-}

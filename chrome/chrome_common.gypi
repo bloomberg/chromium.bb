@@ -62,6 +62,8 @@
       'common/multi_process_lock_linux.cc',
       'common/multi_process_lock_mac.cc',
       'common/multi_process_lock_win.cc',
+      'common/origin_trials/origin_trial_key_manager.cc',
+      'common/origin_trials/origin_trial_key_manager.h',
       'common/partial_circular_buffer.cc',
       'common/partial_circular_buffer.h',
       'common/pref_names_util.cc',

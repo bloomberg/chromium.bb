@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "chrome/common/origin_trials/origin_trial_key_manager.h"
 #include "content/public/common/content_client.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -86,6 +87,10 @@ class ChromeContentClient : public content::ContentClient {
   void AddServiceWorkerSchemes(std::set<std::string>* schemes) override;
 
   bool IsSupplementarySiteIsolationModeEnabled() override;
+  base::StringPiece GetOriginTrialPublicKey() override;
+
+ private:
+  OriginTrialKeyManager origin_trial_key_manager_;
 };
 
 #endif  // CHROME_COMMON_CHROME_CONTENT_CLIENT_H_

@@ -225,8 +225,4 @@ bool ContentRendererClient::ShouldEnforceWebRTCRoutingPreferences() {
   return true;
 }
 
-base::StringPiece ContentRendererClient::GetOriginTrialPublicKey() {
-  return base::StringPiece();
-}
-
 }  // namespace content

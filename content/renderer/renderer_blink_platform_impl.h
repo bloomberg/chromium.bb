@@ -16,7 +16,7 @@
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
-#include "content/renderer/origin_trials/trial_token_validator.h"
+#include "content/renderer/origin_trials/web_trial_token_validator_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "device/vibration/vibration_manager.mojom.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -294,7 +294,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
 
-  TrialTokenValidator trial_token_validator_;
+  WebTrialTokenValidatorImpl trial_token_validator_;
 
   scoped_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;
 

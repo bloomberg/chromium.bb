@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/origin_trials/trial_token_validator.h"
+#include "content/common/origin_trials/trial_token_validator.h"
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/common/content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -71,7 +71,7 @@ const char kExpiredToken[] =
 
 const char kUnparsableToken[] = "abcde";
 
-class TestContentRendererClient : public content::ContentRendererClient {
+class TestContentClient : public ContentClient {
  public:
   base::StringPiece GetOriginTrialPublicKey() override {
     return base::StringPiece(reinterpret_cast<const char*>(key_),
@@ -90,57 +90,58 @@ class TrialTokenValidatorTest : public testing::Test {
         inappropriate_origin_(GURL(kInappropriateOrigin)),
         insecure_origin_(GURL(kInsecureOrigin)) {
     SetPublicKey(kTestPublicKey);
-    SetRendererClientForTesting(&test_content_renderer_client_);
+    SetContentClient(&test_content_client_);
   }
+
+  ~TrialTokenValidatorTest() override { SetContentClient(nullptr); }
 
   void SetPublicKey(const uint8_t* key) {
-    test_content_renderer_client_.SetOriginTrialPublicKey(key);
+    test_content_client_.SetOriginTrialPublicKey(key);
   }
 
-  TrialTokenValidator trial_token_validator_;
   const url::Origin appropriate_origin_;
   const url::Origin inappropriate_origin_;
   const url::Origin insecure_origin_;
 
  private:
-  TestContentRendererClient test_content_renderer_client_;
+  TestContentClient test_content_client_;
 };
 
 TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
-  EXPECT_TRUE(trial_token_validator_.validateToken(
+  EXPECT_TRUE(TrialTokenValidator::ValidateToken(
       kSampleToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {
-  EXPECT_FALSE(TrialTokenValidator().validateToken(
+  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
       kSampleToken, inappropriate_origin_, kAppropriateFeatureName));
-  EXPECT_FALSE(TrialTokenValidator().validateToken(
+  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
       kSampleToken, insecure_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateFeature) {
-  EXPECT_FALSE(TrialTokenValidator().validateToken(
+  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
       kSampleToken, appropriate_origin_, kInappropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInvalidSignature) {
-  EXPECT_FALSE(TrialTokenValidator().validateToken(
+  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
       kInvalidSignatureToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateUnparsableToken) {
-  EXPECT_FALSE(TrialTokenValidator().validateToken(
+  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
       kUnparsableToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
-  EXPECT_FALSE(TrialTokenValidator().validateToken(
+  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
       kExpiredToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   SetPublicKey(kTestPublicKey2);
-  EXPECT_FALSE(TrialTokenValidator().validateToken(
+  EXPECT_FALSE(TrialTokenValidator::ValidateToken(
       kSampleToken, appropriate_origin_, kAppropriateFeatureName));
 }
 

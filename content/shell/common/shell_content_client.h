@@ -17,6 +17,7 @@ std::string GetShellUserAgent();
 
 class ShellContentClient : public ContentClient {
  public:
+  ShellContentClient();
   ~ShellContentClient() override;
 
   std::string GetUserAgent() const override;
@@ -28,6 +29,10 @@ class ShellContentClient : public ContentClient {
       int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
   bool IsSupplementarySiteIsolationModeEnabled() override;
+  base::StringPiece GetOriginTrialPublicKey() override;
+
+ private:
+  base::StringPiece origin_trial_public_key_;
 };
 
 }  // namespace content

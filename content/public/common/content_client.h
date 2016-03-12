@@ -156,6 +156,10 @@ class CONTENT_EXPORT ContentClient {
   // model decisions.
   virtual bool IsSupplementarySiteIsolationModeEnabled();
 
+  // Returns the public key to be used for origin trials, or an empty string if
+  // origin trials are not enabled in this context.
+  virtual base::StringPiece GetOriginTrialPublicKey();
+
  private:
   friend class ContentClientInitializer;  // To set these pointers.
   friend class InternalTestInitializer;

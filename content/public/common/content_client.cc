@@ -120,4 +120,8 @@ bool ContentClient::IsSupplementarySiteIsolationModeEnabled() {
   return false;
 }
 
+base::StringPiece ContentClient::GetOriginTrialPublicKey() {
+  return base::StringPiece();
+}
+
 }  // namespace content

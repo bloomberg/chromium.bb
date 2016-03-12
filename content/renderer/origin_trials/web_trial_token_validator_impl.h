@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
-#define CONTENT_RENDERER_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
+#ifndef CONTENT_RENDERER_ORIGIN_TRIALS_WEB_TRIAL_TOKEN_VALIDATOR_IMPL_H_
+#define CONTENT_RENDERER_ORIGIN_TRIALS_WEB_TRIAL_TOKEN_VALIDATOR_IMPL_H_
 
 #include <string>
 #include "content/common/content_export.h"
@@ -15,11 +15,11 @@ namespace content {
 // to validate tokens to enable experimental features.
 //
 // This class is thread-safe.
-class CONTENT_EXPORT TrialTokenValidator
+class CONTENT_EXPORT WebTrialTokenValidatorImpl
     : public NON_EXPORTED_BASE(blink::WebTrialTokenValidator) {
  public:
-  TrialTokenValidator();
-  ~TrialTokenValidator() override;
+  WebTrialTokenValidatorImpl();
+  ~WebTrialTokenValidatorImpl() override;
 
   // blink::WebTrialTokenValidator implementation
   bool validateToken(const blink::WebString& token,
@@ -27,9 +27,9 @@ class CONTENT_EXPORT TrialTokenValidator
                      const blink::WebString& featureName) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TrialTokenValidator);
+  DISALLOW_COPY_AND_ASSIGN(WebTrialTokenValidatorImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_ORIGIN_TRIALS_TRIAL_TOKEN_VALIDATOR_H_
+#endif  // CONTENT_RENDERER_ORIGIN_TRIALS_WEB_TRIAL_TOKEN_VALIDATOR_IMPL_H_

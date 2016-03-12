@@ -642,3 +642,7 @@ bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
   return false;
 #endif
 }
+
+base::StringPiece ChromeContentClient::GetOriginTrialPublicKey() {
+  return origin_trial_key_manager_.GetPublicKey();
+}
