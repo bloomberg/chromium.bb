@@ -259,6 +259,11 @@ bool HTMLDocumentParser::isParsingFragment() const
     return m_treeBuilder->isParsingFragment();
 }
 
+bool HTMLDocumentParser::processingData() const
+{
+    return isScheduledForResume() || inPumpSession() || m_haveBackgroundParser;
+}
+
 void HTMLDocumentParser::pumpTokenizerIfPossible()
 {
     if (isStopped() || isWaitingForScripts())
@@ -429,8 +434,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
     TRACE_EVENT0("blink", "HTMLDocumentParser::processParsedChunkFromBackgroundParser");
     TemporaryChange<bool> hasLineNumber(m_isParsingAtLineNumber, true);
 
-    ASSERT_WITH_SECURITY_IMPLICATION(m_pumpSpeculationsSessionNestingLevel == 1);
-    ASSERT_WITH_SECURITY_IMPLICATION(!inPumpSession());
+    ASSERT_WITH_SECURITY_IMPLICATION(document()->activeParserCount() == 1);
     ASSERT(!isParsingFragment());
     ASSERT(!isWaitingForScripts());
     ASSERT(!isStopped());
@@ -546,7 +550,7 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     // FIXME: Pass in current input length.
     TRACE_EVENT_BEGIN1("devtools.timeline", "ParseHTML", "beginData", InspectorParseHtmlEvent::beginData(document(), lineNumber().zeroBasedInt()));
 
-    SpeculationsPumpSession session(m_pumpSpeculationsSessionNestingLevel);
+    SpeculationsPumpSession session(m_pumpSpeculationsSessionNestingLevel, contextForParsingSession());
     while (!m_speculations.isEmpty()) {
         ASSERT(!isScheduledForResume());
         size_t elementTokenCount = processParsedChunkFromBackgroundParser(m_speculations.takeFirst().release());
@@ -580,6 +584,15 @@ void HTMLDocumentParser::forcePlaintextForTextDocument()
         m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
 
+Document* HTMLDocumentParser::contextForParsingSession()
+{
+    // The parsing session should interact with the document only when parsing
+    // non-fragments. Otherwise, we might delay the load event mistakenly.
+    if (isParsingFragment())
+        return nullptr;
+    return document();
+}
+
 void HTMLDocumentParser::pumpTokenizer()
 {
     ASSERT(!isStopped());
@@ -590,7 +603,7 @@ void HTMLDocumentParser::pumpTokenizer()
     ASSERT(m_tokenizer);
     ASSERT(m_token);
 
-    PumpSession session(m_pumpSessionNestingLevel);
+    PumpSession session(m_pumpSessionNestingLevel, contextForParsingSession());
 
     // We tell the InspectorInstrumentation about every pump, even if we
     // end up pumping nothing.  It can filter out empty pumps itself.
@@ -1048,6 +1061,7 @@ void HTMLDocumentParser::parseDocumentFragment(const String& source, DocumentFra
     RefPtrWillBeRawPtr<HTMLDocumentParser> parser = HTMLDocumentParser::create(fragment, contextElement, parserContentPolicy);
     parser->append(source);
     parser->finish();
+    ASSERT(!parser->processingData()); // Make sure we're done. <rdar://problem/3963151>
     parser->detach(); // Allows ~DocumentParser to assert it was detached before destruction.
 }
 

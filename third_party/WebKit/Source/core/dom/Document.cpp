@@ -396,6 +396,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_frame(initializer.frame())
     , m_domWindow(m_frame ? m_frame->localDOMWindow() : 0)
     , m_importsController(initializer.importsController())
+    , m_activeParserCount(0)
     , m_contextFeatures(ContextFeatures::defaultSwitch())
     , m_wellFormed(false)
     , m_printing(false)
@@ -5542,6 +5543,11 @@ void Document::setThreadedParsingEnabledForTesting(bool enabled)
 bool Document::threadedParsingEnabledForTesting()
 {
     return s_threadedParsingEnabledForTesting;
+}
+
+bool Document::hasActiveParser()
+{
+    return m_activeParserCount || (m_parser && m_parser->processingData());
 }
 
 void Document::setContextFeatures(ContextFeatures& features)

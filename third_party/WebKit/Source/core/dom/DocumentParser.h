@@ -61,6 +61,11 @@ public:
 
     virtual void finish() = 0;
 
+    // FIXME: processingData() is only used by DocumentLoader::isLoadingInAPISense
+    // and is very unclear as to what it actually means.  The LegacyHTMLDocumentParser
+    // used to implement it.
+    virtual bool processingData() const { return false; }
+
     // document() will return 0 after detach() is called.
     Document* document() const { ASSERT(m_document); return m_document; }
 

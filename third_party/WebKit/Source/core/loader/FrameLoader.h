@@ -110,7 +110,7 @@ public:
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
 
-    void loadFailed(DocumentLoader*, const ResourceError&);
+    void receivedMainResourceError(DocumentLoader*, const ResourceError&);
 
     bool isLoadingMainFrame() const;
 

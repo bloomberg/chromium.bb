@@ -954,6 +954,11 @@ public:
     void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&, LayoutObject&);
     void adjustFloatRectForScrollAndAbsoluteZoom(FloatRect&, LayoutObject&);
 
+    bool hasActiveParser();
+    unsigned activeParserCount() { return m_activeParserCount; }
+    void incrementActiveParserCount() { ++m_activeParserCount; }
+    void decrementActiveParserCount() { --m_activeParserCount; }
+
     void setContextFeatures(ContextFeatures&);
     ContextFeatures& contextFeatures() const { return *m_contextFeatures; }
 
@@ -1182,6 +1187,7 @@ private:
 
     PersistentWillBeMember<ResourceFetcher> m_fetcher;
     RefPtrWillBeMember<DocumentParser> m_parser;
+    unsigned m_activeParserCount;
     RefPtrWillBeMember<ContextFeatures> m_contextFeatures;
 
     bool m_wellFormed;

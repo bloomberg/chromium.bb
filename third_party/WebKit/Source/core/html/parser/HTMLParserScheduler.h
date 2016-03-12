@@ -34,20 +34,31 @@
 
 namespace blink {
 
+class Document;
 class HTMLDocumentParser;
 class WebTaskRunner;
 
-class PumpSession : public NestingLevelIncrementer {
+class ActiveParserSession : public NestingLevelIncrementer {
     STACK_ALLOCATED();
 public:
-    PumpSession(unsigned& nestingLevel);
+    ActiveParserSession(unsigned& nestingLevel, Document*);
+    ~ActiveParserSession();
+
+private:
+    RefPtrWillBeMember<Document> m_document;
+};
+
+class PumpSession : public ActiveParserSession {
+    STACK_ALLOCATED();
+public:
+    PumpSession(unsigned& nestingLevel, Document*);
     ~PumpSession();
 };
 
-class SpeculationsPumpSession : public NestingLevelIncrementer {
+class SpeculationsPumpSession : public ActiveParserSession {
     STACK_ALLOCATED();
 public:
-    SpeculationsPumpSession(unsigned& nestingLevel);
+    SpeculationsPumpSession(unsigned& nestingLevel, Document*);
     ~SpeculationsPumpSession();
 
     double elapsedTime() const;

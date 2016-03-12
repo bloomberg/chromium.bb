@@ -130,13 +130,12 @@ void RawResource::didAddClient(ResourceClient* c)
 
 void RawResource::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
 {
-    Resource::willFollowRedirect(newRequest, redirectResponse);
-
     RefPtrWillBeRawPtr<RawResource> protect(this);
     ASSERT(!redirectResponse.isNull());
     ResourceClientWalker<RawResourceClient> w(m_clients);
     while (RawResourceClient* c = w.next())
         c->redirectReceived(this, newRequest, redirectResponse);
+    Resource::willFollowRedirect(newRequest, redirectResponse);
 }
 
 void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)

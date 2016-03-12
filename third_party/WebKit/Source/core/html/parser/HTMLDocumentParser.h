@@ -110,6 +110,8 @@ public:
     void flush() final;
     void setDecoder(PassOwnPtr<TextResourceDecoder>) final;
 
+    UseCounter* useCounter() { return UseCounter::getFrom(contextForParsingSession()); }
+
 protected:
     void insert(const SegmentedString&) final;
     void append(const String&) override;
@@ -131,6 +133,7 @@ private:
     // DocumentParser
     void detach() final;
     bool hasInsertionPoint() final;
+    bool processingData() const final;
     void prepareToStopParsing() final;
     void stopParsing() final;
     bool isWaitingForScripts() const final;
@@ -149,6 +152,8 @@ private:
     void discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk> lastChunk, PassOwnPtr<HTMLToken>, PassOwnPtr<HTMLTokenizer>);
     size_t processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
     void pumpPendingSpeculations();
+
+    Document* contextForParsingSession();
 
     bool canTakeNextToken();
     void pumpTokenizer();
