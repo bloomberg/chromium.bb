@@ -1,0 +1,22 @@
+<html>
+<body onload="load()">
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function load()
+{
+    document.addEventListener("visibilitychange", onVisibilityChange, false);
+    location = "data:text/html,You should have seen a warning message for alert dialog.<script>if (window.testRunner) testRunner.notifyDone(); </" + "script>";
+}
+
+function onVisibilityChange()
+{
+    alert("visibilitychanged");
+}
+</script>
+start document
+</body>
+</html>

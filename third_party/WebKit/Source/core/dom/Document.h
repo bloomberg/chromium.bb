@@ -485,10 +485,11 @@ public:
     void dispatchUnloadEvents();
 
     enum PageDismissalType {
-        NoDismissal = 0,
-        BeforeUnloadDismissal = 1,
-        PageHideDismissal = 2,
-        UnloadDismissal = 3
+        NoDismissal,
+        BeforeUnloadDismissal,
+        PageHideDismissal,
+        UnloadVisibilityChangeDismissal,
+        UnloadDismissal
     };
     PageDismissalType pageDismissalEventBeingDispatched() const;
 
@@ -874,6 +875,7 @@ public:
         BeforeUnloadEventInProgress,
         BeforeUnloadEventCompleted,
         PageHideInProgress,
+        UnloadVisibilityChangeInProgress,
         UnloadEventInProgress,
         UnloadEventHandled
     };

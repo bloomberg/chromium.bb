@@ -1384,6 +1384,11 @@ PageVisibilityState Document::pageVisibilityState() const
     // http://dvcs.w3.org/hg/webperf/raw-file/tip/specs/PageVisibility/Overview.html#dom-document-hidden
     if (!m_frame || !m_frame->page())
         return PageVisibilityStateHidden;
+    // While visibilitychange is being dispatched during unloading it is
+    // expected that the visibility is hidden regardless of the page's
+    // visibility.
+    if (m_loadEventProgress >= UnloadVisibilityChangeInProgress)
+        return PageVisibilityStateHidden;
     return m_frame->page()->visibilityState();
 }
 
@@ -2780,6 +2785,17 @@ void Document::dispatchUnloadEvents()
             if (!m_frame)
                 return;
 
+            PageVisibilityState visibilityState = pageVisibilityState();
+            m_loadEventProgress = UnloadVisibilityChangeInProgress;
+            if (visibilityState != PageVisibilityStateHidden && RuntimeEnabledFeatures::visibilityChangeOnUnloadEnabled()) {
+                // Dispatch visibilitychange event, but don't bother doing
+                // other notifications as we're about to be unloaded.
+                dispatchEvent(Event::createBubble(EventTypeNames::visibilitychange));
+                dispatchEvent(Event::createBubble(EventTypeNames::webkitvisibilitychange));
+            }
+            if (!m_frame)
+                return;
+
             // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed
             // while dispatching the event, so protect it to prevent writing the end
             // time into freed memory.
@@ -2811,12 +2827,24 @@ void Document::dispatchUnloadEvents()
 
 Document::PageDismissalType Document::pageDismissalEventBeingDispatched() const
 {
-    if (m_loadEventProgress == BeforeUnloadEventInProgress)
+    switch (m_loadEventProgress) {
+    case BeforeUnloadEventInProgress:
         return BeforeUnloadDismissal;
-    if (m_loadEventProgress == PageHideInProgress)
+    case PageHideInProgress:
         return PageHideDismissal;
-    if (m_loadEventProgress == UnloadEventInProgress)
+    case UnloadVisibilityChangeInProgress:
+        return UnloadVisibilityChangeDismissal;
+    case UnloadEventInProgress:
         return UnloadDismissal;
+
+    case LoadEventNotRun:
+    case LoadEventInProgress:
+    case LoadEventCompleted:
+    case BeforeUnloadEventCompleted:
+    case UnloadEventHandled:
+        return NoDismissal;
+    }
+    ASSERT_NOT_REACHED();
     return NoDismissal;
 }
 

@@ -110,6 +110,44 @@
 
 namespace blink {
 
+namespace {
+
+const char* dialogTypeToString(ChromeClient::DialogType dialogType)
+{
+    switch (dialogType) {
+    case ChromeClient::AlertDialog:
+        return "alert";
+    case ChromeClient::ConfirmDialog:
+        return "confirm";
+    case ChromeClient::PromptDialog:
+        return "prompt";
+    case ChromeClient::HTMLDialog:
+        ASSERT_NOT_REACHED();
+    }
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
+const char* dismissalTypeToString(Document::PageDismissalType dismissalType)
+{
+    switch (dismissalType) {
+    case Document::BeforeUnloadDismissal:
+        return "beforeunload";
+    case Document::PageHideDismissal:
+        return "pagehide";
+    case Document::UnloadVisibilityChangeDismissal:
+        return "visibilitychange";
+    case Document::UnloadDismissal:
+        return "unload";
+    case Document::NoDismissal:
+        ASSERT_NOT_REACHED();
+    }
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
+} // namespace
+
 class CompositorAnimationTimeline;
 
 // Converts a AXObjectCache::AXNotification to a WebAXEvent
@@ -859,20 +897,7 @@ DOMWindow* ChromeClientImpl::pagePopupWindowForTesting() const
 
 bool ChromeClientImpl::shouldOpenModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const
 {
-    const char* const kDialogs[] = { "alert", "confirm", "prompt" };
-    int dialog = static_cast<int>(dialogType);
-    ASSERT_WITH_SECURITY_IMPLICATION(0 <= dialog);
-    ASSERT_WITH_SECURITY_IMPLICATION(dialog < static_cast<int>(WTF_ARRAY_LENGTH(kDialogs)));
-
-    const char* const kDismissals[] = { "beforeunload", "pagehide", "unload" };
-    int dismissal = static_cast<int>(dismissalType) - 1; // Exclude NoDismissal.
-    ASSERT_WITH_SECURITY_IMPLICATION(0 <= dismissal);
-    ASSERT_WITH_SECURITY_IMPLICATION(dismissal < static_cast<int>(WTF_ARRAY_LENGTH(kDismissals)));
-
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, dialogDismissalHistogram, ("Renderer.ModalDialogsDuringPageDismissal", WTF_ARRAY_LENGTH(kDialogs) * WTF_ARRAY_LENGTH(kDismissals)));
-    dialogDismissalHistogram.count(dismissal * WTF_ARRAY_LENGTH(kDialogs) + dialog);
-
-    String message = String("Blocked ") + kDialogs[dialog] + "('" + dialogMessage + "') during " + kDismissals[dismissal] + ".";
+    String message = String("Blocked ") + dialogTypeToString(dialogType) + "('" + dialogMessage + "') during " + dismissalTypeToString(dismissalType) + ".";
     m_webView->mainFrame()->addMessageToConsole(WebConsoleMessage(WebConsoleMessage::LevelError, message));
 
     return false;
