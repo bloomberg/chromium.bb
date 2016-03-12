@@ -53,11 +53,11 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void WasShown() override;
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  // Sets |idle_cleanup_enabled_| to true, zeros out |idle_cleanup_interval_|,
-  // and sets |idle_timeout_| to |idle_timeout|. A zero cleanup interval will
-  // cause the idle timer to run with each run of the message loop.
-  void EnableInstantIdleCleanupForTesting(base::TimeDelta idle_timeout,
-                                          base::TickClock* tick_clock);
+  // Zeros out |idle_cleanup_interval_|, and sets |idle_timeout_| to
+  // |idle_timeout|. A zero cleanup interval will cause the idle timer to run
+  // with each run of the message loop.
+  void SetIdleCleanupParamsForTesting(base::TimeDelta idle_timeout,
+                                      base::TickClock* tick_clock);
   bool IsIdleCleanupTimerRunningForTesting() const {
     return idle_cleanup_timer_.IsRunning();
   }
@@ -85,10 +85,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   bool idle_cleanup_running_ = false;
   std::map<int, base::TimeTicks> idle_delegate_map_;
   base::RepeatingTimer idle_cleanup_timer_;
-
-  // Controls whether cleanup of idle delegates is enabled or not as well as the
-  // polling interval and timeout period for delegates; overridden for testing.
-  bool idle_cleanup_enabled_ = false;
 
   // Amount of time allowed to elapse after a delegate enters the paused before
   // the delegate is suspended.

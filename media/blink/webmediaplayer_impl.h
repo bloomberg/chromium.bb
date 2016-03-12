@@ -168,8 +168,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void exitedFullscreen() override;
 
   // WebMediaPlayerDelegate::Observer implementation.
-  void OnHidden(bool must_suspend) override;
+  void OnHidden() override;
   void OnShown() override;
+  void OnSuspendRequested(bool must_suspend) override;
   void OnPlay() override;
   void OnPause() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
@@ -284,6 +285,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // accessed on the media thread.
   void ReportMemoryUsage();
   void FinishMemoryUsageReport(int64_t demuxer_memory_usage);
+
+  // Indicates if automatic resumption of a suspended playback is allowed.
+  bool IsAutomaticResumeAllowed();
 
   blink::WebLocalFrame* frame_;
 

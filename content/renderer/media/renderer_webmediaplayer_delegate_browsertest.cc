@@ -28,8 +28,9 @@ class MockWebMediaPlayerDelegateObserver
   ~MockWebMediaPlayerDelegateObserver() {}
 
   // WebMediaPlayerDelegate::Observer implementation.
-  MOCK_METHOD1(OnHidden, void(bool));
+  MOCK_METHOD0(OnHidden, void());
   MOCK_METHOD0(OnShown, void());
+  MOCK_METHOD1(OnSuspendRequested, void(bool));
   MOCK_METHOD0(OnPlay, void());
   MOCK_METHOD0(OnPause, void());
   MOCK_METHOD1(OnVolumeMultiplierUpdate, void(double));
@@ -123,7 +124,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, DeliversObserverNotifications) {
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer;
   const int delegate_id = delegate_manager_->AddObserver(&observer);
 
-  EXPECT_CALL(observer, OnHidden(false));
+  EXPECT_CALL(observer, OnHidden());
   delegate_manager_->WasHidden();
 
   EXPECT_CALL(observer, OnShown());
@@ -143,7 +144,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, DeliversObserverNotifications) {
                                                            kTestMultiplier);
   delegate_manager_->OnMessageReceived(volume_msg);
 
-  EXPECT_CALL(observer, OnHidden(true));
+  EXPECT_CALL(observer, OnSuspendRequested(true));
   MediaPlayerDelegateMsg_SuspendAllMediaPlayers suspend_msg(0);
   delegate_manager_->OnMessageReceived(suspend_msg);
 
@@ -156,8 +157,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   tick_clock.Advance(base::TimeDelta::FromSeconds(1234));
 
   const base::TimeDelta kIdleTimeout = base::TimeDelta::FromSeconds(2);
-  delegate_manager_->EnableInstantIdleCleanupForTesting(kIdleTimeout,
-                                                        &tick_clock);
+  delegate_manager_->SetIdleCleanupParamsForTesting(kIdleTimeout, &tick_clock);
   EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_1;
@@ -175,7 +175,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   // Adding the observer should instantly queue the timeout task, once run the
   // second delegate should be expired while the first is kept alive.
   {
-    EXPECT_CALL(observer_2, OnHidden(true))
+    EXPECT_CALL(observer_2, OnSuspendRequested(false))
         .WillOnce(RunClosure(base::Bind(
             &RendererWebMediaPlayerDelegate::PlayerGone,
             base::Unretained(delegate_manager_.get()), delegate_id_2)));
@@ -185,7 +185,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
     run_loop.Run();
   }
 
-  // Pausing should not count as idle if playback didn't reach end of stream.
+  // Pausing should count as idle if playback didn't reach end of stream, but
+  // in this case the player will not remove the MediaSession.
   delegate_manager_->DidPause(delegate_id_1, false /* reached_end_of_stream */);
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_3;
   const int delegate_id_3 = delegate_manager_->AddObserver(&observer_3);
@@ -195,6 +196,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   // Adding the observer should instantly queue the timeout task, once run no
   // delegates should have been expired.
   {
+    EXPECT_CALL(observer_1, OnSuspendRequested(false))
+        .Times(testing::AtLeast(1));
     base::RunLoop run_loop;
     base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
     tick_clock.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
@@ -210,7 +213,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   // Once the timeout task runs the first delegate should be expired while the
   // third is kept alive.
   {
-    EXPECT_CALL(observer_1, OnHidden(true))
+    EXPECT_CALL(observer_1, OnSuspendRequested(false))
         .WillOnce(RunClosure(base::Bind(
             &RendererWebMediaPlayerDelegate::PlayerGone,
             base::Unretained(delegate_manager_.get()), delegate_id_1)));
@@ -224,6 +227,33 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   delegate_manager_->RemoveObserver(delegate_id_2);
   delegate_manager_->RemoveObserver(delegate_id_3);
   EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+}
+
+TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesIgnoresSuspendRequest) {
+  // Start the tick clock off at a non-null value.
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.Advance(base::TimeDelta::FromSeconds(1234));
+
+  const base::TimeDelta kIdleTimeout = base::TimeDelta::FromSeconds(2);
+  delegate_manager_->SetIdleCleanupParamsForTesting(kIdleTimeout, &tick_clock);
+  EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+
+  testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_1;
+  const int delegate_id_1 = delegate_manager_->AddObserver(&observer_1);
+  EXPECT_TRUE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+
+  // Adding the observer should instantly queue the timeout task, once run the
+  // second delegate should be expired while the first is kept alive.
+  EXPECT_CALL(observer_1, OnSuspendRequested(false));
+  base::RunLoop run_loop;
+  base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  tick_clock.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
+  run_loop.Run();
+
+  // Even though the player did not call PlayerGone() it should be removed from
+  // future idle cleanup polls.
+  EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+  delegate_manager_->RemoveObserver(delegate_id_1);
 }
 
 }  // namespace media

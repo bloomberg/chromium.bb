@@ -725,7 +725,7 @@ TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
 
   // A hidden event should not pause the player.
   delegate_.set_hidden(true);
-  player_.OnHidden(false);
+  player_.OnHidden();
   EXPECT_FALSE(player_.paused());
 
   // OnPause() should pause the player.
@@ -742,13 +742,15 @@ TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
   player_.play();
   EXPECT_FALSE(player_.paused());
 
-  // An OnHidden() with forced suspension should pause playback.
-  delegate_.set_hidden(true);
-  player_.OnHidden(true);
+  // An OnSuspendRequested() without forced suspension should do nothing.
+  player_.OnSuspendRequested(false);
+  EXPECT_FALSE(player_.paused());
+
+  // An OnSuspendRequested() with forced suspension should pause playback.
+  player_.OnSuspendRequested(true);
   EXPECT_TRUE(player_.paused());
 
   // OnShown() should restart after a forced suspension.
-  delegate_.set_hidden(false);
   player_.OnShown();
   EXPECT_FALSE(player_.paused());
   EXPECT_CALL(*this, DoSetWebLayer(false));

@@ -16,16 +16,26 @@ class WebMediaPlayerDelegate {
  public:
   class Observer {
    public:
-    // Called when the WebMediaPlayer is no longer in the foreground.  Audio may
-    // continue in the background unless |must_suspend| is true.
-    virtual void OnHidden(bool must_suspend) = 0;
-
+    // Called when the WebMediaPlayer enters the background or foreground
+    // respectively. Note: Some implementations will stop playback when hidden,
+    // and thus subsequently call WebMediaPlayerDelegate::PlayerGone().
+    virtual void OnHidden() = 0;
     virtual void OnShown() = 0;
+
+    // Requests a WebMediaPlayer instance to release all idle resources. If
+    // |must_suspend| is true, the player must stop playback, release all idle
+    // resources, and finally call WebMediaPlayerDelegate::PlayerGone(). If
+    // |must_suspend| is false, the player may ignore the request. Optionally,
+    // it may do some or all of the same actions as when |must_suspend| is true.
+    // To be clear, the player is not required to call PlayerGone() when
+    // |must_suspend| is false.
+    virtual void OnSuspendRequested(bool must_suspend) = 0;
+
     virtual void OnPlay() = 0;
     virtual void OnPause() = 0;
 
-    // Playout volume should be set to current_volume * multiplier.  The range
-    // is [0, 1] and is typically 1.
+    // Playout volume should be set to current_volume * multiplier. The range is
+    // [0, 1] and is typically 1.
     virtual void OnVolumeMultiplierUpdate(double multiplier) = 0;
   };
 
@@ -46,7 +56,8 @@ class WebMediaPlayerDelegate {
   // The specified player stopped playing media.
   virtual void DidPause(int delegate_id, bool reached_end_of_stream) = 0;
 
-  // The specified player was destroyed or suspended.  This may be called
+  // The specified player was destroyed or suspended and will no longer accept
+  // Observer::OnPlay() or Observer::OnPause() calls. This may be called
   // multiple times in row. Note: Clients must still call RemoveObserver() to
   // unsubscribe from callbacks.
   virtual void PlayerGone(int delegate_id) = 0;

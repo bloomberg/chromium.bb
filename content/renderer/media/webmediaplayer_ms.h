@@ -135,8 +135,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
   size_t videoDecodedByteCount() const override;
 
   // WebMediaPlayerDelegate::Observer implementation.
-  void OnHidden(bool must_suspend) override;
+  void OnHidden() override;
   void OnShown() override;
+  void OnSuspendRequested(bool must_suspend) override;
   void OnPlay() override;
   void OnPause() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
@@ -223,8 +224,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
   double volume_;
   double volume_multiplier_;
 
-  // True if the delegate forced a pause during the last OnHidden() call.
-  bool paused_on_hidden_;
+  // True if playback should be started upon the next call to OnShown(). Only
+  // used on Android.
+  bool should_play_upon_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

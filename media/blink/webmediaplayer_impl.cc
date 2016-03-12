@@ -105,6 +105,17 @@ void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
   }
 }
 
+bool IsSuspendUponHiddenEnabled() {
+#if !defined(OS_ANDROID)
+  // Suspend/Resume is only enabled by default on Android.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMediaSuspend);
+#else
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableMediaSuspend);
+#endif
+}
+
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -339,6 +350,7 @@ void WebMediaPlayerImpl::play() {
   }
 #endif
 
+  const bool was_paused = paused_;
   paused_ = false;
   pipeline_.SetPlaybackRate(playback_rate_);
 
@@ -347,13 +359,13 @@ void WebMediaPlayerImpl::play() {
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
 
-  if (playback_rate_ > 0) {
+  if (playback_rate_ > 0 && was_paused) {
     NotifyPlaybackStarted();
 
-    // Resume the player if playback was initiated in the foreground. Resume()
-    // will do nothing if the pipeline is not suspended state, but will clear
-    // some internal pending state, so it should always be called.
-    if (delegate_ && !delegate_->IsHidden())
+    // Resume the player if allowed. We always call Resume() in case there is a
+    // pending suspend that should be aborted. If the pipeline is not suspended,
+    // Resume() will have no effect.
+    if (IsAutomaticResumeAllowed())
       pipeline_controller_.Resume();
   }
 }
@@ -442,10 +454,10 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
     paused_time_ = time;
   pipeline_controller_.Seek(time, time_updated);
 
-  // Resume the pipeline if the seek is initiated in the foreground so that
-  // the correct frame is displayed. If the pipeline is not suspended, Resume()
-  // will do nothing but clear some pending state.
-  if (delegate_ && !delegate_->IsHidden())
+  // Resume the pipeline if allowed so that the correct frame is displayed. We
+  // always call Resume() in case there is a pending suspend that should be
+  // aborted. If the pipeline is not suspended, Resume() will have no effect.
+  if (IsAutomaticResumeAllowed())
     pipeline_controller_.Resume();
 }
 
@@ -858,8 +870,6 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   }
 #endif
 
-  if (delegate_)
-    delegate_->PlayerGone(delegate_id_);
   memory_usage_reporting_timer_.Stop();
   ReportMemoryUsage();
 
@@ -871,8 +881,13 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
 }
 
 void WebMediaPlayerImpl::OnPipelineResumed() {
-  if (playback_rate_ > 0 && !paused_)
+  if (playback_rate_ > 0 && !paused_) {
     NotifyPlaybackStarted();
+  } else if (!playback_rate_ || paused_ || ended_) {
+    // Resend our paused notification so the pipeline is considered for idle
+    // resource reclamation; duplicate pause notifications are ignored.
+    NotifyPlaybackPaused();
+  }
 }
 
 void WebMediaPlayerImpl::OnPipelineEnded() {
@@ -936,7 +951,7 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
     // If there is video and the frame is hidden, then it may be time to suspend
     // playback.
     if (delegate_ && delegate_->IsHidden())
-      OnHidden(false);
+      OnHidden();
   }
 }
 
@@ -997,49 +1012,35 @@ void WebMediaPlayerImpl::OnAddTextTrack(
   done_cb.Run(std::move(text_track));
 }
 
-void WebMediaPlayerImpl::OnHidden(bool must_suspend) {
+void WebMediaPlayerImpl::OnHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-#if !defined(OS_ANDROID)
-  // Suspend/Resume is enabled by default on Android.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMediaSuspend)) {
+  if (!IsSuspendUponHiddenEnabled())
     return;
-  }
-#endif  // !defined(OS_ANDROID)
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMediaSuspend)) {
-    return;
-  }
-
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID)  // WMPI_CAST
   // If we're remote, the pipeline should already be suspended.
   if (isRemote())
     return;
 #endif
 
-  if (must_suspend || (paused_ && ended_) || hasVideo())
-    pipeline_controller_.Suspend();
+  // Don't suspend players which only have audio and have not completed
+  // playback. The user can still control these players via the MediaSession UI.
+  // If the player has never started playback, OnSuspendRequested() will handle
+  // release of any idle resources.
+  if (!hasVideo() && !paused_ && !ended_)
+    return;
+
+  pipeline_controller_.Suspend();
+  if (delegate_)
+    delegate_->PlayerGone(delegate_id_);
 }
 
 void WebMediaPlayerImpl::OnShown() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-#if !defined(OS_ANDROID)
-  // Suspend/Resume is enabled by default on Android.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMediaSuspend)) {
+  if (!IsSuspendUponHiddenEnabled())
     return;
-  }
-#endif  // !defined(OS_ANDROID)
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMediaSuspend)) {
-    return;
-  }
-
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID)  // WMPI_CAST
   // If we're remote, the pipeline should stay suspended.
   if (isRemote())
     return;
@@ -1047,6 +1048,27 @@ void WebMediaPlayerImpl::OnShown() {
 
   if (!ended_ && !paused_)
     pipeline_controller_.Resume();
+}
+
+void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+#if defined(OS_ANDROID)  // WMPI_CAST
+  // If we're remote, the pipeline should already be suspended.
+  if (isRemote())
+    return;
+#endif
+
+  // Suspend should never be requested unless required or we're already in an
+  // idle state (paused or ended).
+  DCHECK(must_suspend || paused_ || ended_);
+
+  // Always suspend, but only notify the delegate if we must; this allows any
+  // exposed UI for player controls to continue to function even though the
+  // player has now been suspended.
+  pipeline_controller_.Suspend();
+  if (must_suspend && delegate_)
+    delegate_->PlayerGone(delegate_id_);
 }
 
 void WebMediaPlayerImpl::OnPlay() {
@@ -1432,6 +1454,15 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   const int64_t delta = current_memory_usage - last_reported_memory_usage_;
   last_reported_memory_usage_ = current_memory_usage;
   adjust_allocated_memory_cb_.Run(delta);
+}
+
+bool WebMediaPlayerImpl::IsAutomaticResumeAllowed() {
+#if defined(OS_ANDROID)
+  return !hasVideo() || (delegate_ && !delegate_->IsHidden());
+#else
+  // On non-Android platforms Resume() is always allowed.
+  return true;
+#endif
 }
 
 }  // namespace media
