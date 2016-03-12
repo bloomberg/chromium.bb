@@ -21,7 +21,7 @@ _NO_COMPRESS_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.wav', '.mp2',
                            '.mp3', '.ogg', '.aac', '.mpg', '.mpeg', '.mid',
                            '.midi', '.smf', '.jet', '.rtttl', '.imy', '.xmf',
                            '.mp4', '.m4a', '.m4v', '.3gp', '.3gpp', '.3g2',
-                           '.3gpp2', '.amr', '.awb', '.wma', '.wmv')
+                           '.3gpp2', '.amr', '.awb', '.wma', '.wmv', '.webm')
 
 
 def _ParseArgs(args):

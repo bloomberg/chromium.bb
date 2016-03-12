@@ -642,19 +642,15 @@ test("media_unittests") {
     sources += [
       "ffmpeg/ffmpeg_common_unittest.cc",
       "filters/audio_decoder_unittest.cc",
+      "filters/audio_file_reader_unittest.cc",
       "filters/blocking_url_protocol_unittest.cc",
+      "filters/ffmpeg_demuxer_unittest.cc",
       "filters/ffmpeg_glue_unittest.cc",
       "filters/in_memory_url_protocol_unittest.cc",
     ]
 
     if (!is_android) {
       sources += [
-        # These tests are confused by Android always having proprietary
-        # codecs enabled, but ffmpeg_branding=Chromium.  These should be
-        # fixed, http://crbug.com/570762.
-        "filters/audio_file_reader_unittest.cc",
-        "filters/ffmpeg_demuxer_unittest.cc",
-
         # FFmpeg on Android does not include video decoders.
         "filters/ffmpeg_video_decoder_unittest.cc",
       ]

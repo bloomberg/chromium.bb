@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeVideos) {
 
   // A relative source/track should've been updated.
   EXPECT_THAT(distiller_result_->distilled_content().html(),
-              ContainsRegex("src=\"http://127.0.0.1:.*/relative_video.mp4\""));
+              ContainsRegex("src=\"http://127.0.0.1:.*/relative_video.webm\""));
   EXPECT_THAT(
       distiller_result_->distilled_content().html(),
       ContainsRegex("src=\"http://127.0.0.1:.*/relative_track_en.vtt\""));

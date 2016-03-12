@@ -234,7 +234,7 @@ public class ContextMenuTest extends DownloadTestBase {
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
         DOMUtils.clickNode(this, getActivity().getCurrentContentViewCore(), "videoDOMElement");
-        saveMediaFromContextMenu("videoDOMElement", R.id.contextmenu_save_video, "test.mp4");
+        saveMediaFromContextMenu("videoDOMElement", R.id.contextmenu_save_video, "test.webm");
     }
 
     /**
