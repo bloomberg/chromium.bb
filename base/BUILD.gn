@@ -1593,6 +1593,15 @@ if (is_win) {
     ]
   }
 
+  loadable_module("scoped_handle_test_dll") {
+    sources = [
+      "win/scoped_handle_test_dll.cc",
+    ]
+    deps = [
+      ":base",
+    ]
+  }
+
   if (target_cpu == "x64") {
     # Must be a shared library so that it can be unloaded during testing.
     shared_library("base_profiler_test_support_library") {
@@ -1957,9 +1966,12 @@ test("base_unittests") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
-  if (is_win && target_cpu == "x64") {
-    sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
-    deps += [ ":base_profiler_test_support_library" ]
+  if (is_win) {
+    deps += [ "//base:scoped_handle_test_dll" ]
+    if (target_cpu == "x64") {
+      sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
+      deps += [ ":base_profiler_test_support_library" ]
+    }
   }
 
   if (use_experimental_allocator_shim) {

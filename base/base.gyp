@@ -700,6 +700,9 @@
           ],
         }],
         ['OS == "win"', {
+          'dependencies': [
+            'scoped_handle_test_dll'
+          ],
           'sources!': [
             'file_descriptor_shuffle_unittest.cc',
             'files/dir_reader_posix_unittest.cc',
@@ -1680,6 +1683,16 @@
               ],
             },
           },
+        },
+        {
+          'target_name': 'scoped_handle_test_dll',
+          'type': 'loadable_module',
+          'dependencies': [
+            'base',
+          ],
+          'sources': [
+            'win/scoped_handle_test_dll.cc',
+          ],
         },
       ],
     }],

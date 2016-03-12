@@ -5,14 +5,23 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/scoped_native_library.h"
+#include "base/test/multiprocess_test.h"
+#include "base/test/test_timeouts.h"
 #include "base/win/scoped_handle.h"
 
-#include <utility>
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
 
 namespace base {
 namespace win {
+
+namespace testing {
+extern "C" bool __declspec(dllexport) RunTest();
+}  // namespace testing
 
 TEST(ScopedHandleTest, ScopedHandle) {
   // Any illegal error code will do. We just need to test that it is preserved
@@ -88,6 +97,37 @@ TEST(ScopedHandleTest, ActiveVerifierUntrackedHandle) {
   }, "");
 
   ASSERT_TRUE(::CloseHandle(handle));
+}
+
+TEST(ScopedHandleTest, MultiProcess) {
+  // Initializing ICU in the child process causes a scoped handle to be created
+  // before the test gets a chance to test the race condition, so disable ICU
+  // for the child process here.
+  CommandLine command_line(base::GetMultiProcessTestChildBaseCommandLine());
+  command_line.AppendSwitch(switches::kTestDoNotInitializeIcu);
+
+  base::Process test_child_process = base::SpawnMultiProcessTestChild(
+      "ActiveVerifierChildProcess", command_line, LaunchOptions());
+
+  int rv = -1;
+  ASSERT_TRUE(test_child_process.WaitForExitWithTimeout(
+      TestTimeouts::action_timeout(), &rv));
+  EXPECT_EQ(0, rv);
+}
+
+MULTIPROCESS_TEST_MAIN(ActiveVerifierChildProcess) {
+  ScopedNativeLibrary module(FilePath(L"scoped_handle_test_dll.dll"));
+
+  if (!module.is_valid())
+    return 1;
+  auto run_test_function = reinterpret_cast<decltype(&testing::RunTest)>(
+      module.GetFunctionPointer("RunTest"));
+  if (!run_test_function)
+    return 1;
+  if (!run_test_function())
+    return 1;
+
+  return 0;
 }
 
 }  // namespace win

@@ -22,6 +22,9 @@ __declspec(dllexport) void* GetHandleVerifier();
 typedef void* (*GetHandleVerifierFn)();
 }
 
+// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 namespace {
 
 struct HandleHash {
@@ -85,6 +88,7 @@ class ActiveVerifier {
                             const void* pc1, const void* pc2);
   virtual void Disable();
   virtual void OnHandleBeingClosed(HANDLE handle);
+  virtual HMODULE GetModule() const;
 
  private:
   ~ActiveVerifier();  // Not implemented.
@@ -242,6 +246,10 @@ void ActiveVerifier::OnHandleBeingClosed(HANDLE handle) {
   CHECK(false);  // CloseHandle called on tracked handle.
 }
 
+HMODULE ActiveVerifier::GetModule() const {
+  return reinterpret_cast<HMODULE>(&__ImageBase);
+}
+
 }  // namespace
 
 void* GetHandleVerifier() {
@@ -274,6 +282,10 @@ void DisableHandleVerifier() {
 
 void OnHandleBeingClosed(HANDLE handle) {
   return ActiveVerifier::Get()->OnHandleBeingClosed(handle);
+}
+
+HMODULE GetHandleVerifierModuleForTesting() {
+  return g_active_verifier->GetModule();
 }
 
 }  // namespace win

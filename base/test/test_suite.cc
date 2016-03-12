@@ -331,7 +331,10 @@ void TestSuite::Initialize() {
     logging::SetLogAssertHandler(UnitTestAssertHandler);
   }
 
-  i18n::InitializeICU();
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestDoNotInitializeIcu)) {
+    i18n::InitializeICU();
+  }
   // On the Mac OS X command line, the default locale is *_POSIX. In Chromium,
   // the locale is set via an OS X locale API and is never *_POSIX.
   // Some tests (such as those involving word break iterator) will behave
