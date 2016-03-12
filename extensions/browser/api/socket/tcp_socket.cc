@@ -97,17 +97,12 @@ void TCPSocket::Connect(const net::AddressList& address,
   connect_callback_ = callback;
 
   int result = net::ERR_CONNECTION_FAILED;
-  do {
-    if (is_connected_)
-      break;
-
+  if (!is_connected_) {
     socket_.reset(
         new net::TCPClientSocket(address, NULL, net::NetLog::Source()));
-
-    connect_callback_ = callback;
     result = socket_->Connect(
         base::Bind(&TCPSocket::OnConnectComplete, base::Unretained(this)));
-  } while (false);
+  }
 
   if (result != net::ERR_IO_PENDING)
     OnConnectComplete(result);
