@@ -200,13 +200,6 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
   CHECK(result.second) << "Inserted a duplicate item.";
 }
 
-bool RenderFrameProxy::IsMainFrameDetachedFromTree() const {
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden())
-    return false;
-  return web_frame_->top() == web_frame_ &&
-      render_view_->webview()->mainFrame()->isWebLocalFrame();
-}
-
 void RenderFrameProxy::WillBeginCompositorFrame() {
   if (compositing_helper_) {
     FrameHostMsg_HittestData_Params params;
@@ -321,32 +314,14 @@ void RenderFrameProxy::OnSetChildFrameSurface(
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
   blink::WebFrame* opener =
       RenderFrameImpl::ResolveOpener(opener_routing_id, nullptr);
-
-  // When there is a RenderFrame for this proxy, tell it to update its opener.
-  // TODO(alexmos, nasko): Remove this when we only have WebRemoteFrames.
-  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    RenderFrameImpl* render_frame =
-        RenderFrameImpl::FromRoutingID(frame_routing_id_);
-    if (render_frame) {
-      render_frame->GetWebFrame()->setOpener(opener);
-      return;
-    }
-  }
-
   web_frame_->setOpener(opener);
 }
 
 void RenderFrameProxy::OnDidStartLoading() {
-  if (IsMainFrameDetachedFromTree())
-    return;
-
   web_frame_->didStartLoading();
 }
 
 void RenderFrameProxy::OnDidStopLoading() {
-  if (IsMainFrameDetachedFromTree())
-    return;
-
   web_frame_->didStopLoading();
 }
 

@@ -292,12 +292,11 @@ bool RenderViewHostImpl::CreateRenderView(
   CHECK(main_frame_routing_id_ != MSG_ROUTING_NONE ||
         proxy_route_id != MSG_ROUTING_NONE);
 
-  // If swappedout:// is disabled, we should not set both main_frame_routing_id_
-  // and proxy_route_id.  Log cases that this happens (without crashing) to
-  // track down https://crbug.com/574245.
+  // We should not set both main_frame_routing_id_ and proxy_route_id.  Log
+  // cases that this happens (without crashing) to track down
+  // https://crbug.com/574245.
   // TODO(creis): Remove this once we've found the cause.
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden() &&
-      main_frame_routing_id_ != MSG_ROUTING_NONE &&
+  if (main_frame_routing_id_ != MSG_ROUTING_NONE &&
       proxy_route_id != MSG_ROUTING_NONE)
     base::debug::DumpWithoutCrashing();
 

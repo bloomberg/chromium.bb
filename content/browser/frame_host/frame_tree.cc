@@ -252,18 +252,11 @@ void FrameTree::RemoveFrame(FrameTreeNode* child) {
 void FrameTree::CreateProxiesForSiteInstance(
     FrameTreeNode* source,
     SiteInstance* site_instance) {
-  // Create the swapped out RVH for the new SiteInstance. This will create
-  // a top-level swapped out RFH as well, which will then be wrapped by a
-  // RenderFrameProxyHost.
+  // Create the RenderFrameProxyHost for the new SiteInstance.
   if (!source || !source->IsMainFrame()) {
     RenderViewHostImpl* render_view_host = GetRenderViewHost(site_instance);
     if (!render_view_host) {
-      if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-        root()->render_manager()->CreateRenderFrameProxy(site_instance);
-      } else {
-        root()->render_manager()->CreateRenderFrame(
-            site_instance, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN, nullptr);
-      }
+      root()->render_manager()->CreateRenderFrameProxy(site_instance);
     } else {
       root()->render_manager()->EnsureRenderViewInitialized(render_view_host,
                                                             site_instance);

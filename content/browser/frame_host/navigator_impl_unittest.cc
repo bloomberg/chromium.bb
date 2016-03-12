@@ -975,62 +975,6 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
 
-// PlzNavigate: Verify that a previously swapped out RenderFrameHost is
-// correctly reused when spawning a speculative RenderFrameHost in a navigation
-// using the same SiteInstance.
-TEST_F(NavigatorTestWithBrowserSideNavigation,
-       SpeculativeRendererReuseSwappedOutRFH) {
-  // This test doesn't make sense in --site-per-process where swapped out
-  // RenderFrameHost is no longer used.
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden())
-    return;
-
-  // Navigate to an initial site.
-  const GURL kUrl1("http://wikipedia.org/");
-  contents()->NavigateAndCommit(kUrl1);
-  TestRenderFrameHost* rfh1 = main_test_rfh();
-  FrameTreeNode* node = rfh1->frame_tree_node();
-  RenderFrameHostManager* rfhm = node->render_manager();
-
-  // Increment active frame count to cause the RenderFrameHost to be swapped out
-  // (instead of immediately destroyed).
-  rfh1->GetSiteInstance()->IncrementActiveFrameCount();
-
-  // Navigate to another site to swap out the initial RenderFrameHost.
-  const GURL kUrl2("http://chromium.org/");
-  contents()->NavigateAndCommit(kUrl2);
-  ASSERT_NE(rfh1, main_test_rfh());
-  EXPECT_NE(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, main_test_rfh()->rfh_state());
-  EXPECT_TRUE(rfhm->IsOnSwappedOutList(rfh1));
-
-  // Now go back to the initial site so that the swapped out RenderFrameHost
-  // should be reused.
-  process()->sink().ClearMessages();
-  rfh1->GetProcess()->sink().ClearMessages();
-  int entry_id = RequestNavigation(node, kUrl1);
-  EXPECT_EQ(rfh1, GetSpeculativeRenderFrameHost(node));
-
-  main_test_rfh()->SendBeforeUnloadACK(true);
-  EXPECT_EQ(rfh1, GetSpeculativeRenderFrameHost(node));
-  EXPECT_NE(RenderFrameHostImpl::STATE_DEFAULT,
-            GetSpeculativeRenderFrameHost(node)->rfh_state());
-
-  scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(node->navigation_request())
-      ->CallOnResponseStarted(response, MakeEmptyStream());
-  EXPECT_EQ(rfh1, GetSpeculativeRenderFrameHost(node));
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT,
-            GetSpeculativeRenderFrameHost(node)->rfh_state());
-  EXPECT_TRUE(DidRenderFrameHostRequestCommit(rfh1));
-  EXPECT_FALSE(DidRenderFrameHostRequestCommit(main_test_rfh()));
-
-  rfh1->SendNavigate(1, entry_id, true, kUrl1);
-  EXPECT_EQ(rfh1, main_test_rfh());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
-  EXPECT_FALSE(rfhm->IsOnSwappedOutList(rfh1));
-}
-
 // PlzNavigate: Verify that data urls are properly handled.
 TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
   const GURL kUrl1("http://wikipedia.org/");

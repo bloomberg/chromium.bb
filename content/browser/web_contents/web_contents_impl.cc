@@ -4346,15 +4346,11 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
     }
 
     if (this != source_web_contents && GetBrowserPluginGuest()) {
-      // We create a swapped out RenderView or RenderFrameProxyHost for the
-      // embedder in the guest's render process but we intentionally do not
-      // expose the embedder's opener chain to it.
-      if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-        source_web_contents->GetRenderManager()->CreateRenderFrameProxy(
-            GetSiteInstance());
-      } else {
-        source_web_contents->CreateSwappedOutRenderView(GetSiteInstance());
-      }
+      // We create a RenderFrameProxyHost for the embedder in the guest's render
+      // process but we intentionally do not expose the embedder's opener chain
+      // to it.
+      source_web_contents->GetRenderManager()->CreateRenderFrameProxy(
+          GetSiteInstance());
     } else {
       RenderFrameHostImpl* source_rfhi =
           static_cast<RenderFrameHostImpl*>(source_rfh);
@@ -4377,13 +4373,7 @@ bool WebContentsImpl::AddMessageToConsole(int32_t level,
 int WebContentsImpl::CreateSwappedOutRenderView(
     SiteInstance* instance) {
   int render_view_routing_id = MSG_ROUTING_NONE;
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    GetRenderManager()->CreateRenderFrameProxy(instance);
-  } else {
-    GetRenderManager()->CreateRenderFrame(
-        instance, CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
-        &render_view_routing_id);
-  }
+  GetRenderManager()->CreateRenderFrameProxy(instance);
   return render_view_routing_id;
 }
 

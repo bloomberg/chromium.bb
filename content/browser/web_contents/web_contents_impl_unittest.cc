@@ -588,10 +588,6 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   if (IsBrowserSideNavigationEnabled())
     contents()->GetMainFrame()->PrepareForCommit();
   TestRenderFrameHost* goback_rfh = contents()->GetPendingMainFrame();
-  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    // Recycling the rfh is a behavior specific to swappedout://
-    EXPECT_EQ(orig_rfh, goback_rfh);
-  }
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Navigations should be suspended in goback_rfh until BeforeUnloadACK.
@@ -974,20 +970,15 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
       popup->GetRenderManager()->GetOpenerRoutingID(instance);
   RenderFrameProxyHost* proxy =
       contents()->GetRenderManager()->GetRenderFrameProxyHost(instance);
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    EXPECT_TRUE(proxy);
-    EXPECT_EQ(proxy->GetRoutingID(), opener_frame_routing_id);
+  EXPECT_TRUE(proxy);
+  EXPECT_EQ(proxy->GetRoutingID(), opener_frame_routing_id);
 
-    // Ensure that committing the navigation removes the proxy.
-    int entry_id = controller().GetPendingEntry()->GetUniqueID();
-    contents()->TestDidNavigate(pending_rfh, 2, entry_id, true, url2,
-                                ui::PAGE_TRANSITION_TYPED);
-    EXPECT_FALSE(
-        contents()->GetRenderManager()->GetRenderFrameProxyHost(instance));
-  } else {
-    EXPECT_FALSE(proxy);
-    EXPECT_EQ(pending_rfh->GetRoutingID(), opener_frame_routing_id);
-  }
+  // Ensure that committing the navigation removes the proxy.
+  entry_id = controller().GetPendingEntry()->GetUniqueID();
+  contents()->TestDidNavigate(pending_rfh, 2, entry_id, true, url2,
+                              ui::PAGE_TRANSITION_TYPED);
+  EXPECT_FALSE(
+      contents()->GetRenderManager()->GetRenderFrameProxyHost(instance));
 }
 
 // Tests that WebContentsImpl uses the current URL, not the SiteInstance's site,

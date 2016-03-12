@@ -956,14 +956,7 @@ blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id,
     if (opener_view_routing_id)
       *opener_view_routing_id = opener_proxy->render_view()->GetRoutingID();
 
-    // TODO(nasko,alexmos): This check won't be needed once swappedout:// is
-    // gone.
-    if (opener_proxy->IsMainFrameDetachedFromTree()) {
-      DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
-      return opener_proxy->render_view()->webview()->mainFrame();
-    } else {
-      return opener_proxy->web_frame();
-    }
+    return opener_proxy->web_frame();
   }
 
   RenderFrameImpl* opener_frame =
@@ -1058,17 +1051,6 @@ RenderFrameImpl::~RenderFrameImpl() {
 #endif
 
   if (is_main_frame_) {
-    // When using swapped out frames, RenderFrameProxy is owned by
-    // RenderFrameImpl in the case it is the main frame. Ensure it is deleted
-    // along with this object.
-    if (render_frame_proxy_ &&
-        !SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-      // The following method calls back into this object and clears
-      // |render_frame_proxy_|.
-      render_frame_proxy_->frameDetached(
-          blink::WebRemoteFrameClient::DetachType::Remove);
-    }
-
     // Ensure the RenderView doesn't point to this object, once it is destroyed.
     // TODO(nasko): Add a check that the |main_render_frame_| of |render_view_|
     // is |this|, once the object is no longer leaked.
@@ -1543,8 +1525,6 @@ void RenderFrameImpl::OnSwapOut(
     const FrameReplicationState& replicated_frame_state) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::OnSwapOut", "id", routing_id_);
   RenderFrameProxy* proxy = NULL;
-  bool swapped_out_forbidden =
-      SiteIsolationPolicy::IsSwappedOutStateForbidden();
 
   // This codepath should only be hit for subframes when in --site-per-process.
   CHECK(is_main_frame_ || SiteIsolationPolicy::AreCrossProcessFramesPossible());
@@ -1586,26 +1566,10 @@ void RenderFrameImpl::OnSwapOut(
     if (proxy)
       set_render_frame_proxy(proxy);
 
-    // Now that we're swapped out and filtering IPC messages, stop loading to
-    // ensure that no other in-progress navigation continues.  We do this here
-    // to avoid sending a DidStopLoading message to the browser process.
-    // TODO(creis): Should we be stopping all frames here and using
-    // StopAltErrorPageFetcher with RenderView::OnStop, or just stopping this
-    // frame?
-    if (!swapped_out_forbidden)
-      OnStop();
-
     // Transfer settings such as initial drawing parameters to the remote frame,
     // if one is created, that will replace this frame.
     if (!is_main_frame_ && proxy)
       proxy->web_frame()->initializeFromFrame(frame_);
-
-    // Replace the page with a blank dummy URL. The unload handler will not be
-    // run a second time, thanks to a check in FrameLoader::stopLoading.
-    // TODO(creis): Need to add a better way to do this that avoids running the
-    // beforeunload handler. For now, we just run it a second time silently.
-    if (!swapped_out_forbidden)
-      NavigateToSwappedOutURL();
 
     // Let WebKit know that this view is hidden so it can drop resources and
     // stop compositing.
@@ -1629,7 +1593,7 @@ void RenderFrameImpl::OnSwapOut(
 
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
-  if (proxy && swapped_out_forbidden) {
+  if (proxy) {
     // The swap call deletes this RenderFrame via frameDetached.  Do not access
     // any members after this call.
     // TODO(creis): WebFrame::swap() can return false.  Most of those cases
@@ -1655,23 +1619,16 @@ void RenderFrameImpl::OnSwapOut(
       proxy->OnDidStartLoading();
   }
 
-  // In --site-per-process, initialize the WebRemoteFrame with the replication
-  // state passed by the process that is now rendering the frame.
-  // TODO(alexmos): We cannot yet do this for swapped-out main frames, because
-  // in that case we leave the LocalFrame as the main frame visible to Blink
-  // and don't call swap() above. Because swap() is what creates a RemoteFrame
-  // in proxy->web_frame(), the RemoteFrame will not exist for main frames.
-  // When we do an unconditional swap for all frames, we can remove
-  // !is_main_frame below.
-  if (proxy && swapped_out_forbidden)
+  // Initialize the WebRemoteFrame with the replication state passed by the
+  // process that is now rendering the frame.
+  if (proxy)
     proxy->SetReplicatedState(replicated_frame_state);
 
   // Safe to exit if no one else is using the process.
   // TODO(nasko): Remove the dependency on RenderViewImpl here and ref count
   // the process based on the lifetime of this RenderFrameImpl object.
-  if (is_main_frame) {
+  if (is_main_frame)
     render_view->WasSwappedOut();
-  }
 }
 
 void RenderFrameImpl::OnDeleteFrame() {
@@ -2109,18 +2066,8 @@ void RenderFrameImpl::OnPostMessageEvent(
   if (params.source_routing_id != MSG_ROUTING_NONE) {
     RenderFrameProxy* source_proxy =
         RenderFrameProxy::FromRoutingID(params.source_routing_id);
-    if (source_proxy) {
-      // Currently, navigating a top-level frame cross-process does not swap
-      // the WebLocalFrame for a WebRemoteFrame in the frame tree, and the
-      // WebRemoteFrame will not have an associated blink::Frame. If this is
-      // the case for |source_proxy|, use the corresponding (swapped-out)
-      // WebLocalFrame instead, so that event.source for this message can be
-      // set and used properly.
-      if (source_proxy->IsMainFrameDetachedFromTree())
-        source_frame = source_proxy->render_view()->webview()->mainFrame();
-      else
-        source_frame = source_proxy->web_frame();
-    }
+    if (source_proxy)
+      source_frame = source_proxy->web_frame();
   }
 
   // If the message contained MessagePorts, create the corresponding endpoints.
@@ -4783,33 +4730,28 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       RenderViewImpl::GetReferrerFromRequest(frame_, info.urlRequest));
 
   // TODO(nick): Is consulting |is_main_frame| here correct?
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden() && !is_main_frame_) {
-    // There's no reason to ignore navigations on subframes, since the swap out
-    // logic no longer applies.
-  } else {
-    if (is_swapped_out_) {
-      if (info.urlRequest.url() != GURL(kSwappedOutURL)) {
-        // Targeted links may try to navigate a swapped out frame.  Allow the
-        // browser process to navigate the tab instead.  Note that it is also
-        // possible for non-targeted navigations (from this view) to arrive
-        // here just after we are swapped out.  It's ok to send them to the
-        // browser, as long as they're for the top level frame.
-        // TODO(creis): Ensure this supports targeted form submissions when
-        // fixing http://crbug.com/101395.
-        if (frame_->parent() == NULL) {
-          OpenURL(info.urlRequest.url(), referrer, info.defaultPolicy,
-                  info.replacesCurrentHistoryItem, false);
-          return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
-        }
-
-        // We should otherwise ignore in-process iframe navigations, if they
-        // arrive just after we are swapped out.
-        return blink::WebNavigationPolicyIgnore;
+  if (is_main_frame_ && is_swapped_out_) {
+    if (info.urlRequest.url() != GURL(kSwappedOutURL)) {
+      // Targeted links may try to navigate a swapped out frame.  Allow the
+      // browser process to navigate the tab instead.  Note that it is also
+      // possible for non-targeted navigations (from this view) to arrive
+      // here just after we are swapped out.  It's ok to send them to the
+      // browser, as long as they're for the top level frame.
+      // TODO(creis): Ensure this supports targeted form submissions when
+      // fixing http://crbug.com/101395.
+      if (frame_->parent() == NULL) {
+        OpenURL(info.urlRequest.url(), referrer, info.defaultPolicy,
+                info.replacesCurrentHistoryItem, false);
+        return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
       }
 
-      // Allow kSwappedOutURL to complete.
-      return info.defaultPolicy;
+      // We should otherwise ignore in-process iframe navigations, if they
+      // arrive just after we are swapped out.
+      return blink::WebNavigationPolicyIgnore;
     }
+
+    // Allow kSwappedOutURL to complete.
+    return info.defaultPolicy;
   }
 
   // Webkit is asking whether to navigate to a new URL.

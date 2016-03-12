@@ -360,32 +360,19 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     active_rfh->SendNavigate(max_page_id + 1, entry_id, true, url);
 
     // Make sure that we start to run the unload handler at the time of commit.
-    bool expecting_rfh_shutdown = false;
     if (old_rfh != active_rfh && !rfh_observer.deleted()) {
       EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT,
                 old_rfh->rfh_state());
-      if (!old_rfh->GetSiteInstance()->active_frame_count() ||
-          SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-        expecting_rfh_shutdown = true;
-        EXPECT_TRUE(
+      EXPECT_TRUE(
             old_rfh->frame_tree_node()->render_manager()->IsPendingDeletion(
                 old_rfh));
-      }
     }
 
     // Simulate the swap out ACK coming from the pending renderer.  This should
     // either shut down the old RFH or leave it in a swapped out state.
     if (old_rfh != active_rfh) {
       old_rfh->OnSwappedOut();
-      if (expecting_rfh_shutdown) {
-        EXPECT_TRUE(rfh_observer.deleted());
-        if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-          EXPECT_TRUE(rvh_observer.deleted());
-        }
-      } else {
-        EXPECT_EQ(RenderFrameHostImpl::STATE_SWAPPED_OUT,
-                  old_rfh->rfh_state());
-      }
+      EXPECT_TRUE(rfh_observer.deleted());
     }
     EXPECT_EQ(active_rfh, contents()->GetMainFrame());
     EXPECT_EQ(NULL, contents()->GetPendingMainFrame());
@@ -411,8 +398,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
         new_entry->IsViewSourceMode());
   }
 
-  // Creates a test RenderFrameHost that's swapped out.
-  TestRenderFrameHost* CreateSwappedOutRenderFrameHost() {
+  // Creates a test RenderViewHost that's swapped out.
+  void CreateSwappedOutRenderViewHost() {
     const GURL kChromeURL("chrome://foo");
     const GURL kDestUrl("http://www.google.com/");
 
@@ -441,9 +428,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 
     dest_rfh->SendNavigate(101, entry_id, true, kDestUrl);
     ntp_rfh->OnSwappedOut();
-
-    EXPECT_TRUE(ntp_rfh->is_swapped_out());
-    return ntp_rfh;
   }
 
   // Returns the RenderFrameHost that should be used in the navigation to
@@ -643,48 +627,6 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
             dest_rfh->GetRenderViewHost()->GetRoutingID(), icons)));
     EXPECT_FALSE(observer.favicon_received());
   }
-
-  // In --site-per-process, the RenderFrameHost is deleted on cross-process
-  // navigation, so the rest of the test case doesn't apply.
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    return;
-  }
-
-#if defined(ENABLE_PLUGINS)
-  // The same logic should apply to RenderFrameHosts as well and routing through
-  // swapped out RFH shouldn't be allowed. Use a PluginCrashObserver to check
-  // if the IPC message is allowed through or not.
-  {
-    PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(ntp_rfh->OnMessageReceived(
-                    FrameHostMsg_PluginCrashed(
-                        ntp_rfh->GetRoutingID(), base::FilePath(), 0)));
-    EXPECT_FALSE(observer.plugin_crashed());
-  }
-#endif
-
-  // We cannot filter out synchronous IPC messages, because the renderer would
-  // be left waiting for a reply.  We pick RunBeforeUnloadConfirm as an example
-  // that can run easily within a unit test, and that needs to receive a reply
-  // without showing an actual dialog.
-  MockRenderProcessHost* ntp_process_host = ntp_rfh->GetProcess();
-  ntp_process_host->sink().ClearMessages();
-  bool result = false;
-  base::string16 unused;
-  FrameHostMsg_RunBeforeUnloadConfirm before_unload_msg(
-      ntp_rfh->GetRoutingID(), kChromeURL, false, &result, &unused);
-  EXPECT_TRUE(ntp_rfh->OnMessageReceived(before_unload_msg));
-  EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
-
-  // Also test RunJavaScriptMessage.
-  ntp_process_host->sink().ClearMessages();
-  const base::string16 msg = base::ASCIIToUTF16("Message");
-  FrameHostMsg_RunJavaScriptMessage js_msg(
-      ntp_rfh->GetRoutingID(), msg, msg, kChromeURL,
-      JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
-  js_msg.EnableMessagePumping();
-  EXPECT_TRUE(ntp_rfh->OnMessageReceived(js_msg));
-  EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
 }
 
 // Test that the ViewHostMsg_UpdateFaviconURL IPC message is ignored if the
@@ -744,95 +686,13 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   }
 }
 
-// Ensure that frames aren't added to the frame tree, if the message is coming
-// from a process different than the parent frame's current RenderFrameHost
-// process. Otherwise it is possible to have collisions of routing ids, as they
-// are scoped per process. See https://crbug.com/415059.
-TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
-  const GURL kUrl1("http://foo.com");
-  const GURL kUrl2("http://www.google.com/");
-
-  // This test is invalid in --site-per-process mode, as swapped-out is no
-  // longer used.
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    return;
-  }
-
-  // Navigate to the first site.
-  NavigateActiveAndCommit(kUrl1);
-  TestRenderFrameHost* initial_rfh = contents()->GetMainFrame();
-  {
-    RenderFrameHostCreatedObserver observer(contents());
-    initial_rfh->OnCreateChildFrame(
-        initial_rfh->GetProcess()->GetNextRoutingID(),
-        blink::WebTreeScopeType::Document, std::string(), "uniqueName1",
-        blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
-    EXPECT_TRUE(observer.created());
-  }
-
-  // Create one more frame in the same SiteInstance where initial_rfh
-  // exists so that initial_rfh doesn't get deleted on navigation to another
-  // site.
-  initial_rfh->GetSiteInstance()->IncrementActiveFrameCount();
-
-  // Navigate to a cross-site URL.
-  NavigateActiveAndCommit(kUrl2);
-  EXPECT_TRUE(initial_rfh->is_swapped_out());
-
-  TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
-  ASSERT_TRUE(dest_rfh);
-  EXPECT_NE(initial_rfh, dest_rfh);
-
-  {
-    // Since the old RFH is now swapped out, it shouldn't process any messages
-    // to create child frames.
-    RenderFrameHostCreatedObserver observer(contents());
-    initial_rfh->OnCreateChildFrame(
-        initial_rfh->GetProcess()->GetNextRoutingID(),
-        blink::WebTreeScopeType::Document, std::string(), "uniqueName2",
-        blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
-    EXPECT_FALSE(observer.created());
-  }
-}
-
-TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
-  // TODO(nasko): Check with kenrb whether this test can be rewritten and
-  // whether it makes sense when swapped out is replaced with proxies.
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    return;
-  }
-  TestRenderFrameHost* swapped_out_rfh = CreateSwappedOutRenderFrameHost();
-  TestRenderWidgetHostView* swapped_out_rwhv =
-      static_cast<TestRenderWidgetHostView*>(
-          swapped_out_rfh->GetRenderViewHost()->GetWidget()->GetView());
-  EXPECT_FALSE(swapped_out_rwhv->did_swap_compositor_frame());
-
-  MockRenderProcessHost* process_host = swapped_out_rfh->GetProcess();
-  process_host->sink().ClearMessages();
-
-  cc::CompositorFrame frame;
-  ViewHostMsg_SwapCompositorFrame msg(
-      rvh()->GetRoutingID(), 0, frame, std::vector<IPC::Message>());
-
-  EXPECT_TRUE(
-      swapped_out_rfh->render_view_host()->GetWidget()->OnMessageReceived(msg));
-  EXPECT_TRUE(swapped_out_rwhv->did_swap_compositor_frame());
-}
-
 // Test if RenderViewHost::GetRenderWidgetHosts() only returns active
 // widgets.
 TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
-  // This test is invalid in --site-per-process mode, as swapped-out is no
-  // longer used.
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    return;
-  }
-
-  TestRenderFrameHost* swapped_out_rfh = CreateSwappedOutRenderFrameHost();
-  EXPECT_TRUE(swapped_out_rfh->is_swapped_out());
-
+  CreateSwappedOutRenderViewHost();
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
+
   // We know that there is the only one active widget. Another view is
   // now swapped out, so the swapped out view is not included in the
   // list.
@@ -849,15 +709,7 @@ TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
 // including swapped out ones.
 TEST_F(RenderFrameHostManagerTest,
        GetRenderWidgetHostsWithinGetAllRenderWidgetHosts) {
-  // This test is invalid in --site-per-process mode, as swapped-out is no
-  // longer used.
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    return;
-  }
-
-  TestRenderFrameHost* swapped_out_rfh = CreateSwappedOutRenderFrameHost();
-  EXPECT_TRUE(swapped_out_rfh->is_swapped_out());
-
+  CreateSwappedOutRenderViewHost();
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
 
@@ -1443,13 +1295,6 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   contents()->GetPendingMainFrame()->SendNavigate(
       entry2->GetPageID(), entry2->GetUniqueID(), false, entry2->GetURL());
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, main_test_rfh()->rfh_state());
-  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    EXPECT_EQ(rfh2, main_test_rfh());
-    EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
-    rfh1->OnSwappedOut();
-    EXPECT_TRUE(rfh1->is_swapped_out());
-    EXPECT_EQ(RenderFrameHostImpl::STATE_SWAPPED_OUT, rfh1->rfh_state());
-  }
 }
 
 // Test that we create swapped out RFHs for the opener chain when navigating an
@@ -1491,17 +1336,8 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   EXPECT_TRUE(site_instance1->IsRelatedSiteInstance(rfh2->GetSiteInstance()));
 
   // Ensure rvh1 is placed on swapped out list of the current tab.
-  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    EXPECT_TRUE(manager->IsRVHOnSwappedOutList(rvh1));
-    EXPECT_FALSE(rfh1_deleted_observer.deleted());
-    EXPECT_TRUE(manager->IsOnSwappedOutList(rfh1));
-    EXPECT_EQ(rfh1,
-              manager->GetRenderFrameProxyHost(site_instance1.get())
-                  ->render_frame_host());
-  } else {
-    EXPECT_TRUE(rfh1_deleted_observer.deleted());
-    EXPECT_TRUE(manager->GetRenderFrameProxyHost(site_instance1.get()));
-  }
+  EXPECT_TRUE(rfh1_deleted_observer.deleted());
+  EXPECT_TRUE(manager->GetRenderFrameProxyHost(site_instance1.get()));
   EXPECT_EQ(rvh1,
             manager->GetSwappedOutRenderViewHost(rvh1->GetSiteInstance()));
 
@@ -1511,13 +1347,7 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   RenderFrameHostImpl* opener1_rfh = opener1_proxy->render_frame_host();
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rfh));
-    EXPECT_TRUE(opener1_manager->IsRVHOnSwappedOutList(opener1_rvh));
-    EXPECT_TRUE(opener1_rfh->is_swapped_out());
-  } else {
-    EXPECT_FALSE(opener1_rfh);
-  }
+  EXPECT_FALSE(opener1_rfh);
   EXPECT_FALSE(opener1_rvh->is_active());
 
   // Ensure a swapped out RFH and RVH is created in the second opener tab.
@@ -1526,13 +1356,7 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   RenderFrameHostImpl* opener2_rfh = opener2_proxy->render_frame_host();
   TestRenderViewHost* opener2_rvh = static_cast<TestRenderViewHost*>(
       opener2_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    EXPECT_TRUE(opener2_manager->IsOnSwappedOutList(opener2_rfh));
-    EXPECT_TRUE(opener2_manager->IsRVHOnSwappedOutList(opener2_rvh));
-    EXPECT_TRUE(opener2_rfh->is_swapped_out());
-  } else {
-    EXPECT_FALSE(opener2_rfh);
-  }
+  EXPECT_FALSE(opener2_rfh);
   EXPECT_FALSE(opener2_rvh->is_active());
 
   // Navigate to a cross-BrowsingInstance URL.
@@ -1779,13 +1603,7 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   RenderFrameHostImpl* opener1_rfh = opener1_proxy->render_frame_host();
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rfh));
-    EXPECT_TRUE(opener1_manager->IsRVHOnSwappedOutList(opener1_rvh));
-    EXPECT_TRUE(opener1_rfh->is_swapped_out());
-  } else {
-    EXPECT_FALSE(opener1_rfh);
-  }
+  EXPECT_FALSE(opener1_rfh);
   EXPECT_FALSE(opener1_rvh->is_active());
 
   // Ensure the new RVH has WebUI bindings.
@@ -2022,13 +1840,8 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   // Simulate the swap out ack.
   rfh1->OnSwappedOut();
 
-  // rfh1 should be swapped out or deleted in --site-per-process.
-  if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    EXPECT_FALSE(rfh_deleted_observer.deleted());
-    EXPECT_TRUE(rfh1->is_swapped_out());
-  } else {
-    EXPECT_TRUE(rfh_deleted_observer.deleted());
-  }
+  // rfh1 should be deleted.
+  EXPECT_TRUE(rfh_deleted_observer.deleted());
 }
 
 // Test that the RenderViewHost is properly swapped out if a navigation in the
@@ -2071,15 +1884,10 @@ TEST_F(RenderFrameHostManagerTest,
   // Simulate the swap out ack.
   rfh1->OnSwappedOut();
 
-  // rfh1 should be swapped out.
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    EXPECT_TRUE(rfh_deleted_observer.deleted());
-    EXPECT_TRUE(contents()->GetFrameTree()->root()->render_manager()
-                ->GetRenderFrameProxyHost(site_instance.get()));
-  } else {
-    EXPECT_FALSE(rfh_deleted_observer.deleted());
-    EXPECT_TRUE(rfh1->is_swapped_out());
-  }
+  // rfh1 should be deleted.
+  EXPECT_TRUE(rfh_deleted_observer.deleted());
+  EXPECT_TRUE(contents()->GetFrameTree()->root()->render_manager()
+              ->GetRenderFrameProxyHost(site_instance.get()));
 }
 
 // Test that a RenderFrameHost is properly deleted when a cross-site navigation
@@ -2131,13 +1939,9 @@ TEST_F(RenderFrameHostManagerTest,
         FrameHostMsg_BeforeUnload_ACK(0, false, now, now));
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
-    if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-      EXPECT_TRUE(rfh_deleted_observer.deleted());
-      EXPECT_TRUE(contents()->GetFrameTree()->root()->render_manager()
-                  ->GetRenderFrameProxyHost(site_instance.get()));
-    } else {
-      EXPECT_FALSE(rfh_deleted_observer.deleted());
-    }
+    EXPECT_TRUE(rfh_deleted_observer.deleted());
+    EXPECT_TRUE(contents()->GetFrameTree()->root()->render_manager()
+                ->GetRenderFrameProxyHost(site_instance.get()));
   }
 }
 

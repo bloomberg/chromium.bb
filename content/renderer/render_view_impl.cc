@@ -695,18 +695,9 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);
-    if (main_render_frame_) {
-      CHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
-      RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-          main_render_frame_, params.proxy_routing_id,
-          blink::WebTreeScopeType::Document);
-      main_render_frame_->set_render_frame_proxy(proxy);
-    } else {
-      CHECK(SiteIsolationPolicy::IsSwappedOutStateForbidden());
-      RenderFrameProxy::CreateFrameProxy(
-          params.proxy_routing_id, routing_id(), params.opener_frame_route_id,
-          MSG_ROUTING_NONE, params.replicated_frame_state);
-    }
+    RenderFrameProxy::CreateFrameProxy(
+        params.proxy_routing_id, routing_id(), params.opener_frame_route_id,
+        MSG_ROUTING_NONE, params.replicated_frame_state);
   }
 
   if (main_render_frame_)

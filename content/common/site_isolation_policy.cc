@@ -35,9 +35,4 @@ bool SiteIsolationPolicy::UseSubframeNavigationEntries() {
   return AreCrossProcessFramesPossible() || IsBrowserSideNavigationEnabled();
 }
 
-// static
-bool SiteIsolationPolicy::IsSwappedOutStateForbidden() {
-  return true;
-}
-
 }  // namespace content
