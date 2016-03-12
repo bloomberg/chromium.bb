@@ -235,7 +235,7 @@ LayoutRect LayoutSVGInlineText::clippedOverflowRectForPaintInvalidation(const La
 {
     // FIXME: The following works because LayoutSVGBlock has forced slow rect mapping of the paintInvalidationState.
     // Should let this really work with paintInvalidationState's fast mapping and remove the assert.
-    ASSERT(!paintInvalidationState || !paintInvalidationState->canMapToContainer(paintInvalidationContainer));
+    ASSERT(!paintInvalidationState || !paintInvalidationState->canMapToAncestor(paintInvalidationContainer));
     return parent()->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 }
 

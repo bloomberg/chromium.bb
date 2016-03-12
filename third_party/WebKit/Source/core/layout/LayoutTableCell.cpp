@@ -366,7 +366,7 @@ void LayoutTableCell::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject
     if (ancestor == this)
         return;
     r.setY(r.y());
-    if ((!paintInvalidationState || !paintInvalidationState->canMapToContainer(ancestor)) && parent())
+    if ((!paintInvalidationState || !paintInvalidationState->canMapToAncestor(ancestor)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
     LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, r, paintInvalidationState);
 }

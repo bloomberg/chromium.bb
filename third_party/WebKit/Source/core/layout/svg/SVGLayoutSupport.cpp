@@ -95,7 +95,7 @@ LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const Layou
     if (int outlineOutset = object.styleRef().outlineOutsetExtent())
         paintInvalidationRect.inflate(outlineOutset);
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(paintInvalidationContainer)) {
         // Compute accumulated SVG transform and apply to local paint rect.
         AffineTransform transform = paintInvalidationState->svgTransform() * object.localToParentTransform();
 
@@ -144,7 +144,7 @@ void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object, const Layo
 {
     transformState.applyTransform(object->localToParentTransform());
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor)) {
         // |svgTransform| contains localToBorderBoxTransform mentioned below.
         transformState.applyTransform(paintInvalidationState->svgTransform());
         transformState.move(paintInvalidationState->paintOffset());

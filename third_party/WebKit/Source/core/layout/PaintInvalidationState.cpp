@@ -73,12 +73,12 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
 
             if (layoutObject.isOutOfFlowPositioned() && !fixed) {
                 if (LayoutObject* container = layoutObject.container()) {
-                    if (container->style()->hasInFlowPosition() && container->isLayoutInline())
+                    if (container->isInFlowPositioned() && container->isLayoutInline())
                         m_paintOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(toLayoutBox(layoutObject));
                 }
             }
 
-            if (layoutObject.style()->hasInFlowPosition() && layoutObject.hasLayer())
+            if (layoutObject.isInFlowPositioned() && layoutObject.hasLayer())
                 m_paintOffset += layoutObject.layer()->offsetForInFlowPosition();
         }
 
@@ -115,6 +115,33 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, con
 
     if (m_cachedOffsetsEnabled)
         m_svgTransform = AffineTransform(next.svgTransform() * layoutObject.localToParentTransform());
+}
+
+void PaintInvalidationState::mapObjectRectToAncestor(const LayoutObject& object, const LayoutBoxModelObject* ancestor, LayoutRect& rect) const
+{
+    ASSERT(canMapToAncestor(ancestor));
+
+    if (ancestor == &object) {
+        if (object.isBox() && object.styleRef().isFlippedBlocksWritingMode())
+            toLayoutBox(object).flipForWritingMode(rect);
+        return;
+    }
+
+    if (object.hasLayer()) {
+        if (const TransformationMatrix* transform = toLayoutBoxModelObject(object).layer()->transform())
+            rect = LayoutRect(transform->mapRect(pixelSnappedIntRect(rect)));
+
+        if (object.isInFlowPositioned())
+            rect.move(toLayoutBoxModelObject(object).layer()->offsetForInFlowPosition());
+    }
+
+    if (object.isBox())
+        rect.moveBy(toLayoutBox(object).location());
+
+    rect.move(m_paintOffset);
+
+    if (m_clipped)
+        rect.intersect(m_clipRect);
 }
 
 void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutSize& clipSize)

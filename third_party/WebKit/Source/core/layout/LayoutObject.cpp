@@ -1638,10 +1638,8 @@ void LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
     if (ancestor == this)
         return;
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
-        rect.move(paintInvalidationState->paintOffset());
-        if (paintInvalidationState->isClipped())
-            rect.intersect(paintInvalidationState->clipRect());
+    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor)) {
+        paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect);
         return;
     }
 
@@ -2235,7 +2233,7 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tran
     if (ancestor == this)
         return;
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
+    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor)) {
         LayoutSize offset = paintInvalidationState->paintOffset();
         if (const LayoutBox* layoutBox = isBox() ? toLayoutBox(this) : nullptr)
             offset += layoutBox->locationOffset();

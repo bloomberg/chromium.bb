@@ -1959,18 +1959,8 @@ void LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
     // included into the visual overflow for repaint, we wouldn't have this issue.
     inflatePaintInvalidationRectForReflectionAndFilter(rect);
 
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor) && position != FixedPosition) {
-        if (layer() && layer()->transform())
-            rect = LayoutRect(layer()->transform()->mapRect(pixelSnappedIntRect(rect)));
-
-        // We can't trust the bits on LayoutObject, because this might be called while re-resolving style.
-        if (styleToUse.hasInFlowPosition() && layer())
-            rect.move(layer()->offsetForInFlowPosition());
-
-        rect.moveBy(location());
-        rect.move(paintInvalidationState->paintOffset());
-        if (paintInvalidationState->isClipped())
-            rect.intersect(paintInvalidationState->clipRect());
+    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor) && position != FixedPosition) {
+        paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect);
         return;
     }
 

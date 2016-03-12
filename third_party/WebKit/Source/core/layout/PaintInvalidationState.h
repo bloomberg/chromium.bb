@@ -54,10 +54,11 @@ public:
 
     const LayoutBoxModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
 
-    bool canMapToContainer(const LayoutBoxModelObject* container) const
+    bool canMapToAncestor(const LayoutBoxModelObject* ancestor) const
     {
-        return m_cachedOffsetsEnabled && container == &m_paintInvalidationContainer;
+        return m_cachedOffsetsEnabled && ancestor == &m_paintInvalidationContainer;
     }
+    void mapObjectRectToAncestor(const LayoutObject&, const LayoutBoxModelObject* ancestor, LayoutRect&) const;
 
     // Records |obj| as needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
     void pushDelayedPaintInvalidationTarget(LayoutObject& obj) { m_pendingDelayedPaintInvalidations.append(&obj); }

@@ -1083,12 +1083,8 @@ LayoutRect LayoutInline::visualOverflowRect() const
 
 void LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
-    if (paintInvalidationState && paintInvalidationState->canMapToContainer(ancestor)) {
-        if (style()->hasInFlowPosition() && layer())
-            rect.move(layer()->offsetForInFlowPosition());
-        rect.move(paintInvalidationState->paintOffset());
-        if (paintInvalidationState->isClipped())
-            rect.intersect(paintInvalidationState->clipRect());
+    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor)) {
+        paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect);
         return;
     }
 
