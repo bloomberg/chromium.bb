@@ -4,6 +4,7 @@
 
 #include "net/url_request/url_request_context_getter.h"
 
+#include "base/debug/leak_annotations.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_context.h"
@@ -41,6 +42,8 @@ void URLRequestContextGetter::OnDestruct() const {
         // aid in debugging.
         DLOG(WARNING) << "URLRequestContextGetter leaking due to no owning"
                       << " thread.";
+        // Let LSan know we know this is a leak. https://crbug.com/594130
+        ANNOTATE_LEAKING_OBJECT_PTR(this);
       }
     }
   }
