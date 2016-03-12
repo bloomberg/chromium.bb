@@ -133,6 +133,9 @@ deps = {
   'src/third_party/icu':
    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '6d3b55dfa17d9a597c064eeef7ceac18c73184b7',
 
+  'src/third_party/libexif/sources':
+   Var('chromium_git') + '/chromium/deps/libexif/sources.git' + '@' + '9d467f7d21e4749ee22ee7520e561ac7b38484b9',
+
   'src/third_party/hunspell_dictionaries':
    Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + 'c106afdcec5d3de2622e19f1b3294c47bbd8bd72',
 

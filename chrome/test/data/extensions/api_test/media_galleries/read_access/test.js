@@ -42,6 +42,28 @@ function ReadFileToBytesTest() {
   TestFirstFilesystem(verifyFilesystem);
 }
 
+function GetMetadataTest() {
+  function verifyFilesystem(filesystem) {
+    filesystem.root.getFile("test.jpg", {create: false}, verifyFileEntry,
+      chrome.test.fail);
+  }
+
+  function verifyFileEntry(fileEntry) {
+    fileEntry.file(verifyFile, chrome.test.fail)
+  }
+
+  function verifyFile(file) {
+    mediaGalleries.getMetadata(file, {}, verifyMetadata);
+  }
+
+  function verifyMetadata(metadata) {
+    chrome.test.assertEq("image/jpeg", metadata.mimeType);
+    chrome.test.succeed();
+  }
+
+  TestFirstFilesystem(verifyFilesystem);
+}
+
 function GetMediaFileSystemMetadataTest() {
   function verifyFilesystem(filesystem) {
     var metadata = mediaGalleries.getMediaFileSystemMetadata(filesystem);
@@ -61,6 +83,7 @@ chrome.test.getConfig(function(config) {
   chrome.test.runTests([
     ReadDirectoryTest,
     ReadFileToBytesTest,
+    GetMetadataTest,
     GetMediaFileSystemMetadataTest,
   ]);
 })

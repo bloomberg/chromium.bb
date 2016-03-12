@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/utility/chrome_content_utility_client.h"
+#include "chrome/utility/media_galleries/image_metadata_extractor.h"
 #include "chrome/utility/media_galleries/ipc_data_source.h"
 #include "chrome/utility/media_galleries/media_metadata_parser.h"
 #include "content/public/common/content_paths.h"
@@ -79,6 +80,9 @@ ExtensionsHandler::~ExtensionsHandler() {
 
 // static
 void ExtensionsHandler::PreSandboxStartup() {
+  // Initialize libexif for image metadata parsing.
+  metadata::ImageMetadataExtractor::InitializeLibrary();
+
   // Initialize media libraries for media file validation.
   media::InitializeMediaLibrary();
 }

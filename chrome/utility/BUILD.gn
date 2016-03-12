@@ -92,6 +92,12 @@ static_library("utility") {
                       ".",
                       "..")
     }
+
+    # Linux should use system libexif
+    if (!is_linux || is_chromeos) {
+      # TODO(thestig): Properly support building on Linux and ChromeOS.
+      deps += [ "//third_party/libexif" ]
+    }
   }
 
   if (use_nss_certs) {

@@ -233,6 +233,18 @@ fuzzer_test("unicode_string_codepage_create_fuzzer") {
   ]
 }
 
+if (is_linux) {
+  # libexif_fuzzer is linux only atm
+  fuzzer_test("libexif_parser_fuzzer") {
+    sources = [
+      "libexif_parser_fuzzer.cc",
+    ]
+    deps = [
+      "//third_party/libexif:libexif_fuzzers",
+    ]
+  }
+}
+
 fuzzer_test("libpng_read_fuzzer") {
   sources = [
     "libpng_read_fuzzer.cc",

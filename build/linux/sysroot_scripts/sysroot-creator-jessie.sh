@@ -51,6 +51,8 @@ DEBIAN_PACKAGES="\
   libdrm-radeon1
   libelf1
   libelf-dev
+  libexif12
+  libexif-dev
   libexpat1
   libexpat1-dev
   libffi6

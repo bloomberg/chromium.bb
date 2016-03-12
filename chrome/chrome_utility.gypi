@@ -83,6 +83,8 @@
       'utility/safe_browsing/mac/udif.h',
     ],
     'chrome_utility_shared_media_sources': [
+      'utility/media_galleries/image_metadata_extractor.cc',
+      'utility/media_galleries/image_metadata_extractor.h',
       'utility/media_galleries/ipc_data_source.cc',
       'utility/media_galleries/ipc_data_source.h',
       'utility/media_galleries/itunes_pref_parser_win.cc',
@@ -175,6 +177,7 @@
         ['enable_extensions==1', {
           'dependencies': [
             '../extensions/extensions.gyp:extensions_utility',
+            '../third_party/libexif/libexif.gyp:libexif',
             'common/extensions/api/api.gyp:chrome_api',
           ],
           'export_dependent_settings': [

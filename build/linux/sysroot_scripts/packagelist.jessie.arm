@@ -73,6 +73,8 @@ main/libd/libdrm/libdrm-freedreno1_2.4.58-2_armhf.deb
 main/libd/libdrm/libdrm-nouveau2_2.4.58-2_armhf.deb
 main/libd/libdrm/libdrm-omap1_2.4.58-2_armhf.deb
 main/libd/libdrm/libdrm-radeon1_2.4.58-2_armhf.deb
+main/libe/libexif/libexif12_0.6.21-2_armhf.deb
+main/libe/libexif/libexif-dev_0.6.21-2_armhf.deb
 main/libf/libffi/libffi6_3.1-2+b2_armhf.deb
 main/libf/libffi/libffi-dev_3.1-2+b2_armhf.deb
 main/libg/libgcrypt20/libgcrypt20_1.6.3-2_armhf.deb

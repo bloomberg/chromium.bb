@@ -80,6 +80,7 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
+          '<(PRODUCT_DIR)/exif.so',
         ],
       },
     }],

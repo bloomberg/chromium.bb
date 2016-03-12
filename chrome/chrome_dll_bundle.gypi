@@ -132,6 +132,12 @@
   ],
   'copies': [
     {
+      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+      'files': [
+        '<(PRODUCT_DIR)/exif.so',
+      ],
+    },
+    {
       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Helpers',
       'files': [
         '<(PRODUCT_DIR)/crashpad_handler',

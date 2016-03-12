@@ -1,0 +1,115 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Linux should use system libexif
+
+config("libexif_public_config") {
+  include_dirs = [ "sources" ]
+}
+
+config("libexif_warnings") {
+  if (is_clang) {
+    cflags = [
+      "-Wno-enum-conversion",
+      "-Wno-switch",
+      "-Wno-format",
+
+      # libexif uses fabs(int) to cast to float.
+      "-Wno-absolute-value",
+    ]
+  }
+}
+
+libexif_sources = [
+  "sources/libexif/canon/exif-mnote-data-canon.c",
+  "sources/libexif/canon/mnote-canon-entry.c",
+  "sources/libexif/canon/mnote-canon-tag.c",
+  "sources/libexif/exif-byte-order.c",
+  "sources/libexif/exif-content.c",
+  "sources/libexif/exif-data.c",
+  "sources/libexif/exif-entry.c",
+  "sources/libexif/exif-format.c",
+  "sources/libexif/exif-ifd.c",
+  "sources/libexif/exif-loader.c",
+  "sources/libexif/exif-log.c",
+  "sources/libexif/exif-mem.c",
+  "sources/libexif/exif-mnote-data.c",
+  "sources/libexif/exif-tag.c",
+  "sources/libexif/exif-utils.c",
+  "sources/libexif/fuji/exif-mnote-data-fuji.c",
+  "sources/libexif/fuji/mnote-fuji-entry.c",
+  "sources/libexif/fuji/mnote-fuji-tag.c",
+  "sources/libexif/olympus/exif-mnote-data-olympus.c",
+  "sources/libexif/olympus/mnote-olympus-entry.c",
+  "sources/libexif/olympus/mnote-olympus-tag.c",
+  "sources/libexif/pentax/exif-mnote-data-pentax.c",
+  "sources/libexif/pentax/mnote-pentax-entry.c",
+  "sources/libexif/pentax/mnote-pentax-tag.c",
+]
+
+if (!is_linux || is_chromeos) {
+  loadable_module("libexif") {
+    if (is_mac) {
+      # Matches the output from GYP.
+      output_name = "exif"
+    }
+    sources = libexif_sources
+
+    include_dirs = [ "sources" ]
+
+    # TODO(GYP): Additional options for non-Windows platforms.
+
+    if (is_win) {
+      import("//build/config/win/visual_studio_version.gni")
+
+      if (visual_studio_version == "2013" || visual_studio_version == "2013e") {
+        defines = [
+          # This seems like a hack, but this is what WebKit Win does.
+          # VS 2015 supports these natively so they cannot be #defines.
+          "snprintf=_snprintf",
+          "inline=__inline",
+        ]
+      }
+
+      ldflags = [ "/DEF:" + rebase_path("libexif.def") ]
+
+      cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
+
+      # TODO(GYP): Handle /analyze switch, when it will be used in GN.
+    } else if (is_linux) {
+      libs = [ "m" ]
+    }
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+
+      # Must be after no_chromium_code for warning flags to be ordered properly.
+      ":libexif_warnings",
+    ]
+
+    public_configs = [ ":libexif_public_config" ]
+  }
+}
+
+if (is_linux) {
+  # used by libfuzzer fuzzers only atm.
+  source_set("libexif_fuzzers") {
+    sources = libexif_sources
+
+    include_dirs = [ "sources" ]
+
+    libs = [ "m" ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+
+      # Must be after no_chromium_code for warning flags to be ordered properly.
+      ":libexif_warnings",
+    ]
+
+    public_configs = [ ":libexif_public_config" ]
+  }
+}

@@ -102,15 +102,16 @@ dev_list="bison cdbs curl dpkg-dev elfutils devscripts fakeroot
           language-pack-fr language-pack-he language-pack-zh-hant
           libapache2-mod-php5 libasound2-dev libbrlapi-dev libav-tools
           libbz2-dev libcairo2-dev libcap-dev libcups2-dev libcurl4-gnutls-dev
-          libdrm-dev libelf-dev libffi-dev libgconf2-dev libglib2.0-dev
-          libglu1-mesa-dev libgnome-keyring-dev libgtk2.0-dev libkrb5-dev
-          libnspr4-dev libnss3-dev libpam0g-dev libpci-dev libpulse-dev
-          libsctp-dev libspeechd-dev libsqlite3-dev libssl-dev libudev-dev
-          libwww-perl libxslt1-dev libxss-dev libxt-dev libxtst-dev openbox
-          patch perl php5-cgi pkg-config python python-cherrypy3 python-crypto
-          python-dev python-numpy python-opencv python-openssl python-psutil
-          python-yaml rpm ruby subversion ttf-dejavu-core ttf-indic-fonts
-          ttf-kochi-gothic ttf-kochi-mincho wdiff zip $chromeos_dev_list"
+          libdrm-dev libelf-dev libexif-dev libffi-dev libgconf2-dev
+          libglib2.0-dev libglu1-mesa-dev libgnome-keyring-dev libgtk2.0-dev
+          libkrb5-dev libnspr4-dev libnss3-dev libpam0g-dev libpci-dev
+          libpulse-dev libsctp-dev libspeechd-dev libsqlite3-dev libssl-dev
+          libudev-dev libwww-perl libxslt1-dev libxss-dev libxt-dev libxtst-dev
+          openbox patch perl php5-cgi pkg-config python python-cherrypy3
+          python-crypto python-dev python-numpy python-opencv python-openssl
+          python-psutil python-yaml rpm ruby subversion ttf-dejavu-core
+          ttf-indic-fonts ttf-kochi-gothic ttf-kochi-mincho wdiff
+          zip $chromeos_dev_list"
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
 # NaCl binaries.
@@ -123,12 +124,12 @@ chromeos_lib_list="libpulse0 libbz2-1.0"
 
 # Full list of required run-time libraries
 lib_list="libatk1.0-0 libc6 libasound2 libcairo2 libcap2 libcups2 libexpat1
-          libffi6 libfontconfig1 libfreetype6 libglib2.0-0 libgnome-keyring0
-          libgtk2.0-0 libpam0g libpango1.0-0 libpci3 libpcre3 libpixman-1-0
-          libpng12-0 libspeechd2 libstdc++6 libsqlite3-0 libx11-6 libxau6
-          libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxdmcp6 libxext6
-          libxfixes3 libxi6 libxinerama1 libxrandr2 libxrender1 libxtst6
-          zlib1g $chromeos_lib_list"
+          libexif12 libffi6 libfontconfig1 libfreetype6 libglib2.0-0
+          libgnome-keyring0 libgtk2.0-0 libpam0g libpango1.0-0 libpci3 libpcre3
+          libpixman-1-0 libpng12-0 libspeechd2 libstdc++6 libsqlite3-0 libx11-6
+          libxau6 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxdmcp6
+          libxext6 libxfixes3 libxi6 libxinerama1 libxrandr2 libxrender1
+          libxtst6 zlib1g $chromeos_lib_list"
 
 # Debugging symbols for all of the run-time libraries
 dbg_list="libatk1.0-dbg libc6-dbg libcairo2-dbg libffi6-dbg libfontconfig1-dbg
@@ -164,9 +165,10 @@ fi
 # Packages to build NaCl, its toolchains, and its ports.
 naclports_list="ant autoconf bison cmake gawk intltool xutils-dev xsltproc"
 nacl_list="g++-mingw-w64-i686 lib32z1-dev
-           libasound2:i386 libcap2:i386 libelf-dev:i386 libfontconfig1:i386
-           libgconf-2-4:i386 libglib2.0-0:i386 libgpm2:i386 libgtk2.0-0:i386
-           libncurses5:i386 lib32ncurses5-dev libnss3:i386 libpango1.0-0:i386
+           libasound2:i386 libcap2:i386 libelf-dev:i386 libexif12:i386
+           libfontconfig1:i386 libgconf-2-4:i386 libglib2.0-0:i386 libgpm2:i386
+           libgtk2.0-0:i386 libncurses5:i386 lib32ncurses5-dev
+           libnss3:i386 libpango1.0-0:i386
            libssl1.0.0:i386 libtinfo-dev libtinfo-dev:i386 libtool
            libxcomposite1:i386 libxcursor1:i386 libxdamage1:i386 libxi6:i386
            libxrandr2:i386 libxss1:i386 libxtst6:i386 texinfo xvfb

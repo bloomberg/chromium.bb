@@ -658,6 +658,7 @@
       'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',
       'renderer/media/cast_ipc_dispatcher_unittest.cc',
       'utility/image_writer/image_writer_unittest.cc',
+      'utility/media_galleries/image_metadata_extractor_unittest.cc',
     ],
     'chrome_unit_tests_extensions_service_discovery_sources': [
       'browser/extensions/api/gcd_private/privet_v3_context_getter_unittest.cc',

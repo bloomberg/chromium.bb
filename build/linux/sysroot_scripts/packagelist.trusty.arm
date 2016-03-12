@@ -57,6 +57,8 @@ main/k/krb5/libkrb5support0_1.12+dfsg-2ubuntu4_armhf.deb
 main/libc/libcap2/libcap2_2.24-0ubuntu2_armhf.deb
 main/libc/libcap2/libcap-dev_2.24-0ubuntu2_armhf.deb
 main/libd/libdrm/libdrm2_2.4.52-1_armhf.deb
+main/libe/libexif/libexif12_0.6.21-1ubuntu1_armhf.deb
+main/libe/libexif/libexif-dev_0.6.21-1ubuntu1_armhf.deb
 main/libf/libffi/libffi6_3.1~rc1+r3.0.13-12_armhf.deb
 main/libg/libgcrypt11/libgcrypt11_1.5.3-2ubuntu4_armhf.deb
 main/libg/libgcrypt11/libgcrypt11-dev_1.5.3-2ubuntu4_armhf.deb

@@ -130,6 +130,7 @@
         'files': [
           '../google_apis/test/',
           '<(PRODUCT_DIR)/keyboard_resources.pak',
+          '<(PRODUCT_DIR)/libexif.so',
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
           '<(PRODUCT_DIR)/resources/chromeos/',
