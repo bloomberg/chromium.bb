@@ -131,8 +131,7 @@ class HWTestList(object):
     async_kwargs['timeout'] = config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT
 
     # BVT + AU suite.
-    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                    blocking=True, **kwargs),
+    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, **kwargs),
             config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                     blocking=True, **au_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
@@ -243,7 +242,7 @@ class HWTestList(object):
     suite_list = HWTestList.DefaultListNonCanary(**default_dict)
     suite_list.extend(
         [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                 blocking=True, num=1, timeout=120*60)])
+                                 num=1, timeout=120*60)])
     return suite_list
 
   @classmethod
@@ -328,7 +327,7 @@ class HWTestList(object):
     wifi tests as a pre-cq sanity check.
     """
     default_dict = dict(pool=constants.HWTEST_WIFICELL_PRE_CQ_POOL,
-                        blocking=True, file_bugs=False,
+                        file_bugs=False,
                         priority=constants.HWTEST_DEFAULT_PRIORITY,
                         retry=False, max_retries=None, minimum_duts=1)
     default_dict.update(kwargs)
@@ -1790,19 +1789,17 @@ def GetConfig():
             hw_tests=[
                 config_lib.HWTestConfig(
                     constants.HWTEST_MOBLAB_QUICK_SUITE,
-                    blocking=True, num=1, timeout=120*60,
+                    num=1, timeout=120*60,
                     pool=constants.HWTEST_PALADIN_POOL)
             ])
       if board in _paladin_cheets_hwtest_boards:
         customizations.update(
             hw_tests=[
                 config_lib.HWTestConfig(
-                    constants.HWTEST_COMMIT_SUITE,
-                    blocking=True, timeout=120*60,
+                    constants.HWTEST_COMMIT_SUITE, timeout=120*60,
                     pool=constants.HWTEST_PALADIN_POOL),
                 config_lib.HWTestConfig(
-                    constants.HWTEST_ARC_COMMIT_SUITE,
-                    blocking=True, timeout=120*60,
+                    constants.HWTEST_ARC_COMMIT_SUITE, timeout=120*60,
                     pool=constants.HWTEST_PALADIN_POOL)
             ])
       if board in _paladin_jetstream_hwtest_boards:
@@ -2459,11 +2456,11 @@ def GetConfig():
       afdo_use=False,
       signer_tests=False,
       hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE, blocking=True,
+          config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE,
                                   num=1, timeout=120*60),
-          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, blocking=True,
+          config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                   warn_only=True, num=1),
-          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                   warn_only=True, num=1)],
   )
 
