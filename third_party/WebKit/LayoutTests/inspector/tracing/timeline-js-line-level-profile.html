@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/timeline-data.js"></script>
+<script>
+function test()
+{
+    var cpuProfile = {
+        startTime: 10,
+        endTime: 20,
+        head: {
+            functionName: "(root)",
+            hitCount: 0,
+            children: [
+                {
+                    functionName: "foo1",
+                    hitCount: 100,
+                    positionTicks: [{line:1, ticks:10}, {line:2, ticks:20}, {line:3, ticks:30}, {line:4, ticks:40}],
+                    children: []
+                },
+                {
+                    functionName: "foo2",
+                    hitCount: 200,
+                    positionTicks: [{line:100, ticks:1}, {line:102, ticks:190}],
+                    children: []
+                },
+                {
+                    functionName: "null",
+                    hitCount: 0,
+                    positionTicks: [],
+                    children: [
+                        {
+                            functionName: "bar",
+                            hitCount: 300,
+                            positionTicks: [{line:55, ticks:22}],
+                            children: []
+                        },
+                        {
+                            functionName: "baz",
+                            hitCount: 400,
+                            // no positionTicks for the node.
+                            children: []
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+
+    InspectorTest.addSniffer(WebInspector.CodeMirrorTextEditor.prototype, "setGutterDecoration", decorationAdded, true);
+    InspectorTest.showScriptSource("timeline-data.js", frameRevealed);
+
+    function decorationAdded(line, type, element)
+    {
+        InspectorTest.addResult(`${line} ${type} ${element.textContent} ${element.style.backgroundColor}`);
+    }
+
+    function setUrls(url, node)
+    {
+        node.url = url;
+        node.children.forEach(setUrls.bind(null, url));
+    }
+
+    function frameRevealed(frame)
+    {
+        var url = frame.uiSourceCode().url();
+        InspectorTest.addResult(InspectorTest.formatters.formatAsURL(url));
+        setUrls(url, cpuProfile.head);
+        var lineProfile = new WebInspector.TimelineModel.LineLevelProfile();
+        lineProfile.appendCPUProfile(new WebInspector.CPUProfileDataModel(cpuProfile));
+        WebInspector.panels.timeline._setLineLevelCPUProfile(lineProfile);
+        setTimeout(() => InspectorTest.completeTest(), 0);
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+Tests that a line-level CPU profile is shown in the text editor.
+</body>
+</html>
