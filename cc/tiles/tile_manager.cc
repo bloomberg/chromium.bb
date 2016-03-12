@@ -44,7 +44,7 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
 class RasterTaskImpl : public RasterTask {
  public:
   RasterTaskImpl(const Resource* resource,
-                 DisplayListRasterSource* raster_source,
+                 scoped_refptr<DisplayListRasterSource> raster_source,
                  const gfx::Rect& content_rect,
                  const gfx::Rect& invalid_content_rect,
                  float contents_scale,
@@ -60,7 +60,7 @@ class RasterTaskImpl : public RasterTask {
                  ImageDecodeTask::Vector* dependencies)
       : RasterTask(dependencies),
         resource_(resource),
-        raster_source_(raster_source),
+        raster_source_(std::move(raster_source)),
         content_rect_(content_rect),
         invalid_content_rect_(invalid_content_rect),
         contents_scale_(contents_scale),
@@ -82,7 +82,17 @@ class RasterTaskImpl : public RasterTask {
     DCHECK(raster_source_.get());
     DCHECK(raster_buffer_);
 
-    Raster(raster_source_.get());
+    frame_viewer_instrumentation::ScopedRasterTask raster_task(
+        tile_, tile_resolution_, source_frame_number_, layer_id_);
+    ScopedRasterTaskTimer timer;
+    timer.SetArea(content_rect_.size().GetArea());
+
+    DCHECK(raster_source_);
+
+    bool include_images = tile_resolution_ != LOW_RESOLUTION;
+    raster_buffer_->Playback(raster_source_.get(), content_rect_,
+                             invalid_content_rect_, new_content_id_,
+                             contents_scale_, include_images);
   }
 
   // Overridden from TileTask:
@@ -100,20 +110,6 @@ class RasterTaskImpl : public RasterTask {
   ~RasterTaskImpl() override { DCHECK(!raster_buffer_); }
 
  private:
-  void Raster(const DisplayListRasterSource* raster_source) {
-    frame_viewer_instrumentation::ScopedRasterTask raster_task(
-        tile_, tile_resolution_, source_frame_number_, layer_id_);
-    ScopedRasterTaskTimer timer;
-    timer.SetArea(content_rect_.size().GetArea());
-
-    DCHECK(raster_source);
-
-    bool include_images = tile_resolution_ != LOW_RESOLUTION;
-    raster_buffer_->Playback(raster_source_.get(), content_rect_,
-                             invalid_content_rect_, new_content_id_,
-                             contents_scale_, include_images);
-  }
-
   const Resource* resource_;
   scoped_refptr<DisplayListRasterSource> raster_source_;
   gfx::Rect content_rect_;

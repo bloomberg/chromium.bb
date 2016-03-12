@@ -211,7 +211,7 @@ void PictureLayerTiling::SetRasterSourceAndResize(
     scoped_refptr<DisplayListRasterSource> raster_source) {
   DCHECK(!raster_source->IsSolidColor());
   gfx::Size old_layer_bounds = raster_source_->GetSize();
-  raster_source_.swap(raster_source);
+  raster_source_ = std::move(raster_source);
   gfx::Size new_layer_bounds = raster_source_->GetSize();
   gfx::Size content_bounds =
       gfx::ScaleToCeiledSize(new_layer_bounds, contents_scale_);

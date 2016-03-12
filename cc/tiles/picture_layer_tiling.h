@@ -122,8 +122,8 @@ class CC_EXPORT PictureLayerTiling {
     can_require_tiles_for_activation_ = can_require_tiles;
   }
 
-  DisplayListRasterSource* raster_source() const {
-    return raster_source_.get();
+  const scoped_refptr<DisplayListRasterSource>& raster_source() const {
+    return raster_source_;
   }
   gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
