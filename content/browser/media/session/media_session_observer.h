@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_OBSERVER_H_
-#define CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_OBSERVER_H_
+#ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_OBSERVER_H_
+#define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_OBSERVER_H_
 
 namespace content {
 
@@ -26,4 +26,4 @@ class MediaSessionObserver {
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_OBSERVER_H_
+#endif // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_OBSERVER_H_

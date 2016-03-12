@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_CONTROLLER_H_
-#define CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_CONTROLLER_H_
+#define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_CONTROLLER_H_
 
+#include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "content/browser/media/android/media_session_observer.h"
+#include "content/browser/media/session/media_session_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -18,7 +19,8 @@ class MediaWebContentsObserver;
 // Helper class for controlling a single player's MediaSession instance.  Sends
 // browser side MediaSession commands back to a player hosted in the renderer
 // process.
-class CONTENT_EXPORT MediaSessionController : public MediaSessionObserver {
+class CONTENT_EXPORT MediaSessionController :
+    NON_EXPORTED_BASE(public MediaSessionObserver) {
  public:
   MediaSessionController(const WebContentsObserver::MediaPlayerId& id,
                          MediaWebContentsObserver* media_web_contents_observer);
@@ -66,4 +68,4 @@ class CONTENT_EXPORT MediaSessionController : public MediaSessionObserver {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_CONTROLLER_H_

@@ -26,7 +26,8 @@ static base::LazyInstance<AudibleMetrics>::Leaky g_audible_metrics =
 }  // anonymous namespace
 
 MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents),
+      session_controllers_manager_(this) {}
 
 MediaWebContentsObserver::~MediaWebContentsObserver() {}
 
@@ -37,6 +38,7 @@ void MediaWebContentsObserver::WebContentsDestroyed() {
 void MediaWebContentsObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   ClearPowerSaveBlockers(render_frame_host);
+  session_controllers_manager_.RenderFrameDeleted(render_frame_host);
 }
 
 void MediaWebContentsObserver::MaybeUpdateAudibleState() {
@@ -93,19 +95,26 @@ void MediaWebContentsObserver::OnMediaDestroyed(
   OnMediaPaused(render_frame_host, delegate_id, true);
 }
 
-
 void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
                                              int delegate_id,
                                              bool reached_end_of_stream) {
-  const MediaPlayerId id(render_frame_host, delegate_id);
-  const bool removed_audio = RemoveMediaPlayerEntry(id, &active_audio_players_);
-  const bool removed_video = RemoveMediaPlayerEntry(id, &active_video_players_);
+  const MediaPlayerId player_id(render_frame_host, delegate_id);
+  const bool removed_audio =
+      RemoveMediaPlayerEntry(player_id, &active_audio_players_);
+  const bool removed_video =
+      RemoveMediaPlayerEntry(player_id, &active_video_players_);
   MaybeReleasePowerSaveBlockers();
 
   if (removed_audio || removed_video) {
     // Notify observers the player has been "paused".
-    static_cast<WebContentsImpl*>(web_contents())->MediaStoppedPlaying(id);
+    static_cast<WebContentsImpl*>(web_contents())
+        ->MediaStoppedPlaying(player_id);
   }
+
+  if (reached_end_of_stream)
+    session_controllers_manager_.OnEnd(player_id);
+  else
+    session_controllers_manager_.OnPause(player_id);
 }
 
 void MediaWebContentsObserver::OnMediaPlaying(
@@ -141,6 +150,11 @@ void MediaWebContentsObserver::OnMediaPlaying(
         !static_cast<WebContentsImpl*>(web_contents())->IsHidden()) {
       CreateVideoPowerSaveBlocker();
     }
+  }
+
+  if (!session_controllers_manager_.RequestPlay(
+      id, has_audio, is_remote, duration)) {
+    return;
   }
 
   // Notify observers of the new player.

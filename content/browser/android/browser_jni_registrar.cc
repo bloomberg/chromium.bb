@@ -29,7 +29,7 @@
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_android.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
-#include "content/browser/media/android/media_session.h"
+#include "content/browser/media/session/media_session_delegate_android.h"
 #include "content/browser/mojo/service_registrar_android.h"
 #include "content/browser/mojo/service_registry_android.h"
 #include "content/browser/power_save_blocker_android.h"
@@ -50,7 +50,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"CoreImpl", mojo::android::RegisterCoreImpl},
     {"MediaResourceGetterImpl",
      content::MediaResourceGetterImpl::RegisterMediaResourceGetter},
-    {"MediaSession", content::MediaSession::RegisterMediaSession},
+    {"MediaSessionDelegate", content::MediaSessionDelegateAndroid::Register},
     {"AndroidLocationApiAdapter",
      content::AndroidLocationApiAdapter::RegisterGeolocationService},
     {"BackgroundSyncNetworkObserverAndroid",

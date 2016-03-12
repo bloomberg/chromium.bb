@@ -356,6 +356,7 @@ source_set("browser") {
       "geolocation/network_location_provider.h",
       "geolocation/network_location_request.cc",
       "geolocation/network_location_request.h",
+      "media/session/media_session_delegate_default.cc",
       "power_usage_monitor_impl.cc",
       "power_usage_monitor_impl.h",
       "renderer_host/begin_frame_observer_proxy.cc",

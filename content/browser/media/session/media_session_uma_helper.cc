@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/media_session_uma_helper.h"
+#include "content/browser/media/session/media_session_uma_helper.h"
 
 #include <utility>
 

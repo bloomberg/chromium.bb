@@ -697,7 +697,6 @@ class WebContents : public PageNavigator,
   // as soon as they are ready.
   virtual void ResumeLoadingCreatedWebContents() = 0;
 
-#if defined(OS_ANDROID)
   // Requests to resume the current media session.
   virtual void ResumeMediaSession() = 0;
   // Requests to suspend the current media session.
@@ -705,6 +704,7 @@ class WebContents : public PageNavigator,
   // Requests to stop the current media session.
   virtual void StopMediaSession() = 0;
 
+#if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() = 0;

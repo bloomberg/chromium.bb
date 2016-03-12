@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/media_session_controller.h"
+#include "content/browser/media/session/media_session_controller.h"
 
-#include "content/browser/media/android/media_session.h"
 #include "content/browser/media/media_web_contents_observer.h"
+#include "content/browser/media/session/media_session.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"

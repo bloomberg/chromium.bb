@@ -495,8 +495,10 @@ test("content_browsertests") {
             content_tests_gypi_values.content_browsertests_android_sources,
             ".",
             "//content")
-    sources -=
-        [ "../browser/battery_status/battery_monitor_impl_browsertest.cc" ]
+    sources -= [
+      "../browser/battery_status/battery_monitor_impl_browsertest.cc",
+      "../browser/media/session/media_session_delegate_default_browsertest.cc",
+    ]
     deps += [
       ":content_browsertests_java",
       ":content_browsertests_manifest",

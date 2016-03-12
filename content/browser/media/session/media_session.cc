@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/media_session.h"
+#include "content/browser/media/session/media_session.h"
 
-#include "base/android/context_utils.h"
-#include "base/android/jni_android.h"
-#include "content/browser/media/android/media_session_observer.h"
+#include "content/browser/media/session/media_session_delegate.h"
+#include "content/browser/media/session/media_session_observer.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "jni/MediaSession_jni.h"
-#include "media/base/android/media_player_android.h"
 
 namespace content {
+
+namespace {
+
+const double kDefaultVolumeMultiplier = 1.0;
+
+}  // anonymous namespace
 
 using MediaSessionSuspendedSource =
     MediaSessionUmaHelper::MediaSessionSuspendedSource;
@@ -37,11 +40,6 @@ size_t MediaSession::PlayerIdentifier::Hash::operator()(
       player_identifier.observer);
   hash += BASE_HASH_NAMESPACE::hash<int>()(player_identifier.player_id);
   return hash;
-}
-
-// static
-bool content::MediaSession::RegisterMediaSession(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 // static
@@ -115,29 +113,7 @@ void MediaSession::RemovePlayers(MediaSessionObserver* observer) {
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSession::OnSuspend(JNIEnv* env,
-                             const JavaParamRef<jobject>& obj,
-                             jboolean temporary) {
-  // TODO(mlamouri): this check makes it so that if a MediaSession is paused and
-  // then loses audio focus, it will still stay in the Suspended state.
-  // See https://crbug.com/539998
-  if (audio_focus_state_ != State::ACTIVE)
-    return;
-
-  OnSuspendInternal(SuspendType::SYSTEM,
-                    temporary ? State::SUSPENDED : State::INACTIVE);
-
-}
-
-void MediaSession::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  if (audio_focus_state_ != State::SUSPENDED)
-    return;
-
-  OnResumeInternal(SuspendType::SYSTEM);
-}
-
-void MediaSession::RecordSessionDuck(JNIEnv* env,
-                                     const JavaParamRef<jobject>& obj) {
+void MediaSession::RecordSessionDuck() {
   uma_helper_.RecordSessionSuspended(
       MediaSessionSuspendedSource::SystemTransientDuck);
 }
@@ -162,42 +138,64 @@ void MediaSession::OnPlayerPaused(MediaSessionObserver* observer,
   DCHECK(!IsSuspended());
   OnSuspendInternal(SuspendType::CONTENT, State::SUSPENDED);
 }
-void MediaSession::OnSetVolumeMultiplier(JNIEnv *env, jobject obj,
-                                         jdouble volume_multiplier) {
-  OnSetVolumeMultiplierInternal(volume_multiplier);
+
+void MediaSession::Resume(SuspendType type) {
+  DCHECK(IsReallySuspended());
+
+  // When the resume requests comes from another source than system, audio focus
+  // must be requested.
+  if (type != SuspendType::SYSTEM) {
+    // Request audio focus again in case we lost it because another app started
+    // playing while the playback was paused.
+    State audio_focus_state = RequestSystemAudioFocus(audio_focus_type_)
+                                  ? State::ACTIVE
+                                  : State::INACTIVE;
+    SetAudioFocusState(audio_focus_state);
+
+    if (audio_focus_state_ != State::ACTIVE)
+      return;
+  }
+
+  OnResumeInternal(type);
 }
 
-void MediaSession::Resume() {
-  DCHECK(IsSuspended());
-
-  // Request audio focus again in case we lost it because another app started
-  // playing while the playback was paused.
-  State audio_focus_state = RequestSystemAudioFocus(audio_focus_type_)
-                                ? State::ACTIVE
-                                : State::INACTIVE;
-  SetAudioFocusState(audio_focus_state);
-
-  if (audio_focus_state_ != State::ACTIVE)
-    return;
-
-  OnResumeInternal(SuspendType::UI);
-}
-
-void MediaSession::Suspend() {
+void MediaSession::Suspend(SuspendType type) {
   DCHECK(!IsSuspended());
 
-  OnSuspendInternal(SuspendType::UI, State::SUSPENDED);
+  OnSuspendInternal(type, State::SUSPENDED);
 }
 
-void MediaSession::Stop() {
+void MediaSession::Stop(SuspendType type) {
   DCHECK(audio_focus_state_ != State::INACTIVE);
 
+  DCHECK(type != SuspendType::CONTENT);
+
+  // TODO(mlamouri): merge the logic between UI and SYSTEM.
+  if (type == SuspendType::SYSTEM) {
+    OnSuspendInternal(type, State::INACTIVE);
+    return;
+  }
+
   if (audio_focus_state_ != State::SUSPENDED)
-    OnSuspendInternal(SuspendType::UI, State::SUSPENDED);
+    OnSuspendInternal(type, State::SUSPENDED);
 
   DCHECK(audio_focus_state_ == State::SUSPENDED);
   players_.clear();
   AbandonSystemAudioFocusIfNeeded();
+}
+
+void MediaSession::SetVolumeMultiplier(double volume_multiplier) {
+  volume_multiplier_ = volume_multiplier;
+  for (const auto& it : players_)
+    it.observer->OnSetVolumeMultiplier(it.player_id, volume_multiplier_);
+}
+
+bool MediaSession::IsActive() const {
+  return audio_focus_state_ == State::ACTIVE;
+}
+
+bool MediaSession::IsReallySuspended() const {
+  return audio_focus_state_ == State::SUSPENDED;
 }
 
 bool MediaSession::IsSuspended() const {
@@ -211,8 +209,9 @@ bool MediaSession::IsControllable() const {
          audio_focus_type_ == Type::Content;
 }
 
-void MediaSession::ResetJavaRefForTest() {
-  j_media_session_.Reset();
+void MediaSession::SetDelegateForTests(
+    scoped_ptr<MediaSessionDelegate> delegate) {
+  delegate_ = std::move(delegate);
 }
 
 bool MediaSession::IsActiveForTest() const {
@@ -236,6 +235,9 @@ void MediaSession::OnSuspendInternal(SuspendType type, State new_state) {
   DCHECK(new_state == State::SUSPENDED || new_state == State::INACTIVE);
   // UI suspend cannot use State::INACTIVE.
   DCHECK(type == SuspendType::SYSTEM || new_state == State::SUSPENDED);
+
+  if (audio_focus_state_ != State::ACTIVE)
+    return;
 
   switch (type) {
     case SuspendType::UI:
@@ -287,37 +289,19 @@ void MediaSession::OnResumeInternal(SuspendType type) {
   UpdateWebContents();
 }
 
-void MediaSession::OnSetVolumeMultiplierInternal(double volume_multiplier) {
-  volume_multiplier_ = volume_multiplier;
-  for (const auto& it : players_)
-    it.observer->OnSetVolumeMultiplier(it.player_id, volume_multiplier_);
-}
-
 MediaSession::MediaSession(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audio_focus_state_(State::INACTIVE),
       audio_focus_type_(Type::Transient),
-      volume_multiplier_(media::MediaPlayerAndroid::kDefaultVolumeMultiplier) {
+      volume_multiplier_(kDefaultVolumeMultiplier) {
 }
 
 void MediaSession::Initialize() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(env);
-  j_media_session_.Reset(Java_MediaSession_createMediaSession(
-      env,
-      base::android::GetApplicationContext(),
-      reinterpret_cast<intptr_t>(this)));
+  delegate_ = MediaSessionDelegate::Create(this);
 }
 
 bool MediaSession::RequestSystemAudioFocus(Type type) {
-  // During tests, j_media_session_ might be null.
-  if (j_media_session_.is_null())
-    return true;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(env);
-  bool result = Java_MediaSession_requestAudioFocus(env, j_media_session_.obj(),
-                                                    type == Type::Transient);
+  bool result = delegate_->RequestAudioFocus(type);
   uma_helper_.RecordRequestAudioFocusResult(result);
   return result;
 }
@@ -326,12 +310,7 @@ void MediaSession::AbandonSystemAudioFocusIfNeeded() {
   if (audio_focus_state_ == State::INACTIVE || !players_.empty())
     return;
 
-  // During tests, j_media_session_ might be null.
-  if (!j_media_session_.is_null()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    DCHECK(env);
-    Java_MediaSession_abandonAudioFocus(env, j_media_session_.obj());
-  }
+  delegate_->AbandonAudioFocus();
 
   SetAudioFocusState(State::INACTIVE);
   UpdateWebContents();

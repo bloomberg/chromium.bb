@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/tuple.h"
-#include "content/browser/media/android/media_session.h"
-#include "content/browser/media/android/media_session_controller.h"
-#include "content/browser/media/android/media_web_contents_observer_android.h"
+#include "content/browser/media/media_web_contents_observer.h"
+#include "content/browser/media/session/media_session.h"
+#include "content/browser/media/session/media_session_controller.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -18,7 +18,6 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     id_ = WebContentsObserver::MediaPlayerId(contents()->GetMainFrame(), 0);
-    observer_ = MediaWebContentsObserverAndroid::FromWebContents(contents());
     controller_ = CreateController();
   }
 
@@ -31,8 +30,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
 
  protected:
   scoped_ptr<MediaSessionController> CreateController() {
-    return scoped_ptr<MediaSessionController>(
-        new MediaSessionController(id_, observer_));
+    return scoped_ptr<MediaSessionController>(new MediaSessionController(
+        id_, contents()->media_web_contents_observer()));
   }
 
   MediaSession* media_session() { return MediaSession::Get(contents()); }
@@ -99,7 +98,6 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
   }
 
   WebContentsObserver::MediaPlayerId id_;
-  MediaWebContentsObserverAndroid* observer_;
   scoped_ptr<MediaSessionController> controller_;
 };
 

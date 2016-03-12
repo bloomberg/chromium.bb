@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/android/media_session.h"
+#include "content/browser/media/session/media_session.h"
 
 #include <stddef.h>
 
@@ -13,7 +13,8 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
-#include "content/browser/media/android/media_session_observer.h"
+#include "content/browser/media/session/media_session_delegate.h"
+#include "content/browser/media/session/mock_media_session_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/content_browser_test.h"
@@ -23,93 +24,23 @@
 using content::WebContents;
 using content::WebContentsObserver;
 using content::MediaSession;
+using content::MediaSessionDelegate;
 using content::MediaSessionObserver;
 using content::MediaSessionUmaHelper;
+using content::MockMediaSessionObserver;
 
 using ::testing::Expectation;
 
 namespace {
 
-class MockMediaSessionObserver : public MediaSessionObserver {
+class MockMediaSessionDelegate : public MediaSessionDelegate {
  public:
-  MockMediaSessionObserver()
-      : received_resume_calls_(0),
-        received_suspend_calls_(0) {
+  bool RequestAudioFocus(MediaSession::Type) override {
+    return true;
   }
 
-  ~MockMediaSessionObserver() override = default;
-
-  // Implements MediaSessionObserver.
-  void OnSuspend(int player_id) override {
-    EXPECT_GE(player_id, 0);
-    EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
-
-    ++received_suspend_calls_;
-    players_[player_id].is_playing_ = false;
+  void AbandonAudioFocus() override {
   }
-
-  void OnResume(int player_id) override {
-    EXPECT_GE(player_id, 0);
-    EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
-
-    ++received_resume_calls_;
-    players_[player_id].is_playing_ = true;
-  }
-
-  void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override {
-    EXPECT_GE(player_id, 0);
-    EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
-
-    EXPECT_GE(volume_multiplier, 0.0f);
-    EXPECT_LE(volume_multiplier, 1.0f);
-
-    players_[player_id].volume_multiplier_ = volume_multiplier;
-  }
-
-  int StartNewPlayer() {
-    players_.push_back(MockPlayer(true, 1.0f));
-    return players_.size() - 1;
-  }
-
-  bool IsPlaying(size_t player_id) {
-    EXPECT_GT(players_.size(), player_id);
-    return players_[player_id].is_playing_;
-  }
-
-  double GetVolumeMultiplier(size_t player_id) {
-    EXPECT_GT(players_.size(), player_id);
-    return players_[player_id].volume_multiplier_;
-  }
-
-  void SetPlaying(size_t player_id, bool playing) {
-    EXPECT_GT(players_.size(), player_id);
-    players_[player_id].is_playing_ = playing;
-  }
-
-  int received_suspend_calls() const {
-    return received_suspend_calls_;
-  }
-
-  int received_resume_calls() const {
-    return received_resume_calls_;
-  }
-
- private:
-  struct MockPlayer {
-   public:
-    MockPlayer(bool is_playing = true, double volume_multiplier = 1.0f)
-        : is_playing_(is_playing),
-          volume_multiplier_(volume_multiplier) {}
-    bool is_playing_;
-    double volume_multiplier_;
-  };
-
-  // Basic representation of the players. The position in the vector is the
-  // player_id. The value of the vector is the playing status and volume.
-  std::vector<MockPlayer> players_;
-
-  int received_resume_calls_;
-  int received_suspend_calls_;
 };
 
 class MockWebContentsObserver : public WebContentsObserver {
@@ -133,7 +64,8 @@ class MediaSessionBrowserTest : public content::ContentBrowserTest {
     mock_web_contents_observer_.reset(
         new MockWebContentsObserver(shell()->web_contents()));
     media_session_ = MediaSession::Get(shell()->web_contents());
-    media_session_->ResetJavaRefForTest();
+    media_session_->SetDelegateForTests(
+        scoped_ptr<MediaSessionDelegate>(new MockMediaSessionDelegate()));
     ASSERT_TRUE(media_session_);
   }
 
@@ -186,24 +118,26 @@ class MediaSessionBrowserTest : public content::ContentBrowserTest {
   bool IsSuspended() { return media_session_->IsSuspended(); }
 
   void UIResume() {
-    media_session_->Resume();
+    media_session_->Resume(MediaSession::SuspendType::UI);
   }
 
   void SystemResume() {
-    media_session_->OnResume(nullptr, nullptr);
+    media_session_->OnResumeInternal(MediaSession::SuspendType::SYSTEM);
   }
 
   void UISuspend() {
-    media_session_->Suspend();
+    media_session_->Suspend(MediaSession::SuspendType::UI);
   }
 
   void SystemSuspend(bool temporary) {
-    media_session_->OnSuspend(nullptr, nullptr, temporary);
+    media_session_->OnSuspendInternal(
+        MediaSession::SuspendType::SYSTEM,
+        temporary ? MediaSession::State::SUSPENDED
+                  : MediaSession::State::INACTIVE);
   }
 
   void SystemSetVolumeMultiplier(double volume_multiplier) {
-    media_session_->OnSetVolumeMultiplier(
-        nullptr, nullptr, volume_multiplier);
+    media_session_->SetVolumeMultiplier(volume_multiplier);
   }
 
   MockWebContentsObserver* mock_web_contents_observer() {
@@ -364,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, StopGivesAwayAudioFocus) {
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
 
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   EXPECT_FALSE(HasAudioFocus());
 }
@@ -797,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
 
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   EXPECT_FALSE(IsControllable());
   EXPECT_TRUE(IsSuspended());
@@ -1080,7 +1014,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, UMA_Suspended_Stop) {
   base::HistogramTester tester;
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   scoped_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.Suspended"));
@@ -1117,7 +1051,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
 
   clock->Advance(base::TimeDelta::FromMilliseconds(1000));
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   scoped_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
@@ -1146,7 +1080,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   UIResume();
 
   clock->Advance(base::TimeDelta::FromMilliseconds(1000));
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   scoped_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
@@ -1175,7 +1109,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   SystemResume();
 
   clock->Advance(base::TimeDelta::FromMilliseconds(1000));
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   scoped_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
@@ -1231,12 +1165,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
   clock->Advance(base::TimeDelta::FromMilliseconds(500));
   SystemSuspend(true);
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
   clock->Advance(base::TimeDelta::FromMilliseconds(5000));
   SystemResume();
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   scoped_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
@@ -1263,7 +1197,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
   clock->Advance(base::TimeDelta::FromMilliseconds(1000));
-  media_session_->Stop();
+  media_session_->Stop(MediaSession::SuspendType::UI);
 
   scoped_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));

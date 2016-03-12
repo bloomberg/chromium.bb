@@ -54,6 +54,7 @@
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/web_contents_audio_muter.h"
 #include "content/browser/media/media_web_contents_observer.h"
+#include "content/browser/media/session/media_session.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/plugin_content_origin_whitelist.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -126,7 +127,6 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/date_time_chooser_android.h"
-#include "content/browser/media/android/media_session.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #endif  // OS_ANDROID
@@ -3582,8 +3582,6 @@ void WebContentsImpl::OnUpdateFaviconURL(
                     DidUpdateFaviconURL(candidates));
 }
 
-#if defined(OS_ANDROID)
-
 void WebContentsImpl::OnMediaSessionStateChanged() {
   MediaSession* session = MediaSession::Get(this);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -3592,18 +3590,16 @@ void WebContentsImpl::OnMediaSessionStateChanged() {
 }
 
 void WebContentsImpl::ResumeMediaSession() {
-  MediaSession::Get(this)->Resume();
+  MediaSession::Get(this)->Resume(MediaSession::SuspendType::UI);
 }
 
 void WebContentsImpl::SuspendMediaSession() {
-  MediaSession::Get(this)->Suspend();
+  MediaSession::Get(this)->Suspend(MediaSession::SuspendType::UI);
 }
 
 void WebContentsImpl::StopMediaSession() {
-  MediaSession::Get(this)->Stop();
+  MediaSession::Get(this)->Stop(MediaSession::SuspendType::UI);
 }
-
-#endif  // defined(OS_ANDROID)
 
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,

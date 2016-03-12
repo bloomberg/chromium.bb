@@ -91,6 +91,13 @@ const char kWaveOutBuffers[] = "waveout-buffers";
 const char kUseCras[] = "use-cras";
 #endif
 
+#if !defined(OS_ANDROID)
+// Use a media session for each tabs in a way that two tabs can't play on top of
+// each other. This is different from the Media Session API as it is enabling a
+// default behaviour for the browser.
+const char kEnableDefaultMediaSession[] = "enable-default-media-session";
+#endif
+
 // Use fake device for Media Stream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 
