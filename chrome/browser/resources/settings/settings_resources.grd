@@ -190,9 +190,6 @@
       <structure name="IDR_SETTINGS_CERTIFICATES_CERTIFICATE_DELETE_CONFIRMATION_DIALOG_HTML"
                  file="certificate_manager_page/certificate_delete_confirmation_dialog.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_PAGE_CSS"
-                 file="clear_browsing_data_page/clear_browsing_data_page.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_PAGE_HTML"
                  file="clear_browsing_data_page/clear_browsing_data_page.html"
                  type="chrome_html" />
