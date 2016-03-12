@@ -28530,6 +28530,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time to complete a speculative certificate verification.</summary>
 </histogram>
 
+<histogram name="Net.SSLProtocolErrorCipher" enum="SSLCipherSuite">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    The cipher suite used when the corresponding operation on an SSLClientSocket
+    fails with ERR_SSL_PROTOCOL_ERROR. This histogram will be removed when
+    https://crbug.com/593963 is resolved.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSLProtocolErrorReason" enum="BoringSSLReasonCode">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    The internal, version-specific BoringSSL error reason reported when the
+    corresponding operation on an SSLClientSocket fails with
+    ERR_SSL_PROTOCOL_ERROR. This histogram will be removed when
+    https://crbug.com/593963 is resolved.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLProtocolNegotiation" enum="SSLProtocolNegotiation">
   <owner>bnc@chromium.org</owner>
   <summary>
@@ -60660,6 +60679,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Wiped out"/>
 </enum>
 
+<enum name="BoringSSLReasonCode" type="int">
+  <details>
+    See include/openssl/ssl.h at the corresponding BoringSSL revision for the
+    corresponding values.
+  </details>
+</enum>
+
 <enum name="BrokenAlternateProtocolLocation" type="int">
   <int value="0" label="HTTP_STREAM_FACTORY_IMPL_JOB"/>
   <int value="1" label="QUIC_STREAM_FACTORY"/>
@@ -89402,6 +89428,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="WithoutIndex"
       label="The Simple Cache index was not yet loaded."/>
   <affected-histogram name="SimpleCache.SyncOpenResult"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SocketOperation" separator=".">
+  <affected-histogram name="Net.SSLProtocolErrorCipher"/>
+  <affected-histogram name="Net.SSLProtocolErrorReason"/>
+  <suffix name="Connect"/>
+  <suffix name="Read"/>
+  <suffix name="Write"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SocketType">

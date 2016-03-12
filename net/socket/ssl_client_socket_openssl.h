@@ -127,6 +127,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
 
+  uint16_t GetCipherSuite();
+
   bool DoTransportIO();
   int DoHandshake();
   int DoHandshakeComplete(int result);
