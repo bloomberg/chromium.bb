@@ -194,9 +194,10 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
   }
 
   const bool isOpaque = image->isOpaque();
+  const base::TimeTicks timestamp = base::TimeTicks::Now();
   scoped_refptr<media::VideoFrame> video_frame = frame_pool_.CreateFrame(
       isOpaque ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_YV12A, size,
-      gfx::Rect(size), size, base::TimeTicks::Now() - base::TimeTicks());
+      gfx::Rect(size), size, timestamp - base::TimeTicks());
   DCHECK(video_frame);
 
   // TODO(emircan): Use https://code.google.com/p/libyuv/issues/detail?id=572
@@ -218,8 +219,7 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
       FROM_HERE,
       base::Bind(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
                      SendNewFrameOnIOThread,
-                 delegate_->GetWeakPtrForIOThread(), video_frame,
-                 base::TimeTicks::Now()));
+                 delegate_->GetWeakPtrForIOThread(), video_frame, timestamp));
 }
 
 void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
