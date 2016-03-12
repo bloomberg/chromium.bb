@@ -6,42 +6,13 @@
 
 #include <mach/mach.h>
 
+#include "base/mac/mach_port_util.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/process/process.h"
 #include "ipc/attachment_broker_messages.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/mach_port_attachment_mac.h"
-
-namespace {
-
-// Struct for receiving a complex message.
-struct MachReceiveComplexMessage {
-  mach_msg_header_t header;
-  mach_msg_body_t body;
-  mach_msg_port_descriptor_t data;
-  mach_msg_trailer_t trailer;
-};
-
-// Receives a Mach port from |port_to_listen_on|, which should have exactly one
-// queued message. Returns |MACH_PORT_NULL| on any error.
-base::mac::ScopedMachSendRight ReceiveMachPort(mach_port_t port_to_listen_on) {
-  MachReceiveComplexMessage recv_msg;
-  mach_msg_header_t* recv_hdr = &recv_msg.header;
-  recv_hdr->msgh_local_port = port_to_listen_on;
-  recv_hdr->msgh_size = sizeof(recv_msg);
-
-  kern_return_t kr =
-      mach_msg(recv_hdr, MACH_RCV_MSG | MACH_RCV_TIMEOUT, 0,
-               recv_hdr->msgh_size, port_to_listen_on, 0, MACH_PORT_NULL);
-  if (kr != KERN_SUCCESS)
-    return base::mac::ScopedMachSendRight(MACH_PORT_NULL);
-  if (recv_msg.header.msgh_id != 0)
-    return base::mac::ScopedMachSendRight(MACH_PORT_NULL);
-  return base::mac::ScopedMachSendRight(recv_msg.data.name);
-}
-
-}  // namespace
 
 namespace IPC {
 
@@ -93,7 +64,7 @@ void AttachmentBrokerUnprivilegedMac::OnMachPortHasBeenDuplicated(
 
   base::mac::ScopedMachReceiveRight message_port(wire_format.mach_port);
   base::mac::ScopedMachSendRight memory_object(
-      ReceiveMachPort(message_port.get()));
+      base::ReceiveMachPort(message_port.get()));
 
   LogError(memory_object.get() == MACH_PORT_NULL ? ERR_RECEIVE_MACH_MESSAGE
                                                  : SUCCESS);

@@ -308,6 +308,8 @@
           'mac/mach_logging.h',
           'mac/mach_port_broker.h',
           'mac/mach_port_broker.mm',
+          'mac/mach_port_util.cc',
+          'mac/mach_port_util.h',
           'mac/objc_property_releaser.h',
           'mac/objc_property_releaser.mm',
           'mac/os_crash_dumps.cc',

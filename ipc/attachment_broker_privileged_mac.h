@@ -141,17 +141,6 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
   MachPortWireFormat DuplicateMachPort(const MachPortWireFormat& wire_format,
                                        base::ProcessId source_process);
 
-  // |task_port| is the task port of another process.
-  // |port_to_insert| must be a send right in the current task's name space.
-  // Creates an intermediate Mach port in |pid| and sends |port_to_insert| as a
-  // mach_msg to the intermediate Mach port.
-  // Returns the intermediate port on success, and MACH_PORT_NULL on failure.
-  // This method takes ownership of |port_to_insert|. On success, ownership is
-  // passed to the intermediate Mach port.
-  mach_port_name_t CreateIntermediateMachPort(
-      mach_port_t task_port,
-      base::mac::ScopedMachSendRight port_to_insert);
-
   // Extracts a copy of the send right to |named_right| from |task_port|.
   // Returns MACH_PORT_NULL on error.
   base::mac::ScopedMachSendRight ExtractNamedRight(
