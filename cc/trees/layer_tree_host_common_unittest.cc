@@ -4024,7 +4024,7 @@ TEST_F(LayerTreeHostCommonTest, RootClipPropagationToClippedSurface) {
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(50, 50), unclipped_surface->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(100, 100), unclipped_desc_surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(50, 50), unclipped_desc_surface->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(10, 10), clipped_surface->visible_layer_rect());
 }
 
@@ -9422,8 +9422,8 @@ TEST_F(LayerTreeHostCommonTest,
                                false);
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(50, 50), render_surface->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(50, 50), test_layer1->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(30, 30), render_surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(30, 30), test_layer1->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(30, 30), clip_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(30, 30), test_layer2->visible_layer_rect());
 }
@@ -9518,7 +9518,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(50, 50),
             unclipped_surface->render_surface()->content_rect());
-  EXPECT_EQ(gfx::Rect(100, 100),
+  EXPECT_EQ(gfx::Rect(50, 50),
             unclipped_desc_surface->render_surface()->content_rect());
   EXPECT_EQ(gfx::Rect(50, 50),
             unclipped_desc_surface2->render_surface()->content_rect());

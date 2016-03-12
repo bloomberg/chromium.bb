@@ -187,7 +187,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       // Surfaces reset the rect used for layer clipping. At other nodes, layer
       // clipping state from ancestors must continue to get propagated.
       node.data.layer_clipping_uses_only_local_clip =
-          created_render_surface || !ancestor_clips_subtree;
+          (created_render_surface && layer->num_unclipped_descendants() == 0) ||
+          !ancestor_clips_subtree;
     } else {
       // Otherwise, we're either unclipped, or exist only in order to apply our
       // parent's clips in our space.
