@@ -128,7 +128,8 @@ class MockVideoFrameProvider : public VideoFrameProvider {
   void Pause() override;
 
   // Methods for test use
-  void QueueFrames(const std::vector<int>& timestamps_or_frame_type);
+  void QueueFrames(const std::vector<int>& timestamps_or_frame_type,
+                   bool opaque_frame = true);
   bool Started() { return started_; }
   bool Paused() { return paused_; }
 
@@ -184,7 +185,8 @@ void MockVideoFrameProvider::AddFrame(
 }
 
 void MockVideoFrameProvider::QueueFrames(
-    const std::vector<int>& timestamp_or_frame_type) {
+    const std::vector<int>& timestamp_or_frame_type,
+    bool opaque_frame) {
   for (const int token : timestamp_or_frame_type) {
     if (token < static_cast<int>(FrameType::MIN_TYPE)) {
       CHECK(false) << "Unrecognized frame type: " << token;
@@ -199,8 +201,9 @@ void MockVideoFrameProvider::QueueFrames(
     if (token >= 0) {
       gfx::Size natural_size = media::TestVideoConfig::NormalCodedSize();
       auto frame = media::VideoFrame::CreateZeroInitializedFrame(
-          media::PIXEL_FORMAT_YV12, natural_size, gfx::Rect(natural_size),
-          natural_size, base::TimeDelta::FromMilliseconds(token));
+          opaque_frame ? media::PIXEL_FORMAT_YV12 : media::PIXEL_FORMAT_YV12A,
+          natural_size, gfx::Rect(natural_size), natural_size,
+          base::TimeDelta::FromMilliseconds(token));
 
       frame->metadata()->SetTimeTicks(
           media::VideoFrameMetadata::Key::REFERENCE_TIME,
@@ -329,7 +332,7 @@ scoped_refptr<VideoFrameProvider> MockRenderFactory::GetVideoFrameProvider(
 //    WebMediaPlayerMSCompositor.
 // 7. When WebMediaPlayerMS::play gets called, evething paused in step 6 should
 //    be resumed.
-class WebMediaPlayerMSTest : public testing::Test,
+class WebMediaPlayerMSTest : public testing::TestWithParam<bool>,
                              public blink::WebMediaPlayerClient,
                              public cc::VideoFrameProvider::Client {
  public:
@@ -568,7 +571,8 @@ TEST_F(WebMediaPlayerMSTest, Playing_ErrorFrame) {
   EXPECT_CALL(*this, DoStopRendering());
 }
 
-TEST_F(WebMediaPlayerMSTest, PlayThenPause) {
+TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
+  const bool opaque_frame = GetParam();
   // In the middle of this test, WebMediaPlayerMS::pause will be called, and we
   // are going to verify that during the pause stage, a frame gets freezed, and
   // cc::VideoFrameProviderClient should also be paused.
@@ -578,7 +582,7 @@ TEST_F(WebMediaPlayerMSTest, PlayThenPause) {
   int tokens[] = {0,   33,  66,  100, 133, kTestBrake, 166, 200, 233, 266,
                   300, 333, 366, 400, 433, 466,        500, 533, 566, 600};
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
-  provider->QueueFrames(timestamps);
+  provider->QueueFrames(timestamps, opaque_frame);
 
   EXPECT_CALL(*this, DoSetWebLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
@@ -603,7 +607,8 @@ TEST_F(WebMediaPlayerMSTest, PlayThenPause) {
   EXPECT_CALL(*this, DoSetWebLayer(false));
 }
 
-TEST_F(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
+TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
+  const bool opaque_frame = GetParam();
   // Similary to PlayAndPause test above, this one focuses on testing that
   // WebMediaPlayerMS can be resumed after a period of paused status.
   MockVideoFrameProvider* provider = LoadAndGetFrameProvider(false);
@@ -613,7 +618,7 @@ TEST_F(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
                   200, 233,        266, 300, 333, 366,        400,
                   433, kTestBrake, 466, 500, 533, 566,        600};
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
-  provider->QueueFrames(timestamps);
+  provider->QueueFrames(timestamps, opaque_frame);
 
   EXPECT_CALL(*this, DoSetWebLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
@@ -648,6 +653,8 @@ TEST_F(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
   EXPECT_CALL(*this, DoSetWebLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
+
+INSTANTIATE_TEST_CASE_P(, WebMediaPlayerMSTest, ::testing::Bool());
 
 TEST_F(WebMediaPlayerMSTest, BackgroudRendering) {
   // During this test, we will switch to background rendering mode, in which

@@ -31,14 +31,11 @@ namespace content {
 
 namespace {
 
-// This function copies |frame| to a new I420 media::VideoFrame.
-scoped_refptr<media::VideoFrame> CopyFrameToI420(
+// This function copies |frame| to a new I420 or YV12A media::VideoFrame.
+scoped_refptr<media::VideoFrame> CopyFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     media::SkCanvasVideoRenderer* video_renderer) {
-  const scoped_refptr<media::VideoFrame> new_frame =
-      media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12,
-                                     frame->coded_size(), frame->visible_rect(),
-                                     frame->natural_size(), frame->timestamp());
+  scoped_refptr<media::VideoFrame> new_frame;
   const gfx::Size& size = frame->coded_size();
 
   if (frame->HasTextures()) {
@@ -47,6 +44,9 @@ scoped_refptr<media::VideoFrame> CopyFrameToI420(
            frame->format() == media::PIXEL_FORMAT_I420 ||
            frame->format() == media::PIXEL_FORMAT_UYVY ||
            frame->format() == media::PIXEL_FORMAT_NV12);
+    new_frame = media::VideoFrame::CreateFrame(
+        media::PIXEL_FORMAT_I420, frame->coded_size(), frame->visible_rect(),
+        frame->natural_size(), frame->timestamp());
     SkBitmap bitmap;
     bitmap.allocN32Pixels(frame->visible_rect().width(),
                           frame->visible_rect().height());
@@ -75,7 +75,13 @@ scoped_refptr<media::VideoFrame> CopyFrameToI420(
   } else {
     DCHECK(frame->IsMappable());
     DCHECK(frame->format() == media::PIXEL_FORMAT_YV12 ||
+           frame->format() == media::PIXEL_FORMAT_YV12A ||
            frame->format() == media::PIXEL_FORMAT_I420);
+    new_frame = media::VideoFrame::CreateFrame(
+        media::IsOpaque(frame->format()) ? media::PIXEL_FORMAT_I420
+                                         : media::PIXEL_FORMAT_YV12A,
+        frame->coded_size(), frame->visible_rect(), frame->natural_size(),
+        frame->timestamp());
     libyuv::I420Copy(frame->data(media::VideoFrame::kYPlane),
                      frame->stride(media::VideoFrame::kYPlane),
                      frame->data(media::VideoFrame::kUPlane),
@@ -89,6 +95,14 @@ scoped_refptr<media::VideoFrame> CopyFrameToI420(
                      new_frame->data(media::VideoFrame::kVPlane),
                      new_frame->stride(media::VideoFrame::kVPlane),
                      size.width(), size.height());
+    if (frame->format() == media::PIXEL_FORMAT_YV12A) {
+      libyuv::CopyPlane(frame->data(media::VideoFrame::kAPlane),
+                        frame->stride(media::VideoFrame::kAPlane),
+                        new_frame->data(media::VideoFrame::kAPlane),
+                        new_frame->stride(media::VideoFrame::kAPlane),
+                        size.width(),
+                        size.height());
+    }
   }
 
   // Transfer metadata keys.
@@ -336,7 +350,7 @@ void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy() {
   // there might be a finite number of available buffers. E.g, video that
   // originates from a video camera.
   current_frame_ =
-      CopyFrameToI420(current_frame_, player_->GetSkCanvasVideoRenderer());
+      CopyFrame(current_frame_, player_->GetSkCanvasVideoRenderer());
 }
 
 bool WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks(
