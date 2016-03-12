@@ -131,7 +131,7 @@ deps = {
    Var('chromium_git') + '/external/colorama.git' + '@' + '799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8',
 
   'src/third_party/icu':
-   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'e466f6ac8f60bb9697af4a91c6911c6fc4aec95f',
+   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '6d3b55dfa17d9a597c064eeef7ceac18c73184b7',
 
   'src/third_party/hunspell_dictionaries':
    Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + 'c106afdcec5d3de2622e19f1b3294c47bbd8bd72',
