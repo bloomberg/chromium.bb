@@ -4,10 +4,12 @@
 
 #include "courgette/disassembler.h"
 
+#include "base/logging.h"
+
 namespace courgette {
 
 Disassembler::Disassembler(const void* start, size_t length)
-  : failure_reason_("uninitialized") {
+    : failure_reason_("uninitialized") {
   start_ = reinterpret_cast<const uint8_t*>(start);
   length_ = length;
   end_ = start_ + length_;
@@ -15,13 +17,21 @@ Disassembler::Disassembler(const void* start, size_t length)
 
 Disassembler::~Disassembler() {};
 
-const uint8_t* Disassembler::OffsetToPointer(size_t offset) const {
-  assert(start_ + offset <= end_);
-  return start_ + offset;
+const uint8_t* Disassembler::FileOffsetToPointer(FileOffset file_offset) const {
+  CHECK_LE(file_offset, static_cast<FileOffset>(end_ - start_));
+  return start_ + file_offset;
+}
+
+const uint8_t* Disassembler::RVAToPointer(RVA rva) const {
+  FileOffset file_offset = RVAToFileOffset(rva);
+  if (file_offset == kNoFileOffset)
+    return nullptr;
+
+  return FileOffsetToPointer(file_offset);
 }
 
 bool Disassembler::Good() {
-  failure_reason_ = NULL;
+  failure_reason_ = nullptr;
   return true;
 }
 

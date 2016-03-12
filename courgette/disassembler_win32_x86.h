@@ -8,14 +8,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "courgette/disassembler.h"
+#include "courgette/image_utils.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_win_pe.h"
-
-#ifdef COURGETTE_HISTOGRAM_TARGETS
-#include <map>
-#endif
 
 namespace courgette {
 
@@ -25,19 +26,14 @@ class DisassemblerWin32X86 : public Disassembler {
  public:
   explicit DisassemblerWin32X86(const void* start, size_t length);
 
-  virtual ExecutableType kind() { return EXE_WIN_32_X86; }
+  // Disassembler interfaces.
+  RVA FileOffsetToRVA(FileOffset file_offset) const override;
+  FileOffset RVAToFileOffset(RVA rva) const override;
+  ExecutableType kind() const override { return EXE_WIN_32_X86; }
+  bool ParseHeader() override;
+  bool Disassemble(AssemblyProgram* target) override;
 
-  // Returns 'true' if the buffer appears to point to a Windows 32 bit
-  // executable, 'false' otherwise.  If ParseHeader() succeeds, other member
-  // functions may be called.
-  virtual bool ParseHeader();
-
-  virtual bool Disassemble(AssemblyProgram* target);
-
-  //
   // Exposed for test purposes
-  //
-
   bool has_text_section() const { return has_text_section_; }
   uint32_t size_of_code() const { return size_of_code_; }
   bool is_32bit() const { return !is_PE32_plus_; }
@@ -47,16 +43,8 @@ class DisassemblerWin32X86 : public Disassembler {
   // that are listed in the base relocation table.
   bool ParseRelocs(std::vector<RVA> *addresses);
 
-  // Returns Section containing the relative virtual address, or NULL if none.
+  // Returns Section containing the relative virtual address, or null if none.
   const Section* RVAToSection(RVA rva) const;
-
-  static const int kNoOffset = -1;
-  // Returns kNoOffset if there is no file offset corresponding to 'rva'.
-  int RVAToFileOffset(RVA rva) const;
-
-  // Returns same as FileOffsetToPointer(RVAToFileOffset(rva)) except that NULL
-  // is returned if there is no file offset corresponding to 'rva'.
-  const uint8_t* RVAToPointer(RVA rva) const;
 
   static std::string SectionName(const Section* section);
 
@@ -66,59 +54,46 @@ class DisassemblerWin32X86 : public Disassembler {
   void ParseRel32RelocsFromSections();
   void ParseRel32RelocsFromSection(const Section* section);
 
-  CheckBool ParseNonSectionFileRegion(uint32_t start_file_offset,
-                                      uint32_t end_file_offset,
+  CheckBool ParseNonSectionFileRegion(FileOffset start_file_offset,
+                                      FileOffset end_file_offset,
                                       AssemblyProgram* program)
       WARN_UNUSED_RESULT;
   CheckBool ParseFileRegion(const Section* section,
-                            uint32_t start_file_offset,
-                            uint32_t end_file_offset,
+                            FileOffset start_file_offset,
+                            FileOffset end_file_offset,
                             AssemblyProgram* program) WARN_UNUSED_RESULT;
 
 #if COURGETTE_HISTOGRAM_TARGETS
   void HistogramTargets(const char* kind, const std::map<RVA, int>& map);
 #endif
 
-  // Most addresses are represented as 32-bit RVAs.  The one address we can't
-  // do this with is the image base address.  'image_base' is valid only for
-  // 32-bit executables. 'image_base_64' is valid for 32- and 64-bit executable.
+  // Most addresses are represented as 32-bit RVAs. The one address we can't
+  // do this with is the image base address.
   uint32_t image_base() const { return static_cast<uint32_t>(image_base_); }
 
   const ImageDataDirectory& base_relocation_table() const {
     return base_relocation_table_;
   }
 
-  // Returns description of the RVA, e.g. ".text+0x1243".  For debugging only.
+  // Returns description of the RVA, e.g. ".text+0x1243". For debugging only.
   std::string DescribeRVA(RVA rva) const;
 
-  // Finds the first section at file_offset or above.  Does not return sections
+  // Finds the first section at file_offset or above. Does not return sections
   // that have no raw bytes in the file.
-  const Section* FindNextSection(uint32_t file_offset) const;
-
-  // There are 2 'coordinate systems' for reasoning about executables.
-  //   FileOffset - the the offset within a single .EXE or .DLL *file*.
-  //   RVA - relative virtual address (offset within *loaded image*)
-  // FileOffsetToRVA and RVAToFileOffset convert between these representations.
-
-  RVA FileOffsetToRVA(uint32_t offset) const;
+  const Section* FindNextSection(FileOffset file_offset) const;
 
  private:
-
   bool ReadDataDirectory(int index, ImageDataDirectory* dir);
 
-  bool incomplete_disassembly_;  // 'true' if can leave out 'uninteresting' bits
+  bool incomplete_disassembly_;  // true if can omit "uninteresting" bits.
 
   std::vector<RVA> abs32_locations_;
   std::vector<RVA> rel32_locations_;
 
   //
-  // Fields that are always valid.
+  // Information that is valid after ParseHeader() succeeds.
   //
-
-  //
-  // Information that is valid after successful ParseHeader.
-  //
-  bool is_PE32_plus_;   // PE32_plus is for 64 bit executables.
+  bool is_PE32_plus_;  // PE32_plus is for 64 bit executables.
 
   // Location and size of IMAGE_OPTIONAL_HEADER in the buffer.
   const uint8_t* optional_header_;
@@ -155,9 +130,9 @@ class DisassemblerWin32X86 : public Disassembler {
   std::map<RVA, int> rel32_target_rvas_;
 #endif
 
-
   DISALLOW_COPY_AND_ASSIGN(DisassemblerWin32X86);
 };
 
 }  // namespace courgette
+
 #endif  // COURGETTE_DISASSEMBLER_WIN32_X86_H_

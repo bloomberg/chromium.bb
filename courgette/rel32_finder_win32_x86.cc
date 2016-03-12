@@ -8,11 +8,9 @@
 
 namespace courgette {
 
-Rel32FinderWin32X86::Rel32FinderWin32X86(
-    RVA relocs_start_rva, RVA relocs_end_rva, RVA image_end_rva)
-    : relocs_start_rva_(relocs_start_rva),
-      relocs_end_rva_(relocs_end_rva),
-      image_end_rva_(image_end_rva) {
+Rel32FinderWin32X86::Rel32FinderWin32X86(RVA relocs_start_rva,
+                                         RVA relocs_end_rva)
+    : relocs_start_rva_(relocs_start_rva), relocs_end_rva_(relocs_end_rva) {
 }
 
 Rel32FinderWin32X86::~Rel32FinderWin32X86() {
@@ -28,9 +26,9 @@ void Rel32FinderWin32X86::SwapRel32TargetRVAs(std::map<RVA, int>* dest) {
 }
 #endif
 
-Rel32FinderWin32X86_Basic::Rel32FinderWin32X86_Basic(
-    RVA relocs_start_rva, RVA relocs_end_rva, RVA image_end_rva)
-    : Rel32FinderWin32X86(relocs_start_rva, relocs_end_rva, image_end_rva) {
+Rel32FinderWin32X86_Basic::Rel32FinderWin32X86_Basic(RVA relocs_start_rva,
+                                                     RVA relocs_end_rva)
+    : Rel32FinderWin32X86(relocs_start_rva, relocs_end_rva) {
 }
 
 Rel32FinderWin32X86_Basic::~Rel32FinderWin32X86_Basic() {
@@ -51,6 +49,10 @@ void Rel32FinderWin32X86_Basic::Find(const uint8_t* start_pointer,
   const uint8_t* p = start_pointer;
   while (p < end_pointer) {
     RVA current_rva = static_cast<RVA>(p - adjust_pointer_to_rva);
+
+    // Skip the base reloation table if we encounter it.
+    // Note: We're not bothering to handle the edge case where a Rel32 pointer
+    // collides with |relocs_start_rva_| by being {1, 2, 3}-bytes before it.
     if (current_rva == relocs_start_rva_) {
       if (relocs_start_rva_ < relocs_end_rva_) {
         p += relocs_end_rva_ - relocs_start_rva_;
@@ -58,13 +60,10 @@ void Rel32FinderWin32X86_Basic::Find(const uint8_t* start_pointer,
       }
     }
 
-    //while (abs32_pos != abs32_locations.end() && *abs32_pos < current_rva)
-    //  ++abs32_pos;
-
     // Heuristic discovery of rel32 locations in instruction stream: are the
     // next few bytes the start of an instruction containing a rel32
     // addressing mode?
-    const uint8_t* rel32 = NULL;
+    const uint8_t* rel32 = nullptr;
 
     if (p + 5 <= end_pointer) {
       if (*p == 0xE8 || *p == 0xE9) {  // jmp rel32 and call rel32
@@ -95,10 +94,9 @@ void Rel32FinderWin32X86_Basic::Find(const uint8_t* start_pointer,
       }
 
       RVA target_rva = rel32_rva + 4 + Read32LittleEndian(rel32);
-      // To be valid, rel32 target must be within image, and within this
-      // section.
-      if (IsValidRVA(target_rva) &&
-          start_rva <= target_rva && target_rva < end_rva) {
+      // Valid, rel32 target must be within image, and within this section.
+      // Subsumes |target_rva| != |kUnassignedRVA|.
+      if (start_rva <= target_rva && target_rva < end_rva) {
         rel32_locations_.push_back(rel32_rva);
 #if COURGETTE_HISTOGRAM_TARGETS
         ++rel32_target_rvas_[target_rva];

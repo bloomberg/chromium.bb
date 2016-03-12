@@ -14,8 +14,44 @@
 
 namespace courgette {
 
-typedef uint32_t RVA;
+// There are several ways to reason about addresses in an image:
+// - File Offset: Position relative to start of image.
+// - VA (Virtual Address): Virtual memory address of a loaded image. This is
+//   subject to relocation by the OS.
+// - RVA (Relative Virtual Address): VA relative to some base address. This is
+//   the preferred way to specify pointers in an image. Two ways to encode RVA
+//   are:
+//   - abs32: RVA value is encoded directly.
+//   - rel32: RVA is encoded as offset from an instruction address. This is
+//     commonly used for relative branch/call opcodes.
+// Courgette operates on File Offsets and RVAs only.
+
+using RVA = uint32_t;
 const RVA kUnassignedRVA = 0xFFFFFFFFU;
+const RVA kNoRVA = 0xFFFFFFFFU;
+
+using FileOffset = size_t;
+const FileOffset kNoFileOffset = UINTPTR_MAX;
+
+// An interface for {File Offset, RVA, pointer to image data} translation.
+class AddressTranslator {
+ public:
+  // Returns the RVA corresponding to |file_offset|, or kNoRVA if nonexistent.
+  virtual RVA FileOffsetToRVA(FileOffset file_offset) const = 0;
+
+  // Returns the file offset corresponding to |rva|, or kNoFileOffset if
+  // nonexistent.
+  virtual FileOffset RVAToFileOffset(RVA rva) const = 0;
+
+  // Returns the pointer to the image data for |file_offset|. Assumes that
+  // 0 <= |file_offset| <= image size. If |file_offset| == image, the resulting
+  // pointer is an end bound for iteration that should never be dereferenced.
+  virtual const uint8_t* FileOffsetToPointer(FileOffset file_offset) const = 0;
+
+  // Returns the pointer to the image data for |rva|, or null if |rva| is
+  // invalid.
+  virtual const uint8_t* RVAToPointer(RVA rva) const = 0;
+};
 
 // A Label is a symbolic reference to an address.  Unlike a conventional
 // assembly language, we always know the address.  The address will later be

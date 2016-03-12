@@ -2,16 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "courgette/disassembler_elf_32_x86.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
 #include "courgette/assembly_program.h"
 #include "courgette/base_test_unittest.h"
-#include "courgette/disassembler_elf_32_x86.h"
+#include "courgette/image_utils.h"
+
+namespace courgette {
+
+namespace {
 
 class DisassemblerElf32X86Test : public BaseTest {
  public:
-
   void TestExe(const char* file_name,
                size_t expected_abs_count,
                size_t expected_rel_count) const;
@@ -20,10 +29,11 @@ class DisassemblerElf32X86Test : public BaseTest {
 void DisassemblerElf32X86Test::TestExe(const char* file_name,
                                        size_t expected_abs_count,
                                        size_t expected_rel_count) const {
+  using TypedRVA = DisassemblerElf32::TypedRVA;
   std::string file1 = FileContents(file_name);
 
-  scoped_ptr<courgette::DisassemblerElf32X86> disassembler(
-      new courgette::DisassemblerElf32X86(file1.c_str(), file1.length()));
+  scoped_ptr<DisassemblerElf32X86> disassembler(
+      new DisassemblerElf32X86(file1.c_str(), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();
   EXPECT_TRUE(can_parse_header);
@@ -33,7 +43,7 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   // real file, since trailing debug info is not included
   EXPECT_EQ(file1.length(), disassembler->length());
 
-  const uint8_t* offset_p = disassembler->OffsetToPointer(0);
+  const uint8_t* offset_p = disassembler->FileOffsetToPointer(0);
   EXPECT_EQ(reinterpret_cast<const void*>(file1.c_str()),
             reinterpret_cast<const void*>(offset_p));
   EXPECT_EQ(0x7F, offset_p[0]);
@@ -41,46 +51,45 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   EXPECT_EQ('L', offset_p[2]);
   EXPECT_EQ('F', offset_p[3]);
 
-  courgette::AssemblyProgram* program =
-    new courgette::AssemblyProgram(courgette::EXE_ELF_32_X86);
+  scoped_ptr<AssemblyProgram> program(new AssemblyProgram(EXE_ELF_32_X86));
 
-  EXPECT_TRUE(disassembler->Disassemble(program));
+  EXPECT_TRUE(disassembler->Disassemble(program.get()));
 
-  EXPECT_EQ(disassembler->Abs32Locations().size(), expected_abs_count);
-  EXPECT_EQ(disassembler->Rel32Locations().size(), expected_rel_count);
+  const std::vector<RVA>& abs32_list = disassembler->Abs32Locations();
 
-  // Prove that none of the rel32 RVAs overlap with abs32 RVAs
-  std::set<courgette::RVA> abs(disassembler->Abs32Locations().begin(),
-                               disassembler->Abs32Locations().end());
-  std::set<courgette::DisassemblerElf32::TypedRVA*>
-    rel(disassembler->Rel32Locations().begin(),
-        disassembler->Rel32Locations().end());
-  for (std::vector<courgette::DisassemblerElf32::TypedRVA*>::iterator
-         rel32 = disassembler->Rel32Locations().begin();
-       rel32 !=  disassembler->Rel32Locations().end();
-       rel32++) {
-    EXPECT_TRUE(abs.find((*rel32)->rva()) == abs.end());
-  }
+  // Flatten the list typed rel32 to a list of rel32 RVAs.
+  std::vector<RVA> rel32_list;
+  rel32_list.reserve(disassembler->Rel32Locations().size());
+  for (TypedRVA* typed_rel32 : disassembler->Rel32Locations())
+    rel32_list.push_back(typed_rel32->rva());
 
-  for (std::vector<courgette::RVA>::iterator abs32 =
-        disassembler->Abs32Locations().begin();
-       abs32 !=  disassembler->Abs32Locations().end();
-       abs32++) {
-    bool found = false;
-    for (std::vector<courgette::DisassemblerElf32::TypedRVA*>::iterator
-           rel32 = disassembler->Rel32Locations().begin();
-         rel32 !=  disassembler->Rel32Locations().end();
-         rel32++) {
-      if (*abs32 == (*rel32)->rva()) {
-        found = true;
-        break;
-      }
+  EXPECT_EQ(expected_abs_count, abs32_list.size());
+  EXPECT_EQ(expected_rel_count, rel32_list.size());
+
+  EXPECT_TRUE(std::is_sorted(abs32_list.begin(), abs32_list.end()));
+  EXPECT_TRUE(std::is_sorted(rel32_list.begin(), rel32_list.end()));
+
+  // Verify that rel32 RVAs do not overlap with abs32 RVAs.
+  // TODO(huangs): Fix this to account for RVA's 4-byte width.
+  bool found_match = false;
+  std::vector<RVA>::const_iterator abs32_it = abs32_list.begin();
+  std::vector<RVA>::const_iterator rel32_it = rel32_list.begin();
+  while (abs32_it != abs32_list.end() && rel32_it != rel32_list.end()) {
+    if (*abs32_it < *rel32_it) {
+      ++abs32_it;
+    } else if (*abs32_it > *rel32_it) {
+      ++rel32_it;
+    } else {
+      found_match = true;
     }
-    EXPECT_TRUE(!found);
   }
-  delete program;
+  EXPECT_FALSE(found_match);
 }
+
+}  // namespace
 
 TEST_F(DisassemblerElf32X86Test, All) {
   TestExe("elf-32-1", 200, 3442);
 }
+
+}  // namespace courgette
