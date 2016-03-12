@@ -51,6 +51,7 @@
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif  // defined(OS_WIN)
 
@@ -140,6 +141,15 @@ void RecordMicroArchitectureStats() {
 void RecordStartupMetricsOnBlockingPool() {
 #if defined(OS_WIN)
   GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms();
+
+  const base::win::OSInfo& os_info = *base::win::OSInfo::GetInstance();
+  UMA_HISTOGRAM_ENUMERATION("Windows.GetVersionExVersion", os_info.version(),
+                            base::win::VERSION_WIN_LAST);
+  UMA_HISTOGRAM_ENUMERATION("Windows.Kernel32Version",
+                            os_info.Kernel32Version(),
+                            base::win::VERSION_WIN_LAST);
+  UMA_HISTOGRAM_BOOLEAN("Windows.InCompatibilityMode",
+                        os_info.version() != os_info.Kernel32Version());
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)

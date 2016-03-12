@@ -58501,6 +58501,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Windows.GetVersionExVersion" enum="WindowsVersion">
+  <owner>scottmg@chromium.org</owner>
+  <summary>
+    The Windows version (base::win::Version) as reported by GetVersionEx(). This
+    is queried shortly after startup.
+  </summary>
+</histogram>
+
+<histogram name="Windows.InCompatibilityMode" enum="BooleanCompatibilityMode">
+  <owner>scottmg@chromium.org</owner>
+  <summary>
+    A boolean used to indicate when the Windows version reported by
+    GetVersionEx() and the Windows version reported by VerQueryValue() on
+    kernel32 do not match. This is queried shortly after startup.
+  </summary>
+</histogram>
+
+<histogram name="Windows.Kernel32Version" enum="WindowsVersion">
+  <owner>scottmg@chromium.org</owner>
+  <summary>
+    The Windows version (base::win::Version) as reported by VeryQueryValue() on
+    kernel32.dll. This is queried shortly after startup.
+  </summary>
+</histogram>
+
 <histogram name="Windows.Tablet" enum="BooleanTablet">
   <owner>zturner@chromium.org</owner>
   <summary>Count of browser launches from a Windows tablet pc.</summary>
@@ -60188,6 +60213,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanCommonNameMatch" type="int">
   <int value="0" label="subjectAltName used"/>
   <int value="1" label="Common Name used"/>
+</enum>
+
+<enum name="BooleanCompatibilityMode" type="int">
+  <int value="0" label="Not in compatibility mode"/>
+  <int value="1" label="In compatibility mode"/>
 </enum>
 
 <enum name="BooleanCompleted" type="int">
@@ -84218,6 +84248,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Vista"/>
   <int value="4" label="Windows 7"/>
   <int value="5" label="Windows 8"/>
+  <int value="6" label="Windows 8.1"/>
+  <int value="7" label="Windows 10"/>
+  <int value="8" label="Windows 10 TH2"/>
 </enum>
 
 <enum name="WindowType" type="int">

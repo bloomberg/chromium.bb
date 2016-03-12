@@ -599,6 +599,7 @@
         'win/shortcut_unittest.cc',
         'win/startup_information_unittest.cc',
         'win/win_util_unittest.cc',
+        'win/windows_version_unittest.cc',
         'win/wrapped_window_proc_unittest.cc',
         '<@(trace_event_test_sources)',
       ],
