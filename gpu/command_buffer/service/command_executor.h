@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
-#define GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_COMMAND_EXECUTOR_H_
+#define GPU_COMMAND_BUFFER_SERVICE_COMMAND_EXECUTOR_H_
 
 #include <stdint.h>
 
@@ -26,8 +26,7 @@
 
 namespace gpu {
 
-class PreemptionFlag
-    : public base::RefCountedThreadSafe<PreemptionFlag> {
+class PreemptionFlag : public base::RefCountedThreadSafe<PreemptionFlag> {
  public:
   PreemptionFlag() : flag_(0) {}
 
@@ -47,15 +46,15 @@ class PreemptionFlag
 // a command buffer and forwarded to a command parser. TODO(apatrick): This
 // class should not know about the decoder. Do not add additional dependencies
 // on it.
-class GPU_EXPORT GpuScheduler
+class GPU_EXPORT CommandExecutor
     : NON_EXPORTED_BASE(public CommandBufferEngine),
-      public base::SupportsWeakPtr<GpuScheduler> {
+      public base::SupportsWeakPtr<CommandExecutor> {
  public:
-  GpuScheduler(CommandBufferServiceBase* command_buffer,
-               AsyncAPIInterface* handler,
-               gles2::GLES2Decoder* decoder);
+  CommandExecutor(CommandBufferServiceBase* command_buffer,
+                  AsyncAPIInterface* handler,
+                  gles2::GLES2Decoder* decoder);
 
-  ~GpuScheduler() override;
+  ~CommandExecutor() override;
 
   void PutChanged();
 
@@ -100,28 +99,26 @@ class GPU_EXPORT GpuScheduler
   // determine if there's more idle work do be done after this has been called.
   void PerformIdleWork();
 
-  CommandParser* parser() const {
-    return parser_.get();
-  }
+  CommandParser* parser() const { return parser_.get(); }
 
  private:
   bool IsPreempted();
 
-  // The GpuScheduler holds a weak reference to the CommandBuffer. The
-  // CommandBuffer owns the GpuScheduler and holds a strong reference to it
+  // The CommandExecutor holds a weak reference to the CommandBuffer. The
+  // CommandBuffer owns the CommandExecutor and holds a strong reference to it
   // through the ProcessCommands callback.
   CommandBufferServiceBase* command_buffer_;
 
   // The parser uses this to execute commands.
   AsyncAPIInterface* handler_;
 
-  // Does not own decoder. TODO(apatrick): The GpuScheduler shouldn't need a
+  // Does not own decoder. TODO(apatrick): The CommandExecutor shouldn't need a
   // pointer to the decoder, it is only used to initialize the CommandParser,
   // which could be an argument to the constructor, and to determine the
   // reason for context lost.
   gles2::GLES2Decoder* decoder_;
 
-  // TODO(apatrick): The GpuScheduler currently creates and owns the parser.
+  // TODO(apatrick): The CommandExecutor currently creates and owns the parser.
   // This should be an argument to the constructor.
   scoped_ptr<CommandParser> parser_;
 
@@ -136,9 +133,9 @@ class GPU_EXPORT GpuScheduler
   scoped_refptr<PreemptionFlag> preemption_flag_;
   bool was_preempted_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuScheduler);
+  DISALLOW_COPY_AND_ASSIGN(CommandExecutor);
 };
 
 }  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_SCHEDULER_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_COMMAND_EXECUTOR_H_

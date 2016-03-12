@@ -63,8 +63,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Recreate the surface without changing the size.
   virtual bool Recreate();
 
-  // Unschedule the GpuScheduler and return true to abort the processing of
-  // a GL draw call to this surface and defer it until the GpuScheduler is
+  // Unschedule the CommandExecutor and return true to abort the processing of
+  // a GL draw call to this surface and defer it until the CommandExecutor is
   // rescheduled.
   virtual bool DeferDraws();
 

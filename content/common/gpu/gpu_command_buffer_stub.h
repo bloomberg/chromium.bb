@@ -22,8 +22,8 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -111,7 +111,7 @@ class GpuCommandBufferStub
   bool HasUnprocessedCommands();
 
   gpu::gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
-  gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
+  gpu::CommandExecutor* scheduler() const { return executor_.get(); }
   GpuChannel* channel() const { return channel_; }
 
   // Unique command buffer ID for this command buffer stub.
@@ -209,7 +209,7 @@ class GpuCommandBufferStub
 
   void ReportState();
 
-  // Wrapper for GpuScheduler::PutChanged that sets the crash report URL.
+  // Wrapper for CommandExecutor::PutChanged that sets the crash report URL.
   void PutChanged();
 
   // Poll the command buffer to execute work.
@@ -256,7 +256,7 @@ class GpuCommandBufferStub
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
-  scoped_ptr<gpu::GpuScheduler> scheduler_;
+  scoped_ptr<gpu::CommandExecutor> executor_;
   scoped_ptr<gpu::SyncPointClient> sync_point_client_;
   scoped_refptr<gfx::GLSurface> surface_;
   gfx::GLSurface::Format surface_format_;

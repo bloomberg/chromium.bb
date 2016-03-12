@@ -174,11 +174,10 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!decoder_.get())
     return EGL_NO_SURFACE;
 
-  gpu_scheduler_.reset(new gpu::GpuScheduler(command_buffer.get(),
-                                             decoder_.get(),
-                                             NULL));
+  executor_.reset(
+      new gpu::CommandExecutor(command_buffer.get(), decoder_.get(), NULL));
 
-  decoder_->set_engine(gpu_scheduler_.get());
+  decoder_->set_engine(executor_.get());
   gfx::Size size(create_offscreen_width_, create_offscreen_height_);
   if (create_offscreen_) {
     gl_surface_ = gfx::GLSurface::CreateOffscreenGLSurface(size);
@@ -224,12 +223,10 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
     return EGL_NO_SURFACE;
   }
 
-  command_buffer->SetPutOffsetChangeCallback(
-      base::Bind(&gpu::GpuScheduler::PutChanged,
-                 base::Unretained(gpu_scheduler_.get())));
-  command_buffer->SetGetBufferChangeCallback(
-      base::Bind(&gpu::GpuScheduler::SetGetBuffer,
-                 base::Unretained(gpu_scheduler_.get())));
+  command_buffer->SetPutOffsetChangeCallback(base::Bind(
+      &gpu::CommandExecutor::PutChanged, base::Unretained(executor_.get())));
+  command_buffer->SetGetBufferChangeCallback(base::Bind(
+      &gpu::CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
 
   scoped_ptr<gpu::gles2::GLES2CmdHelper> cmd_helper(
       new gpu::gles2::GLES2CmdHelper(command_buffer.get()));
@@ -249,7 +246,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
 
 void Display::DestroySurface(EGLSurface surface) {
   DCHECK(IsValidSurface(surface));
-  gpu_scheduler_.reset();
+  executor_.reset();
   if (decoder_.get()) {
     decoder_->Destroy(true);
   }

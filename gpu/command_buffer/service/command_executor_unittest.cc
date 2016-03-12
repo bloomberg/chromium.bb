@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/service/command_executor.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +26,7 @@ namespace gpu {
 
 const size_t kRingBufferSize = 1024;
 
-class GpuSchedulerTest : public testing::Test {
+class CommandExecutorTest : public testing::Test {
  protected:
   static const int32_t kTransferBufferId = 123;
 
@@ -42,22 +43,21 @@ class GpuSchedulerTest : public testing::Test {
     CommandBuffer::State default_state;
     ON_CALL(*command_buffer_.get(), GetLastState())
         .WillByDefault(Return(default_state));
-    ON_CALL(*command_buffer_.get(), GetPutOffset())
-        .WillByDefault(Return(0));
+    ON_CALL(*command_buffer_.get(), GetPutOffset()).WillByDefault(Return(0));
 
     decoder_.reset(new gles2::MockGLES2Decoder());
     // Install FakeDoCommands handler so we can use individual DoCommand()
     // expectations.
-    EXPECT_CALL(*decoder_, DoCommands(_, _, _, _)).WillRepeatedly(
-        Invoke(decoder_.get(), &gles2::MockGLES2Decoder::FakeDoCommands));
+    EXPECT_CALL(*decoder_, DoCommands(_, _, _, _))
+        .WillRepeatedly(
+            Invoke(decoder_.get(), &gles2::MockGLES2Decoder::FakeDoCommands));
 
-    scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
-                                           decoder_.get(),
-                                           decoder_.get()));
+    executor_.reset(new gpu::CommandExecutor(command_buffer_.get(),
+                                             decoder_.get(), decoder_.get()));
     EXPECT_CALL(*command_buffer_, GetTransferBuffer(kTransferBufferId))
-       .WillOnce(Return(shared_memory_buffer_));
+        .WillOnce(Return(shared_memory_buffer_));
     EXPECT_CALL(*command_buffer_, SetGetOffset(0));
-    EXPECT_TRUE(scheduler_->SetGetBuffer(kTransferBufferId));
+    EXPECT_TRUE(executor_->SetGetBuffer(kTransferBufferId));
   }
 
   void TearDown() override {
@@ -66,49 +66,45 @@ class GpuSchedulerTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  error::Error GetError() {
-    return command_buffer_->GetLastState().error;
-  }
+  error::Error GetError() { return command_buffer_->GetLastState().error; }
 
   scoped_ptr<MockCommandBuffer> command_buffer_;
   scoped_refptr<Buffer> shared_memory_buffer_;
   int32_t* buffer_;
   scoped_ptr<gles2::MockGLES2Decoder> decoder_;
-  scoped_ptr<GpuScheduler> scheduler_;
+  scoped_ptr<CommandExecutor> executor_;
   base::MessageLoop message_loop_;
 };
 
-TEST_F(GpuSchedulerTest, SchedulerDoesNothingIfRingBufferIsEmpty) {
+TEST_F(CommandExecutorTest, ExecutorDoesNothingIfRingBufferIsEmpty) {
   CommandBuffer::State state;
 
-  EXPECT_CALL(*command_buffer_, GetLastState())
-    .WillRepeatedly(Return(state));
+  EXPECT_CALL(*command_buffer_, GetLastState()).WillRepeatedly(Return(state));
 
-  EXPECT_CALL(*command_buffer_, SetParseError(_))
-    .Times(0);
+  EXPECT_CALL(*command_buffer_, SetParseError(_)).Times(0);
 
-  scheduler_->PutChanged();
+  executor_->PutChanged();
 }
 
-TEST_F(GpuSchedulerTest, GetSetBuffer) {
+TEST_F(CommandExecutorTest, GetSetBuffer) {
   CommandBuffer::State state;
 
   // Set the get offset to something not 0.
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
-  scheduler_->SetGetOffset(2);
-  EXPECT_EQ(2, scheduler_->GetGetOffset());
+  executor_->SetGetOffset(2);
+  EXPECT_EQ(2, executor_->GetGetOffset());
 
   // Set the buffer.
   EXPECT_CALL(*command_buffer_, GetTransferBuffer(kTransferBufferId))
-     .WillOnce(Return(shared_memory_buffer_));
+      .WillOnce(Return(shared_memory_buffer_));
   EXPECT_CALL(*command_buffer_, SetGetOffset(0));
-  EXPECT_TRUE(scheduler_->SetGetBuffer(kTransferBufferId));
+  EXPECT_TRUE(executor_->SetGetBuffer(kTransferBufferId));
 
   // Check the get offset was reset.
-  EXPECT_EQ(0, scheduler_->GetGetOffset());
+  EXPECT_EQ(0, executor_->GetGetOffset());
 }
 
-TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
+TEST_F(CommandExecutorTest, ProcessesOneCommand) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
@@ -116,22 +112,19 @@ TEST_F(GpuSchedulerTest, ProcessesOneCommand) {
 
   CommandBuffer::State state;
 
-  EXPECT_CALL(*command_buffer_, GetLastState())
-    .WillRepeatedly(Return(state));
-  EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillRepeatedly(Return(2));
+  EXPECT_CALL(*command_buffer_, GetLastState()).WillRepeatedly(Return(state));
+  EXPECT_CALL(*command_buffer_, GetPutOffset()).WillRepeatedly(Return(2));
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
   EXPECT_CALL(*decoder_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(error::kNoError));
+      .WillOnce(Return(error::kNoError));
 
-  EXPECT_CALL(*command_buffer_, SetParseError(_))
-    .Times(0);
+  EXPECT_CALL(*command_buffer_, SetParseError(_)).Times(0);
 
-  scheduler_->PutChanged();
+  executor_->PutChanged();
 }
 
-TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
+TEST_F(CommandExecutorTest, ProcessesTwoCommands) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 2;
@@ -141,78 +134,71 @@ TEST_F(GpuSchedulerTest, ProcessesTwoCommands) {
 
   CommandBuffer::State state;
 
-  EXPECT_CALL(*command_buffer_, GetLastState())
-    .WillRepeatedly(Return(state));
-  EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillRepeatedly(Return(3));
+  EXPECT_CALL(*command_buffer_, GetLastState()).WillRepeatedly(Return(state));
+  EXPECT_CALL(*command_buffer_, GetPutOffset()).WillRepeatedly(Return(3));
 
   EXPECT_CALL(*decoder_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(error::kNoError));
+      .WillOnce(Return(error::kNoError));
 
   EXPECT_CALL(*decoder_, DoCommand(8, 0, &buffer_[2]))
-    .WillOnce(Return(error::kNoError));
+      .WillOnce(Return(error::kNoError));
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
-  scheduler_->PutChanged();
+  executor_->PutChanged();
 }
 
-TEST_F(GpuSchedulerTest, SetsErrorCodeOnCommandBuffer) {
+TEST_F(CommandExecutorTest, SetsErrorCodeOnCommandBuffer) {
   CommandHeader* header = reinterpret_cast<CommandHeader*>(&buffer_[0]);
   header[0].command = 7;
   header[0].size = 1;
 
   CommandBuffer::State state;
 
-  EXPECT_CALL(*command_buffer_, GetLastState())
-    .WillRepeatedly(Return(state));
-  EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillRepeatedly(Return(1));
+  EXPECT_CALL(*command_buffer_, GetLastState()).WillRepeatedly(Return(state));
+  EXPECT_CALL(*command_buffer_, GetPutOffset()).WillRepeatedly(Return(1));
 
   EXPECT_CALL(*decoder_, DoCommand(7, 0, &buffer_[0]))
-    .WillOnce(Return(
-        error::kUnknownCommand));
+      .WillOnce(Return(error::kUnknownCommand));
   EXPECT_CALL(*command_buffer_, SetGetOffset(1));
 
   EXPECT_CALL(*command_buffer_, SetContextLostReason(_));
   EXPECT_CALL(*decoder_, GetContextLostReason())
-    .WillOnce(Return(error::kUnknown));
-  EXPECT_CALL(*command_buffer_,
-      SetParseError(error::kUnknownCommand));
+      .WillOnce(Return(error::kUnknown));
+  EXPECT_CALL(*command_buffer_, SetParseError(error::kUnknownCommand));
 
-  scheduler_->PutChanged();
+  executor_->PutChanged();
 }
 
-TEST_F(GpuSchedulerTest, ProcessCommandsDoesNothingAfterError) {
+TEST_F(CommandExecutorTest, ProcessCommandsDoesNothingAfterError) {
   CommandBuffer::State state;
   state.error = error::kGenericError;
 
-  EXPECT_CALL(*command_buffer_, GetLastState())
-    .WillRepeatedly(Return(state));
+  EXPECT_CALL(*command_buffer_, GetLastState()).WillRepeatedly(Return(state));
 
-  scheduler_->PutChanged();
+  executor_->PutChanged();
 }
 
-TEST_F(GpuSchedulerTest, CanGetAddressOfSharedMemory) {
+TEST_F(CommandExecutorTest, CanGetAddressOfSharedMemory) {
   EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
-    .WillOnce(Return(shared_memory_buffer_));
+      .WillOnce(Return(shared_memory_buffer_));
 
-  EXPECT_EQ(&buffer_[0], scheduler_->GetSharedMemoryBuffer(7)->memory());
+  EXPECT_EQ(&buffer_[0], executor_->GetSharedMemoryBuffer(7)->memory());
 }
 
 ACTION_P2(SetPointee, address, value) {
   *address = value;
 }
 
-TEST_F(GpuSchedulerTest, CanGetSizeOfSharedMemory) {
+TEST_F(CommandExecutorTest, CanGetSizeOfSharedMemory) {
   EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
-    .WillOnce(Return(shared_memory_buffer_));
+      .WillOnce(Return(shared_memory_buffer_));
 
-  EXPECT_EQ(kRingBufferSize, scheduler_->GetSharedMemoryBuffer(7)->size());
+  EXPECT_EQ(kRingBufferSize, executor_->GetSharedMemoryBuffer(7)->size());
 }
 
-TEST_F(GpuSchedulerTest, SetTokenForwardsToCommandBuffer) {
+TEST_F(CommandExecutorTest, SetTokenForwardsToCommandBuffer) {
   EXPECT_CALL(*command_buffer_, SetToken(7));
-  scheduler_->set_token(7);
+  executor_->set_token(7);
 }
 
 }  // namespace gpu

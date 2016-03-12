@@ -25,7 +25,7 @@
 
 namespace gpu {
 class CommandBufferService;
-class GpuScheduler;
+class CommandExecutor;
 class SyncPointClient;
 class SyncPointOrderData;
 namespace gles2 {
@@ -125,7 +125,7 @@ class CommandBufferDriver : base::NonThreadSafe {
   scoped_ptr<Client> client_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
-  scoped_ptr<gpu::GpuScheduler> scheduler_;
+  scoped_ptr<gpu::CommandExecutor> executor_;
   scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
   scoped_ptr<gpu::SyncPointClient> sync_point_client_;
   scoped_refptr<gfx::GLContext> context_;

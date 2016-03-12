@@ -33,7 +33,7 @@ class GLSurface;
 namespace gpu {
 
 class CommandBufferService;
-class GpuScheduler;
+class CommandExecutor;
 class SyncPointClient;
 class SyncPointOrderData;
 class SyncPointManager;
@@ -162,7 +162,7 @@ class GLManager : private GpuControl {
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
-  scoped_ptr<GpuScheduler> gpu_scheduler_;
+  scoped_ptr<CommandExecutor> executor_;
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_ptr<gles2::GLES2CmdHelper> gles2_helper_;

@@ -320,8 +320,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 
   // Ensure that any delayed work that was created will be handled.
   if (have_context) {
-    if (scheduler_)
-      scheduler_->ProcessPendingQueries();
+    if (executor_)
+      executor_->ProcessPendingQueries();
     ScheduleDelayedWork(
         base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
   }
@@ -334,7 +334,7 @@ bool GpuCommandBufferStub::Send(IPC::Message* message) {
 }
 
 bool GpuCommandBufferStub::IsScheduled() {
-  return (!scheduler_.get() || scheduler_->scheduled());
+  return (!executor_.get() || executor_->scheduled());
 }
 
 void GpuCommandBufferStub::PollWork() {
@@ -360,7 +360,7 @@ void GpuCommandBufferStub::PerformWork() {
   if (decoder_.get() && !MakeCurrent())
     return;
 
-  if (scheduler_) {
+  if (executor_) {
     uint32_t current_unprocessed_num =
         channel()->gpu_channel_manager()->GetUnprocessedOrderNum();
     // We're idle when no messages were processed or scheduled.
@@ -378,10 +378,10 @@ void GpuCommandBufferStub::PerformWork() {
 
     if (is_idle) {
       last_idle_time_ = base::TimeTicks::Now();
-      scheduler_->PerformIdleWork();
+      executor_->PerformIdleWork();
     }
 
-    scheduler_->ProcessPendingQueries();
+    executor_->ProcessPendingQueries();
   }
 
   ScheduleDelayedWork(
@@ -398,8 +398,8 @@ bool GpuCommandBufferStub::HasUnprocessedCommands() {
 }
 
 void GpuCommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
-  bool has_more_work = scheduler_.get() && (scheduler_->HasPendingQueries() ||
-                                            scheduler_->HasMoreIdleWork());
+  bool has_more_work = executor_.get() && (executor_->HasPendingQueries() ||
+                                           executor_->HasMoreIdleWork());
   if (!has_more_work) {
     last_idle_time_ = base::TimeTicks();
     return;
@@ -426,8 +426,8 @@ void GpuCommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
   // for more work at the rate idle work is performed. This also ensures
   // that idle work is done as efficiently as possible without any
   // unnecessary delays.
-  if (scheduler_.get() && scheduler_->scheduled() &&
-      scheduler_->HasMoreIdleWork()) {
+  if (executor_.get() && executor_->scheduled() &&
+      executor_->HasMoreIdleWork()) {
     delay = base::TimeDelta();
   }
 
@@ -468,7 +468,7 @@ void GpuCommandBufferStub::Destroy() {
 
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
-  scheduler_.reset();
+  executor_.reset();
 
   sync_point_client_.reset();
 
@@ -533,17 +533,16 @@ void GpuCommandBufferStub::OnInitialize(
   DCHECK(manager);
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group_.get()));
-  scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
-                                         decoder_.get(),
-                                         decoder_.get()));
+  executor_.reset(new gpu::CommandExecutor(command_buffer_.get(),
+                                           decoder_.get(), decoder_.get()));
   sync_point_client_ = sync_point_manager_->CreateSyncPointClient(
       channel_->GetSyncPointOrderData(stream_id_),
       gpu::CommandBufferNamespace::GPU_IO, command_buffer_id_);
 
   if (preemption_flag_.get())
-    scheduler_->SetPreemptByFlag(preemption_flag_);
+    executor_->SetPreemptByFlag(preemption_flag_);
 
-  decoder_->set_engine(scheduler_.get());
+  decoder_->set_engine(executor_.get());
 
   surface_ = CreateSurface();
   if (!surface_.get()) {
@@ -636,18 +635,16 @@ void GpuCommandBufferStub::OnInitialize(
 
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GpuCommandBufferStub::PutChanged, base::Unretained(this)));
-  command_buffer_->SetGetBufferChangeCallback(
-      base::Bind(&gpu::GpuScheduler::SetGetBuffer,
-                 base::Unretained(scheduler_.get())));
+  command_buffer_->SetGetBufferChangeCallback(base::Bind(
+      &gpu::CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
   command_buffer_->SetParseErrorCallback(
       base::Bind(&GpuCommandBufferStub::OnParseError, base::Unretained(this)));
-  scheduler_->SetSchedulingChangedCallback(base::Bind(
+  executor_->SetSchedulingChangedCallback(base::Bind(
       &GpuCommandBufferStub::OnSchedulingChanged, base::Unretained(this)));
 
   if (watchdog_) {
-    scheduler_->SetCommandProcessedCallback(
-        base::Bind(&GpuCommandBufferStub::OnCommandProcessed,
-                   base::Unretained(this)));
+    executor_->SetCommandProcessedCallback(base::Bind(
+        &GpuCommandBufferStub::OnCommandProcessed, base::Unretained(this)));
   }
 
   const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
@@ -869,7 +866,7 @@ void GpuCommandBufferStub::ReportState() { command_buffer_->UpdateState(); }
 
 void GpuCommandBufferStub::PutChanged() {
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
-  scheduler_->PutChanged();
+  executor_->PutChanged();
 }
 
 void GpuCommandBufferStub::PullTextureUpdates(
@@ -944,7 +941,7 @@ bool GpuCommandBufferStub::OnWaitFenceSync(
     gpu::CommandBufferId command_buffer_id,
     uint64_t release) {
   DCHECK(!waiting_for_sync_point_);
-  DCHECK(scheduler_->scheduled());
+  DCHECK(executor_->scheduled());
 
   scoped_refptr<gpu::SyncPointClientState> release_state =
       sync_point_manager_->GetSyncPointClientState(namespace_id,
@@ -969,7 +966,7 @@ bool GpuCommandBufferStub::OnWaitFenceSync(
   if (!waiting_for_sync_point_)
     return true;
 
-  scheduler_->SetScheduled(false);
+  executor_->SetScheduled(false);
   return false;
 }
 
@@ -982,7 +979,7 @@ void GpuCommandBufferStub::OnWaitFenceSyncCompleted(
                          this);
   PullTextureUpdates(namespace_id, command_buffer_id, release);
   waiting_for_sync_point_ = false;
-  scheduler_->SetScheduled(true);
+  executor_->SetScheduled(true);
 }
 
 void GpuCommandBufferStub::OnCreateImage(

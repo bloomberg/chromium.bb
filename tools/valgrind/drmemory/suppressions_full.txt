@@ -1154,7 +1154,7 @@ name=bug_115419_1
 *!gpu::gles2::GLES2DecoderImpl::HandleReadPixels
 *!gpu::gles2::GLES2DecoderImpl::DoCommand
 *!gpu::CommandParser::ProcessCommand
-*!gpu::GpuScheduler::PutChanged
+*!gpu::CommandExecutor::PutChanged
 *!webkit::gpu::GLInProcessContext::PumpCommands
 
 UNINITIALIZED READ
@@ -1173,7 +1173,7 @@ name=bug_115419_2
 *!gpu::gles2::GLES2DecoderImpl::HandleLinkProgram*
 *!gpu::gles2::GLES2DecoderImpl::DoCommand
 *!gpu::CommandParser::ProcessCommand
-*!gpu::GpuScheduler::PutChanged
+*!gpu::CommandExecutor::PutChanged
 *!webkit::gpu::GLInProcessContext::PumpCommands
 
 UNINITIALIZED READ
@@ -1576,7 +1576,7 @@ osmesa.dll!_mesa_readpixels
 ...
 gpu.dll!gpu::gles2::GLES2DecoderImpl::DoCommand
 gpu.dll!gpu::CommandParser::ProcessCommand
-gpu.dll!gpu::GpuScheduler::PutChanged
+gpu.dll!gpu::CommandExecutor::PutChanged
 
 UNINITIALIZED READ
 name=bug_347967,bug_348357

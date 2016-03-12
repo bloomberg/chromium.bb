@@ -1889,7 +1889,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   }
 
   // Set remaining commands to process to 0 to force DoCommands to return
-  // and allow context preemption and GPU watchdog checks in GpuScheduler().
+  // and allow context preemption and GPU watchdog checks in CommandExecutor().
   void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
 
   void ProcessPendingReadPixels(bool did_finish);

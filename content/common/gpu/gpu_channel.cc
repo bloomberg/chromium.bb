@@ -36,7 +36,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/value_state.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"

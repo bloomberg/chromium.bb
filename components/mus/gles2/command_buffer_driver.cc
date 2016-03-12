@@ -15,9 +15,9 @@
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -123,12 +123,12 @@ bool CommandBufferDriver::Initialize(
   DCHECK(result);
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group.get()));
-  scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(), decoder_.get(),
-                                         decoder_.get()));
+  executor_.reset(new gpu::CommandExecutor(command_buffer_.get(),
+                                           decoder_.get(), decoder_.get()));
   sync_point_order_data_ = gpu::SyncPointOrderData::Create();
   sync_point_client_ = gpu_state_->sync_point_manager()->CreateSyncPointClient(
       sync_point_order_data_, GetNamespaceID(), command_buffer_id_);
-  decoder_->set_engine(scheduler_.get());
+  decoder_->set_engine(executor_.get());
   decoder_->SetFenceSyncReleaseCallback(base::Bind(
       &CommandBufferDriver::OnFenceSyncRelease, base::Unretained(this)));
   decoder_->SetWaitFenceSyncCallback(base::Bind(
@@ -143,9 +143,9 @@ bool CommandBufferDriver::Initialize(
     return false;
 
   command_buffer_->SetPutOffsetChangeCallback(base::Bind(
-      &gpu::GpuScheduler::PutChanged, base::Unretained(scheduler_.get())));
+      &gpu::CommandExecutor::PutChanged, base::Unretained(executor_.get())));
   command_buffer_->SetGetBufferChangeCallback(base::Bind(
-      &gpu::GpuScheduler::SetGetBuffer, base::Unretained(scheduler_.get())));
+      &gpu::CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
   command_buffer_->SetParseErrorCallback(
       base::Bind(&CommandBufferDriver::OnParseError, base::Unretained(this)));
 
@@ -279,7 +279,7 @@ void CommandBufferDriver::DestroyImage(int32_t id) {
 
 bool CommandBufferDriver::IsScheduled() const {
   DCHECK(CalledOnValidThread());
-  return scheduler_->scheduled();
+  return executor_->scheduled();
 }
 
 bool CommandBufferDriver::HasUnprocessedCommands() const {
@@ -330,7 +330,7 @@ bool CommandBufferDriver::MakeCurrent() {
 
 void CommandBufferDriver::ProcessPendingAndIdleWork() {
   DCHECK(CalledOnValidThread());
-  scheduler_->ProcessPendingQueries();
+  executor_->ProcessPendingQueries();
   ScheduleDelayedWork(
       base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
 }
@@ -338,7 +338,7 @@ void CommandBufferDriver::ProcessPendingAndIdleWork() {
 void CommandBufferDriver::ScheduleDelayedWork(base::TimeDelta delay) {
   DCHECK(CalledOnValidThread());
   const bool has_more_work =
-      scheduler_->HasPendingQueries() || scheduler_->HasMoreIdleWork();
+      executor_->HasPendingQueries() || executor_->HasMoreIdleWork();
   if (!has_more_work) {
     last_idle_time_ = base::TimeTicks();
     return;
@@ -365,7 +365,7 @@ void CommandBufferDriver::ScheduleDelayedWork(base::TimeDelta delay) {
     // so we can set delay to 0 and instead poll for more work at the rate idle
     // work is performed. This also ensures that idle work is done as
     // efficiently as possible without any unnecessary delays.
-  if (scheduler_->scheduled() && scheduler_->HasMoreIdleWork())
+  if (executor_->scheduled() && executor_->HasMoreIdleWork())
     delay = base::TimeDelta();
 
   process_delayed_work_time_ = current_time + delay;
@@ -397,7 +397,7 @@ void CommandBufferDriver::PerformWork() {
   if (!MakeCurrent())
     return;
 
-  if (scheduler_) {
+  if (executor_) {
     const uint32_t current_unprocessed_num =
         gpu_state_->driver_manager()->GetUnprocessedOrderNum();
     // We're idle when no messages were processed or scheduled.
@@ -414,9 +414,9 @@ void CommandBufferDriver::PerformWork() {
 
     if (is_idle) {
       last_idle_time_ = base::TimeTicks::Now();
-      scheduler_->PerformIdleWork();
+      executor_->PerformIdleWork();
     }
-    scheduler_->ProcessPendingQueries();
+    executor_->ProcessPendingQueries();
   }
 
   ScheduleDelayedWork(
@@ -465,13 +465,11 @@ bool CommandBufferDriver::OnWaitFenceSync(
   if (!release_state)
     return true;
 
-  scheduler_->SetScheduled(false);
-  sync_point_client_->Wait(
-      release_state.get(),
-      release,
-      base::Bind(&gpu::GpuScheduler::SetScheduled,
-                 scheduler_->AsWeakPtr(), true));
-  return scheduler_->scheduled();
+  executor_->SetScheduled(false);
+  sync_point_client_->Wait(release_state.get(), release,
+                           base::Bind(&gpu::CommandExecutor::SetScheduled,
+                                      executor_->AsWeakPtr(), true));
+  return executor_->scheduled();
 }
 
 void CommandBufferDriver::OnParseError() {

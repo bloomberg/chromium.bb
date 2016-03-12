@@ -26,10 +26,10 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -247,7 +247,7 @@ void InProcessCommandBuffer::PumpCommands() {
   if (!MakeCurrent())
     return;
 
-  gpu_scheduler_->PutChanged();
+  executor_->PutChanged();
 }
 
 bool InProcessCommandBuffer::GetBufferChanged(int32_t transfer_buffer_id) {
@@ -353,13 +353,13 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                                     service_->pending_valuebuffer_state(),
                                     bind_generates_resource)));
 
-  gpu_scheduler_.reset(
-      new GpuScheduler(command_buffer.get(), decoder_.get(), decoder_.get()));
+  executor_.reset(new CommandExecutor(command_buffer.get(), decoder_.get(),
+                                      decoder_.get()));
   command_buffer->SetGetBufferChangeCallback(base::Bind(
-      &GpuScheduler::SetGetBuffer, base::Unretained(gpu_scheduler_.get())));
+      &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
   command_buffer_ = std::move(command_buffer);
 
-  decoder_->set_engine(gpu_scheduler_.get());
+  decoder_->set_engine(executor_.get());
 
   if (!surface_.get()) {
     if (params.is_offscreen)
@@ -547,8 +547,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset,
   // If we've processed all pending commands but still have pending queries,
   // pump idle work until the query is passed.
   if (put_offset == state_after_last_flush_.get_offset &&
-      (gpu_scheduler_->HasMoreIdleWork() ||
-       gpu_scheduler_->HasPendingQueries())) {
+      (executor_->HasMoreIdleWork() || executor_->HasPendingQueries())) {
     ScheduleDelayedWorkOnGpuThread();
   }
 }
@@ -558,10 +557,9 @@ void InProcessCommandBuffer::PerformDelayedWork() {
   delayed_work_pending_ = false;
   base::AutoLock lock(command_buffer_lock_);
   if (MakeCurrent()) {
-    gpu_scheduler_->PerformIdleWork();
-    gpu_scheduler_->ProcessPendingQueries();
-    if (gpu_scheduler_->HasMoreIdleWork() ||
-        gpu_scheduler_->HasPendingQueries()) {
+    executor_->PerformIdleWork();
+    executor_->ProcessPendingQueries();
+    if (executor_->HasMoreIdleWork() || executor_->HasPendingQueries()) {
       ScheduleDelayedWorkOnGpuThread();
     }
   }

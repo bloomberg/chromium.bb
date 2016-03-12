@@ -14,9 +14,9 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -24,7 +24,7 @@
 namespace gpu {
 class CommandBufferService;
 class GpuControl;
-class GpuScheduler;
+class CommandExecutor;
 class TransferBuffer;
 class TransferBufferManagerInterface;
 
@@ -116,7 +116,7 @@ class Display : private gpu::GpuControl {
 
   scoped_refptr<gpu::TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
-  scoped_ptr<gpu::GpuScheduler> gpu_scheduler_;
+  scoped_ptr<gpu::CommandExecutor> executor_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> gl_surface_;

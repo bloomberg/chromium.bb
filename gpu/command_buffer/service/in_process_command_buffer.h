@@ -68,7 +68,7 @@ class SubscriptionRefSet;
 
 class CommandBufferServiceBase;
 class GpuMemoryBufferManager;
-class GpuScheduler;
+class CommandExecutor;
 class ImageFactory;
 class TransferBufferManagerInterface;
 
@@ -251,7 +251,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // creation):
   bool context_lost_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  scoped_ptr<GpuScheduler> gpu_scheduler_;
+  scoped_ptr<CommandExecutor> executor_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;

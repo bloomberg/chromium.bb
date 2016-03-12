@@ -24,10 +24,10 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -238,11 +238,10 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
   ASSERT_TRUE(command_buffer_->Initialize())
       << "could not create command buffer service";
 
-  gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
-                                        decoder_.get(),
-                                        decoder_.get()));
+  executor_.reset(new CommandExecutor(command_buffer_.get(), decoder_.get(),
+                                      decoder_.get()));
 
-  decoder_->set_engine(gpu_scheduler_.get());
+  decoder_->set_engine(executor_.get());
 
   surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
@@ -426,7 +425,7 @@ void GLManager::PumpCommands() {
     return;
   }
 
-  gpu_scheduler_->PutChanged();
+  executor_->PutChanged();
   ::gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   if (!context_lost_allowed_) {
     ASSERT_EQ(::gpu::error::kNoError, state.error);
@@ -439,7 +438,7 @@ void GLManager::PumpCommands() {
 }
 
 bool GLManager::GetBufferChanged(int32_t transfer_buffer_id) {
-  return gpu_scheduler_->SetGetBuffer(transfer_buffer_id);
+  return executor_->SetGetBuffer(transfer_buffer_id);
 }
 
 Capabilities GLManager::GetCapabilities() {

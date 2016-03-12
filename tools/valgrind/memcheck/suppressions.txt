@@ -2161,7 +2161,7 @@
    fun:_ZN7testing8internal14FunctionMockerIFN3gpu5error5ErrorEjjPKvEE6InvokeEjjS6_
    fun:_ZN3gpu12AsyncAPIMock9DoCommandEjjPKv
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
-   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN3gpu12CommandExecutor10PutChangedEv
 }
 {
    bug_259789b
@@ -2383,7 +2383,7 @@
    ...
    fun:*gpu*gles*GLES2DecoderImpl*DoCommand*
    fun:*gpu*CommandParser*ProcessCommand*
-   fun:*gpu*GpuScheduler*PutChanged*
+   fun:*gpu*CommandExecutor*PutChanged*
 }
 {
    bug_348863

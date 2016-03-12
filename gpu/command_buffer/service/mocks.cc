@@ -4,7 +4,7 @@
 
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/mocks.h"
 
 using testing::Invoke;

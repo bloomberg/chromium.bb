@@ -241,7 +241,7 @@ class CONTENT_EXPORT GpuChannel
   scoped_refptr<gpu::PreemptionFlag> preempting_flag_;
 
   // If non-NULL, all stubs on this channel should stop processing GL
-  // commands (via their GpuScheduler) when preempted_flag_->IsSet()
+  // commands (via their CommandExecutor) when preempted_flag_->IsSet()
   scoped_refptr<gpu::PreemptionFlag> preempted_flag_;
 
   // The id of the client who is on the other side of the channel.

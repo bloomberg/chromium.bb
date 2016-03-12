@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/command_executor.h"
 
 #include <stdint.h>
 
@@ -21,21 +21,20 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-GpuScheduler::GpuScheduler(CommandBufferServiceBase* command_buffer,
-                           AsyncAPIInterface* handler,
-                           gles2::GLES2Decoder* decoder)
+CommandExecutor::CommandExecutor(CommandBufferServiceBase* command_buffer,
+                                 AsyncAPIInterface* handler,
+                                 gles2::GLES2Decoder* decoder)
     : command_buffer_(command_buffer),
       handler_(handler),
       decoder_(decoder),
       scheduled_(true),
       was_preempted_(false) {}
 
-GpuScheduler::~GpuScheduler() {}
+CommandExecutor::~CommandExecutor() {}
 
-void GpuScheduler::PutChanged() {
-  TRACE_EVENT1(
-     "gpu", "GpuScheduler:PutChanged",
-     "decoder", decoder_ ? decoder_->GetLogger()->GetLogPrefix() : "None");
+void CommandExecutor::PutChanged() {
+  TRACE_EVENT1("gpu", "CommandExecutor:PutChanged", "decoder",
+               decoder_ ? decoder_->GetLogger()->GetLogPrefix() : "None");
 
   CommandBuffer::State state = command_buffer_->GetLastState();
 
@@ -94,8 +93,8 @@ void GpuScheduler::PutChanged() {
   }
 }
 
-void GpuScheduler::SetScheduled(bool scheduled) {
-  TRACE_EVENT2("gpu", "GpuScheduler:SetScheduled", "this", this, "scheduled",
+void CommandExecutor::SetScheduled(bool scheduled) {
+  TRACE_EVENT2("gpu", "CommandExecutor:SetScheduled", "this", this, "scheduled",
                scheduled);
   if (scheduled_ == scheduled)
     return;
@@ -104,30 +103,30 @@ void GpuScheduler::SetScheduled(bool scheduled) {
     scheduling_changed_callback_.Run(scheduled);
 }
 
-bool GpuScheduler::HasPendingQueries() const {
+bool CommandExecutor::HasPendingQueries() const {
   return (decoder_ && decoder_->HasPendingQueries());
 }
 
-void GpuScheduler::ProcessPendingQueries() {
+void CommandExecutor::ProcessPendingQueries() {
   if (!decoder_)
     return;
   decoder_->ProcessPendingQueries(false);
 }
 
-void GpuScheduler::SetSchedulingChangedCallback(
+void CommandExecutor::SetSchedulingChangedCallback(
     const SchedulingChangedCallback& callback) {
   scheduling_changed_callback_ = callback;
 }
 
-scoped_refptr<Buffer> GpuScheduler::GetSharedMemoryBuffer(int32_t shm_id) {
+scoped_refptr<Buffer> CommandExecutor::GetSharedMemoryBuffer(int32_t shm_id) {
   return command_buffer_->GetTransferBuffer(shm_id);
 }
 
-void GpuScheduler::set_token(int32_t token) {
+void CommandExecutor::set_token(int32_t token) {
   command_buffer_->SetToken(token);
 }
 
-bool GpuScheduler::SetGetBuffer(int32_t transfer_buffer_id) {
+bool CommandExecutor::SetGetBuffer(int32_t transfer_buffer_id) {
   scoped_refptr<Buffer> ring_buffer =
       command_buffer_->GetTransferBuffer(transfer_buffer_id);
   if (!ring_buffer.get()) {
@@ -138,14 +137,14 @@ bool GpuScheduler::SetGetBuffer(int32_t transfer_buffer_id) {
     parser_.reset(new CommandParser(handler_));
   }
 
-  parser_->SetBuffer(
-      ring_buffer->memory(), ring_buffer->size(), 0, ring_buffer->size());
+  parser_->SetBuffer(ring_buffer->memory(), ring_buffer->size(), 0,
+                     ring_buffer->size());
 
   SetGetOffset(0);
   return true;
 }
 
-bool GpuScheduler::SetGetOffset(int32_t offset) {
+bool CommandExecutor::SetGetOffset(int32_t offset) {
   if (parser_->set_get(offset)) {
     command_buffer_->SetGetOffset(static_cast<int32_t>(parser_->get()));
     return true;
@@ -153,35 +152,35 @@ bool GpuScheduler::SetGetOffset(int32_t offset) {
   return false;
 }
 
-int32_t GpuScheduler::GetGetOffset() {
+int32_t CommandExecutor::GetGetOffset() {
   return parser_->get();
 }
 
-void GpuScheduler::SetCommandProcessedCallback(
+void CommandExecutor::SetCommandProcessedCallback(
     const base::Closure& callback) {
   command_processed_callback_ = callback;
 }
 
-bool GpuScheduler::IsPreempted() {
+bool CommandExecutor::IsPreempted() {
   if (!preemption_flag_.get())
     return false;
 
   if (!was_preempted_ && preemption_flag_->IsSet()) {
-    TRACE_COUNTER_ID1("gpu", "GpuScheduler::Preempted", this, 1);
+    TRACE_COUNTER_ID1("gpu", "CommandExecutor::Preempted", this, 1);
     was_preempted_ = true;
   } else if (was_preempted_ && !preemption_flag_->IsSet()) {
-    TRACE_COUNTER_ID1("gpu", "GpuScheduler::Preempted", this, 0);
+    TRACE_COUNTER_ID1("gpu", "CommandExecutor::Preempted", this, 0);
     was_preempted_ = false;
   }
 
   return preemption_flag_->IsSet();
 }
 
-bool GpuScheduler::HasMoreIdleWork() const {
+bool CommandExecutor::HasMoreIdleWork() const {
   return (decoder_ && decoder_->HasMoreIdleWork());
 }
 
-void GpuScheduler::PerformIdleWork() {
+void CommandExecutor::PerformIdleWork() {
   if (!decoder_)
     return;
   decoder_->PerformIdleWork();
