@@ -4,6 +4,8 @@
 
 component("wallpaper") {
   sources = [
+    "wallpaper_files_id.cc",
+    "wallpaper_files_id.h",
     "wallpaper_layout.h",
     "wallpaper_resizer.cc",
     "wallpaper_resizer.h",

@@ -106,11 +106,13 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
   params_ = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
-  // Gets account id and username hash while at UI thread.
-  account_id_ =
-      user_manager::UserManager::Get()->GetLoggedInUser()->GetAccountId();
-  user_id_hash_ =
-      user_manager::UserManager::Get()->GetLoggedInUser()->username_hash();
+  // Gets account id and user wallpaper files id while at UI thread.
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetLoggedInUser();
+  account_id_ = user->GetAccountId();
+  chromeos::WallpaperManager* wallpaper_manager =
+      chromeos::WallpaperManager::Get();
+  wallpaper_files_id_ = wallpaper_manager->GetFilesId(*user);
 
   if (params_->details.data) {
     StartDecode(*params_->details.data);
@@ -136,7 +138,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      wallpaper::kThumbnailWallpaperSubDir, user_id_hash_,
+      wallpaper::kThumbnailWallpaperSubDir, wallpaper_files_id_,
       params_->details.filename);
 
   sequence_token_ = BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
@@ -153,7 +155,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       account_id_ ==
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   wallpaper_manager->SetCustomWallpaper(
-      account_id_, user_id_hash_, params_->details.filename, layout,
+      account_id_, wallpaper_files_id_, params_->details.filename, layout,
       user_manager::User::CUSTOMIZED, image, update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 

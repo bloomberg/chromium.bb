@@ -47,10 +47,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "components/wallpaper/wallpaper_files_id.h"
 #include "components/wallpaper/wallpaper_layout.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -83,6 +85,9 @@ const char kNewWallpaperDateNodeName[] = "date";
 const char kNewWallpaperLayoutNodeName[] = "layout";
 const char kNewWallpaperLocationNodeName[] = "file";
 const char kNewWallpaperTypeNodeName[] = "type";
+
+// Known user keys.
+const char kWallpaperFilesId[] = "wallpaper-files-id";
 
 // These global default values are used to set customized default
 // wallpaper path in WallpaperManager::InitializeWallpaper().
@@ -122,6 +127,31 @@ int FindPublicSession(const user_manager::UserList& users) {
   }
 
   return index;
+}
+
+cryptohome::Identification GetUnhashedSourceForWallpaperFilesId(
+    const user_manager::User& user) {
+  const AccountId& account_id = user.GetAccountId();
+  const std::string& old_id = account_id.GetUserEmail();  // Migrated
+  return cryptohome::Identification::FromString(old_id);
+}
+
+wallpaper::WallpaperFilesId GetKnownUserWallpaperFilesId(
+    const user_manager::User& user) {
+  const AccountId& account_id = user.GetAccountId();
+  std::string stored_value;
+  if (user_manager::known_user::GetStringPref(account_id, kWallpaperFilesId,
+                                              &stored_value)) {
+    return wallpaper::WallpaperFilesId::FromString(stored_value);
+  }
+  return wallpaper::WallpaperFilesId::FromString(user.username_hash());
+}
+
+void SetKnownUserWallpaperFilesId(
+    const AccountId& account_id,
+    const wallpaper::WallpaperFilesId& wallpaper_files_id) {
+  user_manager::known_user::SetStringPref(account_id, kWallpaperFilesId,
+                                          wallpaper_files_id.id());
 }
 
 }  // namespace
@@ -458,7 +488,7 @@ void WallpaperManager::OnPolicyFetched(const std::string& policy,
 
 void WallpaperManager::SetCustomWallpaper(
     const AccountId& account_id,
-    const std::string& user_id_hash,
+    const wallpaper::WallpaperFilesId& wallpaper_files_id,
     const std::string& file,
     wallpaper::WallpaperLayout layout,
     user_manager::User::WallpaperType type,
@@ -475,7 +505,7 @@ void WallpaperManager::SetCustomWallpaper(
     return;
 
   base::FilePath wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kOriginalWallpaperSubDir, user_id_hash, file);
+      wallpaper::kOriginalWallpaperSubDir, wallpaper_files_id, file);
 
   // If decoded wallpaper is empty, we have probably failed to decode the file.
   // Use default wallpaper in this case.
@@ -512,12 +542,13 @@ void WallpaperManager::SetCustomWallpaper(
     // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
     blocking_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&WallpaperManager::SaveCustomWallpaper, user_id_hash,
+        base::Bind(&WallpaperManager::SaveCustomWallpaper, wallpaper_files_id,
                    base::FilePath(wallpaper_info.location),
                    wallpaper_info.layout, base::Passed(std::move(deep_copy))));
   }
 
-  std::string relative_path = base::FilePath(user_id_hash).Append(file).value();
+  std::string relative_path =
+      base::FilePath(wallpaper_files_id.id()).Append(file).value();
   // User's custom wallpaper path is determined by relative path and the
   // appropriate wallpaper resolution in GetCustomWallpaperInternal.
   WallpaperInfo info = {
@@ -804,17 +835,19 @@ void WallpaperManager::SetPolicyControlledWallpaper(
     return;
   }
 
-  if (user->username_hash().empty()) {
+  const wallpaper::WallpaperFilesId wallpaper_files_id =
+      GetKnownUserWallpaperFilesId(*user);
+  if (!wallpaper_files_id.is_valid()) {
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-        cryptohome::Identification(account_id),
+        GetUnhashedSourceForWallpaperFilesId(*user),
         base::Bind(&WallpaperManager::SetCustomWallpaperOnSanitizedUsername,
                    weak_factory_.GetWeakPtr(), account_id, user_image.image(),
                    true /* update wallpaper */));
   } else {
-    SetCustomWallpaper(
-        account_id, user->username_hash(), "policy-controlled.jpeg",
-        wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED, user_manager::User::POLICY,
-        user_image.image(), true /* update wallpaper */);
+    SetCustomWallpaper(account_id, wallpaper_files_id, "policy-controlled.jpeg",
+                       wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                       user_manager::User::POLICY, user_image.image(),
+                       true /* update wallpaper */);
   }
 }
 
@@ -823,10 +856,13 @@ void WallpaperManager::SetCustomWallpaperOnSanitizedUsername(
     const gfx::ImageSkia& image,
     bool update_wallpaper,
     bool cryptohome_success,
-    const std::string& user_id_hash) {
+    const std::string& wallpaper_files_id_str) {
   if (!cryptohome_success)
     return;
-  SetCustomWallpaper(account_id, user_id_hash, "policy-controlled.jpeg",
+  const wallpaper::WallpaperFilesId wallpaper_files_id =
+      wallpaper::WallpaperFilesId::FromString(wallpaper_files_id_str);
+  SetKnownUserWallpaperFilesId(account_id, wallpaper_files_id);
+  SetCustomWallpaper(account_id, wallpaper_files_id, "policy-controlled.jpeg",
                      wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
                      user_manager::User::POLICY, image, update_wallpaper);
 }
@@ -1099,6 +1135,11 @@ void WallpaperManager::SetDefaultWallpaperPath(
   if (need_update_screen) {
     DoSetDefaultWallpaper(EmptyAccountId(), MovableOnDestroyCallbackHolder());
   }
+}
+
+wallpaper::WallpaperFilesId WallpaperManager::GetFilesId(
+    const user_manager::User& user) const {
+  return GetKnownUserWallpaperFilesId(user);
 }
 
 }  // namespace chromeos

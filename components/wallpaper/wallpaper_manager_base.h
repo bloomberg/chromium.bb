@@ -68,7 +68,7 @@ struct WALLPAPER_EXPORT WallpaperInfo {
   ~WallpaperInfo();
 
   // Either file name of migrated wallpaper including first directory level
-  // (corresponding to user id hash) or online wallpaper URL.
+  // (corresponding to user wallpaper_files_id) or online wallpaper URL.
   std::string location;
   WallpaperLayout layout;
   user_manager::User::WallpaperType type;
@@ -118,6 +118,8 @@ WALLPAPER_EXPORT extern const char kUserWallpapers[];
 
 // A dictionary pref that maps usernames to wallpaper properties.
 WALLPAPER_EXPORT extern const char kUserWallpapersProperties[];
+
+class WallpaperFilesId;
 
 // This singleton class maintains wallpapers for users.
 class WALLPAPER_EXPORT WallpaperManagerBase {
@@ -224,11 +226,13 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
                                      int preferred_height,
                                      gfx::ImageSkia* output_skia);
 
-  // Returns custom wallpaper path. Append |sub_dir|, |user_id_hash| and |file|
+  // Returns custom wallpaper path. Append |sub_dir|, |wallpaper_files_id| and
+  // |file|
   // to custom wallpaper directory.
-  static base::FilePath GetCustomWallpaperPath(const char* sub_dir,
-                                               const std::string& user_id_hash,
-                                               const std::string& file);
+  static base::FilePath GetCustomWallpaperPath(
+      const char* sub_dir,
+      const WallpaperFilesId& wallpaper_files_id,
+      const std::string& file);
 
   WallpaperManagerBase();
   virtual ~WallpaperManagerBase();
@@ -260,7 +264,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   // local state preferences. If |update_wallpaper| is false, don't change
   // wallpaper but only update cache.
   virtual void SetCustomWallpaper(const AccountId& account_id,
-                                  const std::string& user_id_hash,
+                                  const WallpaperFilesId& wallpaper_files_id,
                                   const std::string& file,
                                   WallpaperLayout layout,
                                   user_manager::User::WallpaperType type,
@@ -342,6 +346,9 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   // Returns queue size.
   virtual size_t GetPendingListSizeForTesting() const = 0;
 
+  // Ruturns files identifier for the user.
+  virtual WallpaperFilesId GetFilesId(const user_manager::User& user) const = 0;
+
  protected:
   friend class TestApi;
   friend class WallpaperManagerBrowserTest;
@@ -356,16 +363,16 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
 
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.
-  static void SaveCustomWallpaper(const std::string& user_id_hash,
+  static void SaveCustomWallpaper(const WallpaperFilesId& wallpaper_files_id,
                                   const base::FilePath& path,
                                   WallpaperLayout layout,
                                   scoped_ptr<gfx::ImageSkia> image);
 
-  // Moves custom wallpapers from user email directory to |user_id_hash|
-  // directory.
+  // Moves custom wallpapers from user email directory to
+  // |wallpaper_files_id| directory.
   static void MoveCustomWallpapersOnWorker(
       const AccountId& account_id,
-      const std::string& user_id_hash,
+      const WallpaperFilesId& wallpaper_files_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& reply_task_runner,
       base::WeakPtr<WallpaperManagerBase> weak_ptr);
 
@@ -445,14 +452,14 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
 
   // Called when the original custom wallpaper is moved to the new place.
   // Updates the corresponding user wallpaper info.
-  virtual void MoveCustomWallpapersSuccess(const AccountId& account_id,
-                                           const std::string& user_id_hash);
+  virtual void MoveCustomWallpapersSuccess(
+      const AccountId& account_id,
+      const wallpaper::WallpaperFilesId& wallpaper_files_id);
 
   // Moves custom wallpaper to a new place. Email address was used as directory
   // name in the old system, this is not safe. New directory system uses
-  // user_id_hash instead of account_id. This must be called after user_id_hash
-  // is
-  // ready.
+  // wallpaper_files_id instead of e-mail. This must be called after
+  // wallpaper_files_id is ready.
   virtual void MoveLoggedInUserCustomWallpaper();
 
   // Gets wallpaper information of |account_id| from Local State or memory.

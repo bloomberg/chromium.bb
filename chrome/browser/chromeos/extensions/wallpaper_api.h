@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/common/extensions/api/wallpaper.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/wallpaper/wallpaper_files_id.h"
 #include "net/url_request/url_request_status.h"
 
 namespace base {
@@ -17,8 +18,8 @@ class RefCountedBytes;
 
 // Implementation of chrome.wallpaper.setWallpaper API.
 // After this API being called, a jpeg encoded wallpaper will be saved to
-// /home/chronos/custom_wallpaper/{resolution}/{user_id_hash}/file_name. The
-// wallpaper can then persistent after Chrome restart. New call to this API
+// /home/chronos/custom_wallpaper/{resolution}/{wallpaper_files_id_}/file_name.
+// The wallpaper can then persist after Chrome restart. New call to this API
 // will replace the previous saved wallpaper with new one.
 // Note: For security reason, the original encoded wallpaper image is not saved
 // directly. It is decoded and re-encoded to jpeg format before saved to file
@@ -59,8 +60,8 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   // User id of the user who initiate this API call.
   AccountId account_id_ = EmptyAccountId();
 
-  // User id hash of the logged in user.
-  std::string user_id_hash_;
+  // Id used to identify user wallpaper files on hard drive.
+  wallpaper::WallpaperFilesId wallpaper_files_id_;
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.

@@ -23,6 +23,8 @@
       ],
       'sources': [
         'wallpaper/wallpaper_layout.h',
+        'wallpaper/wallpaper_files_id.cc',
+        'wallpaper/wallpaper_files_id.h',
         'wallpaper/wallpaper_resizer.cc',
         'wallpaper/wallpaper_resizer.h',
         'wallpaper/wallpaper_resizer_observer.h',

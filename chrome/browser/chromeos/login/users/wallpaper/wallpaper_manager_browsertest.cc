@@ -35,6 +35,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/wallpaper/wallpaper_files_id.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/geometry/point.h"
@@ -100,13 +101,13 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
  protected:
 
   // Return custom wallpaper path. Create directory if not exist.
-  base::FilePath GetCustomWallpaperPath(const char* sub_dir,
-                                        const std::string& username_hash,
-                                        const std::string& id) {
+  base::FilePath GetCustomWallpaperPath(
+      const char* sub_dir,
+      const wallpaper::WallpaperFilesId& wallpaper_files_id,
+      const std::string& id) {
     base::FilePath wallpaper_path =
         WallpaperManager::Get()->GetCustomWallpaperPath(sub_dir,
-                                                        username_hash,
-                                                        id);
+                                                        wallpaper_files_id, id);
     if (!base::DirectoryExists(wallpaper_path.DirName()))
       base::CreateDirectory(wallpaper_path.DirName());
 
@@ -165,6 +166,11 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
   const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
 
+  const wallpaper::WallpaperFilesId test_account1_wallpaper_files_id_ =
+      wallpaper::WallpaperFilesId::FromString(kTestUser1Hash);
+  const wallpaper::WallpaperFilesId test_account2_wallpaper_files_id_ =
+      wallpaper::WallpaperFilesId::FromString(kTestUser2Hash);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WallpaperManagerBrowserTest);
 };
@@ -177,9 +183,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   LogIn(test_account_id1_, kTestUser1Hash);
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, kTestUser1Hash, id);
+      wallpaper::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
   base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kLargeWallpaperSubDir, kTestUser1Hash, id);
+      wallpaper::kLargeWallpaperSubDir, test_account1_wallpaper_files_id_, id);
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
@@ -194,7 +200,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       kLargeWallpaperHeight,
       wallpaper_manager_test_utils::kLargeDefaultWallpaperColor));
 
-  std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
+  std::string relative_path =
+      base::FilePath(test_account1_wallpaper_files_id_.id()).Append(id).value();
   // Saves wallpaper info to local state for user |test_account_id1_|.
   WallpaperInfo info = {relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED,
                         user_manager::User::CUSTOMIZED,
@@ -267,14 +274,15 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Change wallpaper to a custom wallpaper.
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, kTestUser1Hash, id);
+      wallpaper::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
       small_wallpaper_path,
       kSmallWallpaperWidth,
       kSmallWallpaperHeight,
       wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
 
-  std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
+  std::string relative_path =
+      base::FilePath(test_account1_wallpaper_files_id_.id()).Append(id).value();
   // Saves wallpaper info to local state for user |test_account_id1_|.
   WallpaperInfo info = {relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED,
                         user_manager::User::CUSTOMIZED,
@@ -481,9 +489,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, kTestUser1Hash, id);
+      wallpaper::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
   base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kLargeWallpaperSubDir, kTestUser1Hash, id);
+      wallpaper::kLargeWallpaperSubDir, test_account1_wallpaper_files_id_, id);
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
@@ -498,7 +506,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
       kLargeWallpaperHeight,
       wallpaper_manager_test_utils::kLargeDefaultWallpaperColor));
 
-  std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
+  std::string relative_path =
+      base::FilePath(test_account1_wallpaper_files_id_.id()).Append(id).value();
   // Saves wallpaper info to local state for user |test_account_id1_|.
   WallpaperInfo info = {relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED,
                         user_manager::User::CUSTOMIZED,
@@ -566,11 +575,11 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   EXPECT_TRUE(cached_wallpaper.BackedBySameObjectAs(red_wallpaper));
 
   gfx::ImageSkia green_wallpaper = CreateTestImage(SK_ColorGREEN);
-  wallpaper_manager->SetCustomWallpaper(test_account_id1_, kTestUser1Hash,
-                                        "dummy",  // dummy file name
-                                        WALLPAPER_LAYOUT_CENTER,
-                                        user_manager::User::CUSTOMIZED,
-                                        green_wallpaper, true);
+  wallpaper_manager->SetCustomWallpaper(
+      test_account_id1_, test_account1_wallpaper_files_id_,
+      "dummy",  // dummy file name
+      WALLPAPER_LAYOUT_CENTER, user_manager::User::CUSTOMIZED, green_wallpaper,
+      true);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   // SetCustomWallpaper should also update wallpaper cache when multi-profile is
   // turned on.
@@ -833,7 +842,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   gfx::ImageSkia image = wallpaper_manager_test_utils::CreateTestImage(
       640, 480, wallpaper_manager_test_utils::kCustomWallpaperColor);
   WallpaperManager::Get()->SetCustomWallpaper(
-      chromeos::login::StubAccountId(), "test_hash", "test-nofile.jpeg",
+      chromeos::login::StubAccountId(),
+      wallpaper::WallpaperFilesId::FromString("test_hash"), "test-nofile.jpeg",
       WALLPAPER_LAYOUT_STRETCH, user_manager::User::CUSTOMIZED, image, true);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
 

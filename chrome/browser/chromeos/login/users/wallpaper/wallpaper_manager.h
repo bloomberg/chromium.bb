@@ -86,7 +86,7 @@ class WallpaperManager
   // local state preferences. If |update_wallpaper| is false, don't change
   // wallpaper but only update cache.
   void SetCustomWallpaper(const AccountId& account_id,
-                          const std::string& user_id_hash,
+                          const wallpaper::WallpaperFilesId& wallpaper_files_id,
                           const std::string& file,
                           wallpaper::WallpaperLayout layout,
                           user_manager::User::WallpaperType type,
@@ -128,6 +128,10 @@ class WallpaperManager
   // Returns queue size.
   size_t GetPendingListSizeForTesting() const override;
 
+  // Returns wallpaper files id for the user.
+  wallpaper::WallpaperFilesId GetFilesId(
+      const user_manager::User& user) const override;
+
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   void UserChangedChildStatus(user_manager::User* user) override;
 
@@ -152,12 +156,14 @@ class WallpaperManager
   void SetPolicyControlledWallpaper(const AccountId& account_id,
                                     const user_manager::UserImage& user_image);
 
-  // Calls SetCustomWallpaper() with |user_id_hash| received from cryptohome.
-  void SetCustomWallpaperOnSanitizedUsername(const AccountId& account_id,
-                                             const gfx::ImageSkia& image,
-                                             bool update_wallpaper,
-                                             bool cryptohome_success,
-                                             const std::string& user_id_hash);
+  // Calls SetCustomWallpaper() with |wallpaper_files_id_str| received from
+  // cryptohome.
+  void SetCustomWallpaperOnSanitizedUsername(
+      const AccountId& account_id,
+      const gfx::ImageSkia& image,
+      bool update_wallpaper,
+      bool cryptohome_success,
+      const std::string& wallpaper_files_id_str);
 
   // WallpaperManagerBase overrides:
   void InitializeRegisteredDeviceWallpaper() override;
