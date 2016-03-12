@@ -8,3 +8,7 @@ class DepotToolsApi(recipe_api.RecipeApi):
   @property
   def download_from_google_storage_path(self):
     return self.package_repo_resource('download_from_google_storage.py')
+
+  @property
+  def ninja_path(self):
+    return self.package_repo_resource('ninja')
