@@ -11,4 +11,5 @@ class DepotToolsApi(recipe_api.RecipeApi):
 
   @property
   def ninja_path(self):
-    return self.package_repo_resource('ninja')
+    ninja_exe = 'ninja.exe' if self.m.platform.is_win else 'ninja'
+    return self.package_repo_resource(ninja_exe)
