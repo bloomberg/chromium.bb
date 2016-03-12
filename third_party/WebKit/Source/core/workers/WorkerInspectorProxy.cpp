@@ -20,6 +20,7 @@ WorkerInspectorProxy::WorkerInspectorProxy()
     : m_workerThread(nullptr)
     , m_executionContext(nullptr)
     , m_pageInspector(nullptr)
+    , m_workerGlobalScopeProxy(nullptr)
 {
 }
 
@@ -43,10 +44,9 @@ void WorkerInspectorProxy::workerThreadCreated(ExecutionContext* context, Worker
 {
     m_workerThread = workerThread;
     m_executionContext = context;
-    m_url = url.getString();
     // We expect everyone starting worker thread to synchronously ask for workerStartMode right before.
     bool waitingForDebugger = InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(context);
-    InspectorInstrumentation::didStartWorker(context, this, waitingForDebugger);
+    InspectorInstrumentation::didStartWorker(context, this, url, waitingForDebugger);
 }
 
 void WorkerInspectorProxy::workerThreadTerminated()
@@ -55,18 +55,6 @@ void WorkerInspectorProxy::workerThreadTerminated()
         InspectorInstrumentation::workerTerminated(m_executionContext, this);
     m_workerThread = nullptr;
     m_pageInspector = nullptr;
-}
-
-void WorkerInspectorProxy::dispatchMessageFromWorker(const String& message)
-{
-    if (m_pageInspector)
-        m_pageInspector->dispatchMessageFromWorker(this, message);
-}
-
-void WorkerInspectorProxy::workerConsoleAgentEnabled()
-{
-    if (m_pageInspector)
-        m_pageInspector->workerConsoleAgentEnabled(this);
 }
 
 static void connectToWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
@@ -90,9 +78,8 @@ static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThr
         inspector->disconnectFrontend();
 }
 
-void WorkerInspectorProxy::disconnectFromInspector(WorkerInspectorProxy::PageInspector* pageInspector)
+void WorkerInspectorProxy::disconnectFromInspector()
 {
-    ASSERT(m_pageInspector == pageInspector);
     m_pageInspector = nullptr;
     if (m_workerThread)
         m_workerThread->appendDebuggerTask(threadSafeBind(disconnectFromWorkerGlobalScopeInspectorTask, AllowCrossThreadAccess(m_workerThread)));
@@ -120,6 +107,7 @@ void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId, co
 DEFINE_TRACE(WorkerInspectorProxy)
 {
     visitor->trace(m_executionContext);
+    visitor->trace(m_pageInspector);
 }
 
 } // namespace blink

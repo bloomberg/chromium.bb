@@ -7,7 +7,6 @@
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/workers/WorkerInspectorProxy.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -213,7 +212,6 @@ void ConsoleMessage::collectCallStack()
 DEFINE_TRACE(ConsoleMessage)
 {
     visitor->trace(m_scriptArguments);
-    visitor->trace(m_workerProxy);
 }
 
 } // namespace blink

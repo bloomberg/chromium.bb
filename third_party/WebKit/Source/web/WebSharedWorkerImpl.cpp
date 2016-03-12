@@ -230,7 +230,11 @@ void WebSharedWorkerImpl::postMessageToPageInspector(const String& message)
 
 void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(const String& message)
 {
-    m_workerInspectorProxy->dispatchMessageFromWorker(message);
+    WorkerInspectorProxy::PageInspector* pageInspector = m_workerInspectorProxy->pageInspector();
+    if (!pageInspector)
+        return;
+    pageInspector->dispatchMessageFromWorker(message);
+
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeClosed()

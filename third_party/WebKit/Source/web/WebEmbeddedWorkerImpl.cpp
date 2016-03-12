@@ -204,7 +204,10 @@ void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(int sessionId, const WebStri
 
 void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
 {
-    m_workerInspectorProxy->dispatchMessageFromWorker(message);
+    WorkerInspectorProxy::PageInspector* pageInspector = m_workerInspectorProxy->pageInspector();
+    if (!pageInspector)
+        return;
+    pageInspector->dispatchMessageFromWorker(message);
 }
 
 void WebEmbeddedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
