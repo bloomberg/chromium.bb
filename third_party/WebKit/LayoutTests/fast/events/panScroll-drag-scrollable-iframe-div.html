@@ -36,7 +36,11 @@ function autoscrollTestPart2() {
     var testCompleted = document.getElementById("testCompletedButton");
     var h = testCompleted.offsetTop - document.scrollingElement.scrollTop + 10;
     eventSender.dragMode = false;
-    eventSender.mouseMoveTo(20, testCompleted.offsetTop);
+    eventSender.mouseMoveTo(20, h);
+    // This click exits the pan scroll mode.
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    // This click actually clicks the button.
     eventSender.mouseDown();
     eventSender.mouseUp();
     testRunner.runAfterLayoutAndPaint(checkButtonClicked);

@@ -140,11 +140,10 @@ void AutoscrollController::updateAutoscrollLayoutObject()
     while (layoutObject && !(layoutObject->isBox() && toLayoutBox(layoutObject)->canAutoscroll()))
         layoutObject = layoutObject->parent();
 
-    LayoutBox* autoscrollLayoutObject = layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : nullptr;
-    if (m_autoscrollLayoutObject && !autoscrollLayoutObject)
-        m_autoscrollType = NoAutoscroll;
+    m_autoscrollLayoutObject = layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : nullptr;
 
-    m_autoscrollLayoutObject = autoscrollLayoutObject;
+    if (m_autoscrollType != NoAutoscroll && !m_autoscrollLayoutObject)
+        m_autoscrollType = NoAutoscroll;
 }
 
 void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoint& eventPosition, double eventTime)
@@ -271,7 +270,7 @@ void AutoscrollController::animate(double)
         break;
 #endif
     }
-    if (m_autoscrollType != NoAutoscroll)
+    if (m_autoscrollType != NoAutoscroll && m_autoscrollLayoutObject)
         m_page->chromeClient().scheduleAnimation(m_autoscrollLayoutObject->frame()->view());
 }
 

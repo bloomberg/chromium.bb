@@ -907,7 +907,7 @@ void LayoutBox::panScroll(const IntPoint& sourcePoint)
         delta.setWidth(0);
     if (abs(delta.height()) <= AutoscrollController::noPanScrollRadius)
         delta.setHeight(0);
-    scrollByRecursively(adjustedScrollDelta(delta), ScrollOffsetClamped);
+    scroll(ScrollByPixel, FloatSize(adjustedScrollDelta(delta)));
 }
 
 void LayoutBox::scrollByRecursively(const DoubleSize& delta, ScrollOffsetClamping clamp)
