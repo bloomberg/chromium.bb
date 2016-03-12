@@ -64,6 +64,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnAuthInstanceReady();
   if (clipboard_instance())
     observer->OnClipboardInstanceReady();
+  if (crash_collector_instance())
+    observer->OnCrashCollectorInstanceReady();
   if (ime_instance())
     observer->OnImeInstanceReady();
   if (input_instance())
@@ -156,6 +158,34 @@ void ArcBridgeService::CloseClipboardChannel() {
 
   clipboard_ptr_.reset();
   FOR_EACH_OBSERVER(Observer, observer_list(), OnClipboardInstanceClosed());
+}
+
+void ArcBridgeService::OnCrashCollectorInstanceReady(
+    CrashCollectorInstancePtr crash_collector_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_crash_collector_ptr_ = std::move(crash_collector_ptr);
+  temporary_crash_collector_ptr_.QueryVersion(
+      base::Bind(&ArcBridgeService::OnCrashCollectorVersionReady,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnCrashCollectorVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  crash_collector_ptr_ = std::move(temporary_crash_collector_ptr_);
+  crash_collector_ptr_.set_connection_error_handler(
+      base::Bind(&ArcBridgeService::CloseCrashCollectorChannel,
+                 weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnCrashCollectorInstanceReady());
+}
+
+void ArcBridgeService::CloseCrashCollectorChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!crash_collector_ptr_)
+    return;
+
+  crash_collector_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(),
+                    OnCrashCollectorInstanceClosed());
 }
 
 void ArcBridgeService::OnImeInstanceReady(ImeInstancePtr ime_ptr) {
@@ -380,6 +410,7 @@ void ArcBridgeService::CloseAllChannels() {
   CloseAppChannel();
   CloseAuthChannel();
   CloseClipboardChannel();
+  CloseCrashCollectorChannel();
   CloseImeChannel();
   CloseInputChannel();
   CloseIntentHelperChannel();

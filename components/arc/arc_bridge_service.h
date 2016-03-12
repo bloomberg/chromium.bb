@@ -85,6 +85,10 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual void OnClipboardInstanceReady() {}
     virtual void OnClipboardInstanceClosed() {}
 
+    // Called whenever the ARC crash collector interface state changes.
+    virtual void OnCrashCollectorInstanceReady() {}
+    virtual void OnCrashCollectorInstanceClosed() {}
+
     // Called whenever the ARC IME interface state changes.
     virtual void OnImeInstanceReady() {}
     virtual void OnImeInstanceClosed() {}
@@ -157,6 +161,9 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstance* app_instance() { return app_ptr_.get(); }
   AuthInstance* auth_instance() { return auth_ptr_.get(); }
   ClipboardInstance* clipboard_instance() { return clipboard_ptr_.get(); }
+  CrashCollectorInstance* crash_collector_instance() {
+    return crash_collector_ptr_.get();
+  }
   ImeInstance* ime_instance() { return ime_ptr_.get(); }
   InputInstance* input_instance() { return input_ptr_.get(); }
   IntentHelperInstance* intent_helper_instance() {
@@ -173,6 +180,9 @@ class ArcBridgeService : public ArcBridgeHost {
   int32_t app_version() const { return app_ptr_.version(); }
   int32_t auth_version() const { return auth_ptr_.version(); }
   int32_t clipboard_version() const { return clipboard_ptr_.version(); }
+  int32_t crash_collector_version() const {
+    return crash_collector_ptr_.version();
+  }
   int32_t ime_version() const { return ime_ptr_.version(); }
   int32_t input_version() const { return input_ptr_.version(); }
   int32_t intent_helper_version() const { return intent_helper_ptr_.version(); }
@@ -186,6 +196,8 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnAppInstanceReady(AppInstancePtr app_ptr) override;
   void OnAuthInstanceReady(AuthInstancePtr auth_ptr) override;
   void OnClipboardInstanceReady(ClipboardInstancePtr clipboard_ptr) override;
+  void OnCrashCollectorInstanceReady(
+      CrashCollectorInstancePtr crash_collector_ptr) override;
   void OnImeInstanceReady(ImeInstancePtr ime_ptr) override;
   void OnInputInstanceReady(InputInstancePtr input_ptr) override;
   void OnIntentHelperInstanceReady(
@@ -230,6 +242,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void CloseAppChannel();
   void CloseAuthChannel();
   void CloseClipboardChannel();
+  void CloseCrashCollectorChannel();
   void CloseImeChannel();
   void CloseInputChannel();
   void CloseIntentHelperChannel();
@@ -243,6 +256,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnAppVersionReady(int32_t version);
   void OnAuthVersionReady(int32_t version);
   void OnClipboardVersionReady(int32_t version);
+  void OnCrashCollectorVersionReady(int32_t version);
   void OnImeVersionReady(int32_t version);
   void OnInputVersionReady(int32_t version);
   void OnIntentHelperVersionReady(int32_t version);
@@ -256,6 +270,7 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstancePtr app_ptr_;
   AuthInstancePtr auth_ptr_;
   ClipboardInstancePtr clipboard_ptr_;
+  CrashCollectorInstancePtr crash_collector_ptr_;
   ImeInstancePtr ime_ptr_;
   InputInstancePtr input_ptr_;
   IntentHelperInstancePtr intent_helper_ptr_;
@@ -274,6 +289,7 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstancePtr temporary_app_ptr_;
   AuthInstancePtr temporary_auth_ptr_;
   ClipboardInstancePtr temporary_clipboard_ptr_;
+  CrashCollectorInstancePtr temporary_crash_collector_ptr_;
   ImeInstancePtr temporary_ime_ptr_;
   InputInstancePtr temporary_input_ptr_;
   IntentHelperInstancePtr temporary_intent_helper_ptr_;

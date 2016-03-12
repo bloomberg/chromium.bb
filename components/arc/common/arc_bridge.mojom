@@ -7,6 +7,7 @@ module arc;
 import "app.mojom";
 import "auth.mojom";
 import "clipboard.mojom";
+import "crash_collector.mojom";
 import "ime.mojom";
 import "input.mojom";
 import "intent_helper.mojom";
@@ -30,13 +31,17 @@ interface ArcBridgeHost {
   // Notifies Chrome that the ClipboardInstance interface is ready.
   [MinVersion=2] OnClipboardInstanceReady@109(ClipboardInstance instance_ptr);
 
+  // Notifies Chrome that the CrashCollectorInstance interface is ready.
+  [MinVersion=7] OnCrashCollectorInstanceReady@112(
+      CrashCollectorInstance instance_ptr);
+
   // Notifies Chrome that the ImeInstance interface is ready.
   [MinVersion=3] OnImeInstanceReady@110(ImeInstance instance_ptr);
 
-  // Notifies Chrome that the InputInstnace interface is ready.
+  // Notifies Chrome that the InputInstance interface is ready.
   OnInputInstanceReady@101(InputInstance instance_ptr);
 
-  // Notifies Chrome that the IntentHelpernstnace interface is ready.
+  // Notifies Chrome that the IntentHelperInstance interface is ready.
   [MinVersion=4] OnIntentHelperInstanceReady@111(
       IntentHelperInstance instance_ptr);
 
