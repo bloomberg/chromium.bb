@@ -315,7 +315,8 @@ FieldTrialList::FieldTrialList(
     : entropy_provider_(entropy_provider),
       observer_list_(new ObserverListThreadSafe<FieldTrialList::Observer>(
           ObserverListBase<FieldTrialList::Observer>::NOTIFY_EXISTING_ONLY)) {
-  DCHECK(!global_);
+  // TODO(asvitkine): Turn into a DCHECK after http://crbug.com/359406 is fixed.
+  CHECK(!global_);
   DCHECK(!used_without_global_);
   global_ = this;
 

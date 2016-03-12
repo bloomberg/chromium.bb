@@ -656,6 +656,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
   metrics::MetricsService* metrics = browser_process_->metrics_service();
+  // TODO(asvitkine): Turn into a DCHECK after http://crbug.com/359406 is fixed.
+  CHECK(!field_trial_list_);
   field_trial_list_.reset(
       new base::FieldTrialList(metrics->CreateEntropyProvider().release()));
 
