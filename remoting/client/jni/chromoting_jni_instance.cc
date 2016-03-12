@@ -57,11 +57,8 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                                              const std::string& capabilities,
                                              const std::string& flags)
     : jni_runtime_(jni_runtime),
-      host_id_(host_id),
       host_jid_(host_jid),
       flags_(flags),
-      create_pairing_(false),
-      stats_logging_enabled_(false),
       capabilities_(capabilities),
       weak_factory_(this) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
@@ -73,13 +70,14 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
   xmpp_config_.username = username;
   xmpp_config_.auth_token = auth_token;
 
-  // Initialize |authenticator_|.
-  authenticator_.reset(new protocol::NegotiatingClientAuthenticator(
-      pairing_id, pairing_secret, host_id_,
-      base::Bind(&ChromotingJniInstance::FetchSecret,
-                 weak_factory_.GetWeakPtr()),
+  client_auth_config_.host_id = host_id;
+  client_auth_config_.pairing_client_id = pairing_id;
+  client_auth_config_.pairing_secret = pairing_secret;
+  client_auth_config_.fetch_secret_callback = base::Bind(
+      &ChromotingJniInstance::FetchSecret, weak_factory_.GetWeakPtr());
+  client_auth_config_.fetch_third_party_token_callback =
       base::Bind(&ChromotingJniInstance::FetchThirdPartyToken,
-                 weak_factory_.GetWeakPtr(), host_pubkey)));
+                 weak_factory_.GetWeakPtr(), host_pubkey);
 
   // Post a task to start connection
   jni_runtime_->network_task_runner()->PostTask(
@@ -94,7 +92,6 @@ ChromotingJniInstance::~ChromotingJniInstance() {
   DCHECK(!view_);
   DCHECK(!client_context_);
   DCHECK(!video_renderer_);
-  DCHECK(!authenticator_);
   DCHECK(!client_);
   DCHECK(!signaling_);
   DCHECK(!client_status_logger_);
@@ -108,8 +105,6 @@ void ChromotingJniInstance::Disconnect() {
     return;
   }
 
-  host_id_.clear();
-
   stats_logging_enabled_ = false;
 
   // |client_| must be torn down before |signaling_|.
@@ -117,7 +112,6 @@ void ChromotingJniInstance::Disconnect() {
   client_status_logger_.reset();
   video_renderer_.reset();
   view_.reset();
-  authenticator_.reset();
   signaling_.reset();
   perf_tracker_.reset();
   client_context_.reset();
@@ -333,30 +327,25 @@ void ChromotingJniInstance::OnRouteChanged(
 
 void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {
   jni_runtime_->ui_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromotingJniRuntime::SetCapabilities,
-                 base::Unretained(jni_runtime_),
-                 capabilities));
+      FROM_HERE, base::Bind(&ChromotingJniRuntime::SetCapabilities,
+                            base::Unretained(jni_runtime_), capabilities));
 }
 
 void ChromotingJniInstance::SetPairingResponse(
     const protocol::PairingResponse& response) {
-
   jni_runtime_->ui_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ChromotingJniRuntime::CommitPairingCredentials,
-                 base::Unretained(jni_runtime_),
-                 host_id_, response.client_id(), response.shared_secret()));
+                 base::Unretained(jni_runtime_), client_auth_config_.host_id,
+                 response.client_id(), response.shared_secret()));
 }
 
 void ChromotingJniInstance::DeliverHostMessage(
     const protocol::ExtensionMessage& message) {
   jni_runtime_->ui_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromotingJniRuntime::HandleExtensionMessage,
-                 base::Unretained(jni_runtime_),
-                 message.type(),
-                 message.data()));
+      FROM_HERE, base::Bind(&ChromotingJniRuntime::HandleExtensionMessage,
+                            base::Unretained(jni_runtime_), message.type(),
+                            message.data()));
 }
 
 protocol::ClipboardStub* ChromotingJniInstance::GetClipboardStub() {
@@ -398,16 +387,15 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   video_renderer_.reset(new SoftwareVideoRenderer(
       client_context_->decode_task_runner(), view_.get(), perf_tracker_.get()));
 
-  client_.reset(new ChromotingClient(
-      client_context_.get(), this, video_renderer_.get(), nullptr));
+  client_.reset(new ChromotingClient(client_context_.get(), this,
+                                     video_renderer_.get(), nullptr));
 
-  signaling_.reset(new XmppSignalStrategy(
-      net::ClientSocketFactory::GetDefaultFactory(),
-      jni_runtime_->url_requester(), xmpp_config_));
+  signaling_.reset(
+      new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
+                             jni_runtime_->url_requester(), xmpp_config_));
 
   client_status_logger_.reset(
-      new ClientStatusLogger(ServerLogEntry::ME2ME,
-                             signaling_.get(),
+      new ClientStatusLogger(ServerLogEntry::ME2ME, signaling_.get(),
                              ServiceUrls::GetInstance()->directory_bot_jid()));
 
   scoped_refptr<protocol::TransportContext> transport_context =
@@ -429,7 +417,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
     client_->set_protocol_config(std::move(protocol_config));
   }
 
-  client_->Start(signaling_.get(), std::move(authenticator_), transport_context,
+  client_->Start(signaling_.get(), client_auth_config_, transport_context,
                  host_jid_, capabilities_);
 }
 
@@ -444,7 +432,7 @@ void ChromotingJniInstance::FetchSecret(
   }
 
   // Delete pairing credentials if they exist.
-  jni_runtime_->CommitPairingCredentials(host_id_, "", "");
+  jni_runtime_->CommitPairingCredentials(client_auth_config_.host_id, "", "");
 
   pin_callback_ = callback;
   jni_runtime_->DisplayAuthenticationPrompt(pairable);

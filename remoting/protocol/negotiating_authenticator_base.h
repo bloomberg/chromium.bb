@@ -13,7 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+
+namespace buzz {
+struct StaticQName;
+}  // namespace buzz
 
 namespace remoting {
 namespace protocol {

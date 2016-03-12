@@ -53,7 +53,7 @@ void ChromotingClient::SetConnectionToHostForTests(
 
 void ChromotingClient::Start(
     SignalStrategy* signal_strategy,
-    scoped_ptr<protocol::Authenticator> authenticator,
+    const protocol::ClientAuthenticationConfig& client_auth_config,
     scoped_refptr<protocol::TransportContext> transport_context,
     const std::string& host_jid,
     const std::string& capabilities) {
@@ -89,7 +89,7 @@ void ChromotingClient::Start(
   session_manager_.reset(new protocol::JingleSessionManager(signal_strategy));
   session_manager_->set_protocol_config(std::move(protocol_config_));
 
-  authenticator_ = std::move(authenticator);
+  client_auth_config_ = client_auth_config;
   transport_context_ = transport_context;
 
   signal_strategy_ = signal_strategy;
@@ -212,7 +212,10 @@ bool ChromotingClient::OnSignalStrategyIncomingStanza(
 void ChromotingClient::StartConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   connection_->Connect(
-      session_manager_->Connect(host_jid_, std::move(authenticator_)),
+      session_manager_->Connect(
+          host_jid_,
+          make_scoped_ptr(new protocol::NegotiatingClientAuthenticator(
+              client_auth_config_))),
       transport_context_, this);
 }
 
