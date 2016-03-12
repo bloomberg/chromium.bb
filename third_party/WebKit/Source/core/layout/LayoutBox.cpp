@@ -1828,44 +1828,102 @@ void LayoutBox::setPaginationStrut(LayoutUnit strut)
     ensureRareData().m_paginationStrut = strut;
 }
 
-static bool isForcedBreakAllowed(const LayoutBox* child)
+bool LayoutBox::isBreakBetweenControllable(EBreak breakValue) const
 {
-    // We currently only support forced breaks on in-flow block level elements, which is the minimum
-    // requirement according to the spec.
-    if (child->isInline() || child->isFloatingOrOutOfFlowPositioned())
+    if (breakValue == BreakAuto)
+        return true;
+    // We currently only support non-auto break-before and break-after values on in-flow block
+    // level elements, which is the minimum requirement according to the spec.
+    if (isInline() || isFloatingOrOutOfFlowPositioned())
         return false;
-    const LayoutBlock* curr = child->containingBlock();
+    const LayoutBlock* curr = containingBlock();
     if (!curr || !curr->isLayoutBlockFlow())
         return false;
-    const LayoutView* layoutView = child->view();
-    while (curr && curr != layoutView) {
-        if (curr->isLayoutFlowThread())
-            return true;
+    const LayoutView* layoutView = view();
+    bool viewIsPaginated = layoutView->fragmentationContext();
+    if (!viewIsPaginated && !flowThreadContainingBlock())
+        return false;
+    while (curr) {
+        if (curr == layoutView)
+            return viewIsPaginated && breakValue != BreakColumn && breakValue != BreakAvoidColumn;
+        if (curr->isLayoutFlowThread()) {
+            if (breakValue == BreakAvoid) // Valid in any kind of fragmentation context.
+                return true;
+            bool isMulticolValue = breakValue == BreakColumn || breakValue == BreakAvoidColumn;
+            if (toLayoutFlowThread(curr)->isLayoutPagedFlowThread())
+                return !isMulticolValue;
+            if (isMulticolValue)
+                return true;
+            // If this is a flow thread for a multicol container, and we have a break value for
+            // paged, we need to keep looking.
+        }
         if (curr->isFloatingOrOutOfFlowPositioned())
             return false;
         curr = curr->containingBlock();
     }
-    return true;
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+bool LayoutBox::isBreakInsideControllable(EBreak breakValue) const
+{
+    ASSERT(!isForcedFragmentainerBreakValue(breakValue));
+    if (breakValue == BreakAuto)
+        return true;
+    // First check multicol.
+    const LayoutFlowThread* flowThread = flowThreadContainingBlock();
+    // 'avoid-column' is only valid in a multicol context.
+    if (breakValue == BreakAvoidColumn)
+        return flowThread && !flowThread->isLayoutPagedFlowThread();
+    // 'avoid' is valid in any kind of fragmentation context.
+    if (breakValue == BreakAvoid && flowThread)
+        return true;
+    ASSERT(breakValue == BreakAvoidPage || breakValue == BreakAvoid);
+    if (view()->fragmentationContext())
+        return true; // The view is paginated, probably because we're printing.
+    if (!flowThread)
+        return false; // We're not inside any pagination context
+    // We're inside a flow thread. We need to be contained by a flow thread for paged overflow in
+    // order for pagination values to be valid, though.
+    for (const LayoutBlock* ancestor = flowThread; ancestor; ancestor = ancestor->containingBlock()) {
+        if (ancestor->isLayoutFlowThread() && toLayoutFlowThread(ancestor)->isLayoutPagedFlowThread())
+            return true;
+    }
+    return false;
+}
+
+EBreak LayoutBox::breakAfter() const
+{
+    EBreak breakValue = style()->breakAfter();
+    if (breakValue == BreakAuto || isBreakBetweenControllable(breakValue))
+        return breakValue;
+    return BreakAuto;
+}
+
+EBreak LayoutBox::breakBefore() const
+{
+    EBreak breakValue = style()->breakBefore();
+    if (breakValue == BreakAuto || isBreakBetweenControllable(breakValue))
+        return breakValue;
+    return BreakAuto;
+}
+
+EBreak LayoutBox::breakInside() const
+{
+    EBreak breakValue = style()->breakInside();
+    if (breakValue == BreakAuto || isBreakInsideControllable(breakValue))
+        return breakValue;
+    return BreakAuto;
 }
 
 bool LayoutBox::hasForcedBreakBefore() const
 {
-    LayoutFlowThread* flowThread = flowThreadContainingBlock();
-    bool checkColumnBreaks = flowThread;
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // TODO(mstensho): Once columns can print, we have to check this.
-    bool checkBeforeAlways = (checkColumnBreaks && style()->breakBefore() == BreakColumn)
-        || (checkPageBreaks && style()->breakBefore() == BreakPage);
-    return checkBeforeAlways && isForcedBreakAllowed(this);
+    return isForcedFragmentainerBreakValue(breakBefore());
 }
 
 bool LayoutBox::hasForcedBreakAfter() const
 {
-    LayoutFlowThread* flowThread = flowThreadContainingBlock();
-    bool checkColumnBreaks = flowThread;
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // TODO(mstensho): Once columns can print, we have to check this.
-    bool checkAfterAlways = (checkColumnBreaks && style()->breakAfter() == BreakColumn)
-        || (checkPageBreaks && style()->breakAfter() == BreakPage);
-    return checkAfterAlways && isForcedBreakAllowed(this);
+    return isForcedFragmentainerBreakValue(breakAfter());
 }
 
 LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
@@ -4178,12 +4236,8 @@ LayoutBox::PaginationBreakability LayoutBox::getPaginationBreakability() const
         || (isOutOfFlowPositioned() && style()->position() == FixedPosition))
         return ForbidBreaks;
 
-    bool checkColumnBreaks = flowThreadContainingBlock();
-    bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight();
-    EBreak breakInside = style()->breakInside();
-    bool isUnsplittable = (checkColumnBreaks && (breakInside == BreakAvoid || breakInside == BreakAvoidColumn))
-        || (checkPageBreaks && (breakInside == BreakAvoid || breakInside == BreakAvoidPage));
-    if (isUnsplittable)
+    EBreak breakValue = breakInside();
+    if (breakValue == BreakAvoid || breakValue == BreakAvoidPage || breakValue == BreakAvoidColumn)
         return AvoidBreaks;
     return AllowAnyBreaks;
 }

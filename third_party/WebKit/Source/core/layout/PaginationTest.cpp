@@ -90,7 +90,7 @@ TEST_F(PaginationStrutTest, BreakBefore)
     setBodyInnerHTML(
         "<div style='overflow:-webkit-paged-y; height:400px; line-height:50px;'>"
         "    <div id='block1'>line1</div>"
-        "    <div id='block2' style='-webkit-column-break-before:always;'>line2</div>"
+        "    <div id='block2' style='break-before:page;'>line2</div>"
         "</div>");
     EXPECT_EQ(0, strutForBox("block1"));
     EXPECT_EQ(0, strutForLine("block1", 0));
@@ -120,7 +120,7 @@ TEST_F(PaginationStrutTest, BlockWithStrutPropagatedFromUnbreakableInnerBlock)
         "<div style='overflow:-webkit-paged-y; height:400px; line-height:150px;'>"
         "    <div id='block1'>line1</div>"
         "    <div id='block2' style='padding-top:2px;'>"
-        "        <div id='innerBlock' style='padding-top:2px; -webkit-column-break-inside:avoid;'>"
+        "        <div id='innerBlock' style='padding-top:2px; break-inside:avoid;'>"
         "            line2<br>"
         "            line3<br>"
         "        </div>"
@@ -140,7 +140,7 @@ TEST_F(PaginationStrutTest, InnerBlockWithBreakBefore)
         "<div style='overflow:-webkit-paged-y; height:200px; line-height:150px;'>"
         "    <div id='block1'>line1</div>"
         "    <div id='block2' style='padding-top:2px;'>"
-        "        <div id='innerBlock' style='padding-top:2px; -webkit-column-break-before:always;'>line2</div>"
+        "        <div id='innerBlock' style='padding-top:2px; break-before:page;'>line2</div>"
         "    </div>"
         "</div>");
     EXPECT_EQ(0, strutForBox("block1"));

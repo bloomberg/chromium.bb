@@ -620,6 +620,20 @@ public:
             m_rareData->m_paginationStrut = LayoutUnit();
     }
 
+    // Is the specified break-before or break-after value supported on this object? It needs to be
+    // in-flow all the way up to a fragmentation context that supports the specified value.
+    bool isBreakBetweenControllable(EBreak) const;
+
+    // Is the specified break-inside value supported on this object? It needs to be contained by a
+    // fragmentation context that supports the specified value.
+    bool isBreakInsideControllable(EBreak) const;
+
+    EBreak breakAfter() const;
+    EBreak breakBefore() const;
+    EBreak breakInside() const;
+
+    static bool isForcedFragmentainerBreakValue(EBreak);
+
     bool hasForcedBreakBefore() const;
     bool hasForcedBreakAfter() const;
 
@@ -1134,6 +1148,16 @@ inline void LayoutBox::setInlineBoxWrapper(InlineBox* boxWrapper)
     }
 
     m_inlineBoxWrapper = boxWrapper;
+}
+
+inline bool LayoutBox::isForcedFragmentainerBreakValue(EBreak breakValue)
+{
+    return breakValue == BreakColumn
+        || breakValue == BreakLeft
+        || breakValue == BreakPage
+        || breakValue == BreakRecto
+        || breakValue == BreakRight
+        || breakValue == BreakVerso;
 }
 
 } // namespace blink
