@@ -524,30 +524,14 @@ TEST_F(NativeWidgetAuraTest, OnWidgetMovedInvokedAfterAcquireLayer) {
 // can not be activated.
 TEST_F(NativeWidgetAuraTest, PreventFocusOnNonActivableWindow) {
   test_focus_rules()->set_can_activate(false);
-  Widget* w1 = new Widget;
-  views::test::TestInitialFocusWidgetDelegate* delegate =
-      new views::test::TestInitialFocusWidgetDelegate(root_window());
-  views::Widget::InitParams params1;
-  params1.delegate = delegate;
-  params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params1.context = root_window();
-  w1->Init(params1);
-  w1->Show();
-  EXPECT_FALSE(delegate->view()->HasFocus());
-  w1->CloseNow();
+  views::test::TestInitialFocusWidgetDelegate delegate(root_window());
+  delegate.GetWidget()->Show();
+  EXPECT_FALSE(delegate.view()->HasFocus());
 
   test_focus_rules()->set_can_activate(true);
-  Widget* w2 = new Widget;
-  views::test::TestInitialFocusWidgetDelegate* delegate2 =
-      new views::test::TestInitialFocusWidgetDelegate(root_window());
-  views::Widget::InitParams params2;
-  params2.delegate = delegate2;
-  params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params2.context = root_window();
-  w2->Init(params2);
-  w2->Show();
-  EXPECT_TRUE(delegate2->view()->HasFocus());
-  w2->CloseNow();
+  views::test::TestInitialFocusWidgetDelegate delegate2(root_window());
+  delegate2.GetWidget()->Show();
+  EXPECT_TRUE(delegate2.view()->HasFocus());
 }
 
 }  // namespace
