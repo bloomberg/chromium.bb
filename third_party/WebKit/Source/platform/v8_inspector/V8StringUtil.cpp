@@ -125,7 +125,7 @@ protocol::Vector<std::pair<int, String16>> scriptRegexpMatchesByLines(const V8Re
         unsigned lineEnd = endings->at(lineNumber);
         String16 line = text.substring(start, lineEnd - start);
         if (line.endsWith('\r'))
-            line = line.left(line.length() - 1);
+            line = line.substring(0, line.length() - 1);
 
         int matchLength;
         if (regex.match(line, 0, &matchLength) != -1)
@@ -154,19 +154,15 @@ PassOwnPtr<V8Regex> createSearchRegex(V8DebuggerImpl* debugger, const String16& 
 
 v8::Local<v8::String> toV8String(v8::Isolate* isolate, const String16& string)
 {
-    if (string.isNull())
+    if (string.isEmpty())
         return v8::String::Empty(isolate);
-    if (string.is8Bit())
-        return v8::String::NewFromOneByte(isolate, string.characters8(), v8::NewStringType::kNormal, string.length()).ToLocalChecked();
     return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kNormal, string.length()).ToLocalChecked();
 }
 
 v8::Local<v8::String> toV8StringInternalized(v8::Isolate* isolate, const String16& string)
 {
-    if (string.isNull())
+    if (string.isEmpty())
         return v8::String::Empty(isolate);
-    if (string.is8Bit())
-        return v8::String::NewFromOneByte(isolate, string.characters8(), v8::NewStringType::kInternalized, string.length()).ToLocalChecked();
     return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kInternalized, string.length()).ToLocalChecked();
 }
 

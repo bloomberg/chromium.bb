@@ -27,7 +27,7 @@ public:
 
 };
 
-using V8EventListenerInfoMap = protocol::HashMap<String16, OwnPtr<protocol::Vector<V8EventListenerInfo>>>;
+using V8EventListenerInfoList = protocol::Vector<V8EventListenerInfo>;
 
 } // namespace blink
 

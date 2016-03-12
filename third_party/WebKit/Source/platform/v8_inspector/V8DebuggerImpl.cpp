@@ -145,7 +145,7 @@ static int getGroupId(v8::Local<v8::Context> context)
     size_t commaPos = dataString.find(",");
     if (commaPos == kNotFound)
         return 0;
-    return dataString.left(commaPos).toInt();
+    return dataString.substring(0, commaPos).toInt();
 }
 
 void V8DebuggerImpl::addDebuggerAgent(int contextGroupId, V8DebuggerAgentImpl* agent)

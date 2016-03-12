@@ -221,11 +221,13 @@ void V8InjectedScriptHost::getInternalPropertiesCallback(const v8::FunctionCallb
     v8SetReturnValue(info, properties);
 }
 
-static v8::Local<v8::Array> wrapListenerFunctions(v8::Isolate* isolate, const protocol::Vector<V8EventListenerInfo>& listeners)
+static v8::Local<v8::Array> wrapListenerFunctions(v8::Isolate* isolate, const V8EventListenerInfoList& listeners, const String16& type)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate);
     size_t handlersCount = listeners.size();
     for (size_t i = 0, outputIndex = 0; i < handlersCount; ++i) {
+        if (listeners[i].eventType != type)
+            continue;
         v8::Local<v8::Object> function = listeners[i].handler;
         v8::Local<v8::Object> listenerEntry = v8::Object::New(isolate);
         listenerEntry->Set(toV8StringInternalized(isolate, "listener"), function);
@@ -244,19 +246,18 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
     if (!host->debugger())
         return;
     V8DebuggerClient* client = host->debugger()->client();
-    V8EventListenerInfoMap listenerInfo;
+    V8EventListenerInfoList listenerInfo;
     client->eventListeners(info[0], listenerInfo);
 
     v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
-    protocol::Vector<String16> types;
-    for (auto& it : listenerInfo)
-        types.append(it.first);
-    std::sort(types.begin(), types.end(), String16::codePointCompareLessThan);
-    for (const String16& type : types) {
-        v8::Local<v8::Array> listeners = wrapListenerFunctions(info.GetIsolate(), *listenerInfo.get(type));
+    protocol::HashSet<String16> types;
+    for (auto& info : listenerInfo)
+        types.add(info.eventType);
+    for (const auto& it : types) {
+        v8::Local<v8::Array> listeners = wrapListenerFunctions(info.GetIsolate(), listenerInfo, it.first);
         if (!listeners->Length())
             continue;
-        result->Set(toV8String(info.GetIsolate(), type), listeners);
+        result->Set(toV8String(info.GetIsolate(), it.first), listeners);
     }
 
     v8SetReturnValue(info, result);

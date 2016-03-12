@@ -832,6 +832,7 @@
       'inspector_protocol/Parser.h',
       'inspector_protocol/FrontendChannel.h',
       'inspector_protocol/String16.h',
+      'inspector_protocol/String16WTF.cpp',
       'inspector_protocol/String16WTF.h',
       'inspector_protocol/Values.cpp',
       'inspector_protocol/Values.h',

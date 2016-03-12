@@ -33,7 +33,7 @@ public:
         errors->push();
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
         for (size_t i = 0; i < array->size(); ++i) {
-            errors->setName("[" + String16::number(i) + "]");
+            errors->setName(String16::number(i));
             T item = FromValue<T>::parse(array->at(i), errors);
             result->m_vector.append(item);
         }
@@ -94,7 +94,7 @@ public:
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
         errors->push();
         for (size_t i = 0; i < array->size(); ++i) {
-            errors->setName("[" + String16::number(i) + "]");
+            errors->setName(String16::number(i));
             OwnPtr<T> item = FromValue<T>::parse(array->at(i), errors);
             result->m_vector.append(item.release());
         }

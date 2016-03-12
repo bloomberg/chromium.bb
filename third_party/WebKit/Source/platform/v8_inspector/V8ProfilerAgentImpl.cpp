@@ -153,7 +153,7 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
     String16 id;
     String16 resolvedTitle;
     // Take last started profile if no title was passed.
-    if (title.isNull()) {
+    if (title.isEmpty()) {
         if (m_startedProfiles.isEmpty())
             return;
         id = m_startedProfiles.last().m_id;

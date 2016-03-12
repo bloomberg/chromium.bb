@@ -80,7 +80,7 @@ private:
 
     void startUpdateStatsTimer();
     void stopUpdateStatsTimer();
-    bool isInspectableHeapObject(unsigned id);
+    bool isInspectableHeapObject(int id);
 
     OwnPtr<V8HeapProfilerAgent> m_v8HeapProfilerAgent;
     OwnPtr<HeapStatsUpdateTask> m_heapStatsUpdateTask;

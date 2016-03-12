@@ -113,10 +113,7 @@ static String16 calculateHash(const String16& str)
 
     size_t current = 0;
     const uint32_t* data = nullptr;
-    if (str.is8Bit())
-        data = reinterpret_cast<const uint32_t*>(str.characters8());
-    else
-        data = reinterpret_cast<const uint32_t*>(str.characters16());
+    data = reinterpret_cast<const uint32_t*>(str.characters16());
     for (size_t i = 0; i < str.sizeInBytes() / 4; i += 4) {
         uint32_t v = data[i];
         uint64_t xi = v * randomOdd[current] & 0x7FFFFFFF;
@@ -1084,7 +1081,7 @@ void V8DebuggerAgentImpl::traceAsyncCallbackCompleted()
 {
     if (!m_nestedAsyncCallCount)
         return;
-    ASSERT(m_currentAsyncCallChain);
+//    ASSERT(m_currentAsyncCallChain);
     --m_nestedAsyncCallCount;
     if (!m_nestedAsyncCallCount) {
         clearCurrentAsyncOperation();

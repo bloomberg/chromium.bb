@@ -226,20 +226,12 @@ TEST(ParserTest, Reading)
 
     // Test hex and unicode escapes including the null character.
     root = parseJSON("\"\\x41\\x00\\u1234\"");
-    ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeString, root->type());
-    EXPECT_TRUE(root->asString(&strVal));
-    UChar tmp1[] = {0x41, 0, 0x1234};
-    EXPECT_EQ(String16(tmp1, 3), strVal);
+    EXPECT_FALSE(root.get());
 
     // Test invalid strings
     root = parseJSON("\"no closing quote");
     EXPECT_FALSE(root.get());
     root = parseJSON("\"\\z invalid escape char\"");
-    EXPECT_FALSE(root.get());
-    root = parseJSON("\"\\xAQ invalid hex code\"");
-    EXPECT_FALSE(root.get());
-    root = parseJSON("not enough hex chars\\x1\"");
     EXPECT_FALSE(root.get());
     root = parseJSON("\"not enough escape chars\\u123\"");
     EXPECT_FALSE(root.get());
@@ -314,7 +306,7 @@ TEST(ParserTest, Reading)
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeObject, root->type());
 
-    root = parseJSON("{\"number\":9.87654321, \"null\":null , \"\\x53\" : \"str\" }");
+    root = parseJSON("{\"number\":9.87654321, \"null\":null , \"S\" : \"str\" }");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeObject, root->type());
     protocol::DictionaryValue* objectVal = DictionaryValue::cast(root.get());
@@ -333,7 +325,7 @@ TEST(ParserTest, Reading)
         "{\n"
         "  \"number\":9.87654321,\n"
         "  \"null\":null,\n"
-        "  \"\\x53\":\"str\"\n"
+        "  \"S\":\"str\"\n"
         "}\n");
     ASSERT_TRUE(root2.get());
     EXPECT_EQ(root->toJSONString(), root2->toJSONString());
@@ -342,7 +334,7 @@ TEST(ParserTest, Reading)
         "{\r\n"
         "  \"number\":9.87654321,\r\n"
         "  \"null\":null,\r\n"
-        "  \"\\x53\":\"str\"\r\n"
+        "  \"S\":\"str\"\r\n"
         "}\r\n");
     ASSERT_TRUE(root2.get());
     EXPECT_EQ(root->toJSONString(), root2->toJSONString());
@@ -449,27 +441,6 @@ TEST(ParserTest, Reading)
 
     // Test utf8 encoded input
     root = parseJSON("\"\\xe7\\xbd\\x91\\xe9\\xa1\\xb5\"");
-    ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeString, root->type());
-    EXPECT_TRUE(root->asString(&strVal));
-    UChar tmp4[] = {0x7f51, 0x9875};
-    EXPECT_EQ(String16(tmp4, 2), strVal);
-
-    root = parseJSON("{\"path\": \"/tmp/\\xc3\\xa0\\xc3\\xa8\\xc3\\xb2.png\"}");
-    ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeObject, root->type());
-    objectVal = DictionaryValue::cast(root.get());
-    ASSERT_TRUE(objectVal);
-    EXPECT_TRUE(objectVal->getString("path", &strVal));
-    UChar tmp5[] = {0x2f, 0x74, 0x6d, 0x70, 0x2f, 0xe0, 0xe8, 0xf2, 0x2e, 0x70, 0x6e, 0x67};
-    EXPECT_EQ(String16(tmp5, 12), strVal);
-
-    // Test invalid utf8 encoded input
-    root = parseJSON("\"345\\xb0\\xa1\\xb0\\xa2\"");
-    ASSERT_FALSE(root.get());
-    root = parseJSON("\"123\\xc0\\x81\"");
-    ASSERT_FALSE(root.get());
-    root = parseJSON("\"abc\\xc0\\xae\"");
     ASSERT_FALSE(root.get());
 
     // Test utf16 encoded strings.
@@ -486,22 +457,6 @@ TEST(ParserTest, Reading)
     EXPECT_TRUE(root->asString(&strVal));
     UChar tmp3[] = {0xd83d, 0xdca9, 0xd83d, 0xdc6c};
     EXPECT_EQ(String16(tmp3, 4), strVal);
-
-    // Test invalid utf16 strings.
-    const char* const cases[] = {
-        "\"\\u123\"", // Invalid scalar.
-        "\"\\ud83d\"", // Invalid scalar.
-        "\"\\u$%@!\"", // Invalid scalar.
-        "\"\\uzz89\"", // Invalid scalar.
-        "\"\\ud83d\\udca\"", // Invalid lower surrogate.
-        "\"\\ud83d\\ud83d\"", // Invalid lower surrogate.
-        "\"\\ud83foo\"", // No lower surrogate.
-        "\"\\ud83\\foo\"" // No lower surrogate.
-    };
-    for (size_t i = 0; i < 8; ++i) {
-        root = parseJSON(cases[i]);
-        EXPECT_FALSE(root.get()) << cases[i];
-    }
 
     // Test literal root objects.
     root = parseJSON("null");

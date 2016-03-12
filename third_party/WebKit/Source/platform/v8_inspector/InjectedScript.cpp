@@ -447,7 +447,7 @@ PassOwnPtr<protocol::Value> InjectedScript::makeCall(V8FunctionCall& function)
     if (!hadException) {
         result = toProtocolValue(function.context(), resultValue);
         if (!result)
-            result = protocol::StringValue::create("Object has too long reference chain(must not be longer than " + String16::number(protocol::Value::maxDepth) + ")");
+            result = protocol::StringValue::create("Object has too long reference chain");
     } else {
         result = protocol::StringValue::create("Exception while making a call.");
     }
@@ -501,7 +501,7 @@ PassOwnPtr<protocol::Value> InjectedScript::makeCallWithExceptionDetails(V8Funct
     } else {
         result = toProtocolValue(function.context(), resultValue);
         if (!result)
-            result = protocol::StringValue::create("Object has too long reference chain(must not be longer than " + String16::number(protocol::Value::maxDepth) + ")");
+            result = protocol::StringValue::create("Object has too long reference chain");
     }
     return result.release();
 }

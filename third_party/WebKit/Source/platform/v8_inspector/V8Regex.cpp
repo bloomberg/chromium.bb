@@ -35,7 +35,7 @@ int V8Regex::match(const String16& string, int startFrom, int* matchLength) cons
     if (matchLength)
         *matchLength = 0;
 
-    if (m_regex.IsEmpty() || string.isNull())
+    if (m_regex.IsEmpty() || string.isEmpty())
         return -1;
 
     // v8 strings are limited to int.

@@ -47,6 +47,7 @@ function dumpObject(object, prefix)
     }
     prefix = prefix || "";
     var keys = Object.keys(object);
+    keys.sort();
     for (var i = 0; i < keys.length; ++i) {
         var value = object[keys[i]];
         var nameWithPrefix = prefix + keys[i] + ": ";

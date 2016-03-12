@@ -13,8 +13,12 @@ ErrorSupport::ErrorSupport() : m_errorString(nullptr) { }
 ErrorSupport::ErrorSupport(String16* errorString) : m_errorString(errorString) { }
 ErrorSupport::~ErrorSupport()
 {
-    if (m_errorString && hasErrors())
-        *m_errorString = "Internal error(s): " + errors();
+    if (m_errorString && hasErrors()) {
+        String16Builder builder;
+        builder.append("Internal error(s): ");
+        builder.append(errors());
+        *m_errorString = builder.toString();
+    }
 }
 
 void ErrorSupport::setName(const String16& name)

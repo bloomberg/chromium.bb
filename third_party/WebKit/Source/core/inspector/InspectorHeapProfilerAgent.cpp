@@ -172,7 +172,7 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
 void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, const String16& heapSnapshotObjectId, const protocol::Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
-    unsigned id = heapSnapshotObjectId.toUInt(&ok);
+    int id = heapSnapshotObjectId.toInt(&ok);
     if (!ok) {
         *error = "Invalid heap snapshot object id";
         return;
@@ -189,7 +189,7 @@ void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, con
 void InspectorHeapProfilerAgent::addInspectedHeapObject(ErrorString* error, const String16& inspectedHeapObjectId)
 {
     bool ok;
-    unsigned id = inspectedHeapObjectId.toUInt(&ok);
+    int id = inspectedHeapObjectId.toInt(&ok);
     if (!ok) {
         *error = "Invalid heap snapshot object id";
         return;
@@ -208,11 +208,11 @@ void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const
     m_v8HeapProfilerAgent->getHeapObjectId(errorString, objectId, heapSnapshotObjectId);
 }
 
-bool InspectorHeapProfilerAgent::isInspectableHeapObject(unsigned id)
+bool InspectorHeapProfilerAgent::isInspectableHeapObject(int id)
 {
     v8::HandleScope scope(m_isolate);
     v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
-    v8::Local<v8::Value> value = profiler->FindObjectById(id);
+    v8::Local<v8::Value> value = profiler->FindObjectById(static_cast<unsigned>(id));
     if (value.IsEmpty() || !value->IsObject())
         return false;
     v8::Local<v8::Object> object = value.As<v8::Object>();

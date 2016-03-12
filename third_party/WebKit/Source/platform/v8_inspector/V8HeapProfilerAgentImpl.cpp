@@ -42,7 +42,11 @@ private:
 
 class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolver {
 public:
-    explicit GlobalObjectNameResolver(V8RuntimeAgentImpl* runtimeAgent) : m_runtimeAgent(runtimeAgent) { }
+    explicit GlobalObjectNameResolver(V8RuntimeAgentImpl* runtimeAgent) : m_offset(0), m_runtimeAgent(runtimeAgent)
+    {
+        m_strings.resize(10000);
+    }
+
     const char* GetName(v8::Local<v8::Object> object) override
     {
         int contextId = V8Debugger::contextId(object->CreationContext());
@@ -51,13 +55,23 @@ public:
         InjectedScript* injectedScript = m_runtimeAgent->getInjectedScriptManager()->findInjectedScript(contextId);
         if (!injectedScript)
             return "";
-        String16 name = injectedScript->origin().latin1Data();
-        m_strings.append(name);
-        return reinterpret_cast<const char *>(name.characters8());
+        String16 name = injectedScript->origin();
+        size_t length = name.length();
+        if (m_offset + length + 1 >= m_strings.size())
+            return "";
+        for (size_t i = 0; i < length; ++i) {
+            UChar ch = name[i];
+            m_strings[m_offset + i] = ch > 0xff ? '?' : static_cast<char>(ch);
+        }
+        m_strings[m_offset + length] = '\0';
+        char* result = &*m_strings.begin() + m_offset;
+        m_offset += length + 1;
+        return result;
     }
 
 private:
-    protocol::Vector<String16> m_strings;
+    size_t m_offset;
+    protocol::Vector<char> m_strings;
     V8RuntimeAgentImpl* m_runtimeAgent;
 };
 
@@ -77,7 +91,7 @@ private:
     protocol::Frontend::HeapProfiler* m_frontend;
 };
 
-v8::Local<v8::Object> objectByHeapObjectId(v8::Isolate* isolate, unsigned id)
+v8::Local<v8::Object> objectByHeapObjectId(v8::Isolate* isolate, int id)
 {
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
     v8::Local<v8::Value> value = profiler->FindObjectById(id);
@@ -88,13 +102,13 @@ v8::Local<v8::Object> objectByHeapObjectId(v8::Isolate* isolate, unsigned id)
 
 class InspectableHeapObject final : public V8RuntimeAgent::Inspectable {
 public:
-    explicit InspectableHeapObject(unsigned heapObjectId) : m_heapObjectId(heapObjectId) { }
+    explicit InspectableHeapObject(int heapObjectId) : m_heapObjectId(heapObjectId) { }
     v8::Local<v8::Value> get(v8::Local<v8::Context> context) override
     {
         return objectByHeapObjectId(context->GetIsolate(), m_heapObjectId);
     }
 private:
-    unsigned m_heapObjectId;
+    int m_heapObjectId;
 };
 
 class HeapStatsStream final : public v8::OutputStream {
@@ -228,7 +242,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
 void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String16& heapSnapshotObjectId, const protocol::Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
-    unsigned id = heapSnapshotObjectId.toUInt(&ok);
+    int id = heapSnapshotObjectId.toInt(&ok);
     if (!ok) {
         *error = "Invalid heap snapshot object id";
         return;
@@ -248,7 +262,7 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
 void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, const String16& inspectedHeapObjectId)
 {
     bool ok;
-    unsigned id = inspectedHeapObjectId.toUInt(&ok);
+    int id = inspectedHeapObjectId.toInt(&ok);
     if (!ok) {
         *errorString = "Invalid heap snapshot object id";
         return;

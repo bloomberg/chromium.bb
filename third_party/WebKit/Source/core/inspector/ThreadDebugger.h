@@ -25,7 +25,7 @@ public:
     // V8DebuggerClient implementation.
     void muteWarningsAndDeprecations() override { };
     void unmuteWarningsAndDeprecations() override { };
-    void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoMap&) override;
+    void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) override;
     v8::MaybeLocal<v8::Object> instantiateObject(v8::Local<v8::Function>) override;
     v8::MaybeLocal<v8::Value> runCompiledScript(v8::Local<v8::Context>, v8::Local<v8::Script>) override;
     v8::MaybeLocal<v8::Value> compileAndRunInternalScript(v8::Local<v8::String>) override;

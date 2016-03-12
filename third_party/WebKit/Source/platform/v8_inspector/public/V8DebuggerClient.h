@@ -20,7 +20,7 @@ public:
     virtual void quitMessageLoopOnPause() = 0;
     virtual void muteWarningsAndDeprecations() = 0;
     virtual void unmuteWarningsAndDeprecations() = 0;
-    virtual void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoMap&) = 0;
+    virtual void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) = 0;
     virtual void contextsToReport(int contextGroupId, V8ContextInfoVector&) = 0;
     virtual bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) = 0;
 
