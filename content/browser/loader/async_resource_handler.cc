@@ -450,6 +450,8 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   if (!sent_data_buffer_msg_) {
     base::SharedMemoryHandle handle = base::SharedMemory::DuplicateHandle(
         buffer_->GetSharedMemory().handle());
+    if (!base::SharedMemory::IsHandleValid(handle))
+      return false;
     filter->Send(new ResourceMsg_SetDataBuffer(
         GetRequestID(), handle, buffer_->GetSharedMemory().mapped_size(),
         filter->peer_pid()));
