@@ -269,10 +269,11 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 		return NULL;
 
 	bo = gbm_bo_new(gbm, fd_data->width, fd_data->height, fd_data->format);
-	bo->strides[0] = fd_data->stride;
-
 	if (!bo)
 		return NULL;
+
+	bo->strides[0] = fd_data->stride;
+	bo->sizes[0] = fd_data->height * fd_data->stride;
 
 	prime_handle.fd = fd_data->fd;
 
