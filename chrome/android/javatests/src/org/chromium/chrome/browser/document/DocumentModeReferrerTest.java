@@ -9,8 +9,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Browser;
+import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
@@ -44,8 +44,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         }
     }
 
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testReferrerExtra() throws Exception {
         Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
                 DocumentActivity.class.getName(), null, false);
@@ -97,8 +96,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         assertEquals(URL_2, mReferrer);
     }
 
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testReferrerExtraAndroidApp() throws Exception {
         Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
                 DocumentActivity.class.getName(), null, false);
@@ -150,8 +148,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         assertEquals(androidAppReferrer, mReferrer);
     }
 
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testReferrerExtraNotAndroidApp() throws Exception {
         Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
                 DocumentActivity.class.getName(), null, false);
@@ -204,8 +201,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         assertNull(mReferrer);
     }
 
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testReferrerExtraFromExternalIntent() throws Exception {
         Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
                 DocumentActivity.class.getName(), null, false);

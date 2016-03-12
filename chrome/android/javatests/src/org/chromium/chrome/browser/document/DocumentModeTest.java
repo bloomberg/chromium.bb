@@ -12,12 +12,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -86,8 +87,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     /**
      * Confirm that you can't start ChromeTabbedActivity while the user is running in Document mode.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testDontStartTabbedActivityInDocumentMode() throws Exception {
         launchThreeTabs();
 
@@ -112,8 +112,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * the DocumentActivity to finish itself and hopefully not flat crash (though that'd be better
      * than letting the user live in both tabbed and document mode simultaneously crbug.com/445136).
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testFireInvalidIntent() throws Exception {
         launchThreeTabs();
 
@@ -152,8 +151,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Confirm that firing an Intent for a document that has an ID for an already existing Tab kills
      * the original.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testDuplicateTabIDsKillsOldActivities() throws Exception {
         launchThreeTabs();
 
@@ -199,8 +197,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     /**
      * Confirm that firing a View Intent with a null URL acts like a Main Intent.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testRelaunchLatestTabWithInvalidViewIntent() throws Exception {
         launchThreeTabs();
 
@@ -235,8 +232,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Confirm that clicking the Chrome icon (e.g. firing an Intent with ACTION_MAIN) brings back
      * the last viewed Tab.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testRelaunchLatestTab() throws Exception {
         launchThreeTabs();
 
@@ -262,8 +258,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     /**
      * Confirm that setting the index brings the correct tab forward.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testSetIndex() throws Exception {
         int[] tabIds = launchThreeTabs();
 
@@ -289,8 +284,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     }
 
     /** Check that Intents that request reusing Tabs are honored. */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testReuseIntent() throws Exception {
         // Create a tab, then send the user back to the Home screen.
         int tabId = launchViaViewIntent(false, URL_1, "Page 1");
@@ -338,8 +332,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Tests both ways of launching Incognito tabs: via an Intent, and via
      * {@ref ChromeLauncherActivity#launchDocumentInstance()}.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testIncognitoLaunches() throws Exception {
         assertFalse(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
 
@@ -415,8 +408,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Tests that opening an Incognito tab via a context menu while in Incognito mode opens the tab
      * in the background.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testIncognitoOpensInBackgroundFromIncognito() throws Exception {
         // Create an Incognito tab via an Intent extra.
         assertFalse(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
@@ -453,8 +445,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Confirm that the incognito tabs and TabModel are destroyed when the "close all" notification
      * Intent is fired.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testIncognitoNotificationClosesTabs() throws Exception {
         final int regularId = launchViaLaunchDocumentInstance(false, URL_1, "Page 1");
         final DocumentTabModelSelector selector =
@@ -490,8 +481,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     /**
      * Tests that Incognito tabs are opened in the foreground when spawned from a regular tab.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testIncognitoOpensInForegroundViaLinkContextMenu() throws Exception {
         launchViaLaunchDocumentInstance(false, HREF_LINK, "href link page");
 
@@ -560,8 +550,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     /**
      * Tests that tab ID is properly set when tabs change.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testLastTabIdUpdates() throws Exception {
         launchViaLaunchDocumentInstance(false, HREF_LINK, "href link page");
 
@@ -607,8 +596,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Tests that the page loads fine when a new page is opened via:
      * <a href="" target="_blank" rel="noreferrer">
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testTargetBlank() throws Exception {
         Intent lastIntent = performNewWindowTest(
                 HREF_NO_REFERRER_LINK, "href no referrer link page", false, "Page 4", false);
@@ -620,8 +608,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Tabs opened this way have their WebContents paused while the new Activity that will host
      * the WebContents starts asynchronously.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testWindowOpen() throws Exception {
         Intent lastIntent = performNewWindowTest(
                 ONCLICK_LINK, "window.open page", true, "Page 4", false);
@@ -658,8 +645,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Tests that the page loads fine when a new page is opened via window.open() and the opener is
      * set to null immediately afterward.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testWindowOpenWithOpenerSuppressed() throws Exception {
         Intent lastIntent = performNewWindowTest(ONCLICK_NO_REFERRER_LINK,
                 "window.open page, opener set to null", true, "Page 4", false);
@@ -671,10 +657,9 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Tests that a Weblite url from an external app uses the lite_url param when Data Reduction
      * Proxy previews are being used.
      */
-    // @MediumTest
-    // @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
-    //         "enable-data-reduction-proxy-lo-fi-preview"})
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
+            "enable-data-reduction-proxy-lo-fi-preview"})
     public void testLaunchWebLiteURL() throws Exception {
         EmbeddedTestServer testServer;
         testServer = EmbeddedTestServer.createAndStartFileServer(
@@ -700,8 +685,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
      * Tests that a Weblite url from an external app does not use the lite_url param when Data
      * Reduction Proxy previews are not being used.
      */
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MediumTest
     public void testLaunchWebLiteURLNoPreviews() throws Exception {
         String url = "http://googleweblight.com/?lite_url=chrome/test/data/android/about.html";
         Runnable viewIntentRunnable = getViewIntentRunnable(false, url);

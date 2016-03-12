@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
@@ -15,7 +16,7 @@ import android.view.View;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.document.DocumentActivity;
+import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.test.MultiActivityTestBase;
@@ -219,11 +221,10 @@ public class WebappModeTest extends MultiActivityTestBase {
     /**
      * Tests that WebappActivities handle window.open() properly in document mode.
      */
-    // @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @MediumTest
     public void testWebappHandlesWindowOpenInDocumentMode() throws Exception {
-        triggerWindowOpenAndWaitForLoad(DocumentActivity.class, ONCLICK_LINK, true);
+        triggerWindowOpenAndWaitForDocumentLoad(ONCLICK_LINK, true);
     }
 
     /**
@@ -238,11 +239,10 @@ public class WebappModeTest extends MultiActivityTestBase {
     /**
      * Tests that WebappActivities handle suppressed window.open() properly in document mode.
      */
-    // @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    // @MediumTest
-    @DisabledTest // https://crbug.com/592404
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @MediumTest
     public void testWebappHandlesSuppressedWindowOpenInDocumentMode() throws Exception {
-        triggerWindowOpenAndWaitForLoad(DocumentActivity.class, HREF_NO_REFERRER_LINK, false);
+        triggerWindowOpenAndWaitForDocumentLoad(HREF_NO_REFERRER_LINK, false);
     }
 
     /**
@@ -252,6 +252,24 @@ public class WebappModeTest extends MultiActivityTestBase {
     @MediumTest
     public void testWebappHandlesSuppressedWindowOpenInTabbedMode() throws Exception {
         triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, HREF_NO_REFERRER_LINK, false);
+    }
+
+    private void triggerWindowOpenAndWaitForDocumentLoad(
+            String linkHtml, boolean checkContents) throws Exception {
+        // We default to tabbed mode. To have the WebappActivity launch a DocumentActivity,
+        // we have to explicitly override that default here.
+        DocumentModeManager documentModeManager = DocumentModeManager.getInstance(
+                getInstrumentation().getTargetContext());
+        boolean previouslyOptedOut = documentModeManager.isOptedOutOfDocumentMode();
+        documentModeManager.setOptedOutState(DocumentModeManager.OPT_OUT_PROMO_DISMISSED);
+        try {
+            triggerWindowOpenAndWaitForLoad(DocumentActivity.class, linkHtml, checkContents);
+        } finally {
+            if (previouslyOptedOut) {
+                documentModeManager.setOptedOutState(
+                        DocumentModeManager.OPTED_OUT_OF_DOCUMENT_MODE);
+            }
+        }
     }
 
     private <T extends ChromeActivity> void triggerWindowOpenAndWaitForLoad(
