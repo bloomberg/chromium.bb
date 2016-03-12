@@ -13,6 +13,9 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/network/ResourceLoadPriority.h"
+#include "platform/testing/URLTestHelpers.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebUnitTestSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <base/macros.h>
 
@@ -94,36 +97,36 @@ TEST(LinkLoaderTest, Preload)
         const bool expectingLoad;
         const char* accept;
     } cases[] = {
-        {"data://example.test/cat.jpg", "image", "", ResourceLoadPriorityVeryLow, WebURLRequest::RequestContextImage, true, true, "image/webp,image/*,*/*;q=0.8"},
-        {"data://example.test/cat.js", "script", "", ResourceLoadPriorityMedium, WebURLRequest::RequestContextScript, true, true, "*/*"},
-        {"data://example.test/cat.css", "style", "", ResourceLoadPriorityHigh, WebURLRequest::RequestContextStyle, true, true, "text/css,*/*;q=0.1"},
+        {"http://example.test/cat.jpg", "image", "", ResourceLoadPriorityVeryLow, WebURLRequest::RequestContextImage, true, true, "image/webp,image/*,*/*;q=0.8"},
+        {"http://example.test/cat.js", "script", "", ResourceLoadPriorityMedium, WebURLRequest::RequestContextScript, true, true, "*/*"},
+        {"http://example.test/cat.css", "style", "", ResourceLoadPriorityHigh, WebURLRequest::RequestContextStyle, true, true, "text/css,*/*;q=0.1"},
         // TODO(yoav): It doesn't seem like the audio context is ever used. That should probably be fixed (or we can consolidate audio and video).
-        {"data://example.test/cat.wav", "media", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true, ""},
-        {"data://example.test/cat.mp4", "media", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true, ""},
-        {"data://example.test/cat.vtt", "track", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, true, ""},
-        {"data://example.test/cat.woff", "font", "", ResourceLoadPriorityMedium, WebURLRequest::RequestContextFont, true, true, ""},
+        {"http://example.test/cat.wav", "media", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true, ""},
+        {"http://example.test/cat.mp4", "media", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true, ""},
+        {"http://example.test/cat.vtt", "track", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, true, ""},
+        {"http://example.test/cat.woff", "font", "", ResourceLoadPriorityMedium, WebURLRequest::RequestContextFont, true, true, ""},
         // TODO(yoav): subresource should be *very* low priority (rather than low).
-        {"data://example.test/cat.empty", "", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, true, ""},
-        {"data://example.test/cat.blob", "blabla", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false, false, ""},
+        {"http://example.test/cat.empty", "", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, true, ""},
+        {"http://example.test/cat.blob", "blabla", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false, false, ""},
         {"bla://example.test/cat.gif", "image", "", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage, false, false, ""},
         // MIME type tests
-        {"data://example.test/cat.webp", "image", "image/webp", ResourceLoadPriorityVeryLow, WebURLRequest::RequestContextImage, true, true, "image/webp,image/*,*/*;q=0.8"},
-        {"data://example.test/cat.svg", "image", "image/svg+xml", ResourceLoadPriorityVeryLow, WebURLRequest::RequestContextImage, true, true, "image/webp,image/*,*/*;q=0.8"},
-        {"data://example.test/cat.jxr", "image", "image/jxr", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage, false, false, ""},
-        {"data://example.test/cat.js", "script", "text/javascript", ResourceLoadPriorityMedium, WebURLRequest::RequestContextScript, true, true, "*/*"},
-        {"data://example.test/cat.js", "script", "text/coffeescript", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextScript, false, false, ""},
-        {"data://example.test/cat.css", "style", "text/css", ResourceLoadPriorityHigh, WebURLRequest::RequestContextStyle, true, true, "text/css,*/*;q=0.1"},
-        {"data://example.test/cat.css", "style", "text/sass", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextStyle, false, false, ""},
-        {"data://example.test/cat.wav", "media", "audio/wav", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true, ""},
-        {"data://example.test/cat.wav", "media", "audio/mp57", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextVideo, false, false, ""},
-        {"data://example.test/cat.webm", "media", "video/webm", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true, ""},
-        {"data://example.test/cat.mp199", "media", "video/mp199", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextVideo, false, false, ""},
-        {"data://example.test/cat.vtt", "track", "text/vtt", ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, true, ""},
-        {"data://example.test/cat.vtt", "track", "text/subtitlething", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextTrack, false, false, ""},
-        {"data://example.test/cat.woff", "font", "font/woff2", ResourceLoadPriorityMedium, WebURLRequest::RequestContextFont, true, true, ""},
-        {"data://example.test/cat.woff", "font", "font/woff84", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextFont, false, false, ""},
-        {"data://example.test/cat.empty", "", "foo/bar", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, true, ""},
-        {"data://example.test/cat.blob", "blabla", "foo/bar", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false, false, ""},
+        {"http://example.test/cat.webp", "image", "image/webp", ResourceLoadPriorityVeryLow, WebURLRequest::RequestContextImage, true, true, "image/webp,image/*,*/*;q=0.8"},
+        {"http://example.test/cat.svg", "image", "image/svg+xml", ResourceLoadPriorityVeryLow, WebURLRequest::RequestContextImage, true, true, "image/webp,image/*,*/*;q=0.8"},
+        {"http://example.test/cat.jxr", "image", "image/jxr", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage, false, false, ""},
+        {"http://example.test/cat.js", "script", "text/javascript", ResourceLoadPriorityMedium, WebURLRequest::RequestContextScript, true, true, "*/*"},
+        {"http://example.test/cat.js", "script", "text/coffeescript", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextScript, false, false, ""},
+        {"http://example.test/cat.css", "style", "text/css", ResourceLoadPriorityHigh, WebURLRequest::RequestContextStyle, true, true, "text/css,*/*;q=0.1"},
+        {"http://example.test/cat.css", "style", "text/sass", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextStyle, false, false, ""},
+        {"http://example.test/cat.wav", "media", "audio/wav", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true, ""},
+        {"http://example.test/cat.wav", "media", "audio/mp57", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextVideo, false, false, ""},
+        {"http://example.test/cat.webm", "media", "video/webm", ResourceLoadPriorityLow, WebURLRequest::RequestContextVideo, true, true, ""},
+        {"http://example.test/cat.mp199", "media", "video/mp199", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextVideo, false, false, ""},
+        {"http://example.test/cat.vtt", "track", "text/vtt", ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, true, ""},
+        {"http://example.test/cat.vtt", "track", "text/subtitlething", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextTrack, false, false, ""},
+        {"http://example.test/cat.woff", "font", "font/woff2", ResourceLoadPriorityMedium, WebURLRequest::RequestContextFont, true, true, ""},
+        {"http://example.test/cat.woff", "font", "font/woff84", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextFont, false, false, ""},
+        {"http://example.test/cat.empty", "", "foo/bar", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, true, ""},
+        {"http://example.test/cat.blob", "blabla", "foo/bar", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false, false, ""},
     };
 
     // Test the cases with a single header
@@ -133,6 +136,7 @@ TEST(LinkLoaderTest, Preload)
         OwnPtrWillBePersistent<MockLinkLoaderClient> loaderClient = MockLinkLoaderClient::create(testCase.linkLoaderShouldLoadValue);
         OwnPtrWillBeRawPtr<LinkLoader> loader = LinkLoader::create(loaderClient.get());
         KURL hrefURL = KURL(KURL(), testCase.href);
+        URLTestHelpers::registerMockedErrorURLLoad(hrefURL);
         loader->loadLink(LinkRelAttribute("preload"),
             CrossOriginAttributeNotSet,
             testCase.type,
@@ -164,6 +168,7 @@ TEST(LinkLoaderTest, Preload)
             dummyPageHolder->document().fetcher()->clearPreloads();
         }
         memoryCache()->evictResources();
+        Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
 }
 
