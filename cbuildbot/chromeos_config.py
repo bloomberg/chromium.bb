@@ -2490,7 +2490,7 @@ def GetConfig():
                                   num=1, timeout=120*60),
           config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
                                   num=1, timeout=120*60),
-          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
+          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                   warn_only=True, num=1)],
   )
 
