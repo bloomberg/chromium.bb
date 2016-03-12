@@ -1026,6 +1026,40 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
     return std::max(childSize, minExtent);
 }
 
+LayoutUnit LayoutFlexibleBox::computeDefiniteLogicalWidth()
+{
+    const Length& widthLength = styleRef().logicalWidth();
+    if (widthLength.hasPercent() && !hasDefiniteLogicalWidth())
+        return LayoutUnit(-1);
+
+    if (widthLength.isAuto()) {
+        // We can still have a definite width even with width: auto if we're a flex item ourselves
+        if (!isFlexItem())
+            return LayoutUnit(-1);
+        return toLayoutFlexibleBox(parent())->childLogicalWidthForPercentageResolution(*this);
+    }
+    LogicalExtentComputedValues computedValues;
+    computeLogicalWidth(computedValues);
+    return computedValues.m_extent;
+}
+
+LayoutUnit LayoutFlexibleBox::computeDefiniteLogicalHeight()
+{
+    const Length& heightLength = styleRef().logicalHeight();
+    if (heightLength.hasPercent()) {
+        return computePercentageLogicalHeight(heightLength);
+    }
+    if (heightLength.isAuto()) {
+        // We can still have a definite height even with height: auto if we're a flex item ourselves
+        if (!isFlexItem())
+            return LayoutUnit(-1);
+        return toLayoutFlexibleBox(parent())->childLogicalHeightForPercentageResolution(*this);
+    }
+    LogicalExtentComputedValues computedValues;
+    computeLogicalHeight(LayoutUnit(-1), LayoutUnit(), computedValues);
+    return computedValues.m_extent;
+}
+
 LayoutUnit LayoutFlexibleBox::crossSizeForPercentageResolution(const LayoutBox& child)
 {
     // This function implements section 9.8. Definite and Indefinite Sizes, case
@@ -1044,42 +1078,18 @@ LayoutUnit LayoutFlexibleBox::crossSizeForPercentageResolution(const LayoutBox& 
 
     LayoutUnit childCrossSize;
 
-    LogicalExtentComputedValues computedValues;
     if (isColumnFlow()) {
-        const Length& widthLength = styleRef().logicalWidth();
-        if (widthLength.hasPercent() && !hasDefiniteLogicalWidth())
-            return LayoutUnit(-1);
-
-        if (widthLength.isAuto()) {
-            // We can still have a definite width even with width: auto if we're a flex item ourselves
-            if (!isFlexItem())
-                return LayoutUnit(-1);
-            computedValues.m_extent = toLayoutFlexibleBox(parent())->childLogicalWidthForPercentageResolution(*this);
-            if (computedValues.m_extent == LayoutUnit(-1))
-                return computedValues.m_extent;
-        } else {
-            computeLogicalWidth(computedValues);
-        }
-        if (computedValues.m_extent == LayoutUnit(-1))
-            return LayoutUnit(-1);
-        childCrossSize = computedValues.m_extent - borderAndPaddingLogicalWidth() - scrollbarLogicalWidth();
+        LayoutUnit definiteWidth = computeDefiniteLogicalWidth();
+        if (definiteWidth == LayoutUnit(-1))
+            return definiteWidth;
+        childCrossSize = definiteWidth - borderAndPaddingLogicalWidth() - scrollbarLogicalWidth();
         childCrossSize = child.constrainLogicalWidthByMinMax(childCrossSize, childCrossSize, this) - child.scrollbarLogicalWidth() - child.borderAndPaddingLogicalWidth();
     } else {
-        const Length& heightLength = styleRef().logicalHeight();
-        if (heightLength.hasPercent()) {
-            computedValues.m_extent = computePercentageLogicalHeight(heightLength);
-        } else if (heightLength.isAuto()) {
-            // We can still have a definite height even with height: auto if we're a flex item ourselves
-            if (!isFlexItem())
-                return LayoutUnit(-1);
-            computedValues.m_extent = toLayoutFlexibleBox(parent())->childLogicalHeightForPercentageResolution(*this);
-        } else {
-            computeLogicalHeight(LayoutUnit(-1), LayoutUnit(), computedValues);
-        }
-        if (computedValues.m_extent == LayoutUnit(-1))
-            return computedValues.m_extent;
+        LayoutUnit definiteHeight = computeDefiniteLogicalHeight();
+        if (definiteHeight == LayoutUnit(-1))
+            return definiteHeight;
 
-        childCrossSize = computedValues.m_extent - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();
+        childCrossSize = definiteHeight - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();
         childCrossSize = child.constrainLogicalHeightByMinMax(childCrossSize, LayoutUnit(-1)) - child.scrollbarLogicalHeight() - child.borderAndPaddingLogicalHeight();
     }
     return childCrossSize;

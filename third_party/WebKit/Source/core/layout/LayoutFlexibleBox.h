@@ -60,6 +60,10 @@ public:
 
     const OrderIterator& orderIterator() const { return m_orderIterator; }
 
+    // Returns -1 if the height of this flexbox is indefinite
+    LayoutUnit computeDefiniteLogicalWidth();
+    LayoutUnit computeDefiniteLogicalHeight();
+
     LayoutUnit crossSizeForPercentageResolution(const LayoutBox& child);
     LayoutUnit childLogicalHeightForPercentageResolution(const LayoutBox& child);
     LayoutUnit childLogicalWidthForPercentageResolution(const LayoutBox& child);
