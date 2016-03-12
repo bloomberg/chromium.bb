@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/rejecting_authenticator.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"

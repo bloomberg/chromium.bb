@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/third_party_authenticator_base.h"
 
 namespace remoting {

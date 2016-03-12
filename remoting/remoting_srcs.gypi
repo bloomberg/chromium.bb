@@ -80,6 +80,8 @@
       'protocol/authenticator.cc',
       'protocol/authenticator.h',
       'protocol/capability_names.h',
+      'protocol/client_authentication_config.cc',
+      'protocol/client_authentication_config.h',
       'protocol/channel_authenticator.h',
       'protocol/channel_dispatcher_base.cc',
       'protocol/channel_dispatcher_base.h',

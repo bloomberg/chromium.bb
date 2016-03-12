@@ -29,15 +29,14 @@
 #include "remoting/client/plugin/pepper_video_renderer.h"
 #include "remoting/client/touch_input_scaler.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/mouse_input_filter.h"
-#include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/performance_tracker.h"
-#include "remoting/protocol/third_party_client_authenticator.h"
 
 namespace base {
 class DictionaryValue;

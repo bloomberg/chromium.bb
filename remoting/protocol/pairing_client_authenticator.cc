@@ -15,19 +15,13 @@ namespace remoting {
 namespace protocol {
 
 PairingClientAuthenticator::PairingClientAuthenticator(
-    const std::string& client_id,
-    const std::string& paired_secret,
-    const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
-    const FetchSecretCallback& fetch_pin_callback,
-    const std::string& host_id)
-    : client_id_(client_id),
-      paired_secret_(paired_secret),
+    const ClientAuthenticationConfig& client_auth_config,
+    const CreateBaseAuthenticatorCallback& create_base_authenticator_callback)
+    : client_auth_config_(client_auth_config),
       create_base_authenticator_callback_(create_base_authenticator_callback),
-      fetch_pin_callback_(fetch_pin_callback),
-      host_id_(host_id),
       weak_factory_(this) {
-  spake2_authenticator_ =
-      create_base_authenticator_callback_.Run(paired_secret_, MESSAGE_READY);
+  spake2_authenticator_ = create_base_authenticator_callback_.Run(
+      client_auth_config.pairing_secret, MESSAGE_READY);
   using_paired_secret_ = true;
 }
 
@@ -44,7 +38,7 @@ void PairingClientAuthenticator::CreateSpakeAuthenticatorWithPin(
     const base::Closure& resume_callback) {
   DCHECK(!waiting_for_pin_);
   waiting_for_pin_ = true;
-  fetch_pin_callback_.Run(
+  client_auth_config_.fetch_secret_callback.Run(
       true,
       base::Bind(&PairingClientAuthenticator::OnPinFetched,
                  weak_factory_.GetWeakPtr(), initial_state, resume_callback));
@@ -57,7 +51,8 @@ void PairingClientAuthenticator::AddPairingElements(buzz::XmlElement* message) {
   // the host will accept the client id or request that we fall back to the PIN.
   if (!sent_client_id_) {
     buzz::XmlElement* pairing_tag = new buzz::XmlElement(kPairingInfoTag);
-    pairing_tag->AddAttr(kClientIdAttribute, client_id_);
+    pairing_tag->AddAttr(kClientIdAttribute,
+                         client_auth_config_.pairing_client_id);
     message->AddElement(pairing_tag);
     sent_client_id_ = true;
   }
@@ -71,7 +66,7 @@ void PairingClientAuthenticator::OnPinFetched(
   DCHECK(!spake2_authenticator_);
   waiting_for_pin_ = false;
   spake2_authenticator_ = create_base_authenticator_callback_.Run(
-      GetSharedSecretHash(host_id_, pin), initial_state);
+      GetSharedSecretHash(client_auth_config_.host_id, pin), initial_state);
   resume_callback.Run();
 }
 

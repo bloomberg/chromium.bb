@@ -22,9 +22,6 @@
 namespace remoting {
 namespace protocol {
 
-ClientAuthenticationConfig::ClientAuthenticationConfig() {}
-ClientAuthenticationConfig::~ClientAuthenticationConfig() {}
-
 NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
     const std::string& local_id,
     const std::string& remote_id,
@@ -151,9 +148,7 @@ void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
     // If the client specified a pairing id and shared secret, then create a
     // PairingAuthenticator.
     current_authenticator_.reset(new PairingClientAuthenticator(
-        config_.pairing_client_id, config_.pairing_secret,
-        base::Bind(&V2Authenticator::CreateForClient),
-        config_.fetch_secret_callback, config_.host_id));
+        config_, base::Bind(&V2Authenticator::CreateForClient)));
     current_method_ = Method::PAIRED_SPAKE2_P224;
   }
 }

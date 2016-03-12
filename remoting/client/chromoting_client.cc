@@ -16,6 +16,7 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/ice_connection_to_host.h"
 #include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"

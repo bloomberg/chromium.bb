@@ -12,29 +12,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/negotiating_authenticator_base.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
 
 namespace remoting {
 namespace protocol {
-
-struct ClientAuthenticationConfig {
-  ClientAuthenticationConfig();
-  ~ClientAuthenticationConfig();
-
-  // Used for all authenticators.
-  std::string host_id;
-
-  // Used for pairing authenticators
-  std::string pairing_client_id;
-  std::string pairing_secret;
-
-  // Used for shared secret authenticators.
-  FetchSecretCallback fetch_secret_callback;
-
-  // Used for third party authenticators.
-  FetchThirdPartyTokenCallback fetch_third_party_token_callback;
-};
 
 // Client-side implementation of NegotiatingAuthenticatorBase.
 // See comments in negotiating_authenticator_base.h for a general explanation.

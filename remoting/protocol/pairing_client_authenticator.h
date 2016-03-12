@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/pairing_authenticator_base.h"
 
 namespace remoting {
@@ -15,11 +16,9 @@ namespace protocol {
 class PairingClientAuthenticator : public PairingAuthenticatorBase {
  public:
   PairingClientAuthenticator(
-      const std::string& client_id,
-      const std::string& paired_secret,
-      const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
-      const FetchSecretCallback& fetch_pin_callback,
-      const std::string& host_id);
+      const ClientAuthenticationConfig& client_auth_config,
+      const CreateBaseAuthenticatorCallback&
+          create_base_authenticator_callback);
   ~PairingClientAuthenticator() override;
 
   // Authenticator interface.
@@ -36,13 +35,11 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
                     const base::Closure& resume_callback,
                     const std::string& pin);
 
-  // Protocol state.
-  bool sent_client_id_ = false;
-  std::string client_id_;
-  std::string paired_secret_;
+  ClientAuthenticationConfig client_auth_config_;
   CreateBaseAuthenticatorCallback create_base_authenticator_callback_;
-  FetchSecretCallback fetch_pin_callback_;
-  std::string host_id_;
+
+  // Set to true after client_id is sent to the host.
+  bool sent_client_id_ = false;
 
   // Set to true if a PIN-based authenticator has been requested but has not
   // yet been set.
