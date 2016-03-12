@@ -1583,14 +1583,14 @@ Press any key to continue exploring.
     Previous password
   </message>
   <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_TITLE" desc="Title for the fatal cryptohome error dialog box">
-    Could not sign in
+    Can't sign in
   </message>
   <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_MESSAGE" desc="Message for the fatal cryptohome error dialog box">
-    We're very sorry, but a serious error has occurred and your profile on this device will need to be re-created to continue.<ph name="BR">&lt;br&gt;</ph>
+    We're sorry. We can't access your profile. Files and data stored on this device may have been lost.<ph name="BR">&lt;br&gt;</ph>
     <ph name="BR">&lt;br&gt;</ph>
-    Don't worry, your account is safe, but unfortunately, your local data and files on this device may have been lost.<ph name="BR">&lt;br&gt;</ph>
+    You'll have to set up your profile again.<ph name="BR">&lt;br&gt;</ph>
     <ph name="BR">&lt;br&gt;</ph>
-    Please send feedback to help us prevent this issue in the future.
+    On the next screen, please send feedback to help us fix the issue.
   </message>
   <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_CONTINUE" desc="Label of the button to continue with re-creating cryptohome for the fatal cryptohome error dialog box">
     Continue
