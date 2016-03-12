@@ -603,6 +603,46 @@ TEST_P(QuicStreamFactoryTest, GoAway) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
+TEST_P(QuicStreamFactoryTest, GoAwayForConnectionMigrationWithPortOnly) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+
+  session->OnGoAway(
+      QuicGoAwayFrame(QUIC_ERROR_MIGRATING_PORT, 0,
+                      "peer connection migration due to port change only"));
+  NetErrorDetails details;
+  EXPECT_FALSE(details.quic_port_migration_detected);
+  session->PopulateNetErrorDetails(&details);
+  EXPECT_TRUE(details.quic_port_migration_detected);
+  details.quic_port_migration_detected = false;
+  stream->PopulateNetErrorDetails(&details);
+  EXPECT_TRUE(details.quic_port_migration_detected);
+
+  EXPECT_FALSE(
+      QuicStreamFactoryPeer::HasActiveSession(factory_.get(), host_port_pair_));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
 TEST_P(QuicStreamFactoryTest, Pooling) {
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();

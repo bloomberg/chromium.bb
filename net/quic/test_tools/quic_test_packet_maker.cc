@@ -190,6 +190,28 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeConnectionClosePacket(
   return scoped_ptr<QuicEncryptedPacket>(MakePacket(header, QuicFrame(&close)));
 }
 
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeGoAwayPacket(
+    QuicPacketNumber num,
+    QuicErrorCode error_code,
+    std::string reason_phrase) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = connection_id_;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.packet_number = num;
+  header.entropy_flag = false;
+  header.fec_flag = false;
+  header.fec_group = 0;
+
+  QuicGoAwayFrame goaway;
+  goaway.error_code = error_code;
+  goaway.last_good_stream_id = 0;
+  goaway.reason_phrase = reason_phrase;
+  return scoped_ptr<QuicEncryptedPacket>(
+      MakePacket(header, QuicFrame(&goaway)));
+}
+
 // Sets both least_unacked fields in stop waiting frame and ack frame
 // to be |least_unacked|.
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(

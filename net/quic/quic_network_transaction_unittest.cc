@@ -233,11 +233,30 @@ class QuicNetworkTransactionTest
     return maker_.MakeConnectionClosePacket(num);
   }
 
+  scoped_ptr<QuicEncryptedPacket> ConstructGoAwayPacket(
+      QuicPacketNumber num,
+      QuicErrorCode error_code,
+      std::string reason_phrase) {
+    return maker_.MakeGoAwayPacket(num, error_code, reason_phrase);
+  }
+
   scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked) {
     return maker_.MakeAckPacket(2, largest_received, least_unacked,
                                 least_unacked, true);
+  }
+
+  scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstPacket(
+      QuicPacketNumber num,
+      QuicStreamId stream_id,
+      QuicRstStreamErrorCode error_code,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber ack_least_unacked,
+      QuicPacketNumber stop_least_unacked) {
+    return maker_.MakeAckAndRstPacket(num, false, stream_id, error_code,
+                                      largest_received, ack_least_unacked,
+                                      stop_least_unacked, true);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
@@ -913,6 +932,67 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceQuicSupportedVersion) {
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                    GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  // Read a GoAway packet with
+  // QuicErrorCode: QUIC_ERROR_MIGRATING_PORT from the peer.
+  mock_quic_data.AddRead(
+      ConstructGoAwayPacket(2, QUIC_ERROR_MIGRATING_PORT,
+                            "connection migration with port change only"));
+  mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  mock_quic_data.AddRead(
+      ConstructDataPacket(3, kClientDataStreamId1, false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructAckAndRstPacket(
+      3, kClientDataStreamId1, QUIC_STREAM_CANCELLED, 3, 3, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
+  // connection to the the server, in this test we require confirmation
+  // before encrypting so the HTTP job will still start.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
+                         nullptr, net_log_.bound());
+
+  CreateSession();
+  session_->quic_stream_factory()->set_require_confirmation(true);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  // Check whether this transaction is correctly marked as received a go-away
+  // because of migrating port.
+  NetErrorDetails details;
+  EXPECT_FALSE(details.quic_port_migration_detected);
+  trans->PopulateNetErrorDetails(&details);
+  EXPECT_TRUE(details.quic_port_migration_detected);
 }
 
 TEST_P(QuicNetworkTransactionTest,

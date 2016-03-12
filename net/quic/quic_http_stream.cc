@@ -46,6 +46,7 @@ QuicHttpStream::QuicHttpStream(
       closed_stream_sent_bytes_(0),
       user_buffer_len_(0),
       quic_connection_error_(QUIC_NO_ERROR),
+      port_migration_detected_(false),
       found_promise_(false),
       push_handle_(nullptr),
       weak_factory_(this) {
@@ -437,6 +438,11 @@ void QuicHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
   details->connection_info = HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3;
   if (was_handshake_confirmed_)
     details->quic_connection_error = quic_connection_error_;
+  if (session_) {
+    session_->PopulateNetErrorDetails(details);
+  } else {
+    details->quic_port_migration_detected = port_migration_detected_;
+  }
 }
 
 void QuicHttpStream::SetPriority(RequestPriority priority) {
@@ -514,9 +520,10 @@ void QuicHttpStream::OnCryptoHandshakeConfirmed() {
   was_handshake_confirmed_ = true;
 }
 
-void QuicHttpStream::OnSessionClosed(int error) {
+void QuicHttpStream::OnSessionClosed(int error, bool port_migration_detected) {
   Close(false);
   session_error_ = error;
+  port_migration_detected_ = port_migration_detected;
   session_.reset();
 }
 

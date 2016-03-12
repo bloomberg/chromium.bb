@@ -56,6 +56,9 @@ class QuicTestPacketMaker {
       std::string& quic_error_details);
   scoped_ptr<QuicEncryptedPacket> MakeConnectionClosePacket(
       QuicPacketNumber num);
+  scoped_ptr<QuicEncryptedPacket> MakeGoAwayPacket(QuicPacketNumber num,
+                                                   QuicErrorCode error_code,
+                                                   std::string reason_phrase);
   scoped_ptr<QuicEncryptedPacket> MakeAckPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,

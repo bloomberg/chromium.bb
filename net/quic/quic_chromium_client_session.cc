@@ -205,6 +205,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
                                        std::move(socket_performance_watcher),
                                        net_log_)),
       going_away_(false),
+      port_migration_detected_(false),
       disabled_reason_(QUIC_DISABLED_NOT),
       token_binding_signatures_(kTokenBindingSignatureMapSize),
       weak_factory_(this) {
@@ -370,7 +371,7 @@ void QuicChromiumClientSession::OnStreamFrame(const QuicStreamFrame& frame) {
 void QuicChromiumClientSession::AddObserver(Observer* observer) {
   if (going_away_) {
     RecordUnexpectedObservers(ADD_OBSERVER);
-    observer->OnSessionClosed(ERR_UNEXPECTED);
+    observer->OnSessionClosed(ERR_UNEXPECTED, port_migration_detected_);
     return;
   }
 
@@ -760,6 +761,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeMessageReceived(
 void QuicChromiumClientSession::OnGoAway(const QuicGoAwayFrame& frame) {
   QuicSession::OnGoAway(frame);
   NotifyFactoryOfSessionGoingAway();
+  port_migration_detected_ = frame.error_code == QUIC_ERROR_MIGRATING_PORT;
 }
 
 void QuicChromiumClientSession::OnRstStream(const QuicRstStreamFrame& frame) {
@@ -961,7 +963,7 @@ void QuicChromiumClientSession::CloseAllObservers(int net_error) {
   while (!observers_.empty()) {
     Observer* observer = *observers_.begin();
     observers_.erase(observer);
-    observer->OnSessionClosed(net_error);
+    observer->OnSessionClosed(net_error, port_migration_detected_);
   }
 }
 
@@ -1096,6 +1098,11 @@ bool QuicChromiumClientSession::MigrateToSocket(
   StartReading();
   connection()->SendPing();
   return true;
+}
+
+void QuicChromiumClientSession::PopulateNetErrorDetails(
+    NetErrorDetails* details) {
+  details->quic_port_migration_detected = port_migration_detected_;
 }
 
 const DatagramClientSocket* QuicChromiumClientSession::GetDefaultSocket()

@@ -79,7 +79,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   // QuicChromiumClientSession::Observer implementation
   void OnCryptoHandshakeConfirmed() override;
-  void OnSessionClosed(int error) override;
+  void OnSessionClosed(int error, bool port_migration_detected) override;
 
   // QuicClientPushPromiseIndex::Delegate implementation
   bool CheckVary(const SpdyHeaderBlock& client_request,
@@ -192,6 +192,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   // SSLInfo from the underlying QuicSession.
   SSLInfo ssl_info_;
+
+  // True when this stream receives a go away from server due to port migration.
+  bool port_migration_detected_;
 
   bool found_promise_;
   // |QuicClientPromisedInfo| owns this. It will be set when |Try()|

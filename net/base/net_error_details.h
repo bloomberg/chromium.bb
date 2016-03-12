@@ -16,12 +16,14 @@ struct NET_EXPORT NetErrorDetails {
   NetErrorDetails()
       : quic_broken(false),
         quic_connection_error(QUIC_NO_ERROR),
-        connection_info(HttpResponseInfo::CONNECTION_INFO_UNKNOWN) {}
+        connection_info(HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
+        quic_port_migration_detected(false) {}
 
   NetErrorDetails(bool quic_broken, QuicErrorCode quic_connection_error)
       : quic_broken(quic_broken),
         quic_connection_error(quic_connection_error),
-        connection_info(HttpResponseInfo::CONNECTION_INFO_UNKNOWN) {}
+        connection_info(HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
+        quic_port_migration_detected(false) {}
 
   // True if all QUIC alternative services are marked broken for the origin.
   bool quic_broken;
@@ -31,6 +33,9 @@ struct NET_EXPORT NetErrorDetails {
   // Will be discarded by upper layers if the connection type can be fetched
   // from response header from the server.
   HttpResponseInfo::ConnectionInfo connection_info;
+  // True if receives a GoAway frame from the server due to connection
+  // migration with port change.
+  bool quic_port_migration_detected;
 };
 
 }  // namespace net

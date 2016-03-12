@@ -20,6 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
+#include "net/base/net_error_details.h"
 #include "net/base/socket_performance_watcher.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/proxy/proxy_server.h"
@@ -71,7 +72,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
    public:
     virtual ~Observer() {}
     virtual void OnCryptoHandshakeConfirmed() = 0;
-    virtual void OnSessionClosed(int error) = 0;
+    virtual void OnSessionClosed(int error, bool port_migration_detected) = 0;
   };
 
   // A helper class used to manage a request to create a stream.
@@ -248,6 +249,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                        scoped_ptr<QuicChromiumPacketReader> reader,
                        scoped_ptr<QuicPacketWriter> writer);
 
+  // Populates network error details for this session.
+  void PopulateNetErrorDetails(NetErrorDetails* details);
+
   // Returns current default socket. This is the socket over which all
   // QUIC packets are sent. This default socket can change, so do not store the
   // returned socket.
@@ -328,6 +332,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // True when the session is going away, and streams may no longer be created
   // on this session. Existing stream will continue to be processed.
   bool going_away_;
+  // True when the session receives a go away from server due to port migration.
+  bool port_migration_detected_;
   QuicDisabledReason disabled_reason_;
   TokenBindingSignatureMap token_binding_signatures_;
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_;
