@@ -12,6 +12,7 @@
 
 #include <v8-debug.h>
 #include <v8-profiler.h>
+#include <v8-version.h>
 
 namespace blink {
 
@@ -126,7 +127,9 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agen
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::StackTrace> stackTrace;
     if (isolate->InContext()) {
+#if V8_MAJOR_VERSION >= 5
         isolate->GetCpuProfiler()->CollectSample();
+#endif
         stackTrace = v8::StackTrace::CurrentStackTrace(isolate, maxStackSize, stackTraceOptions);
     }
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize, description);

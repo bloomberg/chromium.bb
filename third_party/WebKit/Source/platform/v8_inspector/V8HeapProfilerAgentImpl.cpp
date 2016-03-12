@@ -11,6 +11,7 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include <v8-profiler.h>
+#include <v8-version.h>
 
 namespace blink {
 
@@ -18,7 +19,9 @@ namespace HeapProfilerAgentState {
 static const char heapProfilerEnabled[] = "heapProfilerEnabled";
 static const char heapObjectsTrackingEnabled[] = "heapObjectsTrackingEnabled";
 static const char allocationTrackingEnabled[] = "allocationTrackingEnabled";
+#if V8_MAJOR_VERSION >= 5
 static const char samplingHeapProfilerEnabled[] = "samplingHeapProfilerEnabled";
+#endif
 }
 
 namespace {
@@ -174,10 +177,12 @@ void V8HeapProfilerAgentImpl::restore()
         m_frontend->resetProfiles();
     if (m_state->booleanProperty(HeapProfilerAgentState::heapObjectsTrackingEnabled, false))
         startTrackingHeapObjectsInternal(m_state->booleanProperty(HeapProfilerAgentState::allocationTrackingEnabled, false));
+#if V8_MAJOR_VERSION >= 5
     if (m_state->booleanProperty(HeapProfilerAgentState::samplingHeapProfilerEnabled, false)) {
         ErrorString error;
         startSampling(&error);
     }
+#endif
 }
 
 void V8HeapProfilerAgentImpl::collectGarbage(ErrorString*)
@@ -208,11 +213,13 @@ void V8HeapProfilerAgentImpl::enable(ErrorString*)
 void V8HeapProfilerAgentImpl::disable(ErrorString* error)
 {
     stopTrackingHeapObjectsInternal();
+#if V8_MAJOR_VERSION >= 5
     if (m_state->booleanProperty(HeapProfilerAgentState::samplingHeapProfilerEnabled, false)) {
         v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
         if (profiler)
             profiler->StopSamplingHeapProfiler();
     }
+#endif
     m_isolate->GetHeapProfiler()->ClearObjectIds();
     m_state->setBoolean(HeapProfilerAgentState::heapProfilerEnabled, false);
 }
@@ -306,6 +313,7 @@ void V8HeapProfilerAgentImpl::stopTrackingHeapObjectsInternal()
 
 void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString)
 {
+#if V8_MAJOR_VERSION >= 5
     v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
     if (!profiler) {
         *errorString = "Cannot access v8 heap profiler";
@@ -313,8 +321,10 @@ void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString)
     }
     m_state->setBoolean(HeapProfilerAgentState::samplingHeapProfilerEnabled, true);
     profiler->StartSamplingHeapProfiler();
+#endif
 }
 
+#if V8_MAJOR_VERSION >= 5
 namespace {
 PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProfileNode(const v8::AllocationProfile::Node* node)
 {
@@ -335,9 +345,11 @@ PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProf
     return result.release();
 }
 } // namespace
+#endif
 
 void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>* profile)
 {
+#if V8_MAJOR_VERSION >= 5
     v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
     if (!profiler) {
         *errorString = "Cannot access v8 heap profiler";
@@ -354,6 +366,7 @@ void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, OwnPtr<prot
     v8::AllocationProfile::Node* root = v8Profile->GetRootNode();
     *profile = protocol::HeapProfiler::SamplingHeapProfile::create()
         .setHead(buildSampingHeapProfileNode(root)).build();
+#endif
 }
 
 } // namespace blink
