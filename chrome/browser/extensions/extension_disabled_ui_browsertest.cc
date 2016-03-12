@@ -30,6 +30,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/url_request/test_url_request_interceptor.h"
+#include "sync/api/fake_sync_change_processor.h"
+#include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -213,6 +215,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
       GURL("http://localhost/autoupdate/v2.crx"),
       scoped_temp_dir_.path().AppendASCII("permissions2.crx"));
 
+  sync_service->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS, syncer::SyncDataList(),
+      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
   extensions::TestExtensionRegistryObserver install_observer(registry_);
   sync_service->ProcessSyncChanges(
       FROM_HERE,
@@ -265,12 +271,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
                                          syncer::AttachmentIdList(),
                                          syncer::AttachmentServiceProxy());
 
+  ExtensionSyncService* sync_service = ExtensionSyncService::Get(profile());
+  sync_service->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS, syncer::SyncDataList(),
+      make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
   extensions::TestExtensionRegistryObserver install_observer(registry_);
-  ExtensionSyncService::Get(profile())->ProcessSyncChanges(
+  sync_service->ProcessSyncChanges(
       FROM_HERE,
       syncer::SyncChangeList(
-          1, syncer::SyncChange(FROM_HERE,
-                                syncer::SyncChange::ACTION_ADD,
+          1, syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD,
                                 sync_data)));
 
   install_observer.WaitForExtensionWillBeInstalled();

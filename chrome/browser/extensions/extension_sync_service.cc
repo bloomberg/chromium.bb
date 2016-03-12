@@ -319,24 +319,18 @@ void ExtensionSyncService::ApplySyncData(
                                                         : syncer::EXTENSIONS;
   const std::string& id = extension_sync_data.id();
   SyncBundle* bundle = GetSyncBundle(type);
+  DCHECK(bundle->IsSyncing());
   // Note: |extension| may be null if it hasn't been installed yet.
   const Extension* extension =
       ExtensionRegistry::Get(profile_)->GetInstalledExtension(id);
-  // TODO(bolms): we should really handle this better.  The particularly bad
-  // case is where an app becomes an extension or vice versa, and we end up with
-  // a zombie extension that won't go away.
-  // TODO(treib): Is this still true?
   if (extension && !IsCorrectSyncType(*extension, type)) {
-    // Special hack: There was a bug where themes incorrectly ended up in the
-    // syncer::EXTENSIONS type. If we get incoming sync data for a theme, clean
-    // it up. crbug.com/558299
-    // TODO(treib,devlin): Remove this after M52 or so.
-    if (extension->is_theme()) {
-      // First tell the bundle about the extension, so that it won't just ignore
-      // the deletion.
-      bundle->ApplySyncData(extension_sync_data);
-      bundle->PushSyncDeletion(id, extension_sync_data.GetSyncData());
-    }
+    // The installed item isn't the same type as the sync data item, so we need
+    // to remove the sync data item; otherwise it will be a zombie that will
+    // keep coming back even if the installed item with this id is uninstalled.
+    // First tell the bundle about the extension, so that it won't just ignore
+    // the deletion, then push the deletion.
+    bundle->ApplySyncData(extension_sync_data);
+    bundle->PushSyncDeletion(id, extension_sync_data.GetSyncData());
     return;
   }
 
@@ -602,8 +596,13 @@ void ExtensionSyncService::OnExtensionInstalled(
   auto it = pending_updates_.find(extension->id());
   if (it != pending_updates_.end()) {
     int compare_result = extension->version()->CompareTo(it->second.version);
-    if (compare_result == 0 && it->second.grant_permissions_and_reenable)
+    if (compare_result == 0 && it->second.grant_permissions_and_reenable) {
+      // The call to SyncExtensionChangeIfNeeded below will take care of syncing
+      // changes to this extension, so we don't want to trigger sync activity
+      // from the call to GrantPermissionsAndEnableExtension.
+      base::AutoReset<bool> ignore_updates(&ignore_updates_, true);
       extension_service()->GrantPermissionsAndEnableExtension(extension);
+    }
     if (compare_result >= 0)
       pending_updates_.erase(it);
   }

@@ -43,6 +43,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/value_builder.h"
 #include "sync/api/fake_sync_change_processor.h"
+#include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,6 +81,81 @@ SyncChangeList MakeSyncChangeList(const std::string& id,
   return SyncChangeList(1, SyncChange(FROM_HERE, change_type, sync_data));
 }
 
+// This is a FakeSyncChangeProcessor specialization that maintains a store of
+// SyncData items in the superclass' data_ member variable, treating it like a
+// map keyed by the extension id from the SyncData. Each instance of this class
+// should only be used for one model type (which should be either extensions or
+// apps) to match how the real sync system handles things.
+class StatefulChangeProcessor : public syncer::FakeSyncChangeProcessor {
+ public:
+  explicit StatefulChangeProcessor(syncer::ModelType expected_type)
+      : expected_type_(expected_type) {
+    EXPECT_TRUE(expected_type == syncer::ModelType::EXTENSIONS ||
+                expected_type == syncer::ModelType::APPS);
+  }
+
+  ~StatefulChangeProcessor() override {}
+
+  // We let our parent class, FakeSyncChangeProcessor, handle saving the
+  // changes for us, but in addition we "apply" these changes by treating
+  // the FakeSyncChangeProcessor's SyncDataList as a map keyed by extension
+  // id.
+  syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) override {
+    syncer::FakeSyncChangeProcessor::ProcessSyncChanges(from_here, change_list);
+    for (const auto& change : change_list) {
+      syncer::SyncData sync_data = change.sync_data();
+      EXPECT_EQ(expected_type_, sync_data.GetDataType());
+
+      scoped_ptr<ExtensionSyncData> modified =
+          ExtensionSyncData::CreateFromSyncData(sync_data);
+
+      // Start by removing any existing entry for this extension id.
+      syncer::SyncDataList& data_list = data();
+      for (auto iter = data_list.begin(); iter != data_list.end(); ++iter) {
+        scoped_ptr<ExtensionSyncData> existing =
+            ExtensionSyncData::CreateFromSyncData(*iter);
+        if (existing->id() == modified->id()) {
+          data_list.erase(iter);
+          break;
+        }
+      }
+
+      // Now add in the new data for this id, if appropriate.
+      if (change.change_type() == SyncChange::ACTION_ADD ||
+          change.change_type() == SyncChange::ACTION_UPDATE) {
+        data_list.push_back(sync_data);
+      } else if (change.change_type() != SyncChange::ACTION_DELETE) {
+        ADD_FAILURE() << "Unexpected change type " << change.change_type();
+      }
+    }
+    return syncer::SyncError();
+  }
+
+  // We override this to help catch the error of trying to use a single
+  // StatefulChangeProcessor to process changes for both extensions and apps
+  // sync data.
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
+    EXPECT_EQ(expected_type_, type);
+    return FakeSyncChangeProcessor::GetAllSyncData(type);
+  }
+
+  // This is a helper to vend a wrapped version of this object suitable for
+  // passing in to MergeDataAndStartSyncing, which takes a
+  // scoped_ptr<SyncChangeProcessor>, since in tests we typically don't want to
+  // give up ownership of a local change processor.
+  scoped_ptr<syncer::SyncChangeProcessor> GetWrapped() {
+    return make_scoped_ptr(new syncer::SyncChangeProcessorWrapperForTest(this));
+  }
+
+ protected:
+  // The expected ModelType of changes that this processor will see.
+  syncer::ModelType expected_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(StatefulChangeProcessor);
+};
+
 }  // namespace
 
 class ExtensionServiceSyncTest
@@ -90,6 +166,16 @@ class ExtensionServiceSyncTest
                           syncer::ModelType model_type) {
     *was_called = true;
     *model_type_passed_in = model_type;
+  }
+
+  // Helper to call MergeDataAndStartSyncing with no server data and dummy
+  // change processor / error factory.
+  void StartSyncing(syncer::ModelType type) {
+    ASSERT_TRUE(type == syncer::EXTENSIONS || type == syncer::APPS);
+    extension_sync_service()->MergeDataAndStartSyncing(
+        type, syncer::SyncDataList(),
+        make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
+        make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
   }
 
  protected:
@@ -608,6 +694,7 @@ TEST_F(ExtensionServiceSyncTest, SyncForUninstalledExternalExtension) {
       syncer::EXTENSIONS, syncer::SyncDataList(),
       make_scoped_ptr(new syncer::FakeSyncChangeProcessor()),
       make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+  StartSyncing(syncer::APPS);
 
   UninstallExtension(good_crx, false);
   EXPECT_TRUE(
@@ -792,6 +879,8 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataUninstall) {
 
 TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
   InitializeEmptyExtensionService();
+  StartSyncing(syncer::EXTENSIONS);
+  StartSyncing(syncer::APPS);
 
   // Install the extension.
   base::FilePath extension_path = data_dir().AppendASCII("good.crx");
@@ -1486,6 +1575,7 @@ class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
     ExtensionServiceInitParams params = CreateDefaultInitParams();
     params.profile_is_supervised = profile_is_supervised;
     InitializeExtensionService(params);
+    StartSyncing(syncer::EXTENSIONS);
 
     supervised_user_service()->SetDelegate(this);
     supervised_user_service()->Init();
@@ -1833,6 +1923,7 @@ TEST_F(ExtensionServiceSyncTest, SyncUninstallByCustodianSkipsPolicy) {
 
 TEST_F(ExtensionServiceSyncTest, SyncExtensionHasAllhostsWithheld) {
   InitializeEmptyExtensionService();
+  StartSyncing(syncer::EXTENSIONS);
 
   // Create an extension that needs all-hosts.
   const std::string kName("extension");
@@ -1879,3 +1970,96 @@ TEST_F(ExtensionServiceSyncTest, SyncExtensionHasAllhostsWithheld) {
 }
 
 #endif  // defined(ENABLE_SUPERVISED_USERS)
+
+// Tests sync behavior in the case of an item that starts out as an app and
+// gets updated to become an extension.
+TEST_F(ExtensionServiceSyncTest, AppToExtension) {
+  InitializeEmptyExtensionService();
+  service()->Init();
+  ASSERT_TRUE(service()->is_ready());
+
+  // Install v1, which is an app.
+  const Extension* v1 =
+      InstallCRX(data_dir().AppendASCII("sync_datatypes").AppendASCII("v1.crx"),
+                 INSTALL_NEW);
+  EXPECT_TRUE(v1->is_app());
+  EXPECT_FALSE(v1->is_extension());
+  std::string id = v1->id();
+
+  StatefulChangeProcessor extensions_processor(syncer::ModelType::EXTENSIONS);
+  StatefulChangeProcessor apps_processor(syncer::ModelType::APPS);
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS, syncer::SyncDataList(),
+      extensions_processor.GetWrapped(),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::APPS, syncer::SyncDataList(), apps_processor.GetWrapped(),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+
+  // Check the app/extension change processors to be sure the right data was
+  // added.
+  EXPECT_TRUE(extensions_processor.changes().empty());
+  EXPECT_TRUE(extensions_processor.data().empty());
+  EXPECT_EQ(1u, apps_processor.data().size());
+  ASSERT_EQ(1u, apps_processor.changes().size());
+  const SyncChange& app_change = apps_processor.changes()[0];
+  EXPECT_EQ(SyncChange::ACTION_ADD, app_change.change_type());
+  scoped_ptr<ExtensionSyncData> app_data =
+      ExtensionSyncData::CreateFromSyncData(app_change.sync_data());
+  EXPECT_TRUE(app_data->is_app());
+  EXPECT_EQ(id, app_data->id());
+  EXPECT_EQ(*v1->version(), app_data->version());
+
+  // Update the app to v2, which is an extension.
+  const Extension* v2 =
+      InstallCRX(data_dir().AppendASCII("sync_datatypes").AppendASCII("v2.crx"),
+                 INSTALL_UPDATED);
+  EXPECT_FALSE(v2->is_app());
+  EXPECT_TRUE(v2->is_extension());
+  EXPECT_EQ(id, v2->id());
+
+  // Make sure we saw an extension item added.
+  ASSERT_EQ(1u, extensions_processor.changes().size());
+  const SyncChange& extension_change = extensions_processor.changes()[0];
+  EXPECT_EQ(SyncChange::ACTION_ADD, extension_change.change_type());
+  scoped_ptr<ExtensionSyncData> extension_data =
+      ExtensionSyncData::CreateFromSyncData(extension_change.sync_data());
+  EXPECT_FALSE(extension_data->is_app());
+  EXPECT_EQ(id, extension_data->id());
+  EXPECT_EQ(*v2->version(), extension_data->version());
+
+  // Get the current data from the change processors to use as the input to
+  // the following call to MergeDataAndStartSyncing. This simulates what should
+  // happen with sync.
+  syncer::SyncDataList extensions_data =
+      extensions_processor.GetAllSyncData(syncer::EXTENSIONS);
+  syncer::SyncDataList apps_data = apps_processor.GetAllSyncData(syncer::APPS);
+
+  // Stop syncing, then start again.
+  extension_sync_service()->StopSyncing(syncer::EXTENSIONS);
+  extension_sync_service()->StopSyncing(syncer::APPS);
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS, extensions_data, extensions_processor.GetWrapped(),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::APPS, apps_data, apps_processor.GetWrapped(),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock()));
+
+  // Make sure we saw an app item deleted.
+  bool found_delete = false;
+  for (const auto& change : apps_processor.changes()) {
+    if (change.change_type() == SyncChange::ACTION_DELETE) {
+      scoped_ptr<ExtensionSyncData> data =
+          ExtensionSyncData::CreateFromSyncChange(change);
+      if (data->id() == id) {
+        found_delete = true;
+        break;
+      }
+    }
+  }
+  EXPECT_TRUE(found_delete);
+
+  // Make sure there is one extension, and there are no more apps.
+  EXPECT_EQ(1u, extensions_processor.data().size());
+  EXPECT_TRUE(apps_processor.data().empty());
+}
