@@ -14,7 +14,6 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/storage/durable_storage_permission_infobar_delegate_android.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -141,11 +140,6 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
       break;
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       infobar_ = ProtectedMediaIdentifierInfoBarDelegateAndroid::Create(
-          GetInfoBarService(id_), requesting_frame_, display_languages,
-          callback);
-      break;
-    case content::PermissionType::DURABLE_STORAGE:
-      infobar_ = DurableStoragePermissionInfoBarDelegateAndroid::Create(
           GetInfoBarService(id_), requesting_frame_, display_languages,
           callback);
       break;

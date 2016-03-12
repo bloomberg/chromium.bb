@@ -134,9 +134,6 @@ base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {
       message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT;
       break;
 #endif
-    case content::PermissionType::DURABLE_STORAGE:
-      message_id = IDS_DURABLE_STORAGE_BUBBLE_FRAGMENT;
-      break;
     default:
       NOTREACHED();
       return base::string16();

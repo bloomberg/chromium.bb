@@ -984,8 +984,6 @@
       'browser/signin/oauth2_token_service_delegate_android.cc',
       'browser/signin/oauth2_token_service_delegate_android.h',
       'browser/ssl/ssl_add_certificate_android.cc',
-      'browser/storage/durable_storage_permission_infobar_delegate_android.cc',
-      'browser/storage/durable_storage_permission_infobar_delegate_android.h',
     ],
     # Cross-platform Ash sources.
     'chrome_browser_ash_sources': [
