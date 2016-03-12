@@ -27,8 +27,7 @@ namespace cc {
 namespace {
 
 #define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test)                    \
-  root->ResetAllChangeTrackingForSubtree();                                 \
-  root->layer_tree_impl()->property_trees()->ResetAllChangeTracking(        \
+  root->layer_tree_impl()->ResetAllChangeTracking(                          \
       PropertyTrees::ResetFlags::ALL_TREES);                                \
   code_to_test;                                                             \
   EXPECT_TRUE(                                                              \
@@ -42,7 +41,8 @@ namespace {
   EXPECT_TRUE(grand_child->LayerPropertyChanged());
 
 #define EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(code_to_test)             \
-  root->ResetAllChangeTrackingForSubtree();                                 \
+  root->layer_tree_impl()->ResetAllChangeTracking(                          \
+      PropertyTrees::ResetFlags::ALL_TREES);                                \
   code_to_test;                                                             \
   EXPECT_FALSE(                                                             \
       root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(root));   \
@@ -56,7 +56,8 @@ namespace {
 
 #define EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE( \
     code_to_test)                                                            \
-  root->ResetAllChangeTrackingForSubtree();                                  \
+  root->layer_tree_impl()->ResetAllChangeTracking(                           \
+      PropertyTrees::ResetFlags::ALL_TREES);                                 \
   code_to_test;                                                              \
   EXPECT_TRUE(                                                               \
       root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(root));    \
@@ -69,7 +70,8 @@ namespace {
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
 #define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)                 \
-  root->ResetAllChangeTrackingForSubtree();                                 \
+  root->layer_tree_impl()->ResetAllChangeTracking(                          \
+      PropertyTrees::ResetFlags::ALL_TREES);                                \
   root->layer_tree_impl()->property_trees()->full_tree_damaged = false;     \
   code_to_test;                                                             \
   EXPECT_TRUE(                                                              \
@@ -83,7 +85,8 @@ namespace {
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                \
-  root->ResetAllChangeTrackingForSubtree();                              \
+  root->layer_tree_impl()->ResetAllChangeTracking(                       \
+      PropertyTrees::ResetFlags::ALL_TREES);                             \
   host_impl.active_tree()->property_trees()->needs_rebuild = true;       \
   host_impl.active_tree()->BuildPropertyTreesForTesting();               \
   host_impl.ForcePrepareToDraw();                                        \
@@ -92,7 +95,8 @@ namespace {
   EXPECT_TRUE(host_impl.active_tree()->needs_update_draw_properties());
 
 #define VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)             \
-  root->ResetAllChangeTrackingForSubtree();                              \
+  root->layer_tree_impl()->ResetAllChangeTracking(                       \
+      PropertyTrees::ResetFlags::ALL_TREES);                             \
   host_impl.active_tree()->property_trees()->needs_rebuild = true;       \
   host_impl.active_tree()->BuildPropertyTreesForTesting();               \
   host_impl.ForcePrepareToDraw();                                        \
@@ -132,6 +136,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* root = root_ptr.get();
   root_clip_ptr->AddChild(std::move(root_ptr));
+  host_impl.active_tree()->SetRootLayer(std::move(root_clip_ptr));
   scoped_ptr<LayerImpl> scroll_parent =
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* scroll_child = LayerImpl::Create(host_impl.active_tree(), 4).get();
@@ -146,13 +151,13 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>();
   clip_children->insert(clip_child);
   clip_children->insert(root);
-  root->ResetAllChangeTrackingForSubtree();
+  root->layer_tree_impl()->ResetAllChangeTracking(
+      PropertyTrees::ResetFlags::ALL_TREES);
 
   root->AddChild(LayerImpl::Create(host_impl.active_tree(), 7));
   LayerImpl* child = root->children()[0].get();
   child->AddChild(LayerImpl::Create(host_impl.active_tree(), 8));
   LayerImpl* grand_child = child->children()[0].get();
-  host_impl.active_tree()->SetRootLayer(std::move(root_clip_ptr));
   root->SetScrollClipLayer(root_clip->id());
   host_impl.active_tree()->BuildPropertyTreesForTesting();
 

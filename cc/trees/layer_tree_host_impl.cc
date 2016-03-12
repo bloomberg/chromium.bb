@@ -1681,9 +1681,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     (*frame->render_surface_layer_list)[i]->render_surface()->damage_tracker()->
         DidDrawDamagedArea();
   }
-  active_tree_->root_layer()->ResetAllChangeTrackingForSubtree();
-  active_tree_->property_trees()->ResetAllChangeTracking(
-      PropertyTrees::ResetFlags::ALL_TREES);
+  active_tree_->ResetAllChangeTracking(PropertyTrees::ResetFlags::ALL_TREES);
 
   active_tree_->set_has_ever_been_drawn(true);
   devtools_instrumentation::DidDrawFrame(id_);

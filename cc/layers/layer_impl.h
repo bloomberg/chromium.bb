@@ -524,7 +524,7 @@ class CC_EXPORT LayerImpl {
 
   bool LayerPropertyChanged() const;
 
-  void ResetAllChangeTrackingForSubtree();
+  void ResetChangeTracking();
 
   virtual SimpleEnclosedRegion VisibleOpaqueRegion() const;
 
@@ -652,7 +652,6 @@ class CC_EXPORT LayerImpl {
 
   void NoteLayerPropertyChangedForDescendantsInternal();
   void PushLayerPropertyChangedForSubtreeInternal();
-  void ResetAllChangeTrackingForSubtreeInternal();
 
   virtual const char* LayerTypeAsString() const;
 

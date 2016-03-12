@@ -714,17 +714,16 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
     switch (static_cast<Animations>(index_)) {
       case OPACITY:
         index_++;
-        impl->active_tree()->root_layer()->ResetAllChangeTrackingForSubtree();
+        impl->active_tree()->ResetAllChangeTracking(
+            PropertyTrees::ResetFlags::ALL_TREES);
         impl->active_tree()->root_layer()->OnOpacityAnimated(0.5f);
         PostSetNeedsCommitToMainThread();
         break;
       case TRANSFORM:
         index_++;
         EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
-        impl->active_tree()->root_layer()->ResetAllChangeTrackingForSubtree();
-        impl->active_tree()
-            ->property_trees()
-            ->effect_tree.ResetChangeTracking();
+        impl->active_tree()->ResetAllChangeTracking(
+            PropertyTrees::ResetFlags::EFFECT_TREE);
         EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
         transform.Translate(10, 10);
         impl->active_tree()->root_layer()->OnTransformAnimated(transform);
@@ -733,10 +732,8 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
       case FILTER:
         index_++;
         EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
-        impl->active_tree()->root_layer()->ResetAllChangeTrackingForSubtree();
-        impl->active_tree()
-            ->property_trees()
-            ->transform_tree.ResetChangeTracking();
+        impl->active_tree()->ResetAllChangeTracking(
+            PropertyTrees::ResetFlags::TRANSFORM_TREE);
         EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
         filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
         impl->active_tree()->root_layer()->OnFilterAnimated(filters);

@@ -304,36 +304,35 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndTrackStackingOrderChange) {
 
   host_->SetRootLayer(layer_tree_root);
 
-  scoped_ptr<LayerImpl> layer_impl_tree_root =
-      TreeSynchronizer::SynchronizeTrees(
-          layer_tree_root.get(), nullptr, host_->active_tree());
-  ExpectTreesAreIdentical(layer_tree_root.get(),
-                          layer_impl_tree_root.get(),
+  host_->active_tree()->SetRootLayer(TreeSynchronizer::SynchronizeTrees(
+      layer_tree_root.get(), nullptr, host_->active_tree()));
+  LayerImpl* layer_impl_tree_root = host_->active_tree()->root_layer();
+  ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
   // We have to push properties to pick up the destruction list pointer.
-  TreeSynchronizer::PushProperties(layer_tree_root.get(),
-                                   layer_impl_tree_root.get());
+  TreeSynchronizer::PushProperties(layer_tree_root.get(), layer_impl_tree_root);
 
-  layer_impl_tree_root->ResetAllChangeTrackingForSubtree();
+  host_->active_tree()->ResetAllChangeTracking(
+      PropertyTrees::ResetFlags::ALL_TREES);
 
   // re-insert the layer and sync again.
   child2->RemoveFromParent();
   layer_tree_root->AddChild(child2);
-  layer_impl_tree_root = TreeSynchronizer::SynchronizeTrees(
-      layer_tree_root.get(), std::move(layer_impl_tree_root),
-      host_->active_tree());
-  ExpectTreesAreIdentical(layer_tree_root.get(),
-                          layer_impl_tree_root.get(),
+  host_->active_tree()->SetRootLayer(TreeSynchronizer::SynchronizeTrees(
+      layer_tree_root.get(), host_->active_tree()->DetachLayerTree(),
+      host_->active_tree()));
+  layer_impl_tree_root = host_->active_tree()->root_layer();
+  ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
-  TreeSynchronizer::PushProperties(layer_tree_root.get(),
-                                   layer_impl_tree_root.get());
+  TreeSynchronizer::PushProperties(layer_tree_root.get(), layer_impl_tree_root);
 
   // Check that the impl thread properly tracked the change.
   EXPECT_FALSE(layer_impl_tree_root->LayerPropertyChanged());
   EXPECT_FALSE(layer_impl_tree_root->children()[0]->LayerPropertyChanged());
   EXPECT_TRUE(layer_impl_tree_root->children()[1]->LayerPropertyChanged());
+  host_->active_tree()->DetachLayerTree();
 }
 
 TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {

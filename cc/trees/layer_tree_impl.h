@@ -473,6 +473,8 @@ class CC_EXPORT LayerTreeImpl {
         event_properties;
   }
 
+  void ResetAllChangeTracking(PropertyTrees::ResetFlags flag);
+
  protected:
   explicit LayerTreeImpl(
       LayerTreeHostImpl* layer_tree_host_impl,

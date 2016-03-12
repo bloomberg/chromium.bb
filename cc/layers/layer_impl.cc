@@ -742,13 +742,8 @@ const char* LayerImpl::LayerTypeAsString() const {
   return "cc::LayerImpl";
 }
 
-void LayerImpl::ResetAllChangeTrackingForSubtreeInternal() {
+void LayerImpl::ResetChangeTracking() {
   layer_property_changed_ = false;
-  if (TransformNode* transform_node =
-          layer_tree_impl_->property_trees()->transform_tree.Node(
-              transform_tree_index())) {
-    transform_node->data.transform_changed = false;
-  }
 
   update_rect_.SetRect(0, 0, 0, 0);
   damage_rect_.SetRect(0, 0, 0, 0);
@@ -757,20 +752,12 @@ void LayerImpl::ResetAllChangeTrackingForSubtreeInternal() {
     render_surface_->ResetPropertyChangedFlag();
 
   if (mask_layer_)
-    mask_layer_->ResetAllChangeTrackingForSubtreeInternal();
+    mask_layer_->ResetChangeTracking();
 
   if (replica_layer_) {
     // This also resets the replica mask, if it exists.
-    replica_layer_->ResetAllChangeTrackingForSubtreeInternal();
+    replica_layer_->ResetChangeTracking();
   }
-
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->ResetAllChangeTrackingForSubtreeInternal();
-}
-
-void LayerImpl::ResetAllChangeTrackingForSubtree() {
-  layer_tree_impl()->LayersThatShouldPushProperties().clear();
-  ResetAllChangeTrackingForSubtreeInternal();
 }
 
 int LayerImpl::num_copy_requests_in_target_subtree() {

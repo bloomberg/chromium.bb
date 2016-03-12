@@ -2065,4 +2065,11 @@ bool LayerTreeImpl::TransformAnimationBoundsForBox(const LayerImpl* layer,
              : true;
 }
 
+void LayerTreeImpl::ResetAllChangeTracking(PropertyTrees::ResetFlags flag) {
+  layers_that_should_push_properties_.clear();
+  for (auto* layer : *this)
+    layer->ResetChangeTracking();
+  property_trees_.ResetAllChangeTracking(flag);
+}
+
 }  // namespace cc
