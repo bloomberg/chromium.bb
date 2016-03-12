@@ -1482,15 +1482,15 @@ bool LayoutBox::intersectsVisibleViewport()
 
 PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
-    if (isFloating())
-        paintInvalidationState.enclosingSelfPaintingLayer(*this).setNeedsPaintPhaseFloat();
+    PaintLayer& enclosingSelfPaintingLayer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
+    if (enclosingSelfPaintingLayer.layoutObject() != this) {
+        if (isFloating())
+            enclosingSelfPaintingLayer.setNeedsPaintPhaseFloat();
 
-    if (hasBoxDecorationBackground()
-        // We also paint overflow controls in background phase.
-        || (hasOverflowClip() && getScrollableArea()->hasOverflowControls())) {
-        PaintLayer& layer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
-        if (layer.layoutObject() != this)
-            layer.setNeedsPaintPhaseDescendantBlockBackgrounds();
+        if (hasBoxDecorationBackground()
+            // We also paint overflow controls in background phase.
+            || (hasOverflowClip() && getScrollableArea()->hasOverflowControls()))
+            enclosingSelfPaintingLayer.setNeedsPaintPhaseDescendantBlockBackgrounds();
     }
 
     PaintInvalidationReason fullInvalidationReason = fullPaintInvalidationReason();
