@@ -381,6 +381,11 @@
             }
         }
     ],
+    "UnifiedMediaPipeline": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "UpdateMenuItem": [
         {
             "group_name": "Enabled",
