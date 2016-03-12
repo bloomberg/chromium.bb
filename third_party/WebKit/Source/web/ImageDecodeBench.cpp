@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef WTF
-
-Provides a minimal wrapping of the Blink image decoders. Used to perform
-a non-threaded, memory-to-memory image decode using micro second accuracy
-clocks to measure image decode time. Optionally applies color correction
-during image decoding on supported platforms (default off). Usage:
-
-  % ninja -C /out/Release image_decode_bench &&
-     ./out/Release/image_decode_bench file [iterations]
-
-FIXME: Consider adding md5 checksum support to WTF. Use it to compute the
-decoded image frame md5 and output that value.
-
-FIXME: Consider integrating this tool in Chrome telemetry for realz, using
-the image corpii used to assess Blink image decode performance. Refer to
-http://crbug.com/398235#c103 and http://crbug.com/258324#c5
-
-#endif
+// Provides a minimal wrapping of the Blink image decoders. Used to perform
+// a non-threaded, memory-to-memory image decode using micro second accuracy
+// clocks to measure image decode time. Optionally applies color correction
+// during image decoding on supported platforms (default off). Usage:
+//
+//   % ninja -C /out/Release image_decode_bench &&
+//      ./out/Release/image_decode_bench file [iterations]
+//
+// TODO(noel): Consider adding md5 checksum support to WTF. Use it to compute
+// the decoded image frame md5 and output that value.
+//
+// TODO(noel): Consider integrating this tool in Chrome telemetry for realz,
+// using the image corpii used to assess Blink image decode performance. Refer
+// to http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
