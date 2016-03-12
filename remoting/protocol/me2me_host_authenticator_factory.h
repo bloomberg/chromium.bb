@@ -42,7 +42,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& required_client_domain,
-      scoped_ptr<TokenValidatorFactory> token_validator_factory);
+      scoped_refptr<TokenValidatorFactory> token_validator_factory);
 
   Me2MeHostAuthenticatorFactory();
   ~Me2MeHostAuthenticatorFactory() override;
@@ -64,7 +64,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   std::string pin_hash_;
 
   // Used only for third party host authenticators.
-  scoped_ptr<TokenValidatorFactory> token_validator_factory_;
+  scoped_refptr<TokenValidatorFactory> token_validator_factory_;
 
   // Used only for pairing host authenticators.
   scoped_refptr<PairingRegistry> pairing_registry_;

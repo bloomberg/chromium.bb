@@ -98,8 +98,8 @@ class TokenValidatorFactoryImplTest : public testing::Test {
     config.token_url = GURL(kTokenUrl);
     config.token_validation_url = GURL(kTokenValidationUrl);
     config.token_validation_cert_issuer = kTokenValidationCertIssuer;
-    token_validator_factory_.reset(new TokenValidatorFactoryImpl(
-        config, key_pair_, request_context_getter_));
+    token_validator_factory_ = new TokenValidatorFactoryImpl(
+        config, key_pair_, request_context_getter_);
   }
 
   static std::string CreateResponse(const std::string& scope) {
@@ -131,7 +131,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  scoped_ptr<TokenValidatorFactoryImpl> token_validator_factory_;
+  scoped_refptr<TokenValidatorFactoryImpl> token_validator_factory_;
   scoped_ptr<protocol::TokenValidator> token_validator_;
 };
 

@@ -806,13 +806,12 @@ void HostProcess::CreateAuthenticatorFactory() {
     DCHECK(third_party_auth_config_.token_url.is_valid());
     DCHECK(third_party_auth_config_.token_validation_url.is_valid());
 
-    scoped_ptr<protocol::TokenValidatorFactory> token_validator_factory(
-        new TokenValidatorFactoryImpl(
-            third_party_auth_config_,
-            key_pair_, context_->url_request_context_getter()));
+    scoped_refptr<protocol::TokenValidatorFactory> token_validator_factory =
+        new TokenValidatorFactoryImpl(third_party_auth_config_, key_pair_,
+                                      context_->url_request_context_getter());
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
         use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_, std::move(token_validator_factory));
+        client_domain_, token_validator_factory);
   }
 
 #if defined(OS_POSIX)

@@ -22,6 +22,8 @@ class RsaKeyPair;
 
 namespace protocol {
 
+class TokenValidatorFactory;
+
 // Host-side implementation of NegotiatingAuthenticatorBase.
 // See comments in negotiating_authenticator_base.h for a general explanation.
 class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
@@ -53,7 +55,7 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
       const std::string& remote_id,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
-      scoped_ptr<TokenValidator> token_validator);
+      scoped_refptr<TokenValidatorFactory> token_validator_factory);
 
   // Overriden from Authenticator.
   void ProcessMessage(const buzz::XmlElement* message,
@@ -83,7 +85,7 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   std::string shared_secret_hash_;
 
   // Used only for third party host authenticators.
-  scoped_ptr<TokenValidator> token_validator_;
+  scoped_refptr<TokenValidatorFactory> token_validator_factory_;
 
   // Used only for pairing authenticators.
   scoped_refptr<PairingRegistry> pairing_registry_;

@@ -78,11 +78,11 @@ NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
     const std::string& remote_id,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    scoped_ptr<TokenValidator> token_validator) {
+    scoped_refptr<TokenValidatorFactory> token_validator_factory) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
                                        key_pair));
-  result->token_validator_ = std::move(token_validator);
+  result->token_validator_factory_ = token_validator_factory;
   result->AddMethod(Method::THIRD_PARTY_SPAKE2_CURVE25519);
   result->AddMethod(Method::THIRD_PARTY_SPAKE2_P224);
   return std::move(result);
@@ -183,23 +183,15 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
   DCHECK(current_method_ != Method::INVALID);
 
   if (current_method_ == Method::THIRD_PARTY_SPAKE2_P224) {
-    // |ThirdPartyHostAuthenticator| takes ownership of |token_validator_|.
-    // The authentication method negotiation logic should guarantee that only
-    // one |ThirdPartyHostAuthenticator| will need to be created per session.
-    DCHECK(token_validator_);
     current_authenticator_.reset(new ThirdPartyHostAuthenticator(
         base::Bind(&V2Authenticator::CreateForHost, local_cert_,
                    local_key_pair_),
-        std::move(token_validator_)));
+        token_validator_factory_->CreateTokenValidator(local_id_, remote_id_)));
   } else if (current_method_ == Method::THIRD_PARTY_SPAKE2_CURVE25519) {
-    // |ThirdPartyHostAuthenticator| takes ownership of |token_validator_|.
-    // The authentication method negotiation logic should guarantee that only
-    // one |ThirdPartyHostAuthenticator| will need to be created per session.
-    DCHECK(token_validator_);
     current_authenticator_.reset(new ThirdPartyHostAuthenticator(
         base::Bind(&Spake2Authenticator::CreateForHost, local_id_, remote_id_,
                    local_cert_, local_key_pair_),
-        std::move(token_validator_)));
+        token_validator_factory_->CreateTokenValidator(local_id_, remote_id_)));
   } else if (current_method_ == Method::SHARED_SECRET_SPAKE2_CURVE25519) {
     current_authenticator_ = Spake2Authenticator::CreateForHost(
         local_id_, remote_id_, local_cert_, local_key_pair_,

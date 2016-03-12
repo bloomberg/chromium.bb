@@ -48,9 +48,8 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
     const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-      const std::string& required_client_domain,
-    scoped_ptr<TokenValidatorFactory>
-        token_validator_factory) {
+    const std::string& required_client_domain,
+    scoped_refptr<TokenValidatorFactory> token_validator_factory) {
   scoped_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());
   result->use_service_account_ = use_service_account;
@@ -58,7 +57,7 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
   result->required_client_domain_ = required_client_domain;
-  result->token_validator_factory_ = std::move(token_validator_factory);
+  result->token_validator_factory_ = token_validator_factory;
   return std::move(result);
 }
 
@@ -120,8 +119,7 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     if (token_validator_factory_) {
       return NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
           local_jid, remote_jid, local_cert_, key_pair_,
-          token_validator_factory_->CreateTokenValidator(local_jid,
-                                                         remote_jid));
+          token_validator_factory_);
     }
 
     return NegotiatingHostAuthenticator::CreateWithPin(
