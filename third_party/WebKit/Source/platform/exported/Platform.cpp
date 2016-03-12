@@ -126,7 +126,6 @@ void Platform::shutdown()
     Heap::shutdown();
 
     WTF::shutdown();
-    WebPrerenderingSupport::shutdown();
     WTF::Partitions::shutdown();
 
     s_platform->m_mainThread = nullptr;
