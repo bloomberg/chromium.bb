@@ -52,7 +52,6 @@ Polymer({
 
   /** @private */
   onClearBrowsingDataTap_: function() {
-    this.$.pages.querySelector('settings-clear-browsing-data-page')
-        .showClearBrowsingDataDialog();
+    this.$.pages.querySelector('settings-clear-browsing-data-dialog').open();
   },
 });

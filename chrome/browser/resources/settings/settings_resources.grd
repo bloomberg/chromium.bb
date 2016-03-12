@@ -190,11 +190,11 @@
       <structure name="IDR_SETTINGS_CERTIFICATES_CERTIFICATE_DELETE_CONFIRMATION_DIALOG_HTML"
                  file="certificate_manager_page/certificate_delete_confirmation_dialog.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_PAGE_HTML"
-                 file="clear_browsing_data_page/clear_browsing_data_page.html"
+      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_HTML"
+                 file="clear_browsing_data_dialog/clear_browsing_data_dialog.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_PAGE_JS"
-                 file="clear_browsing_data_page/clear_browsing_data_page.js"
+      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_JS"
+                 file="clear_browsing_data_dialog/clear_browsing_data_dialog.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_CHECKBOX_HTML"
                  file="controls/settings_checkbox.html"

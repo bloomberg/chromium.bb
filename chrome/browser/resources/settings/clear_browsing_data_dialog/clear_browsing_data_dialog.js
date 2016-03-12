@@ -16,7 +16,7 @@
  *    </iron-animated-pages>
  */
 Polymer({
-  is: 'settings-clear-browsing-data-page',
+  is: 'settings-clear-browsing-data-dialog',
 
   properties: {
     /**
@@ -91,8 +91,8 @@ Polymer({
     }
   },
 
-  showClearBrowsingDataDialog: function() {
-    this.$.clearBrowsingDataDialog.open();
+  open: function() {
+    this.$.dialog.open();
   },
 
   /**
