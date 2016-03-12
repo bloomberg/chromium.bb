@@ -30,7 +30,6 @@ namespace blink {
 
 class EllipsisBox;
 class HitTestResult;
-class LayoutBlockFlow;
 class LineLayoutBlockFlow;
 
 struct BidiStatus;
@@ -38,7 +37,7 @@ struct GapRects;
 
 class RootInlineBox : public InlineFlowBox {
 public:
-    explicit RootInlineBox(LayoutBlockFlow&);
+    explicit RootInlineBox(LineLayoutItem);
 
     void destroy() final;
 

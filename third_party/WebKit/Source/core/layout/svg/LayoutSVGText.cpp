@@ -395,7 +395,7 @@ void LayoutSVGText::layout()
 
 RootInlineBox* LayoutSVGText::createRootInlineBox()
 {
-    RootInlineBox* box = new SVGRootInlineBox(*this);
+    RootInlineBox* box = new SVGRootInlineBox(LineLayoutItem(this));
     box->setHasVirtualLogicalHeight();
     return box;
 }

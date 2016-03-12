@@ -1232,7 +1232,7 @@ void LayoutInline::dirtyLineBoxes(bool fullLayout)
 
 InlineFlowBox* LayoutInline::createInlineFlowBox()
 {
-    return new InlineFlowBox(*this);
+    return new InlineFlowBox(LineLayoutItem(this));
 }
 
 InlineFlowBox* LayoutInline::createAndAppendInlineFlowBox()

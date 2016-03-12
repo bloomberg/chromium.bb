@@ -76,9 +76,19 @@ public:
         return toBox()->flipForWritingMode(point);
     }
 
+    LayoutPoint flipForWritingModeForChild(const LineLayoutBox& child, LayoutPoint childPoint) const
+    {
+        return toBox()->flipForWritingModeForChild(toLayoutBox(child.layoutObject()), childPoint);
+    }
+
     void moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal)
     {
         toBox()->moveWithEdgeOfInlineContainerIfNecessary(isHorizontal);
+    }
+
+    void move(const LayoutUnit& width, const LayoutUnit& height)
+    {
+        toBox()->move(width, height);
     }
 
     bool hasOverflowModel() const
@@ -118,6 +128,21 @@ public:
     {
         return toBox()->inlineBoxWrapper();
     }
+
+    void setInlineBoxWrapper(InlineBox* box)
+    {
+        return toBox()->setInlineBoxWrapper(box);
+    }
+
+#ifndef NDEBUG
+
+    void showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1) const
+    {
+        if (layoutObject()->isLayoutBlockFlow())
+            toLayoutBlockFlow(layoutObject())->showLineTreeAndMark(markedBox1, markedLabel1);
+    }
+
+#endif
 
 private:
     LayoutBox* toBox()

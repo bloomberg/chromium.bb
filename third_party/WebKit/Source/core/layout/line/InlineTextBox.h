@@ -40,8 +40,8 @@ const unsigned short cFullTruncation = USHRT_MAX - 1;
 
 class InlineTextBox : public InlineBox {
 public:
-    InlineTextBox(LayoutObject& obj, int start, unsigned short length)
-        : InlineBox(obj)
+    InlineTextBox(LineLayoutItem item, int start, unsigned short length)
+        : InlineBox(item)
         , m_prevTextBox(nullptr)
         , m_nextTextBox(nullptr)
         , m_start(start)

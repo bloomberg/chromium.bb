@@ -1436,7 +1436,7 @@ void LayoutText::dirtyLineBoxes()
 
 InlineTextBox* LayoutText::createTextBox(int start, unsigned short length)
 {
-    return new InlineTextBox(*this, start, length);
+    return new InlineTextBox(LineLayoutItem(this), start, length);
 }
 
 InlineTextBox* LayoutText::createInlineTextBox(int start, unsigned short length)

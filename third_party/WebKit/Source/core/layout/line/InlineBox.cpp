@@ -63,8 +63,8 @@ void InlineBox::destroy()
 {
     // We do not need to issue invalidations if the page is being destroyed
     // since these objects will never be repainted.
-    if (!m_layoutObject.documentBeingDestroyed())
-        m_layoutObject.invalidateDisplayItemClient(*this);
+    if (!m_lineLayoutItem.documentBeingDestroyed())
+        m_lineLayoutItem.invalidateDisplayItemClient(*this);
     delete this;
 }
 
@@ -97,18 +97,18 @@ String InlineBox::debugName() const
 LayoutRect InlineBox::visualRect() const
 {
     // TODO(chrishtr): tighten these bounds.
-    return layoutObject().visualRect();
+    return getLineLayoutItem().visualRect();
 }
 
 #ifndef NDEBUG
 void InlineBox::showTreeForThis() const
 {
-    layoutObject().showTreeForThis();
+    getLineLayoutItem().showTreeForThis();
 }
 
 void InlineBox::showLineTreeForThis() const
 {
-    layoutObject().containingBlock()->showLineTreeAndMark(this, "*");
+    getLineLayoutItem().containingBlock().showLineTreeAndMark(this, "*");
 }
 
 void InlineBox::showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1, const InlineBox* markedBox2, const char* markedLabel2, const LayoutObject* obj, int depth) const
@@ -118,7 +118,7 @@ void InlineBox::showLineTreeAndMark(const InlineBox* markedBox1, const char* mar
         printedCharacters += fprintf(stderr, "%s", markedLabel1);
     if (this == markedBox2)
         printedCharacters += fprintf(stderr, "%s", markedLabel2);
-    if (&layoutObject() == obj)
+    if (getLineLayoutItem().isEqual(obj))
         printedCharacters += fprintf(stderr, "*");
     for (; printedCharacters < depth * 2; printedCharacters++)
         fputc(' ', stderr);
@@ -132,7 +132,7 @@ void InlineBox::showBox(int printedCharacters) const
     for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
         fputc(' ', stderr);
     fprintf(stderr, "\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i\n",
-        layoutObject().decoratedName().ascii().data(), &layoutObject(),
+        getLineLayoutItem().decoratedName().ascii().data(), getLineLayoutItem().debugPointer(),
         x().toFloat(), y().toFloat(), width().toFloat(), height().toFloat(),
         baselinePosition(AlphabeticBaseline), baselinePosition(IdeographicBaseline));
 }
@@ -146,7 +146,7 @@ LayoutUnit InlineBox::logicalHeight() const
     if (getLineLayoutItem().isText())
         return m_bitfields.isText() ? LayoutUnit(getLineLayoutItem().style(isFirstLineStyle())->getFontMetrics().height()) : LayoutUnit();
     if (getLineLayoutItem().isBox() && parent())
-        return isHorizontal() ? toLayoutBox(layoutObject()).size().height() : toLayoutBox(layoutObject()).size().width();
+        return isHorizontal() ? LineLayoutBox(getLineLayoutItem()).size().height() : LineLayoutBox(getLineLayoutItem()).size().width();
 
     ASSERT(isInlineFlowBox());
     LineLayoutBoxModel flowObject = boxModelObject();
@@ -187,7 +187,7 @@ void InlineBox::dirtyLineBoxes()
 void InlineBox::deleteLine()
 {
     if (!m_bitfields.extracted() && getLineLayoutItem().isBox())
-        toLayoutBox(layoutObject()).setInlineBoxWrapper(nullptr);
+        LineLayoutBox(getLineLayoutItem()).setInlineBoxWrapper(nullptr);
     destroy();
 }
 
@@ -195,14 +195,14 @@ void InlineBox::extractLine()
 {
     m_bitfields.setExtracted(true);
     if (getLineLayoutItem().isBox())
-        toLayoutBox(layoutObject()).setInlineBoxWrapper(nullptr);
+        LineLayoutBox(getLineLayoutItem()).setInlineBoxWrapper(nullptr);
 }
 
 void InlineBox::attachLine()
 {
     m_bitfields.setExtracted(false);
     if (getLineLayoutItem().isBox())
-        toLayoutBox(layoutObject()).setInlineBoxWrapper(this);
+        LineLayoutBox(getLineLayoutItem()).setInlineBoxWrapper(this);
 }
 
 void InlineBox::move(const LayoutSize& delta)
@@ -210,7 +210,7 @@ void InlineBox::move(const LayoutSize& delta)
     m_topLeft.move(delta);
 
     if (getLineLayoutItem().isAtomicInlineLevel())
-        toLayoutBox(layoutObject()).move(delta.width(), delta.height());
+        LineLayoutBox(getLineLayoutItem()).move(delta.width(), delta.height());
 }
 
 void InlineBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit /* lineTop */, LayoutUnit /* lineBottom */) const
@@ -225,7 +225,7 @@ bool InlineBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     // specification.)
     LayoutPoint childPoint = accumulatedOffset;
     if (parent()->getLineLayoutItem().hasFlippedBlocksWritingMode()) // Faster than calling containingBlock().
-        childPoint = layoutObject().containingBlock()->flipForWritingModeForChild(&toLayoutBox(layoutObject()), childPoint);
+        childPoint = getLineLayoutItem().containingBlock().flipForWritingModeForChild(LineLayoutBox(getLineLayoutItem()), childPoint);
 
     if (getLineLayoutItem().style()->hasBorderRadius()) {
         LayoutRect borderRect = logicalFrameRect();
@@ -303,7 +303,7 @@ InlineBox* InlineBox::prevLeafChildIgnoringLineBreak() const
 
 SelectionState InlineBox::getSelectionState() const
 {
-    return layoutObject().getSelectionState();
+    return getLineLayoutItem().getSelectionState();
 }
 
 bool InlineBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const
@@ -390,7 +390,7 @@ LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point) const
 
 void InlineBox::invalidateDisplayItemClientsRecursively()
 {
-    layoutObject().invalidateDisplayItemClient(*this);
+    getLineLayoutItem().invalidateDisplayItemClient(*this);
     if (!isInlineFlowBox())
         return;
     for (InlineBox* child = toInlineFlowBox(this)->firstChild(); child; child = child->nextOnLine())

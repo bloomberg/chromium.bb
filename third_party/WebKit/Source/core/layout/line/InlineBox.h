@@ -22,7 +22,6 @@
 #define InlineBox_h
 
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutObject.h"
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
@@ -33,6 +32,7 @@ namespace blink {
 
 class HitTestRequest;
 class HitTestResult;
+class LayoutObject;
 class RootInlineBox;
 
 enum MarkLineBoxes { MarkLineBoxesDirty, DontMarkLineBoxes };
@@ -42,11 +42,11 @@ enum MarkLineBoxes { MarkLineBoxesDirty, DontMarkLineBoxes };
 class InlineBox : public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(InlineBox);
 public:
-    InlineBox(LayoutObject& obj)
+    InlineBox(LineLayoutItem obj)
         : m_next(nullptr)
         , m_prev(nullptr)
         , m_parent(nullptr)
-        , m_layoutObject(obj)
+        , m_lineLayoutItem(obj)
         , m_logicalWidth()
 #if ENABLE(ASSERT)
         , m_hasBadParent(false)
@@ -54,12 +54,12 @@ public:
     {
     }
 
-    InlineBox(InlineBox* inlineBoxForLayoutObject, LayoutPoint topLeft, LayoutUnit logicalWidth, bool firstLine, bool constructed,
+    InlineBox(LineLayoutItem item, LayoutPoint topLeft, LayoutUnit logicalWidth, bool firstLine, bool constructed,
         bool dirty, bool extracted, bool isHorizontal, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
         : m_next(next)
         , m_prev(prev)
         , m_parent(parent)
-        , m_layoutObject(inlineBoxForLayoutObject->layoutObject())
+        , m_lineLayoutItem(item)
         , m_topLeft(topLeft)
         , m_logicalWidth(logicalWidth)
         , m_bitfields(firstLine, constructed, dirty, extracted, isHorizontal)
@@ -171,7 +171,7 @@ public:
     InlineBox* nextLeafChildIgnoringLineBreak() const;
     InlineBox* prevLeafChildIgnoringLineBreak() const;
 
-    LineLayoutItem getLineLayoutItem() const { return LineLayoutItem(&m_layoutObject); }
+    LineLayoutItem getLineLayoutItem() const { return m_lineLayoutItem; }
 
     InlineFlowBox* parent() const
     {
@@ -278,7 +278,7 @@ public:
     LineLayoutBoxModel boxModelObject() const
     {
         if (!getLineLayoutItem().isText())
-            return LineLayoutBoxModel(toLayoutBoxModelObject(&m_layoutObject));
+            return LineLayoutBoxModel(m_lineLayoutItem);
         return LineLayoutBoxModel(nullptr);
     }
 
@@ -398,7 +398,7 @@ private:
     InlineBox* m_prev; // The previous element on the same line as us.
 
     InlineFlowBox* m_parent; // The box that contains us.
-    LayoutObject& m_layoutObject;
+    LineLayoutItem m_lineLayoutItem;
 
 protected:
     // For RootInlineBox
@@ -424,8 +424,6 @@ protected:
     LayoutUnit m_logicalWidth;
 
 private:
-    LayoutObject& layoutObject() const { return m_layoutObject; }
-
     InlineBoxBitfields m_bitfields;
 
 #if ENABLE(ASSERT)

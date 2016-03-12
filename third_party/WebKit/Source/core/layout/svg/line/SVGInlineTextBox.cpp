@@ -46,8 +46,8 @@ struct ExpectedSVGInlineTextBoxSize : public InlineTextBox {
 
 static_assert(sizeof(SVGInlineTextBox) == sizeof(ExpectedSVGInlineTextBoxSize), "SVGInlineTextBox has an unexpected size");
 
-SVGInlineTextBox::SVGInlineTextBox(LayoutObject& object, int start, unsigned short length)
-    : InlineTextBox(object, start, length)
+SVGInlineTextBox::SVGInlineTextBox(LineLayoutItem item, int start, unsigned short length)
+    : InlineTextBox(item, start, length)
     , m_logicalHeight(0)
     , m_startsNewTextChunk(false)
 {

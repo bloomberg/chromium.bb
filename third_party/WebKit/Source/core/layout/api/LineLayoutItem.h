@@ -63,6 +63,16 @@ public:
         return m_layoutObject == layoutObject;
     }
 
+    bool operator==(const LineLayoutItem& other) const
+    {
+        return m_layoutObject == other.m_layoutObject;
+    }
+
+    bool operator!=(const LineLayoutItem& other) const
+    {
+        return !(*this == other);
+    }
+
     String debugName() const
     {
         return m_layoutObject->debugName();
@@ -403,6 +413,21 @@ public:
         return m_layoutObject->hasOverflowClip();
     }
 
+    bool documentBeingDestroyed() const
+    {
+        return m_layoutObject->documentBeingDestroyed();
+    }
+
+    void invalidateDisplayItemClient(const DisplayItemClient& displayItemClient)
+    {
+        return m_layoutObject->invalidateDisplayItemClient(displayItemClient);
+    }
+
+    LayoutRect visualRect() const
+    {
+        return m_layoutObject->visualRect();
+    }
+
     bool isHashTableDeletedValue() const
     {
         return m_layoutObject == kHashTableDeletedValue;
@@ -432,6 +457,16 @@ public:
         return m_layoutObject;
     }
 
+    void showTreeForThis() const
+    {
+        m_layoutObject->showTreeForThis();
+    }
+
+    String decoratedName() const
+    {
+        return m_layoutObject->decoratedName();
+    }
+
 #endif
 
 protected:
@@ -444,6 +479,7 @@ private:
     friend class LayoutBlockFlow;
     friend class LineLayoutAPIShim;
     friend class LineLayoutBlockFlow;
+    friend class LineLayoutBox;
     friend class LineLayoutRubyRun;
 };
 

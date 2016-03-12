@@ -42,8 +42,8 @@ typedef HashMap<const InlineTextBox*, std::pair<Vector<const SimpleFontData*>, G
 
 class InlineFlowBox : public InlineBox {
 public:
-    InlineFlowBox(LayoutObject& obj)
-        : InlineBox(obj)
+    InlineFlowBox(LineLayoutItem lineLayoutItem)
+        : InlineBox(lineLayoutItem)
         , m_firstChild(nullptr)
         , m_lastChild(nullptr)
         , m_prevLineBox(nullptr)
@@ -67,7 +67,7 @@ public:
         // an invisible marker exists.  The side effect of having an invisible marker is that the quirks mode behavior of shrinking lines with no
         // text children must not apply.  This change also means that gaps will exist between image bullet list items.  Even when the list bullet
         // is an image, the line is still considered to be immune from the quirk.
-        m_hasTextChildren = obj.style()->display() == LIST_ITEM;
+        m_hasTextChildren = lineLayoutItem.style()->display() == LIST_ITEM;
         m_hasTextDescendants = m_hasTextChildren;
     }
 

@@ -49,7 +49,7 @@ static_assert(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), "RootInl
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
 static EllipsisBoxMap* gEllipsisBoxMap = nullptr;
 
-RootInlineBox::RootInlineBox(LayoutBlockFlow& block)
+RootInlineBox::RootInlineBox(LineLayoutItem block)
     : InlineFlowBox(block)
     , m_lineBreakPos(0)
     , m_lineBreakObj(nullptr)
@@ -117,7 +117,7 @@ bool RootInlineBox::lineCanAccommodateEllipsis(bool ltr, int blockEdge, int line
 LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth)
 {
     // Create an ellipsis box.
-    EllipsisBox* ellipsisBox = new EllipsisBox(this, ellipsisStr, this,
+    EllipsisBox* ellipsisBox = new EllipsisBox(getLineLayoutItem(), ellipsisStr, this,
         ellipsisWidth, logicalHeight().toFloat(), x(), y(), !prevRootBox(), isHorizontal());
 
     if (!gEllipsisBoxMap)

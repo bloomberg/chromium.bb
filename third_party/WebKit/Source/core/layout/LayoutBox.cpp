@@ -1739,7 +1739,7 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
 
 InlineBox* LayoutBox::createInlineBox()
 {
-    return new InlineBox(*this);
+    return new InlineBox(LineLayoutItem(this));
 }
 
 void LayoutBox::dirtyLineBoxes(bool fullLayout)

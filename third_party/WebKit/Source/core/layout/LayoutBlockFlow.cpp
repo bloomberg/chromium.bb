@@ -2773,7 +2773,7 @@ LayoutUnit LayoutBlockFlow::logicalRightSelectionOffset(const LayoutBlock* rootB
 
 RootInlineBox* LayoutBlockFlow::createRootInlineBox()
 {
-    return new RootInlineBox(*this);
+    return new RootInlineBox(LineLayoutItem(this));
 }
 
 bool LayoutBlockFlow::isPagedOverflow(const ComputedStyle& style)

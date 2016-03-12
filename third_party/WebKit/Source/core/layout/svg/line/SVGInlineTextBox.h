@@ -29,7 +29,7 @@ namespace blink {
 
 class SVGInlineTextBox final : public InlineTextBox {
 public:
-    SVGInlineTextBox(LayoutObject&, int start, unsigned short length);
+    SVGInlineTextBox(LineLayoutItem, int start, unsigned short length);
 
     bool isSVGInlineTextBox() const override { return true; }
 

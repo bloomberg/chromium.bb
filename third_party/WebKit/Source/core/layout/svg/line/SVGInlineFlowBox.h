@@ -27,8 +27,8 @@ namespace blink {
 
 class SVGInlineFlowBox final : public InlineFlowBox {
 public:
-    SVGInlineFlowBox(LayoutObject& obj)
-        : InlineFlowBox(obj)
+    SVGInlineFlowBox(LineLayoutItem item)
+        : InlineFlowBox(item)
         , m_logicalHeight(0)
     {
     }
