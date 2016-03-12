@@ -251,8 +251,7 @@ def CalculateStageStats(builds_timings):
   for b in builds_timings:
     if b.success:
       for s in b.stages:
-        stage_map.setdefault(s.name, [])
-        stage_map[s.name].append(s)
+        stage_map.setdefault(s.name, []).append(s)
 
   stage_stats = []
   for name in stage_map.iterkeys():
@@ -265,6 +264,55 @@ def CalculateStageStats(builds_timings):
             duration=CalculateTimeStats([s.duration for s in named_stages])))
 
   return stage_stats
+
+
+def GetBuildSuccessRates(build_statuses):
+  """Get the success rate for each builder.
+
+  Args:
+    build_statuses: Array of cidb result dictionaries.
+
+  Returns:
+    A dictionary of success rates by build.
+  """
+  config_successes = {}
+  for build_status in build_statuses:
+    config = build_status['build_config']
+    success = build_status['status'] == 'pass'
+    config_successes.setdefault(config, []).append(success)
+    config_successes.setdefault('master', []).append(success)
+
+  success_rates = {}
+  for key, successes in config_successes.iteritems():
+    success_rates[key] = Percent(sum(successes), len(successes))
+  return success_rates
+
+
+def GetStageSuccessRates(build_statuses):
+  """Get the success rate for each stage.
+
+  Args:
+    build_statuses: Array of cidb result dictionaries.
+
+  Returns:
+    An dictionary of success rates by stage.
+  """
+  config_successes = {}
+  for build_status in build_statuses:
+    for stage in build_status['stages']:
+      status = stage['status']
+      # TODO(stevenjb): Handle 'planned', 'forgiven', 'inflight'?
+      if (status == 'skipped' or
+          status == 'planned' or status == 'forgiven' or status == 'inflight'):
+        continue
+      success = stage['status'] != 'fail'
+      config_successes.setdefault(stage['name'], []).append(success)
+
+  success_rates = {}
+  for key, successes in config_successes.iteritems():
+    success_rates[key] = Percent(sum(successes), len(successes))
+
+  return success_rates
 
 
 def FindAndSortStageStats(focus_build, builds_timings):
@@ -583,3 +631,68 @@ def StabilityReport(output, description, builds_timings):
                   Percent(successes, total),
                   Percent(timeouts, total),
                   total))
+
+
+def SuccessReport(
+    output, description, build_success_rates, stage_success_rates):
+  """Generate a report describing the success rate of the builders.
+
+  Report includes success rate by builder and by stage.
+
+  Args:
+    output: A file object to write the report too.
+    description: A user friendly string description what the report covers.
+    build_success_rates: Dictionary of success rates by builder.
+    stage_success_rates: Dictionary of success rates by stage.
+  """
+  assert build_success_rates
+
+  output.write('\n%s\n\n' % description)
+
+  stage_keys = stage_success_rates.keys()
+  if len(stage_keys):
+    output.write('Stages with failures:\n\n')
+    stage_keys.sort()
+    for key in stage_keys:
+      success_rate = stage_success_rates[key]
+      if success_rate == '100%':
+        continue
+      output.write('%s Success rate: %s.\n' % (key, success_rate))
+    output.write('\n')
+
+  output.write('Builders:\n\n')
+  builder_keys = build_success_rates.keys()
+  builder_keys.sort()
+  for key in builder_keys:
+    if key == 'master':
+      continue
+    output.write('%s Success rate: %s.\n' % (key, build_success_rates[key]))
+  output.write('\nTotal success rate for %s: %s.\n' %
+               (description, build_success_rates['master']))
+
+
+def SuccessReportCsv(output, build_success_rates, stage_success_rates):
+  """Generate a CSV report with the success rate of the builders.
+
+  Report includes success rate by builder and by stage.
+
+  Args:
+    output: A file object to write the report too.
+    build_success_rates: Dictionary of success rates by builder.
+    stage_success_rates: Dictionary of success rates by stage.
+  """
+  assert build_success_rates
+
+  output.write('builder,%s,%s\n' % ('master', build_success_rates['master']))
+  builder_keys = build_success_rates.keys()
+  builder_keys.sort()
+  for key in builder_keys:
+    if key == 'master':
+      continue
+    output.write('builder,%s,%s\n' % (key, build_success_rates[key]))
+
+  stage_keys = stage_success_rates.keys()
+  if len(stage_keys):
+    stage_keys.sort()
+    for key in stage_keys:
+      output.write('stage,%s,%s\n' % (key, stage_success_rates[key]))

@@ -80,7 +80,7 @@ def GetParser():
 
   report_group = parser.add_mutually_exclusive_group()
   report_group.add_argument('--report', default='standard',
-                            choices=['standard', 'stability'],
+                            choices=['standard', 'stability', 'success'],
                             help='What type of report to generate?')
 
   return parser
@@ -114,8 +114,9 @@ def main(argv):
   start_date, end_date = OptionsToStartEndDates(options)
 
   # Trending is sufficiently different to be handled on it's own.
-  if not options.trending:
-    assert not options.csv, '--csv can only be used with --trending.'
+  if not options.trending and options.report != 'success':
+    assert not options.csv, (
+        '--csv can only be used with --trending or --report success.')
 
   # Data about a single build (optional).
   focus_build = None
@@ -140,12 +141,30 @@ def main(argv):
         db, BUILD_TYPE_MAP[options.build_type], start_date, end_date)
     description = 'Type %s' % options.build_type
 
+  if not builds_statuses:
+    logging.critical('No Builds Found For: %s', description)
+    return 1
+
+  if options.report == 'success':
+    # Calculate per-build success rates and per-stage success rates.
+    build_success_rates = build_time_stats.GetBuildSuccessRates(builds_statuses)
+    stage_success_rates = (
+        build_time_stats.GetStageSuccessRates(builds_statuses) if options.stages
+        else {})
+    if options.csv:
+      build_time_stats.SuccessReportCsv(
+          sys.stdout, build_success_rates, stage_success_rates)
+    else:
+      build_time_stats.SuccessReport(
+          sys.stdout, description, build_success_rates, stage_success_rates)
+    return 0
+
   # Compute per-build timing.
   builds_timings = [build_time_stats.GetBuildTimings(status)
                     for status in builds_statuses]
 
   if not builds_timings:
-    logging.critical('No Builds Found For: %s', description)
+    logging.critical('No timing results For: %s', description)
     return 1
 
   # Report results.
