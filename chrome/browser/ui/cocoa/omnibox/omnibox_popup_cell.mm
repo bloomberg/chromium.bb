@@ -388,7 +388,7 @@ NSAttributedString* CreateClassifiedAttributedString(
                                     kACMatchPropertyContentsPrefix)),
                                 ContentTextColor(), textAlignment) retain];
 
-    isAnswer_ = match.answer;
+    isAnswer_ = !!match.answer;
     if (isAnswer_) {
       contents_ = [CreateAnswerLine(match.answer->first_line()) retain];
       description_ = [CreateAnswerLine(match.answer->second_line()) retain];

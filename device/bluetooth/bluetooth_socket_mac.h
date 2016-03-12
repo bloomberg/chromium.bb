@@ -154,7 +154,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   void ReleaseChannel();
   void ReleaseListener();
 
-  bool is_connecting() const { return connect_callbacks_; }
+  bool is_connecting() const { return !!connect_callbacks_; }
 
   // Used to verify that all methods are called on the same thread.
   base::ThreadChecker thread_checker_;

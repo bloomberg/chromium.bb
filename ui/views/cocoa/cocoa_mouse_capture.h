@@ -24,7 +24,7 @@ class VIEWS_EXPORT CocoaMouseCapture {
   ~CocoaMouseCapture();
 
   // True if the event tap is active (i.e. not stolen by a later instance).
-  bool IsActive() const { return active_handle_; }
+  bool IsActive() const { return !!active_handle_; }
 
  private:
   class ActiveEventTap;

@@ -122,7 +122,8 @@ struct FreeDeleter {
 // Now that scoped_ptr is almost 100% compatible with std::unique_ptr, we're
 // incrementally migrating scoped_ptr to just be a type alias for
 // std::unique_ptr. The eventual goal is to delete scoped_ptr altogether.
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_ANDROID) || \
+    defined(OS_MACOSX)
 template <typename T, typename D = std::default_delete<T>>
 using scoped_ptr = std::unique_ptr<T, D>;
 

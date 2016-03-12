@@ -258,7 +258,7 @@ void WebStateImpl::ClearWebUI() {
 }
 
 bool WebStateImpl::HasWebUI() {
-  return web_ui_;
+  return !!web_ui_;
 }
 
 void WebStateImpl::ProcessWebUIMessage(const GURL& source_url,

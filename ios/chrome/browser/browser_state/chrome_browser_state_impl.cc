@@ -176,7 +176,7 @@ ChromeBrowserStateImpl::GetOffTheRecordChromeBrowserState() {
 }
 
 bool ChromeBrowserStateImpl::HasOffTheRecordChromeBrowserState() const {
-  return otr_state_;
+  return !!otr_state_;
 }
 
 void ChromeBrowserStateImpl::DestroyOffTheRecordChromeBrowserState() {
