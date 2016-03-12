@@ -269,7 +269,7 @@ bool OpusAudioDecoder::ConfigureDecoder() {
                   << " vs " << opus_extra_data.skip_samples;
     config_.Initialize(config_.codec(), config_.sample_format(),
                        config_.channel_layout(), config_.samples_per_second(),
-                       config_.extra_data(), config_.is_encrypted(),
+                       config_.extra_data(), config_.encryption_scheme(),
                        config_.seek_preroll(), opus_extra_data.skip_samples);
   }
 

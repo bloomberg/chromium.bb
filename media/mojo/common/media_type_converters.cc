@@ -17,6 +17,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -221,6 +222,20 @@ ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_ANY);
 ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_MAX);
 ASSERT_ENUM_EQ(VideoCodecProfile, , , VIDEO_CODEC_PROFILE_MAX);
 
+// CipherMode
+ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
+                   EncryptionScheme::CipherMode::CIPHER_MODE_UNENCRYPTED,
+                   CipherMode::UNENCRYPTED);
+ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
+                   EncryptionScheme::CipherMode::CIPHER_MODE_AES_CTR,
+                   CipherMode::AES_CTR);
+ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
+                   EncryptionScheme::CipherMode::CIPHER_MODE_AES_CBC,
+                   CipherMode::AES_CBC);
+ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
+                   EncryptionScheme::CipherMode::CIPHER_MODE_MAX,
+                   CipherMode::MAX);
+
 // Decryptor Status
 ASSERT_ENUM_EQ_RAW(Decryptor::Status,
                    Decryptor::kSuccess,
@@ -294,6 +309,59 @@ ASSERT_CDM_KEY_STATUS(KEY_STATUS_PENDING);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_REQUEST);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RENEWAL);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RELEASE);
+
+template <>
+struct TypeConverter<media::interfaces::PatternPtr,
+                     media::EncryptionScheme::Pattern> {
+  static media::interfaces::PatternPtr Convert(
+      const media::EncryptionScheme::Pattern& input);
+};
+template <>
+struct TypeConverter<media::EncryptionScheme::Pattern,
+                     media::interfaces::PatternPtr> {
+  static media::EncryptionScheme::Pattern Convert(
+      const media::interfaces::PatternPtr& input);
+};
+
+// static
+media::interfaces::PatternPtr
+TypeConverter<media::interfaces::PatternPtr, media::EncryptionScheme::Pattern>::
+    Convert(const media::EncryptionScheme::Pattern& input) {
+  media::interfaces::PatternPtr mojo_pattern(media::interfaces::Pattern::New());
+  mojo_pattern->encrypt_blocks = input.encrypt_blocks();
+  mojo_pattern->skip_blocks = input.skip_blocks();
+  return mojo_pattern;
+}
+
+// static
+media::EncryptionScheme::Pattern
+TypeConverter<media::EncryptionScheme::Pattern, media::interfaces::PatternPtr>::
+    Convert(const media::interfaces::PatternPtr& input) {
+  return media::EncryptionScheme::Pattern(input->encrypt_blocks,
+                                          input->skip_blocks);
+}
+
+// static
+media::interfaces::EncryptionSchemePtr TypeConverter<
+    media::interfaces::EncryptionSchemePtr,
+    media::EncryptionScheme>::Convert(const media::EncryptionScheme& input) {
+  media::interfaces::EncryptionSchemePtr mojo_encryption_scheme(
+      media::interfaces::EncryptionScheme::New());
+  mojo_encryption_scheme->mode =
+      static_cast<media::interfaces::CipherMode>(input.mode());
+  mojo_encryption_scheme->pattern =
+      media::interfaces::Pattern::From(input.pattern());
+  return mojo_encryption_scheme;
+}
+
+// static
+media::EncryptionScheme
+TypeConverter<media::EncryptionScheme, media::interfaces::EncryptionSchemePtr>::
+    Convert(const media::interfaces::EncryptionSchemePtr& input) {
+  return media::EncryptionScheme(
+      static_cast<media::EncryptionScheme::CipherMode>(input->mode),
+      input->pattern.To<media::EncryptionScheme::Pattern>());
+}
 
 // static
 media::interfaces::SubsampleEntryPtr TypeConverter<
@@ -435,7 +503,8 @@ media::interfaces::AudioDecoderConfigPtr TypeConverter<
   }
   config->seek_preroll_usec = input.seek_preroll().InMicroseconds();
   config->codec_delay = input.codec_delay();
-  config->is_encrypted = input.is_encrypted();
+  config->encryption_scheme =
+      media::interfaces::EncryptionScheme::From(input.encryption_scheme());
   return config;
 }
 
@@ -449,7 +518,7 @@ TypeConverter<media::AudioDecoderConfig,
                     static_cast<media::SampleFormat>(input->sample_format),
                     static_cast<media::ChannelLayout>(input->channel_layout),
                     input->samples_per_second, input->extra_data.storage(),
-                    input->is_encrypted,
+                    input->encryption_scheme.To<media::EncryptionScheme>(),
                     base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
                     input->codec_delay);
   return config;
@@ -474,7 +543,8 @@ media::interfaces::VideoDecoderConfigPtr TypeConverter<
   if (!input.extra_data().empty()) {
     config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
   }
-  config->is_encrypted = input.is_encrypted();
+  config->encryption_scheme =
+      media::interfaces::EncryptionScheme::From(input.encryption_scheme());
   return config;
 }
 
@@ -484,14 +554,14 @@ TypeConverter<media::VideoDecoderConfig,
               media::interfaces::VideoDecoderConfigPtr>::
     Convert(const media::interfaces::VideoDecoderConfigPtr& input) {
   media::VideoDecoderConfig config;
-  config.Initialize(static_cast<media::VideoCodec>(input->codec),
-                    static_cast<media::VideoCodecProfile>(input->profile),
-                    static_cast<media::VideoPixelFormat>(input->format),
-                    static_cast<media::ColorSpace>(input->color_space),
-                    input->coded_size.To<gfx::Size>(),
-                    input->visible_rect.To<gfx::Rect>(),
-                    input->natural_size.To<gfx::Size>(),
-                    input->extra_data.storage(), input->is_encrypted);
+  config.Initialize(
+      static_cast<media::VideoCodec>(input->codec),
+      static_cast<media::VideoCodecProfile>(input->profile),
+      static_cast<media::VideoPixelFormat>(input->format),
+      static_cast<media::ColorSpace>(input->color_space),
+      input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
+      input->natural_size.To<gfx::Size>(), input->extra_data.storage(),
+      input->encryption_scheme.To<media::EncryptionScheme>());
   return config;
 }
 

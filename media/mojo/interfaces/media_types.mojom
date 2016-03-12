@@ -168,6 +168,29 @@ enum VideoCodecProfile {
   VIDEO_CODEC_PROFILE_MAX = VP9PROFILE_MAX,
 };
 
+// See media/base/encryption_scheme.h.
+// Kept in sync with media::CipherMode via static_asserts.
+enum CipherMode {
+  UNENCRYPTED = 0,
+  AES_CTR,
+  AES_CBC,
+  MAX = AES_CBC
+};
+
+// This defines a mojo transport format for media::EncryptionScheme::Pattern
+// See media/base/encryption_scheme.h for description.
+struct Pattern {
+  uint32 encrypt_blocks;
+  uint32 skip_blocks;
+};
+
+// This defines a mojo transport format for media::EncryptionScheme.
+// See media/base/encryption_scheme.h for description.
+struct EncryptionScheme {
+  CipherMode mode;
+  Pattern pattern;
+};
+
 // This defines a mojo transport format for media::AudioDecoderConfig.
 // See media/base/audio_decoder_config.h for descriptions.
 struct AudioDecoderConfig {
@@ -178,7 +201,7 @@ struct AudioDecoderConfig {
   array<uint8>? extra_data;
   int64 seek_preroll_usec;
   int32 codec_delay;
-  bool is_encrypted;
+  EncryptionScheme encryption_scheme;
 };
 
 // This defines a mojo transport format for media::VideoDecoderConfig.
@@ -192,7 +215,7 @@ struct VideoDecoderConfig {
   mojo.Rect visible_rect;
   mojo.Size natural_size;
   array<uint8>? extra_data;
-  bool is_encrypted;
+  EncryptionScheme encryption_scheme;
 };
 
 // This defines a mojo transport format for media::SubsampleEntry.

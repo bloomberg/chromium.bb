@@ -14,6 +14,8 @@ source_set("ipc_streamer") {
     "decoder_buffer_base_marshaller.h",
     "decrypt_config_marshaller.cc",
     "decrypt_config_marshaller.h",
+    "encryption_scheme_marshaller.cc",
+    "encryption_scheme_marshaller.h",
     "video_decoder_config_marshaller.cc",
     "video_decoder_config_marshaller.h",
   ]

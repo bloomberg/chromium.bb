@@ -52,6 +52,7 @@ MSVC_POP_WARNING();
 namespace media {
 
 class AudioDecoderConfig;
+class EncryptionScheme;
 class VideoDecoderConfig;
 
 // The following implement the deleters declared in ffmpeg_deleters.h (which
@@ -113,7 +114,7 @@ void VideoDecoderConfigToAVCodecContext(
 // is not modified.
 MEDIA_EXPORT bool AVCodecContextToAudioDecoderConfig(
     const AVCodecContext* codec_context,
-    bool is_encrypted,
+    const EncryptionScheme& encryption_scheme,
     AudioDecoderConfig* config);
 
 // Converts FFmpeg's channel layout to chrome's ChannelLayout.  |channels| can

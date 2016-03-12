@@ -63,7 +63,7 @@ void DemuxerStreamForTest::Read(const ReadCB& read_cb) {
                                      visible_rect,
                                      natural_size,
                                      ::media::EmptyExtraData(),
-                                     false);
+                                     ::media::Unencrypted());
 }
 
 ::media::DemuxerStream::Type DemuxerStreamForTest::type() const {

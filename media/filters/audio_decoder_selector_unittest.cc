@@ -77,14 +77,14 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   void UseClearStream() {
     AudioDecoderConfig clear_audio_config(kCodecVorbis, kSampleFormatPlanarF32,
                                           CHANNEL_LAYOUT_STEREO, 44100,
-                                          EmptyExtraData(), false);
+                                          EmptyExtraData(), Unencrypted());
     demuxer_stream_->set_audio_decoder_config(clear_audio_config);
   }
 
   void UseEncryptedStream() {
     AudioDecoderConfig encrypted_audio_config(
         kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
-        EmptyExtraData(), true);
+        EmptyExtraData(), AesCtrEncryptionScheme());
     demuxer_stream_->set_audio_decoder_config(encrypted_audio_config);
   }
 

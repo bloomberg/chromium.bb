@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "media/base/encryption_scheme.h"
+#include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -262,7 +264,7 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
     const H264SPS* sps = h264_parser_->GetSPS(pps->seq_parameter_set_id);
     if (!sps)
       return false;
-    RCHECK(UpdateVideoDecoderConfig(sps));
+    RCHECK(UpdateVideoDecoderConfig(sps, Unencrypted()));
   }
 
   // Emit a frame.
@@ -287,7 +289,8 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
   return es_adapter_.OnNewBuffer(stream_parser_buffer);
 }
 
-bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps) {
+bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
+                                            const EncryptionScheme& scheme) {
   // Set the SAR to 1 when not specified in the H264 stream.
   int sar_width = (sps->sar_width == 0) ? 1 : sps->sar_width;
   int sar_height = (sps->sar_height == 0) ? 1 : sps->sar_height;
@@ -314,7 +317,7 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps) {
   VideoDecoderConfig video_decoder_config(
       kCodecH264, ProfileIDCToVideoCodecProfile(sps->profile_idc),
       PIXEL_FORMAT_YV12, COLOR_SPACE_HD_REC709, coded_size, visible_rect,
-      natural_size, std::vector<uint8_t>(), false);
+      natural_size, EmptyExtraData(), scheme);
 
   if (!video_decoder_config.Matches(last_video_decoder_config_)) {
     DVLOG(1) << "Profile IDC: " << sps->profile_idc;

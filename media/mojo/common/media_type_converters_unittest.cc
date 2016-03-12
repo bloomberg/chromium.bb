@@ -13,6 +13,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
 #include "media/base/sample_format.h"
 #include "media/base/test_helpers.h"
@@ -287,7 +288,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Normal) {
 
   AudioDecoderConfig config;
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    kExtraDataVector, false, base::TimeDelta(), 0);
+                    kExtraDataVector, Unencrypted(), base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
   EXPECT_FALSE(ptr->extra_data.is_null());
@@ -298,7 +299,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Normal) {
 TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_EmptyExtraData) {
   AudioDecoderConfig config;
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    EmptyExtraData(), false, base::TimeDelta(), 0);
+                    EmptyExtraData(), Unencrypted(), base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
   EXPECT_TRUE(ptr->extra_data.is_null());
@@ -309,14 +310,11 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_EmptyExtraData) {
 TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Encrypted) {
   AudioDecoderConfig config;
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    EmptyExtraData(),
-                    true,  // Is encrypted.
+                    EmptyExtraData(), AesCtrEncryptionScheme(),
                     base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
-  EXPECT_TRUE(ptr->is_encrypted);
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
-  EXPECT_TRUE(result.is_encrypted());
   EXPECT_TRUE(result.Matches(config));
 }
 
@@ -327,7 +325,7 @@ TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Normal) {
 
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
                             COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
-                            kNaturalSize, kExtraDataVector, false);
+                            kNaturalSize, kExtraDataVector, Unencrypted());
   interfaces::VideoDecoderConfigPtr ptr(
       interfaces::VideoDecoderConfig::From(config));
   EXPECT_FALSE(ptr->extra_data.is_null());
@@ -338,7 +336,7 @@ TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Normal) {
 TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_EmptyExtraData) {
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
                             COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
-                            kNaturalSize, EmptyExtraData(), false);
+                            kNaturalSize, EmptyExtraData(), Unencrypted());
   interfaces::VideoDecoderConfigPtr ptr(
       interfaces::VideoDecoderConfig::From(config));
   EXPECT_TRUE(ptr->extra_data.is_null());
@@ -350,12 +348,10 @@ TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Encrypted) {
   VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
                             COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
                             kNaturalSize, EmptyExtraData(),
-                            true /* is_encrypted */);
+                            AesCtrEncryptionScheme());
   interfaces::VideoDecoderConfigPtr ptr(
       interfaces::VideoDecoderConfig::From(config));
-  EXPECT_TRUE(ptr->is_encrypted);
   VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
-  EXPECT_TRUE(result.is_encrypted());
   EXPECT_TRUE(result.Matches(config));
 }
 
@@ -456,6 +452,23 @@ TEST(MediaTypeConvertersTest, ConvertVideoFrame_ColorFrame) {
 
   // Compare.
   CompareVideoFrames(frame, result);
+}
+
+TEST(MediaTypeConvertersTest, ConvertEncryptionSchemeAesCbcWithPattern) {
+  // Original.
+  EncryptionScheme scheme(EncryptionScheme::CIPHER_MODE_AES_CBC,
+                          EncryptionScheme::Pattern(1, 9));
+
+  // Convert to and back.
+  interfaces::EncryptionSchemePtr ptr(
+      interfaces::EncryptionScheme::From(scheme));
+  EncryptionScheme result(ptr.To<EncryptionScheme>());
+
+  EXPECT_TRUE(result.Matches(scheme));
+
+  // Verify a couple of negative cases.
+  EXPECT_FALSE(result.Matches(Unencrypted()));
+  EXPECT_FALSE(result.Matches(AesCtrEncryptionScheme()));
 }
 
 }  // namespace media
