@@ -4874,6 +4874,18 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeBackgroundShorthand(backgroundShorthand(), important);
     case CSSPropertyWebkitMask:
         return consumeBackgroundShorthand(webkitMaskShorthand(), important);
+    case CSSPropertyGridGap: {
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled() && shorthandForProperty(CSSPropertyGridGap).length() == 2);
+        RefPtrWillBeRawPtr<CSSValue> rowGap = consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
+        RefPtrWillBeRawPtr<CSSValue> columnGap = consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
+        if (!rowGap || !m_range.atEnd())
+            return false;
+        if (!columnGap)
+            columnGap = rowGap;
+        addProperty(CSSPropertyGridRowGap, rowGap.release(), important);
+        addProperty(CSSPropertyGridColumnGap, columnGap.release(), important);
+        return true;
+    }
     default:
         m_currentShorthand = oldShorthand;
         CSSParserValueList valueList(m_range);

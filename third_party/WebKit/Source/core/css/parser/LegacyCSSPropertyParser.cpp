@@ -304,10 +304,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
 bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool important)
 {
     switch (propertyID) {
-    case CSSPropertyGridGap:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridGapShorthand(important);
-
     case CSSPropertyGridColumn:
     case CSSPropertyGridRow:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
@@ -460,39 +456,6 @@ bool CSSPropertyParser::parseGridItemPositionShorthand(CSSPropertyID shorthandId
 
     addProperty(shorthand.properties()[0], startValue, important);
     addProperty(shorthand.properties()[1], endValue, important);
-    return true;
-}
-
-bool CSSPropertyParser::parseGridGapShorthand(bool important)
-{
-    ShorthandScope scope(this, CSSPropertyGridGap);
-    ASSERT(shorthandForProperty(CSSPropertyGridGap).length() == 2);
-
-    CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
-
-    if (!validUnit(value, FLength | FNonNeg))
-        return false;
-
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> rowGap = createPrimitiveNumericValue(value);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> columnGap = nullptr;
-
-    value = m_valueList->next();
-    if (value) {
-        if (!validUnit(value, FLength | FNonNeg))
-            return false;
-
-        columnGap = createPrimitiveNumericValue(value);
-        if (m_valueList->next())
-            return false;
-    } else {
-        columnGap = rowGap;
-    }
-
-    addProperty(CSSPropertyGridRowGap, rowGap, important);
-    addProperty(CSSPropertyGridColumnGap, columnGap, important);
-
     return true;
 }
 

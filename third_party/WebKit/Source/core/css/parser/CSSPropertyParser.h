@@ -126,7 +126,6 @@ private:
     bool parseGridTemplateShorthand(bool important);
     bool parseGridShorthand(bool important);
     bool parseGridAreaShorthand(bool important);
-    bool parseGridGapShorthand(bool important);
     bool parseSingleGridAreaLonghand(RefPtrWillBeRawPtr<CSSValue>&);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackList();
     bool parseGridTrackRepeatFunction(CSSValueList&, bool& isAutoRepeat);
