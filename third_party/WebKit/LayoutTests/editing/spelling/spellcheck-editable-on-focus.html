@@ -5,7 +5,7 @@
 <script src="resources/util.js"></script>
 <script src="../../resources/js-test.js"></script>
 </head>
-<body onload="test();">
+<body>
 <div id="container">
   <div id="test_editable" contentEditable>zz zz zz.</div>
   <textarea id="test_textarea">zz zz zz.</textarea>
@@ -18,27 +18,27 @@ description("Spell checking should be triggered on focus of an editable. "
 
 jsTestIsAsync = true;
 
-var testEditable = document.getElementById('test_editable');
-var testTextArea = document.getElementById('test_textarea');
-var testTextField = document.getElementById('test_textfield');
-
-function triggerSpellingForEditables() {
-    testEditable.focus();
-    testTextArea.focus();
-    testTextField.focus();
+function findFirstTextNodeOf(id) {
+    return findFirstTextNode(document.getElementById(id));
 }
 
-var expectedNumberOfMarkers;
-var textNode;
-function verifySpellingMarkers(expectation, doneCallback) {
-    expectedNumberOfMarkers = expectation;
-    shouldBecomeEqual('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', 'expectedNumberOfMarkers', function() {
-        shouldBecomeEqual('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', 'expectedNumberOfMarkers', function() {
-            shouldBecomeEqual('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', 'expectedNumberOfMarkers', function() {
-                doneCallback();
+var expectedNumberOfMarkers = "0";
+function checkMarkersFor(elementID, doFocus, continuation) {
+    var element = document.getElementById(elementID);
+    if (doFocus)
+        element.focus();
+    shouldBecomeEqual('internals.markerCountForNode(findFirstTextNodeOf("' + elementID + '"), "spelling")', expectedNumberOfMarkers, continuation);
+}
+
+function verifySpellingMarkers(doFocus, doneCallback) {
+    checkMarkersFor('test_editable', doFocus, function () {
+        checkMarkersFor('test_textarea', doFocus, function () {
+            checkMarkersFor('test_textfield', doFocus, function () {
+                doneCallback && doneCallback();
                 // After focusing the editable elements, check whether they have spelling markers.
-                verifySpellingMarkers(3, finishJSTest);
-             });
+                expectedNumberOfMarkers = "3";
+                verifySpellingMarkers(true, finishJSTest);
+            });
         });
     });
 }
@@ -53,9 +53,9 @@ function test() {
 
     // Check whether non-focused elements do not have spelling markers, then
     // verify them when they get focused.
-    verifySpellingMarkers(0, triggerSpellingForEditables);
+    verifySpellingMarkers(false);
 }
-
+test();
 </script>
 </body>
 </html>
