@@ -23,10 +23,6 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace gpu {
-struct GpuPreferences;
-}  // namespace gpu
-
 namespace content {
 
 class GpuVideoDecodeAccelerator
@@ -46,8 +42,7 @@ class GpuVideoDecodeAccelerator
   // Static query for the capabilities, which includes the supported profiles.
   // This query calls the appropriate platform-specific version.  The returned
   // capabilities will not contain duplicate supported profile entries.
-  static gpu::VideoDecodeAcceleratorCapabilities GetCapabilities(
-      const gpu::GpuPreferences& gpu_preferences);
+  static gpu::VideoDecodeAcceleratorCapabilities GetCapabilities();
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -77,30 +72,18 @@ class GpuVideoDecodeAccelerator
   bool Initialize(const media::VideoDecodeAccelerator::Config& config);
 
  private:
-  typedef scoped_ptr<media::VideoDecodeAccelerator> (
+  typedef scoped_ptr<media::VideoDecodeAccelerator>(
       GpuVideoDecodeAccelerator::*CreateVDAFp)();
 
   class MessageFilter;
 
-#if defined(OS_WIN)
   scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA();
-#endif
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SliceVDA();
-#endif
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   scoped_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA();
-#endif
-#if defined(OS_MACOSX)
   scoped_ptr<media::VideoDecodeAccelerator> CreateVTVDA();
-#endif
-#if !defined(OS_CHROMEOS) && defined(USE_OZONE)
   scoped_ptr<media::VideoDecodeAccelerator> CreateOzoneVDA();
-#endif
-#if defined(OS_ANDROID)
   scoped_ptr<media::VideoDecodeAccelerator> CreateAndroidVDA();
-#endif
 
   // We only allow self-delete, from OnWillDestroyStub(), after cleanup there.
   ~GpuVideoDecodeAccelerator() override;
@@ -121,12 +104,10 @@ class GpuVideoDecodeAccelerator
   // Sets the texture to cleared.
   void SetTextureCleared(const media::Picture& picture);
 
-#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
   // Helper to bind |image| to the texture specified by |client_texture_id|.
   void BindImage(uint32_t client_texture_id,
                  uint32_t texture_target,
                  scoped_refptr<gl::GLImage> image);
-#endif
 
   // Helper function to call NotifyError in the |child_task_runner_| thread.
   void CallOrPostNotifyError(media::VideoDecodeAccelerator::Error error);

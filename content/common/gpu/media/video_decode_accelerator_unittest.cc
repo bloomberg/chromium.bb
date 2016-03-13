@@ -521,12 +521,10 @@ GLRenderingVDAClient::CreateDXVAVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  const bool enable_accelerated_vpx_decode =
-      cmd_line->HasSwitch(switches::kEnableAcceleratedVpxDecode);
-  decoder.reset(new DXVAVideoDecodeAccelerator(
-      base::Bind(&DoNothingReturnTrue), rendering_helper_->GetGLContext().get(),
-      enable_accelerated_vpx_decode));
+    decoder.reset(
+        new DXVAVideoDecodeAccelerator(
+            base::Bind(&DoNothingReturnTrue),
+            rendering_helper_->GetGLContext().get()));
 #endif
   return decoder;
 }

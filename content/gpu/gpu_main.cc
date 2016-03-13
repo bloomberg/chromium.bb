@@ -23,6 +23,9 @@
 #include "content/common/gpu/gpu_config.h"
 #include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
+#include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
@@ -381,6 +384,13 @@ int GpuMain(const MainFunctionParams& parameters) {
 #elif defined(OS_MACOSX)
     gpu_info.sandboxed = Sandbox::SandboxIsCurrentlyActive();
 #endif
+
+    gpu_info.video_decode_accelerator_capabilities =
+        content::GpuVideoDecodeAccelerator::GetCapabilities();
+    gpu_info.video_encode_accelerator_supported_profiles =
+        content::GpuVideoEncodeAccelerator::GetSupportedProfiles();
+    gpu_info.jpeg_decode_accelerator_supported =
+        content::GpuJpegDecodeAccelerator::IsSupported();
   } else {
     dead_on_arrival = true;
   }

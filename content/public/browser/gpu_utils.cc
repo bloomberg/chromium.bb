@@ -37,20 +37,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kInProcessGPU);
   gpu_preferences.ui_prioritize_in_gpu_process =
       command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess);
-  gpu_preferences.disable_accelerated_video_decode =
-      command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
-#if defined(OS_CHROMEOS)
-  gpu_preferences.disable_vaapi_accelerated_video_encode =
-      command_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode);
-#endif
-#if defined(ENABLE_WEBRTC)
-  gpu_preferences.disable_web_rtc_hw_encoding =
-      command_line->HasSwitch(switches::kDisableWebRtcHWEncoding);
-#endif
-#if defined(OS_WIN)
-  gpu_preferences.enable_accelerated_vpx_decode =
-      command_line->HasSwitch(switches::kEnableAcceleratedVpxDecode);
-#endif
   gpu_preferences.compile_shader_always_succeeds =
       command_line->HasSwitch(switches::kCompileShaderAlwaysSucceeds);
   gpu_preferences.disable_gl_error_limit =

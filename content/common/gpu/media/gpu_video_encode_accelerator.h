@@ -26,10 +26,6 @@ namespace base {
 class SharedMemory;
 }  // namespace base
 
-namespace gpu {
-struct GpuPreferences;
-}  // namespace gpu
-
 namespace content {
 
 // This class encapsulates the GPU process view of a VideoEncodeAccelerator,
@@ -68,25 +64,17 @@ class GpuVideoEncodeAccelerator
   // Static query for supported profiles.  This query calls the appropriate
   // platform-specific version. The returned supported profiles vector will
   // not contain duplicates.
-  static gpu::VideoEncodeAcceleratorSupportedProfiles GetSupportedProfiles(
-      const gpu::GpuPreferences& gpu_preferences);
+  static gpu::VideoEncodeAcceleratorSupportedProfiles GetSupportedProfiles();
 
  private:
   typedef scoped_ptr<media::VideoEncodeAccelerator>(*CreateVEAFp)();
 
   // Return a set of VEA Create function pointers applicable to the current
   // platform.
-  static std::vector<CreateVEAFp> CreateVEAFps(
-      const gpu::GpuPreferences& gpu_preferences);
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+  static std::vector<CreateVEAFp> CreateVEAFps();
   static scoped_ptr<media::VideoEncodeAccelerator> CreateV4L2VEA();
-#endif
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   static scoped_ptr<media::VideoEncodeAccelerator> CreateVaapiVEA();
-#endif
-#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   static scoped_ptr<media::VideoEncodeAccelerator> CreateAndroidVEA();
-#endif
 
   // IPC handlers, proxying media::VideoEncodeAccelerator for the renderer
   // process.

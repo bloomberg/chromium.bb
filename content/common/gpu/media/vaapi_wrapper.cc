@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -17,6 +18,7 @@
 // Auto-generated for dlopen libva libraries
 #include "content/common/gpu/media/va_stubs.h"
 #include "content/common/gpu/media/vaapi_picture.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gl/gl_bindings.h"
 #if defined(USE_X11)
@@ -212,6 +214,10 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
 media::VideoEncodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedEncodeProfiles() {
   media::VideoEncodeAccelerator::SupportedProfiles profiles;
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode))
+    return profiles;
+
   std::vector<ProfileInfo> encode_profile_infos =
       profile_infos_.Get().GetSupportedProfileInfosForCodecMode(kEncode);
 

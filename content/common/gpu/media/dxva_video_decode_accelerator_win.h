@@ -60,10 +60,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   };
 
   // Does not take ownership of |client| which must outlive |*this|.
-  DXVAVideoDecodeAccelerator(
+  explicit DXVAVideoDecodeAccelerator(
       const base::Callback<bool(void)>& make_context_current,
-      gfx::GLContext* gl_context,
-      bool enable_accelerated_vpx_decode);
+      gfx::GLContext* gl_context);
   ~DXVAVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -393,9 +392,6 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Set to true if we are sharing ANGLE's device.
   bool using_angle_device_;
-
-  // Enables experimental hardware acceleration for VP8/VP9 video decoding.
-  const bool enable_accelerated_vpx_decode_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;

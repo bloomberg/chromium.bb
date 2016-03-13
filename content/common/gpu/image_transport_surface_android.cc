@@ -4,9 +4,14 @@
 
 #include "content/common/gpu/image_transport_surface.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
 #include "content/common/gpu/pass_through_image_transport_surface.h"
+#include "content/public/common/content_switches.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace content {

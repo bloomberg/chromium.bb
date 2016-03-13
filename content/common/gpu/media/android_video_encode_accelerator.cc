@@ -7,11 +7,13 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/shared_memory_region.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/bitstream_buffer.h"
@@ -103,6 +105,12 @@ AndroidVideoEncodeAccelerator::~AndroidVideoEncodeAccelerator() {
 media::VideoEncodeAccelerator::SupportedProfiles
 AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
   SupportedProfiles profiles;
+
+#if defined(ENABLE_WEBRTC)
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
+    return profiles;
+#endif
 
   const struct {
       const media::VideoCodec codec;
