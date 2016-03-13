@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.media.router;
 
 import android.os.Environment;
 import android.os.StrictMode;
-import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.EnormousTest;
+import org.chromium.base.test.util.Manual;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.media.RouterTestUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -28,6 +29,8 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for MediaRouter.
+ *
+ * TODO(jbudorick): Remove this when media_router_integration_browsertest runs on Android.
  */
 @CommandLineFlags.Add(ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_PRESENTATION)
 public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<ChromeActivity> {
@@ -196,8 +199,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         startMainActivityOnBlankPage();
     }
 
-    @LargeTest
-    public void testMANUALBasic() throws InterruptedException, TimeoutException {
+    @EnormousTest
+    @Manual
+    public void testBasic() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -216,8 +220,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         // executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
     }
 
-    @LargeTest
-    public void testMANUALSendAndOnMessage() throws InterruptedException, TimeoutException {
+    @EnormousTest
+    @Manual
+    public void testSendAndOnMessage() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -232,8 +237,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 String.format(SEND_MESSAGE_AND_EXPECT_RESPONSE_SCRIPT, "foo"));
     }
 
-    @LargeTest
-    public void testMANUALOnClose() throws InterruptedException, TimeoutException {
+    @EnormousTest
+    @Manual
+    public void testOnClose() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -250,8 +256,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         //         SEND_MESSAGE_AND_EXPECT_CONNECTION_CLOSE_ON_ERROR_SCRIPT);
     }
 
-    @LargeTest
-    public void testMANUALFailNoProvider() throws InterruptedException, TimeoutException {
+    @EnormousTest
+    @Manual
+    public void testFailNoProvider() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Builder.sProvider.setIsSupportsSource(false);
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
@@ -264,8 +271,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 webContents, "UnknownError", "No provider supports createRoute with source");
     }
 
-    @LargeTest
-    public void testMANUALFailCreateRoute() throws InterruptedException, TimeoutException {
+    @EnormousTest
+    @Manual
+    public void testFailCreateRoute() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Builder.sProvider.setCreateRouteErrorMessage("Unknown sink");
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
@@ -278,8 +286,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 webContents, "UnknownError", "Unknown sink");
     }
 
-    @LargeTest
-    public void testMANUALReconnectSession() throws InterruptedException, TimeoutException {
+    @EnormousTest
+    @Manual
+    public void testReconnectSession() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -302,8 +311,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         // executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
     }
 
-    @LargeTest
-    public void testMANUALFailReconnectSession() throws InterruptedException, TimeoutException {
+    @EnormousTest
+    @Manual
+    public void testFailReconnectSession() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
@@ -322,8 +332,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 String.format("checkReconnectSessionFails('%s');", sessionId));
     }
 
-    @LargeTest
-    public void testMANUALFailStartCancelled() throws InterruptedException, TimeoutException {
+    @EnormousTest
+    @Manual
+    public void testFailStartCancelled() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
