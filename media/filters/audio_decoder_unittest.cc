@@ -37,6 +37,10 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/filters/android/media_codec_audio_decoder.h"
 
+#if defined(USE_PROPRIETARY_CODECS)
+#include "media/formats/mpeg/adts_header_parser.h"
+#endif
+
 // Helper macro to skip the test if MediaCodec is not available.
 #define SKIP_TEST_IF_NO_MEDIA_CODEC()                                \
   do {                                                               \
@@ -187,7 +191,6 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     EXPECT_EQ(GetParam().first_packet_pts, packet.pts);
     start_timestamp_ = ConvertFromTimeBase(
         reader_->GetAVStreamForTesting()->time_base, packet.pts);
-    av_packet_unref(&packet);
 
     // Seek back to the beginning.
     ASSERT_TRUE(reader_->SeekForTesting(start_timestamp_));
@@ -195,6 +198,18 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     AudioDecoderConfig config;
     ASSERT_TRUE(AVCodecContextToAudioDecoderConfig(
         reader_->codec_context_for_testing(), Unencrypted(), &config));
+
+#if defined(OS_ANDROID) && defined(USE_PROPRIETARY_CODECS)
+    // MEDIA_CODEC type requires config->extra_data() for AAC codec. For ADTS
+    // streams we need to extract it with a separate procedure.
+    if (GetParam().decoder_type == MEDIA_CODEC &&
+        GetParam().codec == kCodecAAC && config.extra_data().empty()) {
+      ASSERT_TRUE(ParseAdtsHeader(packet.data, false, &config));
+      ASSERT_FALSE(config.extra_data().empty());
+    }
+#endif
+
+    av_packet_unref(&packet);
 
     EXPECT_EQ(GetParam().codec, config.codec());
     EXPECT_EQ(GetParam().samples_per_second, config.samples_per_second());
@@ -299,12 +314,28 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     return base::MD5DigestToBase16(digest);
   }
 
+  // Android MediaCodec returns wrong timestamps (shifted one frame forward)
+  // for AAC before Android L. Skip the timestamp check in this situation.
+  bool SkipBufferTimestampCheck() const {
+#if defined(OS_ANDROID)
+    return (base::android::BuildInfo::GetInstance()->sdk_int() < 21) &&
+           GetParam().decoder_type == MEDIA_CODEC &&
+           GetParam().codec == kCodecAAC;
+#else
+    return false;
+#endif
+  }
+
   void ExpectDecodedAudio(size_t i, const std::string& exact_hash) {
     CHECK_LT(i, decoded_audio_.size());
     const scoped_refptr<AudioBuffer>& buffer = decoded_audio_[i];
 
     const DecodedBufferExpectations& sample_info = GetParam().expectations[i];
-    EXPECT_EQ(sample_info.timestamp, buffer->timestamp().InMicroseconds());
+
+    // Android MediaCodec returns wrong timestamps (shifted one frame forward)
+    // for AAC before Android L. Ignore sample_info.timestamp in this situation.
+    if (!SkipBufferTimestampCheck())
+      EXPECT_EQ(sample_info.timestamp, buffer->timestamp().InMicroseconds());
     EXPECT_EQ(sample_info.duration, buffer->duration().InMicroseconds());
     EXPECT_FALSE(buffer->end_of_stream());
 
@@ -493,9 +524,21 @@ INSTANTIATE_TEST_CASE_P(OpusAudioDecoderBehavioralTest,
                         testing::ValuesIn(kOpusBehavioralTest));
 
 #if defined(OS_ANDROID)
+#if defined(USE_PROPRIETARY_CODECS)
+const DecodedBufferExpectations kSfxAdtsMCExpectations[] = {
+    {0, 23219, "-1.80,-1.49,-0.23,1.11,1.54,-0.11,"},
+    {23219, 23219, "-1.90,-1.53,-0.15,1.28,1.23,-0.33,"},
+    {46439, 23219, "0.54,0.88,2.19,3.54,3.24,1.63,"},
+};
+#endif
+
 const DecoderTestData kMediaCodecTests[] = {
     {MEDIA_CODEC, kCodecOpus, "bear-opus.ogg", kBearOpusExpectations, 24, 48000,
      CHANNEL_LAYOUT_STEREO},
+#if defined(USE_PROPRIETARY_CODECS)
+    {MEDIA_CODEC, kCodecAAC, "sfx.adts", kSfxAdtsMCExpectations, 0, 44100,
+     CHANNEL_LAYOUT_MONO},
+#endif
 };
 
 INSTANTIATE_TEST_CASE_P(MediaCodecAudioDecoderTest,

@@ -13,12 +13,12 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bit_reader.h"
 #include "media/base/channel_layout.h"
-#include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/common/offset_byte_queue.h"
 #include "media/formats/mp2t/mp2t_common.h"
 #include "media/formats/mpeg/adts_constants.h"
+#include "media/formats/mpeg/adts_header_parser.h"
 
 namespace media {
 
@@ -26,15 +26,6 @@ static int ExtractAdtsFrameSize(const uint8_t* adts_header) {
   return ((static_cast<int>(adts_header[5]) >> 5) |
           (static_cast<int>(adts_header[4]) << 3) |
           ((static_cast<int>(adts_header[3]) & 0x3) << 11));
-}
-
-static size_t ExtractAdtsFrequencyIndex(const uint8_t* adts_header) {
-  return ((adts_header[2] >> 2) & 0xf);
-}
-
-static size_t ExtractAdtsChannelConfig(const uint8_t* adts_header) {
-  return (((adts_header[3] >> 6) & 0x3) |
-          ((adts_header[2] & 0x1) << 2));
 }
 
 // Return true if buf corresponds to an ADTS syncword.
@@ -185,68 +176,25 @@ void EsParserAdts::ResetInternal() {
 }
 
 bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header) {
-  size_t frequency_index = ExtractAdtsFrequencyIndex(adts_header);
-  if (frequency_index >= kADTSFrequencyTableSize) {
-    // Frequency index 13 & 14 are reserved
-    // while 15 means that the frequency is explicitly written
-    // (not supported).
+  AudioDecoderConfig audio_decoder_config;
+  if (!ParseAdtsHeader(adts_header, sbr_in_mimetype_, &audio_decoder_config))
     return false;
-  }
-
-  size_t channel_configuration = ExtractAdtsChannelConfig(adts_header);
-  if (channel_configuration == 0 ||
-      channel_configuration >= kADTSChannelLayoutTableSize) {
-    // TODO(damienv): Add support for inband channel configuration.
-    return false;
-  }
-
-  // TODO(damienv): support HE-AAC frequency doubling (SBR)
-  // based on the incoming ADTS profile.
-  int samples_per_second = kADTSFrequencyTable[frequency_index];
-  int adts_profile = (adts_header[2] >> 6) & 0x3;
-
-  // The following code is written according to ISO 14496 Part 3 Table 1.11 and
-  // Table 1.22. (Table 1.11 refers to the capping to 48000, Table 1.22 refers
-  // to SBR doubling the AAC sample rate.)
-  // TODO(damienv) : Extend sample rate cap to 96kHz for Level 5 content.
-  int extended_samples_per_second = sbr_in_mimetype_
-      ? std::min(2 * samples_per_second, 48000)
-      : samples_per_second;
-
-  // The following code is written according to ISO 14496 Part 3 Table 1.13 -
-  // Syntax of AudioSpecificConfig.
-  uint16_t extra_data_int = static_cast<uint16_t>(
-      // Note: adts_profile is in the range [0,3], since the ADTS header only
-      // allows two bits for its value.
-      ((adts_profile + 1) << 11) +
-      // frequency_index is [0..13], per early out above.
-      (frequency_index << 7) +
-      // channel_configuration is [0..7], per early out above.
-      (channel_configuration << 3));
-  std::vector<uint8_t> extra_data;
-  extra_data.push_back(static_cast<uint8_t>(extra_data_int >> 8));
-  extra_data.push_back(static_cast<uint8_t>(extra_data_int & 0xff));
-
-  AudioDecoderConfig audio_decoder_config(
-      kCodecAAC, kSampleFormatS16,
-      kADTSChannelLayoutTable[channel_configuration],
-      extended_samples_per_second, extra_data, Unencrypted());
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
-    DVLOG(1) << "Sampling frequency: " << samples_per_second;
-    DVLOG(1) << "Extended sampling frequency: " << extended_samples_per_second;
-    DVLOG(1) << "Channel config: " << channel_configuration;
-    DVLOG(1) << "Adts profile: " << adts_profile;
+    DVLOG(1) << "Sampling frequency: "
+             << audio_decoder_config.samples_per_second();
+    DVLOG(1) << "Channel layout: "
+             << ChannelLayoutToString(audio_decoder_config.channel_layout());
     // Reset the timestamp helper to use a new time scale.
     if (audio_timestamp_helper_ &&
         audio_timestamp_helper_->base_timestamp() != kNoTimestamp()) {
       base::TimeDelta base_timestamp = audio_timestamp_helper_->GetTimestamp();
       audio_timestamp_helper_.reset(
-        new AudioTimestampHelper(samples_per_second));
+          new AudioTimestampHelper(audio_decoder_config.samples_per_second()));
       audio_timestamp_helper_->SetBaseTimestamp(base_timestamp);
     } else {
       audio_timestamp_helper_.reset(
-          new AudioTimestampHelper(samples_per_second));
+          new AudioTimestampHelper(audio_decoder_config.samples_per_second()));
     }
     // Audio config notification.
     last_audio_decoder_config_ = audio_decoder_config;
