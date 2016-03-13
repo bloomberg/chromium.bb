@@ -67,6 +67,7 @@ FieldTypeGroup AutofillType::group() const {
     case PHONE_HOME_COUNTRY_CODE:
     case PHONE_HOME_CITY_AND_NUMBER:
     case PHONE_HOME_WHOLE_NUMBER:
+    case PHONE_HOME_EXTENSION:
       return PHONE_HOME;
 
     case PHONE_BILLING_NUMBER:
@@ -199,6 +200,7 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_TEL_LOCAL:
     case HTML_TYPE_TEL_LOCAL_PREFIX:
     case HTML_TYPE_TEL_LOCAL_SUFFIX:
+    case HTML_TYPE_TEL_EXTENSION:
       return html_mode_ == HTML_MODE_BILLING ? PHONE_BILLING : PHONE_HOME;
 
     case HTML_TYPE_EMAIL:
@@ -388,6 +390,9 @@ ServerFieldType AutofillType::GetStorableType() const {
     case HTML_TYPE_TEL_LOCAL_SUFFIX:
       return PHONE_HOME_NUMBER;
 
+    case HTML_TYPE_TEL_EXTENSION:
+      return PHONE_HOME_EXTENSION;
+
     case HTML_TYPE_EMAIL:
       return EMAIL_ADDRESS;
 
@@ -538,6 +543,8 @@ std::string AutofillType::ToString() const {
       return "PHONE_HOME_CITY_AND_NUMBER";
     case PHONE_HOME_WHOLE_NUMBER:
       return "PHONE_HOME_WHOLE_NUMBER";
+    case PHONE_HOME_EXTENSION:
+      return "PHONE_HOME_EXTENSION";
     case PHONE_FAX_NUMBER:
       return "PHONE_FAX_NUMBER";
     case PHONE_FAX_CITY_CODE:
@@ -721,6 +728,8 @@ std::string AutofillType::ToString() const {
       return "HTML_TYPE_TEL_LOCAL_PREFIX";
     case HTML_TYPE_TEL_LOCAL_SUFFIX:
       return "HTML_TYPE_TEL_LOCAL_SUFFIX";
+    case HTML_TYPE_TEL_EXTENSION:
+      return "HTML_TYPE_TEL_EXTENSION";
     case HTML_TYPE_EMAIL:
       return "HTML_TYPE_EMAIL";
     case HTML_TYPE_ADDITIONAL_NAME_INITIAL:

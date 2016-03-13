@@ -13,6 +13,6 @@ PHONE_HOME_NUMBER | HomeSuffix |  |  | delivTitle_1-default
 PHONE_HOME_CITY_CODE | WorkArea |  |  | delivTitle_1-default
 PHONE_HOME_NUMBER | WorkPrefix |  |  | delivTitle_1-default
 PHONE_HOME_NUMBER | WorkSuffix |  |  | delivTitle_1-default
-UNKNOWN_TYPE | delivWorkPhoneExt | Ext: |  | delivTitle_1-default
+PHONE_HOME_EXTENSION | delivWorkPhoneExt | Ext: |  | delivTitle_1-default
 UNKNOWN_TYPE | dlv_isct_tx | Closest Major Intersection: |  | delivTitle_1-default
 UNKNOWN_TYPE | instructions |  |  | delivTitle_1-default

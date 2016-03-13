@@ -247,10 +247,9 @@ void PhoneField::AddClassifications(
   }
 
   if (parsed_phone_fields_[FIELD_EXTENSION]) {
-    // TODO(crbug.com/589211): Change from UNKNOWN_TYPE to the proper
-    // ServerFieldType once the new phone suffix is checked in.
-    AddClassification(parsed_phone_fields_[FIELD_EXTENSION], UNKNOWN_TYPE,
-                      kBasePhoneParserScore, field_candidates);
+    AddClassification(parsed_phone_fields_[FIELD_EXTENSION],
+                      PHONE_HOME_EXTENSION, kBasePhoneParserScore,
+                      field_candidates);
   }
 }
 

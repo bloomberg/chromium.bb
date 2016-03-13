@@ -24,7 +24,7 @@ ADDRESS_HOME_ZIP | zipCode | ZIP* |  | typeOfAddress_1-default
 UNKNOWN_TYPE |  | Phone number | Χ  | typeOfAddress_1-default
 PHONE_HOME_WHOLE_NUMBER | phone1 | Phone number |  | typeOfAddress_1-default
 UNKNOWN_TYPE |  | Ext | Χ  | typeOfAddress_1-default
-UNKNOWN_TYPE | phone2 | Ext |  | typeOfAddress_1-default
+PHONE_HOME_EXTENSION | phone2 | Ext |  | typeOfAddress_1-default
 UNKNOWN_TYPE | phone1Type | Cell phone | C | typeOfAddress_1-default
 UNKNOWN_TYPE |  | Email address* | Χ  | typeOfAddress_1-default
 EMAIL_ADDRESS | email1 | Email address* |  | typeOfAddress_1-default

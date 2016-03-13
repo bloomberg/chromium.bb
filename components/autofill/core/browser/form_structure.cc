@@ -274,6 +274,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "tel-local-suffix")
     return HTML_TYPE_TEL_LOCAL_SUFFIX;
 
+  if (autocomplete_attribute_value == "tel-extension")
+    return HTML_TYPE_TEL_EXTENSION;
+
   if (autocomplete_attribute_value == "email")
     return HTML_TYPE_EMAIL;
 

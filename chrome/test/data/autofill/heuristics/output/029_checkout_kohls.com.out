@@ -7,7 +7,7 @@ ADDRESS_HOME_STATE | BILL_TO_ADDRESS<>state_cd | State: |  | BILL_TO_ADDRESS<>fi
 ADDRESS_HOME_ZIP | BILL_TO_ADDRESS<>postal | ZIP Code: |  | BILL_TO_ADDRESS<>firstName_1-default
 PHONE_HOME_CITY_CODE | BILL_PHONE<>areacode | Area Code |  | BILL_TO_ADDRESS<>firstName_1-default
 PHONE_HOME_NUMBER | BILL_PHONE<>exchange | Exchange |  | BILL_TO_ADDRESS<>firstName_1-default
-UNKNOWN_TYPE | BILL_PHONE<>extension | Extension |  | BILL_TO_ADDRESS<>firstName_1-default
+PHONE_HOME_EXTENSION | BILL_PHONE<>extension | Extension |  | BILL_TO_ADDRESS<>firstName_1-default
 PHONE_HOME_WHOLE_NUMBER | bill_phone | Contact Phone: |  | BILL_TO_ADDRESS<>firstName_1-default
 EMAIL_ADDRESS | CURRENT_USER<>email | E-mail Address: |  | BILL_TO_ADDRESS<>firstName_1-default
 UNKNOWN_TYPE | EMAIL_OPT_STATUS_ARRAY<>opt_status | Yes, sign me up for Sale Alerts. (optional) | true | BILL_TO_ADDRESS<>firstName_1-default
@@ -22,6 +22,6 @@ ADDRESS_HOME_STATE | SHIP_TO_ADDRESS<>state_cd | State: |  | SHIP_TO_ADDRESS<>fi
 ADDRESS_HOME_ZIP | SHIP_TO_ADDRESS<>postal | ZIP Code: |  | SHIP_TO_ADDRESS<>firstName_1-default
 PHONE_HOME_CITY_CODE | SHIP_PHONE<>areacode | Area Code |  | SHIP_TO_ADDRESS<>firstName_1-default
 PHONE_HOME_NUMBER | SHIP_PHONE<>exchange | Exchange |  | SHIP_TO_ADDRESS<>firstName_1-default
-UNKNOWN_TYPE | SHIP_PHONE<>extension | Extension |  | SHIP_TO_ADDRESS<>firstName_1-default
+PHONE_HOME_EXTENSION | SHIP_PHONE<>extension | Extension |  | SHIP_TO_ADDRESS<>firstName_1-default
 PHONE_HOME_WHOLE_NUMBER | ship_phone | Contact Phone: |  | SHIP_TO_ADDRESS<>firstName_1-default
 UNKNOWN_TYPE | validShippingMethodList | Shipping Method: | 7037973929746575 | SHIP_TO_ADDRESS<>firstName_1-default

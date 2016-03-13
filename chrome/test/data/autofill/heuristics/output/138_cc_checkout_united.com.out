@@ -40,7 +40,7 @@ ADDRESS_HOME_STATE | BmlModel.BMLStateCode | State/territory/province* |  | Cred
 ADDRESS_HOME_ZIP | BmlModel.BMLPostalCode | Zip/Postal code* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_COUNTRY | BmlModel.BMLPhoneCountryAccessCode | Phone Country | US | CreditCardViewModels[0].CardTypeCode_1-default
 PHONE_HOME_WHOLE_NUMBER | BmlModel.BMLPhoneNumber | Phone number* |  | CreditCardViewModels[0].CardTypeCode_1-default
-UNKNOWN_TYPE | BmlModel.BMLPhoneExtension | Extension (Optional) |  | CreditCardViewModels[0].CardTypeCode_1-default
+PHONE_HOME_EXTENSION | BmlModel.BMLPhoneExtension | Extension (Optional) |  | CreditCardViewModels[0].CardTypeCode_1-default
 EMAIL_ADDRESS | BmlModel.BMLEmail | Email address* |  | CreditCardViewModels[0].CardTypeCode_1-default
 UNKNOWN_TYPE | BmlModel.DobMonth | Date Of Birth Month |  | CreditCardViewModels[0].CardTypeCode_1-default
 UNKNOWN_TYPE | BmlModel.DobDay | DD* |  | CreditCardViewModels[0].CardTypeCode_1-default

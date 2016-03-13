@@ -50,4 +50,4 @@ HTML_TYPE_TEL_AREA_CODE | ta |  |  | c4_1-default
 HTML_TYPE_TEL_LOCAL | tl |  |  | c4_1-default
 HTML_TYPE_TEL_LOCAL_PREFIX | tp |  |  | c4_1-default
 HTML_TYPE_TEL_LOCAL_SUFFIX | ts |  |  | c4_1-default
-UNKNOWN_TYPE | te |  |  | c4_1-default
+HTML_TYPE_TEL_EXTENSION | te |  |  | c4_1-default

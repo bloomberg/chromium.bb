@@ -9,7 +9,7 @@ ADDRESS_HOME_COUNTRY | countryId | Country or region | 1 | firstname_1-default
 PHONE_HOME_CITY_CODE | dayphone1 | Primary telephone number |  | firstname_1-default
 PHONE_HOME_NUMBER | dayphone2 | Primary telephone number |  | firstname_1-default
 PHONE_HOME_NUMBER | dayphone3 | Primary telephone number |  | firstname_1-default
-UNKNOWN_TYPE | dayphone4 | ext.: |  | firstname_1-default
+PHONE_HOME_EXTENSION | dayphone4 | ext.: |  | firstname_1-default
 EMAIL_ADDRESS | email | Email address |  | firstname_1-default
 EMAIL_ADDRESS | retype_email | Re-enter email address |  | firstname_1-default
 UNKNOWN_TYPE | userid | Create your eBay user ID |  | firstname_1-default

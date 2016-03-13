@@ -153,10 +153,11 @@ enum ServerFieldType {
   CREDIT_CARD_NAME_FIRST = 91,
   CREDIT_CARD_NAME_LAST = 92,
 
+  PHONE_HOME_EXTENSION = 93,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-
-  MAX_VALID_FIELD_TYPE = 93,
+  MAX_VALID_FIELD_TYPE = 94,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.
@@ -206,6 +207,7 @@ enum HtmlFieldType {
   HTML_TYPE_TEL_LOCAL,
   HTML_TYPE_TEL_LOCAL_PREFIX,
   HTML_TYPE_TEL_LOCAL_SUFFIX,
+  HTML_TYPE_TEL_EXTENSION,
 
   // Email.
   HTML_TYPE_EMAIL,

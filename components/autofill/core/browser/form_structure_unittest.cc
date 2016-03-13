@@ -406,7 +406,7 @@ TEST_F(FormStructureTest, HeuristicsContactInfo) {
 
   // Expect the correct number of fields.
   ASSERT_EQ(9U, form_structure->field_count());
-  ASSERT_EQ(7U, form_structure->autofill_count());
+  ASSERT_EQ(8U, form_structure->autofill_count());
 
   // First name.
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
@@ -418,7 +418,7 @@ TEST_F(FormStructureTest, HeuristicsContactInfo) {
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(3)->heuristic_type());
   // Phone extension.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
+  EXPECT_EQ(PHONE_HOME_EXTENSION, form_structure->field(4)->heuristic_type());
   // Address.
   EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(5)->heuristic_type());
   // City.
@@ -1653,7 +1653,7 @@ TEST_F(FormStructureTest, ThreePartPhoneNumber) {
   form_structure->DetermineHeuristicTypes();
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
-  ASSERT_EQ(3U, form_structure->autofill_count());
+  ASSERT_EQ(4U, form_structure->autofill_count());
 
   // Area code.
   EXPECT_EQ(PHONE_HOME_CITY_CODE, form_structure->field(0)->heuristic_type());
@@ -1663,8 +1663,8 @@ TEST_F(FormStructureTest, ThreePartPhoneNumber) {
   // Phone number suffix.
   EXPECT_EQ(PHONE_HOME_NUMBER,
             form_structure->field(2)->heuristic_type());
-  // Unknown.
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(3)->heuristic_type());
+  // Phone extension.
+  EXPECT_EQ(PHONE_HOME_EXTENSION, form_structure->field(3)->heuristic_type());
 }
 
 TEST_F(FormStructureTest, HeuristicsInfernoCC) {

@@ -7,4 +7,4 @@ ADDRESS_HOME_CITY | sCity | City * |  | sFirstName_1-default
 ADDRESS_HOME_STATE | sState | Step 1. SHIP TO ADDRESS INFO Edit |  | sFirstName_1-default
 ADDRESS_HOME_ZIP | sZipCode | Zip Code * |  | sFirstName_1-default
 PHONE_HOME_WHOLE_NUMBER | sPhone | Phone Number * |  | sFirstName_1-default
-UNKNOWN_TYPE | sPhoneExt | Extension |  | sFirstName_1-default
+PHONE_HOME_EXTENSION | sPhoneExt | Extension |  | sFirstName_1-default

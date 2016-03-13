@@ -25,7 +25,7 @@ ADDRESS_HOME_STATE | FormUserControl$_mailingAddress$_stateXX | State/Province O
 ADDRESS_HOME_ZIP | FormUserControl$_mailingAddress$_zip | Zip/Postal Code* |  | FormUserControl$_guardianInformation$_lastName$_name_1-default
 ADDRESS_HOME_COUNTRY | FormUserControl$_contactInformation$_phoneNumber$_countryCode | Country Code | 1 | FormUserControl$_contactInformation$_phoneNumber$_countryCode_1-default
 PHONE_HOME_WHOLE_NUMBER | FormUserControl$_contactInformation$_phoneNumber$_phoneNumberTextBox | Country Code |  | FormUserControl$_contactInformation$_phoneNumber$_countryCode_1-default
-UNKNOWN_TYPE | FormUserControl$_contactInformation$_phoneNumber$_extensionTextBox | Ext. |  | FormUserControl$_contactInformation$_phoneNumber$_countryCode_1-default
+PHONE_HOME_EXTENSION | FormUserControl$_contactInformation$_phoneNumber$_extensionTextBox | Ext. |  | FormUserControl$_contactInformation$_phoneNumber$_countryCode_1-default
 EMAIL_ADDRESS | FormUserControl$_contactInformation$_emailAddress$_emailAddressTextBox | Email Address* |  | FormUserControl$_contactInformation$_phoneNumber$_countryCode_1-default
 UNKNOWN_TYPE | FormUserControl$_userIdPassword$_userId$_userId | Create a User ID* |  | FormUserControl$_contactInformation$_phoneNumber$_countryCode_1-default
 UNKNOWN_TYPE | FormUserControl$_userIdPassword$_password$_password | Create a Password |  | FormUserControl$_contactInformation$_phoneNumber$_countryCode_1-default

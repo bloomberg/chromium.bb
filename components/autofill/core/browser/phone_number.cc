@@ -119,6 +119,9 @@ base::string16 PhoneNumber::GetInfo(const AutofillType& type,
       return
           cached_parsed_phone_.city_code() + cached_parsed_phone_.number();
 
+    case PHONE_HOME_EXTENSION:
+      return base::string16();
+
     default:
       NOTREACHED();
       return base::string16();
