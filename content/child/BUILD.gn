@@ -34,6 +34,7 @@ source_set("child") {
     "//mojo/common",
     "//mojo/message_pump",
     "//mojo/shell/public/interfaces",
+    "//mojo/shell/runner/common",
     "//net",
     "//skia",
     "//third_party/icu",

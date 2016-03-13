@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -18,6 +19,7 @@ namespace mojo {
 namespace test {
 
 namespace {
+
 // Share the application name with multiple application tests.
 shell::mojom::IdentityPtr g_identity;
 uint32_t g_id = shell::mojom::kInvalidInstanceID;
@@ -43,13 +45,14 @@ class ShellGrabber : public shell::mojom::ShellClient {
 
  private:
   // shell::mojom::ShellClient implementation.
-  void Initialize(shell::mojom::ConnectorPtr connector,
-                  shell::mojom::IdentityPtr identity,
-                  uint32_t id) override {
+  void Initialize(shell::mojom::IdentityPtr identity,
+                  uint32_t id,
+                  const InitializeCallback& callback) override {
+    callback.Run(GetProxy(&g_connector));
+
     g_identity = std::move(identity);
     g_id = id;
     g_shell_client_request = binding_.Unbind();
-    g_connector = std::move(connector);
   }
 
   void AcceptConnection(
@@ -64,6 +67,8 @@ class ShellGrabber : public shell::mojom::ShellClient {
 
   Binding<ShellClient> binding_;
 };
+
+void IgnoreConnectorRequest(shell::mojom::ConnectorRequest) {}
 
 }  // namespace
 
@@ -115,9 +120,12 @@ TestHelper::TestHelper(ShellClient* client)
       name_(g_identity->name),
       userid_(g_identity->user_id),
       instance_id_(g_id) {
+  shell_connection_->SetAppTestConnectorForTesting(std::move(g_connector));
+
   // Fake ShellClient initialization.
   shell::mojom::ShellClient* shell_client = shell_connection_.get();
-  shell_client->Initialize(std::move(g_connector), std::move(g_identity), g_id);
+  shell_client->Initialize(std::move(g_identity), g_id,
+                           base::Bind(&IgnoreConnectorRequest));
 }
 
 TestHelper::~TestHelper() {

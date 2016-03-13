@@ -408,21 +408,12 @@ void ChildThreadImpl::Init(const Options& options) {
   if (!IsInBrowserProcess()) {
     // Don't double-initialize IPC support in single-process mode.
     mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(GetIOTaskRunner()));
-
     InitializeMojoIPCChannel();
   }
 
-  // If this process was launched with a primordial pipe token, we exchange it
-  // for a pipe to connect to the shell.
-  std::string pipe_token =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kMojoPrimordialPipeToken);
-  if (!pipe_token.empty() && MojoShellConnectionImpl::Get()) {
-    mojo::ScopedMessagePipeHandle pipe =
-        mojo::edk::CreateChildMessagePipe(pipe_token);
-
+  if (MojoShellConnectionImpl::Get()) {
     base::ElapsedTimer timer;
-    MojoShellConnectionImpl::Get()->BindToMessagePipe(std::move(pipe));
+    MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
     UMA_HISTOGRAM_TIMES("Mojo.Shell.ChildConnectionTime", timer.Elapsed());
   }
 

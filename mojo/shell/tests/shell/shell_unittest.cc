@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
+#include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -92,7 +93,9 @@ class ShellTest : public mojo::test::ShellTest,
     connector()->ConnectToInterface("mojo:shell", &shell);
 
     shell->AddInstanceListener(binding_.CreateInterfacePtrAndBind());
-    binding_.WaitForIncomingMethodCall();
+
+    wait_for_instances_loop_.reset(new base::RunLoop);
+    wait_for_instances_loop_->Run();
   }
 
   bool ContainsInstanceWithName(const std::string& name) const {
@@ -129,10 +132,15 @@ class ShellTest : public mojo::test::ShellTest,
       initial_instances_.push_back(InstanceInfo(instances[i]->id,
                                                 instances[i]->identity->name));
     }
+
+    DCHECK(wait_for_instances_loop_);
+    wait_for_instances_loop_->Quit();
   }
+
   void InstanceCreated(mojom::InstanceInfoPtr instance) override {
     instances_.push_back(InstanceInfo(instance->id, instance->identity->name));
   }
+
   void InstanceDestroyed(uint32_t id) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       auto& instance = *it;
@@ -142,6 +150,7 @@ class ShellTest : public mojo::test::ShellTest,
       }
     }
   }
+
   void InstancePIDAvailable(uint32_t id, uint32_t pid) override {
     for (auto& instance : instances_) {
       if (instance.id == id) {
@@ -155,6 +164,7 @@ class ShellTest : public mojo::test::ShellTest,
   Binding<mojom::InstanceListener> binding_;
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
+  scoped_ptr<base::RunLoop> wait_for_instances_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTest);
 };

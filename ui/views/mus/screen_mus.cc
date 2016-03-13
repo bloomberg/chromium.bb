@@ -4,7 +4,6 @@
 
 #include "ui/views/mus/screen_mus.h"
 
-// #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
@@ -82,8 +81,10 @@ void ScreenMus::Init(mojo::Connector* connector) {
 
   display_manager_->AddObserver(
       display_manager_observer_binding_.CreateInterfacePtrAndBind());
+
   // We need the set of displays before we can continue. Wait for it.
-  display_manager_observer_binding_.WaitForIncomingMethodCall();
+  wait_for_displays_loop_.reset(new base::RunLoop);
+  wait_for_displays_loop_->Run();
 
   // The WaitForIncomingMethodCall() should have supplied the set of Displays.
   DCHECK(displays_.size());
@@ -203,6 +204,9 @@ void ScreenMus::OnDisplays(mojo::Array<mus::mojom::DisplayPtr> displays) {
       WindowManagerFrameValues::SetInstance(frame_values);
     }
   }
+
+  DCHECK(wait_for_displays_loop_);
+  wait_for_displays_loop_->Quit();
 }
 
 void ScreenMus::OnDisplaysChanged(

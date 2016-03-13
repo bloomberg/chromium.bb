@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/cpp/capabilities.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/lib/connection_impl.h"
@@ -18,30 +19,44 @@ namespace mojo {
 ////////////////////////////////////////////////////////////////////////////////
 // ShellConnection, public:
 
-ShellConnection::ShellConnection(
-    mojo::ShellClient* client,
-    InterfaceRequest<shell::mojom::ShellClient> request)
-    : client_(client),
-      binding_(this, std::move(request)),
-      weak_factory_(this) {}
+ShellConnection::ShellConnection(mojo::ShellClient* client)
+    : ShellConnection(client, nullptr) {}
+
+ShellConnection::ShellConnection(mojo::ShellClient* client,
+                                 shell::mojom::ShellClientRequest request)
+    : client_(client), binding_(this) {
+  shell::mojom::ConnectorPtr connector;
+  pending_connector_request_ = GetProxy(&connector);
+  connector_.reset(new ConnectorImpl(std::move(connector)));
+
+  if (request.is_pending())
+    BindToRequest(std::move(request));
+}
 
 ShellConnection::~ShellConnection() {}
 
-void ShellConnection::WaitForInitialize() {
-  DCHECK(!connector_);
-  binding_.WaitForIncomingMethodCall();
+void ShellConnection::BindToRequest(shell::mojom::ShellClientRequest request) {
+  DCHECK(!binding_.is_bound());
+  binding_.Bind(std::move(request));
+}
+
+void ShellConnection::SetAppTestConnectorForTesting(
+    shell::mojom::ConnectorPtr connector) {
+  pending_connector_request_ = nullptr;
+  connector_.reset(new ConnectorImpl(std::move(connector)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellConnection, shell::mojom::ShellClient implementation:
 
-void ShellConnection::Initialize(shell::mojom::ConnectorPtr connector,
-                                 shell::mojom::IdentityPtr identity,
-                                 uint32_t id) {
-  connector_.reset(new ConnectorImpl(std::move(connector)));
-  binding_.set_connection_error_handler(
-      base::Bind(&ShellConnection::OnConnectionError,
-                 weak_factory_.GetWeakPtr()));
+void ShellConnection::Initialize(shell::mojom::IdentityPtr identity,
+                                 uint32_t id,
+                                 const InitializeCallback& callback) {
+  callback.Run(std::move(pending_connector_request_));
+
+  DCHECK(binding_.is_bound());
+  binding_.set_connection_error_handler([this] { OnConnectionError(); });
+
   client_->Initialize(connector_.get(), identity.To<Identity>(), id);
 }
 

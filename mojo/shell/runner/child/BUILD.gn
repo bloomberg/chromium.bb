@@ -25,6 +25,7 @@ source_set("lib") {
     "//mojo/edk/system",
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
+    "//mojo/shell/public/cpp:sources",
     "//mojo/shell/public/interfaces",
     "//mojo/shell/runner/common",
   ]

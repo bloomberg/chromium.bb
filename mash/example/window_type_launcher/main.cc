@@ -16,7 +16,6 @@
 #include "mash/example/window_type_launcher/window_type_launcher.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "mojo/shell/runner/child/runner_connection.h"
@@ -60,14 +59,13 @@ int main(int argc, char** argv) {
     CHECK(io_thread.StartWithOptions(io_thread_options));
 
     mojo::edk::InitIPCSupport(&process_delegate, io_thread.task_runner().get());
+    mojo::edk::SetParentPipeHandleFromCommandLine();
 
-    mojo::shell::mojom::ShellClientRequest request;
-    scoped_ptr<mojo::shell::RunnerConnection> connection(
-        mojo::shell::RunnerConnection::ConnectToRunner(
-            &request, mojo::ScopedMessagePipeHandle()));
-    base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
+    base::MessageLoop loop;
     WindowTypeLauncher delegate;
-    mojo::ShellConnection impl(&delegate, std::move(request));
+    mojo::ShellConnection impl(&delegate);
+    scoped_ptr<mojo::shell::RunnerConnection> connection =
+        mojo::shell::RunnerConnection::Create(&impl);
     loop.Run();
 
     mojo::edk::ShutdownIPCSupport();

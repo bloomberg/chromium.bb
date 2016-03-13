@@ -44,6 +44,7 @@ source_set("browser") {
     "//mojo/shell",
     "//mojo/shell/public/cpp:cpp_for_chromium",
     "//mojo/shell/public/interfaces",
+    "//mojo/shell/runner/common",
     "//mojo/shell/runner/host:lib",
     "//net",
     "//net:extras",

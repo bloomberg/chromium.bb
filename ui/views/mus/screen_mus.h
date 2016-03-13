@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "base/run_loop.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/display.h"
@@ -65,6 +66,7 @@ class VIEWS_MUS_EXPORT ScreenMus
   mojo::Binding<mus::mojom::DisplayManagerObserver>
       display_manager_observer_binding_;
   base::ObserverList<gfx::DisplayObserver> observers_;
+  scoped_ptr<base::RunLoop> wait_for_displays_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMus);
 };

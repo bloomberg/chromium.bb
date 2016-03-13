@@ -48,6 +48,10 @@ MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(
 // that the parent received from ChildProcessLaunched.
 MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandle(ScopedPlatformHandle pipe);
 
+// Same as above but extracts the pipe handle from the command line. See
+// PlatformChannelPair for details.
+MOJO_SYSTEM_IMPL_EXPORT void SetParentPipeHandleFromCommandLine();
+
 // Must be called first, or just after setting configuration parameters, to
 // initialize the (global, singleton) system.
 MOJO_SYSTEM_IMPL_EXPORT void Init();

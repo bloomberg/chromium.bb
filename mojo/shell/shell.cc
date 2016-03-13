@@ -117,16 +117,39 @@ class Shell::Instance : public mojom::Connector,
       pid_ = base::Process::Current().Pid();
     }
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
+
+    shell_client_.set_connection_error_handler(
+        base::Bind(&Instance::OnShellClientLost, base::Unretained(this)));
   }
 
   ~Instance() override {}
 
+  void OnShellClientLost() {
+    shell_client_.reset();
+    OnConnectionLost();
+  }
+
+  void OnConnectionLost() {
+    // Any time a Connector is lost or we lose the ShellClient connection, it
+    // may have been the last pipe using this Instance. If so, clean up.
+    if (connectors_.empty() && !shell_client_) {
+      // Deletes |this|.
+      shell_->OnInstanceError(this);
+    }
+  }
+
+  void OnInitializeResponse(mojom::ConnectorRequest connector_request) {
+    if (connector_request.is_pending()) {
+      connectors_.AddBinding(this, std::move(connector_request));
+      connectors_.set_connection_error_handler(
+          base::Bind(&Instance::OnConnectionLost, base::Unretained(this)));
+    }
+  }
+
   void InitializeClient() {
-    shell_client_->Initialize(connectors_.CreateInterfacePtrAndBind(this),
-                              mojom::Identity::From(identity_), id_);
-    connectors_.set_connection_error_handler(
-        base::Bind(&mojo::shell::Shell::OnInstanceError,
-                   base::Unretained(shell_), base::Unretained(this)));
+    shell_client_->Initialize(mojom::Identity::From(identity_), id_,
+                              base::Bind(&Instance::OnInitializeResponse,
+                                         base::Unretained(this)));
   }
 
   void ConnectToClient(scoped_ptr<ConnectParams> params) {
@@ -217,6 +240,7 @@ class Shell::Instance : public mojom::Connector,
     params->set_connect_callback(callback);
     shell_->Connect(std::move(params));
   }
+
   void Clone(mojom::ConnectorRequest request) override {
     connectors_.AddBinding(this, std::move(request));
   }
@@ -353,6 +377,7 @@ class Shell::Instance : public mojom::Connector,
   }
 
   mojo::shell::Shell* const shell_;
+
   // An id that identifies this instance. Distinct from pid, as a single process
   // may vend multiple application instances, and this object may exist before a
   // process is launched.
@@ -396,7 +421,6 @@ Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
   CreateInstance(CreateShellIdentity(), GetPermissiveCapabilities(),
                  std::move(client));
   shell_connection_.reset(new ShellConnection(this, std::move(request)));
-  shell_connection_->WaitForInitialize();
 
   if (catalog)
     InitCatalog(std::move(catalog));

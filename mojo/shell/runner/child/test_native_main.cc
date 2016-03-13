@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/runner/child/runner_connection.h"
@@ -56,13 +55,12 @@ int TestNativeMain(mojo::ShellClient* shell_client) {
     CHECK(io_thread.StartWithOptions(io_thread_options));
 
     mojo::edk::InitIPCSupport(&process_delegate, io_thread.task_runner());
+    mojo::edk::SetParentPipeHandleFromCommandLine();
 
-    mojom::ShellClientRequest request;
-    scoped_ptr<mojo::shell::RunnerConnection> connection(
-        mojo::shell::RunnerConnection::ConnectToRunner(
-            &request, ScopedMessagePipeHandle()));
-    base::MessageLoop loop(mojo::common::MessagePumpMojo::Create());
-    mojo::ShellConnection impl(shell_client, std::move(request));
+    base::MessageLoop loop;
+    mojo::ShellConnection impl(shell_client);;
+    scoped_ptr<mojo::shell::RunnerConnection> connection =
+        mojo::shell::RunnerConnection::Create(&impl);
     loop.Run();
 
     mojo::edk::ShutdownIPCSupport();

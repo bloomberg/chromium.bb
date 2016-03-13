@@ -5,35 +5,41 @@
 #ifndef MOJO_SHELL_RUNNER_CHILD_RUNNER_CONNECTION_H_
 #define MOJO_SHELL_RUNNER_CHILD_RUNNER_CONNECTION_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 
 namespace mojo {
 namespace shell {
 
-// Encapsulates a connection to a runner process. The connection object starts a
-// background controller thread that is used to receive control messages from
-// the runner. When this object is destroyed the thread is joined.
+// Encapsulates a connection to a runner process.
 class RunnerConnection {
  public:
   virtual ~RunnerConnection();
 
-  // Establish a connection to the runner, blocking the calling thread until
-  // it is established. The Application request from the runner is returned via
-  // |request|.
+  // Establishes a new runner connection using a ShellClientFactory request pipe
+  // from the command line.
   //
-  // If a connection to the runner cannot be established, |request| will not be
-  // modified and this function will return null.
+  // |shell_connection| is a ShellConnection which will be used to service
+  // incoming connection requests from other clients. This may be null, in which
+  // case no incoming connection requests will be serviced. This is not owned
+  // and must out-live the RunnerConnection.
   //
   // If |exit_on_error| is true, the calling process will be terminated in the
-  // event of an error on |handle|.
+  // event of an error on the ShellClientFactory pipe.
   //
-  // TODO(rockot): Remove |exit_on_error| when it's safe for all clients to be
-  // terminated on such errors. For now we don't want this killing content's
-  // child processes.
-  static RunnerConnection* ConnectToRunner(
-      InterfaceRequest<mojom::ShellClient>* request,
-      ScopedMessagePipeHandle handle,
+  // The RunnerConnection returned by this call bounds the lifetime of the
+  // connection. If connection fails (which can happen if there is no
+  // ShellClientFactory request pipe on the command line) this returns null.
+  //
+  // TODO(rockot): Remove |exit_on_error|. We shouldn't be killing processes
+  // abruptly on pipe errors, but some tests currently depend on this behavior.
+  static scoped_ptr<RunnerConnection> Create(
+      mojo::ShellConnection* shell_connection,
       bool exit_on_error = true);
 
  protected:

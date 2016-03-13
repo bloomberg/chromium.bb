@@ -186,7 +186,6 @@ void MashRunner::RunMain() {
   shell_connection_.reset(new mojo::ShellConnection(
       shell_client_.get(),
       background_shell.CreateShellClientRequest("exe:chrome_mash")));
-  shell_connection_->WaitForInitialize();
   shell_connection_->connector()->Connect("mojo:mash_shell");
   base::MessageLoop::current()->Run();
 }

@@ -172,10 +172,6 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     embed_run_loop_.reset();
   }
 
-  bool WaitForIncomingMethodCall() {
-    return binding_.WaitForIncomingMethodCall();
-  }
-
   bool WaitForChangeCompleted(uint32_t id) {
     waiting_change_id_ = id;
     change_completed_run_loop_.reset(new base::RunLoop);
@@ -585,7 +581,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
                                   std::move(tree_client_ptr));
 
     // Next we should get an embed call on the "window manager" client.
-    wt_client1_->WaitForIncomingMethodCall();
+    wt_client1_->WaitForOnEmbed();
 
     ASSERT_EQ(1u, changes1()->size());
     EXPECT_EQ(CHANGE_TYPE_EMBED, (*changes1())[0].type);

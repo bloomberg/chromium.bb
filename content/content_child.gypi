@@ -12,6 +12,7 @@
     '../ipc/ipc.gyp:ipc',
     '../mojo/mojo_base.gyp:mojo_common_lib',
     '../mojo/mojo_public.gyp:mojo_message_pump_lib',
+    '../mojo/mojo_shell.gyp:mojo_runner_common_lib',
     '../skia/skia.gyp:skia',
     '../storage/storage_common.gyp:storage_common',
     '../third_party/WebKit/public/blink.gyp:blink',

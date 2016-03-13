@@ -77,6 +77,7 @@
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
 #include "media/midi/midi_manager.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
@@ -920,11 +921,14 @@ int BrowserMainLoop::CreateThreads() {
 
 int BrowserMainLoop::PreMainMessageLoopRun() {
   if (IsRunningInMojoShell()) {
+    mojo::edk::SetParentPipeHandleFromCommandLine();
     MojoShellConnectionImpl::Create();
-    MojoShellConnectionImpl::Get()->BindToCommandLinePlatformChannel();
+    MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-    views::WindowManagerConnection::Create(
-        MojoShellConnection::Get()->GetConnector());
+    if (MojoShellConnection::Get()) {
+      views::WindowManagerConnection::Create(
+          MojoShellConnection::Get()->GetConnector());
+    }
 #endif
   }
 

@@ -17,10 +17,6 @@ interface ShellClient {
   //
   // Parameters:
   //
-  //  connector
-  //    An interface back to the shell by which new connections may be
-  //    established.
-  //
   //  identity
   //    The identity of this instance in the shell. Includes:
   //    * The resolved name used in the connection request that resulted in this
@@ -32,7 +28,14 @@ interface ShellClient {
   //  id
   //    A unique identifier used by the shell to identify this instance.
   //
-  Initialize(Connector connector, Identity identity, uint32 id);
+  //
+  // Response parameters:
+  //
+  //  connector_request
+  //    An optional Connector request for the shell to bind, allowing the
+  //    initialized client to connect to others.
+  //
+  Initialize(Identity identity, uint32 id) => (Connector&? connector_request);
 
   // Called when another application attempts to open a connection to this
   // application. An application implements this method to complete the exchange

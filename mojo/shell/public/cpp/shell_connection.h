@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
@@ -44,23 +43,34 @@ class Connector;
 //
 class ShellConnection : public shell::mojom::ShellClient {
  public:
-  // Does not take ownership of |delegate|, which must remain valid for the
+  // Creates a new ShellConnection to eventually be bound to a
+  // ShellClientRequest (see BindToRequest()). This connection may be used
+  // immediately to begin making outgoing connections via connector().
+  //
+  // Does not take ownership of |client|, which must remain valid for the
   // lifetime of ShellConnection.
-  ShellConnection(mojo::ShellClient* client,
-                  InterfaceRequest<shell::mojom::ShellClient> request);
-  ~ShellConnection() override;
+  explicit ShellConnection(mojo::ShellClient* client);
 
-  // Block the calling thread until the Initialize() method is called by the
-  // shell.
-  void WaitForInitialize();
+  // Like above but binds to |request| upon construction.
+  ShellConnection(mojo::ShellClient* client,
+                  shell::mojom::ShellClientRequest request);
+
+  ~ShellConnection() override;
 
   Connector* connector() { return connector_.get(); }
 
+  // Binds this ShellConnection to a client request if one was not available at
+  // construction time.
+  void BindToRequest(shell::mojom::ShellClientRequest request);
+
+  // TODO(rockot): Remove this once we get rid of app tests.
+  void SetAppTestConnectorForTesting(shell::mojom::ConnectorPtr connector);
+
  private:
   // shell::mojom::ShellClient:
-  void Initialize(shell::mojom::ConnectorPtr connector,
-                  shell::mojom::IdentityPtr identity,
-                  uint32_t id) override;
+  void Initialize(shell::mojom::IdentityPtr identity,
+                  uint32_t id,
+                  const InitializeCallback& callback) override;
   void AcceptConnection(
       shell::mojom::IdentityPtr source,
       uint32_t source_id,
@@ -74,10 +84,13 @@ class ShellConnection : public shell::mojom::ShellClient {
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.
   ScopedVector<Connection> incoming_connections_;
+
+  // A pending Connector request which will eventually be passed to the shell.
+  shell::mojom::ConnectorRequest pending_connector_request_;
+
   mojo::ShellClient* client_;
   Binding<shell::mojom::ShellClient> binding_;
   scoped_ptr<Connector> connector_;
-  base::WeakPtrFactory<ShellConnection> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellConnection);
 };

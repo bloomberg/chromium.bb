@@ -57,7 +57,6 @@ TEST(BackgroundShellTest, MAYBE_Basic) {
   ShellClientImpl shell_client;
   ShellConnection shell_connection(
       &shell_client, background_shell.CreateShellClientRequest(kTestName));
-  shell_connection.WaitForInitialize();
   mojom::TestServicePtr test_service;
   shell_connection.connector()->ConnectToInterface(
       "mojo:background_shell_test_app", &test_service);

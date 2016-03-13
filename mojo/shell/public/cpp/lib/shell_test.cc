@@ -36,7 +36,7 @@ void ShellTest::InitializeCalled(Connector* connector,
                                  const std::string& name,
                                  const std::string& user_id,
                                  uint32_t id) {
-  connector_ = connector;
+  DCHECK_EQ(connector_, connector);
   initialize_name_ = name;
   initialize_instance_id_ = id;
   initialize_userid_ = user_id;
@@ -50,7 +50,7 @@ void ShellTest::SetUp() {
   shell_connection_.reset(new ShellConnection(
       shell_client_.get(),
       background_shell_->CreateShellClientRequest(test_name_)));
-  shell_connection_->WaitForInitialize();
+  connector_ = shell_connection_->connector();
 }
 
 void ShellTest::TearDown() {

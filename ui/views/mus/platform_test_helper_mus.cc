@@ -47,7 +47,6 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     shell_connection_.reset(new mojo::ShellConnection(
         shell_client_.get(),
         background_shell_->CreateShellClientRequest(kTestName)));
-    shell_connection_->WaitForInitialize();
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
     mojo::Connector* connector = shell_connection_->connector();
