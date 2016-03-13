@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -37,7 +36,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
-#include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/shell_integration.h"
@@ -55,7 +53,8 @@ namespace {
 
 // An open User Manager window. There can only be one open at a time. This
 // is reset to NULL when the window is closed.
-UserManagerView* instance_ = NULL;
+UserManagerView* instance_ = nullptr;
+base::Closure* user_manager_shown_callback_for_testing_ = nullptr;
 bool instance_under_construction_ = false;
 
 class ReauthDelegate : public views::DialogDelegateView,
@@ -151,7 +150,7 @@ void ReauthDelegate::CloseReauthDialog() {
   GetWidget()->Close();
 }
 
-} // namespace
+}  // namespace
 
 // UserManager -----------------------------------------------------------------
 
@@ -181,7 +180,7 @@ void UserManager::Show(
   // there to then be multiple pending operations and eventually multiple
   // User Managers.
   if (instance_under_construction_)
-      return;
+    return;
 
   // Create the system profile, if necessary, and open the user manager
   // from the system profile.
@@ -210,8 +209,16 @@ bool UserManager::IsShowing() {
 
 // static
 void UserManager::OnUserManagerShown() {
-  if (instance_)
+  if (instance_) {
     instance_->LogTimeToOpen();
+    if (user_manager_shown_callback_for_testing_) {
+      if (!user_manager_shown_callback_for_testing_->is_null())
+        user_manager_shown_callback_for_testing_->Run();
+
+      delete user_manager_shown_callback_for_testing_;
+      user_manager_shown_callback_for_testing_ = nullptr;
+    }
+  }
 }
 
 // static
@@ -228,6 +235,13 @@ void UserManager::ShowReauthDialog(content::BrowserContext* browser_context,
   gfx::NativeView parent = instance_->GetWidget()->GetNativeView();
   views::DialogDelegate::CreateDialogWidget(delegate, nullptr, parent);
   delegate->GetWidget()->Show();
+}
+
+// static
+void UserManager::AddOnUserManagerShownCallbackForTesting(
+    const base::Closure& callback) {
+  DCHECK(!user_manager_shown_callback_for_testing_);
+  user_manager_shown_callback_for_testing_ = new base::Closure(callback);
 }
 
 // UserManagerView -------------------------------------------------------------

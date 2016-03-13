@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -173,15 +174,6 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     return registry;
   }
 
-  void WaitForUserManager() {
-    // If the User Manager hasn't shown yet, wait for it to show up.
-    // TODO(mlerman): As per crbug.com/450221, we should somehow observe when
-    // the UserManager is created and wait for that event.
-    if (!UserManager::IsShowing())
-      base::MessageLoop::current()->RunUntilIdle();
-    EXPECT_TRUE(UserManager::IsShowing());
-  }
-
   content::WindowedNotificationObserver* window_close_observer() {
     return window_close_observer_.get();
   }
@@ -257,11 +249,15 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ViewProfileUMA) {
       ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_VIEW, 1);
 }
 
-// Flaky: http://crbug.com/450221
-// WaitForUserManager()'s RunUntilIdle isn't always sufficient for the
-// UserManager to be showing.
+// Fixed flaky test: http://crbug.com/450221
+// TODO(mlermann): enable the test.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, DISABLED_LockProfile) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
+
+  // Set up the message loop for the user manager.
+  scoped_refptr<content::MessageLoopRunner> runner(
+      new content::MessageLoopRunner);
+  UserManager::AddOnUserManagerShownCallbackForTesting(runner->QuitClosure());
 
   SetupProfilesForLock(browser()->profile());
   EXPECT_EQ(1U, BrowserList::GetInstance()->size());
@@ -276,27 +272,36 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, DISABLED_LockProfile) {
   window_close_observer()->Wait();
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 
-  WaitForUserManager();
+  // Wait until the user manager is shown.
+  runner->Run();
+
   // We need to hide the User Manager or else the process can't die.
   UserManager::Hide();
 }
 
-// Flaky: http://crbug.com/450221
-// WaitForUserManager()'s RunUntilIdle isn't always sufficient for the
-// UserManager to be showing.
+// Fixed flaky test: http://crbug.com/450221
+// TODO(mlermann): enable the test.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
                        DISABLED_LockProfileBlockExtensions) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   // Make sure we have at least one enabled extension.
   extensions::ExtensionRegistry* registry =
       GetPreparedRegistry(browser()->profile());
+
+  // Set up the message loop for the user manager.
+  scoped_refptr<content::MessageLoopRunner> runner(
+      new content::MessageLoopRunner);
+  UserManager::AddOnUserManagerShownCallbackForTesting(runner->QuitClosure());
+
   SetupProfilesForLock(browser()->profile());
 
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
   ClickProfileChooserViewLockButton();
   window_close_observer()->Wait();
 
-  WaitForUserManager();
+  // Wait until the user manager is shown.
+  runner->Run();
+
   // Assert that the ExtensionService is blocked.
   ASSERT_EQ(1U, registry->blocked_extensions().size());
 
@@ -304,9 +309,8 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   UserManager::Hide();
 }
 
-// Flaky: http://crbug.com/450221
-// WaitForUserManager()'s RunUntilIdle isn't always sufficient for the
-// UserManager to be showing.
+// Fixed flaky test: http://crbug.com/450221
+// TODO(mlermann): enable the test.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
                        DISABLED_LockProfileNoBlockOtherProfileExtensions) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
@@ -314,6 +318,11 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   extensions::ExtensionRegistry* registry =
       GetPreparedRegistry(browser()->profile());
   const size_t total_enabled_extensions = registry->enabled_extensions().size();
+
+  // Set up the message loop for the user manager.
+  scoped_refptr<content::MessageLoopRunner> runner(
+      new content::MessageLoopRunner);
+  UserManager::AddOnUserManagerShownCallbackForTesting(runner->QuitClosure());
 
   // Create a different profile and then lock it.
   Profile *signed_in = CreateTestingProfile("signed_in");
@@ -327,7 +336,9 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   window_close_observer()->Wait();
   EXPECT_EQ(1U, BrowserList::GetInstance()->size());
 
-  WaitForUserManager();
+  // Wait until the user manager is shown.
+  runner->Run();
+
   // Assert that the first profile's extensions are not blocked.
   ASSERT_EQ(total_enabled_extensions, registry->enabled_extensions().size());
   ASSERT_EQ(0U, registry->blocked_extensions().size());

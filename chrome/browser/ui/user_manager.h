@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_USER_MANAGER_H_
 #define CHROME_BROWSER_UI_USER_MANAGER_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_window.h"
 
@@ -33,6 +34,10 @@ class UserManager {
   // To be called once the User Manager's contents are showing.
   static void OnUserManagerShown();
 
+  // Add a callback that will be called when OnUserManagerShown is called.
+  static void AddOnUserManagerShownCallbackForTesting(
+      const base::Closure& callback);
+
   // Shows a dialog where the user can re-authenticate when their profile is
   // not yet open.  This is called from the user manager when a profile is
   // locked and it has detected that the user's password has changed since the
@@ -49,14 +54,13 @@ class UserManager {
   static const int kReauthDialogHeight = 440;
 
   // This class observes the WebUI used in the UserManager to perform online
-  // reauthentication of locked profiles. Its concretely implemented in
+  // reauthentication of locked profiles. It is concretely implemented in
   // UserManagerMac and UserManagerView to specialize the closing of the UI's
   // dialog widget.
   class ReauthDialogObserver : public content::WebContentsObserver {
    public:
     ReauthDialogObserver(content::WebContents* web_contents,
                          const std::string& email_address);
-    ~ReauthDialogObserver() override {}
 
    private:
     // content::WebContentsObserver:
