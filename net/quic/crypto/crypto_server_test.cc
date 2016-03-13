@@ -199,6 +199,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     StringPiece scid;
     ASSERT_TRUE(server_config_->GetStringPiece(kSCID, &scid));
     scid_hex_ = "#" + base::HexEncode(scid.data(), scid.size());
+    crypto_proof_ = QuicCryptoProof();
+    DCHECK(crypto_proof_.chain.get() == nullptr);
   }
 
   // Helper used to accept the result of ValidateClientHello and pass
@@ -377,8 +379,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     string cert_sct;
     scoped_ptr<ProofSource> proof_source(
         CryptoTestUtils::ProofSourceForTesting());
-    if (!proof_source->GetProof(server_ip, "", "", false, &chain, &sig,
-                                &cert_sct) ||
+    if (!proof_source->GetProof(server_ip, "", "", client_version_, "", false,
+                                &chain, &sig, &cert_sct) ||
         chain->certs.empty()) {
       return "#0100000000000000";
     }
@@ -705,6 +707,7 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
       "#004b5453", (string(1, 'X') + srct_hex_).c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", (string(1, 'X') + nonce_hex_).c_str(),
+      "NONP", (string(1, 'X') + nonce_hex_).c_str(),
       "SNO\0", (string(1, 'X') + nonce_hex_).c_str(),
       "XLCT", XlctHexString().c_str(),
       "VER\0", client_version_string_.c_str(),
@@ -714,7 +717,7 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
   ShouldSucceed(msg);
   CheckRejectTag();
 
-  if (client_version_ <= QUIC_VERSION_30) {
+  if (client_version_ <= QUIC_VERSION_31) {
     const HandshakeFailureReason kRejectReasons[] = {
         SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE, CLIENT_NONCE_INVALID_FAILURE,
         SERVER_NONCE_DECRYPTION_FAILURE};
@@ -738,6 +741,7 @@ TEST_P(CryptoServerTest, NoServerNonce) {
       "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
+      "NONP", nonce_hex_.c_str(),
       "XLCT", XlctHexString().c_str(),
       "VER\0", client_version_string_.c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
@@ -802,10 +806,13 @@ TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
   scoped_ptr<ProofVerifyDetails> details;
   string error_details;
   DummyProofVerifierCallback callback;
-  EXPECT_EQ(QUIC_SUCCESS, proof_verifier->VerifyProof(
-                              "test.example.com", scfg_str.as_string(), certs,
-                              "", proof.as_string(), verify_context.get(),
-                              &error_details, &details, &callback));
+  string chlo_hash;
+  CryptoUtils::HashHandshakeMessage(msg, &chlo_hash);
+  EXPECT_EQ(QUIC_SUCCESS,
+            proof_verifier->VerifyProof(
+                "test.example.com", scfg_str.as_string(), client_version_,
+                chlo_hash, certs, "", proof.as_string(), verify_context.get(),
+                &error_details, &details, &callback));
 }
 
 TEST_P(CryptoServerTest, RejectInvalidXlct) {
@@ -851,6 +858,7 @@ TEST_P(CryptoServerTest, ValidXlct) {
       "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
+      "NONP", "123456789012345678901234567890",
       "VER\0", client_version_string_.c_str(),
       "XLCT", XlctHexString().c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),

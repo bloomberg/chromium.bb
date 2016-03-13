@@ -118,6 +118,8 @@ class FakeProofSource : public ProofSource {
   bool GetProof(const IPAddress& server_ip,
                 const std::string& hostname,
                 const std::string& server_config,
+                QuicVersion quic_version,
+                StringPiece chlo_hash,
                 bool ecdsa_ok,
                 scoped_refptr<ProofSource::Chain>* out_chain,
                 std::string* out_signature,
@@ -149,6 +151,8 @@ class FakeProofVerifier : public TestProofVerifierChromium {
   // ProofVerifier interface
   QuicAsyncStatus VerifyProof(const std::string& hostname,
                               const std::string& server_config,
+                              QuicVersion quic_version,
+                              StringPiece chlo_hash,
                               const std::vector<std::string>& certs,
                               const std::string& cert_sct,
                               const std::string& signature,

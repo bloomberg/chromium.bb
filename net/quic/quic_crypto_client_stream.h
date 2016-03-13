@@ -209,8 +209,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream
 
   QuicCryptoClientConfig* const crypto_config_;
 
-  // Client's connection nonce (4-byte timestamp + 28 random bytes)
-  std::string nonce_;
+  // SHA-256 hash of the most recently sent CHLO.
+  std::string chlo_hash_;
+
   // Server's (hostname, port, is_https, privacy_mode) tuple.
   const QuicServerId server_id_;
 

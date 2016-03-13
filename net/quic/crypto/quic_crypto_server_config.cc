@@ -607,11 +607,13 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   bool x509_ecdsa_supported = false;
   ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
   DCHECK(proof_source_.get());
+  string chlo_hash;
+  CryptoUtils::HashHandshakeMessage(client_hello, &chlo_hash);
   if (!crypto_proof->chain &&
-      !proof_source_->GetProof(server_ip, info.sni.as_string(),
-                               primary_config->serialized, x509_ecdsa_supported,
-                               &crypto_proof->chain, &crypto_proof->signature,
-                               &crypto_proof->cert_sct)) {
+      !proof_source_->GetProof(
+          server_ip, info.sni.as_string(), primary_config->serialized, version,
+          chlo_hash, x509_ecdsa_supported, &crypto_proof->chain,
+          &crypto_proof->signature, &crypto_proof->cert_sct)) {
     return QUIC_HANDSHAKE_FAILED;
   }
 
@@ -1042,10 +1044,12 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     bool x509_ecdsa_supported = false;
     ParseProofDemand(client_hello, &x509_supported, &x509_ecdsa_supported);
     string serialized_config = primary_config->serialized;
-    if (!proof_source_->GetProof(server_ip, info->sni.as_string(),
-                                 serialized_config, x509_ecdsa_supported,
-                                 &crypto_proof->chain, &crypto_proof->signature,
-                                 &crypto_proof->cert_sct)) {
+    string chlo_hash;
+    CryptoUtils::HashHandshakeMessage(client_hello, &chlo_hash);
+    if (!proof_source_->GetProof(
+            server_ip, info->sni.as_string(), serialized_config, version,
+            chlo_hash, x509_ecdsa_supported, &crypto_proof->chain,
+            &crypto_proof->signature, &crypto_proof->cert_sct)) {
       found_error = true;
       info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
     }
@@ -1071,8 +1075,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   // Server nonce is optional, and used for key derivation if present.
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
 
-  if (version > QUIC_VERSION_30) {
-    DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_31 and higher.";
+  if (version > QUIC_VERSION_31) {
+    DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_32 and higher.";
     // If the server nonce is empty and we're requiring handshake confirmation
     // for DoS reasons then we must reject the CHLO.
     if (FLAGS_quic_require_handshake_confirmation &&
@@ -1161,9 +1165,10 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
   scoped_refptr<ProofSource::Chain> chain;
   string signature;
   string cert_sct;
-  if (!proof_source_->GetProof(
-          server_ip, params.sni, primary_config_->serialized,
-          params.x509_ecdsa_supported, &chain, &signature, &cert_sct)) {
+  if (!proof_source_->GetProof(server_ip, params.sni,
+                               primary_config_->serialized, version,
+                               params.client_nonce, params.x509_ecdsa_supported,
+                               &chain, &signature, &cert_sct)) {
     DVLOG(1) << "Server: failed to get proof.";
     return false;
   }

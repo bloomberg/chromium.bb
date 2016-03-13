@@ -206,7 +206,12 @@ const size_t kOrbitSize = 8;  // Number of bytes in an orbit value.
 
 // kProofSignatureLabel is prepended to server configs before signing to avoid
 // any cross-protocol attacks on the signature.
-const char kProofSignatureLabel[] = "QUIC server config signature";
+// TODO(rch): Remove this when QUIC_VERSION_30 is removed.
+const char kProofSignatureLabelOld[] = "QUIC server config signature";
+
+// kProofSignatureLabel is prepended to the CHLO hash and server configs before
+// signing to avoid any cross-protocol attacks on the signature.
+const char kProofSignatureLabel[] = "QUIC CHLO and server config signature";
 
 // kClientHelloMinimumSize is the minimum size of a client hello. Client hellos
 // will have PAD tags added in order to ensure this minimum is met and client

@@ -16,6 +16,7 @@
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_server_id.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -183,6 +184,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   TestQuicSpdyClientSession client_session(client_conn, DefaultQuicConfig(),
                                            server_id, &crypto_config);
 
+  EXPECT_CALL(client_session, OnProofValid(testing::_))
+      .Times(testing::AnyNumber());
   client_session.GetCryptoStream()->CryptoConnect();
   CHECK_EQ(1u, client_conn->encrypted_packets_.size());
 

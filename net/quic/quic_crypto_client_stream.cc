@@ -15,6 +15,7 @@
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
+#include "net/quic/quic_utils.h"
 
 using std::string;
 using std::vector;
@@ -183,8 +184,8 @@ void QuicCryptoClientStream::HandleServerConfigUpdateMessage(
       crypto_config_->LookupOrCreate(server_id_);
   QuicErrorCode error = crypto_config_->ProcessServerConfigUpdate(
       server_config_update, session()->connection()->clock()->WallNow(),
-      session()->connection()->version(), cached, &crypto_negotiated_params_,
-      &error_details);
+      session()->connection()->version(), cached->chlo_hash(), cached,
+      &crypto_negotiated_params_, &error_details);
 
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(
@@ -260,6 +261,7 @@ void QuicCryptoClientStream::DoInitialize(
     DCHECK(crypto_config_->proof_verifier());
     // Track proof verification time when cached server config is used.
     proof_verify_start_time_ = base::TimeTicks::Now();
+    chlo_hash_ = cached->chlo_hash();
     // If the cached state needs to be verified, do it now.
     next_state_ = STATE_VERIFY_PROOF;
   } else {
@@ -328,6 +330,7 @@ void QuicCryptoClientStream::DoSendCHLO(
     out.set_minimum_size(
         static_cast<size_t>(max_packet_size - kFramingOverhead));
     next_state_ = STATE_RECV_REJ;
+    CryptoUtils::HashHandshakeMessage(out, &chlo_hash_);
     SendHandshakeMessage(out);
     return;
   }
@@ -355,6 +358,7 @@ void QuicCryptoClientStream::DoSendCHLO(
     CloseConnectionWithDetails(error, error_details);
     return;
   }
+  CryptoUtils::HashHandshakeMessage(out, &chlo_hash_);
   channel_id_sent_ = (channel_id_key_.get() != nullptr);
   if (cached->proof_verify_details()) {
     proof_handler_->OnProofVerifyDetailsAvailable(
@@ -424,8 +428,8 @@ void QuicCryptoClientStream::DoReceiveREJ(
   string error_details;
   QuicErrorCode error = crypto_config_->ProcessRejection(
       *in, session()->connection()->clock()->WallNow(),
-      session()->connection()->version(), cached, &crypto_negotiated_params_,
-      &error_details);
+      session()->connection()->version(), chlo_hash_, cached,
+      &crypto_negotiated_params_, &error_details);
 
   if (error != QUIC_NO_ERROR) {
     next_state_ = STATE_NONE;
@@ -459,7 +463,8 @@ QuicAsyncStatus QuicCryptoClientStream::DoVerifyProof(
   verify_ok_ = false;
 
   QuicAsyncStatus status = verifier->VerifyProof(
-      server_id_.host(), cached->server_config(), cached->certs(),
+      server_id_.host(), cached->server_config(),
+      session()->connection()->version(), chlo_hash_, cached->certs(),
       cached->cert_sct(), cached->signature(), verify_context_.get(),
       &verify_error_details_, &verify_details_, proof_verify_callback);
 

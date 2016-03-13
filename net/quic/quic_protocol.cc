@@ -192,6 +192,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '2', '9');
     case QUIC_VERSION_30:
       return MakeQuicTag('Q', '0', '3', '0');
+    case QUIC_VERSION_31:
+      return MakeQuicTag('Q', '0', '3', '1');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -224,6 +226,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_28);
     RETURN_STRING_LITERAL(QUIC_VERSION_29);
     RETURN_STRING_LITERAL(QUIC_VERSION_30);
+    RETURN_STRING_LITERAL(QUIC_VERSION_31);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }

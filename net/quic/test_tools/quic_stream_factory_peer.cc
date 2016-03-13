@@ -157,8 +157,8 @@ void QuicStreamFactoryPeer::CacheDummyServerConfig(
   QuicCryptoClientConfig::CachedState* cached =
       crypto_config->LookupOrCreate(quic_server_id);
   QuicClock clock;
-  cached->Initialize(server_config, source_address_token, certs, "", signature,
-                     clock.WallNow());
+  cached->Initialize(server_config, source_address_token, certs, "", "",
+                     signature, clock.WallNow());
 }
 
 QuicClientPushPromiseIndex* QuicStreamFactoryPeer::GetPushPromiseIndex(

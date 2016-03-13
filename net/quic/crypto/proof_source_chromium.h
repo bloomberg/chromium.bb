@@ -36,6 +36,8 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
   bool GetProof(const IPAddress& server_ip,
                 const std::string& hostname,
                 const std::string& server_config,
+                QuicVersion quic_version,
+                base::StringPiece chlo_hash,
                 bool ecdsa_ok,
                 scoped_refptr<ProofSource::Chain>* out_chain,
                 std::string* out_signature,

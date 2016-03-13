@@ -357,6 +357,7 @@ enum QuicVersion {
   QUIC_VERSION_28 = 28,  // Receiver can refuse to create a requested stream.
   QUIC_VERSION_29 = 29,  // Server and client honor QUIC_STREAM_NO_ERROR.
   QUIC_VERSION_30 = 30,  // Add server side support of cert transparency.
+  QUIC_VERSION_31 = 31,  // Adds a hash of the client hello to crypto proof.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -367,7 +368,7 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {
-    QUIC_VERSION_30, QUIC_VERSION_29, QUIC_VERSION_28,
+    QUIC_VERSION_31, QUIC_VERSION_30, QUIC_VERSION_29, QUIC_VERSION_28,
     QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25};
 
 typedef std::vector<QuicVersion> QuicVersionVector;

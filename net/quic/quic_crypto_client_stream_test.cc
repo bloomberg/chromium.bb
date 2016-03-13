@@ -153,7 +153,8 @@ TEST_F(QuicCryptoClientStreamTest, InvalidCachedServerConfig) {
   vector<string> certs = state->certs();
   string cert_sct = state->cert_sct();
   string signature = state->signature();
-  state->SetProof(certs, cert_sct, signature + signature);
+  string chlo_hash = state->chlo_hash();
+  state->SetProof(certs, cert_sct, chlo_hash, signature + signature);
 
   stream()->CryptoConnect();
   // Check that a client hello was sent.

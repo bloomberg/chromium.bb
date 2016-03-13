@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_types.h"
 
 namespace net {
@@ -75,6 +76,8 @@ class NET_EXPORT_PRIVATE ProofVerifier {
   // case of RSA.
   virtual QuicAsyncStatus VerifyProof(const std::string& hostname,
                                       const std::string& server_config,
+                                      QuicVersion quic_version,
+                                      base::StringPiece chlo_hash,
                                       const std::vector<std::string>& certs,
                                       const std::string& cert_sct,
                                       const std::string& signature,

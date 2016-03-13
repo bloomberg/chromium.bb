@@ -345,7 +345,7 @@ TEST(QuicCryptoClientConfigTest, ClearCachedStates) {
   // TODO(rch): Populate other fields of |state|.
   vector<string> certs(1);
   certs[0] = "Hello Cert";
-  state->SetProof(certs, "cert_sct", "signature");
+  state->SetProof(certs, "cert_sct", "chlo_hash", "signature");
   state->set_source_address_token("TOKEN");
   state->SetProofValid();
   EXPECT_EQ(1u, state->generation_counter());
@@ -383,8 +383,8 @@ TEST(QuicCryptoClientConfigTest, ProcessReject) {
   QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
   EXPECT_EQ(QUIC_NO_ERROR,
             config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
-                                    QuicSupportedVersions().front(), &cached,
-                                    &out_params, &error));
+                                    QuicSupportedVersions().front(), "",
+                                    &cached, &out_params, &error));
   EXPECT_FALSE(cached.has_server_designated_connection_id());
   EXPECT_FALSE(cached.has_server_nonce());
 }
@@ -405,8 +405,8 @@ TEST(QuicCryptoClientConfigTest, ProcessStatelessReject) {
   QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
   EXPECT_EQ(QUIC_NO_ERROR,
             config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
-                                    QuicSupportedVersions().front(), &cached,
-                                    &out_params, &error));
+                                    QuicSupportedVersions().front(), "",
+                                    &cached, &out_params, &error));
   EXPECT_TRUE(cached.has_server_designated_connection_id());
   EXPECT_EQ(kConnectionId, cached.GetNextServerDesignatedConnectionId());
   EXPECT_EQ(server_nonce, cached.GetNextServerNonce());
@@ -425,8 +425,8 @@ TEST(QuicCryptoClientConfigTest, BadlyFormattedStatelessReject) {
   QuicCryptoClientConfig config(CryptoTestUtils::ProofVerifierForTesting());
   EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
             config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0),
-                                    QuicSupportedVersions().front(), &cached,
-                                    &out_params, &error));
+                                    QuicSupportedVersions().front(), "",
+                                    &cached, &out_params, &error));
   EXPECT_FALSE(cached.has_server_designated_connection_id());
   EXPECT_EQ("Missing kRCID", error);
 }

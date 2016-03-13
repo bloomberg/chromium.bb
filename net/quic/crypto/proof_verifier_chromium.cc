@@ -64,6 +64,8 @@ class ProofVerifierChromium::Job {
   // |callback| will be invoked asynchronously when the verification completes.
   QuicAsyncStatus VerifyProof(const std::string& hostname,
                               const std::string& server_config,
+                              QuicVersion quic_version,
+                              base::StringPiece chlo_hash,
                               const std::vector<std::string>& certs,
                               const std::string& cert_sct,
                               const std::string& signature,
@@ -84,6 +86,8 @@ class ProofVerifierChromium::Job {
   int DoVerifyCertComplete(int result);
 
   bool VerifySignature(const std::string& signed_data,
+                       QuicVersion quic_version,
+                       StringPiece chlo_hash,
                        const std::string& signature,
                        const std::string& cert);
 
@@ -155,6 +159,8 @@ ProofVerifierChromium::Job::~Job() {
 QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const string& hostname,
     const string& server_config,
+    QuicVersion quic_version,
+    StringPiece chlo_hash,
     const vector<string>& certs,
     const std::string& cert_sct,
     const string& signature,
@@ -208,7 +214,8 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
 
   // We call VerifySignature first to avoid copying of server_config and
   // signature.
-  if (!VerifySignature(server_config, signature, certs[0])) {
+  if (!VerifySignature(server_config, quic_version, chlo_hash, signature,
+                       certs[0])) {
     *error_details = "Failed to verify signature of server config";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
@@ -343,6 +350,8 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 }
 
 bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
+                                                 QuicVersion quic_version,
+                                                 StringPiece chlo_hash,
                                                  const string& signature,
                                                  const string& cert) {
   StringPiece spki;
@@ -384,8 +393,20 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
     return false;
   }
 
-  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(kProofSignatureLabel),
-                        sizeof(kProofSignatureLabel));
+  if (quic_version <= QUIC_VERSION_30) {
+    verifier.VerifyUpdate(
+        reinterpret_cast<const uint8_t*>(kProofSignatureLabelOld),
+        sizeof(kProofSignatureLabelOld));
+  } else {
+    verifier.VerifyUpdate(
+        reinterpret_cast<const uint8_t*>(kProofSignatureLabel),
+        sizeof(kProofSignatureLabel));
+    uint32_t len = chlo_hash.length();
+    verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(&len), sizeof(len));
+    verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(chlo_hash.data()),
+                          len);
+  }
+
   verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(signed_data.data()),
                         signed_data.size());
 
@@ -415,6 +436,8 @@ ProofVerifierChromium::~ProofVerifierChromium() {
 QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     const std::string& hostname,
     const std::string& server_config,
+    QuicVersion quic_version,
+    base::StringPiece chlo_hash,
     const std::vector<std::string>& certs,
     const std::string& cert_sct,
     const std::string& signature,
@@ -432,9 +455,9 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
       new Job(this, cert_verifier_, ct_policy_enforcer_,
               transport_security_state_, cert_transparency_verifier_,
               chromium_context->cert_verify_flags, chromium_context->net_log));
-  QuicAsyncStatus status =
-      job->VerifyProof(hostname, server_config, certs, cert_sct, signature,
-                       error_details, verify_details, callback);
+  QuicAsyncStatus status = job->VerifyProof(
+      hostname, server_config, quic_version, chlo_hash, certs, cert_sct,
+      signature, error_details, verify_details, callback);
   if (status == QUIC_PENDING) {
     active_jobs_.insert(job.release());
   }

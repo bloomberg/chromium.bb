@@ -57,6 +57,8 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
 void RunVerification(ProofVerifier* verifier,
                      const string& hostname,
                      const string& server_config,
+                     QuicVersion quic_version,
+                     StringPiece chlo_hash,
                      const vector<string>& certs,
                      const string& proof,
                      bool expected_ok) {
@@ -70,8 +72,8 @@ void RunVerification(ProofVerifier* verifier,
       new TestProofVerifierCallback(&comp_callback, &ok, &error_details);
 
   QuicAsyncStatus status = verifier->VerifyProof(
-      hostname, server_config, certs, "", proof, verify_context.get(),
-      &error_details, &details, callback);
+      hostname, server_config, quic_version, chlo_hash, certs, "", proof,
+      verify_context.get(), &error_details, &details, callback);
 
   switch (status) {
     case QUIC_FAILURE:
@@ -104,66 +106,82 @@ string LoadTestCert(const string& file_name) {
   return der_bytes;
 }
 
+class ProofTest : public ::testing::TestWithParam<QuicVersion> {};
+
 }  // namespace
 
+INSTANTIATE_TEST_CASE_P(QuicVersion,
+                        ProofTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
 // TODO(rtenneti): Enable testing of ProofVerifier. See http://crbug.com/514468.
-TEST(ProofTest, DISABLED_Verify) {
+TEST_P(ProofTest, DISABLED_Verify) {
   scoped_ptr<ProofSource> source(CryptoTestUtils::ProofSourceForTesting());
   scoped_ptr<ProofVerifier> verifier(
       CryptoTestUtils::ProofVerifierForTesting());
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
+  const string first_chlo_hash = "first chlo hash bytes";
+  const string second_chlo_hash = "first chlo hash bytes";
+  const QuicVersion quic_version = GetParam();
   scoped_refptr<ProofSource::Chain> chain;
   scoped_refptr<ProofSource::Chain> first_chain;
   string error_details, signature, first_signature, first_cert_sct, cert_sct;
   IPAddress server_ip;
 
-  ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
-                               false /* no ECDSA */, &first_chain,
-                               &first_signature, &first_cert_sct));
-  ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
-                               false /* no ECDSA */, &chain, &signature,
-                               &cert_sct));
+  ASSERT_TRUE(source->GetProof(
+      server_ip, hostname, server_config, quic_version, first_chlo_hash,
+      false /* no ECDSA */, &first_chain, &first_signature, &first_cert_sct));
+  ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config, quic_version,
+                               second_chlo_hash, false /* no ECDSA */, &chain,
+                               &signature, &cert_sct));
 
   // Check that the proof source is caching correctly:
   ASSERT_EQ(first_chain->certs, chain->certs);
-  ASSERT_EQ(signature, first_signature);
+  if (GetParam() < QUIC_VERSION_31) {
+    ASSERT_EQ(signature, first_signature);
+  } else {
+    // QUIC 31 includes the CHLO hash.
+    ASSERT_NE(signature, first_signature);
+  }
   ASSERT_EQ(first_cert_sct, cert_sct);
 
-  RunVerification(verifier.get(), hostname, server_config, chain->certs,
-                  signature, true);
+  RunVerification(verifier.get(), hostname, server_config, quic_version,
+                  first_chlo_hash, chain->certs, signature, true);
 
-  RunVerification(verifier.get(), "foo.com", server_config, chain->certs,
-                  signature, false);
+  RunVerification(verifier.get(), "foo.com", server_config, quic_version,
+                  first_chlo_hash, chain->certs, signature, false);
 
   RunVerification(verifier.get(), server_config.substr(1, string::npos),
-                  server_config, chain->certs, signature, false);
+                  server_config, quic_version, first_chlo_hash, chain->certs,
+                  signature, false);
 
   const string corrupt_signature = "1" + signature;
-  RunVerification(verifier.get(), hostname, server_config, chain->certs,
-                  corrupt_signature, false);
+  RunVerification(verifier.get(), hostname, server_config, quic_version,
+                  first_chlo_hash, chain->certs, corrupt_signature, false);
 
   vector<string> wrong_certs;
   for (size_t i = 1; i < chain->certs.size(); i++) {
     wrong_certs.push_back(chain->certs[i]);
   }
-  RunVerification(verifier.get(), "foo.com", server_config, wrong_certs,
-                  corrupt_signature, false);
+  RunVerification(verifier.get(), "foo.com", server_config, quic_version,
+                  first_chlo_hash, wrong_certs, corrupt_signature, false);
 }
 
-TEST(ProofTest, UseAfterFree) {
+TEST_P(ProofTest, UseAfterFree) {
   ProofSource* source = CryptoTestUtils::ProofSourceForTesting();
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
+  const string chlo_hash = "proof nonce bytes";
   scoped_refptr<ProofSource::Chain> chain;
   string error_details, signature, cert_sct;
   IPAddress server_ip;
 
-  ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config,
-                               false /* no ECDSA */, &chain, &signature,
-                               &cert_sct));
+  ASSERT_TRUE(source->GetProof(server_ip, hostname, server_config, GetParam(),
+                               chlo_hash, false /* no ECDSA */, &chain,
+                               &signature, &cert_sct));
 
   // Make sure we can safely access results after deleting where they came from.
   EXPECT_FALSE(chain->HasOneRef());
@@ -178,7 +196,10 @@ TEST(ProofTest, UseAfterFree) {
 
 // A known answer test that allows us to test ProofVerifier without a working
 // ProofSource.
-TEST(ProofTest, VerifyRSAKnownAnswerTest) {
+TEST_P(ProofTest, VerifyRSAKnownAnswerTest) {
+  if (GetParam() > QUIC_VERSION_30) {
+    return;
+  }
   // These sample signatures were generated by running the Proof.Verify test
   // and dumping the bytes of the |signature| output of ProofSource::GetProof().
   static const unsigned char signature_data_0[] = {
@@ -259,6 +280,8 @@ TEST(ProofTest, VerifyRSAKnownAnswerTest) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
+  const string chlo_hash = "proof nonce bytes";
+  const QuicVersion quic_version = GetParam();
 
   vector<string> certs(2);
   certs[0] = LoadTestCert("test.example.com.crt");
@@ -277,30 +300,37 @@ TEST(ProofTest, VerifyRSAKnownAnswerTest) {
   for (size_t i = 0; i < signatures.size(); i++) {
     const string& signature = signatures[i];
 
-    RunVerification(verifier.get(), hostname, server_config, certs, signature,
-                    true);
-    RunVerification(verifier.get(), "foo.com", server_config, certs, signature,
-                    false);
+    RunVerification(verifier.get(), hostname, server_config, quic_version,
+                    chlo_hash, certs, signature, true);
+    RunVerification(verifier.get(), "foo.com", server_config, quic_version,
+                    chlo_hash, certs, signature, false);
     RunVerification(verifier.get(), hostname,
-                    server_config.substr(1, string::npos), certs, signature,
-                    false);
+                    server_config.substr(1, string::npos), quic_version,
+                    chlo_hash, certs, signature, false);
 
     const string corrupt_signature = "1" + signature;
-    RunVerification(verifier.get(), hostname, server_config, certs,
-                    corrupt_signature, false);
+    RunVerification(verifier.get(), hostname, server_config, quic_version,
+                    chlo_hash, certs, corrupt_signature, false);
 
     vector<string> wrong_certs;
     for (size_t i = 1; i < certs.size(); i++) {
       wrong_certs.push_back(certs[i]);
     }
-    RunVerification(verifier.get(), hostname, server_config, wrong_certs,
-                    signature, false);
+    RunVerification(verifier.get(), hostname, server_config, quic_version,
+                    chlo_hash, wrong_certs, signature, false);
   }
 }
 
 // A known answer test that allows us to test ProofVerifier without a working
 // ProofSource.
-TEST(ProofTest, VerifyECDSAKnownAnswerTest) {
+TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
+  if (GetParam() > QUIC_VERSION_30) {
+    return;
+  }
+// These sample signatures were generated by running the Proof.Verify test
+// (modified to use ECDSA for signing proofs) and dumping the bytes of the
+// |signature| output of ProofSource::GetProof().
+
 // Disable this test on platforms that do not support ECDSA certificates.
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
@@ -340,6 +370,8 @@ TEST(ProofTest, VerifyECDSAKnownAnswerTest) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
+  const string chlo_hash = "chlo_hash nonce bytes";
+  const QuicVersion quic_version = GetParam();
 
   vector<string> certs(2);
   certs[0] = LoadTestCert("test_ecc.example.com.crt");
@@ -356,34 +388,41 @@ TEST(ProofTest, VerifyECDSAKnownAnswerTest) {
                        sizeof(signature_data_2));
 
   for (size_t i = 0; i < signatures.size(); i++) {
+    LOG(ERROR) << "====================" << i << "======================";
     const string& signature = signatures[i];
 
-    RunVerification(verifier.get(), hostname, server_config, certs, signature,
-                    true);
-    RunVerification(verifier.get(), "foo.com", server_config, certs, signature,
-                    false);
+    LOG(ERROR) << "=================== expect ok =====================";
+    RunVerification(verifier.get(), hostname, server_config, quic_version,
+                    chlo_hash, certs, signature, true);
+    LOG(ERROR) << "=================== hose_name = foo.com =============";
+    RunVerification(verifier.get(), "foo.com", server_config, quic_version,
+                    chlo_hash, certs, signature, false);
+    LOG(ERROR) << "================== server_config ====================";
     RunVerification(verifier.get(), hostname,
-                    server_config.substr(1, string::npos), certs, signature,
-                    false);
+                    server_config.substr(1, string::npos), quic_version,
+                    chlo_hash, certs, signature, false);
 
     // An ECDSA signature is DER-encoded. Corrupt the last byte so that the
     // signature can still be DER-decoded correctly.
     string corrupt_signature = signature;
     corrupt_signature[corrupt_signature.size() - 1] += 1;
-    RunVerification(verifier.get(), hostname, server_config, certs,
-                    corrupt_signature, false);
+    LOG(ERROR) << "================= corrupt signature =======================";
+    RunVerification(verifier.get(), hostname, server_config, quic_version,
+                    chlo_hash, certs, corrupt_signature, false);
 
     // Prepending a "1" makes the DER invalid.
     const string bad_der_signature1 = "1" + signature;
-    RunVerification(verifier.get(), hostname, server_config, certs,
-                    bad_der_signature1, false);
+    LOG(ERROR) << "=========================bad der signature ===============";
+    RunVerification(verifier.get(), hostname, server_config, quic_version,
+                    chlo_hash, certs, bad_der_signature1, false);
 
     vector<string> wrong_certs;
     for (size_t i = 1; i < certs.size(); i++) {
       wrong_certs.push_back(certs[i]);
     }
-    RunVerification(verifier.get(), hostname, server_config, wrong_certs,
-                    signature, false);
+    LOG(ERROR) << "==================== wrong certs =========================";
+    RunVerification(verifier.get(), hostname, server_config, quic_version,
+                    chlo_hash, wrong_certs, signature, false);
   }
 }
 

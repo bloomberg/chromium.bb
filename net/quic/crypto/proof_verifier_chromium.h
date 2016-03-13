@@ -67,6 +67,8 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   // ProofVerifier interface
   QuicAsyncStatus VerifyProof(const std::string& hostname,
                               const std::string& server_config,
+                              QuicVersion quic_version,
+                              base::StringPiece chlo_hash,
                               const std::vector<std::string>& certs,
                               const std::string& cert_sct,
                               const std::string& signature,
