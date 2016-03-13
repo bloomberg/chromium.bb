@@ -169,11 +169,11 @@ CompositingReasons LayoutEmbeddedObject::additionalCompositingReasons() const
     return CompositingReasonNone;
 }
 
-LayoutBox* LayoutEmbeddedObject::embeddedContentBox() const
+LayoutReplaced* LayoutEmbeddedObject::embeddedReplacedContent() const
 {
     if (!node() || !widget() || !widget()->isFrameView())
         return nullptr;
-    return toFrameView(widget())->embeddedContentBox();
+    return toFrameView(widget())->embeddedReplacedContent();
 }
 
 } // namespace blink

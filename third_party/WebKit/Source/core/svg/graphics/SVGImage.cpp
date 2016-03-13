@@ -385,12 +385,12 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
     startAnimation();
 }
 
-LayoutBox* SVGImage::embeddedContentBox() const
+LayoutReplaced* SVGImage::embeddedReplacedContent() const
 {
     SVGSVGElement* rootElement = svgRootElement(m_page.get());
     if (!rootElement)
         return nullptr;
-    return toLayoutBox(rootElement->layoutObject());
+    return toLayoutSVGRoot(rootElement->layoutObject());
 }
 
 FrameView* SVGImage::frameView() const

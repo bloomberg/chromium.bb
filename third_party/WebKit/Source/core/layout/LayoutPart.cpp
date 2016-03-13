@@ -140,7 +140,7 @@ bool LayoutPart::needsPreferredWidthsRecalculation() const
 {
     if (LayoutReplaced::needsPreferredWidthsRecalculation())
         return true;
-    return embeddedContentBox();
+    return embeddedReplacedContent();
 }
 
 bool LayoutPart::nodeAtPointOverWidget(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)

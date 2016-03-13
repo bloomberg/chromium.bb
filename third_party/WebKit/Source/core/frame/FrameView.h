@@ -70,6 +70,7 @@ class Node;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
+class LayoutReplaced;
 class LayoutScrollbarPart;
 class LayoutView;
 class PaintInvalidationState;
@@ -302,7 +303,7 @@ public:
     bool shouldSuspendScrollAnimations() const override;
     void scrollbarStyleChanged() override;
 
-    LayoutBox* embeddedContentBox() const;
+    LayoutReplaced* embeddedReplacedContent() const;
 
     static void setInitialTracksPaintInvalidationsForTesting(bool);
 

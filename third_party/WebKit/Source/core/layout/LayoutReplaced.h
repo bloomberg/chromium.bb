@@ -102,7 +102,7 @@ protected:
     // CSS properties like 'zoom' or 'image-orientation'.
     virtual void intrinsicSizeChanged();
 
-    virtual LayoutBox* embeddedContentBox() const { return nullptr; }
+    virtual LayoutReplaced* embeddedReplacedContent() const { return nullptr; }
 
     PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 

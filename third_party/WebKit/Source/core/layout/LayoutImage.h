@@ -80,7 +80,7 @@ public:
 
 protected:
     bool needsPreferredWidthsRecalculation() const final;
-    LayoutBox* embeddedContentBox() const final;
+    LayoutReplaced* embeddedReplacedContent() const final;
     void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
 
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;

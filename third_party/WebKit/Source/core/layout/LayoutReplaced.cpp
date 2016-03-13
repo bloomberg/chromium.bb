@@ -530,8 +530,8 @@ LayoutRect LayoutReplaced::replacedContentRect(const LayoutSize* overriddenIntri
 
 void LayoutReplaced::computeIntrinsicSizingInfo(IntrinsicSizingInfo& intrinsicSizingInfo) const
 {
-    // If there's an embeddedContentBox() of a remote, referenced document available, this code-path should never be used.
-    ASSERT(!embeddedContentBox());
+    // If there's an embeddedReplacedContent() of a remote, referenced document available, this code-path should never be used.
+    ASSERT(!embeddedReplacedContent());
     intrinsicSizingInfo.size = FloatSize(intrinsicLogicalWidth().toFloat(), intrinsicLogicalHeight().toFloat());
 
     // Figure out if we need to compute an intrinsic ratio.
@@ -556,7 +556,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
     if (style()->logicalWidth().isSpecified() || style()->logicalWidth().isIntrinsic())
         return computeReplacedLogicalWidthRespectingMinMaxWidth(computeReplacedLogicalWidthUsing(MainOrPreferredSize, style()->logicalWidth()), shouldComputePreferred);
 
-    LayoutBox* contentLayoutObject = embeddedContentBox();
+    LayoutReplaced* contentLayoutObject = embeddedReplacedContent();
 
     // 10.3.2 Inline, replaced elements: http://www.w3.org/TR/CSS21/visudet.html#inline-replaced-width
     IntrinsicSizingInfo intrinsicSizingInfo;
@@ -617,7 +617,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
     if (hasReplacedLogicalHeight())
         return computeReplacedLogicalHeightRespectingMinMaxHeight(computeReplacedLogicalHeightUsing(MainOrPreferredSize, style()->logicalHeight()));
 
-    LayoutBox* contentLayoutObject = embeddedContentBox();
+    LayoutReplaced* contentLayoutObject = embeddedReplacedContent();
 
     // 10.6.2 Inline, replaced elements: http://www.w3.org/TR/CSS21/visudet.html#inline-replaced-height
     IntrinsicSizingInfo intrinsicSizingInfo;

@@ -309,17 +309,17 @@ bool LayoutImage::needsPreferredWidthsRecalculation() const
 {
     if (LayoutReplaced::needsPreferredWidthsRecalculation())
         return true;
-    return embeddedContentBox();
+    return embeddedReplacedContent();
 }
 
-LayoutBox* LayoutImage::embeddedContentBox() const
+LayoutReplaced* LayoutImage::embeddedReplacedContent() const
 {
     if (!m_imageResource)
         return nullptr;
 
     ImageResource* cachedImage = m_imageResource->cachedImage();
     if (cachedImage && cachedImage->getImage() && cachedImage->getImage()->isSVGImage())
-        return toSVGImage(cachedImage->getImage())->embeddedContentBox();
+        return toSVGImage(cachedImage->getImage())->embeddedReplacedContent();
 
     return nullptr;
 }

@@ -736,7 +736,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     if (!ownerLayoutObject || !ownerLayoutObject->frame())
         return;
 
-    LayoutBox* contentBox = embeddedContentBox();
+    LayoutReplaced* contentBox = embeddedReplacedContent();
     if (!contentBox)
         return;
 
@@ -746,7 +746,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
 
     // If the embedded SVG document appears the first time, the ownerLayoutObject has already finished
     // layout without knowing about the existence of the embedded SVG document, because LayoutReplaced
-    // embeddedContentBox() returns 0, as long as the embedded document isn't loaded yet. Before
+    // embeddedReplacedContent() returns 0, as long as the embedded document isn't loaded yet. Before
     // bothering to lay out the SVG document, mark the ownerLayoutObject needing layout and ask its
     // FrameView for a layout. After that the LayoutEmbeddedObject (ownerLayoutObject) carries the
     // correct size, which LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
@@ -1173,7 +1173,7 @@ DocumentLifecycle& FrameView::lifecycle() const
     return m_frame->document()->lifecycle();
 }
 
-LayoutBox* FrameView::embeddedContentBox() const
+LayoutReplaced* FrameView::embeddedReplacedContent() const
 {
     LayoutView* layoutView = this->layoutView();
     if (!layoutView)
@@ -1183,9 +1183,9 @@ LayoutBox* FrameView::embeddedContentBox() const
     if (!firstChild || !firstChild->isBox())
         return nullptr;
 
-    // Curently only embedded SVG documents participate in the size-negotiation logic.
+    // Currently only embedded SVG documents participate in the size-negotiation logic.
     if (firstChild->isSVGRoot())
-        return toLayoutBox(firstChild);
+        return toLayoutSVGRoot(firstChild);
 
     return nullptr;
 }
@@ -1852,7 +1852,7 @@ bool FrameView::needsLayout() const
 
 void FrameView::setNeedsLayout()
 {
-    LayoutBox* box = embeddedContentBox();
+    LayoutReplaced* box = embeddedReplacedContent();
     // It's illegal to ask for layout changes during the layout compositing or paint invalidation step.
     // FIXME: the third conditional is a hack to support embedded SVG. See FrameView::forceLayoutParentViewIfNeeded and crbug.com/442939
     RELEASE_ASSERT(!m_frame->document() || m_frame->document()->lifecycle().stateAllowsLayoutInvalidation() || (box && box->isSVGRoot()));

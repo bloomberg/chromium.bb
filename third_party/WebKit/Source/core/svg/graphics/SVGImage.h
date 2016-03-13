@@ -38,7 +38,7 @@ namespace blink {
 class Document;
 class FrameView;
 class Page;
-class LayoutBox;
+class LayoutReplaced;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 
@@ -51,7 +51,7 @@ public:
 
     static bool isInSVGImage(const Node*);
 
-    LayoutBox* embeddedContentBox() const;
+    LayoutReplaced* embeddedReplacedContent() const;
 
     bool isSVGImage() const override { return true; }
     bool isTextureBacked() override { return false; }
