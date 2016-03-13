@@ -2230,10 +2230,17 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 				       seat, unbind_resource);
 }
 
+static void
+seat_release(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
 static const struct wl_seat_interface seat_interface = {
 	seat_get_pointer,
 	seat_get_keyboard,
 	seat_get_touch,
+	seat_release,
 };
 
 static void
