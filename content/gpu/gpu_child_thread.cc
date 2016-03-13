@@ -17,7 +17,9 @@
 #include "content/common/gpu/establish_channel_params.h"
 #include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
+#include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/gpu/media/media_service.h"
 #include "content/gpu/gpu_process_control_impl.h"
 #include "content/gpu/gpu_watchdog_thread.h"
@@ -190,11 +192,6 @@ GpuChildThread::GpuChildThread(
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kInProcessGPU));
 
-  // Populate accelerator capabilities (normally done during GpuMain, which is
-  // not called for single process or in process gpu).
-  gpu_info_.video_decode_accelerator_capabilities =
-      content::GpuVideoDecodeAccelerator::GetCapabilities();
-
 #if defined(ENABLE_VULKAN)
   // Temporary Vulkan initialization injection.
   gpu::VulkanSurface::InitializeOneOff();
@@ -354,6 +351,15 @@ void GpuChildThread::StoreShaderToDisk(int32_t client_id,
 
 void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   gpu_preferences_ = gpu_preferences;
+
+  gpu_info_.video_decode_accelerator_capabilities =
+      content::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
+  gpu_info_.video_encode_accelerator_supported_profiles =
+      content::GpuVideoEncodeAccelerator::GetSupportedProfiles(
+          gpu_preferences_);
+  gpu_info_.jpeg_decode_accelerator_supported =
+      content::GpuJpegDecodeAccelerator::IsSupported();
+
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - process_start_time_;

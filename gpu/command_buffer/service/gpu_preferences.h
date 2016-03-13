@@ -32,6 +32,24 @@ struct GPU_EXPORT GpuPreferences {
   // Prioritizes the UI's command stream in the GPU process.
   bool ui_prioritize_in_gpu_process = false;
 
+  // Disables hardware acceleration of video decode, where available.
+  bool disable_accelerated_video_decode = false;
+
+#if defined(OS_CHROMEOS)
+  // Disables VA-API accelerated video encode.
+  bool disable_vaapi_accelerated_video_encode = false;
+#endif
+
+#if defined(ENABLE_WEBRTC)
+  // Disables HW encode acceleration for WebRTC.
+  bool disable_web_rtc_hw_encoding = false;
+#endif
+
+#if defined(OS_WIN)
+  // Enables experimental hardware acceleration for VP8/VP9 video decoding.
+  bool enable_accelerated_vpx_decode = false;
+#endif
+
   // ===================================
   // Settings from //gpu/command_buffer/service/gpu_switches.cc
 

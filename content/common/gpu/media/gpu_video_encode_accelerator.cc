@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/gpu/media/media_messages.h"
 #include "content/public/common/content_switches.h"
@@ -102,8 +103,11 @@ bool GpuVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  std::vector<GpuVideoEncodeAccelerator::CreateVEAFp>
-      create_vea_fps = CreateVEAFps();
+  const gpu::GpuPreferences& gpu_preferences =
+      stub_->channel()->gpu_channel_manager()->gpu_preferences();
+
+  std::vector<GpuVideoEncodeAccelerator::CreateVEAFp> create_vea_fps =
+      CreateVEAFps(gpu_preferences);
   // Try all possible encoders and use the first successful encoder.
   for (size_t i = 0; i < create_vea_fps.size(); ++i) {
     encoder_ = (*create_vea_fps[i])();
@@ -172,10 +176,11 @@ void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
 
 // static
 gpu::VideoEncodeAcceleratorSupportedProfiles
-GpuVideoEncodeAccelerator::GetSupportedProfiles() {
+GpuVideoEncodeAccelerator::GetSupportedProfiles(
+    const gpu::GpuPreferences& gpu_preferences) {
   media::VideoEncodeAccelerator::SupportedProfiles profiles;
-  std::vector<GpuVideoEncodeAccelerator::CreateVEAFp>
-      create_vea_fps = CreateVEAFps();
+  std::vector<GpuVideoEncodeAccelerator::CreateVEAFp> create_vea_fps =
+      CreateVEAFps(gpu_preferences);
 
   for (size_t i = 0; i < create_vea_fps.size(); ++i) {
     scoped_ptr<media::VideoEncodeAccelerator>
@@ -192,47 +197,52 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles() {
 
 // static
 std::vector<GpuVideoEncodeAccelerator::CreateVEAFp>
-GpuVideoEncodeAccelerator::CreateVEAFps() {
+GpuVideoEncodeAccelerator::CreateVEAFps(
+    const gpu::GpuPreferences& gpu_preferences) {
   std::vector<GpuVideoEncodeAccelerator::CreateVEAFp> create_vea_fps;
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateV4L2VEA);
-  create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateVaapiVEA);
-  create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateAndroidVEA);
+#endif
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  if (!gpu_preferences.disable_vaapi_accelerated_video_encode)
+    create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateVaapiVEA);
+#endif
+#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
+  if (!gpu_preferences.disable_web_rtc_hw_encoding)
+    create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateAndroidVEA);
+#endif
   return create_vea_fps;
 }
 
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
 // static
 scoped_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateV4L2VEA() {
   scoped_ptr<media::VideoEncodeAccelerator> encoder;
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   if (device)
     encoder.reset(new V4L2VideoEncodeAccelerator(device));
-#endif
   return encoder;
 }
+#endif
 
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 // static
 scoped_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateVaapiVEA() {
-  scoped_ptr<media::VideoEncodeAccelerator> encoder;
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode))
-    encoder.reset(new VaapiVideoEncodeAccelerator());
-#endif
-  return encoder;
+  return make_scoped_ptr<media::VideoEncodeAccelerator>(
+      new VaapiVideoEncodeAccelerator());
 }
+#endif
 
+#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
 // static
 scoped_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateAndroidVEA() {
-  scoped_ptr<media::VideoEncodeAccelerator> encoder;
-#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
-  encoder.reset(new AndroidVideoEncodeAccelerator());
-#endif
-  return encoder;
+  return make_scoped_ptr<media::VideoEncodeAccelerator>(
+      new AndroidVideoEncodeAccelerator());
 }
+#endif
 
 void GpuVideoEncodeAccelerator::OnEncode(
     const AcceleratedVideoEncoderMsg_Encode_Params& params) {
