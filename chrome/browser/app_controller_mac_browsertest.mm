@@ -261,11 +261,12 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 
   // Lock the active profile.
   Profile* profile = [ac lastProfile];
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  cache.SetProfileSigninRequiredAtIndex(profile_index, true);
-  EXPECT_TRUE(cache.ProfileIsSigninRequiredAtIndex(profile_index));
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(g_browser_process->profile_manager()->
+                  GetProfileAttributesStorage().
+                  GetProfileAttributesWithPath(profile->GetPath(), &entry));
+  entry->SetIsSigninRequired(true);
+  EXPECT_TRUE(entry->IsSigninRequired());
 
   EXPECT_EQ(1u, active_browser_list_->size());
   BOOL result = [ac applicationShouldHandleReopen:NSApp hasVisibleWindows:NO];

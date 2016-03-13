@@ -38,7 +38,8 @@
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -201,12 +202,11 @@ bool IsProfileSignedOut(Profile* profile) {
   // --new-profile-management flag.
   if (!switches::IsNewProfileManagement())
     return false;
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  if (profile_index == std::string::npos)
-    return false;
-  return cache.ProfileIsSigninRequiredAtIndex(profile_index);
+  ProfileAttributesEntry* entry;
+  bool has_entry =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetProfileAttributesWithPath(profile->GetPath(), &entry);
+  return has_entry && entry->IsSigninRequired();
 }
 
 }  // namespace
@@ -260,7 +260,7 @@ bool IsProfileSignedOut(Profile* profile) {
 - (GURL)handoffURLFromWebContents:(content::WebContents*)webContents;
 @end
 
-class AppControllerProfileObserver : public ProfileInfoCacheObserver {
+class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
  public:
   AppControllerProfileObserver(
       ProfileManager* profile_manager, AppController* app_controller)
@@ -268,16 +268,16 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
         app_controller_(app_controller) {
     DCHECK(profile_manager_);
     DCHECK(app_controller_);
-    profile_manager_->GetProfileInfoCache().AddObserver(this);
+    profile_manager_->GetProfileAttributesStorage().AddObserver(this);
   }
 
   ~AppControllerProfileObserver() override {
     DCHECK(profile_manager_);
-    profile_manager_->GetProfileInfoCache().RemoveObserver(this);
+    profile_manager_->GetProfileAttributesStorage().RemoveObserver(this);
   }
 
  private:
-  // ProfileInfoCacheObserver implementation:
+  // ProfileAttributesStorage::Observer implementation:
 
   void OnProfileAdded(const base::FilePath& profile_path) override {}
 
@@ -756,9 +756,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   EncodingMenuControllerDelegate::BuildEncodingMenu([self lastProfile],
                                                     encodingMenu);
 
-  // Instantiate the ProfileInfoCache observer so that we can get
+  // Instantiate the ProfileAttributesStorage observer so that we can get
   // notified when a profile is deleted.
-  profileInfoCacheObserver_.reset(new AppControllerProfileObserver(
+  profileAttributesStorageObserver_.reset(new AppControllerProfileObserver(
       g_browser_process->profile_manager(), self));
 
   // Since Chrome is localized to more languages than the OS, tell Cocoa which

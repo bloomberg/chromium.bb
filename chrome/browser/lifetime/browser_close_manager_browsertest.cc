@@ -184,9 +184,9 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 class FakeBackgroundModeManager : public BackgroundModeManager {
  public:
   FakeBackgroundModeManager()
-      : BackgroundModeManager(
-            *base::CommandLine::ForCurrentProcess(),
-            &g_browser_process->profile_manager()->GetProfileInfoCache()),
+      : BackgroundModeManager(*base::CommandLine::ForCurrentProcess(),
+                              &g_browser_process->profile_manager()
+                                  ->GetProfileAttributesStorage()),
         suspended_(false) {}
 
   void SuspendBackgroundMode() override {
@@ -1000,7 +1000,6 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   EXPECT_FALSE(IsBackgroundModeSuspended());
-
 }
 
 // Check that closing the last browser window individually does not affect

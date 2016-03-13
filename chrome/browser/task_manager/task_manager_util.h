@@ -25,8 +25,8 @@ int GetMessagePrefixID(bool is_app,
                        bool is_prerender,
                        bool is_background);
 
-// Returns the name of profile from InfoCache.
-base::string16 GetProfileNameFromInfoCache(Profile* profile);
+// Returns the name of profile from ProfileAttributesStorage.
+base::string16 GetProfileNameFromAttributesStorage(Profile* profile);
 
 // Returns the title from web contents.
 base::string16 GetTitleFromWebContents(content::WebContents* web_contents);

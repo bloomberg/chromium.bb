@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <vector>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -14,6 +17,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc_log_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -107,15 +112,15 @@ void WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(
 void WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ProfileInfoCache& profile_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profiles_count = profile_cache.GetNumberOfProfiles();
-  for (size_t i = 0; i < profiles_count; ++i) {
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,
         FROM_HERE,
         base::Bind(&DeleteOldWebRtcLogFiles,
                    WebRtcLogList::GetWebRtcLogDirectoryForProfile(
-                       profile_cache.GetPathOfProfileAtIndex(i))));
+                       entry->GetPath())));
   }
 }

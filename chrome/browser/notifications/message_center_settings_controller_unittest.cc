@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -167,7 +166,7 @@ TEST_F(MessageCenterSettingsControllerChromeOSTest, NotifierGroups) {
             base::UTF8ToUTF16("Profile-1"));
 }
 // TODO(mukai): write a test case to reproduce the actual guest session scenario
-// in ChromeOS -- no profiles in the profile_info_cache.
+// in ChromeOS -- no profiles in |profile_attributes_storage_|.
 #endif  // !defined(OS_CHROMEOS)
 
 TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {

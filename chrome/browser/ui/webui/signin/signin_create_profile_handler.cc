@@ -18,6 +18,8 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -131,11 +133,10 @@ void SigninCreateProfileHandler::RequestDefaultProfileIcons(
 void SigninCreateProfileHandler::RequestSignedInProfiles(
     const base::ListValue* args) {
   base::ListValue user_info_list;
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
   std::vector<ProfileAttributesEntry*> entries =
-      cache.GetAllProfilesAttributes();
-  for (auto& entry : entries) {
+      g_browser_process->profile_manager()->
+          GetProfileAttributesStorage().GetAllProfilesAttributesSortedByName();
+  for (ProfileAttributesEntry* entry : entries) {
     base::string16 username = entry->GetUserName();
     if (username.empty())
       continue;
@@ -144,7 +145,7 @@ void SigninCreateProfileHandler::RequestSignedInProfiles(
     user_info->SetString("username", username);
     user_info->SetString("profilePath", profile_path);
 
-    user_info_list.Append(user_info.release());
+    user_info_list.Append(std::move(user_info));
   }
   web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
                                    base::StringValue("signedin-users-received"),
@@ -505,11 +506,10 @@ void SigninCreateProfileHandler::DoCreateProfileIfPossible(
     return;
 
   // Check if this supervised user already exists on this machine.
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
   std::vector<ProfileAttributesEntry*> entries =
-      cache.GetAllProfilesAttributes();
-  for (auto& entry : entries) {
+      g_browser_process->profile_manager()->
+          GetProfileAttributesStorage().GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
     if (supervised_user_id == entry->GetSupervisedUserId()) {
       // TODO(mahmadi): see whether we need a more specific error message here.
       ShowProfileCreationError(nullptr, GetProfileCreationErrorMessageLocal());

@@ -74,6 +74,8 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/shell_integration.h"
@@ -401,12 +403,11 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   if (switches::IsNewProfileManagement() &&
       profile &&
       !profile->IsGuestSession()) {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t profile_index = cache.GetIndexOfProfileWithPath(profile_path);
-
-    if (profile_index != std::string::npos &&
-        cache.ProfileIsSigninRequiredAtIndex(profile_index)) {
+    ProfileAttributesEntry* entry;
+    bool has_entry = g_browser_process->profile_manager()->
+                         GetProfileAttributesStorage().
+                         GetProfileAttributesWithPath(profile_path, &entry);
+    if (has_entry && entry->IsSigninRequired()) {
       profile = g_browser_process->profile_manager()->GetProfile(
           ProfileManager::GetGuestProfilePath());
     }

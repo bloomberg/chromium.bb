@@ -282,8 +282,8 @@ void BrowserProcessImpl::StartTearDown() {
   // those things during teardown.
   notification_ui_manager_.reset();
 
-  // The SupervisedUserWhitelistInstaller observes the ProfileInfoCache, so it
-  // needs to be shut down before the ProfileManager.
+  // The SupervisedUserWhitelistInstaller observes the ProfileAttributesStorage,
+  // so it needs to be shut down before the ProfileManager.
   supervised_user_whitelist_installer_.reset();
 
 #if !defined(OS_ANDROID)
@@ -973,7 +973,8 @@ BrowserProcessImpl::supervised_user_whitelist_installer() {
   if (!supervised_user_whitelist_installer_) {
     supervised_user_whitelist_installer_ =
         component_updater::SupervisedUserWhitelistInstaller::Create(
-            component_updater(), &profile_manager()->GetProfileInfoCache(),
+            component_updater(),
+            &profile_manager()->GetProfileAttributesStorage(),
             local_state());
   }
   return supervised_user_whitelist_installer_.get();
@@ -1143,8 +1144,9 @@ void BrowserProcessImpl::CreateBackgroundModeManager() {
 #if BUILDFLAG(ENABLE_BACKGROUND)
   DCHECK(background_mode_manager_.get() == NULL);
   background_mode_manager_.reset(
-      new BackgroundModeManager(*base::CommandLine::ForCurrentProcess(),
-                                &profile_manager()->GetProfileInfoCache()));
+      new BackgroundModeManager(
+              *base::CommandLine::ForCurrentProcess(),
+              &profile_manager()->GetProfileAttributesStorage()));
 #endif
 }
 

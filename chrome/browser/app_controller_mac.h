@@ -49,9 +49,9 @@ class WorkAreaWatcherObserver;
   // build the user-data specific main menu items.
   Profile* lastProfile_;
 
-  // The ProfileObserver observes the ProfileInfoCache and gets notified
+  // The ProfileObserver observes the ProfileAttrbutesStorage and gets notified
   // when a profile has been deleted.
-  scoped_ptr<AppControllerProfileObserver> profileInfoCacheObserver_;
+  scoped_ptr<AppControllerProfileObserver> profileAttributesStorageObserver_;
 
   // Management of the bookmark menu which spans across all windows
   // (and Browser*s). |profileBookmarkMenuBridgeMap_| is a cache that owns one

@@ -33,7 +33,6 @@
 #include "chrome/browser/chrome_elf_init_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/simple_message_box.h"

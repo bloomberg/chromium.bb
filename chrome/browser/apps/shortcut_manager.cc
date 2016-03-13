@@ -70,7 +70,7 @@ void AppShortcutManager::RegisterProfilePrefs(
 
 AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
-      is_profile_info_cache_observer_(false),
+      is_profile_attributes_storage_observer_(false),
       prefs_(profile->GetPrefs()),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
@@ -93,12 +93,12 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
   // profile_manager might be NULL in testing environments.
   if (profile_manager) {
     profile_manager->GetProfileAttributesStorage().AddObserver(this);
-    is_profile_info_cache_observer_ = true;
+    is_profile_attributes_storage_observer_ = true;
   }
 }
 
 AppShortcutManager::~AppShortcutManager() {
-  if (g_browser_process && is_profile_info_cache_observer_) {
+  if (g_browser_process && is_profile_attributes_storage_observer_) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     // profile_manager might be NULL in testing environments or during shutdown.
     if (profile_manager)

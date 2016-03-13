@@ -52,7 +52,7 @@ size_t RendererResource::GetV8MemoryUsed() const {
 }
 
 base::string16 RendererResource::GetProfileName() const {
-  return util::GetProfileNameFromInfoCache(Profile::FromBrowserContext(
+  return util::GetProfileNameFromAttributesStorage(Profile::FromBrowserContext(
       render_view_host_->GetProcess()->GetBrowserContext()));
 }
 
