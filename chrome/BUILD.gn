@@ -146,6 +146,7 @@ if (!is_android) {
         "//crypto",
         "//sandbox",
         "//ui/gfx",
+        "//win8:visual_elements_resources",
         "//win8/delegate_execute",
       ]
       data_deps = [

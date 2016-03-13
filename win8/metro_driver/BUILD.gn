@@ -16,7 +16,6 @@ shared_library("metro_driver") {
   ]
 
   deps = [
-    ":copy_resources",
     ":version_resources",
     "//base",
     "//chrome/common:constants",
@@ -84,21 +83,6 @@ process_version("version_resources") {
   ]
   output = "$target_gen_dir/metro_driver_dll_version.rc"
   template_file = chrome_version_rc_template
-}
-
-copy("copy_resources") {
-  visibility = [ ":*" ]
-
-  sources = [
-    "resources/Logo.png",
-    "resources/SecondaryTile.png",
-    "resources/SmallLogo.png",
-    "resources/chrome.VisualElementsManifest.xml",
-  ]
-
-  outputs = [
-    "$root_out_dir/{{source_file_part}}",
-  ]
 }
 
 test("metro_driver_unittests") {

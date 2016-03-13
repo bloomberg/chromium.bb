@@ -102,18 +102,6 @@
               ],
             }],
           ],
-          'copies': [
-            {
-              # GN version: //win8/metro_viewer:copy_resources
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                'resources/Logo.png',
-                'resources/SecondaryTile.png',
-                'resources/SmallLogo.png',
-                'resources/chrome.VisualElementsManifest.xml',
-              ],
-            },
-          ],
         },
         {
           # GN version: //win8/metro_driver:metro_driver_unittests

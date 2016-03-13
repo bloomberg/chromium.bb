@@ -38,5 +38,21 @@
         'test/test_registrar_constants.h',
       ],
     },
+    {
+      'target_name': 'visual_elements_resources',
+      'type': 'none',
+      'copies': [
+        {
+          # GN version: //win8/visual_elements_resources
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            'resources/Logo.png',
+            'resources/SecondaryTile.png',
+            'resources/SmallLogo.png',
+            'resources/chrome.VisualElementsManifest.xml',
+          ],
+        },
+      ],
+    },
   ],
 }

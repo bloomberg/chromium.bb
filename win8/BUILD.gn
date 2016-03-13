@@ -50,3 +50,16 @@ executable("test_registrar") {
     "//chrome",
   ]
 }
+
+copy("visual_elements_resources") {
+  sources = [
+    "resources/Logo.png",
+    "resources/SecondaryTile.png",
+    "resources/SmallLogo.png",
+    "resources/chrome.VisualElementsManifest.xml",
+  ]
+
+  outputs = [
+    "$root_out_dir/{{source_file_part}}",
+  ]
+}

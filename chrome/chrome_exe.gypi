@@ -423,6 +423,7 @@
             '../third_party/kasko/kasko.gyp:kasko_features',
             '../ui/gfx/gfx.gyp:gfx',
             '../win8/delegate_execute/delegate_execute.gyp:*',
+            '../win8/win8.gyp:visual_elements_resources',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_exe_version.rc',

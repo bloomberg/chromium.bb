@@ -2,6 +2,7 @@
   "Condition": "$SUPPORTS_SXS",
   "Files": {
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.exe": {"exists": true},
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.VisualElementsManifest.xml": {"exists": true},
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome.dll":
         {"exists": true},
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
