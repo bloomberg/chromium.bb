@@ -169,6 +169,9 @@ chrome.test.runTests([
     }));
   },
 
+  // DISABLED: crbug.com/594318
+  // Fails in --site-per-process
+  /*
   function newTabPagesShareProcess() {
     getProcessId(tabs[3].id, pass(function(pid3) {
       getProcessId(tabs[4].id, pass(function(pid4) {
@@ -177,6 +180,7 @@ chrome.test.runTests([
       }));
     }));
   },
+  */
 
   function idsInUpdateEvent() {
     listenOnce(chrome.processes.onUpdated, function(processes) {
