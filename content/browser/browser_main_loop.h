@@ -71,6 +71,8 @@ struct MainFunctionParams;
 
 #if defined(OS_ANDROID)
 class ScreenOrientationDelegate;
+#elif defined(OS_WIN)
+class ScreenOrientationDelegate;
 #endif
 
 // Implements the main browser loop stages called from BrowserMainRunner.
@@ -198,6 +200,10 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   scoped_ptr<base::trace_event::TraceEventSystemStatsMonitor>
       system_stats_monitor_;
+
+#if defined(OS_WIN)
+  scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
+#endif
 
 #if defined(OS_ANDROID)
   // Android implementation of ScreenOrientationDelegate

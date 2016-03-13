@@ -1387,6 +1387,8 @@
       'browser/resource_context_impl.h',
       'browser/safe_util_win.cc',
       'browser/safe_util_win.h',
+      'browser/screen_orientation/screen_orientation_delegate_win.cc',
+      'browser/screen_orientation/screen_orientation_delegate_win.h',
       'browser/screen_orientation/screen_orientation_dispatcher_host_impl.cc',
       'browser/screen_orientation/screen_orientation_dispatcher_host_impl.h',
       'browser/service_worker/embedded_worker_instance.cc',

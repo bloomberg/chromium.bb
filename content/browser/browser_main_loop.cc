@@ -131,6 +131,8 @@
 #include <shellapi.h>
 
 #include "base/memory/memory_pressure_monitor_win.h"
+#include "base/win/windows_version.h"
+#include "content/browser/screen_orientation/screen_orientation_delegate_win.h"
 #include "content/common/sandbox_win.h"
 #include "net/base/winsock_init.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -592,6 +594,11 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
             base::ThreadTaskRunnerHandle::Get()));
   }
 #endif  // !defined(OS_IOS)
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    screen_orientation_delegate_.reset(new ScreenOrientationDelegateWin());
+#endif
 
   // TODO(boliu): kSingleProcess check is a temporary workaround for
   // in-process Android WebView. crbug.com/503724 tracks proper fix.
