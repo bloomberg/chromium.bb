@@ -1250,8 +1250,6 @@ crbug.com/591500 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
 crbug.com/591500 [ Win10 ] printing/iframe-print.html [ Skip ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Skip ]
 
-crbug.com/571233 compositing/background-color/background-color-outside-document.html [ Skip ]
-
 crbug.com/331582 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
@@ -1457,7 +1455,7 @@ crbug.com/593917 fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline 
 crbug.com/593917 fast/text/emphasis-vertical.html [ NeedsRebaseline ]
 crbug.com/593917 fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline ]
 
-crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ] 
+crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
 
 crbug.com/591825 [ Mac10.11 Debug ] fast/text/selection-multiple-runs.html [ Failure ]
 
@@ -1465,7 +1463,7 @@ crbug.com/594230 [ Linux Debug ] fast/files/workers/worker-read-blob-async-crash
 crbug.com/594230 [ Linux Debug ] http/tests/fetch/serviceworker/fetch.html [ Crash Pass ]
 crbug.com/594230 [ Linux Debug ] http/tests/fetch/serviceworker/fetch-base-https-other-https.html [ Crash Pass ]
 
-crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Failure ] 
+crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Failure ]
 crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
 crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 

@@ -265,8 +265,8 @@ void DevToolsEmulator::enableMobileEmulation()
     RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(true);
     ComputedStyle::invalidateInitialStyle();
     m_webViewImpl->page()->settings().setUseMobileViewportStyle(true);
-    m_webViewImpl->enableViewport();
-    m_webViewImpl->settings()->setViewportMetaEnabled(true);
+    m_webViewImpl->page()->settings().setViewportEnabled(true);
+    m_webViewImpl->page()->settings().setViewportMetaEnabled(true);
     m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();
     m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
     m_webViewImpl->page()->settings().setTextAutosizingEnabled(true);
@@ -296,8 +296,8 @@ void DevToolsEmulator::disableMobileEmulation()
     RuntimeEnabledFeatures::setOrientationEventEnabled(m_isOrientationEventEnabled);
     RuntimeEnabledFeatures::setMobileLayoutThemeEnabled(m_isMobileLayoutThemeEnabled);
     ComputedStyle::invalidateInitialStyle();
-    m_webViewImpl->disableViewport();
-    m_webViewImpl->settings()->setViewportMetaEnabled(false);
+    m_webViewImpl->page()->settings().setViewportEnabled(false);
+    m_webViewImpl->page()->settings().setViewportMetaEnabled(false);
     m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();
     m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
     m_webViewImpl->page()->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);

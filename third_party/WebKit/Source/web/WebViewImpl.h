@@ -276,10 +276,6 @@ public:
     void setShowScrollBottleneckRects(bool) override;
     void acceptLanguagesChanged() override;
 
-    // WebViewImpl
-    void enableViewport();
-    void disableViewport();
-
     float defaultMinimumPageScaleFactor() const;
     float defaultMaximumPageScaleFactor() const;
     float minimumPageScaleFactor() const;

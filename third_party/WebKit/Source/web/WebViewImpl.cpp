@@ -3310,8 +3310,14 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
             m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
     }
 
-    if (!settings()->viewportEnabled() || !page() || (!m_size.width && !m_size.height) || !page()->mainFrame()->isLocalFrame())
+    if (!page() || (!m_size.width && !m_size.height) || !page()->mainFrame()->isLocalFrame())
         return;
+
+    if (!settings()->viewportEnabled()) {
+        pageScaleConstraintsSet().clearPageDefinedConstraints();
+        updateMainFrameLayoutSize();
+        return;
+    }
 
     Document* document = page()->deprecatedLocalMainFrame()->document();
 
@@ -3411,18 +3417,6 @@ WebSize WebViewImpl::contentsPreferredMinimumSize()
     int widthScaled = document->layoutView()->minPreferredLogicalWidth().round(); // Already accounts for zoom.
     int heightScaled = document->documentElement()->layoutBox()->scrollHeight().round();
     return IntSize(widthScaled, heightScaled);
-}
-
-void WebViewImpl::enableViewport()
-{
-    settings()->setViewportEnabled(true);
-}
-
-void WebViewImpl::disableViewport()
-{
-    settings()->setViewportEnabled(false);
-    pageScaleConstraintsSet().clearPageDefinedConstraints();
-    updateMainFrameLayoutSize();
 }
 
 float WebViewImpl::defaultMinimumPageScaleFactor() const
