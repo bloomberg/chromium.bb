@@ -13,6 +13,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -45,13 +46,16 @@ void StarDecoration::SetStarred(bool starred, bool locationBarIsDark) {
     gfx::VectorIconId iconId = starred_ ?
         gfx::VectorIconId::LOCATION_BAR_STAR_ACTIVE :
         gfx::VectorIconId::LOCATION_BAR_STAR;
+    SkColor starColor = gfx::kPlaceholderColor;
     if (locationBarIsDark) {
-      theImage = NSImageFromImageSkia(gfx::CreateVectorIcon(
-          iconId, 16, SK_ColorWHITE));
+      starColor = SK_ColorWHITE;
+    } else if (starred_) {
+      starColor = gfx::kGoogleBlue500;
     } else {
-      theImage = NSImageFromImageSkia(gfx::CreateVectorIcon(
-          iconId, 16, SkColorSetARGB(0xFF, 0x5A, 0x5A, 0x5A)));
+      starColor = gfx::kChromeIconGrey;
     }
+    theImage = NSImageFromImageSkia(gfx::CreateVectorIcon(
+        iconId, 16, starColor));
     SetImage(theImage);
   } else {
     SetImage(OmniboxViewMac::ImageForResource(image_id));
