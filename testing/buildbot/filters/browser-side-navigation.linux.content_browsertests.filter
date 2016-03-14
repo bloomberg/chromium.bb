@@ -12,4 +12,3 @@
 -RenderViewImplTest.TestBackForward
 -SessionHistoryTest.FrameBackForward
 -SessionHistoryTest.FrameFormBackForward
--WebContentsImplBrowserTest.ClearNonVisiblePendingOnFail

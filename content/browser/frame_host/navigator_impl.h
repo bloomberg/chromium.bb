@@ -137,6 +137,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void DidStartMainFrameNavigation(const GURL& url,
                                    SiteInstanceImpl* site_instance);
 
+  // Called when a navigation has failed to discard the pending entry in order
+  // to avoid url spoofs.
+  void DiscardPendingEntryOnFailureIfNeeded(NavigationHandleImpl* handle);
+
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this NavigatorImpl.
   // TODO(nasko): Move ownership of the NavigationController from
