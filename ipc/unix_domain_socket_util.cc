@@ -55,22 +55,27 @@ bool MakeUnixAddrForPath(const std::string& socket_name,
 }
 
 // This functions creates a unix domain socket, and set it as non-blocking.
-// Returns a valid socket descriptor on success, or an invalid one otherwise.
-base::ScopedFD CreateUnixDomainSocket() {
-  // Create socket.
+// If successful, |out_fd| will be set to the new file descriptor, and the
+// function will return true. Otherwise returns false.
+bool CreateUnixDomainSocket(base::ScopedFD* out_fd) {
+  DCHECK(out_fd);
+
+  // Create the unix domain socket.
   base::ScopedFD fd(socket(AF_UNIX, SOCK_STREAM, 0));
   if (!fd.is_valid()) {
     PLOG(ERROR) << "Failed to create AF_UNIX socket.";
-    return base::ScopedFD();
+    return false;
   }
 
-  // Make socket non-blocking.
+  // Now set it as non-blocking.
   if (!base::SetNonBlocking(fd.get())) {
     PLOG(ERROR) << "base::SetNonBlocking() failed " << fd.get();
-    return base::ScopedFD();
+    return false;
   }
 
-  return fd;
+  fd.swap(*out_fd);
+
+  return true;
 }
 
 bool IsRecoverableError() {
@@ -104,8 +109,8 @@ bool CreateServerUnixDomainSocket(const base::FilePath& socket_path,
   if (!MakeUnixAddrForPath(socket_name, &unix_addr, &unix_addr_len))
     return false;
 
-  base::ScopedFD fd(CreateUnixDomainSocket());
-  if (!fd.is_valid())
+  base::ScopedFD fd;
+  if (!CreateUnixDomainSocket(&fd))
     return false;
 
   // Bind the socket.
@@ -135,8 +140,8 @@ bool CreateClientUnixDomainSocket(const base::FilePath& socket_path,
   if (!MakeUnixAddrForPath(socket_path.value(), &unix_addr, &unix_addr_len))
     return false;
 
-  base::ScopedFD fd(CreateUnixDomainSocket());
-  if (!fd.is_valid())
+  base::ScopedFD fd;
+  if (!CreateUnixDomainSocket(&fd))
     return false;
 
   if (HANDLE_EINTR(connect(fd.get(), reinterpret_cast<sockaddr*>(&unix_addr),
