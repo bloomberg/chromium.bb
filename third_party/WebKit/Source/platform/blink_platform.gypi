@@ -1244,6 +1244,7 @@
       'testing/PaintPrinters.h',
       'testing/PictureMatchers.cpp',
       'testing/PictureMatchers.h',
+      'testing/PlatformTestPrinters.cpp',
       'testing/TestingPlatformSupport.cpp',
       'testing/TestingPlatformSupport.h',
       'testing/TestPaintArtifact.cpp',

@@ -30,6 +30,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
+#include <iosfwd>
 
 namespace blink {
 
@@ -107,6 +108,9 @@ private:
 
 inline bool operator==(const ResourceError& a, const ResourceError& b) { return ResourceError::compare(a, b); }
 inline bool operator!=(const ResourceError& a, const ResourceError& b) { return !(a == b); }
+
+// Pretty printer for gtest. Declared here to avoid ODR violations.
+std::ostream& operator<<(std::ostream&, const ResourceError&);
 
 } // namespace blink
 
