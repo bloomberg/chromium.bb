@@ -162,6 +162,27 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_NavigationByMouse) {
       VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
 
+IN_PROC_BROWSER_TEST_F(FindInPageTest, ButtonsDisabledWithoutText) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  // First we navigate to any page.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kSimplePage));
+  // Show the Find bar.
+  browser()->GetFindBarController()->Show();
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // The buttons should be disabled as there is no text entered in the find bar
+  // and no search has been issued yet.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON));
+}
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_FocusRestore DISABLED_FocusRestore

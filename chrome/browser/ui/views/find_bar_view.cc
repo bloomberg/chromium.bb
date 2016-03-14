@@ -605,9 +605,7 @@ void FindBarView::Find(const base::string16& search_text) {
 }
 
 void FindBarView::UpdateMatchCountAppearance(bool no_match) {
-  // Enable the buttons if there is a match or if there is a match count text
-  // set (from a prepopulated view).
-  bool enable_buttons = !match_count_text_->text().empty() || !no_match;
+  bool enable_buttons = !match_count_text_->text().empty() && !no_match;
   find_previous_button_->SetEnabled(enable_buttons);
   find_next_button_->SetEnabled(enable_buttons);
 
