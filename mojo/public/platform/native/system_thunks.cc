@@ -200,6 +200,11 @@ MojoResult MojoCancelWatch(MojoHandle handle, uintptr_t context) {
   return g_thunks.CancelWatch(handle, context);
 }
 
+MojoResult MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
+  assert(g_thunks.FuseMessagePipes);
+  return g_thunks.FuseMessagePipes(handle0, handle1);
+}
+
 extern "C" THUNK_EXPORT size_t MojoSetSystemThunks(
     const MojoSystemThunks* system_thunks) {
   if (system_thunks->size >= sizeof(g_thunks))

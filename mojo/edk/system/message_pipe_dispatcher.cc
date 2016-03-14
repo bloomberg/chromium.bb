@@ -99,6 +99,31 @@ MessagePipeDispatcher::MessagePipeDispatcher(NodeController* node_controller,
       make_scoped_refptr(new PortObserverThunk(this)));
 }
 
+bool MessagePipeDispatcher::Fuse(MessagePipeDispatcher* other) {
+  node_controller_->SetPortObserver(port_, nullptr);
+  node_controller_->SetPortObserver(other->port_, nullptr);
+
+  ports::PortRef port0;
+  {
+    base::AutoLock lock(signal_lock_);
+    port0 = port_;
+    port_closed_ = true;
+    awakables_.CancelAll();
+  }
+
+  ports::PortRef port1;
+  {
+    base::AutoLock lock(other->signal_lock_);
+    port1 = other->port_;
+    other->port_closed_ = true;
+    other->awakables_.CancelAll();
+  }
+
+  // Both ports are always closed by this call.
+  int rv = node_controller_->MergeLocalPorts(port0, port1);
+  return rv == ports::OK;
+}
+
 Dispatcher::Type MessagePipeDispatcher::GetType() const {
   return Type::MESSAGE_PIPE;
 }

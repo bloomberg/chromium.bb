@@ -170,6 +170,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          MojoHandle* handles,
                          uint32_t* num_handles,
                          MojoReadMessageFlags flags);
+  MojoResult FuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/data_pipe.h":

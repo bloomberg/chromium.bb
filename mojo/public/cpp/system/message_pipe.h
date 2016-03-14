@@ -88,6 +88,14 @@ inline MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
       message_pipe.value(), bytes, num_bytes, handles, num_handles, flags);
 }
 
+// Fuses two message pipes together at the given handles. See
+// |MojoFuseMessagePipes()| for complete documentation.
+inline MojoResult FuseMessagePipes(ScopedMessagePipeHandle message_pipe0,
+                                   ScopedMessagePipeHandle message_pipe1) {
+  return MojoFuseMessagePipes(message_pipe0.release().value(),
+                              message_pipe1.release().value());
+}
+
 // A wrapper class that automatically creates a message pipe and owns both
 // handles.
 class MessagePipe {

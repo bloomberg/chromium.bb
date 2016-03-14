@@ -90,6 +90,9 @@ class NodeController : public ports::NodeDelegate,
   void MergePortIntoParent(const std::string& token,
                            const ports::PortRef& port);
 
+  // Merges two local ports together.
+  int MergeLocalPorts(const ports::PortRef& port0, const ports::PortRef& port1);
+
   // Creates a new shared buffer for use in the current process.
   scoped_refptr<PlatformSharedBuffer> CreateSharedBuffer(size_t num_bytes);
 

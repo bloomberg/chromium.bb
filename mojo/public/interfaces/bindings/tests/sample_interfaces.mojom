@@ -13,6 +13,10 @@ enum Enum {
   VALUE
 };
 
+interface PingTest {
+  Ping() => ();
+};
+
 interface Provider {
   EchoString(string a) => (string a);
   EchoStrings(string a, string b) => (string a, string b);

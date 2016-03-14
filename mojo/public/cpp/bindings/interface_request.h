@@ -117,6 +117,16 @@ InterfaceRequest<Interface> GetProxy(InterfacePtr<Interface>* ptr) {
   return MakeRequest<Interface>(std::move(pipe.handle1));
 }
 
+// Fuses an InterfaceRequest<T> endpoint with an InterfacePtrInfo<T> endpoint.
+// Returns |true| on success or |false| on failure.
+template <typename Interface>
+bool FuseInterface(InterfaceRequest<Interface> request,
+                   InterfacePtrInfo<Interface> proxy_info) {
+  MojoResult result = FuseMessagePipes(request.PassMessagePipe(),
+                                       proxy_info.PassHandle());
+  return result == MOJO_RESULT_OK;
+}
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_REQUEST_H_

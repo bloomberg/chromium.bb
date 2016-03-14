@@ -54,6 +54,8 @@ class MessagePipeTest : public test::MojoTestBase {
   DISALLOW_COPY_AND_ASSIGN(MessagePipeTest);
 };
 
+using FuseMessagePipeTest = test::MojoTestBase;
+
 TEST_F(MessagePipeTest, WriteData) {
   ASSERT_EQ(MOJO_RESULT_OK,
             WriteMessage(pipe0_, kHelloWorld, sizeof(kHelloWorld)));
@@ -488,6 +490,160 @@ TEST_F(MessagePipeTest, MAYBE_SharedBufferHandlePingPong) {
 }
 
 #endif  // !defined(OS_IOS)
+
+TEST_F(FuseMessagePipeTest, Basic) {
+  // Test that we can fuse pipes and they still work.
+
+  MojoHandle a, b, c, d;
+  CreateMessagePipe(&a, &b);
+  CreateMessagePipe(&c, &d);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c));
+
+  // Handles b and c should be closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
+
+  const std::string kTestMessage1 = "Hello, world!";
+  const std::string kTestMessage2 = "Goodbye, world!";
+
+  WriteMessage(a, kTestMessage1);
+  EXPECT_EQ(kTestMessage1, ReadMessage(d));
+
+  WriteMessage(d, kTestMessage2);
+  EXPECT_EQ(kTestMessage2, ReadMessage(a));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
+}
+
+TEST_F(FuseMessagePipeTest, FuseAfterPeerWrite) {
+  // Test that messages written before fusion are eventually delivered.
+
+  MojoHandle a, b, c, d;
+  CreateMessagePipe(&a, &b);
+  CreateMessagePipe(&c, &d);
+
+  const std::string kTestMessage1 = "Hello, world!";
+  const std::string kTestMessage2 = "Goodbye, world!";
+  WriteMessage(a, kTestMessage1);
+  WriteMessage(d, kTestMessage2);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c));
+
+  // Handles b and c should be closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
+
+  EXPECT_EQ(kTestMessage1, ReadMessage(d));
+  EXPECT_EQ(kTestMessage2, ReadMessage(a));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
+}
+
+TEST_F(FuseMessagePipeTest, NoFuseAfterWrite) {
+  // Test that a pipe endpoint which has been written to cannot be fused.
+
+  MojoHandle a, b, c, d;
+  CreateMessagePipe(&a, &b);
+  CreateMessagePipe(&c, &d);
+
+  WriteMessage(b, "shouldn't have done that!");
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, MojoFuseMessagePipes(b, c));
+
+  // Handles b and c should be closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
+}
+
+TEST_F(FuseMessagePipeTest, NoFuseSelf) {
+  // Test that a pipe's own endpoints can't be fused together.
+
+  MojoHandle a, b;
+  CreateMessagePipe(&a, &b);
+
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, MojoFuseMessagePipes(a, b));
+
+  // Handles a and b should be closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(a));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
+}
+
+TEST_F(FuseMessagePipeTest, FuseInvalidArguments) {
+  MojoHandle a, b, c, d;
+  CreateMessagePipe(&a, &b);
+  CreateMessagePipe(&c, &d);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
+
+  // Can't fuse an invalid handle.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoFuseMessagePipes(b, c));
+
+  // Handle c should be closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
+
+  // Can't fuse a non-message pipe handle.
+  MojoHandle e, f;
+  CreateDataPipe(&e, &f, 16);
+
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoFuseMessagePipes(e, d));
+
+  // Handles d and e should be closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(d));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(e));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(f));
+}
+
+TEST_F(FuseMessagePipeTest, FuseAfterPeerClosure) {
+  // Test that peer closure prior to fusion can still be detected after fusion.
+
+  MojoHandle a, b, c, d;
+  CreateMessagePipe(&a, &b);
+  CreateMessagePipe(&c, &d);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c));
+
+  // Handles b and c should be closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(d, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
+}
+
+TEST_F(FuseMessagePipeTest, FuseAfterPeerWriteAndClosure) {
+  // Test that peer write and closure prior to fusion still results in the
+  // both message arrival and awareness of peer closure.
+
+  MojoHandle a, b, c, d;
+  CreateMessagePipe(&a, &b);
+  CreateMessagePipe(&c, &d);
+
+  const std::string kTestMessage = "ayyy lmao";
+  WriteMessage(a, kTestMessage);
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFuseMessagePipes(b, c));
+
+  // Handles b and c should be closed.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
+
+  EXPECT_EQ(kTestMessage, ReadMessage(d));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(d, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
+}
 
 }  // namespace
 }  // namespace edk

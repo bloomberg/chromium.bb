@@ -103,6 +103,10 @@ MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
       message_pipe_handle, bytes, num_bytes, handles, num_handles, flags);
 }
 
+MojoResult MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
+  return g_core->FuseMessagePipes(handle0, handle1);
+}
+
 MojoResult MojoCreateDataPipe(const MojoCreateDataPipeOptions* options,
                               MojoHandle* data_pipe_producer_handle,
                               MojoHandle* data_pipe_consumer_handle) {

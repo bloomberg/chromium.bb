@@ -209,6 +209,13 @@ void NodeController::MergePortIntoParent(const std::string& token,
   parent->RequestPortMerge(port.name(), token);
 }
 
+int NodeController::MergeLocalPorts(const ports::PortRef& port0,
+                                    const ports::PortRef& port1) {
+  int rv = node_->MergeLocalPorts(port0, port1);
+  AcceptIncomingMessages();
+  return rv;
+}
+
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
   // TODO(amistry): Fix sync broker and re-enable on OSX.

@@ -714,6 +714,42 @@ TEST_F(InterfacePtrTest, Scoping) {
   EXPECT_TRUE(a_impl.d_called());
 }
 
+class PingTestImpl : public sample::PingTest {
+ public:
+  explicit PingTestImpl(InterfaceRequest<sample::PingTest> request)
+      : binding_(this, std::move(request)) {}
+  ~PingTestImpl() override {}
+
+ private:
+  // sample::PingTest:
+  void Ping(const PingCallback& callback) override { callback.Run(); }
+
+  Binding<sample::PingTest> binding_;
+};
+
+// Tests that FuseProxy does what it's supposed to do.
+TEST_F(InterfacePtrTest, Fusion) {
+  sample::PingTestPtr proxy;
+  PingTestImpl impl(GetProxy(&proxy));
+
+  // Create another PingTest pipe.
+  sample::PingTestPtr ptr;
+  sample::PingTestRequest request = GetProxy(&ptr);
+
+  // Fuse the new pipe to the one hanging off |impl|.
+  EXPECT_TRUE(FuseInterface(std::move(request), proxy.PassInterface()));
+
+  // Ping!
+  bool called = false;
+  base::RunLoop loop;
+  ptr->Ping([&called, &loop] {
+    called = true;
+    loop.Quit();
+  });
+  loop.Run();
+  EXPECT_TRUE(called);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

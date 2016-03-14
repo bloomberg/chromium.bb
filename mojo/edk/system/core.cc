@@ -451,6 +451,8 @@ MojoResult Core::CreateMessagePipe(
   if (*message_pipe_handle1 == MOJO_HANDLE_INVALID) {
     scoped_refptr<Dispatcher> unused;
     unused->Close();
+
+    base::AutoLock lock(handles_lock_);
     handles_.GetAndRemoveDispatcher(*message_pipe_handle0, &unused);
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
@@ -523,6 +525,41 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
   return dispatcher->ReadMessage(bytes, num_bytes, handles, num_handles, flags);
 }
 
+MojoResult Core::FuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
+  RequestContext request_context;
+  scoped_refptr<Dispatcher> dispatcher0;
+  scoped_refptr<Dispatcher> dispatcher1;
+
+  bool valid_handles = true;
+  {
+    base::AutoLock lock(handles_lock_);
+    MojoResult result0 = handles_.GetAndRemoveDispatcher(handle0, &dispatcher0);
+    MojoResult result1 = handles_.GetAndRemoveDispatcher(handle1, &dispatcher1);
+    if (result0 != MOJO_RESULT_OK || result1 != MOJO_RESULT_OK ||
+        dispatcher0->GetType() != Dispatcher::Type::MESSAGE_PIPE ||
+        dispatcher1->GetType() != Dispatcher::Type::MESSAGE_PIPE)
+      valid_handles = false;
+  }
+
+  if (!valid_handles) {
+    if (dispatcher0)
+      dispatcher0->Close();
+    if (dispatcher1)
+      dispatcher1->Close();
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  MessagePipeDispatcher* mpd0 =
+      static_cast<MessagePipeDispatcher*>(dispatcher0.get());
+  MessagePipeDispatcher* mpd1 =
+      static_cast<MessagePipeDispatcher*>(dispatcher1.get());
+
+  if (!mpd0->Fuse(mpd1))
+    return MOJO_RESULT_FAILED_PRECONDITION;
+
+  return MOJO_RESULT_OK;
+}
+
 MojoResult Core::CreateDataPipe(
     const MojoCreateDataPipeOptions* options,
     MojoHandle* data_pipe_producer_handle,
@@ -568,6 +605,7 @@ MojoResult Core::CreateDataPipe(
       *data_pipe_consumer_handle == MOJO_HANDLE_INVALID) {
     if (*data_pipe_producer_handle != MOJO_HANDLE_INVALID) {
       scoped_refptr<Dispatcher> unused;
+      base::AutoLock lock(handles_lock_);
       handles_.GetAndRemoveDispatcher(*data_pipe_producer_handle, &unused);
     }
     producer->Close();

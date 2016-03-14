@@ -181,6 +181,31 @@ MOJO_SYSTEM_EXPORT MojoResult
                     uint32_t* num_handles,  // Optional in/out.
                     MojoReadMessageFlags flags);
 
+// Fuses two message pipe endpoints together. Given two pipes:
+//
+//     A <-> B    and    C <-> D
+//
+// Fusing handle B and handle C results in a single pipe:
+//
+//     A <-> D
+//
+// Handles B and C are ALWAYS closed. Any unread messages at C will eventually
+// be delivered to A, and any unread messages at B will eventually be delivered
+// to D.
+//
+// NOTE: A handle may only be fused if it is an open message pipe handle which
+// has not been written to.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if both handles were valid message pipe
+//       handles but could not be merged (e.g. one of them has been written to).
+//   |MOJO_INVALID_ARGUMENT| if either handle is not a fusable message pipe
+//       handle.
+MOJO_SYSTEM_EXPORT MojoResult
+    MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
+
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

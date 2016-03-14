@@ -137,6 +137,12 @@ class Node {
                  const NodeName& destination_node_name,
                  const PortName& destination_port_name);
 
+  // Like above but merges two ports local to this node. Because both ports are
+  // local this can also verify that neither port has been written to before the
+  // merge. If this fails for any reason, both ports are closed. Otherwise OK
+  // is returned and the ports' receiving peers are connected to each other.
+  int MergeLocalPorts(const PortRef& port0_ref, const PortRef& port1_ref);
+
   // Called to inform this node that communication with another node is lost
   // indefinitely. This triggers cleanup of ports bound to this node.
   int LostConnectionToNode(const NodeName& node_name);
@@ -157,6 +163,7 @@ class Node {
   scoped_refptr<Port> GetPort(const PortName& port_name);
   scoped_refptr<Port> GetPort_Locked(const PortName& port_name);
 
+  int MergePorts_Locked(const PortRef& port0_ref, const PortRef& port1_ref);
   void WillSendPort_Locked(Port* port,
                            const NodeName& to_node_name,
                            PortName* port_name,
