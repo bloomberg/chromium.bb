@@ -428,6 +428,11 @@
       'filepath': 'ui/views/animation/test/.*ink_drop.*|' \
                   'ui/views/animation/.*ink_drop.*'
     },
+    'input': {
+      'filepath': 'content/browser/renderer_host/input|'\
+                  'content/renderer/input|'\
+                  'ui/events/blink/'
+    },
     'installer': {
       'filepath': 'chrome/installer/',
     },
@@ -1056,6 +1061,9 @@
                   '|third_party/WebKit/LayoutTests/storage/indexeddb' \
                   '|third_party/WebKit/public/platform/.*IDB'
     },
+    'blink_input': {
+      'filepath': 'third_party/WebKit/Source/core/input/'
+    },
     'blink_layout': {
       'filepath': 'third_party/WebKit/Source/core/layout' \
                   '|third_party/WebKit/Source/core/rendering'
@@ -1379,6 +1387,7 @@
     'indexed_db': ['cmumford@chromium.org',
                    'jsbell+idb@chromium.org'],
     'ink_drop': ['bruthig+ink_drop@chromium.org'],
+    'input': ['dtapuska+chromiumwatch@chromium.org'],
     'installer': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'installer_linux': [ 'mmoss@chromium.org'],
     'instant': ['dcblack@chromium.org', 'jered@chromium.org',
@@ -1588,11 +1597,13 @@
                         'devtools-reviews@chromium.org' ],
     'blink_events': [ 'eae+blinkwatch@chromium.org',
                       'dglazkov+blink@chromium.org',
+                      'dtapuska+blinkwatch@chromium.org',
                       'blink-reviews-events@chromium.org' ],
     'blink_fetch': [ 'japhet@chromium.org',
                      'gavinp+loader@chromium.org',
                      'tyoshino+watch@chromium.org',
                      'loading-reviews+fetch@chromium.org' ],
+    'blink_input': [ 'dtapuska+blinkwatch@chromium.org' ],
     'blink_layers': [ 'blink-layers+watch@chromium.org' ],
     'blink_loader': [ 'japhet@chromium.org',
                       'gavinp+loader@chromium.org',
