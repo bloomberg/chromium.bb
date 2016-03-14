@@ -354,8 +354,6 @@
         'test/mock_bluetooth_adapter.h',
         'test/mock_bluetooth_advertisement.cc',
         'test/mock_bluetooth_advertisement.h',
-        'test/mock_bluetooth_central_manager_mac.mm',
-        'test/mock_bluetooth_central_manager_mac.h',
         'test/mock_bluetooth_device.cc',
         'test/mock_bluetooth_device.h',
         'test/mock_bluetooth_discovery_session.cc',

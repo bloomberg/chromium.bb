@@ -7,12 +7,9 @@
 
 #include "base/mac/sdk_forward_declarations.h"
 #include "build/build_config.h"
+#include "device/bluetooth/test/bluetooth_test_mac.h"
 
-#if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>
-#else
-#import <IOBluetooth/IOBluetooth.h>
-#endif
 
 // Class to mock a CBCentralManager. Cannot use a OCMockObject because mocking
 // the 'state' property gives a compiler warning when mock_central_manager is of
@@ -25,11 +22,15 @@
 @property(nonatomic, assign) NSInteger stopScanCallCount;
 @property(nonatomic, assign) id<CBCentralManagerDelegate> delegate;
 @property(nonatomic, assign) CBCentralManagerState state;
+@property(nonatomic, assign) device::BluetoothTestMac* bluetoothTestMac;
 
 - (void)scanForPeripheralsWithServices:(NSArray*)serviceUUIDs
                                options:(NSDictionary*)options;
 
 - (void)stopScan;
+
+- (void)connectPeripheral:(CBPeripheral*)peripheral
+                  options:(NSDictionary*)options;
 
 @end
 

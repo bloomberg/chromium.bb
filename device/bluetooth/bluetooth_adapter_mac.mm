@@ -92,6 +92,14 @@ BluetoothAdapterMac::BluetoothAdapterMac()
 }
 
 BluetoothAdapterMac::~BluetoothAdapterMac() {
+  // When devices will be destroyed, they will need this current instance to
+  // disconnect the gatt connection. To make sure they don't use the mac
+  // adapter, they should be explicitly destroyed here.
+  devices_.clear();
+  // Set low_energy_central_manager_ to nil so no devices will try to use it
+  // while being destroyed after this method. |devices_| is owned by
+  // BluetoothAdapter.
+  low_energy_central_manager_.reset();
 }
 
 std::string BluetoothAdapterMac::GetAddress() const {
@@ -221,17 +229,21 @@ bool BluetoothAdapterMac::IsLowEnergyAvailable() {
   return base::mac::IsOSYosemiteOrLater();
 }
 
+void BluetoothAdapterMac::RemovePairingDelegateInternal(
+    BluetoothDevice::PairingDelegate* pairing_delegate) {}
+
 void BluetoothAdapterMac::SetCentralManagerForTesting(
     CBCentralManager* central_manager) {
   CHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
   central_manager.delegate = low_energy_central_manager_delegate_;
-  low_energy_central_manager_.reset(central_manager);
+  low_energy_central_manager_.reset(central_manager,
+                                    base::scoped_policy::RETAIN);
   low_energy_discovery_manager_->SetCentralManager(
       low_energy_central_manager_.get());
 }
 
-void BluetoothAdapterMac::RemovePairingDelegateInternal(
-    BluetoothDevice::PairingDelegate* pairing_delegate) {
+CBCentralManager* BluetoothAdapterMac::GetCentralManagerForTesting() {
+  return low_energy_central_manager_;
 }
 
 void BluetoothAdapterMac::AddDiscoverySession(
@@ -454,25 +466,23 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     CBPeripheral* peripheral,
     NSDictionary* advertisement_data,
     int rssi) {
-  std::string device_address =
-      BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
-  // Try to find device from |devices_| with key |device_address|,
+  BluetoothLowEnergyDeviceMac* device_mac =
+      GetBluetoothLowEnergyDeviceMac(peripheral);
   // if has no entry in the map, create new device and insert into |devices_|,
   // otherwise update the existing device.
-  DevicesMap::const_iterator iter = devices_.find(device_address);
-  if (iter == devices_.end()) {
+  if (!device_mac) {
     VLOG(1) << "LowEnergyDeviceUpdated new device";
     // A new device has been found.
-    BluetoothLowEnergyDeviceMac* device_mac = new BluetoothLowEnergyDeviceMac(
-        this, peripheral, advertisement_data, rssi);
+    device_mac = new BluetoothLowEnergyDeviceMac(this, peripheral,
+                                                 advertisement_data, rssi);
+    std::string device_address =
+        BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
     devices_.add(device_address, scoped_ptr<BluetoothDevice>(device_mac));
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceAdded(this, device_mac));
     return;
   }
 
-  BluetoothLowEnergyDeviceMac* device_mac =
-      static_cast<BluetoothLowEnergyDeviceMac*>(iter->second);
   std::string stored_device_id = device_mac->GetIdentifier();
   std::string updated_device_id =
       BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral);
@@ -533,6 +543,65 @@ void BluetoothAdapterMac::AddPairedDevices() {
   for (IOBluetoothDevice* device in [IOBluetoothDevice pairedDevices]) {
     ClassicDeviceAdded(device);
   }
+}
+
+void BluetoothAdapterMac::CreateGattConnection(
+    BluetoothLowEnergyDeviceMac* device_mac) {
+  [low_energy_central_manager_ connectPeripheral:device_mac->peripheral_
+                                         options:nil];
+}
+
+void BluetoothAdapterMac::DisconnectGatt(
+    BluetoothLowEnergyDeviceMac* device_mac) {
+  [low_energy_central_manager_
+      cancelPeripheralConnection:device_mac->peripheral_];
+}
+
+void BluetoothAdapterMac::DidConnectPeripheral(CBPeripheral* peripheral) {
+  BluetoothLowEnergyDeviceMac* device_mac =
+      GetBluetoothLowEnergyDeviceMac(peripheral);
+  if (!device_mac) {
+    [low_energy_central_manager_ cancelPeripheralConnection:peripheral];
+    return;
+  }
+  device_mac->DidConnectGatt();
+}
+
+void BluetoothAdapterMac::DidFailToConnectPeripheral(CBPeripheral* peripheral,
+                                                     NSError* error) {
+  BluetoothLowEnergyDeviceMac* device_mac =
+      GetBluetoothLowEnergyDeviceMac(peripheral);
+  if (!device_mac) {
+    [low_energy_central_manager_ cancelPeripheralConnection:peripheral];
+    return;
+  }
+  VLOG(1) << "Bluetooth error, domain: " << error.domain.UTF8String
+          << ", error code: " << error.code;
+  // TODO(http://crbug.com/585894): Need to convert the error.
+  device_mac->DidFailToConnectGatt(BluetoothClassicDeviceMac::ERROR_UNKNOWN);
+}
+
+void BluetoothAdapterMac::DidDisconnectPeripheral(CBPeripheral* peripheral,
+                                                  NSError* error) {
+  BluetoothLowEnergyDeviceMac* device_mac =
+      GetBluetoothLowEnergyDeviceMac(peripheral);
+  if (!device_mac) {
+    [low_energy_central_manager_ cancelPeripheralConnection:peripheral];
+    return;
+  }
+  // TODO(http://crbug.com/585897): Need to pass the error.
+  device_mac->DidDisconnectPeripheral();
+}
+
+BluetoothLowEnergyDeviceMac*
+BluetoothAdapterMac::GetBluetoothLowEnergyDeviceMac(CBPeripheral* peripheral) {
+  std::string device_address =
+      BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
+  DevicesMap::const_iterator iter = devices_.find(device_address);
+  if (iter == devices_.end()) {
+    return nil;
+  }
+  return static_cast<BluetoothLowEnergyDeviceMac*>(iter->second);
 }
 
 }  // namespace device

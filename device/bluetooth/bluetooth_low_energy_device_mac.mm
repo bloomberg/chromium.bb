@@ -43,6 +43,9 @@ BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
 }
 
 BluetoothLowEnergyDeviceMac::~BluetoothLowEnergyDeviceMac() {
+  if (IsGattConnected()) {
+    GetMacAdapter()->DisconnectGatt(this);
+  }
 }
 
 void BluetoothLowEnergyDeviceMac::Update(CBPeripheral* peripheral,
@@ -134,7 +137,7 @@ bool BluetoothLowEnergyDeviceMac::IsConnectable() const {
 }
 
 bool BluetoothLowEnergyDeviceMac::IsConnecting() const {
-  return false;
+  return ([peripheral_ state] == CBPeripheralStateConnecting);
 }
 
 BluetoothDevice::UUIDList BluetoothLowEnergyDeviceMac::GetUUIDs() const {
@@ -220,12 +223,6 @@ void BluetoothLowEnergyDeviceMac::ConnectToServiceInsecurely(
   NOTIMPLEMENTED();
 }
 
-void BluetoothLowEnergyDeviceMac::CreateGattConnection(
-    const GattConnectionCallback& callback,
-    const ConnectErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
-}
-
 NSDate* BluetoothLowEnergyDeviceMac::GetLastUpdateTime() const {
   return last_update_time_.get();
 }
@@ -235,15 +232,13 @@ std::string BluetoothLowEnergyDeviceMac::GetDeviceName() const {
 }
 
 void BluetoothLowEnergyDeviceMac::CreateGattConnectionImpl() {
-  // Mac implementation does not yet use the default CreateGattConnection
-  // implementation. http://crbug.com/520774
-  NOTIMPLEMENTED();
+  if (!IsGattConnected()) {
+    GetMacAdapter()->CreateGattConnection(this);
+  }
 }
 
 void BluetoothLowEnergyDeviceMac::DisconnectGatt() {
-  // Mac implementation does not yet use the default CreateGattConnection
-  // implementation. http://crbug.com/520774
-  NOTIMPLEMENTED();
+  GetMacAdapter()->DisconnectGatt(this);
 }
 
 // static
@@ -264,4 +259,20 @@ std::string BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(
                            sizeof(raw));
   std::string hash = base::HexEncode(raw, sizeof(raw));
   return BluetoothDevice::CanonicalizeAddress(hash);
+}
+
+device::BluetoothAdapterMac* BluetoothLowEnergyDeviceMac::GetMacAdapter() {
+  return static_cast<BluetoothAdapterMac*>(this->adapter_);
+}
+
+CBPeripheral* BluetoothLowEnergyDeviceMac::GetPeripheral() {
+  return peripheral_;
+}
+
+void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral() {
+  if (create_gatt_connection_error_callbacks_.empty()) {
+    DidDisconnectGatt();
+  } else {
+    DidFailToConnectGatt(ERROR_FAILED);
+  }
 }

@@ -33,6 +33,20 @@ class BluetoothLowEnergyCentralManagerBridge {
     adapter_->LowEnergyCentralManagerUpdatedState();
   }
 
+  virtual void DidConnectPeripheral(CBPeripheral* peripheral) {
+    adapter_->DidConnectPeripheral(peripheral);
+  }
+
+  virtual void DidFailToConnectPeripheral(CBPeripheral* peripheral,
+                                          NSError* error) {
+    adapter_->DidFailToConnectPeripheral(peripheral, error);
+  }
+
+  virtual void DidDisconnectPeripheral(CBPeripheral* peripheral,
+                                       NSError* error) {
+    adapter_->DidDisconnectPeripheral(peripheral, error);
+  }
+
  private:
   BluetoothLowEnergyDiscoveryManagerMac* discovery_manager_;
   BluetoothAdapterMac* adapter_;
@@ -63,6 +77,23 @@ class BluetoothLowEnergyCentralManagerBridge {
 - (void)centralManagerDidUpdateState:(CBCentralManager*)central {
   // Notifies when the powered state of the central manager changed.
   bridge_->UpdatedState();
+}
+
+- (void)centralManager:(CBCentralManager*)central
+    didConnectPeripheral:(CBPeripheral*)peripheral {
+  bridge_->DidConnectPeripheral(peripheral);
+}
+
+- (void)centralManager:(CBCentralManager*)central
+    didFailToConnectPeripheral:(CBPeripheral*)peripheral
+                         error:(nullable NSError*)error {
+  bridge_->DidFailToConnectPeripheral(peripheral, error);
+}
+
+- (void)centralManager:(CBCentralManager*)central
+    didDisconnectPeripheral:(CBPeripheral*)peripheral
+                      error:(nullable NSError*)error {
+  bridge_->DidDisconnectPeripheral(peripheral, error);
 }
 
 @end

@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_MAC_H_
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_MAC_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 
@@ -30,12 +31,24 @@ class BluetoothTestMac : public BluetoothTestBase {
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
   BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
+  void SimulateGattConnection(BluetoothDevice* device) override;
+  void SimulateGattDisconnection(BluetoothDevice* device) override;
+  void SimulateGattConnectionError(
+      BluetoothDevice* device,
+      BluetoothDevice::ConnectErrorCode errorCode) override;
+
+  // Callback for the bluetooth central manager mock.
+  void OnFakeBluetoothDeviceConnectGattCalled();
+  void OnFakeBluetoothGattDisconnect();
 
  protected:
+  class ScopedMockCentralManager;
+
   // Utility function for finding CBUUIDs with relatively nice SHA256 hashes.
   std::string FindCBUUIDForHashTarget();
 
   BluetoothAdapterMac* adapter_mac_ = NULL;
+  scoped_ptr<ScopedMockCentralManager> mock_central_manager_;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).

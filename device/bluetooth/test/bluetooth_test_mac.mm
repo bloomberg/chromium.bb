@@ -6,20 +6,37 @@
 
 #include <stdint.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
+#include "device/bluetooth/test/mock_bluetooth_cbperipheral_mac.h"
 #include "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 
-#if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>
-#else  // !defined(OS_IOS)
-#import <IOBluetooth/IOBluetooth.h>
-#endif  // defined(OS_IOS)
+
+using base::mac::ObjCCast;
+using base::scoped_nsobject;
 
 namespace device {
+
+// This class hides Objective-C from bluetooth_test_mac.h.
+class BluetoothTestMac::ScopedMockCentralManager {
+ public:
+  explicit ScopedMockCentralManager(MockCentralManager* mock_central_manager) {
+    mock_central_manager_.reset(mock_central_manager);
+  }
+
+  // Returns MockCentralManager instance.
+  MockCentralManager* get() { return mock_central_manager_.get(); };
+
+ private:
+  scoped_nsobject<MockCentralManager> mock_central_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedMockCentralManager);
+};
 
 namespace {
 
@@ -83,9 +100,11 @@ void BluetoothTestMac::InitWithoutDefaultAdapter() {
   adapter_ = adapter_mac_;
 
   if (BluetoothAdapterMac::IsLowEnergyAvailable()) {
-    id low_energy_central_manager = [[MockCentralManager alloc] init];
-    [low_energy_central_manager setState:CBCentralManagerStateUnsupported];
-    adapter_mac_->SetCentralManagerForTesting(low_energy_central_manager);
+    mock_central_manager_.reset(
+        new ScopedMockCentralManager([[MockCentralManager alloc] init]));
+    [mock_central_manager_->get() setBluetoothTestMac:this];
+    [mock_central_manager_->get() setState:CBCentralManagerStateUnsupported];
+    adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
   }
 }
 
@@ -97,9 +116,11 @@ void BluetoothTestMac::InitWithFakeAdapter() {
   adapter_ = adapter_mac_;
 
   if (BluetoothAdapterMac::IsLowEnergyAvailable()) {
-    id low_energy_central_manager = [[MockCentralManager alloc] init];
-    [low_energy_central_manager setState:CBCentralManagerStatePoweredOn];
-    adapter_mac_->SetCentralManagerForTesting(low_energy_central_manager);
+    mock_central_manager_.reset(
+        new ScopedMockCentralManager([[MockCentralManager alloc] init]));
+    mock_central_manager_->get().bluetoothTestMac = this;
+    [mock_central_manager_->get() setState:CBCentralManagerStatePoweredOn];
+    adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
   }
 }
 
@@ -151,12 +172,17 @@ BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
       break;
     }
     case 3: {
-      CBPeripheral* peripheral = CreateMockPeripheral(
-          [NSString stringWithUTF8String:kTestPeripheralUUID1.c_str()]);
-      NSString* name =
-          [NSString stringWithUTF8String:kTestDeviceNameEmpty.c_str()];
-      NSArray* uuids = nil;
-      NSDictionary* advertisement_data = CreateAdvertisementData(name, uuids);
+      scoped_nsobject<NSString> uuid_string(
+          [[NSString alloc] initWithUTF8String:kTestPeripheralUUID1.c_str()]);
+      scoped_nsobject<NSUUID> identifier(
+          [[NSUUID alloc] initWithUUIDString:uuid_string]);
+      scoped_nsobject<CBPeripheral> peripheral;
+      peripheral.reset(static_cast<CBPeripheral*>(
+          [[MockCBPeripheral alloc] initWithIdentifier:identifier]));
+      scoped_nsobject<NSString> name(
+          [[NSString alloc] initWithUTF8String:kTestDeviceNameEmpty.c_str()]);
+      scoped_nsobject<NSDictionary> advertisement_data(
+          [CreateAdvertisementData(name, nil) retain]);
       [central_manager_delegate centralManager:central_manager
                          didDiscoverPeripheral:peripheral
                              advertisementData:advertisement_data
@@ -178,6 +204,59 @@ BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
     }
   }
   return observer.last_device();
+}
+
+void BluetoothTestMac::SimulateGattConnection(BluetoothDevice* device) {
+  BluetoothLowEnergyDeviceMac* lowEnergyDeviceMac =
+      static_cast<BluetoothLowEnergyDeviceMac*>(device);
+  CBPeripheral* peripheral = lowEnergyDeviceMac->GetPeripheral();
+  MockCBPeripheral* mockPeripheral = (MockCBPeripheral*)peripheral;
+  [mockPeripheral setState:CBPeripheralStateConnected];
+  CBCentralManager* centralManager =
+      ObjCCast<CBCentralManager>(mock_central_manager_->get());
+  [centralManager.delegate centralManager:centralManager
+                     didConnectPeripheral:peripheral];
+}
+
+void BluetoothTestMac::SimulateGattDisconnection(BluetoothDevice* device) {
+  BluetoothLowEnergyDeviceMac* lowEnergyDeviceMac =
+      static_cast<BluetoothLowEnergyDeviceMac*>(device);
+  CBPeripheral* peripheral = lowEnergyDeviceMac->GetPeripheral();
+  MockCBPeripheral* mockPeripheral = (MockCBPeripheral*)peripheral;
+  [mockPeripheral setState:CBPeripheralStateDisconnected];
+  CBCentralManager* centralManager =
+      ObjCCast<CBCentralManager>(mock_central_manager_->get());
+  [centralManager.delegate centralManager:centralManager
+                  didDisconnectPeripheral:peripheral
+                                    error:nil];
+}
+
+void BluetoothTestMac::SimulateGattConnectionError(
+    BluetoothDevice* device,
+    BluetoothDevice::ConnectErrorCode errorCode) {
+  BluetoothLowEnergyDeviceMac* lowEnergyDeviceMac =
+      static_cast<BluetoothLowEnergyDeviceMac*>(device);
+  CBPeripheral* peripheral = lowEnergyDeviceMac->GetPeripheral();
+  MockCBPeripheral* mockPeripheral = (MockCBPeripheral*)peripheral;
+  [mockPeripheral setState:CBPeripheralStateDisconnected];
+  CBCentralManager* centralManager =
+      ObjCCast<CBCentralManager>(mock_central_manager_->get());
+  // TODO(http://crbug.com/585894): Need to convert the connect error code into
+  // NSError
+  NSError* error = [NSError errorWithDomain:@"BluetoothDevice::ConnectErrorCode"
+                                       code:-1
+                                   userInfo:nil];
+  [centralManager.delegate centralManager:centralManager
+               didFailToConnectPeripheral:peripheral
+                                    error:error];
+}
+
+void BluetoothTestMac::OnFakeBluetoothDeviceConnectGattCalled() {
+  gatt_connection_attempts_++;
+}
+
+void BluetoothTestMac::OnFakeBluetoothGattDisconnect() {
+  gatt_disconnection_attempts_++;
 }
 
 // Utility function for generating new (CBUUID, address) pairs where CBUUID

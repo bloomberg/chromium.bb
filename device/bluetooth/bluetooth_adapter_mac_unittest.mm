@@ -116,9 +116,11 @@ class BluetoothAdapterMacTest : public testing::Test {
       LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
       return false;
     }
-    mock_central_manager_ = [[MockCentralManager alloc] init];
+    mock_central_manager_.reset([[MockCentralManager alloc] init]);
     [mock_central_manager_ setState:desired_state];
-    adapter_mac_->SetCentralManagerForTesting(mock_central_manager_);
+    CBCentralManager* centralManager =
+        (CBCentralManager*)mock_central_manager_.get();
+    adapter_mac_->SetCentralManagerForTesting(centralManager);
     return true;
   }
 
@@ -153,7 +155,7 @@ class BluetoothAdapterMacTest : public testing::Test {
   BluetoothAdapterMac* adapter_mac_;
 
   // Owned by |adapter_mac_|.
-  id mock_central_manager_ = NULL;
+  base::scoped_nsobject<MockCentralManager> mock_central_manager_;
 
   int callback_count_;
   int error_callback_count_;
