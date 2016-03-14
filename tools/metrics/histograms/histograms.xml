@@ -57510,6 +57510,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.AVSyncOffsetInMs" units="ms">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The absolute value of the sync offset between a rendered video frame and the
+    latest played audio frame is measured per video frame. The average offset
+    per received video stream is recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.BandwidthLimitedResolutionInPercent" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
