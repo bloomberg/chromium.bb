@@ -81,5 +81,43 @@ assertInterpolation({
   {at: 1, is: '50px'},
   {at: 1.5, is: '75px'},
 ]);
+
+assertInterpolation({
+  property: 'text-indent',
+  from: '0px hanging',
+  to: '50px hanging',
+}, [
+  {at: -0.3, is: '-15px hanging'},
+  {at: 0, is: '0 hanging'},
+  {at: 0.3, is: '15px hanging'},
+  {at: 0.6, is: '30px hanging'},
+  {at: 1, is: '50px hanging'},
+  {at: 1.5, is: '75px hanging'},
+]);
+
+assertInterpolation({
+  property: 'text-indent',
+  from: '0px hanging each-line',
+  to: '50px each-line hanging',
+}, [
+  {at: -0.3, is: '-15px hanging each-line'},
+  {at: 0, is: '0 hanging each-line'},
+  {at: 0.3, is: '15px hanging each-line'},
+  {at: 0.6, is: '30px hanging each-line'},
+  {at: 1, is: '50px hanging each-line'},
+  {at: 1.5, is: '75px hanging each-line'},
+]);
+
+assertNoInterpolation({
+  property: 'text-indent',
+  from: '0px each-line',
+  to: '50px hanging',
+});
+
+assertNoInterpolation({
+  property: 'text-indent',
+  from: '0px',
+  to: '50px each-line hanging',
+});
 </script>
 </body>
