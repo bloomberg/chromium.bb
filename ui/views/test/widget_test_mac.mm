@@ -13,32 +13,10 @@
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/root_view.h"
 
-@interface IsKeyWindowDonor : NSObject
-@end
-
-@implementation IsKeyWindowDonor
-- (BOOL)isKeyWindow {
-  return YES;
-}
-@end
-
 namespace views {
 namespace test {
 
 namespace {
-
-class FakeActivationMac : public WidgetTest::FakeActivation {
- public:
-  FakeActivationMac()
-      : swizzler_([NSWindow class],
-                  [IsKeyWindowDonor class],
-                  @selector(isKeyWindow)) {}
-
- private:
-  base::mac::ScopedObjCClassSwizzler swizzler_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeActivationMac);
-};
 
 // The NSWindow last activated by SimulateNativeActivate(). It will have a
 // simulated deactivate on a subsequent call.
@@ -104,11 +82,6 @@ gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
 // static
 ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
   return static_cast<internal::RootView*>(widget->GetRootView());
-}
-
-// static
-scoped_ptr<WidgetTest::FakeActivation> WidgetTest::FakeWidgetIsActiveAlways() {
-  return make_scoped_ptr(new FakeActivationMac);
 }
 
 // static

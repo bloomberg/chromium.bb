@@ -160,6 +160,7 @@ source_set("test_support_internal") {
     "//skia",
     "//testing/gtest",
     "//ui/base",
+    "//ui/base:test_support",
     "//ui/base/ime",
     "//ui/compositor",
     "//ui/compositor:test_support",

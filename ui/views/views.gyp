@@ -812,6 +812,7 @@
         '../../testing/gtest.gyp:gtest',
         '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
+        '../base/ui_base.gyp:ui_base_test_support',
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
         '../events/events.gyp:events',

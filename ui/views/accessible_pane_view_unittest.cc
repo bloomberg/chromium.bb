@@ -12,10 +12,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_MACOSX)
-#include "ui/base/test/scoped_fake_nswindow_focus.h"
-#endif
-
 namespace views {
 
 // TODO(alicet): bring pane rotation into views and add tests.
@@ -105,13 +101,6 @@ TEST_F(AccessiblePaneViewTest, SimpleSetPaneFocus) {
 }
 
 TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
-#if defined(OS_MACOSX)
-  // On Aura platforms, this test creates Ash windows and only interacts with
-  // the Ash window manager. On Mac, it creates native windows, but since unit
-  // tests cannot gain key status, fake it out here.
-  ui::test::ScopedFakeNSWindowFocus fake_focus;
-#endif
-
   View* test_view_main = new View();
   scoped_ptr<Widget> widget_main(new Widget());
   Widget::InitParams params_main = CreateParams(Widget::InitParams::TYPE_POPUP);

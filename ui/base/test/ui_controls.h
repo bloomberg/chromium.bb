@@ -44,6 +44,10 @@ namespace ui_controls {
 // tests.
 void EnableUIControls();
 
+#if defined(OS_MACOSX)
+bool IsUIControlsEnabled();
+#endif
+
 bool SendKeyPress(gfx::NativeWindow window,
                   ui::KeyboardCode key,
                   bool control,

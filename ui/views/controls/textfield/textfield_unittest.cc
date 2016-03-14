@@ -436,11 +436,6 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     widget_->Show();
     textfield_->RequestFocus();
 
-    // On Mac, activation is asynchronous since desktop widgets are used. We
-    // don't want parallel tests to steal active status either, so fake it.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
-    fake_activation_ = test::WidgetTest::FakeWidgetIsActiveAlways();
-#endif
     event_generator_.reset(
         new ui::test::EventGenerator(GetContext(), widget_->GetNativeWindow()));
   }
@@ -660,7 +655,6 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
  private:
   ui::ClipboardType copied_to_clipboard_;
-  scoped_ptr<test::WidgetTest::FakeActivation> fake_activation_;
   scoped_ptr<ui::test::EventGenerator> event_generator_;
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
 };

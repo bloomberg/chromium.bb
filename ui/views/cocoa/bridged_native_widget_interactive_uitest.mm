@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "ui/base/hit_test.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
+#include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/views/test/widget_test.h"
@@ -39,7 +40,11 @@ class ResizableDelegateView : public WidgetDelegateView {
 
 class BridgedNativeWidgetUITest : public test::WidgetTest {
  public:
-  BridgedNativeWidgetUITest() {}
+  BridgedNativeWidgetUITest() {
+    // TODO(tapted): Remove this when these are absorbed into Chrome's
+    // interactive_ui_tests target. See http://crbug.com/403679.
+    ui_controls::EnableUIControls();
+  }
 
   // testing::Test:
   void SetUp() override {

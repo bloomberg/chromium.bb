@@ -2115,7 +2115,7 @@ TEST_F(ViewTest, HandleAccelerator) {
   // Create a window and add the view as its child.
   scoped_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 100, 100);
   widget->Init(params);
   View* root = widget->GetRootView();
@@ -2131,6 +2131,10 @@ TEST_F(ViewTest, HandleAccelerator) {
   EXPECT_FALSE(focus_manager->ProcessAccelerator(return_accelerator));
   EXPECT_EQ(0, view->accelerator_count_map_[return_accelerator]);
 #endif
+
+  // TYPE_POPUP widgets default to non-activatable, so the Show() above wouldn't
+  // have activated the Widget. First, allow activation.
+  widget->widget_delegate()->set_can_activate(true);
 
   // When a non-child view is active, it should handle accelerators.
   view->accelerator_count_map_[return_accelerator] = 0;
