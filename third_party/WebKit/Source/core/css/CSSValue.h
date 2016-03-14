@@ -108,6 +108,7 @@ public:
     bool isGridLineNamesValue() const { return m_classType == GridLineNamesClass; }
     bool isCustomPropertyDeclaration() const { return m_classType == CustomPropertyDeclarationClass; }
     bool isVariableReferenceValue() const { return m_classType == VariableReferenceClass; }
+    bool isGridAutoRepeatValue() const { return m_classType == GridAutoRepeatClass; }
 
     bool hasFailedOrCanceledSubresources() const;
 
@@ -182,6 +183,7 @@ protected:
         FunctionClass,
         ImageSetClass,
         GridLineNamesClass,
+        GridAutoRepeatClass,
         // Do not append non-list class types here.
     };
 

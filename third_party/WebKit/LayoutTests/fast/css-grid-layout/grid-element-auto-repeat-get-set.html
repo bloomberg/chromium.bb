@@ -9,12 +9,12 @@
     description('Test that setting/getting grid-template-{columns|rows} with repeat(auto-fill|auto-fit,) works as expected');
 
     debug("Test auto-repeat syntax.");
-    testGridDefinitionsSetJSValues("repeat(auto-fill, [foo bar] 10px)", "repeat(auto-fill, 2em [foo bar])", "[foo bar] 10px", "20px [foo bar]", "[foo bar] 10px", "2em [foo bar]");
-    testGridDefinitionsSetJSValues("repeat(auto-fill, [foo bar] minmax(10px, 1fr))", "repeat(auto-fill, [foo] minmax(2em, max-content) [bar])", "[foo bar] 800px", "[foo] 20px [bar]", "[foo bar] minmax(10px, 1fr)", "[foo] minmax(2em, max-content) [bar]");
-    testGridDefinitionsSetJSValues("repeat(auto-fill, minmax(10px, 100px)) repeat(2, 20px)", "repeat(1, 70px) repeat(auto-fill, minmax(2em, max-content) [bar]) repeat(2, [foo] 1em)", "100px 20px 20px", "70px 20px [bar foo] 10px [foo] 10px", "minmax(10px, 100px) 20px 20px", "70px minmax(2em, max-content) [bar] [foo] 1em [foo] 1em");
-    testGridDefinitionsSetJSValues("repeat(auto-fit, [foo bar] 10px)", "repeat(auto-fit, 2em [foo bar])", "[foo bar] 10px", "20px [foo bar]", "[foo bar] 10px", "2em [foo bar]");
-    testGridDefinitionsSetJSValues("repeat(auto-fit, [foo bar] minmax(10px, 1fr))", "repeat(auto-fit, [foo] minmax(2em, max-content) [bar])", "[foo bar] 800px", "[foo] 20px [bar]", "[foo bar] minmax(10px, 1fr)", "[foo] minmax(2em, max-content) [bar]");
-    testGridDefinitionsSetJSValues("repeat(auto-fit, minmax(10px, min-content)) repeat(2, 20px)", "repeat(1, 10%) repeat(auto-fit, minmax(2em, max-content) [bar]) repeat(2, [foo] 1em)", "10px 20px 20px", "60px 20px [bar foo] 10px [foo] 10px", "minmax(10px, min-content) 20px 20px", "10% minmax(2em, max-content) [bar] [foo] 1em [foo] 1em");
+    testGridDefinitionsSetJSValues("repeat(auto-fill, [foo bar] 10px)", "repeat(auto-fill, 2em [foo bar])", "[foo bar] 10px", "20px [foo bar]", "repeat(auto-fill, [foo bar] 10px)", "repeat(auto-fill, 2em [foo bar])");
+    testGridDefinitionsSetJSValues("repeat(auto-fill, [foo bar] minmax(10px, 1fr))", "repeat(auto-fill, [foo] minmax(2em, max-content) [bar])", "[foo bar] 800px", "[foo] 20px [bar]", "repeat(auto-fill, [foo bar] minmax(10px, 1fr))", "repeat(auto-fill, [foo] minmax(2em, max-content) [bar])");
+    testGridDefinitionsSetJSValues("repeat(auto-fill, minmax(10px, 100px)) repeat(2, 20px)", "repeat(1, 70px) repeat(auto-fill, minmax(2em, max-content) [bar]) repeat(2, [foo] 1em)", "100px 20px 20px", "70px 20px [bar foo] 10px [foo] 10px", "repeat(auto-fill, minmax(10px, 100px)) 20px 20px", "70px repeat(auto-fill, minmax(2em, max-content) [bar]) [foo] 1em [foo] 1em");
+    testGridDefinitionsSetJSValues("repeat(auto-fit, [foo bar] 10px)", "repeat(auto-fit, 2em [foo bar])", "[foo bar] 10px", "20px [foo bar]", "repeat(auto-fit, [foo bar] 10px)", "repeat(auto-fit, 2em [foo bar])");
+    testGridDefinitionsSetJSValues("repeat(auto-fit, [foo bar] minmax(10px, 1fr))", "repeat(auto-fit, [foo] minmax(2em, max-content) [bar])", "[foo bar] 800px", "[foo] 20px [bar]", "repeat(auto-fit, [foo bar] minmax(10px, 1fr))", "repeat(auto-fit, [foo] minmax(2em, max-content) [bar])");
+    testGridDefinitionsSetJSValues("repeat(auto-fit, minmax(10px, min-content)) repeat(2, 20px)", "repeat(1, 10%) repeat(auto-fit, minmax(2em, max-content) [bar]) repeat(2, [foo] 1em)", "10px 20px 20px", "60px 20px [bar foo] 10px [foo] 10px", "repeat(auto-fit, minmax(10px, min-content)) 20px 20px", "10% repeat(auto-fit, minmax(2em, max-content) [bar]) [foo] 1em [foo] 1em");
 
     debug("");
     debug("Test invalid repeat syntax.");

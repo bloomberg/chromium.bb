@@ -1134,6 +1134,8 @@
             'css/CSSFunctionValue.h',
             'css/CSSGradientValue.cpp',
             'css/CSSGradientValue.h',
+            'css/CSSGridAutoRepeatValue.h',
+            'css/CSSGridAutoRepeatValue.cpp',
             'css/CSSGridLineNamesValue.cpp',
             'css/CSSGridLineNamesValue.h',
             'css/CSSGridTemplateAreasValue.cpp',
