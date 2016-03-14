@@ -917,8 +917,14 @@ bool test_stat(const char *test_file) {
   ASSERT_EQ(buf.st_ino, buf2.st_ino);
   // Do not check st_atime as it seems to be updated by open or fstat
   // on Windows.
-  ASSERT_EQ(buf.st_mtime, buf2.st_mtime);
-  ASSERT_EQ(buf.st_ctime, buf2.st_ctime);
+  // Disable the check on Windows for now because this check starts
+  // failing when the buildbots change timezone by entering or leaving
+  // Daylight Savings Time (DST).
+  // See https://bugs.chromium.org/p/nativeclient/issues/detail?id=3990.
+  if (!isWindows) {
+    ASSERT_EQ(buf.st_mtime, buf2.st_mtime);
+    ASSERT_EQ(buf.st_ctime, buf2.st_ctime);
+  }
   rc = close(fd);
   ASSERT_EQ(rc, 0);
 
