@@ -1164,6 +1164,8 @@
             'css/CSSMediaRule.h',
             'css/CSSNamespaceRule.cpp',
             'css/CSSNamespaceRule.h',
+            'css/CSSPaintValue.cpp',
+            'css/CSSPaintValue.h',
             'css/CSSPageRule.cpp',
             'css/CSSPageRule.h',
             'css/CSSPathValue.cpp',

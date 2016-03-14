@@ -78,6 +78,7 @@ public:
     bool isCounterValue() const { return m_classType == CounterClass; }
     bool isCursorImageValue() const { return m_classType == CursorImageClass; }
     bool isCrossfadeValue() const { return m_classType == CrossfadeClass; }
+    bool isPaintValue() const { return m_classType == PaintClass; }
     bool isFontFeatureValue() const { return m_classType == FontFeatureClass; }
     bool isFontFaceSrcValue() const { return m_classType == FontFaceSrcClass; }
     bool isFunctionValue() const { return m_classType == FunctionClass; }
@@ -149,6 +150,7 @@ protected:
 
         // Image generator classes.
         CrossfadeClass,
+        PaintClass,
         LinearGradientClass,
         RadialGradientClass,
 

@@ -27,6 +27,7 @@
 
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/css/CSSPaintValue.h"
 #include "platform/graphics/Image.h"
 
 namespace blink {
@@ -132,6 +133,8 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject* layoutObject
         return toCSSCrossfadeValue(this)->image(layoutObject, size);
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->image(layoutObject, size);
+    case PaintClass:
+        return toCSSPaintValue(this)->image(layoutObject, size);
     case RadialGradientClass:
         return toCSSRadialGradientValue(this)->image(layoutObject, size);
     default:
@@ -147,6 +150,8 @@ bool CSSImageGeneratorValue::isFixedSize() const
         return toCSSCrossfadeValue(this)->isFixedSize();
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->isFixedSize();
+    case PaintClass:
+        return toCSSPaintValue(this)->isFixedSize();
     case RadialGradientClass:
         return toCSSRadialGradientValue(this)->isFixedSize();
     default:
@@ -162,6 +167,8 @@ IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject* layoutObject, cons
         return toCSSCrossfadeValue(this)->fixedSize(layoutObject, defaultObjectSize);
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->fixedSize(layoutObject);
+    case PaintClass:
+        return toCSSPaintValue(this)->fixedSize(layoutObject);
     case RadialGradientClass:
         return toCSSRadialGradientValue(this)->fixedSize(layoutObject);
     default:
@@ -177,6 +184,8 @@ bool CSSImageGeneratorValue::isPending() const
         return toCSSCrossfadeValue(this)->isPending();
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->isPending();
+    case PaintClass:
+        return toCSSPaintValue(this)->isPending();
     case RadialGradientClass:
         return toCSSRadialGradientValue(this)->isPending();
     default:
@@ -192,6 +201,8 @@ bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject* layoutObject) c
         return toCSSCrossfadeValue(this)->knownToBeOpaque(layoutObject);
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->knownToBeOpaque(layoutObject);
+    case PaintClass:
+        return toCSSPaintValue(this)->knownToBeOpaque(layoutObject);
     case RadialGradientClass:
         return toCSSRadialGradientValue(this)->knownToBeOpaque(layoutObject);
     default:
@@ -208,6 +219,9 @@ void CSSImageGeneratorValue::loadSubimages(Document* document)
         break;
     case LinearGradientClass:
         toCSSLinearGradientValue(this)->loadSubimages(document);
+        break;
+    case PaintClass:
+        toCSSPaintValue(this)->loadSubimages(document);
         break;
     case RadialGradientClass:
         toCSSRadialGradientValue(this)->loadSubimages(document);

@@ -46,6 +46,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
+#include "core/css/CSSPaintValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSQuadValue.h"
@@ -128,6 +129,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSRadialGradientValue>(*this, other);
         case CrossfadeClass:
             return compareCSSValues<CSSCrossfadeValue>(*this, other);
+        case PaintClass:
+            return compareCSSValues<CSSPaintValue>(*this, other);
         case CustomIdentClass:
             return compareCSSValues<CSSCustomIdentValue>(*this, other);
         case ImageClass:
@@ -216,6 +219,8 @@ String CSSValue::cssText() const
         return toCSSRadialGradientValue(this)->customCSSText();
     case CrossfadeClass:
         return toCSSCrossfadeValue(this)->customCSSText();
+    case PaintClass:
+        return toCSSPaintValue(this)->customCSSText();
     case CustomIdentClass:
         return toCSSCustomIdentValue(this)->customCSSText();
     case ImageClass:
@@ -315,6 +320,9 @@ void CSSValue::destroy()
         return;
     case CrossfadeClass:
         delete toCSSCrossfadeValue(this);
+        return;
+    case PaintClass:
+        delete toCSSPaintValue(this);
         return;
     case CustomIdentClass:
         delete toCSSCustomIdentValue(this);
@@ -440,6 +448,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case CrossfadeClass:
         toCSSCrossfadeValue(this)->~CSSCrossfadeValue();
         return;
+    case PaintClass:
+        toCSSPaintValue(this)->~CSSPaintValue();
+        return;
     case CustomIdentClass:
         toCSSCustomIdentValue(this)->~CSSCustomIdentValue();
         return;
@@ -563,6 +574,9 @@ DEFINE_TRACE(CSSValue)
         return;
     case CrossfadeClass:
         toCSSCrossfadeValue(this)->traceAfterDispatch(visitor);
+        return;
+    case PaintClass:
+        toCSSPaintValue(this)->traceAfterDispatch(visitor);
         return;
     case CustomIdentClass:
         toCSSCustomIdentValue(this)->traceAfterDispatch(visitor);

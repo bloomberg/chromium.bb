@@ -17,6 +17,7 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSImageSetValue.h"
+#include "core/css/CSSPaintValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
@@ -1917,7 +1918,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePositionY(CSSParserTokenRange& ra
     return consumePositionLonghand<CSSValueTop, CSSValueBottom>(range, cssParserMode);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSValue> consumePaintStroke(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
@@ -2451,6 +2452,17 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCrossFade(CSSParserTokenRange& ar
     return CSSCrossfadeValue::create(fromImageValue, toImageValue, percentage);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumePaint(CSSParserTokenRange& args, CSSParserContext context)
+{
+    ASSERT(RuntimeEnabledFeatures::cssPaintAPIEnabled());
+
+    RefPtrWillBeRawPtr<CSSCustomIdentValue> name = consumeCustomIdent(args);
+    if (!name)
+        return nullptr;
+
+    return CSSPaintValue::create(name.release());
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeGeneratedImage(CSSParserTokenRange& range, CSSParserContext context)
 {
     CSSValueID id = range.peek().functionId();
@@ -2491,6 +2503,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeGeneratedImage(CSSParserTokenRang
         result = consumeDeprecatedRadialGradient(args, context.mode(), Repeating);
     } else if (id == CSSValueWebkitCrossFade) {
         result = consumeCrossFade(args, context);
+    } else if (id == CSSValuePaint) {
+        result = RuntimeEnabledFeatures::cssPaintAPIEnabled() ? consumePaint(args, context) : nullptr;
     }
     if (!result || !args.atEnd())
         return nullptr;
@@ -2504,7 +2518,7 @@ static bool isGeneratedImage(CSSValueID id)
         || id == CSSValueRepeatingLinearGradient || id == CSSValueRepeatingRadialGradient
         || id == CSSValueWebkitLinearGradient || id == CSSValueWebkitRadialGradient
         || id == CSSValueWebkitRepeatingLinearGradient || id == CSSValueWebkitRepeatingRadialGradient
-        || id == CSSValueWebkitGradient || id == CSSValueWebkitCrossFade;
+        || id == CSSValueWebkitGradient || id == CSSValueWebkitCrossFade || id == CSSValuePaint;
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange& range, CSSParserContext context)
@@ -3497,7 +3511,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeLength(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyFill:
     case CSSPropertyStroke:
-        return consumePaint(m_range, m_context.mode());
+        return consumePaintStroke(m_range, m_context.mode());
     case CSSPropertyPaintOrder:
         return consumePaintOrder(m_range);
     case CSSPropertyMarkerStart:
