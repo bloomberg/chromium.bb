@@ -22,18 +22,13 @@ void WebIntTest::SetUp() {
   ASSERT_FALSE(server.IsRunning());
   server.StartOrDie();
 
-
-  if (IsWKWebViewSupported()) {
-    RemoveWKWebViewCreatedData([WKWebsiteDataStore defaultDataStore],
-                               [WKWebsiteDataStore allWebsiteDataTypes]);
-  }
+  RemoveWKWebViewCreatedData([WKWebsiteDataStore defaultDataStore],
+                             [WKWebsiteDataStore allWebsiteDataTypes]);
 }
 
 void WebIntTest::TearDown() {
-  if (IsWKWebViewSupported()) {
-    RemoveWKWebViewCreatedData([WKWebsiteDataStore defaultDataStore],
-                               [WKWebsiteDataStore allWebsiteDataTypes]);
-  }
+  RemoveWKWebViewCreatedData([WKWebsiteDataStore defaultDataStore],
+                             [WKWebsiteDataStore allWebsiteDataTypes]);
 
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   server.Stop();

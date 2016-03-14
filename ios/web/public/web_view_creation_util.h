@@ -12,9 +12,6 @@
 namespace web {
 class BrowserState;
 
-// Returns true if WKWebView is supported on current OS/platform/arch.
-bool IsWKWebViewSupported();
-
 // Returns a new WKWebView for displaying regular web content.
 // WKWebViewConfiguration object for resulting web view will be obtained from
 // the given |browser_state|.
