@@ -2161,5 +2161,3 @@ chromium_sqlite3.dll!sqlite3Prepare
 chromium_sqlite3.dll!sqlite3LockAndPrepare
 chromium_sqlite3.dll!sqlite3_prepare_v2
 sql.dll!sql::Connection::GetUniqueStatement
-*!net::SQLitePersistentCookieStore::Backend::InitializeDatabase
-*!net::SQLitePersistentCookieStore::Backend::LoadAndNotifyInBackground
