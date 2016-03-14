@@ -645,10 +645,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // Sends the current frame's navigation state to the browser.
   void SendUpdateState();
 
-  // Creates a MojoBindingsController to allow WebUI documents to communicate
-  // with the browser process. If |for_layout_tests| is true, the module system
-  // is exposed on a global "mojo" object rather than "define".
-  void EnableMojoBindings(bool for_layout_tests);
+  // Creates a MojoBindingsController if Mojo bindings have been enabled for
+  // this frame. For WebUI, this allows the page to communicate with the browser
+  // process; for layout tests, this allows the test to mock out services at
+  // the Mojo IPC layer.
+  void MaybeEnableMojoBindings();
 
  protected:
   explicit RenderFrameImpl(const CreateParams& params);

@@ -84,4 +84,33 @@ mojo_test(() => {
 
   });
 }, 'Generated mojo bindings can be loaded in tests');
+
+mojo_test(() => {
+  return new Promise(resolve => {
+    let iframe = document.createElement('iframe');
+    let listener = result => {
+      document.body.removeChild(iframe);
+      window.removeEventListener('message', listener);
+      assert_true(result.data);
+      resolve();
+    }
+    window.addEventListener('message', listener);
+    iframe.setAttribute('src', 'resources/mojo-helpers-inner.html');
+    document.body.appendChild(iframe);
+  });
+}, 'Mojo bindings are accessible from iframes');
+
+mojo_test(() => {
+  return new Promise(resolve => {
+    let popup;
+    let listener = result => {
+      popup.close();
+      window.removeEventListener('message', listener);
+      assert_true(result.data);
+      resolve();
+    }
+    window.addEventListener('message', listener);
+    popup = window.open('resources/mojo-helpers-inner.html');
+  });
+}, 'Mojo bindings are accessible from popups');
 </script>

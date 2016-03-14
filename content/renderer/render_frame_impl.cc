@@ -1090,10 +1090,7 @@ void RenderFrameImpl::Initialize() {
                  "parent", parent_id);
   }
 
-  if (IsMainFrame() &&
-      RenderProcess::current()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI) {
-    EnableMojoBindings(false /* for_layout_tests */);
-  }
+  MaybeEnableMojoBindings();
 
 #if defined(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
@@ -5768,12 +5765,26 @@ void RenderFrameImpl::SendUpdateState() {
       routing_id_, SingleHistoryItemToPageState(current_history_item_)));
 }
 
-void RenderFrameImpl::EnableMojoBindings(bool for_layout_tests) {
+void RenderFrameImpl::MaybeEnableMojoBindings() {
+  int enabled_bindings = RenderProcess::current()->GetEnabledBindings();
+  // BINDINGS_POLICY_WEB_UI and BINDINGS_POLICY_MOJO are mutually exclusive.
+  // They both provide access to Mojo bindings, but do so in incompatible ways.
+  const int kMojoAndWebUiBindings =
+      BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO;
+  DCHECK_NE(enabled_bindings & kMojoAndWebUiBindings, kMojoAndWebUiBindings);
+
   // If an MojoBindingsController already exists for this RenderFrameImpl, avoid
   // creating another one. It is not kept as a member, as it deletes itself when
   // the frame is destroyed.
-  if (!RenderFrameObserverTracker<MojoBindingsController>::Get(this))
-    new MojoBindingsController(this, for_layout_tests);
+  if (RenderFrameObserverTracker<MojoBindingsController>::Get(this))
+    return;
+
+  if (IsMainFrame() &&
+      enabled_bindings & BINDINGS_POLICY_WEB_UI) {
+    new MojoBindingsController(this, false /* for_layout_tests */);
+  } else if (enabled_bindings & BINDINGS_POLICY_MOJO) {
+    new MojoBindingsController(this, true /* for_layout_tests */);
+  }
 }
 
 void RenderFrameImpl::SendFailedProvisionalLoad(
