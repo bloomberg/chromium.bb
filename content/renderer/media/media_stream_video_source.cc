@@ -401,6 +401,14 @@ base::SingleThreadTaskRunner* MediaStreamVideoSource::io_task_runner() const {
   return track_adapter_->io_task_runner();
 }
 
+const media::VideoCaptureFormat*
+    MediaStreamVideoSource::GetCurrentFormat() const {
+  DCHECK(CalledOnValidThread());
+  if (state_ == STARTING || state_ == STARTED)
+    return &current_format_;
+  return nullptr;
+}
+
 void MediaStreamVideoSource::DoStopSource() {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << "DoStopSource()";

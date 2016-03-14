@@ -8,10 +8,12 @@
 #include "content/common/content_export.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/channel_layout.h"
+#include "media/base/video_capture_types.h"
 #include "media/base/video_capturer_source.h"
 
 namespace blink {
 class WebMediaStream;
+class WebMediaStreamTrack;
 }
 
 namespace content {
@@ -40,6 +42,12 @@ CONTENT_EXPORT bool AddAudioTrackToMediaStream(
     bool is_remote,
     bool is_readonly,
     blink::WebMediaStream* web_media_stream);
+
+// On success returns pointer to the current format of the given video track;
+// returns nullptr on failure (if the argument is invalid or if the format
+// cannot be retrieved at the moment).
+CONTENT_EXPORT const media::VideoCaptureFormat* GetCurrentVideoTrackFormat(
+    const blink::WebMediaStreamTrack& video_track);
 
 }  // namespace content
 

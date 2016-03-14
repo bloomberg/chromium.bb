@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
+#include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -110,6 +111,19 @@ bool AddAudioTrackToMediaStream(
 
   web_media_stream->addTrack(web_media_stream_track);
   return true;
+}
+
+const media::VideoCaptureFormat* GetCurrentVideoTrackFormat(
+    const blink::WebMediaStreamTrack& video_track) {
+  if (video_track.isNull())
+    return nullptr;
+
+  content::MediaStreamVideoSource* source =
+      content::MediaStreamVideoSource::GetVideoSource(video_track.source());
+  if (!source)
+    return nullptr;
+
+  return source->GetCurrentFormat();
 }
 
 }  // namespace content

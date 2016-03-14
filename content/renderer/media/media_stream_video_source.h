@@ -87,6 +87,8 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // Returns the task runner where video frames will be delivered on.
   base::SingleThreadTaskRunner* io_task_runner() const;
 
+  const media::VideoCaptureFormat* GetCurrentFormat() const;
+
  protected:
   void DoStopSource() override;
 
