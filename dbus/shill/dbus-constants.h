@@ -402,9 +402,21 @@ const char kGatewayProperty[] = "Gateway";
 const char kDomainNameProperty[] = "DomainName";
 const char kAcceptedHostnameProperty[] = "AcceptedHostname";
 const char kNameServersProperty[] = "NameServers";
+const char kDhcpv6AddressesProperty[] = "Dhcpv6Addresses";
+const char kDhcpv6DelegatedPrefixesProperty[] = "Dhcpv6DelegatedPrefixes";
+const char kLeaseDurationSecondsProperty[] = "LeaseDurationSeconds";
+
+// These constants are deprecated in favor of kDhcpv6DelegatedPrefixesProperty.
+// TODO(tjennison): Remove when shill no longer uses them b/26778228
 const char kDelegatedPrefixProperty[] = "DelegatedPrefix";
 const char kDelegatedPrefixLengthProperty[] = "DelegatedPrefixLength";
-const char kLeaseDurationSecondsProperty[] = "LeaseDurationSeconds";
+
+// IPConfig DHCPv6 address/prefix property names.
+const char kDhcpv6AddressProperty[] = "Address";
+const char kDhcpv6LengthProperty[] = "Length";
+const char kDhcpv6LeaseDurationSecondsProperty[] = "LeaseDurationSeconds";
+const char kDhcpv6PreferredLeaseDurationSecondsProperty[] =
+    "PreferredLeaseDurationSeconds";
 
 // IPConfig type options.
 const char kTypeIPv4[] = "ipv4";
