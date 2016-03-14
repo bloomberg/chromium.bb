@@ -6681,6 +6681,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
   inputs.device_scale_factor = device_scale_factor;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
+  EXPECT_EQ(scroll_child->effect_tree_index(),
+            scroll_child_target->effect_tree_index());
   EXPECT_EQ(scroll_child->visible_layer_rect(), gfx::Rect(10, 10, 40, 40));
   EXPECT_EQ(scroll_child->clip_rect(), gfx::Rect(15, 15, 75, 75));
   gfx::Transform scale;

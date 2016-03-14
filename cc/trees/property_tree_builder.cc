@@ -836,6 +836,8 @@ void BuildPropertyTreesInternal(
       DCHECK_EQ(scroll_child->scroll_parent(), layer);
       DataForRecursionFromChild<LayerType> data_from_child;
       DCHECK(scroll_child->parent());
+      data_for_children.effect_tree_parent =
+          scroll_child->parent()->effect_tree_index();
       data_for_children.render_target =
           scroll_child->parent()->effect_tree_index();
       BuildPropertyTreesInternal(scroll_child, data_for_children,
