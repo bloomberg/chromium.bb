@@ -269,6 +269,44 @@ TEST_F(BackgroundTracingConfigTest, PreemptiveConfigFromValidString) {
   EXPECT_EQ(config->scenario_name(), "my_awesome_experiment");
 }
 
+TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
+  scoped_ptr<BackgroundTracingConfigImpl> config = ReadFromJSONString(
+      "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
+      "\"BENCHMARK\",\"configs\": [{\"rule\": "
+      "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", \"trigger_name\":\"foo\"}]}");
+
+  BackgroundTracingConfigImpl::CategoryPreset categories[] = {
+      BackgroundTracingConfigImpl::BENCHMARK,
+      BackgroundTracingConfigImpl::BENCHMARK_DEEP,
+      BackgroundTracingConfigImpl::BENCHMARK_GPU,
+      BackgroundTracingConfigImpl::BENCHMARK_IPC,
+      BackgroundTracingConfigImpl::BENCHMARK_STARTUP,
+      BackgroundTracingConfigImpl::BENCHMARK_BLINK_GC,
+      BackgroundTracingConfigImpl::BLINK_STYLE,
+  };
+
+  const char* category_strings[] = {"BENCHMARK",         "BENCHMARK_DEEP",
+                                    "BENCHMARK_GPU",     "BENCHMARK_IPC",
+                                    "BENCHMARK_STARTUP", "BENCHMARK_BLINK_GC",
+                                    "BLINK_STYLE"};
+  for (size_t i = 0;
+       i <
+       sizeof(categories) / sizeof(BackgroundTracingConfigImpl::CategoryPreset);
+       i++) {
+    config->set_category_preset(categories[i]);
+    std::string expected =
+        std::string("{\"category\":\"") + category_strings[i] +
+        std::string(
+            "\",\"configs\":[{\"rule\":"
+            "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\",\"trigger_name\":"
+            "\"foo\"}],\"mode\":\"PREEMPTIVE_TRACING_MODE\"}");
+    EXPECT_EQ(ConfigToString(config.get()), expected.c_str());
+    scoped_ptr<BackgroundTracingConfigImpl> config2 =
+        ReadFromJSONString(expected);
+    EXPECT_EQ(config->category_preset(), config2->category_preset());
+  }
+}
+
 TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
   scoped_ptr<BackgroundTracingConfigImpl> config;
 
