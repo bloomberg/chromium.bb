@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -17,10 +16,11 @@
 #include "build/build_config.h"
 
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/gpu/media/media_messages.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/message_filter.h"
@@ -152,10 +152,10 @@ GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
 
 // static
 gpu::VideoDecodeAcceleratorCapabilities
-GpuVideoDecodeAccelerator::GetCapabilities() {
+GpuVideoDecodeAccelerator::GetCapabilities(
+    const gpu::GpuPreferences& gpu_preferences) {
   media::VideoDecodeAccelerator::Capabilities capabilities;
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
+  if (gpu_preferences.disable_accelerated_video_decode)
     return gpu::VideoDecodeAcceleratorCapabilities();
 
   // Query supported profiles for each VDA. The order of querying VDAs should
@@ -329,6 +329,11 @@ bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
 
 bool GpuVideoDecodeAccelerator::Initialize(
     const media::VideoDecodeAccelerator::Config& config) {
+  const gpu::GpuPreferences& gpu_preferences =
+      stub_->channel()->gpu_channel_manager()->gpu_preferences();
+  if (gpu_preferences.disable_accelerated_video_decode)
+    return false;
+
   DCHECK(!video_decode_accelerator_);
 
   if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
@@ -348,13 +353,26 @@ bool GpuVideoDecodeAccelerator::Initialize(
   // platform. This list is ordered by priority of use and it should be the
   // same as the order of querying supported profiles of VDAs.
   const GpuVideoDecodeAccelerator::CreateVDAFp create_vda_fps[] = {
-      &GpuVideoDecodeAccelerator::CreateDXVAVDA,
-      &GpuVideoDecodeAccelerator::CreateV4L2VDA,
-      &GpuVideoDecodeAccelerator::CreateV4L2SliceVDA,
-      &GpuVideoDecodeAccelerator::CreateVaapiVDA,
-      &GpuVideoDecodeAccelerator::CreateVTVDA,
-      &GpuVideoDecodeAccelerator::CreateOzoneVDA,
-      &GpuVideoDecodeAccelerator::CreateAndroidVDA};
+#if defined(OS_WIN)
+    &GpuVideoDecodeAccelerator::CreateDXVAVDA,
+#endif
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+    &GpuVideoDecodeAccelerator::CreateV4L2VDA,
+    &GpuVideoDecodeAccelerator::CreateV4L2SliceVDA,
+#endif
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+    &GpuVideoDecodeAccelerator::CreateVaapiVDA,
+#endif
+#if defined(OS_MACOSX)
+    &GpuVideoDecodeAccelerator::CreateVTVDA,
+#endif
+#if !defined(OS_CHROMEOS) && defined(USE_OZONE)
+    &GpuVideoDecodeAccelerator::CreateOzoneVDA,
+#endif
+#if defined(OS_ANDROID)
+    &GpuVideoDecodeAccelerator::CreateAndroidVDA,
+#endif
+  };
 
   for (const auto& create_vda_function : create_vda_fps) {
     video_decode_accelerator_ = (this->*create_vda_function)();
@@ -374,25 +392,28 @@ bool GpuVideoDecodeAccelerator::Initialize(
   return false;
 }
 
+#if defined(OS_WIN)
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateDXVAVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if defined(OS_WIN)
+  const gpu::GpuPreferences& gpu_preferences =
+      stub_->channel()->gpu_channel_manager()->gpu_preferences();
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
     DVLOG(0) << "Initializing DXVA HW decoder for windows.";
-    decoder.reset(new DXVAVideoDecodeAccelerator(make_context_current_,
-        stub_->decoder()->GetGLContext()));
+    decoder.reset(new DXVAVideoDecodeAccelerator(
+        make_context_current_, stub_->decoder()->GetGLContext(),
+        gpu_preferences.enable_accelerated_vpx_decode));
   } else {
     NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   }
-#endif
   return decoder;
 }
+#endif
 
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateV4L2VDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (device.get()) {
     decoder.reset(new V4L2VideoDecodeAccelerator(
@@ -403,14 +424,12 @@ GpuVideoDecodeAccelerator::CreateV4L2VDA() {
         device,
         io_task_runner_));
   }
-#endif
   return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
   if (device.get()) {
     decoder.reset(new V4L2SliceVideoDecodeAccelerator(
@@ -421,10 +440,11 @@ GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
         make_context_current_,
         io_task_runner_));
   }
-#endif
   return decoder;
 }
+#endif
 
+#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
 void GpuVideoDecodeAccelerator::BindImage(uint32_t client_texture_id,
                                           uint32_t texture_target,
                                           scoped_refptr<gl::GLImage> image) {
@@ -437,49 +457,48 @@ void GpuVideoDecodeAccelerator::BindImage(uint32_t client_texture_id,
                                    gpu::gles2::Texture::BOUND);
   }
 }
+#endif
 
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateVaapiVDA() {
-  scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  decoder.reset(new VaapiVideoDecodeAccelerator(
-      make_context_current_, base::Bind(&GpuVideoDecodeAccelerator::BindImage,
-                                        base::Unretained(this))));
-#endif
-  return decoder;
+  return make_scoped_ptr<media::VideoDecodeAccelerator>(
+      new VaapiVideoDecodeAccelerator(
+          make_context_current_,
+          base::Bind(&GpuVideoDecodeAccelerator::BindImage,
+                     base::Unretained(this))));
 }
+#endif
 
+#if defined(OS_MACOSX)
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateVTVDA() {
-  scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if defined(OS_MACOSX)
-  decoder.reset(new VTVideoDecodeAccelerator(
-      make_context_current_, base::Bind(&GpuVideoDecodeAccelerator::BindImage,
-                                        base::Unretained(this))));
-#endif
-  return decoder;
+  return make_scoped_ptr<media::VideoDecodeAccelerator>(
+      new VTVideoDecodeAccelerator(
+          make_context_current_,
+          base::Bind(&GpuVideoDecodeAccelerator::BindImage,
+                     base::Unretained(this))));
 }
+#endif
 
+#if !defined(OS_CHROMEOS) && defined(USE_OZONE)
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateOzoneVDA() {
-  scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if !defined(OS_CHROMEOS) && defined(USE_OZONE)
   media::MediaOzonePlatform* platform =
       media::MediaOzonePlatform::GetInstance();
-  decoder.reset(platform->CreateVideoDecodeAccelerator(make_context_current_));
-#endif
-  return decoder;
+  return make_scoped_ptr<media::VideoDecodeAccelerator>(
+      platform->CreateVideoDecodeAccelerator(make_context_current_));
 }
+#endif
 
+#if defined(OS_ANDROID)
 scoped_ptr<media::VideoDecodeAccelerator>
 GpuVideoDecodeAccelerator::CreateAndroidVDA() {
-  scoped_ptr<media::VideoDecodeAccelerator> decoder;
-#if defined(OS_ANDROID)
-  decoder.reset(new AndroidVideoDecodeAccelerator(stub_->decoder()->AsWeakPtr(),
-                                                  make_context_current_));
-#endif
-  return decoder;
+  return make_scoped_ptr<media::VideoDecodeAccelerator>(
+      new AndroidVideoDecodeAccelerator(stub_->decoder()->AsWeakPtr(),
+                                        make_context_current_));
 }
+#endif
 
 void GpuVideoDecodeAccelerator::OnSetCdm(int cdm_id) {
   DCHECK(video_decode_accelerator_);

@@ -10,7 +10,6 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/macros.h"
@@ -20,7 +19,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "content/common/gpu/media/vt_video_decode_accelerator_mac.h"
-#include "content/public/common/content_switches.h"
 #include "media/base/limits.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
@@ -179,11 +177,6 @@ static bool CreateVideoToolboxSession(const uint8_t* sps, size_t sps_size,
 // session fails, hardware decoding will be disabled (Initialize() will always
 // return false).
 static bool InitializeVideoToolboxInternal() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAcceleratedVideoDecode)) {
-    return false;
-  }
-
   if (!IsVtInitialized()) {
     // CoreVideo is also required, but the loader stops after the first path is
     // loaded. Instead we rely on the transitive dependency from VideoToolbox to

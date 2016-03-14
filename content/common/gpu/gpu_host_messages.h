@@ -104,6 +104,16 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPreferences)
   IPC_STRUCT_TRAITS_MEMBER(single_process)
   IPC_STRUCT_TRAITS_MEMBER(in_process_gpu)
   IPC_STRUCT_TRAITS_MEMBER(ui_prioritize_in_gpu_process)
+  IPC_STRUCT_TRAITS_MEMBER(disable_accelerated_video_decode)
+#if defined(OS_CHROMEOS)
+  IPC_STRUCT_TRAITS_MEMBER(disable_vaapi_accelerated_video_encode)
+#endif
+#if defined(ENABLE_WEBRTC)
+  IPC_STRUCT_TRAITS_MEMBER(disable_web_rtc_hw_encoding)
+#endif
+#if defined(OS_WIN)
+  IPC_STRUCT_TRAITS_MEMBER(enable_accelerated_vpx_decode)
+#endif
   IPC_STRUCT_TRAITS_MEMBER(compile_shader_always_succeeds)
   IPC_STRUCT_TRAITS_MEMBER(disable_gl_error_limit)
   IPC_STRUCT_TRAITS_MEMBER(disable_glsl_translator)

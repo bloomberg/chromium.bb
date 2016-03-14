@@ -21,7 +21,6 @@
 #include "base/base_paths_win.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
@@ -34,7 +33,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
-#include "content/public/common/content_switches.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
@@ -43,7 +41,6 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface_egl.h"
-#include "ui/gl/gl_switches.h"
 
 namespace {
 
@@ -676,7 +673,8 @@ DXVAVideoDecodeAccelerator::PendingSampleInfo::~PendingSampleInfo() {}
 
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
     const base::Callback<bool(void)>& make_context_current,
-    gfx::GLContext* gl_context)
+    gfx::GLContext* gl_context,
+    bool enable_accelerated_vpx_decode)
     : client_(NULL),
       dev_manager_reset_token_(0),
       dx11_dev_manager_reset_token_(0),
@@ -694,6 +692,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       dx11_video_format_converter_media_type_needs_init_(true),
       gl_context_(gl_context),
       using_angle_device_(false),
+      enable_accelerated_vpx_decode_(enable_accelerated_vpx_decode),
       weak_this_factory_(this) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
@@ -1255,10 +1254,9 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
                       false);
     codec_ = media::kCodecH264;
     clsid = __uuidof(CMSH264DecoderMFT);
-  } else if ((profile == media::VP8PROFILE_ANY ||
-              profile == media::VP9PROFILE_ANY) &&
-             base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableAcceleratedVpxDecode)) {
+  } else if (enable_accelerated_vpx_decode_ &&
+             (profile == media::VP8PROFILE_ANY ||
+              profile == media::VP9PROFILE_ANY)) {
     int program_files_key = base::DIR_PROGRAM_FILES;
     if (base::win::OSInfo::GetInstance()->wow64_status() ==
         base::win::OSInfo::WOW64_ENABLED) {
