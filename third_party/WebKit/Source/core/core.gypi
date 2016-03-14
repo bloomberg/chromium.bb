@@ -1360,6 +1360,8 @@
             'css/parser/CSSParserSelector.cpp',
             'css/parser/CSSPropertyParser.cpp',
             'css/parser/CSSPropertyParser.h',
+            'css/parser/CSSPropertyParserHelpers.cpp',
+            'css/parser/CSSPropertyParserHelpers.h',
             'css/parser/CSSSelectorParser.cpp',
             'css/parser/CSSSelectorParser.h',
             'css/parser/CSSSupportsParser.cpp',
