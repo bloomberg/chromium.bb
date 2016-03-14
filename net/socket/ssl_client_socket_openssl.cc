@@ -644,6 +644,8 @@ int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
 }
 
 void SSLClientSocketOpenSSL::Disconnect() {
+  crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
+
   if (ssl_) {
     // Calling SSL_shutdown prevents the session from being marked as
     // unresumable.
