@@ -135,6 +135,10 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
         base::UTF8ToUTF16(data.buttons.at(i)->label.get())));
   }
 
+  // If the client is old (version < 1), both |no_clear| and |ongoing_event|
+  // are false.
+  rich_data.pinned = (data.no_clear || data.ongoing_event);
+
   // The identifier of the notifier, which is used to distinguish the notifiers
   // in the message center.
   message_center::NotifierId notifier_id(

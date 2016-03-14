@@ -55,6 +55,12 @@ struct ArcNotificationData {
   int32 progress_max;
   // Action buttons
   array<ArcNotificationButton> buttons;
+  // Flag if the notification has FLAG_NO_CLEAR.
+  [MinVersion=1]
+  bool no_clear;
+  // Flag if the notification has FLAG_ONGOING_EVENT.
+  [MinVersion=1]
+  bool ongoing_event;
 };
 
 interface NotificationsHost {
