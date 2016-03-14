@@ -187,9 +187,13 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
   DCHECK(buffer_->GetUsage() == gfx::BufferUsage::SCANOUT);
+  OverlayPlane::ProcessBufferCallback processing_callback;
+  if (!processing_callback_.is_null())
+    processing_callback = base::Bind(&GbmPixmap::ProcessBuffer, this);
+
   surface_manager_->GetSurface(widget)->QueueOverlayPlane(
       OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
-                   crop_rect, base::Bind(&GbmPixmap::ProcessBuffer, this)));
+                   crop_rect, processing_callback));
 
   return true;
 }
