@@ -30,6 +30,7 @@
 
 #include "platform/v8_inspector/V8FunctionCall.h"
 
+#include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "wtf/PassOwnPtr.h"
@@ -38,8 +39,8 @@
 
 namespace blink {
 
-V8FunctionCall::V8FunctionCall(V8DebuggerClient* client, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& name)
-    : m_client(client)
+V8FunctionCall::V8FunctionCall(V8DebuggerImpl* debugger, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& name)
+    : m_debugger(debugger)
     , m_context(context)
     , m_name(toV8String(context->GetIsolate(), name))
     , m_value(value)
@@ -104,7 +105,7 @@ v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
     }
 
     v8::Local<v8::Value> result;
-    if (!m_client->callFunction(function, m_context, thisObject, m_arguments.size(), info.get()).ToLocal(&result))
+    if (!m_debugger->callFunction(function, m_context, thisObject, m_arguments.size(), info.get()).ToLocal(&result))
         return v8::Local<v8::Value>();
     return result;
 }

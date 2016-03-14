@@ -38,11 +38,11 @@
 
 namespace blink {
 
-class V8DebuggerClient;
+class V8DebuggerImpl;
 
 class V8FunctionCall {
 public:
-    V8FunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& name);
+    V8FunctionCall(V8DebuggerImpl*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& name);
 
     void appendArgument(v8::Local<v8::Value>);
     void appendArgument(const String16&);
@@ -57,7 +57,7 @@ public:
     v8::Local<v8::Context> context() { return m_context; }
 
 protected:
-    V8DebuggerClient* m_client;
+    V8DebuggerImpl* m_debugger;
     v8::Local<v8::Context> m_context;
     protocol::Vector<v8::Local<v8::Value>> m_arguments;
     v8::Local<v8::String> m_name;

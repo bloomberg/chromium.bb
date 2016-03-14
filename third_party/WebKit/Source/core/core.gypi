@@ -2476,8 +2476,6 @@
             'dom/MessageChannel.cpp',
             'dom/MessageChannel.h',
             'dom/MessagePort.cpp',
-            'dom/Microtask.cpp',
-            'dom/Microtask.h',
             'dom/MutationCallback.h',
             'dom/MutationObserver.cpp',
             'dom/MutationObserver.h',

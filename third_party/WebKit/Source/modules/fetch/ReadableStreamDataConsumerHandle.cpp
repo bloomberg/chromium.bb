@@ -12,7 +12,6 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
-#include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/dom/DOMTypedArray.h"
 #include "public/platform/Platform.h"

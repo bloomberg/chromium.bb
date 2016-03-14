@@ -51,6 +51,7 @@ public:
     ~InjectedScriptManager();
 
     InjectedScriptHost* injectedScriptHost();
+    V8DebuggerImpl* debugger() { return m_debugger; }
 
     InjectedScript* injectedScriptFor(v8::Local<v8::Context>);
     InjectedScript* findInjectedScript(int) const;
@@ -70,7 +71,7 @@ private:
     IdToInjectedScriptMap m_idToInjectedScript;
     OwnPtr<InjectedScriptHost> m_injectedScriptHost;
     bool m_customObjectFormatterEnabled;
-    V8DebuggerClient* m_client;
+    V8DebuggerImpl* m_debugger;
 };
 
 } // namespace blink

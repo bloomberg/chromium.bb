@@ -26,11 +26,11 @@
 
 #include "core/workers/WorkerThread.h"
 
+#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Initializer.h"
-#include "core/dom/Microtask.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"

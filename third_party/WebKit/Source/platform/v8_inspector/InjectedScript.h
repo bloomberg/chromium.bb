@@ -41,7 +41,6 @@ namespace blink {
 class InjectedScriptManager;
 class RemoteObjectId;
 class V8FunctionCall;
-class V8DebuggerClient;
 
 namespace protocol {
 class DictionaryValue;
@@ -114,7 +113,7 @@ public:
 
 private:
     friend InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context>);
-    InjectedScript(InjectedScriptManager*, v8::Local<v8::Context>, v8::Local<v8::Object>, V8DebuggerClient*, PassOwnPtr<InjectedScriptNative>, int contextId);
+    InjectedScript(InjectedScriptManager*, v8::Local<v8::Context>, v8::Local<v8::Object>, PassOwnPtr<InjectedScriptNative>, int contextId);
 
     bool canAccessInspectedWindow() const;
     v8::Local<v8::Value> v8Value() const;
@@ -127,7 +126,6 @@ private:
     v8::Isolate* m_isolate;
     v8::Global<v8::Context> m_context;
     v8::Global<v8::Value> m_value;
-    V8DebuggerClient* m_client;
     OwnPtr<InjectedScriptNative> m_native;
     int m_contextId;
     String16 m_origin;

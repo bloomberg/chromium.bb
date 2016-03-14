@@ -198,7 +198,6 @@
       'WebRemoteFrameImpl.cpp',
       'WebRemoteFrameImpl.h',
       'WebRuntimeFeatures.cpp',
-      'WebScopedMicrotaskSuppression.cpp',
       'WebScopedUserGesture.cpp',
       'WebScopedWindowFocusAllowedIndicator.cpp',
       'WebScriptController.cpp',

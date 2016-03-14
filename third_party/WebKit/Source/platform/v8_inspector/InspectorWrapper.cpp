@@ -32,14 +32,14 @@ v8::Local<v8::FunctionTemplate> InspectorWrapperBase::createWrapperTemplate(v8::
     return functionTemplate;
 }
 
-v8::Local<v8::Object> InspectorWrapperBase::createWrapper(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context)
+v8::Local<v8::Object> InspectorWrapperBase::createWrapper(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context)
 {
     v8::Local<v8::Function> function;
     if (!constructorTemplate->GetFunction(context).ToLocal(&function))
         return v8::Local<v8::Object>();
 
     v8::Local<v8::Object> result;
-    if (!client->instantiateObject(function).ToLocal(&result))
+    if (!function->NewInstance(context).ToLocal(&result))
         return v8::Local<v8::Object>();
     return result;
 }

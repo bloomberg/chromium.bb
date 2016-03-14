@@ -51,7 +51,7 @@ PassOwnPtr<InjectedScriptManager> InjectedScriptManager::create(V8DebuggerImpl* 
 InjectedScriptManager::InjectedScriptManager(V8DebuggerImpl* debugger)
     : m_injectedScriptHost(InjectedScriptHost::create(debugger))
     , m_customObjectFormatterEnabled(false)
-    , m_client(debugger->client())
+    , m_debugger(debugger)
 {
 }
 
@@ -125,14 +125,14 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
         return it->second;
 
     v8::Local<v8::Context> callingContext = context->GetIsolate()->GetCallingContext();
-    if (!callingContext.IsEmpty() && !m_client->callingContextCanAccessContext(callingContext, context))
+    if (!callingContext.IsEmpty() && !m_debugger->client()->callingContextCanAccessContext(callingContext, context))
         return nullptr;
 
     OwnPtr<InjectedScriptNative> injectedScriptNative = adoptPtr(new InjectedScriptNative(context->GetIsolate()));
     String16 injectedScriptSource(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
 
     v8::Local<v8::Object> object = createInjectedScript(injectedScriptSource, context, contextId, injectedScriptNative.get());
-    OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(this, context, object, m_client, injectedScriptNative.release(), contextId));
+    OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(this, context, object, injectedScriptNative.release(), contextId));
     InjectedScript* resultPtr = result.get();
     if (m_customObjectFormatterEnabled)
         result->setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);
@@ -152,7 +152,7 @@ v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String16
         m_injectedScriptHost->setWrapperTemplate(wrapperTemplate, isolate);
     }
 
-    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(m_client, wrapperTemplate, context, m_injectedScriptHost.get());
+    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(wrapperTemplate, context, m_injectedScriptHost.get());
     if (scriptHostWrapper.IsEmpty())
         return v8::Local<v8::Object>();
 
@@ -164,14 +164,15 @@ v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String16
     // injected script id and explicit reference to the inspected global object. The function is expected
     // to create and configure InjectedScript instance that is going to be used by the inspector.
     v8::Local<v8::Value> value;
-    if (!m_client->compileAndRunInternalScript(toV8String(isolate, source)).ToLocal(&value))
+    if (!m_debugger->compileAndRunInternalScript(context, toV8String(isolate, source)).ToLocal(&value))
         return v8::Local<v8::Object>();
     ASSERT(value->IsFunction());
-
+    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
     v8::Local<v8::Object> windowGlobal = context->Global();
     v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(context->GetIsolate(), id) };
+    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Value> injectedScriptValue;
-    if (!m_client->callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info).ToLocal(&injectedScriptValue))
+    if (!function->Call(context, windowGlobal, WTF_ARRAY_LENGTH(info), info).ToLocal(&injectedScriptValue))
         return v8::Local<v8::Object>();
     if (!injectedScriptValue->IsObject())
         return v8::Local<v8::Object>();

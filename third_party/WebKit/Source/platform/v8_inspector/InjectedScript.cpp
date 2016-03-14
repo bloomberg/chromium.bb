@@ -36,6 +36,7 @@
 #include "platform/v8_inspector/InjectedScriptHost.h"
 #include "platform/v8_inspector/InjectedScriptManager.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
+#include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8FunctionCall.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
@@ -115,12 +116,11 @@ static void weakCallback(const v8::WeakCallbackInfo<InjectedScript>& data)
     data.GetParameter()->dispose();
 }
 
-InjectedScript::InjectedScript(InjectedScriptManager* manager, v8::Local<v8::Context> context, v8::Local<v8::Object> object, V8DebuggerClient* client, PassOwnPtr<InjectedScriptNative> injectedScriptNative, int contextId)
+InjectedScript::InjectedScript(InjectedScriptManager* manager, v8::Local<v8::Context> context, v8::Local<v8::Object> object, PassOwnPtr<InjectedScriptNative> injectedScriptNative, int contextId)
     : m_manager(manager)
     , m_isolate(context->GetIsolate())
     , m_context(m_isolate, context)
     , m_value(m_isolate, object)
-    , m_client(client)
     , m_native(injectedScriptNative)
     , m_contextId(contextId)
 {
@@ -134,7 +134,7 @@ InjectedScript::~InjectedScript()
 void InjectedScript::evaluate(ErrorString* errorString, const String16& expression, const String16& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "evaluate");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "evaluate");
     function.appendArgument(expression);
     function.appendArgument(objectGroup);
     function.appendArgument(includeCommandLineAPI);
@@ -146,7 +146,7 @@ void InjectedScript::evaluate(ErrorString* errorString, const String16& expressi
 void InjectedScript::callFunctionOn(ErrorString* errorString, const String16& objectId, const String16& expression, const String16& arguments, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "callFunctionOn");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "callFunctionOn");
     function.appendArgument(objectId);
     function.appendArgument(expression);
     function.appendArgument(arguments);
@@ -158,7 +158,7 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String16& ob
 void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String16& callFrameId, const String16& expression, const String16& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "evaluateOnCallFrame");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "evaluateOnCallFrame");
     function.appendArgument(callFrames);
     function.appendArgument(callFrameId);
     function.appendArgument(expression);
@@ -172,7 +172,7 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8:
 void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String16& callFrameId)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "restartFrame");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "restartFrame");
     function.appendArgument(callFrames);
     function.appendArgument(callFrameId);
     OwnPtr<protocol::Value> resultValue = makeCall(function);
@@ -197,7 +197,7 @@ void InjectedScript::setVariableValue(ErrorString* errorString,
     const String16& newValueStr)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "setVariableValue");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "setVariableValue");
     if (callFrameIdOpt.isJust()) {
         function.appendArgument(callFrames);
         function.appendArgument(callFrameIdOpt.fromJust());
@@ -227,7 +227,7 @@ void InjectedScript::setVariableValue(ErrorString* errorString,
 void InjectedScript::getFunctionDetails(ErrorString* errorString, const String16& functionId, OwnPtr<FunctionDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "getFunctionDetails");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getFunctionDetails");
     function.appendArgument(functionId);
     OwnPtr<protocol::Value> resultValue = makeCall(function);
     protocol::ErrorSupport errors(errorString);
@@ -237,7 +237,7 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String16
 void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, OwnPtr<GeneratorObjectDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "getGeneratorObjectDetails");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getGeneratorObjectDetails");
     function.appendArgument(objectId);
     OwnPtr<protocol::Value> resultValue = makeCall(function);
     protocol::ErrorSupport errors(errorString);
@@ -247,7 +247,7 @@ void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const S
 void InjectedScript::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<Array<CollectionEntry>>* result)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "getCollectionEntries");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getCollectionEntries");
     function.appendArgument(objectId);
     OwnPtr<protocol::Value> resultValue = makeCall(function);
     protocol::ErrorSupport errors(errorString);
@@ -257,7 +257,7 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
 void InjectedScript::getProperties(ErrorString* errorString, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "getProperties");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getProperties");
     function.appendArgument(objectId);
     function.appendArgument(ownProperties);
     function.appendArgument(accessorPropertiesOnly);
@@ -276,7 +276,7 @@ void InjectedScript::getProperties(ErrorString* errorString, const String16& obj
 void InjectedScript::getInternalProperties(ErrorString* errorString, const String16& objectId, Maybe<Array<InternalPropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "getInternalProperties");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getInternalProperties");
     function.appendArgument(objectId);
 
     OwnPtr<protocol::Value> result = makeCallWithExceptionDetails(function, exceptionDetails);
@@ -307,14 +307,14 @@ v8::MaybeLocal<v8::Value> InjectedScript::runCompiledScript(v8::Local<v8::Script
     v8::Local<v8::Symbol> commandLineAPISymbolValue = V8Debugger::commandLineAPISymbol(m_isolate);
     v8::Local<v8::Object> global = context()->Global();
     if (includeCommandLineAPI) {
-        V8FunctionCall function(m_client, context(), v8Value(), "commandLineAPI");
+        V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "commandLineAPI");
         bool hadException = false;
         v8::Local<v8::Value> commandLineAPI = function.call(hadException, false);
         if (!hadException)
             global->Set(commandLineAPISymbolValue, commandLineAPI);
     }
 
-    v8::MaybeLocal<v8::Value> maybeValue = m_client->runCompiledScript(context(), script);
+    v8::MaybeLocal<v8::Value> maybeValue = m_manager->debugger()->runCompiledScript(context(), script);
     if (includeCommandLineAPI)
         global->Delete(context(), commandLineAPISymbolValue);
 
@@ -324,7 +324,7 @@ v8::MaybeLocal<v8::Value> InjectedScript::runCompiledScript(v8::Local<v8::Script
 PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object> callFrames)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "wrapCallFrames");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "wrapCallFrames");
     function.appendArgument(callFrames);
     bool hadException = false;
     v8::Local<v8::Value> callFramesValue = callFunctionWithEvalEnabled(function, hadException);
@@ -339,7 +339,7 @@ PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local<v8::Value> value, const String16& groupName, bool generatePreview) const
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "wrapObject");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "wrapObject");
     function.appendArgument(value);
     function.appendArgument(groupName);
     function.appendArgument(canAccessInspectedWindow());
@@ -355,7 +355,7 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "wrapTable");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "wrapTable");
     function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(table);
     if (columns.IsEmpty())
@@ -385,7 +385,7 @@ void InjectedScript::releaseObjectGroup(const String16& objectGroup)
     v8::HandleScope handles(m_isolate);
     m_native->releaseObjectGroup(objectGroup);
     if (objectGroup == "console") {
-        V8FunctionCall function(m_client, context(), v8Value(), "clearLastEvaluationResult");
+        V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "clearLastEvaluationResult");
         bool hadException = false;
         callFunctionWithEvalEnabled(function, hadException);
         ASSERT(!hadException);
@@ -395,7 +395,7 @@ void InjectedScript::releaseObjectGroup(const String16& objectGroup)
 void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
 {
     v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "setCustomObjectFormatterEnabled");
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "setCustomObjectFormatterEnabled");
     function.appendArgument(enabled);
     makeCall(function);
 }
@@ -405,7 +405,7 @@ bool InjectedScript::canAccessInspectedWindow() const
     v8::Local<v8::Context> callingContext = m_isolate->GetCallingContext();
     if (callingContext.IsEmpty())
         return true;
-    return m_client->callingContextCanAccessContext(callingContext, context());
+    return m_manager->debugger()->client()->callingContextCanAccessContext(callingContext, context());
 }
 
 v8::Local<v8::Context> InjectedScript::context() const

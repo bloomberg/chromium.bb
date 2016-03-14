@@ -1,3 +1,10 @@
+function wrapCallFunctionForTimeline(f)
+{
+    var script = document.createElement("script");
+    script.textContent = "(" + f.toString() + ")()\n//# sourceURL=wrapCallFunctionForTimeline.js";
+    document.body.appendChild(script);
+}
+
 var initialize_Timeline = function() {
 
 InspectorTest.preloadPanel("timeline");

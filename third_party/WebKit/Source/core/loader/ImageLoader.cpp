@@ -21,6 +21,7 @@
 
 #include "core/loader/ImageLoader.h"
 
+#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -28,7 +29,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
-#include "core/dom/Microtask.h"
 #include "core/events/Event.h"
 #include "core/events/EventSender.h"
 #include "core/fetch/FetchRequest.h"

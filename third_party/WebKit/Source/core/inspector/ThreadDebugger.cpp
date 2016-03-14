@@ -11,10 +11,8 @@
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
-#include "bindings/core/v8/V8RecursionScope.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/Microtask.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -32,31 +30,6 @@ ThreadDebugger::~ThreadDebugger()
 void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, V8EventListenerInfoList& result)
 {
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(m_isolate, value, result);
-}
-
-v8::MaybeLocal<v8::Object> ThreadDebugger::instantiateObject(v8::Local<v8::Function> function)
-{
-    return V8ScriptRunner::instantiateObject(m_isolate, function);
-}
-
-v8::MaybeLocal<v8::Value> ThreadDebugger::runCompiledScript(v8::Local<v8::Context> context, v8::Local<v8::Script> script)
-{
-    return V8ScriptRunner::runCompiledScript(m_isolate, script, toExecutionContext(context));
-}
-
-v8::MaybeLocal<v8::Value> ThreadDebugger::compileAndRunInternalScript(v8::Local<v8::String> script)
-{
-    return V8ScriptRunner::compileAndRunInternalScript(script, m_isolate);
-}
-
-v8::MaybeLocal<v8::Value> ThreadDebugger::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Context> context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
-{
-    return V8ScriptRunner::callFunction(function, toExecutionContext(context), receiver, argc, info, m_isolate);
-}
-
-v8::MaybeLocal<v8::Value> ThreadDebugger::callInternalFunction(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
-{
-    return V8ScriptRunner::callInternalFunction(function, receiver, argc, info, m_isolate);
 }
 
 String16 ThreadDebugger::valueSubtype(v8::Local<v8::Value> value)
@@ -81,7 +54,12 @@ bool ThreadDebugger::formatAccessorsAsProperties(v8::Local<v8::Value> value)
 
 bool ThreadDebugger::hasRecursionLevel()
 {
-    return !!V8RecursionScope::recursionLevel(m_isolate);
+    return !!v8::MicrotasksScope::GetCurrentDepth(m_isolate);
+}
+
+bool ThreadDebugger::isExecutionAllowed()
+{
+    return !ScriptForbiddenScope::isScriptForbidden();
 }
 
 double ThreadDebugger::currentTimeMS()
