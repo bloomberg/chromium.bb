@@ -93,6 +93,9 @@ void WebContentsObserverProxy::DidStartLoading() {
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, web_contents()->GetVisibleURL().spec()));
+  if (auto entry = web_contents()->GetController().GetPendingEntry()) {
+    base_url_of_last_started_data_url_ = entry->GetBaseURLForDataURL();
+  }
   Java_WebContentsObserverProxy_didStartLoading(env, obj.obj(),
                                                 jstring_url.obj());
 }
@@ -102,6 +105,8 @@ void WebContentsObserverProxy::DidStopLoading() {
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   std::string url_string = web_contents()->GetLastCommittedURL().spec();
   SetToBaseURLForDataURLIfNeeded(&url_string);
+  // DidStopLoading is the last event we should get.
+  base_url_of_last_started_data_url_ = GURL::EmptyGURL();
   ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
       env, url_string));
   Java_WebContentsObserverProxy_didStopLoading(env, obj.obj(),
@@ -317,8 +322,16 @@ void WebContentsObserverProxy::SetToBaseURLForDataURLIfNeeded(
   NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   // Note that GetBaseURLForDataURL is only used by the Android WebView.
-  if (entry && !entry->GetBaseURLForDataURL().is_empty())
+  // FIXME: Should we only return valid specs and "about:blank" for invalid
+  // ones? This may break apps.
+  if (entry && !entry->GetBaseURLForDataURL().is_empty()) {
     *url = entry->GetBaseURLForDataURL().possibly_invalid_spec();
+  } else if (!base_url_of_last_started_data_url_.is_empty()) {
+    // NavigationController can lose the pending entry and recreate it without
+    // a base URL if there has been a loadUrl("javascript:...") after
+    // loadDataWithBaseUrl.
+    *url = base_url_of_last_started_data_url_.possibly_invalid_spec();
+  }
 }
 
 bool RegisterWebContentsObserverProxy(JNIEnv* env) {

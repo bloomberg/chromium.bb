@@ -373,4 +373,37 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
         assertEquals("true", executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,
                         "window.gotToEndOfBody"));
     }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOnPageFinishedWhenInterrupted() throws Throwable {
+        // See crbug.com/594001 -- when a javascript: URL is loaded, the pending entry
+        // gets discarded and the previous load goes through a different path
+        // inside NavigationController.
+        final String pageHtml = "<html><body>Hello, world!</body></html>";
+        final String baseUrl = "http://example.com/";
+        final TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+        final int callCount = onPageFinishedHelper.getCallCount();
+        loadDataWithBaseUrlAsync(mAwContents, pageHtml, "text/html", false, baseUrl, null);
+        loadUrlAsync(mAwContents, "javascript:42");
+        onPageFinishedHelper.waitForCallback(callCount);
+        assertEquals(baseUrl, onPageFinishedHelper.getUrl());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOnPageFinishedWithInvalidBaseUrlWhenInterrupted() throws Throwable {
+        final String pageHtml = CommonResources.ABOUT_HTML;
+        final String invalidBaseUrl = "http://";
+        final TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+        final int callCount = onPageFinishedHelper.getCallCount();
+        getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+        loadDataWithBaseUrlAsync(mAwContents, pageHtml, "text/html", false, invalidBaseUrl, null);
+        loadUrlAsync(mAwContents, "javascript:42");
+        onPageFinishedHelper.waitForCallback(callCount);
+        // Verify that the load succeeds. The actual base url is undefined.
+        assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(mAwContents));
+    }
 }

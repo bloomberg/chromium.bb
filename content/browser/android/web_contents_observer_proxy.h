@@ -84,6 +84,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
                            bool was_ignored_by_handler);
 
   base::android::ScopedJavaGlobalRef<jobject> java_observer_;
+  GURL base_url_of_last_started_data_url_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsObserverProxy);
 };
