@@ -58,13 +58,10 @@ ClipBox CalculateClipBoxBoundary(const ClipBox& media_box,
 
   // Clip |media_box| to the size of |crop_box|, but ignore |crop_box| if it is
   // bigger than |media_box|.
-  clip_box.left =
-      (crop_box.left < media_box.left) ? media_box.left : crop_box.left;
-  clip_box.right =
-      (crop_box.right > media_box.right) ? media_box.right : crop_box.right;
-  clip_box.top = (crop_box.top > media_box.top) ? media_box.top : crop_box.top;
-  clip_box.bottom =
-      (crop_box.bottom < media_box.bottom) ? media_box.bottom : crop_box.bottom;
+  clip_box.left = std::max(crop_box.left, media_box.left);
+  clip_box.right = std::min(crop_box.right, media_box.right);
+  clip_box.top = std::min(crop_box.top, media_box.top);
+  clip_box.bottom = std::max(crop_box.bottom, media_box.bottom);
   return clip_box;
 }
 
