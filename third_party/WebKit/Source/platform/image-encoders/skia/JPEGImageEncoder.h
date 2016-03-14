@@ -59,7 +59,7 @@ public:
     // be safer.
     static bool encode(const ImageDataBuffer&, const double& quality, Vector<unsigned char>*);
 
-    static void encodeWithPreInitializedState(JPEGImageEncoderState*, const unsigned char*);
+    static bool encodeWithPreInitializedState(PassOwnPtr<JPEGImageEncoderState>, const unsigned char*);
     static int computeCompressionQuality(const double& quality);
 
 private:
