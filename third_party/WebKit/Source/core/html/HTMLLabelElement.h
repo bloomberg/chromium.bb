@@ -43,6 +43,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     HTMLFormElement* formOwner() const override;
+    HTMLFormElement* formForBinding() const;
 
 
 #if !ENABLE(OILPAN)

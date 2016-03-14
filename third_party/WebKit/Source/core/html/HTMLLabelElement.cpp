@@ -34,6 +34,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/FormAssociatedElement.h"
+#include "core/html/HTMLFormControlElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
 
@@ -62,15 +63,21 @@ LabelableElement* HTMLLabelElement::control() const
         // per http://dev.w3.org/html5/spec/Overview.html#the-label-element
         // the form element must be "labelable form-associated element".
         for (LabelableElement& element : Traversal<LabelableElement>::descendantsOf(*this)) {
-            if (element.supportLabels())
+            if (element.supportLabels()) {
+                if (!element.isFormControlElement())
+                    UseCounter::count(document(), UseCounter::HTMLLabelElementControlForNonFormAssociatedElement);
                 return &element;
+            }
         }
         return nullptr;
     }
 
     if (Element* element = treeScope().getElementById(controlId)) {
-        if (isLabelableElement(*element) && toLabelableElement(*element).supportLabels())
+        if (isLabelableElement(*element) && toLabelableElement(*element).supportLabels()) {
+            if (!element->isFormControlElement())
+                UseCounter::count(document(), UseCounter::HTMLLabelElementControlForNonFormAssociatedElement);
             return toLabelableElement(element);
+        }
     }
 
     return nullptr;
@@ -79,6 +86,21 @@ LabelableElement* HTMLLabelElement::control() const
 HTMLFormElement* HTMLLabelElement::formOwner() const
 {
     return FormAssociatedElement::form();
+}
+
+HTMLFormElement* HTMLLabelElement::formForBinding() const
+{
+    HTMLFormElement* formOwner = FormAssociatedElement::form();
+    HTMLFormElement* controlForm = nullptr;
+    if (LabelableElement* control = this->control()) {
+        if (control->isFormControlElement())
+            controlForm = toHTMLFormControlElement(control)->form();
+    }
+    if (formOwner != controlForm)
+        UseCounter::count(document(), UseCounter::HTMLLabelElementFormIsDifferentFromControlForm);
+    if (!controlForm && formOwner && formOwner == findFormAncestor())
+        UseCounter::count(document(), UseCounter::HTMLLabelElementHasNoControlAndFormIsAncestor);
+    return formOwner;
 }
 
 void HTMLLabelElement::setActive(bool down)

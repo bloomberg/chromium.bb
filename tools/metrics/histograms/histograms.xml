@@ -68346,6 +68346,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1258" label="DocumentAllLegacyCallIndexed"/>
   <int value="1259" label="DocumentAllLegacyCallIndexedWithNonNumber"/>
   <int value="1260" label="DocumentAllLegacyCallTwoArguments"/>
+  <int value="1261" label="HTMLLabelElementFormIsDifferentFromControlForm"/>
+  <int value="1262" label="HTMLLabelElementHasNoControlAndFormIsAncestor"/>
+  <int value="1263" label="HTMLLabelElementControlForNonFormAssociatedElement"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

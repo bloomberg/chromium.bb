@@ -21,7 +21,7 @@
 // https://html.spec.whatwg.org/#the-label-element
 
 interface HTMLLabelElement : HTMLElement {
-    [ImplementedAs=formOwner, MeasureAs=HTMLLabelElementFormIDLAttribute] readonly attribute HTMLFormElement? form;
+    [ImplementedAs=formForBinding, MeasureAs=HTMLLabelElementFormIDLAttribute] readonly attribute HTMLFormElement? form;
     [Reflect=for] attribute DOMString htmlFor;
     readonly attribute HTMLElement? control;
 };
