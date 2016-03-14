@@ -1502,3 +1502,4 @@ crbug.com/592409 inspector-protocol/debugger/stepping-with-blackboxed-ranges.htm
 
 crbug.com/559258 [ Mac10.10 ] scrollbars/listbox-scrollbar-combinations.html [ Failure ]
 crbug.com/559258 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/listbox-scrollbar-combinations.html [ Failure ]
+crbug.com/594570 [ Linux ] svg/custom/svg-font-support.html [ Failure Pass ]
