@@ -96,35 +96,6 @@ public class BookmarkUtils {
         return bookmarkModel.addBookmark(parent, bookmarkModel.getChildCount(parent), title, url);
     }
 
-    /**
-     * Saves an offline copy for the specified tab that is bookmarked. A snackbar will be shown to
-     * notify the user.
-     * @param id The bookmark ID for the tab.
-     * @param bookmarkModel The bookmark model.
-     * @param tab The bookmarked tab to save an offline copy.
-     * @param snackbarManager The SnackbarManager used to show the snackbar.
-     * @param activity Current activity.
-     */
-    public static void saveBookmarkOffline(long id, BookmarkModel bookmarkModel,
-            Tab tab, final SnackbarManager snackbarManager, Activity activity) {
-        assert id != Tab.INVALID_BOOKMARK_ID;
-        BookmarkId bookmarkId = new BookmarkId(id, BookmarkType.NORMAL);
-
-        // Bail out if the ID no longer points to a valid bookmark, which might happen if the user
-        // deleted the bookmark while the page was loading.
-        if (!bookmarkModel.doesBookmarkExist(bookmarkId)) return;
-
-        // Skip saving the offline page for the bookmark if the tab
-        // cannot be saved currently (error or sad tab being shown).
-        // TODO(sansid, petewil): Snackbar triggering for error tabs should be handled.
-        //      See: http://crbug/568310 for details.
-        if (shouldSkipSavingTabOffline(tab)) return;
-
-        bookmarkModel.saveOfflinePage(bookmarkId, tab.getWebContents(),
-                createAddBookmarkCallback(bookmarkModel, snackbarManager, activity,
-                        tab.getWebContents()));
-    }
-
     private static void showSnackbarForAddingBookmark(final BookmarkModel bookmarkModel,
             final SnackbarManager snackbarManager, final Activity activity,
             final BookmarkId bookmarkId, final int saveResult, boolean isStorageAlmostFull,
