@@ -29,7 +29,7 @@
 #include "components/tracing/tracing_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/services/catalog/owner.h"
+#include "mojo/services/catalog/factory.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
@@ -155,7 +155,7 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
   scoped_ptr<catalog::Store> store;
   if (init_params)
     store = std::move(init_params->catalog_store);
-  catalog_.reset(new catalog::Owner(blocking_pool_.get(), std::move(store)));
+  catalog_.reset(new catalog::Factory(blocking_pool_.get(), std::move(store)));
   shell_.reset(new Shell(std::move(runner_factory),
                          catalog_->TakeShellClient()));
 

@@ -51,6 +51,10 @@ Identity CreateShellIdentity() {
   return Identity(kShellName, mojom::kRootUserID);
 }
 
+Identity CreateCatalogIdentity() {
+  return Identity(kCatalogName, mojom::kRootUserID);
+}
+
 CapabilitySpec GetPermissiveCapabilities() {
   CapabilitySpec capabilities;
   CapabilityRequest spec;
@@ -488,16 +492,14 @@ bool Shell::AcceptConnection(Connection* connection) {
 // Shell, private:
 
 void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
-  Identity identity(kCatalogName, mojom::kRootUserID);
-  CreateInstance(identity, CapabilitySpec(), std::move(catalog));
-  shell_connection_->connector()->ConnectToInterface(
-      kCatalogName, &shell_resolver_);
+  CreateInstance(CreateCatalogIdentity(), CapabilitySpec(), std::move(catalog));
 
+  // TODO(beng): this doesn't work anymore.
   // Seed the catalog with manifest info for the shell & catalog.
-  shell_resolver_->ResolveMojoName(
-      kCatalogName, base::Bind(&EmptyResolverCallback));
-  shell_resolver_->ResolveMojoName(
-      kShellName, base::Bind(&EmptyResolverCallback));
+  mojo::shell::mojom::ShellResolverPtr resolver;
+  shell_connection_->connector()->ConnectToInterface(kCatalogName, &resolver);
+  resolver->ResolveMojoName(kCatalogName, base::Bind(&EmptyResolverCallback));
+  resolver->ResolveMojoName(kShellName, base::Bind(&EmptyResolverCallback));
 }
 
 void Shell::TerminateShellConnections() {
@@ -533,11 +535,20 @@ void Shell::Connect(scoped_ptr<ConnectParams> params,
   if (!client.is_bound() && ConnectToExistingInstance(&params))
     return;
 
+  // The catalog needs to see the source identity as that of the originating
+  // app so it loads the correct store. Since the catalog is itself run as root
+  // when this re-enters Connect() it'll be handled by
+  // ConnectToExistingInstance().
+  mojom::ShellResolverPtr resolver;
+  ConnectToInterface(this, Identity(kShellName, params->target().user_id()),
+                     CreateCatalogIdentity(), &resolver);
+
   std::string name = params->target().name();
-  shell_resolver_->ResolveMojoName(
+  mojom::ShellResolver* resolver_raw = resolver.get();
+  resolver_raw->ResolveMojoName(
       name,
-      base::Bind(&Shell::OnGotResolvedName,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
+      base::Bind(&Shell::OnGotResolvedName, weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(resolver)), base::Passed(&params),
                  base::Passed(&client)));
 }
 
@@ -632,7 +643,8 @@ void Shell::OnShellClientFactoryLost(const Identity& which) {
   shell_client_factories_.erase(it);
 }
 
-void Shell::OnGotResolvedName(scoped_ptr<ConnectParams> params,
+void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
+                              scoped_ptr<ConnectParams> params,
                               mojom::ShellClientPtr client,
                               const String& resolved_name,
                               const String& resolved_instance,

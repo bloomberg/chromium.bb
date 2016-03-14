@@ -15,7 +15,6 @@
 #include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
 #include "url/gurl.h"
 
@@ -23,38 +22,20 @@ namespace catalog {
 
 class Store;
 
-class Catalog
-    : public mojo::ShellClient,
-      public mojo::InterfaceFactory<mojom::Resolver>,
-      public mojo::InterfaceFactory<mojo::shell::mojom::ShellResolver>,
-      public mojo::InterfaceFactory<mojom::Catalog>,
-      public mojom::Resolver,
-      public mojo::shell::mojom::ShellResolver,
-      public mojom::Catalog {
+class Catalog : public mojom::Resolver,
+                public mojo::shell::mojom::ShellResolver,
+                public mojom::Catalog {
  public:
-  // If |register_schemes| is true, mojo: and exe: schemes are registered as
-  // "standard".
   Catalog(base::TaskRunner* blocking_pool, scoped_ptr<Store> store);
   ~Catalog() override;
+
+  void BindResolver(mojom::ResolverRequest request);
+  void BindShellResolver(mojo::shell::mojom::ShellResolverRequest request);
+  void BindCatalog(mojom::CatalogRequest request);
 
  private:
   using MojoNameAliasMap =
       std::map<std::string, std::pair<std::string, std::string>>;
-
-  // mojo::ShellClient:
-  bool AcceptConnection(mojo::Connection* connection) override;
-
-  // mojo::InterfaceFactory<mojom::Resolver>:
-  void Create(mojo::Connection* connection,
-              mojom::ResolverRequest request) override;
-
-  // mojo::InterfaceFactory<mojo::shell::mojom::ShellResolver>:
-  void Create(mojo::Connection* connection,
-              mojo::shell::mojom::ShellResolverRequest request) override;
-
-  // mojo::InterfaceFactory<mojom::Catalog>:
-  void Create(mojo::Connection* connection,
-              mojom::CatalogRequest request) override;
 
   // mojom::Resolver:
   void ResolveResponse(

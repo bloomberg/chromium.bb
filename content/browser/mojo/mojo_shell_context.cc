@@ -25,7 +25,7 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/services/catalog/owner.h"
+#include "mojo/services/catalog/factory.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
@@ -207,7 +207,7 @@ MojoShellContext::MojoShellContext() {
   scoped_ptr<mojo::shell::NativeRunnerFactory> native_runner_factory(
       new mojo::shell::InProcessNativeRunnerFactory(
           BrowserThread::GetBlockingPool()));
-  catalog_.reset(new catalog::Owner(file_task_runner.get(), nullptr));
+  catalog_.reset(new catalog::Factory(file_task_runner.get(), nullptr));
   shell_.reset(new mojo::shell::Shell(std::move(native_runner_factory),
                                       catalog_->TakeShellClient()));
 

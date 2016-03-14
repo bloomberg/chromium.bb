@@ -154,7 +154,8 @@ class Shell : public ShellClient {
   // |file_url| is the resolved file:// URL of the physical package.
   // |capabilities| is the CapabilitySpecPtr the requested application should be
   // run with, from its manifest.
-  void OnGotResolvedName(scoped_ptr<ConnectParams> params,
+  void OnGotResolvedName(mojom::ShellResolverPtr resolver,
+                         scoped_ptr<ConnectParams> params,
                          mojom::ShellClientPtr client,
                          const String& resolved_name,
                          const String& resolved_instance,
@@ -171,8 +172,6 @@ class Shell : public ShellClient {
   Loader* GetLoaderForName(const std::string& name);
 
   void CleanupRunner(NativeRunner* runner);
-
-  mojom::ShellResolverPtr shell_resolver_;
 
   // Loader management.
   // Loaders are chosen in the order they are listed here.

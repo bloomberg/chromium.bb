@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/services/catalog/owner.h"
+#include "mojo/services/catalog/factory.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/loader.h"
@@ -402,7 +402,7 @@ class LoaderTest : public testing::Test {
 
   void SetUp() override {
     blocking_pool_ = new base::SequencedWorkerPool(3, "blocking_pool");
-    catalog_.reset(new catalog::Owner(blocking_pool_.get(), nullptr));
+    catalog_.reset(new catalog::Factory(blocking_pool_.get(), nullptr));
     shell_.reset(new Shell(nullptr, catalog_->TakeShellClient()));
     test_loader_ = new TestLoader(&context_);
     shell_->set_default_loader(scoped_ptr<Loader>(test_loader_));
@@ -453,7 +453,7 @@ class LoaderTest : public testing::Test {
   TestContext context_;
   base::MessageLoop loop_;
   scoped_ptr<TestClient> test_client_;
-  scoped_ptr<catalog::Owner> catalog_;
+  scoped_ptr<catalog::Factory> catalog_;
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
   scoped_ptr<Shell> shell_;
   DISALLOW_COPY_AND_ASSIGN(LoaderTest);
@@ -478,7 +478,7 @@ TEST_F(LoaderTest, ClientError) {
 
 TEST_F(LoaderTest, Deletes) {
   {
-    catalog::Owner catalog(blocking_pool_.get(), nullptr);
+    catalog::Factory catalog(blocking_pool_.get(), nullptr);
     Shell shell(nullptr, catalog.TakeShellClient());
     TestLoader* default_loader = new TestLoader(&context_);
     TestLoader* name_loader1 = new TestLoader(&context_);

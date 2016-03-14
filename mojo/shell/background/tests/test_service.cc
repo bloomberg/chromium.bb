@@ -25,6 +25,9 @@ class TestClient : public ShellClient,
     connection->AddInterface(this);
     return true;
   }
+  void ShellConnectionLost() override {
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
 
   // InterfaceFactory<mojom::TestService>:
   void Create(Connection* connection,
@@ -33,7 +36,9 @@ class TestClient : public ShellClient,
   }
 
   // mojom::TestService
-  void Test(const TestCallback& callback) override { callback.Run(); }
+  void Test(const TestCallback& callback) override {
+    callback.Run();
+  }
 
   BindingSet<mojom::TestService> bindings_;
 

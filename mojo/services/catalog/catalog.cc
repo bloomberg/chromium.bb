@@ -30,10 +30,12 @@ scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
 
 }  // namespace
 
-Catalog::Catalog(base::TaskRunner* blocking_pool,
-                 scoped_ptr<Store> catalog)
+////////////////////////////////////////////////////////////////////////////////
+// Catalog, public:
+
+Catalog::Catalog(base::TaskRunner* blocking_pool, scoped_ptr<Store> store)
     : blocking_pool_(blocking_pool),
-      store_(std::move(catalog)),
+      store_(std::move(store)),
       weak_factory_(this) {
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
@@ -45,30 +47,24 @@ Catalog::Catalog(base::TaskRunner* blocking_pool,
 
   DeserializeCatalog();
 }
+
 Catalog::~Catalog() {}
 
-bool Catalog::AcceptConnection(mojo::Connection* connection) {
-  connection->AddInterface<mojom::Catalog>(this);
-  connection->AddInterface<mojom::Resolver>(this);
-  if (connection->GetRemoteIdentity().name() == "mojo:shell")
-    connection->AddInterface<mojo::shell::mojom::ShellResolver>(this);
-  return true;
-}
-
-void Catalog::Create(mojo::Connection* connection,
-                     mojom::ResolverRequest request) {
+void Catalog::BindResolver(mojom::ResolverRequest request) {
   resolver_bindings_.AddBinding(this, std::move(request));
 }
 
-void Catalog::Create(mojo::Connection* connection,
-                     mojo::shell::mojom::ShellResolverRequest request) {
+void Catalog::BindShellResolver(
+    mojo::shell::mojom::ShellResolverRequest request) {
   shell_resolver_bindings_.AddBinding(this, std::move(request));
 }
 
-void Catalog::Create(mojo::Connection* connection,
-                     mojom::CatalogRequest request) {
+void Catalog::BindCatalog(mojom::CatalogRequest request) {
   catalog_bindings_.AddBinding(this, std::move(request));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Catalog, mojom::Resolver:
 
 void Catalog::ResolveResponse(mojo::URLResponsePtr response,
                               const ResolveResponseCallback& callback) {
@@ -91,6 +87,9 @@ void Catalog::ResolveProtocolScheme(
   // TODO(beng): implement.
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Catalog, mojo::shell::mojom::ShellResolver:
+
 void Catalog::ResolveMojoName(const mojo::String& mojo_name,
                               const ResolveMojoNameCallback& callback) {
   std::string resolved_name = mojo_name;
@@ -109,6 +108,9 @@ void Catalog::ResolveMojoName(const mojo::String& mojo_name,
     AddNameToCatalog(resolved_name, callback);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Catalog, mojom::Catalog:
+
 void Catalog::GetEntries(mojo::Array<mojo::String> names,
                          const GetEntriesCallback& callback) {
   mojo::Map<mojo::String, mojom::CatalogEntryPtr> entries;
@@ -123,6 +125,9 @@ void Catalog::GetEntries(mojo::Array<mojo::String> names,
   }
   callback.Run(std::move(entries));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Catalog, private:
 
 void Catalog::CompleteResolveMojoName(
     const std::string& resolved_name,

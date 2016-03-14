@@ -21,8 +21,8 @@ source_set("lib") {
     "catalog.h",
     "entry.cc",
     "entry.h",
-    "owner.cc",
-    "owner.h",
+    "factory.cc",
+    "factory.h",
     "store.cc",
     "store.h",
   ]
