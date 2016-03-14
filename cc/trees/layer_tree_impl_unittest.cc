@@ -1206,6 +1206,9 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
 
     // This should let |grand_child| "escape" |child|'s clip.
     grand_child->SetClipParent(root.get());
+    scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
+    clip_children->insert(grand_child.get());
+    root->SetClipChildren(clip_children.release());
 
     child->AddChild(std::move(grand_child));
     root->AddChild(std::move(child));
