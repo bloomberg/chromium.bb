@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-if (typeof Polymer == 'undefined')
+if (typeof Polymer == 'undefined') {
   Polymer = {dom: 'shadow'};
-else
-  console.error('Polymer is already defined.');
+} else {
+  // TODO(michaelpg): Change back to error once polymer_config.html is removed.
+  console.warn('Polymer is already defined.');
+}
