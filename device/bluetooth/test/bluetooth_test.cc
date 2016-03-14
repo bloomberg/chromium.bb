@@ -231,6 +231,7 @@ void BluetoothTestBase::ResetEventCounts() {
   gatt_notify_characteristic_attempts_ = 0;
   gatt_read_characteristic_attempts_ = 0;
   gatt_write_characteristic_attempts_ = 0;
+  gatt_read_descriptor_attempts_ = 0;
   gatt_write_descriptor_attempts_ = 0;
 }
 

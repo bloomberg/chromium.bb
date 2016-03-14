@@ -158,6 +158,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   virtual BluetoothGattDescriptor* GetDescriptor(
       const std::string& identifier) const = 0;
 
+  // Returns the GATT characteristic descriptor that matches |uuid|.
+  virtual BluetoothGattDescriptor* GetDescriptorForUUID(
+      const BluetoothUUID& uuid);
+
   // Adds a characteristic descriptor to the locally hosted characteristic
   // represented by this instance. This method only makes sense for local
   // characteristics and won't have an effect if this instance represents a

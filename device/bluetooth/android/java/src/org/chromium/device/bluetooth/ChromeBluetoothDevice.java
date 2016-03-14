@@ -255,6 +255,44 @@ final class ChromeBluetoothDevice {
                 }
             });
         }
+
+        @Override
+        public void onDescriptorRead(
+                final Wrappers.BluetoothGattDescriptorWrapper descriptor, final int status) {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ChromeBluetoothRemoteGattDescriptor chromeDescriptor =
+                            mWrapperToChromeDescriptorsMap.get(descriptor);
+                    if (chromeDescriptor == null) {
+                        // Android events arriving with no Chrome object is expected rarely: only
+                        // when the event races object destruction.
+                        Log.v(TAG, "onDescriptorRead when chromeDescriptor == null.");
+                    } else {
+                        chromeDescriptor.onDescriptorRead(status);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onDescriptorWrite(
+                final Wrappers.BluetoothGattDescriptorWrapper descriptor, final int status) {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ChromeBluetoothRemoteGattDescriptor chromeDescriptor =
+                            mWrapperToChromeDescriptorsMap.get(descriptor);
+                    if (chromeDescriptor == null) {
+                        // Android events arriving with no Chrome object is expected rarely: only
+                        // when the event races object destruction.
+                        Log.v(TAG, "onDescriptorWrite when chromeDescriptor == null.");
+                    } else {
+                        chromeDescriptor.onDescriptorWrite(status);
+                    }
+                }
+            });
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

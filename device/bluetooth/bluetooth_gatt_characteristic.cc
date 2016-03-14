@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 
 #include "base/logging.h"
+#include "device/bluetooth/bluetooth_gatt_descriptor.h"
 
 namespace device {
 
@@ -21,6 +22,16 @@ BluetoothGattCharacteristic* BluetoothGattCharacteristic::Create(
     Properties properties,
     Permissions permissions) {
   LOG(ERROR) << "Creating local GATT characteristics currently not supported.";
+  return NULL;
+}
+
+BluetoothGattDescriptor* BluetoothGattCharacteristic::GetDescriptorForUUID(
+    const BluetoothUUID& uuid) {
+  for (BluetoothGattDescriptor* descriptor : GetDescriptors()) {
+    if (descriptor->GetUUID() == uuid) {
+      return descriptor;
+    }
+  }
   return NULL;
 }
 

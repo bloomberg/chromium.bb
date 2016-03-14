@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <queue>
+
 #include "base/android/jni_android.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
@@ -73,18 +75,24 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
 
+  // Called when StartNotifySession operation succeeds.
+  void OnStartNotifySessionSuccess();
+
+  // Called when StartNotifySession operation fails.
+  void OnStartNotifySessionError(BluetoothGattService::GattErrorCode error);
+
   // Called when value changed event occurs.
   void OnChanged(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& jcaller,
                  const base::android::JavaParamRef<jbyteArray>& value);
 
-  // Callback after Read operation completes.
+  // Called when Read operation completes.
   void OnRead(JNIEnv* env,
               const base::android::JavaParamRef<jobject>& jcaller,
               int32_t status,
               const base::android::JavaParamRef<jbyteArray>& value);
 
-  // Callback after Write operation completes.
+  // Called when Write operation completes.
   void OnWrite(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& jcaller,
                int32_t status);
@@ -122,6 +130,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
 
   // Adapter unique instance ID.
   std::string instance_id_;
+
+  // StartNotifySession callbacks and pending state.
+  typedef std::pair<NotifySessionCallback, ErrorCallback>
+      PendingStartNotifyCall;
+  std::queue<PendingStartNotifyCall> pending_start_notify_calls_;
 
   // ReadRemoteCharacteristic callbacks and pending state.
   bool read_pending_ = false;

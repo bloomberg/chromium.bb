@@ -50,6 +50,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) override;
 
+  // Called when Read operation completes.
+  void OnRead(JNIEnv* env,
+              const base::android::JavaParamRef<jobject>& jcaller,
+              int32_t status,
+              const base::android::JavaParamRef<jbyteArray>& value);
+
+  // Called when Write operation completes.
+  void OnWrite(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& jcaller,
+               int32_t status);
+
  private:
   BluetoothRemoteGattDescriptorAndroid(const std::string& instanceId);
 
@@ -59,6 +70,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
 
   // Adapter unique instance ID.
   std::string instance_id_;
+
+  // ReadRemoteCharacteristic callbacks and pending state.
+  bool read_pending_ = false;
+  ValueCallback read_callback_;
+  ErrorCallback read_error_callback_;
+
+  // WriteRemoteCharacteristic callbacks and pending state.
+  bool write_pending_ = false;
+  base::Closure write_callback_;
+  ErrorCallback write_error_callback_;
+
+  std::vector<uint8_t> value_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorAndroid);
 };

@@ -907,14 +907,7 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_Multiple) {
   characteristic1_->StartNotifySession(
       GetNotifyCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED));
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/551634): Decide when implementing IsNotifying if Android
-  // should trust the notification request always worked, or if we should always
-  // redundantly set the value to the OS.
-  EXPECT_EQ(2, gatt_notify_characteristic_attempts_);
-#else
   EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
-#endif
   EXPECT_EQ(0, callback_count_);
   SimulateGattNotifySessionStarted(characteristic1_);
   EXPECT_EQ(2, callback_count_);
