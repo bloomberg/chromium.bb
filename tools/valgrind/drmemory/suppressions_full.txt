@@ -1989,7 +1989,7 @@ KERNEL32.dll!BaseThreadInitThunk
 
 UNINITIALIZED READ
 name=bug_508794a
-ucrtbase.dll!wcsnlen
+...
 ucrtbase.dll!ismbblead
 ucrtbase.dll!free_base
 ucrtbase.dll!_stdio_common_vsnwprintf_s
@@ -2169,6 +2169,7 @@ chromium_sqlite3.dll!sqlite3ExprSkipCollate
 chromium_sqlite3.dll!isDistinctRedundant
 chromium_sqlite3.dll!sqlite3WhereBegin
 chromium_sqlite3.dll!sqlite3Select
+...
 chromium_sqlite3.dll!yy_reduce
 chromium_sqlite3.dll!sqlite3Parser
 chromium_sqlite3.dll!sqlite3RunParser
@@ -2188,3 +2189,29 @@ name=bug_594657
 *!courgette::adjustment_method_2::Adjuster::Finish
 *!courgette::adjustment_method_2::Adjuster::Adjust
 *!courgette::Adjust
+
+UNINITIALIZED READ
+name=bug_594781a
+chromium_sqlite3.dll!PSCreateMemoryPropertyStore
+...
+chromium_sqlite3.dll!StgDeserializePropVariant
+
+UNADDRESSABLE ACCESS
+name=bug_594781b
+...
+chromium_sqlite3.dll!PropVariantToGUID
+sql.dll!sql::Connection::GetUniqueStatement
+
+UNADDRESSABLE ACCESS
+name=bug_594785
+...
+chromium_sqlite3.dll!sqlite3_stricmp
+chromium_sqlite3.dll!lookupName
+...
+chromium_sqlite3.dll!yy_reduce
+chromium_sqlite3.dll!sqlite3Parser
+chromium_sqlite3.dll!sqlite3RunParser
+chromium_sqlite3.dll!sqlite3Prepare
+chromium_sqlite3.dll!sqlite3LockAndPrepare
+chromium_sqlite3.dll!sqlite3_prepare_v2
+sql.dll!sql::Connection::ExecuteAndReturnErrorCode
