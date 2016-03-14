@@ -57,7 +57,10 @@ scoped_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
   bool has_trailing_non_labeled_fields = false;
   while (!scanner->IsEnd()) {
     const size_t cursor = scanner->SaveCursor();
-    if (address_field->ParseAddressLines(scanner) ||
+    // Ignore "Address Lookup" field. http://crbug.com/427622
+    if (ParseField(scanner, base::UTF8ToUTF16(kAddressLookupRe), NULL)) {
+      continue;
+    } else if (address_field->ParseAddressLines(scanner) ||
         address_field->ParseCityStateZipCode(scanner) ||
         address_field->ParseCountry(scanner) ||
         address_field->ParseCompany(scanner)) {
@@ -172,10 +175,6 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
   // AmericanGirl-Registration.html, BloomingdalesBilling.html,
   // EBay Registration Enter Information.html).
   if (address1_ || street_address_)
-    return false;
-
-  // Ignore "Address Lookup" field. http://crbug.com/427622
-  if (ParseField(scanner, base::UTF8ToUTF16(kAddressLookupRe), NULL))
     return false;
 
   base::string16 pattern = UTF8ToUTF16(kAddressLine1Re);
