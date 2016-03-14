@@ -107,9 +107,9 @@ void WebUSBClientImpl::getDevices(
 void WebUSBClientImpl::requestDevice(
     const blink::WebUSBDeviceRequestOptions& options,
     blink::WebUSBClientRequestDeviceCallbacks* callbacks) {
-  if (!webusb_permission_bubble_) {
+  if (!chooser_service_) {
     service_registry_->ConnectToRemoteService(
-        mojo::GetProxy(&webusb_permission_bubble_));
+        mojo::GetProxy(&chooser_service_));
   }
 
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
@@ -117,7 +117,7 @@ void WebUSBClientImpl::requestDevice(
   mojo::Array<device::usb::DeviceFilterPtr> device_filters =
       mojo::Array<device::usb::DeviceFilterPtr>::From(options.filters);
 
-  webusb_permission_bubble_->GetPermission(
+  chooser_service_->GetPermission(
       std::move(device_filters),
       base::Bind(&OnRequestDevicesComplete, base::Passed(&scoped_callbacks),
                  base::Unretained(device_manager_.get())));

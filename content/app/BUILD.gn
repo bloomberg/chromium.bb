@@ -42,6 +42,7 @@ if (is_win) {
   content_app_sources -= [ "content_main.cc" ]
   content_app_deps += [
     "//content/public/android:jni",
+    "//device/usb",
     "//device/vibration",
     "//skia",
     "//third_party/android_tools:cpu_features",

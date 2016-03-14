@@ -128,6 +128,7 @@
       'target_name': 'device_usb_mojo_bindings',
       'type': 'static_library',
       'sources': [
+        'public/interfaces/chooser_service.mojom',
         'public/interfaces/device.mojom',
         'public/interfaces/device_manager.mojom',
       ],

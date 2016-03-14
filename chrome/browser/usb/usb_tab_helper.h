@@ -14,13 +14,10 @@
 
 namespace device {
 namespace usb {
+class ChooserService;
 class DeviceManager;
 class PermissionProvider;
 }
-}
-
-namespace webusb {
-class WebUsbPermissionBubble;
 }
 
 struct FrameUsbServices;
@@ -42,9 +39,9 @@ class UsbTabHelper : public content::WebContentsObserver,
       mojo::InterfaceRequest<device::usb::DeviceManager> request);
 
 #if !defined(OS_ANDROID)
-  void CreatePermissionBubble(
+  void CreateChooserService(
       content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request);
+      mojo::InterfaceRequest<device::usb::ChooserService> request);
 #endif  // !defined(OS_ANDROID)
 
  private:
@@ -61,9 +58,9 @@ class UsbTabHelper : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host);
 
 #if !defined(OS_ANDROID)
-  void GetPermissionBubble(
+  void GetChooserService(
       content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request);
+      mojo::InterfaceRequest<device::usb::ChooserService> request);
 #endif  // !defined(OS_ANDROID)
 
   FrameUsbServicesMap frame_usb_services_;

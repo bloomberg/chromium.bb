@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/usb/web_usb_permission_bubble.h"
+#include "chrome/browser/usb/web_usb_chooser_service.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
 #include "device/usb/mojo/device_manager_impl.h"
 
@@ -18,7 +18,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(UsbTabHelper);
 
 struct FrameUsbServices {
   scoped_ptr<WebUSBPermissionProvider> permission_provider;
-  scoped_ptr<ChromeWebUsbPermissionBubble> permission_bubble;
+  scoped_ptr<WebUsbChooserService> chooser_service;
 };
 
 // static
@@ -43,10 +43,10 @@ void UsbTabHelper::CreateDeviceManager(
 }
 
 #if !defined(OS_ANDROID)
-void UsbTabHelper::CreatePermissionBubble(
+void UsbTabHelper::CreateChooserService(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
-  GetPermissionBubble(render_frame_host, std::move(request));
+    mojo::InterfaceRequest<device::usb::ChooserService> request) {
+  GetChooserService(render_frame_host, std::move(request));
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -81,14 +81,14 @@ UsbTabHelper::GetPermissionProvider(RenderFrameHost* render_frame_host) {
 }
 
 #if !defined(OS_ANDROID)
-void UsbTabHelper::GetPermissionBubble(
+void UsbTabHelper::GetChooserService(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
+    mojo::InterfaceRequest<device::usb::ChooserService> request) {
   FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
-  if (!frame_usb_services->permission_bubble) {
-    frame_usb_services->permission_bubble.reset(
-        new ChromeWebUsbPermissionBubble(render_frame_host));
+  if (!frame_usb_services->chooser_service) {
+    frame_usb_services->chooser_service.reset(
+        new WebUsbChooserService(render_frame_host));
   }
-  frame_usb_services->permission_bubble->Bind(std::move(request));
+  frame_usb_services->chooser_service->Bind(std::move(request));
 }
 #endif  // !defined(OS_ANDROID)

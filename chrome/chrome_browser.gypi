@@ -1382,8 +1382,8 @@
       'browser/upgrade_detector.h',
       'browser/usb/usb_chooser_bubble_controller.cc',
       'browser/usb/usb_chooser_bubble_controller.h',
-      'browser/usb/web_usb_permission_bubble.cc',
-      'browser/usb/web_usb_permission_bubble.h',
+      'browser/usb/web_usb_chooser_service.cc',
+      'browser/usb/web_usb_chooser_service.h',
     ],
     'chrome_browser_win_sources': [
       'browser/first_run/try_chrome_dialog_view.cc',

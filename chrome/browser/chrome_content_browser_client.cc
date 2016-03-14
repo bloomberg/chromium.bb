@@ -294,7 +294,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "components/webusb/public/interfaces/webusb_permission_bubble.mojom.h"
+#include "device/usb/public/interfaces/chooser_service.mojom.h"
 #endif
 
 #if defined(ENABLE_WAYLAND_SERVER)
@@ -690,9 +690,9 @@ void CreateUsbDeviceManager(
 }
 
 #if !defined(OS_ANDROID)
-void CreateWebUsbPermissionBubble(
+void CreateWebUsbChooserService(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<webusb::WebUsbPermissionBubble> request) {
+    mojo::InterfaceRequest<device::usb::ChooserService> request) {
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents) {
@@ -702,7 +702,7 @@ void CreateWebUsbPermissionBubble(
 
   UsbTabHelper* tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
-  tab_helper->CreatePermissionBubble(render_frame_host, std::move(request));
+  tab_helper->CreateChooserService(render_frame_host, std::move(request));
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -2793,7 +2793,7 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
   registry->AddService(base::Bind(&CreateUsbDeviceManager, render_frame_host));
 #if !defined(OS_ANDROID)
   registry->AddService(
-      base::Bind(&CreateWebUsbPermissionBubble, render_frame_host));
+      base::Bind(&CreateWebUsbChooserService, render_frame_host));
 #endif  // !defined(OS_ANDROID)
 }
 

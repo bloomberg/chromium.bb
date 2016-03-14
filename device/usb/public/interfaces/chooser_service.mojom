@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module webusb;
+module device.usb;
 
-import "device/usb/public/interfaces/device.mojom";
-import "device/usb/public/interfaces/device_manager.mojom";
+import "device.mojom";
+import "device_manager.mojom";
 
-interface WebUsbPermissionBubble {
+interface ChooserService {
   // Get permission from user to use the device.
   //
   // |device_filters| filters the available devices and the filtered

@@ -77,7 +77,7 @@ UsbChooserBubbleController::UsbChooserBubbleController(
     content::RenderFrameHost* owner,
     mojo::Array<device::usb::DeviceFilterPtr> device_filters,
     content::RenderFrameHost* render_frame_host,
-    const webusb::WebUsbPermissionBubble::GetPermissionCallback& callback)
+    const device::usb::ChooserService::GetPermissionCallback& callback)
     : ChooserBubbleController(owner),
       render_frame_host_(render_frame_host),
       callback_(callback),

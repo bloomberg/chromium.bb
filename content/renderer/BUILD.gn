@@ -32,7 +32,6 @@ source_set("renderer") {
     "//cc/surfaces:surface_id",
     "//components/scheduler:scheduler",
     "//components/url_formatter",
-    "//components/webusb",
     "//content:resources",
     "//content/common:mojo_bindings",
     "//content/public/child:child_sources",
