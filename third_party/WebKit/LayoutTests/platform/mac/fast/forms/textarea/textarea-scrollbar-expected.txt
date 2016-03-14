@@ -35,6 +35,5 @@ layer at (8,26) size 141x84 clip at (9,27) size 124x82 scrollHeight 121
         text run at (0,91) width 8: "8"
       LayoutText {#text} at (7,91) size 1x13
         text run at (7,91) width 1: " "
-      LayoutText {#text} at (0,104) size 0x13
-        text run at (0,104) width 0: " "
-caret: position 0 of child 9 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {TEXTAREA} of body
+      LayoutBR {BR} at (0,104) size 0x13
+caret: position 0 of child 9 {BR} of child 0 {DIV} of {#document-fragment} of child 3 {TEXTAREA} of body

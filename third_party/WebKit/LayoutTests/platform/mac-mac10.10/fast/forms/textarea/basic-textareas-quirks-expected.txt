@@ -685,203 +685,161 @@ layer at (376,800) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
 layer at (376,879) size 141x47 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 176 scrollHeight 212
   LayoutTextControl {TEXTAREA} at (14.61,1) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x208
-      LayoutText {#text} at (0,0) size 4x13
+      LayoutText {#text} at (0,0) size 175x195
         text run at (0,0) width 4: " "
-      LayoutBR {BR} at (3,11) size 1x0
-      LayoutText {#text} at (0,13) size 175x13
+        text run at (3,0) width 1: " "
         text run at (0,13) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,26) size 175x13
+        text run at (174,13) width 1: " "
         text run at (0,26) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,39) size 175x13
+        text run at (174,26) width 1: " "
         text run at (0,39) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,52) size 175x13
+        text run at (174,39) width 1: " "
         text run at (0,52) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,65) size 175x13
+        text run at (174,52) width 1: " "
         text run at (0,65) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,78) size 175x13
+        text run at (174,65) width 1: " "
         text run at (0,78) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,91) size 175x13
+        text run at (174,78) width 1: " "
         text run at (0,91) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,104) size 175x13
+        text run at (174,91) width 1: " "
         text run at (0,104) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,117) size 175x13
+        text run at (174,104) width 1: " "
         text run at (0,117) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,130) size 175x13
+        text run at (174,117) width 1: " "
         text run at (0,130) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,143) size 175x13
+        text run at (174,130) width 1: " "
         text run at (0,143) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,156) size 175x13
+        text run at (174,143) width 1: " "
         text run at (0,156) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,169) size 175x13
+        text run at (174,156) width 1: " "
         text run at (0,169) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,182) size 175x13
+        text run at (174,169) width 1: " "
         text run at (0,182) width 175: "This is a text area with wrap=\"soft\""
-      LayoutBR {BR} at (0,0) size 0x0
+        text run at (174,182) width 1: " "
       LayoutBR {BR} at (0,195) size 0x13
 layer at (376,945) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 394
   LayoutTextControl {TEXTAREA} at (14.61,1) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x390
-      LayoutText {#text} at (0,0) size 4x13
+      LayoutText {#text} at (0,0) size 115x377
         text run at (0,0) width 4: " "
-      LayoutBR {BR} at (3,11) size 1x0
-      LayoutText {#text} at (0,13) size 115x26
+        text run at (3,0) width 1: " "
         text run at (0,13) width 112: "This is a text area with"
         text run at (111,13) width 4: " "
         text run at (0,26) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,37) size 1x0
-      LayoutText {#text} at (0,39) size 115x26
+        text run at (59,26) width 1: " "
         text run at (0,39) width 112: "This is a text area with"
         text run at (111,39) width 4: " "
         text run at (0,52) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,63) size 1x0
-      LayoutText {#text} at (0,65) size 115x26
+        text run at (59,52) width 1: " "
         text run at (0,65) width 112: "This is a text area with"
         text run at (111,65) width 4: " "
         text run at (0,78) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,89) size 1x0
-      LayoutText {#text} at (0,91) size 115x26
+        text run at (59,78) width 1: " "
         text run at (0,91) width 112: "This is a text area with"
         text run at (111,91) width 4: " "
         text run at (0,104) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,115) size 1x0
-      LayoutText {#text} at (0,117) size 115x26
+        text run at (59,104) width 1: " "
         text run at (0,117) width 112: "This is a text area with"
         text run at (111,117) width 4: " "
         text run at (0,130) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,141) size 1x0
-      LayoutText {#text} at (0,143) size 115x26
+        text run at (59,130) width 1: " "
         text run at (0,143) width 112: "This is a text area with"
         text run at (111,143) width 4: " "
         text run at (0,156) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,167) size 1x0
-      LayoutText {#text} at (0,169) size 115x26
+        text run at (59,156) width 1: " "
         text run at (0,169) width 112: "This is a text area with"
         text run at (111,169) width 4: " "
         text run at (0,182) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,193) size 1x0
-      LayoutText {#text} at (0,195) size 115x26
+        text run at (59,182) width 1: " "
         text run at (0,195) width 112: "This is a text area with"
         text run at (111,195) width 4: " "
         text run at (0,208) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,219) size 1x0
-      LayoutText {#text} at (0,221) size 115x26
+        text run at (59,208) width 1: " "
         text run at (0,221) width 112: "This is a text area with"
         text run at (111,221) width 4: " "
         text run at (0,234) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,245) size 1x0
-      LayoutText {#text} at (0,247) size 115x26
+        text run at (59,234) width 1: " "
         text run at (0,247) width 112: "This is a text area with"
         text run at (111,247) width 4: " "
         text run at (0,260) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,271) size 1x0
-      LayoutText {#text} at (0,273) size 115x26
+        text run at (59,260) width 1: " "
         text run at (0,273) width 112: "This is a text area with"
         text run at (111,273) width 4: " "
         text run at (0,286) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,297) size 1x0
-      LayoutText {#text} at (0,299) size 115x26
+        text run at (59,286) width 1: " "
         text run at (0,299) width 112: "This is a text area with"
         text run at (111,299) width 4: " "
         text run at (0,312) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,323) size 1x0
-      LayoutText {#text} at (0,325) size 115x26
+        text run at (59,312) width 1: " "
         text run at (0,325) width 112: "This is a text area with"
         text run at (111,325) width 4: " "
         text run at (0,338) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,349) size 1x0
-      LayoutText {#text} at (0,351) size 115x26
+        text run at (59,338) width 1: " "
         text run at (0,351) width 112: "This is a text area with"
         text run at (111,351) width 4: " "
         text run at (0,364) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,375) size 1x0
+        text run at (59,364) width 1: " "
       LayoutBR {BR} at (0,377) size 0x13
 layer at (376,996) size 141x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollHeight 394
   LayoutTextControl {TEXTAREA} at (14.61,1) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 120x390
-      LayoutText {#text} at (0,0) size 4x13
+      LayoutText {#text} at (0,0) size 115x377
         text run at (0,0) width 4: " "
-      LayoutBR {BR} at (3,11) size 1x0
-      LayoutText {#text} at (0,13) size 115x26
+        text run at (3,0) width 1: " "
         text run at (0,13) width 112: "This is a text area with"
         text run at (111,13) width 4: " "
         text run at (0,26) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,37) size 1x0
-      LayoutText {#text} at (0,39) size 115x26
+        text run at (59,26) width 1: " "
         text run at (0,39) width 112: "This is a text area with"
         text run at (111,39) width 4: " "
         text run at (0,52) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,63) size 1x0
-      LayoutText {#text} at (0,65) size 115x26
+        text run at (59,52) width 1: " "
         text run at (0,65) width 112: "This is a text area with"
         text run at (111,65) width 4: " "
         text run at (0,78) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,89) size 1x0
-      LayoutText {#text} at (0,91) size 115x26
+        text run at (59,78) width 1: " "
         text run at (0,91) width 112: "This is a text area with"
         text run at (111,91) width 4: " "
         text run at (0,104) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,115) size 1x0
-      LayoutText {#text} at (0,117) size 115x26
+        text run at (59,104) width 1: " "
         text run at (0,117) width 112: "This is a text area with"
         text run at (111,117) width 4: " "
         text run at (0,130) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,141) size 1x0
-      LayoutText {#text} at (0,143) size 115x26
+        text run at (59,130) width 1: " "
         text run at (0,143) width 112: "This is a text area with"
         text run at (111,143) width 4: " "
         text run at (0,156) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,167) size 1x0
-      LayoutText {#text} at (0,169) size 115x26
+        text run at (59,156) width 1: " "
         text run at (0,169) width 112: "This is a text area with"
         text run at (111,169) width 4: " "
         text run at (0,182) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,193) size 1x0
-      LayoutText {#text} at (0,195) size 115x26
+        text run at (59,182) width 1: " "
         text run at (0,195) width 112: "This is a text area with"
         text run at (111,195) width 4: " "
         text run at (0,208) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,219) size 1x0
-      LayoutText {#text} at (0,221) size 115x26
+        text run at (59,208) width 1: " "
         text run at (0,221) width 112: "This is a text area with"
         text run at (111,221) width 4: " "
         text run at (0,234) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,245) size 1x0
-      LayoutText {#text} at (0,247) size 115x26
+        text run at (59,234) width 1: " "
         text run at (0,247) width 112: "This is a text area with"
         text run at (111,247) width 4: " "
         text run at (0,260) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,271) size 1x0
-      LayoutText {#text} at (0,273) size 115x26
+        text run at (59,260) width 1: " "
         text run at (0,273) width 112: "This is a text area with"
         text run at (111,273) width 4: " "
         text run at (0,286) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,297) size 1x0
-      LayoutText {#text} at (0,299) size 115x26
+        text run at (59,286) width 1: " "
         text run at (0,299) width 112: "This is a text area with"
         text run at (111,299) width 4: " "
         text run at (0,312) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,323) size 1x0
-      LayoutText {#text} at (0,325) size 115x26
+        text run at (59,312) width 1: " "
         text run at (0,325) width 112: "This is a text area with"
         text run at (111,325) width 4: " "
         text run at (0,338) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,349) size 1x0
-      LayoutText {#text} at (0,351) size 115x26
+        text run at (59,338) width 1: " "
         text run at (0,351) width 112: "This is a text area with"
         text run at (111,351) width 4: " "
         text run at (0,364) width 60: "wrap=\"soft\""
-      LayoutBR {BR} at (59,375) size 1x0
+        text run at (59,364) width 1: " "
       LayoutBR {BR} at (0,377) size 0x13
