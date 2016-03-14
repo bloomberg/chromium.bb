@@ -25,7 +25,7 @@ class RTCCertificate : public blink::WebRTCCertificate {
   ~RTCCertificate() override;
 
   // blink::WebRTCCertificate implementation.
-  RTCCertificate* shallowCopy() const override;
+  blink::WebPassOwnPtr<blink::WebRTCCertificate> shallowCopy() const override;
   const blink::WebRTCKeyParams& keyParams() const override;
   uint64_t expires() const override;
 

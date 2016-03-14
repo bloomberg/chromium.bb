@@ -140,15 +140,15 @@ WebRTCICECandidate convertToWebRTCIceCandidate(const RTCIceCandidateInitOrRTCIce
 }
 
 // Helper class for RTCPeerConnection::generateCertificate.
-class WebRTCCertificateObserver : public WebCallbacks<WebRTCCertificate*, void> {
+class WebRTCCertificateObserver : public WebRTCCertificateCallback {
 public:
-    // The created observer is responsible for deleting itself after onSuccess/onError. To avoid memory
-    // leak the observer should therefore be used in a WebRTCCertificateGenerator::generateCertificate call
-    // which is ensured to invoke one of these. Takes ownership of |resolver|.
+    // Takes ownership of |resolver|.
     static WebRTCCertificateObserver* create(ScriptPromiseResolver* resolver)
     {
         return new WebRTCCertificateObserver(resolver);
     }
+
+    ~WebRTCCertificateObserver() override {}
 
     DEFINE_INLINE_TRACE() { visitor->trace(m_resolver); }
 
@@ -156,18 +156,14 @@ private:
     WebRTCCertificateObserver(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) {}
 
-    ~WebRTCCertificateObserver() override {}
-
-    void onSuccess(WebRTCCertificate* certificate) override
+    void onSuccess(WebPassOwnPtr<WebRTCCertificate> certificate) override
     {
         m_resolver->resolve(new RTCCertificate(certificate));
-        delete this;
     }
 
     void onError() override
     {
         m_resolver->reject();
-        delete this;
     }
 
     Persistent<ScriptPromiseResolver> m_resolver;
@@ -660,7 +656,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(ScriptState* scriptState, c
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebRTCCertificateObserver* certificateObserver = WebRTCCertificateObserver::create(resolver);
+    WebPassOwnPtr<WebRTCCertificateObserver> certificateObserver = adoptWebPtr(WebRTCCertificateObserver::create(resolver));
 
     // Generate certificate. The |certificateObserver| will resolve the promise asynchronously upon completion.
     // The observer will manage its own destruction as well as the resolver's destruction.

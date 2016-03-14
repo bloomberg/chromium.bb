@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/rtc_certificate_generator.h"
 
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
@@ -55,12 +56,12 @@ class RTCCertificateIdentityObserver
       const blink::WebRTCKeyParams& key_params,
       const GURL& url,
       const GURL& first_party_for_cookies,
-      blink::WebCallbacks<blink::WebRTCCertificate*, void>* observer) {
+      blink::WebPassOwnPtr<blink::WebRTCCertificateCallback> observer) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(!observer_) << "Already have a RequestIdentity in progress.";
-    DCHECK(observer);
     key_params_ = key_params;
     observer_ = observer;
+    DCHECK(observer_);
     // Identity request must be performed on the WebRTC signaling thread.
     signaling_thread_->PostTask(FROM_HERE, base::Bind(
         &RTCCertificateIdentityObserver::RequestIdentityOnWebRtcSignalingThread,
@@ -115,9 +116,10 @@ class RTCCertificateIdentityObserver
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(observer_);
     if (certificate)
-      observer_->onSuccess(certificate);
+      observer_->onSuccess(blink::adoptWebPtr(certificate));
     else
       observer_->onError();
+    observer_.reset();
   }
 
   // The main thread is the renderer thread.
@@ -126,7 +128,7 @@ class RTCCertificateIdentityObserver
   // PeerConnectionIdentityStore::RequestIdentity on, as is required.
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   blink::WebRTCKeyParams key_params_;
-  blink::WebCallbacks<blink::WebRTCCertificate*, void>* observer_;
+  scoped_ptr<blink::WebRTCCertificateCallback> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCCertificateIdentityObserver);
 };
@@ -137,7 +139,7 @@ void RTCCertificateGenerator::generateCertificate(
     const blink::WebRTCKeyParams& key_params,
     const blink::WebURL& url,
     const blink::WebURL& first_party_for_cookies,
-    blink::WebCallbacks<blink::WebRTCCertificate*, void>* observer) {
+    blink::WebPassOwnPtr<blink::WebRTCCertificateCallback> observer) {
   DCHECK(isSupportedKeyParams(key_params));
 
 #if defined(ENABLE_WEBRTC)

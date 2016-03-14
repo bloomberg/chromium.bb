@@ -19,8 +19,9 @@ RTCCertificate::RTCCertificate(
 RTCCertificate::~RTCCertificate() {
 }
 
-RTCCertificate* RTCCertificate::shallowCopy() const {
-  return new RTCCertificate(key_params_, certificate_);
+blink::WebPassOwnPtr<blink::WebRTCCertificate> RTCCertificate::shallowCopy()
+    const {
+  return blink::adoptWebPtr(new RTCCertificate(key_params_, certificate_));
 }
 
 const blink::WebRTCKeyParams& RTCCertificate::keyParams() const {

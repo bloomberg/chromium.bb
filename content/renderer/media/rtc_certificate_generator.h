@@ -25,7 +25,7 @@ class RTCCertificateGenerator : public blink::WebRTCCertificateGenerator {
       const blink::WebRTCKeyParams& key_params,
       const blink::WebURL& url,
       const blink::WebURL& first_party_for_cookies,
-      blink::WebCallbacks<blink::WebRTCCertificate*, void>* observer) override;
+      blink::WebPassOwnPtr<blink::WebRTCCertificateCallback> observer) override;
   bool isSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override;
 
  private:

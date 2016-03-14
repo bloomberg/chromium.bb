@@ -32,24 +32,27 @@
 #define WebRTCCertificateGenerator_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "public/platform/WebRTCKeyParams.h"
 #include "public/platform/WebURL.h"
 
 namespace blink {
 
+using WebRTCCertificateCallback = WebCallbacks<WebPassOwnPtr<WebRTCCertificate>, void>;
+
 // Interface defining a class that can generate WebRTCCertificates asynchronously.
 class WebRTCCertificateGenerator {
 public:
     virtual ~WebRTCCertificateGenerator() {}
 
-    // Start generating a certificate asynchronously. The |observer| is invoked on the
+    // Start generating a certificate asynchronously. |observer| is invoked on the
     // same thread that called generateCertificate when the operation is completed.
     virtual void generateCertificate(
         const WebRTCKeyParams&,
         const WebURL&,
         const WebURL& firstPartyForCookies,
-        WebCallbacks<WebRTCCertificate*, void>* observer) = 0;
+        WebPassOwnPtr<WebRTCCertificateCallback> observer) = 0;
 
     // Determines if the parameters are supported by generateCertificate.
     // For example, if the number of bits of some parameter is too small or too large we

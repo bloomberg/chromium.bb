@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "platform/heap/GarbageCollected.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "wtf/OwnPtr.h"
 
@@ -43,11 +44,10 @@ class RTCCertificate final : public GarbageCollectedFinalized<RTCCertificate>, p
     DEFINE_WRAPPERTYPEINFO();
 public:
     // Takes ownership of the certificate.
-    RTCCertificate(WebRTCCertificate*);
+    RTCCertificate(WebPassOwnPtr<WebRTCCertificate>);
 
-    // Returns a new WebRTCCertificate shallow copy that the caller is
-    // responsible for deleting.
-    WebRTCCertificate* certificateShallowCopy() const;
+    // Returns a new WebRTCCertificate shallow copy.
+    WebPassOwnPtr<WebRTCCertificate> certificateShallowCopy() const;
 
     DEFINE_INLINE_TRACE() {}
 

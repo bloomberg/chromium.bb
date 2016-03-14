@@ -97,8 +97,7 @@ public:
     void setRtcpMuxPolicy(RTCRtcpMuxPolicy rtcpMuxPolicy) { m_rtcpMuxPolicy = rtcpMuxPolicy; }
     RTCRtcpMuxPolicy rtcpMuxPolicy() { return m_rtcpMuxPolicy; }
 
-    // Takes ownership of |certificate|.
-    void appendCertificate(WebRTCCertificate* certificate) { m_certificates.append(adoptPtr(certificate)); }
+    void appendCertificate(WebPassOwnPtr<WebRTCCertificate> certificate) { m_certificates.append(certificate.release()); }
     size_t numberOfCertificates() const { return m_certificates.size(); }
     WebRTCCertificate* certificate(size_t index) const { return m_certificates[index].get(); }
 
