@@ -133,13 +133,8 @@ void LayoutEmbeddedObject::layout()
     updateLayerTransformAfterLayout();
 
     Widget* widget = this->widget();
-    if (widget) {
-        // TODO(chrishtr): remove this code. It's now called in FrameView::updateStyleAndLayoutIfNeededRecursive.
-        if (widget->isPluginView())
-            toPluginView(widget)->updateAllLifecyclePhases();
-    } else if (frameView()) {
+    if (!widget && frameView())
         frameView()->addPartToUpdate(*this);
-    }
 
     clearNeedsLayout();
 }
