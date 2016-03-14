@@ -167,8 +167,6 @@ template("test") {
                                "include_dirs",
                                "ldflags",
                                "libs",
-                               "output_extension",
-                               "output_name",
                                "public",
                                "public_configs",
                                "public_deps",

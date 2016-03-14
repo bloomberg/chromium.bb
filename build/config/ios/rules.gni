@@ -180,6 +180,7 @@ template("ios_app") {
 
   # Top level group
   group(target_name) {
+    forward_variables_from(invoker, [ "visibility" ])
     deps = [
       ":$bin_gen_target_name",
       ":$plist_gen_target_name",
