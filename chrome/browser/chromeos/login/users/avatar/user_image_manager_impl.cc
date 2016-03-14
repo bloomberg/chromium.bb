@@ -239,14 +239,14 @@ class UserImageManagerImpl::Job {
   // Called back after an image has been loaded from disk.
   void OnLoadImageDone(bool save, const user_manager::UserImage& user_image);
 
-  // Updates the user object with |user_image_|.
-  void UpdateUser();
+  // Updates the user object with |user_image|.
+  void UpdateUser(const user_manager::UserImage& user_image);
 
   // Saves |user_image_| to disk in JPEG format. Local state will be updated
   // when a callback indicates that the image has been saved.
-  void SaveImageAndUpdateLocalState();
+  void SaveImageAndUpdateLocalState(const user_manager::UserImage& user_image);
 
-  // Called back after the |user_image_| has been saved to
+  // Called back after the user image has been saved to
   // disk. Updates the user image information in local state. The
   // information is only updated if |success| is true (indicating that
   // the image was saved successfully) or the user image is the
@@ -256,7 +256,7 @@ class UserImageManagerImpl::Job {
   void OnSaveImageDone(bool success);
 
   // Updates the user image in local state, setting it to one of the
-  // default images or the saved |user_image_|, depending on
+  // default images or the saved user image, depending on
   // |image_index_|.
   void UpdateLocalState();
 
@@ -273,8 +273,6 @@ class UserImageManagerImpl::Job {
   int image_index_;
   GURL image_url_;
   base::FilePath image_path_;
-
-  user_manager::UserImage user_image_;
 
   base::WeakPtrFactory<Job> weak_factory_;
 
@@ -303,9 +301,9 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
   if (image_index_ >= 0 &&
       image_index_ < default_user_image::kDefaultImagesCount) {
     // Load one of the default images. This happens synchronously.
-    user_image_ = user_manager::UserImage(
+    const user_manager::UserImage user_image(
         default_user_image::GetDefaultImage(image_index_));
-    UpdateUser();
+    UpdateUser(user_image);
     NotifyJobDone();
   } else if (image_index_ == user_manager::User::USER_IMAGE_EXTERNAL ||
              image_index_ == user_manager::User::USER_IMAGE_PROFILE) {
@@ -333,10 +331,10 @@ void UserImageManagerImpl::Job::SetToDefaultImage(int default_image_index) {
   DCHECK_GT(default_user_image::kDefaultImagesCount, default_image_index);
 
   image_index_ = default_image_index;
-  user_image_ = user_manager::UserImage(
+  const user_manager::UserImage user_image(
       default_user_image::GetDefaultImage(image_index_));
 
-  UpdateUser();
+  UpdateUser(user_image);
   UpdateLocalState();
   NotifyJobDone();
 }
@@ -351,10 +349,9 @@ void UserImageManagerImpl::Job::SetToImage(
          image_index == user_manager::User::USER_IMAGE_PROFILE);
 
   image_index_ = image_index;
-  user_image_ = user_image;
 
-  UpdateUser();
-  SaveImageAndUpdateLocalState();
+  UpdateUser(user_image);
+  SaveImageAndUpdateLocalState(user_image);
 }
 
 void UserImageManagerImpl::Job::SetToImageData(scoped_ptr<std::string> data) {
@@ -399,21 +396,21 @@ void UserImageManagerImpl::Job::SetToPath(const base::FilePath& path,
 void UserImageManagerImpl::Job::OnLoadImageDone(
     bool save,
     const user_manager::UserImage& user_image) {
-  user_image_ = user_image;
-  UpdateUser();
+  UpdateUser(user_image);
   if (save)
-    SaveImageAndUpdateLocalState();
+    SaveImageAndUpdateLocalState(user_image);
   else
     NotifyJobDone();
 }
 
-void UserImageManagerImpl::Job::UpdateUser() {
+void UserImageManagerImpl::Job::UpdateUser(
+    const user_manager::UserImage& user_image) {
   user_manager::User* user = parent_->GetUserAndModify();
   if (!user)
     return;
 
-  if (!user_image_.image().isNull()) {
-    user->SetImage(user_image_, image_index_);
+  if (!user_image.image().isNull()) {
+    user->SetImage(user_image, image_index_);
   } else {
     user->SetStubImage(
         user_manager::UserImage(
@@ -427,15 +424,15 @@ void UserImageManagerImpl::Job::UpdateUser() {
   parent_->OnJobChangedUserImage();
 }
 
-void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState() {
+void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState(
+    const user_manager::UserImage& user_image) {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   image_path_ = user_data_dir.Append(user_id() + kSafeImagePathExtension);
 
   base::PostTaskAndReplyWithResult(
-      parent_->background_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&SaveImage, user_image_, image_path_),
+      parent_->background_task_runner_.get(), FROM_HERE,
+      base::Bind(&SaveImage, user_image, image_path_),
       base::Bind(&Job::OnSaveImageDone, weak_factory_.GetWeakPtr()));
 }
 
