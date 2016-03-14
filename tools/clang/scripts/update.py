@@ -173,10 +173,12 @@ def RmTree(dir):
 
 
 def RmCmakeCache(dir):
-  """Delete CMakeCache.txt files under dir recursively."""
-  for dirpath, _, files in os.walk(dir):
+  """Delete CMake cache related files from dir."""
+  for dirpath, dirs, files in os.walk(dir):
     if 'CMakeCache.txt' in files:
       os.remove(os.path.join(dirpath, 'CMakeCache.txt'))
+    if 'CMakeFiles' in dirs:
+      RmTree(os.path.join(dirpath, 'CMakeFiles'))
 
 
 def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
