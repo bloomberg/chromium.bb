@@ -1175,10 +1175,8 @@ void RendererBlinkPlatformImpl::connectToRemoteService(
       RenderThreadImpl::current()->layout_test_mode())
     return;
 
-  if (ServiceRegistry* registry = RenderThread::Get()->GetServiceRegistry()) {
-    // registry can be null during testing.
-    registry->ConnectToRemoteService(name, std::move(handle));
-  }
+  RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
+      name, std::move(handle));
 }
 
 void RendererBlinkPlatformImpl::startListening(

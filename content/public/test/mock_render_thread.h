@@ -159,6 +159,7 @@ class MockRenderThread : public RenderThread {
   base::ObserverList<RenderProcessObserver> observers_;
 
   cc::TestSharedBitmapManager shared_bitmap_manager_;
+  scoped_ptr<ServiceRegistry> service_registry_;
 };
 
 }  // namespace content

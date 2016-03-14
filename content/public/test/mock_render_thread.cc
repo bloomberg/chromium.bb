@@ -4,10 +4,12 @@
 
 #include "content/public/test/mock_render_thread.h"
 
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
+#include "content/common/mojo/service_registry_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/renderer/render_view_impl.h"
@@ -25,7 +27,8 @@ MockRenderThread::MockRenderThread()
       new_window_routing_id_(0),
       new_window_main_frame_routing_id_(0),
       new_window_main_frame_widget_routing_id_(0),
-      new_frame_routing_id_(0) {}
+      new_frame_routing_id_(0),
+      service_registry_(new ServiceRegistryImpl) {}
 
 MockRenderThread::~MockRenderThread() {
   while (!filters_.empty()) {
@@ -186,7 +189,8 @@ void MockRenderThread::ReleaseCachedFonts() {
 #endif  // OS_WIN
 
 ServiceRegistry* MockRenderThread::GetServiceRegistry() {
-  return NULL;
+  DCHECK(service_registry_);
+  return service_registry_.get();
 }
 
 void MockRenderThread::SendCloseMessage() {

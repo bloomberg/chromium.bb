@@ -26,10 +26,8 @@ WebCacheRenderProcessObserver::WebCacheRenderProcessObserver()
     pending_cache_capacity_(kUnitializedCacheCapacity) {
   content::ServiceRegistry* service_registry =
       content::RenderThread::Get()->GetServiceRegistry();
-  if (service_registry) {
-    service_registry->AddService(base::Bind(
-        &WebCacheRenderProcessObserver::BindRequest, base::Unretained(this)));
-  }
+  service_registry->AddService(base::Bind(
+      &WebCacheRenderProcessObserver::BindRequest, base::Unretained(this)));
 }
 
 WebCacheRenderProcessObserver::~WebCacheRenderProcessObserver() {

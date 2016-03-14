@@ -1632,6 +1632,7 @@ void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
 #endif  // OS_WIN
 
 ServiceRegistry* RenderThreadImpl::GetServiceRegistry() {
+  DCHECK(service_registry());
   return service_registry();
 }
 

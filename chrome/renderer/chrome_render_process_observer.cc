@@ -265,11 +265,8 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());
 
-  content::ServiceRegistry* service_registry = thread->GetServiceRegistry();
-  if (service_registry) {
-    service_registry->AddService<ResourceUsageReporter>(
-        base::Bind(CreateResourceUsageReporter, weak_factory_.GetWeakPtr()));
-  }
+  thread->GetServiceRegistry()->AddService<ResourceUsageReporter>(
+      base::Bind(CreateResourceUsageReporter, weak_factory_.GetWeakPtr()));
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
