@@ -37,5 +37,13 @@ test(function() {
     document.execCommand('paste');
     assert_equals(textarea2.value, 'foo\n');
 }, 'Pasting text ending \\n should not add another \\n.');
+
+test(function() {
+    var textarea = document.createElement('textarea');
+    document.body.appendChild(textarea);
+    textarea.focus();
+    document.execCommand('InsertLineBreak');
+    assert_equals(textarea.value, '\n');
+}, 'InsertLineBreak command should insert just one newline.');
 </script>
 </body>
