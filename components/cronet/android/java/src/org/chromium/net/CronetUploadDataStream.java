@@ -34,6 +34,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     private final Executor mExecutor;
     private final UploadDataProvider mDataProvider;
     private long mLength;
+    private long mRemainingLength;
     private CronetUrlRequest mRequest;
 
     // Reusable read task, to reduce redundant memory allocation.
@@ -186,7 +187,12 @@ final class CronetUploadDataStream implements UploadDataSink {
                         "Non-chunked upload can't have last chunk");
             }
             int bytesRead = mByteBuffer.position();
-
+            mRemainingLength -= bytesRead;
+            if (mRemainingLength < 0 && mLength >= 0) {
+                throw new IllegalArgumentException(
+                        String.format("Read upload data length %d exceeds expected length %d",
+                                mLength - mRemainingLength, mLength));
+            }
             mByteBuffer = null;
             mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
 
@@ -213,6 +219,7 @@ final class CronetUploadDataStream implements UploadDataSink {
         synchronized (mLock) {
             checkState(UserCallback.REWIND);
             mInWhichUserCallback = UserCallback.NOT_IN_CALLBACK;
+            mRemainingLength = mLength;
             // Request may been canceled already.
             if (mUploadDataStreamAdapter == 0) {
                 return;
@@ -306,6 +313,7 @@ final class CronetUploadDataStream implements UploadDataSink {
         }
         try {
             mLength = mDataProvider.getLength();
+            mRemainingLength = mLength;
         } catch (Throwable t) {
             onError(t);
         }
@@ -334,6 +342,7 @@ final class CronetUploadDataStream implements UploadDataSink {
         synchronized (mLock) {
             mUploadDataStreamAdapter = nativeCreateAdapterForTesting();
             mLength = mDataProvider.getLength();
+            mRemainingLength = mLength;
             return nativeCreateUploadDataStreamForTesting(mLength, mUploadDataStreamAdapter);
         }
     }

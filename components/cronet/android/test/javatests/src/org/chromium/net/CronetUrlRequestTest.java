@@ -15,6 +15,7 @@ import org.chromium.net.TestUrlRequestCallback.FailureType;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.test.FailurePhase;
 
+import java.io.IOException;
 import java.net.ConnectException;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
@@ -1155,6 +1156,72 @@ public class CronetUrlRequestTest extends CronetTestBase {
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("test", callback.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadWithBadLength() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor()) {
+            @Override
+            public long getLength() throws IOException {
+                return 1;
+            }
+
+            @Override
+            public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
+                    throws IOException {
+                byteBuffer.put("12".getBytes());
+                uploadDataSink.onReadSucceeded(false);
+            }
+        };
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertEquals("Read upload data length 2 exceeds expected length 1",
+                callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadWithBadLengthBufferAligned() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor()) {
+            @Override
+            public long getLength() throws IOException {
+                return 8191;
+            }
+
+            @Override
+            public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
+                    throws IOException {
+                byteBuffer.put("0123456789abcdef".getBytes());
+                uploadDataSink.onReadSucceeded(false);
+            }
+        };
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+        assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertEquals("Read upload data length 8192 exceeds expected length 8191",
+                callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
     }
 
     @SmallTest

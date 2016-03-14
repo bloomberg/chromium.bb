@@ -287,6 +287,12 @@ final class JavaUrlRequest implements UrlRequest {
                 @Override
                 public void run() throws Exception {
                     mBuffer.flip();
+                    if (mTotalBytes != -1 && mTotalBytes - mWrittenBytes < mBuffer.remaining()) {
+                        enterUploadErrorState(new IllegalArgumentException(String.format(
+                                "Read upload data length %d exceeds expected length %d",
+                                mWrittenBytes + mBuffer.remaining(), mTotalBytes)));
+                        return;
+                    }
                     while (mBuffer.hasRemaining()) {
                         mWrittenBytes += mOutputChannel.write(mBuffer);
                     }
@@ -304,7 +310,9 @@ final class JavaUrlRequest implements UrlRequest {
                     } else if (mTotalBytes == mWrittenBytes) {
                         finish();
                     } else {
-                        throw new IllegalStateException("Wrote more bytes than were available");
+                        enterUploadErrorState(new IllegalArgumentException(String.format(
+                                "Read upload data length %d exceeds expected length %d",
+                                mWrittenBytes, mTotalBytes)));
                     }
                 }
             }));
