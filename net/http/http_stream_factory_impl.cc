@@ -54,13 +54,9 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
     HttpStreamRequest::Delegate* delegate,
     const BoundNetLog& net_log) {
   DCHECK(!for_websockets_);
-  return RequestStreamInternal(request_info,
-                               priority,
-                               server_ssl_config,
-                               proxy_ssl_config,
-                               delegate,
-                               NULL,
-                               net_log);
+  return RequestStreamInternal(request_info, priority, server_ssl_config,
+                               proxy_ssl_config, delegate, nullptr,
+                               HttpStreamRequest::HTTP_STREAM, net_log);
 }
 
 HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
@@ -73,13 +69,9 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
     const BoundNetLog& net_log) {
   DCHECK(for_websockets_);
   DCHECK(create_helper);
-  return RequestStreamInternal(request_info,
-                               priority,
-                               server_ssl_config,
-                               proxy_ssl_config,
-                               delegate,
-                               create_helper,
-                               net_log);
+  return RequestStreamInternal(request_info, priority, server_ssl_config,
+                               proxy_ssl_config, delegate, create_helper,
+                               HttpStreamRequest::HTTP_STREAM, net_log);
 }
 
 HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamJob(
@@ -92,24 +84,9 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamJob(
   DCHECK(!for_websockets_);
   DCHECK(request_info.url.SchemeIs(url::kHttpsScheme));
 
-// TODO(xunjieli): Create QUIC's version of BidirectionalStreamJob.
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-  HostPortPair server = HostPortPair::FromURL(request_info.url);
-  GURL origin_url = ApplyHostMappingRules(request_info.url, &server);
-  Request* request =
-      new Request(request_info.url, this, delegate, nullptr, net_log,
-                  Request::BIDIRECTIONAL_STREAM_SPDY_JOB);
-  Job* job = new Job(this, session_, request_info, priority, server_ssl_config,
-                     proxy_ssl_config, server, origin_url, net_log.net_log());
-  request->AttachJob(job);
-
-  job->Start(request);
-  return request;
-
-#else
-  DCHECK(false);
-  return nullptr;
-#endif
+  return RequestStreamInternal(
+      request_info, priority, server_ssl_config, proxy_ssl_config, delegate,
+      nullptr, HttpStreamRequest::BIDIRECTIONAL_STREAM, net_log);
 }
 
 HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
@@ -120,10 +97,11 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
     HttpStreamRequest::Delegate* delegate,
     WebSocketHandshakeStreamBase::CreateHelper*
         websocket_handshake_stream_create_helper,
+    HttpStreamRequest::StreamType stream_type,
     const BoundNetLog& net_log) {
   Request* request = new Request(request_info.url, this, delegate,
                                  websocket_handshake_stream_create_helper,
-                                 net_log, Request::HTTP_STREAM);
+                                 net_log, stream_type);
   HostPortPair server = HostPortPair::FromURL(request_info.url);
   GURL origin_url = ApplyHostMappingRules(request_info.url, &server);
 
@@ -338,7 +316,8 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
       // TODO(ricea): Restore this code path when WebSocket over SPDY
       // implementation is ready.
       NOTREACHED();
-    } else if (request->for_bidirectional()) {
+    } else if (request->stream_type() ==
+               HttpStreamRequest::BIDIRECTIONAL_STREAM) {
 #if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
       request->OnBidirectionalStreamJobReady(
           nullptr, used_ssl_config, used_proxy_info,

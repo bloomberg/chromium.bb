@@ -55,6 +55,15 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRstPacket(
     bool include_version,
     QuicStreamId stream_id,
     QuicRstStreamErrorCode error_code) {
+  return MakeRstPacket(num, include_version, stream_id, error_code, 0);
+}
+
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRstPacket(
+    QuicPacketNumber num,
+    bool include_version,
+    QuicStreamId stream_id,
+    QuicRstStreamErrorCode error_code,
+    size_t bytes_written) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id_;
   header.public_header.reset_flag = false;
@@ -65,7 +74,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRstPacket(
   header.fec_flag = false;
   header.fec_group = 0;
 
-  QuicRstStreamFrame rst(stream_id, error_code, 0);
+  QuicRstStreamFrame rst(stream_id, error_code, bytes_written);
+  DVLOG(1) << "Adding frame: " << QuicFrame(&rst);
   return scoped_ptr<QuicEncryptedPacket>(MakePacket(header, QuicFrame(&rst)));
 }
 

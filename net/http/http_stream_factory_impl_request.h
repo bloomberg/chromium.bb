@@ -27,12 +27,6 @@ class SpdySession;
 
 class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
  public:
-  // Indicates which type of stream is requested.
-  enum StreamType {
-    BIDIRECTIONAL_STREAM_SPDY_JOB,
-    HTTP_STREAM,
-  };
-
   Request(const GURL& url,
           HttpStreamFactoryImpl* factory,
           HttpStreamRequest::Delegate* delegate,
@@ -69,8 +63,9 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   void RemoveRequestFromSpdySessionRequestMap();
 
   // Called by an attached Job if it sets up a SpdySession.
-  // |stream| is null when |for_bidirectional| is true.
-  // |bidirectional_stream_spdy_job| is null when |for_bidirectional| is false.
+  // |stream| is null when |stream_type| is HttpStreamRequest::HTTP_STREAM.
+  // |bidirectional_stream_spdy_job| is null when |stream_type| is
+  // HttpStreamRequest::BIDIRECTIONAL_STREAM.
   void OnNewSpdySessionReady(
       Job* job,
       scoped_ptr<HttpStream> stream,
@@ -139,7 +134,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   NextProto protocol_negotiated() const override;
   bool using_spdy() const override;
   const ConnectionAttempts& connection_attempts() const override;
-  bool for_bidirectional() const { return for_bidirectional_; }
+  HttpStreamRequest::StreamType stream_type() const { return stream_type_; }
 
  private:
   // Used to bind |job| to the request and orphan all other jobs in |jobs_|.
@@ -173,7 +168,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   bool using_spdy_;
   ConnectionAttempts connection_attempts_;
 
-  const bool for_bidirectional_;
+  const HttpStreamRequest::StreamType stream_type_;
   DISALLOW_COPY_AND_ASSIGN(Request);
 };
 

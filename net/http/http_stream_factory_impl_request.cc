@@ -35,7 +35,7 @@ HttpStreamFactoryImpl::Request::Request(
       was_npn_negotiated_(false),
       protocol_negotiated_(kProtoUnknown),
       using_spdy_(false),
-      for_bidirectional_(stream_type == BIDIRECTIONAL_STREAM_SPDY_JOB) {
+      stream_type_(stream_type) {
   DCHECK(factory_);
   DCHECK(delegate_);
 
@@ -83,7 +83,7 @@ void HttpStreamFactoryImpl::Request::OnStreamReady(
     const ProxyInfo& used_proxy_info,
     HttpStream* stream) {
   DCHECK(!factory_->for_websockets_);
-  DCHECK(!for_bidirectional_);
+  DCHECK_EQ(HttpStreamRequest::HTTP_STREAM, stream_type_);
   DCHECK(stream);
   DCHECK(completed_);
 
@@ -97,7 +97,7 @@ void HttpStreamFactoryImpl::Request::OnBidirectionalStreamJobReady(
     const ProxyInfo& used_proxy_info,
     BidirectionalStreamJob* stream_job) {
   DCHECK(!factory_->for_websockets_);
-  DCHECK(for_bidirectional_);
+  DCHECK_EQ(HttpStreamRequest::BIDIRECTIONAL_STREAM, stream_type_);
   DCHECK(stream_job);
   DCHECK(completed_);
 
@@ -112,7 +112,7 @@ void HttpStreamFactoryImpl::Request::OnWebSocketHandshakeStreamReady(
     const ProxyInfo& used_proxy_info,
     WebSocketHandshakeStreamBase* stream) {
   DCHECK(factory_->for_websockets_);
-  DCHECK(!for_bidirectional_);
+  DCHECK_EQ(HttpStreamRequest::HTTP_STREAM, stream_type_);
   DCHECK(stream);
   DCHECK(completed_);
 
@@ -314,7 +314,7 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
     // TODO(ricea): Re-instate this code when WebSockets over SPDY is
     // implemented.
     NOTREACHED();
-  } else if (for_bidirectional_) {
+  } else if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
     DCHECK(bidirectional_stream_job);
     DCHECK(!stream);
 #if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
