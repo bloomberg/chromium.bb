@@ -58,8 +58,7 @@ public:
     void disable(ErrorString*) override;
 
     void workerTerminated(WorkerInspectorProxy*);
-
-    void workerConsoleAgentEnabled(WorkerGlobalScopeProxy*);
+    void workerConsoleAgentEnabled(WorkerInspectorProxy*);
 
 protected:
     ConsoleMessageStorage* messageStorage() override;
@@ -73,7 +72,8 @@ private:
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    HashSet<WorkerGlobalScopeProxy*> m_workersWithEnabledConsole;
+    using WorkerInspectorProxySet = WillBeHeapHashSet<RawPtrWillBeMember<WorkerInspectorProxy>>;
+    WorkerInspectorProxySet m_workersWithEnabledConsole;
 
     static int s_enabledAgentCount;
 };

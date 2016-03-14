@@ -336,7 +336,7 @@ interface InspectorInstrumentation {
     void didFireAnimationFrame(const InspectorInstrumentationCookie&);
 
     [Worker]
-    void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, const KURL& url, bool waitingForDebugger);
+    void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
 
     [Worker, PageConsole]
     void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);

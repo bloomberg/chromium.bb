@@ -30,7 +30,7 @@ public:
 
     CORE_EXPORT Vector<unsigned> argumentCounts() const;
 
-    void adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy*);
+    void adoptWorkerMessagesAfterTermination(WorkerInspectorProxy*);
     void frameWindowDiscarded(LocalDOMWindow*);
 
     size_t size() const;

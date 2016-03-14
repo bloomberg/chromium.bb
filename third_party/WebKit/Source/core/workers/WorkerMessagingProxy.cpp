@@ -86,7 +86,6 @@ WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, Pa
     ASSERT(m_workerObject);
     ASSERT((m_executionContext->isDocument() && isMainThread())
         || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
-    m_workerInspectorProxy->setWorkerGlobalScopeProxy(this);
 }
 
 WorkerMessagingProxy::~WorkerMessagingProxy()
@@ -96,7 +95,6 @@ WorkerMessagingProxy::~WorkerMessagingProxy()
         || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
     if (m_loaderProxy)
         m_loaderProxy->detachProvider(this);
-    m_workerInspectorProxy->setWorkerGlobalScopeProxy(nullptr);
 }
 
 void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode)
@@ -189,7 +187,7 @@ void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLev
         return;
 
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
-    consoleMessage->setWorkerGlobalScopeProxy(this);
+    consoleMessage->setWorkerInspectorProxy(m_workerInspectorProxy.get());
     frame->console().addMessage(consoleMessage.release());
 }
 
@@ -251,25 +249,14 @@ void WorkerMessagingProxy::terminateWorkerGlobalScope()
 
 void WorkerMessagingProxy::postMessageToPageInspector(const String& message)
 {
-    if (!m_workerInspectorProxy)
-        return;
-    WorkerInspectorProxy::PageInspector* pageInspector = m_workerInspectorProxy->pageInspector();
-    if (pageInspector)
-        pageInspector->dispatchMessageFromWorker(message);
+    if (m_workerInspectorProxy)
+        m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
 void WorkerMessagingProxy::postWorkerConsoleAgentEnabled()
 {
-    if (!m_workerInspectorProxy)
-        return;
-    WorkerInspectorProxy::PageInspector* pageInspector = m_workerInspectorProxy->pageInspector();
-    if (pageInspector)
-        pageInspector->workerConsoleAgentEnabled(this);
-}
-
-WorkerInspectorProxy* WorkerMessagingProxy::workerInspectorProxy()
-{
-    return m_workerInspectorProxy.get();
+    if (m_workerInspectorProxy)
+        m_workerInspectorProxy->workerConsoleAgentEnabled();
 }
 
 void WorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
@@ -300,7 +287,7 @@ void WorkerMessagingProxy::terminateInternally()
     Document* document = toDocument(m_executionContext.get());
     LocalFrame* frame = document->frame();
     if (frame)
-        frame->console().adoptWorkerMessagesAfterTermination(this);
+        frame->console().adoptWorkerMessagesAfterTermination(m_workerInspectorProxy.get());
 }
 
 } // namespace blink
