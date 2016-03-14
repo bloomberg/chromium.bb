@@ -123,6 +123,7 @@ CrSettingsSearchEnginesTest.prototype = {
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
     'search_engines_page_test.js',
   ]),
 };
@@ -152,6 +153,7 @@ CrSettingsCertificateManagerTest.prototype = {
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
     'certificate_manager_page_test.js',
   ]),
 };

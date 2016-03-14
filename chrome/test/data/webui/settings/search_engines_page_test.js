@@ -10,11 +10,10 @@ cr.define('settings_search_engines_page', function() {
    *
    * @constructor
    * @implements {settings.SearchEnginesBrowserProxy}
+   * @extends {settings.TestBrowserProxy}
    */
   var TestSearchEnginesBrowserProxy = function() {
-    /** @private {!Map<string, !PromiseResolver>} */
-    this.resolverMap_ = new Map();
-    var wrapperMethods = [
+    settings.TestBrowserProxy.call(this, [
       'getSearchEnginesList',
       'removeSearchEngine',
       'searchEngineEditCancelled',
@@ -24,54 +23,38 @@ cr.define('settings_search_engines_page', function() {
       'validateSearchEngineInput',
       'manageExtension',
       'disableExtension',
-    ];
-    wrapperMethods.forEach(this.resetResolver, this);
+    ]);
 
     /** @private {!SearchEnginesInfo} */
     this.searchEnginesInfo_ = {defaults: [], others: [], extensions: []};
   };
 
   TestSearchEnginesBrowserProxy.prototype = {
-    /**
-     * @param {string} methodName
-     * @return {!Promise} A promise that is resolved when the given method
-     *     is called.
-     */
-    whenCalled: function(methodName) {
-      return this.resolverMap_.get(methodName).promise;
-    },
-
-    /**
-     * Resets the PromiseResolver associated with the given method.
-     * @param {string} methodName
-     */
-    resetResolver: function(methodName) {
-      this.resolverMap_.set(methodName, new PromiseResolver());
-    },
+    __proto__: settings.TestBrowserProxy.prototype,
 
     /** @override */
     setDefaultSearchEngine: function(modelIndex) {
-      this.resolverMap_.get('setDefaultSearchEngine').resolve(modelIndex);
+      this.methodCalled('setDefaultSearchEngine', modelIndex);
     },
 
     /** @override */
     removeSearchEngine: function(modelIndex) {
-      this.resolverMap_.get('removeSearchEngine').resolve(modelIndex);
+      this.methodCalled('removeSearchEngine', modelIndex);
     },
 
     /** @override */
     searchEngineEditStarted: function(modelIndex) {
-      this.resolverMap_.get('searchEngineEditStarted').resolve(modelIndex);
+      this.methodCalled('searchEngineEditStarted', modelIndex);
     },
 
     /** @override */
     searchEngineEditCancelled: function() {
-      this.resolverMap_.get('searchEngineEditCancelled').resolve();
+      this.methodCalled('searchEngineEditCancelled');
     },
 
     /** @override */
     searchEngineEditCompleted: function(searchEngine, keyword, queryUrl) {
-      this.resolverMap_.get('searchEngineEditCompleted').resolve();
+      this.methodCalled('searchEngineEditCompleted');
     },
 
     /**
@@ -84,24 +67,24 @@ cr.define('settings_search_engines_page', function() {
 
     /** @override */
     getSearchEnginesList: function() {
-      this.resolverMap_.get('getSearchEnginesList').resolve();
+      this.methodCalled('getSearchEnginesList');
       return Promise.resolve(this.searchEnginesInfo_);
     },
 
     /** @override */
     validateSearchEngineInput: function(fieldName, fieldValue) {
-      this.resolverMap_.get('validateSearchEngineInput').resolve();
+      this.methodCalled('validateSearchEngineInput');
       return Promise.resolve(true);
     },
 
     /** @override */
     manageExtension: function(extensionId) {
-      this.resolverMap_.get('manageExtension').resolve(extensionId);
+      this.methodCalled('manageExtension', extensionId);
     },
 
     /** @override */
     disableExtension: function(extensionId) {
-      this.resolverMap_.get('disableExtension').resolve(extensionId);
+      this.methodCalled('disableExtension', extensionId);
     },
   };
 

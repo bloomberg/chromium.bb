@@ -10,38 +10,21 @@ cr.define('certificate_manager_page', function() {
    *
    * @constructor
    * @implements {settings.CertificatesBrowserProxy}
+   * @extends {settings.TestBrowserProxy}
    */
   var TestCertificatesBrowserProxy = function() {
-    /** @private {!Map<string, !PromiseResolver>} */
-    this.resolverMap_ = new Map();
-    var wrapperMethods = [
+    settings.TestBrowserProxy.call(this, [
       'deleteCertificate',
       'editCaCertificateTrust',
       'getCaCertificateTrust',
-    ];
-    wrapperMethods.forEach(this.resetResolver, this);
+    ]);
 
     /** @private {!CaTrustInfo} */
     this.caTrustInfo_ = {ssl: true, email: true, objSign: true};
   };
 
   TestCertificatesBrowserProxy.prototype = {
-    /**
-     * @param {string} methodName
-     * @return {!Promise} A promise that is resolved when the given method
-     *     is called.
-     */
-    whenCalled: function(methodName) {
-      return this.resolverMap_.get(methodName).promise;
-    },
-
-    /**
-     * Resets the PromiseResolver associated with the given method.
-     * @param {string} methodName
-     */
-    resetResolver: function(methodName) {
-      this.resolverMap_.set(methodName, new PromiseResolver());
-    },
+    __proto__: settings.TestBrowserProxy.prototype,
 
     /**
      * @param {!CaTrustInfo} caTrustInfo
@@ -52,13 +35,13 @@ cr.define('certificate_manager_page', function() {
 
     /** @override */
     getCaCertificateTrust: function(id) {
-      this.resolverMap_.get('getCaCertificateTrust').resolve(id);
+      this.methodCalled('getCaCertificateTrust', id);
       return Promise.resolve(this.caTrustInfo_);
     },
 
     /** @override */
     editCaCertificateTrust: function(id, ssl, email, objSign) {
-      this.resolverMap_.get('editCaCertificateTrust').resolve({
+      this.methodCalled('editCaCertificateTrust', {
         id: id, ssl: ssl, email: email, objSign: objSign,
       });
       return Promise.resolve();
@@ -66,7 +49,7 @@ cr.define('certificate_manager_page', function() {
 
     /** @override */
     deleteCertificate: function(id) {
-      this.resolverMap_.get('deleteCertificate').resolve(id);
+      this.methodCalled('deleteCertificate', id);
       return Promise.resolve();
     },
   };
