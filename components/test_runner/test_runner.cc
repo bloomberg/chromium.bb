@@ -335,7 +335,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
 
   std::string PlatformName();
   std::string TooltipText();
-  bool DisableNotifyDone();
   int WebHistoryItemCount();
   bool InterceptPostMessage();
   void SetInterceptPostMessage(bool value);
@@ -627,7 +626,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // Properties.
       .SetProperty("platformName", &TestRunnerBindings::PlatformName)
       .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
-      .SetProperty("disableNotifyDone", &TestRunnerBindings::DisableNotifyDone)
       // webHistoryItemCount is used by tests in LayoutTests\http\tests\history
       .SetProperty("webHistoryItemCount",
                    &TestRunnerBindings::WebHistoryItemCount)
@@ -1568,12 +1566,6 @@ std::string TestRunnerBindings::TooltipText() {
   return std::string();
 }
 
-bool TestRunnerBindings::DisableNotifyDone() {
-  if (runner_)
-    return runner_->disable_notify_done_;
-  return false;
-}
-
 int TestRunnerBindings::WebHistoryItemCount() {
   if (runner_)
     return runner_->web_history_item_count_;
@@ -1664,7 +1656,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     : test_is_running_(false),
       close_remaining_windows_(false),
       work_queue_(this),
-      disable_notify_done_(false),
       web_history_item_count_(0),
       intercept_post_message_(false),
       test_interfaces_(interfaces),
@@ -1765,7 +1756,6 @@ void TestRunner::Reset() {
 
   platform_name_ = "chromium";
   tooltip_text_ = std::string();
-  disable_notify_done_ = false;
   web_history_item_count_ = 0;
   intercept_post_message_ = false;
 
@@ -2057,9 +2047,6 @@ class WorkItemBackForward : public TestRunner::WorkItem {
 };
 
 void TestRunner::NotifyDone() {
-  if (disable_notify_done_)
-    return;
-
   // Test didn't timeout. Kill the timeout timer.
   task_list_.RevokeAll();
 

@@ -690,12 +690,6 @@ class TestRunner : public WebTestRunner,
   // Bound variable to store the last tooltip text
   std::string tooltip_text_;
 
-  // Bound variable to disable notifyDone calls. This is used in GC leak
-  // tests, where existing LayoutTests are loaded within an iframe. The GC
-  // test harness will set this flag to ignore the notifyDone calls from the
-  // target LayoutTest.
-  bool disable_notify_done_;
-
   // Bound variable counting the number of top URLs visited.
   int web_history_item_count_;
 
