@@ -21,13 +21,10 @@ namespace {
 const int kFadeDurationMs = 240;
 
 // The length of the expand animation.
-const int kExpandDurationMs = 120;
+const int kExpandDurationMs = 240;
 
 // How long we should wait before hiding the scrollbar.
 const int kScrollbarHideTimeoutMs = 500;
-
-// How many frames per second to target for the expand animation.
-const int kExpandFrameRateHz = 60;
 
 // The thickness of the normal and expanded scrollbars.
 const int kScrollbarThickness = 12;
@@ -48,8 +45,10 @@ const int kExpandedScrollbarThumbInset = 3;
 const SkColor kScrollerDefaultThumbColor = SkColorSetARGB(0x38, 0, 0, 0);
 const SkColor kScrollerHoverThumbColor = SkColorSetARGB(0x80, 0, 0, 0);
 
+// Opacity of the overlay scrollbar.
+const float kOverlayOpacity = 0.8f;
+
 // Scroller track colors.
-// TODO(spqchan): Add an alpha channel for the overlay-style scroll track.
 const SkColor kScrollerTrackGradientColors[] = {
     SkColorSetRGB(0xEF, 0xEF, 0xEF), SkColorSetRGB(0xF9, 0xF9, 0xF9),
     SkColorSetRGB(0xFD, 0xFD, 0xFD), SkColorSetRGB(0xF6, 0xF6, 0xF6)};
@@ -168,16 +167,17 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
           base::TimeDelta::FromMilliseconds(kScrollbarHideTimeoutMs),
           base::Bind(&CocoaScrollBar::HideScrollbar, base::Unretained(this)),
           false),
-      expand_animation_(kExpandDurationMs, kExpandFrameRateHz, this),
+      thickness_animation_(this),
       is_expanded_(false),
       did_start_dragging_(false) {
   bridge_.reset([[ViewsScrollbarBridge alloc] initWithDelegate:this]);
-
   scroller_style_ = [ViewsScrollbarBridge getPreferredScrollerStyle];
+
+  thickness_animation_.SetSlideDuration(kExpandDurationMs);
 
   SetPaintToLayer(true);
   has_scrolltrack_ = scroller_style_ == NSScrollerStyleLegacy;
-  layer()->SetOpacity(scroller_style_ == NSScrollerStyleOverlay ? 0.0 : 1.0);
+  layer()->SetOpacity(scroller_style_ == NSScrollerStyleOverlay ? 0.0f : 1.0f);
 }
 
 CocoaScrollBar::~CocoaScrollBar() {
@@ -192,9 +192,8 @@ gfx::Rect CocoaScrollBar::GetTrackBounds() const {
 
   int inset = kScrollbarThumbInset;
   if (is_expanded_) {
-    inset = expand_animation_.
-        CurrentValueBetween(kScrollbarThumbInset,
-                            kExpandedScrollbarThumbInset);
+    inset = thickness_animation_.CurrentValueBetween(
+        kScrollbarThumbInset, kExpandedScrollbarThumbInset);
   }
   local_bounds.Inset(inset, inset);
 
@@ -306,13 +305,12 @@ void CocoaScrollBar::OnMouseEntered(const ui::MouseEvent& event) {
   // Expand the scrollbar. If the scrollbar is hidden, don't animate it.
   if (!is_expanded_) {
     SetScrolltrackVisible(true);
-
     is_expanded_ = true;
     if (IsScrollbarFullyHidden()) {
-      expand_animation_.SetCurrentValue(1.0);
+      thickness_animation_.Reset(1.0);
       UpdateScrollbarThickness();
     } else {
-      expand_animation_.Start();
+      thickness_animation_.Show();
     }
   }
 
@@ -348,7 +346,7 @@ void CocoaScrollBar::OnScrollerStyleChanged() {
     return;
 
   // Cancel all of the animations.
-  expand_animation_.Stop();
+  thickness_animation_.Reset();
   layer()->GetAnimator()->AbortAllAnimations();
 
   scroller_style_ = scroller_style;
@@ -359,8 +357,9 @@ void CocoaScrollBar::OnScrollerStyleChanged() {
 
   if (scroller_style_ == NSScrollerStyleOverlay) {
     // Hide the scrollbar, but don't fade out.
-    layer()->SetOpacity(0.0);
+    layer()->SetOpacity(0.0f);
     ResetOverlayScrollbar();
+    GetThumb()->SchedulePaint();
   } else {
     is_expanded_ = false;
     SetScrolltrackVisible(true);
@@ -384,18 +383,25 @@ void CocoaScrollBar::AnimationProgressed(const gfx::Animation* animation) {
   UpdateScrollbarThickness();
 }
 
+void CocoaScrollBar::AnimationEnded(const gfx::Animation* animation) {
+  // Remove the scrolltrack and set |is_expanded| to false at the end of
+  // the shrink animation.
+  if (!thickness_animation_.IsShowing()) {
+    is_expanded_ = false;
+    SetScrolltrackVisible(false);
+  }
+}
+
 //////////////////////////////////////////////////////////////////
 // CocoaScrollBar, public:
 
 bool CocoaScrollBar::IsScrollbarFullyHidden() const {
-  return layer()->opacity() == 0.0;
+  return layer()->opacity() == 0.0f;
 }
 
 //////////////////////////////////////////////////////////////////
 // CocoaScrollBar, private:
 
-// TODO(spqchan): Animate the scrollbar shrinking back to its original
-// thickness when the scrollbar fades away so that it'll look less janky.
 void CocoaScrollBar::HideScrollbar() {
   DCHECK_EQ(scroller_style_, NSScrollerStyleOverlay);
 
@@ -415,12 +421,23 @@ void CocoaScrollBar::HideScrollbar() {
   animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kFadeDurationMs));
   animation.AddObserver(this);
-  layer()->SetOpacity(0.0);
+  layer()->SetOpacity(0.0f);
 }
 
 void CocoaScrollBar::ShowScrollbar() {
+  // If the scrollbar is still expanded but has not completely faded away,
+  // then shrink it back to its original state.
+  if (is_expanded_ && !IsHoverOrPressedState() &&
+      layer()->GetAnimator()->IsAnimatingProperty(
+          ui::LayerAnimationElement::OPACITY)) {
+    DCHECK_EQ(scroller_style_, NSScrollerStyleOverlay);
+    thickness_animation_.Hide();
+  }
+
   // Updates the scrolltrack and repaint it, if necessary.
-  layer()->SetOpacity(1.0);
+  double opacity =
+      scroller_style_ == NSScrollerStyleOverlay ? kOverlayOpacity : 1.0f;
+  layer()->SetOpacity(opacity);
   hide_scrollbar_timer_.Stop();
 }
 
@@ -440,10 +457,11 @@ void CocoaScrollBar::UpdateScrollbarThickness() {
 }
 
 void CocoaScrollBar::ResetOverlayScrollbar() {
-  if (!IsHoverOrPressedState() && IsScrollbarFullyHidden()) {
+  if (!IsHoverOrPressedState() && IsScrollbarFullyHidden() &&
+      !thickness_animation_.IsClosing()) {
     if (is_expanded_) {
       is_expanded_ = false;
-      expand_animation_.Stop();
+      thickness_animation_.Reset();
       UpdateScrollbarThickness();
     }
     SetScrolltrackVisible(false);
@@ -451,11 +469,11 @@ void CocoaScrollBar::ResetOverlayScrollbar() {
 }
 
 int CocoaScrollBar::ScrollbarThickness() const {
-  if (scroller_style_ == NSScrollerStyleLegacy || !is_expanded_)
+  if (scroller_style_ == NSScrollerStyleLegacy)
     return kScrollbarThickness;
 
-  return expand_animation_.
-      CurrentValueBetween(kScrollbarThickness, kExpandedScrollbarThickness);
+  return thickness_animation_.CurrentValueBetween(kScrollbarThickness,
+                                                  kExpandedScrollbarThickness);
 }
 
 void CocoaScrollBar::SetScrolltrackVisible(bool visible) {

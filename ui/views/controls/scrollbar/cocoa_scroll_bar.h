@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #import "base/mac/scoped_nsobject.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #import "ui/views/cocoa/views_scrollbar_bridge.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar.h"
 #include "ui/views/views_export.h"
@@ -43,6 +43,7 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // Returns the scroller style.
   NSScrollerStyle GetScrollerStyle() const { return scroller_style_; }
@@ -94,8 +95,10 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
   // Timer that will start the scrollbar's hiding animation when it reaches 0.
   base::Timer hide_scrollbar_timer_;
 
-  // Linear animation that expands an overlay scrollbar when hovered.
-  gfx::LinearAnimation expand_animation_;
+  // Slide animation that animates the thickness of an overlay scrollbar.
+  // The animation expands the scrollbar as the showing animation and shrinks
+  // the scrollbar as the hiding animation.
+  gfx::SlideAnimation thickness_animation_;
 
   // True when the scrollbar is expanded.
   bool is_expanded_;
