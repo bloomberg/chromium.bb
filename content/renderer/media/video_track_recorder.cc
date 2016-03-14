@@ -326,9 +326,11 @@ void VideoTrackRecorder::VpxEncoder::ConfigureEncoding(const gfx::Size& size) {
   // Note that due to http://crbug.com/440223, it might be necessary to force a
   // key frame after 10,000frames since decoding fails after 30,000 non-key
   // frames.
+  // Forcing a keyframe in regular intervals also allows seeking in the
+  // resulting recording with decent performance.
   codec_config_.kf_mode = VPX_KF_AUTO;
   codec_config_.kf_min_dist = 0;
-  codec_config_.kf_max_dist = 30000;
+  codec_config_.kf_max_dist = 100;
 
   // Do not saturate CPU utilization just for encoding. On a lower-end system
   // with only 1 or 2 cores, use only one thread for encoding. On systems with
