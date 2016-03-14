@@ -11,9 +11,6 @@
 #include "core/animation/ImageSliceStyleInterpolation.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
-#include "core/animation/LengthBoxStyleInterpolation.h"
-#include "core/animation/LengthStyleInterpolation.h"
-#include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/PropertyInterpolationTypesMapping.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -137,7 +134,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
     CSSPropertyID property = propertyHandle.isCSSProperty() ? propertyHandle.cssProperty() : propertyHandle.presentationAttribute();
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toCSSPropertySpecificKeyframe(end).value();
-    InterpolationRange range = RangeAll;
 
     // FIXME: Remove this flag once we can rely on legacy's behaviour being correct.
     bool forceDefaultInterpolation = false;
@@ -148,37 +144,10 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
 
     ASSERT(fromCSSValue && toCSSValue);
 
-    if (!CSSPropertyMetadata::isInterpolableProperty(property)) {
-        if (fromCSSValue == toCSSValue)
-            return ConstantStyleInterpolation::create(fromCSSValue, property);
-
-        return nullptr;
-    }
-
     if (fromCSSValue->isCSSWideKeyword() || toCSSValue->isCSSWideKeyword())
         return createLegacyStyleInterpolation(property, end, element, baseStyle);
 
     switch (property) {
-    case CSSPropertyTransformOrigin: {
-        RefPtr<Interpolation> interpolation = ListStyleInterpolation<LengthStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property, range);
-        if (interpolation)
-            return interpolation.release();
-
-        // FIXME: Handle keywords: top, right, left, center, bottom
-        return createLegacyStyleInterpolation(property, end, element, baseStyle);
-    }
-
-    case CSSPropertyClip: {
-        if (LengthBoxStyleInterpolation::usesDefaultInterpolation(*fromCSSValue, *toCSSValue)) {
-            forceDefaultInterpolation = true;
-            break;
-        }
-        RefPtr<Interpolation> interpolation = LengthBoxStyleInterpolation::maybeCreateFrom(*fromCSSValue, *toCSSValue, property);
-        if (interpolation)
-            return interpolation.release();
-        break;
-    }
-
     case CSSPropertyBorderImageSlice:
     case CSSPropertyWebkitMaskBoxImageSlice: {
         RefPtr<Interpolation> interpolation = ImageSliceStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property);
@@ -186,14 +155,12 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
             return interpolation.release();
         if (ImageSliceStyleInterpolation::usesDefaultInterpolation(*fromCSSValue, *toCSSValue))
             forceDefaultInterpolation = true;
-
         break;
     }
 
     default:
         // Fall back to LegacyStyleInterpolation.
         return createLegacyStyleInterpolation(property, end, element, baseStyle);
-        break;
     }
 
     if (fromCSSValue == toCSSValue)
@@ -206,7 +173,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
     }
 
     return nullptr;
-
 }
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
