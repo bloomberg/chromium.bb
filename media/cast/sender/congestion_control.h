@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
@@ -33,9 +34,12 @@ class CongestionControl {
   // Called when we receive an ACK for a frame.
   virtual void AckFrame(uint32_t frame_id, base::TimeTicks when) = 0;
 
-  // Returns the bitrate we should use for the next frame.  |soft_max_bitrate|
-  // is a soft upper-bound applied to the computed target bitrate before the
-  // hard upper- and lower-bounds are applied.
+  // Called when the RTP receiver received frames that have frame ID larger
+  // than |last_acked_frame_|.
+  virtual void AckLaterFrames(std::vector<uint32_t> received_frames,
+                              base::TimeTicks when) = 0;
+
+  // Returns the bitrate we should use for the next frame.
   virtual int GetBitrate(base::TimeTicks playout_time,
                          base::TimeDelta playout_delay) = 0;
 };

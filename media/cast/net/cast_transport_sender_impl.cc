@@ -372,18 +372,20 @@ void CastTransportSenderImpl::OnReceivedCastMessage(
     }
   }
 
-  if (cast_message.missing_frames_and_packets.empty())
-    return;
+  if (!cast_message.missing_frames_and_packets.empty()) {
+    // This call does two things.
+    // 1. Specifies that retransmissions for packets not listed in the set are
+    //    cancelled.
+    // 2. Specifies a deduplication window. For video this would be the most
+    //    recent RTT. For audio there is no deduplication.
+    ResendPackets(ssrc, cast_message.missing_frames_and_packets, true,
+                  dedup_info);
+  }
 
-  // This call does two things.
-  // 1. Specifies that retransmissions for packets not listed in the set are
-  //    cancelled.
-  // 2. Specifies a deduplication window. For video this would be the most
-  //    recent RTT. For audio there is no deduplication.
-  ResendPackets(ssrc,
-                cast_message.missing_frames_and_packets,
-                true,
-                dedup_info);
+  if (!cast_message.received_later_frames.empty()) {
+    // Cancel resending frames that were received by the RTP receiver.
+    CancelSendingFrames(ssrc, cast_message.received_later_frames);
+  }
 }
 
 void CastTransportSenderImpl::AddValidSsrc(uint32_t ssrc) {

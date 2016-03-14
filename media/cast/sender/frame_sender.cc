@@ -313,7 +313,8 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   if (last_send_time_.is_null())
     return;  // Cannot get an ACK without having first sent a frame.
 
-  if (cast_feedback.missing_frames_and_packets.empty()) {
+  if (cast_feedback.missing_frames_and_packets.empty() &&
+      cast_feedback.received_later_frames.empty()) {
     if (latest_acked_frame_id_ == cast_feedback.ack_frame_id) {
       VLOG(1) << SENDER_SSRC << "Received duplicate ACK for frame "
               << latest_acked_frame_id_;
@@ -341,6 +342,11 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   congestion_control_->AckFrame(cast_feedback.ack_frame_id, now);
+  if (!cast_feedback.received_later_frames.empty()) {
+    // Ack the received frames.
+    congestion_control_->AckLaterFrames(cast_feedback.received_later_frames,
+                                        now);
+  }
 
   scoped_ptr<FrameEvent> ack_event(new FrameEvent());
   ack_event->timestamp = now;

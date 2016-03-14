@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -125,6 +126,19 @@ TEST_F(CongestionControlTest, SimpleRun) {
       base::TimeDelta::FromMilliseconds(300));
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 1 / 3,
               bitrate,
+              safe_bitrate * 0.05);
+
+  // Ack the last frame.
+  std::vector<uint32_t> received_frames;
+  received_frames.push_back(frame_id_ - 1);
+  congestion_control_->AckLaterFrames(received_frames,
+                                      testing_clock_.NowTicks());
+
+  // Results should show that we have ~200ms to send.
+  bitrate = congestion_control_->GetBitrate(
+      testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
+      base::TimeDelta::FromMilliseconds(300));
+  EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 2 / 3, bitrate,
               safe_bitrate * 0.05);
 }
 

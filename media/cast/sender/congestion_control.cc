@@ -43,6 +43,8 @@ class AdaptiveCongestionControl : public CongestionControl {
                             size_t frame_size_in_bits,
                             base::TimeTicks when) final;
   void AckFrame(uint32_t frame_id, base::TimeTicks when) final;
+  void AckLaterFrames(std::vector<uint32_t> received_frames,
+                      base::TimeTicks when) final;
   int GetBitrate(base::TimeTicks playout_time,
                  base::TimeDelta playout_delay) final;
 
@@ -102,6 +104,8 @@ class FixedCongestionControl : public CongestionControl {
                             size_t frame_size_in_bits,
                             base::TimeTicks when) final {}
   void AckFrame(uint32_t frame_id, base::TimeTicks when) final {}
+  void AckLaterFrames(std::vector<uint32_t> received_frames,
+                      base::TimeTicks when) final {}
   int GetBitrate(base::TimeTicks playout_time,
                  base::TimeDelta playout_delay) final {
     return bitrate_;
@@ -247,9 +251,32 @@ void AdaptiveCongestionControl::AckFrame(uint32_t frame_id,
     if (when < frame_stats->enqueue_time)
       when = frame_stats->enqueue_time;
 
+    // We overwrite the ack time for those frames that were already acked in
+    // previous extended ACK messages. This is conservative but safe to estimate
+    // the available bitrate. This might need be re-visited later.
     frame_stats->ack_time = when;
     acked_bits_in_history_ += frame_stats->frame_size_in_bits;
     dead_time_in_history_ += DeadTime(*last_frame_stats, *frame_stats);
+  }
+}
+
+void AdaptiveCongestionControl::AckLaterFrames(
+    std::vector<uint32_t> received_frames,
+    base::TimeTicks when) {
+  for (uint32_t frame_id : received_frames) {
+    if (IsNewerFrameId(frame_id, last_acked_frame_)) {
+      FrameStats* frame_stats = GetFrameStats(frame_id);
+      if (frame_stats->enqueue_time.is_null()) {
+        // Can't ack a frame that hasn't been sent yet.
+        continue;
+      }
+      if (when < frame_stats->enqueue_time)
+        when = frame_stats->enqueue_time;
+      // This |ack_time| is only used to indicate that the frame has been
+      // received by the RTP receiver. And will be overriten later when it is
+      // normally acked in |AckFrame()|.
+      frame_stats->ack_time = when;
+    }
   }
 }
 
@@ -282,37 +309,42 @@ base::TimeTicks AdaptiveCongestionControl::EstimatedSendingTime(
     // and not the time when the ACK left the receiver.
     base::TimeTicks estimated_ack_time = stats->ack_time;
 
-    // If |estimated_ack_time| is not null, then we already have the actual ACK
-    // time, so we'll just use it.  Otherwise, we need to estimate when the ACK
-    // will arrive.
-    if (estimated_ack_time.is_null()) {
-      // Model: The |estimated_sending_time| is the time at which the first byte
-      // of the encoded frame is transmitted.  Then, assume the transmission of
-      // the remaining bytes is paced such that the last byte has just left the
-      // sender at |frame_transmit_time| later.  This last byte then takes
-      // ~RTT/2 amount of time to travel to the receiver.  Finally, the ACK from
-      // the receiver is sent and this takes another ~RTT/2 amount of time to
-      // reach the sender.
-      const base::TimeDelta frame_transmit_time =
-          base::TimeDelta::FromSecondsD(stats->frame_size_in_bits /
-                                            estimated_bitrate);
-      estimated_ack_time =
-          std::max(estimated_sending_time, stats->enqueue_time) +
-              frame_transmit_time + rtt_;
+    // Do not update the estimate if this frame's packets will never again enter
+    // the packet send queue; unless there is no estimate yet.
+    if (!estimated_ack_time.is_null() && !estimated_sending_time.is_null())
+      continue;
 
-      if (estimated_ack_time < now) {
-        // The current frame has not yet been ACK'ed and the yet the computed
-        // |estimated_ack_time| is before |now|.  This contradiction must be
-        // resolved.
-        //
-        // The solution below is a little counter-intuitive, but it seems to
-        // work.  Basically, when we estimate that the ACK should have already
-        // happened, we figure out how long ago it should have happened and
-        // guess that the ACK will happen half of that time in the future.  This
-        // will cause some over-estimation when acks are late, which is actually
-        // the desired behavior.
-        estimated_ack_time = now + (now - estimated_ack_time) / 2;
-      }
+    // The initial estimate is based on the last ACKed frame and the RTT.
+    if (!estimated_ack_time.is_null()) {
+      DCHECK_EQ(f, last_acked_frame_);
+      estimated_sending_time = estimated_ack_time - rtt_;
+      continue;
+    }
+
+    // Model: The |estimated_sending_time| is the time at which the first byte
+    // of the encoded frame is transmitted.  Then, assume the transmission of
+    // the remaining bytes is paced such that the last byte has just left the
+    // sender at |frame_transmit_time| later.  This last byte then takes
+    // ~RTT/2 amount of time to travel to the receiver.  Finally, the ACK from
+    // the receiver is sent and this takes another ~RTT/2 amount of time to
+    // reach the sender.
+    const base::TimeDelta frame_transmit_time = base::TimeDelta::FromSecondsD(
+        stats->frame_size_in_bits / estimated_bitrate);
+    estimated_ack_time = std::max(estimated_sending_time, stats->enqueue_time) +
+                         frame_transmit_time + rtt_;
+
+    if (estimated_ack_time < now) {
+      // The current frame has not yet been ACK'ed and the yet the computed
+      // |estimated_ack_time| is before |now|.  This contradiction must be
+      // resolved.
+      //
+      // The solution below is a little counter-intuitive, but it seems to
+      // work.  Basically, when we estimate that the ACK should have already
+      // happened, we figure out how long ago it should have happened and
+      // guess that the ACK will happen half of that time in the future.  This
+      // will cause some over-estimation when acks are late, which is actually
+      // the desired behavior.
+      estimated_ack_time = now + (now - estimated_ack_time) / 2;
     }
 
     // Since we [in the common case] do not wait for an ACK before we start
