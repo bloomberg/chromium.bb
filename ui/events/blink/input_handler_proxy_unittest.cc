@@ -387,6 +387,10 @@ class InputHandlerProxyTest
     input_handler_->set_use_gesture_events_for_mouse_wheel(value);
   }
 
+  base::HistogramTester& histogram_tester() {
+    return histogram_tester_;
+  }
+
  protected:
   const bool synchronous_root_scroll_;
   const bool install_synchronous_handler_;
@@ -397,6 +401,7 @@ class InputHandlerProxyTest
   testing::StrictMock<MockInputHandlerProxyClient> mock_client_;
   WebGestureEvent gesture_;
   InputHandlerProxy::EventDisposition expected_disposition_;
+  base::HistogramTester histogram_tester_;
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   cc::InputHandlerScrollResult scroll_result_did_not_scroll_;
 };
@@ -2802,7 +2807,6 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
 }
 
 TEST_P(InputHandlerProxyTest, MainThreadScrollingMouseWheelHistograms) {
-  base::HistogramTester histogram_tester;
   input_handler_->RecordMainThreadScrollingReasonsForTest(
       WebInputEvent::MouseWheel,
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects |
@@ -2811,7 +2815,7 @@ TEST_P(InputHandlerProxyTest, MainThreadScrollingMouseWheelHistograms) {
           cc::MainThreadScrollingReason::kAnimatingScrollOnMainThread);
 
   EXPECT_THAT(
-      histogram_tester.GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
+      histogram_tester().GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
       testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1),
                            base::Bucket(5, 1), base::Bucket(14, 1)));
 }
