@@ -341,7 +341,8 @@ void PPB_Graphics3D_Proxy::OnMsgSwapBuffers(const HostResource& context,
       context, callback_factory_,
       &PPB_Graphics3D_Proxy::SendSwapBuffersACKToPlugin, context);
   if (enter.succeeded())
-    enter.SetResult(enter.object()->SwapBuffers(enter.callback(), sync_token));
+    enter.SetResult(
+        enter.object()->SwapBuffersWithSyncToken(enter.callback(), sync_token));
 }
 
 void PPB_Graphics3D_Proxy::OnMsgEnsureWorkVisible(const HostResource& context) {

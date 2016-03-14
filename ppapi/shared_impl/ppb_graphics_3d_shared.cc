@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/c/pp_errors.h"
 
 namespace ppapi {
@@ -54,6 +55,11 @@ int32_t PPB_Graphics3D_Shared::ResizeBuffers(int32_t width, int32_t height) {
 }
 
 int32_t PPB_Graphics3D_Shared::SwapBuffers(
+    scoped_refptr<TrackedCallback> callback) {
+  return SwapBuffersWithSyncToken(callback, gpu::SyncToken());
+}
+
+int32_t PPB_Graphics3D_Shared::SwapBuffersWithSyncToken(
     scoped_refptr<TrackedCallback> callback,
     const gpu::SyncToken& sync_token) {
   if (HasPendingSwap()) {
