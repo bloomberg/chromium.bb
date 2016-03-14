@@ -314,7 +314,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFramesAreDecodable) {
   VideoDecoderConfig config(kCodecH264, H264PROFILE_MAIN, frame_->format(),
                             COLOR_SPACE_UNSPECIFIED, frame_->coded_size(),
                             frame_->visible_rect(), frame_->natural_size(),
-                            EmptyExtraData(), false);
+                            EmptyExtraData(), Unencrypted());
   scoped_refptr<EndToEndFrameChecker> checker(new EndToEndFrameChecker(config));
 
   VideoEncoder::FrameEncodedCallback cb =
