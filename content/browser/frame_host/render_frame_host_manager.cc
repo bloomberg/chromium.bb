@@ -1510,7 +1510,6 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
   if (frame_routing_id == MSG_ROUTING_NONE)
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
 
-  bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   bool hidden = !!(flags & CREATE_RF_HIDDEN);
 
   // Create a RVH for main frames, or find the existing one for subframes.
@@ -1518,7 +1517,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
   RenderViewHostImpl* render_view_host = nullptr;
   if (frame_tree_node_->IsMainFrame()) {
     render_view_host = frame_tree->CreateRenderViewHost(
-        site_instance, view_routing_id, frame_routing_id, swapped_out, hidden);
+        site_instance, view_routing_id, frame_routing_id, false, hidden);
     // TODO(avi): It's a bit bizarre that this logic lives here instead of in
     // CreateRenderFrame(). It turns out that FrameTree::CreateRenderViewHost
     // doesn't /always/ create a new RenderViewHost. It first tries to find an
@@ -1573,17 +1572,12 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     SiteInstance* instance,
     int flags,
     int* view_routing_id_ptr) {
-  bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   int32_t widget_routing_id = MSG_ROUTING_NONE;
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
 
   CHECK(instance);
-  CHECK(!swapped_out);
   CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible() ||
         frame_tree_node_->IsMainFrame());
-
-  // Swapped out views should always be hidden.
-  DCHECK(!swapped_out || (flags & CREATE_RF_HIDDEN));
 
   scoped_ptr<RenderFrameHostImpl> new_render_frame_host;
   bool success = true;

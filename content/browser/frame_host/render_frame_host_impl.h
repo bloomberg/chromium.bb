@@ -90,10 +90,8 @@ struct ResourceResponse;
 
 // Flag arguments for RenderFrameHost creation.
 enum CreateRenderFrameFlags {
-  // The RFH will be initially placed on the swapped out hosts list.
-  CREATE_RF_SWAPPED_OUT = 1 << 0,
   // The RenderFrame is initially hidden.
-  CREATE_RF_HIDDEN = 1 << 1,
+  CREATE_RF_HIDDEN = 1 << 0,
 };
 
 class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,

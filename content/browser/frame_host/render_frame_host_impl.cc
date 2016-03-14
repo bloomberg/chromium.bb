@@ -195,6 +195,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       frame_tree_node_(frame_tree_node),
       render_widget_host_(nullptr),
       routing_id_(routing_id),
+      rfh_state_(STATE_DEFAULT),
       render_frame_created_(false),
       navigations_suspended_(false),
       is_waiting_for_beforeunload_ack_(false),
@@ -209,7 +210,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
       weak_ptr_factory_(this) {
-  bool is_swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   bool hidden = !!(flags & CREATE_RF_HIDDEN);
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
@@ -217,13 +217,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       RenderFrameHostID(GetProcess()->GetID(), routing_id_),
       this));
   site_instance_->AddObserver(this);
-
-  if (is_swapped_out) {
-    rfh_state_ = STATE_SWAPPED_OUT;
-  } else {
-    rfh_state_ = STATE_DEFAULT;
-    GetSiteInstance()->IncrementActiveFrameCount();
-  }
+  GetSiteInstance()->IncrementActiveFrameCount();
 
   // New child frames should inherit the nav_entry_id of their parent.
   if (frame_tree_node_->parent()) {
