@@ -1483,6 +1483,7 @@
             'java_in_dir': 'test/android/javatests',
             'java_in_dir_suffix': '/src_dummy',
             'native_lib_target': 'libnet_java_test_support',
+            'never_lint': 1,
           },
           'includes': [
             '../build/java_apk.gypi',

@@ -68,7 +68,7 @@
             # variable that contains at least one java file.
             'java_in_dir': 'cronet/android/api',
             'java_in_dir_suffix': '/src_dummy',
-            'run_findbugs': 1,
+            'never_lint': 1,
           },
           'dependencies': [
             'url_request_error_java',
@@ -479,7 +479,7 @@
             'resource_dir': 'cronet/android/test/res',
             'asset_location': 'cronet/android/test/assets',
             'native_lib_target': 'libcronet_tests',
-            'run_findbugs': 1,
+            'never_lint': 1,
             'additional_bundled_libs': [
               '>(netty_tcnative_so_file_location)',
             ],

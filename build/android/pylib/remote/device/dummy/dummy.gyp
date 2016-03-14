@@ -20,6 +20,7 @@
         'apk_name': '<(remote_device_dummy_apk_name)',
         'final_apk_path': '<(remote_device_dummy_apk_path)',
         'java_in_dir': '.',
+        'never_lint': 1,
         'android_manifest_path': '../../../../../../build/android/AndroidManifest.xml',
       },
       'includes': [

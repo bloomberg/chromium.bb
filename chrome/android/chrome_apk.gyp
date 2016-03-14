@@ -346,6 +346,7 @@
         'java_in_dir_suffix': '/src_dummy',
         'apk_name': 'ChromePublicTest',
         'is_test_apk': 1,
+        'never_lint': 1,
         'test_type': 'instrumentation',
         'isolate_file': '../chrome_public_test_apk.isolate',
         'additional_apks': [

@@ -201,6 +201,7 @@
           'variables': {
             'java_in_dir': '<(DEPTH)/build/android/empty',
             'has_java_resources': 0,
+            'never_lint': 1,
           },
           'dependencies': [
             'ax_enumerations_java',
