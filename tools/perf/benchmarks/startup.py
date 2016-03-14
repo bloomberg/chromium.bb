@@ -61,7 +61,7 @@ class StartupWarmBlankPage(_StartupWarm):
 
 @benchmark.Disabled('reference',                   # http://crbug.com/476882
                     'android',                     # http://crbug.com/481919
-                    'content-shell', 'mandoline')  # No pregenerated profiles.
+                    'content-shell')               # No pregenerated profiles.
 class StartupLargeProfileColdBlankPage(_StartupCold):
   """Measures cold startup time with a large profile."""
   tag = 'cold'
@@ -81,7 +81,7 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
 
 @benchmark.Disabled('reference',                   # http://crbug.com/476882
                     'android',                     # http://crbug.com/481919
-                    'content-shell', 'mandoline')  # No pregenerated profiles.
+                    'content-shell')               # No pregenerated profiles.
 class StartupLargeProfileWarmBlankPage(_StartupWarm):
   """Measures warm startup time with a large profile."""
   tag = 'warm'

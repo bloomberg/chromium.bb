@@ -103,4 +103,4 @@ void InputMethodMUS::UpdateTextInputType() {
     window_->SetTextInputState(std::move(state));
 }
 
-}  // namespace mandoline
+}  // namespace views

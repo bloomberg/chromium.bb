@@ -476,9 +476,6 @@
     'linux_seccomp_bpf': {
       'filepath': 'content/common/sandbox.*linux.cc',
     },
-    'mandoline': {
-      'filepath': 'mandoline',
-    },
     'manifest': {
       'filepath': 'content/(browser|renderer)/manifest/'\
                   '|content/public/common/manifest*',
@@ -1405,9 +1402,6 @@
     'linux_sandboxing': ['jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
-    'mandoline': ['yzshen+watch@chromium.org',
-                  'penghuang+watch-mandoline@chromium.org',
-                  'rjkroege@chromium.org'],
     'manifest': ['mlamouri+watch-manifest@chromium.org'],
     'md_settings': ['dbeam+watch-settings@chromium.org',
                     'michaelpg+watch-md-settings@chromium.org',
