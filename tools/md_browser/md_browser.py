@@ -92,7 +92,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     if not full_path.startswith(SRC_DIR):
       self._DoUnknown()
     elif path == '/doc.css':
-      self._WriteTemplate('doc.css')
+      self._DoCSS('doc.css')
     elif not os.path.exists(full_path):
       self._DoNotFound()
     elif path.lower().endswith('.md'):
@@ -122,16 +122,23 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                                     extension_configs=extension_configs,
                                     output_format='html4').encode('utf-8')
     try:
+      self._WriteHeader('text/html')
       self._WriteTemplate('header.html')
       self.wfile.write(md_fragment)
       self._WriteTemplate('footer.html')
     except:
       raise
 
+  def _DoCSS(self, template):
+    self._WriteHeader('text/css')
+    self._WriteTemplate(template)
+
   def _DoNotFound(self):
+    self._WriteHeader('text/html')
     self.wfile.write('<html><body>%s not found</body></html>' % self.path)
 
   def _DoUnknown(self):
+    self._WriteHeader('text/html')
     self.wfile.write('<html><body>I do not know how to serve %s.</body>'
                        '</html>' % self.path)
 
@@ -140,6 +147,11 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     path = os.path.join(self.server.top_level, relpath)
     with codecs.open(path, encoding='utf-8') as fp:
       return fp.read()
+
+  def _WriteHeader(self, content_type='text/plain'):
+    self.send_response(200)
+    self.send_header('Content-Type', content_type)
+    self.end_headers()
 
   def _WriteTemplate(self, template):
     contents = self._Read(os.path.join('tools', 'md_browser', template))
