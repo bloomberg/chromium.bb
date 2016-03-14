@@ -101,6 +101,8 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
+  DCHECK(!resource_context_);
+  DCHECK(!request_context_getter_);
 }
 
 void ServiceWorkerContextWrapper::Init(
@@ -143,7 +145,6 @@ void ServiceWorkerContextWrapper::InitializeResourceContext(
 
 void ServiceWorkerContextWrapper::OnContextShuttingDown() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  request_context_getter_->RemoveObserver(this);
 
   // OnContextShuttingDown is called when the ProfileIOData (ResourceContext) is
   // shutting down, so call ShutdownOnIO() to clear resource_context_.
@@ -698,6 +699,10 @@ void ServiceWorkerContextWrapper::InitInternal(
 
 void ServiceWorkerContextWrapper::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Can be null in tests.
+  if (request_context_getter_)
+    request_context_getter_->RemoveObserver(this);
+  request_context_getter_ = nullptr;
   resource_context_ = nullptr;
   context_core_.reset();
 }
