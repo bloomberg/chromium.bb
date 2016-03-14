@@ -15,7 +15,6 @@
 <translation id="1103523840287552314">Vždy preložiť nasledujúci jazyk: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Ak je toto nastavenie začiarknuté, Chrome uloží kópiu karty na toto zariadenie, aby ste mohli vypĺňať formuláre rýchlejšie.</translation>
 <translation id="1113869188872983271">&amp;Vrátiť späť zmenu poradia</translation>
-<translation id="111844081046043029">Naozaj chcete odísť z tejto stránky?</translation>
 <translation id="112840717907525620">Vyrovnávacia pamäť pravidla je v poriadku</translation>
 <translation id="113188000913989374">Web <ph name="SITE" /> hovorí:</translation>
 <translation id="1132774398110320017">Nastavenia Automatického dopĺňania prehliadača Chrome...</translation>
@@ -51,7 +50,6 @@
 <translation id="1430915738399379752">Tlačiť</translation>
 <translation id="1442912890475371290">Zablokovaný pokus <ph name="BEGIN_LINK" /> o návštevu stránky na doméne <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Pri overovaní karty sa vyskytol problém. Skontrolujte svoje pripojenie k internetu a skúste to znova.</translation>
-<translation id="1491151370853475546">Znova načítať stránku</translation>
 <translation id="1506687042165942984">Zobrazí sa uložená (t. j. neaktuálna) kópia tejto stránky.</translation>
 <translation id="1519264250979466059">Dátum zostavenia</translation>
 <translation id="1549470594296187301">Ak chcete použiť túto funkciu, musíte povoliť JavaScript.</translation>
@@ -92,7 +90,6 @@
 <translation id="1974060860693918893">Rozšírené</translation>
 <translation id="201192063813189384">Pri čítaní údajov z vyrovnávacej pamäte došlo k chybe.</translation>
 <translation id="2025186561304664664">Proxy je nastavené na automatickú konfiguráciu.</translation>
-<translation id="2025623846716345241">Potvrdiť opätovné načítanie</translation>
 <translation id="2030481566774242610">Mysleli ste stránku <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Skontrolovať proxy server a bránu firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">PSČ</translation>
@@ -159,6 +156,7 @@
 <translation id="2650446666397867134">Prístup k súboru bol odmietnutý</translation>
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2674170444375937751">Naozaj chcete odstrániť tieto stránky zo svojej histórie?</translation>
+<translation id="2677748264148917807">Opustiť</translation>
 <translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
 <translation id="2705137772291741111">Uložená kópia tohto webu (vo vyrovnávacej pamäti) bola nečitateľná.</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
@@ -289,7 +287,6 @@
 <translation id="4058922952496707368">Kľúč <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klient a server nepodporujú spoločnú verziu protokolu SSL ani šifrovaciu súpravu.</translation>
 <translation id="4079302484614802869">Konfigurácia proxy je nastavená na použitie skriptu PAC webovej adresy, nie pevne daných serverov proxy.</translation>
-<translation id="409504436206021213">Nenačítať</translation>
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
 <translation id="4103763322291513355">Na stránke &lt;strong&gt;chrome://policy&lt;/strong&gt; nájdete zoznam zakázaných webových adries a ďalšie pravidlá vynútené vaším správcom systému.</translation>
 <translation id="4117700440116928470">Rozsah pravidla nie je podporovaný.</translation>
@@ -374,7 +371,6 @@
 <translation id="5199729219167945352">Experimenty</translation>
 <translation id="5228309736894624122">Chyba protokolu SSL.</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5295309862264981122">Potvrdiť navigáciu</translation>
 <translation id="5299298092464848405">Pri analýze pravidla sa vyskytla chyba</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Vymazať súbory cookie<ph name="END_LINK" /></translation>
@@ -467,7 +463,6 @@
 <translation id="647261751007945333">Pravidlá zariadenia</translation>
 <translation id="6489534406876378309">Spustiť nahrávanie správ o zlyhaní</translation>
 <translation id="6500116422101723010">Server momentálne nemôže spracovať žiadosť. Tento kód označuje, že ide o dočasný stav a server bude za nejaký čas opäť funkčný.</translation>
-<translation id="6512448926095770873">Odísť z tejto stránky</translation>
 <translation id="6518133107902771759">Overiť</translation>
 <translation id="6529602333819889595">&amp;Znova odstrániť</translation>
 <translation id="6533019874004191247">Nepodpor. adr. URL.</translation>
@@ -621,7 +616,6 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8293206222192510085">Pridať záložku</translation>
 <translation id="8294431847097064396">Zdroj</translation>
 <translation id="8308427013383895095">Preklad zlyhal v dôsledku problému so sieťovým pripojením.</translation>
-<translation id="8311778656528046050">Naozaj chcete znova načítať túto stránku?</translation>
 <translation id="8332188693563227489">Prístup k webu <ph name="HOST_NAME" /> bol zamietnutý</translation>
 <translation id="8349305172487531364">Panel so záložkami</translation>
 <translation id="8363502534493474904">Vypnúť režim v lietadle</translation>
@@ -690,7 +684,6 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="9125941078353557812">Zadajte trojmiestny kód CVC zo zadnej strany svojej karty</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="9148507642005240123">&amp;Vrátiť späť úpravu</translation>
-<translation id="9154176715500758432">Zostať na tejto stránke</translation>
 <translation id="9157595877708044936">Prebieha nastavenie...</translation>
 <translation id="9170848237812810038">&amp;Naspäť</translation>
 <translation id="917450738466192189">Certifikát servera je neplatný.</translation>

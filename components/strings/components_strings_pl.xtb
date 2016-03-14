@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Zawsze tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Po zaznaczeniu tej opcji Chrome będzie zapisywać kopię danych karty na tym urządzeniu, by szybciej wypełniać formularze.</translation>
 <translation id="1113869188872983271">&amp;Cofnij zmianę kolejności</translation>
-<translation id="111844081046043029">Czy na pewno chcesz opuścić tę stronę?</translation>
 <translation id="112840717907525620">Pamięć podręczna zasad: OK</translation>
 <translation id="113188000913989374">Komunikat ze strony <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Ustawienia autouzupełniania Chrome...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1442912890475371290">Zablokowano próbę <ph name="BEGIN_LINK" />wejścia na stronę w domenie <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Podczas weryfikacji karty wystąpił problem. Sprawdź połączenie internetowe i spróbuj ponownie.</translation>
-<translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
 <translation id="1506687042165942984">Pokaż zapisaną (tzn. nieaktualną) kopię tej strony.</translation>
 <translation id="1519264250979466059">Data kompilacji</translation>
 <translation id="1549470594296187301">Aby można było korzystać z tej funkcji, musi być włączony JavaScript.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Zaawansowane</translation>
 <translation id="201192063813189384">Błąd podczas odczytu danych z pamięci podręcznej.</translation>
 <translation id="2025186561304664664">Ustawiono automatyczne konfigurowanie proxy.</translation>
-<translation id="2025623846716345241">Potwierdź ponowne ładowanie</translation>
 <translation id="2030481566774242610">Czy chodziło Ci o <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Sprawdź serwer proxy i zaporę sieciową<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Kod pocztowy</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Odmówiono dostępu do pliku</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2674170444375937751">Czy na pewno chcesz usunąć te strony z historii?</translation>
+<translation id="2677748264148917807">Wyjdź</translation>
 <translation id="2704283930420550640">Wartość nie pasuje do formatu.</translation>
 <translation id="2705137772291741111">Zapisana w pamięci podręcznej kopia tej strony jest uszkodzona.</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
@@ -302,7 +300,6 @@
 <translation id="4058922952496707368">Klucz „<ph name="SUBKEY" />”: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klient i serwer nie obsługują wspólnej wersji protokołu SSL lub mechanizmu szyfrowania.</translation>
 <translation id="4079302484614802869">Proxy skonfigurowano do używania URL-a skryptu PAC, a nie ustalonych serwerów proxy.</translation>
-<translation id="409504436206021213">Nie ładuj ponownie</translation>
 <translation id="4103249731201008433">Numer seryjny urządzenia jest nieprawidłowy</translation>
 <translation id="4103763322291513355">Wejdź na stronę &lt;strong&gt;chrome://policy&lt;/strong&gt;, aby wyświetlić czarną listę URL-i oraz inne zasady egzekwowane przez administratora systemu.</translation>
 <translation id="4117700440116928470">Ten zakres zasad nie jest obsługiwany.</translation>
@@ -387,7 +384,6 @@
 <translation id="5199729219167945352">Eksperymenty</translation>
 <translation id="5228309736894624122">Błąd protokołu SSL.</translation>
 <translation id="5251803541071282808">Chmura</translation>
-<translation id="5295309862264981122">Potwierdź nawigację</translation>
 <translation id="5299298092464848405">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Usuń pliki cookie<ph name="END_LINK" /></translation>
@@ -482,7 +478,6 @@
 <translation id="647261751007945333">Zasady dotyczące urządzeń</translation>
 <translation id="6489534406876378309">Rozpocznij przesyłanie informacji o awariach</translation>
 <translation id="6500116422101723010">Serwer nie może obecnie obsłużyć tego żądania. Ten kod wskazuje, iż jest to sytuacja tymczasowa, a serwer będzie ponownie działać po przerwie.</translation>
-<translation id="6512448926095770873">Opuść tę stronę</translation>
 <translation id="6518133107902771759">Zweryfikuj</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
 <translation id="6533019874004191247">Nieobsługiwany URL.</translation>
@@ -651,7 +646,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8293206222192510085">Dodaj zakładkę</translation>
 <translation id="8294431847097064396">Źródło</translation>
 <translation id="8308427013383895095">Tłumaczenie nie powiodło się z powodu problemu z połączeniem sieciowym.</translation>
-<translation id="8311778656528046050">Czy na pewno chcesz załadować ponownie tę stronę?</translation>
 <translation id="8332188693563227489">Odmowa dostępu do <ph name="HOST_NAME" /></translation>
 <translation id="8349305172487531364">Pasek zakładek</translation>
 <translation id="8363502534493474904">Wyłącz tryb samolotowy</translation>
@@ -721,7 +715,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="9125941078353557812">Wpisz trzycyfrowy kod CVC widoczny na odwrocie karty</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9148507642005240123">&amp;Cofnij edycję</translation>
-<translation id="9154176715500758432">Pozostań na tej stronie</translation>
 <translation id="9157595877708044936">Konfigurowanie...</translation>
 <translation id="9170848237812810038">&amp;Cofnij</translation>
 <translation id="917450738466192189">Certyfikat serwera jest nieprawidłowy.</translation>

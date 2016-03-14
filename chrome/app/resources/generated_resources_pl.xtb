@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1000498691615767391">Wybierz folder do otwarcia</translation>
-<translation id="1000916256947465293">Automatycznie loguj się w witrynach za pomocą zapisanych poświadczeń. Gdy ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o weryfikację.</translation>
 <translation id="1005274289863221750">Korzystać z Twojego mikrofonu i kamery</translation>
 <translation id="1007233996198401083">Nie można połączyć.</translation>
 <translation id="1007408791287232274">Nie udało się załadować urządzeń.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Wyłącz WiMAX</translation>
 <translation id="174773101815569257">Blokowanie myszy</translation>
 <translation id="1749854530031883739">W przypadku okien, których nie można zmaksymalizować, wyświetlaj szare tło za oknem używane w TouchView (tryb maksymalizacji).</translation>
+<translation id="17513872634828108">Otwarte karty</translation>
 <translation id="175196451752279553">Prz&amp;ywróć zamkniętą kartę</translation>
 <translation id="1753682364559456262">Zarządzaj blokowaniem grafik...</translation>
 <translation id="1753905327828125965">Najczęstsze</translation>
@@ -2308,7 +2308,6 @@ Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
 <translation id="4298972503445160211">Klawiatura duńska</translation>
 <translation id="4299273509016391946">Włącza opcję upraszczania strony w oknie podglądu wydruku</translation>
 <translation id="4299729908419173967">brazylijski</translation>
-<translation id="4301786491084298653">Wyłącz w domenie <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Włącz eksperymentalną implementację dyrektywy „Cache-Control: stale-while-revalidate”. Pozwala to serwerom na określenie, że w tle może być przeprowadzane przywracanie ważności w przypadku niektórych zasobów, by zmniejszyć czas oczekiwania.</translation>
 <translation id="4307281933914537745">Więcej informacji na temat odzyskiwania systemu</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (aktywne <ph name="NUM_KILOBYTES_LIVE" /> KB)</translation>
@@ -2329,7 +2328,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4336032328163998280">Kopiowanie nie powiodło się: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Dzienniki sieciowe są dostępne tutaj: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> chce nawiązać połączenie z aplikacją „<ph name="EXTENSION_NAME" />”</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> wymaga zweryfikowania tożsamości urządzenia przez Google, aby ustalić, czy jest ono uprawnione do zaawansowanego odtwarzania chronionych multimediów. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Blokuj próby umieszczenia na komputerze danych z witryn</translation>
 <translation id="4342311272543222243">Ups, błąd TPM.</translation>
 <translation id="4345587454538109430">Konfiguruj</translation>
@@ -2463,7 +2461,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4572659312570518089">Podczas łączenia się z urządzeniem „<ph name="DEVICE_NAME" />” zostało anulowane uwierzytelnianie.</translation>
 <translation id="4572815280350369984">Plik <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Więcej</translation>
-<translation id="4575703660920788003">Naciśnij Shift+Alt, jeśli chcesz przełączyć układ klawiatury.</translation>
 <translation id="4580526846085481512">Czy na pewno chcesz usunąć następującą liczbę elementów: $1?</translation>
 <translation id="458150753955139441">Naciśnij, by wrócić, lub otwórz menu kontekstowe, by wyświetlić historię</translation>
 <translation id="4582447636905308869">Nowy edytor IME dla języka koreańskiego oparty na silniku HMM Narzędzi Google do wprowadzania tekstu.</translation>
@@ -3140,6 +3137,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="556042886152191864">Przycisk</translation>
 <translation id="5565871407246142825">Karty kredytowe</translation>
 <translation id="5567989639534621706">Pamięci podręczne aplikacji</translation>
+<translation id="5568069709869097550">Nie można się zalogować</translation>
 <translation id="5569544776448152862">Rejestruję w <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Rozszerzenie w trybie incognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Zresetowanie urządzenia nie będzie miało wpływu na Twoje konta Google ani żadne dane zsynchronizowane z tymi kontami. Wszystkie pliki zapisane lokalnie na urządzeniu zostaną jednak usunięte.</translation>
@@ -3189,7 +3187,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5642953011762033339">Odłącz konto</translation>
 <translation id="5646376287012673985">Lokalizacja</translation>
 <translation id="5649768706273821470">Posłuchaj</translation>
-<translation id="5649823029736413118">Aby odtwarzać materiały płatne, adres <ph name="URL" /> musi jednoznacznie identyfikować Twoje urządzenie.</translation>
 <translation id="5650551054760837876">Nie znaleziono wyników wyszukiwania.</translation>
 <translation id="5653140146600257126">Folder „$1” już istnieje. Wybierz inną nazwę.</translation>
 <translation id="5657667036353380798">Rozszerzenie zewnętrzne wymaga zainstalowania Chrome w wersji <ph name="MINIMUM_CHROME_VERSION" /> lub nowszej.</translation>
@@ -4445,7 +4442,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="7626009897377900107">Generowanie haseł</translation>
 <translation id="7627262197844840899">Witryna nie akceptuje kart MasterCard.</translation>
 <translation id="7627790789328695202">Ups, plik <ph name="FILE_NAME" /> już istnieje. Zmień jego nazwę i spróbuj ponownie.</translation>
-<translation id="7628079021897738671">OK, rozumiem</translation>
 <translation id="762917759028004464">Aktualnie domyślną przeglądarką jest <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Zezwala na wykorzystanie danych logowania z aplikacji na Androida na powiązanych stronach.</translation>
 <translation id="7629827748548208700">Karta: <ph name="TAB_NAME" /></translation>
@@ -5320,7 +5316,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8925458182817574960">&amp;Ustawienia</translation>
 <translation id="8926389886865778422">Nie pytaj ponownie</translation>
 <translation id="8926518602592448999">Wyłącz rozszerzenia trybu programisty</translation>
-<translation id="892867331564916668"><ph name="URL" /> chce zapisać pliki na tym urządzeniu.</translation>
 <translation id="8929454297483336498">Użycie interfejsów API AVFoundation zamiast QTKit w systemie Mac OS X</translation>
 <translation id="8931394284949551895">Nowe urządzenia</translation>
 <translation id="8932730422557198035">Używaj Android Midi API</translation>

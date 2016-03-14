@@ -17,7 +17,6 @@
 <translation id="1103523840287552314">ಯಾವಾಗಲೂ ಅನುವಾದಿಸಿ <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">ಪರಿಶೀಲಿಸಿದರೆ, ವೇಗವಾಗಿ ಫಾರ್ಮ್ ಭರ್ತಿ ಮಾಡಲು Chrome ಈ ಸಾಧನದಲ್ಲಿ ನಿಮ್ಮ ಕಾರ್ಡ್‌ನ ಪ್ರತಿಯನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ.</translation>
 <translation id="1113869188872983271">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
-<translation id="111844081046043029">ನೀವು ಈ ಪುಟವನ್ನು ನಿರ್ಗಮಿಸಲು ಖಚಿತವಾಗಿ ನಿರ್ಧರಿಸಿರುವಿರಾ?</translation>
 <translation id="112840717907525620">ನೀತಿಯ ಸಂಗ್ರಹ ಸರಿಯಾಗಿದೆ</translation>
 <translation id="113188000913989374"><ph name="SITE" /> ಹೀಗೆ ಹೇಳುತ್ತದೆ:</translation>
 <translation id="1132774398110320017">Chrome ಸ್ವಯಂತುಂಬುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
@@ -53,7 +52,6 @@
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" /> <ph name="DOMAIN" /> ನಲ್ಲಿ ಪುಟಕ್ಕೆ ಭೇಟಿ ನೀಡುವ<ph name="END_LINK" /> ಪ್ರಯತ್ನವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="1455235771979731432">ನಿಮ್ಮ ಕಾರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸುವಲ್ಲಿ ಸಮಸ್ಯೆ ಇದೆ. ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="1491151370853475546">ಪುಟ ಮರುಲೋಡ್ ಮಾಡು</translation>
 <translation id="1506687042165942984">ಈ ಪುಟದ ಉಳಿಸಲಾದ (ಉದಾ. ಹಳೆಯದು ಎಂದು ಕರೆಯಲಾಗುವ) ನಕಲನ್ನು ತೋರಿಸಿ.</translation>
 <translation id="1519264250979466059">ಬಿಲ್ಡ್ ಡೇಟಾ</translation>
 <translation id="1549470594296187301">ಈ ವೈಶಿಷ್ಟ್ಯವನ್ನು ಬಳಸಲು JavaScript ಸಕ್ರಿಯಗೊಳಿಸಬೇಕು.</translation>
@@ -94,7 +92,6 @@
 <translation id="1974060860693918893">ಸುಧಾರಿತ</translation>
 <translation id="201192063813189384">ಸಂಗ್ರಹದಿಂದ ದೋಷ ಓದುವಿಕೆ ಡೇಟಾ.</translation>
 <translation id="2025186561304664664">ಪ್ರಾಕ್ಸಿಯನ್ನು ಸ್ವಯಂ ಕಾನ್ಫಿಗರ್ ಆಗಿ ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
-<translation id="2025623846716345241">ಮರುಲೋಡ್ ದೃಢೀಕರಿಸಿ</translation>
 <translation id="2030481566774242610">ನಿಮ್ಮ ಮಾತಿನ ಅರ್ಥ <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ಪ್ರಾಕ್ಸಿ ಮತ್ತು ಫೈರ್‌ವಾಲ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ಪಿನ್ ಕೋಡ್</translation>
@@ -163,6 +160,7 @@
 <translation id="2650446666397867134">ಫೈಲ್‌ಗೆ ಪ್ರವೇಶವನ್ನು ನಿರಾಕರಿಸಲಾಗಿದೆ</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
 <translation id="2674170444375937751">ನಿಮ್ಮ ಇತಿಹಾಸದಿಂದ ನೀವು ಈ ಪುಟಗಳನ್ನು ಖಚಿತವಾಗಿ ಅಳಿಸಲು ಬಯಸುತ್ತಿದ್ದೀರಾ?</translation>
+<translation id="2677748264148917807">ತೊರೆಯಿರಿ</translation>
 <translation id="2704283930420550640">ಮೌಲ್ಯವು ಸ್ವರೂಪಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2705137772291741111">ಈ ಸೈಟ್‌ನ ಉಳಿಸಿದ (ಸಂಗ್ರಹವಾಗಿರುವ) ನಕಲನ್ನು ಓದಲಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="2709516037105925701">ಸ್ವಯಂತುಂಬುವಿಕೆ</translation>
@@ -296,7 +294,6 @@
 <translation id="4058922952496707368">ಕೀ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">ಸಾಮಾನ್ಯ SSL ಪ್ರೊಟೋಕಾಲ್ ಆವೃತ್ತಿ ಅಥವಾ ಸೈಫರ್ ಸ್ಯೂಟ್ ಅನ್ನು ಕ್ಲೈಂಟ್ ಮತ್ತು ಸರ್ವರ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="4079302484614802869">ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಬಳಸುವಂತೆ ಹೊಂದಿಸಲಾಗಿದೆ, ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳಲ್ಲ.</translation>
-<translation id="409504436206021213">ಮರುಲೋಡ್ ಮಾಡಬೇಡ</translation>
 <translation id="4103249731201008433">ಸಾಧನದ ಸರಣಿಯ ಸಂಖ್ಯೆ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="4103763322291513355">ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು ವಿಧಿಸಿರುವ ಕಪ್ಪುಪಟ್ಟಿಯ URLಗಳು ಮತ್ತು ಇತರ ನೀತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು &lt;strong&gt;chrome://policy&lt;/strong&gt; ಗೆ ಭೇಟಿ ನೀಡಿ.</translation>
 <translation id="4117700440116928470">ನೀತಿಯ ವ್ಯಾಪ್ತಿಯು ಬೆಂಬಲಿತವಾಗಿಲ್ಲ.</translation>
@@ -381,7 +378,6 @@
 <translation id="5199729219167945352">ಪ್ರಯೋಗಗಳು</translation>
 <translation id="5228309736894624122">SSL ಪ್ರೊಟೋಕಾಲ್ ದೋಷ.</translation>
 <translation id="5251803541071282808">ಮೇಘ</translation>
-<translation id="5295309862264981122">ನ್ಯಾವಿಗೇಶನ್ ಅನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="5299298092464848405">ನೀತಿಯ ಪಾರ್ಸಿಂಗ್‌ನಲ್ಲಿ ದೋಷ</translation>
 <translation id="5300589172476337783">ಪ್ರದರ್ಶಿಸಿ</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />ನಿಮ್ಮ ಕುಕೀಗಳನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತಿದೆ<ph name="END_LINK" /></translation>
@@ -474,7 +470,6 @@
 <translation id="647261751007945333">ಸಾಧನ ನೀತಿಗಳು</translation>
 <translation id="6489534406876378309">ವಿಫಲತೆಗಳನ್ನು ಅಪ್‌ಲೋಡ್‌ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸು</translation>
 <translation id="6500116422101723010">ವಿನಂತಿಯನ್ನು ನಿರ್ವಹಿಸಲು ಸರ್ವರ್‌ಗೆ ಪ್ರಸ್ತುತ ಸಾಧ್ಯವಿಲ್ಲ. ಇದು ತಾತ್ಕಾಲಿಕ ಸ್ಥಿತಿಯೆಂದು  ಈ ಕೋಡ್ ಸೂಚಿಸುತ್ತದೆ ಮತ್ತು ತುಸು ಸಮಯದ ಬಳಿಕ ಸರ್ವರ್ ಮತ್ತೆ ಕ್ರಿಯಾಶೀಲವಾಗುತ್ತದೆ. </translation>
-<translation id="6512448926095770873">ಈ ಪುಟವನ್ನು ತ್ಯಜಿಸಿ</translation>
 <translation id="6518133107902771759">ಪರಿಶೀಲಿಸು</translation>
 <translation id="6529602333819889595">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="6533019874004191247">ಬೆಂಬಲಿಸಲಾಗದಿರುವ URL.</translation>
@@ -641,7 +636,6 @@
 <translation id="8293206222192510085">ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸು</translation>
 <translation id="8294431847097064396">ಮೂಲ</translation>
 <translation id="8308427013383895095">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕದಲ್ಲಿನ ಸಮಸ್ಯೆಯಿಂದಾಗಿ ಭಾಷಾಂತರವು ವಿಫಲವಾಗಿದೆ.</translation>
-<translation id="8311778656528046050">ಈ ಪುಟವನ್ನು ಮರುಲೋಡ್ ಮಾಡುವುದು ಖಚಿತವೇ?</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> ಗೆ ಪ್ರವೇಶವನ್ನು ನಿರಾಕರಿಸಲಾಗಿದೆ</translation>
 <translation id="8349305172487531364">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಬಾರ್</translation>
 <translation id="8363502534493474904">ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್ ಆಫ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
@@ -711,7 +705,6 @@
 <translation id="9125941078353557812">ನಿಮ್ಮ ಕಾರ್ಡ್ ಹಿಂಭಾಗದಲ್ಲಿರುವ 3-ಅಂಕಿಗಳ CVC ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="9137013805542155359">ಮೂಲವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="9148507642005240123">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
-<translation id="9154176715500758432">ಈ ಪುಟದಲ್ಲಿ ನಿಲ್ಲಿ</translation>
 <translation id="9157595877708044936">ಹೊಂದಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="9170848237812810038">&amp;ರದ್ದುಮಾಡು</translation>
 <translation id="917450738466192189">ಸರ್ವರ್‌ನ ಪ್ರಮಾಣಪತ್ರವು ಅಮಾನ್ಯವಾಗಿದೆ.</translation>

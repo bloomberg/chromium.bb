@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="1000498691615767391">ತೆರೆಯಲು ಫೋಲ್ಡರ್‌ವೊಂದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
-<translation id="1000916256947465293">ಸಂಗ್ರಹಿಸಲಾದ ರುಜುವಾತುಗಳನ್ನು ಬಳಸಿಕೊಳ್ಳುವ ಮೂಲಕ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ. ವೈಶಿಷ್ಟ್ಯವು ಆಫ್ ಆಗಿದ್ದರೆ, ನೀವು ವೆಬ್‌ಸೈಟ್‌ಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವ ಮೊದಲು ಪ್ರತಿ ಬಾರಿಯೂ ನಿಮಗೆ ಪರಿಶೀಲನೆ ಮಾಡಲು ಕೇಳಲಾಗುವುದು.</translation>
 <translation id="1005274289863221750">ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಮತ್ತು ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಿ</translation>
 <translation id="1007233996198401083">ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="1007408791287232274">ಸಾಧನಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.</translation>
@@ -534,6 +533,7 @@
 <translation id="1747687775439512873">WiMAX ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="174773101815569257">ಮೌಸ್ ಲಾಕ್</translation>
 <translation id="1749854530031883739">ಗರಿಷ್ಠಗೊಳಿಸಲಾಗದ TouchView (ಗರಿಷ್ಠ ಮೋಡ್) ವಿಂಡೋಗಳ ಹಿಂಬದಿಯಲ್ಲಿ ಬಳಸಲಾಗುವ ಬೂದು ಬಣ್ಣದ ವಿಂಡೋ ಬ್ಯಾಕ್‌ಡ್ರಾಪ್‌ಗಳನ್ನು ತೋರಿಸು.</translation>
+<translation id="17513872634828108">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="175196451752279553">ಮುಚ್ಚಿದ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ</translation>
 <translation id="1753682364559456262">ಇಮೇಜ್ ನಿರ್ಬಂಧಿಸುವಿಕೆಯನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="1753905327828125965">ಅತಿಹೆಚ್ಚು ಬಾರಿ ಸಂದರ್ಶಿಸಿರುವುದು</translation>
@@ -2307,7 +2307,6 @@
 <translation id="4298972503445160211">ಡ್ಯಾನಿಶ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="4299273509016391946">ಮುದ್ರಣ ಪೂರ್ವವೀಕ್ಷಣೆ ಸಂವಾದದಲ್ಲಿ ಸರಳೀಕೃತ ಪುಟ ಚೆಕ್ ಬಾಕ್ಸ್ ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ</translation>
 <translation id="4299729908419173967">ಬ್ರೆಜಿಲಿಯನ್</translation>
-<translation id="4301786491084298653"><ph name="DOMAIN" /> ನಲ್ಲಿ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="430714521864499800">"ಸಂಗ್ರಹ-ನಿಯಂತ್ರಣ: ಮರುಪ್ರಮಾಣೀಕರಿಸುವಾಗ ಹಳೆಯದಾಗಿಸುವಿಕೆ" ನಿರ್ದೇಶನದ ಪ್ರಾಯೋಗಿಕ ಜಾರಿಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ. ಇದು ವಿಳಂಬವನ್ನು ಸುಧಾರಿಸಲು ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಮರುಮೌಲ್ಯಿಕರಿಸಬಹುದಾದ ಕೆಲವು ಸಂಪನ್ಮೂಲಗಳನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಲು ಸರ್ವರ್‌ಗೆ ಅವಕಾಶ ಮಾಡಿಕೊಡುತ್ತದೆ.</translation>
 <translation id="4307281933914537745">ಸಿಸ್ಟಂ‌ನ ಮರುಪ್ರಾಪ್ತಿ ಬಗ್ಗೆ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K ಲೈವ್)</translation>
@@ -2328,7 +2327,6 @@
 <translation id="4336032328163998280">ನಕಲು ಕಾರ್ಯಾಚರಣೆ ವಿಫಲವಾಗಿದೆ. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">ನೆಟ್‌ವರ್ಕ್ ಲಾಗ್‌ಗಳಿಗೆ, ಇದನ್ನು ವೀಕ್ಷಿಸಿ: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942">"<ph name="EXTENSION_NAME" />" ಅಪ್ಲಿಕೇಶನ್ ನೊಂದಿಗೆ <ph name="ORIGIN" /> ಸಂಪರ್ಕಿಸಲು ಬಯಸುತ್ತದೆ</translation>
-<translation id="4341364588986930687">ರಕ್ಷಣೆ ಮಾಡಿದ ಮಾಧ್ಯಮದ ವರ್ಧಿಸಲಾದ ಪ್ಲೇಬ್ಯಾಕ್‍‍ಗಾಗಿ ಅರ್ಹತೆಯನ್ನು ನಿರ್ಧರಿಸಲು, Google ನಿಂದ, <ph name="DOMAIN" /> ನಿಮ್ಮ ಸಾಧನದ ಗುರುತು ಪರಿಶೀಲನೆಯ ಅಗತ್ಯವಿದೆ. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">ಯಾವುದೇ ಡೇಟಾವನ್ನು ಹೊಂದಿಸದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="4342311272543222243">ಓಹ್, TPM ದೋಷ.</translation>
 <translation id="4345587454538109430">ಕಾನ್ಫಿಗರ್ ಮಾಡಿ...</translation>
@@ -2462,7 +2460,6 @@
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" ಗೆ ಸಂಪರ್ಕಪಡಿಸುವಾಗ ದೃಢೀಕರಣವನ್ನು ರದ್ದು ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ಫೈಲ್</translation>
 <translation id="457386861538956877">ಇನ್ನಷ್ಟು...</translation>
-<translation id="4575703660920788003">ಕೀಬೋರ್ಡ್ ಲೇಔಟ್ ಬದಲಾಯಿಸಲು Shift-Alt ಒತ್ತಿರಿ.</translation>
 <translation id="4580526846085481512">$1 ಐಟಂಗಳನ್ನು ಅಳಿಸಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?</translation>
 <translation id="458150753955139441">ಹಿಂದೆ ಹೋಗಲು ಒತ್ತಿರಿ, ಇತಿಹಾಸ ವೀಕ್ಷಿಸಲು ಸಂದರ್ಭ ಮೆನು ಬಳಸಿ</translation>
 <translation id="4582447636905308869">Google ಇನ್‌ಪುಟ್ ಪರಿಕರಗಳ HMM ಎಂಜಿನ್ ಆಧರಿಸಿರುವ ಹೊಸ ಕೊರಿಯನ್ IME.</translation>
@@ -3144,6 +3141,7 @@
 <translation id="556042886152191864">ಬಟನ್</translation>
 <translation id="5565871407246142825">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು</translation>
 <translation id="5567989639534621706">ಅಪ್ಲಿಕೇಶನ್ ಸಂಗ್ರಹಗಳು</translation>
+<translation id="5568069709869097550">ಸೈನ್ ಇನ್ ಆಗಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> ರಲ್ಲಿ ನೊಂದಾಯಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5575473780076478375">ಅಜ್ಞಾತ ವಿಸ್ತರಣೆ: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಹೊಂದಿಸುವುದರಿಂದ, ನಿಮ್ಮ Google ಖಾತೆಗಳು ಅಥವಾ ಈ ಖಾತೆಗಳಿಗೆ ಸಿಂಕ್ ಮಾಡಲಾಗಿರುವ ಯಾವುದೇ ಡೇಟಾದ ಮೇಲೆ ಪರಿಣಾಮ ಬೀರುವುದಿಲ್ಲ. ಆದಾಗ್ಯೂ, ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಸ್ಥಳೀಯವಾಗಿ ಉಳಿಸಲಾಗಿರುವ ಎಲ್ಲಾ ಫೈಲ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ.</translation>
@@ -3194,7 +3192,6 @@
 <translation id="5642953011762033339">ಖಾತೆಯ ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಿ</translation>
 <translation id="5646376287012673985">ಸ್ಥಾನ</translation>
 <translation id="5649768706273821470">ಆಲಿಸು</translation>
-<translation id="5649823029736413118">ಪ್ರೀಮಿಯಮ್ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡಲು <ph name="URL" /> ಗೆ ನಿಮ್ಮ ಸಾಧನವನ್ನು ಅನನ್ಯವಾಗಿ ಗುರುತಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="5650551054760837876">ಯಾವುದೇ ಫಲಿತಾಂಶಗಳು ಕಂಡುಬಂದಿಲ್ಲ.</translation>
 <translation id="5653140146600257126">"$1" ಹೆಸರಿನ ಡೈರೆಕ್ಟರಿ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ. ದಯವಿಟ್ಟು ಬೇರೊಂದು ಹೆಸರನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="5657667036353380798">ಬಾಹ್ಯ ವಿಸ್ತರಣೆಯನ್ನು ಸ್ಥಾಪಿಸಲು <ph name="MINIMUM_CHROME_VERSION" /> ನ chrome ಆವೃತ್ತಿ ಅಥವಾ ಹೆಚ್ಚಿನದು ನಿಮಗೆ ಅಗತ್ಯವಿದೆ.</translation>
@@ -4459,7 +4456,6 @@
 <translation id="7626009897377900107">ಪಾಸ್‌ವರ್ಡ್ ರಚನೆ</translation>
 <translation id="7627262197844840899">ಈ ಸೈಟ್‌ MasterCard ಅನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="7627790789328695202">ಓಹ್, <ph name="FILE_NAME" /> ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ. ಅದನ್ನು ಮರುಹೆಸರಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="7628079021897738671">ಸರಿ, ಅರ್ಥವಾಯಿತು</translation>
 <translation id="762917759028004464">ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಪ್ರಸ್ತುತ <ph name="BROWSER_NAME" /> ಆಗಿದೆ.</translation>
 <translation id="7629536005696009600">ಸೂಕ್ತವಾದ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ಭರ್ತಿ ಮಾಡಲು Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ಸಂಗ್ರಹಿಸಲಾದ ರುಜುವಾತುಗಳನ್ನು ಅನುಮತಿಸಿ.</translation>
 <translation id="7629827748548208700">ಟ್ಯಾಬ್: <ph name="TAB_NAME" /></translation>
@@ -5331,7 +5327,6 @@
 <translation id="8925458182817574960">&amp;ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8926389886865778422">ಮತ್ತೆ ಕೇಳಬೇಡಿ</translation>
 <translation id="8926518602592448999">ಡೆವೆಲಪರ್ ಮೋಡ್ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
-<translation id="892867331564916668">ಈ ಸಾಧನದಲ್ಲಿ ಫೈಲ್‌ಗಳನ್ನು ಸಂಗ್ರಹಿಸಲು <ph name="URL" /> ಬಯಸುತ್ತದೆ.</translation>
 <translation id="8929454297483336498">QTKit ಬದಲಾಗಿ, Mac OS X AVFoundation API ಗಳ ಬಳಕೆ</translation>
 <translation id="8931394284949551895">ಹೊಸ ಸಾಧನಗಳು</translation>
 <translation id="8932730422557198035">Android Midi API ಬಳಸಿ</translation>

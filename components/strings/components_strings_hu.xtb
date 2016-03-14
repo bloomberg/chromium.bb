@@ -18,7 +18,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> - mindig legyen lefordítva</translation>
 <translation id="1107591249535594099">Ha be van jelölve, a Chrome ezen az eszközön tárolja a kártya egy példányát az űrlapok gyorsabb kitöltéséhez.</translation>
 <translation id="1113869188872983271">&amp;Átrendezés visszavonása</translation>
-<translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
 <translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
 <translation id="113188000913989374">A(z) <ph name="SITE" /> közlendője:</translation>
 <translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1442912890475371290">Letiltott kísérlet <ph name="BEGIN_LINK" /> egy oldal felkeresésére a következő domainen: <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">A kártya ellenőrzése során hiba történt. Ellenőrizze az internetkapcsolatot, és próbálja újra.</translation>
-<translation id="1491151370853475546">Az oldal újratöltése</translation>
 <translation id="1506687042165942984">Az oldal mentett (pl. köztudottan régi) változatának megjelenítése.</translation>
 <translation id="1519264250979466059">Build dátuma</translation>
 <translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Speciális</translation>
 <translation id="201192063813189384">Hiba történt a gyorsítótárban lévő adatok beolvasása során.</translation>
 <translation id="2025186561304664664">Automatikusan konfigurálhatóra beállított proxy.</translation>
-<translation id="2025623846716345241">Újratöltés megerősítése</translation>
 <translation id="2030481566774242610">Erre gondolt: <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />A proxy és a tűzfal ellenőrzése<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Irányítószám</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">A hozzáférés a fájlhoz megtagadva.</translation>
 <translation id="2653659639078652383">Elküldés</translation>
 <translation id="2674170444375937751">Biztosan törölni szeretné ezeket az oldalakat az előzmények közül?</translation>
+<translation id="2677748264148917807">Lap elhagyása</translation>
 <translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
 <translation id="2705137772291741111">A webhely mentett (gyorsítótárazott) példánya nem olvasható.</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
@@ -301,7 +299,6 @@
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" kulcs: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Az ügyfél és a szerver nem támogat ugyanolyan SSL-protokollverziót vagy rejtjelezési csomagot.</translation>
 <translation id="4079302484614802869">A proxykonfiguráció a .pac típusú szkript URL-cím, nem pedig a fix proxyszerverek használatára van beállítva.</translation>
-<translation id="409504436206021213">Ne töltse újra</translation>
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
 <translation id="4103763322291513355">Látogasson el a &lt;strong&gt;chrome://policy&lt;/strong&gt; oldalra a feketelistán lévő URL-ek és egyéb, a rendszergazda által előírt szabályok megtekintéséhez.</translation>
 <translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
@@ -386,7 +383,6 @@
 <translation id="5199729219167945352">Kísérletek</translation>
 <translation id="5228309736894624122">SSL-protokoll hiba.</translation>
 <translation id="5251803541071282808">Felhő</translation>
-<translation id="5295309862264981122">Navigálás megerősítése</translation>
 <translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />A cookie-k törlése<ph name="END_LINK" /></translation>
@@ -480,7 +476,6 @@
 <translation id="647261751007945333">Eszközházirendek</translation>
 <translation id="6489534406876378309">Feltöltési összeomlások indítása</translation>
 <translation id="6500116422101723010">A webhely nem képes kezelni a kérelmet. Ez a kód egy átmeneti állapotot jelez, és a szerver egy idő után újra működni fog.</translation>
-<translation id="6512448926095770873">Az oldal elhagyása</translation>
 <translation id="6518133107902771759">Ellenőrzés</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
 <translation id="6533019874004191247">Nem támogatott URL.</translation>
@@ -650,7 +645,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8293206222192510085">Könyvjelző hozzáadása</translation>
 <translation id="8294431847097064396">Forrás</translation>
 <translation id="8308427013383895095">A fordítás a hálózati kapcsolat problémája miatt nem sikerült.</translation>
-<translation id="8311778656528046050">Biztos, hogy újra szeretné tölteni ezt az oldalt?</translation>
 <translation id="8332188693563227489">A hozzáférés megtagadva a következőhöz: <ph name="HOST_NAME" /></translation>
 <translation id="8349305172487531364">Könyvjelzősáv</translation>
 <translation id="8363502534493474904">Repülős üzemmód kikapcsolása</translation>
@@ -720,7 +714,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="9125941078353557812">Adja meg a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9148507642005240123">&amp;Szerkesztés visszavonása</translation>
-<translation id="9154176715500758432">Maradok ezen az oldalon</translation>
 <translation id="9157595877708044936">Előkészítés...</translation>
 <translation id="9170848237812810038">&amp;Visszavonás</translation>
 <translation id="917450738466192189">A szerver tanúsítványa érvénytelen.</translation>

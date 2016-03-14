@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1000498691615767391">Vyberte priečinok, ktorý chcete otvoriť</translation>
-<translation id="1000916256947465293">Povolí automatické prihlasovanie na webových stránkach pomocou uložených poverení. Ak je funkcia vypnutá, zobrazí sa výzva na overenie vždy pred prihlásením sa na webové stránky.</translation>
 <translation id="1005274289863221750">Používať mikrofón a fotoaparát</translation>
 <translation id="1007233996198401083">Nedá sa pripojiť.</translation>
 <translation id="1007408791287232274">Zariadenia sa nedali načítať.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Zakázať sieť WiMAX</translation>
 <translation id="174773101815569257">Zámok myši</translation>
 <translation id="1749854530031883739">Zobrazovať sivé kulisy okien používané v zobrazení TouchView (maximalizovaný režim) za oknami, ktoré sa nedajú maximalizovať.</translation>
+<translation id="17513872634828108">Otvorené karty</translation>
 <translation id="175196451752279553">Znovu o&amp;tvoriť zatvorenú kartu</translation>
 <translation id="1753682364559456262">Spravovať blokovanie obrázkov...</translation>
 <translation id="1753905327828125965">Najviac navšt.</translation>
@@ -1319,7 +1319,7 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2889064240420137087">Otvoriť odkaz pomocou...</translation>
 <translation id="2889925978073739256">Pokračovať v blokovaní doplnkov, ktoré nie sú v karanténe</translation>
 <translation id="2890624088306605051">Načítať iba synchronizované nastavenia a údaje</translation>
-<translation id="2890678560483811744">Odkaz na stránku mimo rozsah</translation>
+<translation id="2890678560483811744">Odkaz na stránku je mimo rozsahu</translation>
 <translation id="2893168226686371498">Predvolený prehliadač</translation>
 <translation id="289426338439836048">Iná mobilná sieť...</translation>
 <translation id="2894745200702272315">Aktivuje experimentálnu verziu funkcií detekcie kľúčového slova „Ok Google“, ktoré sú závislé od hardvéru.</translation>
@@ -2309,7 +2309,6 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tra
 <translation id="4298972503445160211">dánska klávesnica</translation>
 <translation id="4299273509016391946">Povolí začiarkavacie políčko na zjednodušenie stránky v dialógu ukážky tlače</translation>
 <translation id="4299729908419173967">brazílčina</translation>
-<translation id="4301786491084298653">Zakázať v doméne <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Povoľte experimentálnu implementáciu funkcie Cache-Control: smernica typu stale-while-revalidate. Umožňuje serverom určiť, ktoré zdroje môžu byť opätovne overené na pozadí s cieľom zlepšiť latenciu.</translation>
 <translation id="4307281933914537745">Viac informácií o obnovení systému</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (aktívne: <ph name="NUM_KILOBYTES_LIVE" /> kB)</translation>
@@ -2330,7 +2329,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4336032328163998280">Kopírovanie zlyhalo. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Denníky siete nájdete na stránke <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942">Web <ph name="ORIGIN" /> chce komunikovať s aplikáciou <ph name="EXTENSION_NAME" /></translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> vyžaduje, aby služba Google overila identitu vášho zariadenia s cieľom stanoviť spôsobilosť pre vylepšené prehrávanie chránených médií. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Blokovať webovým stránkam nastavenie akýchkoľvek údajov</translation>
 <translation id="4342311272543222243">Hops, vyskytla sa chyba modulu TPM.</translation>
 <translation id="4345587454538109430">Konfigurovať...</translation>
@@ -2464,7 +2462,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4572659312570518089">Overenie totožnosti sa počas pripájania k zariadeniu <ph name="DEVICE_NAME" /> zrušilo.</translation>
 <translation id="4572815280350369984">Súbor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Viac...</translation>
-<translation id="4575703660920788003">Podržaním klávesov Shift a Alt zmeníte rozloženie klávesnice.</translation>
 <translation id="4580526846085481512">Naozaj chcete odstrániť položky ($1)?</translation>
 <translation id="458150753955139441">Stlačením tohto tlačidla prejdete späť, históriu si zobrazíte pomocou kontextovej ponuky</translation>
 <translation id="4582447636905308869">Nová metóda vstupu pre kórejčinu, ktorá je založená na module HMM Nástrojov Google na zadávanie textu.</translation>
@@ -3014,7 +3011,7 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="539755880180803351">Pridá k webovým formulárom anotácie tak, že ako zástupný text vloží typ poľa predpovedaný funkciou Automatické dopĺňanie.</translation>
 <translation id="5397578532367286026">Aktivitu a históriu tohto používateľa môže skontrolovať správca (<ph name="MANAGER_EMAIL" />) na adrese chrome.com.</translation>
 <translation id="5397794290049113714">Vy</translation>
-<translation id="5398572795982417028">Odkaz na stránku mimo rozsah, limit je <ph name="MAXIMUM_PAGE" /></translation>
+<translation id="5398572795982417028">Odkaz na stránku je mimo rozsahu, limit je <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398824043967640339"><ph name="COUNT" /> z iných webov</translation>
 <translation id="5399158067281117682">Kódy PIN sa nezhodujú.</translation>
 <translation id="5400640815024374115">Čip modulu TPM (Trusted Platform Module) je zakázaný alebo chýba.</translation>
@@ -3142,6 +3139,7 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="556042886152191864">Tlačidlo</translation>
 <translation id="5565871407246142825">Kreditné karty</translation>
 <translation id="5567989639534621706">Vyrovnávacie pamäte aplikácií</translation>
+<translation id="5568069709869097550">Nedá sa prihlásiť</translation>
 <translation id="5569544776448152862">Registruje sa v doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Rozšírenie inkognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Obnovenie vášho zariadenia neovplyvní účty Google ani údaje synchronizované do týchto účtov. Všetky súbory uložené miestne v zariadení sa však odstránia.</translation>
@@ -3191,7 +3189,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="5642953011762033339">Odpojiť účet</translation>
 <translation id="5646376287012673985">Poloha</translation>
 <translation id="5649768706273821470">Počúvať</translation>
-<translation id="5649823029736413118">Stránky <ph name="URL" /> potrebujú jedinečne identifikovať vaše zariadenie, aby mohli prehrať prémiový obsah.</translation>
 <translation id="5650551054760837876">Nenašli sa žiadne výsledky vyhľadávania.</translation>
 <translation id="5653140146600257126">Priečinok s názvom „$1“ už existuje. Vyberte iný názov.</translation>
 <translation id="5657667036353380798">Inštalácia externého rozšírenia vyžaduje prehliadač Chrome verzie <ph name="MINIMUM_CHROME_VERSION" /> alebo vyšší</translation>
@@ -4459,7 +4456,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="7626009897377900107">Generovanie hesla</translation>
 <translation id="7627262197844840899">Tieto stránky neprijímajú karty MasterCard.</translation>
 <translation id="7627790789328695202">Hops, súbor <ph name="FILE_NAME" /> už existuje. Premenujte ho a skúste to znova.</translation>
-<translation id="7628079021897738671">Áno, rozumiem</translation>
 <translation id="762917759028004464">Predvolený prehliadač je momentálne <ph name="BROWSER_NAME" /></translation>
 <translation id="7629536005696009600">Povoliť, aby sa poverenia ukladali pre aplikácie pre Android a následne doplňovali na príslušných webových stránkach.</translation>
 <translation id="7629827748548208700">Karta: <ph name="TAB_NAME" /></translation>
@@ -5335,7 +5331,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8925458182817574960">&amp;Nastavenia</translation>
 <translation id="8926389886865778422">Túto otázku už nezobrazovať</translation>
 <translation id="8926518602592448999">Zakázanie rozšírení spustených v režime vývojára</translation>
-<translation id="892867331564916668">Stránky <ph name="URL" /> chcú ukladať súbory na tomto zariadení.</translation>
 <translation id="8929454297483336498">Použitie rozhraní AV Foundation API systému Mac OS X (namiesto rozhrania QTKit)</translation>
 <translation id="8931394284949551895">Nové zariadenia</translation>
 <translation id="8932730422557198035">Použitie rozhrania Android Midi API</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="1000498691615767391">திறப்பதற்கு ஒரு கோப்புறையைத் தேர்ந்தெடுக்கவும்</translation>
-<translation id="1000916256947465293">சேமிக்கப்பட்டுள்ள நற்சான்றிதழைப் பயன்படுத்தி, இணைய தளங்களில் தானாகவே உள்நுழையவும். இந்த அம்சம் முடக்கப்பட்டிருக்கும் போது, இணைய தளத்தில் உள்நுழையும் முன், ஒவ்வொரு முறையும் சரிபார்க்கும்படி கேட்கப்படுவீர்கள்.</translation>
 <translation id="1005274289863221750">உங்கள் மைக்ரோஃபோன் மற்றும் கேமராவைப் பயன்படுத்தலாம்</translation>
 <translation id="1007233996198401083">இணைக்க முடியவில்லை.</translation>
 <translation id="1007408791287232274">சாதனங்களை ஏற்ற முடியவில்லை.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">WiMAX ஐ முடக்கு</translation>
 <translation id="174773101815569257">சுட்டிப் பூட்டு</translation>
 <translation id="1749854530031883739">பெரிதாக்க முடியாத சாளரங்களின் பின்புறத்தில், TouchView இல் (பெரிதாக்கும் பயன்முறை) பயன்படுத்தப்படும் சாம்பல் நிற சாளரப் படக் கலவைகளைக் காட்டும்.</translation>
+<translation id="17513872634828108">தாவல்களைத் திற</translation>
 <translation id="175196451752279553">மூடிய தாவலை ம&amp;றுபடி திறக்கவும்</translation>
 <translation id="1753682364559456262">படத் தடுப்பை நிர்வகியுங்கள்...</translation>
 <translation id="1753905327828125965">அதிகமாகப் பார்க்கப்பட்டவை</translation>
@@ -2308,7 +2308,6 @@
 <translation id="4298972503445160211">டேனிஷ் விசைப்பலகை</translation>
 <translation id="4299273509016391946">அச்சு மாதிரிக்காட்சி உரையாடலில் பக்கத்தை எளிதாக்கு எனும் செக் பாக்ஸை இயக்கும்</translation>
 <translation id="4299729908419173967">பிரேசிலியன்</translation>
-<translation id="4301786491084298653"><ph name="DOMAIN" /> இல் முடக்கு</translation>
 <translation id="430714521864499800">Cache-Control: stale-while-revalidate கட்டளையின் சோதனைச் செயலாக்கத்தை இயக்கும். இது தாமதநிலையைக் குறைக்க, பின்னணியில் சில மூலங்கள் மறுசரிபார்ப்பு செய்யப்படலாம் என்பதைக் குறிக்க சேவையகங்களை அனுமதிக்கும்.</translation>
 <translation id="4307281933914537745">முறைமை மீட்பு குறித்து மேலும் அறியவும்</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K பயன்பாட்டில்)</translation>
@@ -2329,7 +2328,6 @@
 <translation id="4336032328163998280">நகலெடுக்கும் செயல்பாடு தோல்வி. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">நெட்வொர்க் பதிவுகளுக்கு, இதைப் பார்க்கவும்: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" />, "<ph name="EXTENSION_NAME" />" பயன்பாட்டுடன் தொடர்புகொள்ள விழைகிறது</translation>
-<translation id="4341364588986930687">பாதுகாக்கப்பட்ட மீடியாவின் மேம்பட்ட வீடியோவின் இயக்கத்திற்கான தகுதிநிலையைத் தீர்மானிப்பதற்கு,  உங்கள் சாதனத்தின் அடையாளம் Google ஆல் சரிபார்க்கப்பட வேண்டிய அவசியம் <ph name="DOMAIN" /> க்கு உள்ளது. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">எந்த தரவையும் அமைப்பதிலிருந்து தளங்களைத் தடு</translation>
 <translation id="4342311272543222243">அச்சச்சோ, TPM பிழை.</translation>
 <translation id="4345587454538109430">உள்ளமை...</translation>
@@ -2463,7 +2461,6 @@
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" உடன் இணைக்கும்போது அங்கீகரிப்பு ரத்தானது.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> கோப்பு</translation>
 <translation id="457386861538956877">மேலும்...</translation>
-<translation id="4575703660920788003">விசைப்பலகை தளவமைப்பை மாற்ற Shift-Alt விசையை அழுத்துக</translation>
 <translation id="4580526846085481512">$1 உருப்படிகளை நிச்சயமாக நீக்க வேண்டுமா?</translation>
 <translation id="458150753955139441">பின்னே செல்ல அழுத்தவும், வரலாற்றைக் காண சூழல் மெனுவைப் பயன்படுத்தவும்</translation>
 <translation id="4582447636905308869">Google உள்ளீட்டுக் கருவியின் HMM இன்ஜினின் அடிப்படையிலான புதிய கொரிய IME.</translation>
@@ -3137,6 +3134,7 @@
 <translation id="556042886152191864">பொத்தான்</translation>
 <translation id="5565871407246142825">கிரெடிட் கார்டுகள்</translation>
 <translation id="5567989639534621706">பயன்பாட்டு தற்காலிக சேமிப்புகள்</translation>
+<translation id="5568069709869097550">உள்நுழைய முடியவில்லை</translation>
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> இல் பதிவுசெய்கிறது...</translation>
 <translation id="5575473780076478375">மறைநிலை நீட்டிப்பு: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">உங்கள் சாதனத்தை மீட்டமைப்பதால் உங்கள் Google கணக்குகள் அல்லது இந்தக் கணக்குகளுடன் ஒத்திசைக்கப்படும் எந்த தரவையும் பாதிக்காது. எனினும்,  உங்கள் அக சாதனத்தில் சேமிக்கப்பட்ட எல்லா கோப்புகளும் நீக்கப்படும்.</translation>
@@ -3187,7 +3185,6 @@
 <translation id="5642953011762033339">ஒரு கணக்கின் தொடர்பைத் துண்டி</translation>
 <translation id="5646376287012673985">இருப்பிடம்</translation>
 <translation id="5649768706273821470">கேள்</translation>
-<translation id="5649823029736413118">ப்ரீமியம் உள்ளடக்கத்தை இயக்குவதற்கு, உங்கள் சாதனத்தின் தனிப்பட்ட அடையாளம் <ph name="URL" /> க்கு தேவைப்படுகிறது.</translation>
 <translation id="5650551054760837876">தேடல் முடிவுகள் எதுவும் காணப்படவில்லை.</translation>
 <translation id="5653140146600257126">"$1" என்று பெயரிடப்பட்ட கோப்புறை ஏற்கனவே உள்ளது. வேறு பெயரைத் தேர்வுசெய்க.</translation>
 <translation id="5657667036353380798">வெளிப்புற நீட்டிப்பிற்கு chrome பதிப்பு <ph name="MINIMUM_CHROME_VERSION" /> அல்லது அதற்கு பிந்தையதை நிறுவியிருக்க வேண்டும்.</translation>
@@ -4443,7 +4440,6 @@
 <translation id="7626009897377900107">கடவுச்சொல் உருவாக்கம்</translation>
 <translation id="7627262197844840899">இந்தத் தளம் MasterCard ஐ ஏற்காது.</translation>
 <translation id="7627790789328695202">அடடா, <ph name="FILE_NAME" /> ஏற்கனவே உள்ளது. இதற்கு மறுபெயரிட்டு மீண்டும் முயற்சிக்கவும்.</translation>
-<translation id="7628079021897738671">சரி, புரிந்தது</translation>
 <translation id="762917759028004464">நடப்பு இயல்புநிலை உலாவி <ph name="BROWSER_NAME" /> ஆகும்.</translation>
 <translation id="7629536005696009600">Android பயன்பாடுகளுக்காகச் சேமிக்கப்பட்ட நற்சான்றுகளை, தொடர்புடைய இணையதளங்களில் நிரப்ப அனுமதிக்கும்.</translation>
 <translation id="7629827748548208700">தாவல்: <ph name="TAB_NAME" /></translation>
@@ -5319,7 +5315,6 @@
 <translation id="8925458182817574960">&amp;அமைப்புகள்</translation>
 <translation id="8926389886865778422">மீண்டும் கேட்கவேண்டாம்</translation>
 <translation id="8926518602592448999">டெவெலப்பர் பயன்முறை நீட்டிப்புகளை முடக்கவும்</translation>
-<translation id="892867331564916668"><ph name="URL" /> இந்தச் சாதனத்தில் கோப்புகளைச் சேமிக்க விரும்புகிறது.</translation>
 <translation id="8929454297483336498">QTKitக்குப் பதிலாக, Mac OS X AVFoundation APIகளின் பயன்பாடு</translation>
 <translation id="8931394284949551895">புதிய சாதனங்கள்</translation>
 <translation id="8932730422557198035">Android Midi APIஐப் பயன்படுத்து</translation>

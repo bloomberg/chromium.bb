@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">勾選後，Chrome 會在這個裝置上儲存您的信用卡複本，以便更快填寫資訊。</translation>
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
-<translation id="111844081046043029">您確定要離開此網頁嗎?</translation>
 <translation id="112840717907525620">政策快取正確</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 顯示：</translation>
 <translation id="1132774398110320017">Chrome 自動填入設定...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">列印</translation>
 <translation id="1442912890475371290">已封鎖<ph name="BEGIN_LINK" />造訪位於 <ph name="DOMAIN" /> 的網頁<ph name="END_LINK" />的要求。</translation>
 <translation id="1455235771979731432">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
-<translation id="1491151370853475546">重新載入這個網頁</translation>
 <translation id="1506687042165942984">顯示這個網頁的儲存複本 (亦即現已不再使用的版本)。</translation>
 <translation id="1519264250979466059">建立日期</translation>
 <translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">進階</translation>
 <translation id="201192063813189384">讀取快取資料時發生錯誤。</translation>
 <translation id="2025186561304664664">Proxy 已設為自動設定。</translation>
-<translation id="2025623846716345241">確認重新載入</translation>
 <translation id="2030481566774242610">您要找的是 <ph name="LINK" /> 嗎？</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />檢查 Proxy 和防火牆<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">郵遞區號</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">存取檔案遭拒</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2674170444375937751">確定要從您的紀錄中刪除這些網頁嗎？</translation>
+<translation id="2677748264148917807">離開</translation>
 <translation id="2704283930420550640">政策值格式不符。</translation>
 <translation id="2705137772291741111">已儲存 (快取) 這個網站的複本，但無法讀取。</translation>
 <translation id="2709516037105925701">自動填入</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">鍵「<ph name="SUBKEY" />」：<ph name="ERROR" /></translation>
 <translation id="4075732493274867456">用戶端和伺服器不支援一般 SSL 通訊協定版本或加密套件。</translation>
 <translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
-<translation id="409504436206021213">不要重新載入</translation>
 <translation id="4103249731201008433">裝置序號無效</translation>
 <translation id="4103763322291513355">請前往 &lt;strong&gt;chrome://policy&lt;/strong&gt; 查看列入黑名單的網址清單，以及其他系統管理員強制執行的政策。</translation>
 <translation id="4117700440116928470">系統不支援這項政策的範圍。</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">實驗性功能</translation>
 <translation id="5228309736894624122">SSL 通訊協定錯誤。</translation>
 <translation id="5251803541071282808">雲端</translation>
-<translation id="5295309862264981122">確認瀏覽</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />清除 Cookie<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">裝置政策</translation>
 <translation id="6489534406876378309">開始上傳當機報告</translation>
 <translation id="6500116422101723010">伺服器目前無法處理這項要求。這個代碼表示目前只是暫時發生狀況，伺服器會在延遲過後重新恢復運作。</translation>
-<translation id="6512448926095770873">離開此頁</translation>
 <translation id="6518133107902771759">確認</translation>
 <translation id="6529602333819889595">重做刪除(&amp;R)</translation>
 <translation id="6533019874004191247">網址不受支援。</translation>
@@ -653,7 +648,6 @@
 <translation id="8293206222192510085">新增書籤</translation>
 <translation id="8294431847097064396">來源</translation>
 <translation id="8308427013383895095">網路連線發生問題，翻譯作業失敗。</translation>
-<translation id="8311778656528046050">您確定要重新載入這個網頁？</translation>
 <translation id="8332188693563227489">存取 <ph name="HOST_NAME" /> 的要求遭到拒絕</translation>
 <translation id="8349305172487531364">書籤列</translation>
 <translation id="8363502534493474904">關閉飛航模式</translation>
@@ -714,7 +708,7 @@
 <translation id="901974403500617787">這些設定會套用至整個系統，只有以下使用者可設定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020142588544155172">伺服器拒絕連線。</translation>
 <translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="9038649477754266430">使用預測查詢字串服務，以便更快載入網頁</translation>
+<translation id="9038649477754266430">使用預測查詢字串服務，讓系統更快載入網頁</translation>
 <translation id="9039213469156557790">此外，這個網頁含有其他不安全的資源。其他人可能會在資源傳輸期間檢視這些資源，攻擊者也可能會修改這些資源，進而變更網頁行為。</translation>
 <translation id="9049981332609050619">您嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證無效。</translation>
 <translation id="9050666287014529139">通關密語</translation>
@@ -723,7 +717,6 @@
 <translation id="9125941078353557812">請輸入信用卡背面的三位數信用卡安全碼</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9148507642005240123">復原編輯(&amp;U)</translation>
-<translation id="9154176715500758432">停留在此頁</translation>
 <translation id="9157595877708044936">設定中...</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="917450738466192189">伺服器憑證無效。</translation>

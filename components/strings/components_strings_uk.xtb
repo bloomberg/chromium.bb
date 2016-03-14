@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Якщо вибрати цю опцію, Chrome зберігатиме копію даних вашої картки на цьому пристрої для швидшого заповнення форм.</translation>
 <translation id="1113869188872983271">&amp;Відмінити перевпорядкування</translation>
-<translation id="111844081046043029">Дійсно залишити цю сторінку?</translation>
 <translation id="112840717907525620">Кеш-пам’ять правила не пошкоджено</translation>
 <translation id="113188000913989374">Повідомлення із сайту <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Налаштування автозаповнення Chrome…</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1442912890475371290">Заблоковано спробу <ph name="BEGIN_LINK" />перейти на сторінку в домені <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Не вдалося підтвердити дані картки. Перевірте з’єднання з Інтернетом і повторіть спробу.</translation>
-<translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
 <translation id="1506687042165942984">Показати стару збережену копію цієї сторінки.</translation>
 <translation id="1519264250979466059">Дата створення версії</translation>
 <translation id="1549470594296187301">Щоб користуватися цією функцією, потрібно ввімкнути JavaScript.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Розширені</translation>
 <translation id="201192063813189384">Помилка читання даних з кеш-пам’яті.</translation>
 <translation id="2025186561304664664">Проксі-сервер установлено на автоматичне налаштування.</translation>
-<translation id="2025623846716345241">Підтвердьте перезавантаження</translation>
 <translation id="2030481566774242610">Можливо, ви мали на увазі <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />перевірити проксі-сервер і брандмауер<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Поштовий індекс</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">У доступі до файлу відмовлено</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2674170444375937751">Ви дійсно бажаєте видалити ці сторінки зі своєї історії?</translation>
+<translation id="2677748264148917807">Вийти</translation>
 <translation id="2704283930420550640">Значення не відповідає формату.</translation>
 <translation id="2705137772291741111">Не вдається прочитати збережену (кешовану) копію цього сайту.</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Ключ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Клієнт і сервер підтримують різні версії протоколу SSL або набору шифрів.</translation>
 <translation id="4079302484614802869">Конфігурацію проксі-сервера налаштовано на використання URL-адреси сценарію .pac, а не фіксованих проксі-серверів.</translation>
-<translation id="409504436206021213">Не перезавантажувати</translation>
 <translation id="4103249731201008433">Недійсний серійний номер пристрою</translation>
 <translation id="4103763322291513355">Перейдіть на сторінку &lt;strong&gt;chrome://policy&lt;/strong&gt;, щоб переглянути список URL-адрес із "чорного" списку й інші правила, що примусово застосовується системним адміністратором.</translation>
 <translation id="4117700440116928470">Правило не підтримується.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Експерименти</translation>
 <translation id="5228309736894624122">Помилка протоколу SSL.</translation>
 <translation id="5251803541071282808">Хмара</translation>
-<translation id="5295309862264981122">Підтвердити перехід</translation>
 <translation id="5299298092464848405">Помилка аналізу правила</translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />очистити файли cookie<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Правила пристрою</translation>
 <translation id="6489534406876378309">Почати завантаження даних про аварійне завершення роботи</translation>
 <translation id="6500116422101723010">Сервер наразі не може обробити цей запит. Цей код указує на тимчасовість стану. Після затримки сервер працюватиме знову.</translation>
-<translation id="6512448926095770873">Залишити цю сторінку</translation>
 <translation id="6518133107902771759">Підтвердити</translation>
 <translation id="6529602333819889595">&amp;Повторити видалення</translation>
 <translation id="6533019874004191247">URL не підтримується</translation>
@@ -652,7 +647,6 @@
 <translation id="8293206222192510085">Додати закладку</translation>
 <translation id="8294431847097064396">Джерело</translation>
 <translation id="8308427013383895095">Переклад не виконано через проблему підключення до мережі.</translation>
-<translation id="8311778656528046050">Дійсно перезавантажити цю сторінку?</translation>
 <translation id="8332188693563227489">Відмовлено в доступі до хосту <ph name="HOST_NAME" /></translation>
 <translation id="8349305172487531364">Панель закладок</translation>
 <translation id="8363502534493474904">вимкнути режим польоту</translation>
@@ -722,7 +716,6 @@
 <translation id="9125941078353557812">Введіть код CVC з 3 цифр, розташований на звороті вашої картки</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
 <translation id="9148507642005240123">&amp;Відмінити редагування</translation>
-<translation id="9154176715500758432">Залишатися на цій сторінці</translation>
 <translation id="9157595877708044936">Налаштування...</translation>
 <translation id="9170848237812810038">&amp;Скасувати</translation>
 <translation id="917450738466192189">Сертифікат сервера недійсний.</translation>

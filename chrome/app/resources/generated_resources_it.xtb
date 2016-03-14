@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1000498691615767391">Seleziona una cartella da aprire</translation>
-<translation id="1000916256947465293">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Quando la funzione non è attiva, ti viene chiesta la verifica prima di ogni accesso ai siti web.</translation>
 <translation id="1005274289863221750">Utilizzo del microfono e della fotocamera</translation>
 <translation id="1007233996198401083">Impossibile connettersi.</translation>
 <translation id="1007408791287232274">Impossibile caricare i dispositivi.</translation>
@@ -533,6 +532,7 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1747687775439512873">Disattiva WiMAX</translation>
 <translation id="174773101815569257">Blocco del mouse</translation>
 <translation id="1749854530031883739">Consente di mostrare gli sfondi grigi delle finestre utilizzati in TouchView (modalità ingrandita) dietro le finestre che non è possibile ingrandire.</translation>
+<translation id="17513872634828108">Schede aperte</translation>
 <translation id="175196451752279553">R&amp;iapri scheda chiusa</translation>
 <translation id="1753682364559456262">Gestisci il blocco delle immagini...</translation>
 <translation id="1753905327828125965">Più visitati</translation>
@@ -1643,7 +1643,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3338239663705455570">Tastiera slovena</translation>
 <translation id="3340978935015468852">impostazioni</translation>
 <translation id="3341703758641437857">Consenti l'accesso agli URL dei file</translation>
-<translation id="3343813173145836998">Accedi facilmente su questo dispositivo</translation>
+<translation id="3343813173145836998">Accedi facilmente a questo dispositivo</translation>
 <translation id="3344786168130157628">Nome punto di accesso:</translation>
 <translation id="3345135638360864351">Impossibile inviare a <ph name="NAME" /> la richiesta di accesso a questo sito. Riprova.</translation>
 <translation id="3345886924813989455">Non è stato trovato nessun browser supportato</translation>
@@ -2304,7 +2304,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="4298972503445160211">Tastiera danese</translation>
 <translation id="4299273509016391946">Consente di attivare la casella di controllo Pagina semplificata nella finestra dell'anteprima di stampa</translation>
 <translation id="4299729908419173967">Brasiliano</translation>
-<translation id="4301786491084298653">Disattiva su <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Consente di attivare l'implementazione sperimentale dell'istruzione "Cache-Control: stale-while-revalidate", che permette ai server di specificare che alcune risorse potrebbero essere riconvalidate in background per migliorare la latenza.</translation>
 <translation id="4307281933914537745">Ulteriori informazioni sul ripristino del sistema</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB effettivi)</translation>
@@ -2325,7 +2324,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4336032328163998280">Operazione di copia non riuscita. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Per i log di rete, vedi: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> vuole comunicare con l'app "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> richiede che Google controlli l'identità del tuo dispositivo per determinarne l'idoneità alla riproduzione avanzata di contenuti multimediali protetti. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Impedisci ai siti di impostare dati</translation>
 <translation id="4342311272543222243">Spiacenti, errore TPM.</translation>
 <translation id="4345587454538109430">Configura...</translation>
@@ -2459,7 +2457,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4572659312570518089">Autenticazione annullata durante la connessione a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Altro...</translation>
-<translation id="4575703660920788003">Premi Maiusc+Alt per cambiare il layout della tastiera.</translation>
 <translation id="4580526846085481512">Eliminare $1 elementi?</translation>
 <translation id="458150753955139441">Premi per tornare indietro, utilizza il menu contestuale per visualizzare la cronologia</translation>
 <translation id="4582447636905308869">Nuovo IME coreano, basato sul motore HMM di Google Strumenti di immissione.</translation>
@@ -3007,7 +3004,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="539755880180803351">Annota i moduli web con previsioni sul tipo di campi di Compilazione automatica sotto forma di testo segnaposto.</translation>
 <translation id="5397578532367286026">L'utilizzo e la cronologia di questo utente possono essere esaminati dal gestore (<ph name="MANAGER_EMAIL" />) su chrome.com.</translation>
 <translation id="5397794290049113714">Tu</translation>
-<translation id="5398572795982417028">Riferimento pagina oltre i limiti, il limite è <ph name="MAXIMUM_PAGE" /></translation>
+<translation id="5398572795982417028">Riferimento pagina oltre i limiti. Il limite è <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398824043967640339"><ph name="COUNT" /> da altri siti</translation>
 <translation id="5399158067281117682">I PIN non corrispondono.</translation>
 <translation id="5400640815024374115">Il chip TPM (Trusted Platform Module) non è attivo o è assente.</translation>
@@ -3135,6 +3132,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="556042886152191864">Pulsante</translation>
 <translation id="5565871407246142825">Carte di credito</translation>
 <translation id="5567989639534621706">Cache applicazione</translation>
+<translation id="5568069709869097550">Non riesco a effettuare l'accesso</translation>
 <translation id="5569544776448152862">Registrazione in <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Estensione in incognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Il ripristino del dispositivo non influirà sui tuoi account Google o sui dati sincronizzati con tali account. Tuttavia, tutti i file salvati localmente sul dispositivo verranno eliminati.</translation>
@@ -3184,7 +3182,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5642953011762033339">Disconnetti account</translation>
 <translation id="5646376287012673985">Posizione</translation>
 <translation id="5649768706273821470">Ascolta</translation>
-<translation id="5649823029736413118"><ph name="URL" /> deve identificare in modo univoco il tuo dispositivo per poter riprodurre contenuti premium.</translation>
 <translation id="5650551054760837876">Nessun risultato di ricerca trovato.</translation>
 <translation id="5653140146600257126">Esiste già una cartella denominata "$1". Scegli un altro nome.</translation>
 <translation id="5657667036353380798">Per poter installare l'estensione esterna occorre la versione di Chrome <ph name="MINIMUM_CHROME_VERSION" /> o successiva.</translation>
@@ -4440,7 +4437,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7626009897377900107">Generazione di password</translation>
 <translation id="7627262197844840899">Questo sito non accetta MasterCard.</translation>
 <translation id="7627790789328695202">Spiacenti. <ph name="FILE_NAME" /> esiste già. Rinominarlo e riprovare.</translation>
-<translation id="7628079021897738671">OK</translation>
 <translation id="762917759028004464">Al momento il browser predefinito è <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Autorizza l'inserimento delle credenziali archiviate per le applicazioni Android nei siti web corrispondenti.</translation>
 <translation id="7629827748548208700">Scheda: <ph name="TAB_NAME" /></translation>
@@ -5315,7 +5311,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8925458182817574960">&amp;Impostazioni</translation>
 <translation id="8926389886865778422">Non visualizzare più questo avviso</translation>
 <translation id="8926518602592448999">Disattiva estensioni in modalità sviluppatore</translation>
-<translation id="892867331564916668">Il sito <ph name="URL" /> vuole memorizzare file sul dispositivo.</translation>
 <translation id="8929454297483336498">Utilizzo delle API Mac OS X AVFoundation anziché di QTKit</translation>
 <translation id="8931394284949551895">Nuovi dispositivi</translation>
 <translation id="8932730422557198035">Utilizza l'API Android Midi</translation>

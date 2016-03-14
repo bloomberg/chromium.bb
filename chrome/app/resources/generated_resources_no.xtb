@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1000498691615767391">Velg en mappe du vil åpne</translation>
-<translation id="1000916256947465293">Logg automatisk på nettsteder ved hjelp av lagret legitimasjon. Når denne funksjonen er slått av, blir du bedt om å bekrefte hvem du er, før du logger på et nettsted.</translation>
 <translation id="1005274289863221750">bruke mikrofonen din og kameraet ditt</translation>
 <translation id="1007233996198401083">Kunne ikke koble til.</translation>
 <translation id="1007408791287232274">Kunne ikke laste inn enhetene.</translation>
@@ -530,6 +529,7 @@
 <translation id="1747687775439512873">Deaktiver WiMAX</translation>
 <translation id="174773101815569257">Muselås</translation>
 <translation id="1749854530031883739">Viser de grå vindusbakteppene som brukes i TouchView (maksimeringsmodus), bak vinduer som ikke kan maksimeres.</translation>
+<translation id="17513872634828108">Åpne faner</translation>
 <translation id="175196451752279553">Gj&amp;enåpne den lukkede fanen</translation>
 <translation id="1753682364559456262">Administrer blokkering av bilder</translation>
 <translation id="1753905327828125965">Mest besøkt</translation>
@@ -1179,7 +1179,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2737363922397526254">Skjul</translation>
 <translation id="2738771556149464852">Ikke etter</translation>
 <translation id="2739191690716947896">Feilsøk</translation>
-<translation id="2739240477418971307">endre tilgjengelighetsinnstillingene dine</translation>
+<translation id="2739240477418971307">endre innstillingene for tilgjengelighet</translation>
 <translation id="2739842825616753233">Spør når et nettsted krever tilgang til kameraet og mikrofonen (anbefales)</translation>
 <translation id="2740393541869613458">gjennomgå nettstedene den administrerte brukeren har besøkt, og</translation>
 <translation id="2743387203779672305">Kopiér til utklippstavlen</translation>
@@ -1313,7 +1313,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2889064240420137087">Åpne link med</translation>
 <translation id="2889925978073739256">Fortsett blokkeringen av programtillegg uten prosessisolering</translation>
 <translation id="2890624088306605051">Bare hent synkroniserte innstillinger og data</translation>
-<translation id="2890678560483811744">Sidereferansen ligger utenfor området</translation>
+<translation id="2890678560483811744">Sidereferansen ligger utenfor det gyldige området</translation>
 <translation id="2893168226686371498">Standardnettleser</translation>
 <translation id="289426338439836048">Annet mobilnettverk</translation>
 <translation id="2894745200702272315">Slår på en eksperimentell versjon av gjenkjenningsfunksjoner for «Ok Google»-kommandoord som har en maskinvareavhengighet.</translation>
@@ -2041,7 +2041,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3887557525921873910">Dette skal brukes sammen med enable-navigation-tracing-flagget.
         Velg den etiketten som best beskriver de registrerte sporene. Dette avgjør hvor de lastes opp til. Hvis du ikke er sikker, bør du velge «Annet». Hvis du lar dette stå tomt, blir ingen spor lastet opp.</translation>
 <translation id="3888118750782905860">Forbrukeradministrasjon</translation>
-<translation id="3893536212201235195">lese og endre tilgjengelighetsinnstillingene dine</translation>
+<translation id="3893536212201235195">lese og endre innstillingene for tilgjengelighet</translation>
 <translation id="3893630138897523026">ChromeVox (muntlig tilbakemelding)</translation>
 <translation id="3893977120523121937">Kjør alt innhold for programtillegg</translation>
 <translation id="389589731200570180">Del med gjester</translation>
@@ -2300,7 +2300,6 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="4298972503445160211">Dansk tastatur</translation>
 <translation id="4299273509016391946">Slår på avmerkingsboksen for forenkling av sider i dialogboksen for forhåndsvisning av utskrifter</translation>
 <translation id="4299729908419173967">Brasiliansk</translation>
-<translation id="4301786491084298653">Deaktiver på <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Slå på eksperimentell implementering av «Cache-Control: stale-while-revalidate»-direktivet. Dette gjør at tjenere kan spesifisere at enkelte ressurser kan valideres på nytt i bakgrunnen, for å redusere tidsforsinkelser.</translation>
 <translation id="4307281933914537745">Les mer om systemgjenoppretting</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB ubrukt)</translation>
@@ -2321,7 +2320,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4336032328163998280">Kopieringshandlingen mislyktes. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">For nettverkslogger, se: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ønsker å kommunisere med «<ph name="EXTENSION_NAME" />»-appen</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> krever at identiteten til enheten din bekreftes av Google, for å bestemme berettigelse for forbedret avspilling av beskyttet media. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Blokkér nettsteder fra å lagre data på maskinen</translation>
 <translation id="4342311272543222243">Beklager, det oppsto en TPM-feil.</translation>
 <translation id="4345587454538109430">Konfigurer</translation>
@@ -2455,7 +2453,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4572659312570518089">Autentiseringen ble avbrutt under tilkobling til <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer</translation>
-<translation id="4575703660920788003">Trykk på Shift + Alt for å bytte tastaturoppsett.</translation>
 <translation id="4580526846085481512">Er du sikker på at du vil slette $1 elementer?</translation>
 <translation id="458150753955139441">Trykk for å gå tilbake, og bruk den kontekstuelle menyen for å se loggen</translation>
 <translation id="4582447636905308869">Ny koreansk IME. Denne er basert på HMM-motoren i Google Inndataverktøy.</translation>
@@ -3002,7 +2999,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="539755880180803351">Kommenterer nettskjemaer med autofyll-forslag som plassholdertekst.</translation>
 <translation id="5397578532367286026">Bruken og loggen for denne brukeren kan gjennomgås av administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com</translation>
 <translation id="5397794290049113714">Deg</translation>
-<translation id="5398572795982417028">Sidereferansen ligger utenfor området. Grensen er <ph name="MAXIMUM_PAGE" /></translation>
+<translation id="5398572795982417028">Sidereferansen ligger utenfor det gyldige området. Grensen er <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398824043967640339"><ph name="COUNT" /> fra andre nettsteder</translation>
 <translation id="5399158067281117682">De personlige kodene stemmer ikke overens.</translation>
 <translation id="5400640815024374115">Pålitelig plattformmodul (TPM)-brikke er deaktivert eller mangler.</translation>
@@ -3130,6 +3127,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="556042886152191864">Knapp</translation>
 <translation id="5565871407246142825">Kredittkort</translation>
 <translation id="5567989639534621706">Programbuffere</translation>
+<translation id="5568069709869097550">Kan ikke logge på</translation>
 <translation id="5569544776448152862">Registrerer for <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> …</translation>
 <translation id="5575473780076478375">Inkognitoutvidelse: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Tilbakestilling av enheten påvirker ikke Google-kontoene dine eller andre data som er synkronisert til disse kontoene. Derimot slettes alle filer som er lagret lokalt på enheten.</translation>
@@ -3179,7 +3177,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5642953011762033339">Koble fra konto</translation>
 <translation id="5646376287012673985">Posisjon</translation>
 <translation id="5649768706273821470">Lytt</translation>
-<translation id="5649823029736413118"><ph name="URL" /> må unikt identifisere enheten din for å spille av premiuminnhold.</translation>
 <translation id="5650551054760837876">Ingen søkeresultater funnet.</translation>
 <translation id="5653140146600257126">Mappen «$1» fins allerede. Velg et annet navn.</translation>
 <translation id="5657667036353380798">Den eksterne utvidelsen krever at Chrome versjon <ph name="MINIMUM_CHROME_VERSION" /> eller nyere er installert.</translation>
@@ -3572,7 +3569,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6263541650532042179">tilbakestill synkronisering</translation>
 <translation id="6264347891387618177">Translitterasjon (selam → ሰላም)</translation>
 <translation id="6264365405983206840">Velg &amp;alle</translation>
-<translation id="6264485186158353794">Tilbake til sikkerhet</translation>
+<translation id="6264485186158353794">Til trygg havn</translation>
 <translation id="626568068055008686">Feil passord eller skadet fil.</translation>
 <translation id="6267166720438879315">Velg sertifikat for å autentisere deg selv til <ph name="HOST_NAME" /></translation>
 <translation id="6267909379545953750">Eksperimentell JavaScript</translation>
@@ -4435,7 +4432,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7626009897377900107">Passordgenerering</translation>
 <translation id="7627262197844840899">Dette nettstedet godtar ikke MasterCard.</translation>
 <translation id="7627790789328695202">Beklager, <ph name="FILE_NAME" /> finnes allerede. Gi den et nytt navn og prøv igjen.</translation>
-<translation id="7628079021897738671">OK, skjønner</translation>
 <translation id="762917759028004464">Standard nettleser er <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Tillat at legitimasjon som er lagret for Android-apper, fylles inn på de tilhørende nettstedene.</translation>
 <translation id="7629827748548208700">Fane: <ph name="TAB_NAME" /></translation>
@@ -5310,7 +5306,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8925458182817574960">&amp;Innstillinger</translation>
 <translation id="8926389886865778422">Ikke spør igjen</translation>
 <translation id="8926518602592448999">Deaktiver utvidelser for utviklermodus</translation>
-<translation id="892867331564916668"><ph name="URL" /> vil lagre filer på denne enheten.</translation>
 <translation id="8929454297483336498">Bruk av Mac OS X AVFoundation API-er i stedet for QTKit</translation>
 <translation id="8931394284949551895">Nye enheter</translation>
 <translation id="8932730422557198035">Bruk Android Midi API</translation>

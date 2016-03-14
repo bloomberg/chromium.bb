@@ -18,7 +18,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> همیشه ترجمه شود</translation>
 <translation id="1107591249535594099">‏اگر علامت زده شود، Chrome یک کپی از این کارت را در دستگاه نگهداری می‌کند تا برای پرکردن فرم‌ها از آن استفاده شود.</translation>
 <translation id="1113869188872983271">&amp;واگرد ترتیب‌بندی مجدد</translation>
-<translation id="111844081046043029">آیا می‌خواهید این صفحه را ترک کنید؟</translation>
 <translation id="112840717907525620">حافظه پنهان خط‌مشی مورد تأیید است</translation>
 <translation id="113188000913989374"><ph name="SITE" /> می‌گوید:</translation>
 <translation id="1132774398110320017">‏تنظیمات تکمیل خودکار Chrome...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="1442912890475371290">تلاش <ph name="BEGIN_LINK" /> برای بازدید از صفحه‌ای در <ph name="DOMAIN" /><ph name="END_LINK" /> مسدود شد.</translation>
 <translation id="1455235771979731432">هنگام تأیید کارت‌تان مشکلی رخ داد. اتصال اینترنت را بررسی کرده و دوباره امتحان کنید.</translation>
-<translation id="1491151370853475546">تازه‌سازی این صفحه</translation>
 <translation id="1506687042165942984">یک نسخه ذخیره‌شده (یعنی قدیمی) از این صفحه نشان داده شود.</translation>
 <translation id="1519264250979466059">تاریخ ساخت</translation>
 <translation id="1549470594296187301">برای استفاده از این قابلیت، جاوا اسکریپت باید فعال باشد.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="201192063813189384">خطا در خواندن داده‌ها از حافظهٔ پنهان.</translation>
 <translation id="2025186561304664664">پروکسی بر روی پیکربندی خودکار تنظیم شده است.</translation>
-<translation id="2025623846716345241">تأیید تازه‌سازی</translation>
 <translation id="2030481566774242610">منظورتان <ph name="LINK" /> بود؟</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />بررسی پروکسی و دیوار آتش<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">کد پستی</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">دسترسی به فایل رد شد</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2674170444375937751">آیا مطمئن هستید می‌خواهید این صفحات را از سابقه خود حذف کنید؟</translation>
+<translation id="2677748264148917807">خروج</translation>
 <translation id="2704283930420550640">مقدار با فرمت مطابقت ندارد.</translation>
 <translation id="2705137772291741111">کپی ذخیره‌شده (ذخیره موقت‌شده) این سایت قابل خواندن نبود.</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">کلید "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">‏کلاینت و سرور از مجموعه رمزگذاری یا نسخه پروتکل SSL مشترکی استفاده نمی‌کنند.</translation>
 <translation id="4079302484614802869">‏تنظیمات پروکسی، برای استفاده از آدرس اسکریپت pac. تنظیم شده است و از سرورهای ثابت نمی‌تواند استفاده کند.</translation>
-<translation id="409504436206021213">تازه‌سازی نشود</translation>
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="4103763322291513355">‏برای مشاهده فهرست نشانی‌های وب ممنوع و سایر خط‌مشی‌های اجباری براساس تصمیم سرپرست سیستم خود از &lt;strong&gt;chrome://policy&lt;/strong&gt; بازدید نمایید.</translation>
 <translation id="4117700440116928470">محدوده خط‌مشی پشتیبانی نمی‌شود.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">آزمایشات</translation>
 <translation id="5228309736894624122">‏خطای پروتکل SSL.</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5295309862264981122">تأیید پیمایش</translation>
 <translation id="5299298092464848405">خطا در تجزیه خط‌‌مشی</translation>
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />پاک کردن کوکی‌ها<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">خط‌‌مشی‌های دستگاه</translation>
 <translation id="6489534406876378309">شروع آپلود کردن خرابی‌ها</translation>
 <translation id="6500116422101723010">سرور در حال حاضر نمی‌تواند این درخواست را انجام دهد. این کد نشان دهنده آن است که این یک وضعیت موقت است و سرور پس از مدتی تأخیر دوباره به فعالیت ادامه می‌دهد.</translation>
-<translation id="6512448926095770873">ترک کردن این صفحه</translation>
 <translation id="6518133107902771759">تأیید</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
 <translation id="6533019874004191247">نشانی وب پشتیبانی نمی‌شود.</translation>
@@ -653,7 +648,6 @@
 <translation id="8293206222192510085">افزودن نشانک</translation>
 <translation id="8294431847097064396">منبع</translation>
 <translation id="8308427013383895095">ترجمه انجام نشد چون مشکلی در اتصال به شبکه رخ داد.</translation>
-<translation id="8311778656528046050">آیا مطمئن هستید که می‌خواهید این صفحه را تازه‌سازی کنید؟</translation>
 <translation id="8332188693563227489">دسترسی به <ph name="HOST_NAME" /> رد شد</translation>
 <translation id="8349305172487531364">نوار نشانک‌ها</translation>
 <translation id="8363502534493474904">خاموش کردن حالت هواپیما</translation>
@@ -723,7 +717,6 @@
 <translation id="9125941078353557812">‏کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9148507642005240123">&amp;واگرد ویرایش</translation>
-<translation id="9154176715500758432">ماندن در این صفحه</translation>
 <translation id="9157595877708044936">در حال راه‌اندازی...</translation>
 <translation id="9170848237812810038">&amp;واگرد</translation>
 <translation id="917450738466192189">گواهی سرور نامعتبر است.</translation>

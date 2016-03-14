@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1000498691615767391">انتخاب پوشه برای باز کردن</translation>
-<translation id="1000916256947465293">با استفاده از اطلاعات کاربری ذخیره شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. وقتی این قابلیت خاموش است، هر بار قبل از وارد شدن به سیستم وب‌سایت از شما خواسته می‌شود اطلاعات را تأیید کنید.</translation>
 <translation id="1005274289863221750">استفاده از میکروفون و دوربین خود</translation>
 <translation id="1007233996198401083">اتصال امکان‌پذیر نیست.</translation>
 <translation id="1007408791287232274">بارگیری دستگاه‌ها انجام نشد.</translation>
@@ -531,6 +530,7 @@
 <translation id="1747687775439512873">‏غیرفعال کردن WiMAX</translation>
 <translation id="174773101815569257">قفل شدن موشواره</translation>
 <translation id="1749854530031883739">‏تصویرهای زمینه خاکستری پنجره را که در TouchView (حالت حداکثر) در پشت پنجره‌های غیرقابل بزرگ کردن استفاده می‌شود، نشان می‌دهد.</translation>
+<translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="175196451752279553">با&amp;ز کردن مجدد برگه بسته</translation>
 <translation id="1753682364559456262">مدیریت انسداد تصویر...</translation>
 <translation id="1753905327828125965">بیشترین موارد بازدید شده</translation>
@@ -2305,7 +2305,6 @@
 <translation id="4298972503445160211">صفحه‌کلید دانمارکی</translation>
 <translation id="4299273509016391946">کادر تأیید ساده کردن صفحه را در کادر گفتگوی پیش‌نمایش چاپ فعال می‌کند</translation>
 <translation id="4299729908419173967">برزیلی</translation>
-<translation id="4301786491084298653">غیرفعال کردن در <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">پیاده‌سازی آزمایشی دایرکتیو «کنترل حافظه پنهان: غیرفعال هنگام تأیید مجدد» فعال می‌شود. این کار به سرورها اجازه می‌دهد تعیین کنند بعضی از منابع می‌توانند برای بهبود زمان تأخیر، در پس‌زمینه دوباره تأیید شوند.</translation>
 <translation id="4307281933914537745">درباره بازیابی سیستم خود بیشتر بیاموزید</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> کیلوبایت (<ph name="NUM_KILOBYTES_LIVE" />کیلوبایت زنده)</translation>
@@ -2326,7 +2325,6 @@
 <translation id="4336032328163998280">فرایند رونوشت‌برداری انجام نشد. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">برای گزارش‌های شبکه، به این قسمت رجوع کنید: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> می‌خواهد با برنامه «<ph name="EXTENSION_NAME" />» ارتباط برقرار کند</translation>
-<translation id="4341364588986930687">‏<ph name="DOMAIN" /> لازم دارد شناسه دستگاهتان توسط Google تأیید شود تا صلاحیت پخش تقویت‌شده رسانه محافظت‌شده را تعیین کند. <ph name="LEARN_MORE" /></translation>
 <translation id="4341977339441987045">تنظیم داده‌ها توسط سایت‌ها مسدود شود</translation>
 <translation id="4342311272543222243">‏متأسفانه خطای TPM رخ داد.</translation>
 <translation id="4345587454538109430">پیکربندی...</translation>
@@ -2460,7 +2458,6 @@
 <translation id="4572659312570518089">هنگام اتصال به «<ph name="DEVICE_NAME" />» تأیید اعتبار لغو شد.</translation>
 <translation id="4572815280350369984">فایل <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">بیشتر...</translation>
-<translation id="4575703660920788003">‏برای تغییر طرح صفحه، کلیدهای Shift-Alt را فشار دهید.</translation>
 <translation id="4580526846085481512">آیا مطمئنید می‌خواهید موارد $1 را حذف کنید؟</translation>
 <translation id="458150753955139441">فشار دهید تا به عقب برگردید، از منوی بافت استفاده کنید تا سابقه را ببینید</translation>
 <translation id="4582447636905308869">‏IME کره‌ای جدید که مبتنی بر موتور «HMM ابزار ورودی Google» است.</translation>
@@ -3138,6 +3135,7 @@
 <translation id="556042886152191864">دکمه</translation>
 <translation id="5565871407246142825">کارت‌های اعتباری</translation>
 <translation id="5567989639534621706">حافظه‌های پنهان برنامه</translation>
+<translation id="5568069709869097550">ورود به سیستم ممکن نیست</translation>
 <translation id="5569544776448152862">در حال ثبت‌نام در <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">افزونه ناشناس: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">‏بازنشانی دستگاهتان بر حساب‌های Google شما یا هر گونه داده همگام‌سازی شده با این حساب‌ها تأثیری نمی‌گذارد. اگرچه، همه فایل‌هایی که به‌صورت محلی در دستگاهتان ذخیره شده‌اند، حذف خواهند شد.</translation>
@@ -3187,7 +3185,6 @@
 <translation id="5642953011762033339">قطع ارتباط حساب</translation>
 <translation id="5646376287012673985">مکان</translation>
 <translation id="5649768706273821470">گوش دادن</translation>
-<translation id="5649823029736413118"><ph name="URL" /> برای پخش محتوای ممتاز، نیاز به شناسایی دستگاه شما به صورت متمایز دارد.</translation>
 <translation id="5650551054760837876">هیچ نتیجه‌ای برای جستجو یافت نشد.</translation>
 <translation id="5653140146600257126">پوشه با نام «$1» در حال حاضر موجود است. لطفاً نام دیگری انتخاب کنید.</translation>
 <translation id="5657667036353380798">‏برنامه افزودنی خارجی برای نصب شدن به Chrome نسخه <ph name="MINIMUM_CHROME_VERSION" /> یا بالاتر نیاز دارد.</translation>
@@ -4452,7 +4449,6 @@
 <translation id="7626009897377900107">تولید گذرواژه</translation>
 <translation id="7627262197844840899">‏این سایت MasterCard را نمی‌پذیرد.</translation>
 <translation id="7627790789328695202">اوه، <ph name="FILE_NAME" /> از قبل وجود دارد. نام آن را تغییر دهید و دوباره امتحان کنید.</translation>
-<translation id="7628079021897738671">بله، متوجه شدم</translation>
 <translation id="762917759028004464">در حال حاضر مرورگر پیش‌فرض <ph name="BROWSER_NAME" /> است.</translation>
 <translation id="7629536005696009600">‏اجازه می‌دهد اعتبارنامه‌های ذخیره شده برای برنامه‌های Android، در وب‌سایت‌های مرتبط استفاده شوند.</translation>
 <translation id="7629827748548208700">برگه: <ph name="TAB_NAME" /></translation>
@@ -5327,7 +5323,6 @@
 <translation id="8925458182817574960">&amp;تنظیمات</translation>
 <translation id="8926389886865778422">دوباره سؤال نشود</translation>
 <translation id="8926518602592448999">غیرفعال کردن افزونه‌های حالت برنامه‌نویس</translation>
-<translation id="892867331564916668"><ph name="URL" /> می‌خواهد فایل‌ها را در این دستگاه ذخیره کند.</translation>
 <translation id="8929454297483336498">‏استفاده از فایل‌های Mac OS X AVFoundation API به‌جای QTKit</translation>
 <translation id="8931394284949551895">دستگاه‌های جدید</translation>
 <translation id="8932730422557198035">‏استفاده از Android Midi API</translation>

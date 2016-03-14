@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="1000498691615767391">Chagua folda ya kufungua</translation>
-<translation id="1000916256947465293">Ingia katika akaunti kiotomatiki kwa kutumia kitambulisho kilichohifadhiwa. Kipengele kikiwa kimezimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
 <translation id="1005274289863221750">Tumia kipazasauti na kamera yako</translation>
 <translation id="1007233996198401083">Imeshindwa kuunganisha.</translation>
 <translation id="1007408791287232274">Haikuweza kupakia vifaa.</translation>
@@ -531,6 +530,7 @@
 <translation id="1747687775439512873">Zima WiMAX</translation>
 <translation id="174773101815569257">Kufuli la Kipanya</translation>
 <translation id="1749854530031883739">Onyesha mandhari ya dirisha ya kijivu yaliyotumiwa katika TouchView (tanua hali) nyuma ya madirisha ambayo hayawezi kutanuliwa.</translation>
+<translation id="17513872634828108">Vichupo vilivyo wazi</translation>
 <translation id="175196451752279553">&amp;Fungua tena kichupo kilichofungwa</translation>
 <translation id="1753682364559456262">Dhibiti uzuiaji wa picha...</translation>
 <translation id="1753905327828125965">Zinazotembelewa Zaidi</translation>
@@ -2299,7 +2299,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4298972503445160211">Kibodi ya Kidenmaki</translation>
 <translation id="4299273509016391946">Huwasha kisanduku cha kuteua cha kurahisisha ukurasa kwenye kidirisha cha onyesho la kuchungulia la printa</translation>
 <translation id="4299729908419173967">Kibrazili</translation>
-<translation id="4301786491084298653">Zima kwenye <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Washa utekelezaji wa kimajaribio wa Kudhibiti Akiba: agizo la kutangazwa kuwa sahihi tena muda ukiwa umekwisha. Hii huruhusu seva kubainisha kuwa baadhi ya rasilimali zinaweza kutangazwa kuwa sahihi katika hali ya chini chini ili kuboresha muda wa kusubiri.</translation>
 <translation id="4307281933914537745">Pata maelezo zaidi kuhusu ufufuaji wa mfumo</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
@@ -2320,7 +2319,6 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="4336032328163998280">Uendeshaji wa nakala haukufanikiwa. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Kwa kumbukumbu za mtandao, angalia: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> inataka kuwasiliana na programu "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> inahitaji utambulisho wa kifaa chako uthibitishwe, na Google, ili kubaini ustahiki kwa ajili ya kuimarisha uchezaji wa maudhui yanayolindwa. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Zuia tovuti zisiweke data yoyote</translation>
 <translation id="4342311272543222243">Lo, hitilafu ya TPM.</translation>
 <translation id="4345587454538109430">Sanidi...</translation>
@@ -2454,7 +2452,6 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="4572659312570518089">Uthibitishaji ulighairiwa wakati ikiunganishwa kwa "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Faili ya <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Zaidi...</translation>
-<translation id="4575703660920788003">Gonga Shift-Alt kubadili mpangilio wa kibodi.</translation>
 <translation id="4580526846085481512">Je, una uhakika unataka kufuta vipengee %1$?</translation>
 <translation id="458150753955139441">Bonyeza ili urudi nyuma, tumia menyu ili uone historia</translation>
 <translation id="4582447636905308869">IME mpya ya Kikorea, ambayo inapatikana kwenye mtambo wa HMM wa Zana za Kuingiza Data kwenye Google.</translation>
@@ -3131,6 +3128,7 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="556042886152191864">Kitufe</translation>
 <translation id="5565871407246142825">Kadi za malipo</translation>
 <translation id="5567989639534621706">Akiba za programu</translation>
+<translation id="5568069709869097550">Siwezi kuingia</translation>
 <translation id="5569544776448152862">Inajisajili katika <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Kiendelezi kilicho katika hali fiche: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Kuweka upya kifaa chako hakutaathiri akaunti zako za Google au data yoyote iliyosawazishwa kwenye akaunti hizi. Hata hivyo, faili zote zilizohifadhiwa ndani ya kifaa chako zitafutwa.</translation>
@@ -3180,7 +3178,6 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="5642953011762033339">Acha kuunganisha akaunti</translation>
 <translation id="5646376287012673985">Mahali</translation>
 <translation id="5649768706273821470">Sikiliza</translation>
-<translation id="5649823029736413118"><ph name="URL" /> inahitaji kutambua kifaa chako kipekee ili kicheze maudhui yanayolipishwa.</translation>
 <translation id="5650551054760837876">Matokeo ya utafutaji hayakupatikana.</translation>
 <translation id="5653140146600257126">Folda iitwayo "$1" tayari ipo. Tafadhali chagua jina tofauti.</translation>
 <translation id="5657667036353380798">Kiendelezi cha nje kinahitaji toleo la chrome la <ph name="MINIMUM_CHROME_VERSION" /> au zaidi ili kisakinishwe.</translation>
@@ -3517,7 +3514,7 @@ Vipengee fulani huenda visipatikane, Tafadhali hakikisha kuwa wasifu upo na una 
 <translation id="6163522313638838258">Panua yote...</translation>
 <translation id="6164005077879661055">Faili zote na data ya ndani zinazohusishwa na mtumiaji anayesimamiwa zitafutwa kabisa mtumiaji huyu anayesimamiwa atakapoondolewa. Tovuti zilizotembelewa na mipangilio ya mtumiaji huyu anayesimamiwa inaweza bado kuonekana na msimamizi katika <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
-<translation id="6167008112175207002">Alamisho, historia, manenosiri, na mipangilio yako mingine itasawazishwa kwenye Akaunti yako ya Google ili uweze kuitumia kwenye vifaa vyako vyote. Unaweza kubadilisha usawazishaji huu katika <ph name="BEGIN_LINK" /></translation>
+<translation id="6167008112175207002">Alamisho, historia, manenosiri na mipangilio yako mingine itasawazishwa kwenye Akaunti yako ya Google ili uweze kuitumia kwenye vifaa vyako vyote. Unaweza kubadilisha usawazishaji huu katika <ph name="BEGIN_LINK" /></translation>
 <translation id="6171550060231646388">Vipengele vya maunzi vilivyobuniwa vya 'OK Google'</translation>
 <translation id="6175314957787328458">GUID ya Vikoa kutoka Microsoft</translation>
 <translation id="6178664161104547336">Chagua cheti</translation>
@@ -4448,7 +4445,6 @@ Vipengee fulani huenda visipatikane, Tafadhali hakikisha kuwa wasifu upo na una 
 <translation id="7626009897377900107">Uundaji wa nenosiri</translation>
 <translation id="7627262197844840899">Tovuti hii haikubali MasterCard.</translation>
 <translation id="7627790789328695202">Lo, <ph name="FILE_NAME" /> tayari ipo. Ibadili jina na ujaribu tena.</translation>
-<translation id="7628079021897738671">Sawa, nimeelewa</translation>
 <translation id="762917759028004464">Kivinjari chaguo-msingi kwa sasa ni <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Ruhusu kitambulisho kilichohifadhiwa cha programu za Android kujazwa katika tovuti zinazolingana.</translation>
 <translation id="7629827748548208700">Kichupo: <ph name="TAB_NAME" /></translation>
@@ -5326,7 +5322,6 @@ Inakokotoa muda wa kujaa</translation>
 <translation id="8925458182817574960">&amp;Mipangilio</translation>
 <translation id="8926389886865778422">Nisiulizwe tena</translation>
 <translation id="8926518602592448999">Zima Viendelezi vya Hali ya Msanidi Programu</translation>
-<translation id="892867331564916668"><ph name="URL" /> inataka kuhifadhi faili kwenye kifaa hiki.</translation>
 <translation id="8929454297483336498">Matumizi ya API za Mac OS X AVFoundation, badala ya QTKit</translation>
 <translation id="8931394284949551895">Vifaa vipya</translation>
 <translation id="8932730422557198035">Kutumia API ya Android Midi</translation>

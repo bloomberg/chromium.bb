@@ -18,7 +18,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" />を常に翻訳</translation>
 <translation id="1107591249535594099">チェックボックスをオンにすると、Chrome はフォームに迅速に入力するために、カード情報のコピーをこのデバイスに保存します。</translation>
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
-<translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
 <translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
 <translation id="113188000913989374"><ph name="SITE" /> の内容:</translation>
 <translation id="1132774398110320017">Chrome の自動入力設定...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" /><ph name="DOMAIN" /> のページへのアクセス<ph name="END_LINK" />がブロックされました。</translation>
 <translation id="1455235771979731432">カードの確認中に問題が発生しました。インターネット接続を確認してから、もう一度お試しください。</translation>
-<translation id="1491151370853475546">このページを再読み込み</translation>
 <translation id="1506687042165942984">このページの保存されているコピー（古いバージョン）を表示します。</translation>
 <translation id="1519264250979466059">ビルド日</translation>
 <translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="201192063813189384">キャッシュからデータを読み込み中にエラーが発生しました。</translation>
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
-<translation id="2025623846716345241">再読み込みに関する確認</translation>
 <translation id="2030481566774242610">もしかして: <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">郵便番号</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">ファイルへのアクセスが拒否されました</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2674170444375937751">履歴からこれらのページを削除してもよろしいですか？</translation>
+<translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
 <translation id="2705137772291741111">このサイトの保存（キャッシュ）されたコピーを読み取れませんでした。</translation>
 <translation id="2709516037105925701">自動入力</translation>
@@ -302,7 +300,6 @@
 <translation id="4058922952496707368">キー「<ph name="SUBKEY" />」: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">クライアントとサーバーで、共通の SSL プロトコル バージョンまたは暗号スイートがサポートされていません。</translation>
 <translation id="4079302484614802869">プロキシは固定プロキシ サーバーではなく .pac スクリプト URL を使用するように設定されています。</translation>
-<translation id="409504436206021213">再読み込みしない</translation>
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
 <translation id="4103763322291513355">&lt;strong&gt;chrome://policy&lt;/strong&gt; にアクセスして、ブラックリストに登録されている URL とシステム管理者が設定した他のポリシーを確認できます。</translation>
 <translation id="4117700440116928470">ポリシーの適用範囲がサポートされていません。</translation>
@@ -387,7 +384,6 @@
 <translation id="5199729219167945352">試験運用機能</translation>
 <translation id="5228309736894624122">SSL プロトコル エラーです。</translation>
 <translation id="5251803541071282808">クラウド</translation>
-<translation id="5295309862264981122">ナビゲーションの確認</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
 <translation id="5300589172476337783">表示</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Cookie を消去する<ph name="END_LINK" /></translation>
@@ -482,7 +478,6 @@
 <translation id="647261751007945333">デバイス ポリシー</translation>
 <translation id="6489534406876378309">クラッシュのアップロードを開始</translation>
 <translation id="6500116422101723010">サーバーは現在、リクエストを処理できません。このコードは、状態が一時的なものであることを示しており、しばらくするとサーバーは利用可能になります。</translation>
-<translation id="6512448926095770873">このページを離れる</translation>
 <translation id="6518133107902771759">確認</translation>
 <translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
 <translation id="6533019874004191247">非対応 URL。</translation>
@@ -646,7 +641,6 @@
 <translation id="8293206222192510085">ブックマークの追加</translation>
 <translation id="8294431847097064396">ソース</translation>
 <translation id="8308427013383895095">ネットワーク接続に問題があったため翻訳できませんでした。</translation>
-<translation id="8311778656528046050">このページを再読み込みしてもよろしいですか？</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> へのアクセスが拒否されました</translation>
 <translation id="8349305172487531364">ブックマーク バー</translation>
 <translation id="8363502534493474904">機内モードをオフにする</translation>
@@ -717,7 +711,6 @@
 <translation id="9125941078353557812">カードの裏面に記載されている 3 桁の CVC を入力します</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9148507642005240123">編集の取り消し（&amp;U）</translation>
-<translation id="9154176715500758432">このページにとどまる</translation>
 <translation id="9157595877708044936">セットアップ中...</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="917450738466192189">サーバーの証明書が無効です。</translation>

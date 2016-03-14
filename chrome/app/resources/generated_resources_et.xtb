@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="1000498691615767391">Avatava kausta valimine</translation>
-<translation id="1000916256947465293">Teid logitakse salvestatud mandaadiga veebisaitidele automaatselt sisse. Kui funktsioon on välja lülitatud, palutakse teilt iga kord enne veebisaidile sisselogimist kinnitust.</translation>
 <translation id="1005274289863221750">Mikrofoni ja kaamera kasutamine</translation>
 <translation id="1007233996198401083">Ühendust ei saa luua.</translation>
 <translation id="1007408791287232274">Seadmete laadimine ebaõnnestus.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Keela WiMAX</translation>
 <translation id="174773101815569257">Hiirelukk</translation>
 <translation id="1749854530031883739">Kuvab TouchView's (maksimeeritud režiimis) kasutatava halli taustadekoratsiooni akende taga, mida ei saa maksimeerida.</translation>
+<translation id="17513872634828108">Avatud vahelehed</translation>
 <translation id="175196451752279553">&amp;Ava suletud vaheleht uuesti</translation>
 <translation id="1753682364559456262">Piltide blokeerimise haldamine...</translation>
 <translation id="1753905327828125965">Enim külastatud</translation>
@@ -2309,7 +2309,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4298972503445160211">Taani klaviatuur</translation>
 <translation id="4299273509016391946">Lubab printimise eelvaate dialoogis lehe lihtsustamise märkeruudu</translation>
 <translation id="4299729908419173967">Brasiilia</translation>
-<translation id="4301786491084298653">Keela domeenil <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Lubatakse direktiivi „Cache-Control: stale-while-revalidate” katseline juurutamine. See lubab serveritel määrata osade ressursside taustal uuesti valideerimise, et parandada latentsust.</translation>
 <translation id="4307281933914537745">Lisateave süsteemitaaste kohta</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />kB (<ph name="NUM_KILOBYTES_LIVE" />kB reaalajas)</translation>
@@ -2329,7 +2328,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4336032328163998280">Kopeerimine ebaõnnestus. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Võrgulogisid vaadake: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> tahab suhelda rakendusega „<ph name="EXTENSION_NAME" />”</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> nõuab, et Google valideeriks seadme identiteedi, et tuvastada sobilikkus kaitstud meediasisu täiustatud taasesitamiseks. <ph name="LEARN_MORE" /> .</translation>
 <translation id="4341977339441987045">Blokeeri saidid mis tahes andmete seadistamisest</translation>
 <translation id="4342311272543222243">Vabandust! Ilmnes TPM-i viga.</translation>
 <translation id="4345587454538109430">Konfigureeri...</translation>
@@ -2463,7 +2461,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4572659312570518089">Autentimine tühistati seadmega „<ph name="DEVICE_NAME" />” ühenduse loomisel.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-file</translation>
 <translation id="457386861538956877">Rohkem ...</translation>
-<translation id="4575703660920788003">Klaviatuuripaigutuse muutmiseks vajutage koos tõstuklahvi Shift ja klahvi Alt</translation>
 <translation id="4580526846085481512">Kas soovite kindlasti $1 üksust kustutada?</translation>
 <translation id="458150753955139441">Vajutage tagasiliikumiseks, kasutage kontekstimenüüd ajaloo nägemiseks</translation>
 <translation id="4582447636905308869">Uus Korea IME, mis põhineb Google'i sisestustööriistade HMM-mootoril.</translation>
@@ -3142,6 +3139,7 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="556042886152191864">Nupp</translation>
 <translation id="5565871407246142825">Krediitkaardid</translation>
 <translation id="5567989639534621706">Rakenduste vahemälud</translation>
+<translation id="5568069709869097550">Ei saa sisse logida</translation>
 <translation id="5569544776448152862">Registreerumine teenuses <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> ...</translation>
 <translation id="5575473780076478375">Inkognito laiendus: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Seadme lähtestamine ei mõjuta teie Google'i kontosid ega nende kontodega sünkroonitud andmeid. Kõik seadmesse lokaalselt salvestatud failid siiski kustutatakse.</translation>
@@ -3191,7 +3189,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5642953011762033339">Katkesta konto ühendus</translation>
 <translation id="5646376287012673985">Asukoht</translation>
 <translation id="5649768706273821470">Esita</translation>
-<translation id="5649823029736413118"><ph name="URL" /> peab kvaliteetse sisu esitamiseks teie seadme kordumatult tuvastama.</translation>
 <translation id="5650551054760837876">Otsingutulemusi ei leitud.</translation>
 <translation id="5653140146600257126">Kataloog nimega „$1” on juba olemas. Valige teine nimi.</translation>
 <translation id="5657667036353380798">Väline laiend nõuab, et installitud oleks Chrome <ph name="MINIMUM_CHROME_VERSION" /> või uuem versioon.</translation>
@@ -4459,7 +4456,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7626009897377900107">Parooli loomine</translation>
 <translation id="7627262197844840899">See sait ei aktsepteeri MasterCardi.</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> on juba olemas. Nimetage see ümber ja proovige uuesti.</translation>
-<translation id="7628079021897738671">OK, selge</translation>
 <translation id="762917759028004464">Vaikebrauser on praegu <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Androidi rakendustesse salvestatud mandaatide vastavatele veebisaitidele sisestamise lubamine.</translation>
 <translation id="7629827748548208700">Vaheleht: <ph name="TAB_NAME" /></translation>
@@ -5335,7 +5331,6 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8925458182817574960">&amp;Seaded</translation>
 <translation id="8926389886865778422">Ära enam küsi</translation>
 <translation id="8926518602592448999">Arendaja režiimis töötavate laienduste keelamine</translation>
-<translation id="892867331564916668">URL <ph name="URL" /> soovib sellesse seadmesse faile salvestada.</translation>
 <translation id="8929454297483336498">QTKiti asemel Mac OS X-i AVFoundationi API-de kasutamine</translation>
 <translation id="8931394284949551895">Uued seadmed</translation>
 <translation id="8932730422557198035">Kasuta Android Midi API-t</translation>

@@ -189,7 +189,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="1859633270756049523">Limitar la duración de la sesión</translation>
 <translation id="1859859319036806634">Advertencia: El resguardo de la versión de TLS se quitará de <ph name="PRODUCT_NAME" /> después de la versión 52 (alrededor de septiembre de 2016), y esta política dejará de funcionar.
 
-      Cuando se produce un error con el protocolo de enlace TLS, <ph name="PRODUCT_NAME" /> intenta conectarse con una versión anterior de TLS para evitar los errores en los servidores HTTPS. Esta configuración establece la versión en la que se detendrá este proceso de resguardo. Si el servidor realiza la negociación de la versión correctamente (es decir, sin que se interrumpa la conexión), no se aplica esta configuración. Independientemente de esto, la conexión resultante debe cumplir con SSLVersionMin.
+      Cuando se produce un error con el protocolo de enlace TLS, <ph name="PRODUCT_NAME" /> intenta conectarse con una versión anterior de TLS para evitar los errores en los servidores HTTPS. Esta configuración establece la versión en la que se detendrá este proceso de resguardo. Si el servidor realiza la negociación de la versión correctamente (es decir, sin que se interrumpa la conexión), no se aplica esta configuración. En cualquier caso, la conexión resultante debe cumplir con SSLVersionMin.
 
       Si no se configura esta política o si se establece con el valor "tls1.2", <ph name="PRODUCT_NAME" /> ya no realiza este resguardo. Ten en cuenta que esto no inhabilita la compatibilidad para las versiones de TLS anteriores. Esto solo sucede si <ph name="PRODUCT_NAME" /> evita los servidores con errores que no pueden negociar las versiones correctamente.
 
@@ -1413,7 +1413,7 @@ desactivarlo).</translation>
 <translation id="6598235178374410284">Imagen de avatar del usuario</translation>
 <translation id="6628646143828354685">Te permite establecer si los sitios web pueden acceder a dispositivos Bluetooth cercanos. El acceso se puede bloquear por completo o se puede preguntar al usuario cada vez que un sitio web desea acceder a dispositivos Bluetooth cercanos.
 
-          Si no se configura esta política, se usará el valor "3" y el usuario podrá cambiarlo.</translation>
+          Si no se configura esta política, se usará el valor "3", y el usuario podrá cambiarlo.</translation>
 <translation id="6636268606788232221">Configura la administración de energía cuando el usuario está inactivo.
 
           Esta política controla distintas configuraciones de la estrategia de administración de energía cuando el usuario está inactivo.

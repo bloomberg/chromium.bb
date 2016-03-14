@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1000498691615767391">Válasszon megnyitni kívánt mappát</translation>
-<translation id="1000916256947465293">Automatikus bejelentkezés webhelyekre a tárolt hitelesítő adatokkal. Ha ez a funkció ki van kapcsolva, mindig meg kell adnia hitelesítő adatait, mielőtt bejelentkezne egy webhelyre.</translation>
 <translation id="1005274289863221750">Mikrofon és kamera használata</translation>
 <translation id="1007233996198401083">A kapcsolat nem jött létre.</translation>
 <translation id="1007408791287232274">Nem sikerült betölteni az eszközöket.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">WiMAX letiltása</translation>
 <translation id="174773101815569257">Egér zárolása</translation>
 <translation id="1749854530031883739">Engedélyezi a TouchView szürke ablak Backdropjainak használatát (teljes méret mód) az ablakok mögött, amelyeket nem lehet teljes méretűre állítani.</translation>
+<translation id="17513872634828108">Megnyitott lapok</translation>
 <translation id="175196451752279553">Bezárt lap m&amp;egnyitása</translation>
 <translation id="1753682364559456262">Képek letiltásának kezelése...</translation>
 <translation id="1753905327828125965">Leggyakrabban látogatott</translation>
@@ -2308,7 +2308,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4298972503445160211">Dán billentyűzet</translation>
 <translation id="4299273509016391946">Engedélyezi az „Oldal leegyszerűsítése” jelölőnégyzetet a nyomtatási előnézet párbeszédablakban</translation>
 <translation id="4299729908419173967">brazil</translation>
-<translation id="4301786491084298653">Letiltás a következőn: <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">A Cache-Control: stale-while-revalidate („újraérvényesítés közben elévült”) direktíva kísérleti megvalósításának engedélyezése. Ez lehetővé teszi, hogy a szerverek meghatározzák, hogy egyes források érvényesítése a háttérben történjen a várakozási idő javításának érdekében.</translation>
 <translation id="4307281933914537745">További információ a rendszer helyreállításáról</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K élő)</translation>
@@ -2328,7 +2327,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4336032328163998280">A másolási művelet sikertelen. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">A hálózati naplók a következő helyen találhatók: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> kommunikálni szeretne a(z) „<ph name="EXTENSION_NAME" />” alkalmazással.</translation>
-<translation id="4341364588986930687">A védett médiatartalom bővített lejátszására vonatkozó jogosultság megállapításához a(z) <ph name="DOMAIN" /> megköveteli, hogy a Google ellenőrizze az eszköz azonosságát. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Adatmentés tiltása a webhelyeken</translation>
 <translation id="4342311272543222243">Hoppá! TPM-hiba.</translation>
 <translation id="4345587454538109430">Konfigurálás...</translation>
@@ -2462,7 +2460,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4572659312570518089">Hitelesítés visszavonva a következőhöz való csatlakozáskor: „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fájl</translation>
 <translation id="457386861538956877">Továbbiak...</translation>
-<translation id="4575703660920788003">A Shift+Alt billentyűk megnyomásával válthat billentyűzetkiosztást.</translation>
 <translation id="4580526846085481512">Biztos, hogy törölni szeretné ezt az elemet: $1?</translation>
 <translation id="458150753955139441">Nyomja meg a visszalépéshez, illetve választhatja a helyi menüt az előzmények megtekintéséshez</translation>
 <translation id="4582447636905308869">Új koreai IME, amely a Google Beviteli Eszközök HMM-motorján alapul.</translation>
@@ -3141,6 +3138,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="556042886152191864">Gomb</translation>
 <translation id="5565871407246142825">Hitelkártyák</translation>
 <translation id="5567989639534621706">Alkalmazás-gyorsítótárak</translation>
+<translation id="5568069709869097550">Nem sikerült a bejelentkezés</translation>
 <translation id="5569544776448152862">Csatlakozás a következőhöz: <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />…</translation>
 <translation id="5575473780076478375">Inkognitómód bővítmény: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Az eszköz visszaállítása nincs hatással Google-fiókjaira vagy a fiókokkal szinkronizált adatokra. Az eszközön helyileg mentett fájlok azonban törlődni fognak.</translation>
@@ -3191,7 +3189,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5642953011762033339">Fiók leválasztása</translation>
 <translation id="5646376287012673985">Tartózkodási hely</translation>
 <translation id="5649768706273821470">Meghallgatás</translation>
-<translation id="5649823029736413118">A(z) <ph name="URL" /> címnek egyedien kell azonosítania eszközét a prémium tartalmak lejátszásához.</translation>
 <translation id="5650551054760837876">Nincs találat</translation>
 <translation id="5653140146600257126">A(z) "$1" nevű mappa már létezik. Kérjük, válasszon másik nevet.</translation>
 <translation id="5657667036353380798">A külső bővítményhez a Chrome <ph name="MINIMUM_CHROME_VERSION" /> vagy újabb verziójának telepítése szükséges.</translation>
@@ -4455,7 +4452,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7626009897377900107">Jelszógenerálás</translation>
 <translation id="7627262197844840899">Ez a webhely nem fogadja el a MasterCard kártyákat.</translation>
 <translation id="7627790789328695202">Hoppá! <ph name="FILE_NAME" /> már létezik. Nevezze át, majd próbálja újra.</translation>
-<translation id="7628079021897738671">Rendben, értem</translation>
 <translation id="762917759028004464">Az alapértelmezett böngésző jelenleg ez: <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Az Android-alkalmazásoknál tárolt hitelesítési adatok kitöltésének engedélyezése a megfelelő webhelyeken.</translation>
 <translation id="7629827748548208700">Lap: <ph name="TAB_NAME" /></translation>
@@ -5331,7 +5327,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="8925458182817574960">&amp;Beállítások</translation>
 <translation id="8926389886865778422">Többször ne figyelmeztessen</translation>
 <translation id="8926518602592448999">A fejlesztői módban futó bővítmények kikapcsolása</translation>
-<translation id="892867331564916668"><ph name="URL" /> szeretne fájlokat tárolni ezen az eszközön</translation>
 <translation id="8929454297483336498">A Mac OS X AVFoundation API-k használata a QTKit helyett</translation>
 <translation id="8931394284949551895">Új eszközök</translation>
 <translation id="8932730422557198035">Android Midi API használata</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1000498691615767391">Sélectionner le dossier à ouvrir</translation>
-<translation id="1000916256947465293">Se connecter automatiquement aux sites Web à l'aide de l'identifiant enregistré. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
 <translation id="1005274289863221750">Utiliser votre micro et votre caméra</translation>
 <translation id="1007233996198401083">Impossible d'établir la connexion.</translation>
 <translation id="1007408791287232274">Impossible de charger la liste des périphériques.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Désactiver WiMAX</translation>
 <translation id="174773101815569257">Verrouillage de la souris</translation>
 <translation id="1749854530031883739">Cette option permet d'afficher un fond gris dans TouchView (en mode plein écran) derrière les fenêtres qui ne peuvent pas être agrandies.</translation>
+<translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="175196451752279553">&amp;Rouvrir l'onglet fermé</translation>
 <translation id="1753682364559456262">Configurer les paramètres de blocage des images...</translation>
 <translation id="1753905327828125965">Les + visités</translation>
@@ -1735,7 +1735,7 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="347719495489420368">Pour lancer <ph name="PLUGIN_NAME" />, cliquez avec le bouton droit de la souris.</translation>
 <translation id="347785443197175480">Continuer à autoriser <ph name="HOST" /> à accéder à votre caméra et à votre micro</translation>
 <translation id="3478315065074101056">Avec la technologie XPS, des options avancées sont activées pour les imprimantes classiques connectées à Cloud Print via Chrome. Après avoir modifié cet indicateur, vous devez connecter à nouveau ces imprimantes.</translation>
-<translation id="3479539252931486093">S'agit-il d'une erreur inattendue ? <ph name="BEGIN_LINK" />Signaler-nous ce problème.<ph name="END_LINK" /></translation>
+<translation id="3479539252931486093">S'agit-il d'une erreur inattendue ? <ph name="BEGIN_LINK" />Signalez-nous ce problème.<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Pas maintenant</translation>
 <translation id="3480892288821151001">Ancrer la fenêtre à gauche</translation>
 <translation id="3481915276125965083">Les fenêtres pop-up suivantes ont été bloquées sur cette page :</translation>
@@ -2308,7 +2308,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="4298972503445160211">Clavier danois</translation>
 <translation id="4299273509016391946">Cette option active une case à cocher permettant de simplifier la page dans la boîte de dialogue d'aperçu avant impression.</translation>
 <translation id="4299729908419173967">brésilien</translation>
-<translation id="4301786491084298653">Désactiver sur <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Activer l'implémentation expérimentale de la directive "Cache-Control: stale-while-revalidate" (elle permet aux serveurs d'exiger la revalidation de certaines ressources en arrière-plan pour optimiser la latence)</translation>
 <translation id="4307281933914537745">En savoir plus sur la récupération du système</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> Ko (<ph name="NUM_KILOBYTES_LIVE" /> Ko effectifs)</translation>
@@ -2329,7 +2328,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4336032328163998280">Échec de l'opération de copie. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Pour les journaux réseau, consultez la page suivante : <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> souhaite communiquer avec l'application "<ph name="EXTENSION_NAME" />".</translation>
-<translation id="4341364588986930687">La validation de l'identité de votre appareil par Google est requise pour le site <ph name="DOMAIN" /> afin de déterminer si vous pouvez bénéficier d'une lecture améliorée des médias protégés. <ph name="LEARN_MORE" /></translation>
 <translation id="4341977339441987045">Interdire à tous les sites de stocker des données</translation>
 <translation id="4342311272543222243">Une erreur liée au module de plate-forme sécurisée s'est produite</translation>
 <translation id="4345587454538109430">Configurer...</translation>
@@ -2463,7 +2461,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4572659312570518089">Annulation de l'authentification lors de la connexion à l'appareil "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Fichier <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Autres...</translation>
-<translation id="4575703660920788003">Appuyez sur Maj+Alt pour changer la disposition du clavier</translation>
 <translation id="4580526846085481512">Voulez-vous vraiment supprimer $1 éléments ?</translation>
 <translation id="458150753955139441">Appuyer pour revenir en arrière, menu contextuel pour afficher l'historique</translation>
 <translation id="4582447636905308869">Cette option active une nouvelle interface de saisie pour le coréen, basée sur le moteur HMM de Google Outils de saisie.</translation>
@@ -3141,6 +3138,7 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="556042886152191864">Bouton</translation>
 <translation id="5565871407246142825">Cartes de paiement</translation>
 <translation id="5567989639534621706">Caches des applications</translation>
+<translation id="5568069709869097550">Impossible de se connecter</translation>
 <translation id="5569544776448152862">Inscription au domaine <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> en cours…</translation>
 <translation id="5575473780076478375">Extension en mode navigation privée :<ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">La réinitialisation de votre appareil n'a aucune incidence sur vos comptes Google ni sur leurs données synchronisées. Toutefois, tous les fichiers enregistrés en local sur votre appareil vont être supprimés.</translation>
@@ -3191,7 +3189,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5642953011762033339">Déconnecter le compte</translation>
 <translation id="5646376287012673985">Localisation</translation>
 <translation id="5649768706273821470">Écouter</translation>
-<translation id="5649823029736413118">Votre appareil doit être identifié dans <ph name="URL" /> pour que la lecture du contenu premium soit autorisée.</translation>
 <translation id="5650551054760837876">Aucun résultat de recherche trouvé</translation>
 <translation id="5653140146600257126">Le dossier nommé "$1" existe déjà. Veuillez choisir un autre nom.</translation>
 <translation id="5657667036353380798">L'extension externe nécessite que la version <ph name="MINIMUM_CHROME_VERSION" /> ou une version ultérieure de Chrome soit installée.</translation>
@@ -4457,7 +4454,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7626009897377900107">Génération de mots de passe</translation>
 <translation id="7627262197844840899">Les cartes MasterCard ne sont pas acceptées sur ce site.</translation>
 <translation id="7627790789328695202">Le fichier <ph name="FILE_NAME" /> existe déjà. Veuillez le renommer, puis réessayer.</translation>
-<translation id="7628079021897738671">OK</translation>
 <translation id="762917759028004464">Le navigateur par défaut est actuellement <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Autoriser l'insertion des identifiants stockés pour les applications Android dans les sites Web correspondants</translation>
 <translation id="7629827748548208700">Onglet : <ph name="TAB_NAME" /></translation>
@@ -5254,7 +5250,7 @@ Calcul de la durée restante</translation>
 <translation id="8795668016723474529">Ajouter une carte de paiement</translation>
 <translation id="8795916974678578410">Nouvelle fenêtre</translation>
 <translation id="8798099450830957504">Par défaut</translation>
-<translation id="8799127529310003270">Si ce paramètre activé, les appels InputConnection sont exécutés sur le fil de discussion IME, et au lieu de garder un éditeur dupliqué, chaque appel InputConnection communique directement avec le moteur de rendu.</translation>
+<translation id="8799127529310003270">Si ce paramètre est activé, les appels InputConnection sont exécutés sur le fil de discussion IME, et au lieu de garder un éditeur dupliqué, chaque appel InputConnection communique directement avec le moteur de rendu.</translation>
 <translation id="8799839487311913894">Activer la modification d'un mot de passe dans le gestionnaire de mots de passe après avoir envoyé un formulaire de modification de mot de passe</translation>
 <translation id="8800004011501252845">Affichage des emplacements de destination pour</translation>
 <translation id="8800420788467349919">Volume : <ph name="PRECENTAGE" /> %</translation>
@@ -5333,7 +5329,6 @@ Calcul de la durée restante</translation>
 <translation id="8925458182817574960">&amp;Paramètres</translation>
 <translation id="8926389886865778422">Ne plus afficher ce message</translation>
 <translation id="8926518602592448999">Désactiver les extensions exécutées en mode développeur ?</translation>
-<translation id="892867331564916668"><ph name="URL" /> souhaite stocker des fichiers sur cet appareil.</translation>
 <translation id="8929454297483336498">Utilisation des API Mac OS X AVFoundation, au lieu du framework QTKit</translation>
 <translation id="8931394284949551895">Nouveaux périphériques</translation>
 <translation id="8932730422557198035">Utiliser l'API Android Midi</translation>

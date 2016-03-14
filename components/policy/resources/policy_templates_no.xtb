@@ -206,9 +206,9 @@
 <translation id="1859633270756049523">Begrens innloggingstiden</translation>
 <translation id="1859859319036806634">Advarsel: TLS-versjonen som fungerer som reserveløsning, fjernes fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
 
-      Når et TLS-håndtrykk mislykkes, ville <ph name="PRODUCT_NAME" /> tidligere prøvd å koble til på nytt med en dårligere versjon av TLS for å omgå feil på HTTPS-tjenere. Denne tjenesten konfigurerer hvilken versjon denne reserveprosessen stopper på. Hvis en tjener utfører versjonsforhandlingen riktig (det vil si uten å bryte tilkoblingen), gjelder ikke denne innstillingen. Tilkoblingen som opprettes, må uansett rette seg etter SSLVersionMin.
+      Når et TLS-håndtrykk mislykkes, prøvde <ph name="PRODUCT_NAME" /> tidligere å koble til på nytt med en lavere versjon av TLS for å omgå feil på HTTPS-tjenere. Denne innstillingen konfigurerer hvilken versjon denne reserveprosessen stopper på. Hvis en tjener utfører versjonsforhandlingen riktig (det vil si uten å bryte tilkoblingen), gjelder ikke denne innstillingen. Tilkoblingen som opprettes, må uansett rette seg etter SSLVersionMin.
 
-      Hvis denne regelen ikke er konfigurert, eller hvis den er satt til «tls1.2», gjennomfører ikke <ph name="PRODUCT_NAME" /> denne reserveprosessen lenger. Vær oppmerksom på at dette ikke slår av støtten for eldre TLS-versjoner, det avgjør bare om <ph name="PRODUCT_NAME" /> omgår problemer med tjenere som ikke kan forhandle versjoner riktig.
+      Hvis denne regelen ikke er konfigurert, eller hvis den er satt til «tls1.2», gjennomfører ikke <ph name="PRODUCT_NAME" /> denne reserveprosessen lenger. Vær oppmerksom på at dette ikke slår av støtten for eldre TLS-versjoner – det avgjør bare om <ph name="PRODUCT_NAME" /> omgår problemer med tjenere som ikke kan forhandle versjoner riktig.
 
       Hvis det er nødvendig å beholde kompatibiliteten med en tjener med feil, kan denne regelen settes til «tls1.1». Dette er en midlertidig løsning, og tjeneren må fikses så fort som mulig.</translation>
 <translation id="1861037019115362154">Angir en liste over programtillegg deaktivert på <ph name="PRODUCT_NAME" />, og forhindrer brukere fra å endre denne innstillingen.

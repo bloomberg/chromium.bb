@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1000498691615767391">Piliin ang isang folder para buksan</translation>
-<translation id="1000916256947465293">Awtomatikong mag-sign in sa mga website gamit ang nakaimbak na kredensyal. Kapag naka-off ang feature, palagi kang hihingan ng verification bago ka makapag-sign in sa isang website.</translation>
 <translation id="1005274289863221750">Gamitin ang iyong mikropono at camera</translation>
 <translation id="1007233996198401083">Hindi makakonekta.</translation>
 <translation id="1007408791287232274">Hindi ma-load ang mga device.</translation>
@@ -534,6 +533,7 @@
 <translation id="1747687775439512873">I-disable ang WiMAX</translation>
 <translation id="174773101815569257">Lock ng Mouse</translation>
 <translation id="1749854530031883739">Ipakita ang mga grey na backdrop ng window na ginagamit sa TouchView (maximize mode) sa likod ng mga window na hindi maaaring i-maximize.</translation>
+<translation id="17513872634828108">Mga bukas na tab</translation>
 <translation id="175196451752279553">M&amp;uling buksan ang nakasarang tab</translation>
 <translation id="1753682364559456262">Pamahalaan ang paghaharang ng larawan...</translation>
 <translation id="1753905327828125965">Most Visited</translation>
@@ -2312,7 +2312,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="4298972503445160211">Danish na keyboard</translation>
 <translation id="4299273509016391946">Ine-enable ang check box ng pasimplehin ang page sa dialog ng print preview</translation>
 <translation id="4299729908419173967">Brazilian</translation>
-<translation id="4301786491084298653">I-disable sa <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">I-enable ang pang-eksperimentong pagsasagawa ng "Cache-Control: stale-while-revalidate" na directive. Pinapahintulutan nito ang mga server na tukuyin na maaaring muling mapatunayan sa background ang ilan sa mga mapagkukunan upang mapahusay ang latency.</translation>
 <translation id="4307281933914537745">Matuto nang higit pa tungkol sa pagbawi ng system</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
@@ -2333,7 +2332,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4336032328163998280">Nabigo ang pagkopya. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Para sa mga log ng network, tingnan ang: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942">Gustong makipag-ugnayan ng <ph name="ORIGIN" /> sa app na "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687">Kinakailangan ng <ph name="DOMAIN" /> na i-verify, ng Google, ang pagkakakilanlan ng iyong device, upang matukoy ang pagiging kwalipikado para sa pinahusay na pag-playback ng pinoprotektahang media. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Harangan ang mga site mula sa pagtatakda ng anumang data</translation>
 <translation id="4342311272543222243">Oops, nagkaroon ng TPM error.</translation>
 <translation id="4345587454538109430">I-configure...</translation>
@@ -2467,7 +2465,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4572659312570518089">Nakansela ang pagpapatunay habang kumokonekta sa "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> na file</translation>
 <translation id="457386861538956877">Higit pa...</translation>
-<translation id="4575703660920788003">Pindutin ang Shift-Alt upang palitan ang layout ng keyboard.</translation>
 <translation id="4580526846085481512">Sigurado ka bang gusto mong tanggalin ang $1 (na) item?</translation>
 <translation id="458150753955139441">Pindutin upang bumalik, gamitin ang menu ng konteksto upang makita ang history</translation>
 <translation id="4582447636905308869">Bagong Korean IME, na batay sa HMM engine ng Mga Input Tool ng Google.</translation>
@@ -3146,6 +3143,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="556042886152191864">Pindutan</translation>
 <translation id="5565871407246142825">Mga credit card</translation>
 <translation id="5567989639534621706">Mga cache ng application</translation>
+<translation id="5568069709869097550">Hindi makapag-sign in</translation>
 <translation id="5569544776448152862">Ine-enroll sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Extension ng Incognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Hindi maaapektuhan ng pag-reset sa iyong device ang iyong mga Google account o anumang data na naka-sync sa mga account na ito. Gayunpaman, matatanggal ang lahat ng file na lokal na naka-save sa iyong device.</translation>
@@ -3195,7 +3193,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5642953011762033339">Idiskonekta ang account</translation>
 <translation id="5646376287012673985">Lokasyon</translation>
 <translation id="5649768706273821470">Pakinggan</translation>
-<translation id="5649823029736413118">Kinakailangan ng <ph name="URL" /> na matukoy nang natatangi ang iyong device upang makapag-play ng premium na nilalaman.</translation>
 <translation id="5650551054760837876">Walang nahanap na mga resulta sa paghahanap</translation>
 <translation id="5653140146600257126">Umiiral na ang folder na may pangalang "$1". Mangyaring pumili ng ibang pangalan.</translation>
 <translation id="5657667036353380798">Kinakailangan ng external na extension ang bersyon ng Chrome na <ph name="MINIMUM_CHROME_VERSION" /> o mas mataas upang ma-install.</translation>
@@ -4465,7 +4462,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7626009897377900107">Pagbuo ng password</translation>
 <translation id="7627262197844840899">Ang site na ito ay hindi tumatanggap ng MasterCard.</translation>
 <translation id="7627790789328695202">Whoops, umiiral na ang <ph name="FILE_NAME" />. Palitan ang pangalan nito at subukang muli.</translation>
-<translation id="7628079021897738671">OK, nakuha ko</translation>
 <translation id="762917759028004464">Ang default na browser ay kasalukuyang <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Payagang mailagay sa mga akmang website ang mga kredensyal na naiimbak para sa mga Android application.</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
@@ -5345,7 +5341,6 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="8925458182817574960">&amp;Mga Setting</translation>
 <translation id="8926389886865778422">Huwag nang itanong ulit</translation>
 <translation id="8926518602592448999">I-disable ang Mga Extension sa Developer Mode</translation>
-<translation id="892867331564916668">Gusto ng <ph name="URL" /> na mag-imbak ng mga file sa device na ito.</translation>
 <translation id="8929454297483336498">Gamitin ang mga Mac OS X AVFoundation API, sa halip na ang QTKit</translation>
 <translation id="8931394284949551895">Mga bagong device</translation>
 <translation id="8932730422557198035">Gamitin ang Android Midi API</translation>

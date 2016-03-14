@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Selalu terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Apabila dicentang, Chrome akan menyimpan salinan kartu Anda pada perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
 <translation id="1113869188872983271">&amp;Urungkan pengaturan ulang</translation>
-<translation id="111844081046043029">Yakin ingin meninggalkan laman ini?</translation>
 <translation id="112840717907525620">Cache kebijakan Oke</translation>
 <translation id="113188000913989374"><ph name="SITE" /> menyatakan:</translation>
 <translation id="1132774398110320017">Setelan IsiOtomatis Chrome...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1442912890475371290">Usaha yang diblokir <ph name="BEGIN_LINK" /> untuk mengunjungi laman di <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Terjadi masalah saat memverifikasi kartu. Periksa sambungan internet Anda dan coba lagi.</translation>
-<translation id="1491151370853475546">Muat Ulang Laman Ini</translation>
 <translation id="1506687042165942984">Tampilkan salinan tersimpan (yang diketahui telah habis masa berlakunya) dari laman ini.</translation>
 <translation id="1519264250979466059">Tanggal Dibuat</translation>
 <translation id="1549470594296187301">JavaScript harus diaktifkan untuk menggunakan fitur ini.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="201192063813189384">Kesalahan membaca data dari cache.</translation>
 <translation id="2025186561304664664">Proxy disetel ke konfigurasi otomatis.</translation>
-<translation id="2025623846716345241">Konfirmasi Pemuatan Ulang</translation>
 <translation id="2030481566774242610">Mungkin maksud Anda <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Memeriksa proxy dan firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Kode pos</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Akses ke file ditolak</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2674170444375937751">Yakin ingin menghapus laman ini dari riwayat?</translation>
+<translation id="2677748264148917807">Keluar</translation>
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
 <translation id="2705137772291741111">Salinan tersimpan (dalam cache) situs ini tidak dapat dibaca.</translation>
 <translation id="2709516037105925701">IsiOtomatis</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Kunci "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klien dan server tidak mendukung versi protokol SSL umum atau cipher suite.</translation>
 <translation id="4079302484614802869">Konfigurasi proxy disetel untuk menggunakan URL skrip .pac, bukan server proxy yang tetap.</translation>
-<translation id="409504436206021213">Jangan Muat Ulang</translation>
 <translation id="4103249731201008433">Nomor seri perangkat tidak valid</translation>
 <translation id="4103763322291513355">Kunjungi &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat daftar URL yang masuk daftar hitam dan kebijakan lain yang diterapkan oleh administrator sistem Anda.</translation>
 <translation id="4117700440116928470">Lingkup kebijakan tidak didukung.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Eksperimen</translation>
 <translation id="5228309736894624122">Kesalahan protokol SSL.</translation>
 <translation id="5251803541071282808">Awan</translation>
-<translation id="5295309862264981122">Konfirmasikan Navigasi</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Hapus cookie<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Kebijakan perangkat</translation>
 <translation id="6489534406876378309">Mulai mengunggah kerusakan</translation>
 <translation id="6500116422101723010">Server tidak dapat menangani permintaan untuk sementara.  Kode ini menunjukkan bahwa ini adalah keadaan sementara, dan server akan hidup lagi setelah penundaan.</translation>
-<translation id="6512448926095770873">Keluar dari Laman</translation>
 <translation id="6518133107902771759">Verifikasi</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6533019874004191247">URL Tidak Didukung.</translation>
@@ -653,7 +648,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8293206222192510085">Tambahkan Bookmark</translation>
 <translation id="8294431847097064396">Sumber</translation>
 <translation id="8308427013383895095">Terjemahan gagal karena ada masalah dengan koneksi jaringan.</translation>
-<translation id="8311778656528046050">Yakin ingin memuat ulang laman ini?</translation>
 <translation id="8332188693563227489">Akses ke <ph name="HOST_NAME" /> ditolak</translation>
 <translation id="8349305172487531364">Bilah bookmark</translation>
 <translation id="8363502534493474904">Nonaktifkan mode pesawat</translation>
@@ -723,7 +717,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="9125941078353557812">Masukkan 3 digit CVC di belakang kartu Anda</translation>
 <translation id="9137013805542155359">Perlihatkan laman asli</translation>
 <translation id="9148507642005240123">&amp;Urungkan pengeditan</translation>
-<translation id="9154176715500758432">Tetap di Laman ini</translation>
 <translation id="9157595877708044936">Menyiapkan...</translation>
 <translation id="9170848237812810038">&amp;Urung</translation>
 <translation id="917450738466192189">Sertifikat server tidak valid.</translation>

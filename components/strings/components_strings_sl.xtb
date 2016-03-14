@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Vedno prevedi ta jezik: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Če je izbrana ta možnost, bo shranil kopijo kartice v tej napravi za hitrejše izpolnjevanje obrazcev.</translation>
 <translation id="1113869188872983271">&amp;Razveljavi razvrstitev</translation>
-<translation id="111844081046043029">Ali ste prepričani, da želite zapustiti to stran?</translation>
 <translation id="112840717907525620">Predpomnilnik pravilnika ustrezen</translation>
 <translation id="113188000913989374"><ph name="SITE" /> sporoča:</translation>
 <translation id="1132774398110320017">Nastavitve samodejnega izpolnjevanja v Chromu …</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Natisni</translation>
 <translation id="1442912890475371290">Preprečen poskus <ph name="BEGIN_LINK" />dostopa do strani v domeni <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Težava pri preverjanju kartice. Preverite internetno povezavo in poskusite znova.</translation>
-<translation id="1491151370853475546">Znova naloži stran</translation>
 <translation id="1506687042165942984">Prikaži shranjeno (zastarelo) kopijo te strani.</translation>
 <translation id="1519264250979466059">Datum gradnje</translation>
 <translation id="1549470594296187301">Če želite uporabljati to funkcijo, mora biti omogočen JavaScript.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="201192063813189384">Napaka pri branju podatkov iz predpomnilnika</translation>
 <translation id="2025186561304664664">Strežnik proxy je nastavljen na samodejno konfiguriranje.</translation>
-<translation id="2025623846716345241">Potrditev vnovičnega nalaganja</translation>
 <translation id="2030481566774242610">Ali ste mislili <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />preveriti strežnik proxy in požarni zid<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Poštna številka</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Dostop do datoteke je bil zavrnjen</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2674170444375937751">Ali ste prepričani, da želite te strani izbrisati iz svoje zgodovine?</translation>
+<translation id="2677748264148917807">Zapusti</translation>
 <translation id="2704283930420550640">Vrednost se ne ujema z obliko.</translation>
 <translation id="2705137772291741111">Shranjena (predpomnjena) kopija tega spletnega mesta je bila neberljiva.</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
@@ -304,7 +302,6 @@
 <translation id="4058922952496707368">Ključ »<ph name="SUBKEY" />«: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Odjemalec in strežnik ne podpirata skupne različice protokola SSL ali šifrirne zbirke.</translation>
 <translation id="4079302484614802869">Konfiguracija strežnika proxy je nastavljena na uporabo URL-ja skripta .pac, ne na stalne strežnike proxy.</translation>
-<translation id="409504436206021213">Ne naloži znova</translation>
 <translation id="4103249731201008433">Neveljavna serijska številka naprave</translation>
 <translation id="4103763322291513355">Na &lt;strong&gt;chrome://policy&lt;/strong&gt; si lahko ogledate seznam blokiranih URL-jev in drugih pravilnikov, ki jih uveljavlja skrbnik sistema.</translation>
 <translation id="4117700440116928470">Obseg pravilnika ni podprt.</translation>
@@ -389,7 +386,6 @@
 <translation id="5199729219167945352">Poskusi</translation>
 <translation id="5228309736894624122">Napaka protokola SSL.</translation>
 <translation id="5251803541071282808">Oblak</translation>
-<translation id="5295309862264981122">Potrditev krmarjenja</translation>
 <translation id="5299298092464848405">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />izbrisati piškotke<ph name="END_LINK" /></translation>
@@ -484,7 +480,6 @@
 <translation id="647261751007945333">Pravilniki za naprave</translation>
 <translation id="6489534406876378309">Začetek prenašanja zrušitev v storitev</translation>
 <translation id="6500116422101723010">Strežnik trenutno ne more obravnavati zahteve. Ta koda pomeni, da je to stanje začasno in da bo strežnik po zapoznitvi znova deloval.</translation>
-<translation id="6512448926095770873">Zapusti to stran</translation>
 <translation id="6518133107902771759">Preveri</translation>
 <translation id="6529602333819889595">&amp;Uveljavi izbris</translation>
 <translation id="6533019874004191247">Nepodprt URL.</translation>
@@ -654,7 +649,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8293206222192510085">Dodaj zaznamek</translation>
 <translation id="8294431847097064396">Vir</translation>
 <translation id="8308427013383895095">Prevod ni uspel zaradi težave s povezavo omrežja.</translation>
-<translation id="8311778656528046050">Ali res želite znova naložiti to stran?</translation>
 <translation id="8332188693563227489">Dostop do spletnega mesta <ph name="HOST_NAME" /> je bil zavrnjen</translation>
 <translation id="8349305172487531364">Vrstica z zaznamki</translation>
 <translation id="8363502534493474904">izklopiti način za letalo</translation>
@@ -724,7 +718,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="9125941078353557812">Vnesite trimestno kodo CVC na hrbtni strani kartice</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9148507642005240123">&amp;Razveljavi urejanje</translation>
-<translation id="9154176715500758432">Ostani na tej strani</translation>
 <translation id="9157595877708044936">Nastavljanje ...</translation>
 <translation id="9170848237812810038">&amp;Razveljavi</translation>
 <translation id="917450738466192189">Potrdilo strežnika ni veljavno.</translation>

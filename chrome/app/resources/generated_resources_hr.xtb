@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1000498691615767391">Odaberite mapu za otvaranje</translation>
-<translation id="1000916256947465293">Vrši automatsku prijavu na web-lokacije pomoću pohranjenih vjerodajnica. Kada je ta značajka isključena, tražit će se potvrda prije svake prijave na web-lokaciju.</translation>
 <translation id="1005274289863221750">upotrijebiti vaš mikrofon i kameru</translation>
 <translation id="1007233996198401083">Povezivanje nije moguće.</translation>
 <translation id="1007408791287232274">Uređaji se nisu mogli učitati.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Onemogući WiMAX</translation>
 <translation id="174773101815569257">Zaključavanje miša</translation>
 <translation id="1749854530031883739">Prikazuje sive pozadine prozora koje se upotrebljavaju u TouchViewu (maksimizirani način) iza prozora koji se ne mogu maksimizirati.</translation>
+<translation id="17513872634828108">Otvorene kartice</translation>
 <translation id="175196451752279553">P&amp;onovo otvori zatvorenu karticu</translation>
 <translation id="1753682364559456262">Upravljanje blokiranjem slika...</translation>
 <translation id="1753905327828125965">Najposjećenije</translation>
@@ -2307,7 +2307,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="4298972503445160211">Danska tipkovnica</translation>
 <translation id="4299273509016391946">Omogućuje potvrdni okvir za pojednostavljivanje stranice u dijaloškom okviru pregleda ispisa</translation>
 <translation id="4299729908419173967">brazilski</translation>
-<translation id="4301786491084298653">Onemogući na domeni <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Omogućuje eksperimentalnu implementaciju upute "Cache-Control: stale-while-revalidate". Njome se poslužiteljima dopušta da odrede resurse koji se mogu ponovo provjeriti u pozadini radi poboljšanja latencije.</translation>
 <translation id="4307281933914537745">Saznajte više o oporavku sustava</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K izravno)</translation>
@@ -2328,7 +2327,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4336032328163998280">Kopiranje nije uspjelo. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Za mrežne zapisnike pogledajte: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> želi komunicirati s aplikacijom "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687">Domena <ph name="DOMAIN" /> zahtijeva da Google provjeri i potvrdi identitet vašeg uređaja kako bi utvrdio prikladnost za poboljšanu reprodukciju zaštićenih medija. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Blokiraj postavljanje podataka s bilo koje web-lokacije</translation>
 <translation id="4342311272543222243">Ups, TPM pogreška.</translation>
 <translation id="4345587454538109430">Konfiguracija...</translation>
@@ -2462,7 +2460,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4572659312570518089">Autentifikacija je otkazana prilikom povezivanja s uređajem "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> datoteka</translation>
 <translation id="457386861538956877">Više...</translation>
-<translation id="4575703660920788003">Pritisnite Shift-Alt za promjenu izgleda tipkovnice.</translation>
 <translation id="4580526846085481512">Jeste li sigurni da želite izbrisati ovoliko stavki: $1?</translation>
 <translation id="458150753955139441">Pritisnite za povratak, a za prikaz povijesti koristite kontekstni izbornik</translation>
 <translation id="4582447636905308869">Novi način unosa za korejski koji se temelji na HMM modulu Google alata za unos teksta.</translation>
@@ -3141,6 +3138,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="556042886152191864">Gumb</translation>
 <translation id="5565871407246142825">Kreditne kartice</translation>
 <translation id="5567989639534621706">Predmemorije aplikacije</translation>
+<translation id="5568069709869097550">Ne mogu se prijaviti</translation>
 <translation id="5569544776448152862">Prijavljivanje u <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Anonimno proširenje: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Vraćanje uređaja na tvorničke postavke neće utjecati na vaše Google račune ili bilo koje podatke sinkronizirane s tim računima. Međutim, izbrisat će se sve datoteke koje su spremljene lokalno na uređaju.</translation>
@@ -3190,7 +3188,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5642953011762033339">Prekini vezu s računom</translation>
 <translation id="5646376287012673985">Lokacija</translation>
 <translation id="5649768706273821470">Poslušajte</translation>
-<translation id="5649823029736413118"><ph name="URL" /> mora jedinstveno identificirati vaš uređaj radi reprodukcije premium sadržaja.</translation>
 <translation id="5650551054760837876">Nisu pronađeni rezultati pretraživanja.</translation>
 <translation id="5653140146600257126">Mapa pod nazivom "$1" već postoji. Odaberite drugo ime.</translation>
 <translation id="5657667036353380798">Vanjsko proširenje zahtijeva instaliranje verzije Chromea <ph name="MINIMUM_CHROME_VERSION" /> ili novije.</translation>
@@ -4452,7 +4449,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="7626009897377900107">Generiranje zaporke</translation>
 <translation id="7627262197844840899">Ova web-lokacija ne prihvaća MasterCard.</translation>
 <translation id="7627790789328695202">Ups, stavka <ph name="FILE_NAME" /> već postoji. Preimenujte je i pokušajte ponovo.</translation>
-<translation id="7628079021897738671">U redu, razumijem</translation>
 <translation id="762917759028004464">Zadani preglednik trenutno je <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Dopuštanje popunjavanja pohranjenih vjerodajnica za Androidove aplikacije na odgovarajućim web-lokacijama.</translation>
 <translation id="7629827748548208700">Kartica: <ph name="TAB_NAME" /></translation>
@@ -5327,7 +5323,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8925458182817574960">&amp;Postavke</translation>
 <translation id="8926389886865778422">Više me ne pitaj</translation>
 <translation id="8926518602592448999">Onemogućivanje proširenja u načinu rada razvojnog programera</translation>
-<translation id="892867331564916668"><ph name="URL" /> želi pohraniti datoteke na ovaj uređaj.</translation>
 <translation id="8929454297483336498">Upotreba Mac OS X AVFoundation API-ja umjesto QTKita</translation>
 <translation id="8931394284949551895">Novi uređaji</translation>
 <translation id="8932730422557198035">Koristi Android Midi API</translation>

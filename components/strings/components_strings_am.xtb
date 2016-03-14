@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">ሁልጊዜ <ph name="LANGUAGE" />ን መተርጎም</translation>
 <translation id="1107591249535594099">ምልክት ከተደረገበት፣ Chrome ለተሻለ ፈጣን የቅጽ አሞላል የካርድዎን ቅጂ በዚህ መሣሪያ ላይ ያከማቻል።</translation>
 <translation id="1113869188872983271">&amp;እንደገና ደርድርን ቀልብስ</translation>
-<translation id="111844081046043029">እርግጠኛ ነዎት ይህን ገጽ መተው ይፈልጋሉ?</translation>
 <translation id="112840717907525620">የመምሪያ መሸጎጫ እሺ</translation>
 <translation id="113188000913989374"><ph name="SITE" /> እንዲህ ይላል፦</translation>
 <translation id="1132774398110320017">የChrome ራስ-ሙላ ቅንብሮች...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">አትም</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" />በ<ph name="DOMAIN" /> ላይ ያለውን ገጽ የመጎብኘት<ph name="END_LINK" /> ሙከራ ታግዷል።</translation>
 <translation id="1455235771979731432">የእርስዎን ካርድ ማረጋገጥ ላይ ችግር ነበር። የእርስዎን የበይነመረብ ግንኙነት ይፈትሹ እና እንደገና ይሞክሩ።</translation>
-<translation id="1491151370853475546">ይህን ገጽ ዳግም ይጫኑ</translation>
 <translation id="1506687042165942984">የዚህን ገጽ የተቀመጠ (ለምሳሌ ቀኑ ያለፈበት እንደሆነ የታወቀ) ቅጂን አሳይ።</translation>
 <translation id="1519264250979466059">የግንብ ቀን</translation>
 <translation id="1549470594296187301">ይህን ባህሪ ለመጠቀም ጃቫስክሪፕት መንቃት አለበት።</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">የላቀ</translation>
 <translation id="201192063813189384">ውሂብ ከመሸጎጫው ማንበብ ላይ ስህተት።</translation>
 <translation id="2025186561304664664">ተኪ ወደ ራስ-ውቅር ተዋቅሯል።</translation>
-<translation id="2025623846716345241">ዳግም መጫን ያረጋግጡ</translation>
 <translation id="2030481566774242610"><ph name="LINK" />ን ማለትዎ ነው?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ወኪሉን እና ኬላውን መፈተሽ<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ዚፕ ኮድ</translation>
@@ -152,7 +149,7 @@
 <translation id="2495083838625180221">JSON ተንታኝ</translation>
 <translation id="2495093607237746763">ምልክት ከተደረገበት Chromium ለተሻለ የቅጽ አሞላል ፍጥነት የካርድዎን ቅጂ በዚህ መሣሪያ ላይ ያከማቻል።</translation>
 <translation id="2498091847651709837">አዲስ ካርድ ቃኝ</translation>
-<translation id="2515629240566999685">በእርስዎ አካባቢ ያለውን ሲጊናል መፈተሽ</translation>
+<translation id="2515629240566999685">በእርስዎ አካባቢ ያለውን ሲግናል መፈተሽ</translation>
 <translation id="2516305470678292029">የበይነገጽ አማራጮች</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ልክ ያልኾነ ምላሽ ልኳል።</translation>
 <translation id="2552545117464357659">በጣም አዲስ</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">የፋይሉ መዳረሻ ተከልክሏል</translation>
 <translation id="2653659639078652383">አስገባ</translation>
 <translation id="2674170444375937751">እርግጠኛ ነዎት እነዚህን ገጾች ከታሪክዎ መሰረዝ ይፈልጋሉ?</translation>
+<translation id="2677748264148917807">ለቅቀህ ውጣ</translation>
 <translation id="2704283930420550640">ዋጋ ከቅርጸት ጋር አይዛመድም።</translation>
 <translation id="2705137772291741111">የተቀመጠው (የተሸጎጠ) የዚህ ጣቢያ ቅጂ የሚነበብ አልነበረም።</translation>
 <translation id="2709516037105925701">ራስ-ሙላ</translation>
@@ -302,7 +300,6 @@
 <translation id="4058922952496707368">ቁልፍ «<ph name="SUBKEY" />»፦ <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">ደንበኛው እና አገልጋዩ የተለመደ የኤስኤስኤል ፕሮቶኮል ስሪት ወይም የስነ መሰውር ጥቅል አይደግፉም።</translation>
 <translation id="4079302484614802869">የተኪ ውቅር ቋሚ አገልጋዮችን ሳይሆን የ.pac ስክሪፕት ዩአርኤል ለመጠቀም ነው የተዋቀረው።</translation>
-<translation id="409504436206021213">ዳግም አትጫን</translation>
 <translation id="4103249731201008433">የመሣሪያ መለያ ቁጥር ልክ ያልሆነ ነው</translation>
 <translation id="4103763322291513355">የተከለከሉ የዩ አር ኤሎች ዝርዝር እና ሌሎች በስርዓት አስተዳዳሪዎ አስገዳጅነት የተሰጣቸው መመሪያዎችን ለማየት &lt;strong&gt;chrome://policy&lt;/strong&gt;ን ይጎብኙ።</translation>
 <translation id="4117700440116928470">የመመሪያ ወሰን አይደገፍም።</translation>
@@ -387,7 +384,6 @@
 <translation id="5199729219167945352">ሙከራዎች</translation>
 <translation id="5228309736894624122">SSL ፕሮቶኮል ስህተት።</translation>
 <translation id="5251803541071282808">ደመና</translation>
-<translation id="5295309862264981122">ዳሰሳን አረጋግጥ</translation>
 <translation id="5299298092464848405">መምሪያን መተንተን ላይ ስህተት</translation>
 <translation id="5300589172476337783">አሳይ</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />የእርስዎን ኩኪዎች ማጽዳት<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@ nil</translation>
 <translation id="647261751007945333">የመሣሪያ መምሪያዎች</translation>
 <translation id="6489534406876378309">ድምስሶችን መስቀል ጀምር</translation>
 <translation id="6500116422101723010">አገልጋዩ በአሁኑ ጊዜ ጥያቄውን ለመያዝ አይችልም።  ይህ ኮድ ይሄ ጊዜያዊ ሁኔታ መሆኑን ያመላክታል፣ እና አገልጋዩ ከሆነ መዘግየት በኋላ እንደገና ይሰራል።</translation>
-<translation id="6512448926095770873">ይህን ገጽ ተወው</translation>
 <translation id="6518133107902771759">አረጋግጥ</translation>
 <translation id="6529602333819889595">&amp;ሰርዝን ድገም</translation>
 <translation id="6533019874004191247">የማይደገፍ ዩአርኤል።</translation>
@@ -650,7 +645,6 @@ nil</translation>
 <translation id="8293206222192510085">እልባት ያክሉ</translation>
 <translation id="8294431847097064396">ምንጭ</translation>
 <translation id="8308427013383895095">በአውታረመረብ ግንኙነት ችግር ምክንያት የትርጉም ስራው ተሰናክሏል።</translation>
-<translation id="8311778656528046050">እርግጠኛ ነዎት ይህን ገጽ ዳግም መጫን ይፈልጋሉ?</translation>
 <translation id="8332188693563227489">የ<ph name="HOST_NAME" /> መዳረሻ ተከልክሏል</translation>
 <translation id="8349305172487531364">የዕልባቶች አሞሌ</translation>
 <translation id="8363502534493474904">የአውሮፕላን ሁነታን ማጥፋት</translation>
@@ -720,7 +714,6 @@ nil</translation>
 <translation id="9125941078353557812">በካርድዎ ኋላ ላይ ያለውን ባለ3 አኃዝ CVCን ያስገቡ</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
 <translation id="9148507642005240123">&amp;አርትዕን ቀልብስ</translation>
-<translation id="9154176715500758432">በዚሁ ገጽ ላይ ቆይ</translation>
 <translation id="9157595877708044936">በማዋቀር ላይ…</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
 <translation id="917450738466192189">የአገልጋይ እውቅና ማረጋገጫ ልክ ያልኾነ ነው።</translation>

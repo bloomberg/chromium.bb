@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1000498691615767391">Selecteer een map om te openen</translation>
-<translation id="1000916256947465293">Automatisch inloggen bij websites met de opgeslagen inloggegevens. Wanneer de functie is uitgeschakeld, word je elke keer om verificatie gevraagd voordat je wordt ingelogd bij een website.</translation>
 <translation id="1005274289863221750">Je microfoon en camera gebruiken</translation>
 <translation id="1007233996198401083">Kan geen verbinding maken.</translation>
 <translation id="1007408791287232274">Kan apparaten niet laden.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">WiMAX uitschakelen</translation>
 <translation id="174773101815569257">Muisvergrendeling</translation>
 <translation id="1749854530031883739">Grijze achtergronden weergeven die in TouchView (gemaximaliseerde modus) worden gebruikt achter vensters die niet kunnen worden gemaximaliseerd.</translation>
+<translation id="17513872634828108">Geopende tabbladen</translation>
 <translation id="175196451752279553">Gesloten tabblad opni&amp;euw openen</translation>
 <translation id="1753682364559456262">Blokkeren van afbeeldingen beheren...</translation>
 <translation id="1753905327828125965">Meest bezocht</translation>
@@ -2309,7 +2309,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="4298972503445160211">Deens toetsenbord</translation>
 <translation id="4299273509016391946">Hiermee wordt het selectievakje 'Pagina vereenvoudigen' in het dialoogvenster met het afdrukvoorbeeld ingeschakeld</translation>
 <translation id="4299729908419173967">Braziliaans</translation>
-<translation id="4301786491084298653">Uitschakelen op <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">De experimentele implementatie inschakelen van de instructie 'Cache-Control: stale-while-revalidate'. Hiermee kunnen servers specificeren dat bepaalde bronnen op de achtergrond opnieuw kunnen worden gevalideerd om de wachttijd te verbeteren.</translation>
 <translation id="4307281933914537745">Meer informatie over systeemherstel</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K live)</translation>
@@ -2330,7 +2329,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4336032328163998280">Kopiëren mislukt. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Zie voor netwerklogboeken: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> wil communiceren met de app '<ph name="EXTENSION_NAME" />'</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> vereist dat de identiteit van je apparaat wordt geverifieerd door Google om de geschiktheid voor het geoptimaliseerd afspelen van beveiligde media vast te stellen. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Sites niet toestaan gegevens in te stellen</translation>
 <translation id="4342311272543222243">TPM-fout.</translation>
 <translation id="4345587454538109430">Configureren...</translation>
@@ -2464,7 +2462,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4572659312570518089">Verificatie geannuleerd tijdens verbinden met '<ph name="DEVICE_NAME" />'.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-bestand</translation>
 <translation id="457386861538956877">Meer...</translation>
-<translation id="4575703660920788003">Druk op Shift-Alt om van toetsenbordindeling te wisselen.</translation>
 <translation id="4580526846085481512">Weet je zeker dat je $1 items wilt verwijderen?</translation>
 <translation id="458150753955139441">Druk om terug te gaan, gebruik het contextmenu om de geschiedenis te bekijken</translation>
 <translation id="4582447636905308869">Nieuwe Koreaanse IME. Deze is gebaseerd op de HMM-engine van Google Transcript.</translation>
@@ -3141,6 +3138,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="556042886152191864">Knop</translation>
 <translation id="5565871407246142825">Creditcards</translation>
 <translation id="5567989639534621706">Applicatiecaches</translation>
+<translation id="5568069709869097550">Kan niet aanmelden</translation>
 <translation id="5569544776448152862">Inschrijven in <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Incognito-extensie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Als je je apparaat opnieuw instelt, heeft dit geen effect op je Google-accounts of gegevens die zijn gesynchroniseerd met deze accounts. Alle bestanden die lokaal op je apparaat zijn opgeslagen, worden wel verwijderd.</translation>
@@ -3190,7 +3188,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5642953011762033339">Account ontkoppelen</translation>
 <translation id="5646376287012673985">Locatie</translation>
 <translation id="5649768706273821470">Luisteren</translation>
-<translation id="5649823029736413118"><ph name="URL" /> moet een unieke identificatie van je apparaat zijn om premium inhoud te kunnen afspelen.</translation>
 <translation id="5650551054760837876">Geen zoekresultaten gevonden.</translation>
 <translation id="5653140146600257126">Er bestaat al een map met de naam '$1'. Kies een andere naam.</translation>
 <translation id="5657667036353380798">Voor de externe extensie moet Chrome-versie <ph name="MINIMUM_CHROME_VERSION" /> of hoger zijn geïnstalleerd.</translation>
@@ -4459,7 +4456,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="7626009897377900107">Wachtwoorden genereren</translation>
 <translation id="7627262197844840899">Deze site accepteert geen MasterCard.</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> bestaat al. Geef een nieuwe naam op en probeer het opnieuw.</translation>
-<translation id="7628079021897738671">OK, ik begrijp het</translation>
 <translation id="762917759028004464">De standaardbrowser is momenteel <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Toestaan dat inloggegevens die worden opgeslagen voor Android-apps, worden ingevuld op bijbehorende websites.</translation>
 <translation id="7629827748548208700">Tabblad: <ph name="TAB_NAME" /></translation>
@@ -5337,7 +5333,6 @@ Tijd berekenen tot vol</translation>
 <translation id="8925458182817574960">&amp;Instellingen</translation>
 <translation id="8926389886865778422">Niet meer vragen</translation>
 <translation id="8926518602592448999">Extensies van ontwikkelaarsmodus uitschakelen</translation>
-<translation id="892867331564916668"><ph name="URL" /> wil bestanden opslaan op dit apparaat.</translation>
 <translation id="8929454297483336498">Mac OS X AVFoundation-API's gebruiken in plaats van QTKit</translation>
 <translation id="8931394284949551895">Nieuwe apparaten</translation>
 <translation id="8932730422557198035">Android Midi API gebruiken</translation>

@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Ако поставите отметка, Chrome ще съхранява копие на картата ви на това устройство с цел по-бързо попълване на формуляри.</translation>
 <translation id="1113869188872983271">&amp;Отмяна на пренареждането</translation>
-<translation id="111844081046043029">Наистина ли искате да излезете от тази страница?</translation>
 <translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
 <translation id="113188000913989374"><ph name="SITE" /> изпраща подкана:</translation>
 <translation id="1132774398110320017">Настройки за Автоматично попълване в Chrome...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Печат</translation>
 <translation id="1442912890475371290">Блокиран бе опит за <ph name="BEGIN_LINK" />посещение на страница от <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">При потвърждаването на картата ви възникна проблем. Проверете връзката си с интернет и опитайте отново.</translation>
-<translation id="1491151370853475546">Презареждане на тази страница</translation>
 <translation id="1506687042165942984">Показване на запазено копие на тази страница (за което е известно, че не е актуално).</translation>
 <translation id="1519264250979466059">Дата на версията</translation>
 <translation id="1549470594296187301">Трябва да активирате JavaScript, за да използвате тази функция.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="201192063813189384">При четенето на данни от кеш паметта възникна грешка.</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
-<translation id="2025623846716345241">Потвърждаване на презареждането</translation>
 <translation id="2030481566774242610">Може би имахте предвид <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверете прокси сървъра и защитната стена<ph name="END_LINK" />.</translation>
 <translation id="2053553514270667976">Пощенски код</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Достъпът до файла бе отказан</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2674170444375937751">Наистина ли искате да изтриете тези страници от историята си?</translation>
+<translation id="2677748264148917807">Излизане</translation>
 <translation id="2704283930420550640">Стойността не съответства на формата.</translation>
 <translation id="2705137772291741111">Запазеното (кеширано) копие на този сайт не можа да се прочете.</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Ключ „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Клиентът и сървърът не поддържат обща версия или пакет за шифроване за протокола SSL.</translation>
 <translation id="4079302484614802869">За конфигурацията на прокси сървъра е зададено да използва URL адрес на скрипт във формат .pac, а не фиксирани прокси сървъри.</translation>
-<translation id="409504436206021213">Без презареждане</translation>
 <translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
 <translation id="4103763322291513355">Посетете &lt;strong&gt;chrome://policy&lt;/strong&gt;, за да видите изброени URL адресите в черния списък и другите правила, наложени от системния ви администратор.</translation>
 <translation id="4117700440116928470">Обхватът на правилата не се поддържа.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Експерименти</translation>
 <translation id="5228309736894624122">Грешка в SSL протокола.</translation>
 <translation id="5251803541071282808">Облак</translation>
-<translation id="5295309862264981122">Потвърждение на навигацията</translation>
 <translation id="5299298092464848405">Грешка при синтактичния анализ на правилото</translation>
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Изчистете „бисквитките“<ph name="END_LINK" />.</translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Правила за устройството</translation>
 <translation id="6489534406876378309">Стартиране на качването на сривове</translation>
 <translation id="6500116422101723010">В момента сървърът не може да обработи заявката.  Този код посочва, че това състояние е временно и сървърът ще бъде работоспособен отново след известно време.</translation>
-<translation id="6512448926095770873">Излизане от тази страница</translation>
 <translation id="6518133107902771759">Потвърждаване</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
 <translation id="6533019874004191247">Неподдържан URL адр.</translation>
@@ -628,7 +623,7 @@
 <translation id="8034955203865359138">Няма намерени записи в историята.</translation>
 <translation id="8088680233425245692">Преглеждането на статията не бе успешно.</translation>
 <translation id="8091372947890762290">В сървъра се изчаква активиране</translation>
-<translation id="8134994873729925007">Не можа да се намери <ph name="BEGIN_ABBR" />DNS адресът<ph name="END_ABBR" /> на сървъра на <ph name="HOST_NAME" />.</translation>
+<translation id="8134994873729925007">Не можа да бъде намерен <ph name="BEGIN_ABBR" />DNS адресът<ph name="END_ABBR" /> на сървъра на <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Компютърът ви премина в спящ режим.</translation>
 <translation id="8150722005171944719">Файлът на адрес <ph name="URL" /> не може да бъде прочетен.  Възможно е да е премахнат, преместен или разрешенията му да предотвратяват достъпа.</translation>
 <translation id="8194797478851900357">&amp;Отмяна на преместването</translation>
@@ -653,7 +648,6 @@
 <translation id="8293206222192510085">Добавяне на отметка</translation>
 <translation id="8294431847097064396">Източник</translation>
 <translation id="8308427013383895095">Преводът не бе успешен поради проблем с връзката към мрежата.</translation>
-<translation id="8311778656528046050">Наистина ли искате да презаредите тази страница?</translation>
 <translation id="8332188693563227489">Достъпът до <ph name="HOST_NAME" /> бе отказан</translation>
 <translation id="8349305172487531364">Лента на отметките</translation>
 <translation id="8363502534493474904">Изключете самолетния режим.</translation>
@@ -723,7 +717,6 @@
 <translation id="9125941078353557812">Въведете трицифрения код за проверка от гърба на картата си</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="9148507642005240123">&amp;Отмяна на редактирането</translation>
-<translation id="9154176715500758432">Нека остана на тази страница</translation>
 <translation id="9157595877708044936">Настройва се...</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="917450738466192189">Сертификатът на сървъра е невалиден.</translation>

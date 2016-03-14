@@ -15,7 +15,6 @@
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Pokud je tato možnost zaškrtnuta, Chrome v tomto zařízení bude za účelem rychlejšího vyplňování formulářů uchovávat kopii vaší karty.</translation>
 <translation id="1113869188872983271">&amp;Vrátit změnu uspořádání zpět</translation>
-<translation id="111844081046043029">Jste si jisti, že chcete opustit tuto stránku?</translation>
 <translation id="112840717907525620">Mezipaměť zásady je v pořádku</translation>
 <translation id="113188000913989374">Web <ph name="SITE" /> říká:</translation>
 <translation id="1132774398110320017">Nastavení Automatického vyplňování v prohlížeči Chrome...</translation>
@@ -51,7 +50,6 @@
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1442912890475371290">Byl zablokován pokus <ph name="BEGIN_LINK" /> navštívit stránku v doméně <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Při ověřování vaší karty došlo k problému. Zkontrolujte připojení k internetu a zkuste to znovu.</translation>
-<translation id="1491151370853475546">Načíst tuto stránku znovu</translation>
 <translation id="1506687042165942984">Zobrazí uloženou (tj. neaktuální) kopii této stránky</translation>
 <translation id="1519264250979466059">Datum sestavení</translation>
 <translation id="1549470594296187301">Chcete-li tuto funkci použít, musí být aktivován JavaScript.</translation>
@@ -92,7 +90,6 @@
 <translation id="1974060860693918893">Rozšířená nastavení</translation>
 <translation id="201192063813189384">Při čtení dat z mezipaměti došlo k chybě.</translation>
 <translation id="2025186561304664664">Proxy server je nastaven na automatickou konfiguraci.</translation>
-<translation id="2025623846716345241">Potvrdit opětovné načtení</translation>
 <translation id="2030481566774242610">Měli jste na mysli <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Zkontrolovat proxy server a firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">PSČ</translation>
@@ -159,6 +156,7 @@
 <translation id="2650446666397867134">Přístup k souboru byl odepřen.</translation>
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2674170444375937751">Jste si jisti, že chcete tyto stránky odstranit ze své historie?</translation>
+<translation id="2677748264148917807">Odejít</translation>
 <translation id="2704283930420550640">Hodnota neodpovídá formátu.</translation>
 <translation id="2705137772291741111">Kopii tohoto webu uloženou v mezipaměti se nepodařilo přečíst.</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
@@ -289,7 +287,6 @@
 <translation id="4058922952496707368">Klíč <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klient a server nepodporují společnou verzi protokolu SSL nebo šifrovací sadu.</translation>
 <translation id="4079302484614802869">Proxy je nastaveno na používání adresy URL skriptu PAC, nikoliv pevně daných serverů proxy.</translation>
-<translation id="409504436206021213">Nenačítat</translation>
 <translation id="4103249731201008433">Sériové číslo zařízení je neplatné</translation>
 <translation id="4103763322291513355">Na stránce &lt;strong&gt;chrome://policy&lt;/strong&gt; naleznete seznam zakázaných adres URL a další zásady vynucené vaším správcem systému.</translation>
 <translation id="4117700440116928470">Rozsah zásady není podporován.</translation>
@@ -374,7 +371,6 @@
 <translation id="5199729219167945352">Experimenty</translation>
 <translation id="5228309736894624122">Chyba protokolu SSL.</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5295309862264981122">Potvrdit navigaci</translation>
 <translation id="5299298092464848405">Při analýze zásady došlo k chybě</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Vymazat soubory cookie<ph name="END_LINK" /></translation>
@@ -467,7 +463,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="647261751007945333">Zásady zařízení</translation>
 <translation id="6489534406876378309">Začít nahrávat zprávy o selhání</translation>
 <translation id="6500116422101723010">Server nemůže požadavek momentálně zpracovat. Tento kód znamená dočasný stav a server bude za nějakou dobu opět funkční.</translation>
-<translation id="6512448926095770873">Opustit tuto stránku</translation>
 <translation id="6518133107902771759">Ověřit</translation>
 <translation id="6529602333819889595">&amp;Opakovat smazání</translation>
 <translation id="6533019874004191247">Nepodporovaná URL.</translation>
@@ -621,7 +616,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8293206222192510085">Přidat záložku</translation>
 <translation id="8294431847097064396">Zdroj</translation>
 <translation id="8308427013383895095">Překlad se nezdařil kvůli problému s připojením k síti.</translation>
-<translation id="8311778656528046050">Opravdu chcete tuto stránku znovu načíst?</translation>
 <translation id="8332188693563227489">Přístup k webu <ph name="HOST_NAME" /> byl odepřen</translation>
 <translation id="8349305172487531364">Lišta záložek</translation>
 <translation id="8363502534493474904">Vypnout režim Letadlo</translation>
@@ -690,7 +684,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="9125941078353557812">Zadejte třípísmenný kód CVC uvedený na zadní straně karty.</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="9148507642005240123">&amp;Vrátit úpravy zpět</translation>
-<translation id="9154176715500758432">Zůstat na této stránce</translation>
 <translation id="9157595877708044936">Nastavování...</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="917450738466192189">Certifikát serveru je neplatný.</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1000498691615767391">የሚከፍቱትን አቃፊ ይምረጡ</translation>
-<translation id="1000916256947465293">የተከማቹ አሳማኝ ማስረጃዎችን በመጠቀም በራስ-ሰር ወደ የድር ጣቢያዎች በመለያ ይግቡ። ባህሪው በሚጠፋበት ጊዜ፣ ወደ አንድ የድር ጣቢያ በመለያ ከመግባትዎ በፊት ማረጋገጫ ይጠየቃሉ።</translation>
 <translation id="1005274289863221750">ማይክሮፎንዎን እና ካሜራዎን ይጠቀማል</translation>
 <translation id="1007233996198401083">ለመገናኘት አልተቻለም።</translation>
 <translation id="1007408791287232274">መሣሪያዎችን መጫን አልተቻለም።</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">WiMAX አሰናክል</translation>
 <translation id="174773101815569257">የመዳፊት መቆለፊያ</translation>
 <translation id="1749854530031883739">ከፍ ሊሉ በማይችሉ መስኮቶች ጀርባ በTouchView (ከፍተኛ ሁነታ) ውስጥ ጥቅም ላይ የዋሉ ግራጫ የመስኮት backdropዎችን ያሳያል።</translation>
+<translation id="17513872634828108">ትሮችን ክፈት</translation>
 <translation id="175196451752279553">የተ&amp;ዘጋውን ትር ዳግም ክፈት</translation>
 <translation id="1753682364559456262">የምስል እገዳን አቀናብር…</translation>
 <translation id="1753905327828125965">በይበልጥ የተጎበኙ</translation>
@@ -1318,7 +1318,7 @@
 <translation id="2889064240420137087">አገናኝ ክፈት በ...</translation>
 <translation id="2889925978073739256">በማጠሪያ ያልተቀመጡ ተሰኪዎችን ማገዱን ቀጥል</translation>
 <translation id="2890624088306605051">የተመሳሰሉ ቅንብሮችንና ውሂብ ብቻ አምጣ</translation>
-<translation id="2890678560483811744">ከወሰን ውጭጭ የሆነ የገጽ ማጣቀሻ</translation>
+<translation id="2890678560483811744">ከወሰን ውጭ የሆነ የገጽ ማጣቀሻ</translation>
 <translation id="2893168226686371498">ነባሪ አሳሽ</translation>
 <translation id="289426338439836048">ሌላ የተንቀሳቃሽ ስልክ አውታረ መረብ...</translation>
 <translation id="2894745200702272315">የሃርድዌር ጥገኝነት ያላቸው የ«Ok Google» የሙከራ ትኩስ ቃል ማወቂያ ባህሪያትን ያነቃል።</translation>
@@ -2307,7 +2307,6 @@
 <translation id="4298972503445160211">የዳኒሽ ቁልፍ ሰሌዳ</translation>
 <translation id="4299273509016391946">በቅድመ-እይታ መገናኛው ላይ የገጽ አቅልል አመልካች ሳጥኑን ያነቃል</translation>
 <translation id="4299729908419173967">ብራዚላዊ</translation>
-<translation id="4301786491084298653">በ<ph name="DOMAIN" /> ላይ አሰናክል</translation>
 <translation id="430714521864499800">የ«Cache-Control: stale-while-revalidate directive»ን የሙከራ መመሪያውን ያንቁ። ይሄ የስርዓት ምላሽ ጊዜው ለማሻሻል አገልጋዮች አንዳንድ ግብዓቶች ጀርባ ላይ ዳግም ሊረጋገጡ እንደሚችሉ እንዲገልጹ ይፈቅድላቸዋል።</translation>
 <translation id="4307281933914537745">ስለስርዓት ዳግም ማግኛ ተጨማሪ ለመረዳት</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K በቀጥታ)</translation>
@@ -2328,7 +2327,6 @@
 <translation id="4336032328163998280">የመገልበጥ ክወና አልተሳካም። <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">የአውታረ መረብ ምዝግብ ማስታወሻዎችን ለማግኘት ይህንን ይመልከቱ፦ <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ከ«<ph name="EXTENSION_NAME" />» መተግበሪያ ጋር መገናኘት ይፈልጋል</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> መሣሪያዎ የላቀ የተጠበቀ ማህደረመረጃ መልሶ ለማጫወት ብቁ መሆኑን ለመወሰን የመሣሪያዎን ማንነት በGoogle እንዲረጋገጥ ይፈልጋል። <ph name="LEARN_MORE" />።</translation>
 <translation id="4341977339441987045">ጣቢያዎችን ምንም አይነት ውሂብ ከማዘጋጀት አግድ</translation>
 <translation id="4342311272543222243">ውይ፣ የTPM ስህተት</translation>
 <translation id="4345587454538109430">አዋቅር...</translation>
@@ -2462,7 +2460,6 @@
 <translation id="4572659312570518089">ከ«<ph name="DEVICE_NAME" />» ጋር በመገናኘት ሳለ ፈቀዳ ተሰርዟል።</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ፋይል</translation>
 <translation id="457386861538956877">ተጨማሪ...</translation>
-<translation id="4575703660920788003">የቁልፍ ሰሌዳ አቀማመጥን ለመቀየር Shift-Alt ይምቱ።</translation>
 <translation id="4580526846085481512">እርግጠኛ ነዎት $1 ንጥሎችን መሰረዝ ይፈልጋሉ?</translation>
 <translation id="458150753955139441">ለመመለስ ይጫኑ፣ ታሪክን ለማየት የአውድ ምናሌን ይጠቀሙ</translation>
 <translation id="4582447636905308869">በGoogle ግቤት መሣሪያዎች HMM ሞተር ላይ የተመረኮዘ፣ አዲስ የኮርያኛ IME።</translation>
@@ -3141,6 +3138,7 @@
 <translation id="556042886152191864">አዘራር</translation>
 <translation id="5565871407246142825">ክሬዲት ካርዶች</translation>
 <translation id="5567989639534621706">የመተግበሪያ መሸጎጫዎች</translation>
+<translation id="5568069709869097550">መግባት አልተቻለም</translation>
 <translation id="5569544776448152862">በ<ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> ውስጥ በመመዝገብ ላይ...</translation>
 <translation id="5575473780076478375">የማንነትን የማያሳውቅ ቅጥያ፦ <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">የእርስዎን መሣሪያ ዳግም ማስጀመር በእርስዎ Google መለያዎች ወይም ከእነዚህ መለያዎች ጋር በተመሳሰሉ ማንኛውም ውሂብ ላይ ምንም ተጽዕኖ አይኖረውም። ይሁንና በመሣሪያዎ ላይ የተቀመጡ ፋይሎች ሁሉ ይሰረዛሉ።</translation>
@@ -3190,7 +3188,6 @@
 <translation id="5642953011762033339">የመለያውን ግንኙነት አቋርጥ</translation>
 <translation id="5646376287012673985">አካባቢ</translation>
 <translation id="5649768706273821470">አዳምጥ</translation>
-<translation id="5649823029736413118"><ph name="URL" /> ዋና ይዘት ለማጫወት የእርስዎን መሣሪያ ለይቶ ማወቅ አለበት።</translation>
 <translation id="5650551054760837876">ምንም የፍለጋ ውጤቶች አልተገኙም።</translation>
 <translation id="5653140146600257126">«$1» የሚል አቃፊ አስቀድሞ አለ። እባክዎ የተለየ ስም ይምረጡ።</translation>
 <translation id="5657667036353380798">ውጫዊ ቅጥያው እንዲጫን የchrome ስሪት <ph name="MINIMUM_CHROME_VERSION" /> ወይም ከዚያ በላይ መጫን አለበት።</translation>
@@ -4458,7 +4455,6 @@
 <translation id="7626009897377900107">የይለፍ ቃል ማመንጨት</translation>
 <translation id="7627262197844840899">ይህ ጣቢያ MasterCardን አይቀበልም።</translation>
 <translation id="7627790789328695202">ውይ፣ <ph name="FILE_NAME" /> አስቀድሞ አለ። ዳግም ይሰይሙትና እንደገና ይሞክሩ።</translation>
-<translation id="7628079021897738671">እሺ፣ ገባኝ</translation>
 <translation id="762917759028004464">በአሁኑ ጊዜ መነሻ አሳሹ <ph name="BROWSER_NAME" /> ነው።</translation>
 <translation id="7629536005696009600">ለAndroid መተግበሪያዎች የተከማቹ ምስክርነቶች ወደ ተጓዳኝ ድር ጣቢያዎች እንዲሞሉ ይፍቀዱ።</translation>
 <translation id="7629827748548208700">ትር፦ <ph name="TAB_NAME" /></translation>
@@ -5340,7 +5336,6 @@ nil</translation>
 <translation id="8925458182817574960">&amp;ቅንብሮች</translation>
 <translation id="8926389886865778422">ደግመው አይጠይቁ</translation>
 <translation id="8926518602592448999">የገንቢ ሁኔታ ቅጥያዎችን ያሰናክሉ</translation>
-<translation id="892867331564916668"><ph name="URL" /> ፋይሎችን በዚህ መሣሪያ ላይ ማከማቸት ይፈልጋል።</translation>
 <translation id="8929454297483336498">ከQTKit ይልቅ የMac OS X AVFoundation ኤፒአይዎችን መጠቀም</translation>
 <translation id="8931394284949551895">አዲስ መሣሪያዎች</translation>
 <translation id="8932730422557198035">Android Midi ኤፒአይን ይጠቀሙ</translation>

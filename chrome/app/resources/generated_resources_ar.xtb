@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1000498691615767391">تحديد مجلد لفتحه</translation>
-<translation id="1000916256947465293">سجلّ الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزنة. عند إيقاف تشغيل الميزة، ستتم مطالبتك بالتحقق في كل مرة قبل تسجيل الدخول إلى أي موقع ويب.</translation>
 <translation id="1005274289863221750">استخدام الميكروفون والكاميرا</translation>
 <translation id="1007233996198401083">تعذر الاتصال.</translation>
 <translation id="1007408791287232274">تعذر تحميل الأجهزة.</translation>
@@ -534,6 +533,7 @@
 <translation id="1747687775439512873">‏تعطيل WiMAX</translation>
 <translation id="174773101815569257">قفل الماوس</translation>
 <translation id="1749854530031883739">‏عرض الصور الخلفية للنافذة الرمادية المستخدمة في TouchView (وضع التكبير) خلف النوافذ التي يتعذر تكبيرها.</translation>
+<translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="175196451752279553">إ&amp;عادة فتح علامة التبويب المغلقة</translation>
 <translation id="1753682364559456262">إدارة منع عرض الصور...</translation>
 <translation id="1753905327828125965">الأكثر زيارة</translation>
@@ -2302,7 +2302,6 @@
 <translation id="4298972503445160211">لوحة المفاتيح الدنماركية</translation>
 <translation id="4299273509016391946">تُمكن مربع اختيار تبسيط الصفحة في مربع حوار معاينة الطباعة</translation>
 <translation id="4299729908419173967">البرازيلية</translation>
-<translation id="4301786491084298653">تعطيل في <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">‏تمكين التنفيذ التجريبي لتوجيه "Cache-Control: stale-while-revalidate". يسمح ذلك للخوادم بتحديد احتمالية إعادة التحقق من بعض المصادر في الخلفية لتحسين وقت الاستجابة.</translation>
 <translation id="4307281933914537745">مزيد من المعلومات حول استعادة النظام</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />كيلوبايت (<ph name="NUM_KILOBYTES_LIVE" />كيلوبايت مباشرة)</translation>
@@ -2323,7 +2322,6 @@
 <translation id="4336032328163998280">أخفقت عملية النسخ. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">لسجلات الشبكة، راجع: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> يريد التواصل مع التطبيق "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687">‏يحتاج <ph name="DOMAIN" /> إلى التحقق من هوية جهازك بواسطة Google لتحديد مدى الأهلية للتشغيل المحسَّن للوسائط المحمية. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">منع المواقع من تخزين أية بيانات</translation>
 <translation id="4342311272543222243">‏عفوا، حدث خطأ TPM.</translation>
 <translation id="4345587454538109430">تهيئة...</translation>
@@ -2457,7 +2455,6 @@
 <translation id="4572659312570518089">تم إلغاء المصادقة أثناء الاتصال بالجهاز "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">ملف <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">المزيد...</translation>
-<translation id="4575703660920788003">‏انقر على Shift-Alt لتبديل تخطيط لوحة المفاتيح.</translation>
 <translation id="4580526846085481512">هل تريد بالتأكيد حذف عناصر $1؟</translation>
 <translation id="458150753955139441">اضغط للرجوع، واستخدم قائمة السياق لمشاهدة السجلَ</translation>
 <translation id="4582447636905308869">‏محرر أسلوب الإدخال (IME) الكوري الجديد الذي يعتمد على محرك HMM لأدوات الإدخال من Google.</translation>
@@ -3134,6 +3131,7 @@
 <translation id="556042886152191864">زر</translation>
 <translation id="5565871407246142825">بطاقات ائتمان</translation>
 <translation id="5567989639534621706">ذاكرة التخزين المؤقت للتطبيقات</translation>
+<translation id="5568069709869097550">تعذّر الدخول</translation>
 <translation id="5569544776448152862">التسجيل في <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">إضافة وضع التصفح المتخفي: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">‏لن يؤثر إعادة تعيين الجهاز على حسابات Google أو أي من البيانات التي تمت مزامنتها مع هذه الحسابات. ومع ذلك، سيتم حذف جميع الملفات التي تم حفظها محليًا على جهازك.</translation>
@@ -3183,7 +3181,6 @@
 <translation id="5642953011762033339">قطع الاتصال بالحساب</translation>
 <translation id="5646376287012673985">الموقع</translation>
 <translation id="5649768706273821470">استماع</translation>
-<translation id="5649823029736413118">يحتاج <ph name="URL" /> إلى تحديد هوية جهازك بشكلٍ فريد لتشغيل المحتوى المميز.</translation>
 <translation id="5650551054760837876">لم يتمّ العثور على أي نتائج بحث.</translation>
 <translation id="5653140146600257126">المجلد الذي يحمل الاسم "$1" موجود فعلاً. الرجاء اختيار اسم مختلف.</translation>
 <translation id="5657667036353380798">‏تتطلب الإضافة الخارجية تثبيت chrome الإصدار <ph name="MINIMUM_CHROME_VERSION" /> أو أعلى.</translation>
@@ -4451,7 +4448,6 @@
 <translation id="7626009897377900107">إنشاء كلمات المرور</translation>
 <translation id="7627262197844840899">‏هذا الموقع لا يقبل بطاقة MasterCard.</translation>
 <translation id="7627790789328695202">عذرًا، <ph name="FILE_NAME" /> موجود من قبل. يمكنك إعادة تسميته وإعادة المحاولة.</translation>
-<translation id="7628079021897738671">موافق، وأعي ذلك</translation>
 <translation id="762917759028004464">المتصفح الافتراضي هو حاليًا <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">‏السماح بملء بيانات الاعتماد المخزنة لتطبيقات Android في مواقع الويب المقابلة</translation>
 <translation id="7629827748548208700">علامة التبويب: <ph name="TAB_NAME" /></translation>
@@ -5327,7 +5323,6 @@
 <translation id="8925458182817574960">&amp;الإعدادات</translation>
 <translation id="8926389886865778422">عدم السؤال مرة أخرى</translation>
 <translation id="8926518602592448999">تعطيل إضافات وضع مطور البرامج</translation>
-<translation id="892867331564916668">يرغب <ph name="URL" /> في تخزين الملفات على هذا الجهاز.</translation>
 <translation id="8929454297483336498">‏استخدام واجهات برمجة تطبيقات Mac OS X AVFoundation، بدلاً من QTKit</translation>
 <translation id="8931394284949551895">الأجهزة الجديدة</translation>
 <translation id="8932730422557198035">‏استخدام واجهة برمجة تطبيقات Android Midi</translation>

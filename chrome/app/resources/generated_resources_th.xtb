@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1000498691615767391">เลือกโฟลเดอร์เพื่อเปิด</translation>
-<translation id="1000916256947465293">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อคุณลักษณะนี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนที่จะลงชื่อเข้าใช้เว็บไซต์</translation>
 <translation id="1005274289863221750">ใช้ไมโครโฟนและกล้องถ่ายรูปของคุณ</translation>
 <translation id="1007233996198401083">ไม่สามารถเชื่อมต่อ</translation>
 <translation id="1007408791287232274">ไม่สามารถโหลดอุปกรณ์</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">ปิดใช้งาน WiMAX</translation>
 <translation id="174773101815569257">การล็อกเมาส์</translation>
 <translation id="1749854530031883739">แสดงฉากหลังหน้าต่างสีเทาที่ใช้ใน TouchView (โหมดขยาย) ด้านหลังหน้าต่างที่ไม่สามารถขยายขนาดให้สูงสุดได้</translation>
+<translation id="17513872634828108">แท็บที่เปิดอยู่</translation>
 <translation id="175196451752279553">เ&amp;ปิดแท็บที่ถูกปิดขึ้นใหม่</translation>
 <translation id="1753682364559456262">จัดการการบล็อกภาพ...</translation>
 <translation id="1753905327828125965">เข้าชมบ่อยสุด</translation>
@@ -2307,7 +2307,6 @@
 <translation id="4298972503445160211">แป้นพิมพ์ภาษาเดนมาร์ก</translation>
 <translation id="4299273509016391946">เปิดใช้ช่องทำเครื่องหมายลดความซับซ้อนของหน้าบนกล่องโต้ตอบหน้าตัวอย่างก่อนพิมพ์</translation>
 <translation id="4299729908419173967">บราซิล</translation>
-<translation id="4301786491084298653">ปิดใช้ใน <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">เปิดการใช้คำสั่ง "Cache-Control: ไม่อัปเดตขณะตรวจสอบใหม่" รุ่นทดสอบ ซึ่งเป็นการอนุญาตให้เซิร์ฟเวอร์ระบุว่าอาจมีการตรวจสอบทรัพยากรบางอย่างอีกครั้งในพื้นหลังเพื่อลดเวลาในการตอบสนอง</translation>
 <translation id="4307281933914537745">เรียนรู้เพิ่มเติมเกี่ยวกับการกู้คืนระบบ</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (แสดงอยู่ <ph name="NUM_KILOBYTES_LIVE" />K)</translation>
@@ -2328,7 +2327,6 @@
 <translation id="4336032328163998280">การคัดลอกล้มเหลว <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">สำหรับบันทึกของเครือข่าย โปรดดูที่ <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ต้องการสื่อสารกับแอป "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> ต้องการข้อมูลประจำตัวของอุปกรณ์เพื่อรับการยืนยันจาก Google เพื่อระบุการมีสิทธิ์สำหรับการเล่นที่เพิ่มประสิทธิภาพสำหรับสื่อที่มีการป้องกัน <ph name="LEARN_MORE" /></translation>
 <translation id="4341977339441987045">บล็อกไซต์จากการวางข้อมูลใดๆ</translation>
 <translation id="4342311272543222243">อ๊ะ เกิดข้อผิดพลาด TPM</translation>
 <translation id="4345587454538109430">กำหนดค่า...</translation>
@@ -2462,7 +2460,6 @@
 <translation id="4572659312570518089">การตรวจสอบสิทธิ์ถูกยกเลิกขณะที่เชื่อมต่อกับ "<ph name="DEVICE_NAME" />"</translation>
 <translation id="4572815280350369984">ไฟล์ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">เพิ่มเติม...</translation>
-<translation id="4575703660920788003">กด Shift-Alt เพื่อสลับรูปแบบแป้นพิมพ์</translation>
 <translation id="4580526846085481512">คุณแน่ใจหรือไม่ว่าต้องการลบ $1 รายการ</translation>
 <translation id="458150753955139441">กดเพื่อย้อนกลับ ใช้เมนูตามบริบทเพื่อดูประวัติ</translation>
 <translation id="4582447636905308869">IME ภาษาเกาหลีใหม่ ซึ่งอิงตามเครื่องมือ HMM ของ Google เครื่องมือป้อนข้อมูล</translation>
@@ -3140,6 +3137,7 @@
 <translation id="556042886152191864">ปุ่ม</translation>
 <translation id="5565871407246142825">บัตรเครดิต</translation>
 <translation id="5567989639534621706">แคชของแอปพลิเคชัน</translation>
+<translation id="5568069709869097550">ไม่สามารถลงชื่อเข้าใช้</translation>
 <translation id="5569544776448152862">กำลังลงทะเบียนใน <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">ส่วนขยายแบบไม่ระบุตัวตน: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">การรีเซ็ตอุปกรณ์ของคุณจะไม่ส่งผลต่อบัญชี Google ของคุณหรือข้อมูลใดๆ ที่ซิงค์กับบัญชีเหล่านี้ อย่างไรก็ตาม ไฟล์ทั้งหมดที่บันทึกอยู่ภายในอุปกรณ์จะถูกลบ</translation>
@@ -3189,7 +3187,6 @@
 <translation id="5642953011762033339">หยุดการเชื่อมต่อบัญชี</translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
 <translation id="5649768706273821470">ฟัง</translation>
-<translation id="5649823029736413118"><ph name="URL" /> ต้องระบุอุปกรณ์ของคุณแบบไม่ซ้ำกันเพื่อเล่นเนื้อหาพรีเมียม</translation>
 <translation id="5650551054760837876">ไม่พบผลลัพธ์การค้นหา</translation>
 <translation id="5653140146600257126">มีโฟลเดอร์ชื่อ "$1" อยู่แล้ว โปรดเลือกชื่ออื่น</translation>
 <translation id="5657667036353380798">ต้องมี Chrome เวอร์ชัน <ph name="MINIMUM_CHROME_VERSION" /> หรือสูงกว่าเพื่อติดตั้งส่วนขยายภายนอก</translation>
@@ -4453,7 +4450,6 @@
 <translation id="7626009897377900107">การสร้างรหัสผ่าน</translation>
 <translation id="7627262197844840899">ไซต์นี้ไม่ยอมรับ MasterCard</translation>
 <translation id="7627790789328695202">อ๊ะ มี <ph name="FILE_NAME" /> อยู่แล้ว เปลี่ยนชื่อแล้วลองอีกครั้ง</translation>
-<translation id="7628079021897738671">รับทราบ</translation>
 <translation id="762917759028004464">เบราว์เซอร์เริ่มต้น <ph name="BROWSER_NAME" /> ในขณะนี้</translation>
 <translation id="7629536005696009600">อนุญาตให้เติมข้อมูลรับรองที่จัดเก็บไว้สำหรับแอปพลิเคชัน Android ลงในเว็บไซต์ที่เกี่ยวข้อง</translation>
 <translation id="7629827748548208700">แท็บ: <ph name="TAB_NAME" /></translation>
@@ -5328,7 +5324,6 @@
 <translation id="8925458182817574960">&amp;การตั้งค่า</translation>
 <translation id="8926389886865778422">ไม่ต้องถามอีก</translation>
 <translation id="8926518602592448999">ปิดส่วนขยายโหมดนักพัฒนาซอฟต์แวร์</translation>
-<translation id="892867331564916668"><ph name="URL" /> ต้องการจัดเก็บไฟล์บนอุปกรณ์นี้</translation>
 <translation id="8929454297483336498">ใช้ API ของ Mac OS X AVFoundation แทน QTKit</translation>
 <translation id="8931394284949551895">อุปกรณ์ใหม่</translation>
 <translation id="8932730422557198035">ใช้ Android Midi API</translation>

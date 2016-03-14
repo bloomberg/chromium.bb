@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1000498691615767391">Pilih yang akan dibuka</translation>
-<translation id="1000916256947465293">Secara otomatis masuk ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan diminta untuk verifikasi setiap saat sebelum masuk ke situs web.</translation>
 <translation id="1005274289863221750">Menggunakan mikrofon dan kamera Anda</translation>
 <translation id="1007233996198401083">Tidak dapat tersambung.</translation>
 <translation id="1007408791287232274">Tidak dapat memuat perangkat.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Nonaktifkan WiMAX</translation>
 <translation id="174773101815569257">Pengunci Mouse</translation>
 <translation id="1749854530031883739">Tampilkan tampilan latar jendela abu-abu yang digunakan dalam TouchView (mode maksimal) di belakang jendela yang tidak dapat dimaksimalkan.</translation>
+<translation id="17513872634828108">Buka tab</translation>
 <translation id="175196451752279553">Buka k&amp;embali tab yang tertutup</translation>
 <translation id="1753682364559456262">Kelola pemblokiran gambar...</translation>
 <translation id="1753905327828125965">Sering Dibuka</translation>
@@ -2308,7 +2308,6 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="4298972503445160211">Keyboard untuk bahasa Denmark</translation>
 <translation id="4299273509016391946">Mengaktifkan kotak centang untuk menyederhanakan laman pada dialog pratinjau cetak</translation>
 <translation id="4299729908419173967">Brasil</translation>
-<translation id="4301786491084298653">Nonaktifkan di <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Mengaktifkan penerapan eksperimental perintah "Cache-Control: stale-while-revalidate". Hal ini memungkinkan server menentukan bahwa beberapa sumber daya dapat divalidasi ulang di latar belakang guna meningkatkan latensi.</translation>
 <translation id="4307281933914537745">Pelajari selengkapnya pemulihan sistem</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K langsung)</translation>
@@ -2329,7 +2328,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4336032328163998280">Operasi penyalinan gagal. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Untuk log jaringan, lihat: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ingin berkomunikasi dengan aplikasi "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> mewajibkan identitas perangkat Anda agar diverifikasi, oleh Google, guna menentukan kelayakan untuk pemutaran media terlindungi yang ditingkatkan. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Cekal situs agar tidak menyetel data apa pun</translation>
 <translation id="4342311272543222243">Ups, kesalahan TPM.</translation>
 <translation id="4345587454538109430">Konfigurasikan...</translation>
@@ -2463,7 +2461,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4572659312570518089">Autentikasi dibatalkan saat menyambung ke "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lainnya...</translation>
-<translation id="4575703660920788003">Tekan Shift-Alt untuk mengubah tata letak keyboard.</translation>
 <translation id="4580526846085481512">Yakin ingin menghapus $1 item?</translation>
 <translation id="458150753955139441">Tekan untuk kembali, gunakan menu konteks untuk melihat riwayat</translation>
 <translation id="4582447636905308869">IME Korea baru, yang didasarkan pada mesin HMM Google Input Tools.</translation>
@@ -3142,6 +3139,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="556042886152191864">Tombol</translation>
 <translation id="5565871407246142825">Kartu kredit</translation>
 <translation id="5567989639534621706">Cache aplikasi</translation>
+<translation id="5568069709869097550">Tidak dapat sign in</translation>
 <translation id="5569544776448152862">Mendaftarkan di <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Ekstensi Penyamaran: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Penyetelan ulang perangkat Anda tidak akan memengaruhi akun Google Anda atau data yang disinkronkan ke akun ini. Namun, semua file yang disimpan secara lokal pada perangkat Anda akan terhapus.</translation>
@@ -3191,7 +3189,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5642953011762033339">Putuskan kaitan akun</translation>
 <translation id="5646376287012673985">Lokasi</translation>
 <translation id="5649768706273821470">Dengar</translation>
-<translation id="5649823029736413118"><ph name="URL" /> perlu mengidentifikasi perangkat Anda secara khusus untuk memutar konten premium.</translation>
 <translation id="5650551054760837876">Tak ada hasil penelusuran yang ditemukan.</translation>
 <translation id="5653140146600257126">Folder dengan nama "$1" sudah ada. Pilih nama yang berbeda.</translation>
 <translation id="5657667036353380798">Ekstensi eksternal memerlukan versi chrome <ph name="MINIMUM_CHROME_VERSION" /> atau lebih tinggi untuk dipasang.</translation>
@@ -4455,7 +4452,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="7626009897377900107">Pembuatan sandi</translation>
 <translation id="7627262197844840899">Situs ini tidak menerima MasterCard.</translation>
 <translation id="7627790789328695202">Ups, <ph name="FILE_NAME" /> sudah ada. Ganti nama dan coba lagi.</translation>
-<translation id="7628079021897738671">Oke, saya mengerti</translation>
 <translation id="762917759028004464">Browser default saat ini: <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Mengizinkan kredensial yang disimpan untuk aplikasi Android agar diisikan ke situs web yang sesuai.</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
@@ -5330,7 +5326,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8925458182817574960">&amp;Setelan</translation>
 <translation id="8926389886865778422">Jangan tanya lagi</translation>
 <translation id="8926518602592448999">Nonaktifkan Ekstensi Mode Pengembang</translation>
-<translation id="892867331564916668"><ph name="URL" /> ingin menyimpan file di perangkat ini.</translation>
 <translation id="8929454297483336498">Penggunaan API AVFoundation Mac OS X, sebagai ganti QTKit</translation>
 <translation id="8931394284949551895">Perangkat baru</translation>
 <translation id="8932730422557198035">Gunakan API Android Midi</translation>

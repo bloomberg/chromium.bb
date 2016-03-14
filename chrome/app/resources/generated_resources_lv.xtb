@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="1000498691615767391">Atlasīt atveramo mapi</translation>
-<translation id="1000916256947465293">Automātiski pierakstīties vietnēs, izmantojot saglabātos akreditācijas datus. Ja funkcija ir izslēgta, verifikācija būs jāveic, katru reizi pierakstoties vietnē.</translation>
 <translation id="1005274289863221750">Izmantot jūsu mikrofonu un videokameru</translation>
 <translation id="1007233996198401083">Nevar izveidot savienojumu.</translation>
 <translation id="1007408791287232274">Nevarēja ielādēt ierīces.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Atspējot WiMAX</translation>
 <translation id="174773101815569257">Peles bloķēšana</translation>
 <translation id="1749854530031883739">Sīklietotnē TouchView (maksimizēšanas režīmā) aiz logiem, kurus nevar maksimizēt, tiek rādītas pelēkas logu fona kolāžas.</translation>
+<translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="175196451752279553">Vēlr&amp;eiz atvērt aizvērto cilni</translation>
 <translation id="1753682364559456262">Pārvaldīt attēlu bloķēšanas iestatījumus...</translation>
 <translation id="1753905327828125965">Visapmeklētākais</translation>
@@ -2310,7 +2310,6 @@ Lai turpinātu, visiem lietotājiem ir jāizrakstās.</translation>
 <translation id="4298972503445160211">Dāņu valodas tastatūra</translation>
 <translation id="4299273509016391946">Tiek iespējota izvēles rūtiņa “Vienkāršot lapu” drukas priekšskatījuma dialoglodziņā.</translation>
 <translation id="4299729908419173967">Brazīliešu</translation>
-<translation id="4301786491084298653">Atspējot domēnā <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Tiek iespējota direktīvas “Cache-Control: stale-while-revalidate” eksperimentāla ieviešana. Tā ļauj serveriem norādīt, ka dažus resursus var atkārtoti pārbaudīt fonā, lai uzlabotu latentumu.</translation>
 <translation id="4307281933914537745">Uzziniet vairāk par sistēmas atkopšanu</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB tiešsaistē)</translation>
@@ -2331,7 +2330,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4336032328163998280">Kopēšana neizdevās. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Informāciju par tīkla žurnāliem skatiet šeit: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> vēlas sazināties ar lietotni “<ph name="EXTENSION_NAME" />”</translation>
-<translation id="4341364588986930687">Vietne <ph name="DOMAIN" /> pieprasa jūsu ierīces identifikāciju, ko veic Google, lai noteiktu, vai jūsu ierīce ir piemērota aizsargāta multivides satura uzlabotai atskaņošanai. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Neļaut vietnēm saglabāt nekādus datus</translation>
 <translation id="4342311272543222243">Radās TPM kļūda.</translation>
 <translation id="4345587454538109430">Konfigurēt...</translation>
@@ -2465,7 +2463,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4572659312570518089">Veidojot savienojumu ar ierīci <ph name="DEVICE_NAME" />, autentifikācija tika atcelta.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fails</translation>
 <translation id="457386861538956877">Vēl...</translation>
-<translation id="4575703660920788003">Nospiediet taustiņus Shift un Alt, lai pārslēgtu tastatūras izkārtojumu.</translation>
 <translation id="4580526846085481512">Vai tiešām vēlaties dzēst $1 vienumus?</translation>
 <translation id="458150753955139441">Nospiediet, lai pārietu atpakaļ; atveriet kontekstizvēlni, lai skatītu vēsturi.</translation>
 <translation id="4582447636905308869">Jaunais korejiešu valodas IME, ko nodrošina Google ievades rīku HMM programma.</translation>
@@ -3144,6 +3141,7 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="556042886152191864">Poga</translation>
 <translation id="5565871407246142825">Kredītkartes</translation>
 <translation id="5567989639534621706">Lietojumprogrammu kešatmiņas</translation>
+<translation id="5568069709869097550">Nevarat pieteikties</translation>
 <translation id="5569544776448152862">Notiek reģistrēšanās sistēmā <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Inkognito paplašinājums: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Ierīces atiestatīšana neietekmēs jūsu Google kontus un ar tiem sinhronizētos datus, taču tiks dzēsti visi faili, kuri ierīcē ir saglabāti lokāli.</translation>
@@ -3193,7 +3191,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5642953011762033339">Atvienot kontu</translation>
 <translation id="5646376287012673985">Atrašanās vieta</translation>
 <translation id="5649768706273821470">Klausīties</translation>
-<translation id="5649823029736413118">Lai tiktu atskaņots maksas saturs, vietrādim <ph name="URL" /> ir unikāli jāidentificē jūsu ierīce.</translation>
 <translation id="5650551054760837876">Meklēšanas rezultāti nav atrasti.</translation>
 <translation id="5653140146600257126">Mape ar nosaukumu $1 jau pastāv. Izvēlieties citu nosaukumu.</translation>
 <translation id="5657667036353380798">Lai varētu izmantot ārējo paplašinājumu, jāinstalē Chrome versija <ph name="MINIMUM_CHROME_VERSION" /> vai jaunāka versija.</translation>
@@ -4462,7 +4459,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="7626009897377900107">Paroles ģenerēšana</translation>
 <translation id="7627262197844840899">Šajā vietnē netiek pieņemti maksājumi ar MasterCard karti.</translation>
 <translation id="7627790789328695202">Diemžēl fails <ph name="FILE_NAME" /> jau pastāv. Pārdēvējiet to un mēģiniet vēlreiz.</translation>
-<translation id="7628079021897738671">Es saprotu</translation>
 <translation id="762917759028004464">Noklusējuma pārlūks šobrīd ir <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Atļaut aizpildīt Android lietojumprogrammām glabātos akreditācijas datus attiecīgajās vietnēs</translation>
 <translation id="7629827748548208700">Cilne: <ph name="TAB_NAME" /></translation>
@@ -5339,7 +5335,6 @@ Tiek rēķināts atlikušais uzlādes laiks</translation>
 <translation id="8925458182817574960">&amp;Iestatījumi</translation>
 <translation id="8926389886865778422">Nejautāt atkārtoti</translation>
 <translation id="8926518602592448999">Izstrādātāja režīma paplašinājumu atspējošana</translation>
-<translation id="892867331564916668">Vietne <ph name="URL" /> vēlas glabāt failus šajā ierīcē.</translation>
 <translation id="8929454297483336498">Mac OS X AV Foundation API izmantošana (QTKit vietā)</translation>
 <translation id="8931394284949551895">Jaunas ierīces</translation>
 <translation id="8932730422557198035">Izmantot Android Midi API</translation>

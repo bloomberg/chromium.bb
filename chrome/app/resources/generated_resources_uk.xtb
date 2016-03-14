@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1000498691615767391">Виберіть папку, яку потрібно відкрити</translation>
-<translation id="1000916256947465293">Автоматично входити в обліковий запис на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно буде проходити процедуру підтвердження щоразу, коли ви входите в обліковий запис на веб-сайті.</translation>
 <translation id="1005274289863221750">Використовувати ваш мікрофон і камеру</translation>
 <translation id="1007233996198401083">Неможливо під’єднатися.</translation>
 <translation id="1007408791287232274">Не вдалося завантажити пристрої.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Вимкнути WiMAX</translation>
 <translation id="174773101815569257">Блокування миші</translation>
 <translation id="1749854530031883739">Показувати сірий фон у режимі розгортання TouchView для вікон, які не можна розгорнути.</translation>
+<translation id="17513872634828108">Відкриті вкладки</translation>
 <translation id="175196451752279553">В&amp;ідкрити закриту вкладку знову</translation>
 <translation id="1753682364559456262">Керувати блокуванням зображень...</translation>
 <translation id="1753905327828125965">Часто відвідувані</translation>
@@ -2307,7 +2307,6 @@
 <translation id="4298972503445160211">Данська розкладка</translation>
 <translation id="4299273509016391946">Спрощувати сторінку у вікні попереднього перегляду версії для друку</translation>
 <translation id="4299729908419173967">бразильська</translation>
-<translation id="4301786491084298653">Вимкнути в домені <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Увімкнути експериментальне використання розширення Cache-Control (директива застарілого під час підтвердження кешу). Завдяки цьому сервери можуть указувати підтвердження деяких ресурсів у фоновому режимі для зменшення затримки.</translation>
 <translation id="4307281933914537745">Докладніше про відновлення системи</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> Кб (<ph name="NUM_KILOBYTES_LIVE" /> Кб у реальному часі)</translation>
@@ -2328,7 +2327,6 @@
 <translation id="4336032328163998280">Помилка операції копіювання. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Журнали мережі можна переглянути на сторінці <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> хоче обмінюватися даними з додатком <ph name="EXTENSION_NAME" /></translation>
-<translation id="4341364588986930687">Домену <ph name="DOMAIN" /> потрібно підтвердити ідентифікацію пристрою від Google, щоб визначити придатність для розширених можливостей відтворення захищених медіа. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Не дозволяти сайтам зберігати дані</translation>
 <translation id="4342311272543222243">Помилка TPM.</translation>
 <translation id="4345587454538109430">Налаштувати...</translation>
@@ -2462,7 +2460,6 @@
 <translation id="4572659312570518089">Автентифікацію скасовано під час під’єднання до "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Файл <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Інші...</translation>
-<translation id="4575703660920788003">Натисніть комбінацію клавіш Shift-Alt, щоб змінити розкладку клавіатури.</translation>
 <translation id="4580526846085481512">Дійсно видалити елементи $1?</translation>
 <translation id="458150753955139441">Натисніть, щоб повернутись, або відкрийте контекстне меню, щоб переглянути історію</translation>
 <translation id="4582447636905308869">Новий редактор IME для корейської мови на основі системи HMM у Google Способах введення.</translation>
@@ -3141,6 +3138,7 @@
 <translation id="556042886152191864">Кнопка</translation>
 <translation id="5565871407246142825">Кредитні картки</translation>
 <translation id="5567989639534621706">Кеші програми</translation>
+<translation id="5568069709869097550">Не можна увійти</translation>
 <translation id="5569544776448152862">Реєстрація в <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />…</translation>
 <translation id="5575473780076478375">Розширення в режимі анонімного перегляду: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Скидання пристрою не вплине на ваші облікові записи Google чи дані, синхронізовані з цими обліковими записами. Проте, усі збережені на вашому пристрої файли буде видалено.</translation>
@@ -3190,7 +3188,6 @@
 <translation id="5642953011762033339">Від’єднати обліковий запис</translation>
 <translation id="5646376287012673985">Місцезнаходження</translation>
 <translation id="5649768706273821470">Слухати</translation>
-<translation id="5649823029736413118"><ph name="URL" /> має отримати унікальний ідентифікатор вашого пристрою, щоб відтворювати платний вміст.</translation>
 <translation id="5650551054760837876">Результаті пошуку відсутні.</translation>
 <translation id="5653140146600257126">Папка з назвою "$1" уже існує. Виберіть іншу назву.</translation>
 <translation id="5657667036353380798">Для зовнішнього розширення потрібна версія Chrome <ph name="MINIMUM_CHROME_VERSION" /> або новіша.</translation>
@@ -4455,7 +4452,6 @@
 <translation id="7626009897377900107">Генерування пароля</translation>
 <translation id="7627262197844840899">Цей сайт не приймає картки MasterCard.</translation>
 <translation id="7627790789328695202">Файл "<ph name="FILE_NAME" />" вже існує. Перейменуйте його та повторіть спробу.</translation>
-<translation id="7628079021897738671">OK</translation>
 <translation id="762917759028004464">Наразі переглядачем за умовчанням є <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Дозволити вводити облікові дані додатків Android на відповідних веб-сайтах.</translation>
 <translation id="7629827748548208700">Вкладка: <ph name="TAB_NAME" /></translation>
@@ -5330,7 +5326,6 @@
 <translation id="8925458182817574960">&amp;Налаштування</translation>
 <translation id="8926389886865778422">Не запитувати знову</translation>
 <translation id="8926518602592448999">Вимкнути розширення в режимі розробника</translation>
-<translation id="892867331564916668">Сайту <ph name="URL" /> потрібен дозвіл зберігати файли на цьому пристрої.</translation>
 <translation id="8929454297483336498">Використовувати API ОС Mac X AVFoundation замість QTKit</translation>
 <translation id="8931394284949551895">Нові пристрої</translation>
 <translation id="8932730422557198035">Використовувати API Android Midi</translation>

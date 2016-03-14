@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1000498691615767391">Pilih folder untuk dibuka</translation>
-<translation id="1000916256947465293">Log masuk secara automatik ke tapak web menggunakan bukti kelayakan yang disimpan. Apabila ciri ini dimatikan, anda akan diminta pengesahan setiap kali sebelum melog masuk ke tapak web.</translation>
 <translation id="1005274289863221750">Gunakan mikrofon dan kamera anda</translation>
 <translation id="1007233996198401083">Tidak boleh bersambung.</translation>
 <translation id="1007408791287232274">Tidak dapat memuatkan peranti.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Lumpuhkan WiMAX</translation>
 <translation id="174773101815569257">Kunci Tetikus</translation>
 <translation id="1749854530031883739">Tunjukkan tirai latar tetingkap kelabu yang digunakan dalam TouchView (mod maksimumkan) di belakang tetingkap yang tidak boleh dimaksimumkan.</translation>
+<translation id="17513872634828108">Buka tab</translation>
 <translation id="175196451752279553">B&amp;uka semula tab yang ditutup</translation>
 <translation id="1753682364559456262">Uruskan sekatan imej...</translation>
 <translation id="1753905327828125965">Paling Kerap Dilawati</translation>
@@ -2309,7 +2309,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="4298972503445160211">Papan kekunci Denmark</translation>
 <translation id="4299273509016391946">Mendayakan kotak pilihan ringkaskan halaman pada dialog pratonton cetakan</translation>
 <translation id="4299729908419173967">Bahasa Brazil</translation>
-<translation id="4301786491084298653">Lumpuhkan di <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Dayakan pelaksanaan arahan "Cache-Control: stale-while-revalidate". Pelaksanaan ini membenarkan pelayan untuk menentukan bahawa sesetengah sumber boleh disahkan semula di latar belakang untuk menambah baik kependaman.</translation>
 <translation id="4307281933914537745">Ketahui lebih lanjut mengenai pemulihan sistem</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K langsung)</translation>
@@ -2330,7 +2329,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4336032328163998280">Operasi menyalin gagal. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Untuk log rangkaian, lihat: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ingin berkomunikasi dengan apl "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> memerlukan identiti peranti anda disahkan, oleh Google, untuk menentukan kelayakan bagi main balik yang dipertingkat untuk media yang dilindungi. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Sekat tapak daripada menetapkan sebarang data</translation>
 <translation id="4342311272543222243">Op, ralat TPM.</translation>
 <translation id="4345587454538109430">Konfigurasi...</translation>
@@ -2464,7 +2462,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4572659312570518089">Pengesahan dibatalkan semasa menyambung ke "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Fail <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lagi...</translation>
-<translation id="4575703660920788003">Tekan Shift-Alt untuk menukar atur letak papan kekunci.</translation>
 <translation id="4580526846085481512">Adakah anda pasti anda mahu memadamkan item $1?</translation>
 <translation id="458150753955139441">Tekan untuk kembali, gunakan menu konteks untuk melihat sejarah</translation>
 <translation id="4582447636905308869">IME Korea baharu yang berasaskan enjin HMM Alatan Input Google.</translation>
@@ -3015,7 +3012,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="539755880180803351">Mencatatkan borang web dengan ramalan jenis medan Auto Isi sebagai teks pemegang tempat.</translation>
 <translation id="5397578532367286026">Penggunaan dan sejarah pengguna ini boleh disemak oleh pengurus (<ph name="MANAGER_EMAIL" />) di chrome.com.</translation>
 <translation id="5397794290049113714">Anda</translation>
-<translation id="5398572795982417028">Rujukan halaman di luar batasan, hadnya adalah <ph name="MAXIMUM_PAGE" /></translation>
+<translation id="5398572795982417028">Rujukan halaman di luar batasan, hadnya ialah <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398824043967640339"><ph name="COUNT" /> daripada tapak lain</translation>
 <translation id="5399158067281117682">PIN tidak sepadan!</translation>
 <translation id="5400640815024374115">Cip Modul Platform Dipercayai (TPM) dilumpuhkan atau tiada.</translation>
@@ -3143,6 +3140,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="556042886152191864">Butang</translation>
 <translation id="5565871407246142825">Kad kredit</translation>
 <translation id="5567989639534621706">Cache aplikasi</translation>
+<translation id="5568069709869097550">Tidak boleh log masuk</translation>
 <translation id="5569544776448152862">Mendaftar dalam <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Sambungan Inkognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Penetapan semula peranti anda tidak akan menjejaskan akaun Google anda atau sebarang data yang disegerakkan ke akaun ini. Walau bagaimanapun, semua fail yang disimpan secara setempat pada peranti anda akan dipadamkan.</translation>
@@ -3192,7 +3190,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5642953011762033339">Putuskan sambungan akaun</translation>
 <translation id="5646376287012673985">Lokasi</translation>
 <translation id="5649768706273821470">Dengar</translation>
-<translation id="5649823029736413118"><ph name="URL" /> perlu mengenal pasti peranti anda secara unik untuk memainkan kandungan premium.</translation>
 <translation id="5650551054760837876">Tiada hasil carian ditemui.</translation>
 <translation id="5653140146600257126">Folder bernama "$1" telah wujud. Sila pilih nama lain.</translation>
 <translation id="5657667036353380798">Sambungan luaran memerlukan chrome versi <ph name="MINIMUM_CHROME_VERSION" /> atau lebih baharu untuk dipasang.</translation>
@@ -4456,7 +4453,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7626009897377900107">Penghasilan kata laluan</translation>
 <translation id="7627262197844840899">Tapak ini tidak menerima MasterCard.</translation>
 <translation id="7627790789328695202">Op, <ph name="FILE_NAME" /> telah pun wujud. Namakan semula dan cuba lagi.</translation>
-<translation id="7628079021897738671">OK, faham</translation>
 <translation id="762917759028004464">Penyemak imbas lalai kini <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Benarkan bukti kelayakan yang disimpan untuk aplikasi Android diisi dalam tapak web yang sama.</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
@@ -5333,7 +5329,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8925458182817574960">&amp;Tetapan</translation>
 <translation id="8926389886865778422">Jangan tanya lagi</translation>
 <translation id="8926518602592448999">Lumpuhkan Sambungan Mod Pembangun</translation>
-<translation id="892867331564916668"><ph name="URL" /> mahu menyimpan fail pada peranti ini.</translation>
 <translation id="8929454297483336498">Penggunaan API Mac OS X AVFoundation berbanding QTKit</translation>
 <translation id="8931394284949551895">Peranti baharu</translation>
 <translation id="8932730422557198035">Gunakan API Midi Android</translation>

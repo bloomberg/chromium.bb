@@ -16,7 +16,6 @@
 <translation id="1103523840287552314">总是翻译<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">选中后，Chrome 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="1113869188872983271">撤消顺序调整(&amp;U)</translation>
-<translation id="111844081046043029">确定要离开此页吗？</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 显示：</translation>
 <translation id="1132774398110320017">Chrome自动填充设置…</translation>
@@ -52,7 +51,6 @@
 <translation id="1430915738399379752">打印</translation>
 <translation id="1442912890475371290">尝试<ph name="BEGIN_LINK" />访问 <ph name="DOMAIN" /> 中的网页<ph name="END_LINK" />的行为已遭阻止。</translation>
 <translation id="1455235771979731432">验证您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
-<translation id="1491151370853475546">重新加载此页</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
 <translation id="1519264250979466059">构建日期</translation>
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
@@ -93,7 +91,6 @@
 <translation id="1974060860693918893">高级</translation>
 <translation id="201192063813189384">从缓存中读取数据时出现错误。</translation>
 <translation id="2025186561304664664">代理已设为自动配置。</translation>
-<translation id="2025623846716345241">确认重新加载</translation>
 <translation id="2030481566774242610">您是想访问<ph name="LINK" />吗？</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />检查代理服务器和防火墙<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">邮编</translation>
@@ -161,6 +158,7 @@
 <translation id="2650446666397867134">访问文件遭拒</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2674170444375937751">确定要从历史记录中删除这些页吗？</translation>
+<translation id="2677748264148917807">离开</translation>
 <translation id="2704283930420550640">值不符合格式要求。</translation>
 <translation id="2705137772291741111">无法读取此网站的已保存（缓存）副本。</translation>
 <translation id="2709516037105925701">自动填充</translation>
@@ -292,7 +290,6 @@
 <translation id="4058922952496707368">“<ph name="SUBKEY" />”键：<ph name="ERROR" /></translation>
 <translation id="4075732493274867456">客户端和服务器不支持一般 SSL 协议版本或加密套件。</translation>
 <translation id="4079302484614802869">代理配置已设置为使用 .pac 脚本网址，而不是固定的代理服务器。</translation>
-<translation id="409504436206021213">不重新加载</translation>
 <translation id="4103249731201008433">设备序列号无效</translation>
 <translation id="4103763322291513355">请访问 &lt;strong&gt;chrome:// 政策&lt;/strong&gt;，查看列入黑名单的网址列表以及您的系统管理员强制要求执行的其他政策。</translation>
 <translation id="4117700440116928470">政策范围不受支持。</translation>
@@ -377,7 +374,6 @@
 <translation id="5199729219167945352">实验</translation>
 <translation id="5228309736894624122">SSL 协议出错。</translation>
 <translation id="5251803541071282808">云端</translation>
-<translation id="5295309862264981122">确认导航</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5300589172476337783">显示</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />清除 Cookie<ph name="END_LINK" /></translation>
@@ -470,7 +466,6 @@
 <translation id="647261751007945333">设备政策</translation>
 <translation id="6489534406876378309">开始上传崩溃数据</translation>
 <translation id="6500116422101723010">服务器目前无法处理该请求。该代码表明这是临时状态，服务器会在延迟后重新启动。</translation>
-<translation id="6512448926095770873">离开此页</translation>
 <translation id="6518133107902771759">验证</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6533019874004191247">网址不受支持。</translation>
@@ -627,7 +622,6 @@
 <translation id="8293206222192510085">添加书签</translation>
 <translation id="8294431847097064396">来源</translation>
 <translation id="8308427013383895095">由于网络连接问题，翻译失败。</translation>
-<translation id="8311778656528046050">确定要重新加载此网页吗？</translation>
 <translation id="8332188693563227489">访问 <ph name="HOST_NAME" /> 的请求遭到拒绝</translation>
 <translation id="8349305172487531364">书签栏</translation>
 <translation id="8363502534493474904">关闭飞行模式</translation>
@@ -697,7 +691,6 @@
 <translation id="9125941078353557812">输入信用卡背面显示的 3 位数银行卡验证码 (CVC)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9148507642005240123">撤消修改(&amp;U)</translation>
-<translation id="9154176715500758432">留在此页</translation>
 <translation id="9157595877708044936">正在设置...</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>
 <translation id="917450738466192189">服务器证书无效。</translation>

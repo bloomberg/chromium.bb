@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1000498691615767391">খুলতে একটি ফোল্ডার নির্বাচন করুন</translation>
-<translation id="1000916256947465293">সঞ্চিত শংসাপত্র ব্যবহার করে ওয়েবসাইটগুলিতে স্বয়ংক্রিয়ভাবে সাইন ইন করুন। যখন বৈশিষ্ট্যটি বন্ধ করা থাকে, তখন প্রতিবার সাইন ইন করার সময় আপনাকে যাচাইকরণের জন্য বলা হবে।</translation>
 <translation id="1005274289863221750">আপনার মাইক্রোফোন ও ক্যামেরা ব্যবহার করুন</translation>
 <translation id="1007233996198401083">সংযোগ করতে অক্ষম৷</translation>
 <translation id="1007408791287232274">ডিভাইসগুলি লোড করা যায়নি৷</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">WiMAX অক্ষম করুন</translation>
 <translation id="174773101815569257">মাউস লক</translation>
 <translation id="1749854530031883739">উইন্ডোগুলির পিছনে থাকা TouchView এ (সর্বাধিক মোড) ব্যবহৃত ধূসর উইন্ডো ব্যাকড্রপগুলি, যা বড় করা যায় না৷</translation>
+<translation id="17513872634828108">খোলা ট্যাব</translation>
 <translation id="175196451752279553">বন্ধ ট্যাবটি পু&amp;নঃরায় খুলুন</translation>
 <translation id="1753682364559456262">চিত্র ব্লক করা পরিচালনা করুন...</translation>
 <translation id="1753905327828125965">সর্বাধিক দেখা</translation>
@@ -2302,7 +2302,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4298972503445160211">ডেনিশ কীবোর্ড</translation>
 <translation id="4299273509016391946">প্রিন্ট পূর্বরূপ ডায়ালগে পৃষ্ঠা সহজীকরণের চেকবাক্স সক্ষম করে</translation>
 <translation id="4299729908419173967">ব্রাজিলীয়</translation>
-<translation id="4301786491084298653"><ph name="DOMAIN" /> এ অক্ষম করুন</translation>
 <translation id="430714521864499800">"ক্যাশে-নিয়ন্ত্রণ: পুনঃবৈধতার-সময়ে-অব্যবহৃত" ডিরেক্টিভ এর পরীক্ষামূলক বাস্তবায়ন সক্ষম করে। এটি সার্ভারকে লেটেন্সি উন্নত করার জন্য কিছু রিসোর্সের যে পুনঃবৈধতা করা যেতে পারে তা উল্লেখ করার অনুমতি দেয়।</translation>
 <translation id="4307281933914537745">সিস্টেম পুনরুদ্ধার সম্পর্কে আরো জানুন</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K লাইভ)</translation>
@@ -2322,7 +2321,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4336032328163998280">অনুলিপি ক্রিয়াকলাপ ব্যর্থ হয়েছে৷ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">নেটওয়ার্ক লগগুলির জন্য: <ph name="DEVICE_LOG_LINK" /> দেখুন</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" অ্যাপ্লিকেশানটির সাথে যোগাযোগ করতে চায়</translation>
-<translation id="4341364588986930687">সুরক্ষিত মিডিয়ার উন্নত প্লেব্যাকের জন্য উপযুক্ততা নির্ধারণ করতে <ph name="DOMAIN" /> এর জন্য আপনার ডিভাইসের পরিচয় Google এর দ্বারা যাচাইকৃত হওয়া প্রয়োজন৷ <ph name="LEARN_MORE" />৷</translation>
 <translation id="4341977339441987045">যেকোন ডেটা সেট করা থেকে সাইটগুলিকে ব্লক করুন</translation>
 <translation id="4342311272543222243">ওহো, TPM ত্রুটি৷</translation>
 <translation id="4345587454538109430">কনফিগার করুন...</translation>
@@ -2456,7 +2454,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" এ সংযুক্ত করার সময় প্রমাণীকরণ বাতিল করা হয়েছে৷</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
 <translation id="457386861538956877">আরো...</translation>
-<translation id="4575703660920788003">কীবোর্ডের লেআউট স্যুইচ করতে Shift-Alt চাপুন৷</translation>
 <translation id="4580526846085481512">আপনি কি "$1" আইটেম মুছতে চান?</translation>
 <translation id="458150753955139441">ইতিহাস দেখার জন্য পেছনে গিয়ে প্রসঙ্গ মেনুতে টিপুন</translation>
 <translation id="4582447636905308869">Google ইনপুট সরঞ্জামের HMM ইঞ্জিনের উপর ভিত্তি করে রচিত নতুন কোরীয় IME।</translation>
@@ -3132,6 +3129,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="556042886152191864">বোতাম</translation>
 <translation id="5565871407246142825">ক্রেডিট কার্ডসমূহ</translation>
 <translation id="5567989639534621706">অ্যাপ্লিকেশন ক্যাশে</translation>
+<translation id="5568069709869097550">সাইন ইন করতে পারছেন না</translation>
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> এ নথিভুক্ত করা হচ্ছে...</translation>
 <translation id="5575473780076478375">ছদ্মবেশী এক্সটেনশান: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">আপনার ডিভাইসকে পুনরায় রিসেট করলে তা আপনার Google অ্যাকাউন্টগুলি বা এই অ্যাকাউন্টগুলিতে সিঙ্ক হওয়া যেকোনো ডেটাতে প্রভাব ফেলবে না৷ যদিও, স্থানীয়ভাবে সংরক্ষিত সমস্ত ফাইল মুছে ফেলা হবে৷</translation>
@@ -3182,7 +3180,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5642953011762033339">অ্যাকাউন্ট সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="5646376287012673985">অবস্থান</translation>
 <translation id="5649768706273821470">শুনুন</translation>
-<translation id="5649823029736413118">প্রিমিয়াম সামগ্রী প্লে করতে <ph name="URL" /> এর আপনার ডিভাইসকে স্বতন্ত্র ভাবে সনাক্ত করা প্রয়োজন৷</translation>
 <translation id="5650551054760837876">কোনো অনুসন্ধান ফলাফল পাওয়া যায় নি৷</translation>
 <translation id="5653140146600257126">"$1" নামের ফোল্ডার ইতিমধ্যেই বিদ্যমান৷ দয়া করে একটি ভিন্ন নাম চয়ন করুন৷</translation>
 <translation id="5657667036353380798">বাহ্যিক এক্সটেনশানটির জন্য chrome এর <ph name="MINIMUM_CHROME_VERSION" /> সংস্করণ বা তার পরবর্তী সংস্করণ ইনস্টল থাকা প্রয়োজন৷</translation>
@@ -4447,7 +4444,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7626009897377900107">পাসওয়ার্ড সৃষ্টি করা</translation>
 <translation id="7627262197844840899">এই সাইটটি MasterCard গ্রহণ করে না।</translation>
 <translation id="7627790789328695202">ওহো, <ph name="FILE_NAME" /> ইতিমধ্যেই বিদ্যমান রয়েছে৷ এটির পুনঃনামকরণ করুন এবং আবার চেষ্টা করুন৷</translation>
-<translation id="7628079021897738671">ঠিক আছে, বুঝেছি!</translation>
 <translation id="762917759028004464">বর্তমানে ডিফল্ট ব্রাউজারটি হল <ph name="BROWSER_NAME" />৷</translation>
 <translation id="7629536005696009600">Android অ্যাপ্লিকেশানের জন্য সংরক্ষিত শংসাপত্রকে সংশ্লিষ্ট ওয়েবসাইটের মধ্যে পূরণ করতে দেয়।</translation>
 <translation id="7629827748548208700">ট্যাব: <ph name="TAB_NAME" /></translation>
@@ -5324,7 +5320,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8925458182817574960">&amp;সেটিংস</translation>
 <translation id="8926389886865778422">আর জিজ্ঞাসা করবেন না</translation>
 <translation id="8926518602592448999">বিকাশকারী মোডে চলা এক্সটেনশানগুলি অক্ষম করুন</translation>
-<translation id="892867331564916668"><ph name="URL" /> এই ডিভাইসে ফাইল সংরক্ষণ করতে চায়।</translation>
 <translation id="8929454297483336498">QTKit এর পরিবর্তে Mac OS X AVFoundation APIs এর ব্যবহার</translation>
 <translation id="8931394284949551895">নতুন ডিভাইসগুলি</translation>
 <translation id="8932730422557198035">Android Midi API ব্যবহার করুন</translation>

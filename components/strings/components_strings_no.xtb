@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Oversett alltid <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Hvis det er merket av for dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det går raskere å fylle ut skjemaer.</translation>
 <translation id="1113869188872983271">&amp;Angre omorganiseringen</translation>
-<translation id="111844081046043029">Er du sikker på at du vil forlate denne siden?</translation>
 <translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> sier:</translation>
 <translation id="1132774398110320017">Innstillinger for autofyll i Chrome</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1442912890475371290">Blokkerte forsøket <ph name="BEGIN_LINK" /> på å besøke en side på <ph name="DOMAIN" /><ph name="END_LINK" /></translation>
 <translation id="1455235771979731432">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
-<translation id="1491151370853475546">Last inn denne siden på nytt</translation>
 <translation id="1506687042165942984">Vis en lagret kopi av denne siden (dvs. en kopi du vet at er utdatert).</translation>
 <translation id="1519264250979466059">Versjonsdato</translation>
 <translation id="1549470594296187301">Denne funksjonen kan ikke brukes når JavaScript er slått av.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="201192063813189384">Feil under lesing fra hurtigbuffer.</translation>
 <translation id="2025186561304664664">Mellomtjeneren er innstilt på automatisk konfigurasjon.</translation>
-<translation id="2025623846716345241">Bekreft ny innlasting</translation>
 <translation id="2030481566774242610">Mener du <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Sjekk proxy-tjeneren og brannmuren<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Postnummer</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Tilgang til filen ble nektet</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2674170444375937751">Er du sikker på at du vil slette disse sidene fra loggen?</translation>
+<translation id="2677748264148917807">Gå ut</translation>
 <translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
 <translation id="2705137772291741111">Den lagrede (bufrede) kopien av dette nettstedet kunne ikke leses.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Nøkkel – «<ph name="SUBKEY" />»: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klienten og tjeneren støtter ingen felles SSL-protokollversjon eller -chifferserie.</translation>
 <translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
-<translation id="409504436206021213">Ikke last inn på nytt</translation>
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for å se listen over sperrede nettadresser og andre innstillinger aktivert av systemadministratoren din.</translation>
 <translation id="4117700440116928470">Omfanget for innstillingen støttes ikke.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Eksperimenter</translation>
 <translation id="5228309736894624122">SSL-protokollfeil.</translation>
 <translation id="5251803541071282808">Nettsky</translation>
-<translation id="5295309862264981122">Bekreft navigering</translation>
 <translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Slett informasjonskapslene dine<ph name="END_LINK" /></translation>
@@ -463,7 +459,7 @@
 <translation id="6262796033958342538">Mottok flere distinkte Location-overskrifter. Dette er forbudt, for å beskytte
     mot angrep som splitter HTTP-svar.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bokmerker</translation>
-<translation id="6264485186158353794">Tilbake til sikkerhet</translation>
+<translation id="6264485186158353794">Til trygg havn</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6305205051461490394"><ph name="URL" /> er ikke tilgjengelig.</translation>
 <translation id="6321917430147971392">Kontrollér DNS-innstillingene dine</translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Enhetsinnstillinger</translation>
 <translation id="6489534406876378309">Start opplastingen av krasj</translation>
 <translation id="6500116422101723010">Tjeneren kan ikke behandle forespørselen for øyeblikket. Denne koden antyder at dette er en midlertidig tilstand, og at tjeneren vil fungere igjen etter en forsinkelse.</translation>
-<translation id="6512448926095770873">Forlat siden</translation>
 <translation id="6518133107902771759">Bekreft</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
 <translation id="6533019874004191247">Adressen støttes ikke.</translation>
@@ -653,7 +648,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8293206222192510085">Legg til bokmerke</translation>
 <translation id="8294431847097064396">Kilde</translation>
 <translation id="8308427013383895095">Oversettelsen mislyktes på grunn av et problem med nettverksforbindelsen.</translation>
-<translation id="8311778656528046050">Er du sikker på at du vil laste inn denne siden på nytt?</translation>
 <translation id="8332188693563227489">Forsøket på å koble til <ph name="HOST_NAME" /> ble avvist</translation>
 <translation id="8349305172487531364">Bokmerkerad</translation>
 <translation id="8363502534493474904">Slå av flymodus</translation>
@@ -725,7 +719,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="9125941078353557812">Skriv inn den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9148507642005240123">&amp;Angre endringen</translation>
-<translation id="9154176715500758432">Bli værende på denne siden</translation>
 <translation id="9157595877708044936">Konfigurerer ...</translation>
 <translation id="9170848237812810038">&amp;Angre</translation>
 <translation id="917450738466192189">Tjenerens sertifikat er ugyldig.</translation>

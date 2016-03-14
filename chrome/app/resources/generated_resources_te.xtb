@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="1000498691615767391">తెరవడానికి ఫైల్‌ని ఎంచుకోండి</translation>
-<translation id="1000916256947465293">నిల్వ చేసిన ఆధారాన్ని ఉపయోగించి వెబ్‌సైట్‌లకు స్వయంచాలకంగా సైన్ ఇన్ చేస్తుంది. లక్షణం ఆఫ్‌లో ఉన్నప్పుడు, వెబ్‌సైట్‌కి సైన్ ఇన్ చేసే ప్రతిసారి ముందుగా ధృవీకరణ కోసం మిమ్మల్ని అడుగుతుంది.</translation>
 <translation id="1005274289863221750">మీ మైక్రోఫోన్ మరియు కెమెరాను ఉపయోగించండి</translation>
 <translation id="1007233996198401083">కనెక్ట్ చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="1007408791287232274">పరికరాలను లోడ్ చేయడం సాధ్యపడలేదు.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">WiMAXని నిలిపివేయి</translation>
 <translation id="174773101815569257">మౌస్ లాక్</translation>
 <translation id="1749854530031883739">గరిష్టీకరించలేని విండోల వెనుక భాగంలో TouchViewలో (గరిష్టీకరణ మోడ్) ఉపయోగించే బూడిద రంగు విండో బ్యాక్‌డ్రాప్‌లను చూపుతుంది.</translation>
+<translation id="17513872634828108">తెరిచిన ట్యాబ్‍లు</translation>
 <translation id="175196451752279553">మూసిన టాబ్ ని మళ్ళి&amp;తెరువు</translation>
 <translation id="1753682364559456262">చిత్రాన్ని నిరోధించడాన్ని నిర్వహించు...</translation>
 <translation id="1753905327828125965">అధికంగా సందర్శించేది</translation>
@@ -2308,7 +2308,6 @@
 <translation id="4298972503445160211">డానిష్ కీబోర్డ్</translation>
 <translation id="4299273509016391946">ముద్రణ పరిదృశ్యం డైలాగ్‌లో పేజీని సరళీకృతం చేయి తనిఖీ పెట్టెను ప్రారంభిస్తుంది</translation>
 <translation id="4299729908419173967">బ్రెజిలియన్</translation>
-<translation id="4301786491084298653"><ph name="DOMAIN" />లో నిలిపివేయి</translation>
 <translation id="430714521864499800">"కాష్-నియంత్రణ: stale-while-revalidate" డైరెక్టివ్ ప్రయోగాత్మక అమలుని ప్రారంభిస్తుంది. ఇది ప్రతిస్పందన సమయాన్ని మెరుగుపరచడానికి నేపథ్యంలో కొన్ని వనరులను పునఃప్రామాణీకరించబడవచ్చని పేర్కొనడానికి సర్వర్‌లను అనుమతిస్తుంది.</translation>
 <translation id="4307281933914537745">సిస్టమ్ రికవరీ గురించి మరింత తెలుసుకోండి</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K ప్రత్యక్షంగా)</translation>
@@ -2329,7 +2328,6 @@
 <translation id="4336032328163998280">కాపీ ఆపరేషన్ విఫలమైంది. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">నెట్‌వర్క్ లాగ్‌ల కోసం, దీన్ని చూడండి: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" అనువర్తనంతో కమ్యూనికేట్ చేయాలనుకుంటోంది</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" />కు మీ పరికరం రక్షిత మీడియా యొక్క మెరుగైన ప్లేబ్యాక్‌కు అర్హత కలిగి ఉందో లేదో నిర్ణయించడానికి Google ద్వారా దాని గుర్తింపు ధృవీకరించబడటం అవసరం. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">ఏదైనా డేటాను సెట్ చేయడం నుండి సైట్‌లను నిరోధించు</translation>
 <translation id="4342311272543222243">అయ్యో, TPM లోపం.</translation>
 <translation id="4345587454538109430">కన్ఫిగర్ చెయ్యి...</translation>
@@ -2463,7 +2461,6 @@
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />"కి కనెక్ట్ చేస్తున్నప్పుడు ప్రామాణీకరణ రద్దు చేయబడింది.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ఫైల్</translation>
 <translation id="457386861538956877">మరిన్ని...</translation>
-<translation id="4575703660920788003">కీబోర్డ్ లేఅవుట్‌ను మార్చడానికి Shift-Altను నొక్కండి.</translation>
 <translation id="4580526846085481512">మీరు $1 ఐటమ్‌లను ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?</translation>
 <translation id="458150753955139441">వెనుకకు వెళ్లడానికి దీన్ని నొక్కి, ఆపై చరిత్రను చూడటానికి సందర్భ మెను ఉపయోగించండి</translation>
 <translation id="4582447636905308869">కొత్త కొరియన్ IME, ఇది Google ఇన్‌పుట్ సాధనాల HMM ఇంజిన్ ఆధారితమైనది.</translation>
@@ -3142,6 +3139,7 @@
 <translation id="556042886152191864">బటన్</translation>
 <translation id="5565871407246142825">క్రెడిట్ కార్డ్‌లు</translation>
 <translation id="5567989639534621706">అనువర్తన కాష్‌లు</translation>
+<translation id="5568069709869097550">సైన్ ఇన్ చెయ్యలేరు</translation>
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />లో నమోదు చేస్తోంది...</translation>
 <translation id="5575473780076478375">అజ్ఞాత ఎక్స్‌టెన్‌షన్: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">మీ పరికరాన్ని రీసెట్ చేయడం వలన మీ Google ఖాతాలపై లేదా ఈ ఖాతాలకు సమకాలీకరించబడిన ఏదైనా డేటాపై ఎటువంటి ప్రభావం ఉండదు. అయితే, మీ పరికరంలో స్థానికంగా సేవ్ చేయబడిన అన్ని ఫైల్‌లు తొలగించబడతాయి.</translation>
@@ -3191,7 +3189,6 @@
 <translation id="5642953011762033339">ఖాతాను డిస్‌కనెక్ట్ చెయ్యి</translation>
 <translation id="5646376287012673985">స్థానం</translation>
 <translation id="5649768706273821470">వినండి</translation>
-<translation id="5649823029736413118">ప్రీమియం కంటెంట్‌ని ప్లే చేయడానికి <ph name="URL" /> మీ పరికరాన్ని ప్రత్యేకంగా గుర్తించాలి.</translation>
 <translation id="5650551054760837876">శోధన ఫలితాలు ఏవీ దొరకలేదు.</translation>
 <translation id="5653140146600257126">"$1" పేరుతో ఫోల్డర్ ఇప్పటికే ఉంది. దయచేసి వేరొక పేరుని ఎంచుకోండి.</translation>
 <translation id="5657667036353380798">బాహ్య పొడిగింపుకి chrome సంస్కరణ <ph name="MINIMUM_CHROME_VERSION" /> లేదా అంతకంటే అధిక సంస్కరణను ఇన్‌స్టాల్ చేయడం అవసరం.</translation>
@@ -4456,7 +4453,6 @@
 <translation id="7626009897377900107">పాస్‌వర్డ్ ఉత్పాదన</translation>
 <translation id="7627262197844840899">ఈ సైట్ MasterCard కార్డ్‌ని ఆమోదించదు.</translation>
 <translation id="7627790789328695202">అయ్యో, <ph name="FILE_NAME" /> ఇప్పటికే ఉంది. దీని పేరు మార్చి, మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="7628079021897738671">సరే, నాకు అర్థమైంది</translation>
 <translation id="762917759028004464">ప్రస్తుతం డిఫాల్ట్ బ్రౌజర్ <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Android అనువర్తనాల కోసం నిల్వ చేసిన ఆధారాలను సంబంధిత వెబ్‌సైట్‌ల్లో పూరించడానికి అనుమతిస్తుంది.</translation>
 <translation id="7629827748548208700">టాబ్: <ph name="TAB_NAME" /></translation>
@@ -5328,7 +5324,6 @@
 <translation id="8925458182817574960">&amp;సెట్టింగ్‌లు</translation>
 <translation id="8926389886865778422">మళ్ళి అడగవద్దు</translation>
 <translation id="8926518602592448999">డెవలపర్ మోడ్ పొడిగింపులను నిలిపివేయండి</translation>
-<translation id="892867331564916668"><ph name="URL" /> ఈ పరికరంలో ఫైల్‌లను నిల్వ చేయాలనుకుంటోంది.</translation>
 <translation id="8929454297483336498">QTKitకి బదులుగా Mac OS X AVఫౌండేషన్ APIలను ఉపయోగించండి</translation>
 <translation id="8931394284949551895">కొత్త పరికరాలు</translation>
 <translation id="8932730422557198035">Android Midi APIని ఉపయోగించండి</translation>

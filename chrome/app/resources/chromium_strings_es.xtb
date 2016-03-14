@@ -6,7 +6,7 @@
 Es posible que algunas funciones no estén disponibles y que no se guarden los cambios que hagas en las preferencias.</translation>
 <translation id="1115445892567829615">Chromium no ha podido sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
 <translation id="1174473354587728743">Si compartes un ordenador, ahora puedes configurar Chromium como quieras.</translation>
-<translation id="1185134272377778587">Acerca de Chromium</translation>
+<translation id="1185134272377778587">Información de Chromium</translation>
 <translation id="1221340462641866827">Chromium OS no puede iniciar una aplicación externa para gestionar enlaces <ph name="SCHEME" />. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Se ha detectado una instalación conflictiva de Chromium en el sistema. Desinstálala y vuelve a intentarlo.</translation>
 <translation id="1298199220304005244">Obtener ayuda de Chromium OS</translation>
@@ -34,7 +34,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1967743265616885482">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2117181891440368863">Chromium ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor ha proporcionado información de Transparencia de certificados, pero no era válida.</translation>
-<translation id="2119636228670142020">Acerca de &amp;Chromium OS</translation>
+<translation id="2119636228670142020">Información de &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licencias de código abierto de Chromium OS</translation>
 <translation id="2241627712206172106">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chromium a su gusto.</translation>
 <translation id="225614027745146050">Te damos la bienvenida</translation>
@@ -58,7 +58,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2801146392936645542"><ph name="FILE_NAME" /> es un archivo malicioso y Chromium lo ha bloqueado.</translation>
 <translation id="2847479871509788944">Desinstalar de Chromium...</translation>
 <translation id="2886012850691518054">Opcional: ayudar a mejorar Chromium enviando automáticamente a Google estadísticas de uso e informes de errores</translation>
-<translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
+<translation id="2910007522516064972">Información de &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para gestionar enlaces <ph name="SCHEME" />. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
 <translation id="3032787606318309379">Añadiendo a Chromium...</translation>
 <translation id="3046695367536568084">Para usar las aplicaciones, debes iniciar sesión en Chromium. De ese modo, Chromium podrá sincronizar tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones en distintos dispositivos.</translation>
@@ -187,7 +187,7 @@ Chromium no puede recuperar tu configuración.</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7483335560992089831">No se puede instalar la misma versión de Chromium que se está ejecutando actualmente. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="750717762378961310">Este archivo es malicioso y Chromium lo ha bloqueado.</translation>
-<translation id="7549178288319965365">Acerca de Chromium OS</translation>
+<translation id="7549178288319965365">Información de Chromium OS</translation>
 <translation id="761356813943268536">Chromium está utilizando la cámara y el micrófono.</translation>
 <translation id="7617377681829253106">Chromium mejor que nunca</translation>
 <translation id="7641113255207688324">Chromium no es tu navegador predeterminado.</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="1000498691615767391">खोलने के लिए फ़ोल्‍डर को चुनें</translation>
-<translation id="1000916256947465293">संग्रहीत प्रमाणिकता का उपयोग करके वेबसाइटों में अपने आप प्रवेश करें. सुविधा के बंद होने पर, किसी वेबसाइट में प्रवेश करने से पहले हर बार आपसे सत्‍यापन के लिए कहा जाएगा.</translation>
 <translation id="1005274289863221750">अपना माइक्रोफ़ोन और कैमरा उपयोग करें</translation>
 <translation id="1007233996198401083">कनेक्‍ट करने में असमर्थ.</translation>
 <translation id="1007408791287232274">डिवाइस को लोड नहीं किया जा सका.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">WiMAX अक्षम करें</translation>
 <translation id="174773101815569257">माउस लॉक</translation>
 <translation id="1749854530031883739">TouchView में विंडो के पीछे उपयोग की जाने वाली उन धूसर विंडो पृष्‍ठभूमियों को दिखाएं (विस्‍तृत मोड) जिन्हें विस्‍तृत नहीं किया जा सकता है.</translation>
+<translation id="17513872634828108">टैब खोलें</translation>
 <translation id="175196451752279553">बंद किए गए टैब पु&amp;न: खोलें</translation>
 <translation id="1753682364559456262">चित्र अवरोधन प्रबंधित करें...</translation>
 <translation id="1753905327828125965">सबसे अधिक देखे गए</translation>
@@ -2307,7 +2307,6 @@
 <translation id="4298972503445160211">डेनिश कीबोर्ड</translation>
 <translation id="4299273509016391946">प्रिंट पूर्वावलोकन संवाद पर पृष्‍ठ सरलीकृत करें चेकबॉक्‍स को सक्षम करता है</translation>
 <translation id="4299729908419173967">ब्राज़ीलियाई</translation>
-<translation id="4301786491084298653"><ph name="DOMAIN" /> पर अक्षम करें</translation>
 <translation id="430714521864499800">"Cache-Control: stale-while-revalidate" निर्देश के प्रयोगात्‍मक क्रियान्‍वयन को सक्षम करें. इससे सर्वर को यह निर्दिष्‍ट करने की अनुमति मिल जाती है कि विलंब को बेहतर बनाने के लिए कुछ संसाधनों को पृष्‍ठभूमि में पुन: सत्‍यापित किया जा सकता है.</translation>
 <translation id="4307281933914537745">सिस्टम पुनर्प्राप्ति के बारे में अधिक जानें</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K लाइव)</translation>
@@ -2328,7 +2327,6 @@
 <translation id="4336032328163998280">प्रतिलिपि बनाने का कार्य विफल रहा. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">नेटवर्क लॉग के लिए, देखें: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" से संचार करना चाहती है</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> को, Google द्वारा, आपके डिवाइस की पहचान सत्यापित किए जाने की आवश्यकता है, जिससे संरक्षित मीडिया के उन्नत प्लेबैक की योग्यता निर्धारित की जा सके. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">साइट को किसी भी डेटा को सेट करने से अवरोधित करें</translation>
 <translation id="4342311272543222243">ओह, TPM त्रुटि.</translation>
 <translation id="4345587454538109430">कॉन्फ़िगर करें...</translation>
@@ -2462,7 +2460,6 @@
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" से कनेक्ट होते समय प्रमाणीकरण रद्द हो गया.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फ़ाइल</translation>
 <translation id="457386861538956877">अधिक...</translation>
-<translation id="4575703660920788003">कीबोर्ड लेआउट स्विच करने के लिए Shift-Alt दबाएं.</translation>
 <translation id="4580526846085481512">क्या आप वाकई $1 आइटम हटाना चाहते हैं?</translation>
 <translation id="458150753955139441">वापस जाने के लिए दबाएं, इतिहास देखने के लिए प्रसंग मेनू का उपयोग करें</translation>
 <translation id="4582447636905308869">नई कोरियाई IME, जो Google इनपुट उपकरण के HMM इंजन पर आधारित है.</translation>
@@ -3141,6 +3138,7 @@
 <translation id="556042886152191864">बटन</translation>
 <translation id="5565871407246142825">क्रेडिट कार्ड</translation>
 <translation id="5567989639534621706">ऐप्स  संचय</translation>
+<translation id="5568069709869097550">प्रवेश नहीं कर सकता</translation>
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> में नामांकन कर रहा है...</translation>
 <translation id="5575473780076478375">गुप्‍त एक्सटेंशन: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">अपने डिवाइस को रीसेट करना आपके Google खातों या इन खातों से समन्वयित किसी भी डेटा को प्रभावित नहीं करेगा. हालांकि, आपके डिवाइस पर स्थानीय रूप से सहेजी गईं सभी फ़ाइलें हट जाएंगी.</translation>
@@ -3190,7 +3188,6 @@
 <translation id="5642953011762033339">खाता डिस्कनेक्ट करें</translation>
 <translation id="5646376287012673985">स्थान</translation>
 <translation id="5649768706273821470">सुनें</translation>
-<translation id="5649823029736413118">प्रीमियम सामग्री चलाने के लिए <ph name="URL" /> को आपके डिवाइस की अद्वितीय रूप से पहचान करने की आवश्यकता होती है.</translation>
 <translation id="5650551054760837876">कोई खोज परिणाम नहीं मिले.</translation>
 <translation id="5653140146600257126">"$1" नामक फ़ोल्‍डर पहले से मौजूद है. कृपया भिन्‍न नाम चुनें.</translation>
 <translation id="5657667036353380798">बाहरी एक्‍सटेंशन को इंस्टॉल होने के लिए chrome के <ph name="MINIMUM_CHROME_VERSION" /> या उच्चतर वर्शन की आवश्‍यकता होती है.</translation>
@@ -4459,7 +4456,6 @@
 <translation id="7626009897377900107">पासवर्ड जेनरेशन</translation>
 <translation id="7627262197844840899">यह साइट MasterCard स्वीकार नहीं करती.</translation>
 <translation id="7627790789328695202">ओह, <ph name="FILE_NAME" /> पहले से मौजूद है. उसका नाम बदलें और पुन: प्रयास करें.</translation>
-<translation id="7628079021897738671">ठीक हैं, मैं समझ गया/गई.</translation>
 <translation id="762917759028004464">वर्तमान में <ph name="BROWSER_NAME" /> डिफ़ॉल्ट ब्राउज़र है.</translation>
 <translation id="7629536005696009600">Android ऐप्‍लिकेशन के लिए संग्रहीत की गई प्रमाणिकता को संबंधित वेबसाइटों में भरे जाने की अनुमति दें.</translation>
 <translation id="7629827748548208700">टैब: <ph name="TAB_NAME" /></translation>
@@ -5334,7 +5330,6 @@
 <translation id="8925458182817574960">&amp;सेटिंग</translation>
 <translation id="8926389886865778422">दोबारा न पूछें</translation>
 <translation id="8926518602592448999">डेवलपर मोड एक्सटेंशन अक्षम करना</translation>
-<translation id="892867331564916668"><ph name="URL" /> इस डिवाइस पर फ़ाइलें संग्रहीत करना चाहता है.</translation>
 <translation id="8929454297483336498">QTKit के बजाय Mac OS X AVFoundation API का उपयोग</translation>
 <translation id="8931394284949551895">नए डिवाइस</translation>
 <translation id="8932730422557198035">Android Midi API का उपयोग करें</translation>

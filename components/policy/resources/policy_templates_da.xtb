@@ -192,9 +192,9 @@
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="1859633270756049523">Begræns sessionslængden</translation>
-<translation id="1859859319036806634">Advarsel! Denne TLS-alternativversion fjernes fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og denne politik er da ikke længere aktuel.
+<translation id="1859859319036806634">Advarsel! Denne TLS-fallbackversion fjernes fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og denne politik er da ikke længere aktuel.
 
-Når TLS-dataudveksling mislykkes, ville <ph name="PRODUCT_NAME" /> tidligere prøve at oprette forbindelse igen med en ældre TLS-version for at løse problemet med fejl i HTTPS-servere. Denne indstilling konfigurerer den version, hvor fallback-processen stopper. Hvis en server udfører versionsforhanding korrekt (dvs. uden at afbryde forbindelsen), anvendes denne indstilling ikke. Uanset hvad skal den resulterende forbindelse stadig være i overensstemmelse med SSLVersionMin.
+Når TLS-dataudveksling mislykkes, ville <ph name="PRODUCT_NAME" /> tidligere prøve at oprette forbindelse igen med en ældre TLS-version for at løse problemet med fejl i HTTPS-servere. Denne indstilling konfigurerer den version, hvor fallback-processen stopper. Hvis en server udfører versionsforhandling korrekt (dvs. uden at afbryde forbindelsen), anvendes denne indstilling ikke. Uanset hvad skal den resulterende forbindelse stadig være i overensstemmelse med SSLVersionMin.
 
 Hvis denne politik ikke konfigureres, eller hvis den indstilles til "tls1.2", udfører <ph name="PRODUCT_NAME" /> ikke længere dette fallback. Bemærk, at dette ikke deaktiverer understøttelse af ældre TLS-versioner, kun hvorvidt <ph name="PRODUCT_NAME" /> vil løse problemet med fejlbehæftede servere, som ikke kan forhandle versioner korrekt.
 

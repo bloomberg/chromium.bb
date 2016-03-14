@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Luôn dịch <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Nếu được chọn, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền biểu mẫu nhanh hơn.</translation>
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
-<translation id="111844081046043029">Bạn có chắc chắn muốn thoát khỏi trang này không?</translation>
 <translation id="112840717907525620">Bộ nhớ cache chính sách OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> cho biết:</translation>
 <translation id="1132774398110320017">Cài đặt tự động điền trên Chrome...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">In</translation>
 <translation id="1442912890475371290">Đã chặn nỗ lực <ph name="BEGIN_LINK" /> truy cập trang trên <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Đã xảy ra sự cố khi xác minh thẻ của bạn. Hãy kiểm tra kết nối Internet của bạn và thử lại.</translation>
-<translation id="1491151370853475546">Tải lại trang này</translation>
 <translation id="1506687042165942984">Hiển thị bản sao đã lưu (nghĩa là đã lỗi thời) của trang này.</translation>
 <translation id="1519264250979466059">Ngày tạo</translation>
 <translation id="1549470594296187301">Bạn phải bật JavaScript để sử dụng tính năng này.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="201192063813189384">Lỗi đọc dữ liệu từ bộ nhớ cache.</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
-<translation id="2025623846716345241">Xác nhận tải lại</translation>
 <translation id="2030481566774242610">Ý của bạn là <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kiểm tra proxy và tường lửa<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Mã zip</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Truy cập vào tệp bị từ chối</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2674170444375937751">Bạn có chắc chắn muốn xóa những trang này khỏi lịch sử duyệt web của mình không?</translation>
+<translation id="2677748264148917807">Rời khỏi</translation>
 <translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
 <translation id="2705137772291741111">Không thể đọc được bản sao đã lưu (đã lưu vào bộ nhớ cache) của trang web này.</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Khóa "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Ứng dụng và máy chủ không hỗ trợ bộ mã hóa hoặc phiên bản giao thức SSL thông thường.</translation>
 <translation id="4079302484614802869">Cấu hình proxy được đặt để sử dụng URL tập lệnh .pac chứ không phải máy chủ proxy cố định.</translation>
-<translation id="409504436206021213">Không tải lại</translation>
 <translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
 <translation id="4103763322291513355">Truy cập &lt;strong&gt;chrome://policy&lt;/strong&gt; để xem danh sách các URL bị chặn quyền truy cập và các chính sách khác bị quản trị viên hệ thống buộc phải thực thi.</translation>
 <translation id="4117700440116928470">Phạm vi chính sách không được hỗ trợ.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Thử nghiệm</translation>
 <translation id="5228309736894624122">Lỗi giao thức SSL.</translation>
 <translation id="5251803541071282808">Đám mây</translation>
-<translation id="5295309862264981122">Xác nhận Điều hướng</translation>
 <translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Xóa các cookie của bạn<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Chính sách thiết bị</translation>
 <translation id="6489534406876378309">Bắt đầu tải lên sự cố</translation>
 <translation id="6500116422101723010">Hiện tại, máy chủ không thể xử lý yêu cầu này. Mã này cho thấy đây là tình trạng tạm thời và máy chủ sẽ hoạt động trở lại sau khi hết gián đoạn.</translation>
-<translation id="6512448926095770873">Rời khỏi Trang này</translation>
 <translation id="6518133107902771759">Xác minh</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
 <translation id="6533019874004191247">URL không được hỗ trợ.</translation>
@@ -653,7 +648,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8293206222192510085">Thêm Dấu trang</translation>
 <translation id="8294431847097064396">Nguồn</translation>
 <translation id="8308427013383895095">Không thể dịch do kết nối mạng có sự cố.</translation>
-<translation id="8311778656528046050">Bạn có chắc chắn muốn tải lại trang này không?</translation>
 <translation id="8332188693563227489">Quyền truy cập <ph name="HOST_NAME" /> bị từ chối</translation>
 <translation id="8349305172487531364">Thanh dấu trang</translation>
 <translation id="8363502534493474904">Tắt chế độ trên máy bay</translation>
@@ -723,7 +717,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="9125941078353557812">Nhập CVC gồm 3 chữ số ở mặt sau thẻ của bạn</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="9148507642005240123">&amp;Hoàn tác chỉnh sửa</translation>
-<translation id="9154176715500758432">Ở lại Trang này</translation>
 <translation id="9157595877708044936">Đang thiết lập...</translation>
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="917450738466192189">Chứng chỉ của máy chủ không hợp lệ.</translation>

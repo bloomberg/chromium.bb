@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1000498691615767391">Selecciona una carpeta para abrir</translation>
-<translation id="1000916256947465293">Permite iniciar sesión automáticamente en sitios web con las credenciales almacenadas. Cuando la función está desactivada, se solicita la verificación cada vez que se intenta iniciar sesión en un sitio web.</translation>
 <translation id="1005274289863221750">Utilizar el micrófono y la cámara</translation>
 <translation id="1007233996198401083">No se ha podido establecer conexión.</translation>
 <translation id="1007408791287232274">No se han podido cargar dispositivos.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Inhabilitar WiMAX</translation>
 <translation id="174773101815569257">Bloqueo del ratón</translation>
 <translation id="1749854530031883739">Muestra fondos de pantalla de ventana grises utilizados en TouchView (modo maximizado) detrás de ventanas que no se pueden maximizar.</translation>
+<translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="175196451752279553">Volv&amp;er a abrir pestaña cerrada</translation>
 <translation id="1753682364559456262">Administrar bloqueo de imágenes...</translation>
 <translation id="1753905327828125965">Más visitado</translation>
@@ -1400,7 +1400,7 @@ sistema operativo desde una unidad USB
 <translation id="3009300415590184725">¿Seguro que quieres cancelar el proceso de configuración del servicio de datos para móviles?</translation>
 <translation id="3009779501245596802">Bases de datos indexadas</translation>
 <translation id="3010279545267083280">Contraseña eliminada</translation>
-<translation id="3011284594919057757">Acerca de Flash</translation>
+<translation id="3011284594919057757">Información de Flash</translation>
 <translation id="3011362742078013760">Abrir todos los marcadores en una ventana de &amp;incógnito</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Solo conexiones seguras al mismo sitio web</translation>
@@ -2220,7 +2220,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4158739975813877944">Abrir lista de reproducción</translation>
 <translation id="4159681666905192102">Esta es una cuenta infantil administrada por <ph name="CUSTODIAN_EMAIL" /> y <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Teclado desconocido</translation>
-<translation id="4165986682804962316">Configuración del sitio</translation>
+<translation id="4165986682804962316">Configuración de sitios web</translation>
 <translation id="4166210099837486476">Controlar cuándo realizas acciones en Chrome</translation>
 <translation id="4168015872538332605">Algunas opciones que pertenecen a <ph name="PRIMARY_EMAIL" /> se están compartiendo contigo. Estas opciones solo se aplican a tu cuenta cuando utilizas el inicio de sesión múltiple.</translation>
 <translation id="4172051516777682613">Mostrar siempre</translation>
@@ -2307,7 +2307,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4298972503445160211">Teclado danés</translation>
 <translation id="4299273509016391946">Habilita la casilla de verificación Simplificar página en el cuadro de diálogo de la vista previa de impresión</translation>
 <translation id="4299729908419173967">brasileño</translation>
-<translation id="4301786491084298653">Inhabilitar en <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Habilita la implementación experimental de la directiva de control de caché stale_while_revalidate, que permite que los servidores especifiquen que algunos recursos se pueden revalidar en segundo plano para mejorar la latencia.</translation>
 <translation id="4307281933914537745">Más información sobre la recuperación del sistema</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K activos)</translation>
@@ -2328,7 +2327,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4336032328163998280">No se ha podido realizar la operación de copia (<ph name="ERROR_MESSAGE" />).</translation>
 <translation id="4336979451636460645">Puedes consultar los registros de red en la página <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> quiere comunicarse con la aplicación <ph name="EXTENSION_NAME" /></translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> requiere que Google verifique la identidad de tu dispositivo para determinar si puede utilizar la reproducción mejorada con archivos multimedia protegidos. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">No permitir que se guarden datos de los sitios</translation>
 <translation id="4342311272543222243">¡Vaya! Se ha producido un error de TPM</translation>
 <translation id="4345587454538109430">Configurar...</translation>
@@ -2462,7 +2460,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4572659312570518089">Se canceló la autenticación mientras se establecía conexión con <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572815280350369984">Archivo <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Más...</translation>
-<translation id="4575703660920788003">Para cambiar de diseño de teclado, pulsa Mayús+Alt.</translation>
 <translation id="4580526846085481512">¿Seguro que quieres eliminar estos $1 elementos?</translation>
 <translation id="458150753955139441">Pulsa para ir hacia atrás y usa el menú contextual para ver el historial</translation>
 <translation id="4582447636905308869">Nuevo IME coreano, que está basado en el motor HMM de las Herramientas de introducción de texto de Google.</translation>
@@ -3137,6 +3134,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
 <translation id="5567989639534621706">Cachés de aplicación</translation>
+<translation id="5568069709869097550">No puedo iniciar sesión</translation>
 <translation id="5569544776448152862">Registrando en <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Extensión de incógnito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">El restablecimiento de tu dispositivo no afectará a tus cuentas de Google ni a los datos sincronizados con esas cuentas, pero se eliminarán todos los archivos guardados localmente en tu dispositivo.</translation>
@@ -3186,7 +3184,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="5642953011762033339">Desvincular cuenta</translation>
 <translation id="5646376287012673985">Ubicación</translation>
 <translation id="5649768706273821470">Escuchar</translation>
-<translation id="5649823029736413118"><ph name="URL" /> necesita identificar de forma única tu dispositivo para reproducir contenido premium.</translation>
 <translation id="5650551054760837876">No se han encontrado resultados de búsqueda.</translation>
 <translation id="5653140146600257126">Ya existe una carpeta con el nombre "$1". Elige un nombre diferente.</translation>
 <translation id="5657667036353380798">La extensión externa requiere que esté instalada la versión <ph name="MINIMUM_CHROME_VERSION" /> o una versión posterior de Chrome.</translation>
@@ -4451,7 +4448,6 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="7626009897377900107">Generación de contraseñas</translation>
 <translation id="7627262197844840899">Este sitio no acepta MasterCard.</translation>
 <translation id="7627790789328695202">¡Vaya! <ph name="FILE_NAME" /> ya existe. Elige otro nombre y vuelve a intentarlo.</translation>
-<translation id="7628079021897738671">Permitir</translation>
 <translation id="762917759028004464">El navegador predeterminado es <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Permite que las credenciales almacenadas de las aplicaciones de Android se completen en los sitios web correspondientes.</translation>
 <translation id="7629827748548208700">Pestaña: <ph name="TAB_NAME" /></translation>
@@ -5328,7 +5324,6 @@ Calculando el tiempo de carga completa</translation>
 <translation id="8925458182817574960">&amp;Configuración</translation>
 <translation id="8926389886865778422">No preguntar de nuevo</translation>
 <translation id="8926518602592448999">Inhabilitar extensiones en modo de desarrollador</translation>
-<translation id="892867331564916668"><ph name="URL" /> quiere almacenar archivos en este dispositivo.</translation>
 <translation id="8929454297483336498">Utiliza las API de AV Foundation de Mac OS X en lugar de utilizar QTKit</translation>
 <translation id="8931394284949551895">Nuevos dispositivos</translation>
 <translation id="8932730422557198035">Utilizar la API de Android Midi</translation>

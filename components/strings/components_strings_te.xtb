@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE" />ను అనువదించు</translation>
 <translation id="1107591249535594099">ఎంచుకున్నట్లయితే, Chrome వేగవంతమైన ఫారమ్ పూరింపు కోసం ఈ పరికరంలో మీ కార్డ్ కాపీని నిల్వ చేస్తుంది.</translation>
 <translation id="1113869188872983271">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
-<translation id="111844081046043029">మీరు దీన్ని ఖచ్చితంగా వదిలేయాలనుకుంటున్నారా?</translation>
 <translation id="112840717907525620">విధాన కాష్ సరిపోయింది</translation>
 <translation id="113188000913989374"><ph name="SITE" /> ఇలా చెబుతోంది:</translation>
 <translation id="1132774398110320017">Chrome స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
@@ -26,7 +25,7 @@
 <translation id="1150979032973867961">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ కంప్యూటర్ ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="1152921474424827756"><ph name="URL" /> యొక్క <ph name="BEGIN_LINK" />కాష్ చేయబడిన కాపీ<ph name="END_LINK" />ని ప్రాప్యత చేయండి</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ఊహించని విధంగా కనెక్షన్‌ను మూసివేసింది.</translation>
-<translation id="1161325031994447685">Wi-Fiకి మళ్లీ కనెక్ట్ చేస్తోంది</translation>
+<translation id="1161325031994447685">Wi-Fiకి మళ్లీ కనెక్ట్ చేయడం</translation>
 <translation id="1175364870820465910">&amp;ముద్రించు...</translation>
 <translation id="1181037720776840403">తొలగించు</translation>
 <translation id="1195447618553298278">తెలియని లోపం.</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">ముద్రించు</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" /><ph name="DOMAIN" />లో పేజీని సందర్శించడానికి<ph name="END_LINK" /> చేసిన ప్రయత్నం బ్లాక్ చేయబడింది.</translation>
 <translation id="1455235771979731432">మీ కార్డ్‌ను ధృవీకరించడంలో సమస్య ఏర్పడింది. మీ ఇంటర్నెట్ కనెక్షన్ తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="1491151370853475546">ఈ పేజీని మళ్లీ లోడ్ చేయి</translation>
 <translation id="1506687042165942984">ఈ పేజీ యొక్క సేవ్ చేసిన (అంటే పాతది) కాపీని చూపుతుంది.</translation>
 <translation id="1519264250979466059">రూపకల్పన తేదీ</translation>
 <translation id="1549470594296187301">ఈ లక్షణాన్ని ఉపయోగించడానికి జావాస్క్రిప్ట్ తప్పనిసరిగా ప్రారంభించాలి.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">ఆధునిక</translation>
 <translation id="201192063813189384">కాష్ నుండి డేటాను చదవడంలో లోపం ఉంది.</translation>
 <translation id="2025186561304664664">ప్రాక్సీ స్వయంచాలకంగా కాన్ఫిగర్ చేయబడేలా సెట్ చేయబడింది.</translation>
-<translation id="2025623846716345241">మళ్లీ లోడ్ చేయడాన్ని నిర్ధారించు</translation>
 <translation id="2030481566774242610">మీ ఉద్దేశ్యం <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ప్రాక్సీ మరియు ఫైర్‌వాల్‌ను తనిఖీ చేయడం<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">జిప్ కోడ్</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">ఫైల్‌కు ప్రాప్యత తిరస్కరించబడింది</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2674170444375937751">మీ చరిత్ర నుండి ఈ పేజీలను తొలగించదలిచారా?</translation>
+<translation id="2677748264148917807">నిష్క్రమించు</translation>
 <translation id="2704283930420550640">విలువ ఆకృతికి సరిపోలలేదు.</translation>
 <translation id="2705137772291741111">ఈ సైట్ యొక్క సేవ్ చేయబడిన (కాష్ చేసిన) కాపీ చదవదగినట్లుగా లేదు.</translation>
 <translation id="2709516037105925701">స్వయంపూర్తి</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">కీ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">క్లయింట్ మరియు సర్వర్ ఒకే SSL ప్రోటోకాల్ సంస్కరణ లేదా సైఫర్ సూట్‌కు మద్దతివ్వవు.</translation>
 <translation id="4079302484614802869">ప్రాక్సీ కాన్ఫిగరేషన్ స్థిరమైన ప్రాక్సీ సర్వర్‌లను కాకుండా, ఒక .pac స్క్రిప్ట్ URLను ఉపయోగించడానికి సెట్ చేయబడింది.</translation>
-<translation id="409504436206021213">మళ్లీ లోడ్ చేయవద్దు</translation>
 <translation id="4103249731201008433">పరికరం క్రమ సంఖ్య చెల్లదు</translation>
 <translation id="4103763322291513355">నిరోధిత జాబితాలో ఉన్న URLల జాబితాను మరియు మీ సిస్టమ్ నిర్వాహకుని ద్వారా అమలు చేయబడిన ఇతర విధానాలను చూడటానికి &lt;strong&gt;chrome://policy&lt;/strong&gt;ని సందర్శించండి.</translation>
 <translation id="4117700440116928470">విధానం పరిధికి మద్దతు లేదు.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">ప్రయోగాలు</translation>
 <translation id="5228309736894624122">SSL ప్రోటోకాల్ లోపం.</translation>
 <translation id="5251803541071282808">క్లౌడ్</translation>
-<translation id="5295309862264981122">నావిగేషన్‌ను నిర్థారించండి</translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో లోపం</translation>
 <translation id="5300589172476337783">చూపించు</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />మీ కుక్కీలను తీసివేయడం<ph name="END_LINK" /></translation>
@@ -482,7 +478,6 @@
 <translation id="647261751007945333">పరికర విధానాలు</translation>
 <translation id="6489534406876378309">క్రాష్‌లను అప్‌లోడ్ చేయడాన్ని ప్రారంభించండి</translation>
 <translation id="6500116422101723010">సర్వర్ అభ్యర్థనను నిర్వహించడానికి ప్రస్తుతం అందుబాటులో లేదు.  ఇది తాత్కాలిక స్థితి అని ఈ కోడ్ సూచిస్తోంది మరియు సర్వర్ ఆలస్యం తర్వాత మళ్ళీ పైకి పోతుంది.</translation>
-<translation id="6512448926095770873">ఈ పేజీని వదిలివేయండి</translation>
 <translation id="6518133107902771759">ధృవీకరించు</translation>
 <translation id="6529602333819889595">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="6533019874004191247">మద్దతు లేని URL.</translation>
@@ -651,7 +646,6 @@
 <translation id="8293206222192510085">బుక్‌మార్క్‌లను జోడించు</translation>
 <translation id="8294431847097064396">మూలం</translation>
 <translation id="8308427013383895095">నెట్‌వర్క్ కనెక్షన్‌తో సమస్య ఉన్నందున అనువాదం విఫలమైంది.</translation>
-<translation id="8311778656528046050">మీరు ఈ పేజీని మళ్లీ లోడ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />కి ప్రాప్యత నిరాకరించబడింది</translation>
 <translation id="8349305172487531364">బుక్‌మార్క్‌ల పట్టీ</translation>
 <translation id="8363502534493474904">ఎయిర్‌ప్లైన్ మోడ్‌ను ఆఫ్ చేయడం</translation>
@@ -721,7 +715,6 @@
 <translation id="9125941078353557812">మీ కార్డ్ వెనుకవైపు ఉండే 3 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="9137013805542155359">అసలును చూపించు</translation>
 <translation id="9148507642005240123">&amp;సవరించడాన్ని రద్దు చేయి</translation>
-<translation id="9154176715500758432">ఈ పేజీపై ఉండు</translation>
 <translation id="9157595877708044936">అమర్చుతోంది...</translation>
 <translation id="9170848237812810038">&amp;అన్డు</translation>
 <translation id="917450738466192189">సర్వర్ యొక్క ప్రమాణపత్రం చెల్లుబాటు కాదు.</translation>

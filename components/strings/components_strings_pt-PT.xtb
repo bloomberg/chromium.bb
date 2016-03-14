@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Se marcada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="1113869188872983271">&amp;Anular reordenação</translation>
-<translation id="111844081046043029">Tem a certeza de que pretende sair desta página?</translation>
 <translation id="112840717907525620">Cache da política OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> diz:</translation>
 <translation id="1132774398110320017">Definições de Preenchimento automático do Chrome...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1442912890475371290">Tentativa bloqueada <ph name="BEGIN_LINK" /> de visitar uma página em <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Ocorreu um erro ao validar o cartão. Verifique a sua ligação à Internet e tente novamente.</translation>
-<translation id="1491151370853475546">Atualizar esta Página</translation>
 <translation id="1506687042165942984">Mostrar uma cópia guardada desta página (isto é, uma cópia desatualizada).</translation>
 <translation id="1519264250979466059">Data da Compilação</translation>
 <translation id="1549470594296187301">É necessário ativar o JavaScript para utilizar esta funcionalidade.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Avançadas</translation>
 <translation id="201192063813189384">Erro ao ler dados da cache.</translation>
 <translation id="2025186561304664664">O proxy está definido para configuração automática.</translation>
-<translation id="2025623846716345241">Confirmar Atualização</translation>
 <translation id="2030481566774242610">Será que quis dizer <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Verificar o proxy e a firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Código postal</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">O acesso ao ficheiro foi negado</translation>
 <translation id="2653659639078652383">Submeter</translation>
 <translation id="2674170444375937751">Tem a certeza de que pretende eliminar estas páginas do seu histórico?</translation>
+<translation id="2677748264148917807">Sair</translation>
 <translation id="2704283930420550640">O valor não corresponde ao formato.</translation>
 <translation id="2705137772291741111">A cópia guardada (em cache) deste site era ilegível.</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Chave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">O cliente e o servidor não suportam uma versão do protocolo SSL ou um conjunto de cifras comum.</translation>
 <translation id="4079302484614802869">A configuração do proxy está definida para utilizar um URL de script .pac e não servidores proxy fixos.</translation>
-<translation id="409504436206021213">Não Atualizar</translation>
 <translation id="4103249731201008433">Número de série do dispositivo é inválido</translation>
 <translation id="4103763322291513355">Visite &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver os URLs que foram colocados na lista negra e outras políticas aplicadas pelo administrador do sistema.</translation>
 <translation id="4117700440116928470">O âmbito da política não é suportado.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Experiências</translation>
 <translation id="5228309736894624122">Erro de protocolo SSL.</translation>
 <translation id="5251803541071282808">Nuvem</translation>
-<translation id="5295309862264981122">Confirmar navegação</translation>
 <translation id="5299298092464848405">Erro ao analisar a política</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Limpar os cookies<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Políticas do dispositivo</translation>
 <translation id="6489534406876378309">Começar a carregar falhas</translation>
 <translation id="6500116422101723010">O servidor não consegue processar o pedido neste momento. Este código indica que se trata de uma situação temporária e que o servidor voltará a funcionar dentro de algum tempo.</translation>
-<translation id="6512448926095770873">Sair desta página</translation>
 <translation id="6518133107902771759">Verificar</translation>
 <translation id="6529602333819889595">&amp;Refazer eliminação</translation>
 <translation id="6533019874004191247">URL não suportado.</translation>
@@ -653,7 +648,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8293206222192510085">Adicionar marcador</translation>
 <translation id="8294431847097064396">Origem</translation>
 <translation id="8308427013383895095">A tradução falhou devido a um problema com a ligação de rede.</translation>
-<translation id="8311778656528046050">Tem a certeza de que pretende atualizar esta página?</translation>
 <translation id="8332188693563227489">O acesso a <ph name="HOST_NAME" /> foi recusado</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>
 <translation id="8363502534493474904">Desativar o modo de avião</translation>
@@ -723,7 +717,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="9125941078353557812">Introduza o Código de Segurança/CVC de três dígitos que se encontra no verso do cartão</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9148507642005240123">&amp;Anular edição</translation>
-<translation id="9154176715500758432">Permanecer nesta página</translation>
 <translation id="9157595877708044936">A configurar...</translation>
 <translation id="9170848237812810038">An&amp;ular</translation>
 <translation id="917450738466192189">O certificado do servidor é inválido.</translation>

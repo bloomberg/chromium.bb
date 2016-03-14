@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1000498691615767391">Chọn thư mục để mở</translation>
-<translation id="1000916256947465293">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Khi tính năng này tắt, bạn sẽ luôn được yêu cầu xác minh trước khi đăng nhập vào trang web.</translation>
 <translation id="1005274289863221750">Sử dụng micrô và máy ảnh của bạn</translation>
 <translation id="1007233996198401083">Không thể kết nối.</translation>
 <translation id="1007408791287232274">Không thể tải các thiết bị.</translation>
@@ -534,6 +533,7 @@
 <translation id="1747687775439512873">Tắt WiMAX</translation>
 <translation id="174773101815569257">Khóa chuột</translation>
 <translation id="1749854530031883739">Hiển thị phông nền cửa sổ xám được sử dụng trong TouchView (chế độ phóng to) phía sau cửa sổ không thể phóng to được.</translation>
+<translation id="17513872634828108">Tab đang mở</translation>
 <translation id="175196451752279553">&amp;Mở lại tab đã đóng</translation>
 <translation id="1753682364559456262">Quản lý chặn hình ảnh...</translation>
 <translation id="1753905327828125965">Truy cập nhiều nhất</translation>
@@ -2310,7 +2310,6 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="4298972503445160211">Bàn phím tiếng Đan Mạch</translation>
 <translation id="4299273509016391946">Chọn hộp kiểm đơn giản hóa trang trên hộp thoại xem trước bản in</translation>
 <translation id="4299729908419173967">Tiếng Braxin</translation>
-<translation id="4301786491084298653">Tắt trên <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Cho phép triển khai thử nghiệm lệnh "Kiểm soát bộ nhớ cache: cũ trong khi xác thực lại". Thao tác này cho phép máy chủ chỉ định một số tài nguyên có thể được xác thực lại trong nền để cải thiện độ trễ.</translation>
 <translation id="4307281933914537745">Tìm hiểu thêm về khôi phục hệ thống</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K hiện có)</translation>
@@ -2331,7 +2330,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4336032328163998280">Thao tác sao chép không thành công. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Để xem nhật ký mạng, hãy xem: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> muốn giao tiếp với ứng dụng "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> yêu cầu danh tính của thiết bị bạn sở hữu phải được Google xác minh để xác định tính đủ điều kiện để phát lại nâng cao nội dung đa phương tiện được bảo vệ. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Chặn các trang web thiết lập bất kỳ dữ liệu nào</translation>
 <translation id="4342311272543222243">Rất tiếc, lỗi TPM.</translation>
 <translation id="4345587454538109430">Định cấu hình...</translation>
@@ -2465,7 +2463,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4572659312570518089">Đã hủy xác thực trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
-<translation id="4575703660920788003">Ấn Shift-Alt để chuyển bố cục bàn phím.</translation>
 <translation id="4580526846085481512">Bạn có chắc chắn muốn xóa các mục $1 không?</translation>
 <translation id="458150753955139441">Nhấn để quay lại, sử dụng menu ngữ cảnh để xem lịch sử</translation>
 <translation id="4582447636905308869">IME tiếng Hàn mới dựa trên công cụ HMM thuộc Công cụ nhập liệu của Google.</translation>
@@ -3144,6 +3141,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="556042886152191864">Nút</translation>
 <translation id="5565871407246142825">Thẻ tín dụng</translation>
 <translation id="5567989639534621706">Bộ nhớ cache của ứng dụng</translation>
+<translation id="5568069709869097550">Không thể đăng nhập</translation>
 <translation id="5569544776448152862">Đang đăng ký <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Tiện ích Ẩn danh: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Đặt lại thiết bị sẽ không ảnh hưởng tới những tài khoản Google của bạn hoặc bất kỳ dữ liệu nào được đồng bộ hóa với những tài khoản này. Tuy nhiên, tất cả các tệp lưu trên thiết bị của bạn sẽ bị xóa.</translation>
@@ -3193,7 +3191,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5642953011762033339">Ngắt kết nối tài khoản</translation>
 <translation id="5646376287012673985">Vị trí</translation>
 <translation id="5649768706273821470">Nghe</translation>
-<translation id="5649823029736413118"><ph name="URL" /> cần nhận dạng duy nhất thiết bị của bạn để phát nội dung trả phí.</translation>
 <translation id="5650551054760837876">Không tìm thấy kết quả tìm kiếm.</translation>
 <translation id="5653140146600257126">Thư mục có tên "$1" đã tồn tại. Hãy chọn một tên khác.</translation>
 <translation id="5657667036353380798">Tiện ích bên ngoài yêu cầu cài đặt phiên bản phiên bản Chrome <ph name="MINIMUM_CHROME_VERSION" /> trở lên.</translation>
@@ -4461,7 +4458,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="7626009897377900107">Tạo mật khẩu</translation>
 <translation id="7627262197844840899">Trang web này không chấp nhận MasterCard.</translation>
 <translation id="7627790789328695202">Rất tiếc, <ph name="FILE_NAME" /> đã tồn tại. Hãy đổi tên tệp và thử lại.</translation>
-<translation id="7628079021897738671">OK</translation>
 <translation id="762917759028004464">Trình duyệt mặc định hiện tại là <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Cho phép thông tin xác thực được lưu trữ cho ứng dụng Android được điền vào trang web tương ứng.</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
@@ -5257,7 +5253,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8795668016723474529">Thêm thẻ tín dụng</translation>
 <translation id="8795916974678578410">Cửa sổ mới</translation>
 <translation id="8798099450830957504">Mặc định</translation>
-<translation id="8799127529310003270">Nếu được bật, các cuộc gọi InputConnection sẽ chạy trên chuỗi IME và thay vì duy trì trình chỉnh sửa bản sao, mỗi cuộc gọi InputConnection sẽ kết nối trực tiếp với kết xuất đồ họa.</translation>
+<translation id="8799127529310003270">Nếu được bật, các cuộc gọi InputConnection sẽ chạy trên chuỗi IME và thay vì duy trì trình chỉnh sửa bản sao, mỗi cuộc gọi InputConnection sẽ kết nối trực tiếp với trình kết xuất đồ họa.</translation>
 <translation id="8799839487311913894">Bật cập nhật mật khẩu trong trình quản lý mật khẩu sau khi gửi biểu mẫu "thay đổi mật khẩu".</translation>
 <translation id="8800004011501252845">Hiển thị điểm đến cho</translation>
 <translation id="8800420788467349919">Âm lượng: <ph name="PRECENTAGE" />%</translation>
@@ -5336,7 +5332,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8925458182817574960">&amp;Cài đặt</translation>
 <translation id="8926389886865778422">Đừng hỏi lại</translation>
 <translation id="8926518602592448999">Vô hiệu hóa tiện ích chế độ nhà phát triển</translation>
-<translation id="892867331564916668"><ph name="URL" /> muốn lưu trữ tệp trên thiết bị này.</translation>
 <translation id="8929454297483336498">Sử dụng Mac OS X API AVFoundation, thay vì QTKit</translation>
 <translation id="8931394284949551895">Thiết bị mới</translation>
 <translation id="8932730422557198035">Sử dụng API Android Midi</translation>

@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">সর্বদা অনুবাদ করুন <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">যদি পরীক্ষা করা হয়, Chrome দ্রুত ফর্ম পূরণ করার জন্য এই ডিভাইসে থাকা আপনার কার্ডের একটি প্রতিলিপি সঞ্চয় করবে৷</translation>
 <translation id="1113869188872983271">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
-<translation id="111844081046043029">আপনি এই পৃষ্ঠাটি ছেড়ে যাওয়ার ব্যাপারে কি নিশ্চিত?</translation>
 <translation id="112840717907525620">নীতি ক্যাশেটি ঠিক আছে</translation>
 <translation id="113188000913989374"><ph name="SITE" /> বলছে:</translation>
 <translation id="1132774398110320017">Chrome স্বতঃপূর্ণ সেটিংস...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">প্রিন্ট</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" /><ph name="DOMAIN" /> এ পৃষ্ঠা পরিদর্শন করার<ph name="END_LINK" /> প্রচেষ্টা অবরুদ্ধ করা হয়েছে৷</translation>
 <translation id="1455235771979731432">আপনার কার্ডটি যাচাই করতে একটি সমস্যা হয়েছিল৷ আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
-<translation id="1491151370853475546">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
 <translation id="1506687042165942984">এই পৃষ্ঠার একটি সংরক্ষিত প্রতিলিপি (অর্থাৎ,তারিখ সীমার বাইরে হিসাবে পরিচিত) প্রদর্শন করুন৷</translation>
 <translation id="1519264250979466059">নির্মাণের তারিখ</translation>
 <translation id="1549470594296187301">এই বৈশিষ্ট্যটি ব্যবহার করার জন্য JavaScript সক্ষম করা প্রয়োজন।</translation>
@@ -96,7 +94,6 @@
 <translation id="1974060860693918893">উন্নত</translation>
 <translation id="201192063813189384">ক্যাশে থেকে ডেটা পড়ার সময় ত্রুটি৷</translation>
 <translation id="2025186561304664664">স্বতঃ কনফিগার করতে প্রক্সি সেট করা হয়৷</translation>
-<translation id="2025623846716345241">পুনঃলোড নিশ্চিত করুন</translation>
 <translation id="2030481566774242610">আপনি কি <ph name="LINK" /> বোঝাতে চেয়েছিলেন?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />প্রক্সি এবং ফায়ারওয়াল পরীক্ষা করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">পিন কোড</translation>
@@ -124,7 +121,7 @@
 <translation id="2212735316055980242">নীতি পাওয়া যায়নি</translation>
 <translation id="2213606439339815911">এন্ট্রিগুলি আনা হচ্ছে...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> উপলভ্য নয়</translation>
-<translation id="2227695659599072496">নেটওয়ার্ক তার বা রাউটার পরীক্ষা করে দেখুন</translation>
+<translation id="2227695659599072496">নেটওয়ার্কের তার বা রাউটার পরীক্ষা করে দেখুন</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ডায়াগনস্টিক অ্যাপ্লিকেশান<ph name="END_LINK" /> ব্যবহার করে আপনার সংযোগ ঠিক করুন</translation>
 <translation id="225207911366869382">এই মান এই নীতির জন্য অসমর্থিত হয়েছে৷</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
@@ -166,6 +163,7 @@
 <translation id="2650446666397867134">ফাইলে অ্যাক্সেস অস্বীকৃত হয়েছে</translation>
 <translation id="2653659639078652383">জমা</translation>
 <translation id="2674170444375937751">আপনি কি আপনার ইতিহাস থেকে এই পৃষ্ঠাগুলি মোছার বিষয়ে নিশ্চিত?</translation>
+<translation id="2677748264148917807">ছেড়ে চলে যান</translation>
 <translation id="2704283930420550640">বিন্যাসের সাথে মূল্য মেলে না৷</translation>
 <translation id="2705137772291741111">এই সাইটের সংরক্ষিত (সঞ্চিত) অনুলিপি পড়া সম্ভব হয়নি।</translation>
 <translation id="2709516037105925701">স্বয়ংপূরণ</translation>
@@ -304,7 +302,6 @@
 <translation id="4058922952496707368">কী "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">ক্লায়েন্ট ও সার্ভারটি কোনো অভিন্ন SSL প্রোটোকল সংস্করণ বা সাইফার স্যুট সমর্থন করে না।</translation>
 <translation id="4079302484614802869">প্রক্সি কনফিগারেশনটি .pac স্ক্রিপ্ট URL-এ ব্যবহার করাতে সেট থাকে স্থির প্রক্সি সার্ভারগুলিতে নয়৷</translation>
-<translation id="409504436206021213">পুনঃলোড করবেন না</translation>
 <translation id="4103249731201008433">ডিভাইসের ক্রমিক সংখ্যা অবৈধ</translation>
 <translation id="4103763322291513355">নিবারিত URLগুলির তালিকা এবং আপনার সিস্টেম প্রশাসকের দ্বারা জারি করা অন্যান্য নীতিগুলি দেখার জন্য &lt;strong&gt;chrome://policy&lt;/strong&gt; এ যান৷</translation>
 <translation id="4117700440116928470">নীতির সুযোগটি সমর্থিত নয়৷</translation>
@@ -389,7 +386,6 @@
 <translation id="5199729219167945352">পরীক্ষাদি</translation>
 <translation id="5228309736894624122">SSL  প্রোটোকল  ত্রুটি৷</translation>
 <translation id="5251803541071282808">ক্লাউড</translation>
-<translation id="5295309862264981122">নেভিগেশন নিশ্চিত করুন</translation>
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />আপনার কুকিজ সাফ করে দেখুন<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">ডিভাইস নীতিগুলি</translation>
 <translation id="6489534406876378309">ক্র্যাশগুলি আপলোড করা শুরু করুন</translation>
 <translation id="6500116422101723010">সার্ভারটি বর্তমানে অনুরোধ পরিচালনা করতে ব্যর্থ৷  এই কোডটি ইঙ্গিত দেয় যে এটি একটি অস্থায়ী অবস্থা এবং সার্ভার একটু বিলম্বের পরে আবার আগের অবস্থায় ফিরবে৷</translation>
-<translation id="6512448926095770873">এই পৃষ্ঠাটি ত্যাগ করুন</translation>
 <translation id="6518133107902771759">যাচাই করুন</translation>
 <translation id="6529602333819889595">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
 <translation id="6533019874004191247">অসমর্থিত URL৷</translation>
@@ -653,7 +648,6 @@
 <translation id="8293206222192510085">বুকমার্ক যুক্ত করুন</translation>
 <translation id="8294431847097064396">উৎস</translation>
 <translation id="8308427013383895095">নেটওয়ার্ক সংযোগে কোন সমস্যা হওয়ার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
-<translation id="8311778656528046050">আপনি কি এই পৃষ্ঠাটি পুনঃলোড করার ব্যাপারে নিশ্চিত?</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> এ অ্যাক্সেস অস্বীকার করা হয়েছে</translation>
 <translation id="8349305172487531364">বুকমার্কস দণ্ড</translation>
 <translation id="8363502534493474904">বিমান মোড বন্ধ করে দেখুন</translation>
@@ -723,7 +717,6 @@
 <translation id="9125941078353557812">আপনার কার্ডের পিছনে থাকা ৩ সংখ্যার CVC লিখুন</translation>
 <translation id="9137013805542155359">প্রকৃত রূপ দেখান</translation>
 <translation id="9148507642005240123">&amp;সম্পাদনাকে পূর্বাবস্থায় ফেরান</translation>
-<translation id="9154176715500758432">এই পৃষ্ঠাতে থাকুন</translation>
 <translation id="9157595877708044936">সেট আপ হচ্ছে...</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="917450738466192189">সার্ভারের শংসাপত্র অকার্যকর৷</translation>

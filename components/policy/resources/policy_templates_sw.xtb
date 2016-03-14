@@ -205,9 +205,9 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
 <translation id="1859633270756049523">Punguza urefu wa kipindi</translation>
 <translation id="1859859319036806634">Onyo: Toleo la TLS mbadala litaondolewa kwenye <ph name="PRODUCT_NAME" /> baada ya toleo la 52 (kufikia Septemba 2016) na sera hii itaacha kufanya kazi wakati huo.
 
-      TLS ikishindwa kukubaliana,  <ph name="PRODUCT_NAME" /> awali ilijaribu kuunganisha tena kwa kutumia toleo la awali la TLS ili kutatua hitilafu katika seva za HTTPS. Mipangilio hii husanidi toleo ambalo mchakato wa mbadala huu utaacha kufanya kazi. Seva ikitekeleza makubaliano ya toleo vizuri (yaani bila kukata muunganisho) basi mipangilio hii haitumiki. Hata hivyo, lazima muunganisho unaotokea utii SSLVersionMin.
+      TLS ikishindwa kukubaliana,  <ph name="PRODUCT_NAME" /> itajaribu kuunganisha tena kwa kutumia toleo la awali la TLS ili kutatua hitilafu katika seva za HTTPS. Mipangilio hii huweka toleo ambako mchakato huu mbadala huu utaacha kufanya kazi. Seva ikitekeleza makubaliano ya toleo vizuri (yaani bila kukata muunganisho) basi mipangilio hii haitumiki. Hata hivyo, lazima muunganisho unaotokea utii SSLVersionMin.
 
-      Ikiwa sera hii haitasanidiwa au ikiwekwa kuwa "tls1.2" basi <ph name="PRODUCT_NAME" /> haitekelezi tena mbadala huu. Kumbuka hili halizimi matumizi ya matoleo ya awali ya TLS, ni iwapo tu <ph name="PRODUCT_NAME" /> itafanya kazi kwenye seva zenye hitilafu ambazo haziwezi kuendesha matoleo vizuri.
+      Ikiwa sera hii haitawekwa au ikiwekwa kuwa "tls1.2" basi <ph name="PRODUCT_NAME" /> haitatekeleza mbadala huu. Kumbuka hili halizimi matumizi ya matoleo ya awali ya TLS, ni iwapo tu <ph name="PRODUCT_NAME" /> itafanya kazi kwenye seva zenye hitilafu ambazo haziwezi kuendesha matoleo vizuri.
 
       Vinginevyo, ikiwa ni lazima uoanifu na seva zenye hitilafu udumishwe, hii huenda ikawekwa hadi "tls1.1". Huu ni mkakati wa muda tu na seva inapaswa kurekebishwa haraka.</translation>
 <translation id="1861037019115362154">Inabainisha orodha ya programu jalizi ambazo zinalemazwa katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mpangilio huu.

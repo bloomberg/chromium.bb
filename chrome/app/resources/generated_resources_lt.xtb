@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1000498691615767391">Pasirinkite norimą atidaryti aplanką</translation>
-<translation id="1000916256947465293">Automatiškai prisijungti prie svetainių naudojant išsaugotus prisijungimo duomenis. Kai funkcija išjungta, kaskart prisijungiant prie svetainės prašoma patvirtinimo.</translation>
 <translation id="1005274289863221750">Naudoti mikrofoną ir kamerą</translation>
 <translation id="1007233996198401083">Nepavyko prisijungti.</translation>
 <translation id="1007408791287232274">Nepavyko kelti įrenginių.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Neleisti „WiMAX“</translation>
 <translation id="174773101815569257">Pelės užraktas</translation>
 <translation id="1749854530031883739">Rodyti pilkus langų fonus, naudojamus „TouchView“ padidinimo režimu languose, kurių negalima padidinti.</translation>
+<translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="175196451752279553">I&amp;š naujo atidaryti uždarytą skirtuką</translation>
 <translation id="1753682364559456262">Valdyti vaizdų blokavimą...</translation>
 <translation id="1753905327828125965">Dažniausiai lankomi</translation>
@@ -2308,7 +2308,6 @@ Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="4298972503445160211">Daniška klaviatūra</translation>
 <translation id="4299273509016391946">Įgalinamas puslapio supaprastinimo žymimasis laukelis spaudinio peržiūros dialogo lange</translation>
 <translation id="4299729908419173967">Brazilų k.</translation>
-<translation id="4301786491084298653">Neleisti <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Įgalinkite eksperimentinį „Talpyklos valdymo: neaktyvios būsenos pakartotinai tvirtinant“ direktyvos diegimą. Taip leidžiama nurodyti serveriams, kad tam tikrus išteklius galima pakartotinai patvirtinti fone, kad būtų sumažinta delsa.</translation>
 <translation id="4307281933914537745">Sužinokite daugiau apie sistemos atkūrimą</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB tiesiogiai)</translation>
@@ -2329,7 +2328,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="4336032328163998280">Nepavyko įvykdyti kopijavimo operacijos. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Tinklo žurnalus rasite adresu <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> nori užmegzti ryšį su programa „<ph name="EXTENSION_NAME" />“</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> reikia, kad „Google“ patvirtintų jūsų tapatybę, kad galėtų nustatyti patobulinto saugomos medijos atkūrimo tinkamumą. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Blokuoti svetaines, kad nebūtų galima nustatyti jokių duomenų</translation>
 <translation id="4342311272543222243">Oi, TPM klaida.</translation>
 <translation id="4345587454538109430">Konfigūruoti...</translation>
@@ -2463,7 +2461,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="4572659312570518089">Autentifikavimas atšauktas prisijungiant prie „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> failas</translation>
 <translation id="457386861538956877">Daugiau...</translation>
-<translation id="4575703660920788003">Paspauskite „Shift–Alt“, kad perjungtumėte klaviatūros išdėstymą.</translation>
 <translation id="4580526846085481512">Ar tikrai norite ištrinti $1 elementus?</translation>
 <translation id="458150753955139441">Paspauskite, kad grįžtumėte atgal. Peržiūrėkite istoriją naudodami kontekstinį meniu</translation>
 <translation id="4582447636905308869">Nauja korėjiečių IME, pagrįsta „Google“ įvesties įrankių HMM varikliu.</translation>
@@ -3141,6 +3138,7 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="556042886152191864">Mygtukas</translation>
 <translation id="5565871407246142825">Kredito kortelės</translation>
 <translation id="5567989639534621706">Programos talpyklos</translation>
+<translation id="5568069709869097550">Nepavyksta prisijungti</translation>
 <translation id="5569544776448152862">Užregistruojama <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />…</translation>
 <translation id="5575473780076478375">Inkognito plėtinys: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Iš naujo nustačius įrenginį, tai neturės įtakos jūsų „Google“ paskyroms ar šiose paskyrose sinchronizuotiems duomenims. Tačiau bus ištrinti visi įrenginyje saugomi duomenys.</translation>
@@ -3191,7 +3189,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="5642953011762033339">Atjungti paskyrą</translation>
 <translation id="5646376287012673985">Vietovė</translation>
 <translation id="5649768706273821470">Klausyti</translation>
-<translation id="5649823029736413118"><ph name="URL" /> turi unikaliai identifikuoti jūsų įrenginį, kad galėtumėte leisti aukščiausios kokybės turinį.</translation>
 <translation id="5650551054760837876">Nerasta paieškos rezultatų.</translation>
 <translation id="5653140146600257126">Aplankas pav. „$1“ jau yra. Pasirinkite kitą pavadinimą.</translation>
 <translation id="5657667036353380798">Norint naudoti išorinį plėtinį reikalinga <ph name="MINIMUM_CHROME_VERSION" /> arba naujesnės versijos „Chrome“.</translation>
@@ -4461,7 +4458,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Įsitikinkite, kad profilis egzis
 <translation id="7626009897377900107">Slaptažodžio generavimas</translation>
 <translation id="7627262197844840899">Šioje svetainėje negalima naudoti „MasterCard“.</translation>
 <translation id="7627790789328695202">Oi, „<ph name="FILE_NAME" />“ jau yra. Pervardykite jį ir bandykite dar kartą.</translation>
-<translation id="7628079021897738671">Gerai, supratau</translation>
 <translation id="762917759028004464">Šiuo metu pagrindinė naršyklė „<ph name="BROWSER_NAME" />“</translation>
 <translation id="7629536005696009600">Leisti atitinkamas svetaines užpildyti „Android“ programų išsaugotais prisijungimo duomenimis.</translation>
 <translation id="7629827748548208700">Skirtukas: <ph name="TAB_NAME" /></translation>
@@ -5338,7 +5334,6 @@ Skaičiuojamas laikas, kol bus įkrauta</translation>
 <translation id="8925458182817574960">&amp;Nustatymai</translation>
 <translation id="8926389886865778422">Neklauskite dar kartą</translation>
 <translation id="8926518602592448999">Išjunkite kūrėjo režimu veikiančius plėtinius</translation>
-<translation id="892867331564916668"><ph name="URL" /> nori įrenginyje saugoti failus.</translation>
 <translation id="8929454297483336498">Naudoti „Mac OS X AVFoundation“ API vietoje „QTKit“</translation>
 <translation id="8931394284949551895">Nauji įrenginiai</translation>
 <translation id="8932730422557198035">Naudoti „Android Midi“ API</translation>

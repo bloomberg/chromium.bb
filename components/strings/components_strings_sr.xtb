@@ -17,7 +17,6 @@
 <translation id="1103523840287552314">Увек преводи <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Ако означите ову опцију, Chrome ће складиштити копију картице на овом уређају ради бржег попуњавања образаца.</translation>
 <translation id="1113869188872983271">&amp;Опозови промену редоследа</translation>
-<translation id="111844081046043029">Желите ли стварно да затворите ову страницу?</translation>
 <translation id="112840717907525620">Кеш смерница је у реду</translation>
 <translation id="113188000913989374"><ph name="SITE" /> каже:</translation>
 <translation id="1132774398110320017">Подешавања Chrome аутоматског попуњавања...</translation>
@@ -53,7 +52,6 @@
 <translation id="1430915738399379752">Штампај</translation>
 <translation id="1442912890475371290">Блокиран је покушај <ph name="BEGIN_LINK" />посећивања странице на домену <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Дошло је до проблема при верификацији картице. Проверите интернет везу и покушајте поново.</translation>
-<translation id="1491151370853475546">Поново учитај ову страницу</translation>
 <translation id="1506687042165942984">Прикажите сачувану копију ове странице (тј. копију за коју се зна да је застарела).</translation>
 <translation id="1519264250979466059">Датум верзије</translation>
 <translation id="1549470594296187301">JavaScript мора да буде омогућен да бисте користили ову функцију.</translation>
@@ -94,7 +92,6 @@
 <translation id="1974060860693918893">Напредне опције</translation>
 <translation id="201192063813189384">Грешка приликом читања података из кеша.</translation>
 <translation id="2025186561304664664">Прокси је подешен да буде аутоматски конфигурисан.</translation>
-<translation id="2025623846716345241">Потврда поновног учитавања</translation>
 <translation id="2030481566774242610">Да ли сте мислили <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />да проверите прокси и заштитни зид<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Поштански број</translation>
@@ -164,6 +161,7 @@
 <translation id="2650446666397867134">Приступ датотеци је одбијен</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2674170444375937751">Желите ли стварно да избришете ове странице из историје?</translation>
+<translation id="2677748264148917807">Напусти</translation>
 <translation id="2704283930420550640">Вредност се не подудара са форматом.</translation>
 <translation id="2705137772291741111">Сачувана (кеширана) копија овог сајта није могла да се чита.</translation>
 <translation id="2709516037105925701">Аутоматско попуњавање</translation>
@@ -227,7 +225,7 @@
 <translation id="3254409185687681395">Обележите ову страницу</translation>
 <translation id="3270847123878663523">&amp;Опозови промену редоследа</translation>
 <translation id="3286538390144397061">Поново покрени одмах</translation>
-<translation id="3288003805934695103">поново да учитате страницу</translation>
+<translation id="3288003805934695103">да поново учитате страницу</translation>
 <translation id="3305707030755673451">Подаци су шифровани помоћу приступне фразе за синхронизацију <ph name="TIME" />. Унесите је да бисте започели синхронизацију.</translation>
 <translation id="333371639341676808">Спречите ову страницу да прави додатне дијалоге.</translation>
 <translation id="3340978935015468852">подешавања</translation>
@@ -302,7 +300,6 @@
 <translation id="4058922952496707368">Кључ „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Клијент и сервер не подржавају исту верзију SSL протокола или пакет за шифровање.</translation>
 <translation id="4079302484614802869">Конфигурација проксија је подешена да користи URL адресу .pac скрипте, а не фиксне прокси сервере.</translation>
-<translation id="409504436206021213">Не учитавај поново</translation>
 <translation id="4103249731201008433">Серијски број уређаја је неважећи</translation>
 <translation id="4103763322291513355">Посетите &lt;strong&gt;chrome://policy&lt;/strong&gt; да бисте видели листу URL-ова стављених на црну листу и друге смернице које је наметнуо администратор система.</translation>
 <translation id="4117700440116928470">Опсег смерница није подржан.</translation>
@@ -387,7 +384,6 @@
 <translation id="5199729219167945352">Експерименти</translation>
 <translation id="5228309736894624122">Грешка SSL протокола.</translation>
 <translation id="5251803541071282808">Клауд</translation>
-<translation id="5295309862264981122">Потврда навигације</translation>
 <translation id="5299298092464848405">Грешка при рашчлањивању смерница</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />да обришете колачиће<ph name="END_LINK" /></translation>
@@ -480,7 +476,6 @@
 <translation id="647261751007945333">Смернице за уређај</translation>
 <translation id="6489534406876378309">Покрени отпремање отказивања</translation>
 <translation id="6500116422101723010">Сервер тренутно не може да обради овај захтев. Овај кôд означава да је то привремени проблем и да ће сервер поново бити функционалан после кашњења.</translation>
-<translation id="6512448926095770873">Затвори ову страницу</translation>
 <translation id="6518133107902771759">Верификуј</translation>
 <translation id="6529602333819889595">&amp;Понови брисање</translation>
 <translation id="6533019874004191247">Неподржана URL адреса.</translation>
@@ -642,7 +637,6 @@
 <translation id="8293206222192510085">Додавање обележивача</translation>
 <translation id="8294431847097064396">Извор</translation>
 <translation id="8308427013383895095">Превођење није успело због проблема са мрежном везом.</translation>
-<translation id="8311778656528046050">Да ли стварно желите да поново учитате ову страницу?</translation>
 <translation id="8332188693563227489">Приступ хосту <ph name="HOST_NAME" /> је одбијен</translation>
 <translation id="8349305172487531364">Трака са обележивачима</translation>
 <translation id="8363502534493474904">да искључите режим рада у авиону</translation>
@@ -712,7 +706,6 @@
 <translation id="9125941078353557812">Унесите троцифрени CVC који се налази на полеђини картице</translation>
 <translation id="9137013805542155359">Прикажи оригинал</translation>
 <translation id="9148507642005240123">&amp;Опозови измену</translation>
-<translation id="9154176715500758432">Остани на овој страници</translation>
 <translation id="9157595877708044936">Подешавање...</translation>
 <translation id="9170848237812810038">&amp;Опозови</translation>
 <translation id="917450738466192189">Сертификат сервера је неважећи.</translation>

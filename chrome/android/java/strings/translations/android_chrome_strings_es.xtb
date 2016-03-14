@@ -22,7 +22,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
-<translation id="1291207594882862231">Borrar el historial, las cookies, los datos del sitio web, la caché...</translation>
+<translation id="1291207594882862231">Borrar el historial, las cookies, los datos del sitio web, la caché…</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1346090444609141578">No tienes páginas guardadas</translation>
 <translation id="1369915414381695676">Se ha añadido el sitio <ph name="SITE_NAME" /></translation>
@@ -137,7 +137,7 @@ Puedes controlar la Web física en la configuración de privacidad de Chrome.</t
 <translation id="278029852808208386">No se han encontrado dispositivos Bluetooth. <ph name="BEGIN_LINK" />Repite la búsqueda<ph name="END_LINK" />.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
-<translation id="2888126860611144412">Acerca de Chrome</translation>
+<translation id="2888126860611144412">Información de Chrome</translation>
 <translation id="2891154217021530873">Detener la carga de la página</translation>
 <translation id="2902702728133930130">Se ha producido un error inesperado en Chrome durante el inicio.</translation>
 <translation id="2903493209154104877">Direcciones</translation>
@@ -220,7 +220,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4099578267706723511">Ayuda a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="411254640334432676">Error de descarga.</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
-<translation id="4165986682804962316">Configuración del sitio</translation>
+<translation id="4165986682804962316">Configuración de sitios web</translation>
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="4193864812412988973">Viendo una copia sin conexión de este marcador</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>

@@ -18,7 +18,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> નો હંમેશાં અનુવાદ કરો</translation>
 <translation id="1107591249535594099">જો ચેક કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chrome આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહશે.</translation>
 <translation id="1113869188872983271">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
-<translation id="111844081046043029">શું તમે ખરેખર આ પૃષ્ઠ છોડવા માંગો છો?</translation>
 <translation id="112840717907525620">નીતિ કેશ ઑકે</translation>
 <translation id="113188000913989374"><ph name="SITE" /> આ કહે છે:</translation>
 <translation id="1132774398110320017">Chrome સ્વતઃભરણ સેટિંગ્સ...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">છાપો</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" /><ph name="DOMAIN" /> પર પૃષ્ઠની મુલાકાત લેવા<ph name="END_LINK" /> માટેનો પ્રયત્ન અવરોધિત કર્યો.</translation>
 <translation id="1455235771979731432">તમારું કાર્ડ ચકાસવામાં એક સમસ્યા આવી હતી. તમારું ઇન્ટરનેટ કનેક્શન તપાસો અને ફરીથી પ્રયાસ કરો.</translation>
-<translation id="1491151370853475546">આ પૃષ્ઠને ફરીથી લોડ કરો</translation>
 <translation id="1506687042165942984">આ પૃષ્ઠની સાચવેલી (એટલે કે જૂની થઈ ગયેલી તરીકે ઓળખાતી) કૉપિ દર્શાવો.</translation>
 <translation id="1519264250979466059">નિર્માણ તારીખ</translation>
 <translation id="1549470594296187301">આ સુવિધાનો ઉપયોગ કરવા માટે JavaScript સક્ષમ કરેલ હોવી આવશ્યક છે.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">વિગતવાર</translation>
 <translation id="201192063813189384">કેશમાંથી ડેટા વાંચવામાં ભૂલ.</translation>
 <translation id="2025186561304664664">પ્રોક્સી સ્વતઃ ગોઠવાયેલી પર સેટ છે.</translation>
-<translation id="2025623846716345241">ફરીથી લોડ કરવાની પુષ્ટિ કરો</translation>
 <translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK" /> છે?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />પ્રોક્સી અને ફાયરવોલ તપાસીને<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">પિન કોડ</translation>
@@ -164,6 +161,7 @@
 <translation id="2650446666397867134">ફાઇલની ઍક્સેસ નકારવામાં આવી હતી</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2674170444375937751">શું તમે ખરેખર તમારા ઇતિહાસમાંથી આ પૃષ્ઠોને કાઢી નાખવા માંગો છો?</translation>
+<translation id="2677748264148917807">છોડો</translation>
 <translation id="2704283930420550640">મૂલ્ય ફોર્મેટથી મેળ ખાતું  નથી.</translation>
 <translation id="2705137772291741111">આ સાઇટની સાચવેલ (કૅશ કરેલ) કૉપિ વાંચવા યોગ્ય ન હતી.</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
@@ -302,7 +300,6 @@
 <translation id="4058922952496707368">કી "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">ક્લાઇન્ટ અને સર્વર સામાન્ય SSL પ્રોટોકોલ સંસ્કરણ અથવા સાઇફર સ્યૂટનું સમર્થન કરતાં નથી.</translation>
 <translation id="4079302484614802869">પ્રોક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URL નો ઉપયોગ કરવા માટે સેટ છે, નિયત પ્રોક્સી સર્વર્સ માટે નહીં.</translation>
-<translation id="409504436206021213">ફરીથી લોડ કરવું નહીં</translation>
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
 <translation id="4103763322291513355">બ્લેકલિસ્ટ કરેલા URL ની સૂચિ અને તમારા સિસ્ટમ વ્યવસ્થાપક દ્વારા લાગુ અન્ય નીતિઓ જોવા માટે &lt;strong&gt;chrome://policy&lt;/strong&gt; ની મુલાકાત લો.</translation>
 <translation id="4117700440116928470">નીતિ મર્યાદા સમર્થિત નથી.</translation>
@@ -387,7 +384,6 @@
 <translation id="5199729219167945352">પ્રયોગો</translation>
 <translation id="5228309736894624122">SSL પ્રોટોકોલ ભૂલ.</translation>
 <translation id="5251803541071282808">મેઘ</translation>
-<translation id="5295309862264981122">નેવિગેશનની પુષ્ટિ કરો</translation>
 <translation id="5299298092464848405">ભૂલ વિશ્લેષણ નીતિ</translation>
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />તમારી કૂકીઝને સાફ કરીને<ph name="END_LINK" /></translation>
@@ -482,7 +478,6 @@
 <translation id="647261751007945333">ઉપકરણ નીતિઓ</translation>
 <translation id="6489534406876378309">ક્રેશ અપલોડ કરવાનું શરૂ કરો</translation>
 <translation id="6500116422101723010">હાલમાં સર્વર વિનંતીને હેન્ડલ કરવામાં અક્ષમ છે. આ કોડ સૂચવે છે કે આ એક અસ્થાયી સ્થિતિ છે અને સર્વર વિલંબ પછી ફરી ચાલુ થઈ જશે.</translation>
-<translation id="6512448926095770873">આ પૃષ્ઠ છોડો</translation>
 <translation id="6518133107902771759">પ્રમાણિત કરો</translation>
 <translation id="6529602333819889595">&amp;કાઢી નાખવું ફરી કરો</translation>
 <translation id="6533019874004191247">અસમર્થિત URL.</translation>
@@ -651,7 +646,6 @@
 <translation id="8293206222192510085">બુકમાર્ક ઉમેરો</translation>
 <translation id="8294431847097064396">સ્રોત</translation>
 <translation id="8308427013383895095">નેટવર્ક કનેક્શનમાં સમસ્યાને કારણે ભાષાંતર નિષ્ફળ રહ્યું.</translation>
-<translation id="8311778656528046050">શું તમે ખરેખર આ પૃષ્ઠને ફરીથી લોડ કરવા માંગો છો?</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> ની ઍક્સેસ નકારાઈ હતી</translation>
 <translation id="8349305172487531364">બુકમાર્ક્સ બાર</translation>
 <translation id="8363502534493474904">એરપ્લેન મોડ બંધ કરીને</translation>
@@ -721,7 +715,6 @@
 <translation id="9125941078353557812">તમારા કાર્ડની પાછળની બાજુ પરથી 3-અંકનો CVC દાખલ કરો</translation>
 <translation id="9137013805542155359">મૂળ બતાવો</translation>
 <translation id="9148507642005240123">&amp;સંપાદિત કરવું પૂર્વવત્‌ કરો</translation>
-<translation id="9154176715500758432">આ પૃષ્ઠ પર રહો</translation>
 <translation id="9157595877708044936">સેટિંગ અપ...</translation>
 <translation id="9170848237812810038">&amp;પૂર્વવત્ કરો</translation>
 <translation id="917450738466192189">સર્વરનું પ્રમાણપત્ર અમાન્ય છે.</translation>

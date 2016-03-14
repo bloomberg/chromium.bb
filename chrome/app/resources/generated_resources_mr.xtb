@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="1000498691615767391">उघडण्यासाठी फोल्डर निवडा</translation>
-<translation id="1000916256947465293">संचयित क्रेडेन्शियल वापरून वेबसाइटवर स्वयंचलितपणे साइन इन करा. वैशिष्ट्य बंद असते, तेव्हा वेबसाइटवर साइन इन करण्यापूर्वी दरवेळी सत्यापनासाठी आपल्याला विचारले जाईल.</translation>
 <translation id="1005274289863221750">आपला मायक्रोफोन आणि कॅमेरा वापरा</translation>
 <translation id="1007233996198401083">कनेक्ट करण्‍यात अक्षम.</translation>
 <translation id="1007408791287232274">डिव्हाइसेस लोड करू शकलो नाही.</translation>
@@ -532,6 +531,7 @@
 <translation id="1747687775439512873">WiMAX अक्षम करा</translation>
 <translation id="174773101815569257">माऊस लॉक</translation>
 <translation id="1749854530031883739">विंडोमागील TouchView (मोठा केलेला मोड) मध्‍ये वापरलेल्या मोठ्या केले जाऊ शकत नाही अशा राखाडी विंडो पार्श्वभूमी दर्शवा.</translation>
+<translation id="17513872634828108">खुले टॅब</translation>
 <translation id="175196451752279553">पु&amp;न्हा बंद टॅब उघडा</translation>
 <translation id="1753682364559456262">प्रतिमा अवरोधित करणे व्यवस्थापित करा...</translation>
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
@@ -2306,7 +2306,6 @@
 <translation id="4298972503445160211">डॅनिश कीबोर्ड</translation>
 <translation id="4299273509016391946">मुद्रण पूर्वावलोकन संवादावरील पृष्‍ठ सरलीकृत करा चेकबॉक्स सक्षम करते</translation>
 <translation id="4299729908419173967">ब्राझिलियन</translation>
-<translation id="4301786491084298653"><ph name="DOMAIN" /> वर अक्षम करा</translation>
 <translation id="430714521864499800">"Cache-Control: stale-while-revalidate" आदेशाची प्रायोगिक अंमलबजावणी सक्षम करा. यात विलंब सुधारण्यासाठी काही संसाधनांचे पार्श्वभूमीत पुन्हा प्रमाणीकरण केले जाऊ शकते हे निर्दिष्ट करण्यासाठी सर्व्हरना परवानगी देते.</translation>
 <translation id="4307281933914537745">सिस्टम पुनर्प्राप्तीबद्दल अधिक जाणून घ्या</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K लाइव्ह)</translation>
@@ -2327,7 +2326,6 @@
 <translation id="4336032328163998280">कॉपी ऑपरेशन अयशस्वी. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">नेटवर्क लॉगसाठी, हे पहा: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942">"<ph name="EXTENSION_NAME" />" अ‍ॅपसह <ph name="ORIGIN" /> संप्रेषण करू इच्छितो</translation>
-<translation id="4341364588986930687">संरक्षित केलेल्या मीडियाचे प्लेबॅक वर्धित करण्याकरिता पात्रता निर्धारित करण्यासाठी, <ph name="DOMAIN" /> ला आपल्या डिव्हाइसची ओळख Google द्वारे, सत्यापित करणे आवश्यक आहे. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">कोणताही डेटा सेट करण्यापासून साइट अवरोधित करा</translation>
 <translation id="4342311272543222243">अरेरे, TPM त्रुटी.</translation>
 <translation id="4345587454538109430">कॉन्फिगर करा...</translation>
@@ -2461,7 +2459,6 @@
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" शी कनेक्ट करताना प्रमाणीकरण रद्द झाले.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फाइल</translation>
 <translation id="457386861538956877">अधिक...</translation>
-<translation id="4575703660920788003">कीबोर्ड लेआउट स्विच करण्यासाठी Shift-Alt दाबा.</translation>
 <translation id="4580526846085481512">आपली खात्री आहे की आपण $1 आयटम हटवू इच्छिता?</translation>
 <translation id="458150753955139441">परत जाण्‍यासाठी दाबा, इतिहास पाहण्‍यासाठी संदर्भ मेनू वापरा</translation>
 <translation id="4582447636905308869">Google इनपुट साधनांच्या HMM इंजिनवर आधारित असलेली, नवीन कोरियन IME.</translation>
@@ -3140,6 +3137,7 @@
 <translation id="556042886152191864">बटण</translation>
 <translation id="5565871407246142825">क्रेडिट कार्डे</translation>
 <translation id="5567989639534621706">अनुप्रयोग कॅशे</translation>
+<translation id="5568069709869097550">साइन इन करणे शक्य नाही</translation>
 <translation id="5569544776448152862"><ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> मध्‍ये नोंदणी करीत आहे...</translation>
 <translation id="5575473780076478375">गुप्त विस्तार: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">आपले डिव्हाइस रीसेट केल्याने या खात्यांवरील आपल्या Google खात्यांवर किंवा संकालित केलेल्या कोणत्याही डेटावर प्रभाव पडणार नाही. तथापि, आपल्या डिव्हाइसवर स्थानिकपणे जतन केलेल्या सर्व फायली हटविल्या जातील.</translation>
@@ -3189,7 +3187,6 @@
 <translation id="5642953011762033339">खाते डिस्कनेक्ट करा</translation>
 <translation id="5646376287012673985">स्थान</translation>
 <translation id="5649768706273821470">ऐका</translation>
-<translation id="5649823029736413118">प्रीमियम सामग्री प्ले करण्यासाठी आपले डिव्हाइस अनन्यपणे ओळखण्याची <ph name="URL" /> ला आवश्यकता आहे.</translation>
 <translation id="5650551054760837876">शोध परिणाम आढळले नाहीत.</translation>
 <translation id="5653140146600257126">"$1" नावाचे फोल्डर आधीपासूनच विद्यमान आहे. कृपया एक भिन्न नाव निवडा.</translation>
 <translation id="5657667036353380798">बाह्य विस्तारास chrome <ph name="MINIMUM_CHROME_VERSION" /> किंवा मोठी आवृत्ती स्‍थापित केली जाण्‍याची आवश्‍यकता आहे.</translation>
@@ -4453,7 +4450,6 @@
 <translation id="7626009897377900107">संकेतशब्द निर्मिती</translation>
 <translation id="7627262197844840899">ही साइट MasterCard स्वीकारत नाही.</translation>
 <translation id="7627790789328695202">अरेरे, <ph name="FILE_NAME" /> आधीपासून अस्तित्वात आहे. हे पुनर्नामित करा आणि पुन्हा प्रयत्न करा.</translation>
-<translation id="7628079021897738671">ठीक, मला समजले</translation>
 <translation id="762917759028004464">डीफॉल्ट ब्राउझर सध्या <ph name="BROWSER_NAME" /> आहे.</translation>
 <translation id="7629536005696009600">Android अनुप्रयोगांसाठी संचयित केलेल्‍या क्रेडेन्शियलना सुसंगत वेबसाइटमध्‍ये भरले जाण्यासाठी अनुमती द्या.</translation>
 <translation id="7629827748548208700">टॅब: <ph name="TAB_NAME" /></translation>
@@ -5329,7 +5325,6 @@
 <translation id="8925458182817574960">&amp;सेटिंग्ज</translation>
 <translation id="8926389886865778422">पुन्हा विचारू नका</translation>
 <translation id="8926518602592448999">विकासक मोड विस्तार अक्षम करा</translation>
-<translation id="892867331564916668"><ph name="URL" /> या डिव्‍हाइसवर फायली संचयित करू इच्छितो.</translation>
 <translation id="8929454297483336498">QTKit ऐवजी, Mac OS X AVFoundation API चा वापर</translation>
 <translation id="8931394284949551895">नवीन डिव्हाइसेस</translation>
 <translation id="8932730422557198035">Android Midi API वापरा</translation>

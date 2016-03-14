@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
 <translation id="1107591249535594099">‏إذا تم وضع علامة على هذا الخيار، سيخزّن Chrome نسخة من هذه البطاقة على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
 <translation id="1113869188872983271">تراجع عن إعادة الت&amp;رتيب</translation>
-<translation id="111844081046043029">هل تريد بالتأكيد مغادرة هذه الصفحة؟</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
 <translation id="113188000913989374"><ph name="SITE" /> يعرض:</translation>
 <translation id="1132774398110320017">‏إعدادات الملء التلقائي في Chrome...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">طباعة</translation>
 <translation id="1442912890475371290">تمّ منع محاولة <ph name="BEGIN_LINK" /> الانتقال إلى إحدى الصفحات على <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">حدثت مشكلة أثناء التحقق من بطاقتك. تحقق من اتصالك بالإنترنت وأعد المحاولة.</translation>
-<translation id="1491151370853475546">إعادة تحميل هذه الصفحة</translation>
 <translation id="1506687042165942984">عرض نسخة محفوظة (أي معروف أنها منتهية) من هذه الصفحة.</translation>
 <translation id="1519264250979466059">تاريخ الإصدار</translation>
 <translation id="1549470594296187301">‏يجب تمكين JavaScript لاستخدام هذه الميزة.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="201192063813189384">حدث خطأ أثناء قراءة بيانات من ذاكرة التخزين المؤقت.</translation>
 <translation id="2025186561304664664">تم تعيين الخادم الوكيل على التهيئة التلقائية.</translation>
-<translation id="2025623846716345241">تأكيد إعادة التحميل</translation>
 <translation id="2030481566774242610">هل تقصد <ph name="LINK" />؟</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />التحقق من الخادم الوكيل والجدار الناري<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">الرمز البريدي</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">تم رفض الدخول إلى الملف</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2674170444375937751">هل تريد بالتأكيد حذف هذه الصفحات من السجل؟</translation>
+<translation id="2677748264148917807">الخروج</translation>
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
 <translation id="2705137772291741111">تعذر قراءة النسخة المحفوظة (المخزنة في ذاكرة التخزين المؤقت) لموقع الويب هذا.</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">المفتاح "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">لا يدعم كل من العميل والخادم مجموعة تشفير أو إصدار بروتوكول طبقة المقابس الآمنة الشائع.</translation>
 <translation id="4079302484614802869">‏تم تعيين تهيئة الخادم الوكيل لاستخدام عنوان URL نص برمجي ‎.pac وليس الخوادم الوكيلة الثابتة.</translation>
-<translation id="409504436206021213">إلغاء إعادة التحميل</translation>
 <translation id="4103249731201008433">الرقم التسلسلي للجهاز غير صالح</translation>
 <translation id="4103763322291513355">‏انتقل إلى &lt;strong&gt;chrome://policy&lt;/strong&gt; لمشاهدة قائمة بعناوين URL المضافة إلى القائمة السوداء والسياسات الأخرى التي فرضها مشرف النظام.</translation>
 <translation id="4117700440116928470">نطاق السياسة غير متوافق.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">التجارب</translation>
 <translation id="5228309736894624122">‏حدث خطأ في بروتوكول طبقة المقابس الآمنة (SSL).</translation>
 <translation id="5251803541071282808">السحاب</translation>
-<translation id="5295309862264981122">تأكيد التصفح</translation>
 <translation id="5299298092464848405">خطأ في تحليل السياسة</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />محو ملفات تعريف الارتباط<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">سياسات الأجهزة</translation>
 <translation id="6489534406876378309">بدء تحميل الأعطال</translation>
 <translation id="6500116422101723010">يتعذر على الخادم في الوقت الحالي معالجة الطلب.  تشير هذه الشفرة إلى أن هذه هي حالة مؤقتة، وسيتم تشغيل الخادم مجددًا بعد قليل.</translation>
-<translation id="6512448926095770873">مغادرة هذه الصفحة</translation>
 <translation id="6518133107902771759">تحقق</translation>
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
 <translation id="6533019874004191247">‏عنوان URL غير متوافق.</translation>
@@ -652,7 +647,6 @@
 <translation id="8293206222192510085">إضافة إشارة مرجعية</translation>
 <translation id="8294431847097064396">المصدر</translation>
 <translation id="8308427013383895095">أخفقت الترجمة بسبب حدوث مشكلة في الاتصال بالشبكة.</translation>
-<translation id="8311778656528046050">هل تريد بالتأكيد إعادة تحميل هذه الصفحة؟</translation>
 <translation id="8332188693563227489">تم رفض الدخول إلى <ph name="HOST_NAME" />.</translation>
 <translation id="8349305172487531364">شريط الإشارات</translation>
 <translation id="8363502534493474904">إيقاف تشغيل وضع الطائرة</translation>
@@ -722,7 +716,6 @@
 <translation id="9125941078353557812">‏أدخل رمز التحقق من البطاقة (CVC) المكون من ثلاثة أرقام من الجزء الخلفي من بطاقتك</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9148507642005240123">تراجع عن ا&amp;لتحرير</translation>
-<translation id="9154176715500758432">البقاء في هذه الصفحة</translation>
 <translation id="9157595877708044936">جارٍ الإعداد...</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
 <translation id="917450738466192189">شهادة الخادم غير صالحة.</translation>

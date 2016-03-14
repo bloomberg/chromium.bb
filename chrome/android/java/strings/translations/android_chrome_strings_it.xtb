@@ -22,7 +22,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
-<translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati siti, la cache…</translation>
+<translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati dei siti, la cache…</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
 <translation id="1346090444609141578">Nessuna pagina salvata qui</translation>
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
@@ -488,7 +488,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7324738665594301612">Stiamo testando il proxy delle pagine HTTPS tramite i server di Google nell'ambito di un esperimento.</translation>
 <translation id="7346217184097589238">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione.</translation>
 <translation id="7346909386216857016">OK</translation>
-<translation id="7347770551817603360">Contenuto non in linea</translation>
+<translation id="7347770551817603360">Contenuto offline</translation>
 <translation id="7363354739009474003">Caricamento di "<ph name="VIDEO_TITLE" />" in corso</translation>
 <translation id="7366340029385295517">Trasmissione su <ph name="SCREEN_NAME" /> in corso</translation>
 <translation id="7375125077091615385">Tipo:</translation>

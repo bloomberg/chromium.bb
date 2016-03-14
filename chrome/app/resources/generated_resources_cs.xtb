@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1000498691615767391">Vyberte složku, kterou chcete otevřít</translation>
-<translation id="1000916256947465293">Přihlašovat se na weby automaticky pomocí uložených identifikačních údajů. Když je tato funkce vypnutá, budete před každým přihlášením na web požádáni o ověření.</translation>
 <translation id="1005274289863221750">Používat mikrofon a fotoaparát</translation>
 <translation id="1007233996198401083">Nelze se připojit.</translation>
 <translation id="1007408791287232274">Zařízení nelze načíst.</translation>
@@ -534,6 +533,7 @@ UPOZORNĚNÍ: Když toto pravidlo povolíte, Chrome bude zaznamenávat data o v
 <translation id="1747687775439512873">Deaktivovat síť WiMAX</translation>
 <translation id="174773101815569257">Uzamčení myši</translation>
 <translation id="1749854530031883739">Zobrazovat šedé kulisy oken používané v zobrazení TouchView (maximalizovaný režim) za okny, které nelze maximalizovat.</translation>
+<translation id="17513872634828108">Otevřené karty</translation>
 <translation id="175196451752279553">Znovu ot&amp;evřít zavřenou kartu</translation>
 <translation id="1753682364559456262">Spravovat blokování obrázků...</translation>
 <translation id="1753905327828125965">Nejnavštěvovanější</translation>
@@ -2302,7 +2302,6 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="4298972503445160211">Dánská klávesnice</translation>
 <translation id="4299273509016391946">Povolí zaškrtávací políčko ke zjednodušení stránky v dialogu náhledu tisku.</translation>
 <translation id="4299729908419173967">portugalština (Brazílie)</translation>
-<translation id="4301786491084298653">Zakázat v doméně <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Aktivuje experimentální implementaci direktivy Cache-Control: stale-while-revalidate. Tato direktiva serverům umožňuje určit, u kterých zdrojů lze z důvodu zlepšení latence provést opětovné ověření na pozadí.</translation>
 <translation id="4307281933914537745">Další informace o obnovení systému</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB aktivních)</translation>
@@ -2323,7 +2322,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4336032328163998280">Kopírování se nezdařilo. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Protokoly sítě naleznete na stránce <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942">Web <ph name="ORIGIN" /> chce komunikovat s aplikací <ph name="EXTENSION_NAME" /></translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> vyžaduje, aby Google ověřil identitu vašeho zařízení s cílem stanovit způsobilost pro vylepšené přehrávání chráněných médií. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Bránit webům v nastavení jakýchkoli dat</translation>
 <translation id="4342311272543222243">Jejda, došlo k chybě TPM.</translation>
 <translation id="4345587454538109430">Konfigurovat...</translation>
@@ -2457,7 +2455,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4572659312570518089">Během připojování k zařízení <ph name="DEVICE_NAME" /> bylo zrušeno ověření.</translation>
 <translation id="4572815280350369984">Soubor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Další...</translation>
-<translation id="4575703660920788003">Rozložení klávesnice změníte stisknutím kláves Shift+Alt.</translation>
 <translation id="4580526846085481512">Opravdu chcete tyto položky ($1) smazat?</translation>
 <translation id="458150753955139441">Stisknutím přejdete zpět. V kontextové nabídce můžete zobrazit historii</translation>
 <translation id="4582447636905308869">Nový editor IME pro korejštinu, který vychází z modulu HMM Nástrojů pro zadávání textu Google.</translation>
@@ -3132,6 +3129,7 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="556042886152191864">Tlačítko</translation>
 <translation id="5565871407246142825">Platební karty</translation>
 <translation id="5567989639534621706">Mezipaměti aplikací</translation>
+<translation id="5568069709869097550">Nepodařilo se přihlásit</translation>
 <translation id="5569544776448152862">Registrace do domény <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Anonymní rozšíření: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Resetování zařízení nebude mít vliv na vaše účty Google ani na data synchronizovaná s těmito účty. Všechny soubory uložené místně v zařízení však budou smazány.</translation>
@@ -3181,7 +3179,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5642953011762033339">Odpojit účet</translation>
 <translation id="5646376287012673985">Poloha</translation>
 <translation id="5649768706273821470">Poslechnout si</translation>
-<translation id="5649823029736413118">Aby bylo možné přehrát prémiový obsah, web <ph name="URL" /> musí vaše zařízení jedinečně identifikovat.</translation>
 <translation id="5650551054760837876">Nebyly nalezeny žádné výsledky vyhledávání.</translation>
 <translation id="5653140146600257126">Složka s názvem „$1“ již existuje. Vyberte jiný název.</translation>
 <translation id="5657667036353380798">k instalaci tohoto externího rozšíření je vyžadován Chrome verze <ph name="MINIMUM_CHROME_VERSION" /> nebo vyšší.</translation>
@@ -4445,7 +4442,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="7626009897377900107">Generování hesla</translation>
 <translation id="7627262197844840899">Tento web nepřijímá karty MasterCard.</translation>
 <translation id="7627790789328695202">Jejda, soubor <ph name="FILE_NAME" /> již existuje. Přejmenujte jej a zkuste to znovu.</translation>
-<translation id="7628079021897738671">Rozumím</translation>
 <translation id="762917759028004464">Výchozím prohlížečem je v tuto chvíli <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Povolit vyplnění identifikačních údajů uložených pro aplikace Android na odpovídajících webových stránkách.</translation>
 <translation id="7629827748548208700">Karta: <ph name="TAB_NAME" /></translation>
@@ -5322,7 +5318,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8925458182817574960">&amp;Nastavení</translation>
 <translation id="8926389886865778422">Dotaz již nezobrazovat</translation>
 <translation id="8926518602592448999">Deaktivovat rozšíření v režimu pro vývojáře</translation>
-<translation id="892867331564916668">Web <ph name="URL" /> chce do tohoto zařízení uložit soubory.</translation>
 <translation id="8929454297483336498">Namísto rozhraní QTKit používat rozhraní Mac OS X AVFoundation API</translation>
 <translation id="8931394284949551895">Nová zařízení</translation>
 <translation id="8932730422557198035">Použít rozhraní Android Midi API</translation>

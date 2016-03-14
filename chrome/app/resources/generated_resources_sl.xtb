@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="1000498691615767391">Izberite mapo, ki jo želite odpreti</translation>
-<translation id="1000916256947465293">Samodejna prijava v spletna mesta z uporabo shranjene poverilnice. Ko je ta funkcija izklopljena, bo pri vsaki prijavi v spletno mesto potrebno preverjanje.</translation>
 <translation id="1005274289863221750">Uporabite mikrofon in kamero</translation>
 <translation id="1007233996198401083">Povezave ni mogoče vzpostaviti.</translation>
 <translation id="1007408791287232274">Naprav ni bilo mogoče naložiti.</translation>
@@ -534,6 +533,7 @@
 <translation id="1747687775439512873">Onemogoči WiMAX</translation>
 <translation id="174773101815569257">Zaklepanje miške</translation>
 <translation id="1749854530031883739">Prikaz sivih ozadij oken, uporabljenih v načinu TouchView (povečan način) za okni, ki jih ni mogoče povečati.</translation>
+<translation id="17513872634828108">Odpri zavihke</translation>
 <translation id="175196451752279553">&amp;Znova odpri zaprt zavihek</translation>
 <translation id="1753682364559456262">Upravljanje blokiranja slik ...</translation>
 <translation id="1753905327828125965">Najpogosteje obiskane</translation>
@@ -2310,7 +2310,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4298972503445160211">Danska tipkovnica</translation>
 <translation id="4299273509016391946">Omogoča potrditveno polje za poenostavitev strani v pogovornem oknu za predogled tiskanja</translation>
 <translation id="4299729908419173967">portugalščina (Brazilija)</translation>
-<translation id="4301786491084298653">Onemogoči v domeni <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Omogoči poskusno izvedbo direktive »Cache-Control: stale-while-revalidate«. To strežnikom omogoča določanje, da se lahko nekatera sredstva znova preverijo v ozadju in s tem zmanjšajo zamude.</translation>
 <translation id="4307281933914537745">Več o obnovitvi sistema</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB dejavno)</translation>
@@ -2331,7 +2330,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4336032328163998280">Kopiranje ni uspelo. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Dnevniki omrežja so na voljo tukaj: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> želi vzpostaviti povezavo z aplikacijo »<ph name="EXTENSION_NAME" />«</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> zahteva, da Google preveri identiteto naprave in tako določi, ali je ustrezna za izboljšano predvajanje zaščitene predstavnosti. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Mestom prepreči nastavljanje kakršnih koli podatkov</translation>
 <translation id="4342311272543222243">Napaka TPM.</translation>
 <translation id="4345587454538109430">Konfiguracija ...</translation>
@@ -2465,7 +2463,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4572659312570518089">Med povezovanjem z napravo »<ph name="DEVICE_NAME" />« je bilo preklicano preverjanje pristnosti.</translation>
 <translation id="4572815280350369984">Datoteka <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Več ...</translation>
-<translation id="4575703660920788003">Pritisnite Shift + Alt, če želite preklopiti razporeditev tipkovnice</translation>
 <translation id="4580526846085481512">Ali ste prepričani, da želite izbrisati $1 elementov?</translation>
 <translation id="458150753955139441">Pritisnite, če želite nazaj, s kontekstnim menijem pa prikažete zgodovino</translation>
 <translation id="4582447636905308869">Novi korejski UNV, ki temelji na mehanizmu HMM Google Orodij za vnos besedila.</translation>
@@ -3144,6 +3141,7 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="556042886152191864">Gumb</translation>
 <translation id="5565871407246142825">Kreditne kartice</translation>
 <translation id="5567989639534621706">Predpomnilniki aplikacij</translation>
+<translation id="5568069709869097550">Vpis ni mogoč</translation>
 <translation id="5569544776448152862">Včlanjevanje v domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> ...</translation>
 <translation id="5575473780076478375">Razširitev brez beleženja zgodovine: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Ponastavitev naprave ne bo vplivala na vaše Google Račune ali kakršne koli druge podatke, sinhronizirane s temi računi. Izbrisani pa bodo vsi podatki, shranjeni lokalno v napravi.</translation>
@@ -3194,7 +3192,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5642953011762033339">Prekini povezavo z računom</translation>
 <translation id="5646376287012673985">Lokacija</translation>
 <translation id="5649768706273821470">Poslušajte</translation>
-<translation id="5649823029736413118">Če želite predvajati plačljivo vsebino, mora <ph name="URL" /> enolično določiti vašo napravo.</translation>
 <translation id="5650551054760837876">Najden ni bil noben rezultat iskanja.</translation>
 <translation id="5653140146600257126">Mapa »$1« že obstaja. Izberite drugo ime.</translation>
 <translation id="5657667036353380798">Za zunanjo razširitev mora biti nameščen Chrome <ph name="MINIMUM_CHROME_VERSION" /> ali novejši.</translation>
@@ -4459,7 +4456,6 @@ Nekatere funkcije morda ne bodo na voljo. Preverite, ali profil obstaja in ali i
 <translation id="7626009897377900107">Ustvarjanje gesel</translation>
 <translation id="7627262197844840899">To spletno mesto ne sprejema kartic MasterCard.</translation>
 <translation id="7627790789328695202">Ups, datoteka <ph name="FILE_NAME" /> že obstaja. Preimenujte jo in poskusite znova.</translation>
-<translation id="7628079021897738671">V redu, razumem</translation>
 <translation id="762917759028004464">Privzeti brskalnik je trenutno <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Dovoli izpolnjevanje ustreznih spletnih mest s poverilnicami, shranjenimi za aplikacije za Android.</translation>
 <translation id="7629827748548208700">Zavihek: <ph name="TAB_NAME" /></translation>
@@ -5336,7 +5332,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="8925458182817574960">&amp;Nastavitve</translation>
 <translation id="8926389886865778422">Ne sprašuj več</translation>
 <translation id="8926518602592448999">Onemogočanje razširitev za razvijalski način</translation>
-<translation id="892867331564916668"><ph name="URL" /> želi shraniti datoteke v tej napravi.</translation>
 <translation id="8929454297483336498">Uporaba API-jev za ogrodje AVFoundation v sistemu Mac OS X namesto ogrodja QTKit</translation>
 <translation id="8931394284949551895">Nove naprave</translation>
 <translation id="8932730422557198035">Uporaba API-ja Android Midi</translation>

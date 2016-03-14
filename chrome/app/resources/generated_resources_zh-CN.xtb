@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1000498691615767391">选择要打开的文件夹</translation>
-<translation id="1000916256947465293">使用存储的凭据自动登录网站。当该功能处于关闭状态时，系统会在您每次登录网站之前要求您进行验证。</translation>
 <translation id="1005274289863221750">使用您的麦克风和摄像头</translation>
 <translation id="1007233996198401083">无法连接。</translation>
 <translation id="1007408791287232274">无法加载设备。</translation>
@@ -530,6 +529,7 @@
 <translation id="1747687775439512873">停用 WiMAX</translation>
 <translation id="174773101815569257">鼠标锁定</translation>
 <translation id="1749854530031883739">显示 TouchView（最大化模式）中无法最大化的窗口使用的灰色窗口背景幕。</translation>
+<translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="175196451752279553">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="1753682364559456262">管理图片拦截…</translation>
 <translation id="1753905327828125965">常去网站</translation>
@@ -2299,7 +2299,6 @@
 <translation id="4298972503445160211">丹麦语键盘</translation>
 <translation id="4299273509016391946">启用“打印预览”对话框中的“简化网页”复选框</translation>
 <translation id="4299729908419173967">巴西</translation>
-<translation id="4301786491084298653">在<ph name="DOMAIN" />中停用</translation>
 <translation id="430714521864499800">启用实验性“Cache-Control: stale-while-revalidate”指令实施功能。此操作可让服务器指定部分资源可在后台进行重新验证以改善延迟现象。</translation>
 <translation id="4307281933914537745">了解关于系统恢复的详情</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K（实际大小为 <ph name="NUM_KILOBYTES_LIVE" /> K）</translation>
@@ -2320,7 +2319,6 @@
 <translation id="4336032328163998280">复制操作失败。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">如需查看网络日志，请点击以下链接：<ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> 希望与“<ph name="EXTENSION_NAME" />”应用通信</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" />规定您的设备需通过Google的身份验证，以确定是否能使用受保护媒体的增强播放功能。<ph name="LEARN_MORE" />。</translation>
 <translation id="4341977339441987045">阻止网站设置任何数据</translation>
 <translation id="4342311272543222243">糟糕！出现 TPM 错误。</translation>
 <translation id="4345587454538109430">配置...</translation>
@@ -2454,7 +2452,6 @@
 <translation id="4572659312570518089">连接到“<ph name="DEVICE_NAME" />”时取消了身份验证。</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 文件</translation>
 <translation id="457386861538956877">更多...</translation>
-<translation id="4575703660920788003">按 Shift+Alt 可切换键盘布局。</translation>
 <translation id="4580526846085481512">您确定要删除这 $1 项吗？</translation>
 <translation id="458150753955139441">按该按钮可后退，使用上下文菜单可查看历史记录</translation>
 <translation id="4582447636905308869">新版韩语 IME（基于 Google 输入工具的 HMM 引擎）。</translation>
@@ -3126,6 +3123,7 @@
 <translation id="556042886152191864">按钮</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="5567989639534621706">应用缓存</translation>
+<translation id="5568069709869097550">无法登录</translation>
 <translation id="5569544776448152862">正在注册到 <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />…</translation>
 <translation id="5575473780076478375">隐身模式下使用的应用...<ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">重置您的设备不会影响您的 Google 帐户或已同步到这些帐户的任何数据，但您的设备中本地保存的所有文件都将被删除。</translation>
@@ -3175,7 +3173,6 @@
 <translation id="5642953011762033339">断开帐户连接</translation>
 <translation id="5646376287012673985">位置</translation>
 <translation id="5649768706273821470">收听</translation>
-<translation id="5649823029736413118"><ph name="URL" /> 需要唯一标识您的设备才能播放付费内容。</translation>
 <translation id="5650551054760837876">未找到搜索结果。</translation>
 <translation id="5653140146600257126">名为“$1”的目录已存在，请选择其他名称。</translation>
 <translation id="5657667036353380798">该外部扩展程序需要安装 <ph name="MINIMUM_CHROME_VERSION" /> 或更高版本的 Chrome。</translation>
@@ -4429,7 +4426,6 @@
 <translation id="7626009897377900107">密码生成功能</translation>
 <translation id="7627262197844840899">此网站不接受万事达卡。</translation>
 <translation id="7627790789328695202">糟糕，<ph name="FILE_NAME" />已存在。请改用其他名称并重试。</translation>
-<translation id="7628079021897738671">知道了</translation>
 <translation id="762917759028004464">目前的默认浏览器是 <ph name="BROWSER_NAME" />。</translation>
 <translation id="7629536005696009600">允许将存储的 Android 应用专用凭据填充到相应的网站。</translation>
 <translation id="7629827748548208700">标签页：<ph name="TAB_NAME" /></translation>
@@ -5304,7 +5300,6 @@
 <translation id="8925458182817574960">设置(&amp;S)</translation>
 <translation id="8926389886865778422">不再询问</translation>
 <translation id="8926518602592448999">请停用以开发者模式运行的扩展程序</translation>
-<translation id="892867331564916668"><ph name="URL" /> 想要在此设备上存储文件。</translation>
 <translation id="8929454297483336498">使用 Mac OS X AVFoundation API（而非 QTKit）</translation>
 <translation id="8931394284949551895">新设备</translation>
 <translation id="8932730422557198035">使用 Android Midi API</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1000498691615767391">Seleccioneu una carpeta per obrir</translation>
-<translation id="1000916256947465293">Inicia la sessió automàticament als llocs web amb les credencials emmagatzemades. Quan la funció està desactivada, se us demana que les verifiqueu sempre per iniciar la sessió en un lloc web.</translation>
 <translation id="1005274289863221750">Utilitzar el micròfon i la càmera</translation>
 <translation id="1007233996198401083">No es pot establir la connexió.</translation>
 <translation id="1007408791287232274">No s'han pogut carregar els dispositius.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Desactiva WiMAX</translation>
 <translation id="174773101815569257">Bloqueig del ratolí</translation>
 <translation id="1749854530031883739">Mostra els fons de finestra grisos que s'utilitzen a TouchView (mode maximitzat) darrere de finestres que no es poden maximitzar.</translation>
+<translation id="17513872634828108">Pestanyes obertes</translation>
 <translation id="175196451752279553">T&amp;orna a obrir la pestanya tancada</translation>
 <translation id="1753682364559456262">Gestiona el bloqueig d'imatges...</translation>
 <translation id="1753905327828125965">Els més visitats</translation>
@@ -2305,7 +2305,6 @@ Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="4298972503445160211">Teclat danès</translation>
 <translation id="4299273509016391946">Activa la casella de selecció per simplificar la pàgina al quadre de diàleg de previsualització de la impressió</translation>
 <translation id="4299729908419173967">Brasiler</translation>
-<translation id="4301786491084298653">Desactiva a <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Activa la implementació experimental de Cache-Control: directiva d'inactivitat durant la revalidació. Això permet que els servidors especifiquin que alguns recursos es puguin revalidar en segon pla per millorar la latència.</translation>
 <translation id="4307281933914537745">Més informació sobre la recuperació del sistema</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K actius)</translation>
@@ -2326,7 +2325,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4336032328163998280">L'operació de còpia ha fallat. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Si voleu veure els registres de xarxa, consulteu: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> es vol comunicar amb l'aplicació "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> requereix que Google verifiqui la identitat del vostre dispositiu per determinar si és apte per a la reproducció millorada de multimèdia protegit. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">No permetis que s'emmagatzemin dades dels llocs</translation>
 <translation id="4342311272543222243">S'ha produït un error de TPM.</translation>
 <translation id="4345587454538109430">Configura...</translation>
@@ -2460,7 +2458,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4572659312570518089">S'ha cancel·lat l'autenticació mentre es connectava a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Fitxer <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Més...</translation>
-<translation id="4575703660920788003">Premeu Maj + Alt per canviar el disseny del teclat.</translation>
 <translation id="4580526846085481512">Confirmeu que voleu suprimir  $1 elements?</translation>
 <translation id="458150753955139441">Premeu per retrocedir, utilitzeu el menú contextual per veure l'historial</translation>
 <translation id="4582447636905308869">Nou editor del mètode d'introducció de coreà, que es basa en el motor HMM de les Eines d'introducció de text de Google.</translation>
@@ -3135,6 +3132,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="556042886152191864">Botó</translation>
 <translation id="5565871407246142825">Targetes de crèdit</translation>
 <translation id="5567989639534621706">Memòries cau de l'aplicació</translation>
+<translation id="5568069709869097550">No puc accedir</translation>
 <translation id="5569544776448152862">S'està fent la inscripció a <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Extensió d'incògnit: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Si restabliu el dispositiu, no es produirà cap canvi als vostres comptes de Google ni a les dades sincronitzades en aquests comptes. No obstant això, se suprimiran tots els fitxers desats localment al dispositiu.</translation>
@@ -3185,7 +3183,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="5642953011762033339">Desconnecta el compte</translation>
 <translation id="5646376287012673985">Ubicació</translation>
 <translation id="5649768706273821470">Escolta</translation>
-<translation id="5649823029736413118"><ph name="URL" /> ha de ser un identificador únic del vostre dispositiu per reproduir contingut premium.</translation>
 <translation id="5650551054760837876">No s'han trobat resultats de cerca.</translation>
 <translation id="5653140146600257126">Ja existeix una carpeta anomenada "$1". Trieu un nom diferent.</translation>
 <translation id="5657667036353380798">L'extensió externa requereix que tingueu instal·lada la versió de Chrome <ph name="MINIMUM_CHROME_VERSION" /> o una de posterior.</translation>
@@ -3866,7 +3863,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6723354935081862304">Imprimeix a Google Docs i a altres destinacions al núvol. <ph name="BEGIN_LINK" />Inicia la sessió<ph name="END_LINK" /> per imprimir a Google Cloud Print.</translation>
 <translation id="6723661294526996303">Importa les adreces d'interès i la configuració...</translation>
 <translation id="6723839937902243910">Alimentació</translation>
-<translation id="6725240607822645708">Executa l'editor del mètode d'introducció a la conversa pròpia.</translation>
+<translation id="6725240607822645708">Executa l'editor de mètodes d'entrada a la conversa pròpia.</translation>
 <translation id="6725970970008349185">Nombre de candidats que es mostren per pàgina</translation>
 <translation id="672609503628871915">Novetats</translation>
 <translation id="6727005317916125192">Subfinestra anterior</translation>
@@ -4442,7 +4439,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7626009897377900107">Generació de contrasenyes</translation>
 <translation id="7627262197844840899">Aquest lloc no accepta MasterCard.</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> ja existeix. Canvieu-ne el nom i torneu-ho a provar.</translation>
-<translation id="7628079021897738671">D'acord</translation>
 <translation id="762917759028004464">El navegador predeterminat és <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Permet que les credencials desades a les aplicacions d'Android s'introdueixin als llocs web corresponents.</translation>
 <translation id="7629827748548208700">Pestanya: <ph name="TAB_NAME" /></translation>
@@ -4593,7 +4589,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7861215335140947162">&amp;Baixades</translation>
 <translation id="7864539943188674973">Desactiva el Bluetooth</translation>
 <translation id="7868891395842935202">Activa l'entorn de treball experimental per controlar l'accés als experiments de l'API.</translation>
-<translation id="7870576007982733437">Utilitza el gestor de baixades del sistema quan és pertinent.</translation>
+<translation id="7870576007982733437">Utilitza el gestor de baixades del sistema quan sigui pertinent.</translation>
 <translation id="7870790288828963061">No s'ha trobat cap aplicació de Quiosc amb una versió més nova. No hi ha res per actualitzar. Extraieu la memòria USB.</translation>
 <translation id="787150342916295244">Escaneig de targetes de crèdit</translation>
 <translation id="7874357055309047713">Executa sempre en tots els llocs</translation>
@@ -5238,7 +5234,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8795668016723474529">Afegir una targeta de crèdit</translation>
 <translation id="8795916974678578410">Finestra nova</translation>
 <translation id="8798099450830957504">Predeterminat</translation>
-<translation id="8799127529310003270">Si està activada, les crides d'InputConnection s'executen a la conversa de l'editor del mètode d'introducció i, en comptes de mantenir un editor de rèpliques, cada crida d'InputConnection es comunica directament amb el renderitzador.</translation>
+<translation id="8799127529310003270">Si està activada, les crides d'InputConnection s'executen a la conversa de l'editor de mètodes d'entrada i, en comptes de mantenir un editor de rèpliques, cada crida d'InputConnection es comunica directament amb el renderitzador.</translation>
 <translation id="8799839487311913894">Activa l'opció per actualitzar una contrasenya al gestor de contrasenyes després d'enviar un formulari per canviar la contrasenya.</translation>
 <translation id="8800004011501252845">S'estan mostrant les destinacions per a</translation>
 <translation id="8800420788467349919">Volum: <ph name="PRECENTAGE" /> %</translation>
@@ -5317,7 +5313,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8925458182817574960">&amp;Configuració</translation>
 <translation id="8926389886865778422">No m'ho tornis a preguntar</translation>
 <translation id="8926518602592448999">Desactivació de les extensions del mode desenvolupador</translation>
-<translation id="892867331564916668"><ph name="URL" /> vol emmagatzemar fitxers en aquest dispositiu.</translation>
 <translation id="8929454297483336498">Utilitza les API de Mac OS X AVFoundation, en lloc de QTKit</translation>
 <translation id="8931394284949551895">Dispositius nous</translation>
 <translation id="8932730422557198035">Utilitza l'API Midi d'Android</translation>

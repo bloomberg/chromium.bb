@@ -18,7 +18,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> का हमेशा अनुवाद करें</translation>
 <translation id="1107591249535594099">चेक किए होने पर, अधिक तेज़ फ़ॉर्म भरने के लिए Chrome इस डिवाइस पर आपके कार्ड की प्रतिलिपि संग्रहीत कर लेगा.</translation>
 <translation id="1113869188872983271">&amp;पुन: क्रमित करना वापस लाएं</translation>
-<translation id="111844081046043029">क्या आप वाकई इस पृष्ठ को छोड़ना चाहते हैं ?</translation>
 <translation id="112840717907525620">नीति संचय ठीक है</translation>
 <translation id="113188000913989374"><ph name="SITE" /> का कहना है:</translation>
 <translation id="1132774398110320017">Chrome स्‍वत:-भरण सेटिंग...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" /><ph name="DOMAIN" /> के किसी पृष्ठ पर जाने का <ph name="END_LINK" /> प्रयास अवरोधित किया गया.</translation>
 <translation id="1455235771979731432">आपका कार्ड सत्‍यापित करते समय समस्‍या हुई थी. अपना इंटरनेट कनेक्‍शन जांचें और पुन: प्रयास करें.</translation>
-<translation id="1491151370853475546">यह पृष्ठ पुन: लोड करें</translation>
 <translation id="1506687042165942984">इस पृष्‍ठ की सहेजी गई (अर्थात जिसे पुराना माना जाता है) कॉपी दिखाएं.</translation>
 <translation id="1519264250979466059">बिल्ड दिनांक</translation>
 <translation id="1549470594296187301">इस सुविधा का उपयोग करने के लिए JavaScript को सक्षम किया जाना चाहिए.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">उन्नत</translation>
 <translation id="201192063813189384">संचय से डेटा पढ़ने में त्रुटि.</translation>
 <translation id="2025186561304664664">प्रॉक्‍सी स्‍वत: कॉन्‍फ़‍िगर पर सेट है.</translation>
-<translation id="2025623846716345241">फिर से लोड की दुबारा पूछें</translation>
 <translation id="2030481566774242610">क्या आप मतलब <ph name="LINK" /> से है?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी और फायरवॉल की जांच करें<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ज़िप कोड</translation>
@@ -163,6 +160,7 @@
 <translation id="2650446666397867134">फ़ाइल तक पहुंच अस्वीकृत थी</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2674170444375937751">क्या आप वाकई अपने इतिहास से इन पृष्ठों को हटाना चाहते हैं?</translation>
+<translation id="2677748264148917807">छोड़ें</translation>
 <translation id="2704283930420550640">मान का प्रारूप से मिलान नहीं होता.</translation>
 <translation id="2705137772291741111">इस साइट की सहेजी गई (संचित) कॉपी पढ़ने योग्य नहीं थी.</translation>
 <translation id="2709516037105925701">स्‍वत: भरण</translation>
@@ -301,7 +299,6 @@
 <translation id="4058922952496707368">कुंजी "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">क्लाइंट और सर्वर, सामान्य SSL प्रोटोकॉल वर्शन या सिफ़र सुइट का समर्थन नहीं करते हैं.</translation>
 <translation id="4079302484614802869">प्रॉक्‍सी कॉन्‍फ़िगरेशन को .pac स्‍क्रिप्‍ट URL का उपयोग करने के लिए सेट किया जाता है, फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर के लिए नहीं.</translation>
-<translation id="409504436206021213">फिर से लोड न करें</translation>
 <translation id="4103249731201008433">डिवाइस की क्रम संख्या अमान्य है</translation>
 <translation id="4103763322291513355">काली सूची में डाले गए URL तथा आपके सिस्टम व्यवस्थापक द्वारा लागू की गई अन्य नीतियों को देखने के लिए &lt;strong&gt;chrome://policy&lt;/strong&gt; पर जाएं.</translation>
 <translation id="4117700440116928470">नीति क्षेत्र समर्थित नहीं है.</translation>
@@ -386,7 +383,6 @@
 <translation id="5199729219167945352">प्रयोग</translation>
 <translation id="5228309736894624122">SSL प्रोटोकॉल त्रुटि.</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
-<translation id="5295309862264981122">नेवीगेशन की दुबारा पूछें</translation>
 <translation id="5299298092464848405">नीति पार्स करने में त्रुटि</translation>
 <translation id="5300589172476337783">दिखाएं</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करें<ph name="END_LINK" /></translation>
@@ -481,7 +477,6 @@
 <translation id="647261751007945333">डिवाइस नीतियां</translation>
 <translation id="6489534406876378309">क्रैश अपलोड करना प्रारंभ करें</translation>
 <translation id="6500116422101723010">अभी सर्वर अनुरोध को पूरा करने में असमर्थ है. यह कोड बताता है कि यह एक अस्थायी स्थिति है, और थोड़ी देर बाद सर्वर फिर से कार्य करने लगेगा.</translation>
-<translation id="6512448926095770873">इस पृष्ठ से जाएं</translation>
 <translation id="6518133107902771759">सत्यापित करें</translation>
 <translation id="6529602333819889595">&amp;हटाना फिर से करें</translation>
 <translation id="6533019874004191247">असमर्थित URL.</translation>
@@ -492,7 +487,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> खोज</translation>
 <translation id="6634865548447745291">आप इस समय <ph name="SITE" /> पर विज़िट नहीं कर सकते क्योंकि <ph name="BEGIN_LINK" />यह प्रमाणपत्र निरस्त कर दिया गया है<ph name="END_LINK" />. नेटवर्क की त्रुटियां और हमले आमतौर पर अस्थायी होते हैं, इसलिए संभवत: पृष्ठ बाद में काम करने लगेगा.</translation>
 <translation id="6637478299472506933">डाउनलोड विफल</translation>
-<translation id="6642894344118208103">मॉडेम या राऊटर रीसेट करें</translation>
+<translation id="6642894344118208103">मॉडेम या राउटर रीसेट करें</translation>
 <translation id="6644283850729428850">यह नीति हटा दी गई है.</translation>
 <translation id="6646897916597483132">अपने कार्ड के सामने की ओर दिया गया 4 अंकों वाला CVC डालें</translation>
 <translation id="6656103420185847513">फ़ोल्‍डर संपादित करें</translation>
@@ -648,7 +643,6 @@
 <translation id="8293206222192510085">बुकमार्क जोड़ें</translation>
 <translation id="8294431847097064396">स्रोत</translation>
 <translation id="8308427013383895095">नेटवर्क कनेक्शन में कोई समस्या होने के कारण अनुवाद विफल हुआ.</translation>
-<translation id="8311778656528046050">क्‍या आप वाकई इस पृष्ठ को पुन: लोड करना चाहते हैं?</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> का एक्सेस अस्वीकृत किया गया</translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
@@ -718,7 +712,6 @@
 <translation id="9125941078353557812">अपने कार्ड के पीछे दिया गया 3 अंकों वाला CVC डालें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="9148507642005240123">&amp;संपादन वापस लाएं</translation>
-<translation id="9154176715500758432">इस पृष्ठ पर बनें रहें</translation>
 <translation id="9157595877708044936">सेट अप कर रहा है...</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="917450738466192189">सर्वर का प्रमाणपत्र अमान्य है.</translation>

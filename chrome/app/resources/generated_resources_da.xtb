@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1000498691615767391">Vælg en mappe, som skal åbnes</translation>
-<translation id="1000916256947465293">Log automatisk ind på websites med gemte loginoplysninger. Når funktionen er slået fra, bliver du bedt om bekræftelse, hver gang du vil logge ind på et website.</translation>
 <translation id="1005274289863221750">Bruge din mikrofon og dit kamera</translation>
 <translation id="1007233996198401083">Kunne ikke oprette forbindelse.</translation>
 <translation id="1007408791287232274">Enhederne kunne ikke læses.</translation>
@@ -530,6 +529,7 @@
 <translation id="1747687775439512873">Deaktiver WiMAX</translation>
 <translation id="174773101815569257">Muselås</translation>
 <translation id="1749854530031883739">Vis de grå vinduesbaggrunde, der anvendes i TouchView (maksimeringstilstand) bag ved vinduer, som ikke kan maksimeres.</translation>
+<translation id="17513872634828108">Åbne faner</translation>
 <translation id="175196451752279553">G&amp;enåbn lukket fane</translation>
 <translation id="1753682364559456262">Administrer blokering af billeder...</translation>
 <translation id="1753905327828125965">Mest besøgte</translation>
@@ -2305,7 +2305,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4298972503445160211">Dansk tastatur</translation>
 <translation id="4299273509016391946">Aktiverer afkrydsningsfeltet Gør siden mere enkel i dialogboksen Vis udskrift</translation>
 <translation id="4299729908419173967">Brasiliansk</translation>
-<translation id="4301786491084298653">Deaktiver på <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Aktivér den eksperimentelle implementering af "Cache-Control: stale-while-revalidate"-anvisningen. På den måde kan serverne angive, at nogle ressourcer kan valideres igen i baggrunden for at minimere forsinkelser.</translation>
 <translation id="4307281933914537745">Få flere oplysninger om systemgenoprettelse</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
@@ -2326,7 +2325,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4336032328163998280">Kopieringen mislykkedes. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">I forbindelse med netværkslogfiler kan du se: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ønsker at kommunikere med appen "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> kræver, at din enheds identitet bekræftes af Google, for at fastslå muligheden for forbedret afspilning af beskyttede medier. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Bloker altid websites fra at lagre data</translation>
 <translation id="4342311272543222243">Hov! Der opstod en TPM-fejl.</translation>
 <translation id="4345587454538109430">Konfigurer...</translation>
@@ -2460,7 +2458,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4572659312570518089">Godkendelsen blev annulleret under tilslutning til "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Flere...</translation>
-<translation id="4575703660920788003">Tryk på Shift+Alt for at skifte tastaturlayout</translation>
 <translation id="4580526846085481512">Er du sikker på, at du vil slette $1 elementer?</translation>
 <translation id="458150753955139441">Tryk for at gå tilbage – brug genvejsmenuen til at se historik</translation>
 <translation id="4582447636905308869">Ny koreansk IME, som er baseret på HMM-motoren fra Google Indtastningsværktøj.</translation>
@@ -3137,6 +3134,7 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="556042886152191864">Knap</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
 <translation id="5567989639534621706">Applikationscaches</translation>
+<translation id="5568069709869097550">Kan ikke logge ind</translation>
 <translation id="5569544776448152862">Tilmelder <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Inkognitoudvidelse: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Nulstilling af din enhed påvirker ikke dine Google-konti eller de data, der er synkroniseret til disse konti. Men alle filer, der er gemt lokalt på din enhed, slettes.</translation>
@@ -3186,7 +3184,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5642953011762033339">Afbryd konto</translation>
 <translation id="5646376287012673985">Placering</translation>
 <translation id="5649768706273821470">Lyt</translation>
-<translation id="5649823029736413118"><ph name="URL" /> skal identificere din enhed, før der kan afspilles Premium-indhold.</translation>
 <translation id="5650551054760837876">Ingen søgeresultater fundet.</translation>
 <translation id="5653140146600257126">Der findes allerede en mappe med navnet "$1". Vælg et andet navn.</translation>
 <translation id="5657667036353380798">Den eksterne udvidelse kræver Chrome-versionen <ph name="MINIMUM_CHROME_VERSION" /> eller nyere for at blive installeret.</translation>
@@ -4451,7 +4448,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7626009897377900107">Generering af adgangskode</translation>
 <translation id="7627262197844840899">Dette website accepterer ikke MasterCard.</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> findes allerede. Giv filen et nyt navn, og prøv igen.</translation>
-<translation id="7628079021897738671">OK, det er forstået.</translation>
 <translation id="762917759028004464"><ph name="BROWSER_NAME" /> er i øjeblikket din standardbrowser.</translation>
 <translation id="7629536005696009600">Tillad, at loginoplysninger, der gemmes i Android-applikationer, udfyldes på de tilknyttede websites.</translation>
 <translation id="7629827748548208700">Fane: <ph name="TAB_NAME" /></translation>
@@ -5328,7 +5324,6 @@ Beregner resterende tid</translation>
 <translation id="8925458182817574960">&amp;Indstillinger</translation>
 <translation id="8926389886865778422">Spørg ikke igen</translation>
 <translation id="8926518602592448999">Deaktiver udvidelser, der kører i udviklertilstand</translation>
-<translation id="892867331564916668"><ph name="URL" /> vil gemme filer på denne enhed.</translation>
 <translation id="8929454297483336498">Brug af Mac OS X AVFoundation-API'er i stedet for QTKit</translation>
 <translation id="8931394284949551895">Nye enheder</translation>
 <translation id="8932730422557198035">Anvend Android Midi API</translation>

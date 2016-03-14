@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Vienmēr tulkot <ph name="LANGUAGE" /> valodas saturu</translation>
 <translation id="1107591249535594099">Ja šī izvēles rūtiņa ir atzīmēta, pārlūks Chrome saglabās jūsu kartes kopiju šajā ierīcē, lai nodrošinātu ātrāku veidlapu aizpildi.</translation>
 <translation id="1113869188872983271">&amp;Atsaukt pārkārtošanu</translation>
-<translation id="111844081046043029">Vai jūs tiešām vēlaties pamest šo lapu?</translation>
 <translation id="112840717907525620">Politikas kešatmiņa ir labā stāvoklī.</translation>
 <translation id="113188000913989374">Vietnē <ph name="SITE" /> ir rakstīts:</translation>
 <translation id="1132774398110320017">Chrome automātiskās aizpildes iestatījumi...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Drukāt</translation>
 <translation id="1442912890475371290">Tika bloķēts mēģinājums <ph name="BEGIN_LINK" />apmeklēt lapu domēnā <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Verificējot jūsu karti, radās problēma. Pārbaudiet interneta savienojumu un mēģiniet vēlreiz.</translation>
-<translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
 <translation id="1506687042165942984">Rādīt saglabātu (t.i., novecojušu) šīs lapas versiju.</translation>
 <translation id="1519264250979466059">Būvējuma datums</translation>
 <translation id="1549470594296187301">Lai izmantotu šo funkciju, ir jābūt iespējotai valodai JavaScript.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Papildu</translation>
 <translation id="201192063813189384">Kļūda, lasot datus no kešatmiņas.</translation>
 <translation id="2025186561304664664">Starpniekserverim ir iestatīta autokonfigurācija.</translation>
-<translation id="2025623846716345241">Atkārtotas ielādes apstiprināšana</translation>
 <translation id="2030481566774242610">Vai domājāt <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Pārbaudiet starpniekserveri un ugunsmūri<ph name="END_LINK" />.</translation>
 <translation id="2053553514270667976">Pasta indekss</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Piekļuve failam tika noraidīta.</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2674170444375937751">Vai tiešām vēlaties dzēst šīs lapas no savas vēstures?</translation>
+<translation id="2677748264148917807">Iziet</translation>
 <translation id="2704283930420550640">Vērtība neatbilst formātam.</translation>
 <translation id="2705137772291741111">Nevar nolasīt šīs vietnes saglabāto (kešatmiņā ievietoto) kopiju.</translation>
 <translation id="2709516037105925701">Automātiskā aizpilde</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Atslēga <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klients un serveris neatbalsta bieži lietoto SSL protokola versiju vai šifra komplektu.</translation>
 <translation id="4079302484614802869">Starpniekserveris ir iestatīts, lai tas lietotu .pac skripta URL, nevis fiksētus starpniekserverus.</translation>
-<translation id="409504436206021213">Neielādēt atkārtoti</translation>
 <translation id="4103249731201008433">Ierīces sērijas numurs nav derīgs.</translation>
 <translation id="4103763322291513355">Apmeklējiet vietni &lt;strong&gt;chrome://policy&lt;/strong&gt;, lai skatītu melnajā sarakstā iekļautos vietrāžus URL, kā arī citas politikas, ko noteicis sistēmas administrators.</translation>
 <translation id="4117700440116928470">Politikas diapazons netiek atbalstīts.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Eksperimenti</translation>
 <translation id="5228309736894624122">SSL protokola kļūda.</translation>
 <translation id="5251803541071282808">Mākonis</translation>
-<translation id="5295309862264981122">Apstiprināt navigāciju</translation>
 <translation id="5299298092464848405">Parsējot politiku, radās kļūda.</translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Dzēsiet sīkfailus<ph name="END_LINK" />.</translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Ierīces politikas</translation>
 <translation id="6489534406876378309">Sākt avāriju datu augšupielādi</translation>
 <translation id="6500116422101723010">Serveris pašlaik nevar apstrādāt pieprasījumu.  Šis kods norāda, ka tas ir uz laiku, un serveris atkal darbosies pēc aizkaves.</translation>
-<translation id="6512448926095770873">Pamest šo lapu</translation>
 <translation id="6518133107902771759">Verificēt</translation>
 <translation id="6529602333819889595">&amp;Dzēšanas atsaukuma atcelšana</translation>
 <translation id="6533019874004191247">Neatbalstīts URL.</translation>
@@ -653,7 +648,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8293206222192510085">Pievienot grāmatzīmi</translation>
 <translation id="8294431847097064396">Avots</translation>
 <translation id="8308427013383895095">Tulkošana neizdevās, jo radās problēma ar tīkla savienojumu.</translation>
-<translation id="8311778656528046050">Vai jūs tiešām vēlaties atkārtoti ielādēt šo lapu?</translation>
 <translation id="8332188693563227489">Piekļuve vietnei <ph name="HOST_NAME" /> tika noraidīta</translation>
 <translation id="8349305172487531364">Grāmatzīmju josla</translation>
 <translation id="8363502534493474904">Izslēdziet lidojuma režīmu.</translation>
@@ -723,7 +717,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="9125941078353557812">Ievadiet 3 ciparu CVC kodu, kas norādīts jūsu kredītkartes aizmugurē.</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9148507642005240123">&amp;Atsaukt labojumu</translation>
-<translation id="9154176715500758432">Palikt šajā lapā</translation>
 <translation id="9157595877708044936">Notiek uzstādīšana...</translation>
 <translation id="9170848237812810038">&amp;Atsaukt</translation>
 <translation id="917450738466192189">Servera sertifikāts ir nederīgs.</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1000498691615767391">בחר תיקיה לפתיחה</translation>
-<translation id="1000916256947465293">היכנס אוטומטית אל אתרים באמצעות פרטי כניסה מאוחסנים. כשהתכונה כבויה, תתבקש לאמת לפני כל כניסה אל אתר.</translation>
 <translation id="1005274289863221750">להשתמש במיקרופון ובמצלמה</translation>
 <translation id="1007233996198401083">אין אפשרות להתחבר.</translation>
 <translation id="1007408791287232274">לא ניתן לטעון את המכשירים</translation>
@@ -529,6 +528,7 @@
 <translation id="1747687775439512873">‏השבת את WiMAX</translation>
 <translation id="174773101815569257">נעילת עכבר</translation>
 <translation id="1749854530031883739">‏הצג את רקעי החלון האפורים ב-TouchView (מצב גודל מקסימלי) מאחורי חלונות שלא ניתן להגדיל לגודל מקסימלי.</translation>
+<translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="175196451752279553">פ&amp;תח מחדש את הכרטיסייה הסגורה</translation>
 <translation id="1753682364559456262">נהל חסימת תמונות...</translation>
 <translation id="1753905327828125965">עם המבקרים הרבים ביותר</translation>
@@ -2298,7 +2298,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4298972503445160211">מקלדת דנית</translation>
 <translation id="4299273509016391946">מפעיל את תיבת הסימון 'דף פשוט יותר' בתיבת הדו-שיח 'תצוגה מקדימה להדפסה'</translation>
 <translation id="4299729908419173967">פורטוגזית (ברזיל)</translation>
-<translation id="4301786491084298653">השבת ב-<ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">‏הפעל את היישום הניסיוני של ההנחיה "Cache-Control: stale-while-revalidate". הדבר מאפשר לשרתים לציין שייתכן אימות מחדש של משאבים מסוימים ברקע כדי לשפר את זמן האחזור.</translation>
 <translation id="4307281933914537745">למידע נוסף על שחזור מערכת</translation>
 <translation id="4309420042698375243">‏‎<ph name="NUM_KILOBYTES" />K ‏‎(<ph name="NUM_KILOBYTES_LIVE" />K בשימוש)‎‎</translation>
@@ -2319,7 +2318,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4336032328163998280">פעולת ההעתקה נכשלה. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">ליומני רשת, ראה: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> רוצה לתקשר עם האפליקציה "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687">‏<ph name="DOMAIN" /> דורש אימות של זהות המכשיר שלך על ידי Google כדי להחליט אם הוא כשיר עבור הפעלה משופרת של מדיה מוגנת. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">חסום אתרים מהגדרת נתונים כלשהם</translation>
 <translation id="4342311272543222243">‏אופס, טעות של TPM.</translation>
 <translation id="4345587454538109430">הגדר...</translation>
@@ -2453,7 +2451,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4572659312570518089">האימות בוטל בעת ההתחברות ל-"<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">קובץ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">עוד...</translation>
-<translation id="4575703660920788003">‏הקש על Shift-Alt כדי להחליף פריסת מקלדת.</translation>
 <translation id="4580526846085481512">האם אתה בטוח שברצונך למחוק את פריטי $1 אלה?</translation>
 <translation id="458150753955139441">לחץ כדי לחזור אחורה, השתמש בתפריט הקשר כדי לראות היסטוריה</translation>
 <translation id="4582447636905308869">‏Korean IME חדש המבוסס על מנוע HMM של 'כלי Google לקליטת נתונים'.</translation>
@@ -3132,6 +3129,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="556042886152191864">לחצן</translation>
 <translation id="5565871407246142825">כרטיסי אשראי</translation>
 <translation id="5567989639534621706">קבצים שמורים של יישום</translation>
+<translation id="5568069709869097550">אי אפשר להיכנס</translation>
 <translation id="5569544776448152862">נרשם ל-<ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">תוסף של גלישה פרטית: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">‏איפוס של המכשיר לא ישפיע על חשבונות Google שלך או על נתונים המסונכרנים לחשבונות אלה. אך כל הקבצים המאוחסנים במכשיר באופן מקומי יימחקו.</translation>
@@ -3181,7 +3179,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5642953011762033339">נתק חשבון</translation>
 <translation id="5646376287012673985">מיקום</translation>
 <translation id="5649768706273821470">האזן</translation>
-<translation id="5649823029736413118"><ph name="URL" /> צריך לזהות את המכשיר שלך באופן ייחודי לצורך הפעלת תוכן בתשלום.</translation>
 <translation id="5650551054760837876">לא נמצאו תוצאות חיפוש.</translation>
 <translation id="5653140146600257126">כבר קיימת תיקיה בשם "$1". בחר שם אחר.</translation>
 <translation id="5657667036353380798">‏על מנת להתקין את התוסף החיצוני, על Chrome להיות מגרסה <ph name="MINIMUM_CHROME_VERSION" /> ומעלה.</translation>
@@ -4436,7 +4433,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7626009897377900107">יצירת סיסמה</translation>
 <translation id="7627262197844840899">‏אתר זה אינו מקבל כרטיסי אשראי מסוג MasterCard.</translation>
 <translation id="7627790789328695202">אופס, <ph name="FILE_NAME" /> כבר קיים. שנה את השם שלו ונסה שוב.</translation>
-<translation id="7628079021897738671">תודה, הבנתי</translation>
 <translation id="762917759028004464">דפדפן ברירת המחדל הוא כרגע <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">‏התר שימוש בפרטי כניסה המאוחסנים בשביל אפליקציות Android למילוי באתרים תואמים.</translation>
 <translation id="7629827748548208700">כרטיסייה: <ph name="TAB_NAME" /></translation>
@@ -5311,7 +5307,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8925458182817574960">&amp;הגדרות</translation>
 <translation id="8926389886865778422">אל תשאל שוב</translation>
 <translation id="8926518602592448999">השבתת תוספים במצב מפתח</translation>
-<translation id="892867331564916668"><ph name="URL" /> רוצה לאחסן קבצים במכשיר זה.</translation>
 <translation id="8929454297483336498">‏שימוש ב-AVFoundation APIs של Mac OS X, במקום ב-QTKit</translation>
 <translation id="8931394284949551895">מכשירים חדשים</translation>
 <translation id="8932730422557198035">‏השתמש בממשק ה-API של Android Midi</translation>

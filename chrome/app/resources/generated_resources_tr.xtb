@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="1000498691615767391">Açılacak klasörü seç</translation>
-<translation id="1000916256947465293">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
 <translation id="1005274289863221750">Mikrofonunuzu ve kameranızı kullanma</translation>
 <translation id="1007233996198401083">Bağlantı kurulamıyor.</translation>
 <translation id="1007408791287232274">Cihazlar yüklenemedi.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">WiMAX'i devre dışı bırak</translation>
 <translation id="174773101815569257">Farenin Kilitlenmesi</translation>
 <translation id="1749854530031883739">TouchView'da (tam ekran modu), ekranı kaplar duruma getirilemeyen pencerelerin arkasında kalan alanda gri pencere arka planları gösterir.</translation>
+<translation id="17513872634828108">Açık sekmeler</translation>
 <translation id="175196451752279553">&amp;Kapatılan sekmeyi yeniden aç</translation>
 <translation id="1753682364559456262">Resim engellemeyi yönet...</translation>
 <translation id="1753905327828125965">En Çok Ziyaret Edilenler</translation>
@@ -2309,7 +2309,6 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="4298972503445160211">Danca klavye</translation>
 <translation id="4299273509016391946">Yazdırma önizleme iletişim kutusunda sayfayı basitleştir onay kutusunu etkinleştirir</translation>
 <translation id="4299729908419173967">Brezilya Dili</translation>
-<translation id="4301786491084298653"><ph name="DOMAIN" /> alan adında devre dışı bırak</translation>
 <translation id="430714521864499800">Deneysel "Cache-Control: stale-while-revalidate" yönergesini uygulamayı etkinleştir. Bu, sunucunun gecikme süresini iyileştirmek üzere bazı kaynakların arka planda tekrar doğrulanabileceğini belirtmeye izin verir.</translation>
 <translation id="4307281933914537745">Sistem kurtarma hakkında daha fazla bilgi edinin</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K aktif)</translation>
@@ -2330,7 +2329,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4336032328163998280">Kopyalama işlemi başarısız oldu. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Ağ günlükleri için bkz: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" />, "<ph name="EXTENSION_NAME" />" uygulamasıyla iletişim kurmak istiyor</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" />, cihazınızın korumalı medyaya ilişkin gelişmiş oynatma için uygun olup olmadığını belirlemek üzere cihaz kimliğinizin Google tarafından doğrulanmasını gerektiriyor. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Sitelerin veri ayarlamasını engelle</translation>
 <translation id="4342311272543222243">Hata! TPM hatası.</translation>
 <translation id="4345587454538109430">Yapılandır...</translation>
@@ -2464,7 +2462,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" cihazına bağlanırken kimlik doğrulaması iptal edildi.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> dosyası</translation>
 <translation id="457386861538956877">Diğer...</translation>
-<translation id="4575703660920788003">Klavye düzenini değiştirmek için ÜstKrkt-Alt tuşlarına basın.</translation>
 <translation id="4580526846085481512">$1 öğeyi silmek istediğiniz emin misiniz?</translation>
 <translation id="458150753955139441">Geri gitmek için basın, geçmişi görüntülemek için içerik menüsünü kullanın</translation>
 <translation id="4582447636905308869">Google Harf Çevirme Araçları'nın HMM motorunu esas alan yeni Korece IME.</translation>
@@ -3143,6 +3140,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="556042886152191864">Düğme</translation>
 <translation id="5565871407246142825">Kredi kartları</translation>
 <translation id="5567989639534621706">Uygulama önbellekleri</translation>
+<translation id="5568069709869097550">Oturum açılamıyor</translation>
 <translation id="5569544776448152862">Şuraya kaydediliyor: <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Gizli Mod Uzantısı: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Cihazınızı sıfırlamak Google hesaplarınızı veya o hesaplarla senkronize edilmiş verileri etkilemez. Ancak yerel olarak cihazınıza kaydedilmiş tüm dosyalar silinir.</translation>
@@ -3193,7 +3191,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5642953011762033339">Hesabın bağlantısını kes</translation>
 <translation id="5646376287012673985">Konum</translation>
 <translation id="5649768706273821470">Dinle</translation>
-<translation id="5649823029736413118"><ph name="URL" />, premium içerikler oynatmak için cihazınızı benzersiz şekilde tanımlamalıdır.</translation>
 <translation id="5650551054760837876">Arama sonucu bulunamadı.</translation>
 <translation id="5653140146600257126">"$1" adlı klasör zaten var. Lütfen farklı bir ad seçin.</translation>
 <translation id="5657667036353380798">Harici uzantının yüklenebilmesi için Chrome sürümü <ph name="MINIMUM_CHROME_VERSION" /> veya daha yenisi gerekir.</translation>
@@ -4457,7 +4454,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7626009897377900107">Şifre oluşturma</translation>
 <translation id="7627262197844840899">Bu sitede MasterCard kabul edilmiyor.</translation>
 <translation id="7627790789328695202">Hata! <ph name="FILE_NAME" /> zaten mevcut. Yeniden adlandırın ve tekrar deneyin.</translation>
-<translation id="7628079021897738671">Tamam, anladım.</translation>
 <translation id="762917759028004464">Varsayılan tarayıcı şu anda <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Android uygulamaları için depolanan kimlik bilgilerinin ilgili web sitelerinde doldurulmasına izin verin.</translation>
 <translation id="7629827748548208700">Sekme: <ph name="TAB_NAME" /></translation>
@@ -5334,7 +5330,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8925458182817574960">&amp;Ayarlar</translation>
 <translation id="8926389886865778422">Bir daha sorma</translation>
 <translation id="8926518602592448999">Geliştirici Modu Uzantılarını Devre Dışı Bırakın</translation>
-<translation id="892867331564916668"><ph name="URL" />, dosyaları bu cihazda depolamak istiyor.</translation>
 <translation id="8929454297483336498">QTKit yerine Mac OS X AVFoundation API'larını kullanma</translation>
 <translation id="8931394284949551895">Yeni cihazlar</translation>
 <translation id="8932730422557198035">Android Midi API'sını kullan</translation>

@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Kung lalagyan ng check, mag-iimbak ang Chrome ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
 <translation id="1113869188872983271">&amp;I-undo ang pagbabago sa ayos</translation>
-<translation id="111844081046043029">Sigurado ka ba na nais mong iwanan ang pahinang ito?</translation>
 <translation id="112840717907525620">OK ang cache ng patakaran</translation>
 <translation id="113188000913989374">Isinasaad ng <ph name="SITE" /> na:</translation>
 <translation id="1132774398110320017">Mga setting ng Autofill ng Chrome...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">I-print</translation>
 <translation id="1442912890475371290">Na-block na pagtangkang <ph name="BEGIN_LINK" /> bumisita ng isang pahina sa <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Nagkaroon ng problema sa pag-verify ng iyong card. Tingnan ang koneksyon sa internet at subukang muli.</translation>
-<translation id="1491151370853475546">I-reload ang Pahinang Ito</translation>
 <translation id="1506687042165942984">Magpakita ng naka-save (ibigsabihin alam na hindi napapanahon) na kopya ng page na ito.</translation>
 <translation id="1519264250979466059">Petsa ng Build</translation>
 <translation id="1549470594296187301">Dapat naka-enable ang JavaScript upang magamit ang feature na ito.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="201192063813189384">Error sa pagbabasa ng data mula sa cache.</translation>
 <translation id="2025186561304664664">Nakatakda sa awtomatikong naka-configure ang proxy.</translation>
-<translation id="2025623846716345241">Kumpirmahin ang Pag-reload</translation>
 <translation id="2030481566774242610">Ang ibig mo bang sabihin ay <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Suriin ang proxy at ang firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ZIP code</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Tinanggihan ang access sa file</translation>
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2674170444375937751">Sigurado ka bang nais mong tanggalin ang mga pahinang ito mula sa iyong history?</translation>
+<translation id="2677748264148917807">Umalis</translation>
 <translation id="2704283930420550640">Hindi tumutugma ang format sa halaga.</translation>
 <translation id="2705137772291741111">Hindi mabasa ang naka-save (naka-cache) na kopya ng site na ito.</translation>
 <translation id="2709516037105925701">AutoFill</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Key "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Hindi sinusuportahan ng client at server ang isang karaniwang bersyon o cipher suite ng SSL protocol.</translation>
 <translation id="4079302484614802869">Nakatakda ang configuration ng proxy upang gumamit ng isang .pac script URL, hindi ng mga hindi nababagong proxy server.</translation>
-<translation id="409504436206021213">Huwag I-reload</translation>
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
 <translation id="4103763322291513355">Bisitahin ang &lt;strong&gt;chrome://policy&lt;/strong&gt; upang makita ang listahan ng mga naka-blacklist na URL at iba pang mga patakaran na ipinapatupad ng iyong system administrator.</translation>
 <translation id="4117700440116928470">Hindi sinusuportahan ang saklaw ng patakaran.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Mga Eksperimento</translation>
 <translation id="5228309736894624122">SSL protocol error.</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5295309862264981122">Kumpirmahin ang Pag-nabiga</translation>
 <translation id="5299298092464848405">Error sa pag-parse ng patakaran</translation>
 <translation id="5300589172476337783">Ipakita</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />I-clear ang iyong cookies<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Mga patakaran sa device</translation>
 <translation id="6489534406876378309">Simulang mag-upload ng mga pag-crash</translation>
 <translation id="6500116422101723010">Kasalukuyang hindi nagawang hawakan ng server ang kahilingan.  Isinasaad ng code na ito na isa itong pansamantalang kundisyon, at gagana muli ang server pagkatapos ng pagkaantala.</translation>
-<translation id="6512448926095770873">Iwanan ang Pahinang ito</translation>
 <translation id="6518133107902771759">I-verify</translation>
 <translation id="6529602333819889595">&amp;Gawing Muli ang Pagtanggal</translation>
 <translation id="6533019874004191247">Di suportadong URL.</translation>
@@ -653,7 +648,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8293206222192510085">Magdagdag ng Bookmark</translation>
 <translation id="8294431847097064396">Pinagmulan</translation>
 <translation id="8308427013383895095">Nabigo ang translation dahil sa problema sa koneksyon sa network.</translation>
-<translation id="8311778656528046050">Sigurado ka bang nais mong i-reload ang pahinang ito?</translation>
 <translation id="8332188693563227489">Tinanggihan ang access sa <ph name="HOST_NAME" /></translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
 <translation id="8363502534493474904">I-off ang airplane mode</translation>
@@ -724,7 +718,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="9125941078353557812">Ilagay ang CVC na may 3 digit mula sa likod ng iyong card</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9148507642005240123">&amp;I-undo ang pag-e-edit</translation>
-<translation id="9154176715500758432">Manatili sa Pahinang ito</translation>
 <translation id="9157595877708044936">Nagse-set up...</translation>
 <translation id="9170848237812810038">&amp;I-undo</translation>
 <translation id="917450738466192189">Di-wastong certificate ng server.</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1000498691615767391">Select a folder to open</translation>
-<translation id="1000916256947465293">Automatically sign in to websites using stored credential. When the feature is off, you'll be asked for verification every time before signing in to a website.</translation>
 <translation id="1005274289863221750">Use your microphone and camera</translation>
 <translation id="1007233996198401083">Unable to connect</translation>
 <translation id="1007408791287232274">Could not load devices.</translation>
@@ -534,6 +533,7 @@
 <translation id="1747687775439512873">Disable WiMAX</translation>
 <translation id="174773101815569257">Mouse Lock</translation>
 <translation id="1749854530031883739">Show grey window backdrops used in TouchView (maximise mode) behind windows which cannot be maximised.</translation>
+<translation id="17513872634828108">Open tabs</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
 <translation id="1753682364559456262">Manage image blocking...</translation>
 <translation id="1753905327828125965">Most Visited</translation>
@@ -2309,7 +2309,6 @@ All users must sign out to continue.</translation>
 <translation id="4298972503445160211">Danish keyboard</translation>
 <translation id="4299273509016391946">Enables the simplify page tick box on the print preview dialogue</translation>
 <translation id="4299729908419173967">Brazilian</translation>
-<translation id="4301786491084298653">Disable on <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Enable the experimental implementation of the "Cache-Control: stale-while-revalidate" directive. This permits servers to specify that some resources may be revalidated in the background to improve latency.</translation>
 <translation id="4307281933914537745">Learn more about system recovery</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
@@ -2330,7 +2329,6 @@ Press any key to continue exploring.</translation>
 <translation id="4336032328163998280">Copy operation failed. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">For network logs, see: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> wants to communicate with the app "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> requires your device's identity to be verified, by Google, to determine eligibility for enhanced playback of protected media. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Block sites from setting any data</translation>
 <translation id="4342311272543222243">Oops, TPM error.</translation>
 <translation id="4345587454538109430">Configure...</translation>
@@ -2464,7 +2462,6 @@ Press any key to continue exploring.</translation>
 <translation id="4572659312570518089">Authentication cancelled while connecting to "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> file</translation>
 <translation id="457386861538956877">More...</translation>
-<translation id="4575703660920788003">Hit Shift-Alt to change the keyboard layout.</translation>
 <translation id="4580526846085481512">Are you sure that you want to delete these $1 items?</translation>
 <translation id="458150753955139441">Press to go back, use context menu to see history</translation>
 <translation id="4582447636905308869">New Korean IME, which is based on Google Input Tools' HMM engine.</translation>
@@ -3143,6 +3140,7 @@ Press any key to continue exploring.</translation>
 <translation id="556042886152191864">Button</translation>
 <translation id="5565871407246142825">Credit cards</translation>
 <translation id="5567989639534621706">Application Caches</translation>
+<translation id="5568069709869097550">Can't sign in</translation>
 <translation id="5569544776448152862">Enrolling in <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Incognito Extension: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Resetting your device will not affect your Google accounts or any data synced to these accounts. However, all files saved locally on your device will be deleted.</translation>
@@ -3192,7 +3190,6 @@ Press any key to continue exploring.</translation>
 <translation id="5642953011762033339">Disconnect account</translation>
 <translation id="5646376287012673985">Location</translation>
 <translation id="5649768706273821470">Listen</translation>
-<translation id="5649823029736413118"><ph name="URL" /> needs to uniquely identify your device to play premium content.</translation>
 <translation id="5650551054760837876">No search results found.</translation>
 <translation id="5653140146600257126">The directory named "$1" already exists. Please choose a different name.</translation>
 <translation id="5657667036353380798">The external extension requires chrome version <ph name="MINIMUM_CHROME_VERSION" /> or greater to be installed.</translation>
@@ -4461,7 +4458,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7626009897377900107">Password generation</translation>
 <translation id="7627262197844840899">This site doesn't accept MasterCard.</translation>
 <translation id="7627790789328695202">Whoops, <ph name="FILE_NAME" /> already exists. Rename it and try again.</translation>
-<translation id="7628079021897738671">OK, I've got it</translation>
 <translation id="762917759028004464">The default browser is currently <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Allow credentials stored for Android applications to be filled into corresponding websites.</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
@@ -5338,7 +5334,6 @@ Calculating time until full</translation>
 <translation id="8925458182817574960">&amp;Settings</translation>
 <translation id="8926389886865778422">Don't ask again</translation>
 <translation id="8926518602592448999">Disable Developer Mode Extensions</translation>
-<translation id="892867331564916668"><ph name="URL" /> wants to store files on this device.</translation>
 <translation id="8929454297483336498">Use of Mac OS X AVFoundation APIs, instead of QTKit</translation>
 <translation id="8931394284949551895">New devices</translation>
 <translation id="8932730422557198035">Use Android Midi API</translation>

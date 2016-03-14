@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Jika ditandai, Chrome akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
 <translation id="1113869188872983271">&amp;Buat asal susun semula</translation>
-<translation id="111844081046043029">Adakah anda pasti anda mahu meninggalkan halaman ini?</translation>
 <translation id="112840717907525620">Cache dasar OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> menyatakan:</translation>
 <translation id="1132774398110320017">Tetapan Auto Isi Chrome...</translation>
@@ -26,7 +25,7 @@
 <translation id="1150979032973867961">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK" />salinan cache<ph name="END_LINK" /> <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> menutup sambungan tanpa di jangka.</translation>
-<translation id="1161325031994447685">Menyambung semula ke Wi-Fi</translation>
+<translation id="1161325031994447685">Menyambung semula kepada Wi-Fi</translation>
 <translation id="1175364870820465910">&amp;Cetak...</translation>
 <translation id="1181037720776840403">Buang</translation>
 <translation id="1195447618553298278">Ralat tidak diketahui.</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1442912890475371290">Percubaan <ph name="BEGIN_LINK" />untuk melawat halaman di <ph name="DOMAIN" /><ph name="END_LINK" /> disekat.</translation>
 <translation id="1455235771979731432">Terdapat masalah mengesahkan kad anda. Semak sambungan internet anda dan cuba lagi.</translation>
-<translation id="1491151370853475546">Muatkan semula Halaman Ini</translation>
 <translation id="1506687042165942984">Tunjukkan salinan yang disimpan (iaitu diketahui telah lapuk) bagi halaman ini.</translation>
 <translation id="1519264250979466059">Tarikh Bina</translation>
 <translation id="1549470594296187301">Javascript mesti didayakan untuk menggunakan ciri ini.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="201192063813189384">Ralat membaca data daripada cache.</translation>
 <translation id="2025186561304664664">Proksi ditetapkan kepada auto konfigurasi.</translation>
-<translation id="2025623846716345241">Sahkan Muat Semula</translation>
 <translation id="2030481566774242610">Adakah anda maksudkan <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Menyemak proksi dan tembok api<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Poskod</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Akses ke fail dinafikan</translation>
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2674170444375937751">Adakah anda pasti anda mahu memadamkan halaman ini daripada sejarah anda?</translation>
+<translation id="2677748264148917807">Tinggalkan</translation>
 <translation id="2704283930420550640">Nilai tidak sepadan dengan format.</translation>
 <translation id="2705137772291741111">Salinan tapak ini yang disimpan (cache) tidak boleh dibaca.</translation>
 <translation id="2709516037105925701">Autoisi</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Kekunci "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Pelanggan dan pelayan tidak menyokong versi protokol SSL atau set sifer biasa.</translation>
 <translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
-<translation id="409504436206021213">Jangan Muat Semula</translation>
 <translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
 <translation id="4103763322291513355">Lawati &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat senarai URL yang disenarai hitam dan dasar lain yang dikuatkuasakan oleh pentadbir sistem anda.</translation>
 <translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Eksperimen</translation>
 <translation id="5228309736894624122">Ralat protokol SSL.</translation>
 <translation id="5251803541071282808">Awan</translation>
-<translation id="5295309862264981122">Sahkan Navigasi</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Menghapuskan kuki<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Dasar peranti</translation>
 <translation id="6489534406876378309">Mulakan muat naik ranap sistem</translation>
 <translation id="6500116422101723010">Pelayan kini tidak dapat mengendalikan permintaan.  Kod ini menunjukkan ini adalah keadaan sementara, dan pelayan akan pulih semula selepas penangguhan.</translation>
-<translation id="6512448926095770873">Tinggalkan Halaman ini</translation>
 <translation id="6518133107902771759">Sahkan</translation>
 <translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
 <translation id="6533019874004191247">URL tidak disokong.</translation>
@@ -653,7 +648,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8293206222192510085">Tambah Penanda Halaman</translation>
 <translation id="8294431847097064396">Sumber</translation>
 <translation id="8308427013383895095">Gagal terjemahan kerana masalah dengan sambungan rangkaian.</translation>
-<translation id="8311778656528046050">Adakah anda pasti mahu memuat semula halaman ini?</translation>
 <translation id="8332188693563227489">Akses ke <ph name="HOST_NAME" /> dinafikan</translation>
 <translation id="8349305172487531364">Bar penanda halaman</translation>
 <translation id="8363502534493474904">Matikan mod pesawat</translation>
@@ -723,7 +717,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="9125941078353557812">Masukkan CVC 3 digit dari bahagian belakang kad anda</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
 <translation id="9148507642005240123">&amp;Buat asal edit</translation>
-<translation id="9154176715500758432">Kekal di Halaman ini</translation>
 <translation id="9157595877708044936">Menyediakan...</translation>
 <translation id="9170848237812810038">&amp;Buat asal</translation>
 <translation id="917450738466192189">Sijil pelayan tidak sah.</translation>

@@ -183,9 +183,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="1859633270756049523">Limita la durata della sessione</translation>
 <translation id="1859859319036806634">Avviso. Il fallback della versione TLS sarà rimosso da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo settembre 2016), dopodiché questa norma non sarà più attiva.
 
-      Se lo handshake non riesce TLS, <ph name="PRODUCT_NAME" /> proverà a stabilire una connessione con una versione precedente di TLS per risolvere i bug nei server HTTPS. Con questa impostazione viene configurata la versione in cui si interrompe il processo di fallback. Se un server esegue correttamente la negoziazione della versione (cioè senza interrompere la connessione), questa impostazione non viene applicata. In ogni caso, la connessione risultante deve essere conforme a SSLVersionMin.
+      Se lo handshake TLS non riesce, <ph name="PRODUCT_NAME" /> proverà a stabilire una connessione con una versione precedente di TLS per risolvere i bug nei server HTTPS. Con questa impostazione viene configurata la versione in cui si interrompe il processo di fallback. Se un server esegue correttamente la negoziazione della versione (cioè senza interrompere la connessione), questa impostazione non viene applicata. In ogni caso, la connessione risultante deve essere conforme a SSLVersionMin.
 
-      Se questa norma non è configurata o se viene impostata su "tls1.2", <ph name="PRODUCT_NAME" /> non eseguirà più il fallback. Il supporto per le versioni precedenti di TLS non viene disattivato, solo se <ph name="PRODUCT_NAME" /> ovvierà ai server con errori che non sono in grado di negoziare correttamente le versioni.
+      Se questa norma non è configurata o se viene impostata su "tls1.2", <ph name="PRODUCT_NAME" /> non eseguirà più il fallback. Il supporto per le versioni precedenti di TLS non viene disattivato, solo se <ph name="PRODUCT_NAME" /> eviterà i server che presentano errori e che non sono in grado di trattare correttamente le versioni.
 
       In caso contrario, se è necessario mantenere la compatibilità con un server con errori, è possibile impostare la norma su "tls1.1". Si tratta di una misura temporanea ed è necessario correggere rapidamente il server.</translation>
 <translation id="1861037019115362154">Consente di specificare un elenco di plug-in non attivi in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
@@ -1388,7 +1388,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
           Se questa norma non viene impostata, la tastiera sullo schermo è disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la tastiera sullo schermo in qualsiasi momento e il relativo stato sulla schermata di accesso viene mantenuto tra utenti differenti.</translation>
 <translation id="6598235178374410284">Immagine avatar utente</translation>
-<translation id="6628646143828354685">Permette di stabilire se consentire o meno l'accesso ai dispositivi Bluetooth nelle vicinanze. L'accesso può essere bloccato completamente oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera accedere ai dispositivi Bluetooth nelle vicinanze.
+<translation id="6628646143828354685">Permette di stabilire se consentire o meno l'accesso ai dispositivi Bluetooth nelle vicinanze. L'accesso può essere bloccato completamente oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera accedere ai dispositivi Bluetooth vicini.
 
           Se questa norma non viene impostata, verrà utilizzato il valore "3", che potrà essere modificato dall'utente.</translation>
 <translation id="6636268606788232221">Consente di configurare le impostazioni di gestione dell'alimentazione quando l'utente diventa inattivo.

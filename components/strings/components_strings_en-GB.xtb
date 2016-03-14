@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Always translate <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">If ticked, Chrome will store a copy of your card on this device for faster form filling.</translation>
 <translation id="1113869188872983271">&amp;Undo reorder</translation>
-<translation id="111844081046043029">Are you sure that you want to leave this page?</translation>
 <translation id="112840717907525620">Policy cache OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> says:</translation>
 <translation id="1132774398110320017">Chrome Auto-fill settings...</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Print</translation>
 <translation id="1442912890475371290">Blocked attempt <ph name="BEGIN_LINK" /> to visit a page on <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">There was a problem verifying your card. Check your Internet connection and try again.</translation>
-<translation id="1491151370853475546">Reload this Page</translation>
 <translation id="1506687042165942984">Show a saved (i.e. known to be out of date) copy of this page.</translation>
 <translation id="1519264250979466059">Build Date</translation>
 <translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="201192063813189384">Error reading data from cache.</translation>
 <translation id="2025186561304664664">Proxy is set to auto-configured.</translation>
-<translation id="2025623846716345241">Confirm Reload</translation>
 <translation id="2030481566774242610">Did you mean <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Checking the proxy and the firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ZIP code</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Access to the file was denied</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
+<translation id="2677748264148917807">Leave</translation>
 <translation id="2704283930420550640">Value doesn't match format.</translation>
 <translation id="2705137772291741111">The saved (cached) copy of this site was unreadable.</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Key "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">The client and server don't support a common SSL protocol version or cipher suite.</translation>
 <translation id="4079302484614802869">Proxy configuration is set to use a .pac script URL, not fixed proxy servers.</translation>
-<translation id="409504436206021213">Don't Reload</translation>
 <translation id="4103249731201008433">Device serial number is invalid</translation>
 <translation id="4103763322291513355">Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.</translation>
 <translation id="4117700440116928470">Policy scope is not supported.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Experiments</translation>
 <translation id="5228309736894624122">SSL protocol error.</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5295309862264981122">Confirm Navigation</translation>
 <translation id="5299298092464848405">Error parsing policy</translation>
 <translation id="5300589172476337783">Show</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Clearing your cookies<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Device policies</translation>
 <translation id="6489534406876378309">Start uploading crashes</translation>
 <translation id="6500116422101723010">The server is currently unable to handle the request. This code indicates that this is a temporary condition and that the server will be up again after a delay.</translation>
-<translation id="6512448926095770873">Leave this Page</translation>
 <translation id="6518133107902771759">Verify</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6533019874004191247">Unsupported URL.</translation>
@@ -653,7 +648,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8293206222192510085">Add Bookmark</translation>
 <translation id="8294431847097064396">Source</translation>
 <translation id="8308427013383895095">The translation failed because of a problem with the network connection.</translation>
-<translation id="8311778656528046050">Are you sure you want to reload this page?</translation>
 <translation id="8332188693563227489">Access to <ph name="HOST_NAME" /> was denied</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
 <translation id="8363502534493474904">Turning off aeroplane mode</translation>
@@ -723,7 +717,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="9125941078353557812">Enter the 3-digit CVC from the back of your card</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9148507642005240123">&amp;Undo edit</translation>
-<translation id="9154176715500758432">Stay on this Page</translation>
 <translation id="9157595877708044936">Setting up...</translation>
 <translation id="9170848237812810038">&amp;Undo</translation>
 <translation id="917450738466192189">Server's certificate is invalid.</translation>

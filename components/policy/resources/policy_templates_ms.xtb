@@ -213,13 +213,13 @@
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="1859633270756049523">Hadkan panjang sesi</translation>
-<translation id="1859859319036806634">Amaran: Jatuh balik versi TLS akan dialih keluar daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (lebih kurang September 2016) dan selepas itu dasar ini akan berhenti berfungsi.
+<translation id="1859859319036806634">Amaran: Jatuh balik versi TLS akan dialih keluar daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (sekitar September 2016) dan selepas itu dasar ini akan berhenti berfungsi.
 
       Apabila jabat tangan TLS gagal, <ph name="PRODUCT_NAME" /> akan mencuba semula sambungan dengan versi TLS yang lebih rendah bagi membetulkan pepijat dalam pelayan HTTPS. Tetapan ini mengkonfigurasikan versi pada takat mana proses jatuh balik ini berhenti. Jika pelayan melaksanakan rundingan versi dengan betul (iaitu tanpa memutuskan sambungan) maka tetapan ini tidak akan digunakan. Walau apa pun, sambungan yang terhasil tetap perlu mematuhi SSLVersionMin.
 
-      Jika dasar ini tidak dikonfigurasikan atau jika ditetapkan kepada "tls1.2" maka <ph name="PRODUCT_NAME" /> tidak lagi akan melaksanakan jatuh balik ini. Perhatian, ini tidak melumpuhkan sokongan untuk versi TLS yang lebih lama, hanya sama ada <ph name="PRODUCT_NAME" /> akan membetulkan pelayan berpepijat yang tidak dapat merundingkan versi dengan betul.
+      Jika dasar ini tidak dikonfigurasikan atau jika ditetapkan kepada "tls1.2" maka <ph name="PRODUCT_NAME" /> tidak lagi akan melaksanakan jatuh balik ini. Perhatian, langkah ini tidak melumpuhkan sokongan untuk versi TLS yang lebih lama, hanya sama ada <ph name="PRODUCT_NAME" /> akan membetulkan pelayan berpepijat yang tidak dapat merundingkan versi dengan betul.
 
-      Sebaliknya, jika keserasian dengan pelayan berpepijat mesti dikekalkan, dasar ini mungkin ditetapkan kepada "tls1.1". Ini ialah langkah sementara dan pelayan harus dibetulkan dengan segera.</translation>
+      Sebaliknya, jika keserasian dengan pelayan berpepijat mesti dikekalkan, dasar ini mungkin ditetapkan kepada "tls1.1". Ini hanyalah langkah sementara dan pelayan harus dibetulkan dengan segera.</translation>
 <translation id="1861037019115362154">Menentukan senarai pemalam yang dilumpuhkan dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
       Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan urutan aksara rawak. Aksara '*' sepadan dengan bilangan aksara rawak manakala '?' menentukan aksara pilihan tunggal iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', oleh itu untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1000498691615767391">Selectează un dosar pentru a-l deschide</translation>
-<translation id="1000916256947465293">Conectează-te automat la site-uri folosind datele de conectare stocate. Când funcția este dezactivată, ți se va solicita verificarea de fiecare dată înainte de a te conecta la un site.</translation>
 <translation id="1005274289863221750">Utilizează microfonul și camera foto</translation>
 <translation id="1007233996198401083">Nu se poate realiza conectarea.</translation>
 <translation id="1007408791287232274">Dispozitivele nu au putut fi încărcate.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Dezactivați WiMAX</translation>
 <translation id="174773101815569257">Blocarea mouse-ului</translation>
 <translation id="1749854530031883739">Afișează fundalurile ferestrelor gri folosite în TouchView (modul maximizat) în spatele ferestrelor care nu pot fi maximizate.</translation>
+<translation id="17513872634828108">File deschise</translation>
 <translation id="175196451752279553">R&amp;edeschide fila închisă</translation>
 <translation id="1753682364559456262">Gestionează blocarea imaginilor...</translation>
 <translation id="1753905327828125965">Cele mai vizitate</translation>
@@ -2307,7 +2307,6 @@ Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="4298972503445160211">Tastatură daneză</translation>
 <translation id="4299273509016391946">Activează caseta de selectare pentru simplificarea paginii din dialogul de previzualizare înainte de printare</translation>
 <translation id="4299729908419173967">Braziliană</translation>
-<translation id="4301786491084298653">Dezactivați pentru <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Activează implementarea experimentală a directivei „Cache-Control: stale-while-revalidate”. Aceasta permite serverelor să specifice faptul că unele resurse pot fi revalidate în fundal, pentru îmbunătățirea latenței.</translation>
 <translation id="4307281933914537745">Află mai multe despre recuperarea sistemului</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB live)</translation>
@@ -2328,7 +2327,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4336032328163998280">Operația de copiere nu a reușit. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Pentru jurnalele de rețea, consultă: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> dorește să comunice cu aplicația „<ph name="EXTENSION_NAME" />”</translation>
-<translation id="4341364588986930687">Domeniul <ph name="DOMAIN" /> necesită verificarea identității dispozitivului dvs. de către Google, pentru a determina eligibilitatea pentru redarea avansată a conținutului media protejat. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Blochează stocarea datelor de către site-uri</translation>
 <translation id="4342311272543222243">Hopa! A apărut o eroare TPM.</translation>
 <translation id="4345587454538109430">Configurează...</translation>
@@ -2462,7 +2460,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4572659312570518089">Autentificarea a fost anulată în timpul conectării la „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="4572815280350369984">Fișier <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mai multe...</translation>
-<translation id="4575703660920788003">Apăsați pe Shift-Alt pentru a comuta dispunerea tastaturii.</translation>
 <translation id="4580526846085481512">Sigur vrei să ștergi $1 elemente?</translation>
 <translation id="458150753955139441">Apasă pentru a naviga înapoi sau folosește meniul contextual pentru a vedea istoricul</translation>
 <translation id="4582447636905308869">Noul instrument IME pentru coreeană, care se bazează pe motorul HMM din Google Instrumente de introducere text.</translation>
@@ -3140,6 +3137,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="556042886152191864">Buton</translation>
 <translation id="5565871407246142825">Carduri de credit</translation>
 <translation id="5567989639534621706">Memoriile cache ale aplicației</translation>
+<translation id="5568069709869097550">Nu se poate conecta</translation>
 <translation id="5569544776448152862">Se înscrie în <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Extensie incognito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Resetarea dispozitivului nu va afecta conturile Google sau datele sincronizate cu aceste conturi. Cu toate acestea, toate fișierele salvate local pe dispozitiv vor fi șterse.</translation>
@@ -3189,7 +3187,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5642953011762033339">Deconectați contul</translation>
 <translation id="5646376287012673985">Locație</translation>
 <translation id="5649768706273821470">Ascultați</translation>
-<translation id="5649823029736413118">Este necesar ca <ph name="URL" /> să identifice în mod unic dispozitivul dvs. pentru a putea reda conținut premium.</translation>
 <translation id="5650551054760837876">Nu au fost găsite rezultate de căutare.</translation>
 <translation id="5653140146600257126">Dosarul numit „$1” există deja. Alegeți un alt nume.</translation>
 <translation id="5657667036353380798">Extensia externă necesită instalarea versiunii Chrome <ph name="MINIMUM_CHROME_VERSION" /> sau a unei versiuni superioare.</translation>
@@ -4453,7 +4450,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="7626009897377900107">Generarea parolelor</translation>
 <translation id="7627262197844840899">Acest site nu acceptă MasterCard.</translation>
 <translation id="7627790789328695202">Hopa, <ph name="FILE_NAME" /> există deja. Redenumiți și încercați din nou.</translation>
-<translation id="7628079021897738671">OK, am înțeles</translation>
 <translation id="762917759028004464">Browserul prestabilit este în prezent <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Permite completarea datelor de conectare stocate pentru aplicațiile Android pe site-urile aferente.</translation>
 <translation id="7629827748548208700">Fila: <ph name="TAB_NAME" /></translation>
@@ -5328,7 +5324,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8925458182817574960">&amp;Setări</translation>
 <translation id="8926389886865778422">Nu mai întreba</translation>
 <translation id="8926518602592448999">Dezactivați extensiile care rulează în modul pentru dezvoltatori</translation>
-<translation id="892867331564916668"><ph name="URL" /> dorește să stocheze fișiere pe acest dispozitiv.</translation>
 <translation id="8929454297483336498">Folosește API-urile AVFoundation în Mac OS X, în locul platformei QTKit</translation>
 <translation id="8931394284949551895">Dispozitive noi</translation>
 <translation id="8932730422557198035">Folosește API-ul Android Midi</translation>

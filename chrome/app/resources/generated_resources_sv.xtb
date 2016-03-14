@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1000498691615767391">Välj mapp att öppna</translation>
-<translation id="1000916256947465293">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du verifiera dina uppgifter varje gång du besöker webbplatsen innan du kan logga in.</translation>
 <translation id="1005274289863221750">Använd mikrofonen och kameran</translation>
 <translation id="1007233996198401083">Det går inte att ansluta.</translation>
 <translation id="1007408791287232274">Det gick inte att läsa in enheterna.</translation>
@@ -532,6 +531,7 @@
 <translation id="1747687775439512873">Inaktivera WiMAX</translation>
 <translation id="174773101815569257">Lås mus</translation>
 <translation id="1749854530031883739">Visa de grå fönsterbakgrunderna i TouchView (maximeringsläge) bakom fönster som inte går att maximera.</translation>
+<translation id="17513872634828108">Öppna flikar</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="1753682364559456262">Hantera blockering av bilder...</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
@@ -2310,7 +2310,6 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="4298972503445160211">Danskt tangentbord </translation>
 <translation id="4299273509016391946">Aktiverar kryssrutan för förenkling av sida i dialogrutan Förhandsgranskning av utskrift</translation>
 <translation id="4299729908419173967">brasilianska</translation>
-<translation id="4301786491084298653">Inaktivera på <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Aktiverar den experimentella implementeringen av direktivet Cache-Control: stale-while-revalidate. Detta tillåter att servrar anger att vissa resurser kan valideras om i bakgrunden för att förbättra latensen.</translation>
 <translation id="4307281933914537745">Läs mer om systemåterställning</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K aktiva)</translation>
@@ -2331,7 +2330,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4336032328163998280">Kopieringen misslyckades. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Nätverksloggar finns på <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> vill kommunicera med appen <ph name="EXTENSION_NAME" /></translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> kräver att enhetens identitet verifieras av Google för att avgöra om enheten är kvalificerad för förbättrad uppspelning av skyddade media. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Förhindra att webbplatser sparar data</translation>
 <translation id="4342311272543222243">Ett TPM-fel inträffade.</translation>
 <translation id="4345587454538109430">Konfigurera...</translation>
@@ -2465,7 +2463,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4572659312570518089">Autentiseringen avbröts vid anslutning till <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer...</translation>
-<translation id="4575703660920788003">Tryck på Skift+Alt om du vill byta tangentbordslayout.</translation>
 <translation id="4580526846085481512">Vill du ta bort $1 objekt?</translation>
 <translation id="458150753955139441">Tryck här om du vill återgå till föregående och visa historiken med snabbmenyn</translation>
 <translation id="4582447636905308869">Nytt IME för koreanska som är baserat på HMM-motorn för Google Inmatningsverktyg.</translation>
@@ -3144,6 +3141,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="556042886152191864">Knapp</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
 <translation id="5567989639534621706">Programmets cacheminnen</translation>
+<translation id="5568069709869097550">Kan inte logga in</translation>
 <translation id="5569544776448152862">Registrerar i <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> ...</translation>
 <translation id="5575473780076478375">Inkognitotilläggsprogram: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Dina Google-konton eller data som synkroniserats med dessa konton påverkas inte när du återställer enheten. Alla filer som sparas lokalt på enheten kommer dock att tas bort.</translation>
@@ -3193,7 +3191,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5642953011762033339">Koppla bort kontot</translation>
 <translation id="5646376287012673985">Plats</translation>
 <translation id="5649768706273821470">Lyssna</translation>
-<translation id="5649823029736413118"><ph name="URL" /> måste identifiera enheten som unik för att kunna spela upp Premium-innehåll.</translation>
 <translation id="5650551054760837876">Inga sökresultat hittades.</translation>
 <translation id="5653140146600257126">Det finns redan en katalog som heter $1. Välj ett annat namn.</translation>
 <translation id="5657667036353380798">Det externa tillägget kräver att version <ph name="MINIMUM_CHROME_VERSION" /> eller senare av Chrome är installerat.</translation>
@@ -3530,7 +3527,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6163522313638838258">Visa alla...</translation>
 <translation id="6164005077879661055">Alla filer och lokala data som är kopplade till den hanterade användaren tas bort permanent när den hanterade användaren tas bort. Besökta webbplatser och inställningar för den hanterade användaren kan fortfarande vara synliga för den som hanterar användaren på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Läs mer</translation>
-<translation id="6167008112175207002">Bokmärken, historik, lösenord och andra inställningar synkroneras till ditt Google-konto så att du kan använda dem på alla enheter. Du kan ändra inställningen på <ph name="BEGIN_LINK" /></translation>
+<translation id="6167008112175207002">Bokmärken, historik, lösenord och andra inställningar synkroniseras till ditt Google-konto så att du kan använda dem på alla enheter. Du kan ändra inställningen på <ph name="BEGIN_LINK" /></translation>
 <translation id="6171550060231646388">Simulerade maskinvarufunktioner för ”OK Google”</translation>
 <translation id="6175314957787328458">Grafiskt användargränssnitt för Microsoft-domänen</translation>
 <translation id="6178664161104547336">Välj ett certifikat</translation>
@@ -4458,7 +4455,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7626009897377900107">Lösenordsgenerering</translation>
 <translation id="7627262197844840899">MasterCard godtas inte på den här webbplatsen.</translation>
 <translation id="7627790789328695202">Det finns redan en fil med namnet <ph name="FILE_NAME" />. Byt namn på filen och försök igen.</translation>
-<translation id="7628079021897738671">OK</translation>
 <translation id="762917759028004464">Standardwebbläsaren är för närvarande <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Tillåt att användaruppgifter som sparats för Android-appar fylls i på motsvarande webbplatser.</translation>
 <translation id="7629827748548208700">Flik: <ph name="TAB_NAME" /></translation>
@@ -4609,7 +4605,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="7861215335140947162">&amp;Nedladdade filer</translation>
 <translation id="7864539943188674973">Inaktivera Bluetooth</translation>
 <translation id="7868891395842935202">Aktiverar experimentellt ramverk för kontroll av åtkomst till API-experiment.</translation>
-<translation id="7870576007982733437">Använd hanteraren för systemnedladdningar när detta är lämpligt.</translation>
+<translation id="7870576007982733437">Använd systemets nedladdningshanterare när detta är lämpligt.</translation>
 <translation id="7870790288828963061">Inga kioskappar med nyare version hittades. Det finns inget att uppdatera. Ta bort USB-minnet.</translation>
 <translation id="787150342916295244">Inläsning av kreditkort</translation>
 <translation id="7874357055309047713">Kör alltid på alla webbplatser</translation>
@@ -5254,7 +5250,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8795668016723474529">Lägg till ett kreditkort</translation>
 <translation id="8795916974678578410">Nytt fönster</translation>
 <translation id="8798099450830957504">Standard</translation>
-<translation id="8799127529310003270">Om inställningen är aktiverad körs InputConnection-anrop på IME-tråden och istället för att behålla en redigerare för kopian talar InputConnection-anropet direkt med renderaren.</translation>
+<translation id="8799127529310003270">Om inställningen är aktiverad körs InputConnection-anrop på IME-tråden och istället för att behålla en kopia av redigeraren talar InputConnection-anropet direkt med renderaren.</translation>
 <translation id="8799839487311913894">Aktivera uppdatering av lösenordet i lösenordshanteraren efter att ha skickat ett formulär för att ändra lösenord.</translation>
 <translation id="8800004011501252845">Visar platser för</translation>
 <translation id="8800420788467349919">Volym: <ph name="PRECENTAGE" /> %</translation>
@@ -5333,7 +5329,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8925458182817574960">&amp;Inställningar</translation>
 <translation id="8926389886865778422">Fråga inte igen.</translation>
 <translation id="8926518602592448999">Inaktivera tillägg i utvecklarläge</translation>
-<translation id="892867331564916668"><ph name="URL" /> vill lagra filer på den här enheten.</translation>
 <translation id="8929454297483336498">Använd AV Foundation-API:er för Mac OS X i stället för QTKit.</translation>
 <translation id="8931394284949551895">Nya enheter</translation>
 <translation id="8932730422557198035">Använd Androids MIDI-API</translation>

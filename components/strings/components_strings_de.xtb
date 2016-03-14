@@ -19,7 +19,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
 <translation id="1107591249535594099">Bei Aktivierung speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
-<translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
 <translation id="113188000913989374">Unter <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
@@ -55,7 +54,6 @@
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1442912890475371290">Versuch zum <ph name="BEGIN_LINK" />Besuch einer Seite unter <ph name="DOMAIN" /><ph name="END_LINK" /> blockiert</translation>
 <translation id="1455235771979731432">Beim Bestätigen Ihrer Karte ist ein Problem aufgetreten. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.</translation>
-<translation id="1491151370853475546">Diese Seite aktualisieren</translation>
 <translation id="1506687042165942984">Zeigt eine gespeicherte (veraltete) Kopie dieser Seite an</translation>
 <translation id="1519264250979466059">Build-Datum</translation>
 <translation id="1549470594296187301">Für diese Funktion muss JavaScript aktiviert sein.</translation>
@@ -96,7 +94,6 @@
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="201192063813189384">Fehler beim Lesen von Daten aus Cache</translation>
 <translation id="2025186561304664664">Proxy ist auf automatische Konfiguration eingestellt.</translation>
-<translation id="2025623846716345241">Aktualisieren bestätigen</translation>
 <translation id="2030481566774242610">Meinten Sie <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proxy und Firewall prüfen<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Postleitzahl</translation>
@@ -166,6 +163,7 @@
 <translation id="2650446666397867134">Der Zugriff auf die Datei wurde verweigert.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2674170444375937751">Möchten Sie diese Seiten wirklich aus dem Verlauf löschen?</translation>
+<translation id="2677748264148917807">Verlassen</translation>
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
 <translation id="2705137772291741111">Die (im Cache) gespeicherte Kopie dieser Website war nicht lesbar.</translation>
 <translation id="2709516037105925701">AutoFill</translation>
@@ -304,7 +302,6 @@
 <translation id="4058922952496707368">Schlüssel "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Client und Server unterstützen keine gemeinsame SSL-Protokollversion oder Verschlüsselungssammlung.</translation>
 <translation id="4079302484614802869">Die Proxy-Konfiguration ist auf die Verwendung einer PAC-Skript-URL und nicht die von festen Proxyservern eingestellt.</translation>
-<translation id="409504436206021213">Nicht aktualisieren</translation>
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
 <translation id="4103763322291513355">Unter &lt;strong&gt;chrome://policy&lt;/strong&gt; finden Sie eine Liste der blockierten URLs und andere Richtlinien, die durch Ihren Systemadministrator erzwungen werden.</translation>
 <translation id="4117700440116928470">Richtlinienbereich wird nicht unterstützt.</translation>
@@ -389,7 +386,6 @@
 <translation id="5199729219167945352">Experimente</translation>
 <translation id="5228309736894624122">SSL-Protokollfehler</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5295309862264981122">Navigation bestätigen</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Cookies löschen<ph name="END_LINK" /></translation>
@@ -484,7 +480,6 @@
 <translation id="647261751007945333">Geräterichtlinien</translation>
 <translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
 <translation id="6500116422101723010">Der Server kann die Anforderung zurzeit nicht verarbeiten. Dieser Code deutet auf einen vorübergehenden Zustand hin, der Server steht nach einer Verzögerung wieder zur Verfügung.</translation>
-<translation id="6512448926095770873">Diese Seite verlassen</translation>
 <translation id="6518133107902771759">Bestätigen</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
 <translation id="6533019874004191247">URL nicht unterstützt</translation>
@@ -653,7 +648,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8293206222192510085">Lesezeichen hinzufügen</translation>
 <translation id="8294431847097064396">Quelle</translation>
 <translation id="8308427013383895095">Die Übersetzung ist aufgrund eines Problems mit der Netzwerkverbindung fehlgeschlagen.</translation>
-<translation id="8311778656528046050">Möchten Sie diese Seite wirklich aktualisieren?</translation>
 <translation id="8332188693563227489">Der Zugriff auf <ph name="HOST_NAME" /> wurde verweigert</translation>
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
 <translation id="8363502534493474904">Flugmodus ausschalten</translation>
@@ -724,7 +718,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="9125941078353557812">Geben Sie den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9148507642005240123">&amp;Bearbeiten rückgängig machen</translation>
-<translation id="9154176715500758432">Auf dieser Seite bleiben</translation>
 <translation id="9157595877708044936">Einrichtung läuft...</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="917450738466192189">Das Serverzertifikat ist ungültig.</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1000498691615767391">Выберите папку</translation>
-<translation id="1000916256947465293">Использовать сохраненные учетные данные при входе на веб-сайтах. Если функция отключена, данные необходимо указывать при каждом входе.</translation>
 <translation id="1005274289863221750">Использование микрофона и камеры</translation>
 <translation id="1007233996198401083">Не удается подключиться.</translation>
 <translation id="1007408791287232274">Не удалось загрузить список устройств.</translation>
@@ -533,6 +532,7 @@
 <translation id="1747687775439512873">Отключить WiMAX</translation>
 <translation id="174773101815569257">Блокировка мыши</translation>
 <translation id="1749854530031883739">Использовать серый фон в TouchView за окнами, которые невозможно развернуть.</translation>
+<translation id="17513872634828108">Открытые вкладки</translation>
 <translation id="175196451752279553">От&amp;крыть закрытую вкладку</translation>
 <translation id="1753682364559456262">Настройки блокирования изображений…</translation>
 <translation id="1753905327828125965">Наиболее посещаемые</translation>
@@ -2309,7 +2309,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4298972503445160211">Датская раскладка</translation>
 <translation id="4299273509016391946">Включать функцию "Упростить страницу" в окне просмотра перед печатью.</translation>
 <translation id="4299729908419173967">бразильская</translation>
-<translation id="4301786491084298653">Отключить в домене <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Включить экспериментальную версию директивы Cache-Control: stale-while-revalidate. Она позволяет серверам перепроверять некоторые ресурсы в фоновом режиме, чтобы ускорить загрузку страниц.</translation>
 <translation id="4307281933914537745">Подробнее о восстановлении операционной системы...</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> КБ (<ph name="NUM_KILOBYTES_LIVE" /> КБ активно)</translation>
@@ -2330,7 +2329,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4336032328163998280">Не удалось выполнить копирование. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Просмотреть сетевые журналы можно на странице <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> запрашивает доступ к приложению "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="4341364588986930687">Чтобы определить, доступно ли для вашего устройства улучшенное воспроизведение защищенного контента в домене <ph name="DOMAIN" />, требуется идентификация Google. <ph name="LEARN_MORE" /></translation>
 <translation id="4341977339441987045">Не разрешать сайтам сохранять данные</translation>
 <translation id="4342311272543222243">Ошибка доверенного платформенного модуля.</translation>
 <translation id="4345587454538109430">Настройка...</translation>
@@ -2464,7 +2462,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4572659312570518089">При подключении к "<ph name="DEVICE_NAME" />" аутентификация была отменена.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-файл</translation>
 <translation id="457386861538956877">Ещё...</translation>
-<translation id="4575703660920788003">Чтобы переключить раскладку клавиатуры, нажмите клавиши Shift и Alt.</translation>
 <translation id="4580526846085481512">Действительно удалить объекты ($1)?</translation>
 <translation id="458150753955139441">Нажмите, чтобы вернуться. Для просмотра истории используйте контекстное меню.</translation>
 <translation id="4582447636905308869">Включить новый способ ввода корейского языка на базе СММ.</translation>
@@ -3143,6 +3140,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="556042886152191864">Кнопка</translation>
 <translation id="5565871407246142825">Банковские карты</translation>
 <translation id="5567989639534621706">Кеш приложений</translation>
+<translation id="5568069709869097550">Не удается войти</translation>
 <translation id="5569544776448152862">Регистрация на <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />...</translation>
 <translation id="5575473780076478375">Расширение в режиме инкогнито: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Сброс устройства не повлияет на ваши аккаунты Google и синхронизируемые с ними данные. Но все сохраненные на устройстве файлы будут удалены.</translation>
@@ -3192,7 +3190,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5642953011762033339">Отключить аккаунт</translation>
 <translation id="5646376287012673985">Местоположение</translation>
 <translation id="5649768706273821470">Прослушать</translation>
-<translation id="5649823029736413118">Для воспроизведения премиум-контента <ph name="URL" /> запрашивает уникальный код устройства.</translation>
 <translation id="5650551054760837876">Ничего не найдено.</translation>
 <translation id="5653140146600257126">Папка "$1" уже существует. Выберите другое название.</translation>
 <translation id="5657667036353380798">Для установки внешнего расширения требуется версия Chrome <ph name="MINIMUM_CHROME_VERSION" /> или выше.</translation>
@@ -4457,7 +4454,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7626009897377900107">Создание паролей</translation>
 <translation id="7627262197844840899">На этом сайте карты MasterCard не принимаются.</translation>
 <translation id="7627790789328695202">Файл "<ph name="FILE_NAME" />" уже существует. Задайте другое название и повторите попытку.</translation>
-<translation id="7628079021897738671">ОК</translation>
 <translation id="762917759028004464">В настоящий момент браузером по умолчанию является <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Разрешает автоматически вводить учетные данные приложений Android на соответствующих веб-сайтах.</translation>
 <translation id="7629827748548208700">Вкладка: <ph name="TAB_NAME" /></translation>
@@ -5253,7 +5249,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8795668016723474529">Добавить банковскую карту</translation>
 <translation id="8795916974678578410">Новое окно</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
-<translation id="8799127529310003270">Если параметр включен, вызовы InputConnection запускаются по сценарию редактора методов ввода (IME). Резервный редактор не используется – каждый вызов направляется непосредственно к средству визуализации.</translation>
+<translation id="8799127529310003270">Если параметр включен, вызовы InputConnection запускаются по сценарию редактора методов ввода (IME). Копия редактора не используется – каждый вызов направляется непосредственно к средству визуализации.</translation>
 <translation id="8799839487311913894">Обновлять пароль в соответствующем диспетчере после отправки специальной формы.</translation>
 <translation id="8800004011501252845">Поиск мест назначения для</translation>
 <translation id="8800420788467349919">Громкость: <ph name="PRECENTAGE" />%</translation>
@@ -5332,7 +5328,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8925458182817574960">&amp;Настройки</translation>
 <translation id="8926389886865778422">Больше не спрашивать</translation>
 <translation id="8926518602592448999">Отключение расширений в режиме разработчика</translation>
-<translation id="892867331564916668"><ph name="URL" /> запрашивает право сохранять файлы на этом устройстве.</translation>
 <translation id="8929454297483336498">Использование AV Foundation API в среде Mac OS X вместо QTKit</translation>
 <translation id="8931394284949551895">Новые устройства</translation>
 <translation id="8932730422557198035">Использовать Android Midi API</translation>

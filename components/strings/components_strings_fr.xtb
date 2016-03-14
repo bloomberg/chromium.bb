@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si cette case est cochée, une copie de votre carte est stockée sur cet appareil pour compléter les formulaires plus rapidement.</translation>
 <translation id="1113869188872983271">&amp;Annuler la réorganisation</translation>
-<translation id="111844081046043029">Voulez-vous vraiment quitter cette page ?</translation>
 <translation id="112840717907525620">Cache de la règle valide.</translation>
 <translation id="113188000913989374"><ph name="SITE" /> indique :</translation>
 <translation id="1132774398110320017">Paramètres de saisie automatique de Chrome…</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Imprimer</translation>
 <translation id="1442912890475371290">Une tentative de <ph name="BEGIN_LINK" />consultation d'une page sur <ph name="DOMAIN" /><ph name="END_LINK" /> a été bloquée.</translation>
 <translation id="1455235771979731432">Un problème est survenu lors de la validation de votre carte. Veuillez vérifier votre connexion Internet et réessayer.</translation>
-<translation id="1491151370853475546">Actualiser cette page</translation>
 <translation id="1506687042165942984">Afficher une copie enregistrée (non actualisée) de cette page</translation>
 <translation id="1519264250979466059">Date de création</translation>
 <translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="201192063813189384">Erreur lors de la lecture des données du cache.</translation>
 <translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
-<translation id="2025623846716345241">Confirmer l'actualisation</translation>
 <translation id="2030481566774242610">Essayez avec <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Vérifier le proxy et le pare-feu<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Code postal</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Accès au fichier refusé</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2674170444375937751">Voulez-vous vraiment supprimer ces pages de votre historique ?</translation>
+<translation id="2677748264148917807">Quitter</translation>
 <translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
 <translation id="2705137772291741111">La copie enregistrée (en cache) de ce site est illisible.</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Clé "<ph name="SUBKEY" />" : <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Le client et le serveur ne sont pas compatibles avec une version de protocole ou une méthode de chiffrement SSL commune.</translation>
 <translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
-<translation id="409504436206021213">Ne pas actualiser</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
 <translation id="4117700440116928470">La portée de la règle n'est pas compatible.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Prototypes</translation>
 <translation id="5228309736894624122">Erreur de protocole SSL</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="5295309862264981122">Confirmer la navigation</translation>
 <translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Supprimer les cookies<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Règles relatives aux appareils</translation>
 <translation id="6489534406876378309">Lancer l'importation des plantages</translation>
 <translation id="6500116422101723010">Le serveur ne parvient pas à traiter la demande pour le moment. Ce code indique une situation temporaire. Le serveur sera de nouveau opérationnel ultérieurement.</translation>
-<translation id="6512448926095770873">Quitter cette page</translation>
 <translation id="6518133107902771759">Valider</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
 <translation id="6533019874004191247">URL non acceptée.</translation>
@@ -653,7 +648,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8293206222192510085">Ajouter aux favoris</translation>
 <translation id="8294431847097064396">Source</translation>
 <translation id="8308427013383895095">Échec de la traduction en raison d'un problème de connexion réseau</translation>
-<translation id="8311778656528046050">Voulez-vous vraiment actualiser cette page ?</translation>
 <translation id="8332188693563227489">L'accès à <ph name="HOST_NAME" /> a été refusé</translation>
 <translation id="8349305172487531364">Barre de favoris</translation>
 <translation id="8363502534493474904">Désactiver le mode Avion</translation>
@@ -723,7 +717,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="9125941078353557812">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte.</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9148507642005240123">&amp;Annuler la modification</translation>
-<translation id="9154176715500758432">Rester sur cette page</translation>
 <translation id="9157595877708044936">Configuration en cours...</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="917450738466192189">Le certificat du serveur n'est pas valide.</translation>

@@ -15,7 +15,6 @@
 <translation id="1103523840287552314">Tradueix sempre l'idioma <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si s'activa aquesta casella, Chrome emmagatzema una còpia d'aquesta targeta al dispositiu per agilitzar l'emplenament de formularis.</translation>
 <translation id="1113869188872983271">&amp;Desfés el canvi d'ordre</translation>
-<translation id="111844081046043029">Estàs segur que vols marxar d'aquesta pàgina?</translation>
 <translation id="112840717907525620">La memòria cau de la política està en bon estat</translation>
 <translation id="113188000913989374"><ph name="SITE" /> diu:</translation>
 <translation id="1132774398110320017">Configuració d'Emplenament automàtic de Chrome...</translation>
@@ -51,7 +50,6 @@
 <translation id="1430915738399379752">Impressió</translation>
 <translation id="1442912890475371290">S'ha bloquejat un intent <ph name="BEGIN_LINK" />d'accés a una pàgina de <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">S'ha produït un problema en verificar la targeta. Comproveu la connexió a Internet i torneu-ho a provar.</translation>
-<translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
 <translation id="1506687042165942984">Mostra una còpia desada (és a dir, no actualitzada) d'aquesta pàgina.</translation>
 <translation id="1519264250979466059">Data de creació</translation>
 <translation id="1549470594296187301">Heu d'activar el JavaScript per utilitzar aquesta funció.</translation>
@@ -92,7 +90,6 @@
 <translation id="1974060860693918893">Configuració avançada</translation>
 <translation id="201192063813189384">Error en llegir dades de la memòria cau.</translation>
 <translation id="2025186561304664664">El servidor intermediari està definit perquè es configuri automàticament.</translation>
-<translation id="2025623846716345241">Confirmació de la càrrega nova</translation>
 <translation id="2030481566774242610">Volíeu dir <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Comproveu el servidor intermediari i el tallafoc<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Codi postal</translation>
@@ -162,6 +159,7 @@
 <translation id="2650446666397867134">S'ha denegat l'accés al fitxer</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2674170444375937751">Estàs segur que vols suprimir aquestes pàgines de l'historial?</translation>
+<translation id="2677748264148917807">Surt</translation>
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
 <translation id="2705137772291741111">La còpia desada (a la memòria cau) d'aquest lloc no s'ha pogut llegir.</translation>
 <translation id="2709516037105925701">Emplenament autom.</translation>
@@ -300,7 +298,6 @@
 <translation id="4058922952496707368">Tecla "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">El client i el servidor no admeten cap versió de protocol SSL ni cap sistema de xifratge comuns.</translation>
 <translation id="4079302484614802869">La configuració del servidor intermediari s'ha definit perquè utilitzi un URL d'script .pac, en lloc de servidors intermedis fixos.</translation>
-<translation id="409504436206021213">No la tornis a carregar</translation>
 <translation id="4103249731201008433">El número de sèrie del dispositiu no és vàlid</translation>
 <translation id="4103763322291513355">Visiteu &lt;strong&gt;chrome://policy&lt;/strong&gt; per veure la llista d'URL inclosos a la llista negra i altres polítiques aplicades per l'administrador del sistema.</translation>
 <translation id="4117700440116928470">L'àmbit de la política no s'admet.</translation>
@@ -385,7 +382,6 @@
 <translation id="5199729219167945352">Experiments</translation>
 <translation id="5228309736894624122">Error del protocol SSL.</translation>
 <translation id="5251803541071282808">Núvol</translation>
-<translation id="5295309862264981122">Confirma la navegació</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Esborreu les galetes<ph name="END_LINK" /></translation>
@@ -480,7 +476,6 @@
 <translation id="647261751007945333">Polítiques de dispositius</translation>
 <translation id="6489534406876378309">Comença a penjar els errors</translation>
 <translation id="6500116422101723010">El servidor no pot gestionar la sol·licitud. Aquest codi indica que és una situació temporal, i el servidor estarà disponible més tard.</translation>
-<translation id="6512448926095770873">Abandona aquesta pàgina</translation>
 <translation id="6518133107902771759">Verifica</translation>
 <translation id="6529602333819889595">&amp;Refés la supressió</translation>
 <translation id="6533019874004191247">URL no admès.</translation>
@@ -650,7 +645,6 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8293206222192510085">Afegeix una adreça d'interès</translation>
 <translation id="8294431847097064396">Font</translation>
 <translation id="8308427013383895095">No s'ha pogut executar la traducció a causa d'un problema amb la connexió de xarxa.</translation>
-<translation id="8311778656528046050">Esteu segur que voleu tornar a carregar aquesta pàgina?</translation>
 <translation id="8332188693563227489">S'ha rebutjat l'accés a <ph name="HOST_NAME" /></translation>
 <translation id="8349305172487531364">Barra d'adreces d'interès</translation>
 <translation id="8363502534493474904">Desactiveu el mode d'avió</translation>
@@ -720,7 +714,6 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="9125941078353557812">Introduïu el CVC de tres dígits que trobareu a la part posterior de la targeta</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9148507642005240123">&amp;Desfés la modificació</translation>
-<translation id="9154176715500758432">Roman en aquesta pàgina</translation>
 <translation id="9157595877708044936">S'està configurant...</translation>
 <translation id="9170848237812810038">&amp;Desfés</translation>
 <translation id="917450738466192189">El certificat del servidor no és vàlid.</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1000498691615767391">Seleccionar una carpeta para abrir</translation>
-<translation id="1000916256947465293">Permite acceder automáticamente a sitios web mediante la credencial almacenada. Si la función está desactivada, siempre se solicitará verificación antes de acceder a un sitio web.</translation>
 <translation id="1005274289863221750">Usar tu micrófono y tu cámara</translation>
 <translation id="1007233996198401083">No es posible realizar la conexión.</translation>
 <translation id="1007408791287232274">No se pueden cargar los dispositivos.</translation>
@@ -530,6 +529,7 @@
 <translation id="1747687775439512873">Inhabilitar WiMAX</translation>
 <translation id="174773101815569257">Bloqueo del mouse</translation>
 <translation id="1749854530031883739">Muestra los fondos de ventana de color gris que se usan en TouchView (modo para maximizar) detrás de las ventanas que no se pueden maximizar.</translation>
+<translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="175196451752279553">Volver a abrir una pestaña cerrada</translation>
 <translation id="1753682364559456262">Administrar el bloqueo de imagen...</translation>
 <translation id="1753905327828125965">Más visitados</translation>
@@ -2305,7 +2305,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4298972503445160211">Teclado danés</translation>
 <translation id="4299273509016391946">Habilita la casilla de verificación para simplificar la página en el diálogo de la vista previa de impresión.</translation>
 <translation id="4299729908419173967">Brasileño</translation>
-<translation id="4301786491084298653">Inhabilitar en <ph name="DOMAIN" /></translation>
 <translation id="430714521864499800">Habilitar la implementación experimental de la directiva "Cache-Control: stale-while-revalidate". Esta opción les permite a los servidores indicar que algunos recursos pueden haberse revalidado en segundo plano para mejorar la latencia.</translation>
 <translation id="4307281933914537745">Más información acerca de la recuperación del sistema</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K en vivo)</translation>
@@ -2326,7 +2325,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4336032328163998280">Se produjo un error al realizar la operación de copia (<ph name="ERROR_MESSAGE" />).</translation>
 <translation id="4336979451636460645">Para ver los registros de red, consulta: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> quiere comunicarse con la aplicación "<ph name="EXTENSION_NAME" />".</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> requiere que Google verifique la identidad del dispositivo para determinar si es apto para reproducir de forma mejorada contenido multimedia protegido. <ph name="LEARN_MORE" /></translation>
 <translation id="4341977339441987045">Bloquear en los sitios la configuración de datos</translation>
 <translation id="4342311272543222243">Se produjo un error de TPM.</translation>
 <translation id="4345587454538109430">Configurar...</translation>
@@ -2460,7 +2458,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4572659312570518089">La autenticación se canceló mientras se establecía la conexión a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Archivo <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Más ...</translation>
-<translation id="4575703660920788003">Presiona Shift + Alt para cambiar de diseño de teclado.</translation>
 <translation id="4580526846085481512">¿Estás seguro de que deseas eliminar los elementos $1?</translation>
 <translation id="458150753955139441">Presiona para retroceder; usa el menú contextual para consultar el historial</translation>
 <translation id="4582447636905308869">Nuevo IME coreano que se basa en el motor HMM de las Herramientas de captura de texto de Google</translation>
@@ -2645,7 +2642,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="485316830061041779">Alemán</translation>
 <translation id="4856478137399998590">Tu servicio de datos para celulares está activado y listo para ser utilizado</translation>
 <translation id="4858913220355269194">Balón</translation>
-<translation id="4860565041166337978">Permitir que el administrador de descargas del sistema controle las descargas, cuando es posible</translation>
+<translation id="4860565041166337978">Permitir que el administrador de descargas del sistema controle las descargas (si es posible)</translation>
 <translation id="48607902311828362">Modo de avión</translation>
 <translation id="4861833787540810454">Reproducir</translation>
 <translation id="4862050643946421924">Agregando dispositivo…</translation>
@@ -3010,7 +3007,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="539755880180803351">Anota los formularios web con las predicciones del tipo de campo Autocompletar como texto del marcador.</translation>
 <translation id="5397578532367286026">El administrador (<ph name="MANAGER_EMAIL" />) puede revisar el uso y el historial de este usuario en la página chrome.com.</translation>
 <translation id="5397794290049113714">Tú</translation>
-<translation id="5398572795982417028">Referencia de página fuera de los límites, el valor máximo es <ph name="MAXIMUM_PAGE" /></translation>
+<translation id="5398572795982417028">Referencia de página fuera de los límites; el valor máximo es <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398824043967640339"><ph name="COUNT" /> de otros sitios</translation>
 <translation id="5399158067281117682">Los números de PIN no coinciden.</translation>
 <translation id="5400640815024374115">El chip del módulo TPM está deshabilitado o no está.</translation>
@@ -3138,6 +3135,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
 <translation id="5567989639534621706">Cachés de aplicación</translation>
+<translation id="5568069709869097550">No puedo acceder</translation>
 <translation id="5569544776448152862">Registrando en <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" />…</translation>
 <translation id="5575473780076478375">Extensión de incógnito: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Restablecer el dispositivo no afectará las cuentas de Google ni los datos sincronizados con esas cuentas. Sin embargo, se eliminarán todos los archivos guardados localmente en el dispositivo.</translation>
@@ -3187,7 +3185,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5642953011762033339">Desconectar cuenta</translation>
 <translation id="5646376287012673985">Ubicación</translation>
 <translation id="5649768706273821470">Escuchar</translation>
-<translation id="5649823029736413118"><ph name="URL" /> necesita identificar de forma única tu dispositivo para reproducir contenido de calidad superior.</translation>
 <translation id="5650551054760837876">No se han encontrado resultados de búsqueda.</translation>
 <translation id="5653140146600257126">El directorio llamado "$1" ya existe. Elige otro nombre.</translation>
 <translation id="5657667036353380798">La extensión externa requiere que esté instalada la versión <ph name="MINIMUM_CHROME_VERSION" /> o una versión posterior de Chrome.</translation>
@@ -3522,7 +3519,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6163522313638838258">Expandir todo...</translation>
 <translation id="6164005077879661055">Todos los archivos y los datos locales asociados al usuario supervisado se eliminarán de forma permanente una vez que se elimine este usuario supervisado. Es posible que el administrador pueda seguir viendo la configuración y los sitios web visitados de este usuario supervisado en <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Más información</translation>
-<translation id="6167008112175207002">Tus marcadores, historial, contraseñas y otras opciones de configuración se sincronizarán con tu cuenta de Google para que puedas usarlos en todos tus dispositivos. Puedes cambiar esto en <ph name="BEGIN_LINK" /></translation>
+<translation id="6167008112175207002">Tus marcadores, historial, contraseñas y otras opciones de configuración se sincronizarán con tu cuenta de Google para que puedas usarlos en todos tus dispositivos. Puedes cambiar esta opción en <ph name="BEGIN_LINK" /></translation>
 <translation id="6171550060231646388">Funciones "Ok Google" de hardware simulado</translation>
 <translation id="6175314957787328458">GUID de dominio de Microsoft</translation>
 <translation id="6178664161104547336">Seleccionar un certificado</translation>
@@ -4451,7 +4448,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7626009897377900107">Generación de contraseñas</translation>
 <translation id="7627262197844840899">Este sitio no acepta MasterCard.</translation>
 <translation id="7627790789328695202">El archivo <ph name="FILE_NAME" /> ya existe. Cambia el nombre y vuelve a intentarlo.</translation>
-<translation id="7628079021897738671">Permitir</translation>
 <translation id="762917759028004464">El navegador predeterminado es <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Permite que las credenciales almacenadas de las aplicaciones de Android se completen en los sitios web correspondientes.</translation>
 <translation id="7629827748548208700">Pestaña: <ph name="TAB_NAME" /></translation>
@@ -4602,7 +4598,7 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="7861215335140947162">&amp;Descargas</translation>
 <translation id="7864539943188674973">Desactivar Bluetooth</translation>
 <translation id="7868891395842935202">Habilita el marco experimental para controlar el acceso a los experimentos de API.</translation>
-<translation id="7870576007982733437">Usa el administrador de descargas del sistema, cuando es posible.</translation>
+<translation id="7870576007982733437">Usa el administrador de descargas del sistema (si es posible).</translation>
 <translation id="7870790288828963061">No se encontraron aplicaciones de kiosco con una versión más reciente. No hay nada para actualizar. Desconecta el dispositivo USB.</translation>
 <translation id="787150342916295244">Escaneo de la tarjeta de crédito</translation>
 <translation id="7874357055309047713">Ejecutar siempre en todos los sitios</translation>
@@ -5326,7 +5322,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8925458182817574960">&amp;Configuración</translation>
 <translation id="8926389886865778422">No volver a preguntar</translation>
 <translation id="8926518602592448999">Inhabilitar extensiones en modo de programador</translation>
-<translation id="892867331564916668"><ph name="URL" /> quiere almacenar archivos en el dispositivo.</translation>
 <translation id="8929454297483336498">Uso de las API de AVFoundation para Mac OS X en lugar de QTKit</translation>
 <translation id="8931394284949551895">Nuevos dispositivos</translation>
 <translation id="8932730422557198035">Usa la API de Android Midi</translation>

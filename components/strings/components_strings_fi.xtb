@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Käännä <ph name="LANGUAGE" /> aina</translation>
 <translation id="1107591249535594099">Jos tämä ruutu on valittu, Chrome tallentaa kortin kopion tälle laitteelle, jotta lomakkeiden täyttö nopeutuu.</translation>
 <translation id="1113869188872983271">K&amp;umoa uudelleenjärjestely</translation>
-<translation id="111844081046043029">Haluatko varmasti poistua tältä sivulta?</translation>
 <translation id="112840717907525620">Käytännön välimuisti on OK</translation>
 <translation id="113188000913989374">Viesti osoitteesta <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Chromen automaattisen täytön asetukset…</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Tulosta</translation>
 <translation id="1442912890475371290">Estetty yritys <ph name="BEGIN_LINK" /> siirtyä sivulle <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">Korttia todennettaessa tapahtui virhe. Tarkista internetyhteys ja yritä uudelleen.</translation>
-<translation id="1491151370853475546">Päivitä tämä sivu</translation>
 <translation id="1506687042165942984">Näytä tallennettu (eli vanhentuneeksi tiedetty) kopio tästä sivusta.</translation>
 <translation id="1519264250979466059">Koontipäivä</translation>
 <translation id="1549470594296187301">Tämän ominaisuuden käyttö edellyttää JavaScriptiä.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Lisäasetukset</translation>
 <translation id="201192063813189384">Virhe luettaessa välimuistin tietoja.</translation>
 <translation id="2025186561304664664">Välityspalvelimen asetus: automaattisesti määritetty.</translation>
-<translation id="2025623846716345241">Vahvista päivitys</translation>
 <translation id="2030481566774242610">Tarkoititko: <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Tarkista välityspalvelimen ja palomuurin määritykset.<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Postinumero</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Tiedoston käyttöoikeus evättiin</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2674170444375937751">Haluatko varmasti poistaa nämä sivut historiastasi?</translation>
+<translation id="2677748264148917807">Poistu</translation>
 <translation id="2704283930420550640">Arvo ei vastaa muotoa.</translation>
 <translation id="2705137772291741111">Tämän sivuston välimuistiin tallennettu kopio oli lukukelvoton.</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Avain <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Asiakassovellus ja palvelin eivät tue samaa SSL-protokollaversiota tai salaustekniikkaa.</translation>
 <translation id="4079302484614802869">Välityspalvelinmääritykset on asetettu käyttämään .pac-URL-osoitteita, ei kiinteitä välityspalvelimia.</translation>
-<translation id="409504436206021213">Älä päivitä</translation>
 <translation id="4103249731201008433">Laitteen sarjanumero on virheellinen</translation>
 <translation id="4103763322291513355">Voit lukea listan kielletyistä URL-osoitteista ja muut järjestelmänvalvojasi määräämät käytännöt osoitteessa &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
 <translation id="4117700440116928470">Käytännön laajuutta ei tueta.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Kokeilut</translation>
 <translation id="5228309736894624122">SSL-protokollavirhe.</translation>
 <translation id="5251803541071282808">Pilvi</translation>
-<translation id="5295309862264981122">Vahvista liikkuminen</translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Tyhjennä evästeet.<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Laitekäytännöt</translation>
 <translation id="6489534406876378309">Aloita kaatumistietojen lähettäminen</translation>
 <translation id="6500116422101723010">Palvelin ei tällä hetkellä voi käsitellä pyyntöä. Tämä koodi tarkoittaa, että kyseessä on väliaikainen tila ja palvelin palaa toimintaan myöhemmin.</translation>
-<translation id="6512448926095770873">Poistu tältä sivulta</translation>
 <translation id="6518133107902771759">Vahvista</translation>
 <translation id="6529602333819889595">&amp;Toista poisto</translation>
 <translation id="6533019874004191247">Tukematon URL.</translation>
@@ -651,7 +646,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8293206222192510085">Lisää kirjanmerkki</translation>
 <translation id="8294431847097064396">Lähde</translation>
 <translation id="8308427013383895095">Käännös epäonnistui, koska verkkoyhteydessä esiintyi ongelmia.</translation>
-<translation id="8311778656528046050">Haluatko varmasti päivittää tämän sivun?</translation>
 <translation id="8332188693563227489">Sivuston <ph name="HOST_NAME" /> käyttöoikeus evättiin</translation>
 <translation id="8349305172487531364">Kirjanmerkkipalkki</translation>
 <translation id="8363502534493474904">Poista lentokonetila käytöstä.</translation>
@@ -721,7 +715,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="9125941078353557812">Anna kolminumeroinen CVC luottokortin takapuolelta.</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9148507642005240123">K&amp;umoa muokkaus</translation>
-<translation id="9154176715500758432">Pysy tällä sivulla</translation>
 <translation id="9157595877708044936">Valmistellaan...</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="917450738466192189">Palvelimen varmenne ei kelpaa.</translation>

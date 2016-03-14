@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1000498691615767391">Zu öffnenden Ordner auswählen</translation>
-<translation id="1000916256947465293">Automatisch mit gespeicherten Anmeldedaten in Websites anmelden. Ist diese Funktion deaktiviert, werden Sie jedes Mal aufgefordert, sich manuell in einer Website anzumelden.</translation>
 <translation id="1005274289863221750">Ihr Mikrofon und Ihre Kamera verwenden</translation>
 <translation id="1007233996198401083">Kein Verbindungsaufbau möglich</translation>
 <translation id="1007408791287232274">Die Geräte konnten nicht geladen werden.</translation>
@@ -530,6 +529,7 @@
 <translation id="1747687775439512873">WiMAX deaktivieren</translation>
 <translation id="174773101815569257">Maussperre</translation>
 <translation id="1749854530031883739">Graue Fensterrahmen anzeigen, die in TouchView (maximierter Modus) hinter Fenstern verwendet werden, die nicht maximiert werden können.</translation>
+<translation id="17513872634828108">Geöffnete Tabs</translation>
 <translation id="175196451752279553">Geschlossenen Tab wieder öffn&amp;en</translation>
 <translation id="1753682364559456262">Bildblockierung verwalten...</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
@@ -2304,7 +2304,6 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="4298972503445160211">Dänische Tastatur</translation>
 <translation id="4299273509016391946">Setzt ein Häkchen in das Kästchen für "Seite vereinfachen" im Dialogfeld "Druckvorschau"</translation>
 <translation id="4299729908419173967">Portugiesisch (Brasilien)</translation>
-<translation id="4301786491084298653">Auf <ph name="DOMAIN" /> deaktivieren</translation>
 <translation id="430714521864499800">Aktiviert die experimentelle Implementierung der Richtlinie "Cache-Control: stale-while-revalidate". Dadurch können Server angeben, dass einige Ressourcen im Hintergrund erneut überprüft werden sollten, um die Latenz zu verbessern.</translation>
 <translation id="4307281933914537745">Weitere Informationen über die Systemwiederherstellung</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB live)</translation>
@@ -2325,7 +2324,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4336032328163998280">Fehler beim Kopieren. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4336979451636460645">Netzwerkprotokolle sind hier abrufbar: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> möchte mit der App "<ph name="EXTENSION_NAME" />" kommunizieren.</translation>
-<translation id="4341364588986930687"><ph name="DOMAIN" /> erfordert eine Überprüfung der Identität Ihres Geräts durch Google, um festzustellen, ob es für die erweiterte Wiedergabe geschützter Medien infrage kommt. <ph name="LEARN_MORE" />.</translation>
 <translation id="4341977339441987045">Speicherung von Daten für alle Websites blockieren</translation>
 <translation id="4342311272543222243">TPM-Fehler</translation>
 <translation id="4345587454538109430">Konfigurieren...</translation>
@@ -2459,7 +2457,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4572659312570518089">Beim Herstellen der Verbindung zu "<ph name="DEVICE_NAME" />" wurde die Authentifizierung abgebrochen.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-Datei</translation>
 <translation id="457386861538956877">Mehr...</translation>
-<translation id="4575703660920788003">Drücken Sie Shift+Alt, um das Tastaturlayout zu ändern.</translation>
 <translation id="4580526846085481512">Möchten Sie wirklich $1 Elemente löschen?</translation>
 <translation id="458150753955139441">Drücken, um zurückzugehen. Kontextmenü verwenden, um Verlauf aufzurufen</translation>
 <translation id="4582447636905308869">Neuer koreanischer IME auf Grundlage des HMM-Moduls von Google Input Tools.</translation>
@@ -3133,6 +3130,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="556042886152191864">Schaltfläche</translation>
 <translation id="5565871407246142825">Kreditkarten</translation>
 <translation id="5567989639534621706">Caches</translation>
+<translation id="5568069709869097550">Anmeldung nicht möglich</translation>
 <translation id="5569544776448152862">Registrierung in <ph name="BEGIN_BOLD" /><ph name="DOMAIN_NAME" /><ph name="END_BOLD" /> läuft...</translation>
 <translation id="5575473780076478375">Anonyme Erweiterung: <ph name="EXTENSION_NAME" /></translation>
 <translation id="557722062034137776">Beim Zurücksetzen Ihres Geräts bleiben Ihre Google-Konten sowie alle mit diesen Konten synchronisierten Daten unberührt. Es werden jedoch alle Dateien gelöscht, die Sie lokal auf dem Gerät gespeichert haben.</translation>
@@ -3182,7 +3180,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5642953011762033339">Verbindung zum Konto trennen</translation>
 <translation id="5646376287012673985">Standort</translation>
 <translation id="5649768706273821470">Anhören</translation>
-<translation id="5649823029736413118">Für die Wiedergabe von Premium-Medien von <ph name="URL" /> muss Ihr Gerät eindeutig identifiziert werden.</translation>
 <translation id="5650551054760837876">Keine Suchergebnisse gefunden.</translation>
 <translation id="5653140146600257126">Es existiert bereits ein Ordner mit dem Namen "$1". Wählen Sie bitte einen anderen Namen aus.</translation>
 <translation id="5657667036353380798">Für die externe Erweiterung muss die Chrome-Version <ph name="MINIMUM_CHROME_VERSION" /> oder höher installiert sein.</translation>
@@ -4448,7 +4445,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="7626009897377900107">Passwortgenerierung</translation>
 <translation id="7627262197844840899">MasterCard wird von dieser Website nicht akzeptiert.</translation>
 <translation id="7627790789328695202">Hoppla, <ph name="FILE_NAME" /> existiert bereits. Geben Sie einen anderen Namen ein und versuchen Sie es erneut.</translation>
-<translation id="7628079021897738671">OK</translation>
 <translation id="762917759028004464">Der Standardbrowser ist momentan <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">Zulassen, dass für Android-Apps gespeicherte Anmeldedaten auf den entsprechenden Websites eingegeben werden</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
@@ -5323,7 +5319,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8925458182817574960">&amp;Einstellungen</translation>
 <translation id="8926389886865778422">Nicht mehr fragen</translation>
 <translation id="8926518602592448999">Erweiterungen im Entwicklermodus deaktivieren</translation>
-<translation id="892867331564916668"><ph name="URL" /> möchte Dateien auf diesem Gerät speichern.</translation>
 <translation id="8929454297483336498">AVFoundation APIs für Mac OS X verwenden (statt QTKit)</translation>
 <translation id="8931394284949551895">Neue Geräte</translation>
 <translation id="8932730422557198035">Android Midi API verwenden</translation>

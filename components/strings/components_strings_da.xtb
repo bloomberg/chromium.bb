@@ -18,7 +18,6 @@
 <translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Hvis dette felt er markeret, gemmer Chrome en kopi af dit kort på denne enhed, så formularer hurtigere kan udfyldes fremover.</translation>
 <translation id="1113869188872983271">&amp;Fortryd omarrangering</translation>
-<translation id="111844081046043029">Er du sikker på, at du vil forlade denne side?</translation>
 <translation id="112840717907525620">Cache for politik er OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> siger:</translation>
 <translation id="1132774398110320017">Indstillinger for Autofyld i Chrome...</translation>
@@ -26,7 +25,7 @@
 <translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1152921474424827756">Få adgang til en <ph name="BEGIN_LINK" />cachelagret kopi<ph name="END_LINK" /> af <ph name="URL" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> lukkede forbindelsen uventet.</translation>
-<translation id="1161325031994447685">Genopretter forbindelse til Wi-Fi</translation>
+<translation id="1161325031994447685">Genoprette forbindelse til Wi-Fi</translation>
 <translation id="1175364870820465910">&amp;Udskriv...</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1195447618553298278">Ukendt fejl.</translation>
@@ -54,7 +53,6 @@
 <translation id="1430915738399379752">Udskriv</translation>
 <translation id="1442912890475371290">Et forsøg på at <ph name="BEGIN_LINK" />besøge en side på <ph name="DOMAIN" /><ph name="END_LINK" /> blev blokeret.</translation>
 <translation id="1455235771979731432">Dit kort kunne ikke godkendes. Kontrollér at du har forbindelse til internettet, og prøv igen.</translation>
-<translation id="1491151370853475546">Genindlæs denne side</translation>
 <translation id="1506687042165942984">Vis en gemt (dvs. forældet) kopi af denne side.</translation>
 <translation id="1519264250979466059">Versionsdato</translation>
 <translation id="1549470594296187301">JavaScript skal være aktiveret, før du kan bruge denne funktion.</translation>
@@ -95,7 +93,6 @@
 <translation id="1974060860693918893">Avanceret</translation>
 <translation id="201192063813189384">Der opstod en fejl under læsning af data fra cache.</translation>
 <translation id="2025186561304664664">Proxyen konfigureres automatisk.</translation>
-<translation id="2025623846716345241">Bekræft genindlæsning</translation>
 <translation id="2030481566774242610">Mente du <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kontrollere din proxy og din firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Postnummer</translation>
@@ -165,6 +162,7 @@
 <translation id="2650446666397867134">Der blev nægtet adgang til filen</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2674170444375937751">Er du sikker på, at du vil slette disse sider fra din historik?</translation>
+<translation id="2677748264148917807">Forlad</translation>
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
 <translation id="2705137772291741111">Den gemte (cachelagrede) kopi af dette website kunne ikke læses.</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
@@ -303,7 +301,6 @@
 <translation id="4058922952496707368">Nøgle "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klienten og serveren understøtter ikke en fælles SSL-protokolversion eller et fælles krypteringsprogram.</translation>
 <translation id="4079302484614802869">Proxykonfiguration er angivet til at anvende en webadresse for .pac-script, ikke faste proxyservere.</translation>
-<translation id="409504436206021213">Annuller genindlæsning</translation>
 <translation id="4103249731201008433">Enhedens serienummer er ugyldigt</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for at se listen over sortlistede webadresser og andre politikker, din systemadministrator har igangsat.</translation>
 <translation id="4117700440116928470">Politikkens omfang understøttes ikke.</translation>
@@ -388,7 +385,6 @@
 <translation id="5199729219167945352">Eksperimenter</translation>
 <translation id="5228309736894624122">SSL-protokolfejl.</translation>
 <translation id="5251803541071282808">Skyen</translation>
-<translation id="5295309862264981122">Bekræft navigation</translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5307361445257083764"><ph name="BEGIN_LINK" />Rydde dine cookies<ph name="END_LINK" /></translation>
@@ -483,7 +479,6 @@
 <translation id="647261751007945333">Enhedspolitikker</translation>
 <translation id="6489534406876378309">Start upload af nedbrud</translation>
 <translation id="6500116422101723010">Serveren kan ikke håndtere din anmodning i øjeblikket. Denne kode indikerer, at det er en midlertidig tilstand, og at serveren vil være oppe at køre igen efter en forsinkelse.</translation>
-<translation id="6512448926095770873">Forlad denne side</translation>
 <translation id="6518133107902771759">Bekræft</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
 <translation id="6533019874004191247">Ikke-understøttet webadresse.</translation>
@@ -653,7 +648,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8293206222192510085">Tilføj bogmærke</translation>
 <translation id="8294431847097064396">Kilde</translation>
 <translation id="8308427013383895095">Oversættelsen mislykkedes på grund af problemer med netværksforbindelsen.</translation>
-<translation id="8311778656528046050">Er du sikker på, at du vil genindlæse denne side?</translation>
 <translation id="8332188693563227489">Adgangen til <ph name="HOST_NAME" /> blev nægtet</translation>
 <translation id="8349305172487531364">Bogmærkelinje</translation>
 <translation id="8363502534493474904">Deaktivere flytilstand</translation>
@@ -723,7 +717,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="9125941078353557812">Indtast den trecifrede kontrolkode, som ses på bagsiden af dit kort</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9148507642005240123">&amp;Fortryd redigering</translation>
-<translation id="9154176715500758432">Bliv på denne side</translation>
 <translation id="9157595877708044936">Konfigurerer...</translation>
 <translation id="9170848237812810038">&amp;Fortryd</translation>
 <translation id="917450738466192189">Serverens certifikat er ugyldigt.</translation>

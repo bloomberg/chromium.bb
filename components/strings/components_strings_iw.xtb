@@ -17,7 +17,6 @@
 <translation id="1103523840287552314">תרגם <ph name="LANGUAGE" /> תמיד</translation>
 <translation id="1107591249535594099">‏אם האפשרות הזו מסומנת, Chrome ישמור עותק של הכרטיס במכשיר הזה כדי למלא טפסים במהירות רבה יותר.</translation>
 <translation id="1113869188872983271">&amp;ביטול של שינוי סדר</translation>
-<translation id="111844081046043029">האם אתה בטוח שברצונך לצאת מדף זה?</translation>
 <translation id="112840717907525620">הקובץ השמור של המדיניות תקין</translation>
 <translation id="113188000913989374"><ph name="SITE" /> אומר:</translation>
 <translation id="1132774398110320017">‏הגדרות מילוי אוטומטי של Chrome...</translation>
@@ -53,7 +52,6 @@
 <translation id="1430915738399379752">הדפס</translation>
 <translation id="1442912890475371290">נחסם ניסיון <ph name="BEGIN_LINK" /> לביקור בדף ב-<ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
 <translation id="1455235771979731432">הייתה בעיה באימות הכרטיס. בדוק את החיבור לאינטרנט ונסה שוב.</translation>
-<translation id="1491151370853475546">טען מחדש דף זה</translation>
 <translation id="1506687042165942984">הצג עותק שמור (כלומר, ידוע שהוא עדכני) של הדף הזה.</translation>
 <translation id="1519264250979466059">‏תאריך ה-Build</translation>
 <translation id="1549470594296187301">‏JavaScript צריך להיות מופעל כדי להשתמש בתכונה זו.</translation>
@@ -94,9 +92,8 @@
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="201192063813189384">שגיאה בקריאת נתונים מהקובץ השמור.</translation>
 <translation id="2025186561304664664">‏שרת Proxy נקבע למוגדר אוטומטית.</translation>
-<translation id="2025623846716345241">אשר טעינה מחדש</translation>
 <translation id="2030481566774242610">האם התכוונת ל-<ph name="LINK" />?</translation>
-<translation id="2032962459168915086">‏<ph name="BEGIN_LINK" />לבדוק את שרת ה-proxy ואת חומת האש<ph name="END_LINK" /></translation>
+<translation id="2032962459168915086">‏<ph name="BEGIN_LINK" />לבדוק את שרת ה-Proxy ואת חומת האש<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">מספר / מיקוד</translation>
 <translation id="2065985942032347596">נדרש אימות</translation>
 <translation id="2079545284768500474">בטל</translation>
@@ -164,6 +161,7 @@
 <translation id="2650446666397867134">הגישה לקובץ נדחתה</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2674170444375937751">האם אתה בטוח שברצונך להסיר דפים אלו מההיסטוריה שלך?</translation>
+<translation id="2677748264148917807">צא</translation>
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
 <translation id="2705137772291741111">העותק השמור (בקובץ השמור) של האתר הזה היה בלתי קריא.</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
@@ -272,7 +270,7 @@
 <translation id="370665806235115550">טוען...</translation>
 <translation id="3712624925041724820">אין מספיק רישיונות</translation>
 <translation id="3714780639079136834">‏להפעיל נתונים לנייד או את ה-Wi-Fi</translation>
-<translation id="3717027428350673159">‏<ph name="BEGIN_LINK" />לבדוק את תצורת ה-DNS, חומת האש ושרת ה-proxy<ph name="END_LINK" /></translation>
+<translation id="3717027428350673159">‏<ph name="BEGIN_LINK" />לבדוק את תצורת ה-DNS, חומת האש ושרת ה-Proxy<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">קישור שהעתקת</translation>
 <translation id="3744899669254331632">‏אינך יכול לבקר כרגע ב-<ph name="SITE" /> מפני שהאתר שלח פרטי כניסה מעורבלים ש-Chromium אינו יכול לעבד. שגיאות רשת והתקפות הן בדרך כלל זמניות, לכן סביר להניח שדף זה יפעל כהלכה בהמשך.</translation>
 <translation id="3748412725338508953">‏היו יותר מדי הפניות-מחדש.
@@ -305,7 +303,6 @@
 <translation id="4058922952496707368">מפתח "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">‏הלקוח והשרת אינם תומכים בגרסה נפוצה של פרוטוקול SSL או בחבילת צפנים.</translation>
 <translation id="4079302484614802869">‏תצורת ה-Proxy מוגדרת להשתמש בכתובת אתר של סקריפט מסוג ‎.Pac ולא בשרתי Proxy קבועים.</translation>
-<translation id="409504436206021213">אל תטען מחדש</translation>
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
 <translation id="4103763322291513355">‏בקר בכתובת &lt;strong&gt;chrome://policy&lt;/strong&gt; כדי לראות רשימה של כתובות אתרים שנמנעה אליהם הגישה, כמו גם תקנונים אחרים שנאכפו על ידי מנהל המערכת שלך.</translation>
 <translation id="4117700440116928470">היקף המדיניות אינו נתמך.</translation>
@@ -378,7 +375,7 @@ Del</translation>
 <translation id="5031870354684148875">‏מידע על Google Translate</translation>
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="5045550434625856497">סיסמה שגויה</translation>
-<translation id="5070335125961472645">‏<ph name="BEGIN_LINK" />לבדוק את כתובת שרת ה-proxy<ph name="END_LINK" /></translation>
+<translation id="5070335125961472645">‏<ph name="BEGIN_LINK" />לבדוק את כתובת שרת ה-Proxy<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">האישור של השרת אינו תקף כעת.</translation>
 <translation id="5089810972385038852">מדינה</translation>
 <translation id="5094747076828555589">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי Chromium. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
@@ -394,10 +391,9 @@ Del</translation>
 <translation id="5199729219167945352">ניסויים</translation>
 <translation id="5228309736894624122">‏שגיאת פרוטוקול SSL.</translation>
 <translation id="5251803541071282808">ענן</translation>
-<translation id="5295309862264981122">אשר ניווט</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
 <translation id="5300589172476337783">הצג</translation>
-<translation id="5307361445257083764">‏<ph name="BEGIN_LINK" />לנקות את קובצי ה-cookie<ph name="END_LINK" /></translation>
+<translation id="5307361445257083764">‏<ph name="BEGIN_LINK" />לנקות את קובצי ה-Cookie<ph name="END_LINK" /></translation>
 <translation id="5308689395849655368">דיווח קריסות מושבת.</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
@@ -490,7 +486,6 @@ Del</translation>
 <translation id="647261751007945333">מדיניות המכשיר</translation>
 <translation id="6489534406876378309">התחל להעלות קריסות</translation>
 <translation id="6500116422101723010">השרת אינו יכול לטפל בבקשה כעת. קוד זה מצביע על כך שזה מצב זמני והשרת יעלה לאחר עיכוב.</translation>
-<translation id="6512448926095770873">צא מדף זה</translation>
 <translation id="6518133107902771759">אימות</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6533019874004191247">כתובת האתר אינה נתמכת.</translation>
@@ -660,7 +655,6 @@ Del</translation>
 <translation id="8293206222192510085">הוסף סימניה</translation>
 <translation id="8294431847097064396">מקור</translation>
 <translation id="8308427013383895095">התרגום נכשל עקב בעיה בחיבור הרשת.</translation>
-<translation id="8311778656528046050">האם אתה בטוח שברצונך לטעון מחדש דף זה?</translation>
 <translation id="8332188693563227489">הגישה ל-<ph name="HOST_NAME" /> נדחתה</translation>
 <translation id="8349305172487531364">סרגל סימניות</translation>
 <translation id="8363502534493474904">לכבות את מצב הטיסה</translation>
@@ -730,7 +724,6 @@ Del</translation>
 <translation id="9125941078353557812">‏הזן את ה-CVC בן שלוש הספרות המופיע בגב הכרטיס</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9148507642005240123">&amp;ביטול עריכה</translation>
-<translation id="9154176715500758432">הישאר בדף זה</translation>
 <translation id="9157595877708044936">מגדיר...</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>
 <translation id="917450738466192189">אישור השרת לא חוקי.</translation>

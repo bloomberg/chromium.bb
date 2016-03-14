@@ -601,7 +601,7 @@
       TLS 도메인 바인딩 인증서 확장 프로그램 사용 설정 여부를 지정합니다.
 
       이 설정은 TLS 도메인 바인딩 인증서를 테스트용으로 설정하는 데 사용됩니다. 이 실험적 설정은 향후 삭제됩니다.</translation>
-<translation id="2957506574938329824">모든 사이트에서 Web Bluetooth API를 통해 블루투스 기기에 대한 액세스를 요청하도록 허용하지 않습니다.</translation>
+<translation id="2957506574938329824">어떤 사이트든지 Web Bluetooth API를 통해 블루투스 기기에 대한 액세스를 요청하도록 허용하지 않습니다.</translation>
 <translation id="2957513448235202597"><ph name="HTTP_NEGOTIATE" /> 인증의 계정 유형</translation>
 <translation id="2959898425599642200">프록시 우회 규칙</translation>
 <translation id="2960691910306063964">원격 액세스 호스트에서 PIN을 사용하지 않는 인증을 사용 또는 사용 중지합니다.</translation>
