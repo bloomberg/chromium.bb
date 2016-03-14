@@ -208,7 +208,7 @@ class WindowTreeTest : public testing::Test {
   void AckPreviousEvent() {
     WindowManagerStateTestApi test_api(display_->GetActiveWindowManagerState());
     while (test_api.tree_awaiting_input_ack())
-      test_api.tree_awaiting_input_ack()->OnWindowInputEventAck(0);
+      test_api.tree_awaiting_input_ack()->OnWindowInputEventAck(0, true);
   }
 
   void DispatchEventAndAckImmediately(const ui::Event& event) {

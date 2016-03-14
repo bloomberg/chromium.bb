@@ -764,10 +764,12 @@ test("content_unittests") {
 
   if (use_aura) {
     deps += [
+      "//components/mus/public/cpp/tests:unittest_support",
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/wm",
     ]
+    sources += [ "../renderer/mus/compositor_mus_connection_unittest.cc" ]
   } else {
     sources -= [
       "../browser/renderer_host/render_widget_host_view_aura_unittest.cc",

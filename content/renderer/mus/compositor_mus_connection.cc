@@ -11,6 +11,12 @@
 #include "mojo/converters/blink/blink_input_events_type_converters.h"
 #include "ui/events/latency_info.h"
 
+namespace {
+
+void DoNothingBool(bool result) {}
+
+}  // namespace
+
 namespace content {
 
 CompositorMusConnection::CompositorMusConnection(
@@ -71,21 +77,22 @@ void CompositorMusConnection::OnConnectionLostOnMainThread() {
 
 void CompositorMusConnection::OnWindowInputEventOnMainThread(
     scoped_ptr<blink::WebInputEvent> web_event,
-    const base::Closure& ack) {
+    const base::Callback<void(bool)>& ack) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   RenderWidgetMusConnection* connection =
       RenderWidgetMusConnection::Get(routing_id_);
   if (!connection) {
-    ack.Run();
+    ack.Run(false);
     return;
   }
   connection->OnWindowInputEvent(std::move(web_event), ack);
 }
 
 void CompositorMusConnection::OnWindowInputEventAckOnMainThread(
-    const base::Closure& ack) {
+    const base::Callback<void(bool)>& ack,
+    bool handled) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  compositor_task_runner_->PostTask(FROM_HERE, ack);
+  compositor_task_runner_->PostTask(FROM_HERE, base::Bind(ack, handled));
 }
 
 void CompositorMusConnection::OnConnectionLost(
@@ -109,7 +116,7 @@ void CompositorMusConnection::OnEmbed(mus::Window* root) {
 void CompositorMusConnection::OnWindowInputEvent(
     mus::Window* window,
     mus::mojom::EventPtr event,
-    scoped_ptr<base::Closure>* ack_callback) {
+    scoped_ptr<base::Callback<void(bool)>>* ack_callback) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   scoped_ptr<blink::WebInputEvent> web_event =
       event.To<scoped_ptr<blink::WebInputEvent>>();
@@ -117,9 +124,11 @@ void CompositorMusConnection::OnWindowInputEvent(
   ui::LatencyInfo info;
   InputEventAckState ack_state = input_handler_manager_->HandleInputEvent(
       routing_id_, web_event.get(), &info);
+  // TODO(jonross): We probably need to ack the event based on the consumed
+  // state.
   if (ack_state != INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
     return;
-  base::Closure ack = base::Bind(&base::DoNothing);
+  base::Callback<void(bool)> ack = base::Bind(&::DoNothingBool);
   const bool send_ack =
       WebInputEventTraits::WillReceiveAckFromRenderer(*web_event);
   if (send_ack) {

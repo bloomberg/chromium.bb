@@ -87,7 +87,7 @@ class TestWindowTree : public mojom::WindowTree {
   void SetImeVisibility(uint32_t window_id,
                         bool visible,
                         mojo::TextInputStatePtr state) override;
-  void OnWindowInputEventAck(uint32_t event_id) override;
+  void OnWindowInputEventAck(uint32_t event_id, bool handled) override;
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;

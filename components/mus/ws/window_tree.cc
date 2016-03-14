@@ -1156,7 +1156,7 @@ void WindowTree::SetImeVisibility(Id transport_window_id,
   }
 }
 
-void WindowTree::OnWindowInputEventAck(uint32_t event_id) {
+void WindowTree::OnWindowInputEventAck(uint32_t event_id, bool handled) {
   if (event_ack_id_ == 0 || event_id != event_ack_id_) {
     // TODO(sad): Something bad happened. Kill the client?
     NOTIMPLEMENTED() << "Wrong event acked.";

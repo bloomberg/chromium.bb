@@ -27,6 +27,12 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace {
+
+void DoNothingBool(bool result) {}
+
+}  // namespace
+
 namespace mus {
 
 mojo::Array<uint8_t> Int32ToPropertyTransportValue(int32_t value) {
@@ -120,21 +126,22 @@ class TestInputEventHandler : public InputEventHandler {
   void AckEvent() {
     DCHECK(should_manually_ack_);
     DCHECK(!ack_callback_.is_null());
-    ack_callback_.Run();
-    ack_callback_ = base::Closure();
+    ack_callback_.Run(true);
+    ack_callback_ = base::Bind(&::DoNothingBool);
   }
 
   void Reset() {
     received_event_ = false;
-    ack_callback_ = base::Closure();
+    ack_callback_ = base::Bind(&::DoNothingBool);
   }
   bool received_event() const { return received_event_; }
 
  private:
   // InputEventHandler:
-  void OnWindowInputEvent(Window* target,
-                          mojom::EventPtr event,
-                          scoped_ptr<base::Closure>* ack_callback) override {
+  void OnWindowInputEvent(
+      Window* target,
+      mojom::EventPtr event,
+      scoped_ptr<base::Callback<void(bool)>>* ack_callback) override {
     EXPECT_FALSE(received_event_)
         << "Observer was not reset after receiving event.";
     received_event_ = true;
@@ -146,7 +153,7 @@ class TestInputEventHandler : public InputEventHandler {
 
   bool received_event_;
   bool should_manually_ack_;
-  base::Closure ack_callback_;
+  base::Callback<void(bool)> ack_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputEventHandler);
 };

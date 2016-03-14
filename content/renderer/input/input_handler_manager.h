@@ -50,7 +50,7 @@ class CONTENT_EXPORT InputHandlerManager {
       InputHandlerManagerClient* client,
       SynchronousInputHandlerProxyClient* sync_handler_client,
       scheduler::RendererScheduler* renderer_scheduler);
-  ~InputHandlerManager();
+  virtual ~InputHandlerManager();
 
   // Callable from the main thread only.
   void AddInputHandler(int routing_id,
@@ -76,9 +76,10 @@ class CONTENT_EXPORT InputHandlerManager {
   void RemoveInputHandler(int routing_id);
 
   // Called from the compositor's thread.
-  InputEventAckState HandleInputEvent(int routing_id,
-                                      const blink::WebInputEvent* input_event,
-                                      ui::LatencyInfo* latency_info);
+  virtual InputEventAckState HandleInputEvent(
+      int routing_id,
+      const blink::WebInputEvent* input_event,
+      ui::LatencyInfo* latency_info);
 
   // Called from the compositor's thread.
   void DidOverscroll(int routing_id, const DidOverscrollParams& params);
