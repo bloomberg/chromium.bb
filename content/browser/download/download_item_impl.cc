@@ -29,9 +29,11 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/download/download_create_info.h"
@@ -105,6 +107,7 @@ const int DownloadItemImpl::kMaxAutoResumeAttempts = 5;
 
 // Constructor for reading from the history service.
 DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
+                                   const std::string& guid,
                                    uint32_t download_id,
                                    const base::FilePath& current_path,
                                    const base::FilePath& target_path,
@@ -123,7 +126,8 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    DownloadInterruptReason interrupt_reason,
                                    bool opened,
                                    const net::BoundNetLog& bound_net_log)
-    : download_id_(download_id),
+    : guid_(base::ToUpperASCII(guid)),
+      download_id_(download_id),
       current_path_(current_path),
       target_path_(target_path),
       url_chain_(url_chain),
@@ -148,6 +152,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
   delegate_->Attach();
   DCHECK(state_ == COMPLETE_INTERNAL || state_ == INTERRUPTED_INTERNAL ||
          state_ == CANCELLED_INTERNAL);
+  DCHECK(base::IsValidGUID(guid_));
   Init(false /* not actively downloading */, SRC_HISTORY_IMPORT);
 }
 
@@ -156,7 +161,8 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    uint32_t download_id,
                                    const DownloadCreateInfo& info,
                                    const net::BoundNetLog& bound_net_log)
-    : download_id_(download_id),
+    : guid_(base::ToUpperASCII(base::GenerateGUID())),
+      download_id_(download_id),
       target_disposition_((info.save_info->prompt_for_save_location)
                               ? TARGET_DISPOSITION_PROMPT
                               : TARGET_DISPOSITION_OVERWRITE),
@@ -207,6 +213,7 @@ DownloadItemImpl::DownloadItemImpl(
     const net::BoundNetLog& bound_net_log)
     : is_save_package_download_(true),
       request_handle_(std::move(request_handle)),
+      guid_(base::ToUpperASCII(base::GenerateGUID())),
       download_id_(download_id),
       current_path_(path),
       target_path_(path),
@@ -423,6 +430,10 @@ void DownloadItemImpl::ShowDownloadInShell() {
 
 uint32_t DownloadItemImpl::GetId() const {
   return download_id_;
+}
+
+const std::string& DownloadItemImpl::GetGuid() const {
+  return guid_;
 }
 
 DownloadItem::DownloadState DownloadItemImpl::GetState() const {

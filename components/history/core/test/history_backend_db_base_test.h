@@ -51,7 +51,10 @@ class HistoryBackendDBBaseTest : public HistoryUnitTestBase {
 
   void DeleteBackend();
 
-  bool AddDownload(uint32_t id, DownloadState state, base::Time time);
+  bool AddDownload(uint32_t id,
+                   const std::string& guid,
+                   DownloadState state,
+                   base::Time time);
 
   base::ScopedTempDir temp_dir_;
 

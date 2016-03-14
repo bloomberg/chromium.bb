@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
@@ -36,33 +37,6 @@ using testing::WithArg;
 using testing::_;
 
 namespace {
-
-void CheckInfoEqual(const history::DownloadRow& left,
-                    const history::DownloadRow& right) {
-  EXPECT_EQ(left.current_path.value(), right.current_path.value());
-  EXPECT_EQ(left.target_path.value(), right.target_path.value());
-  EXPECT_EQ(left.url_chain.size(), right.url_chain.size());
-  for (unsigned int i = 0;
-       i < left.url_chain.size() && i < right.url_chain.size();
-       ++i) {
-    EXPECT_EQ(left.url_chain[i].spec(), right.url_chain[i].spec());
-  }
-  EXPECT_EQ(left.referrer_url.spec(), right.referrer_url.spec());
-  EXPECT_EQ(left.mime_type, right.mime_type);
-  EXPECT_EQ(left.original_mime_type, right.original_mime_type);
-  EXPECT_EQ(left.start_time.ToTimeT(), right.start_time.ToTimeT());
-  EXPECT_EQ(left.end_time.ToTimeT(), right.end_time.ToTimeT());
-  EXPECT_EQ(left.etag, right.etag);
-  EXPECT_EQ(left.last_modified, right.last_modified);
-  EXPECT_EQ(left.received_bytes, right.received_bytes);
-  EXPECT_EQ(left.total_bytes, right.total_bytes);
-  EXPECT_EQ(left.state, right.state);
-  EXPECT_EQ(left.danger_type, right.danger_type);
-  EXPECT_EQ(left.id, right.id);
-  EXPECT_EQ(left.opened, right.opened);
-  EXPECT_EQ(left.by_ext_id, right.by_ext_id);
-  EXPECT_EQ(left.by_ext_name, right.by_ext_name);
-}
 
 typedef DownloadHistory::IdSet IdSet;
 typedef std::vector<history::DownloadRow> InfoVector;
@@ -146,27 +120,27 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
       const history::DownloadRow& info) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
-    CheckInfoEqual(info, create_download_info_);
+    EXPECT_EQ(info, create_download_info_);
     create_download_info_ = history::DownloadRow();
   }
 
   void ExpectNoDownloadCreated() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
-    CheckInfoEqual(history::DownloadRow(), create_download_info_);
+    EXPECT_EQ(history::DownloadRow(), create_download_info_);
   }
 
   void ExpectDownloadUpdated(const history::DownloadRow& info) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
-    CheckInfoEqual(update_download_, info);
+    EXPECT_EQ(update_download_, info);
     update_download_ = history::DownloadRow();
   }
 
   void ExpectNoDownloadUpdated() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
-    CheckInfoEqual(history::DownloadRow(), update_download_);
+    EXPECT_EQ(history::DownloadRow(), update_download_);
   }
 
   void ExpectNoDownloadsRemoved() {
@@ -236,6 +210,7 @@ class DownloadHistoryTest : public testing::Test {
     for (size_t index = 0; index < infos->size(); ++index) {
       const history::DownloadRow& row = infos->at(index);
       content::MockDownloadManager::CreateDownloadItemAdapter adapter(
+          row.guid,
           history::ToContentDownloadId(row.id),
           row.current_path,
           row.target_path,
@@ -351,18 +326,31 @@ class DownloadHistoryTest : public testing::Test {
     GURL referrer(referrer_string);
     std::vector<GURL> url_chain;
     url_chain.push_back(url);
-    InitItem(static_cast<uint32_t>(items_.size() + 1), base::FilePath(path),
-             base::FilePath(path), url_chain, referrer,
-             "application/octet-stream", "application/octet-stream",
+    InitItem(base::GenerateGUID(),
+             static_cast<uint32_t>(items_.size() + 1),
+             base::FilePath(path),
+             base::FilePath(path),
+             url_chain,
+             referrer,
+             "application/octet-stream",
+             "application/octet-stream",
              (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
-             (base::Time::Now() - base::TimeDelta::FromMinutes(1)), "Etag",
-             "abc", 100, 100, content::DownloadItem::COMPLETE,
+             (base::Time::Now() - base::TimeDelta::FromMinutes(1)),
+             "Etag",
+             "abc",
+             100,
+             100,
+             content::DownloadItem::COMPLETE,
              content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-             content::DOWNLOAD_INTERRUPT_REASON_NONE, false, std::string(),
-             std::string(), info);
+             content::DOWNLOAD_INTERRUPT_REASON_NONE,
+             false,
+             std::string(),
+             std::string(),
+             info);
   }
 
-  void InitItem(uint32_t id,
+  void InitItem(const std::string& guid,
+                uint32_t id,
                 const base::FilePath& current_path,
                 const base::FilePath& target_path,
                 const std::vector<GURL>& url_chain,
@@ -405,11 +393,13 @@ class DownloadHistoryTest : public testing::Test {
     info->interrupt_reason =
         history::ToHistoryDownloadInterruptReason(interrupt_reason);
     info->id = history::ToHistoryDownloadId(id);
+    info->guid = guid;
     info->opened = opened;
     info->by_ext_id = by_extension_id;
     info->by_ext_name = by_extension_name;
 
     EXPECT_CALL(item(index), GetId()).WillRepeatedly(Return(id));
+    EXPECT_CALL(item(index), GetGuid()).WillRepeatedly(ReturnRefOfCopy(guid));
     EXPECT_CALL(item(index), GetFullPath())
         .WillRepeatedly(ReturnRefOfCopy(current_path));
     EXPECT_CALL(item(index), GetTargetFilePath())

@@ -52,6 +52,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Constructing from persistent store:
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
+                   const std::string& guid,
                    uint32_t id,
                    const base::FilePath& current_path,
                    const base::FilePath& target_path,
@@ -105,6 +106,7 @@ class CONTENT_EXPORT DownloadItemImpl
   void OpenDownload() override;
   void ShowDownloadInShell() override;
   uint32_t GetId() const override;
+  const std::string& GetGuid() const override;
   DownloadState GetState() const override;
   DownloadInterruptReason GetLastReason() const override;
   bool IsPaused() const override;
@@ -479,6 +481,8 @@ class CONTENT_EXPORT DownloadItemImpl
   // The handle to the request information.  Used for operations outside the
   // download system.
   scoped_ptr<DownloadRequestHandleInterface> request_handle_;
+
+  std::string guid_;
 
   uint32_t download_id_ = kInvalidId;
 

@@ -206,8 +206,12 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetBrowserContext())
       .WillRepeatedly(Return(browser_context()));
   EXPECT_CALL(*item, GetId()).WillRepeatedly(Return(1));
-  EXPECT_CALL(*item, GetTargetFilePath()).WillRepeatedly(
-      ReturnRefOfCopy(base::FilePath(FILE_PATH_LITERAL("foo"))));
+  EXPECT_CALL(*item, GetGuid())
+      .WillRepeatedly(
+          ReturnRefOfCopy(std::string("14CA04AF-ECEC-4B13-8829-817477EFAB83")));
+  EXPECT_CALL(*item, GetTargetFilePath())
+      .WillRepeatedly(
+          ReturnRefOfCopy(base::FilePath(FILE_PATH_LITERAL("foo"))));
   EXPECT_CALL(*item, GetFullPath()).WillRepeatedly(
       ReturnRefOfCopy(base::FilePath(FILE_PATH_LITERAL("foo"))));
   EXPECT_CALL(*item, GetState())

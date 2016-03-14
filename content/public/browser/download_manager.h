@@ -139,6 +139,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
   virtual DownloadItem* CreateDownloadItem(
+      const std::string& guid,
       uint32_t id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,
@@ -177,7 +178,13 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
 
   // Get the download item for |id| if present, no matter what type of download
   // it is or state it's in.
+  // DEPRECATED: Don't add new callers for GetDownload(uint32_t). Instead keep
+  // track of the GUID and use GetDownloadByGuid(), or observe the DownloadItem
+  // if you need to keep track of a specific download. (http://crbug.com/593020)
   virtual DownloadItem* GetDownload(uint32_t id) = 0;
+
+  // Get the download item for |guid|.
+  virtual DownloadItem* GetDownloadByGuid(const std::string& guid) = 0;
 };
 
 }  // namespace content

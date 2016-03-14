@@ -46,6 +46,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(OpenDownload, void());
   MOCK_METHOD0(ShowDownloadInShell, void());
   MOCK_CONST_METHOD0(GetId, uint32_t());
+  MOCK_CONST_METHOD0(GetGuid, const std::string&());
   MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
   MOCK_CONST_METHOD0(IsPaused, bool());

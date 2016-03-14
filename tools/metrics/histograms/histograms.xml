@@ -9417,6 +9417,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.Database.CreateDownloadDuration" units="ms">
+  <owner>asanka@chromium.org</owner>
+  <summary>Time taken to create a single download in the history DB.</summary>
+</histogram>
+
+<histogram name="Download.Database.QueryDownloadDuration" units="ms">
+  <owner>asanka@chromium.org</owner>
+  <summary>Time taken to query all downloads from history DB.</summary>
+</histogram>
+
+<histogram name="Download.Database.UpdateDownloadDuration" units="ms">
+  <owner>asanka@chromium.org</owner>
+  <summary>Time taken to update a single download in the history DB.</summary>
+</histogram>
+
 <histogram name="Download.DatabaseRecordDropped"
     enum="DownloadDatabaseRecordDroppedType">
   <owner>asanka@chromium.org</owner>

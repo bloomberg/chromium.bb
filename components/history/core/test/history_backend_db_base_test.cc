@@ -117,6 +117,7 @@ void HistoryBackendDBBaseTest::DeleteBackend() {
 }
 
 bool HistoryBackendDBBaseTest::AddDownload(uint32_t id,
+                                           const std::string& guid,
                                            DownloadState state,
                                            base::Time time) {
   std::vector<GURL> url_chain;
@@ -126,6 +127,7 @@ bool HistoryBackendDBBaseTest::AddDownload(uint32_t id,
                        base::FilePath(FILE_PATH_LITERAL("target-path")),
                        url_chain,
                        GURL("http://referrer.com/"),
+                       std::string(),
                        "application/vnd.oasis.opendocument.text",
                        "application/octet-stream",
                        time,
@@ -137,7 +139,9 @@ bool HistoryBackendDBBaseTest::AddDownload(uint32_t id,
                        state,
                        DownloadDangerType::NOT_DANGEROUS,
                        kTestDownloadInterruptReasonNone,
+                       std::string(),
                        id,
+                       guid,
                        false,
                        "by_ext_id",
                        "by_ext_name");

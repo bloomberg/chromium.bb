@@ -131,6 +131,7 @@ history::DownloadRow GetDownloadRow(
       item->GetTargetFilePath(),
       item->GetUrlChain(),
       item->GetReferrerUrl(),
+      std::string(),  // HTTP method (not available yet)
       item->GetMimeType(),
       item->GetOriginalMimeType(),
       item->GetStartTime(),
@@ -142,7 +143,9 @@ history::DownloadRow GetDownloadRow(
       history::ToHistoryDownloadState(item->GetState()),
       history::ToHistoryDownloadDangerType(item->GetDangerType()),
       history::ToHistoryDownloadInterruptReason(item->GetLastReason()),
+      std::string(),  // Hash value (not available yet)
       history::ToHistoryDownloadId(item->GetId()),
+      item->GetGuid(),
       item->GetOpened(),
       by_ext_id,
       by_ext_name);
@@ -150,8 +153,8 @@ history::DownloadRow GetDownloadRow(
 
 bool ShouldUpdateHistory(const history::DownloadRow* previous,
                          const history::DownloadRow& current) {
-  // Ignore url, referrer, mime_type, original_mime_type, start_time,
-  // id, db_handle, which don't change.
+  // Ignore url_chain, referrer, http_method, mime_type, original_mime_type,
+  // start_time, id, guid, which don't change.
   return ((previous == NULL) ||
           (previous->current_path != current.current_path) ||
           (previous->target_path != current.target_path) ||
@@ -163,6 +166,7 @@ bool ShouldUpdateHistory(const history::DownloadRow* previous,
           (previous->state != current.state) ||
           (previous->danger_type != current.danger_type) ||
           (previous->interrupt_reason != current.interrupt_reason) ||
+          (previous->hash != current.hash) ||
           (previous->opened != current.opened) ||
           (previous->by_ext_id != current.by_ext_id) ||
           (previous->by_ext_name != current.by_ext_name));
@@ -264,6 +268,7 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
        it != infos->end(); ++it) {
     loading_id_ = history::ToContentDownloadId(it->id);
     content::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
+        it->guid,
         loading_id_,
         it->current_path,
         it->target_path,

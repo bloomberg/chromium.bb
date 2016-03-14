@@ -154,7 +154,18 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // State accessors -----------------------------------------------------------
 
+  // Retrieve the ID for this download. The ID is provided by the owner of the
+  // DownloadItem and is expected to uniquely identify the download within the
+  // context of its container during the lifetime of the download.
   virtual uint32_t GetId() const = 0;
+
+  // Retrieve the GUID for this download. The returned string is never empty and
+  // will satisfy base::IsValidGUID(), in addition to uniquely identifying the
+  // download during its lifetime regardless of its container.
+  virtual const std::string& GetGuid() const = 0;
+
+  // Get the current state of the download. See DownloadState for descriptions
+  // of each download state.
   virtual DownloadState GetState() const = 0;
 
   // Returns the most recent interrupt reason for this download. Returns

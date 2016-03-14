@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
@@ -265,9 +266,11 @@ class LastDownloadFinderTest : public testing::Test {
       const base::FilePath::CharType* file_path) {
     base::Time now(base::Time::Now());
     return history::DownloadRow(
-        base::FilePath(file_path), base::FilePath(file_path),
+        base::FilePath(file_path),
+        base::FilePath(file_path),
         std::vector<GURL>(1, GURL("http://www.google.com")),  // url_chain
         GURL(),                                               // referrer
+        std::string(),                                        // HTTP method
         "application/octet-stream",                           // mime_type
         "application/octet-stream",                  // original_mime_type
         now - base::TimeDelta::FromMinutes(10),      // start
@@ -280,10 +283,12 @@ class LastDownloadFinderTest : public testing::Test {
         history::DownloadDangerType::NOT_DANGEROUS,  // danger_type
         history::ToHistoryDownloadInterruptReason(
             content::DOWNLOAD_INTERRUPT_REASON_NONE),  // interrupt_reason,
+        std::string(),                                 // hash
         download_id_++,                                // id
-        false,                                         // download_opened
-        std::string(),                                 // ext_id
-        std::string());                                // ext_name
+        base::GenerateGUID(),
+        false,           // download_opened
+        std::string(),   // ext_id
+        std::string());  // ext_name
   }
 
   content::TestBrowserThreadBundle browser_thread_bundle_;

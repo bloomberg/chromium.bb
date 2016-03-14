@@ -10,6 +10,7 @@
 namespace content {
 
 MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
+    const std::string& guid,
     uint32_t id,
     const base::FilePath& current_path,
     const base::FilePath& target_path,
@@ -27,7 +28,8 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened)
-    : id(id),
+    : guid(guid),
+      id(id),
       current_path(current_path),
       target_path(target_path),
       url_chain(url_chain),
@@ -45,7 +47,8 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
 
 MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
     const CreateDownloadItemAdapter& rhs)
-    : id(rhs.id),
+    : guid(rhs.guid),
+      id(rhs.id),
       current_path(rhs.current_path),
       target_path(rhs.target_path),
       url_chain(rhs.url_chain),
@@ -65,23 +68,16 @@ MockDownloadManager::CreateDownloadItemAdapter::~CreateDownloadItemAdapter() {}
 
 bool MockDownloadManager::CreateDownloadItemAdapter::operator==(
     const CreateDownloadItemAdapter& rhs) const {
-  return (id == rhs.id &&
-          current_path == rhs.current_path &&
-          target_path == rhs.target_path &&
-          url_chain == rhs.url_chain &&
-          referrer_url == rhs.referrer_url &&
-          mime_type == rhs.mime_type &&
-          original_mime_type == rhs.original_mime_type &&
-          start_time == rhs.start_time &&
-          end_time == rhs.end_time &&
-          etag == rhs.etag &&
-          last_modified == rhs.last_modified &&
-          received_bytes == rhs.received_bytes &&
-          total_bytes == rhs.total_bytes &&
-          state == rhs.state &&
-          danger_type == rhs.danger_type &&
-          interrupt_reason == rhs.interrupt_reason &&
-          opened == rhs.opened);
+  return (
+      guid == rhs.guid && id == rhs.id && current_path == rhs.current_path &&
+      target_path == rhs.target_path && url_chain == rhs.url_chain &&
+      referrer_url == rhs.referrer_url && mime_type == rhs.mime_type &&
+      original_mime_type == rhs.original_mime_type &&
+      start_time == rhs.start_time && end_time == rhs.end_time &&
+      etag == rhs.etag && last_modified == rhs.last_modified &&
+      received_bytes == rhs.received_bytes && total_bytes == rhs.total_bytes &&
+      state == rhs.state && danger_type == rhs.danger_type &&
+      interrupt_reason == rhs.interrupt_reason && opened == rhs.opened);
 }
 
 MockDownloadManager::MockDownloadManager() {}
@@ -96,6 +92,7 @@ void MockDownloadManager::StartDownload(
 }
 
 DownloadItem* MockDownloadManager::CreateDownloadItem(
+    const std::string& guid,
     uint32_t id,
     const base::FilePath& current_path,
     const base::FilePath& target_path,
@@ -113,11 +110,24 @@ DownloadItem* MockDownloadManager::CreateDownloadItem(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened) {
-  CreateDownloadItemAdapter adapter(
-      id, current_path, target_path, url_chain, referrer_url, mime_type,
-      original_mime_type, start_time, end_time, etag, last_modified,
-      received_bytes, total_bytes, state, danger_type, interrupt_reason,
-      opened);
+  CreateDownloadItemAdapter adapter(guid,
+                                    id,
+                                    current_path,
+                                    target_path,
+                                    url_chain,
+                                    referrer_url,
+                                    mime_type,
+                                    original_mime_type,
+                                    start_time,
+                                    end_time,
+                                    etag,
+                                    last_modified,
+                                    received_bytes,
+                                    total_bytes,
+                                    state,
+                                    danger_type,
+                                    interrupt_reason,
+                                    opened);
   return MockCreateDownloadItem(adapter);
 }
 

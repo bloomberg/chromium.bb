@@ -41,6 +41,7 @@ public:
 
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
+      const std::string& guid,
       uint32_t download_id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,

@@ -106,6 +106,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
 
   DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
+      const std::string& guid,
       uint32_t download_id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,
@@ -124,26 +125,26 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       DownloadInterruptReason interrupt_reason,
       bool opened,
       const net::BoundNetLog& bound_net_log) override {
-    return new DownloadItemImpl(
-        delegate,
-        download_id,
-        current_path,
-        target_path,
-        url_chain,
-        referrer_url,
-        mime_type,
-        original_mime_type,
-        start_time,
-        end_time,
-        etag,
-        last_modified,
-        received_bytes,
-        total_bytes,
-        state,
-        danger_type,
-        interrupt_reason,
-        opened,
-        bound_net_log);
+    return new DownloadItemImpl(delegate,
+                                guid,
+                                download_id,
+                                current_path,
+                                target_path,
+                                url_chain,
+                                referrer_url,
+                                mime_type,
+                                original_mime_type,
+                                start_time,
+                                end_time,
+                                etag,
+                                last_modified,
+                                received_bytes,
+                                total_bytes,
+                                state,
+                                danger_type,
+                                interrupt_reason,
+                                opened,
+                                bound_net_log);
   }
 
   DownloadItemImpl* CreateActiveItem(
@@ -197,6 +198,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
   DownloadItemImpl* download =
       item_factory_->CreateActiveItem(this, id, info, bound_net_log);
   downloads_[id] = download;
+  downloads_by_guid_[download->GetGuid()] = download;
   return download;
 }
 
@@ -285,6 +287,7 @@ void DownloadManagerImpl::Shutdown() {
       download->Cancel(false);
   }
   STLDeleteValues(&downloads_);
+  downloads_by_guid_.clear();
   url_downloaders_.clear();
 
   // We'll have nothing more to report to the observers after this point.
@@ -450,6 +453,8 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
       this, id, main_file_path, page_url, mime_type, std::move(request_handle),
       bound_net_log);
   downloads_[download_item->GetId()] = download_item;
+  DCHECK(!ContainsKey(downloads_by_guid_, download_item->GetGuid()));
+  downloads_by_guid_[download_item->GetGuid()] = download_item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(
       this, download_item));
   if (!item_created.is_null())
@@ -494,6 +499,8 @@ DownloadFileFactory* DownloadManagerImpl::GetDownloadFileFactoryForTesting() {
 void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
   if (!download)
     return;
+
+  downloads_by_guid_.erase(download->GetGuid());
 
   uint32_t download_id = download->GetId();
   if (downloads_.erase(download_id) == 0)
@@ -596,6 +603,7 @@ void DownloadManagerImpl::RemoveObserver(Observer* observer) {
 }
 
 DownloadItem* DownloadManagerImpl::CreateDownloadItem(
+    const std::string& guid,
     uint32_t id,
     const base::FilePath& current_path,
     const base::FilePath& target_path,
@@ -617,8 +625,10 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     NOTREACHED();
     return NULL;
   }
+  DCHECK(!ContainsKey(downloads_by_guid_, guid));
   DownloadItemImpl* item = item_factory_->CreatePersistedItem(
       this,
+      guid,
       id,
       current_path,
       target_path,
@@ -638,6 +648,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       opened,
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD));
   downloads_[id] = item;
+  downloads_by_guid_[guid] = item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, item));
   DVLOG(20) << __FUNCTION__ << "() download = " << item->DebugString(true);
   return item;
@@ -668,7 +679,14 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() const {
 }
 
 DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
-  return ContainsKey(downloads_, download_id) ? downloads_[download_id] : NULL;
+  return ContainsKey(downloads_, download_id) ? downloads_[download_id]
+                                              : nullptr;
+}
+
+DownloadItem* DownloadManagerImpl::GetDownloadByGuid(const std::string& guid) {
+  DCHECK(guid == base::ToUpperASCII(guid));
+  return ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
+                                               : nullptr;
 }
 
 void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {

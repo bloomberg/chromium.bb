@@ -30,6 +30,7 @@ class MockDownloadManager : public DownloadManager {
   // Structure to make it possible to match more than 10 arguments on
   // CreateDownloadItem.
   struct CreateDownloadItemAdapter {
+    std::string guid;
     uint32_t id;
     base::FilePath current_path;
     base::FilePath target_path;
@@ -48,7 +49,8 @@ class MockDownloadManager : public DownloadManager {
     DownloadInterruptReason interrupt_reason;
     bool opened;
 
-    CreateDownloadItemAdapter(uint32_t id,
+    CreateDownloadItemAdapter(const std::string& guid,
+                              uint32_t id,
                               const base::FilePath& current_path,
                               const base::FilePath& target_path,
                               const std::vector<GURL>& url_chain,
@@ -103,7 +105,8 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
 
   // Redirects to mock method to get around gmock 10 argument limit.
-  DownloadItem* CreateDownloadItem(uint32_t id,
+  DownloadItem* CreateDownloadItem(const std::string& guid,
+                                   uint32_t id,
                                    const base::FilePath& current_path,
                                    const base::FilePath& target_path,
                                    const std::vector<GURL>& url_chain,
@@ -129,6 +132,7 @@ class MockDownloadManager : public DownloadManager {
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_METHOD0(CheckForHistoryFilesRemoval, void());
   MOCK_METHOD1(GetDownload, DownloadItem*(uint32_t id));
+  MOCK_METHOD1(GetDownloadByGuid, DownloadItem*(const std::string&));
 };
 
 }  // namespace content

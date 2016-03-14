@@ -12,6 +12,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -426,15 +427,21 @@ class DownloadExtensionTest : public ExtensionApiTest {
     url_chain.push_back(GURL());
     for (size_t i = 0; i < count; ++i) {
       DownloadItem* item = GetOnRecordManager()->CreateDownloadItem(
+          base::GenerateGUID(),
           content::DownloadItem::kInvalidId + 1 + i,
           downloads_directory().Append(history_info[i].filename),
-          downloads_directory().Append(history_info[i].filename), url_chain,
-          GURL(),                        // URL Chain, referrer
-          std::string(), std::string(),  // mime_type, original_mime_type
-          current, current,              // start_time, end_time
-          std::string(), std::string(),  // etag, last_modified
-          1, 1,                          // received_bytes, total_bytes
-          history_info[i].state,         // state
+          downloads_directory().Append(history_info[i].filename),
+          url_chain,
+          GURL(),  // URL Chain, referrer
+          std::string(),
+          std::string(),  // mime_type, original_mime_type
+          current,
+          current,  // start_time, end_time
+          std::string(),
+          std::string(),  // etag, last_modified
+          1,
+          1,                      // received_bytes, total_bytes
+          history_info[i].state,  // state
           history_info[i].danger_type,
           (history_info[i].state != content::DownloadItem::CANCELLED
                ? content::DOWNLOAD_INTERRUPT_REASON_NONE
