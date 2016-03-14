@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
       LayoutSVGRect {svg:rect} at (50,5) size 258x56 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=10.00] [y=1.00] [width=51.45] [height=11.20]
     LayoutSVGText {text} at (10,1) size 52x12 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 52x12
-        chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 1 width 6.11: "T"
-        chunk 1 text run 2 at (14.66,10.00) startOffset 1 endOffset 2 width 4.45: "e"
+        chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 1 width 5.00: "T"
+        chunk 1 text run 2 at (13.55,10.00) startOffset 1 endOffset 2 width 5.56: "e"
         chunk 1 text run 3 at (17.67,10.00) startOffset 2 endOffset 3 width 5.00: "x"
         chunk 1 text run 4 at (21.22,10.00) startOffset 3 endOffset 4 width 2.78: "t"
         chunk 1 text run 5 at (22.55,10.00) startOffset 4 endOffset 5 width 2.78: " "

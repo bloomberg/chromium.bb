@@ -82,7 +82,7 @@ layer at (0,0) size 800x410
                 chunk 1 text run 29 at (627.25,240.32) startOffset 28 endOffset 29 width 26.67: "n"
                 chunk 1 text run 30 at (652.87,233.10) startOffset 29 endOffset 30 width 26.67: "d"
                 chunk 1 text run 31 at (680.18,217.26) startOffset 30 endOffset 31 width 36.67: "m"
-                chunk 1 text run 32 at (703.94,196.12) startOffset 31 endOffset 32 width 26.67: "e"
+                chunk 1 text run 32 at (703.94,196.11) startOffset 31 endOffset 32 width 26.67: "e"
                 chunk 1 text run 33 at (722.36,179.23) startOffset 32 endOffset 33 width 23.33: "?"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
