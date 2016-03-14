@@ -12,9 +12,9 @@ cr.define('md_history.history_item_test', function() {
   ];
 
   var SEARCH_HISTORY_RESULTS = [
-    {"dateShort": "Feb 22, 2016"},
-    {"dateShort": "Feb 21, 2016"},
-    {"dateShort": "Feb 21, 2016"},
+    {"dateShort": "Feb 22, 2016", "title": "Search result"},
+    {"dateShort": "Feb 21, 2016", "title": "Search result 2"},
+    {"dateShort": "Feb 21, 2016", "title": "Search result 3"},
   ];
 
   function registerTests() {
@@ -35,11 +35,11 @@ cr.define('md_history.history_item_test', function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
-          assertTrue(items[0].hasTimeGap);
-          assertTrue(items[1].hasTimeGap);
-          assertFalse(items[2].hasTimeGap);
-          assertTrue(items[3].hasTimeGap);
-          assertFalse(items[4].hasTimeGap);
+          assertTrue(items[0].item.needsTimeGap);
+          assertTrue(items[1].item.needsTimeGap);
+          assertFalse(items[2].item.needsTimeGap);
+          assertTrue(items[3].item.needsTimeGap);
+          assertFalse(items[4].item.needsTimeGap);
 
           done();
         });
@@ -51,9 +51,9 @@ cr.define('md_history.history_item_test', function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
-          assertTrue(items[0].hasTimeGap);
-          assertFalse(items[1].hasTimeGap);
-          assertFalse(items[2].hasTimeGap);
+          assertTrue(items[0].item.needsTimeGap);
+          assertFalse(items[1].item.needsTimeGap);
+          assertFalse(items[2].item.needsTimeGap);
 
           done();
         });
@@ -61,7 +61,8 @@ cr.define('md_history.history_item_test', function() {
 
       test('separator insertion after deletion', function(done) {
         flush(function() {
-          items = Polymer.dom(element.root).querySelectorAll('history-item');
+          var items =
+              Polymer.dom(element.root).querySelectorAll('history-item');
 
           element.set('historyData.3.selected', true);
           items[3].onCheckboxSelected_();
@@ -70,16 +71,14 @@ cr.define('md_history.history_item_test', function() {
           assertEquals(element.historyData.length, 4);
 
           // Checks that a new time gap separator has been inserted.
-          assertTrue(element.historyData[2].needsTimeGap);
-          assertTrue(items[2].hasTimeGap);
+          assertTrue(items[2].item.needsTimeGap);
 
           element.set('historyData.3.selected', true);
           items[3].onCheckboxSelected_();
           element.removeDeletedHistory(1);
 
           // Checks time gap separator is removed.
-          assertFalse(element.historyData[2].needsTimeGap);
-          assertFalse(items[2].hasTimeGap);
+          assertFalse(items[2].item.needsTimeGap);
           done();
         });
       });

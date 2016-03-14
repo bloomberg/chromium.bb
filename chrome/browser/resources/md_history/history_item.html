@@ -107,6 +107,10 @@
         visibility: hidden;
       }
 
+      :host([starred]) #bookmark-star {
+        visibility: visible;
+      }
+
       #time-gap-separator {
         -webkit-border-start: 1px solid #888;
         -webkit-margin-start: 77px;
@@ -115,24 +119,24 @@
     </style>
     <div id="main-container">
       <div id="date-accessed" class="card-title">
-        {{cardTitle_(numberOfItems, historyDate, searchTerm)}}
+        [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
       </div>
       <div id="item-container">
         <paper-checkbox id="checkbox" on-tap="onCheckboxSelected_"
             checked="{{selected}}" disabled="[[selectionNotAllowed_()]]">
         </paper-checkbox>
-        <span id="time-accessed">{{readableTimestamp}}</span>
+        <span id="time-accessed">[[item.readableTimestamp]]</span>
         <div class="website-icon" id="icon"></div>
         <div id="title-and-domain">
-          <a href$="{{websiteUrl}}" id="title" class="website-title"></a>
-          <span id="domain">{{websiteDomain}}</span>
+          <a href="[[item.url]]" id="title" class="website-title"></a>
+          <span id="domain">[[item.domain]]</span>
         </div>
         <iron-icon icon="star" id="bookmark-star"></iron-icon>
         <paper-icon-button icon="more-vert" id="menu-button"
             on-tap="onMenuButtonTap_">
         </paper-icon-button>
       </div>
-      <template is="dom-if" if="{{hasTimeGap}}">
+      <template is="dom-if" if="[[item.hasTimeGap]]">
         <div id="time-gap-separator"></div>
       </template>
     </div>

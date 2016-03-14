@@ -34,21 +34,15 @@
         hidden$="{{hasResults(historyData.length)}}">
       {{noResultsMessage_(searchTerm, loading_)}}
     </div>
-    <iron-list items="{{historyData}}" as="historyDay" id="infinite-list"
+    <iron-list items="{{historyData}}" as="item" id="infinite-list"
         on-scroll="scrollHandler_"
         hidden$="{{!hasResults(historyData.length)}}">
       <template>
-        <history-item history-date="[[historyDay.dateRelativeDay]]"
-            website-title="[[historyDay.title]]"
-            website-url="[[historyDay.url]]"
-            website-domain="[[historyDay.domain]]"
-            readable-timestamp="[[historyDay.readableTimestamp]]"
-            starred="[[historyDay.starred]]"
-            timestamp="[[historyDay.time]]"
-            selected="{{historyDay.selected}}"
-            is-card-start="[[historyDay.isFirstItem]]"
-            is-card-end="[[historyDay.isLastItem]]"
-            has-time-gap="[[historyDay.needsTimeGap]]"
+        <history-item item="[[item]]"
+            starred="[[item.starred]]"
+            selected="{{item.selected}}"
+            is-card-start="[[item.isFirstItem]]"
+            is-card-end="[[item.isLastItem]]"
             search-term="[[searchTerm]]"
             number-of-items="[[historyData.length]]">
         </history-item>

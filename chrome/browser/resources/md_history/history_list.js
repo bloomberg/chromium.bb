@@ -8,8 +8,7 @@ Polymer({
   properties: {
     // An array of history entries in reverse chronological order.
     historyData: {
-      type: Array,
-      value: function() { return []; }
+      type: Array
     },
 
     // The time of access of the last history item in historyData.
@@ -84,7 +83,8 @@ Polymer({
     this.loading_ = false;
 
     if (this.searchTerm != searchTerm) {
-      this.splice('historyData', 0, this.historyData.length);
+      if (this.historyData)
+        this.splice('historyData', 0, this.historyData.length);
       this.searchTerm = searchTerm;
     }
 
@@ -99,11 +99,12 @@ Polymer({
 
     // Resets the last history item for the currentDate if new history results
     // for currentDate is loaded.
-    var lastHistoryItem = this.historyData[this.historyData.length - 1];
-    if (lastHistoryItem && lastHistoryItem.isLastItem &&
-        lastHistoryItem.dateRelativeDay == currentDate) {
-      this.set('historyData.' + (this.historyData.length - 1) +
-          '.isLastItem', false);
+    if (this.historyData && this.historyData.length > 0) {
+      var lastHistoryItem = this.historyData[this.historyData.length - 1];
+      if (lastHistoryItem && lastHistoryItem.dateRelativeDay == currentDate) {
+        this.set('historyData.' + (this.historyData.length - 1) +
+            '.isLastItem', false);
+      }
     }
 
     for (var i = 0; i < results.length; i++) {
@@ -123,14 +124,19 @@ Polymer({
     }
     results[i - 1].isLastItem = true;
 
-    // If it's the first time we get data, the first item will always be the
-    // first card.
-    if (this.historyData.length == 0)
+    if (!this.historyData || this.historyData.length == 0)
       results[0].isFirstItem = true;
 
-    // Adds results to the beginning of the historyData array.
-    results.unshift('historyData');
-    this.push.apply(this, results);
+    if (this.historyData) {
+      // If we have previously received data, push the new items onto the
+      // existing array.
+      results.unshift('historyData');
+      this.push.apply(this, results);
+    } else {
+      // The first time we receive data, use set() to ensure the iron-list is
+      // initialized correctly.
+      this.set('historyData', results);
+    }
 
     this.lastVisitedTime = this.historyData[this.historyData.length - 1].time;
   },

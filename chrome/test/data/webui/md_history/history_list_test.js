@@ -58,9 +58,11 @@ cr.define('md_history.history_list_test', function() {
 
       test('setting first and last items', function() {
         element.addNewResults(TEST_HISTORY_RESULTS, '');
-        assertTrue(element.historyData[0].isLastItem);
         assertTrue(element.historyData[0].isFirstItem);
+        assertTrue(element.historyData[0].isLastItem);
         assertTrue(element.historyData[2].isFirstItem);
+        assertFalse(element.historyData[2].isLastItem);
+        assertFalse(element.historyData[3].isFirstItem);
         assertTrue(element.historyData[3].isLastItem);
       });
 
@@ -181,6 +183,7 @@ cr.define('md_history.history_list_test', function() {
         element.addNewResults(TEST_HISTORY_RESULTS, 'Google');
 
         flush(function() {
+          assertTrue(element.historyData[0].isFirstItem);
           var heading =
               element.$$('history-item').$$('#date-accessed').textContent;
           var title = element.$$('history-item').$.title;
