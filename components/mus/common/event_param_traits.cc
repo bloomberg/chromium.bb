@@ -66,6 +66,13 @@ namespace IPC {
       case ui::EventType::ET_TOUCH_CANCELLED:                           \
       case ui::EventType::ET_DROP_TARGET_EVENT:                         \
         implName(ui::TouchEvent)                                        \
+      case ui::EventType::ET_POINTER_DOWN:                              \
+      case ui::EventType::ET_POINTER_MOVED:                             \
+      case ui::EventType::ET_POINTER_UP:                                \
+      case ui::EventType::ET_POINTER_CANCELLED:                         \
+      case ui::EventType::ET_POINTER_ENTERED:                           \
+      case ui::EventType::ET_POINTER_EXITED:                            \
+        implName(ui::PointerEvent)                                      \
       case ui::EventType::ET_GESTURE_SCROLL_BEGIN:                      \
       case ui::EventType::ET_GESTURE_SCROLL_END:                        \
       case ui::EventType::ET_GESTURE_SCROLL_UPDATE:                     \

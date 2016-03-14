@@ -752,6 +752,13 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
   int32_t pointer_id() const { return pointer_id_; }
   const PointerDetails& pointer_details() const { return details_; }
 
+ protected:
+  // For (de)serialization.
+  PointerEvent(EventType type, base::TimeDelta time_stamp, int flags)
+      : LocatedEvent(type, time_stamp, flags) {}
+  friend struct IPC::ParamTraits<ui::ScopedEvent>;
+  friend struct IPC::ParamTraits<ui::PointerEvent>;
+
  private:
   int32_t pointer_id_;
   PointerDetails details_;

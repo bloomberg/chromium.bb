@@ -61,6 +61,14 @@ class EventParamTraitsTest : public testing::Test {
       case EventType::ET_DROP_TARGET_EVENT:
         Compare(CAST_EVENT(TouchEvent, a), CAST_EVENT(TouchEvent, b));
         break;
+      case EventType::ET_POINTER_DOWN:
+      case EventType::ET_POINTER_MOVED:
+      case EventType::ET_POINTER_UP:
+      case EventType::ET_POINTER_CANCELLED:
+      case EventType::ET_POINTER_ENTERED:
+      case EventType::ET_POINTER_EXITED:
+        Compare(CAST_EVENT(PointerEvent, a), CAST_EVENT(PointerEvent, b));
+        break;
       case EventType::ET_GESTURE_SCROLL_BEGIN:
       case EventType::ET_GESTURE_SCROLL_END:
       case EventType::ET_GESTURE_SCROLL_UPDATE:
@@ -449,6 +457,26 @@ TEST_F(EventParamTraitsTest, GoodCornerCaseGestureEvent) {
         new GestureEvent(0.0, 0.0, 0, base::TimeDelta(),
                          CreateCornerCaseGestureEventDetails(event_types[i])));
     Verify(event);
+  }
+}
+
+TEST_F(EventParamTraitsTest, GoodSimplePointerEvent) {
+  EventType event_types[] = {
+      ET_POINTER_DOWN,      ET_POINTER_MOVED,   ET_POINTER_UP,
+      ET_POINTER_CANCELLED, ET_POINTER_ENTERED, ET_POINTER_EXITED,
+  };
+  EventPointerType pointer_types[] = {
+      EventPointerType::POINTER_TYPE_MOUSE,
+      EventPointerType::POINTER_TYPE_TOUCH,
+  };
+
+  for (size_t i = 0; i < arraysize(event_types); i++) {
+    for (size_t j = 0; j < arraysize(pointer_types); j++) {
+      ScopedEvent event(new PointerEvent(event_types[i], pointer_types[j],
+                                         gfx::Point(), gfx::Point(), 0, 0,
+                                         base::TimeDelta()));
+      Verify(event);
+    }
   }
 }
 
