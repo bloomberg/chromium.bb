@@ -148,6 +148,12 @@ void WebURLLoaderMock::setDefersLoading(bool deferred) {
     default_loader_->setDefersLoading(deferred);
     return;
   }
+
+  // Ignores setDefersLoading(false) safely.
+  if (!deferred)
+    return;
+
+  // setDefersLoading(true) is not implemented.
   NOTIMPLEMENTED();
 }
 
