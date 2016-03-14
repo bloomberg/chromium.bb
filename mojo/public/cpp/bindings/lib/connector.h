@@ -192,6 +192,9 @@ class Connector : public MessageReceiver {
 
   base::ThreadChecker thread_checker_;
 
+  // Create a single weak ptr and use it everywhere, to avoid the malloc/free
+  // cost of creating a new weak ptr whenever it is needed.
+  base::WeakPtr<Connector> weak_self_;
   base::WeakPtrFactory<Connector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Connector);

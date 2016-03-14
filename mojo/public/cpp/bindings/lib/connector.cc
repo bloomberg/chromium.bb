@@ -57,6 +57,7 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
       registered_with_sync_handle_watcher_(false),
       sync_handle_watcher_callback_count_(0),
       weak_factory_(this) {
+  weak_self_ = weak_factory_.GetWeakPtr();
   // Even though we don't have an incoming receiver, we still want to monitor
   // the message pipe to know if is closed or encounters an error.
   WaitToReadMore();
@@ -253,7 +254,7 @@ void Connector::OnWatcherHandleReady(MojoResult result) {
 }
 
 void Connector::OnSyncHandleWatcherHandleReady(MojoResult result) {
-  base::WeakPtr<Connector> weak_self(weak_factory_.GetWeakPtr());
+  base::WeakPtr<Connector> weak_self(weak_self_);
 
   sync_handle_watcher_callback_count_++;
   OnHandleReadyInternal(result);
@@ -287,7 +288,7 @@ void Connector::WaitToReadMore() {
     // no longer be met, we signal the error asynchronously to avoid reentry.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&Connector::OnWatcherHandleReady,
-                              weak_factory_.GetWeakPtr(), rv));
+                              weak_self_, rv));
   }
 
   if (register_sync_handle_watch_count_ > 0 &&
@@ -307,7 +308,7 @@ bool Connector::ReadSingleMessage(MojoResult* read_result) {
 
   // Detect if |this| was destroyed during message dispatch. Allow for the
   // possibility of re-entering ReadMore() through message dispatch.
-  base::WeakPtr<Connector> weak_self = weak_factory_.GetWeakPtr();
+  base::WeakPtr<Connector> weak_self = weak_self_;
 
   Message message;
   const MojoResult rv = ReadMessage(message_pipe_.get(), &message);
