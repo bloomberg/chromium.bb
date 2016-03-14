@@ -1,0 +1,32 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MOJO_SHELL_RUNNER_COMMON_CLIENT_UTIL_H_
+#define MOJO_SHELL_RUNNER_COMMON_CLIENT_UTIL_H_
+
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
+
+namespace base {
+class CommandLine;
+}
+
+namespace mojo {
+namespace shell {
+
+// Creates a new ShellClient pipe and returns one end of it. The other end is
+// passed via a token in |command_line|. A child of the calling process may
+// extract a ShellClientRequest from this by calling
+// GetShellClientRequestFromCommandLine().
+mojom::ShellClientPtr PassShellClientRequestOnCommandLine(
+    base::CommandLine* command_line);
+
+// Extracts a ShellClientRequest from the command line of the current process.
+// The parent of this process should have passed a request using
+// PassShellClientRequestOnCommandLine().
+mojom::ShellClientRequest GetShellClientRequestFromCommandLine();
+
+}  // namespace shell
+}  // namespace mojo
+
+#endif  // MOJO_SHELL_RUNNER_COMMON_CLIENT_UTIL_H_

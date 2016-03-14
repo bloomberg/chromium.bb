@@ -104,8 +104,7 @@ class Shell::Instance : public mojom::Connector,
                         public InterfaceFactory<mojom::Shell>,
                         public mojom::Shell {
  public:
-  Instance(mojom::ShellClientPtr shell_client,
-           mojo::shell::Shell* shell,
+  Instance(mojo::shell::Shell* shell,
            const Identity& identity,
            const CapabilitySpec& capability_spec)
     : shell_(shell),
@@ -113,7 +112,6 @@ class Shell::Instance : public mojom::Connector,
       identity_(identity),
       capability_spec_(capability_spec),
       allow_any_application_(capability_spec.required.count("*") == 1),
-      shell_client_(std::move(shell_client)),
       pid_receiver_binding_(this),
       weak_factory_(this) {
     if (identity_.name() == kShellName ||
@@ -121,9 +119,6 @@ class Shell::Instance : public mojom::Connector,
       pid_ = base::Process::Current().Pid();
     }
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
-
-    shell_client_.set_connection_error_handler(
-        base::Bind(&Instance::OnShellClientLost, base::Unretained(this)));
   }
 
   ~Instance() override {}
@@ -150,13 +145,8 @@ class Shell::Instance : public mojom::Connector,
     }
   }
 
-  void InitializeClient() {
-    shell_client_->Initialize(mojom::Identity::From(identity_), id_,
-                              base::Bind(&Instance::OnInitializeResponse,
-                                         base::Unretained(this)));
-  }
-
   void ConnectToClient(scoped_ptr<ConnectParams> params) {
+    CHECK(shell_client_.is_bound());
     params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
                                    identity_.user_id(), id_);
     uint32_t source_id = mojom::kInvalidInstanceID;
@@ -174,28 +164,38 @@ class Shell::Instance : public mojom::Connector,
         mojom::CapabilityRequest::From(spec), params->target().name());
   }
 
-  void StartWithClientProcessConnection(
-      mojom::ShellClientRequest request,
-      mojom::ClientProcessConnectionPtr client_process_connection) {
-    factory_.Bind(mojom::ShellClientFactoryPtrInfo(
-        std::move(client_process_connection->shell_client_factory), 0u));
-    pid_receiver_binding_.Bind(
-        std::move(client_process_connection->pid_receiver_request));
-    factory_->CreateShellClient(std::move(request), identity_.name());
+  void StartWithClient(mojom::ShellClientPtr client) {
+    CHECK(!shell_client_);
+    shell_client_ = std::move(client);
+    shell_client_.set_connection_error_handler(
+        base::Bind(&Instance::OnShellClientLost, base::Unretained(this)));
+    shell_client_->Initialize(mojom::Identity::From(identity_), id_,
+                              base::Bind(&Instance::OnInitializeResponse,
+                                         base::Unretained(this)));
   }
 
-  void StartWithFilePath(mojom::ShellClientRequest request,
-                         const base::FilePath& path) {
+  void StartWithClientProcessConnection(
+      mojom::ClientProcessConnectionPtr client_process_connection) {
+    mojom::ShellClientPtr client;
+    client.Bind(mojom::ShellClientPtrInfo(
+        std::move(client_process_connection->shell_client), 0));
+    pid_receiver_binding_.Bind(
+        std::move(client_process_connection->pid_receiver_request));
+    StartWithClient(std::move(client));
+  }
+
+  void StartWithFilePath(const base::FilePath& path) {
+    CHECK(!shell_client_);
     scoped_ptr<NativeRunner> runner =
         shell_->native_runner_factory_->Create(path);
     bool start_sandboxed = false;
-    runner->Start(path, identity_, start_sandboxed, std::move(request),
-                  base::Bind(&Instance::PIDAvailable,
-                             weak_factory_.GetWeakPtr()),
-                  base::Bind(&mojo::shell::Shell::CleanupRunner,
-                             shell_->weak_ptr_factory_.GetWeakPtr(),
-                             runner.get()));
+    mojom::ShellClientPtr client = runner->Start(
+        path, identity_, start_sandboxed,
+        base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()),
+        base::Bind(&mojo::shell::Shell::CleanupRunner,
+                   shell_->weak_ptr_factory_.GetWeakPtr(), runner.get()));
     shell_->native_runners_.push_back(std::move(runner));
+    StartWithClient(std::move(client));
   }
 
   mojom::InstanceInfoPtr CreateInstanceInfo() const {
@@ -299,9 +299,9 @@ class Shell::Instance : public mojom::Connector,
         return false;
       }
 
-      if (!(*client_process_connection)->shell_client_factory.is_valid() ||
+      if (!(*client_process_connection)->shell_client.is_valid() ||
           !(*client_process_connection)->pid_receiver_request.is_valid()) {
-        LOG(ERROR) << "Error: must supply both shell_client_factory AND "
+        LOG(ERROR) << "Error: must supply both shell_client AND "
                    << "pid_receiver_request when sending "
                    << "client_process_connection.";
         callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
@@ -393,7 +393,6 @@ class Shell::Instance : public mojom::Connector,
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
   BindingSet<mojom::Connector> connectors_;
   BindingSet<mojom::Shell> shell_bindings_;
-  mojom::ShellClientFactoryPtr factory_;
   NativeRunner* runner_ = nullptr;
   base::ProcessId pid_ = base::kNullProcessId;
   base::WeakPtrFactory<Instance> weak_factory_;
@@ -422,8 +421,9 @@ Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
       weak_ptr_factory_(this) {
   mojom::ShellClientPtr client;
   mojom::ShellClientRequest request = GetProxy(&client);
-  CreateInstance(CreateShellIdentity(), GetPermissiveCapabilities(),
-                 std::move(client));
+  Instance* instance = CreateInstance(CreateShellIdentity(),
+                                      GetPermissiveCapabilities());
+  instance->StartWithClient(std::move(client));
   shell_connection_.reset(new ShellConnection(this, std::move(request)));
 
   if (catalog)
@@ -492,7 +492,9 @@ bool Shell::AcceptConnection(Connection* connection) {
 // Shell, private:
 
 void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
-  CreateInstance(CreateCatalogIdentity(), CapabilitySpec(), std::move(catalog));
+  Instance* instance =
+      CreateInstance(CreateCatalogIdentity(), CapabilitySpec());
+  instance->StartWithClient(std::move(catalog));
 
   // TODO(beng): this doesn't work anymore.
   // Seed the catalog with manifest info for the shell & catalog.
@@ -582,10 +584,9 @@ bool Shell::ConnectToExistingInstance(scoped_ptr<ConnectParams>* params) {
 }
 
 Shell::Instance* Shell::CreateInstance(const Identity& target,
-                                       const CapabilitySpec& spec,
-                                       mojom::ShellClientPtr client) {
+                                       const CapabilitySpec& spec) {
   CHECK(target.user_id() != mojom::kInheritUserID);
-  Instance* instance = new Instance(std::move(client), this, target, spec);
+  Instance* instance = new Instance(this, target, spec);
   DCHECK(identity_to_instance_.find(target) ==
          identity_to_instance_.end());
   identity_to_instance_[target] = instance;
@@ -594,7 +595,6 @@ Shell::Instance* Shell::CreateInstance(const Identity& target,
       [this, &info](mojom::InstanceListener* listener) {
         listener->InstanceCreated(info.Clone());
       });
-  instance->InitializeClient();
   return instance;
 }
 
@@ -608,10 +608,10 @@ void Shell::AddInstanceListener(mojom::InstanceListenerPtr listener) {
   instance_listeners_.AddInterfacePtr(std::move(listener));
 }
 
-void Shell::CreateShellClient(const Identity& source,
-                              const Identity& shell_client_factory,
-                              const std::string& name,
-                              mojom::ShellClientRequest request) {
+void Shell::CreateShellClientWithFactory(const Identity& source,
+                                         const Identity& shell_client_factory,
+                                         const std::string& name,
+                                         mojom::ShellClientRequest request) {
   mojom::ShellClientFactory* factory =
       GetShellClientFactory(shell_client_factory, source);
   factory->CreateShellClient(std::move(request), name);
@@ -674,42 +674,40 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
 
   mojom::ClientProcessConnectionPtr client_process_connection =
       params->TakeClientProcessConnection();
+  Instance* instance = CreateInstance(target, capabilities);
 
-  mojom::ShellClientRequest request;
-  if (!client.is_bound())
-    request = GetProxy(&client);
-
-  Instance* instance = CreateInstance(target, capabilities, std::move(client));
-  instance->ConnectToClient(std::move(params));
-
-  // If a ShellClientPtr was provided, there's no more work to do: someone
-  // is already holding a corresponding ShellClientRequest.
-  if (!request.is_pending())
-    return;
-
-  if (client_process_connection.is_null() && LoadWithLoader(target, &request))
-    return;
-
-  CHECK(!file_url.is_null() && !capabilities_ptr.is_null());
-
-  if (target.name() != resolved_name) {
-    // In cases where a package alias is resolved, we have to use the instance
-    // from the original request rather than for the package itself, which will
-    // always be the same.
-    CreateShellClient(
-        source, Identity(resolved_name, target.user_id(), instance_name),
-        target.name(), std::move(request));
+  // Below are various paths through which a new Instance can be bound to a
+  // ShellClient proxy.
+  if (client.is_bound()) {
+    // If a ShellClientPtr was provided, there's no more work to do: someone
+    // is already holding a corresponding ShellClientRequest.
+    instance->StartWithClient(std::move(client));
+  } else if (!client_process_connection.is_null()) {
+    // Likewise if a ClientProcessConnection was given via Connect(), it
+    // provides the ShellClient proxy to use.
+    instance->StartWithClientProcessConnection(
+        std::move(client_process_connection));
   } else {
-    if (!client_process_connection.is_null()) {
-      // The client already started a process for this instance, use it.
-      instance->StartWithClientProcessConnection(
-          std::move(request), std::move(client_process_connection));
+    // Otherwise we create a new ShellClient pipe.
+    mojom::ShellClientRequest request = GetProxy(&client);
+    if (LoadWithLoader(target, &request)) {
+      instance->StartWithClient(std::move(client));
     } else {
-      // Otherwise we make our own process.
-      instance->StartWithFilePath(std::move(request),
-                                  util::UrlToFilePath(file_url.To<GURL>()));
+      CHECK(!file_url.is_null() && !capabilities_ptr.is_null());
+
+      if (target.name() != resolved_name) {
+        instance->StartWithClient(std::move(client));
+        CreateShellClientWithFactory(
+            source, Identity(resolved_name, target.user_id(), instance_name),
+            target.name(), std::move(request));
+      } else {
+        instance->StartWithFilePath(util::UrlToFilePath(file_url.To<GURL>()));
+      }
     }
   }
+
+  // Now that the instance has a ShellClient, we can connect to it.
+  instance->ConnectToClient(std::move(params));
 }
 
 bool Shell::LoadWithLoader(const Identity& target,

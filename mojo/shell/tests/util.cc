@@ -66,13 +66,13 @@ scoped_ptr<Connection> LaunchAndConnectToProcess(
   mojo::ScopedMessagePipeHandle pipe =
       mojo::edk::CreateParentMessagePipe(primordial_pipe_token);
 
-  mojo::shell::mojom::ShellClientFactoryPtr factory;
-  factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
+  mojo::shell::mojom::ShellClientPtr client;
+  client.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClient>(
       std::move(pipe), 0u));
   mojo::shell::mojom::PIDReceiverPtr receiver;
 
   mojo::Connector::ConnectParams params(target);
-  params.set_client_process_connection(std::move(factory), GetProxy(&receiver));
+  params.set_client_process_connection(std::move(client), GetProxy(&receiver));
   scoped_ptr<mojo::Connection> connection = connector->Connect(&params);
   {
     base::RunLoop loop;

@@ -27,7 +27,7 @@ class ShellConnection;
 // ultimately Quit().
 class ApplicationRunner {
  public:
-  // Takes ownership of |delegate|.
+  // Takes ownership of |client|.
   explicit ApplicationRunner(ShellClient* client);
   ~ApplicationRunner();
 
@@ -52,6 +52,10 @@ class ApplicationRunner {
   // this application, though this application may continue to run and service
   // requests from others.
   void DestroyShellConnection();
+
+  // Allows the caller to explicitly quit the application. Must be called from
+  // the thread which created the ApplicationRunner.
+  void Quit();
 
  private:
   scoped_ptr<ShellConnection> connection_;

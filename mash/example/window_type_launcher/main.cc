@@ -18,7 +18,7 @@
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
-#include "mojo/shell/runner/child/runner_connection.h"
+#include "mojo/shell/runner/common/client_util.h"
 #include "mojo/shell/runner/init.h"
 
 namespace {
@@ -63,9 +63,8 @@ int main(int argc, char** argv) {
 
     base::MessageLoop loop;
     WindowTypeLauncher delegate;
-    mojo::ShellConnection impl(&delegate);
-    scoped_ptr<mojo::shell::RunnerConnection> connection =
-        mojo::shell::RunnerConnection::Create(&impl);
+    mojo::ShellConnection impl(
+        &delegate, mojo::shell::GetShellClientRequestFromCommandLine());
     loop.Run();
 
     mojo::edk::ShutdownIPCSupport();

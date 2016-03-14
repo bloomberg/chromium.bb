@@ -16,7 +16,7 @@
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
-#include "mojo/shell/runner/child/runner_connection.h"
+#include "mojo/shell/runner/common/client_util.h"
 #include "mojo/shell/runner/init.h"
 
 namespace mojo {
@@ -58,9 +58,8 @@ int TestNativeMain(mojo::ShellClient* shell_client) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
 
     base::MessageLoop loop;
-    mojo::ShellConnection impl(shell_client);;
-    scoped_ptr<mojo::shell::RunnerConnection> connection =
-        mojo::shell::RunnerConnection::Create(&impl);
+    mojo::ShellConnection impl(
+        shell_client, mojo::shell::GetShellClientRequestFromCommandLine());
     loop.Run();
 
     mojo::edk::ShutdownIPCSupport();

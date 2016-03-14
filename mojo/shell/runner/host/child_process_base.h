@@ -6,7 +6,6 @@
 #define MOJO_SHELL_RUNNER_HOST_CHILD_PROCESS_BASE_H_
 
 #include "base/callback.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {

@@ -81,4 +81,8 @@ void ApplicationRunner::DestroyShellConnection() {
   connection_.reset();
 }
 
+void ApplicationRunner::Quit() {
+  base::MessageLoop::current()->QuitWhenIdle();
+}
+
 }  // namespace mojo

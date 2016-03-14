@@ -10,9 +10,11 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
@@ -59,10 +61,9 @@ class ChildProcessHost {
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
-  void Start(mojom::ShellClientRequest request,
-             const String& name,
-             const ProcessReadyCallback& callback,
-             const base::Closure& quit_closure);
+  mojom::ShellClientPtr Start(const String& name,
+                              const ProcessReadyCallback& callback,
+                              const base::Closure& quit_closure);
 
   // Waits for the child process to terminate.
   void Join();
@@ -71,7 +72,7 @@ class ChildProcessHost {
   void DidStart(const ProcessReadyCallback& callback);
 
  private:
-  void DoLaunch();
+  void DoLaunch(scoped_ptr<base::CommandLine> child_command_line);
 
   scoped_refptr<base::TaskRunner> launch_process_runner_;
   NativeRunnerDelegate* delegate_ = nullptr;
@@ -79,20 +80,14 @@ class ChildProcessHost {
   Identity target_;
   const base::FilePath app_path_;
   base::Process child_process_;
-  // Used for the ShellClientFactory binding.
-  edk::PlatformChannelPair platform_channel_pair_;
-  mojom::ShellClientFactoryPtr factory_;
-  edk::HandlePassingInformation handle_passing_info_;
 
-  // Used to back the NodeChannel between the parent and child node.
-  scoped_ptr<edk::PlatformChannelPair> node_channel_;
+  // Used to initialize the Mojo IPC channel between parent and child.
+  scoped_ptr<edk::PlatformChannelPair> mojo_ipc_channel_;
+  edk::HandlePassingInformation handle_passing_info_;
 
   // Since Start() calls a method on another thread, we use an event to block
   // the main thread if it tries to destruct |this| while launching the process.
   base::WaitableEvent start_child_process_event_;
-
-  // A token the child can use to connect a primordial pipe to the host.
-  std::string primordial_pipe_token_;
 
   base::WeakPtrFactory<ChildProcessHost> weak_factory_;
 

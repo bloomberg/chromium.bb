@@ -28,9 +28,9 @@ namespace mojo {
 //   Represents a native executable on the host platform, expected to live
 //   alongside the shell executable. Executables launched via this mechanism are
 //   passed a handle to the shell on the command line and are expected to bind
-//   a ShellClientFactory via which they will receive a ShellClientRequest
-//   enabling further communication with the shell. The path component contains
-//   the executable name, minus any platform-specific extension.
+//   a ShellClientRequest enabling further communication with the shell. The
+//   path component contains the executable name, minus any platform-specific
+//   extension.
 //
 // Other types may be supplied but are not recognized by any of the
 // NativeRunners, and as such custom loaders must be specified for such names.

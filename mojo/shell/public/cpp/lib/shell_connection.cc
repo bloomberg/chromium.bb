@@ -19,9 +19,6 @@ namespace mojo {
 ////////////////////////////////////////////////////////////////////////////////
 // ShellConnection, public:
 
-ShellConnection::ShellConnection(mojo::ShellClient* client)
-    : ShellConnection(client, nullptr) {}
-
 ShellConnection::ShellConnection(mojo::ShellClient* client,
                                  shell::mojom::ShellClientRequest request)
     : client_(client), binding_(this) {
@@ -29,16 +26,11 @@ ShellConnection::ShellConnection(mojo::ShellClient* client,
   pending_connector_request_ = GetProxy(&connector);
   connector_.reset(new ConnectorImpl(std::move(connector)));
 
-  if (request.is_pending())
-    BindToRequest(std::move(request));
+  DCHECK(request.is_pending());
+  binding_.Bind(std::move(request));
 }
 
 ShellConnection::~ShellConnection() {}
-
-void ShellConnection::BindToRequest(shell::mojom::ShellClientRequest request) {
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
-}
 
 void ShellConnection::SetAppTestConnectorForTesting(
     shell::mojom::ConnectorPtr connector) {

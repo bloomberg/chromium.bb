@@ -69,6 +69,10 @@ bool FontServiceApp::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
+void FontServiceApp::ShellConnectionLost() {
+  _exit(1);
+}
+
 void FontServiceApp::Create(mojo::Connection* connection,
                             mojo::InterfaceRequest<FontService> request) {
   bindings_.AddBinding(this, std::move(request));

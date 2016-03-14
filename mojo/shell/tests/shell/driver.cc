@@ -29,6 +29,7 @@
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/runner/child/test_native_main.h"
+#include "mojo/shell/runner/common/client_util.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/init.h"
 #include "mojo/shell/tests/shell/shell_unittest.mojom.h"
@@ -71,25 +72,14 @@ class Driver : public mojo::ShellClient,
     platform_channel_pair.PrepareToPassClientHandleToChildProcess(
         &child_command_line, &handle_passing_info);
 
-    // Generate a token for the child to find and connect to a primordial pipe
-    // and pass that as well.
-    std::string primordial_pipe_token = mojo::edk::GenerateRandomToken();
-    child_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken,
-                                         primordial_pipe_token);
-
-    // Allocate the pipe locally.
-    mojo::ScopedMessagePipeHandle pipe =
-        mojo::edk::CreateParentMessagePipe(primordial_pipe_token);
-
-    mojo::shell::mojom::ShellClientFactoryPtr factory;
-    factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
-        std::move(pipe), 0u));
+    mojo::shell::mojom::ShellClientPtr client =
+        mojo::shell::PassShellClientRequestOnCommandLine(&child_command_line);
     mojo::shell::mojom::PIDReceiverPtr receiver;
 
     mojo::Identity target("exe:shell_unittest_target",
                           mojo::shell::mojom::kInheritUserID);
     mojo::Connector::ConnectParams params(target);
-    params.set_client_process_connection(std::move(factory),
+    params.set_client_process_connection(std::move(client),
                                          GetProxy(&receiver));
     scoped_ptr<mojo::Connection> connection = connector->Connect(&params);
     connection->AddConnectionCompletedClosure(

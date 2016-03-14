@@ -7,12 +7,13 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/native_runner.h"
-#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 
 namespace base {
 class TaskRunner;
@@ -33,11 +34,10 @@ class OutOfProcessNativeRunner : public NativeRunner {
   ~OutOfProcessNativeRunner() override;
 
   // NativeRunner:
-  void Start(
+  mojom::ShellClientPtr Start(
       const base::FilePath& app_path,
       const Identity& identity,
       bool start_sandboxed,
-      mojom::ShellClientRequest request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) override;
 

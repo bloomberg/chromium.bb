@@ -43,25 +43,16 @@ class Connector;
 //
 class ShellConnection : public shell::mojom::ShellClient {
  public:
-  // Creates a new ShellConnection to eventually be bound to a
-  // ShellClientRequest (see BindToRequest()). This connection may be used
-  // immediately to begin making outgoing connections via connector().
-  //
-  // Does not take ownership of |client|, which must remain valid for the
-  // lifetime of ShellConnection.
-  explicit ShellConnection(mojo::ShellClient* client);
-
-  // Like above but binds to |request| upon construction.
+  // Creates a new ShellConnection bound to |request|. This connection may be
+  // used immediately to make outgoing connections via connector().  Does not
+  // take ownership of |client|, which must remain valid for the lifetime of
+  // ShellConnection.
   ShellConnection(mojo::ShellClient* client,
                   shell::mojom::ShellClientRequest request);
 
   ~ShellConnection() override;
 
   Connector* connector() { return connector_.get(); }
-
-  // Binds this ShellConnection to a client request if one was not available at
-  // construction time.
-  void BindToRequest(shell::mojom::ShellClientRequest request);
 
   // TODO(rockot): Remove this once we get rid of app tests.
   void SetAppTestConnectorForTesting(shell::mojom::ConnectorPtr connector);

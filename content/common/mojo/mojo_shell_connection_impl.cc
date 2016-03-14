@@ -14,7 +14,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
-#include "mojo/shell/runner/child/runner_connection.h"
+#include "mojo/shell/runner/common/client_util.h"
 
 namespace content {
 namespace {
@@ -59,15 +59,8 @@ MojoShellConnectionImpl* MojoShellConnectionImpl::Get() {
 
 void MojoShellConnectionImpl::BindToRequestFromCommandLine() {
   DCHECK(!shell_connection_);
-
-  shell_connection_.reset(new mojo::ShellConnection(this));
-  runner_connection_ =
-      mojo::shell::RunnerConnection::Create(shell_connection_.get(),
-                                            false /* exit_on_error */);
-  if (!runner_connection_) {
-    delete this;
-    lazy_tls_ptr.Pointer()->Set(nullptr);
-  }
+  shell_connection_.reset(new mojo::ShellConnection(
+      this, mojo::shell::GetShellClientRequestFromCommandLine()));
 }
 
 MojoShellConnectionImpl::MojoShellConnectionImpl(bool external) :

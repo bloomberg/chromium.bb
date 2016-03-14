@@ -10,24 +10,6 @@ group("child") {
   testonly = true
   deps = [
     ":apptests",
-    ":lib",
-  ]
-}
-
-source_set("lib") {
-  sources = [
-    "runner_connection.cc",
-    "runner_connection.h",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/edk/system",
-    "//mojo/message_pump",
-    "//mojo/platform_handle:platform_handle_impl",
-    "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/interfaces",
-    "//mojo/shell/runner/common",
   ]
 }
 
@@ -46,7 +28,7 @@ source_set("test_native_main") {
     "//mojo/edk/system",
     "//mojo/message_pump",
     "//mojo/shell/public/cpp",
-    "//mojo/shell/runner/child:lib",
+    "//mojo/shell/runner/common",
   ]
 }
 
@@ -100,7 +82,6 @@ executable("native_target") {
 
   deps = [
     ":apptest_interfaces",
-    ":lib",
     ":test_native_main",
     "//base",
     "//build/config/sanitizers:deps",

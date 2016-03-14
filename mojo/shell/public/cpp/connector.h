@@ -9,7 +9,7 @@
 #include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
-#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
 
@@ -40,21 +40,21 @@ class Connector {
     const Identity& target() { return target_; }
     void set_target(const Identity& target) { target_ = target; }
     void set_client_process_connection(
-        shell::mojom::ShellClientFactoryPtr shell_client_factory,
+        shell::mojom::ShellClientPtr shell_client,
         shell::mojom::PIDReceiverRequest pid_receiver_request) {
-      shell_client_factory_ = std::move(shell_client_factory);
+      shell_client_ = std::move(shell_client);
       pid_receiver_request_ = std::move(pid_receiver_request);
     }
     void TakeClientProcessConnection(
-        shell::mojom::ShellClientFactoryPtr* shell_client_factory,
+        shell::mojom::ShellClientPtr* shell_client,
         shell::mojom::PIDReceiverRequest* pid_receiver_request) {
-      *shell_client_factory = std::move(shell_client_factory_);
+      *shell_client = std::move(shell_client_);
       *pid_receiver_request = std::move(pid_receiver_request_);
     }
 
    private:
     Identity target_;
-    shell::mojom::ShellClientFactoryPtr shell_client_factory_;
+    shell::mojom::ShellClientPtr shell_client_;
     shell::mojom::PIDReceiverRequest pid_receiver_request_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);

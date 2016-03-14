@@ -74,33 +74,26 @@
       'mojom_bindings_generator_explicit.gypi',
     ],
   }, {
-    'target_name': 'mojo_runner_connection_lib',
-    'type': 'static_library',
-    'sources': [
-      'shell/runner/child/runner_connection.cc',
-      'shell/runner/child/runner_connection.h',
-    ],
-    'dependencies': [
-      'mojo_runner_common_lib',
-      '<(DEPTH)/base/base.gyp:base',
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_base',
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
-      '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
-      '<(DEPTH)/mojo/mojo_platform_handle.gyp:platform_handle',
-      '<(DEPTH)/mojo/mojo_public.gyp:mojo_message_pump_lib',
-    ],
-    'export_dependent_settings': [
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
-    ],
-  }, {
     'target_name': 'mojo_runner_common_lib',
     'type': 'static_library',
     'sources': [
+      'shell/runner/common/client_util.cc',
+      'shell/runner/common/client_util.h',
       'shell/runner/common/switches.cc',
       'shell/runner/common/switches.h',
     ],
     'include_dirs': [
       '..',
+    ],
+    'dependencies': [
+      '<(DEPTH)/base/base.gyp:base',
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
+      '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
+      '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
+      '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_system',
+    ],
+    'export_dependent_settings': [
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
     ],
   }, {
     'target_name': 'mojo_runner_host_lib',

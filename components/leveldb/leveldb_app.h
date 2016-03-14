@@ -25,9 +25,7 @@ class LevelDBApp : public mojo::ShellClient,
                   const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
-
-  // TODO(erg): What do we have to do on shell error?
-  // bool OnShellConnectionError() override;
+  void ShellConnectionLost() override;
 
   // |InterfaceFactory<LevelDBService>| implementation:
   void Create(mojo::Connection* connection,

@@ -37,6 +37,10 @@ class Driver : public mojo::ShellClient,
     connection->AddInterface<ClientProcessTest>(this);
     return true;
   }
+  void ShellConnectionLost() override {
+    // TODO: This should exit cleanly.
+    _exit(1);
+  }
 
   // mojo::InterfaceFactory<ConnectTestService>:
   void Create(mojo::Connection* connection,

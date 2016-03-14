@@ -36,7 +36,9 @@ shell::mojom::ConnectorPtr g_connector;
 class ShellGrabber : public shell::mojom::ShellClient {
  public:
   explicit ShellGrabber(InterfaceRequest<shell::mojom::ShellClient> request)
-      : binding_(this, std::move(request)) {}
+      : binding_(this, std::move(request)) {
+    binding_.set_connection_error_handler([] { _exit(1); });
+  }
 
   void WaitForInitialize() {
     // Initialize is always the first call made on ShellClient.

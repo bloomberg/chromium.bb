@@ -4,7 +4,20 @@
 
 source_set("common") {
   sources = [
+    "client_util.cc",
+    "client_util.h",
     "switches.cc",
     "switches.h",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/edk/system",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
+  ]
+
+  public_deps = [
+    "//mojo/shell/public/interfaces",
   ]
 }

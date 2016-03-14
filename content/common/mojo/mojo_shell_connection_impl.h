@@ -15,12 +15,6 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 
-namespace mojo {
-namespace shell {
-class RunnerConnection;
-}
-}
-
 namespace content {
 
 // Returns true for processes launched from an external mojo shell.
@@ -64,7 +58,6 @@ class MojoShellConnectionImpl : public MojoShellConnection,
 
   bool external_;
   scoped_ptr<mojo::ShellConnection> shell_connection_;
-  scoped_ptr<mojo::shell::RunnerConnection> runner_connection_;
   std::vector<Listener*> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellConnectionImpl);

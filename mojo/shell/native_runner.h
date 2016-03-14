@@ -10,7 +10,6 @@
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
-#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 
 namespace base {
 class FilePath;
@@ -28,12 +27,12 @@ class NativeRunner {
   virtual ~NativeRunner() {}
 
   // Loads the app in the file at |app_path| and runs it on some other
-  // thread/process.
-  virtual void Start(
+  // thread/process. Returns a ShellClient handle the shell can use to connect
+  // to the the app.
+  virtual mojom::ShellClientPtr Start(
       const base::FilePath& app_path,
       const Identity& target,
       bool start_sandboxed,
-      InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) = 0;
 };

@@ -37,6 +37,11 @@ bool ResourceProviderApp::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
+void ResourceProviderApp::ShellConnectionLost() {
+  // TODO: This should exit cleanly.
+  _exit(1);
+}
+
 void ResourceProviderApp::Create(
     mojo::Connection* connection,
     mojo::InterfaceRequest<ResourceProvider> request) {

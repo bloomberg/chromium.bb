@@ -13,6 +13,7 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/runner/host/native_application_support.h"
 #include "mojo/shell/runner/host/out_of_process_native_runner.h"
 #include "mojo/shell/runner/init.h"
@@ -33,17 +34,17 @@ InProcessNativeRunner::~InProcessNativeRunner() {
   }
 }
 
-void InProcessNativeRunner::Start(
+mojom::ShellClientPtr InProcessNativeRunner::Start(
     const base::FilePath& app_path,
     const Identity& target,
     bool start_sandboxed,
-    mojom::ShellClientRequest request,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
 
   DCHECK(!request_.is_pending());
-  request_ = std::move(request);
+  mojom::ShellClientPtr client;
+  request_ = GetProxy(&client);
 
   DCHECK(app_completed_callback_runner_.is_null());
   app_completed_callback_runner_ = base::Bind(
@@ -58,6 +59,8 @@ void InProcessNativeRunner::Start(
   thread_.reset(new base::DelegateSimpleThread(this, thread_name));
   thread_->Start();
   pid_available_callback.Run(base::kNullProcessId);
+
+  return client;
 }
 
 void InProcessNativeRunner::Run() {

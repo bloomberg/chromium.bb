@@ -18,7 +18,7 @@ enum ConnectResult {
   // The name or user id supplied was malformed, or the application specified
   // by |name| could not be loaded.
   INVALID_ARGUMENT,
-  
+
   // The connection was blocked by policy. Either connections to |name| are
   // forbidden from this app by the CapabilityFilter, or the application
   // attempted to connect using a user id other than its own,
@@ -69,12 +69,12 @@ interface PIDReceiver {
 // the process itself and provide the shell the pipes it needs to communicate
 // with it. When an instance of this struct is supplied to Connect(), the client
 // owns the lifetime of the child process, not the shell. The shell binds the
-// |shell_client_factory| pipe, and when it closes destroys the associated
-// instance but the process stays alive.
+// |shell_client| pipe, and when it closes destroys the associated  instance but
+// the process stays alive.
 struct ClientProcessConnection {
-  // Provides the shell the ability to bind a ShellClientRequest from the client
+  // Provides the shell the ability to bind a ShellClient from the client
   // process to the instance it creates.
-  handle<message_pipe> shell_client_factory;
+  handle<message_pipe> shell_client;
 
   // Allows the client process launcher to tell the shell the PID of the process
   // it created (the pid isn't supplied directly here as the process may not

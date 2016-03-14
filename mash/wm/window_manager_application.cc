@@ -125,6 +125,10 @@ bool WindowManagerApplication::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
+void WindowManagerApplication::ShellConnectionLost() {
+  _exit(1);
+}
+
 void WindowManagerApplication::Create(
     mojo::Connection* connection,
     mojo::InterfaceRequest<mash::wm::mojom::UserWindowController> request) {

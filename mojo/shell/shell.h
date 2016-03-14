@@ -111,7 +111,7 @@ class Shell : public ShellClient {
   //
   // If |client| is not null, there must not be an instance of the target
   // application already running. The shell will create a new instance and use
-  // |client| to control.
+  // |client| to control it.
   void Connect(scoped_ptr<ConnectParams> params, mojom::ShellClientPtr client);
 
   // Returns a running instance matching |identity|.
@@ -128,22 +128,21 @@ class Shell : public ShellClient {
   bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
 
   Instance* CreateInstance(const Identity& target,
-                           const CapabilitySpec& spec,
-                           mojom::ShellClientPtr client);
+                           const CapabilitySpec& spec);
 
   // Called from the instance implementing mojom::Shell.
   void AddInstanceListener(mojom::InstanceListenerPtr listener);
 
-  void CreateShellClient(const Identity& source,
-                         const Identity& shell_client_factory,
-                         const std::string& name,
-                         mojom::ShellClientRequest request);
-  // Returns a running ShellClientFactory for |shell_client_factory_identity|,
-  // if there is not one running one is started for |source_identity|.
+  void CreateShellClientWithFactory(const Identity& source,
+                                    const Identity& shell_client_factory,
+                                    const std::string& name,
+                                    mojom::ShellClientRequest request);
+  // Returns a running ShellClientFactory for |shell_client_factory_identity|.
+  // If there is not one running one is started for |source_identity|.
   mojom::ShellClientFactory* GetShellClientFactory(
       const Identity& shell_client_factory_identity,
       const Identity& source_identity);
-  void OnShellClientFactoryLost(const Identity& which);;
+  void OnShellClientFactoryLost(const Identity& which);
 
   // Callback when remote Catalog resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
@@ -181,7 +180,7 @@ class Shell : public ShellClient {
   IdentityToInstanceMap identity_to_instance_;
 
   IdentityToShellClientFactoryMap shell_client_factories_;
-  // Counter used to assign ids to content handlers.
+  // Counter used to assign ids to client factories.
   uint32_t shell_client_factory_id_counter_;
 
   InterfacePtrSet<mojom::InstanceListener> instance_listeners_;

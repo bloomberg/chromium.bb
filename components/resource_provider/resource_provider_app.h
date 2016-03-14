@@ -28,6 +28,7 @@ class ResourceProviderApp : public mojo::ShellClient,
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
+  void ShellConnectionLost() override;
 
   // mojo::InterfaceFactory<ResourceProvider>:
   void Create(mojo::Connection* connection,

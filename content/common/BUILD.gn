@@ -155,7 +155,7 @@ source_set("common") {
     "//gpu/command_buffer/common:gles2_utils",
     "//mojo/converters/network",
     "//mojo/shell/public/cpp",
-    "//mojo/shell/runner/child:lib",
+    "//mojo/shell/runner/common",
     "//net",
     "//skia",
     "//third_party/WebKit/public:blink",

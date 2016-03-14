@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace content {
 namespace {
@@ -91,7 +92,7 @@ std::string MojoConnectToChild(int child_process_id,
   // Generate a token and create a pipe which is bound to it. This pipe is
   // passed to the shell if one is available.
   std::string pipe_token = mojo::edk::GenerateRandomToken();
-  mojo::ScopedMessagePipeHandle request_pipe =
+  mojo::ScopedMessagePipeHandle shell_client_pipe =
       mojo::edk::CreateParentMessagePipe(pipe_token);
 
   // Some process types get created before the main message loop. In this case
@@ -100,9 +101,9 @@ std::string MojoConnectToChild(int child_process_id,
   if (!MojoShellConnection::Get())
     return pipe_token;
 
-  mojo::shell::mojom::ShellClientFactoryPtr factory;
-  factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
-      std::move(request_pipe), 0u));
+  mojo::shell::mojom::ShellClientPtr client;
+  client.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClient>(
+      std::move(shell_client_pipe), 0u));
   mojo::shell::mojom::PIDReceiverPtr pid_receiver;
   mojo::shell::mojom::PIDReceiverRequest pid_receiver_request =
       GetProxy(&pid_receiver);
@@ -115,7 +116,7 @@ std::string MojoConnectToChild(int child_process_id,
                         base::StringPrintf("%d_%d", child_process_id,
                                            instance_id));
   mojo::Connector::ConnectParams params(target);
-  params.set_client_process_connection(std::move(factory),
+  params.set_client_process_connection(std::move(client),
                                        std::move(pid_receiver_request));
   scoped_ptr<mojo::Connection> connection =
       MojoShellConnection::Get()->GetConnector()->Connect(&params);

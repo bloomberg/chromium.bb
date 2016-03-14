@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task_runner.h"
+#include "mojo/shell/runner/common/client_util.h"
 #include "mojo/shell/runner/host/child_process_host.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 
@@ -29,11 +30,10 @@ OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
     child_process_host_->Join();
 }
 
-void OutOfProcessNativeRunner::Start(
+mojom::ShellClientPtr OutOfProcessNativeRunner::Start(
     const base::FilePath& app_path,
     const Identity& target,
     bool start_sandboxed,
-    mojom::ShellClientRequest request,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
@@ -43,10 +43,10 @@ void OutOfProcessNativeRunner::Start(
 
   child_process_host_.reset(new ChildProcessHost(
       launch_process_runner_, delegate_, start_sandboxed, target, app_path));
-  child_process_host_->Start(std::move(request), target.name(),
-                             pid_available_callback,
-                             base::Bind(&OutOfProcessNativeRunner::AppCompleted,
-                                        base::Unretained(this)));
+  return child_process_host_->Start(
+      target.name(), pid_available_callback,
+      base::Bind(&OutOfProcessNativeRunner::AppCompleted,
+                 base::Unretained(this)));
 }
 
 void OutOfProcessNativeRunner::AppCompleted() {
