@@ -79,10 +79,11 @@
               menu-options="[[fontSizeOptions_]]" no-label-float>
           </settings-dropdown-menu>
         </div>
-        <div class="settings-box">
-          <div class="start" i18n-content="customizeFonts"></div>
-          <paper-button on-tap="onCustomizeFontsTap_"
-              i18n-content="customizeFonts"></paper-button>
+        <div class="settings-box two-line" on-tap="onCustomizeFontsTap_">
+          <div class="start">
+            <div i18n-content="customizeFonts"></div>
+            <div class="secondary" i18n-content="chooseFontsAndEncoding"></div>
+          </div>
         </div>
         <div class="settings-box">
           <div class="start" i18n-content="pageZoom"></div>

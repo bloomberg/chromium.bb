@@ -101,6 +101,9 @@
   <message name="IDS_SETTINGS_OPEN_WALLPAPER_APP" desc="Sub-label about opening the wallpaper app.">
     Open the wallpaper app
   </message>
+  <message name="IDS_SETTINGS_CHOOSE_FONTS_AND_ENCODING" desc="Sub-label about choosing font styles and text encoding.">
+    Choose font types and encoding
+  </message>
 
   <!-- Common -->
   <message name="IDS_SETTINGS_ADVANCED" desc="Name of the settings page which displays advanced preferences.">

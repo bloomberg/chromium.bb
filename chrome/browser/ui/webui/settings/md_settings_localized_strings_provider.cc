@@ -134,6 +134,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
       {"themesGalleryUrl", IDS_THEMES_GALLERY_URL},
       {"chooseFromWebStore", IDS_SETTINGS_WEB_STORE},
       {"openWallpaperApp", IDS_SETTINGS_OPEN_WALLPAPER_APP},
+      {"chooseFontsAndEncoding", IDS_SETTINGS_CHOOSE_FONTS_AND_ENCODING},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
