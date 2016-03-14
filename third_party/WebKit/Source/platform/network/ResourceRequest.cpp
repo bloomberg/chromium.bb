@@ -323,7 +323,7 @@ void ResourceRequest::clearHTTPHeaderField(const AtomicString& name)
     m_httpHeaderFields.remove(name);
 }
 
-bool equalIgnoringHeaderFields(const ResourceRequest& a, const ResourceRequest& b)
+bool ResourceRequest::compare(const ResourceRequest& a, const ResourceRequest& b)
 {
     if (a.url() != b.url())
         return false;
@@ -358,14 +358,6 @@ bool equalIgnoringHeaderFields(const ResourceRequest& a, const ResourceRequest& 
         return !formDataA;
 
     if (*formDataA != *formDataB)
-        return false;
-
-    return true;
-}
-
-bool ResourceRequest::compare(const ResourceRequest& a, const ResourceRequest& b)
-{
-    if (!equalIgnoringHeaderFields(a, b))
         return false;
 
     if (a.httpHeaderFields() != b.httpHeaderFields())

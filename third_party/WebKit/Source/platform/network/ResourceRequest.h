@@ -296,8 +296,6 @@ private:
     bool m_followedRedirect;
 };
 
-bool equalIgnoringHeaderFields(const ResourceRequest&, const ResourceRequest&);
-
 inline bool operator==(const ResourceRequest& a, const ResourceRequest& b) { return ResourceRequest::compare(a, b); }
 inline bool operator!=(ResourceRequest& a, const ResourceRequest& b) { return !(a == b); }
 
