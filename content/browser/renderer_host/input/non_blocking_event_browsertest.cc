@@ -128,11 +128,11 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
     // Runs until we get the InputMsgAck callback
     EXPECT_EQ(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
               input_msg_watcher->WaitForAck());
-    frame_watcher->WaitFrames(1);
 
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
-    EXPECT_LT(0, frame_watcher->LastMetadata().root_scroll_offset.y());
+    while (frame_watcher->LastMetadata().root_scroll_offset.y() <= 0)
+      frame_watcher->WaitFrames(1);
   }
 
   void DoTouchScroll() {
