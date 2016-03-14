@@ -92,9 +92,7 @@ class WebTestInterfaces;
 class TEST_RUNNER_EXPORT WebTestProxyBase {
  public:
   void SetInterfaces(WebTestInterfaces* interfaces);
-  WebTestInterfaces* GetInterfaces();
   void SetDelegate(WebTestDelegate* delegate);
-  WebTestDelegate* GetDelegate();
   void set_widget(blink::WebWidget* widget) { web_widget_ = widget; }
 
   void Reset();
@@ -110,8 +108,13 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
                              blink::WebTextDirection main_message_hint,
                              const blink::WebString& sub_message,
                              blink::WebTextDirection sub_message_hint);
-  void HideValidationMessage();
-  void MoveValidationMessage(const blink::WebRect& anchor_in_root_view);
+
+  void RunModalAlertDialog(const blink::WebString& message);
+  bool RunModalConfirmDialog(const blink::WebString& message);
+  bool RunModalPromptDialog(const blink::WebString& message,
+                            const blink::WebString& default_value,
+                            blink::WebString* actual_value);
+  bool RunModalBeforeUnloadDialog(bool is_reload);
 
   std::string DumpBackForwardLists();
   void CapturePixelsForPrinting(
@@ -248,9 +251,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
       const base::Callback<void(const SkBitmap&)>& callback,
       const SkBitmap& bitmap);
 
-  blink::WebWidget* web_widget() const { return web_widget_; }
-
-  WebTestInterfaces* web_test_interfaces_;
   TestInterfaces* test_interfaces_;
   WebTestDelegate* delegate_;
   blink::WebWidget* web_widget_;

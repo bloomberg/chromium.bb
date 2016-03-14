@@ -148,31 +148,22 @@ class WebFrameTestProxy : public Base {
   }
 
   void runModalAlertDialog(const blink::WebString& message) override {
-    base_proxy_->GetDelegate()->PrintMessage(std::string("ALERT: ") +
-                                             message.utf8().data() + "\n");
+    base_proxy_->RunModalAlertDialog(message);
   }
 
   bool runModalConfirmDialog(const blink::WebString& message) override {
-    base_proxy_->GetDelegate()->PrintMessage(std::string("CONFIRM: ") +
-                                             message.utf8().data() + "\n");
-    return true;
+    return base_proxy_->RunModalConfirmDialog(message);
   }
 
   bool runModalPromptDialog(const blink::WebString& message,
                             const blink::WebString& default_value,
-                            blink::WebString*) override {
-    base_proxy_->GetDelegate()->PrintMessage(
-        std::string("PROMPT: ") + message.utf8().data() + ", default text: " +
-        default_value.utf8().data() + "\n");
-    return true;
+                            blink::WebString* actual_value) override {
+    return base_proxy_->RunModalPromptDialog(message, default_value,
+                                             actual_value);
   }
 
   bool runModalBeforeUnloadDialog(bool is_reload) override {
-    base_proxy_->GetDelegate()->PrintMessage(
-        std::string("CONFIRM NAVIGATION\n"));
-    return !base_proxy_->GetInterfaces()
-                ->TestRunner()
-                ->ShouldStayOnPageAfterHandlingBeforeUnload();
+    return base_proxy_->RunModalBeforeUnloadDialog(is_reload);
   }
 
   void showContextMenu(

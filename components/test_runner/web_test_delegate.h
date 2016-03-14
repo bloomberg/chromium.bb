@@ -231,7 +231,7 @@ class WebTestDelegate {
   // Returns the length of the back/forward history of the main WebView.
   virtual int NavigationEntryCount() = 0;
 
-  // The following trigger navigations on the main WebViwe.
+  // The following trigger navigations on the main WebView.
   virtual void GoToOffset(int offset) = 0;
   virtual void Reload() = 0;
   virtual void LoadURLForFrame(const blink::WebURL& url,
@@ -290,8 +290,6 @@ class WebTestDelegate {
   virtual blink::WebPlugin* CreatePluginPlaceholder(
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) = 0;
-
-  virtual void OnWebTestProxyBaseDestroy(WebTestProxyBase* proxy) = 0;
 
   // Convert the position in DIP to native coordinates.
   virtual blink::WebPoint ConvertDIPToNative(

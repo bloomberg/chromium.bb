@@ -53,7 +53,6 @@ class TestInterfaces {
   EventSender* GetEventSender();
   TestRunner* GetTestRunner();
   WebTestDelegate* GetDelegate();
-  WebTestProxyBase* GetProxy();
   const std::vector<WebTestProxyBase*>& GetWindowList();
   blink::WebThemeEngine* GetThemeEngine();
   AppBannerClient* GetAppBannerClient();
@@ -65,7 +64,6 @@ class TestInterfaces {
   scoped_ptr<TextInputController> text_input_controller_;
   scoped_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;
-  WebTestProxyBase* proxy_;
   AppBannerClient* app_banner_client_;
 
   std::vector<WebTestProxyBase*> window_list_;

@@ -55,8 +55,6 @@ class WebTestRunner {
   // Returns true if WebTestProxy::capturePixels should be invoked after
   // capturing text results.
   virtual bool ShouldGeneratePixelResults() = 0;
-
-  virtual bool ShouldStayOnPageAfterHandlingBeforeUnload() const = 0;
 };
 
 }  // namespace test_runner

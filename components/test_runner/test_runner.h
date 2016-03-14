@@ -70,7 +70,6 @@ class TestRunner : public WebTestRunner,
 
   // WebTestRunner implementation.
   bool ShouldGeneratePixelResults() override;
-  bool ShouldStayOnPageAfterHandlingBeforeUnload() const override;
   bool ShouldDumpAsAudio() const override;
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
   const LayoutDumpFlags& GetLayoutDumpFlags() override;
@@ -81,6 +80,7 @@ class TestRunner : public WebTestRunner,
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
 
   // Methods used by WebTestProxyBase.
+  bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   bool shouldDumpSelectionRect() const;
   bool isPrinting() const;
   bool shouldDumpAsTextWithPixelResults();

@@ -58,7 +58,6 @@ TestInterfaces::~TestInterfaces() {
 
 void TestInterfaces::SetWebView(blink::WebView* web_view,
                                 WebTestProxyBase* proxy) {
-  proxy_ = proxy;
   accessibility_controller_->SetWebView(web_view);
   event_sender_->SetWebView(web_view);
   // gamepad_controller_ doesn't depend on WebView.
@@ -167,10 +166,6 @@ TestRunner* TestInterfaces::GetTestRunner() {
 
 WebTestDelegate* TestInterfaces::GetDelegate() {
   return delegate_;
-}
-
-WebTestProxyBase* TestInterfaces::GetProxy() {
-  return proxy_;
 }
 
 const std::vector<WebTestProxyBase*>& TestInterfaces::GetWindowList() {

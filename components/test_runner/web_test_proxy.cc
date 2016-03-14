@@ -302,8 +302,7 @@ std::string DumpAllBackForwardLists(TestInterfaces* interfaces,
 }
 
 WebTestProxyBase::WebTestProxyBase()
-    : web_test_interfaces_(NULL),
-      test_interfaces_(NULL),
+    : test_interfaces_(NULL),
       delegate_(NULL),
       web_widget_(NULL),
       spellcheck_(new SpellCheckClient(this)),
@@ -313,17 +312,11 @@ WebTestProxyBase::WebTestProxyBase()
 
 WebTestProxyBase::~WebTestProxyBase() {
   test_interfaces_->WindowClosed(this);
-  delegate_->OnWebTestProxyBaseDestroy(this);
 }
 
 void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
-  web_test_interfaces_ = interfaces;
   test_interfaces_ = interfaces->GetTestInterfaces();
   test_interfaces_->WindowOpened(this);
-}
-
-WebTestInterfaces* WebTestProxyBase::GetInterfaces() {
-  return web_test_interfaces_;
 }
 
 void WebTestProxyBase::SetDelegate(WebTestDelegate* delegate) {
@@ -331,10 +324,6 @@ void WebTestProxyBase::SetDelegate(WebTestDelegate* delegate) {
   spellcheck_->SetDelegate(delegate);
   if (speech_recognizer_.get())
     speech_recognizer_->SetDelegate(delegate);
-}
-
-WebTestDelegate* WebTestProxyBase::GetDelegate() {
-  return delegate_;
 }
 
 blink::WebView* WebTestProxyBase::GetWebView() const {
@@ -400,6 +389,33 @@ void WebTestProxyBase::ShowValidationMessage(
                           base::UTF16ToUTF8(wrapped_main_text) +
                           " sub-message=" +
                           base::UTF16ToUTF8(wrapped_sub_text) + "\n");
+}
+
+void WebTestProxyBase::RunModalAlertDialog(const blink::WebString& message) {
+  delegate_->PrintMessage(std::string("ALERT: ") + message.utf8().data() +
+                          "\n");
+}
+
+bool WebTestProxyBase::RunModalConfirmDialog(const blink::WebString& message) {
+  delegate_->PrintMessage(std::string("CONFIRM: ") + message.utf8().data() +
+                          "\n");
+  return true;
+}
+
+bool WebTestProxyBase::RunModalPromptDialog(
+    const blink::WebString& message,
+    const blink::WebString& default_value,
+    blink::WebString* actual_value) {
+  delegate_->PrintMessage(std::string("PROMPT: ") + message.utf8().data() +
+                          ", default text: " + default_value.utf8().data() +
+                          "\n");
+  return true;
+}
+
+bool WebTestProxyBase::RunModalBeforeUnloadDialog(bool is_reload) {
+  delegate_->PrintMessage(std::string("CONFIRM NAVIGATION\n"));
+  return !test_interfaces_->GetTestRunner()
+      ->shouldStayOnPageAfterHandlingBeforeUnload();
 }
 
 std::string WebTestProxyBase::DumpBackForwardLists() {

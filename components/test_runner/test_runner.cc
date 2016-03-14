@@ -1815,7 +1815,7 @@ bool TestRunner::ShouldGeneratePixelResults() {
   return layout_dump_flags_.generate_pixel_results();
 }
 
-bool TestRunner::ShouldStayOnPageAfterHandlingBeforeUnload() const {
+bool TestRunner::shouldStayOnPageAfterHandlingBeforeUnload() const {
   return should_stay_on_page_after_handling_before_unload_;
 }
 

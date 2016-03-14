@@ -780,10 +780,6 @@ blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
   return placeholder->plugin();
 }
 
-void BlinkTestRunner::OnWebTestProxyBaseDestroy(
-    test_runner::WebTestProxyBase* proxy) {
-}
-
 blink::WebPoint BlinkTestRunner::ConvertDIPToNative(
     const blink::WebPoint& point_in_dip) const {
   float scale = render_view()->GetDeviceScaleFactorForTest();
