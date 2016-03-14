@@ -62,10 +62,8 @@ class PermissionManagerTest : public testing::Test {
   }
 
   void SetPermission(ContentSettingsType type, ContentSetting value) {
-    HostContentSettingsMapFactory::GetForProfile(&profile_)->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(url_),
-        ContentSettingsPattern::FromURLNoWildcard(url_),
-        type, std::string(), value);
+    HostContentSettingsMapFactory::GetForProfile(&profile_)
+        ->SetContentSettingDefaultScope(url_, url_, type, std::string(), value);
   }
 
   const GURL& url() const {
@@ -142,11 +140,8 @@ TEST_F(PermissionManagerTest, SameTypeChangeNotifies) {
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
@@ -161,11 +156,8 @@ TEST_F(PermissionManagerTest, DifferentTypeChangeDoesNotNotify) {
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -181,27 +173,21 @@ TEST_F(PermissionManagerTest, ChangeAfterUnsubscribeDoesNotNotify) {
 
   GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
 }
 
-TEST_F(PermissionManagerTest, DifferentPrimaryPatternDoesNotNotify) {
+TEST_F(PermissionManagerTest, DifferentPrimaryUrlDoesNotNotify) {
   int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
       PermissionType::GEOLOCATION, url(), url(),
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(other_url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      other_url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -209,17 +195,14 @@ TEST_F(PermissionManagerTest, DifferentPrimaryPatternDoesNotNotify) {
   GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 }
 
-TEST_F(PermissionManagerTest, DifferentSecondaryPatternDoesNotNotify) {
+TEST_F(PermissionManagerTest, DifferentSecondaryUrlDoesNotNotify) {
   int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
       PermissionType::GEOLOCATION, url(), url(),
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(other_url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), other_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -247,11 +230,8 @@ TEST_F(PermissionManagerTest, WildCardPatternNotifies) {
 }
 
 TEST_F(PermissionManagerTest, ClearSettingsNotifies) {
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
@@ -274,11 +254,8 @@ TEST_F(PermissionManagerTest, NewValueCorrectlyPassed) {
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_BLOCK);
 
   EXPECT_TRUE(callback_called());
@@ -288,11 +265,8 @@ TEST_F(PermissionManagerTest, NewValueCorrectlyPassed) {
 }
 
 TEST_F(PermissionManagerTest, ChangeWithoutPermissionChangeDoesNotNotify) {
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
@@ -300,11 +274,8 @@ TEST_F(PermissionManagerTest, ChangeWithoutPermissionChangeDoesNotNotify) {
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -313,11 +284,8 @@ TEST_F(PermissionManagerTest, ChangeWithoutPermissionChangeDoesNotNotify) {
 }
 
 TEST_F(PermissionManagerTest, ChangesBackAndForth) {
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ASK);
 
   int subscription_id = GetPermissionManager()->SubscribePermissionStatusChange(
@@ -325,11 +293,8 @@ TEST_F(PermissionManagerTest, ChangesBackAndForth) {
       base::Bind(&PermissionManagerTest::OnPermissionChange,
                  base::Unretained(this)));
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
@@ -337,11 +302,8 @@ TEST_F(PermissionManagerTest, ChangesBackAndForth) {
 
   Reset();
 
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      ContentSettingsPattern::FromURLNoWildcard(url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ASK);
 
   EXPECT_TRUE(callback_called());
