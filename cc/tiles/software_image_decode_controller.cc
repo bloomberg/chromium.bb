@@ -32,6 +32,23 @@ const size_t kMaxHighQualityImageSizeBytes = 64 * 1024 * 1024;
 // if more items are locked. That is, locked items ignore this limit.
 const size_t kMaxItemsInCache = 100;
 
+class AutoRemoveKeyFromTaskMap {
+ public:
+  AutoRemoveKeyFromTaskMap(
+      std::unordered_map<SoftwareImageDecodeController::ImageKey,
+                         scoped_refptr<ImageDecodeTask>,
+                         SoftwareImageDecodeController::ImageKeyHash>* task_map,
+      const SoftwareImageDecodeController::ImageKey& key)
+      : task_map_(task_map), key_(key) {}
+  ~AutoRemoveKeyFromTaskMap() { task_map_->erase(key_); }
+
+ private:
+  std::unordered_map<SoftwareImageDecodeController::ImageKey,
+                     scoped_refptr<ImageDecodeTask>,
+                     SoftwareImageDecodeController::ImageKeyHash>* task_map_;
+  SoftwareImageDecodeController::ImageKey key_;
+};
+
 class ImageDecodeTaskImpl : public ImageDecodeTask {
  public:
   ImageDecodeTaskImpl(SoftwareImageDecodeController* controller,
@@ -261,6 +278,7 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
   }
 
   base::AutoLock lock(lock_);
+  AutoRemoveKeyFromTaskMap remove_key_from_task_map(&pending_image_tasks_, key);
 
   // We could have finished all of the raster tasks (cancelled) while the task
   // was just starting to run. Since this task already started running, it
@@ -273,10 +291,8 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
 
   auto image_it = decoded_images_.Peek(key);
   if (image_it != decoded_images_.end()) {
-    if (image_it->second->is_locked() || image_it->second->Lock()) {
-      pending_image_tasks_.erase(key);
+    if (image_it->second->is_locked() || image_it->second->Lock())
       return;
-    }
     decoded_images_.Erase(image_it);
   }
 
@@ -285,11 +301,6 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
     base::AutoUnlock unlock(lock_);
     decoded_image = DecodeImageInternal(key, image);
   }
-
-  // Erase the pending task from the queue, since the task won't be doing
-  // anything useful after this function terminates. That is, if this image
-  // needs to be decoded again, we have to create a new task.
-  pending_image_tasks_.erase(key);
 
   // Abort if we failed to decode the image.
   if (!decoded_image)
