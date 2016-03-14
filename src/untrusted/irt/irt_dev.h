@@ -50,25 +50,6 @@ struct nacl_irt_dev_fdio_v0_2 {
 };
 
 #define NACL_IRT_DEV_FDIO_v0_3  "nacl-irt-dev-fdio-0.3"
-struct nacl_irt_dev_fdio_v0_3 {
-  int (*close)(int fd);
-  int (*dup)(int fd, int *newfd);
-  int (*dup2)(int fd, int newfd);
-  int (*read)(int fd, void *buf, size_t count, size_t *nread);
-  int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
-  int (*seek)(int fd, nacl_irt_off_t offset, int whence,
-              nacl_irt_off_t *new_offset);
-  int (*fstat)(int fd, nacl_irt_stat_t *);
-  int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
-  int (*fchdir)(int fd);
-  int (*fchmod)(int fd, mode_t mode);
-  int (*fsync)(int fd);
-  int (*fdatasync)(int fd);
-  int (*ftruncate)(int fd, nacl_irt_off_t length);
-  int (*isatty)(int fd, int *result);
-};
-
-#define NACL_IRT_DEV_FDIO_v0_4  "nacl-irt-dev-fdio-0.4"
 struct nacl_irt_dev_fdio {
   int (*close)(int fd);
   int (*dup)(int fd, int *newfd);
@@ -85,10 +66,6 @@ struct nacl_irt_dev_fdio {
   int (*fdatasync)(int fd);
   int (*ftruncate)(int fd, nacl_irt_off_t length);
   int (*isatty)(int fd, int *result);
-  int (*pread)(int fd, void *buf, size_t count, nacl_irt_off_t offset,
-               size_t *nread);
-  int (*pwrite)(int fd, const void *buf, size_t count, nacl_irt_off_t offset,
-                size_t *nwrote);
 };
 
 /*

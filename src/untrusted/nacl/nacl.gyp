@@ -54,8 +54,6 @@
       'ntohl.c',
       'ntohs.c',
       'open.c',
-      'pread.c',
-      'pwrite.c',
       'pthread_initialize_minimal.c',
       'pthread_stubs.c',
       'random.c',

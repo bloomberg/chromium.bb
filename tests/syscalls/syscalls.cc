@@ -1266,6 +1266,12 @@ bool test_readdir(const char *test_file) {
 
 // isatty returns 1 for TTY descriptors and 0 on error (setting errno)
 bool test_isatty(const char *test_file) {
+  // TODO(mseaborn): Implement isatty() for unsandboxed mode.
+  // We need to write two if-statements two avoid clang's warning.
+  if (NONSFI_MODE)
+    if (TESTS_USE_IRT)
+      return true;
+
   // TODO(sbc): isatty() in glibc is not yet hooked up to the IRT
   // interfaces. Remove this conditional once this gets addressed:
   // https://code.google.com/p/nativeclient/issues/detail?id=3709
@@ -1296,118 +1302,6 @@ bool test_isatty(const char *test_file) {
   }
 
   return passed("test_isatty", "all");
-}
-
-// pread() returns the number of bytes read on success (0 indicates end
-// of file), -1 on error
-bool test_pread(const char *test_file) {
-  int fd;
-  int ret_val;
-  char out_char[10], out_char2[10];
-  const char *testname = "test_pread";
-
-  // TODO(phosek): pread() in glibc is not yet hooked up.
-#if defined(__GLIBC__)
-  return true;
-#endif
-
-  fd = open(test_file, O_RDONLY);
-  ASSERT_GE(fd, -1);
-
-  // fd OK, buffer OK, count OK
-  ret_val = pread(fd, out_char, 1, 0);
-  ASSERT_EQ(ret_val, 1);
-
-  errno = 0;
-  // fd not OK, buffer OK, count OK
-  ret_val = pread(-1, out_char, 1, 0);
-  ASSERT_EQ(ret_val, -1);
-  // bad file number
-  ASSERT_EQ(errno, EBADF);
-
-  if (!NONSFI_MODE) {
-    // Linux's pread() (unsandboxed) does not reject this buffer size.
-    errno = 0;
-    // fd OK, buffer OK, count not OK
-    ret_val = pread(fd, out_char, -1, 0);
-    ASSERT_EQ(ret_val, -1);
-    // bad address
-    ASSERT_EQ(errno, EFAULT);
-  }
-
-  errno = 0;
-  // fd not OK, buffer OK, count not OK
-  ret_val = pread(-1, out_char, -1, 0);
-  ASSERT_EQ(ret_val, -1);
-  if (!NONSFI_MODE) {
-    // bad descriptor
-    ASSERT_EQ(errno, EBADF);
-  }
-
-  // fd OK, buffer OK, count 0
-  ret_val = pread(fd, out_char, 0, 0);
-  ASSERT_EQ(ret_val, 0);
-
-  // read 10, only 5 are available
-  ret_val = pread(fd, out_char, 10, 0);
-  ASSERT_EQ(ret_val, 5);
-
-  // read 10 again, get the same 5
-  ret_val = pread(fd, out_char2, 10, 0);
-  ASSERT_EQ(ret_val, 5);
-  // the same content
-  ASSERT_EQ(memcmp(out_char, out_char2, 5), 0);
-
-  // EOF
-  ret_val = pread(fd, out_char, 10, 5);
-  ASSERT_EQ(ret_val, 0);
-
-  ret_val = close(fd);
-  ASSERT_EQ(ret_val, 0);
-
-  return passed(testname, "all");
-}
-
-// pwrite() returns the number of bytes written on success, -1 on error
-bool test_pwrite(const char *test_file) {
-  int fd;
-  int ret_val;
-  char out_char[] = "12";
-  const char *testname = "test_pwrite";
-
-  // TODO(phosek): pwrite() in glibc is not yet hooked up.
-#if defined(__GLIBC__)
-  return true;
-#endif
-
-  fd = open(test_file, O_WRONLY);
-  ASSERT_GE(fd, -1);
-
-  // all params OK
-  ret_val = pwrite(fd, out_char, 2, 0);
-  ASSERT_EQ(ret_val, 2);
-
-  if (!NONSFI_MODE) {
-    // Linux's pwrite() (unsandboxed) does not reject this buffer size.
-    errno = 0;
-    // invalid count
-    ret_val = pwrite(fd, out_char, -1, 0);
-    ASSERT_EQ(ret_val, -1);
-    // bad address
-    ASSERT_EQ(errno, EFAULT);
-  }
-
-  errno = 0;
-  // invalid fd
-  ret_val = pwrite(-1, out_char, 2, 0);
-  ASSERT_EQ(ret_val, -1);
-  // bad descriptor
-  ASSERT_EQ(errno, EBADF);
-
-  ret_val = close(fd);
-  ASSERT_EQ(ret_val, 0);
-
-  return passed(testname, "all");
 }
 
 /*
@@ -1475,8 +1369,6 @@ bool testSuite(const char *test_file) {
   ret &= test_fsync(test_file);
   ret &= test_fdatasync(test_file);
   ret &= test_utimes(test_file);
-  ret &= test_pread(test_file);
-  ret &= test_pwrite(test_file);
 #endif
 // TODO(sbc): remove this restriction once glibc's truncate calls
 // is hooked up to the IRT dev-filename-0.2 interface:
