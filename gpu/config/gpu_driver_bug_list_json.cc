@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.48",
+  "version": "8.49",
   "entries": [
     {
       "id": 1,
@@ -193,7 +193,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "type": "macosx",
         "version": {
           "op": "<",
-          "value": "10.10"
+          "value": "10.9"
         }
       },
       "vendor_id": "0x8086",
