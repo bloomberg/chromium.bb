@@ -37,6 +37,14 @@ class QuicTestPacketMaker {
       bool include_version,
       QuicStreamId stream_id,
       QuicRstStreamErrorCode error_code);
+
+  scoped_ptr<QuicEncryptedPacket> MakeRstPacket(
+      QuicPacketNumber num,
+      bool include_version,
+      QuicStreamId stream_id,
+      QuicRstStreamErrorCode error_code,
+      size_t bytes_written);
+
   scoped_ptr<QuicEncryptedPacket> MakeAckAndRstPacket(
       QuicPacketNumber num,
       bool include_version,

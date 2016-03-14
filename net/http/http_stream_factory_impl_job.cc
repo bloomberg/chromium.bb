@@ -216,7 +216,7 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
       spdy_session_direct_(false),
       job_status_(STATUS_RUNNING),
       other_job_status_(STATUS_RUNNING),
-      for_bidirectional_(false),
+      stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
       ptr_factory_(this) {
   DCHECK(stream_factory);
   DCHECK(session);
@@ -248,8 +248,8 @@ HttpStreamFactoryImpl::Job::~Job() {
 void HttpStreamFactoryImpl::Job::Start(Request* request) {
   DCHECK(request);
   request_ = request;
-  // Saves |for_bidirectional_|, since request is nulled when job is orphaned.
-  for_bidirectional_ = request_->for_bidirectional();
+  // Saves |stream_type_|, since request is nulled when job is orphaned.
+  stream_type_ = request_->stream_type();
   StartInternal();
 }
 
@@ -502,7 +502,7 @@ void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
     }
     stream_factory_->OnOrphanedJobComplete(this);
   } else {
-    if (for_bidirectional_) {
+    if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
 #if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
       DCHECK(bidirectional_stream_job_);
       request_->OnNewSpdySessionReady(this, /*spdy_http_stream=*/nullptr,
@@ -511,7 +511,6 @@ void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
 #else
       DCHECK(false);
 #endif
-
     } else {
       DCHECK(stream_);
       request_->OnNewSpdySessionReady(this, std::move(stream_),
@@ -704,7 +703,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::Bind(&Job::OnWebSocketHandshakeStreamReadyCallback,
                                   ptr_factory_.GetWeakPtr()));
-      } else if (for_bidirectional_) {
+      } else if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
 #if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
         if (!bidirectional_stream_job_) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1017,7 +1016,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       destination = server_;
       ssl_config = &server_ssl_config_;
     }
-
     int rv =
         quic_request_.Request(destination, request_info_.privacy_mode,
                               ssl_config->GetCertVerifyFlags(), url,
@@ -1259,7 +1257,23 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
       MaybeMarkAlternativeServiceBroken();
       return result;
     }
-    stream_ = quic_request_.ReleaseStream();
+    if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
+#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
+      bidirectional_stream_job_ = quic_request_.CreateBidirectionalStreamJob();
+      if (!bidirectional_stream_job_) {
+        // Quic session is closed before stream can be created.
+        return ERR_CONNECTION_CLOSED;
+      }
+#else
+      NOTREACHED();
+#endif
+    } else {
+      stream_ = quic_request_.CreateStream();
+      if (!stream_) {
+        // Quic session is closed before stream can be created.
+        return ERR_CONNECTION_CLOSED;
+      }
+    }
     next_state_ = STATE_NONE;
     return OK;
   }
@@ -1316,13 +1330,12 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamJob(
   // implemented.
   if (stream_factory_->for_websockets_)
     return ERR_NOT_IMPLEMENTED;
-  if (for_bidirectional_) {
+  if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
 #if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-    // TODO(xunjieli): Create QUIC's version of BidirectionalStreamJob.
     bidirectional_stream_job_.reset(new BidirectionalStreamSpdyJob(session));
     return OK;
 #else
-    DCHECK(false);
+    NOTREACHED();
     return ERR_FAILED;
 #endif
   }
