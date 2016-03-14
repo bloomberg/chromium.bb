@@ -1,0 +1,26 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/html/cr/ui/position_util.html">
+<link rel="import" href="chrome://history/shared_style.html">
+<link rel="import" href="chrome://history/synced_device_card.html">
+
+<dom-module id="history-synced-device-manager">
+  <style include="shared-style"></style>
+  <template>
+    <style>
+      :host {
+        overflow: auto;
+        padding-top: var(--first-card-padding-top);
+      }
+    </style>
+    <template is="dom-repeat" items="[[syncedDevices]]" as="syncedDevice">
+      <history-synced-device-card device="[[syncedDevice.device]]"
+          last-update-time="[[syncedDevice.lastUpdateTime]]"
+          tabs="[[syncedDevice.tabs]]">
+      </history-synced-device-card>
+    </template>
+  </template>
+  <script src="chrome://history/synced_device_manager.js"></script>
+</dom-module>

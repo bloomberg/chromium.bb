@@ -39,8 +39,13 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
   source->AddLocalizedString("foundSearchResults",
                              IDS_HISTORY_FOUND_SEARCH_RESULTS);
+  source->AddLocalizedString("historyMenuItem",
+                             IDS_MD_HISTORY_HISTORY_MENU_ITEM);
   source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
+  source->AddLocalizedString("openAll", IDS_HISTORY_OTHER_SESSIONS_OPEN_ALL);
+  source->AddLocalizedString("openTabsMenuItem",
+                             IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM);
   source->AddLocalizedString("noResults", IDS_HISTORY_NO_RESULTS);
   source->AddLocalizedString("noSearchResults", IDS_HISTORY_NO_SEARCH_RESULTS);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
@@ -67,6 +72,16 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
   source->AddResourcePath("shared_style.html",
                           IDR_MD_HISTORY_SHARED_STYLE_HTML);
+  source->AddResourcePath("side_bar.html", IDR_MD_HISTORY_SIDE_BAR_HTML);
+  source->AddResourcePath("side_bar.js", IDR_MD_HISTORY_SIDE_BAR_JS);
+  source->AddResourcePath("synced_device_card.html",
+                          IDR_MD_HISTORY_SYNCED_DEVICE_CARD_HTML);
+  source->AddResourcePath("synced_device_card.js",
+                          IDR_MD_HISTORY_SYNCED_DEVICE_CARD_JS);
+  source->AddResourcePath("synced_device_manager.html",
+                          IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_HTML);
+  source->AddResourcePath("synced_device_manager.js",
+                          IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_JS);
 
   source->SetDefaultResource(IDR_MD_HISTORY_HISTORY_HTML);
   source->SetJsonPath("strings.js");

@@ -9,7 +9,7 @@
 
 /**
  * The type of the history result object. The definition is based on
- * chrome/browser/ui/webui/history_ui.cc:
+ * chrome/browser/ui/webui/browsing_history_handler.cc:
  *     BrowsingHistoryHandler::HistoryEntry::ToValue()
  * @typedef {{allTimestamps: Array<number>,
  *            blockedVisit: boolean,
@@ -31,7 +31,7 @@ var HistoryEntry;
 
 /**
  * The type of the history results info object. The definition is based on
- * chrome/browser/ui/webui/history_ui.cc:
+ * chrome/browser/ui/webui/browsing_history_handler.cc:
  *     BrowsingHistoryHandler::QueryComplete()
  * @typedef {{finished: boolean,
  *            hasSyncedResults: boolean,
@@ -40,3 +40,27 @@ var HistoryEntry;
  *            term: string}}
  */
 var HistoryQuery;
+
+/**
+ * The type of the foreign session info object. This definition is based on
+ * chrome/browser/ui/webui/foreign_session_handler.cc:
+ * @typedef {{collapsed: boolean,
+ *            deviceType: string,
+ *            name: string,
+ *            modifiedTime: string,
+ *            tag: string,
+ *            windows: Array}}
+ */
+var ForeignSession;
+
+/**
+ * The type of the foreign session tab object. This definition is based on
+ * chrome/browser/ui/webui/foreign_session_handler.cc:
+ * @typedef {{direction: string,
+ *            sessionId: number,
+ *            timestamp: number,
+ *            title: string,
+ *            type: string,
+ *            url: string}}
+ */
+var ForeignSessionTab;

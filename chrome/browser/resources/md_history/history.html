@@ -17,6 +17,7 @@
       background: #f2f2f2;
       display: flex;
       flex-direction: column;
+      min-width: 800px;
     }
 
     #toolbar {
@@ -27,12 +28,27 @@
       flex: 1 0 0;
       overflow: auto;
     }
+
+    #history-synced-device-manager {
+      flex: 1 0 0;
+    }
+
+    #main-container {
+      display: flex;
+      flex: 1 0 0;
+      overflow: hidden;
+    }
   </style>
 </head>
 
 <body>
   <history-toolbar class="paper-header" id="toolbar"></history-toolbar>
-  <history-list id="history-list"></history-list>
+  <div id="main-container">
+    <history-side-bar id="history-side-bar"></history-side-bar>
+    <history-list id="history-list"></history-list>
+    <history-synced-device-manager id="history-synced-device-manager" hidden>
+    </history-synced-device-manager>
+  </div>
 
   <link rel="import" href="chrome://resources/html/polymer_config.html">
   <link rel="import" href="chrome://resources/html/cr.html">
@@ -43,6 +59,8 @@
   <link rel="import" href="chrome://history/constants.html">
   <link rel="import" href="chrome://history/history_list.html">
   <link rel="import" href="chrome://history/history_toolbar.html">
+  <link rel="import" href="chrome://history/synced_device_manager.html">
+  <link rel="import" href="chrome://history/side_bar.html">
 
   <script src="history.js"></script>
 

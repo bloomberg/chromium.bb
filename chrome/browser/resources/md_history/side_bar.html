@@ -1,0 +1,49 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+<dom-module id="history-side-bar">
+  <template>
+    <style>
+      :host {
+        padding-top: 5px;
+        width: 200px;
+      }
+
+      paper-item {
+        -webkit-padding-start: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      paper-menu {
+        --paper-menu-focused-item-after: {
+          background: none;
+        };
+        --paper-menu-selected-item: {
+          color: var(--google-blue-500);
+          font-size: 14px;
+          font-weight: 500;
+        };
+        -webkit-user-select: none;
+        background-color: transparent;
+        color: #5a5a5a;
+      }
+    </style>
+    <paper-menu id="overflow-menu" selected="0" on-iron-select="onSelect_">
+      <paper-item id="history-button">
+        <div i18n-content="historyMenuItem"></div>
+        <paper-ripple></paper-ripple>
+      </paper-item>
+      <paper-item id="synced-tabs-button">
+        <div i18n-content="openTabsMenuItem"></div>
+        <paper-ripple></paper-ripple>
+      </paper-item>
+    </paper-menu>
+  </template>
+  <script src="chrome://history/side_bar.js"></script>
+</dom-module>

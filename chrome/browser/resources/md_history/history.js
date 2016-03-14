@@ -4,6 +4,7 @@
 
 window.addEventListener('load', function() {
   chrome.send('queryHistory', ['', 0, 0, 0, RESULTS_PER_PAGE]);
+  chrome.send('getForeignSessions');
 });
 
 /**
@@ -44,13 +45,21 @@ window.addEventListener('delete-selected', function() {
   chrome.send('removeVisits', toBeRemoved);
 });
 
-
 /**
  * When the search is changed refresh the results from the backend.
  */
 window.addEventListener('search-changed', function(e) {
   /** @type {HistoryListElement} */($('history-list')).setLoading();
   chrome.send('queryHistory', [e.detail.search, 0, 0, 0, RESULTS_PER_PAGE]);
+});
+
+/**
+ * Switches between displaying history data and synced tabs data for the page.
+ */
+window.addEventListener('switch-display', function(e) {
+  $('history-synced-device-manager').hidden =
+      e.detail.display != 'synced-tabs-button';
+  $('history-list').hidden = e.detail.display != 'history-button';
 });
 
 // Chrome Callbacks-------------------------------------------------------------
@@ -65,6 +74,25 @@ function historyResult(info, results) {
   historyList.addNewResults(results, info.term);
   if (info.finished)
     historyList.disableResultLoading();
+}
+
+/**
+ * Receives the synced history data. An empty list means that either there are
+ * no foreign sessions, or tab sync is disabled for this profile.
+ * |isTabSyncEnabled| makes it possible to distinguish between the cases.
+ *
+ * @param {!Array<!ForeignSession>} sessionList Array of objects describing the
+ *     sessions from other devices.
+ * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
+ */
+function setForeignSessions(sessionList, isTabSyncEnabled) {
+  // TODO(calamity): Add a 'no synced devices' message when sessions are empty.
+  $('history-side-bar').hidden = !isTabSyncEnabled;
+  if (isTabSyncEnabled) {
+    var syncedDeviceManager = /** @type {HistorySyncedDeviceManagerElement} */(
+        $('history-synced-device-manager'));
+    syncedDeviceManager.addSyncedHistory(sessionList);
+  }
 }
 
 /**

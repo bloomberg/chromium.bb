@@ -463,6 +463,12 @@ are declared in build/common.gypi.
       <message name="IDS_MD_HISTORY_ITEMS_SELECTED" desc="Label displayed in history toolbar telling the user how many items they have selected.">
         <ph name="NUMBER_OF_ITEMS_SELECTED">$1</ph> selected
       </message>
+      <message name="IDS_MD_HISTORY_HISTORY_MENU_ITEM" desc="Label displayed in history sidebar button to display history.">
+        History
+      </message>
+      <message name="IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM" desc="Label displayed in history sidebar button to display open tabs.">
+        Open tabs
+      </message>
 
       <!-- Generic terms -->
       <message name="IDS_ADD" desc="Used for Add on buttons">

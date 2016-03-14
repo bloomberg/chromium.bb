@@ -43,8 +43,30 @@
         'constants',
         'history_list',
         'history_toolbar',
+        'side_bar',
+        'synced_device_card',
+        'synced_device_manager',
         '<(EXTERNS_GYP):chrome_send',
         '../history/compiled_resources2.gyp:externs',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'side_bar',
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'synced_device_card',
+      'dependencies': [
+        '../history/compiled_resources2.gyp:externs',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'synced_device_manager',
+      'dependencies': [
+        'synced_device_card',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
