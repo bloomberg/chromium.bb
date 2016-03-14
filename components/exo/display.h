@@ -17,6 +17,10 @@
 #include "ui/gfx/geometry/size.h"
 #endif
 
+namespace gfx {
+class Point;
+}
+
 namespace exo {
 class SharedMemory;
 class ShellSurface;
@@ -54,6 +58,12 @@ class Display {
 
   // Creates a shell surface for an existing surface.
   scoped_ptr<ShellSurface> CreateShellSurface(Surface* surface);
+
+  // Creates a popup shell surface for an existing surface at |position| and
+  // with |parent|. |position| is in |parent| surface local coordinates.
+  scoped_ptr<ShellSurface> CreatePopupShellSurface(Surface* surface,
+                                                   ShellSurface* parent,
+                                                   const gfx::Point& position);
 
   // Creates a sub-surface for an existing surface. The sub-surface will be
   // a child of |parent|.

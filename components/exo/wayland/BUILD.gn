@@ -38,6 +38,7 @@ source_set("wayland") {
     "//third_party/wayland-protocols:xdg_shell_protocol",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
+    "//ui/views",
   ]
 
   if (use_ozone) {

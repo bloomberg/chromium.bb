@@ -45,6 +45,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(USE_OZONE)
 #include <drm_fourcc.h>
@@ -1006,7 +1007,15 @@ void xdg_surface_destroy(wl_client* client, wl_resource* resource) {
 void xdg_surface_set_parent(wl_client* client,
                             wl_resource* resource,
                             wl_resource* parent) {
-  NOTIMPLEMENTED();
+  if (!parent) {
+    GetUserDataAs<ShellSurface>(resource)->SetParent(nullptr);
+    return;
+  }
+
+  // This is a noop if parent has not been mapped.
+  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(parent);
+  if (shell_surface->GetWidget())
+    GetUserDataAs<ShellSurface>(resource)->SetParent(shell_surface);
 }
 
 void xdg_surface_set_title(wl_client* client,
@@ -1101,6 +1110,15 @@ const struct xdg_surface_interface xdg_surface_implementation = {
     xdg_surface_set_minimized};
 
 ////////////////////////////////////////////////////////////////////////////////
+// xdg_popup_interface:
+
+void xdg_popup_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct xdg_popup_interface xdg_popup_implementation = {xdg_popup_destroy};
+
+////////////////////////////////////////////////////////////////////////////////
 // xdg_shell_interface:
 
 void xdg_shell_destroy(wl_client* client, wl_resource* resource) {
@@ -1185,6 +1203,11 @@ void xdg_shell_get_xdg_surface(wl_client* client,
                     std::move(shell_surface));
 }
 
+void HandleXdgPopupCloseCallback(wl_resource* resource) {
+  xdg_popup_send_popup_done(resource);
+  wl_client_flush(wl_resource_get_client(resource));
+}
+
 void xdg_shell_get_xdg_popup(wl_client* client,
                              wl_resource* resource,
                              uint32_t id,
@@ -1194,7 +1217,49 @@ void xdg_shell_get_xdg_popup(wl_client* client,
                              uint32_t serial,
                              int32_t x,
                              int32_t y) {
-  NOTIMPLEMENTED();
+  // Parent widget can be found by locating the closest ancestor with a widget.
+  views::Widget* parent_widget = nullptr;
+  aura::Window* parent_window = GetUserDataAs<Surface>(parent);
+  while (parent_window) {
+    parent_widget = views::Widget::GetWidgetForNativeWindow(parent_window);
+    if (parent_widget)
+      break;
+    parent_window = parent_window->parent();
+  }
+
+  // Early out if parent widget was not found or is not associated with a
+  // shell surface.
+  if (!parent_widget ||
+      !ShellSurface::GetMainSurface(parent_widget->GetNativeWindow())) {
+    wl_resource_post_error(resource, XDG_SHELL_ERROR_INVALID_POPUP_PARENT,
+                           "invalid popup parent surface");
+    return;
+  }
+
+  // TODO(reveman): Automatically close popup when clicking outside the
+  // popup window.
+  scoped_ptr<ShellSurface> shell_surface =
+      GetUserDataAs<Display>(resource)->CreatePopupShellSurface(
+          GetUserDataAs<Surface>(surface),
+          // Shell surface widget delegate implementation of GetContentsView()
+          // returns a pointer to the shell surface instance.
+          static_cast<ShellSurface*>(
+              parent_widget->widget_delegate()->GetContentsView()),
+          gfx::Point(x, y));
+  if (!shell_surface) {
+    wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
+                           "surface has already been assigned a role");
+    return;
+  }
+
+  wl_resource* xdg_popup_resource =
+      wl_resource_create(client, &xdg_popup_interface, 1, id);
+
+  shell_surface->set_close_callback(base::Bind(
+      &HandleXdgPopupCloseCallback, base::Unretained(xdg_popup_resource)));
+
+  SetImplementation(xdg_popup_resource, &xdg_popup_implementation,
+                    std::move(shell_surface));
 }
 
 void xdg_shell_pong(wl_client* client, wl_resource* resource, uint32_t serial) {

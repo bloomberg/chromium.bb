@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -33,8 +34,12 @@ class ShellSurface : public SurfaceDelegate,
                      public views::WidgetDelegate,
                      public views::View,
                      public ash::wm::WindowStateObserver,
+                     public aura::WindowObserver,
                      public aura::client::ActivationChangeObserver {
  public:
+  ShellSurface(Surface* surface,
+               ShellSurface* parent,
+               const gfx::Rect& initial_bounds);
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
 
@@ -61,6 +66,10 @@ class ShellSurface : public SurfaceDelegate,
   void set_configure_callback(const ConfigureCallback& configure_callback) {
     configure_callback_ = configure_callback;
   }
+
+  // Set the "parent" of this surface. This window should be stacked above a
+  // parent.
+  void SetParent(ShellSurface* parent);
 
   // Maximizes the shell surface.
   void Maximize();
@@ -125,6 +134,9 @@ class ShellSurface : public SurfaceDelegate,
   void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
                                    ash::wm::WindowStateType old_type) override;
 
+  // Overridden from aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+
   // Overridden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(
       aura::client::ActivationChangeObserver::ActivationReason reason,
@@ -140,6 +152,8 @@ class ShellSurface : public SurfaceDelegate,
 
   scoped_ptr<views::Widget> widget_;
   Surface* surface_;
+  aura::Window* parent_;
+  const gfx::Rect initial_bounds_;
   base::string16 title_;
   std::string application_id_;
   gfx::Rect geometry_;

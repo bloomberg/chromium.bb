@@ -13,6 +13,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(USE_OZONE)
 #include <GLES2/gl2extchromium.h>
@@ -98,7 +99,28 @@ scoped_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
     return nullptr;
   }
 
-  return make_scoped_ptr(new ShellSurface(surface));
+  return make_scoped_ptr(new ShellSurface(surface, nullptr, gfx::Rect()));
+}
+
+scoped_ptr<ShellSurface> Display::CreatePopupShellSurface(
+    Surface* surface,
+    ShellSurface* parent,
+    const gfx::Point& position) {
+  TRACE_EVENT2("exo", "Display::CreatePopupShellSurface", "surface",
+               surface->AsTracedValue(), "parent", parent->AsTracedValue());
+
+  if (surface->Contains(parent->GetWidget()->GetNativeWindow())) {
+    DLOG(ERROR) << "Parent is contained within surface's hierarchy";
+    return nullptr;
+  }
+
+  if (surface->HasSurfaceDelegate()) {
+    DLOG(ERROR) << "Surface has already been assigned a role";
+    return nullptr;
+  }
+
+  return make_scoped_ptr(
+      new ShellSurface(surface, parent, gfx::Rect(position, gfx::Size(1, 1))));
 }
 
 scoped_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,

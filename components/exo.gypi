@@ -74,6 +74,7 @@
             '../third_party/wayland/wayland.gyp:wayland_server',
             '../ui/events/events.gyp:dom_keycode_converter',
             '../ui/events/events.gyp:events_base',
+            '../ui/views/views.gyp:views',
             'exo',
           ],
           'sources': [

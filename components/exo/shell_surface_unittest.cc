@@ -18,6 +18,29 @@ namespace {
 
 using ShellSurfaceTest = test::ExoTestBase;
 
+TEST_F(ShellSurfaceTest, SetParent) {
+  gfx::Size buffer_size(256, 256);
+  scoped_ptr<Buffer> parent_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  scoped_ptr<Surface> parent_surface(new Surface);
+  scoped_ptr<ShellSurface> parent_shell_surface(
+      new ShellSurface(parent_surface.get()));
+
+  parent_surface->Attach(parent_buffer.get());
+  parent_surface->Commit();
+
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  shell_surface->SetParent(parent_shell_surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(shell_surface->GetWidget()->GetNativeWindow()->parent(),
+            parent_shell_surface->GetWidget()->GetNativeWindow());
+}
+
 TEST_F(ShellSurfaceTest, Maximize) {
   gfx::Size buffer_size(256, 256);
   scoped_ptr<Buffer> buffer(
