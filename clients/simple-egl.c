@@ -861,7 +861,7 @@ main(int argc, char **argv)
 	wl_registry_add_listener(display.registry,
 				 &registry_listener, &display);
 
-	wl_display_dispatch(display.display);
+	wl_display_roundtrip(display.display);
 
 	init_egl(&display, &window);
 	create_surface(&window);
