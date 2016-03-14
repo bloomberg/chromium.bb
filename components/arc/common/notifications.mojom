@@ -10,12 +10,12 @@ enum ArcNotificationEvent {
   BODY_CLICKED = 0,
   CLOSED = 1,
   // Five buttons at maximum (message_center::kNotificationMaximumItems = 5).
-  BUTTON1_CLICKED = 2,
-  BUTTON2_CLICKED = 3,
-  BUTTON3_CLICKED = 4,
-  BUTTON4_CLICKED = 5,
-  BUTTON5_CLICKED = 6,
-  MAX = BUTTON5_CLICKED
+  BUTTON_1_CLICKED = 2,
+  BUTTON_2_CLICKED = 3,
+  BUTTON_3_CLICKED = 4,
+  BUTTON_4_CLICKED = 5,
+  BUTTON_5_CLICKED = 6,
+  MAX = BUTTON_5_CLICKED
 };
 
 // These values must be matched with the NOTIFICATION_TYPE_* constants in

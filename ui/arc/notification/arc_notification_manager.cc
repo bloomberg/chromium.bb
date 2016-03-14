@@ -150,19 +150,19 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
   arc::ArcNotificationEvent command;
   switch (button_index) {
     case 0:
-      command = ArcNotificationEvent::BUTTON1_CLICKED;
+      command = ArcNotificationEvent::BUTTON_1_CLICKED;
       break;
     case 1:
-      command = ArcNotificationEvent::BUTTON2_CLICKED;
+      command = ArcNotificationEvent::BUTTON_2_CLICKED;
       break;
     case 2:
-      command = ArcNotificationEvent::BUTTON3_CLICKED;
+      command = ArcNotificationEvent::BUTTON_3_CLICKED;
       break;
     case 3:
-      command = ArcNotificationEvent::BUTTON4_CLICKED;
+      command = ArcNotificationEvent::BUTTON_4_CLICKED;
       break;
     case 4:
-      command = ArcNotificationEvent::BUTTON5_CLICKED;
+      command = ArcNotificationEvent::BUTTON_5_CLICKED;
       break;
     default:
       VLOG(3) << "Invalid button index (key: " << key << ", index: " <<
