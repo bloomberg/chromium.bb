@@ -321,17 +321,6 @@ struct ivi_layout_interface {
 					   enum wl_output_transform orientation);
 
 	/**
-	 * \brief Set an observer callback for ivi_surface content status change.
-	 *
-	 * \return IVI_SUCCEEDED if the method call was successful
-	 * \return IVI_FAILED if the method call was failed
-	 */
-	int32_t (*surface_set_content_observer)(
-				struct ivi_layout_surface *ivisurf,
-				ivi_controller_surface_content_callback callback,
-				void* userdata);
-
-	/**
 	 * \brief register for notification on property changes of ivi_surface
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful

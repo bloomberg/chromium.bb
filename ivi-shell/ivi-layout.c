@@ -2394,21 +2394,6 @@ ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
 		       ivisurf);
 }
 
-static int32_t
-ivi_layout_surface_set_content_observer(struct ivi_layout_surface *ivisurf,
-					ivi_controller_surface_content_callback callback,
-					void* userdata)
-{
-	int32_t ret = IVI_FAILED;
-
-	if (ivisurf != NULL) {
-		ivisurf->content_observer.callback = callback;
-		ivisurf->content_observer.userdata = userdata;
-		ret = IVI_SUCCEEDED;
-	}
-	return ret;
-}
-
 struct ivi_layout_surface*
 ivi_layout_surface_create(struct weston_surface *wl_surface,
 			  uint32_t id_surface)
@@ -2530,7 +2515,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.surface_set_source_rectangle		= ivi_layout_surface_set_source_rectangle,
 	.surface_set_destination_rectangle	= ivi_layout_surface_set_destination_rectangle,
 	.surface_set_orientation		= ivi_layout_surface_set_orientation,
-	.surface_set_content_observer		= ivi_layout_surface_set_content_observer,
 	.surface_add_notification		= ivi_layout_surface_add_notification,
 	.surface_remove_notification		= ivi_layout_surface_remove_notification,
 	.surface_get_weston_surface		= ivi_layout_surface_get_weston_surface,

@@ -54,11 +54,6 @@ struct ivi_layout_surface {
 		struct wl_list layer_list;
 	} order;
 
-	struct {
-		ivi_controller_surface_content_callback callback;
-		void *userdata;
-	} content_observer;
-
 	struct wl_signal configured;
 };
 
