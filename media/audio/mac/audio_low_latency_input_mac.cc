@@ -787,7 +787,13 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
     audio_unit_render_has_worked_ = true;
   }
   if (result) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
+    // Only upload UMA histograms for the case when AGC is enabled. The reason
+    // is that we want to compare these stats with others in this class and
+    // they are only stored for "AGC streams", e.g. WebRTC audio streams.
+    const bool add_uma_histogram = GetAutomaticGainControl();
+    if (add_uma_histogram) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
+    }
     OSSTATUS_LOG(ERROR, result) << "AudioUnitRender() failed ";
     if (result == kAudioUnitErr_TooManyFramesToProcess ||
         result == kAudioUnitErr_CannotDoInCurrentContext) {
@@ -815,7 +821,8 @@ OSStatus AUAudioInputStream::OnDataIsAvailable(
 
       // Add some extra UMA stat to track down if we see this particular error
       // in combination with a previous change of buffer size "on the fly".
-      if (result == kAudioUnitErr_CannotDoInCurrentContext) {
+      if (result == kAudioUnitErr_CannotDoInCurrentContext &&
+          add_uma_histogram) {
         UMA_HISTOGRAM_BOOLEAN("Media.Audio.RenderFailsWhenBufferSizeChangesMac",
                               new_buffer_size_detected);
         UMA_HISTOGRAM_BOOLEAN("Media.Audio.AudioUnitRenderHasWorkedMac",
