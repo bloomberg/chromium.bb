@@ -18,7 +18,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
-#include "content/common/gpu/client/gpu_jpeg_decode_accelerator_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "url/gurl.h"
@@ -242,28 +241,6 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
   return command_buffer;
 }
 
-scoped_ptr<media::JpegDecodeAccelerator> GpuChannelHost::CreateJpegDecoder(
-    media::JpegDecodeAccelerator::Client* client) {
-  TRACE_EVENT0("gpu", "GpuChannelHost::CreateJpegDecoder");
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      factory_->GetIOThreadTaskRunner();
-  int32_t route_id = GenerateRouteID();
-  scoped_ptr<GpuJpegDecodeAcceleratorHost> decoder(
-      new GpuJpegDecodeAcceleratorHost(this, route_id, io_task_runner));
-  if (!decoder->Initialize(client)) {
-    return nullptr;
-  }
-
-  // The reply message of jpeg decoder should run on IO thread.
-  io_task_runner->PostTask(FROM_HERE,
-                           base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
-                                      channel_filter_.get(), route_id,
-                                      decoder->GetReceiver(), io_task_runner));
-
-  return std::move(decoder);
-}
-
 void GpuChannelHost::DestroyCommandBuffer(
     CommandBufferProxyImpl* command_buffer) {
   TRACE_EVENT0("gpu", "GpuChannelHost::DestroyCommandBuffer");
@@ -287,12 +264,20 @@ void GpuChannelHost::DestroyChannel() {
 
 void GpuChannelHost::AddRoute(
     int route_id, base::WeakPtr<IPC::Listener> listener) {
+  AddRouteWithTaskRunner(route_id, listener,
+                         base::ThreadTaskRunnerHandle::Get());
+}
+
+void GpuChannelHost::AddRouteWithTaskRunner(
+    int route_id,
+    base::WeakPtr<IPC::Listener> listener,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       factory_->GetIOThreadTaskRunner();
-  io_task_runner->PostTask(FROM_HERE,
-                           base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
-                                      channel_filter_.get(), route_id, listener,
-                                      base::ThreadTaskRunnerHandle::Get()));
+  io_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
+                 channel_filter_.get(), route_id, listener, task_runner));
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {

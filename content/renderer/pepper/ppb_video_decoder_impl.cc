@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -127,8 +128,12 @@ bool PPB_VideoDecoder_Impl::Init(PP_Resource graphics_context,
 
   // This is not synchronous, but subsequent IPC messages will be buffered, so
   // it is okay to immediately send IPC messages.
-  decoder_ = command_buffer->CreateVideoDecoder();
-  return (decoder_ && decoder_->Initialize(PPToMediaProfile(profile), this));
+  GpuChannelHost* channel = command_buffer->channel();
+  if (channel) {
+    decoder_.reset(new GpuVideoDecodeAcceleratorHost(channel, command_buffer));
+    return decoder_->Initialize(PPToMediaProfile(profile), this);
+  }
+  return false;
 }
 
 const PPP_VideoDecoder_Dev* PPB_VideoDecoder_Impl::GetPPP() {

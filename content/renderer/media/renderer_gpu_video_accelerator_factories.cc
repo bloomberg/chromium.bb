@@ -15,6 +15,8 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
+#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/renderer/render_thread_impl.h"
@@ -112,7 +114,14 @@ RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return nullptr;
-  return context_provider_->GetCommandBufferProxy()->CreateVideoDecoder();
+
+  GpuChannelHost* channel =
+      context_provider_->GetCommandBufferProxy()->channel();
+  DCHECK(channel);
+
+  return scoped_ptr<media::VideoDecodeAccelerator>(
+      new GpuVideoDecodeAcceleratorHost(
+          channel, context_provider_->GetCommandBufferProxy()));
 }
 
 scoped_ptr<media::VideoEncodeAccelerator>
@@ -121,7 +130,14 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return nullptr;
-  return context_provider_->GetCommandBufferProxy()->CreateVideoEncoder();
+
+  GpuChannelHost* channel =
+      context_provider_->GetCommandBufferProxy()->channel();
+  DCHECK(channel);
+
+  return scoped_ptr<media::VideoEncodeAccelerator>(
+      new GpuVideoEncodeAcceleratorHost(
+          channel, context_provider_->GetCommandBufferProxy()));
 }
 
 bool RendererGpuVideoAcceleratorFactories::CreateTextures(

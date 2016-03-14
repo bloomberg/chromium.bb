@@ -11,6 +11,7 @@
 #include "base/numerics/safe_math.h"
 #include "build/build_config.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -533,13 +534,10 @@ bool PepperVideoEncoderHost::InitializeHardware(
   if (!EnsureGpuChannel())
     return false;
 
-  encoder_ = command_buffer_->CreateVideoEncoder();
-  if (!encoder_ ||
-      !encoder_->Initialize(input_format, input_visible_size, output_profile,
-                            initial_bitrate, this))
-    return false;
-
-  return true;
+  encoder_.reset(
+      new GpuVideoEncodeAcceleratorHost(channel_.get(), command_buffer_.get()));
+  return encoder_->Initialize(input_format, input_visible_size, output_profile,
+                              initial_bitrate, this);
 }
 
 void PepperVideoEncoderHost::Close() {

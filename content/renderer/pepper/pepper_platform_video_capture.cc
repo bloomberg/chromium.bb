@@ -6,12 +6,14 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_frame.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -28,7 +28,6 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
 #include "ipc/message_router.h"
-#include "media/video/jpeg_decode_accelerator.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -42,10 +41,6 @@ class WaitableEvent;
 
 namespace IPC {
 class SyncMessageFilter;
-}
-
-namespace media {
-class JpegDecodeAccelerator;
 }
 
 namespace gpu {
@@ -123,10 +118,6 @@ class GpuChannelHost : public IPC::Sender,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference);
 
-  // Creates a JPEG decoder in the GPU process.
-  scoped_ptr<media::JpegDecodeAccelerator> CreateJpegDecoder(
-      media::JpegDecodeAccelerator::Client* client);
-
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);
 
@@ -134,8 +125,16 @@ class GpuChannelHost : public IPC::Sender,
   // destruction.
   void DestroyChannel();
 
-  // Add a route for the current message loop.
+  // Add a message route for the current message loop.
   void AddRoute(int route_id, base::WeakPtr<IPC::Listener> listener);
+
+  // Add a message route to be handled on the provided |task_runner|.
+  void AddRouteWithTaskRunner(
+      int route_id,
+      base::WeakPtr<IPC::Listener> listener,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Remove the message route associated with |route_id|.
   void RemoveRoute(int route_id);
 
   GpuChannelHostFactory* factory() const { return factory_; }

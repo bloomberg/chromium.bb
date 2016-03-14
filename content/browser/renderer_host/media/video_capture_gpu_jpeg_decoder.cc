@@ -218,13 +218,27 @@ void VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread(
 
 void VideoCaptureGpuJpegDecoder::FinishInitialization(
     scoped_refptr<GpuChannelHost> gpu_channel_host) {
+  TRACE_EVENT0("gpu", "VideoCaptureGpuJpegDecoder::FinishInitialization");
   DCHECK(CalledOnValidThread());
   base::AutoLock lock(lock_);
   if (!gpu_channel_host) {
     LOG(ERROR) << "Failed to establish GPU channel for JPEG decoder";
   } else if (gpu_channel_host->gpu_info().jpeg_decode_accelerator_supported) {
     gpu_channel_host_ = std::move(gpu_channel_host);
-    decoder_ = gpu_channel_host_->CreateJpegDecoder(this);
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+        BrowserGpuChannelHostFactory::instance()->GetIOThreadTaskRunner();
+
+    int32_t route_id = gpu_channel_host_->GenerateRouteID();
+    scoped_ptr<GpuJpegDecodeAcceleratorHost> decoder(
+        new GpuJpegDecodeAcceleratorHost(gpu_channel_host_.get(), route_id,
+                                         io_task_runner));
+    if (decoder->Initialize(this)) {
+      gpu_channel_host_->AddRouteWithTaskRunner(
+          route_id, decoder->GetReceiver(), io_task_runner);
+      decoder_ = std::move(decoder);
+    } else {
+      DLOG(ERROR) << "Failed to initialize JPEG decoder";
+    }
   }
   decoder_status_ = decoder_ ? INIT_PASSED : FAILED;
   RecordInitDecodeUMA_Locked();

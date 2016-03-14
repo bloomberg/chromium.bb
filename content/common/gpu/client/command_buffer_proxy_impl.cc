@@ -14,8 +14,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
-#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
@@ -638,22 +636,6 @@ bool CommandBufferProxyImpl::ProduceFrontBuffer(const gpu::Mailbox& mailbox) {
 
   Send(new GpuCommandBufferMsg_ProduceFrontBuffer(route_id_, mailbox));
   return true;
-}
-
-scoped_ptr<media::VideoDecodeAccelerator>
-CommandBufferProxyImpl::CreateVideoDecoder() {
-  if (!channel_)
-    return scoped_ptr<media::VideoDecodeAccelerator>();
-  return scoped_ptr<media::VideoDecodeAccelerator>(
-      new GpuVideoDecodeAcceleratorHost(channel_, this));
-}
-
-scoped_ptr<media::VideoEncodeAccelerator>
-CommandBufferProxyImpl::CreateVideoEncoder() {
-  if (!channel_)
-    return scoped_ptr<media::VideoEncodeAccelerator>();
-  return scoped_ptr<media::VideoEncodeAccelerator>(
-      new GpuVideoEncodeAcceleratorHost(channel_, this));
 }
 
 gpu::error::Error CommandBufferProxyImpl::GetLastError() {

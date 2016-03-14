@@ -10,6 +10,7 @@
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -145,10 +146,14 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   if (acceleration != PP_HARDWAREACCELERATION_NONE) {
     // This is not synchronous, but subsequent IPC messages will be buffered, so
     // it is okay to immediately send IPC messages.
-    decoder_ = command_buffer->CreateVideoDecoder();
-    if (decoder_ && decoder_->Initialize(profile_, this)) {
-      initialized_ = true;
-      return PP_OK;
+    GpuChannelHost* channel = command_buffer->channel();
+    if (channel) {
+      decoder_.reset(
+          new GpuVideoDecodeAcceleratorHost(channel, command_buffer));
+      if (decoder_->Initialize(profile_, this)) {
+        initialized_ = true;
+        return PP_OK;
+      }
     }
     decoder_.reset();
     if (acceleration == PP_HARDWAREACCELERATION_ONLY)

@@ -73,22 +73,6 @@ class CommandBufferProxyImpl
                          int32_t stream_id);
   ~CommandBufferProxyImpl() override;
 
-  // Sends an IPC message to create a GpuVideoDecodeAccelerator. Creates and
-  // returns it as an owned pointer to a media::VideoDecodeAccelerator.  Returns
-  // NULL on failure to create the GpuVideoDecodeAcceleratorHost.
-  // Note that the GpuVideoDecodeAccelerator may still fail to be created in
-  // the GPU process, even if this returns non-NULL. In this case the VDA client
-  // is notified of an error later, after Initialize().
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecoder();
-
-  // Sends an IPC message to create a GpuVideoEncodeAccelerator. Creates and
-  // returns it as an owned pointer to a media::VideoEncodeAccelerator.  Returns
-  // NULL on failure to create the GpuVideoEncodeAcceleratorHost.
-  // Note that the GpuVideoEncodeAccelerator may still fail to be created in
-  // the GPU process, even if this returns non-NULL. In this case the VEA client
-  // is notified of an error later, after Initialize();
-  scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder();
-
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
