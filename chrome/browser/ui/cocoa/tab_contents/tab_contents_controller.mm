@@ -74,6 +74,9 @@ class FullscreenObserver : public WebContentsObserver {
 // Computes and returns the frame to use for the contents view within the
 // container view.
 - (NSRect)frameForContentsView;
+
+// Returns YES if the content view should be resized.
+- (BOOL)shouldResizeContentView;
 @end
 
 // An NSView with special-case handling for when the contents view does not
@@ -136,7 +139,7 @@ class FullscreenObserver : public WebContentsObserver {
   NSView* const contentsView =
       [[self subviews] count] > 0 ? [[self subviews] objectAtIndex:0] : nil;
   if (!contentsView || [contentsView autoresizingMask] == NSViewNotSizable ||
-      !delegate_) {
+      !delegate_ || ![delegate_ shouldResizeContentView]) {
     return;
   }
 
@@ -231,7 +234,8 @@ class FullscreenObserver : public WebContentsObserver {
     isEmbeddingFullscreenWidget_ = NO;
     contentsNativeView = contents_->GetNativeView();
   }
-  if (!isEmbeddingFullscreenWidget_ || !blockFullscreenResize_)
+
+  if ([self shouldResizeContentView])
     [contentsNativeView setFrame:[self frameForContentsView]];
 
   if ([subviews count] == 0) {
@@ -368,6 +372,10 @@ class FullscreenObserver : public WebContentsObserver {
   }
 
   return NSRectFromCGRect(rect.ToCGRect());
+}
+
+- (BOOL)shouldResizeContentView {
+  return !isEmbeddingFullscreenWidget_ || !blockFullscreenResize_;
 }
 
 @end

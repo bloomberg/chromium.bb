@@ -1139,11 +1139,6 @@ willPositionSheet:(NSWindow*)sheet
   if (base::mac::IsOSMavericks() && !enterFullScreen)
     return NO;
 
-  // TODO(spqchan): Fix Flash fullscreen animation in popups.
-  // See http://crbug.com/566588.
-  if ([self isFullscreenForTabContent] && browser_->is_type_popup())
-    return NO;
-
   NSView* root = [[self.window contentView] superview];
   if (!root.layer)
     return NO;
