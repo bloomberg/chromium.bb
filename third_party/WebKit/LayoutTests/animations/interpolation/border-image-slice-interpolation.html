@@ -91,18 +91,6 @@ assertInterpolation({
   {at: 1.5, is: '75%'},
 ]);
 
-assertNoInterpolation({
-  property: 'border-image-slice',
-  from: '0% fill',
-  to: '50%',
-});
-
-assertNoInterpolation({
-  property: 'border-image-slice',
-  from: '50%',
-  to: '100',
-});
-
 assertInterpolation({
   property: 'border-image-slice',
   from: '0% 10% 20% 30%',
@@ -131,5 +119,48 @@ assertInterpolation({
   {at: 1.5, is: '60 70 80 90 fill'},
 ]);
 
+assertInterpolation({
+  property: 'border-image-slice',
+  from: '0% 10 20% 30 fill',
+  to: '40% 50 60% 70 fill',
+}, [
+  {at: -0.5, is: '0% 0 0% 10 fill'}, // CSS border-image-slice can't be negative.
+  {at: 0, is: '0% 10 20% 30 fill'},
+  {at: 0.3, is: '12% 22 32% 42 fill'},
+  {at: 0.5, is: '20% 30 40% 50 fill'},
+  {at: 0.6, is: '24% 34 44% 54 fill'},
+  {at: 1, is: '40% 50 60% 70 fill'},
+  {at: 1.5, is: '60% 70 80% 90 fill'},
+]);
+
+assertNoInterpolation({
+  property: 'border-image-slice',
+  from: '0% fill',
+  to: '50%',
+});
+
+assertNoInterpolation({
+  property: 'border-image-slice',
+  from: '50%',
+  to: '100',
+});
+
+assertNoInterpolation({
+  property: 'border-image-slice',
+  from: '50% fill',
+  to: '100 fill',
+});
+
+assertNoInterpolation({
+  property: 'border-image-slice',
+  from: '0% 10 20% 30 fill',
+  to: '40% 50 60% 70',
+});
+
+assertNoInterpolation({
+  property: 'border-image-slice',
+  from: '0% 10 20 30 fill',
+  to: '40 50 60% 70',
+});
 </script>
 </body>

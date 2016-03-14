@@ -7,8 +7,6 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/ConstantStyleInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
-#include "core/animation/DoubleStyleInterpolation.h"
-#include "core/animation/ImageSliceStyleInterpolation.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/PropertyInterpolationTypesMapping.h"
@@ -135,44 +133,11 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toCSSPropertySpecificKeyframe(end).value();
 
-    // FIXME: Remove this flag once we can rely on legacy's behaviour being correct.
-    bool forceDefaultInterpolation = false;
-
     // FIXME: Remove this check once neutral keyframes are implemented in StringKeyframes.
     if (!fromCSSValue || !toCSSValue)
         return DeferredLegacyStyleInterpolation::create(fromCSSValue, toCSSValue, property);
 
-    ASSERT(fromCSSValue && toCSSValue);
-
-    if (fromCSSValue->isCSSWideKeyword() || toCSSValue->isCSSWideKeyword())
-        return createLegacyStyleInterpolation(property, end, element, baseStyle);
-
-    switch (property) {
-    case CSSPropertyBorderImageSlice:
-    case CSSPropertyWebkitMaskBoxImageSlice: {
-        RefPtr<Interpolation> interpolation = ImageSliceStyleInterpolation::maybeCreate(*fromCSSValue, *toCSSValue, property);
-        if (interpolation)
-            return interpolation.release();
-        if (ImageSliceStyleInterpolation::usesDefaultInterpolation(*fromCSSValue, *toCSSValue))
-            forceDefaultInterpolation = true;
-        break;
-    }
-
-    default:
-        // Fall back to LegacyStyleInterpolation.
-        return createLegacyStyleInterpolation(property, end, element, baseStyle);
-    }
-
-    if (fromCSSValue == toCSSValue)
-        return ConstantStyleInterpolation::create(fromCSSValue, property);
-
-    if (!forceDefaultInterpolation) {
-        ASSERT(AnimatableValue::usesDefaultInterpolation(
-            StyleResolver::createAnimatableValueSnapshot(*element, baseStyle, property, fromCSSValue).get(),
-            StyleResolver::createAnimatableValueSnapshot(*element, baseStyle, property, toCSSValue).get()));
-    }
-
-    return nullptr;
+    return createLegacyStyleInterpolation(property, end, element, baseStyle);
 }
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const

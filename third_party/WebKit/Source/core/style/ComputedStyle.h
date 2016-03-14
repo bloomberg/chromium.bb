@@ -144,6 +144,7 @@ class CORE_EXPORT ComputedStyle: public RefCounted<ComputedStyle> {
     friend class NumberPropertyFunctions; // Reads initial style values.
     friend class PaintPropertyFunctions; // Reads initial style values.
     friend class BorderImageLengthBoxPropertyFunctions; // Reads initial style values.
+    friend class ImageSlicePropertyFunctions; // Reads initial style values.
 
     // FIXME: When we stop resolving currentColor at style time, these can be removed.
     friend class CSSToStyleMap;
