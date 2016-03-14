@@ -288,8 +288,8 @@ class FileImager(USBImager):
 
   def Run(self):
     """Copy the image to the path specified by self.device."""
-    if not os.path.exists(self.device):
-      raise FlashError('Path %s does not exist.' % self.device)
+    if not os.path.isdir(os.path.dirname(self.device)):
+      raise FlashError('Parent of path %s is not a directory.' % self.device)
 
     image_path = self._GetImagePath()
     if os.path.isdir(self.device):
