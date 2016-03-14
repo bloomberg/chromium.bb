@@ -388,11 +388,6 @@ void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<Executi
     backingThread().postTask(location, createWorkerThreadTask(task, true));
 }
 
-void WorkerThread::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task, long long delayMs)
-{
-    backingThread().postDelayedTask(location, createWorkerThreadTask(task, true), delayMs);
-}
-
 void WorkerThread::initializeBackingThread()
 {
     ASSERT(isCurrentThread());

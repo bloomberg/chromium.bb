@@ -146,7 +146,6 @@ private:
     void shutdown();
     void performTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
     void performShutdownTask();
-    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void runDebuggerTask(PassOwnPtr<CrossThreadClosure>);
     void runDebuggerTaskDontWait();
 
