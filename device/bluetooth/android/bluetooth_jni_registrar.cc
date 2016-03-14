@@ -11,6 +11,7 @@
 #include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_device_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_android.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
 
 namespace device {
@@ -22,6 +23,8 @@ const base::android::RegistrationMethod kRegisteredMethods[] = {
     {"BluetoothDeviceAndroid", device::BluetoothDeviceAndroid::RegisterJNI},
     {"BluetoothRemoteGattCharacteristicAndroid",
      device::BluetoothRemoteGattCharacteristicAndroid::RegisterJNI},
+    {"BluetoothRemoteGattDescriptorAndroid",
+     device::BluetoothRemoteGattDescriptorAndroid::RegisterJNI},
     {"BluetoothRemoteGattServiceAndroid",
      device::BluetoothRemoteGattServiceAndroid::RegisterJNI},
     {"Wrappers", device::WrappersRegisterJNI},
