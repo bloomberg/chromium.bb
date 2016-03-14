@@ -53,7 +53,7 @@ class {{interface.name}} {
   }
 {%-     endif %}
 
-  using {{method.name}}Callback = {{interface_macros.declare_callback(method)}};
+  using {{method.name}}Callback = {{interface_macros.declare_callback(method, for_blink)}};
 {%-   endif %}
   virtual void {{method.name}}({{interface_macros.declare_request_params("", method)}}) = 0;
 {%- endfor %}

@@ -101,6 +101,21 @@
       ],
     },
     {
+      # GN version: //mojo/public/cpp/bindings/tests:for_blink_tests
+      'target_name': 'mojo_public_bindings_for_blink_tests',
+      'type': 'static_library',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'mojo_public.gyp:mojo_cpp_bindings',
+        'mojo_public.gyp:mojo_public_test_utils',
+        'mojo_public.gyp:mojo_public_test_wtf_types',
+        'mojo_public.gyp:mojo_public_test_wtf_types_blink',
+      ],
+      'sources': [
+        'public/cpp/bindings/tests/wtf_types_unittest.cc',
+      ],
+    },
+    {
       # GN version: //mojo/edk/test:mojo_public_bindings_perftests
       'target_name': 'mojo_public_bindings_perftests',
       'type': 'executable',

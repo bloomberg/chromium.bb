@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string.h>
-
 #include <string>
 
 #include "base/bind.h"
@@ -15,6 +13,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/tests/pickled_struct_blink.h"
 #include "mojo/public/cpp/bindings/tests/pickled_struct_chromium.h"
+#include "mojo/public/cpp/bindings/tests/variant_test_util.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-chromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,19 +21,6 @@
 namespace mojo {
 namespace test {
 namespace {
-
-// Converts a request of Interface1 to a request of Interface0. Interface0 and
-// Interface1 are expected to be two variants of the same mojom interface.
-// In real-world use cases, users shouldn't need to worry about this. Because it
-// is rare to deal with two variants of the same interface in the same app.
-template <typename Interface0, typename Interface1>
-InterfaceRequest<Interface0> ConvertInterfaceRequest(
-    InterfaceRequest<Interface1> request) {
-  DCHECK_EQ(0, strcmp(Interface0::Name_, Interface1::Name_));
-  InterfaceRequest<Interface0> result;
-  result.Bind(request.PassMessagePipe());
-  return result;
-}
 
 template <typename T>
 void DoExpectResult(int foo,

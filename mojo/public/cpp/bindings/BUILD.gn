@@ -81,6 +81,10 @@ source_set("bindings") {
     "lib/validation_util.cc",
     "lib/validation_util.h",
     "lib/value_traits.h",
+
+    # Include the .h but not the .cc file. The .h file is used by
+    # serialization_forward.h.
+    "lib/wtf_string_serialization.h",
     "map.h",
     "message.h",
     "message_filter.h",
@@ -119,4 +123,19 @@ source_set("callback") {
     "//base",
     "//mojo/public/cpp/system",
   ]
+}
+
+source_set("wtf_support") {
+  sources = [
+    "lib/wtf_serialization.h",
+    "lib/wtf_string_serialization.cc",
+    "lib/wtf_string_serialization.h",
+  ]
+
+  public_deps = [
+    ":bindings",
+    "//third_party/WebKit/Source/wtf",
+  ]
+
+  public_configs = [ "//third_party/WebKit/Source:config" ]
 }

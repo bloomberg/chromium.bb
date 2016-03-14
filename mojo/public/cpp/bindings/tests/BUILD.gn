@@ -68,6 +68,24 @@ source_set("tests") {
   ]
 }
 
+source_set("for_blink_tests") {
+  testonly = true
+
+  sources = [
+    "wtf_types_unittest.cc",
+  ]
+
+  deps = [
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/system",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//mojo/public/interfaces/bindings/tests:test_wtf_types",
+    "//mojo/public/interfaces/bindings/tests:test_wtf_types_blink",
+    "//testing/gtest",
+  ]
+}
+
 source_set("perftests") {
   testonly = true
 

@@ -542,6 +542,7 @@ test("blink_platform_unittests") {
     "//cc/blink",
     "//mojo/edk/embedder:headers",
     "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/bindings/tests:for_blink_tests",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

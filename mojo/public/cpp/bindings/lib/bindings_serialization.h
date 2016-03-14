@@ -112,6 +112,11 @@ inline void AssociatedInterfaceDataToPtrInfo(
   output->set_version(input->version);
 }
 
+class WTFStringContext {
+ public:
+  virtual ~WTFStringContext() {}
+};
+
 // Context information for serialization/deserialization routines.
 struct SerializationContext {
   SerializationContext();
@@ -121,6 +126,8 @@ struct SerializationContext {
 
   // Used to serialize/deserialize associated interface pointers and requests.
   scoped_refptr<MultiplexRouter> router;
+
+  scoped_ptr<WTFStringContext> wtf_string_context;
 };
 
 }  // namespace internal

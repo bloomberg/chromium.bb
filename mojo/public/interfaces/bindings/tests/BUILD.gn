@@ -97,3 +97,26 @@ mojom("test_interfaces_blink") {
     ":test_interfaces",
   ]
 }
+
+mojom("test_wtf_types") {
+  testonly = true
+
+  sources = [
+    "test_wtf_types.mojom",
+  ]
+}
+
+mojom("test_wtf_types_blink") {
+  testonly = true
+
+  sources = [
+    "test_wtf_types.mojom",
+  ]
+
+  deps = [
+    ":test_wtf_types",
+  ]
+
+  for_blink = true
+  variant = "blink"
+}

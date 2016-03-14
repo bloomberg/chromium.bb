@@ -5,13 +5,13 @@
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro declare_callback(method) -%}
+{%- macro declare_callback(method, for_blink) -%}
 mojo::Callback<void(
 {%-   for param in method.response_parameters -%}
 {#- TODO(yzshen): Previously |cpp_result_type| is used here incorrectly.
     The outcome is we will use mojo::String instead of const mojo::String&.
     Preserve the behavior temporarily. #}
-{%- if not param.kind|is_string_kind -%}
+{%- if (not param.kind|is_string_kind) or for_blink -%}
 {{param.kind|cpp_const_wrapper_type}}
 {%- else -%}
 mojo::String

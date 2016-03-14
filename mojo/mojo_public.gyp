@@ -177,6 +177,9 @@
         'public/cpp/bindings/lib/validation_util.cc',
         'public/cpp/bindings/lib/validation_util.h',
         'public/cpp/bindings/lib/value_traits.h',
+        # Include the .h but not the .cc file. The .h file is used by
+        # serialization_forward.h.
+        'public/cpp/bindings/lib/wtf_string_serialization.h',
         'public/cpp/bindings/message.h',
         'public/cpp/bindings/message_filter.h',
         'public/cpp/bindings/no_interface.h',
@@ -192,6 +195,33 @@
         'mojo_cpp_system',
         'mojo_interface_bindings_cpp_sources',
       ],
+    },
+    {
+      # GN version: //mojo/public/cpp/bindings:wtf_support
+      'target_name': 'mojo_cpp_bindings_wtf_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '..'
+      ],
+      'sources': [
+        'public/cpp/bindings/lib/wtf_serialization.h',
+        'public/cpp/bindings/lib/wtf_string_serialization.cc',
+        'public/cpp/bindings/lib/wtf_string_serialization.h',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+        '../third_party/WebKit/Source/config.gyp:config',
+        '../third_party/WebKit/Source/wtf/wtf.gyp:wtf',
+      ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+        '../third_party/WebKit/Source/config.gyp:config',
+      ],
+      'direct_dependent_settings': {
+        'variables': {
+          'clang_warning_flags_unset': [ '-Wglobal-constructors' ],
+        },
+      },
     },
     {
       # GN version: //mojo/message_pump
@@ -455,6 +485,26 @@
         'mojo_public_test_associated_interfaces_mojom',
         'mojo_cpp_bindings',
       ],
+    },
+    {
+      'target_name': 'mojo_public_test_wtf_types',
+      'type': 'static_library',
+      'sources': [
+        'public/interfaces/bindings/tests/test_wtf_types.mojom',
+      ],
+      'includes': [ 'mojom_bindings_generator.gypi' ],
+    },
+    {
+      'target_name': 'mojo_public_test_wtf_types_blink',
+      'type': 'static_library',
+      'variables': {
+        'mojom_variant': 'blink',
+        'for_blink': 'true',
+      },
+      'sources': [
+        'public/interfaces/bindings/tests/test_wtf_types.mojom',
+      ],
+      'includes': [ 'mojom_bindings_generator.gypi' ],
     },
   ],
   'conditions': [

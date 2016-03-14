@@ -19,6 +19,10 @@
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 
+namespace WTF {
+class String;
+}
+
 namespace mojo {
 namespace internal {
 
@@ -191,7 +195,8 @@ struct ArraySerializer<
  private:
   template <typename T,
             bool is_array = IsSpecializationOf<Array, T>::value,
-            bool is_string = std::is_same<T, String>::value>
+            bool is_string = std::is_same<T, String>::value ||
+                             std::is_same<T, WTF::String>::value>
   struct SerializeCaller {
     static void Run(T input,
                     Buffer* buf,

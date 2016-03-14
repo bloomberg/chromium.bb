@@ -32,13 +32,17 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/no_interface.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "{{variant_path}}-internal.h"
 {%- for import in imports %}
 #include "{{import.module.path}}.h"
 {%- endfor %}
+{%- if not for_blink %}
+#include "mojo/public/cpp/bindings/string.h"
+{%- else %}
+#include "third_party/WebKit/Source/wtf/text/WTFString.h"
+{%- endif %}
 
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {

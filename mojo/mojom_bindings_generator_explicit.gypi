@@ -9,8 +9,10 @@
   'variables': {
     'variables': {
       'mojom_variant%': 'none',
+      'for_blink%': 'false',
     },
     'mojom_variant%': '<(mojom_variant)',
+    'for_blink%': '<(for_blink)',
     'mojom_base_output_dir':
         '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
     'mojom_generated_outputs': [
@@ -24,6 +26,18 @@
         'mojom_output_languages%': 'c++,javascript,java',
       }, {
         'mojom_output_languages%': 'c++',
+      }],
+      ['for_blink=="true"', {
+        'mojom_generator_wtf_arg%': [
+          '--for_blink',
+        ],
+        'wtf_dependencies%': [
+          'mojo_public.gyp:mojo_cpp_bindings_wtf_support',
+          '../third_party/WebKit/Source/wtf/wtf.gyp:wtf',
+        ],
+      }, {
+        'mojom_generator_wtf_arg%': [],
+        'wtf_dependencies%': [],
       }],
     ],
   },
@@ -83,6 +97,7 @@
         '--variant', '<(mojom_variant)',
         '-g', '<(mojom_output_languages)',
         '<@(mojom_extra_generator_args)',
+        '<@(mojom_generator_wtf_arg)',
         '--bytecode_path',
         '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings',
       ],
@@ -99,6 +114,10 @@
   ],
   'dependencies': [
     '<(DEPTH)/mojo/public/tools/bindings/bindings.gyp:precompile_mojom_bindings_generator_templates',
+    '<@(wtf_dependencies)',
+  ],
+  'export_dependent_settings': [
+    '<@(wtf_dependencies)',
   ],
   # Prevent the generated sources from being injected into the "all" target by
   # preventing the code generator from being directly depended on by the "all"

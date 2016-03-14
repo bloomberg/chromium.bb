@@ -8,10 +8,12 @@
 #include <stddef.h>
 
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
+#include "mojo/public/cpp/bindings/lib/wtf_string_serialization.h"
 
 // This file is included by serialization implementation files to avoid circular
 // includes.
-// Users of the serialization funtions should include serialization.h.
+// Users of the serialization funtions should include serialization.h (and also
+// wtf_serialization.h if necessary).
 
 namespace mojo {
 

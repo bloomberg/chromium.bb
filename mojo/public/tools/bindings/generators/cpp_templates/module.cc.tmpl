@@ -36,6 +36,10 @@
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
 #include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
+{%- if for_blink %}
+#include "mojo/public/cpp/bindings/lib/wtf_serialization.h"
+{%- endif %}
+
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {
 {%- endfor %}

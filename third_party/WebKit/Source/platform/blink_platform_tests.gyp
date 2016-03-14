@@ -76,6 +76,7 @@
         '<(DEPTH)/cc/cc_tests.gyp:cc_test_support',
         '<(DEPTH)/cc/blink/cc_blink.gyp:cc_blink',
         '<(DEPTH)/mojo/mojo_edk.gyp:mojo_common_test_support',
+        '<(DEPTH)/mojo/mojo_edk_tests.gyp:mojo_public_bindings_for_blink_tests',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',

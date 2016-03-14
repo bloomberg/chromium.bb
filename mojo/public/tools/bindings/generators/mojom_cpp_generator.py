@@ -42,9 +42,10 @@ _kind_to_cpp_literal_suffix = {
   mojom.UINT64:       "ULL",
 }
 
-# TODO(rockot): Get rid of this global. This requires some refactoring of the
+# TODO(rockot): Get rid of these globals. This requires some refactoring of the
 # generator library code so that filters can use the generator as context.
 _current_typemap = {}
+_for_blink = False
 
 
 def ConstantValue(constant):
@@ -56,9 +57,10 @@ def DefaultValue(field):
       assert field.default == "default"
       return "%s::New()" % GetNameForKind(field.kind)
     return ExpressionToText(field.default, kind=field.kind)
-  if (mojom.IsStringKind(field.kind) or mojom.IsArrayKind(field.kind) or
-      mojom.IsMapKind(field.kind)):
+  if mojom.IsArrayKind(field.kind) or mojom.IsMapKind(field.kind):
     return "nullptr";
+  if mojom.IsStringKind(field.kind):
+    return "" if _for_blink else "nullptr"
   return ""
 
 def NamespaceToArray(namespace):
@@ -187,7 +189,7 @@ def GetCppArrayArgWrapperType(kind):
     raise Exception("Arrays of associated interface requests not yet "
                     "supported!")
   if mojom.IsStringKind(kind):
-    return "mojo::String"
+    return "WTF::String" if _for_blink else "mojo::String"
   if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
@@ -223,7 +225,7 @@ def GetCppResultWrapperType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "%sAssociatedRequest" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
-    return "mojo::String"
+    return "WTF::String" if _for_blink else "mojo::String"
   if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
@@ -265,7 +267,7 @@ def GetCppWrapperType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "%sAssociatedRequest" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
-    return "mojo::String"
+    return "WTF::String" if _for_blink else "mojo::String"
   if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
@@ -301,7 +303,7 @@ def GetCppConstWrapperType(kind):
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
   if mojom.IsStringKind(kind):
-    return "const mojo::String&"
+    return "const WTF::String&" if _for_blink else "const mojo::String&"
   if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
@@ -525,6 +527,7 @@ class Generator(generator.Generator):
       "interfaces": self.GetInterfaces(),
       "variant": self.variant,
       "extra_headers": self.GetExtraHeaders(),
+      "for_blink": self.for_blink,
     }
 
   @staticmethod
@@ -550,6 +553,8 @@ class Generator(generator.Generator):
   def GenerateFiles(self, args):
     global _current_typemap
     _current_typemap = self.typemap
+    global _for_blink
+    _for_blink = self.for_blink
     suffix = "-%s" % self.variant if self.variant else ""
     self.Write(self.GenerateModuleHeader(),
         self.MatchMojomFilePath("%s%s.h" % (self.module.name, suffix)))

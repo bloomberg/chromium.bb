@@ -59,6 +59,9 @@ mojom_generator_sources = [
 #   testonly (optional)
 #
 #   visibility (optional)
+#
+#   for_blink (optional, C++ only)
+#       Use WTF types as generated type for mojo string/array/map.
 template("mojom") {
   assert(
       defined(invoker.sources) || defined(invoker.deps) ||
@@ -158,6 +161,10 @@ template("mojom") {
         }
         inputs += invoker.typemaps
       }
+
+      if (defined(invoker.for_blink) && invoker.for_blink) {
+        args += [ "--for_blink" ]
+      }
     }
   }
 
@@ -244,6 +251,9 @@ template("mojom") {
         # get the cpp dependency name.
         full_name = get_label_info(d, "label_no_toolchain")
         deps += [ "${full_name}_${cpp_sources_suffix}" ]
+      }
+      if (defined(invoker.for_blink) && invoker.for_blink) {
+        public_deps += [ "//mojo/public/cpp/bindings:wtf_support" ]
       }
     }
   }

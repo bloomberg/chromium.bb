@@ -11,6 +11,9 @@
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/system/core.h"
 
+namespace WTF {
+class String;
+}
 namespace mojo {
 class String;
 
@@ -159,6 +162,11 @@ struct WrapperTraits<S, true> {
 
 template <>
 struct WrapperTraits<String, false> {
+  typedef String_Data* DataType;
+};
+
+template <>
+struct WrapperTraits<WTF::String, false> {
   typedef String_Data* DataType;
 };
 

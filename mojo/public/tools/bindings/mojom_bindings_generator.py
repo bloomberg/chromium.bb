@@ -143,7 +143,8 @@ class MojomProcessor(object):
       for language, generator_module in generator_modules.iteritems():
         generator = generator_module.Generator(
             module, args.output_dir, typemap=self._typemap.get(language, {}),
-            variant=args.variant, bytecode_path=args.bytecode_path)
+            variant=args.variant, bytecode_path=args.bytecode_path,
+            for_blink=args.for_blink)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -252,6 +253,9 @@ def main():
           "the path from which to load template bytecode; to generate template "
           "bytecode, run %s precompile BYTECODE_PATH" % os.path.basename(
               sys.argv[0])))
+  generate_parser.add_argument("--for_blink", action="store_true",
+                               help="Use WTF types as generated types for mojo "
+                               "string/array/map.")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",
