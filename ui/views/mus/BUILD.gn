@@ -148,6 +148,7 @@ test("views_mus_unittests") {
     "../test/native_widget_factory_mus.cc",
     "../view_targeter_unittest.cc",
     "../widget/native_widget_unittest.cc",
+    "../widget/widget_unittest.cc",
     "platform_test_helper_mus.cc",
     "run_all_unittests_mus.cc",
   ]
@@ -191,7 +192,12 @@ test("views_mus_unittests") {
 
   data_deps = [
     "//mash/wm",
-    "//ui/resources:ui_test_pak",
+  ]
+
+  # TODO(thakis): This should be a data_deps on //ui/resources:ui_test_pak, but
+  # that has no effect.  (See similar TODOs elsewhere ui_test.pak is listed)
+  data = [
+    "$root_out_dir/ui_test.pak",
   ]
 
   if (is_win) {

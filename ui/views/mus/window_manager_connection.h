@@ -64,7 +64,6 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
 
-
   mojo::Connector* connector_;
   scoped_ptr<ScreenMus> screen_;
   scoped_ptr<mus::WindowTreeConnection> window_tree_connection_;

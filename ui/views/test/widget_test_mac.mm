@@ -74,7 +74,6 @@ bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
   return false;
 }
 
-// static
 gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
   return gfx::Size([widget->GetNativeWindow() contentMinSize]);
 }

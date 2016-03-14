@@ -37,6 +37,8 @@ class ScopedViewsTestHelper {
 
   TestViewsDelegate* views_delegate() { return views_delegate_.get(); };
 
+  bool IsMus() const;
+
  private:
   scoped_ptr<TestViewsDelegate> views_delegate_;
   scoped_ptr<ViewsTestHelper> test_helper_;

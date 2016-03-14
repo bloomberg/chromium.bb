@@ -36,7 +36,6 @@ class Connector;
 namespace mus {
 class Window;
 class WindowTreeConnection;
-
 }
 
 namespace wm {
@@ -201,6 +200,11 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
  private:
+  class MusWindowObserver;
+
+  void OnMusWindowVisibilityChanging(mus::Window* window);
+  void OnMusWindowVisibilityChanged(mus::Window* window);
+
   mus::Window* window_;
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
@@ -210,6 +214,10 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
+
+  // Functions with the same name require the mus::WindowObserver to be in
+  // a separate class.
+  scoped_ptr<MusWindowObserver> mus_window_observer_;
 
   // Aura configuration.
   scoped_ptr<SurfaceContextFactory> context_factory_;

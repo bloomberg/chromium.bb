@@ -83,8 +83,10 @@ bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
   return FindLayersInOrder(root_layer->children(), &first, &second);
 }
 
-// static
 gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
+  if (IsMus())
+    return widget->GetNativeWindow()->delegate()->GetMinimumSize();
+
   // On Windows, HWNDMessageHandler receives a WM_GETMINMAXINFO message whenever
   // the window manager is interested in knowing the size constraints. On
   // ChromeOS, it's handled internally. Elsewhere, the size constraints need to

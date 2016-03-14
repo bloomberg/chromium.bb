@@ -5,10 +5,25 @@
 #include "ui/views/test/platform_test_helper.h"
 
 namespace views {
+namespace {
+
+class DefaultPlatformTestHelper : public PlatformTestHelper {
+ public:
+  DefaultPlatformTestHelper() {}
+
+  ~DefaultPlatformTestHelper() override {}
+
+  bool IsMus() const override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultPlatformTestHelper);
+};
+
+}  // namespace
 
 // static
 scoped_ptr<PlatformTestHelper> PlatformTestHelper::Create() {
-  return make_scoped_ptr(new PlatformTestHelper);
+  return make_scoped_ptr(new DefaultPlatformTestHelper);
 }
 
 }  // namespace views

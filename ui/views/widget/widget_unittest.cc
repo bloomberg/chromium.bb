@@ -938,6 +938,11 @@ TEST_F(WidgetObserverTest, ClosingOnHiddenParent) {
 
 // Test behavior of NativeWidget*::GetWindowPlacement on the native desktop.
 TEST_F(WidgetTest, GetWindowPlacement) {
+  if (IsMus()) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
   WidgetAutoclosePtr widget;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // On desktop-Linux cheat and use non-desktop widgets. On X11, minimize is
@@ -1048,10 +1053,12 @@ TEST_F(WidgetTest, MinimumSizeConstraints) {
   widget->SetSize(smaller_size);
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // TODO(tapted): Desktop Linux ignores size constraints for SetSize. Fix it.
-  EXPECT_EQ(smaller_size, widget->GetClientAreaBoundsInScreen().size());
+  const bool use_small_size = IsMus() ? false : true;
 #else
-  EXPECT_EQ(minimum_size, widget->GetClientAreaBoundsInScreen().size());
+  const bool use_small_size = false;
 #endif
+  EXPECT_EQ(use_small_size ? smaller_size : minimum_size,
+            widget->GetClientAreaBoundsInScreen().size());
 }
 
 // Tests that SetBounds() and GetWindowBoundsInScreen() is symmetric when the
@@ -1122,6 +1129,11 @@ TEST_F(WidgetTest, GetWindowBoundsInScreen) {
 
 // Test that GetRestoredBounds() returns the original bounds of the window.
 TEST_F(WidgetTest, MAYBE_GetRestoredBounds) {
+  if (IsMus()) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
 #if defined(OS_MACOSX)
   // Fullscreen on Mac requires an interactive UI test, fake them here.
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
@@ -1269,6 +1281,10 @@ TEST_F(WidgetTest, BubbleControlsResetOnInit) {
 // the case for desktop widgets on Windows. Other platforms retain the window
 // size while minimized.
 TEST_F(WidgetTest, TestViewWidthAfterMinimizingWidget) {
+  if (IsMus()) {
+    // This test is testing behavior specific to DesktopWindowTreeHostWin.
+    return;
+  }
   // Create a widget.
   Widget widget;
   Widget::InitParams init_params =
@@ -1661,7 +1677,9 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
   EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_MOVED));
 
   gfx::Point cursor_location(5, 5);
-  ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
+  ui::test::EventGenerator generator(
+      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      widget->GetNativeWindow());
   generator.MoveMouseTo(cursor_location);
 
   EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_MOVED));
@@ -1705,7 +1723,7 @@ class MousePressEventConsumer : public ui::EventHandler {
 // Test that mouse presses and mouse releases are dispatched normally when a
 // touch is down.
 TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
-  WidgetAutoclosePtr widget(CreateTopLevelNativeWidget());
+  Widget* widget = CreateTopLevelNativeWidget();
   widget->Show();
   widget->SetSize(gfx::Size(300, 300));
 
@@ -1716,12 +1734,17 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
   MousePressEventConsumer consumer;
   event_count_view->AddPostTargetHandler(&consumer);
 
-  ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
-  generator.PressTouch();
-  generator.ClickLeftButton();
+  scoped_ptr<ui::test::EventGenerator> generator(new ui::test::EventGenerator(
+      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      widget->GetNativeWindow()));
+  generator->PressTouch();
+  generator->ClickLeftButton();
 
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_RELEASED));
+
+  // For mus it's important we destroy the widget before the EventGenerator.
+  widget->CloseNow();
 }
 
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
@@ -1742,7 +1765,6 @@ class WidgetWindowTitleTest : public WidgetTest {
     WidgetAutoclosePtr widget(new Widget());  // Destroyed by CloseNow().
     Widget::InitParams init_params =
         CreateParams(Widget::InitParams::TYPE_WINDOW);
-    widget->Init(init_params);
 
 #if !defined(OS_CHROMEOS)
     if (desktop_native_widget)
@@ -1752,6 +1774,7 @@ class WidgetWindowTitleTest : public WidgetTest {
     DCHECK(!desktop_native_widget)
         << "DesktopNativeWidget does not exist on non-Aura or on ChromeOS.";
 #endif
+    widget->Init(init_params);
 
     internal::NativeWidgetPrivate* native_widget =
         widget->native_widget_private();
@@ -1793,6 +1816,14 @@ TEST_F(WidgetWindowTitleTest, SetWindowTitleChanged_DesktopNativeWidget) {
 #endif  // !OS_CHROMEOS
 
 TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
+  // This test doesn't work in mus as it assumes widget and GetContext()
+  // share an aura hierarchy. Test coverage of deletion from mouse pressed is
+  // important though and should be added, hence the NOTIMPLEMENTED().
+  // http://crbug.com/594260.
+  if (IsMus()) {
+    NOTIMPLEMENTED();
+    return;
+  }
   Widget* widget = new Widget;
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
@@ -1816,6 +1847,9 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
 #if !defined(OS_MACOSX) || defined(USE_AURA)
 
 TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
+  // This test doesn't make sense for mus. Force NativeWidgetAura to be used.
+  DisableNativeWidgetMus();
+
   Widget* widget = new Widget;
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
@@ -3162,32 +3196,6 @@ TEST_F(WidgetTest, NonClientWindowValidAfterInit) {
 }
 
 #if defined(OS_WIN)
-// This test validates that sending WM_CHAR/WM_SYSCHAR/WM_SYSDEADCHAR
-// messages via the WindowEventTarget interface implemented by the
-// HWNDMessageHandler class does not cause a crash due to an unprocessed
-// event
-TEST_F(WidgetTest, CharMessagesAsKeyboardMessagesDoesNotCrash) {
-  Widget widget;
-  Widget::InitParams params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.native_widget =
-      CreatePlatformDesktopNativeWidgetImpl(params, &widget, nullptr);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
-  widget.Show();
-
-  ui::WindowEventTarget* target =
-      reinterpret_cast<ui::WindowEventTarget*>(ui::ViewProp::GetValue(
-          widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget(),
-          ui::WindowEventTarget::kWin32InputEventTarget));
-  EXPECT_NE(nullptr, target);
-  bool handled = false;
-  target->HandleKeyboardMessage(WM_CHAR, 0, 0, &handled);
-  target->HandleKeyboardMessage(WM_SYSCHAR, 0, 0, &handled);
-  target->HandleKeyboardMessage(WM_SYSDEADCHAR, 0, 0, &handled);
-  widget.CloseNow();
-}
-
 // Provides functionality to subclass a window and keep track of messages
 // received.
 class SubclassWindowHelper {
@@ -3378,6 +3386,11 @@ TEST_F(WidgetTest, DISABLED_DestroyInSysCommandNCLButtonDownOnCaption) {
 
 // Test that SetAlwaysOnTop and IsAlwaysOnTop are consistent.
 TEST_F(WidgetTest, AlwaysOnTop) {
+  if (IsMus()) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
   WidgetAutoclosePtr widget(CreateTopLevelNativeWidget());
   EXPECT_FALSE(widget->IsAlwaysOnTop());
   widget->SetAlwaysOnTop(true);

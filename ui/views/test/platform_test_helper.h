@@ -17,6 +17,8 @@ class PlatformTestHelper {
 
   static scoped_ptr<PlatformTestHelper> Create();
 
+  virtual bool IsMus() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelper);
 };

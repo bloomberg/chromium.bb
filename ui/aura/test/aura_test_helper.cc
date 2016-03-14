@@ -90,11 +90,12 @@ void AuraTestHelper::TearDown() {
   stacking_client_.reset();
   capture_client_.reset();
   focus_client_.reset();
-  client::SetFocusClient(root_window(), NULL);
+  client::SetFocusClient(root_window(), nullptr);
   host_.reset();
   ui::GestureRecognizer::Reset();
+  if (gfx::Screen::GetScreen() == test_screen_.get())
+    gfx::Screen::SetScreenInstance(nullptr);
   test_screen_.reset();
-  gfx::Screen::SetScreenInstance(NULL);
 
 #if defined(USE_X11)
   ui::test::ResetXCursorCache();

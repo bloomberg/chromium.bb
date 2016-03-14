@@ -78,7 +78,7 @@ class WidgetTest : public ViewsTestBase {
 
   // Query the native window system for the minimum size configured for user
   // initiated window resizes.
-  static gfx::Size GetNativeWidgetMinimumContentSize(Widget* widget);
+  gfx::Size GetNativeWidgetMinimumContentSize(Widget* widget);
 
   // Return the event processor for |widget|. On aura platforms, this is an
   // aura::WindowEventDispatcher. Otherwise, it is a bridge to the OS event

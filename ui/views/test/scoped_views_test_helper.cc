@@ -41,14 +41,21 @@ ScopedViewsTestHelper::~ScopedViewsTestHelper() {
   test_helper_->TearDown();
   test_helper_.reset();
 
-  ui::TerminateContextFactoryForTests();
   views_delegate_.reset();
 
+  // The Mus PlatformTestHelper has state that is deleted by
+  // ui::TerminateContextFactoryForTests().
   platform_test_helper_.reset();
+
+  ui::TerminateContextFactoryForTests();
 }
 
 gfx::NativeWindow ScopedViewsTestHelper::GetContext() {
   return test_helper_->GetContext();
+}
+
+bool ScopedViewsTestHelper::IsMus() const {
+  return platform_test_helper_->IsMus();
 }
 
 }  // namespace views

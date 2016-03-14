@@ -27,6 +27,8 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
+#include "ui/base/view_prop.h"
+#include "ui/base/win/window_event_target.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
@@ -627,6 +629,32 @@ TEST_F(WidgetTest, WindowModalityActivationTest) {
 
   modal_dialog_widget->CloseNow();
 }
+
+// This test validates that sending WM_CHAR/WM_SYSCHAR/WM_SYSDEADCHAR
+// messages via the WindowEventTarget interface implemented by the
+// HWNDMessageHandler class does not cause a crash due to an unprocessed
+// event
+TEST_F(WidgetTest, CharMessagesAsKeyboardMessagesDoesNotCrash) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget =
+      CreatePlatformDesktopNativeWidgetImpl(params, &widget, nullptr);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(params);
+  widget.Show();
+
+  ui::WindowEventTarget* target =
+      reinterpret_cast<ui::WindowEventTarget*>(ui::ViewProp::GetValue(
+          widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget(),
+          ui::WindowEventTarget::kWin32InputEventTarget));
+  ASSERT_NE(nullptr, target);
+  bool handled = false;
+  target->HandleKeyboardMessage(WM_CHAR, 0, 0, &handled);
+  target->HandleKeyboardMessage(WM_SYSCHAR, 0, 0, &handled);
+  target->HandleKeyboardMessage(WM_SYSDEADCHAR, 0, 0, &handled);
+  widget.CloseNow();
+}
+
 #endif  // defined(OS_WIN)
 
 }  // namespace test
