@@ -23,6 +23,9 @@ import shutil
 import sys
 import subprocess
 import tempfile
+import urllib2
+
+from collections import OrderedDict
 
 def main(args):
   mbw = MetaBuildWrapper()
@@ -141,6 +144,24 @@ class MetaBuildWrapper(object):
                       help='path to config file '
                           '(default is //tools/mb/mb_config.pyl)')
     subp.set_defaults(func=self.CmdValidate)
+
+    subp = subps.add_parser('audit',
+                            help='Audit the config file to track progress')
+    subp.add_argument('-f', '--config-file', metavar='PATH',
+                      default=self.default_config,
+                      help='path to config file '
+                          '(default is //tools/mb/mb_config.pyl)')
+    subp.add_argument('-i', '--internal', action='store_true',
+                      help='check internal masters also')
+    subp.add_argument('-m', '--master', action='append',
+                      help='master to audit (default is all non-internal '
+                           'masters in file)')
+    subp.add_argument('-u', '--url-template', action='store',
+                      default='https://build.chromium.org/p/'
+                              '{master}/json/builders',
+                      help='URL scheme for JSON APIs to buildbot '
+                           '(default: %(default)s) ')
+    subp.set_defaults(func=self.CmdAudit)
 
     subp = subps.add_parser('help',
                             help='Get help on a subcommand.')
@@ -332,6 +353,111 @@ class MetaBuildWrapper(object):
                     '\n  ' + '\n  '.join(errs))
 
     self.Print('mb config file %s looks ok.' % self.args.config_file)
+    return 0
+
+  def CmdAudit(self):
+    """Track the progress of the GYP->GN migration on the bots."""
+
+    stats = OrderedDict()
+    STAT_MASTER_ONLY = 'Master only'
+    STAT_CONFIG_ONLY = 'Config only'
+    STAT_TBD = 'Still TBD'
+    STAT_GYP = 'Still GYP'
+    STAT_DONE = 'Done (on GN)'
+    stats[STAT_MASTER_ONLY] = 0
+    stats[STAT_CONFIG_ONLY] = 0
+    stats[STAT_TBD] = 0
+    stats[STAT_GYP] = 0
+    stats[STAT_DONE] = 0
+
+    def PrintBuilders(heading, builders):
+      stats.setdefault(heading, 0)
+      stats[heading] += len(builders)
+      if builders:
+        self.Print('  %s:' % heading)
+        for builder in sorted(builders):
+          self.Print('    %s' % builder)
+
+    self.ReadConfigFile()
+
+    masters = self.args.master or self.masters
+    for master in sorted(masters):
+      url = self.args.url_template.replace('{master}', master)
+
+      self.Print('Auditing %s' % master)
+
+      MASTERS_TO_SKIP = (
+        'client.skia',
+        'client.v8.fyi',
+        'tryserver.v8',
+      )
+      if master in MASTERS_TO_SKIP:
+        # Skip these bots because converting them is the responsibility of
+        # those teams and out of scope for the Chromium migration to GN.
+        self.Print('  Skipped (out of scope)')
+        self.Print('')
+        continue
+
+      INTERNAL_MASTERS = (
+        'chrome',
+        'chrome.continuous',
+        'official.desktop',
+        'official.desktop.continuous',
+      )
+      if master in INTERNAL_MASTERS and not self.args.internal:
+        # Skip these because the servers aren't accessible by default ...
+        self.Print('  Skipped (internal)')
+        self.Print('')
+        continue
+
+      try:
+        # Fetch the /builders contents from the buildbot master. The
+        # keys of the dict are the builder names themselves.
+        json_contents = self.Fetch(url)
+        d = json.loads(json_contents)
+      except Exception as e:
+        self.Print(str(e))
+        return 1
+
+      config_builders = set(self.masters[master])
+      master_builders = set(d.keys())
+      both = master_builders & config_builders
+      master_only = master_builders - config_builders
+      config_only = config_builders - master_builders
+      tbd = set()
+      gyp = set()
+      done = set()
+
+      for builder in both:
+        config = self.masters[master][builder]
+        if config == 'tbd':
+          tbd.add(builder)
+        else:
+          # TODO(dpranke): Check if MB is actually running?
+          vals = self.FlattenConfig(config)
+          if vals['type'] == 'gyp':
+            gyp.add(builder)
+          else:
+            done.add(builder)
+
+      if master_only or config_only or tbd or gyp:
+        PrintBuilders(STAT_MASTER_ONLY, master_only)
+        PrintBuilders(STAT_CONFIG_ONLY, config_only)
+        PrintBuilders(STAT_TBD, tbd)
+        PrintBuilders(STAT_GYP, gyp)
+      else:
+        self.Print('  ... ok')
+
+      stats[STAT_DONE] += len(done)
+
+      self.Print('')
+
+    fmt = '{:<27} {:>4}'
+    self.Print(fmt.format('Totals', str(sum(int(v) for v in stats.values()))))
+    self.Print(fmt.format('-' * 27, '----'))
+    for stat, count in stats.items():
+      self.Print(fmt.format(stat, str(count)))
+
     return 0
 
   def GetConfig(self):
@@ -1095,6 +1221,13 @@ class MetaBuildWrapper(object):
   def Exists(self, path):
     # This function largely exists so it can be overridden for testing.
     return os.path.exists(path)
+
+  def Fetch(self, url):
+
+    f = urllib2.urlopen(url)
+    contents = f.read()
+    f.close()
+    return contents
 
   def GNTargetName(self, target):
     return target[:-len('_apk')] if target.endswith('_apk') else target

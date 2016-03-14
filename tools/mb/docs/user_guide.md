@@ -93,6 +93,13 @@ differences can be subtle.  We won't even go into how the `targets` and
 The `-b/--builder`, `-c/--config`, `-f/--config-file`, `-m/--master`,
 `-q/--quiet`, and `-v/--verbose` flags work as documented for `mb gen`.
 
+### `mb audit`
+
+`mb audit` is used to track the progress of the GYP->GN migration. You can
+use it to check a single master, or all the masters we care about. See
+`mb help audit` for more details (most people are not expected to care about
+this).
+
 ### `mb gen`
 
 `mb gen` is responsible for generating the Ninja files by invoking either GYP
