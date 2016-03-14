@@ -133,6 +133,18 @@ TEST_F(DomainReliabilityMonitorTest, NetworkFailure) {
   EXPECT_EQ(1u, CountQueuedBeacons(context));
 }
 
+TEST_F(DomainReliabilityMonitorTest, GoAwayWithPortMigrationDetected) {
+  DomainReliabilityContext* context = CreateAndAddContext();
+
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/");
+  request.details.quic_port_migration_detected = true;
+  request.response_info.headers = nullptr;
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(1u, CountQueuedBeacons(context));
+}
+
 TEST_F(DomainReliabilityMonitorTest, ServerFailure) {
   DomainReliabilityContext* context = CreateAndAddContext();
 

@@ -294,6 +294,8 @@ bool DomainReliabilityMonitor::RequestInfo::ShouldReportRequest(
     return true;
   if (URLRequestStatusToNetError(request.status) != net::OK)
     return true;
+  if (request.details.quic_port_migration_detected)
+    return true;
 
   return false;
 }

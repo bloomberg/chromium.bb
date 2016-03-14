@@ -43,6 +43,9 @@ scoped_ptr<Value> DomainReliabilityBeacon::ToValue(
   beacon_value->SetString("protocol", protocol);
   if (details.quic_broken)
     beacon_value->SetBoolean("quic_broken", details.quic_broken);
+  if (details.quic_port_migration_detected)
+    beacon_value->SetBoolean("quic_port_migration_detected",
+                             details.quic_port_migration_detected);
   if (http_response_code >= 0)
     beacon_value->SetInteger("http_response_code", http_response_code);
   beacon_value->SetInteger("request_elapsed_ms", elapsed.InMilliseconds());

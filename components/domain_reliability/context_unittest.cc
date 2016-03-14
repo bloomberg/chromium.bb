@@ -33,7 +33,8 @@ typedef std::vector<const DomainReliabilityBeacon*> BeaconVector;
 scoped_ptr<DomainReliabilityBeacon> MakeCustomizedBeacon(
     MockableTime* time,
     std::string status,
-    std::string quic_error) {
+    std::string quic_error,
+    bool quic_port_migration_detected) {
   scoped_ptr<DomainReliabilityBeacon> beacon(new DomainReliabilityBeacon());
   beacon->url = GURL("https://localhost/");
   beacon->status = status;
@@ -43,6 +44,7 @@ scoped_ptr<DomainReliabilityBeacon> MakeCustomizedBeacon(
   beacon->was_proxied = false;
   beacon->protocol = "HTTP";
   beacon->details.quic_broken = true;
+  beacon->details.quic_port_migration_detected = quic_port_migration_detected;
   beacon->http_response_code = -1;
   beacon->elapsed = base::TimeDelta::FromMilliseconds(250);
   beacon->start_time = time->NowTicks() - beacon->elapsed;
@@ -52,7 +54,7 @@ scoped_ptr<DomainReliabilityBeacon> MakeCustomizedBeacon(
 }
 
 scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
-  return MakeCustomizedBeacon(time, "tcp.connection_reset", "");
+  return MakeCustomizedBeacon(time, "tcp.connection_reset", "", false);
 }
 
 template <typename ValueType,
@@ -255,7 +257,8 @@ TEST_F(DomainReliabilityContextTest,
 
 TEST_F(DomainReliabilityContextTest, ReportUpload) {
   InitContext(MakeTestConfig());
-  context_->OnBeacon(MakeBeacon(&time_));
+  context_->OnBeacon(
+      MakeCustomizedBeacon(&time_, "tcp.connection_reset", "", true));
 
   BeaconVector beacons;
   context_->GetQueuedBeaconsForTesting(&beacons);
@@ -274,6 +277,7 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   EXPECT_TRUE(HasBooleanValue(*entry, "network_changed", false));
   EXPECT_TRUE(HasStringValue(*entry, "protocol", "HTTP"));
   EXPECT_TRUE(HasBooleanValue(*entry, "quic_broken", true));
+  EXPECT_TRUE(HasBooleanValue(*entry, "quic_port_migration_detected", true));
   // N.B.: Assumes max_delay is 5 minutes.
   EXPECT_TRUE(HasIntegerValue(*entry, "request_age_ms", 300250));
   EXPECT_TRUE(HasIntegerValue(*entry, "request_elapsed_ms", 250));
@@ -322,7 +326,7 @@ TEST_F(DomainReliabilityContextTest,
        ReportUploadWithQuicProtocolErrorAndQuicError) {
   InitContext(MakeTestConfig());
   context_->OnBeacon(MakeCustomizedBeacon(&time_, "quic.protocol",
-                                          "quic.invalid.stream_data"));
+                                          "quic.invalid.stream_data", true));
 
   BeaconVector beacons;
   context_->GetQueuedBeaconsForTesting(&beacons);
@@ -338,6 +342,7 @@ TEST_F(DomainReliabilityContextTest,
   ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
 
   EXPECT_TRUE(HasBooleanValue(*entry, "quic_broken", true));
+  EXPECT_TRUE(HasBooleanValue(*entry, "quic_port_migration_detected", true));
   EXPECT_TRUE(HasStringValue(*entry, "status", "quic.protocol"));
   EXPECT_TRUE(HasStringValue(*entry, "quic_error", "quic.invalid.stream_data"));
 
@@ -384,7 +389,7 @@ TEST_F(DomainReliabilityContextTest,
        ReportUploadWithNonQuicProtocolErrorAndQuicError) {
   InitContext(MakeTestConfig());
   context_->OnBeacon(MakeCustomizedBeacon(&time_, "tcp.connection_reset",
-                                          "quic.invalid.stream_data"));
+                                          "quic.invalid.stream_data", false));
 
   BeaconVector beacons;
   context_->GetQueuedBeaconsForTesting(&beacons);
