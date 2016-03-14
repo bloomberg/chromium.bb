@@ -54,8 +54,6 @@ struct SideNumbers {
 
 class CSSBorderImageLengthBoxNonInterpolableValue : public NonInterpolableValue {
 public:
-    ~CSSBorderImageLengthBoxNonInterpolableValue() final { }
-
     static PassRefPtr<CSSBorderImageLengthBoxNonInterpolableValue> create(const SideNumbers& sideNumbers, Vector<RefPtr<NonInterpolableValue>>&& sideNonInterpolableValues)
     {
         return adoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(sideNumbers, std::move(sideNonInterpolableValues)));
@@ -86,8 +84,6 @@ namespace {
 
 class UnderlyingSideNumbersChecker : public InterpolationType::ConversionChecker {
 public:
-    ~UnderlyingSideNumbersChecker() final {}
-
     static PassOwnPtr<UnderlyingSideNumbersChecker> create(const SideNumbers& underlyingSideNumbers)
     {
         return adoptPtr(new UnderlyingSideNumbersChecker(underlyingSideNumbers));
@@ -111,33 +107,33 @@ private:
     const SideNumbers m_underlyingSideNumbers;
 };
 
-class ParentSideNumbersChecker : public InterpolationType::ConversionChecker {
+class InheritedSideNumbersChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentSideNumbersChecker> create(CSSPropertyID property, const SideNumbers& parentSideNumbers)
+    static PassOwnPtr<InheritedSideNumbersChecker> create(CSSPropertyID property, const SideNumbers& inheritedSideNumbers)
     {
-        return adoptPtr(new ParentSideNumbersChecker(property, parentSideNumbers));
+        return adoptPtr(new InheritedSideNumbersChecker(property, inheritedSideNumbers));
     }
 
 private:
-    ParentSideNumbersChecker(CSSPropertyID property, const SideNumbers& parentSideNumbers)
+    InheritedSideNumbersChecker(CSSPropertyID property, const SideNumbers& inheritedSideNumbers)
         : m_property(property)
-        , m_parentSideNumbers(parentSideNumbers)
+        , m_inheritedSideNumbers(inheritedSideNumbers)
     { }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
-        return m_parentSideNumbers == SideNumbers(BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(m_property, *environment.state().parentStyle()));
+        return m_inheritedSideNumbers == SideNumbers(BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(m_property, *environment.state().parentStyle()));
     }
 
     const CSSPropertyID m_property;
-    const SideNumbers m_parentSideNumbers;
+    const SideNumbers m_inheritedSideNumbers;
 };
 
 InterpolationValue convertBorderImageLengthBox(const BorderImageLengthBox& box, double zoom)
 {
     OwnPtr<InterpolableList> list = InterpolableList::create(SideIndexCount);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(SideIndexCount);
-    const BorderImageLength* sides[SideIndexCount];
+    const BorderImageLength* sides[SideIndexCount] = {};
     sides[SideTop] = &box.top();
     sides[SideRight] = &box.right();
     sides[SideBottom] = &box.bottom();
@@ -184,9 +180,9 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertInitial
 
 InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    const BorderImageLengthBox& parentBorderImageLengthBox = BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(cssProperty(), *state.parentStyle());
-    conversionCheckers.append(ParentSideNumbersChecker::create(cssProperty(), SideNumbers(parentBorderImageLengthBox)));
-    return convertBorderImageLengthBox(parentBorderImageLengthBox, state.parentStyle()->effectiveZoom());
+    const BorderImageLengthBox& inherited = BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(cssProperty(), *state.parentStyle());
+    conversionCheckers.append(InheritedSideNumbersChecker::create(cssProperty(), SideNumbers(inherited)));
+    return convertBorderImageLengthBox(inherited, state.parentStyle()->effectiveZoom());
 }
 
 InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
@@ -197,7 +193,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(c
     const CSSQuadValue& quad = toCSSQuadValue(value);
     OwnPtr<InterpolableList> list = InterpolableList::create(SideIndexCount);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(SideIndexCount);
-    const CSSPrimitiveValue* sides[SideIndexCount];
+    const CSSPrimitiveValue* sides[SideIndexCount] = {};
     sides[SideTop] = quad.top();
     sides[SideRight] = quad.right();
     sides[SideBottom] = quad.bottom();

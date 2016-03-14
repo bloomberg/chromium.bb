@@ -17,8 +17,8 @@ bool ImageSliceStyleInterpolation::usesDefaultInterpolation(const CSSValue& star
         return true;
     const CSSBorderImageSliceValue& startSlice = toCSSBorderImageSliceValue(start);
     const CSSBorderImageSliceValue& endSlice = toCSSBorderImageSliceValue(end);
-    return startSlice.slices()->top()->isPercentage() != endSlice.slices()->top()->isPercentage()
-        || startSlice.m_fill != endSlice.m_fill;
+    return startSlice.slices().top()->isPercentage() != endSlice.slices().top()->isPercentage()
+        || startSlice.fill() != endSlice.fill();
 }
 
 namespace {
@@ -39,7 +39,7 @@ private:
     {
         const size_t kQuadSides = 4;
         OwnPtr<InterpolableList> interpolableList = InterpolableList::create(kQuadSides);
-        const CSSQuadValue& quad = *value.slices();
+        const CSSQuadValue& quad = value.slices();
         interpolableList->set(0, InterpolableNumber::create(quad.top()->getDoubleValue()));
         interpolableList->set(1, InterpolableNumber::create(quad.right()->getDoubleValue()));
         interpolableList->set(2, InterpolableNumber::create(quad.bottom()->getDoubleValue()));
@@ -50,7 +50,7 @@ private:
             && quad.right()->isPercentage() == isPercentage);
 
         interpolableValue = interpolableList.release();
-        metadata = ImageSliceStyleInterpolation::Metadata {isPercentage, value.m_fill};
+        metadata = ImageSliceStyleInterpolation::Metadata {isPercentage, value.fill()};
     }
 };
 

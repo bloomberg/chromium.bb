@@ -34,6 +34,7 @@ CSSBorderImageSliceValue::CSSBorderImageSliceValue(PassRefPtrWillBeRawPtr<CSSQua
     , m_slices(slices)
     , m_fill(fill)
 {
+    ASSERT(m_slices);
 }
 
 String CSSBorderImageSliceValue::customCSSText() const

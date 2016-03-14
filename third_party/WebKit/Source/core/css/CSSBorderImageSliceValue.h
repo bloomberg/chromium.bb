@@ -41,19 +41,20 @@ public:
 
     String customCSSText() const;
 
-    CSSQuadValue* slices() const { return m_slices.get(); }
+    const CSSQuadValue& slices() const { return *m_slices; }
+    bool fill() const { return m_fill; }
 
     bool equals(const CSSBorderImageSliceValue&) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
+private:
+    CSSBorderImageSliceValue(PassRefPtrWillBeRawPtr<CSSQuadValue> slices, bool fill);
+
     // These four values are used to make "cuts" in the border image. They can be numbers
     // or percentages.
     RefPtrWillBeMember<CSSQuadValue> m_slices;
     bool m_fill;
-
-private:
-    CSSBorderImageSliceValue(PassRefPtrWillBeRawPtr<CSSQuadValue> slices, bool fill);
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSBorderImageSliceValue, isBorderImageSliceValue());

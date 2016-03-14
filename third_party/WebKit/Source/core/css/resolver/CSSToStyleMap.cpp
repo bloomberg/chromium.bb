@@ -500,15 +500,15 @@ void CSSToStyleMap::mapNinePieceImageSlice(StyleResolverState&, const CSSValue& 
 
     // Set up a length box to represent our image slices.
     LengthBox box;
-    CSSQuadValue* slices = borderImageSlice.slices();
-    box.m_top = convertBorderImageSliceSide(*slices->top());
-    box.m_bottom = convertBorderImageSliceSide(*slices->bottom());
-    box.m_left = convertBorderImageSliceSide(*slices->left());
-    box.m_right = convertBorderImageSliceSide(*slices->right());
+    const CSSQuadValue& slices = borderImageSlice.slices();
+    box.m_top = convertBorderImageSliceSide(*slices.top());
+    box.m_bottom = convertBorderImageSliceSide(*slices.bottom());
+    box.m_left = convertBorderImageSliceSide(*slices.left());
+    box.m_right = convertBorderImageSliceSide(*slices.right());
     image.setImageSlices(box);
 
     // Set our fill mode.
-    image.setFill(borderImageSlice.m_fill);
+    image.setFill(borderImageSlice.fill());
 }
 
 static BorderImageLength toBorderImageLength(CSSPrimitiveValue& value, const CSSToLengthConversionData& conversionData)
