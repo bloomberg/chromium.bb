@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class ImageBitmap;
+
 class MODULES_EXPORT OffscreenCanvasRenderingContext : public GarbageCollectedFinalized<OffscreenCanvasRenderingContext>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(OffscreenCanvasRenderingContext);
 public:
@@ -24,6 +26,7 @@ public:
 
     OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
     virtual ContextType getContextType() const = 0;
+    virtual PassRefPtrWillBeRawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&) = 0;
 
     virtual bool is2d() const { return false; }
 

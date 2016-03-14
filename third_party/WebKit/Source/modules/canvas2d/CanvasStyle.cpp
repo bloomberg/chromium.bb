@@ -69,7 +69,7 @@ bool parseColorOrCurrentColor(Color& parsedColor, const String& colorString, HTM
     case ParsedSystemColor:
         return true;
     case ParsedCurrentColor:
-        parsedColor = currentColor(canvas);
+        parsedColor = canvas ? currentColor(canvas) : Color::black;
         return true;
     case ParseFailed:
         return false;

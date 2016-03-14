@@ -4,6 +4,10 @@
 
 #include "modules/offscreencanvas/OffscreenCanvas.h"
 
+#include "core/dom/ExceptionCode.h"
+#if !ENABLE(OILPAN)
+#include "core/frame/ImageBitmap.h" // So ~RefPtr can call unref()
+#endif
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "modules/offscreencanvas/OffscreenCanvasRenderingContext.h"
 #include "modules/offscreencanvas/OffscreenCanvasRenderingContextFactory.h"
@@ -11,6 +15,13 @@
 #include "wtf/MathExtras.h"
 
 namespace blink {
+
+OffscreenCanvas::OffscreenCanvas(const IntSize& size)
+    : m_size(size)
+{ }
+
+OffscreenCanvas::~OffscreenCanvas()
+{ }
 
 OffscreenCanvas* OffscreenCanvas::create(unsigned width, unsigned height)
 {
@@ -25,11 +36,6 @@ void OffscreenCanvas::setWidth(unsigned width)
 void OffscreenCanvas::setHeight(unsigned height)
 {
     m_size.setHeight(clampTo<int>(height));
-}
-
-OffscreenCanvas::OffscreenCanvas(const IntSize& size)
-    : m_size(size)
-{
 }
 
 OffscreenCanvasRenderingContext2D* OffscreenCanvas::getContext(const String& id, const CanvasContextCreationAttributes& attributes)
@@ -57,6 +63,20 @@ OffscreenCanvasRenderingContext2D* OffscreenCanvas::getContext(const String& id,
     // the return type here should be changed to base class of all Offscreen
     // context types.
     return static_cast<OffscreenCanvasRenderingContext2D*>(m_context.get());
+}
+
+PassRefPtrWillBeRawPtr<ImageBitmap> OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionState)
+{
+    if (!m_context) {
+        exceptionState.throwDOMException(InvalidStateError, "Cannot transfer an ImageBitmap from an OffscreenCanvas with no context");
+        return nullptr;
+    }
+    RefPtrWillBeRawPtr<ImageBitmap> image = m_context->transferToImageBitmap(exceptionState);
+    if (!image) {
+        // Undocumented exception (not in spec)
+        exceptionState.throwDOMException(V8GeneralError, "Out of memory");
+    }
+    return image.release();
 }
 
 OffscreenCanvasRenderingContext2D* OffscreenCanvas::renderingContext() const

@@ -5,7 +5,10 @@
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 
 #include "bindings/modules/v8/UnionTypesModules.h"
+#include "core/frame/ImageBitmap.h"
 #include "platform/NotImplemented.h"
+#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "wtf/Assertions.h"
 
 #define UNIMPLEMENTED ASSERT_NOT_REACHED
@@ -31,13 +34,12 @@ DEFINE_TRACE(OffscreenCanvasRenderingContext2D)
 // BaseRenderingContext2D implementation
 bool OffscreenCanvasRenderingContext2D::originClean() const
 {
-    notImplemented();
-    return true;
+    return m_originClean;
 }
 
 void OffscreenCanvasRenderingContext2D::setOriginTainted()
 {
-    notImplemented();
+    m_originClean = false;
 }
 
 bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* source)
@@ -48,80 +50,101 @@ bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* sour
 
 int OffscreenCanvasRenderingContext2D::width() const
 {
-    return getOffscreenCanvas()->height();
+    return getOffscreenCanvas()->width();
 }
 
 int OffscreenCanvasRenderingContext2D::height() const
 {
-    return getOffscreenCanvas()->width();
+    return getOffscreenCanvas()->height();
 }
 
 bool OffscreenCanvasRenderingContext2D::hasImageBuffer() const
 {
-    notImplemented();
-    return false;
+    return !!m_imageBuffer;
 }
 
 ImageBuffer* OffscreenCanvasRenderingContext2D::imageBuffer() const
 {
-    notImplemented();
-    return nullptr;
+    if (!m_imageBuffer) {
+        // TODO: crbug.com/593514 Add support for GPU rendering
+        OffscreenCanvasRenderingContext2D* nonConstThis = const_cast<OffscreenCanvasRenderingContext2D*>(this);
+        nonConstThis->m_imageBuffer = ImageBuffer::create(IntSize(width(), height()), m_hasAlpha ? NonOpaque : Opaque, InitializeImagePixels);
+        // TODO: crbug.com/593349 Restore matrix and clip state on the new ImageBuffer.
+    }
+
+    return m_imageBuffer.get();
 }
 
-bool OffscreenCanvasRenderingContext2D::parseColorOrCurrentColor(Color&, const String& colorString) const
+PassRefPtrWillBeRawPtr<ImageBitmap> OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionState& exceptionState)
 {
-    notImplemented();
-    return false;
+    if (!imageBuffer())
+        return nullptr;
+    // TODO: crbug.com/593514 Add support for GPU rendering
+    RefPtr<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
+    RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
+    m_imageBuffer.clear(); // "Transfer" means no retained buffer
+    return ImageBitmap::create(image.release());
+}
+
+bool OffscreenCanvasRenderingContext2D::parseColorOrCurrentColor(Color& color, const String& colorString) const
+{
+    return ::blink::parseColorOrCurrentColor(color, colorString, nullptr);
 }
 
 SkCanvas* OffscreenCanvasRenderingContext2D::drawingCanvas() const
 {
-    notImplemented();
-    return nullptr;
+    ImageBuffer* buffer = imageBuffer();
+    if (!buffer)
+        return nullptr;
+    return imageBuffer()->canvas();
 }
 
 SkCanvas* OffscreenCanvasRenderingContext2D::existingDrawingCanvas() const
 {
-    notImplemented();
-    return nullptr;
+    if (!m_imageBuffer)
+        return nullptr;
+    return m_imageBuffer->canvas();
 }
 
 void OffscreenCanvasRenderingContext2D::disableDeferral(DisableDeferralReason)
-{
-    notImplemented();
-}
+{ }
 
 AffineTransform OffscreenCanvasRenderingContext2D::baseTransform() const
 {
-    notImplemented();
-    return 0;
+    if (!m_imageBuffer)
+        return AffineTransform(); // identity
+    return m_imageBuffer->baseTransform();
 }
 
 void OffscreenCanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect)
-{
-    notImplemented();
-}
+{ }
 
 bool OffscreenCanvasRenderingContext2D::stateHasFilter()
 {
-    notImplemented();
+    // TODO: crbug.com/593838 make hasFilter accept nullptr
+    // return state().hasFilter(nullptr, nullptr, IntSize(width(), height()), this);
     return false;
 }
 
 SkImageFilter* OffscreenCanvasRenderingContext2D::stateGetFilter()
 {
-    notImplemented();
+    // TODO: make getFilter accept nullptr
+    // return state().getFilter(nullptr, nullptr, IntSize(width(), height()), this);
     return nullptr;
 }
 
 void OffscreenCanvasRenderingContext2D::validateStateStack()
 {
-    notImplemented();
+#if ENABLE(ASSERT)
+    SkCanvas* skCanvas = existingDrawingCanvas();
+    if (skCanvas) {
+        ASSERT(static_cast<size_t>(skCanvas->getSaveCount()) == m_stateStack.size());
+    }
+#endif
 }
 
 bool OffscreenCanvasRenderingContext2D::isContextLost() const
 {
-    notImplemented();
     return false;
 }
 

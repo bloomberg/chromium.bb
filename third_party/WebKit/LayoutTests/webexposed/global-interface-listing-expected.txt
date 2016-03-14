@@ -3996,21 +3996,29 @@ interface OffscreenCanvas
     getter width
     method constructor
     method getContext
+    method transferToImageBitmap
     setter height
     setter width
 interface OffscreenCanvasRenderingContext2D
     attribute @@toStringTag
+    getter fillStyle
     getter offscreenCanvas
+    getter strokeStyle
     method arc
     method arcTo
     method bezierCurveTo
+    method clearRect
     method closePath
     method constructor
     method ellipse
+    method fillRect
     method lineTo
     method moveTo
     method quadraticCurveTo
     method rect
+    method strokeRect
+    setter fillStyle
+    setter strokeStyle
 interface Option
     method constructor
 interface OscillatorNode : AudioSourceNode

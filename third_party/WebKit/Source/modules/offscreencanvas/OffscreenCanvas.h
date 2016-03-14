@@ -15,6 +15,7 @@
 namespace blink {
 
 class CanvasContextCreationAttributes;
+class ImageBitmap;
 class OffscreenCanvasRenderingContext;
 class OffscreenCanvasRenderingContext2D;
 class OffscreenCanvasRenderingContextFactory;
@@ -23,15 +24,19 @@ class MODULES_EXPORT OffscreenCanvas final : public GarbageCollectedFinalized<Of
     DEFINE_WRAPPERTYPEINFO();
 public:
     static OffscreenCanvas* create(unsigned width, unsigned height);
-    ~OffscreenCanvas() {}
+    ~OffscreenCanvas();
 
-    IntSize size() const { return m_size; }
+    // IDL attributes
     unsigned width() const { return m_size.width(); }
     unsigned height() const { return m_size.height(); }
     void setWidth(unsigned);
     void setHeight(unsigned);
 
+    // API Methods
     OffscreenCanvasRenderingContext2D* getContext(const String&, const CanvasContextCreationAttributes&);
+    PassRefPtrWillBeRawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&);
+
+    IntSize size() const { return m_size; }
     OffscreenCanvasRenderingContext2D* renderingContext() const;
 
     static void registerRenderingContextFactory(PassOwnPtr<OffscreenCanvasRenderingContextFactory>);

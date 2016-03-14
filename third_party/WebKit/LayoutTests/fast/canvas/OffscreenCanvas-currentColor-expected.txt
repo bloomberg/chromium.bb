@@ -1,0 +1,11 @@
+Test that the fill and stroke style attribute yield opaque black when set to 'currentcolor' on an OffscreenCanvasRenderingContext2D
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ctx.fillStyle is '#000000'
+PASS ctx.strokeStyle is '#000000'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

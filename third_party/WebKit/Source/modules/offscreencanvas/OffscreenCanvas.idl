@@ -15,5 +15,6 @@ typedef OffscreenCanvasRenderingContext2D OffscreenRenderingContext;
     [EnforceRange] attribute unsigned long width;
     [EnforceRange] attribute unsigned long height;
 
-    OffscreenRenderingContext? getContext(DOMString contextId, optional CanvasContextCreationAttributes attributes); 
+    OffscreenRenderingContext? getContext(DOMString contextId, optional CanvasContextCreationAttributes attributes);
+    [RaisesException] ImageBitmap transferToImageBitmap();
 };

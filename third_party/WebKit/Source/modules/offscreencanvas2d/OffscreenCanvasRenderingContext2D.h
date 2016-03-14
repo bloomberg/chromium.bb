@@ -67,12 +67,16 @@ public:
     bool hasAlpha() const override { return m_hasAlpha; }
     bool isContextLost() const override;
 
+    PassRefPtrWillBeRawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&) final;
+
 protected:
     OffscreenCanvasRenderingContext2D(OffscreenCanvas*, const CanvasContextCreationAttributes& attrs);
     DECLARE_VIRTUAL_TRACE();
 
 private:
     bool m_hasAlpha;
+    bool m_originClean = true;
+    OwnPtr<ImageBuffer> m_imageBuffer;
 };
 
 } // namespace blink
