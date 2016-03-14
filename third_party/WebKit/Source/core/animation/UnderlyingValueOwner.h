@@ -7,6 +7,7 @@
 
 #include "core/animation/TypedInterpolationValue.h"
 #include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -14,6 +15,7 @@ namespace blink {
 // Ensures we perform copy on write if we are not the owner of an underlying InterpolationValue.
 // This functions similar to a DataRef except on OwnPtr'd objects.
 class UnderlyingValueOwner {
+    WTF_MAKE_NONCOPYABLE(UnderlyingValueOwner);
     STACK_ALLOCATED();
 
 public:
