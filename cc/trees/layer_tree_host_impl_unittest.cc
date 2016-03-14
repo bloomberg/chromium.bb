@@ -9564,8 +9564,8 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
 
   // The instant scroll should have marked the smooth scroll animation as
   // aborted.
-  EXPECT_FALSE(
-      host_impl_->animation_host()->HasActiveAnimation(scrolling_layer->id()));
+  EXPECT_FALSE(host_impl_->animation_host()->HasActiveAnimationForTesting(
+      scrolling_layer->id()));
 
   EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(0, y + 50),
                       scrolling_layer->CurrentScrollOffset());
@@ -9624,8 +9624,8 @@ TEST_F(LayerTreeHostImplTimelinesTest,
 
   // The main thread scrolling reason should have marked the smooth scroll
   // animation as finished.
-  EXPECT_FALSE(
-      host_impl_->animation_host()->HasActiveAnimation(scrolling_layer->id()));
+  EXPECT_FALSE(host_impl_->animation_host()->HasActiveAnimationForTesting(
+      scrolling_layer->id()));
   EXPECT_TRUE(y > 1 && y < 49);
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
   host_impl_->DidFinishImplFrame();

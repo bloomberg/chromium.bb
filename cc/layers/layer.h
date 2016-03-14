@@ -405,8 +405,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
-  bool HasActiveAnimation() const;
-
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 
   virtual skia::RefPtr<SkPicture> GetPicture() const;
@@ -527,7 +525,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void OnTransformAnimated(const gfx::Transform& transform);
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
   void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
-  bool IsActive() const;
+  bool HasActiveAnimationForTesting() const;
 
  protected:
   friend class LayerImpl;

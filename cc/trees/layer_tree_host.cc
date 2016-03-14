@@ -1404,9 +1404,10 @@ bool LayerTreeHost::HasAnyAnimation(const Layer* layer) const {
                          : false;
 }
 
-bool LayerTreeHost::HasActiveAnimation(const Layer* layer) const {
-  return animation_host_ ? animation_host_->HasActiveAnimation(layer->id())
-                         : false;
+bool LayerTreeHost::HasActiveAnimationForTesting(const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->HasActiveAnimationForTesting(layer->id())
+             : false;
 }
 
 bool LayerTreeHost::IsSingleThreaded() const {

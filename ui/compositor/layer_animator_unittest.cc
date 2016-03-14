@@ -2526,18 +2526,21 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
   Layer layer;
   root_1.Add(&layer);
   LayerAnimator* animator = layer.GetAnimator();
+  EXPECT_FALSE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
+
   double target_opacity = 1.0;
   base::TimeDelta time_delta = base::TimeDelta::FromSeconds(1);
+
   animator->ScheduleAnimation(new LayerAnimationSequence(
       LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta)));
   EXPECT_TRUE(compositor_1->layer_animator_collection()->HasActiveAnimators());
   EXPECT_FALSE(compositor_2->layer_animator_collection()->HasActiveAnimators());
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimation());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
 
   root_2.Add(&layer);
   EXPECT_FALSE(compositor_1->layer_animator_collection()->HasActiveAnimators());
   EXPECT_TRUE(compositor_2->layer_animator_collection()->HasActiveAnimators());
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimation());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
 
   host_2.reset();
   host_1.reset();
@@ -2564,13 +2567,16 @@ TEST(LayerAnimatorTest, ThreadedAnimationSurvivesIfLayerRemovedAdded) {
   LayerAnimator* animator = layer.GetAnimator();
   double target_opacity = 1.0;
   base::TimeDelta time_delta = base::TimeDelta::FromSeconds(1);
+
   animator->ScheduleAnimation(new LayerAnimationSequence(
       LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta)));
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
 
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimation());
   root.Remove(&layer);
+  EXPECT_FALSE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
+
   root.Add(&layer);
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimation());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimationForTesting());
 
   host.reset();
   TerminateContextFactoryForTests();

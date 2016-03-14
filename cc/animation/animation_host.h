@@ -141,7 +141,7 @@ class CC_EXPORT AnimationHost {
                            float* start_scale) const;
 
   bool HasAnyAnimation(int layer_id) const;
-  bool HasActiveAnimation(int layer_id) const;
+  bool HasActiveAnimationForTesting(int layer_id) const;
 
   void ImplOnlyScrollAnimationCreate(int layer_id,
                                      const gfx::ScrollOffset& target_offset,

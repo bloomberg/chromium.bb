@@ -1807,13 +1807,9 @@ void Layer::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
   }
 }
 
-bool Layer::IsActive() const {
-  return true;
-}
-
-bool Layer::HasActiveAnimation() const {
-  DCHECK(layer_tree_host_);
-  return layer_tree_host_->HasActiveAnimation(this);
+bool Layer::HasActiveAnimationForTesting() const {
+  return layer_tree_host_ ? layer_tree_host_->HasActiveAnimationForTesting(this)
+                          : false;
 }
 
 ScrollbarLayerInterface* Layer::ToScrollbarLayer() {

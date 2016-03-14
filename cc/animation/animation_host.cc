@@ -576,7 +576,7 @@ bool AnimationHost::HasAnyAnimation(int layer_id) const {
   return controller ? controller->has_any_animation() : false;
 }
 
-bool AnimationHost::HasActiveAnimation(int layer_id) const {
+bool AnimationHost::HasActiveAnimationForTesting(int layer_id) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller ? controller->HasActiveAnimation() : false;
 }

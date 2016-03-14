@@ -396,7 +396,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                                         TargetProperty::Type property) const;
   bool AnimationsPreserveAxisAlignment(const Layer* layer) const;
   bool HasAnyAnimation(const Layer* layer) const;
-  bool HasActiveAnimation(const Layer* layer) const;
+  bool HasActiveAnimationForTesting(const Layer* layer) const;
 
   // Serializes the parts of this LayerTreeHost that is needed for a commit to a
   // protobuf message. Not all members are serialized as they are not helpful

@@ -212,7 +212,7 @@ void WebLayerImpl::setBackgroundFilters(const cc::FilterOperations& filters) {
 }
 
 bool WebLayerImpl::hasActiveAnimationForTesting() {
-  return layer_->HasActiveAnimation();
+  return layer_->HasActiveAnimationForTesting();
 }
 
 void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {
