@@ -150,7 +150,7 @@ class MockGnubbyAuthHandler : public GnubbyAuthHandler {
                void(int connection_id, const std::string& response));
   MOCK_METHOD1(SendErrorAndCloseConnection, void(int connection_id));
   MOCK_CONST_METHOD0(GetActiveConnectionCountForTest, size_t());
-  MOCK_METHOD1(SetRequestTimeoutForTest, void(const base::TimeDelta& timeout));
+  MOCK_METHOD1(SetRequestTimeoutForTest, void(base::TimeDelta timeout));
 
   void SetSendMessageCallback(
       const GnubbyAuthHandler::SendMessageCallback& callback) override;

@@ -216,6 +216,8 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "fake_oauth_token_getter.cc",
       "fake_oauth_token_getter.h",
       "host_mock_objects.cc",
+      "security_key/fake_remote_security_key_ipc_client.cc",
+      "security_key/fake_remote_security_key_ipc_client.h",
       "setup/mock_oauth_client.cc",
       "setup/mock_oauth_client.h",
     ]
@@ -285,6 +287,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "screen_resolution_unittest.cc",
       "security_key/gnubby_auth_handler_linux_unittest.cc",
       "security_key/gnubby_extension_session_unittest.cc",
+      "security_key/remote_security_key_ipc_server_unittest.cc",
       "server_log_entry_host_unittest.cc",
       "setup/me2me_native_messaging_host_unittest.cc",
       "setup/oauth_helper_unittest.cc",

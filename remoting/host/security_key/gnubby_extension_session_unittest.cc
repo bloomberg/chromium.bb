@@ -71,7 +71,7 @@ class TestClientStub : public protocol::ClientStub {
   // protocol::CursorShapeStub implementation.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override {}
 
-  void WaitForDeliverHostMessage(const base::TimeDelta& max_timeout) {
+  void WaitForDeliverHostMessage(base::TimeDelta max_timeout) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop_->QuitClosure(), max_timeout);
     run_loop_->Run();

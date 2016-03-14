@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 
 namespace base {
 class FilePath;
-class TimeDelta;
 }  // namespace base
 
 namespace remoting {
@@ -59,7 +59,7 @@ class GnubbyAuthHandler {
   virtual size_t GetActiveConnectionCountForTest() const = 0;
 
   // Sets the timeout used when waiting for a gnubby response.
-  virtual void SetRequestTimeoutForTest(const base::TimeDelta& timeout) = 0;
+  virtual void SetRequestTimeoutForTest(base::TimeDelta timeout) = 0;
 };
 
 }  // namespace remoting

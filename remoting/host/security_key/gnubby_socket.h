@@ -34,7 +34,7 @@ namespace remoting {
 class GnubbySocket {
  public:
   GnubbySocket(scoped_ptr<net::StreamSocket> socket,
-               const base::TimeDelta& timeout,
+               base::TimeDelta timeout,
                const base::Closure& timeout_callback);
   ~GnubbySocket();
 

@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include <stdint.h>
 #include <unistd.h>
 
@@ -64,7 +65,7 @@ class GnubbyAuthHandlerLinux : public GnubbyAuthHandler {
   void SendErrorAndCloseConnection(int gnubby_connection_id) override;
   void SetSendMessageCallback(const SendMessageCallback& callback) override;
   size_t GetActiveConnectionCountForTest() const override;
-  void SetRequestTimeoutForTest(const base::TimeDelta& timeout) override;
+  void SetRequestTimeoutForTest(base::TimeDelta timeout) override;
 
   // Starts listening for connection.
   void DoAccept();
@@ -200,8 +201,7 @@ size_t GnubbyAuthHandlerLinux::GetActiveConnectionCountForTest() const {
   return active_sockets_.size();
 }
 
-void GnubbyAuthHandlerLinux::SetRequestTimeoutForTest(
-    const base::TimeDelta& timeout) {
+void GnubbyAuthHandlerLinux::SetRequestTimeoutForTest(base::TimeDelta timeout) {
   request_timeout_ = timeout;
 }
 

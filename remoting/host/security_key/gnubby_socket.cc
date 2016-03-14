@@ -27,7 +27,7 @@ const char kSshError[] = {0x05};
 }  // namespace
 
 GnubbySocket::GnubbySocket(scoped_ptr<net::StreamSocket> socket,
-                           const base::TimeDelta& timeout,
+                           base::TimeDelta timeout,
                            const base::Closure& timeout_callback)
     : socket_(std::move(socket)),
       read_completed_(false),
