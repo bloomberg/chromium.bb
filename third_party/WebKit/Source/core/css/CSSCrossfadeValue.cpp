@@ -243,9 +243,7 @@ PassRefPtr<Image> CSSCrossfadeValue::image(const LayoutObject* layoutObject, con
     if (toImage->isSVGImage())
         toImageRef = SVGImageForContainer::create(toSVGImage(toImage), size, 1, urlForCSSValue(m_toValue.get()));
 
-    m_generatedImage = CrossfadeGeneratedImage::create(fromImageRef, toImageRef, m_percentageValue->getFloatValue(), fixedSize(layoutObject, FloatSize(size)), size);
-
-    return m_generatedImage.release();
+    return CrossfadeGeneratedImage::create(fromImageRef, toImageRef, m_percentageValue->getFloatValue(), fixedSize(layoutObject, FloatSize(size)), size);
 }
 
 void CSSCrossfadeValue::crossfadeChanged(const IntRect&)

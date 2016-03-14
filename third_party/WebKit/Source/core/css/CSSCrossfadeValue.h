@@ -104,8 +104,6 @@ private:
     RefPtrWillBeMember<ImageResource> m_cachedFromImage;
     RefPtrWillBeMember<ImageResource> m_cachedToImage;
 
-    RefPtr<Image> m_generatedImage;
-
     CrossfadeSubimageObserverProxy m_crossfadeSubimageObserver;
 };
 
