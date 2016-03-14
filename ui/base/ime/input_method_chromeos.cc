@@ -361,7 +361,10 @@ void InputMethodChromeOS::ProcessFilteredKeyPressEvent(ui::KeyEvent* event) {
   }
   ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
                                 VKEY_PROCESSKEY,
-                                event->flags());
+                                event->code(),
+                                event->flags(),
+                                event->GetDomKey(),
+                                event->time_stamp());
   ignore_result(DispatchKeyEventPostIME(&fabricated_event));
   if (fabricated_event.stopped_propagation())
     event->StopPropagation();

@@ -951,4 +951,27 @@ TEST_F(InputMethodChromeOSKeyEventTest, StopPropagationTest) {
   EXPECT_EQ(L'A', inserted_char_);
 }
 
+TEST_F(InputMethodChromeOSKeyEventTest, DeadKeyPressTest) {
+  // Preparation.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+
+  ui::KeyEvent eventA(ET_KEY_PRESSED,
+                      VKEY_OEM_4, // '['
+                      DomCode::BRACKET_LEFT,
+                      0,
+                      DomKey::DeadKeyFromCombiningCharacter('^'),
+                      EventTimeForNow());
+  ime_->ProcessKeyEventPostIME(&eventA, true);
+
+  const ui::KeyEvent& key_event = dispatched_key_event_;
+
+  EXPECT_EQ(ET_KEY_PRESSED, key_event.type());
+  EXPECT_EQ(VKEY_PROCESSKEY, key_event.key_code());
+  EXPECT_EQ(eventA.code(), key_event.code());
+  EXPECT_EQ(eventA.flags(), key_event.flags());
+  EXPECT_EQ(eventA.GetDomKey(), key_event.GetDomKey());
+  EXPECT_EQ(eventA.time_stamp(), key_event.time_stamp());
+}
+
 }  // namespace ui
