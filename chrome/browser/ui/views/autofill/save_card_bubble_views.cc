@@ -97,7 +97,8 @@ bool SaveCardBubbleViews::Accept() {
 }
 
 bool SaveCardBubbleViews::Cancel() {
-  controller_->OnCancelButton();
+  if (controller_)
+    controller_->OnCancelButton();
   return true;
 }
 
