@@ -20,6 +20,7 @@
       ],
       'sources': [
         '<@(remoting_client_sources)',
+        '<@(remoting_client_standalone_sources)',
       ],
     },  # end of target 'remoting_client'
 

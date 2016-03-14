@@ -231,6 +231,7 @@
         'base/typed_buffer_unittest.cc',
         'base/util_unittest.cc',
         'client/audio_player_unittest.cc',
+        'client/chromoting_client_runtime_unittest.cc',
         'client/client_status_logger_unittest.cc',
         'client/empty_cursor_filter_unittest.cc',
         'client/key_event_mapper_unittest.cc',
