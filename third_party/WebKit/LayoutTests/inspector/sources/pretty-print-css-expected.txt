@@ -62,3 +62,16 @@ badbraces {
 </style></body></html>
 ------ >8 ======
 
+Running: testNonZeroLineMapping
+====== 8< ------
+
+
+div {
+    color: red;
+}
+
+------ >8 ======
+Correct mapping for <div>
+Correct mapping for <color>
+Correct mapping for <red>
+

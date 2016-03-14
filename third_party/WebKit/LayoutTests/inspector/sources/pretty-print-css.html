@@ -44,7 +44,13 @@ function test()
         {
             var content = "<html><body><style>@-webkit-keyframes{from{left: 0} to{left:100px;}}</style><style>badbraces { }} @media screen{a{color:red;text-decoration: none}}</style></body></html>";
             InspectorTest.testPrettyPrint("text/html", content, [], next);
-        }
+        },
+
+        function testNonZeroLineMapping(next)
+        {
+            var mappingQueries = ["div", "color", "red"];
+            testCSSFormatter("\n\ndiv { color: red; }", mappingQueries, next);
+        },
     ]);
 }
 
