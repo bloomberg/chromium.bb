@@ -595,7 +595,7 @@ TEST_F('BackgroundTest', 'Checkbox', function() {
 });
 
 /** Tests navigating into and out of iframes.. */
-TEST_F('BackgroundTest', 'ForwardNavigationThroughIframes', function() {
+TEST_F('BackgroundTest', 'DISABLED_ForwardNavigationThroughIframes', function() {
   var mockFeedback = this.createMockFeedback();
 
   var runTestIfIframeIsLoaded = function(rootNode) {
