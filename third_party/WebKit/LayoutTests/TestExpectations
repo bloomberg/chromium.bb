@@ -1222,7 +1222,6 @@ crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
-crbug.com/589525 svg/text/lengthAdjust-text-metrics.html [ NeedsRebaseline ]
 crbug.com/589525 svg/text/ligature-queries.html [ NeedsRebaseline ]
 crbug.com/589525 svg/text/select-textLength-spacing-squeeze-1.svg [ NeedsRebaseline ]
 crbug.com/589525 svg/text/select-textLength-spacing-squeeze-2.svg [ NeedsRebaseline ]
