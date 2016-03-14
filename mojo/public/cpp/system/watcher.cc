@@ -96,7 +96,9 @@ void Watcher::Cancel() {
   MojoResult result =
       MojoCancelWatch(handle_.value(), reinterpret_cast<uintptr_t>(this));
   message_loop_observer_.reset();
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+  // |result| may be MOJO_RESULT_INVALID_ARGUMENT if |handle_| has closed, but
+  // OnHandleReady has not yet been called.
+  DCHECK(result == MOJO_RESULT_INVALID_ARGUMENT || result == MOJO_RESULT_OK);
   handle_.set_value(kInvalidHandleValue);
   callback_.Reset();
 }

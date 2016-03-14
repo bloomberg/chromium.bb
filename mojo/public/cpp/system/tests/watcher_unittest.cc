@@ -182,5 +182,25 @@ TEST_F(WatcherTest, NotifyOnMessageLoopDestruction) {
   b_watcher.Cancel();
 }
 
+TEST_F(WatcherTest, CloseAndCancel) {
+  ScopedMessagePipeHandle a, b;
+  CreateMessagePipe(nullptr, &a, &b);
+
+  Watcher b_watcher;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            b_watcher.Start(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                            OnReady([](MojoResult result) { FAIL(); })));
+  EXPECT_TRUE(b_watcher.IsWatching());
+
+  // This should trigger the watcher above...
+  b.reset();
+  // ...but the watcher is cancelled first.
+  b_watcher.Cancel();
+
+  EXPECT_FALSE(b_watcher.IsWatching());
+
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace
 }  // namespace mojo
