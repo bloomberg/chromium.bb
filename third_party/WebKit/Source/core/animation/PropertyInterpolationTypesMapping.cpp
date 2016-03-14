@@ -349,11 +349,10 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
             || attribute == SVGNames::yChannelSelectorAttr) {
             // Use default SVGValueInterpolationType.
         } else {
-            fallbackToLegacy = true;
+            ASSERT_NOT_REACHED();
         }
 
-        if (!fallbackToLegacy)
-            applicableTypes->append(adoptPtr(new SVGValueInterpolationType(attribute)));
+        applicableTypes->append(adoptPtr(new SVGValueInterpolationType(attribute)));
     }
 
     auto addResult = applicableTypesMap.add(property, fallbackToLegacy ? nullptr : applicableTypes.release());
