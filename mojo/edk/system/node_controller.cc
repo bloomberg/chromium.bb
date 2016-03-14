@@ -429,19 +429,22 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
 }
 
 void NodeController::AcceptIncomingMessages() {
-  std::queue<ports::ScopedMessage> messages;
   for (;;) {
     // TODO: We may need to be more careful to avoid starving the rest of the
     // thread here. Revisit this if it turns out to be a problem. One
     // alternative would be to schedule a task to continue pumping messages
     // after flushing once.
 
-    {
-      base::AutoLock lock(messages_lock_);
-      if (incoming_messages_.empty())
-        break;
-      std::swap(messages, incoming_messages_);
+    messages_lock_.Acquire();
+    if (incoming_messages_.empty()) {
+      messages_lock_.Release();
+      break;
     }
+    // libstdc++'s deque creates an internal buffer on construction, even when
+    // the size is 0. So avoid creating it until it is necessary.
+    std::queue<ports::ScopedMessage> messages;
+    std::swap(messages, incoming_messages_);
+    messages_lock_.Release();
 
     while (!messages.empty()) {
       node_->AcceptMessage(std::move(messages.front()));
@@ -756,7 +759,6 @@ void NodeController::OnPortsMessage(Channel::MessagePtr channel_message) {
 
   node_->AcceptMessage(std::move(message));
   AcceptIncomingMessages();
-  AttemptShutdownIfRequested();
 }
 
 void NodeController::OnRequestPortMerge(
