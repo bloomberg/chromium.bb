@@ -98,8 +98,9 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_.reset(new WebMediaPlayerImpl(
         web_local_frame_, &client_, nullptr,
         base::WeakPtr<WebMediaPlayerDelegate>(),
-        make_scoped_ptr(new DefaultRendererFactory(media_log_, nullptr, nullptr,
-                                                   audio_hardware_config_)),
+        make_scoped_ptr(new DefaultRendererFactory(
+            media_log_, nullptr, DefaultRendererFactory::GetGpuFactoriesCB(),
+            audio_hardware_config_)),
         url_index_,
         WebMediaPlayerParams(
             WebMediaPlayerParams::DeferLoadCB(),

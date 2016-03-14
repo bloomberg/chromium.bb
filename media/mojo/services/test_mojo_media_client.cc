@@ -40,8 +40,9 @@ void TestMojoMediaClient::Initialize() {
 scoped_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<MediaLog>& media_log) {
   DVLOG(1) << __FUNCTION__;
-  return make_scoped_ptr(new DefaultRendererFactory(media_log, nullptr, nullptr,
-                                                    *audio_hardware_config_));
+  return make_scoped_ptr(new DefaultRendererFactory(
+      media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB(),
+      *audio_hardware_config_));
 }
 
 AudioRendererSink* TestMojoMediaClient::CreateAudioRendererSink() {

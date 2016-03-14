@@ -25,9 +25,11 @@ class VideoRendererSink;
 // The default factory class for creating RendererImpl.
 class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
  public:
+  using GetGpuFactoriesCB = base::Callback<GpuVideoAcceleratorFactories*()>;
+
   DefaultRendererFactory(const scoped_refptr<MediaLog>& media_log,
                          DecoderFactory* decoder_factory,
-                         GpuVideoAcceleratorFactories* gpu_factories,
+                         const GetGpuFactoriesCB& get_gpu_factories_cb,
                          const AudioHardwareConfig& audio_hardware_config);
   ~DefaultRendererFactory() final;
 
@@ -43,7 +45,8 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
   ScopedVector<VideoDecoder> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const RequestSurfaceCB& request_surface_cb);
+      const RequestSurfaceCB& request_surface_cb,
+      GpuVideoAcceleratorFactories* gpu_factories);
 
   scoped_refptr<MediaLog> media_log_;
 
@@ -51,8 +54,8 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
   // Could be nullptr if not extra decoders are available.
   DecoderFactory* decoder_factory_;
 
-  // Factories for supporting video accelerators. May be null.
-  GpuVideoAcceleratorFactories* gpu_factories_;
+  // Creates factories for supporting video accelerators. May be null.
+  GetGpuFactoriesCB get_gpu_factories_cb_;
 
   const AudioHardwareConfig& audio_hardware_config_;
 

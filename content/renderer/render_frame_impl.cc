@@ -2470,7 +2470,9 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
   if (!media_renderer_factory.get()) {
     media_renderer_factory.reset(new media::DefaultRendererFactory(
-        media_log, GetDecoderFactory(), render_thread->GetGpuFactories(),
+        media_log, GetDecoderFactory(),
+        base::Bind(&RenderThreadImpl::GetGpuFactories,
+                   base::Unretained(render_thread)),
         *render_thread->GetAudioHardwareConfig()));
   }
 #endif  // defined(ENABLE_MOJO_RENDERER)

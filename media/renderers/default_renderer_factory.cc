@@ -34,11 +34,11 @@ namespace media {
 DefaultRendererFactory::DefaultRendererFactory(
     const scoped_refptr<MediaLog>& media_log,
     DecoderFactory* decoder_factory,
-    GpuVideoAcceleratorFactories* gpu_factories,
+    const GetGpuFactoriesCB& get_gpu_factories_cb,
     const AudioHardwareConfig& audio_hardware_config)
     : media_log_(media_log),
       decoder_factory_(decoder_factory),
-      gpu_factories_(gpu_factories),
+      get_gpu_factories_cb_(get_gpu_factories_cb),
       audio_hardware_config_(audio_hardware_config) {}
 
 DefaultRendererFactory::~DefaultRendererFactory() {
@@ -64,19 +64,20 @@ ScopedVector<AudioDecoder> DefaultRendererFactory::CreateAudioDecoders(
 
 ScopedVector<VideoDecoder> DefaultRendererFactory::CreateVideoDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const RequestSurfaceCB& request_surface_cb) {
+    const RequestSurfaceCB& request_surface_cb,
+    GpuVideoAcceleratorFactories* gpu_factories) {
   // Create our video decoders and renderer.
   ScopedVector<VideoDecoder> video_decoders;
 
   // |gpu_factories_| requires that its entry points be called on its
   // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
   // factories, require that their message loops are identical.
-  DCHECK(!gpu_factories_ ||
-         (gpu_factories_->GetTaskRunner() == media_task_runner.get()));
+  DCHECK(!gpu_factories ||
+         (gpu_factories->GetTaskRunner() == media_task_runner.get()));
 
-  if (gpu_factories_)
+  if (gpu_factories)
     video_decoders.push_back(
-        new GpuVideoDecoder(gpu_factories_, request_surface_cb));
+        new GpuVideoDecoder(gpu_factories, request_surface_cb));
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(new VpxVideoDecoder());
@@ -105,10 +106,14 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
                             CreateAudioDecoders(media_task_runner),
                             audio_hardware_config_, media_log_));
 
+  GpuVideoAcceleratorFactories* gpu_factories = nullptr;
+  if (!get_gpu_factories_cb_.is_null())
+    gpu_factories = get_gpu_factories_cb_.Run();
+
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       media_task_runner, worker_task_runner, video_renderer_sink,
-      CreateVideoDecoders(media_task_runner, request_surface_cb), true,
-      gpu_factories_, media_log_));
+      CreateVideoDecoders(media_task_runner, request_surface_cb, gpu_factories),
+      true, gpu_factories, media_log_));
 
   return scoped_ptr<Renderer>(new RendererImpl(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer)));
