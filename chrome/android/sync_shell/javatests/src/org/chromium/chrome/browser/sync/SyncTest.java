@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ActivityState;
@@ -120,8 +121,12 @@ public class SyncTest extends SyncTestBase {
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
-    @LargeTest
-    @Feature({"Sync"})
+    /*
+     * @LargeTest
+     * @Feature({"Sync"})
+     * BUG = crbug.com/594558
+     */
+    @FlakyTest
     public void testStopAndStartSyncThroughAndroid() throws InterruptedException {
         Account account = setUpTestAccountAndSignInToSync();
         SyncTestUtil.waitForSyncActive();
