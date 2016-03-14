@@ -31,8 +31,7 @@ void ExtensionsAPIClient::AddAdditionalValueStoreCaches(
     const scoped_refptr<SettingsStorageFactory>& factory,
     const scoped_refptr<base::ObserverListThreadSafe<SettingsObserver>>&
         observers,
-    std::map<settings_namespace::Namespace, ValueStoreCache*>* caches) {
-}
+    std::map<settings_namespace::Namespace, ValueStoreCache*>* caches) {}
 
 void ExtensionsAPIClient::AttachWebContentsHelpers(
     content::WebContents* web_contents) const {

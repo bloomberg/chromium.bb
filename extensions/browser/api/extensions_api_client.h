@@ -38,16 +38,16 @@ class ExtensionOptionsGuestDelegate;
 class ManagementAPIDelegate;
 class MimeHandlerViewGuest;
 class MimeHandlerViewGuestDelegate;
-class WebViewGuest;
-class WebViewGuestDelegate;
-class WebViewPermissionHelper;
-class WebViewPermissionHelperDelegate;
-class WebRequestEventRouterDelegate;
 class RulesCacheDelegate;
 class SettingsObserver;
 class SettingsStorageFactory;
 class ValueStoreCache;
 class VirtualKeyboardDelegate;
+class WebRequestEventRouterDelegate;
+class WebViewGuest;
+class WebViewGuestDelegate;
+class WebViewPermissionHelper;
+class WebViewPermissionHelperDelegate;
 
 // Allows the embedder of the extensions module to customize its support for
 // API features. The embedder must create a single instance in the browser
@@ -97,14 +97,14 @@ class ExtensionsAPIClient {
 
   // Returns a delegate for some of WebViewGuest's behavior. The caller owns the
   // returned WebViewGuestDelegate.
-  virtual WebViewGuestDelegate* CreateWebViewGuestDelegate (
+  virtual WebViewGuestDelegate* CreateWebViewGuestDelegate(
       WebViewGuest* web_view_guest) const;
 
   // Returns a delegate for some of WebViewPermissionHelper's behavior. The
   // caller owns the returned WebViewPermissionHelperDelegate.
   virtual WebViewPermissionHelperDelegate*
-      CreateWebViewPermissionHelperDelegate (
-          WebViewPermissionHelper* web_view_permission_helper) const;
+  CreateWebViewPermissionHelperDelegate(
+      WebViewPermissionHelper* web_view_permission_helper) const;
 
   // Creates a delegate for WebRequestEventRouter.
   virtual WebRequestEventRouterDelegate* CreateWebRequestEventRouterDelegate()

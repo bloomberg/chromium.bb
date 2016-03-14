@@ -177,14 +177,13 @@ ValueStore::ReadResult LeveldbValueStore::Get(
 
   scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
 
-  for (std::vector<std::string>::const_iterator it = keys.begin();
-      it != keys.end(); ++it) {
+  for (const std::string& key : keys) {
     scoped_ptr<base::Value> setting;
-    status.Merge(ReadFromDb(*it, &setting));
+    status.Merge(ReadFromDb(key, &setting));
     if (!status.ok())
       return MakeReadResult(status);
     if (setting)
-      settings->SetWithoutPathExpansion(*it, setting.release());
+      settings->SetWithoutPathExpansion(key, setting.release());
   }
 
   return MakeReadResult(std::move(settings), status);
@@ -291,16 +290,15 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
-  for (std::vector<std::string>::const_iterator it = keys.begin();
-      it != keys.end(); ++it) {
+  for (const std::string& key : keys) {
     scoped_ptr<base::Value> old_value;
-    status.Merge(ReadFromDb(*it, &old_value));
+    status.Merge(ReadFromDb(key, &old_value));
     if (!status.ok())
       return MakeWriteResult(status);
 
     if (old_value) {
-      changes->push_back(ValueStoreChange(*it, old_value.release(), NULL));
-      batch.Delete(*it);
+      changes->push_back(ValueStoreChange(key, old_value.release(), NULL));
+      batch.Delete(key);
     }
   }
 

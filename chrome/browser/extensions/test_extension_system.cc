@@ -134,6 +134,10 @@ void TestExtensionSystem::InstallUpdate(const std::string& extension_id,
   NOTREACHED();
 }
 
+TestingValueStore* TestExtensionSystem::value_store() {
+  return value_store_;
+}
+
 // static
 scoped_ptr<KeyedService> TestExtensionSystem::Build(
     content::BrowserContext* profile) {
