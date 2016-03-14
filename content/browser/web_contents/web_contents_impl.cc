@@ -4366,13 +4366,6 @@ bool WebContentsImpl::AddMessageToConsole(int32_t level,
                                         source_id);
 }
 
-int WebContentsImpl::CreateSwappedOutRenderView(
-    SiteInstance* instance) {
-  int render_view_routing_id = MSG_ROUTING_NONE;
-  GetRenderManager()->CreateRenderFrameProxy(instance);
-  return render_view_routing_id;
-}
-
 void WebContentsImpl::OnUserInteraction(
     RenderWidgetHostImpl* render_widget_host,
     const blink::WebInputEvent::Type type) {

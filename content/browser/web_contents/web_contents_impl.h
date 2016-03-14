@@ -120,12 +120,6 @@ class CONTENT_EXPORT WebContentsImpl
   static WebContents* FromRenderFrameHostID(int render_process_host_id,
                                             int render_frame_host_id);
 
-  // Creates a swapped out RenderView. This is used by the browser plugin to
-  // create a swapped out RenderView in the embedder render process for the
-  // guest, to expose the guest's window object to the embedder.
-  // This returns the routing ID of the newly created swapped out RenderView.
-  int CreateSwappedOutRenderView(SiteInstance* instance);
-
   // Complex initialization here. Specifically needed to avoid having
   // members call back into our virtual functions in the constructor.
   virtual void Init(const WebContents::CreateParams& params);
