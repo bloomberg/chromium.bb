@@ -24,9 +24,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_database.h"
 #include "net/http/http_server_properties.h"
-#include "net/http/http_stream_factory.h"
 #include "net/log/net_log.h"
-#include "net/net_features.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/network_connection.h"
 #include "net/quic/quic_chromium_client_session.h"
@@ -57,7 +55,6 @@ class QuicServerInfoFactory;
 class QuicStreamFactory;
 class SocketPerformanceWatcherFactory;
 class TransportSecurityState;
-class BidirectionalStreamJob;
 
 namespace test {
 class QuicStreamFactoryPeer;
@@ -90,14 +87,9 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob() const;
 
-  scoped_ptr<QuicHttpStream> CreateStream();
+  scoped_ptr<QuicHttpStream> ReleaseStream();
 
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-  scoped_ptr<BidirectionalStreamJob> CreateBidirectionalStreamJob();
-#endif
-
-  // Sets |session_|.
-  void SetSession(QuicChromiumClientSession* session);
+  void set_stream(scoped_ptr<QuicHttpStream> stream);
 
   const std::string& origin_host() const { return origin_host_; }
 
@@ -113,7 +105,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   PrivacyMode privacy_mode_;
   BoundNetLog net_log_;
   CompletionCallback callback_;
-  base::WeakPtr<QuicChromiumClientSession> session_;
+  scoped_ptr<QuicHttpStream> stream_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamRequest);
 };

@@ -84,7 +84,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
-      HttpStreamRequest::StreamType stream_type,
       const BoundNetLog& net_log);
 
   AlternativeService GetAlternativeServiceFor(

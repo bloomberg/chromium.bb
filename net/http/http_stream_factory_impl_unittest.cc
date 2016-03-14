@@ -11,10 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "net/base/port_util.h"
 #include "net/base/test_completion_callback.h"
-#include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -30,14 +28,8 @@
 #include "net/net_features.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
-#include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_server_id.h"
-#include "net/quic/test_tools/crypto_test_utils.h"
-#include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
-#include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_stream_factory_peer.h"
-#include "net/quic/test_tools/quic_test_packet_maker.h"
-#include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/mock_client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
@@ -47,8 +39,6 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/test/cert_test_util.h"
-
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
 // introduce any link dependency to net/websockets.
@@ -57,7 +47,6 @@
 
 #if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 #include "net/http/bidirectional_stream_job.h"
-#include "net/http/bidirectional_stream_request_info.h"
 #endif
 
 namespace net {
@@ -748,72 +737,6 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
     EXPECT_TRUE(iter != retry_info.end()) << mock_error[i];
   }
 }
-
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-// BidirectionalStreamJob::Delegate to wait until response headers are
-// received.
-class TestBidirectionalDelegate : public BidirectionalStreamJob::Delegate {
- public:
-  void WaitUntilDone() { loop_.Run(); }
-
-  const SpdyHeaderBlock& response_headers() const { return response_headers_; }
-
- private:
-  void OnHeadersSent() override {}
-  void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
-    response_headers_ = response_headers;
-    loop_.Quit();
-  }
-  void OnDataRead(int bytes_read) override { NOTREACHED(); }
-  void OnDataSent() override { NOTREACHED(); }
-  void OnTrailersReceived(const SpdyHeaderBlock& trailers) override {
-    NOTREACHED();
-  }
-  void OnFailed(int error) override { NOTREACHED(); }
-  base::RunLoop loop_;
-  SpdyHeaderBlock response_headers_;
-};
-
-// Helper class to encapsulate MockReads and MockWrites for QUIC.
-// Simplify ownership issues and the interaction with the MockSocketFactory.
-class MockQuicData {
- public:
-  MockQuicData() : packet_number_(0) {}
-
-  ~MockQuicData() { STLDeleteElements(&packets_); }
-
-  void AddRead(scoped_ptr<QuicEncryptedPacket> packet) {
-    reads_.push_back(
-        MockRead(ASYNC, packet->data(), packet->length(), packet_number_++));
-    packets_.push_back(packet.release());
-  }
-
-  void AddRead(IoMode mode, int rv) {
-    reads_.push_back(MockRead(mode, rv, packet_number_++));
-  }
-
-  void AddWrite(scoped_ptr<QuicEncryptedPacket> packet) {
-    writes_.push_back(MockWrite(SYNCHRONOUS, packet->data(), packet->length(),
-                                packet_number_++));
-    packets_.push_back(packet.release());
-  }
-
-  void AddSocketDataToFactory(MockClientSocketFactory* factory) {
-    MockRead* reads = reads_.empty() ? nullptr : &reads_[0];
-    MockWrite* writes = writes_.empty() ? nullptr : &writes_[0];
-    socket_data_.reset(
-        new SequencedSocketData(reads, reads_.size(), writes, writes_.size()));
-    factory->AddSocketDataProvider(socket_data_.get());
-  }
-
- private:
-  std::vector<QuicEncryptedPacket*> packets_;
-  std::vector<MockWrite> writes_;
-  std::vector<MockRead> reads_;
-  size_t packet_number_;
-  scoped_ptr<SequencedSocketData> socket_data_;
-};
-#endif
 
 }  // namespace
 
@@ -1517,161 +1440,6 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJob) {
   ASSERT_EQ(0u,
             static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory())
                 ->num_orphaned_jobs());
-}
-
-class HttpStreamFactoryBidirectionalQuicTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<QuicVersion> {
- protected:
-  HttpStreamFactoryBidirectionalQuicTest()
-      : clock_(new MockClock),
-        packet_maker_(GetParam(), 0, clock_, "www.example.org"),
-        random_generator_(0),
-        proxy_service_(ProxyService::CreateDirect()),
-        ssl_config_service_(new SSLConfigServiceDefaults) {
-    clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
-  }
-
-  void Initialize() {
-    params_.enable_quic = true;
-    params_.http_server_properties = http_server_properties_.GetWeakPtr();
-    params_.quic_host_whitelist.insert("www.example.org");
-    params_.quic_random = &random_generator_;
-    params_.quic_clock = clock_;
-
-    // Load a certificate that is valid for *.example.org
-    scoped_refptr<X509Certificate> test_cert(
-        ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
-    EXPECT_TRUE(test_cert.get());
-    verify_details_.cert_verify_result.verified_cert = test_cert;
-    verify_details_.cert_verify_result.is_issued_by_known_root = true;
-    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
-    crypto_client_stream_factory_.set_handshake_mode(
-        MockCryptoClientStream::CONFIRM_HANDSHAKE);
-    params_.quic_crypto_client_stream_factory = &crypto_client_stream_factory_;
-    params_.quic_supported_versions = test::SupportedVersions(GetParam());
-    params_.transport_security_state = &transport_security_state_;
-    params_.host_resolver = &host_resolver_;
-    params_.proxy_service = proxy_service_.get();
-    params_.ssl_config_service = ssl_config_service_.get();
-    params_.client_socket_factory = &socket_factory_;
-    session_.reset(new HttpNetworkSession(params_));
-    session_->quic_stream_factory()->set_require_confirmation(false);
-  }
-
-  void AddQuicAlternativeService() {
-    const AlternativeService alternative_service(QUIC, "www.example.org", 443);
-    AlternativeServiceInfoVector alternative_service_info_vector;
-    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-    alternative_service_info_vector.push_back(
-        AlternativeServiceInfo(alternative_service, 1.0, expiration));
-    HostPortPair host_port_pair(alternative_service.host_port_pair());
-    http_server_properties_.SetAlternativeServices(
-        host_port_pair, alternative_service_info_vector);
-  };
-
-  test::QuicTestPacketMaker& packet_maker() { return packet_maker_; }
-
-  MockClientSocketFactory& socket_factory() { return socket_factory_; }
-
-  HttpNetworkSession* session() { return session_.get(); }
-
- private:
-  MockClock* clock_;  // Owned by QuicStreamFactory
-  test::QuicTestPacketMaker packet_maker_;
-  MockClientSocketFactory socket_factory_;
-  scoped_ptr<HttpNetworkSession> session_;
-  test::MockRandom random_generator_;
-  ProofVerifyDetailsChromium verify_details_;
-  MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  HttpServerPropertiesImpl http_server_properties_;
-  TransportSecurityState transport_security_state_;
-  MockHostResolver host_resolver_;
-  scoped_ptr<ProxyService> proxy_service_;
-  scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
-  HttpNetworkSession::Params params_;
-};
-
-INSTANTIATE_TEST_CASE_P(Version,
-                        HttpStreamFactoryBidirectionalQuicTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
-
-TEST_P(HttpStreamFactoryBidirectionalQuicTest,
-       RequestBidirectionalStreamJobQuicAlternative) {
-  GURL url = GURL("https://www.example.org");
-
-  MockQuicData mock_quic_data;
-  SpdyPriority priority =
-      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
-  size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(packet_maker().MakeRequestHeadersPacket(
-      1, test::kClientDataStreamId1, /*should_include_version=*/true,
-      /*fin=*/true, priority,
-      packet_maker().GetRequestHeaders("GET", "https", "/"),
-      &spdy_headers_frame_length));
-  size_t spdy_response_headers_frame_length;
-  mock_quic_data.AddRead(packet_maker().MakeResponseHeadersPacket(
-      1, test::kClientDataStreamId1, /*should_include_version=*/false,
-      /*fin=*/true, packet_maker().GetResponseHeaders("200"),
-      &spdy_response_headers_frame_length));
-  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
-  mock_quic_data.AddSocketDataToFactory(&socket_factory());
-
-  // Add hanging data for http job.
-  scoped_ptr<StaticSocketDataProvider> hanging_data;
-  hanging_data.reset(new StaticSocketDataProvider());
-  MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
-  hanging_data->set_connect_data(hanging_connect);
-  socket_factory().AddSocketDataProvider(hanging_data.get());
-  SSLSocketDataProvider ssl_data(ASYNC, OK);
-  socket_factory().AddSSLSocketDataProvider(&ssl_data);
-
-  // Set up QUIC as alternative_service.
-  AddQuicAlternativeService();
-  Initialize();
-
-  // Now request a stream.
-  SSLConfig ssl_config;
-  HttpRequestInfo request_info;
-  request_info.method = "GET";
-  request_info.url = GURL("https://www.example.org");
-  request_info.load_flags = 0;
-
-  StreamRequestWaiter waiter;
-  scoped_ptr<HttpStreamRequest> request(
-      session()->http_stream_factory()->RequestBidirectionalStreamJob(
-          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
-
-  waiter.WaitForStream();
-  EXPECT_TRUE(waiter.stream_done());
-  EXPECT_FALSE(waiter.websocket_stream());
-  ASSERT_FALSE(waiter.stream());
-  ASSERT_TRUE(waiter.bidirectional_stream_job());
-  BidirectionalStreamJob* job = waiter.bidirectional_stream_job();
-
-  BidirectionalStreamRequestInfo bidi_request_info;
-  bidi_request_info.method = "GET";
-  bidi_request_info.url = GURL("https://www.example.org/");
-  bidi_request_info.end_stream_on_headers = true;
-  bidi_request_info.priority = LOWEST;
-
-  TestBidirectionalDelegate delegate;
-  job->Start(&bidi_request_info, BoundNetLog(), &delegate, nullptr);
-  delegate.WaitUntilDone();
-
-  scoped_refptr<IOBuffer> buffer = new net::IOBuffer(1);
-  EXPECT_EQ(OK, job->ReadData(buffer.get(), 1));
-  EXPECT_EQ("200", delegate.response_headers().find(":status")->second);
-  EXPECT_EQ(1, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
-                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(session()->GetSSLSocketPool(
-                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
-                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
-  EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetSSLSocketPool(
-                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
-  EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
 TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJobFailure) {

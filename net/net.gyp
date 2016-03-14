@@ -292,7 +292,6 @@
         [ 'enable_bidirectional_stream!=1', {
             'sources!': [
               'http/bidirectional_stream_unittest.cc',
-              'quic/bidirectional_stream_quic_impl_unittest.cc',
             ],
           },
         ],

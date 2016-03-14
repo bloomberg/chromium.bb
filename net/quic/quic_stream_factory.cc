@@ -61,11 +61,6 @@
 #include "base/cpu.h"
 #endif
 
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-#include "net/http/bidirectional_stream_job.h"
-#include "net/quic/bidirectional_stream_quic_impl.h"
-#endif
-
 using std::min;
 using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
@@ -518,11 +513,11 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
                                base::StringPiece method,
                                const BoundNetLog& net_log,
                                const CompletionCallback& callback) {
+  DCHECK(!stream_);
   DCHECK(callback_.is_null());
   DCHECK(factory_);
   origin_host_ = url.host();
   privacy_mode_ = privacy_mode;
-
   int rv = factory_->Create(host_port_pair, privacy_mode, cert_verify_flags,
                             url, method, net_log, this);
   if (rv == ERR_IO_PENDING) {
@@ -533,13 +528,13 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
     factory_ = nullptr;
   }
   if (rv == OK)
-    DCHECK(session_);
+    DCHECK(stream_);
   return rv;
 }
 
-void QuicStreamRequest::SetSession(QuicChromiumClientSession* session) {
-  DCHECK(session);
-  session_ = session->GetWeakPtr();
+void QuicStreamRequest::set_stream(scoped_ptr<QuicHttpStream> stream) {
+  DCHECK(stream);
+  stream_ = std::move(stream);
 }
 
 void QuicStreamRequest::OnRequestComplete(int rv) {
@@ -554,20 +549,10 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
       QuicServerId(host_port_pair_, privacy_mode_));
 }
 
-scoped_ptr<QuicHttpStream> QuicStreamRequest::CreateStream() {
-  if (!session_)
-    return nullptr;
-  return make_scoped_ptr(new QuicHttpStream(session_));
+scoped_ptr<QuicHttpStream> QuicStreamRequest::ReleaseStream() {
+  DCHECK(stream_);
+  return std::move(stream_);
 }
-
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-scoped_ptr<BidirectionalStreamJob>
-QuicStreamRequest::CreateBidirectionalStreamJob() {
-  if (!session_)
-    return nullptr;
-  return make_scoped_ptr(new BidirectionalStreamQuicImpl(session_));
-}
-#endif
 
 QuicStreamFactory::QuicStreamFactory(
     HostResolver* host_resolver,
@@ -795,7 +780,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
         static_cast<QuicChromiumClientSession*>(promised->session());
     DCHECK(session);
     if (session->server_id().privacy_mode() == privacy_mode) {
-      request->SetSession(session);
+      request->set_stream(CreateFromSession(session));
       ++num_push_streams_created_;
       return OK;
     }
@@ -813,7 +798,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
       QuicChromiumClientSession* session = it->second;
       if (!session->CanPool(url.host(), privacy_mode))
         return ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN;
-      request->SetSession(session);
+      request->set_stream(CreateFromSession(session));
       return OK;
     }
   }
@@ -869,7 +854,7 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     QuicChromiumClientSession* session = it->second;
     if (!session->CanPool(url.host(), privacy_mode))
       return ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN;
-    request->SetSession(session);
+    request->set_stream(CreateFromSession(session));
   }
   return rv;
 }
@@ -947,7 +932,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
         request->OnRequestComplete(ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN);
         continue;
       }
-      request->SetSession(session);
+      request->set_stream(CreateFromSession(session));
       ++request_it;
     }
   }

@@ -93,7 +93,7 @@ class HttpStreamFactoryImpl::Job {
   NextProto protocol_negotiated() const;
   bool using_spdy() const;
   const BoundNetLog& net_log() const { return net_log_; }
-  HttpStreamRequest::StreamType stream_type() const { return stream_type_; }
+  bool for_bidirectional() const { return for_bidirectional_; }
 
   const SSLConfig& server_ssl_config() const;
   const SSLConfig& proxy_ssl_config() const;
@@ -418,8 +418,8 @@ class HttpStreamFactoryImpl::Job {
   JobStatus other_job_status_;
   base::TimeTicks job_stream_ready_start_time_;
 
-  // Type of stream that is requested.
-  HttpStreamRequest::StreamType stream_type_;
+  // True if BidirectionalStreamJob is requested.
+  bool for_bidirectional_;
 
   base::WeakPtrFactory<Job> ptr_factory_;
 

@@ -54,12 +54,6 @@ struct SSLConfig;
 // which no callbacks will be invoked.
 class NET_EXPORT_PRIVATE HttpStreamRequest {
  public:
-  // Indicates which type of stream is requested.
-  enum StreamType {
-    BIDIRECTIONAL_STREAM,
-    HTTP_STREAM,
-  };
-
   // The HttpStreamRequest::Delegate is a set of callback methods for a
   // HttpStreamRequestJob.  Generally, only one of these methods will be
   // called as a result of a stream request.
