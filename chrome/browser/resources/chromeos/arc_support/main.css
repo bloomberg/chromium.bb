@@ -1,0 +1,111 @@
+/**
+ * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+html,
+body,
+webview,
+.section {
+  font-family: 'Roboto';
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.section {
+  text-align: center;
+}
+
+.text-plus {
+  color: #212121;
+  font-size: 30px;
+  font-weight: 300;
+  margin: 0;
+}
+
+.text-title {
+  color: #212121;
+  font-size: 30px;
+  font-weight: 300;
+  margin: 0;
+  padding: 0 0 30px 0;
+}
+
+.text-desc {
+  color: #8d8d8d;
+  font-size: 18px;
+  font-weight: 300;
+  margin: auto;
+  padding: 0 0 40px 0;
+  width: 480px;
+}
+
+.text-legacy {
+  color: #8d8d8d;
+  font-size: 12px;
+  font-weight: 400;
+  margin: auto;
+  width: 320px;
+}
+
+.text-status {
+  color: #4d4d4d;
+  font-size: 13px;
+  font-weight: 500;
+  margin: auto;
+  padding: 0 0 30px 0;
+}
+
+p.button-get-started {
+  font-size: 12px;
+  font-weight: 700;
+  margin: auto;
+  padding: 12px 0 42px 0;
+}
+
+a.button-get-started {
+  background-color: rgb(103, 160, 48);
+  border-radius: 2px;
+  color: white;
+  padding: 12px 24px 12px 24px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+p.button-retry {
+  font-size: 14px;
+  font-weight: 700;
+  margin: auto;
+  padding: 0;
+}
+
+a.button-retry {
+  color: rgb(123, 172, 75);
+  padding: 0;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.link {
+  color: rgb(74, 144, 226);
+  white-space: nowrap;
+}
+
+.image {
+  display: block;
+  height: 96px;
+  padding: 0 36px 0 36px;
+  width: 96px;
+}
+
+.img-keeper {
+  margin: 0 auto;
+  padding: 18vh 0 40px 0;
+}
+
+.loading-header {
+  padding: 0 0 40vh 0;
+}

@@ -53,6 +53,15 @@ class ArcAuthService : public ArcService,
     ACTIVE,         // ARC is running.
   };
 
+  enum class UIPage {
+    NO_PAGE,         // Hide everything.
+    START,           // Initial start page.
+    LSO_PROGRESS,    // LSO loading progress page.
+    LSO,             // LSO page to enter user's credentials.
+    START_PROGRESS,  // Arc starting progress page.
+    ERROR,           // Arc start error page.
+  };
+
   class Observer {
    public:
     virtual ~Observer() = default;
@@ -61,7 +70,10 @@ class ArcAuthService : public ArcService,
     virtual void OnOptInChanged(State state) {}
 
     // Called to notify that OptIn UI needs to be closed.
-    virtual void OnOptInUINeedToClose() {}
+    virtual void OnOptInUIClose() {}
+
+    // Called to notify that OptIn UI needs to show specific page.
+    virtual void OnOptInUIShowPage(UIPage page, const base::string16& status) {}
   };
 
   explicit ArcAuthService(ArcBridgeService* bridge_service);
@@ -100,9 +112,11 @@ class ArcAuthService : public ArcService,
   void OnSignInComplete() override;
   void OnSignInFailed(arc::ArcSignInFailureReason reason) override;
 
-  // May be called internally as response to on Arc OptIn preference change
-  // or externally from Arc support platform app.
-  void FetchAuthCode();
+  // Called from Arc support platform app when user clicks 'Get Started'.
+  void GetStarted();
+
+  // Called from Arc support platform app to check auth code.
+  void CheckAuthCode();
 
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
@@ -126,14 +140,24 @@ class ArcAuthService : public ArcService,
   // syncable_prefs::PrefServiceSyncableObserver
   void OnIsSyncingChanged() override;
 
+  // Returns current page that has to be shown in OptIn UI.
+  UIPage ui_page() const { return ui_page_; }
+  // Returns current page status, relevant to the specific page.
+  const base::string16& ui_page_status() { return ui_page_status_; }
+
  private:
   void StartArc();
   void SetAuthCodeAndStartArc(const std::string& auth_code);
-  void ShowUI();
+  void PrepareContext();
+  void ShowUI(UIPage page, const base::string16& status);
   void CloseUI();
+  void SetUIPage(UIPage page, const base::string16& status);
   void SetState(State state);
+  void ShutdownBridge();
   void ShutdownBridgeAndCloseUI();
+  void ShutdownBridgeAndShowUI(UIPage page, const base::string16& status);
   void OnOptInPreferenceChanged();
+  void FetchAuthCode();
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
@@ -153,6 +177,10 @@ class ArcAuthService : public ArcService,
   scoped_ptr<UbertokenFetcher> ubertoken_fethcher_;
   std::string auth_code_;
   GetAuthCodeCallback auth_callback_;
+  bool initial_opt_in_ = false;
+  bool context_prepared_ = false;
+  UIPage ui_page_ = UIPage::NO_PAGE;
+  base::string16 ui_page_status_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthService);
 };

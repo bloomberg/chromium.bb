@@ -26,13 +26,17 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
   // Overrides arc::ArcAuthService::Observer:
-  void OnOptInUINeedToClose() override;
+  void OnOptInUIClose() override;
+  void OnOptInUIShowPage(arc::ArcAuthService::UIPage page,
+                         const base::string16& status) override;
 
  private:
+  ArcSupportHost();
+
+  void SendLocalization();
+
   // Unowned pointer.
   Client* client_ = nullptr;
-
-  ArcSupportHost();
 
   DISALLOW_COPY_AND_ASSIGN(ArcSupportHost);
 };

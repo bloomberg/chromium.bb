@@ -1,22 +1,67 @@
 <!doctype html>
 <html>
 <head>
-  <style>
-    html,
-    body,
-    webview {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      width: 100%;
+  <link rel="stylesheet" href="chrome://resources/css/roboto.css">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+  <style is="custom-style">
+    paper-progress {
+      display: block;
+      width: 130px;
+      margin: auto;
+    }
+    paper-progress.red {
+      --paper-progress-active-color: #ff374f;
+      --paper-progress-secondary-color: #ff374f;
+      --paper-progress-container-color: #c8bdd4;
+    }
+    paper-progress.green {
+      --paper-progress-active-color: #67a030;
+      --paper-progress-secondary-color: #67a030;
+      --paper-progress-container-color: #c8bdd4;
     }
   </style>
+  <link rel="stylesheet" href="main.css">
+  <script src="chrome://resources/js/load_time_data.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <script src="chrome://resources/js/i18n_template_no_process.js"></script>
 </head>
 <body>
-<webview
-    id="arc_support"
-    partition="persist:arc_support"
-    src="https://accounts.google.com/o/oauth2/programmatic_auth?scope=https://www.google.com/accounts/OAuthLogin&client_id=1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.googleusercontent.com">
-</webview>
+  <div id="start" class="section" hidden>
+    <div class="layout horizontal center-justified center img-keeper">
+      <img class="image" src="images/play_store_96dp.png">
+      <div class="text-plus">+</div>
+      <img class="image" src="images/chrome_96dp.png">
+    </div>
+    <p class="text-title" i18n-content="greetingHeader"></p>
+    <p class="text-desc" i18n-content="greetingDescription"></p>
+    <p class="button-get-started">
+      <a class="button-get-started" id="get-started"
+          href="#" i18n-content="buttonGetStarted"></a>
+    </p>
+    <p class="text-legacy" id="legacy-text"></p>
+  </div>
+  <div id="lso-loading" class="section" hidden>
+    <div class="loading-header"></div>
+    <paper-progress class="green" indeterminate></paper-progress>
+    <p class="text-status" i18n-content=progressLSOLoading></p>
+  </div>
+  <div id="lso" class="section" hidden>
+    <webview id="arc-support" partition="persist:arc_support"></webview>
+  </div>
+  <div id="arc-loading" class="section" hidden>
+    <div class="loading-header"></div>
+    <paper-progress class="green" indeterminate></paper-progress>
+    <p class="text-status" i18n-content="progressAndroidLoading"></p>
+  </div>
+  <div id="error" class="section" hidden>
+    <div class="loading-header"></div>
+    <paper-progress class="red" value="100" max="100" ></paper-progress>
+    <p class="text-status" id="error-message"></p>
+    <p class="button-retry">
+      <a class="button-retry" id="retry" href="#" i18n-content="buttonRetry">
+      </a>
+    </p>
+  </div>
 </body>
 </html>

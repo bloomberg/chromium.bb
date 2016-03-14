@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -26,8 +27,11 @@
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace arc {
 
@@ -111,12 +115,14 @@ void ArcAuthService::GetAuthCodeDeprecated(
 
 void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   std::string auth_code = GetAndResetAuthCode();
   if (!auth_code.empty()) {
     callback.Run(mojo::String(auth_code), !IsOptInVerificationDisabled());
     return;
   }
 
+  initial_opt_in_ = false;
   auth_callback_ = callback;
   SetState(State::FETCHING_CODE);
   FetchAuthCode();
@@ -127,19 +133,43 @@ void ArcAuthService::OnSignInComplete() {
   DCHECK_EQ(state_, State::ACTIVE);
 
   profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
+  CloseUI();
 }
 
 void ArcAuthService::OnSignInFailed(arc::ArcSignInFailureReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
 
+  int error_message_id;
+  switch (reason) {
+    case arc::ArcSignInFailureReason::NETWORK_ERROR:
+      error_message_id = IDS_ARC_SIGN_IN_NETWORK_ERROR;
+      break;
+    case arc::ArcSignInFailureReason::SERVICE_UNAVAILABLE:
+      error_message_id = IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
+      break;
+    case arc::ArcSignInFailureReason::BAD_AUTHENTICATION:
+      error_message_id = IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR;
+      break;
+    case arc::ArcSignInFailureReason::GMS_CORE_NOT_AVAILABLE:
+      error_message_id = IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR;
+      break;
+    case arc::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL:
+      error_message_id = IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
+      break;
+    default:
+      error_message_id = IDS_ARC_SIGN_IN_UNKNOWN_ERROR;
+  }
+
   profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
-  ShutdownBridgeAndCloseUI();
+  ShutdownBridgeAndShowUI(UIPage::ERROR,
+                          l10n_util::GetStringUTF16(error_message_id));
 }
 
 void ArcAuthService::SetState(State state) {
   if (state_ == state)
     return;
+
   state_ = state;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInChanged(state_));
 }
@@ -204,8 +234,16 @@ void ArcAuthService::Shutdown() {
   pref_change_registrar_.RemoveAll();
 }
 
-void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
+  if (disable_ui_for_testing || IsOptInVerificationDisabled())
+    return;
+
+  SetUIPage(page, status);
+  const extensions::AppWindowRegistry* const app_window_registry =
+      extensions::AppWindowRegistry::Get(profile_);
+  DCHECK(app_window_registry);
+  if (app_window_registry->GetCurrentAppWindowForApp(kArcSupportExtensionId))
+    return;
 
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
@@ -216,6 +254,14 @@ void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {
   AppLaunchParams params(profile_, extension, NEW_WINDOW,
                          extensions::SOURCE_CHROME_INTERNAL);
   OpenApplication(params);
+}
+
+void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  DCHECK(!initial_opt_in_);
+  context_prepared_ = true;
+  ShowUI(UIPage::LSO_PROGRESS, base::string16());
 }
 
 void ArcAuthService::OnMergeSessionFailure(
@@ -250,6 +296,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 
       if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
         // Need pre-fetch auth code and show OptIn UI if needed.
+        initial_opt_in_ = true;
         SetState(State::FETCHING_CODE);
         FetchAuthCode();
       } else {
@@ -262,14 +309,24 @@ void ArcAuthService::OnOptInPreferenceChanged() {
   }
 }
 
-void ArcAuthService::ShutdownBridgeAndCloseUI() {
-  CloseUI();
+void ArcAuthService::ShutdownBridge() {
   auth_callback_.reset();
   auth_fetcher_.reset();
   ubertoken_fethcher_.reset();
   merger_fetcher_.reset();
   ArcBridgeService::Get()->Shutdown();
   SetState(State::STOPPED);
+}
+
+void ArcAuthService::ShutdownBridgeAndCloseUI() {
+  ShutdownBridge();
+  CloseUI();
+}
+
+void ArcAuthService::ShutdownBridgeAndShowUI(UIPage page,
+                                             const base::string16& status) {
+  ShutdownBridge();
+  ShowUI(page, status);
 }
 
 void ArcAuthService::AddObserver(Observer* observer) {
@@ -283,7 +340,14 @@ void ArcAuthService::RemoveObserver(Observer* observer) {
 }
 
 void ArcAuthService::CloseUI() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInUINeedToClose());
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInUIClose());
+}
+
+void ArcAuthService::SetUIPage(UIPage page, const base::string16& status) {
+  ui_page_ = page;
+  ui_page_status_ = status;
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnOptInUIShowPage(ui_page_, ui_page_status_));
 }
 
 void ArcAuthService::StartArc() {
@@ -299,21 +363,29 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   if (!auth_callback_.is_null()) {
     DCHECK_EQ(state_, State::FETCHING_CODE);
     SetState(State::ACTIVE);
-    CloseUI();
     auth_callback_.Run(mojo::String(auth_code), !IsOptInVerificationDisabled());
     auth_callback_.reset();
     return;
   }
 
   State state = state_;
-
-  ShutdownBridgeAndCloseUI();
-
-  if (state != State::FETCHING_CODE)
+  if (state != State::FETCHING_CODE) {
+    ShutdownBridgeAndCloseUI();
     return;
+  }
 
+  SetUIPage(UIPage::START_PROGRESS, base::string16());
+  ShutdownBridge();
   auth_code_ = auth_code;
   StartArc();
+}
+
+void ArcAuthService::CheckAuthCode() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  initial_opt_in_ = false;
+  SetState(State::FETCHING_CODE);
+  FetchAuthCode();
 }
 
 void ArcAuthService::FetchAuthCode() {
@@ -350,7 +422,7 @@ void ArcAuthService::OnAuthCodeFetched(const std::string& auth_code) {
   SetAuthCodeAndStartArc(auth_code);
 }
 
-void ArcAuthService::ShowUI() {
+void ArcAuthService::PrepareContext() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Get auth token to continue.
@@ -369,16 +441,28 @@ void ArcAuthService::ShowUI() {
 void ArcAuthService::OnAuthCodeNeedUI() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (disable_ui_for_testing || IsOptInVerificationDisabled())
-    return;
-
-  ShowUI();
+  if (initial_opt_in_) {
+    initial_opt_in_ = false;
+    ShowUI(UIPage::START, base::string16());
+  } else if (context_prepared_) {
+    ShowUI(UIPage::LSO_PROGRESS, base::string16());
+  } else {
+    PrepareContext();
+  }
 }
 
 void ArcAuthService::OnAuthCodeFailed() {
   DCHECK_EQ(state_, State::FETCHING_CODE);
 
-  ShutdownBridgeAndCloseUI();
+  if (initial_opt_in_) {
+    // Don't show error as first page.
+    initial_opt_in_ = false;
+    ShutdownBridgeAndShowUI(UIPage::START, base::string16());
+  } else {
+    ShutdownBridgeAndShowUI(
+        UIPage::ERROR,
+        l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
+  }
 }
 
 std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {

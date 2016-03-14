@@ -6455,5 +6455,46 @@ All users must sign out to continue.
   <message name="IDS_ARC_CANCEL_NOTIFICATION_BUTTON" desc="Label for the button in the first-run notification that cancel running Android apps.">
     Cancel
   </message>
-
+  <message name="IDS_ARC_OPT_IN_DIALOG_HEADER" desc="Title of the opt-in dialog for Android apps.">
+    Google Play store now on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_DESCRIPTION" desc="Description of the opt-in dialog for Android apps.">
+    Choose from over a million apps and games on Google Play to install and use on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_LEGACY" desc="Legacy text of the opt-in dialog for Android apps.">
+    By proceeding, you're agreeing to the <ph name="BEGIN_LINK">&lt;a class="link" href="https://www.google.com/policies/terms/" target="_blank"&gt;</ph>Google Terms of Service<ph name="END_LINK">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK">&lt;a class="link" href="https://www.google.com/policies/privacy/" target="_blank"&gt;</ph>Privacy Policy<ph name="END_LINK">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_GET_STARTED" desc="Get started button of the opt-in dialog for Android apps.">
+    Get Started
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_RETRY" desc="Retry button of the opt-in dialog for Android apps.">
+    Retry
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_PROGRESS_LSO" desc="Name of LSO loading progress of the opt-in dialog for Android apps.">
+    Just a sec...
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_PROGRESS_ANDROID" desc="Name of Android loading progress of the opt-in dialog for Android apps.">
+    This may take up to a minute or so
+  </message>
+  <message name="IDS_ARC_SIGN_IN_NETWORK_ERROR" desc="Android sign-in error because of network error">
+    Network error
+  </message>
+  <message name="IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR" desc="Android sign-in error because of service is unavailable">
+    Service unavailable
+  </message>
+  <message name="IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR" desc="Android sign-in error because of bad authentification">
+    Bad authentication
+  </message>
+  <message name="IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR" desc="Android sign-in error because of GMS services are unavailable">
+    GMS services are unavailable
+  </message>
+  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR" desc="Android sign-in error because of cloud provision flow failed">
+    Cloud provision flow failed
+  </message>
+  <message name="IDS_ARC_SIGN_IN_UNKNOWN_ERROR" desc="Android sign-in error because of unknown error">
+    Unknown error
+  </message>
+  <message name="IDS_ARC_SERVER_COMMUNICATION_ERROR" desc="Android sign-in error because of server communication error">
+    Server communication error
+  </message>
 </grit-part>
