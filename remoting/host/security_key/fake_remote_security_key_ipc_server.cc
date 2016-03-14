@@ -8,8 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_message_macros.h"
+#include "remoting/host/chromoting_messages.h"
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,6 +34,7 @@ void FakeRemoteSecurityKeyIpcServer::SendRequest(
 }
 
 void FakeRemoteSecurityKeyIpcServer::CloseChannel() {
+  ipc_channel_.reset();
   channel_closed_callback_.Run();
 }
 
@@ -43,7 +45,15 @@ FakeRemoteSecurityKeyIpcServer::AsWeakPtr() {
 
 bool FakeRemoteSecurityKeyIpcServer::OnMessageReceived(
     const IPC::Message& message) {
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(FakeRemoteSecurityKeyIpcServer, message)
+    IPC_MESSAGE_HANDLER(ChromotingRemoteSecurityKeyToNetworkMsg_Request,
+                        SendRequest)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  EXPECT_TRUE(handled);
+  return handled;
 }
 
 void FakeRemoteSecurityKeyIpcServer::OnChannelConnected(int32_t peer_pid) {}
@@ -54,16 +64,28 @@ bool FakeRemoteSecurityKeyIpcServer::CreateChannel(
     const std::string& channel_name,
     base::TimeDelta request_timeout) {
   channel_name_ = channel_name;
-  return true;
+
+  ipc_channel_ =
+      IPC::Channel::CreateNamedServer(IPC::ChannelHandle(channel_name_), this);
+  EXPECT_NE(nullptr, ipc_channel_);
+  return ipc_channel_->Connect();
 }
 
 bool FakeRemoteSecurityKeyIpcServer::SendResponse(
     const std::string& message_data) {
   last_message_received_ = message_data;
 
-  send_response_callback_.Run();
+  // This class works in two modes: one in which the test wants the IPC channel
+  // to be created and used for notification and the second mode where the test
+  // wants to notified of a response via a callback.  If a callback is set then
+  // we use it, otherwise we will use the IPC connection to send a message.
+  if (!send_response_callback_.is_null()) {
+    send_response_callback_.Run();
+    return true;
+  }
 
-  return true;
+  return ipc_channel_->Send(
+      new ChromotingNetworkToRemoteSecurityKeyMsg_Response(message_data));
 }
 
 FakeRemoteSecurityKeyIpcServerFactory::FakeRemoteSecurityKeyIpcServerFactory() {

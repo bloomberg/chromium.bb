@@ -36,6 +36,11 @@ class FakeRemoteSecurityKeyIpcServer : public RemoteSecurityKeyIpcServer,
       const base::Closure& channel_closed_callback);
   ~FakeRemoteSecurityKeyIpcServer() override;
 
+  // RemoteSecurityKeyIpcServer interface.
+  bool CreateChannel(const std::string& channel_name,
+                     base::TimeDelta request_timeout) override;
+  bool SendResponse(const std::string& message_data) override;
+
   // Simulates receipt of a security key request message.
   void SendRequest(const std::string& message_data);
 
@@ -50,11 +55,12 @@ class FakeRemoteSecurityKeyIpcServer : public RemoteSecurityKeyIpcServer,
     return last_message_received_;
   }
 
-  // Returns the name of the IPC channel this instance was told to create.
+  // The name of the IPC channel created by this instance.
   const std::string& channel_name() const { return channel_name_; }
 
-  // Sets a callback which will be signaled when a security key response message
-  // is received.
+  // Signaled when a security key response message is received.
+  // NOTE: Ths callback will be used instead of the IPC channel for response
+  // notifications if it is set.
   void set_send_response_callback(const base::Closure& send_response_callback) {
     send_response_callback_ = send_response_callback;
   }
@@ -64,11 +70,6 @@ class FakeRemoteSecurityKeyIpcServer : public RemoteSecurityKeyIpcServer,
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
-
-  // RemoteSecurityKeyIpcServer interface.
-  bool CreateChannel(const std::string& channel_name,
-                     base::TimeDelta request_timeout) override;
-  bool SendResponse(const std::string& message_data) override;
 
   // The id assigned to this IPC connection.
   int connection_id_;
@@ -87,6 +88,9 @@ class FakeRemoteSecurityKeyIpcServer : public RemoteSecurityKeyIpcServer,
 
   // Signaled when a security key response message is received.
   base::Closure send_response_callback_;
+
+  // Used for sending/receiving security key messages between processes.
+  scoped_ptr<IPC::Channel> ipc_channel_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FakeRemoteSecurityKeyIpcServer> weak_factory_;

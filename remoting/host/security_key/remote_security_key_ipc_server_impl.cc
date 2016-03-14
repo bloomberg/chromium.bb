@@ -53,7 +53,7 @@ bool RemoteSecurityKeyIpcServerImpl::CreateChannel(
   security_key_request_timeout_ = request_timeout;
 
   ipc_channel_ =
-      IPC::Channel::CreateServer(IPC::ChannelHandle(channel_name), this);
+      IPC::Channel::CreateNamedServer(IPC::ChannelHandle(channel_name), this);
   if (!ipc_channel_->Connect()) {
     ipc_channel_.reset();
     return false;

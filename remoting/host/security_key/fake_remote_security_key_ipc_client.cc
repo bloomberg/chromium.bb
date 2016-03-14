@@ -30,7 +30,7 @@ bool FakeRemoteSecurityKeyIpcClient::Connect(const std::string& channel_name) {
   // down and recreated) in some tests and we should be resilient in that case.
   IPC::ChannelHandle channel_handle(channel_name);
   for (int i = 0; i < 5; i++) {
-    client_channel_ = IPC::Channel::CreateClient(channel_handle, this);
+    client_channel_ = IPC::Channel::CreateNamedClient(channel_handle, this);
     if (client_channel_->Connect()) {
       return true;
     }

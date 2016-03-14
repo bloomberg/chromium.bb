@@ -224,6 +224,8 @@
       'host/security_key/gnubby_socket.h',
       'host/security_key/remote_security_key_ipc_constants.cc',
       'host/security_key/remote_security_key_ipc_constants.h',
+      'host/security_key/remote_security_key_ipc_client.cc',
+      'host/security_key/remote_security_key_ipc_client.h',
       'host/security_key/remote_security_key_ipc_server.cc',
       'host/security_key/remote_security_key_ipc_server.h',
       'host/security_key/remote_security_key_ipc_server_impl.cc',
