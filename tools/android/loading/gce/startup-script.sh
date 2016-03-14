@@ -40,7 +40,7 @@ chown -R pythonapp:pythonapp /opt/app
 cat >/etc/supervisor/conf.d/python-app.conf << EOF
 [program:pythonapp]
 directory=/opt/app/clovis
-command=/opt/app/clovis/env/bin/gunicorn --workers=2 main:app \
+command=/opt/app/clovis/env/bin/gunicorn --workers=1 main:app \
   --bind 0.0.0.0:8080
 autostart=true
 autorestart=true

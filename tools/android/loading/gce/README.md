@@ -53,12 +53,28 @@ Otherwise the IP address can be retrieved by doing:
 gcloud compute instances list
 ```
 
-Interact with the app on the port 8080 in your browser at
-`http://<instance-ip>:8080`.
-
 TODO: allow starting the instance in the cloud without Supervisor. This enables
 iterative development on the instance using SSH, manually starting and stopping
 the app. This can be done using [instance metadata][2].
+
+## Use the app
+
+Interact with the app on the port 8080 at `http://<instance-ip>:8080`.
+
+To send a list of URLs to process:
+
+```shell
+curl -X POST -d @urls.json http://<instance-ip>:8080/set_tasks
+```
+
+where `urls.txt` is a file containing URLs (one per line).
+
+Start the processing by sending a request to `http://<instance-ip>:8080/start`,
+for example:
+
+```shell
+curl http://<instance-ip>:8080/start
+```
 
 ## Stop the app in the cloud
 
@@ -85,7 +101,7 @@ pip install -r pip_requirements.txt
 Launch the app:
 
 ```shell
-gunicorn --workers=2 main:app --bind 127.0.0.1:8000
+gunicorn --workers=1 main:app --bind 127.0.0.1:8000
 ```
 
 In your browser, go to `http://localhost:8000` and use the app.

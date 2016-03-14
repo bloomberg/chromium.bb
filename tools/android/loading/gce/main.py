@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import json
+import re
+import threading
 
 from gcloud import storage
 from gcloud.exceptions import NotFound
@@ -14,6 +16,8 @@ class ServerApp(object):
   """
 
   def __init__(self):
+    self._tasks = []
+    self._thread = None
     print 'Initializing credentials'
     self._credentials = GoogleCredentials.get_application_default()
     print 'Reading server configuration'
@@ -52,6 +56,22 @@ class ServerApp(object):
       return None
     return blob.download_as_string()
 
+  def _SetTasks(self, task_list):
+    if len(self._tasks) > 0:
+      return False  # There are tasks already.
+    self._tasks = json.loads(task_list)
+    return len(self._tasks) != 0
+
+  def _ProcessTasks(self):
+    # Avoid special characters in storage object names
+    pattern = re.compile(r"[#\?\[\]\*/]")
+    while len(self._tasks) > 0:
+      url = self._tasks.pop()
+      filename = pattern.sub('_', url)
+      # TODO: compute the actual trace for url.
+      trace = '{}'
+      self._UploadFile(trace, filename)
+
   def __call__(self, environ, start_response):
     path = environ['PATH_INFO']
     if path == '/favicon.ico':
@@ -60,19 +80,24 @@ class ServerApp(object):
 
     status = '200 OK'
 
-    if path == '/write':
-      url = self._UploadFile('foo', 'test.txt')
-      data = 'Writing file at\n' + url + '\n'
-    elif path == '/read':
-      data = self._ReadFile('test.txt')
-      if not data:
-        data = ''
-        status = '404 NOT FOUND'
-    elif path == '/delete':
-      if self._DeleteFile('test.txt'):
-        data = 'Success\n'
+    if path == '/set_tasks':
+      # Get the tasks from the HTTP body.
+      try:
+        body_size = int(environ.get('CONTENT_LENGTH', 0))
+      except (ValueError):
+        body_size = 0
+      body = environ['wsgi.input'].read(body_size)
+      if self._SetTasks(body):
+        data = 'Set tasks: ' + str(len(self._tasks))
       else:
-        data = 'Failed\n'
+        data = 'Something went wrong'
+    elif path == '/start':
+      if len(self._tasks) > 0:
+        data = 'Starting...'
+        self._thread = threading.Thread(target = self._ProcessTasks)
+        self._thread.start()
+      else:
+        data = 'Nothing to do!'
     else:
       data = environ['PATH_INFO'] + '\n'
 
