@@ -88,27 +88,68 @@ var jsBuiltins = new Set([
     'unescape',
 ]);
 
-function isWebIDLConstructor(propertyName) {
-    if (jsBuiltins.has(propertyName))
+function isWebIDLConstructor(propertyKey) {
+    if (jsBuiltins.has(propertyKey))
         return false;
-    var descriptor = Object.getOwnPropertyDescriptor(this, propertyName);
+    var descriptor = Object.getOwnPropertyDescriptor(this, propertyKey);
     if (descriptor.value == undefined || descriptor.value.prototype == undefined)
         return false;
     return descriptor.writable && !descriptor.enumerable && descriptor.configurable;
 }
 
-function collectPropertyInfo(object, propertyName, output) {
-    var keywords = ('prototype' in object) ? 'static ' : '';
-    var descriptor = Object.getOwnPropertyDescriptor(object, propertyName);
+var wellKnownSymbols = new Map([
+    [Symbol.hasInstance, "@@hasInstance"],
+    [Symbol.isConcatSpreadable, "@@isConcatSpreadable"],
+    [Symbol.iterator, "@@iterator"],
+    [Symbol.match, "@@match"],
+    [Symbol.replace, "@@replace"],
+    [Symbol.search, "@@search"],
+    [Symbol.species, "@@species"],
+    [Symbol.split, "@@split"],
+    [Symbol.toPrimitive, "@@toPrimitive"],
+    [Symbol.toStringTag, "@@toStringTag"],
+    [Symbol.unscopables, "@@unscopables"]
+]);
+
+function collectPropertyInfo(object, propertyKey, output) {
+    var propertyString = wellKnownSymbols.get(propertyKey) || propertyKey.toString();
+    var keywords = Object.prototype.hasOwnProperty.call(object, 'prototype') ? 'static ' : '';
+    var descriptor = Object.getOwnPropertyDescriptor(object, propertyKey);
     if ('value' in descriptor) {
         var type = typeof descriptor.value === 'function' ? 'method' : 'attribute';
-        output.push('    ' + keywords + type + ' ' + propertyName);
+        output.push('    ' + keywords + type + ' ' + propertyString);
     } else {
         if (descriptor.get)
-            output.push('    ' + keywords + 'getter ' + propertyName);
+            output.push('    ' + keywords + 'getter ' + propertyString);
         if (descriptor.set)
-            output.push('    ' + keywords + 'setter ' + propertyName);
+            output.push('    ' + keywords + 'setter ' + propertyString);
     }
+}
+
+function ownEnumerableSymbols(object) {
+    return Object.getOwnPropertySymbols(object).
+        filter(function(name) {
+            return Object.getOwnPropertyDescriptor(object, name).enumerable;
+        });
+}
+
+function collectPropertyKeys(object) {
+   if (Object.prototype.hasOwnProperty.call(object, 'prototype')) {
+       // Skip properties that aren't static (e.g. consts), or are inherited.
+       // TODO(caitp): Don't exclude non-enumerable properties
+       var protoProperties = new Set(Object.keys(object.prototype).concat(
+                                     Object.keys(object.__proto__),
+                                     ownEnumerableSymbols(object.prototype),
+                                     ownEnumerableSymbols(object.__proto__)));
+       return propertyKeys = Object.keys(object).
+           concat(ownEnumerableSymbols(object)).
+           filter(function(name) {
+                // TODO(johnme): Stop filtering out 'toString' once
+                //               https://crbug.com/547773 is fixed.
+               return !protoProperties.has(name) && name !== 'toString';
+           });
+   }
+   return Object.getOwnPropertyNames(object).concat(Object.getOwnPropertySymbols(object));
 }
 
 // FIXME: List interfaces with NoInterfaceObject specified in their IDL file.
@@ -123,21 +164,10 @@ interfaceNames.forEach(function(interfaceName) {
         debug('interface ' + interfaceName);
     // List static properties then prototype properties.
     [this[interfaceName], this[interfaceName].prototype].forEach(function(object) {
-        if ('prototype' in object) {
-            // Skip properties that aren't static (e.g. consts), or are inherited.
-            var protoProperties = new Set(Object.keys(object.prototype).concat(
-                                          Object.keys(object.__proto__)));
-            var propertyNames = Object.keys(object).filter(function(name) {
-                // TODO(johnme): Stop filtering out 'toString' once
-                //               https://crbug.com/547773 is fixed.
-                return !protoProperties.has(name) && name !== 'toString';
-            });
-        } else {
-            var propertyNames = Object.getOwnPropertyNames(object);
-        }
+        var propertyKeys = collectPropertyKeys(object);
         var propertyStrings = [];
-        propertyNames.forEach(function(propertyName) {
-            collectPropertyInfo(object, propertyName, propertyStrings);
+        propertyKeys.forEach(function(propertyKey) {
+            collectPropertyInfo(object, propertyKey, propertyStrings);
         });
         propertyStrings.sort().forEach(debug);
     });
@@ -145,11 +175,11 @@ interfaceNames.forEach(function(interfaceName) {
 
 debug('[GLOBAL OBJECT]');
 var propertyStrings = [];
-var memberNames = propertyNamesInGlobal.filter(function(propertyName) {
-    return !jsBuiltins.has(propertyName) && !isWebIDLConstructor(propertyName);
+var memberNames = propertyNamesInGlobal.filter(function(propertyKey) {
+    return !jsBuiltins.has(propertyKey) && !isWebIDLConstructor(propertyKey);
 });
-memberNames.forEach(function(propertyName) {
-    collectPropertyInfo(globalObject, propertyName, propertyStrings);
+memberNames.forEach(function(propertyKey) {
+    collectPropertyInfo(globalObject, propertyKey, propertyStrings);
 });
 propertyStrings.sort().forEach(debug);
 

@@ -6,11 +6,13 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Starting worker: resources/global-interface-listing.js
 [Worker] [INTERFACES]
 [Worker] interface Blob
+[Worker]     attribute @@toStringTag
 [Worker]     getter size
 [Worker]     getter type
 [Worker]     method constructor
 [Worker]     method slice
 [Worker] interface Cache
+[Worker]     attribute @@toStringTag
 [Worker]     method add
 [Worker]     method addAll
 [Worker]     method constructor
@@ -20,6 +22,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method matchAll
 [Worker]     method put
 [Worker] interface CacheStorage
+[Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method delete
 [Worker]     method has
@@ -27,25 +30,30 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method match
 [Worker]     method open
 [Worker] interface CloseEvent : Event
+[Worker]     attribute @@toStringTag
 [Worker]     getter code
 [Worker]     getter reason
 [Worker]     getter wasClean
 [Worker]     method constructor
 [Worker] interface Crypto
+[Worker]     attribute @@toStringTag
 [Worker]     getter subtle
 [Worker]     method constructor
 [Worker]     method getRandomValues
 [Worker] interface CryptoKey
+[Worker]     attribute @@toStringTag
 [Worker]     getter algorithm
 [Worker]     getter extractable
 [Worker]     getter type
 [Worker]     getter usages
 [Worker]     method constructor
 [Worker] interface CustomEvent : Event
+[Worker]     attribute @@toStringTag
 [Worker]     getter detail
 [Worker]     method constructor
 [Worker]     method initCustomEvent
 [Worker] interface DOMException
+[Worker]     attribute @@toStringTag
 [Worker]     attribute ABORT_ERR
 [Worker]     attribute DATA_CLONE_ERR
 [Worker]     attribute DOMSTRING_SIZE_ERR
@@ -77,6 +85,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method toString
 [Worker] interface DataView
+[Worker]     attribute @@toStringTag
 [Worker]     getter buffer
 [Worker]     getter byteLength
 [Worker]     getter byteOffset
@@ -98,6 +107,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method setUint32
 [Worker]     method setUint8
 [Worker] interface Event
+[Worker]     attribute @@toStringTag
 [Worker]     attribute AT_TARGET
 [Worker]     attribute BLUR
 [Worker]     attribute BUBBLING_PHASE
@@ -138,6 +148,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter cancelBubble
 [Worker]     setter returnValue
 [Worker] interface EventSource : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     attribute CLOSED
 [Worker]     attribute CONNECTING
 [Worker]     attribute OPEN
@@ -153,17 +164,20 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onmessage
 [Worker]     setter onopen
 [Worker] interface EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     method addEventListener
 [Worker]     method constructor
 [Worker]     method dispatchEvent
 [Worker]     method removeEventListener
 [Worker] interface File : Blob
+[Worker]     attribute @@toStringTag
 [Worker]     getter lastModified
 [Worker]     getter lastModifiedDate
 [Worker]     getter name
 [Worker]     getter webkitRelativePath
 [Worker]     method constructor
 [Worker] interface FileError : DOMError
+[Worker]     attribute @@toStringTag
 [Worker]     attribute ABORT_ERR
 [Worker]     attribute ENCODING_ERR
 [Worker]     attribute INVALID_MODIFICATION_ERR
@@ -179,10 +193,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter code
 [Worker]     method constructor
 [Worker] interface FileList
+[Worker]     attribute @@toStringTag
 [Worker]     getter length
 [Worker]     method constructor
 [Worker]     method item
 [Worker] interface FileReader : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     attribute DONE
 [Worker]     attribute EMPTY
 [Worker]     attribute LOADING
@@ -208,12 +224,15 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onloadstart
 [Worker]     setter onprogress
 [Worker] interface FileReaderSync
+[Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method readAsArrayBuffer
 [Worker]     method readAsBinaryString
 [Worker]     method readAsDataURL
 [Worker]     method readAsText
 [Worker] interface FormData
+[Worker]     attribute @@toStringTag
+[Worker]     method @@iterator
 [Worker]     method append
 [Worker]     method constructor
 [Worker]     method delete
@@ -226,6 +245,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method set
 [Worker]     method values
 [Worker] interface Headers
+[Worker]     attribute @@toStringTag
+[Worker]     method @@iterator
 [Worker]     method append
 [Worker]     method constructor
 [Worker]     method delete
@@ -238,6 +259,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method set
 [Worker]     method values
 [Worker] interface IDBCursor
+[Worker]     attribute @@toStringTag
 [Worker]     getter direction
 [Worker]     getter key
 [Worker]     getter primaryKey
@@ -248,9 +270,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method delete
 [Worker]     method update
 [Worker] interface IDBCursorWithValue : IDBCursor
+[Worker]     attribute @@toStringTag
 [Worker]     getter value
 [Worker]     method constructor
 [Worker] interface IDBDatabase : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter name
 [Worker]     getter objectStoreNames
 [Worker]     getter onabort
@@ -268,12 +292,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onerror
 [Worker]     setter onversionchange
 [Worker] interface IDBFactory
+[Worker]     attribute @@toStringTag
 [Worker]     method cmp
 [Worker]     method constructor
 [Worker]     method deleteDatabase
 [Worker]     method open
 [Worker]     method webkitGetDatabaseNames
 [Worker] interface IDBIndex
+[Worker]     attribute @@toStringTag
 [Worker]     getter keyPath
 [Worker]     getter multiEntry
 [Worker]     getter name
@@ -292,12 +318,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     static method lowerBound
 [Worker]     static method only
 [Worker]     static method upperBound
+[Worker]     attribute @@toStringTag
 [Worker]     getter lower
 [Worker]     getter lowerOpen
 [Worker]     getter upper
 [Worker]     getter upperOpen
 [Worker]     method constructor
 [Worker] interface IDBObjectStore
+[Worker]     attribute @@toStringTag
 [Worker]     getter autoIncrement
 [Worker]     getter indexNames
 [Worker]     getter keyPath
@@ -318,12 +346,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openKeyCursor
 [Worker]     method put
 [Worker] interface IDBOpenDBRequest : IDBRequest
+[Worker]     attribute @@toStringTag
 [Worker]     getter onblocked
 [Worker]     getter onupgradeneeded
 [Worker]     method constructor
 [Worker]     setter onblocked
 [Worker]     setter onupgradeneeded
 [Worker] interface IDBRequest : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter error
 [Worker]     getter onerror
 [Worker]     getter onsuccess
@@ -335,6 +365,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onerror
 [Worker]     setter onsuccess
 [Worker] interface IDBTransaction : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
@@ -349,24 +380,29 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter oncomplete
 [Worker]     setter onerror
 [Worker] interface IDBVersionChangeEvent : Event
+[Worker]     attribute @@toStringTag
 [Worker]     getter dataLoss
 [Worker]     getter dataLossMessage
 [Worker]     getter newVersion
 [Worker]     getter oldVersion
 [Worker]     method constructor
 [Worker] interface ImageBitmap
+[Worker]     attribute @@toStringTag
 [Worker]     getter height
 [Worker]     getter width
 [Worker]     method constructor
 [Worker] interface ImageData
+[Worker]     attribute @@toStringTag
 [Worker]     getter height
 [Worker]     getter width
 [Worker]     method constructor
 [Worker] interface MessageChannel
+[Worker]     attribute @@toStringTag
 [Worker]     getter port1
 [Worker]     getter port2
 [Worker]     method constructor
 [Worker] interface MessageEvent : Event
+[Worker]     attribute @@toStringTag
 [Worker]     getter data
 [Worker]     getter lastEventId
 [Worker]     getter origin
@@ -375,6 +411,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method initMessageEvent
 [Worker] interface MessagePort : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter onmessage
 [Worker]     method close
 [Worker]     method constructor
@@ -384,6 +421,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface Notification : EventTarget
 [Worker]     static getter maxActions
 [Worker]     static getter permission
+[Worker]     attribute @@toStringTag
 [Worker]     getter body
 [Worker]     getter data
 [Worker]     getter dir
@@ -406,23 +444,28 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onerror
 [Worker]     setter onshow
 [Worker] interface PermissionStatus : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter onchange
 [Worker]     getter state
 [Worker]     method constructor
 [Worker]     setter onchange
 [Worker] interface Permissions
+[Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method query
 [Worker] interface ProgressEvent : Event
+[Worker]     attribute @@toStringTag
 [Worker]     getter lengthComputable
 [Worker]     getter loaded
 [Worker]     getter total
 [Worker]     method constructor
 [Worker] interface PromiseRejectionEvent : Event
+[Worker]     attribute @@toStringTag
 [Worker]     getter promise
 [Worker]     getter reason
 [Worker]     method constructor
 [Worker] interface ReadableByteStream
+[Worker]     attribute @@toStringTag
 [Worker]     method cancel
 [Worker]     method constructor
 [Worker]     method getReader
@@ -431,6 +474,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method getReader
 [Worker] interface Request
+[Worker]     attribute @@toStringTag
 [Worker]     getter bodyUsed
 [Worker]     getter credentials
 [Worker]     getter headers
@@ -449,6 +493,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface Response
 [Worker]     static method error
 [Worker]     static method redirect
+[Worker]     attribute @@toStringTag
 [Worker]     getter body
 [Worker]     getter bodyUsed
 [Worker]     getter headers
@@ -464,6 +509,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method json
 [Worker]     method text
 [Worker] interface ServiceWorkerRegistration : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter onupdatefound
 [Worker]     getter pushManager
 [Worker]     getter scope
@@ -475,10 +521,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method update
 [Worker]     setter onupdatefound
 [Worker] interface SharedWorkerGlobalScope : WorkerGlobalScope
+[Worker]     attribute @@toStringTag
 [Worker]     attribute PERSISTENT
 [Worker]     attribute TEMPORARY
 [Worker]     method constructor
 [Worker] interface SubtleCrypto
+[Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method decrypt
 [Worker]     method deriveBits
@@ -493,18 +541,21 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method verify
 [Worker]     method wrapKey
 [Worker] interface TextDecoder
+[Worker]     attribute @@toStringTag
 [Worker]     getter encoding
 [Worker]     getter fatal
 [Worker]     getter ignoreBOM
 [Worker]     method constructor
 [Worker]     method decode
 [Worker] interface TextEncoder
+[Worker]     attribute @@toStringTag
 [Worker]     getter encoding
 [Worker]     method constructor
 [Worker]     method encode
 [Worker] interface URL
 [Worker]     static method createObjectURL
 [Worker]     static method revokeObjectURL
+[Worker]     attribute @@toStringTag
 [Worker]     getter hash
 [Worker]     getter host
 [Worker]     getter hostname
@@ -529,6 +580,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter search
 [Worker]     setter username
 [Worker] interface URLSearchParams
+[Worker]     attribute @@toStringTag
+[Worker]     method @@iterator
 [Worker]     method append
 [Worker]     method constructor
 [Worker]     method delete
@@ -542,6 +595,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toString
 [Worker]     method values
 [Worker] interface WebSocket : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     attribute CLOSED
 [Worker]     attribute CLOSING
 [Worker]     attribute CONNECTING
@@ -565,6 +619,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onmessage
 [Worker]     setter onopen
 [Worker] interface WorkerGlobalScope : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter console
 [Worker]     getter crypto
 [Worker]     getter indexedDB
@@ -592,6 +647,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onrejectionhandled
 [Worker]     setter onunhandledrejection
 [Worker] interface WorkerLocation
+[Worker]     attribute @@toStringTag
 [Worker]     getter hash
 [Worker]     getter host
 [Worker]     getter hostname
@@ -604,6 +660,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method toString
 [Worker] interface WorkerNavigator
+[Worker]     attribute @@toStringTag
 [Worker]     getter appCodeName
 [Worker]     getter appName
 [Worker]     getter appVersion
@@ -615,6 +672,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter userAgent
 [Worker]     method constructor
 [Worker] interface XMLHttpRequest : XMLHttpRequestEventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     attribute DONE
 [Worker]     attribute HEADERS_RECEIVED
 [Worker]     attribute LOADING
@@ -645,6 +703,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter timeout
 [Worker]     setter withCredentials
 [Worker] interface XMLHttpRequestEventTarget : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter onabort
 [Worker]     getter onerror
 [Worker]     getter onload
@@ -661,8 +720,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onprogress
 [Worker]     setter ontimeout
 [Worker] interface XMLHttpRequestUpload : XMLHttpRequestEventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface webkitIDBCursor
+[Worker]     attribute @@toStringTag
 [Worker]     getter direction
 [Worker]     getter key
 [Worker]     getter primaryKey
@@ -673,6 +734,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method delete
 [Worker]     method update
 [Worker] interface webkitIDBDatabase : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter name
 [Worker]     getter objectStoreNames
 [Worker]     getter onabort
@@ -690,12 +752,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onerror
 [Worker]     setter onversionchange
 [Worker] interface webkitIDBFactory
+[Worker]     attribute @@toStringTag
 [Worker]     method cmp
 [Worker]     method constructor
 [Worker]     method deleteDatabase
 [Worker]     method open
 [Worker]     method webkitGetDatabaseNames
 [Worker] interface webkitIDBIndex
+[Worker]     attribute @@toStringTag
 [Worker]     getter keyPath
 [Worker]     getter multiEntry
 [Worker]     getter name
@@ -714,12 +778,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     static method lowerBound
 [Worker]     static method only
 [Worker]     static method upperBound
+[Worker]     attribute @@toStringTag
 [Worker]     getter lower
 [Worker]     getter lowerOpen
 [Worker]     getter upper
 [Worker]     getter upperOpen
 [Worker]     method constructor
 [Worker] interface webkitIDBObjectStore
+[Worker]     attribute @@toStringTag
 [Worker]     getter autoIncrement
 [Worker]     getter indexNames
 [Worker]     getter keyPath
@@ -740,6 +806,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openKeyCursor
 [Worker]     method put
 [Worker] interface webkitIDBRequest : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter error
 [Worker]     getter onerror
 [Worker]     getter onsuccess
@@ -751,6 +818,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onerror
 [Worker]     setter onsuccess
 [Worker] interface webkitIDBTransaction : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode

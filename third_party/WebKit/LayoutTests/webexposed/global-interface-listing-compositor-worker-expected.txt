@@ -17,6 +17,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method size
 [Worker] interface CompositorProxy
+[Worker]     attribute @@toStringTag
 [Worker]     getter opacity
 [Worker]     getter scrollLeft
 [Worker]     getter scrollTop
@@ -29,11 +30,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter scrollTop
 [Worker]     setter transform
 [Worker] interface CompositorWorkerGlobalScope : WorkerGlobalScope
+[Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface CountQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size
 [Worker] interface DataView
+[Worker]     attribute @@toStringTag
 [Worker]     getter buffer
 [Worker]     getter byteLength
 [Worker]     getter byteOffset
@@ -61,6 +64,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method getReader
 [Worker]     method tee
 [Worker] interface webkitIDBCursor
+[Worker]     attribute @@toStringTag
 [Worker]     getter direction
 [Worker]     getter key
 [Worker]     getter primaryKey
@@ -72,6 +76,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method delete
 [Worker]     method update
 [Worker] interface webkitIDBDatabase : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter name
 [Worker]     getter objectStoreNames
 [Worker]     getter onabort
@@ -89,12 +94,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onerror
 [Worker]     setter onversionchange
 [Worker] interface webkitIDBFactory
+[Worker]     attribute @@toStringTag
 [Worker]     method cmp
 [Worker]     method constructor
 [Worker]     method deleteDatabase
 [Worker]     method open
 [Worker]     method webkitGetDatabaseNames
 [Worker] interface webkitIDBIndex
+[Worker]     attribute @@toStringTag
 [Worker]     getter keyPath
 [Worker]     getter multiEntry
 [Worker]     getter name
@@ -113,6 +120,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     static method lowerBound
 [Worker]     static method only
 [Worker]     static method upperBound
+[Worker]     attribute @@toStringTag
 [Worker]     getter lower
 [Worker]     getter lowerOpen
 [Worker]     getter upper
@@ -120,6 +128,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method includes
 [Worker] interface webkitIDBObjectStore
+[Worker]     attribute @@toStringTag
 [Worker]     getter autoIncrement
 [Worker]     getter indexNames
 [Worker]     getter keyPath
@@ -140,6 +149,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method openKeyCursor
 [Worker]     method put
 [Worker] interface webkitIDBRequest : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter error
 [Worker]     getter onerror
 [Worker]     getter onsuccess
@@ -151,6 +161,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onerror
 [Worker]     setter onsuccess
 [Worker] interface webkitIDBTransaction : EventTarget
+[Worker]     attribute @@toStringTag
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
