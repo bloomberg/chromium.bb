@@ -10,6 +10,7 @@ mojom("interfaces") {
     "decryptor.mojom",
     "demuxer_stream.mojom",
     "media_types.mojom",
+    "output_protection.mojom",
     "renderer.mojom",
     "service_factory.mojom",
   ]

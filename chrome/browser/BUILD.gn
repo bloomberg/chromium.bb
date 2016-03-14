@@ -972,10 +972,16 @@ source_set("browser") {
     deps += [ "//chrome/browser/media/router" ]
   }
 
-  if (mojo_media_host == "browser") {
-    deps += [ "//media/mojo/services:application_factory" ]
-  } else if (enable_mojo_media) {
+  if (enable_mojo_media) {
     configs += [ "//media/mojo/services:mojo_media_config" ]
+    sources += [
+      "media/output_protection_impl.cc",
+      "media/output_protection_impl.h",
+    ]
+    deps += [ "//media/mojo/interfaces" ]
+    if (mojo_media_host == "browser") {
+      deps += [ "//media/mojo/services:application_factory" ]
+    }
   }
 
   if (enable_wayland_server) {

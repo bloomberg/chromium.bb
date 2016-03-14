@@ -301,6 +301,10 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 #endif
 
+#if defined(ENABLE_MOJO_MEDIA)
+#include "chrome/browser/media/output_protection_impl.h"
+#endif
+
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 #include "media/mojo/services/mojo_media_application_factory.h"
 #endif
@@ -2780,11 +2784,17 @@ bool ChromeContentBrowserClient::ShouldUseWindowsPrefetchArgument() const {
 void ChromeContentBrowserClient::RegisterFrameMojoShellServices(
     content::ServiceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
+// TODO(xhwang): Only register this when ENABLE_MOJO_MEDIA.
 #if defined(OS_CHROMEOS)
   registry->AddService(
       base::Bind(&chromeos::attestation::PlatformVerificationImpl::Create,
                  render_frame_host));
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(ENABLE_MOJO_MEDIA)
+  registry->AddService(
+      base::Bind(&OutputProtectionImpl::Create, render_frame_host));
+#endif  // defined(ENABLE_MOJO_MEDIA)
 }
 
 void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
