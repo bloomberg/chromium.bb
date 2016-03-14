@@ -67,14 +67,17 @@ component("shell_dialogs") {
 
 test("shell_dialogs_unittests") {
   sources = [
+    # TODO(karandeepb) : Revisit this once gn gets mac bundle support.
+    # "select_file_dialog_mac_unittest.mm",
+    "run_all_unittests.cc",
     "select_file_dialog_win_unittest.cc",
   ]
 
   deps = [
     ":shell_dialogs",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gtest",
+    "//ui/base:base",
   ]
 }

@@ -14,15 +14,21 @@
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/shell_dialogs_export.h"
 
 @class ExtensionDropdownHandler;
 @class SelectFileDialogBridge;
 
 namespace ui {
 
+namespace test {
+class SelectFileDialogMacTest;
+}  // namespace test
+
 // Implementation of SelectFileDialog that shows Cocoa dialogs for choosing a
 // file or folder.
-class SelectFileDialogImpl : public ui::SelectFileDialog {
+// Exported for unit tests.
+class SHELL_DIALOGS_EXPORT SelectFileDialogImpl : public ui::SelectFileDialog {
  public:
   SelectFileDialogImpl(Listener* listener, ui::SelectFilePolicy* policy);
 
@@ -51,6 +57,8 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
                       void* params) override;
 
  private:
+  friend class test::SelectFileDialogMacTest;
+
   // Struct to store data associated with a file dialog while it is showing.
   struct DialogData {
     DialogData(void* params_,
