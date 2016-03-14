@@ -53,11 +53,10 @@ class UDPSocketPerfTest : public PlatformTest {
 void CreateUDPAddress(const std::string& ip_str,
                       uint16_t port,
                       IPEndPoint* address) {
-  IPAddressNumber ip_number;
-  bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
-  if (!rv)
+  IPAddress ip_address;
+  if (!ip_address.AssignFromIPLiteral(ip_str))
     return;
-  *address = IPEndPoint(ip_number, port);
+  *address = IPEndPoint(ip_address, port);
 }
 
 void UDPSocketPerfTest::WritePacketsToSocket(UDPClientSocket* socket,

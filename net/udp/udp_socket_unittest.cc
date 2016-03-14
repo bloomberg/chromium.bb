@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -128,11 +129,10 @@ class UDPSocketTest : public PlatformTest {
   void CreateUDPAddress(const std::string& ip_str,
                         uint16_t port,
                         IPEndPoint* address) {
-    IPAddressNumber ip_number;
-    bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
-    if (!rv)
+    IPAddress ip_address;
+    if (!ip_address.AssignFromIPLiteral(ip_str))
       return;
-    *address = IPEndPoint(ip_number, port);
+    *address = IPEndPoint(ip_address, port);
   }
 
   // Run unit test for a connection test.
@@ -512,11 +512,11 @@ TEST_F(UDPSocketTest, ClientGetLocalPeerAddresses) {
     SCOPED_TRACE(std::string("Connecting from ") +  tests[i].local_address +
                  std::string(" to ") + tests[i].remote_address);
 
-    IPAddressNumber ip_number;
-    ParseIPLiteralToNumber(tests[i].remote_address, &ip_number);
-    IPEndPoint remote_address(ip_number, 80);
-    ParseIPLiteralToNumber(tests[i].local_address, &ip_number);
-    IPEndPoint local_address(ip_number, 80);
+    IPAddress ip_address;
+    EXPECT_TRUE(ip_address.AssignFromIPLiteral(tests[i].remote_address));
+    IPEndPoint remote_address(ip_address, 80);
+    EXPECT_TRUE(ip_address.AssignFromIPLiteral(tests[i].local_address));
+    IPEndPoint local_address(ip_address, 80);
 
     UDPClientSocket client(DatagramSocket::DEFAULT_BIND,
                            RandIntCallback(),
@@ -610,8 +610,8 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
 
   IPEndPoint bind_address;
   CreateUDPAddress("0.0.0.0", kPort, &bind_address);
-  IPAddressNumber group_ip;
-  EXPECT_TRUE(ParseIPLiteralToNumber(kGroup, &group_ip));
+  IPAddress group_ip;
+  EXPECT_TRUE(group_ip.AssignFromIPLiteral(kGroup));
 
   UDPSocket socket(DatagramSocket::DEFAULT_BIND,
                    RandIntCallback(),

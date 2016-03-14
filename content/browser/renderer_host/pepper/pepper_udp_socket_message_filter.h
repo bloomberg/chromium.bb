@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 #include "net/base/completion_callback.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_socket.h"
 #include "ppapi/c/pp_instance.h"
@@ -75,14 +76,14 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   };
 
   struct PendingSend {
-    PendingSend(const net::IPAddressNumber& address,
+    PendingSend(const net::IPAddress& address,
                 int port,
                 const scoped_refptr<net::IOBufferWithSize>& buffer,
                 const ppapi::host::ReplyMessageContext& context);
     PendingSend(const PendingSend& other);
     ~PendingSend();
 
-    net::IPAddressNumber address;
+    net::IPAddress address;
     int port;
     scoped_refptr<net::IOBufferWithSize> buffer;
     ppapi::host::ReplyMessageContext context;

@@ -21,6 +21,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_activity_monitor.h"
@@ -281,12 +282,12 @@ int UDPSocketPosix::InternalConnect(const IPEndPoint& address) {
 
   int rv = 0;
   if (bind_type_ == DatagramSocket::RANDOM_BIND) {
-    // Construct IPAddressNumber of appropriate size (IPv4 or IPv6) of 0s,
+    // Construct IPAddress of appropriate size (IPv4 or IPv6) of 0s,
     // representing INADDR_ANY or in6addr_any.
-    size_t addr_size = address.GetSockAddrFamily() == AF_INET ?
-        kIPv4AddressSize : kIPv6AddressSize;
-    IPAddressNumber addr_any(addr_size);
-    rv = RandomBind(addr_any);
+    size_t addr_size = address.GetSockAddrFamily() == AF_INET
+                           ? IPAddress::kIPv4AddressSize
+                           : IPAddress::kIPv6AddressSize;
+    rv = RandomBind(IPAddress::AllZeros(addr_size));
   }
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
@@ -652,7 +653,7 @@ int UDPSocketPosix::DoBind(const IPEndPoint& address) {
   return MapSystemError(last_error);
 }
 
-int UDPSocketPosix::RandomBind(const IPAddressNumber& address) {
+int UDPSocketPosix::RandomBind(const IPAddress& address) {
   DCHECK(bind_type_ == DatagramSocket::RANDOM_BIND && !rand_int_cb_.is_null());
 
   for (int i = 0; i < kBindRetries; ++i) {
@@ -664,13 +665,13 @@ int UDPSocketPosix::RandomBind(const IPAddressNumber& address) {
   return DoBind(IPEndPoint(address, 0));
 }
 
-int UDPSocketPosix::JoinGroup(const IPAddressNumber& group_address) const {
+int UDPSocketPosix::JoinGroup(const IPAddress& group_address) const {
   DCHECK(CalledOnValidThread());
   if (!is_connected())
     return ERR_SOCKET_NOT_CONNECTED;
 
   switch (group_address.size()) {
-    case kIPv4AddressSize: {
+    case IPAddress::kIPv4AddressSize: {
       if (addr_family_ != AF_INET)
         return ERR_ADDRESS_INVALID;
 
@@ -681,23 +682,25 @@ int UDPSocketPosix::JoinGroup(const IPAddressNumber& group_address) const {
 #else
       ip_mreq mreq;
       int error = GetIPv4AddressFromIndex(socket_, multicast_interface_,
-                                            &mreq.imr_interface.s_addr);
+                                          &mreq.imr_interface.s_addr);
       if (error != OK)
         return error;
 #endif
-      memcpy(&mreq.imr_multiaddr, &group_address[0], kIPv4AddressSize);
+      memcpy(&mreq.imr_multiaddr, group_address.bytes().data(),
+             IPAddress::kIPv4AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                           &mreq, sizeof(mreq));
       if (rv < 0)
         return MapSystemError(errno);
       return OK;
     }
-    case kIPv6AddressSize: {
+    case IPAddress::kIPv6AddressSize: {
       if (addr_family_ != AF_INET6)
         return ERR_ADDRESS_INVALID;
       ipv6_mreq mreq;
       mreq.ipv6mr_interface = multicast_interface_;
-      memcpy(&mreq.ipv6mr_multiaddr, &group_address[0], kIPv6AddressSize);
+      memcpy(&mreq.ipv6mr_multiaddr, group_address.bytes().data(),
+             IPAddress::kIPv6AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_JOIN_GROUP,
                           &mreq, sizeof(mreq));
       if (rv < 0)
@@ -710,31 +713,33 @@ int UDPSocketPosix::JoinGroup(const IPAddressNumber& group_address) const {
   }
 }
 
-int UDPSocketPosix::LeaveGroup(const IPAddressNumber& group_address) const {
+int UDPSocketPosix::LeaveGroup(const IPAddress& group_address) const {
   DCHECK(CalledOnValidThread());
 
   if (!is_connected())
     return ERR_SOCKET_NOT_CONNECTED;
 
   switch (group_address.size()) {
-    case kIPv4AddressSize: {
+    case IPAddress::kIPv4AddressSize: {
       if (addr_family_ != AF_INET)
         return ERR_ADDRESS_INVALID;
       ip_mreq mreq;
       mreq.imr_interface.s_addr = INADDR_ANY;
-      memcpy(&mreq.imr_multiaddr, &group_address[0], kIPv4AddressSize);
+      memcpy(&mreq.imr_multiaddr, group_address.bytes().data(),
+             IPAddress::kIPv4AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IP, IP_DROP_MEMBERSHIP,
                           &mreq, sizeof(mreq));
       if (rv < 0)
         return MapSystemError(errno);
       return OK;
     }
-    case kIPv6AddressSize: {
+    case IPAddress::kIPv6AddressSize: {
       if (addr_family_ != AF_INET6)
         return ERR_ADDRESS_INVALID;
       ipv6_mreq mreq;
       mreq.ipv6mr_interface = 0;  // 0 indicates default multicast interface.
-      memcpy(&mreq.ipv6mr_multiaddr, &group_address[0], kIPv6AddressSize);
+      memcpy(&mreq.ipv6mr_multiaddr, group_address.bytes().data(),
+             IPAddress::kIPv6AddressSize);
       int rv = setsockopt(socket_, IPPROTO_IPV6, IPV6_LEAVE_GROUP,
                           &mreq, sizeof(mreq));
       if (rv < 0)

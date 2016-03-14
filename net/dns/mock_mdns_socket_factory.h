@@ -16,6 +16,8 @@
 
 namespace net {
 
+class IPAddress;
+
 class MockMDnsDatagramServerSocket : public DatagramServerSocket {
  public:
   explicit MockMDnsDatagramServerSocket(AddressFamily address_family);
@@ -51,8 +53,8 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   MOCK_METHOD0(AllowAddressReuse, void());
   MOCK_METHOD0(AllowBroadcast, void());
 
-  MOCK_CONST_METHOD1(JoinGroup, int(const IPAddressNumber& group_address));
-  MOCK_CONST_METHOD1(LeaveGroup, int(const IPAddressNumber& address));
+  MOCK_CONST_METHOD1(JoinGroup, int(const IPAddress& group_address));
+  MOCK_CONST_METHOD1(LeaveGroup, int(const IPAddress& address));
 
   MOCK_METHOD1(SetMulticastInterface, int(uint32_t interface_index));
   MOCK_METHOD1(SetMulticastTimeToLive, int(int ttl));

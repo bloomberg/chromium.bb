@@ -10,9 +10,6 @@
 
 namespace net {
 
-const size_t IPAddress::kIPv4AddressSize = 4;
-const size_t IPAddress::kIPv6AddressSize = 16;
-
 IPAddress::IPAddress() {}
 
 IPAddress::IPAddress(const IPAddressNumber& address) : ip_address_(address) {}
@@ -85,6 +82,11 @@ IPAddress IPAddress::IPv6Localhost() {
   static const uint8_t kLocalhostIPv6[] = {0, 0, 0, 0, 0, 0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 1};
   return IPAddress(kLocalhostIPv6);
+}
+
+// static
+IPAddress IPAddress::AllZeros(size_t num_zero_bytes) {
+  return IPAddress(std::vector<uint8_t>(num_zero_bytes));
 }
 
 bool IPAddress::operator==(const IPAddress& that) const {

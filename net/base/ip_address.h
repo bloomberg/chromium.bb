@@ -20,8 +20,7 @@ namespace net {
 
 class NET_EXPORT IPAddress {
  public:
-  static const size_t kIPv4AddressSize;
-  static const size_t kIPv6AddressSize;
+  enum : size_t { kIPv4AddressSize = 4, kIPv6AddressSize = 16 };
 
   // Creates a zero-sized, invalid address.
   IPAddress();
@@ -92,6 +91,9 @@ class NET_EXPORT IPAddress {
 
   // Returns an IPAddress instance representing the ::1 address.
   static IPAddress IPv6Localhost();
+
+  // Returns an IPAddress made up of |num_zero_bytes| zeros.
+  static IPAddress AllZeros(size_t num_zero_bytes);
 
   bool operator==(const IPAddress& that) const;
   bool operator!=(const IPAddress& that) const;

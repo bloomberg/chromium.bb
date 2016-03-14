@@ -133,14 +133,15 @@ int PrivetTrafficDetector::Bind() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
   net::IPEndPoint multicast_addr = net::GetMDnsIPEndPoint(address_family_);
-  net::IPAddressNumber address_any(multicast_addr.address().size());
-  net::IPEndPoint bind_endpoint(address_any, multicast_addr.port());
+  net::IPEndPoint bind_endpoint(
+      net::IPAddress::AllZeros(multicast_addr.address().size()),
+      multicast_addr.port());
   socket_->AllowAddressReuse();
   int rv = socket_->Listen(bind_endpoint);
   if (rv < net::OK)
     return rv;
   socket_->SetMulticastLoopbackMode(false);
-  return socket_->JoinGroup(multicast_addr.address().bytes());
+  return socket_->JoinGroup(multicast_addr.address());
 }
 
 bool PrivetTrafficDetector::IsSourceAcceptable() const {

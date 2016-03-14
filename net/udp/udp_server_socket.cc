@@ -92,11 +92,11 @@ void UDPServerSocket::AllowBroadcast() {
   allow_broadcast_ = true;
 }
 
-int UDPServerSocket::JoinGroup(const IPAddressNumber& group_address) const {
+int UDPServerSocket::JoinGroup(const IPAddress& group_address) const {
   return socket_.JoinGroup(group_address);
 }
 
-int UDPServerSocket::LeaveGroup(const IPAddressNumber& group_address) const {
+int UDPServerSocket::LeaveGroup(const IPAddress& group_address) const {
   return socket_.LeaveGroup(group_address);
 }
 

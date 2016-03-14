@@ -450,7 +450,7 @@ bool NetAddressPrivateImpl::SockaddrToNetAddress(
 
 // static
 bool NetAddressPrivateImpl::IPEndPointToNetAddress(
-    const std::vector<unsigned char>& address,
+    const std::vector<uint8_t>& address,
     uint16_t port,
     PP_NetAddress_Private* addr) {
   if (!addr)
@@ -483,7 +483,7 @@ bool NetAddressPrivateImpl::IPEndPointToNetAddress(
 // static
 bool NetAddressPrivateImpl::NetAddressToIPEndPoint(
     const PP_NetAddress_Private& addr,
-    std::vector<unsigned char>* address,
+    std::vector<uint8_t>* address,
     uint16_t* port) {
   if (!address || !port)
     return false;

@@ -26,6 +26,8 @@
 
 namespace net {
 
+class IPAddress;
+
 class NET_EXPORT UDPSocketPosix : public base::NonThreadSafe {
  public:
   UDPSocketPosix(DatagramSocket::BindType bind_type,
@@ -136,7 +138,7 @@ class NET_EXPORT UDPSocketPosix : public base::NonThreadSafe {
   // |group_address| is the group address to join, could be either
   // an IPv4 or IPv6 address.
   // Returns a net error code.
-  int JoinGroup(const IPAddressNumber& group_address) const;
+  int JoinGroup(const IPAddress& group_address) const;
 
   // Leaves the multicast group.
   // |group_address| is the group address to leave, could be either
@@ -145,7 +147,7 @@ class NET_EXPORT UDPSocketPosix : public base::NonThreadSafe {
   // It's optional to leave the multicast group before destroying
   // the socket. It will be done by the OS.
   // Returns a net error code.
-  int LeaveGroup(const IPAddressNumber& group_address) const;
+  int LeaveGroup(const IPAddress& group_address) const;
 
   // Sets interface to use for multicast. If |interface_index| set to 0,
   // default interface is used.
@@ -251,7 +253,7 @@ class NET_EXPORT UDPSocketPosix : public base::NonThreadSafe {
   int SetMulticastOptions();
   int DoBind(const IPEndPoint& address);
   // Binds to a random port on |address|.
-  int RandomBind(const IPAddressNumber& address);
+  int RandomBind(const IPAddress& address);
 
   int socket_;
 

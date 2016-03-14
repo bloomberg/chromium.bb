@@ -121,12 +121,12 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
 
   void AllowBroadcast() override { NOTIMPLEMENTED(); }
 
-  int JoinGroup(const net::IPAddressNumber& group_address) const override {
+  int JoinGroup(const net::IPAddress& group_address) const override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  int LeaveGroup(const net::IPAddressNumber& group_address) const override {
+  int LeaveGroup(const net::IPAddress& group_address) const override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }

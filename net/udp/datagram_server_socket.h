@@ -13,6 +13,7 @@
 
 namespace net {
 
+class IPAddress;
 class IPEndPoint;
 class IOBuffer;
 
@@ -71,14 +72,14 @@ class NET_EXPORT DatagramServerSocket : public DatagramSocket {
 
   // Join the multicast group with address |group_address|.
   // Returns a network error code.
-  virtual int JoinGroup(const IPAddressNumber& group_address) const = 0;
+  virtual int JoinGroup(const IPAddress& group_address) const = 0;
 
   // Leave the multicast group with address |group_address|.
   // If the socket hasn't joined the group, it will be ignored.
   // It's optional to leave the multicast group before destroying
   // the socket. It will be done by the OS.
   // Returns a network error code.
-  virtual int LeaveGroup(const IPAddressNumber& group_address) const = 0;
+  virtual int LeaveGroup(const IPAddress& group_address) const = 0;
 
   // Set interface to use for multicast. If |interface_index| set to 0, default
   // interface is used.

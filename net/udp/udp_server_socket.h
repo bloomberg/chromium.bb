@@ -9,12 +9,12 @@
 
 #include "base/macros.h"
 #include "net/base/completion_callback.h"
-#include "net/base/ip_address_number.h"
 #include "net/udp/datagram_server_socket.h"
 #include "net/udp/udp_socket.h"
 
 namespace net {
 
+class IPAddress;
 class IPEndPoint;
 class BoundNetLog;
 
@@ -42,8 +42,8 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   const BoundNetLog& NetLog() const override;
   void AllowAddressReuse() override;
   void AllowBroadcast() override;
-  int JoinGroup(const IPAddressNumber& group_address) const override;
-  int LeaveGroup(const IPAddressNumber& group_address) const override;
+  int JoinGroup(const IPAddress& group_address) const override;
+  int LeaveGroup(const IPAddress& group_address) const override;
   int SetMulticastInterface(uint32_t interface_index) override;
   int SetMulticastTimeToLive(int time_to_live) override;
   int SetMulticastLoopbackMode(bool loopback) override;
