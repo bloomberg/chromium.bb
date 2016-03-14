@@ -239,16 +239,9 @@ class ThreadPriorityTestThread : public FunctionTestThread {
 
 }  // namespace
 
-#if defined(OS_MACOSX)
-// PlatformThread::GetCurrentThreadPriority() is not implemented on OS X.
-#define MAYBE_ThreadPriorityCurrentThread DISABLED_ThreadPriorityCurrentThread
-#else
-#define MAYBE_ThreadPriorityCurrentThread ThreadPriorityCurrentThread
-#endif
-
 // Test changing a created thread's priority (which has different semantics on
 // some platforms).
-TEST(PlatformThreadTest, MAYBE_ThreadPriorityCurrentThread) {
+TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
   const bool bumping_priority_allowed = IsBumpingPriorityAllowed();
   if (bumping_priority_allowed) {
     // Bump the priority in order to verify that new threads are started with
