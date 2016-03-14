@@ -179,6 +179,18 @@ void ResourceLoader::cancel(const ResourceError& error)
     m_state = ConnectionStateCanceled;
     m_resource->setResourceError(nonNullError);
 
+    // If we don't immediately clear m_loader when cancelling, we might get
+    // unexpected reentrancy. m_resource->error() can trigger JS events, which
+    // could start a modal dialog. Normally, a modal dialog would defer loading
+    // and prevent receiving messages for a cancelled ResourceLoader, but
+    // m_fetcher->didFailLoading() severs the connection by which all of a
+    // page's loads are deferred. A response can then arrive, see m_state
+    // is ConnectionStateCanceled, and ASSERT or break in other ways.
+    if (m_loader) {
+        m_loader->cancel();
+        m_loader.clear();
+    }
+
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
         m_fetcher->didFailLoading(m_resource.get(), nonNullError);
