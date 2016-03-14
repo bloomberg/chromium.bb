@@ -169,20 +169,6 @@ void BackgroundImageGeometry::useFixedAttachment(const LayoutPoint& attachmentPo
     m_phase.move(std::max(alignedPoint.x() - m_destRect.x(), LayoutUnit()), std::max(alignedPoint.y() - m_destRect.y(), LayoutUnit()));
 }
 
-void BackgroundImageGeometry::clip(const LayoutRect& clipRect)
-{
-    m_destRect.intersect(clipRect);
-}
-
-void BackgroundImageGeometry::pixelSnapGeometry()
-{
-    setTileSize(applySubPixelHeuristicToImageSize(m_tileSize, m_destRect));
-    setImageContainerSize(applySubPixelHeuristicToImageSize(m_imageContainerSize, m_destRect));
-    setSpaceSize(LayoutSize(roundedIntSize(m_repeatSpacing)));
-    setDestRect(LayoutRect(pixelSnappedIntRect(m_destRect)));
-    setPhase(LayoutPoint(flooredIntPoint(m_phase)));
-}
-
 void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const LayoutBoxModelObject* paintContainer,
     const GlobalPaintFlags globalPaintFlags, const FillLayer& fillLayer, const LayoutRect& paintRect)
 {
@@ -270,9 +256,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
     LayoutSize fillTileSize(calculateFillTileSize(positioningBox, fillLayer, positioningAreaSize));
     // It's necessary to apply the heuristic here prior to any further calculations to avoid
     // incorrectly using sub-pixel values that won't be present in the painted tile.
-    fillTileSize = applySubPixelHeuristicToImageSize(fillTileSize, m_destRect);
-    setTileSize(fillTileSize);
-    setImageContainerSize(fillTileSize);
+    setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
 
     EFillRepeat backgroundRepeatX = fillLayer.repeatX();
     EFillRepeat backgroundRepeatY = fillLayer.repeatY();
@@ -290,9 +274,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
         if (fillLayer.size().size.height().isAuto() && backgroundRepeatY != RoundFill) {
             fillTileSize.setHeight(fillTileSize.height() * positioningAreaSize.width() / (nrTiles * fillTileSize.width()));
         }
-
-        setTileSize(fillTileSize);
-        setImageContainerSize(fillTileSize);
+        setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
         setPhaseX(tileSize().width() ? LayoutUnit(tileSize().width() - fmodf((computedXPosition + left), tileSize().width()))
             : LayoutUnit());
         setSpaceSize(LayoutSize());
@@ -308,9 +290,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
         if (fillLayer.size().size.width().isAuto() && backgroundRepeatX != RoundFill) {
             fillTileSize.setWidth(fillTileSize.width() * positioningAreaSize.height() / (nrTiles * fillTileSize.height()));
         }
-
-        setTileSize(fillTileSize);
-        setImageContainerSize(fillTileSize);
+        setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
         setPhaseY(tileSize().height() ? LayoutUnit(tileSize().height() - fmodf((computedYPosition + top), tileSize().height()))
             : LayoutUnit());
         setSpaceSize(LayoutSize());
@@ -327,7 +307,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
 
         if (space >= LayoutUnit()) {
             computedXPosition = roundedMinimumValueForLength(Length(), availableWidth);
-            setSpaceSize(LayoutSize(space, LayoutUnit()));
+            setSpaceSize(LayoutSize(space.round(), LayoutUnit()));
             setPhaseX(actualWidth ? LayoutUnit(actualWidth - fmodf((computedXPosition + left), actualWidth)) : LayoutUnit());
         } else {
             backgroundRepeatX = NoRepeatFill;
@@ -350,7 +330,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
 
         if (space >= LayoutUnit()) {
             computedYPosition = roundedMinimumValueForLength(Length(), availableHeight);
-            setSpaceSize(LayoutSize(spaceSize().width(), space));
+            setSpaceSize(LayoutSize(spaceSize().width(), space.round()));
             setPhaseY(actualHeight ? LayoutUnit(actualHeight - fmodf((computedYPosition + top), actualHeight)) : LayoutUnit());
         } else {
             backgroundRepeatY = NoRepeatFill;
@@ -365,8 +345,13 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
     if (fixedAttachment)
         useFixedAttachment(paintRect.location());
 
-    clip(paintRect);
-    pixelSnapGeometry();
+    // Clip the final output rect to the paint rect
+    m_destRect.intersect(paintRect);
+
+    // Snap as-yet unsnapped values.
+    setPhase(LayoutPoint(roundedIntPoint(m_phase)));
+    setDestRect(LayoutRect(pixelSnappedIntRect(m_destRect)));
+
 }
 
 } // namespace blink

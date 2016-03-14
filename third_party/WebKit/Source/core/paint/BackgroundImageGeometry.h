@@ -30,7 +30,6 @@ public:
 
     LayoutRect destRect() const { return m_destRect; }
     LayoutSize tileSize() const { return m_tileSize; }
-    LayoutSize imageContainerSize() const { return m_imageContainerSize; }
     LayoutPoint phase() const { return m_phase; }
     // Space-size represents extra width and height that may be added to
     // the image if used as a pattern with background-repeat: space.
@@ -41,7 +40,6 @@ public:
 private:
     void setDestRect(const LayoutRect& destRect) { m_destRect = destRect; }
     void setPhase(const LayoutPoint& phase) { m_phase = phase; }
-    void setImageContainerSize(const LayoutSize& imageContainerSize) { m_imageContainerSize = imageContainerSize; }
     void setTileSize(const LayoutSize& tileSize) { m_tileSize = tileSize; }
     void setSpaceSize(const LayoutSize& repeatSpacing) { m_repeatSpacing = repeatSpacing; }
     void setPhaseX(LayoutUnit x) { m_phase.setX(x); }
@@ -49,15 +47,11 @@ private:
     void setNoRepeatX(LayoutUnit xOffset);
     void setNoRepeatY(LayoutUnit yOffset);
 
-    void pixelSnapGeometry();
-
     void useFixedAttachment(const LayoutPoint& attachmentPoint);
-    void clip(const LayoutRect&);
     void setHasNonLocalGeometry() { m_hasNonLocalGeometry = true; }
 
     LayoutRect m_destRect;
     LayoutPoint m_phase;
-    LayoutSize m_imageContainerSize;
     LayoutSize m_tileSize;
     LayoutSize m_repeatSpacing;
     bool m_hasNonLocalGeometry;

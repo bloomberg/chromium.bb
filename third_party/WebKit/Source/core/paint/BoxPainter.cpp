@@ -451,7 +451,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
             // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
             SkXfermode::Mode compositeOp = op == SkXfermode::kSrcOver_Mode ? bgOp : op;
             const LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
-            RefPtr<Image> image = bgImage->image(clientForBackgroundImage, flooredIntSize(geometry.imageContainerSize()), obj.style()->effectiveZoom());
+            RefPtr<Image> image = bgImage->image(clientForBackgroundImage, flooredIntSize(geometry.tileSize()), obj.style()->effectiveZoom());
             InterpolationQuality interpolationQuality = chooseInterpolationQuality(*clientForBackgroundImage, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
             if (bgLayer.maskSourceType() == MaskLuminance)
                 context.setColorFilter(ColorFilterLuminanceToAlpha);
