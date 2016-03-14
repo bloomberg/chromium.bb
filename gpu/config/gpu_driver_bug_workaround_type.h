@@ -32,6 +32,8 @@
          disable_d3d11)                                      \
   GPU_OP(DISABLE_DEPTH_TEXTURE,                              \
          disable_depth_texture)                              \
+  GPU_OP(DISABLE_DIRECT_COMPOSITION,                         \
+         disable_direct_composition)                         \
   GPU_OP(DISABLE_DISCARD_FRAMEBUFFER,                        \
          disable_discard_framebuffer)                        \
   GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                           \
@@ -118,6 +120,8 @@
          scalarize_vec_and_mat_constructor_args)             \
   GPU_OP(SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP,        \
          set_texture_filter_before_generating_mipmap)        \
+  GPU_OP(SET_ZERO_LEVEL_BEFORE_GENERATING_MIPMAP,            \
+         set_zero_level_before_generating_mipmap)            \
   GPU_OP(SIMULATE_OUT_OF_MEMORY_ON_LARGE_TEXTURES,           \
          simulate_out_of_memory_on_large_textures)           \
   GPU_OP(SURFACE_TEXTURE_CANT_DETACH,                        \
@@ -128,10 +132,14 @@
          texsubimage_faster_than_teximage)                   \
   GPU_OP(UNBIND_ATTACHMENTS_ON_BOUND_RENDER_FBO_DELETE,      \
          unbind_attachments_on_bound_render_fbo_delete)      \
+  GPU_OP(UNBIND_EGL_CONTEXT_TO_FLUSH_DRIVER_CACHES,          \
+         unbind_egl_context_to_flush_driver_caches)          \
   GPU_OP(UNBIND_FBO_ON_CONTEXT_SWITCH,                       \
          unbind_fbo_on_context_switch)                       \
   GPU_OP(UNFOLD_SHORT_CIRCUIT_AS_TERNARY_OPERATION,          \
          unfold_short_circuit_as_ternary_operation)          \
+  GPU_OP(UNPACK_ALIGNMENT_WORKAROUND_WITH_UNPACK_BUFFER,     \
+         unpack_alignment_workaround_with_unpack_buffer)     \
   GPU_OP(UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX,           \
          unroll_for_loop_with_sampler_array_index)           \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,          \
@@ -146,12 +154,6 @@
          validate_multisample_buffer_allocation)             \
   GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
          wake_up_gpu_before_drawing)                         \
-  GPU_OP(UNBIND_EGL_CONTEXT_TO_FLUSH_DRIVER_CACHES,          \
-         unbind_egl_context_to_flush_driver_caches)          \
-  GPU_OP(SET_ZERO_LEVEL_BEFORE_GENERATING_MIPMAP,            \
-         set_zero_level_before_generating_mipmap)            \
-  GPU_OP(DISABLE_DIRECT_COMPOSITION,                         \
-         disable_direct_composition)                         \
 
 namespace gpu {
 

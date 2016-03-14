@@ -11298,6 +11298,7 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
   }
   uint32_t pixels_size;
   uint32_t skip_size;
+  uint32_t padding;
   if (!GLES2Util::ComputeImageDataSizesES3(width, height, 1,
                                            format, type,
                                            params,
@@ -11305,7 +11306,7 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
                                            nullptr,
                                            nullptr,
                                            &skip_size,
-                                           nullptr)) {
+                                           &padding)) {
     return error::kOutOfBounds;
   }
   DCHECK_EQ(0u, skip_size);
@@ -11331,7 +11332,8 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
 
   TextureManager::DoTexImageArguments args = {
     target, level, internal_format, width, height, 1, border, format, type,
-    pixels, pixels_size, TextureManager::DoTexImageArguments::kTexImage2D };
+    pixels, pixels_size, padding,
+    TextureManager::DoTexImageArguments::kTexImage2D };
   texture_manager()->ValidateAndDoTexImage(
       &texture_state_, &state_, &framebuffer_state_, "glTexImage2D", args);
 
@@ -11386,6 +11388,7 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   }
   uint32_t pixels_size;
   uint32_t skip_size;
+  uint32_t padding;
   if (!GLES2Util::ComputeImageDataSizesES3(width, height, depth,
                                            format, type,
                                            params,
@@ -11393,7 +11396,7 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
                                            nullptr,
                                            nullptr,
                                            &skip_size,
-                                           nullptr)) {
+                                           &padding)) {
     return error::kOutOfBounds;
   }
   DCHECK_EQ(0u, skip_size);
@@ -11419,7 +11422,8 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
 
   TextureManager::DoTexImageArguments args = {
     target, level, internal_format, width, height, depth, border, format, type,
-    pixels, pixels_size, TextureManager::DoTexImageArguments::kTexImage3D };
+    pixels, pixels_size, padding,
+    TextureManager::DoTexImageArguments::kTexImage3D };
   texture_manager()->ValidateAndDoTexImage(
       &texture_state_, &state_, &framebuffer_state_, "glTexImage3D", args);
 
@@ -11810,6 +11814,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32_t immediate_data_size,
   }
   uint32_t pixels_size;
   uint32_t skip_size;
+  uint32_t padding;
   if (!GLES2Util::ComputeImageDataSizesES3(width, height, 1,
                                            format, type,
                                            params,
@@ -11817,7 +11822,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32_t immediate_data_size,
                                            nullptr,
                                            nullptr,
                                            &skip_size,
-                                           nullptr)) {
+                                           &padding)) {
     return error::kOutOfBounds;
   }
   DCHECK_EQ(0u, skip_size);
@@ -11834,7 +11839,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32_t immediate_data_size,
 
   TextureManager::DoTexSubImageArguments args = {
       target, level, xoffset, yoffset, 0, width, height, 1,
-      format, type, pixels, pixels_size,
+      format, type, pixels, pixels_size, padding,
       TextureManager::DoTexSubImageArguments::kTexSubImage2D};
   texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
                                               &framebuffer_state_,
@@ -11892,6 +11897,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32_t immediate_data_size,
   }
   uint32_t pixels_size;
   uint32_t skip_size;
+  uint32_t padding;
   if (!GLES2Util::ComputeImageDataSizesES3(width, height, depth,
                                            format, type,
                                            params,
@@ -11899,7 +11905,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32_t immediate_data_size,
                                            nullptr,
                                            nullptr,
                                            &skip_size,
-                                           nullptr)) {
+                                           &padding)) {
     return error::kOutOfBounds;
   }
   DCHECK_EQ(0u, skip_size);
@@ -11916,7 +11922,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32_t immediate_data_size,
 
   TextureManager::DoTexSubImageArguments args = {
       target, level, xoffset, yoffset, zoffset, width, height, depth,
-      format, type, pixels, pixels_size,
+      format, type, pixels, pixels_size, padding,
       TextureManager::DoTexSubImageArguments::kTexSubImage3D};
   texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
                                               &framebuffer_state_,

@@ -645,7 +645,9 @@ struct DecoderTextureState {
             workarounds.texsubimage_faster_than_teximage),
         force_cube_map_positive_x_allocation(
             workarounds.force_cube_map_positive_x_allocation),
-        force_cube_complete(workarounds.force_cube_complete) {}
+        force_cube_complete(workarounds.force_cube_complete),
+        unpack_alignment_workaround_with_unpack_buffer(
+            workarounds.unpack_alignment_workaround_with_unpack_buffer) {}
 
   // This indicates all the following texSubImage*D calls that are part of the
   // failed texImage*D call should be ignored. The client calls have a lock
@@ -660,6 +662,7 @@ struct DecoderTextureState {
   bool texsubimage_faster_than_teximage;
   bool force_cube_map_positive_x_allocation;
   bool force_cube_complete;
+  bool unpack_alignment_workaround_with_unpack_buffer;
 };
 
 // This class keeps track of the textures and their sizes so we can do NPOT and
@@ -954,6 +957,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     GLenum type;
     const void* pixels;
     uint32_t pixels_size;
+    uint32_t padding;
     TexImageCommandType command_type;
   };
 
@@ -990,6 +994,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     GLenum type;
     const void* pixels;
     uint32_t pixels_size;
+    uint32_t padding;
     TexSubImageCommandType command_type;
   };
 
@@ -1051,12 +1056,17 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
       GLuint* black_texture);
 
   void DoTexImage(
-    DecoderTextureState* texture_state,
-    ContextState* state,
-    DecoderFramebufferState* framebuffer_state,
-    const char* function_name,
-    TextureRef* texture_ref,
-    const DoTexImageArguments& args);
+      DecoderTextureState* texture_state,
+      ContextState* state,
+      DecoderFramebufferState* framebuffer_state,
+      const char* function_name,
+      TextureRef* texture_ref,
+      const DoTexImageArguments& args);
+
+  void DoTexSubImageWithAlignmentWorkaround(
+      DecoderTextureState* texture_state,
+      ContextState* state,
+      const DoTexSubImageArguments& args);
 
   void StartTracking(TextureRef* texture);
   void StopTracking(TextureRef* texture);

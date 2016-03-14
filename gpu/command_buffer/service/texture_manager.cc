@@ -2232,7 +2232,7 @@ bool TextureManager::ValidateTexImage(
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_OPERATION, function_name,
           "pixel unpack buffer should not be mapped to client memory");
-      return error::kNoError;
+      return false;
     }
     base::CheckedNumeric<uint32_t> size = args.pixels_size;
     GLuint offset = ToGLuint(args.pixels);
@@ -2241,14 +2241,14 @@ bool TextureManager::ValidateTexImage(
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_VALUE, function_name,
           "size + offset overflow");
-      return error::kNoError;
+      return false;
     }
     uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
     if (buffer_size < size.ValueOrDefault(0)) {
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_OPERATION, function_name,
           "pixel unpack buffer is not large enough");
-      return error::kNoError;
+      return false;
     }
     size_t type_size = GLES2Util::GetGLTypeSizeForTextures(args.type);
     DCHECK_LT(0u, type_size);
@@ -2256,7 +2256,7 @@ bool TextureManager::ValidateTexImage(
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_OPERATION, function_name,
           "offset is not evenly divisible by elements");
-      return error::kNoError;
+      return false;
     }
   }
 
@@ -2282,6 +2282,8 @@ void TextureManager::ValidateAndDoTexImage(
     return;
   }
 
+  Buffer* buffer = state->bound_pixel_unpack_buffer.get();
+
   // ValidateTexImage is passed already.
   Texture* texture = texture_ref->texture();
   bool need_cube_map_workaround =
@@ -2289,7 +2291,8 @@ void TextureManager::ValidateAndDoTexImage(
       (texture_state->force_cube_complete ||
        (texture_state->force_cube_map_positive_x_allocation &&
         args.target != GL_TEXTURE_CUBE_MAP_POSITIVE_X));
-  if (need_cube_map_workaround) {
+  if (need_cube_map_workaround && !buffer) {
+    // TODO(zmo): The following code does not work with an unpack buffer bound.
     std::vector<GLenum> undefined_faces;
     if (texture_state->force_cube_complete) {
       int width = 0;
@@ -2311,7 +2314,6 @@ void TextureManager::ValidateAndDoTexImage(
         undefined_faces.push_back(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
       }
     }
-
     if (!memory_type_tracker_->EnsureGPUMemoryAvailable(
             (undefined_faces.size() + 1) * args.pixels_size)) {
       ERRORSTATE_SET_GL_ERROR(state->GetErrorState(), GL_OUT_OF_MEMORY,
@@ -2330,6 +2332,33 @@ void TextureManager::ValidateAndDoTexImage(
     }
   }
 
+  if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer) {
+    uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
+    if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
+      // In ValidateTexImage(), we already made sure buffer size is no less
+      // than offset + pixels_size.
+      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+      state->SetBoundBuffer(GL_PIXEL_UNPACK_BUFFER, nullptr);
+      DoTexImageArguments new_args = args;
+      new_args.pixels = nullptr;
+      // pixels_size might be incorrect, but it's not used in this case.
+      DoTexImage(texture_state, state, framebuffer_state, function_name,
+                 texture_ref, new_args);
+      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->service_id());
+      state->SetBoundBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
+
+      DoTexSubImageArguments sub_args = {
+          args.target, args.level, 0, 0, 0, args.width, args.height, args.depth,
+          args.format, args.type, args.pixels, args.pixels_size, args.padding,
+          args.command_type == DoTexImageArguments::kTexImage3D ?
+              DoTexSubImageArguments::kTexSubImage3D :
+              DoTexSubImageArguments::kTexSubImage2D};
+      DoTexSubImageWithAlignmentWorkaround(texture_state, state, sub_args);
+
+      SetLevelCleared(texture_ref, args.target, args.level, true);
+      return;
+    }
+  }
   DoTexImage(texture_state, state, framebuffer_state,
              function_name, texture_ref, args);
 }
@@ -2449,6 +2478,7 @@ void TextureManager::ValidateAndDoTexSubImage(
   bool ok = texture->GetLevelSize(args.target, args.level, &tex_width,
                                   &tex_height, &tex_depth);
   DCHECK(ok);
+  bool full_image;
   if (args.xoffset != 0 || args.yoffset != 0 || args.zoffset != 0 ||
       args.width != tex_width || args.height != tex_height ||
       args.depth != tex_depth) {
@@ -2471,20 +2501,22 @@ void TextureManager::ValidateAndDoTexSubImage(
         return;
       }
     }
-    ScopedTextureUploadTimer timer(texture_state);
-    if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
-      glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
-                      args.zoffset, args.width, args.height, args.depth,
-                      AdjustTexFormat(args.format), args.type, args.pixels);
-    } else {
-      glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
-                      args.width, args.height, AdjustTexFormat(args.format),
-                      args.type, args.pixels);
-    }
-    return;
+    full_image = false;
+  } else {
+    SetLevelCleared(texture_ref, args.target, args.level, true);
+    full_image = true;
   }
 
-  if (!texture_state->texsubimage_faster_than_teximage &&
+  Buffer* buffer = state->bound_pixel_unpack_buffer.get();
+  if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer) {
+    uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
+    if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
+      DoTexSubImageWithAlignmentWorkaround(texture_state, state, args);
+      return;
+    }
+  }
+
+  if (full_image && !texture_state->texsubimage_faster_than_teximage &&
       !texture->IsImmutable() && !texture->HasImages()) {
     ScopedTextureUploadTimer timer(texture_state);
     GLenum internal_format;
@@ -2514,7 +2546,113 @@ void TextureManager::ValidateAndDoTexSubImage(
                       args.type, args.pixels);
     }
   }
-  SetLevelCleared(texture_ref, args.target, args.level, true);
+}
+
+void TextureManager::DoTexSubImageWithAlignmentWorkaround(
+    DecoderTextureState* texture_state,
+    ContextState* state,
+    const DoTexSubImageArguments& args) {
+  DCHECK(state->bound_pixel_unpack_buffer.get());
+  DCHECK(args.width > 0 && args.height > 0 && args.depth > 0);
+
+  ScopedTextureUploadTimer timer(texture_state);
+  uint32_t offset = ToGLuint(args.pixels);
+  if (args.command_type == DoTexSubImageArguments::kTexSubImage2D) {
+    PixelStoreParams params = state->GetUnpackParams(ContextState::k2D);
+    if (args.height > 1) {
+      glTexSubImage2D(args.target, args.level, args.xoffset, args.yoffset,
+                      args.width, args.height - 1,
+                      AdjustTexFormat(args.format), args.type, args.pixels);
+      GLint actual_width = state->unpack_row_length > 0 ?
+          state->unpack_row_length : args.width;
+      uint32_t size;
+      uint32_t padding;
+      // No need to worry about integer overflow here.
+      GLES2Util::ComputeImageDataSizesES3(actual_width, args.height - 1, 1,
+                                          args.format, args.type,
+                                          params,
+                                          &size,
+                                          nullptr, nullptr, nullptr,
+                                          &padding);
+      DCHECK_EQ(args.padding, padding);
+      // Last row should be padded, not unpadded.
+      offset += size + padding;
+    }
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexSubImage2D(args.target, args.level, args.xoffset,
+                    args.yoffset + args.height - 1,
+                    args.width, 1, AdjustTexFormat(args.format), args.type,
+                    reinterpret_cast<const void *>(offset));
+    glPixelStorei(GL_UNPACK_ALIGNMENT, state->unpack_alignment);
+    {
+      uint32_t size;
+      GLES2Util::ComputeImageDataSizesES3(args.width, 1, 1,
+                                          args.format, args.type,
+                                          params,
+                                          &size,
+                                          nullptr, nullptr, nullptr, nullptr);
+      offset += size;
+    }
+  } else {  // kTexSubImage3D
+    PixelStoreParams params = state->GetUnpackParams(ContextState::k3D);
+    GLint actual_width = state->unpack_row_length > 0 ?
+        state->unpack_row_length : args.width;
+    if (args.depth > 1) {
+      glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
+                      args.zoffset, args.width, args.height, args.depth - 1,
+                      AdjustTexFormat(args.format), args.type, args.pixels);
+      GLint actual_height = state->unpack_image_height > 0 ?
+          state->unpack_image_height : args.height;
+      uint32_t size;
+      uint32_t padding;
+      // No need to worry about integer overflow here.
+      GLES2Util::ComputeImageDataSizesES3(actual_width, actual_height,
+                                          args.depth - 1,
+                                          args.format, args.type,
+                                          params,
+                                          &size,
+                                          nullptr, nullptr, nullptr,
+                                          &padding);
+      DCHECK_EQ(args.padding, padding);
+      // Last row should be padded, not unpadded.
+      offset += size + padding;
+    }
+    if (args.height > 1) {
+      glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
+                      args.zoffset + args.depth - 1, args.width,
+                      args.height - 1, 1, AdjustTexFormat(args.format),
+                      args.type, reinterpret_cast<const void*>(offset));
+      uint32_t size;
+      uint32_t padding;
+      // No need to worry about integer overflow here.
+      GLES2Util::ComputeImageDataSizesES3(actual_width, args.height - 1, 1,
+                                          args.format, args.type,
+                                          params,
+                                          &size,
+                                          nullptr, nullptr, nullptr,
+                                          &padding);
+      DCHECK_EQ(args.padding, padding);
+      // Last row should be padded, not unpadded.
+      offset += size + padding;
+    }
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexSubImage3D(args.target, args.level, args.xoffset,
+                    args.yoffset + args.height - 1,
+                    args.zoffset + args.depth - 1,
+                    args.width, 1, 1, AdjustTexFormat(args.format), args.type,
+                    reinterpret_cast<const void *>(offset));
+    glPixelStorei(GL_UNPACK_ALIGNMENT, state->unpack_alignment);
+    {
+      uint32_t size;
+      GLES2Util::ComputeImageDataSizesES3(args.width, 1, 1,
+                                          args.format, args.type,
+                                          params,
+                                          &size,
+                                          nullptr, nullptr, nullptr, nullptr);
+      offset += size;
+    }
+  }
+  DCHECK_EQ(ToGLuint(args.pixels) + args.pixels_size, offset);
 }
 
 GLenum TextureManager::AdjustTexInternalFormat(GLenum format) const {

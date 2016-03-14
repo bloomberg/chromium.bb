@@ -1795,6 +1795,30 @@ LONG_STRING_CONST(
       "features": [
         "disable_direct_composition"
       ]
+    },
+    {
+      "id": 150,
+      "cr_bugs": [563714],
+      "description": "Alignment works incorrectly with unpack buffer bound",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "unpack_alignment_workaround_with_unpack_buffer"
+      ]
+    },
+    {
+      "id": 151,
+      "cr_bugs": [563714],
+      "description": "Alignment works incorrectly with unpack buffer bound",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "unpack_alignment_workaround_with_unpack_buffer"
+      ]
     }
   ]
 }
