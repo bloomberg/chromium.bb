@@ -126,6 +126,14 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // will not have a NavigationEntry associated with it, and this will return 0.
   int pending_nav_entry_id() const { return pending_nav_entry_id_; }
 
+  // Changes the pending NavigationEntry ID for this handle.  This is currently
+  // required during transfer navigations.
+  // TODO(creis): Remove this when transfer navigations do not require pending
+  // entries.  See https://crbug.com/495161.
+  void update_entry_id_for_transfer(int nav_entry_id) {
+    pending_nav_entry_id_ = nav_entry_id;
+  }
+
   void set_net_error_code(net::Error net_error_code) {
     net_error_code_ = net_error_code;
   }
@@ -277,7 +285,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const base::TimeTicks navigation_start_;
 
   // The unique id of the corresponding NavigationEntry.
-  const int pending_nav_entry_id_;
+  int pending_nav_entry_id_;
 
   // This callback will be run when all throttle checks have been performed.
   ThrottleChecksFinishedCallback complete_callback_;

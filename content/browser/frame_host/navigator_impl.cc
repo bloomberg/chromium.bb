@@ -125,7 +125,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
 
   if (is_main_frame && !is_error_page) {
     DidStartMainFrameNavigation(validated_url,
-                                render_frame_host->GetSiteInstance());
+                                render_frame_host->GetSiteInstance(),
+                                render_frame_host->navigation_handle());
   }
 
   if (delegate_) {
@@ -809,7 +810,7 @@ void NavigatorImpl::OnBeginNavigation(
     // RenderFrameHost.
     DidStartMainFrameNavigation(
         common_params.url,
-        frame_tree_node->current_frame_host()->GetSiteInstance());
+        frame_tree_node->current_frame_host()->GetSiteInstance(), nullptr);
     navigation_data_.reset();
   }
 
@@ -1055,7 +1056,8 @@ void NavigatorImpl::RecordNavigationMetrics(
 
 void NavigatorImpl::DidStartMainFrameNavigation(
     const GURL& url,
-    SiteInstanceImpl* site_instance) {
+    SiteInstanceImpl* site_instance,
+    NavigationHandleImpl* navigation_handle) {
   // If there is no browser-initiated pending entry for this navigation and it
   // is not for the error URL, create a pending entry using the current
   // SiteInstance, and ensure the address bar updates accordingly.  We don't
@@ -1074,12 +1076,20 @@ void NavigatorImpl::DidStartMainFrameNavigation(
     entry->set_site_instance(site_instance);
     // TODO(creis): If there's a pending entry already, find a safe way to
     // update it instead of replacing it and copying over things like this.
+    // That will allow us to skip the NavigationHandle update below as well.
     if (pending_entry) {
       entry->set_transferred_global_request_id(
           pending_entry->transferred_global_request_id());
       entry->set_should_replace_entry(pending_entry->should_replace_entry());
       entry->SetRedirectChain(pending_entry->GetRedirectChain());
     }
+
+    // If there's a current NavigationHandle, update its pending NavEntry ID.
+    // This is necessary for transfer navigations.  The handle may be null in
+    // PlzNavigate.
+    if (navigation_handle)
+      navigation_handle->update_entry_id_for_transfer(entry->GetUniqueID());
+
     controller_->SetPendingEntry(std::move(entry));
     if (delegate_)
       delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);

@@ -135,7 +135,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // NavigationEntry if the controller does not currently have a
   // browser-initiated one.
   void DidStartMainFrameNavigation(const GURL& url,
-                                   SiteInstanceImpl* site_instance);
+                                   SiteInstanceImpl* site_instance,
+                                   NavigationHandleImpl* navigation_handle);
 
   // Called when a navigation has failed to discard the pending entry in order
   // to avoid url spoofs.

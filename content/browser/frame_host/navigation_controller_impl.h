@@ -258,6 +258,10 @@ class CONTENT_EXPORT NavigationControllerImpl
                             FrameLoadVector* sameDocumentLoads,
                             FrameLoadVector* differentDocumentLoads);
 
+  // Returns whether there is a pending NavigationEntry whose unique ID matches
+  // the given NavigationHandle's pending_nav_entry_id.
+  bool PendingEntryMatchesHandle(NavigationHandleImpl* handle) const;
+
   // Classifies the given renderer navigation (see the NavigationType enum).
   NavigationType ClassifyNavigation(
       RenderFrameHostImpl* rfh,

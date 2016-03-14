@@ -293,9 +293,16 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
           entry.transferred_global_request_id()) {
     cross_site_transferring_request_->ReleaseRequest();
 
+    DCHECK(transfer_navigation_handle_);
+
+    // Update the pending NavigationEntry ID on the transferring handle.
+    // TODO(creis): Make this line unnecessary by avoiding having a pending
+    // entry for transfer navigations.  See https://crbug.com/495161.
+    transfer_navigation_handle_->update_entry_id_for_transfer(
+        entry.GetUniqueID());
+
     // The navigating RenderFrameHost should take ownership of the
     // NavigationHandle that came from the transferring RenderFrameHost.
-    DCHECK(transfer_navigation_handle_);
     dest_render_frame_host->SetNavigationHandle(
         std::move(transfer_navigation_handle_));
   }

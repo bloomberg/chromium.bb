@@ -830,6 +830,12 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   LoadEntry(std::move(entry));
 }
 
+bool NavigationControllerImpl::PendingEntryMatchesHandle(
+    NavigationHandleImpl* handle) const {
+  return pending_entry_ &&
+         pending_entry_->GetUniqueID() == handle->pending_nav_entry_id();
+}
+
 bool NavigationControllerImpl::RendererDidNavigate(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
@@ -1109,9 +1115,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   // TODO(csharrison): Investigate whether we can remove some of the coarser
   // checks.
   NavigationHandleImpl* handle = rfh->navigation_handle();
-  if (pending_entry_ && handle &&
-      handle->pending_nav_entry_id() == pending_entry_->GetUniqueID() &&
-      pending_entry_index_ == -1 &&
+  DCHECK(handle);
+  if (PendingEntryMatchesHandle(handle) && pending_entry_index_ == -1 &&
       (!pending_entry_->site_instance() ||
        pending_entry_->site_instance() == rfh->GetSiteInstance())) {
     new_entry = pending_entry_->Clone();

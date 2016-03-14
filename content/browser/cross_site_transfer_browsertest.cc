@@ -293,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 // navigation. This test is the same as the test above, except transfering from
 // in-process.
 IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
-                       ReplaceEntryInProcessThenTranfers) {
+                       ReplaceEntryInProcessThenTransfer) {
   const NavigationController& controller =
       shell()->web_contents()->GetController();
 
@@ -367,8 +367,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
       "A.com", "/cross-site/" + url3b.host() + url3b.PathForRequest());
   NavigateToURLContentInitiated(shell(), url3a, false, true);
 
-  // There should be two history entries. url2b should have replaced url1. url2b
-  // should not have replaced url3b.
+  // There should be two history entries. url2b should have replaced url1. url3b
+  // should not have replaced url2b.
   EXPECT_TRUE(controller.GetPendingEntry() == nullptr);
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());

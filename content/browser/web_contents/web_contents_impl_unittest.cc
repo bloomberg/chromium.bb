@@ -354,12 +354,15 @@ class FakeValidationMessageDelegate : public WebContentsDelegate {
 TEST_F(WebContentsImplTest, UpdateTitle) {
   NavigationControllerImpl& cont =
       static_cast<NavigationControllerImpl&>(controller());
+  cont.LoadURL(GURL(url::kAboutBlankURL), Referrer(), ui::PAGE_TRANSITION_TYPED,
+               std::string());
+
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   InitNavigateParams(&params, 0, 0, true, GURL(url::kAboutBlankURL),
                      ui::PAGE_TRANSITION_TYPED);
 
-  LoadCommittedDetails details;
-  cont.RendererDidNavigate(contents()->GetMainFrame(), params, &details);
+  contents()->GetMainFrame()->PrepareForCommit();
+  contents()->GetMainFrame()->SendNavigateWithParams(&params);
 
   contents()->UpdateTitle(contents()->GetMainFrame(), 0,
                           base::ASCIIToUTF16("    Lots O' Whitespace\n"),
@@ -421,8 +424,8 @@ TEST_F(WebContentsImplTest, NTPViewSource) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   InitNavigateParams(&params, 0, entry_id, true, kGURL,
                      ui::PAGE_TRANSITION_TYPED);
-  LoadCommittedDetails details;
-  cont.RendererDidNavigate(contents()->GetMainFrame(), params, &details);
+  contents()->GetMainFrame()->PrepareForCommit();
+  contents()->GetMainFrame()->SendNavigateWithParams(&params);
   // Also check title and url.
   EXPECT_EQ(base::ASCIIToUTF16(kUrl), contents()->GetTitle());
 }
