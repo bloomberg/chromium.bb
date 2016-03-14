@@ -70,12 +70,9 @@ class LayerTreeHostScrollTest : public LayerTreeTest {
     gfx::Size scroll_layer_bounds(root_layer->bounds().width() + 100,
                                   root_layer->bounds().height() + 100);
 
-    CreateVirtualViewportLayers(root_layer,
-                                root_layer->bounds(),
-                                root_layer->bounds(),
-                                scroll_layer_bounds,
-                                layer_tree_host(),
-                                layer_settings());
+    CreateVirtualViewportLayers(root_layer, root_layer->bounds(),
+                                root_layer->bounds(), scroll_layer_bounds,
+                                layer_tree_host());
   }
 };
 
@@ -506,25 +503,19 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
   void SetupTree() override {
     layer_tree_host()->SetDeviceScaleFactor(device_scale_factor_);
 
-    scoped_refptr<Layer> root_layer = Layer::Create(layer_settings());
+    scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(gfx::Size(10, 10));
 
-    root_scroll_layer_ =
-        FakePictureLayer::Create(layer_settings(), &fake_content_layer_client_);
+    root_scroll_layer_ = FakePictureLayer::Create(&fake_content_layer_client_);
     root_scroll_layer_->SetBounds(gfx::Size(110, 110));
     root_scroll_layer_->SetPosition(gfx::PointF());
     root_scroll_layer_->SetIsDrawable(true);
 
-    CreateVirtualViewportLayers(root_layer.get(),
-                                root_scroll_layer_,
-                                root_layer->bounds(),
-                                root_layer->bounds(),
-                                layer_tree_host(),
-                                layer_settings());
+    CreateVirtualViewportLayers(root_layer.get(), root_scroll_layer_,
+                                root_layer->bounds(), root_layer->bounds(),
+                                layer_tree_host());
 
-
-    child_layer_ =
-        FakePictureLayer::Create(layer_settings(), &fake_content_layer_client_);
+    child_layer_ = FakePictureLayer::Create(&fake_content_layer_client_);
     child_layer_->set_did_scroll_callback(
         base::Bind(&LayerTreeHostScrollTestCaseWithChild::DidScroll,
                    base::Unretained(this)));
@@ -1335,12 +1326,9 @@ class LayerTreeHostScrollTestLayerStructureChange
     Layer* root_layer = layer_tree_host()->root_layer();
     root_layer->SetBounds(gfx::Size(10, 10));
 
-    CreateVirtualViewportLayers(root_layer,
-                                root_layer->bounds(),
-                                root_layer->bounds(),
-                                root_layer->bounds(),
-                                layer_tree_host(),
-                                layer_settings());
+    CreateVirtualViewportLayers(root_layer, root_layer->bounds(),
+                                root_layer->bounds(), root_layer->bounds(),
+                                layer_tree_host());
 
     Layer* outer_scroll_layer =
         layer_tree_host()->outer_viewport_scroll_layer();
@@ -1394,7 +1382,7 @@ class LayerTreeHostScrollTestLayerStructureChange
 
   Layer* CreateScrollLayer(Layer* parent, FakeLayerScrollClient* client) {
     scoped_refptr<PictureLayer> scroll_layer =
-        PictureLayer::Create(layer_settings(), &fake_content_layer_client_);
+        PictureLayer::Create(&fake_content_layer_client_);
     scroll_layer->SetBounds(gfx::Size(110, 110));
     scroll_layer->SetPosition(gfx::PointF());
     scroll_layer->SetIsDrawable(true);

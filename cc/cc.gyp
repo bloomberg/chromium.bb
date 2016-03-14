@@ -202,8 +202,6 @@
         'layers/layer_position_constraint.h',
         'layers/layer_proto_converter.cc',
         'layers/layer_proto_converter.h',
-        'layers/layer_settings.cc',
-        'layers/layer_settings.h',
         'layers/layer_utils.cc',
         'layers/layer_utils.h',
         'layers/nine_patch_layer.cc',

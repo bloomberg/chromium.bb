@@ -10,7 +10,6 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -30,8 +29,6 @@ class AnimationHostPerfTest : public testing::Test {
  protected:
   void SetUp() override {
     LayerTreeSettings settings;
-    settings.use_compositor_animation_timelines = true;
-
     layer_tree_host_ =
         FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_, settings);
     layer_tree_host_->InitializeSingleThreaded(
@@ -43,15 +40,6 @@ class AnimationHostPerfTest : public testing::Test {
     layer_tree_host_ = nullptr;
   }
 
-  LayerSettings GetLayerSettings() const {
-    DCHECK(layer_tree_host_);
-
-    LayerSettings settings;
-    settings.use_compositor_animation_timelines =
-        layer_tree_host_->settings().use_compositor_animation_timelines;
-    return settings;
-  }
-
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   LapTimer timer_;
 
@@ -60,13 +48,10 @@ class AnimationHostPerfTest : public testing::Test {
 };
 
 TEST_F(AnimationHostPerfTest, PushPropertiesTo) {
-  if (!layer_tree_host_->settings().use_compositor_animation_timelines)
-    return;
-
   AnimationHost* host = layer_tree_host_->animation_host();
   AnimationHost* host_impl = layer_tree_host_->host_impl()->animation_host();
 
-  scoped_refptr<Layer> root_layer = Layer::Create(GetLayerSettings());
+  scoped_refptr<Layer> root_layer = Layer::Create();
   layer_tree_host_->SetRootLayer(root_layer);
 
   scoped_ptr<LayerImpl> root_layer_impl = LayerImpl::Create(
@@ -81,7 +66,7 @@ TEST_F(AnimationHostPerfTest, PushPropertiesTo) {
   host_impl->AddAnimationTimeline(timeline_impl);
 
   for (int i = 0; i < kNumberOfAnimationPlayers; ++i) {
-    scoped_refptr<Layer> layer = Layer::Create(GetLayerSettings());
+    scoped_refptr<Layer> layer = Layer::Create();
     root_layer->AddChild(layer);
 
     const int layer_id = layer->id();

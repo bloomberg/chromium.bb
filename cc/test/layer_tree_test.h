@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "cc/animation/animation_delegate.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/test/proxy_impl_for_test.h"
 #include "cc/test/proxy_main_for_test.h"
 #include "cc/test/remote_proto_channel_bridge.h"
@@ -41,8 +40,7 @@ void CreateVirtualViewportLayers(Layer* root_layer,
                                  const gfx::Size& inner_bounds,
                                  const gfx::Size& outer_bounds,
                                  const gfx::Size& scroll_bounds,
-                                 LayerTreeHost* host,
-                                 const LayerSettings& layer_settings);
+                                 LayerTreeHost* host);
 
 // Creates the virtual viewport layer hierarchy under the given root_layer.
 // Uses the given scroll layer as the content "outer viewport scroll layer".
@@ -50,8 +48,7 @@ void CreateVirtualViewportLayers(Layer* root_layer,
                                  scoped_refptr<Layer> outer_scroll_layer,
                                  const gfx::Size& outer_bounds,
                                  const gfx::Size& scroll_bounds,
-                                 LayerTreeHost* host,
-                                 const LayerSettings& layer_settings);
+                                 LayerTreeHost* host);
 
 class BeginTask;
 class LayerTreeHostClientForTesting;
@@ -96,13 +93,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DoBeginTest();
   void Timeout();
 
-  const LayerSettings& layer_settings() { return layer_settings_; }
-
  protected:
   LayerTreeTest();
 
   virtual void InitializeSettings(LayerTreeSettings* settings) {}
-  virtual void InitializeLayerSettings(LayerSettings* layer_settings) {}
 
   void RealEndTest();
 
@@ -198,7 +192,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
  private:
   LayerTreeSettings settings_;
-  LayerSettings layer_settings_;
 
   CompositorMode mode_;
 

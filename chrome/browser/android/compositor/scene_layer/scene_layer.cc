@@ -5,7 +5,6 @@
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "content/public/browser/android/compositor.h"
 #include "jni/SceneLayer_jni.h"
 
@@ -20,10 +19,7 @@ SceneLayer* SceneLayer::FromJavaObject(JNIEnv* env, jobject jobj) {
 }
 
 SceneLayer::SceneLayer(JNIEnv* env, jobject jobj)
-    : SceneLayer(env,
-                 jobj,
-                 cc::Layer::Create(cc::LayerSettings())) {
-}
+    : SceneLayer(env, jobj, cc::Layer::Create()) {}
 
 SceneLayer::SceneLayer(JNIEnv* env,
                        jobject jobj,

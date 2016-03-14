@@ -85,7 +85,6 @@ class CC_EXPORT LayerTreeSettings {
   size_t scheduled_raster_task_limit;
   bool use_occlusion_for_tile_prioritization;
   bool image_decode_tasks_enabled;
-  bool use_compositor_animation_timelines;
   bool wait_for_beginframe_interval;
   bool abort_commit_before_output_surface_creation;
   bool use_mouse_wheel_gestures;

@@ -25,18 +25,10 @@ float diagonal(float width, float height) {
   return std::sqrt(width * width + height * height);
 }
 
-class LayerTreeSettingsForAnimationBoundsTest : public LayerTreeSettings {
- public:
-  LayerTreeSettingsForAnimationBoundsTest() {
-    use_compositor_animation_timelines = true;
-  }
-};
-
 class LayerUtilsGetAnimationBoundsTest : public testing::Test {
  public:
   LayerUtilsGetAnimationBoundsTest()
-      : host_impl_(LayerTreeSettingsForAnimationBoundsTest(),
-                   &task_runner_provider_,
+      : host_impl_(&task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_(CreateTwoForkTree(&host_impl_)),

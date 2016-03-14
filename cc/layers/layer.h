@@ -55,7 +55,6 @@ class CopyOutputRequest;
 class LayerAnimationEventObserver;
 class LayerClient;
 class LayerImpl;
-class LayerSettings;
 class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
@@ -82,7 +81,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     INVALID_ID = -1,
   };
 
-  static scoped_refptr<Layer> Create(const LayerSettings& settings);
+  static scoped_refptr<Layer> Create();
 
   int id() const { return layer_id_; }
 
@@ -534,8 +533,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   friend class LayerImpl;
   friend class TreeSynchronizer;
   virtual ~Layer();
-
-  explicit Layer(const LayerSettings& settings);
+  Layer();
 
   // These SetNeeds functions are in order of severity of update:
   //

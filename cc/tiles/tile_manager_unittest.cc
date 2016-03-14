@@ -21,7 +21,6 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_tile_manager.h"
-#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -39,7 +38,7 @@
 namespace cc {
 namespace {
 
-class LowResTilingsSettings : public LayerTreeSettingsForTesting {
+class LowResTilingsSettings : public LayerTreeSettings {
  public:
   LowResTilingsSettings() {
     create_low_res_tiling = true;
@@ -1134,7 +1133,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   soon_rect.Inset(-inset, -inset);
 
   client.SetTileSize(gfx::Size(30, 30));
-  LayerTreeSettingsForTesting settings;
+  LayerTreeSettings settings;
 
   scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
       ACTIVE_TREE, &client, settings.tiling_interest_area_padding,
@@ -1243,7 +1242,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   gfx::Size layer_bounds(1000, 1000);
 
   client.SetTileSize(gfx::Size(30, 30));
-  LayerTreeSettingsForTesting settings;
+  LayerTreeSettings settings;
 
   scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
       ACTIVE_TREE, &client, settings.tiling_interest_area_padding,
@@ -1518,7 +1517,7 @@ class TileManagerTest : public testing::Test {
             make_scoped_ptr(new SoftwareOutputDevice))) {}
 
   void SetUp() override {
-    LayerTreeSettingsForTesting settings;
+    LayerTreeSettings settings;
     CustomizeSettings(&settings);
     host_impl_.reset(new MockLayerTreeHostImpl(settings, &task_runner_provider_,
                                                &shared_bitmap_manager_,
@@ -1583,7 +1582,7 @@ class TileManagerTest : public testing::Test {
   // MockLayerTreeHostImpl allows us to intercept tile manager callbacks.
   class MockLayerTreeHostImpl : public FakeLayerTreeHostImpl {
    public:
-    MockLayerTreeHostImpl(const LayerTreeSettingsForTesting& settings,
+    MockLayerTreeHostImpl(const LayerTreeSettings& settings,
                           TaskRunnerProvider* task_runner_provider,
                           SharedBitmapManager* manager,
                           TaskGraphRunner* task_graph_runner)
@@ -1596,7 +1595,7 @@ class TileManagerTest : public testing::Test {
   };
 
   // By default do no customization.
-  virtual void CustomizeSettings(LayerTreeSettingsForTesting* settings) {}
+  virtual void CustomizeSettings(LayerTreeSettings* settings) {}
 
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
@@ -1798,7 +1797,7 @@ class CancellingTileTaskRunner : public FakeTileTaskRunner {
 
 class PartialRasterTileManagerTest : public TileManagerTest {
  public:
-  void CustomizeSettings(LayerTreeSettingsForTesting* settings) override {
+  void CustomizeSettings(LayerTreeSettings* settings) override {
     settings->use_partial_raster = true;
   }
 };

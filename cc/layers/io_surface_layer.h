@@ -15,7 +15,7 @@ namespace cc {
 
 class CC_EXPORT IOSurfaceLayer : public Layer {
  public:
-  static scoped_refptr<IOSurfaceLayer> Create(const LayerSettings& settings);
+  static scoped_refptr<IOSurfaceLayer> Create();
 
   void SetIOSurfaceProperties(uint32_t io_surface_id, const gfx::Size& size);
 
@@ -25,7 +25,7 @@ class CC_EXPORT IOSurfaceLayer : public Layer {
 
  protected:
   bool HasDrawableContent() const override;
-  explicit IOSurfaceLayer(const LayerSettings& settings);
+  IOSurfaceLayer();
 
  private:
   ~IOSurfaceLayer() override;

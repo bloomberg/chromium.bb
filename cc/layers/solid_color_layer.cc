@@ -13,14 +13,11 @@ scoped_ptr<LayerImpl> SolidColorLayer::CreateLayerImpl(
   return SolidColorLayerImpl::Create(tree_impl, id());
 }
 
-scoped_refptr<SolidColorLayer> SolidColorLayer::Create(
-    const LayerSettings& settings) {
-  return make_scoped_refptr(new SolidColorLayer(settings));
+scoped_refptr<SolidColorLayer> SolidColorLayer::Create() {
+  return make_scoped_refptr(new SolidColorLayer());
 }
 
-SolidColorLayer::SolidColorLayer(const LayerSettings& settings)
-    : Layer(settings) {
-}
+SolidColorLayer::SolidColorLayer() {}
 
 SolidColorLayer::~SolidColorLayer() {}
 

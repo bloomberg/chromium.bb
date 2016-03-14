@@ -29,7 +29,6 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
@@ -243,7 +242,7 @@ scoped_ptr<cc::SurfaceIdAllocator> CompositorImpl::CreateSurfaceIdAllocator() {
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
-    : root_layer_(cc::Layer::Create(cc::LayerSettings())),
+    : root_layer_(cc::Layer::Create()),
       resource_manager_(root_window),
       surface_id_allocator_(CreateSurfaceIdAllocator()),
       has_transparent_background_(false),

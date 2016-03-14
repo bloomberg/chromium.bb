@@ -10,7 +10,6 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/empty_content_layer_client.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/proto/layer.pb.h"
@@ -21,7 +20,6 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -35,7 +33,7 @@ class TestSerializationPictureLayer : public PictureLayer {
   static scoped_refptr<TestSerializationPictureLayer> Create(
       const gfx::Size& recording_source_viewport) {
     return make_scoped_refptr(new TestSerializationPictureLayer(
-        LayerSettings(), EmptyContentLayerClient::GetInstance(),
+        EmptyContentLayerClient::GetInstance(),
         FakeDisplayListRecordingSource::CreateFilledRecordingSource(
             recording_source_viewport),
         recording_source_viewport));
@@ -93,11 +91,10 @@ class TestSerializationPictureLayer : public PictureLayer {
   }
 
  private:
-  TestSerializationPictureLayer(const LayerSettings& settings,
-                                ContentLayerClient* client,
+  TestSerializationPictureLayer(ContentLayerClient* client,
                                 scoped_ptr<DisplayListRecordingSource> source,
                                 const gfx::Size& recording_source_viewport)
-      : PictureLayer(settings, client, std::move(source)),
+      : PictureLayer(client, std::move(source)),
         recording_source_viewport_(recording_source_viewport) {}
   ~TestSerializationPictureLayer() override {}
 
@@ -144,15 +141,13 @@ TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
 TEST(PictureLayerTest, TestSerializationDeserialization) {
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings;
-  settings.use_compositor_animation_timelines = true;
   scoped_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
           make_scoped_ptr(new FakeImageSerializationProcessor);
-  scoped_ptr<FakeLayerTreeHost> host =
-      FakeLayerTreeHost::Create(&host_client, &task_graph_runner, settings,
-                                CompositorMode::SINGLE_THREADED,
-                                fake_image_serialization_processor.get());
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
+      &host_client, &task_graph_runner, LayerTreeSettings(),
+      CompositorMode::SINGLE_THREADED,
+      fake_image_serialization_processor.get());
   gfx::Size recording_source_viewport(256, 256);
   scoped_refptr<TestSerializationPictureLayer> layer =
       TestSerializationPictureLayer::Create(recording_source_viewport);
@@ -183,8 +178,7 @@ TEST(PictureLayerTest, TestEmptySerializationDeserialization) {
 
 TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
-  scoped_refptr<PictureLayer> layer =
-      PictureLayer::Create(LayerSettings(), client);
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(client);
   layer->SetBounds(gfx::Size(10, 10));
 
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
@@ -211,7 +205,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   scoped_ptr<FakeOutputSurface> output_surface =
       FakeOutputSurface::CreateSoftware(
           make_scoped_ptr(new SoftwareOutputDevice));
-  FakeLayerTreeHostImpl host_impl(LayerTreeSettingsForTesting(),
+  FakeLayerTreeHostImpl host_impl(LayerTreeSettings(),
                                   &impl_task_runner_provider,
                                   &shared_bitmap_manager, &task_graph_runner);
   host_impl.InitializeRenderer(output_surface.get());
@@ -232,8 +226,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   client.set_bounds(layer_size);
   skia::RefPtr<SkImage> image = CreateDiscardableImage(layer_size);
   client.add_draw_image(image.get(), gfx::Point(), SkPaint());
-  scoped_refptr<PictureLayer> layer =
-      PictureLayer::Create(LayerSettings(), &client);
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   layer->SetBounds(gfx::Size(10, 10));
 
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
@@ -256,7 +249,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   TestSharedBitmapManager shared_bitmap_manager;
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
-  LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
+  LayerTreeSettings layer_tree_settings = LayerTreeSettings();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
                                   &impl_task_runner_provider,
@@ -314,7 +307,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
   scoped_refptr<FakePictureLayer> layer =
       FakePictureLayer::CreateWithRecordingSource(
-          LayerSettings(), client, std::move(recording_source_owned));
+          client, std::move(recording_source_owned));
 
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
@@ -345,7 +338,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
 // non-monotonically. This executes that code path under this scenario allowing
 // for the code to verify correctness with DCHECKs.
 TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
-  LayerTreeSettingsForTesting settings;
+  LayerTreeSettings settings;
   settings.single_thread_proxy_scheduler = false;
   settings.use_zero_copy = true;
 
@@ -355,8 +348,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   TestTaskGraphRunner task_graph_runner;
 
   ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
-  scoped_refptr<FakePictureLayer> layer =
-      FakePictureLayer::Create(LayerSettings(), client);
+  scoped_refptr<FakePictureLayer> layer = FakePictureLayer::Create(client);
 
   LayerTreeHost::InitParams params;
   params.client = &host_client1;

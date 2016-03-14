@@ -22,12 +22,12 @@ class LayerTreeHostVideoTestSetNeedsDisplay
     : public LayerTreeHostVideoTest {
  public:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
     root->SetIsDrawable(true);
 
-    scoped_refptr<VideoLayer> video = VideoLayer::Create(
-        layer_settings(), &video_frame_provider_, media::VIDEO_ROTATION_90);
+    scoped_refptr<VideoLayer> video =
+        VideoLayer::Create(&video_frame_provider_, media::VIDEO_ROTATION_90);
     video->SetPosition(gfx::PointF(3.f, 3.f));
     video->SetBounds(gfx::Size(4, 5));
     video->SetIsDrawable(true);

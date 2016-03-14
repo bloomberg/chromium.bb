@@ -251,7 +251,6 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
   settings.accelerated_animation_enabled =
       compositor_deps_->IsThreadedAnimationEnabled();
-  settings.use_compositor_animation_timelines = true;
   settings.use_mouse_wheel_gestures = UseGestureBasedWheelScrolling();
 
   settings.default_tile_size = CalculateDefaultTileSize(device_scale_factor);

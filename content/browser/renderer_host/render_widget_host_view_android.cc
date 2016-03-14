@@ -19,7 +19,6 @@
 #include "base/sys_info.h"
 #include "base/threading/worker_pool.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
@@ -446,7 +445,6 @@ scoped_refptr<cc::Layer> RenderWidgetHostViewAndroid::CreateDelegatedLayer()
   DCHECK(manager);
   // manager must outlive compositors using it.
   scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create(
-      cc::LayerSettings(),
       base::Bind(&SatisfyCallback, base::Unretained(manager)),
       base::Bind(&RequireCallback, base::Unretained(manager)));
   surface_layer->SetSurfaceId(surface_id_, 1.f, texture_size_in_layer_);

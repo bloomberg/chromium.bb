@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layers/layer_settings.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/test_layer_animation_delegate.h"
 
@@ -117,7 +116,7 @@ TestLayerAnimationDelegate::GetThreadedAnimationDelegate() {
 }
 
 void TestLayerAnimationDelegate::CreateCcLayer() {
-  cc_layer_ = cc::Layer::Create(cc::LayerSettings());
+  cc_layer_ = cc::Layer::Create();
 }
 
 void TestLayerThreadedAnimationDelegate::AddThreadedAnimation(

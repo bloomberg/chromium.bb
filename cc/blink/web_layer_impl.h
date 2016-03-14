@@ -41,7 +41,6 @@ class ConvertableToTraceFormat;
 namespace cc {
 class FilterOperations;
 class Layer;
-class LayerSettings;
 }
 
 namespace cc_blink {

@@ -28,7 +28,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
   using RequireCallback = base::Callback<void(SurfaceId, SurfaceSequence)>;
 
   static scoped_refptr<SurfaceLayer> Create(
-      const LayerSettings& settings,
       const SatisfyCallback& satisfy_callback,
       const RequireCallback& require_callback);
 
@@ -40,8 +39,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
   void PushPropertiesTo(LayerImpl* layer) override;
 
  protected:
-  SurfaceLayer(const LayerSettings& settings,
-               const SatisfyCallback& satisfy_callback,
+  SurfaceLayer(const SatisfyCallback& satisfy_callback,
                const RequireCallback& require_callback);
   bool HasDrawableContent() const override;
 

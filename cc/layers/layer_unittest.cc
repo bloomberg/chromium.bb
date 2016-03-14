@@ -14,7 +14,6 @@
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/proto/layer.pb.h"
@@ -131,7 +130,7 @@ class LayerSerializationTest : public testing::Test {
     // it can be re-used for the |dest| layer.
     src->SetLayerTreeHost(nullptr);
 
-    scoped_refptr<Layer> dest = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> dest = Layer::Create();
     dest->layer_id_ = src->layer_id_;
     dest->SetLayerTreeHost(layer_tree_host_.get());
     dest->FromLayerPropertiesProto(props);
@@ -243,12 +242,12 @@ class LayerSerializationTest : public testing::Test {
   }
 
   void RunNoMembersChangedTest() {
-    scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer = Layer::Create();
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
   }
 
   void RunArbitraryMembersChangedTest() {
-    scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer = Layer::Create();
     layer->transform_origin_ = gfx::Point3F(3.0f, 1.0f, 4.0f);
     layer->background_color_ = SK_ColorRED;
     layer->bounds_ = gfx::Size(3, 14);
@@ -295,7 +294,7 @@ class LayerSerializationTest : public testing::Test {
   }
 
   void RunAllMembersChangedTest() {
-    scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer = Layer::Create();
     layer->transform_origin_ = gfx::Point3F(3.0f, 1.0f, 4.0f);
     layer->background_color_ = SK_ColorRED;
     layer->bounds_ = gfx::Size(3, 14);
@@ -345,20 +344,20 @@ class LayerSerializationTest : public testing::Test {
   }
 
   void RunScrollAndClipLayersTest() {
-    scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer = Layer::Create();
 
-    scoped_refptr<Layer> scroll_parent = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> scroll_parent = Layer::Create();
     layer->scroll_parent_ = scroll_parent.get();
-    scoped_refptr<Layer> scroll_child = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> scroll_child = Layer::Create();
     layer->scroll_children_.reset(new std::set<Layer*>);
     layer->scroll_children_->insert(scroll_child.get());
 
-    scoped_refptr<Layer> clip_parent = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> clip_parent = Layer::Create();
     layer->clip_parent_ = clip_parent.get();
     layer->clip_children_.reset(new std::set<Layer*>);
-    scoped_refptr<Layer> clip_child1 = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> clip_child1 = Layer::Create();
     layer->clip_children_->insert(clip_child1.get());
-    scoped_refptr<Layer> clip_child2 = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> clip_child2 = Layer::Create();
     layer->clip_children_->insert(clip_child2.get());
 
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
@@ -376,10 +375,10 @@ class LayerSerializationTest : public testing::Test {
       The root layer has a LayerTreeHost, and it should propagate to all the
       children.
     */
-    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_root = Layer::Create();
+    scoped_refptr<Layer> layer_src_a = Layer::Create();
+    scoped_refptr<Layer> layer_src_b = Layer::Create();
+    scoped_refptr<Layer> layer_src_c = Layer::Create();
     layer_src_root->AddChild(layer_src_a);
     layer_src_a->AddChild(layer_src_b);
     layer_src_b->AddChild(layer_src_c);
@@ -388,7 +387,7 @@ class LayerSerializationTest : public testing::Test {
     layer_src_root->ToLayerNodeProto(&proto);
 
     Layer::LayerIdMap empty_dest_layer_map;
-    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_dest_root = Layer::Create();
 
     // Forcefully set the layer tree host for the root layer, which should cause
     // it to propagate to all the children.
@@ -438,8 +437,8 @@ class LayerSerializationTest : public testing::Test {
        not have called InvalidatePropertyTreesIndices() for any of the layers,
        which would happen in for example SetLayerTreeHost(...) calls.
     */
-    scoped_refptr<Layer> layer_root = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_root = Layer::Create();
+    scoped_refptr<Layer> layer_src_a = Layer::Create();
     layer_root->AddChild(layer_src_a);
     layer_root->transform_tree_index_ = 33;
     layer_src_a->transform_tree_index_ = 42;
@@ -474,9 +473,9 @@ class LayerSerializationTest : public testing::Test {
        not have called InvalidatePropertyTreesIndices() for any of the layers,
        which would happen in for example SetLayerTreeHost(...) calls.
     */
-    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_root = Layer::Create();
+    scoped_refptr<Layer> layer_src_a = Layer::Create();
+    scoped_refptr<Layer> layer_src_b = Layer::Create();
     layer_src_root->AddChild(layer_src_a);
     layer_src_root->AddChild(layer_src_b);
 
@@ -484,7 +483,7 @@ class LayerSerializationTest : public testing::Test {
     proto::LayerNode root_proto_1;
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
-    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_dest_root = Layer::Create();
     layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
 
     // Ensure initial copy is correct.
@@ -538,15 +537,15 @@ class LayerSerializationTest : public testing::Test {
        not have called InvalidatePropertyTreesIndices() for any of the layers,
        which would happen in for example SetLayerTreeHost(...) calls.
     */
-    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_root = Layer::Create();
+    scoped_refptr<Layer> layer_src_a = Layer::Create();
     layer_src_root->AddChild(layer_src_a);
 
     // Copy tree-structure to new root.
     proto::LayerNode root_proto_1;
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
-    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_dest_root = Layer::Create();
     layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
 
     // Ensure initial copy is correct.
@@ -559,7 +558,7 @@ class LayerSerializationTest : public testing::Test {
     layer_dest_a->transform_tree_index_ = 42;
 
     // Add another child.
-    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_b = Layer::Create();
     layer_src_root->AddChild(layer_src_b);
 
     // Now serialize and deserialize again.
@@ -594,9 +593,9 @@ class LayerSerializationTest : public testing::Test {
        not have called InvalidatePropertyTreesIndices() for any of the layers,
        which would happen in for example SetLayerTreeHost(...) calls.
     */
-    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_root = Layer::Create();
+    scoped_refptr<Layer> layer_src_a = Layer::Create();
+    scoped_refptr<Layer> layer_src_b = Layer::Create();
     layer_src_root->AddChild(layer_src_a);
     layer_src_root->AddChild(layer_src_b);
 
@@ -604,7 +603,7 @@ class LayerSerializationTest : public testing::Test {
     proto::LayerNode root_proto_1;
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
-    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_dest_root = Layer::Create();
     layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
 
     // Ensure initial copy is correct.
@@ -657,10 +656,10 @@ class LayerSerializationTest : public testing::Test {
        not have called InvalidatePropertyTreesIndices() for any of the layers,
        which would happen in for example SetLayerTreeHost(...) calls.
     */
-    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_root = Layer::Create();
+    scoped_refptr<Layer> layer_src_a = Layer::Create();
+    scoped_refptr<Layer> layer_src_b = Layer::Create();
+    scoped_refptr<Layer> layer_src_c = Layer::Create();
     layer_src_root->AddChild(layer_src_a);
     layer_src_root->AddChild(layer_src_b);
     layer_src_b->AddChild(layer_src_c);
@@ -669,7 +668,7 @@ class LayerSerializationTest : public testing::Test {
     proto::LayerNode root_proto_1;
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
-    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_dest_root = Layer::Create();
     layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
 
     // Ensure initial copy is correct.
@@ -736,10 +735,10 @@ class LayerSerializationTest : public testing::Test {
        not have called InvalidatePropertyTreesIndices() for any of the layers,
        which would happen in for example SetLayerTreeHost(...) calls.
     */
-    scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
-    scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_src_root = Layer::Create();
+    scoped_refptr<Layer> layer_src_a = Layer::Create();
+    scoped_refptr<Layer> layer_src_b = Layer::Create();
+    scoped_refptr<Layer> layer_src_c = Layer::Create();
     layer_src_root->AddChild(layer_src_a);
     layer_src_root->AddChild(layer_src_b);
     layer_src_a->AddChild(layer_src_c);
@@ -748,7 +747,7 @@ class LayerSerializationTest : public testing::Test {
     proto::LayerNode root_proto_1;
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
-    scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> layer_dest_root = Layer::Create();
     layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
 
     // Ensure initial copy is correct.
@@ -817,27 +816,18 @@ class MockLayerTreeHost : public LayerTreeHost {
   MOCK_METHOD0(SetNeedsFullTreeSync, void());
 };
 
-class LayerTreeSettingsForLayerTest : public LayerTreeSettings {
- public:
-  LayerTreeSettingsForLayerTest() { use_compositor_animation_timelines = true; }
-};
-
 class LayerTest : public testing::Test {
  public:
   LayerTest()
-      : host_impl_(LayerTreeSettingsForLayerTest(),
+      : host_impl_(LayerTreeSettings(),
                    &task_runner_provider_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {
-    layer_settings_.use_compositor_animation_timelines =
-        settings().use_compositor_animation_timelines;
-    if (settings().use_compositor_animation_timelines) {
-      timeline_impl_ =
-          AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
-      timeline_impl_->set_is_impl_only(true);
-      host_impl_.animation_host()->AddAnimationTimeline(timeline_impl_);
-    }
+    timeline_impl_ =
+        AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+    timeline_impl_->set_is_impl_only(true);
+    host_impl_.animation_host()->AddAnimationTimeline(timeline_impl_);
   }
 
   const LayerTreeSettings& settings() { return settings_; }
@@ -891,13 +881,13 @@ class LayerTest : public testing::Test {
   }
 
   void CreateSimpleTestTree() {
-    parent_ = Layer::Create(layer_settings_);
-    child1_ = Layer::Create(layer_settings_);
-    child2_ = Layer::Create(layer_settings_);
-    child3_ = Layer::Create(layer_settings_);
-    grand_child1_ = Layer::Create(layer_settings_);
-    grand_child2_ = Layer::Create(layer_settings_);
-    grand_child3_ = Layer::Create(layer_settings_);
+    parent_ = Layer::Create();
+    child1_ = Layer::Create();
+    child2_ = Layer::Create();
+    child3_ = Layer::Create();
+    grand_child1_ = Layer::Create();
+    grand_child2_ = Layer::Create();
+    grand_child3_ = Layer::Create();
 
     EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AnyNumber());
     layer_tree_host_->SetRootLayer(parent_);
@@ -931,12 +921,11 @@ class LayerTest : public testing::Test {
 
   scoped_refptr<AnimationTimeline> timeline_impl_;
 
-  LayerTreeSettingsForLayerTest settings_;
-  LayerSettings layer_settings_;
+  LayerTreeSettings settings_;
 };
 
 TEST_F(LayerTest, BasicCreateAndDestroy) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
   ASSERT_TRUE(test_layer.get());
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
@@ -949,12 +938,12 @@ TEST_F(LayerTest, BasicCreateAndDestroy) {
 
 TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
-  scoped_refptr<Layer> root = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child2 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> dummy_layer1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> dummy_layer2 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
+  scoped_refptr<Layer> grand_child = Layer::Create();
+  scoped_refptr<Layer> dummy_layer1 = Layer::Create();
+  scoped_refptr<Layer> dummy_layer2 = Layer::Create();
 
   layer_tree_host_->SetRootLayer(root);
   root->AddChild(child);
@@ -1134,8 +1123,8 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
 }
 
 TEST_F(LayerTest, AddAndRemoveChild) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
 
   // Upon creation, layers should not have children or parent.
   ASSERT_EQ(0U, parent->children().size());
@@ -1155,8 +1144,8 @@ TEST_F(LayerTest, AddAndRemoveChild) {
 TEST_F(LayerTest, AddSameChildTwice) {
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
 
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
 
   layer_tree_host_->SetRootLayer(parent);
 
@@ -1172,11 +1161,11 @@ TEST_F(LayerTest, AddSameChildTwice) {
 }
 
 TEST_F(LayerTest, InsertChild) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child2 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child3 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child4 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
+  scoped_refptr<Layer> child3 = Layer::Create();
+  scoped_refptr<Layer> child4 = Layer::Create();
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
 
@@ -1217,9 +1206,9 @@ TEST_F(LayerTest, InsertChild) {
 }
 
 TEST_F(LayerTest, InsertChildPastEndOfList) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child2 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
 
   ASSERT_EQ(0U, parent->children().size());
 
@@ -1238,9 +1227,9 @@ TEST_F(LayerTest, InsertChildPastEndOfList) {
 }
 
 TEST_F(LayerTest, InsertSameChildTwice) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child2 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
 
@@ -1267,7 +1256,7 @@ TEST_F(LayerTest, InsertSameChildTwice) {
 
 TEST_F(LayerTest, ReplaceChildWithNewChild) {
   CreateSimpleTestTree();
-  scoped_refptr<Layer> child4 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child4 = Layer::Create();
 
   EXPECT_FALSE(child4->parent());
 
@@ -1292,8 +1281,8 @@ TEST_F(LayerTest, ReplaceChildWithNewChildThatHasOtherParent) {
   CreateSimpleTestTree();
 
   // create another simple tree with test_layer and child4.
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child4 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  scoped_refptr<Layer> child4 = Layer::Create();
   test_layer->AddChild(child4);
   ASSERT_EQ(1U, test_layer->children().size());
   EXPECT_EQ(child4, test_layer->children()[0]);
@@ -1315,9 +1304,9 @@ TEST_F(LayerTest, ReplaceChildWithNewChildThatHasOtherParent) {
 }
 
 TEST_F(LayerTest, DeleteRemovedScrollParent) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child2 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
 
@@ -1344,9 +1333,9 @@ TEST_F(LayerTest, DeleteRemovedScrollParent) {
 }
 
 TEST_F(LayerTest, DeleteRemovedScrollChild) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child2 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
 
@@ -1396,11 +1385,11 @@ TEST_F(LayerTest, RemoveAllChildren) {
 }
 
 TEST_F(LayerTest, SetChildren) {
-  scoped_refptr<Layer> old_parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> new_parent = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> old_parent = Layer::Create();
+  scoped_refptr<Layer> new_parent = Layer::Create();
 
-  scoped_refptr<Layer> child1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child2 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> child2 = Layer::Create();
 
   LayerList new_children;
   new_children.push_back(child1);
@@ -1427,17 +1416,17 @@ TEST_F(LayerTest, SetChildren) {
 }
 
 TEST_F(LayerTest, HasAncestor) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
   EXPECT_FALSE(parent->HasAncestor(parent.get()));
 
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child = Layer::Create();
   parent->AddChild(child);
 
   EXPECT_FALSE(child->HasAncestor(child.get()));
   EXPECT_TRUE(child->HasAncestor(parent.get()));
   EXPECT_FALSE(parent->HasAncestor(child.get()));
 
-  scoped_refptr<Layer> child_child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child_child = Layer::Create();
   child->AddChild(child_child);
 
   EXPECT_FALSE(child_child->HasAncestor(child_child.get()));
@@ -1453,7 +1442,7 @@ TEST_F(LayerTest, GetRootLayerAfterTreeManipulations) {
   // For this test we don't care about SetNeedsFullTreeSync calls.
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AnyNumber());
 
-  scoped_refptr<Layer> child4 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child4 = Layer::Create();
 
   EXPECT_EQ(parent_.get(), parent_->RootLayer());
   EXPECT_EQ(parent_.get(), child1_->RootLayer());
@@ -1508,7 +1497,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   //   2. indirectly calls SetNeedsUpdate, exactly once for each call to
   //      SetNeedsDisplay.
 
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(
       1, layer_tree_host_->SetRootLayer(test_layer));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
@@ -1561,7 +1550,7 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
 }
 
 TEST_F(LayerTest, TestSettingMainThreadScrollingReason) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
                                   layer_tree_host_->SetRootLayer(test_layer));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
@@ -1612,13 +1601,13 @@ TEST_F(LayerTest, TestSettingMainThreadScrollingReason) {
 }
 
 TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(
       1, layer_tree_host_->SetRootLayer(test_layer));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
 
-  scoped_refptr<Layer> dummy_layer1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> dummy_layer2 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> dummy_layer1 = Layer::Create();
+  scoped_refptr<Layer> dummy_layer2 = Layer::Create();
 
   // sanity check of initial test condition
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
@@ -1669,7 +1658,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
 }
 
 TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 
@@ -1701,7 +1690,7 @@ TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
 }
 
 TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForTransform) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 
@@ -1720,7 +1709,7 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForTransform) {
 }
 
 TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 
@@ -1737,15 +1726,14 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
 }
 
 TEST_F(LayerTest, MaskAndReplicaHasParent) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> mask = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica_mask = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> mask_replacement = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica_replacement = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica_mask_replacement =
-      Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> mask = Layer::Create();
+  scoped_refptr<Layer> replica = Layer::Create();
+  scoped_refptr<Layer> replica_mask = Layer::Create();
+  scoped_refptr<Layer> mask_replacement = Layer::Create();
+  scoped_refptr<Layer> replica_replacement = Layer::Create();
+  scoped_refptr<Layer> replica_mask_replacement = Layer::Create();
 
   parent->AddChild(child);
   child->SetMaskLayer(mask.get());
@@ -1773,7 +1761,7 @@ TEST_F(LayerTest, MaskAndReplicaHasParent) {
 }
 
 TEST_F(LayerTest, CheckTransformIsInvertible) {
-  scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
@@ -1804,7 +1792,7 @@ TEST_F(LayerTest, CheckTransformIsInvertible) {
 }
 
 TEST_F(LayerTest, TransformIsInvertibleAnimation) {
-  scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
@@ -1872,22 +1860,14 @@ void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {
     AssertLayerTreeHostMatchesForSubtree(layer->replica_layer(), host);
 }
 
-class LayerLayerTreeHostTest : public testing::Test {
- public:
-  LayerLayerTreeHostTest() {
-    layer_settings_.use_compositor_animation_timelines = true;
-  }
-
- protected:
-  LayerSettings layer_settings_;
-};
+class LayerLayerTreeHostTest : public testing::Test {};
 
 TEST_F(LayerLayerTreeHostTest, EnteringTree) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> mask = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica_mask = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> mask = Layer::Create();
+  scoped_refptr<Layer> replica = Layer::Create();
+  scoped_refptr<Layer> replica_mask = Layer::Create();
 
   // Set up a detached tree of layers. The host pointer should be nil for these
   // layers.
@@ -1914,7 +1894,7 @@ TEST_F(LayerLayerTreeHostTest, EnteringTree) {
 }
 
 TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
   LayerTreeHostFactory factory;
   scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
 
@@ -1924,16 +1904,16 @@ TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
 
   // Adding a subtree to a layer already associated with a host should set the
   // host pointer on all layers in that subtree.
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> grand_child = Layer::Create();
   child->AddChild(grand_child);
 
   // Masks, replicas, and replica masks should pick up the new host too.
-  scoped_refptr<Layer> child_mask = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child_mask = Layer::Create();
   child->SetMaskLayer(child_mask.get());
-  scoped_refptr<Layer> child_replica = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child_replica = Layer::Create();
   child->SetReplicaLayer(child_replica.get());
-  scoped_refptr<Layer> child_replica_mask = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> child_replica_mask = Layer::Create();
   child_replica->SetMaskLayer(child_replica_mask.get());
 
   parent->AddChild(child);
@@ -1943,11 +1923,11 @@ TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
 }
 
 TEST_F(LayerLayerTreeHostTest, ChangeHost) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> mask = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica_mask = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> mask = Layer::Create();
+  scoped_refptr<Layer> replica = Layer::Create();
+  scoped_refptr<Layer> replica_mask = Layer::Create();
 
   // Same setup as the previous test.
   parent->AddChild(child);
@@ -1974,11 +1954,11 @@ TEST_F(LayerLayerTreeHostTest, ChangeHost) {
 }
 
 TEST_F(LayerLayerTreeHostTest, ChangeHostInSubtree) {
-  scoped_refptr<Layer> first_parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> first_child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> second_parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> second_child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> second_grand_child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> first_parent = Layer::Create();
+  scoped_refptr<Layer> first_child = Layer::Create();
+  scoped_refptr<Layer> second_parent = Layer::Create();
+  scoped_refptr<Layer> second_child = Layer::Create();
+  scoped_refptr<Layer> second_grand_child = Layer::Create();
 
   // First put all children under the first parent and set the first host.
   first_parent->AddChild(first_child);
@@ -2010,13 +1990,13 @@ TEST_F(LayerLayerTreeHostTest, ChangeHostInSubtree) {
 }
 
 TEST_F(LayerLayerTreeHostTest, ReplaceMaskAndReplicaLayer) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> mask = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> mask_child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica_child = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> mask_replacement = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica_replacement = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> mask = Layer::Create();
+  scoped_refptr<Layer> replica = Layer::Create();
+  scoped_refptr<Layer> mask_child = Layer::Create();
+  scoped_refptr<Layer> replica_child = Layer::Create();
+  scoped_refptr<Layer> mask_replacement = Layer::Create();
+  scoped_refptr<Layer> replica_replacement = Layer::Create();
 
   parent->SetMaskLayer(mask.get());
   parent->SetReplicaLayer(replica.get());
@@ -2044,8 +2024,8 @@ TEST_F(LayerLayerTreeHostTest, ReplaceMaskAndReplicaLayer) {
 }
 
 TEST_F(LayerLayerTreeHostTest, DestroyHostWithNonNullRootLayer) {
-  scoped_refptr<Layer> root = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
   root->AddChild(child);
   LayerTreeHostFactory factory;
   scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
@@ -2056,7 +2036,7 @@ TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
   LayerTreeHostFactory factory;
   scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
 
-  scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer = Layer::Create();
   layer_tree_host->SetRootLayer(layer);
 
   for (int contents_opaque = 0; contents_opaque < 2; ++contents_opaque) {
@@ -2087,9 +2067,8 @@ TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
 
 class DrawsContentChangeLayer : public Layer {
  public:
-  static scoped_refptr<DrawsContentChangeLayer> Create(
-      const LayerSettings& settings) {
-    return make_scoped_refptr(new DrawsContentChangeLayer(settings));
+  static scoped_refptr<DrawsContentChangeLayer> Create() {
+    return make_scoped_refptr(new DrawsContentChangeLayer());
   }
 
   void SetLayerTreeHost(LayerTreeHost* host) override {
@@ -2107,19 +2086,18 @@ class DrawsContentChangeLayer : public Layer {
   }
 
  private:
-  explicit DrawsContentChangeLayer(const LayerSettings& settings)
-      : Layer(settings), fake_draws_content_(false) {}
+  DrawsContentChangeLayer() : fake_draws_content_(false) {}
   ~DrawsContentChangeLayer() override {}
 
   bool fake_draws_content_;
 };
 
 TEST_F(LayerTest, DrawsContentChangedInSetLayerTreeHost) {
-  scoped_refptr<Layer> root_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> root_layer = Layer::Create();
   scoped_refptr<DrawsContentChangeLayer> becomes_not_draws_content =
-      DrawsContentChangeLayer::Create(layer_settings_);
+      DrawsContentChangeLayer::Create();
   scoped_refptr<DrawsContentChangeLayer> becomes_draws_content =
-      DrawsContentChangeLayer::Create(layer_settings_);
+      DrawsContentChangeLayer::Create();
   root_layer->SetIsDrawable(true);
   becomes_not_draws_content->SetIsDrawable(true);
   becomes_not_draws_content->SetFakeDrawsContent(true);
@@ -2138,7 +2116,7 @@ void ReceiveCopyOutputResult(int* result_count,
 }
 
 TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
-  scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer = Layer::Create();
   int result_count = 0;
 
   // Create identical requests without the source being set, and expect the
@@ -2156,7 +2134,7 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
   layer = nullptr;
   EXPECT_EQ(2, result_count);
 
-  layer = Layer::Create(layer_settings_);
+  layer = Layer::Create();
   result_count = 0;
 
   // Create identical requests, but this time the source is being set.  Expect
@@ -2202,7 +2180,7 @@ TEST_F(LayerTest, DedupesCopyOutputRequestsBySource) {
 }
 
 TEST_F(LayerTest, AnimationSchedulesLayerUpdate) {
-  scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer = Layer::Create();
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(layer));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsUpdateLayers()).Times(1);
@@ -2231,12 +2209,12 @@ TEST_F(LayerTest, RecursiveHierarchySerialization) {
                 c
      Layer c also has a mask layer and a replica layer.
   */
-  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_c_mask = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_c_replica = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_root = Layer::Create();
+  scoped_refptr<Layer> layer_src_a = Layer::Create();
+  scoped_refptr<Layer> layer_src_b = Layer::Create();
+  scoped_refptr<Layer> layer_src_c = Layer::Create();
+  scoped_refptr<Layer> layer_src_c_mask = Layer::Create();
+  scoped_refptr<Layer> layer_src_c_replica = Layer::Create();
   layer_src_root->AddChild(layer_src_a);
   layer_src_root->AddChild(layer_src_b);
   layer_src_b->AddChild(layer_src_c);
@@ -2247,7 +2225,7 @@ TEST_F(LayerTest, RecursiveHierarchySerialization) {
   layer_src_root->ToLayerNodeProto(&proto);
 
   Layer::LayerIdMap empty_dest_layer_map;
-  scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_dest_root = Layer::Create();
   layer_dest_root->FromLayerNodeProto(proto, empty_dest_layer_map);
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
@@ -2285,15 +2263,15 @@ TEST_F(LayerTest, RecursiveHierarchySerializationWithNodeReuse) {
      The deserialization should then re-use the Layers from last
      deserialization.
   */
-  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_root = Layer::Create();
+  scoped_refptr<Layer> layer_src_a = Layer::Create();
   layer_src_root->AddChild(layer_src_a);
 
   proto::LayerNode root_proto_1;
   layer_src_root->ToLayerNodeProto(&root_proto_1);
 
   Layer::LayerIdMap dest_layer_map_1;
-  scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_dest_root = Layer::Create();
   layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map_1);
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
@@ -2307,7 +2285,7 @@ TEST_F(LayerTest, RecursiveHierarchySerializationWithNodeReuse) {
   dest_layer_map_2[layer_dest_a_1->id()] = layer_dest_a_1;
 
   // Add Layer |b|.
-  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_b = Layer::Create();
   layer_src_root->AddChild(layer_src_b);
 
   // Second serialization.
@@ -2346,11 +2324,11 @@ TEST_F(LayerTest, DeletingSubtreeDeletesLayers) {
                   d
      Then the subtree rooted at node |b| is deleted in the next update.
   */
-  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_d = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_root = Layer::Create();
+  scoped_refptr<Layer> layer_src_a = Layer::Create();
+  scoped_refptr<Layer> layer_src_b = Layer::Create();
+  scoped_refptr<Layer> layer_src_c = Layer::Create();
+  scoped_refptr<Layer> layer_src_d = Layer::Create();
   layer_src_root->AddChild(layer_src_a);
   layer_src_root->AddChild(layer_src_b);
   layer_src_b->AddChild(layer_src_c);
@@ -2362,7 +2340,7 @@ TEST_F(LayerTest, DeletingSubtreeDeletesLayers) {
 
   // Deserialization 1.
   Layer::LayerIdMap empty_dest_layer_map;
-  scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_dest_root = Layer::Create();
   layer_dest_root->FromLayerNodeProto(proto1, empty_dest_layer_map);
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
@@ -2393,9 +2371,9 @@ TEST_F(LayerTest, DeletingSubtreeDeletesLayers) {
 }
 
 TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
-  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_mask = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_replica = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_root = Layer::Create();
+  scoped_refptr<Layer> layer_src_mask = Layer::Create();
+  scoped_refptr<Layer> layer_src_replica = Layer::Create();
   layer_src_root->SetMaskLayer(layer_src_mask.get());
   layer_src_root->SetReplicaLayer(layer_src_replica.get());
 
@@ -2405,7 +2383,7 @@ TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
 
   // Deserialization 1.
   Layer::LayerIdMap dest_layer_map;
-  scoped_refptr<Layer> layer_dest_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_dest_root = Layer::Create();
   layer_dest_root->FromLayerNodeProto(proto1, dest_layer_map);
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
@@ -2480,13 +2458,13 @@ TEST_F(LayerTest, SimplePropertiesSerialization) {
      Layers marked with + have descendants with changed properties.
      Layer b also has a mask layer and a replica layer.
   */
-  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b_mask = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b_replica = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_d = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_root = Layer::Create();
+  scoped_refptr<Layer> layer_src_a = Layer::Create();
+  scoped_refptr<Layer> layer_src_b = Layer::Create();
+  scoped_refptr<Layer> layer_src_b_mask = Layer::Create();
+  scoped_refptr<Layer> layer_src_b_replica = Layer::Create();
+  scoped_refptr<Layer> layer_src_c = Layer::Create();
+  scoped_refptr<Layer> layer_src_d = Layer::Create();
   layer_src_root->AddChild(layer_src_a);
   layer_src_root->AddChild(layer_src_b);
   layer_src_a->AddChild(layer_src_c);
@@ -2589,7 +2567,7 @@ TEST_F(LayerTest, SimplePropertiesSerialization) {
 }
 
 TEST_F(LayerSerializationTest, SimplePropertiesDeserialization) {
-  scoped_refptr<Layer> layer = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer = Layer::Create();
   layer->SetLayerTreeHost(layer_tree_host_.get());
   proto::LayerProperties properties;
   properties.set_id(layer->id());
@@ -2638,7 +2616,7 @@ TEST_F(LayerSerializationTest, ScrollAndClipLayers) {
 }
 
 TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
-  scoped_refptr<Layer> test_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 

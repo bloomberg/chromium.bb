@@ -37,7 +37,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_iterator.h"
 #include "cc/layers/layer_proto_converter.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/layer_tree_host.pb.h"
@@ -510,10 +509,7 @@ void LayerTreeHost::WillCommit() {
 void LayerTreeHost::UpdateHudLayer() {
   if (debug_state_.ShowHudInfo()) {
     if (!hud_layer_.get()) {
-      LayerSettings hud_layer_settings;
-      hud_layer_settings.use_compositor_animation_timelines =
-          settings_.use_compositor_animation_timelines;
-      hud_layer_ = HeadsUpDisplayLayer::Create(hud_layer_settings);
+      hud_layer_ = HeadsUpDisplayLayer::Create();
     }
 
     if (root_layer_.get() && !hud_layer_->parent())

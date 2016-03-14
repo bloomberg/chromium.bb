@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/layer_lists.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -143,13 +142,10 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     return render_surface_layer_list_count_;
   }
 
-  const LayerSettings& layer_settings() { return layer_settings_; }
-
  private:
   scoped_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
   LayerList update_layer_list_;
   scoped_ptr<LayerImplList> update_layer_list_impl_;
-  LayerSettings layer_settings_;
 
   int render_surface_layer_list_count_;
 };

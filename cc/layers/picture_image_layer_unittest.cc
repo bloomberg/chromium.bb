@@ -4,7 +4,6 @@
 
 #include "cc/layers/picture_image_layer.h"
 
-#include "cc/layers/layer_settings.h"
 #include "cc/playback/display_item.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,8 +16,7 @@ namespace cc {
 namespace {
 
 TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
-  scoped_refptr<PictureImageLayer> layer =
-      PictureImageLayer::Create(LayerSettings());
+  scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
   gfx::Rect layer_rect(200, 200);
 
   unsigned char image_pixels[4 * 200 * 200] = {0};

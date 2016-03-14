@@ -6,7 +6,6 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "cc/debug/lap_timer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -57,7 +56,7 @@ class LayerPerfTest : public testing::Test {
 };
 
 TEST_F(LayerPerfTest, PushPropertiesTo) {
-  scoped_refptr<Layer> test_layer = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 

@@ -40,21 +40,17 @@ class SatisfySwapPromise : public SwapPromise {
 };
 
 scoped_refptr<SurfaceLayer> SurfaceLayer::Create(
-    const LayerSettings& settings,
     const SatisfyCallback& satisfy_callback,
     const RequireCallback& require_callback) {
   return make_scoped_refptr(
-      new SurfaceLayer(settings, satisfy_callback, require_callback));
+      new SurfaceLayer(satisfy_callback, require_callback));
 }
 
-SurfaceLayer::SurfaceLayer(const LayerSettings& settings,
-                           const SatisfyCallback& satisfy_callback,
+SurfaceLayer::SurfaceLayer(const SatisfyCallback& satisfy_callback,
                            const RequireCallback& require_callback)
-    : Layer(settings),
-      surface_scale_(1.f),
+    : surface_scale_(1.f),
       satisfy_callback_(satisfy_callback),
-      require_callback_(require_callback) {
-}
+      require_callback_(require_callback) {}
 
 SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());

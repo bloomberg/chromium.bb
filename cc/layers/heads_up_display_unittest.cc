@@ -26,7 +26,7 @@ class DrawsContentLayer : public Layer {
   bool DrawsContent() const override { return true; }
 
  private:
-  DrawsContentLayer() : Layer(LayerSettings()) {}
+  DrawsContentLayer() {}
   ~DrawsContentLayer() override {}
 };
 

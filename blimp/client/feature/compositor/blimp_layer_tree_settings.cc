@@ -102,9 +102,6 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   // settings->scrollbar_show_scale_threshold = 1.05f;
 #endif
 
-  // Blimp always uses new cc::AnimationHost system.
-  settings->use_compositor_animation_timelines = true;
-
   // Set the GpuMemoryPolicy.
   cc::ManagedMemoryPolicy memory_policy = settings->memory_policy_;
   memory_policy.bytes_limit_when_visible = 0;

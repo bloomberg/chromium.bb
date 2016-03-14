@@ -8,7 +8,6 @@
 #include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -113,12 +112,11 @@ scoped_refptr<Layer> LayerProtoConverter::FindOrAllocateAndConstruct(
     // layer type we don't support.
     case proto::LayerNode::UNKNOWN:
     case proto::LayerNode::LAYER:
-      return Layer::Create(LayerSettings()).get();
+      return Layer::Create().get();
     case proto::LayerNode::PICTURE_LAYER:
-      return PictureLayer::Create(LayerSettings(),
-                                  EmptyContentLayerClient::GetInstance());
+      return PictureLayer::Create(EmptyContentLayerClient::GetInstance());
     case proto::LayerNode::HEADS_UP_DISPLAY_LAYER:
-      return HeadsUpDisplayLayer::Create(LayerSettings());
+      return HeadsUpDisplayLayer::Create();
   }
   // TODO(nyquist): Add the rest of the necessary LayerTypes. This function
   // should not return null.

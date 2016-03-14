@@ -7,7 +7,6 @@ include_rules = [
   "+components/toolbar",
   "+components/web_contents_delegate_android",
   "+cc/layers/layer.h",
-  "+cc/layers/layer_settings.h",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",
   "+sync/android",
   "+sync/test/fake_server/android",

@@ -6,7 +6,6 @@
 
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/proto/layer_tree_host.pb.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -175,9 +174,9 @@ class LayerTreeHostSerializationTest : public testing::Test {
     layer_tree_host_src_->meta_information_sequence_number_ *= 3;
 
     // Just fake setup a layer for both source and dest.
-    scoped_refptr<Layer> root_layer_src = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> root_layer_src = Layer::Create();
     layer_tree_host_src_->SetRootLayer(root_layer_src);
-    layer_tree_host_dst_->SetRootLayer(Layer::Create(LayerSettings()));
+    layer_tree_host_dst_->SetRootLayer(Layer::Create());
     root_layer_src->SetDoubleSided(!root_layer_src->double_sided());
 
     layer_tree_host_src_->debug_state_.show_replica_screen_space_rects =
@@ -211,21 +210,17 @@ class LayerTreeHostSerializationTest : public testing::Test {
     layer_tree_host_src_->next_commit_forces_redraw_ =
         !layer_tree_host_src_->next_commit_forces_redraw_;
 
-    layer_tree_host_src_->hud_layer_ =
-        HeadsUpDisplayLayer::Create(LayerSettings());
+    layer_tree_host_src_->hud_layer_ = HeadsUpDisplayLayer::Create();
     root_layer_src->AddChild(layer_tree_host_src_->hud_layer_);
-    layer_tree_host_src_->overscroll_elasticity_layer_ =
-        Layer::Create(LayerSettings());
+    layer_tree_host_src_->overscroll_elasticity_layer_ = Layer::Create();
     root_layer_src->AddChild(
         layer_tree_host_src_->overscroll_elasticity_layer_);
-    layer_tree_host_src_->page_scale_layer_ = Layer::Create(LayerSettings());
+    layer_tree_host_src_->page_scale_layer_ = Layer::Create();
     root_layer_src->AddChild(layer_tree_host_src_->page_scale_layer_);
-    layer_tree_host_src_->inner_viewport_scroll_layer_ =
-        Layer::Create(LayerSettings());
+    layer_tree_host_src_->inner_viewport_scroll_layer_ = Layer::Create();
     root_layer_src->AddChild(
         layer_tree_host_src_->inner_viewport_scroll_layer_);
-    layer_tree_host_src_->outer_viewport_scroll_layer_ =
-        Layer::Create(LayerSettings());
+    layer_tree_host_src_->outer_viewport_scroll_layer_ = Layer::Create();
     root_layer_src->AddChild(
         layer_tree_host_src_->outer_viewport_scroll_layer_);
 
@@ -253,15 +248,14 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
   void RunLayersChangedTest() {
     // Just fake setup a layer for both source and dest.
-    scoped_refptr<Layer> root_layer_src = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> root_layer_src = Layer::Create();
     layer_tree_host_src_->SetRootLayer(root_layer_src);
-    layer_tree_host_dst_->SetRootLayer(Layer::Create(LayerSettings()));
+    layer_tree_host_dst_->SetRootLayer(Layer::Create());
     root_layer_src->SetDoubleSided(!root_layer_src->double_sided());
 
     // No HUD layer or |overscroll_elasticity_layer_|, or the inner/outer
     // viewport scroll layers.
-    layer_tree_host_src_->overscroll_elasticity_layer_ =
-        Layer::Create(LayerSettings());
+    layer_tree_host_src_->overscroll_elasticity_layer_ = Layer::Create();
     root_layer_src->AddChild(
         layer_tree_host_src_->overscroll_elasticity_layer_);
 
@@ -270,28 +264,24 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
   void LayersChangedMultipleSerializations() {
     // Just fake setup a layer for both source and dest.
-    scoped_refptr<Layer> root_layer_src = Layer::Create(LayerSettings());
+    scoped_refptr<Layer> root_layer_src = Layer::Create();
     layer_tree_host_src_->SetRootLayer(root_layer_src);
-    layer_tree_host_dst_->SetRootLayer(Layer::Create(LayerSettings()));
+    layer_tree_host_dst_->SetRootLayer(Layer::Create());
     root_layer_src->SetDoubleSided(!root_layer_src->double_sided());
 
     // Ensure that all the layers work correctly for multiple rounds of
     // serialization and deserialization.
-    layer_tree_host_src_->hud_layer_ =
-        HeadsUpDisplayLayer::Create(LayerSettings());
+    layer_tree_host_src_->hud_layer_ = HeadsUpDisplayLayer::Create();
     root_layer_src->AddChild(layer_tree_host_src_->hud_layer_);
-    layer_tree_host_src_->overscroll_elasticity_layer_ =
-        Layer::Create(LayerSettings());
+    layer_tree_host_src_->overscroll_elasticity_layer_ = Layer::Create();
     root_layer_src->AddChild(
         layer_tree_host_src_->overscroll_elasticity_layer_);
-    layer_tree_host_src_->page_scale_layer_ = Layer::Create(LayerSettings());
+    layer_tree_host_src_->page_scale_layer_ = Layer::Create();
     root_layer_src->AddChild(layer_tree_host_src_->page_scale_layer_);
-    layer_tree_host_src_->inner_viewport_scroll_layer_ =
-        Layer::Create(LayerSettings());
+    layer_tree_host_src_->inner_viewport_scroll_layer_ = Layer::Create();
     root_layer_src->AddChild(
         layer_tree_host_src_->inner_viewport_scroll_layer_);
-    layer_tree_host_src_->outer_viewport_scroll_layer_ =
-        Layer::Create(LayerSettings());
+    layer_tree_host_src_->outer_viewport_scroll_layer_ = Layer::Create();
     root_layer_src->AddChild(
         layer_tree_host_src_->outer_viewport_scroll_layer_);
 

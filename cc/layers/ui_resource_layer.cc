@@ -49,13 +49,12 @@ class SharedUIResourceHolder : public UIResourceLayer::UIResourceHolder {
 
 UIResourceLayer::UIResourceHolder::~UIResourceHolder() {}
 
-scoped_refptr<UIResourceLayer> UIResourceLayer::Create(
-    const LayerSettings& settings) {
-  return make_scoped_refptr(new UIResourceLayer(settings));
+scoped_refptr<UIResourceLayer> UIResourceLayer::Create() {
+  return make_scoped_refptr(new UIResourceLayer());
 }
 
-UIResourceLayer::UIResourceLayer(const LayerSettings& settings)
-    : Layer(settings), uv_top_left_(0.f, 0.f), uv_bottom_right_(1.f, 1.f) {
+UIResourceLayer::UIResourceLayer()
+    : uv_top_left_(0.f, 0.f), uv_bottom_right_(1.f, 1.f) {
   vertex_opacity_[0] = 1.0f;
   vertex_opacity_[1] = 1.0f;
   vertex_opacity_[2] = 1.0f;

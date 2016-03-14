@@ -4,7 +4,6 @@
 
 #include <vector>
 #include "cc/blink/web_layer_impl_fixed_bounds.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_image_layer.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/geometry_test_utils.h"
@@ -90,16 +89,15 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
 
   scoped_ptr<WebLayerImplFixedBounds> root_layer(new WebLayerImplFixedBounds());
 
-  WebLayerImplFixedBounds* fixed_bounds_layer = new WebLayerImplFixedBounds(
-      cc::PictureImageLayer::Create(cc::LayerSettings()));
+  WebLayerImplFixedBounds* fixed_bounds_layer =
+      new WebLayerImplFixedBounds(cc::PictureImageLayer::Create());
   fixed_bounds_layer->setBounds(bounds);
   fixed_bounds_layer->SetFixedBounds(fixed_bounds);
   fixed_bounds_layer->setTransform(transform.matrix());
   fixed_bounds_layer->setPosition(position);
   root_layer->addChild(fixed_bounds_layer);
 
-  WebLayerImpl* normal_layer(
-      new WebLayerImpl(cc::PictureImageLayer::Create(cc::LayerSettings())));
+  WebLayerImpl* normal_layer(new WebLayerImpl(cc::PictureImageLayer::Create()));
 
   normal_layer->setBounds(bounds);
   normal_layer->setTransform(transform.matrix());

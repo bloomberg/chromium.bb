@@ -6,7 +6,6 @@
 
 #include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
@@ -25,8 +24,7 @@ WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
     blink::WebExternalTextureLayerClient* client)
     : client_(client) {
   cc::TextureLayerClient* cc_client = client_ ? this : nullptr;
-  scoped_refptr<TextureLayer> layer =
-      TextureLayer::CreateForMailbox(cc::LayerSettings(), cc_client);
+  scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(cc_client);
   layer->SetIsDrawable(true);
   layer_.reset(new WebLayerImpl(layer));
 }

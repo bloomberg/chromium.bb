@@ -153,7 +153,7 @@ class LayerTreeHostTilesTestPartialInvalidation
  public:
   LayerTreeHostTilesTestPartialInvalidation()
       : client_(gfx::Size(200, 200)),
-        picture_layer_(PictureLayer::Create(layer_settings(), &client_)) {
+        picture_layer_(PictureLayer::Create(&client_)) {
     picture_layer_->SetBounds(gfx::Size(200, 200));
     picture_layer_->SetIsDrawable(true);
   }

@@ -111,7 +111,6 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.gpu_rasterization_enabled = true;
-    settings.use_compositor_animation_timelines = true;
     return settings;
   }
 
@@ -509,9 +508,7 @@ class LayerTreeHostImplTest : public testing::Test,
 class LayerTreeHostImplTimelinesTest : public LayerTreeHostImplTest {
  public:
   void SetUp() override {
-    LayerTreeSettings settings = DefaultSettings();
-    settings.use_compositor_animation_timelines = true;
-    CreateHostImpl(settings, CreateOutputSurface());
+    CreateHostImpl(DefaultSettings(), CreateOutputSurface());
   }
 };
 

@@ -934,8 +934,8 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
 
   if (hasVideo()) {
     DCHECK(!video_weblayer_);
-    scoped_refptr<cc::VideoLayer> layer = cc::VideoLayer::Create(
-        cc::LayerSettings(), compositor_, pipeline_metadata_.video_rotation);
+    scoped_refptr<cc::VideoLayer> layer =
+        cc::VideoLayer::Create(compositor_, pipeline_metadata_.video_rotation);
 
     if (pipeline_metadata_.video_rotation == VIDEO_ROTATION_90 ||
         pipeline_metadata_.video_rotation == VIDEO_ROTATION_270) {

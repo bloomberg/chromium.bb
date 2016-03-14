@@ -7,7 +7,6 @@
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -32,7 +31,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
 
     layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_,
                                                  &task_graph_runner_);
-    layer_tree_host_->SetRootLayer(Layer::Create(LayerSettings()));
+    layer_tree_host_->SetRootLayer(Layer::Create());
     layer_tree_host_->InitializeForTesting(
         TaskRunnerProvider::Create(nullptr, nullptr),
         scoped_ptr<Proxy>(new FakeProxy), nullptr);

@@ -42,8 +42,6 @@ void WebLayerTreeViewImplForTesting::Initialize() {
 
   // Accelerated animations are enabled for unit tests.
   settings.accelerated_animation_enabled = true;
-  // External cc::AnimationHost is enabled for unit tests.
-  settings.use_compositor_animation_timelines = true;
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;

@@ -13,14 +13,12 @@
 
 namespace cc {
 
-scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::Create(
-    const LayerSettings& settings) {
-  return make_scoped_refptr(new HeadsUpDisplayLayer(settings));
+scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::Create() {
+  return make_scoped_refptr(new HeadsUpDisplayLayer());
 }
 
-HeadsUpDisplayLayer::HeadsUpDisplayLayer(const LayerSettings& settings)
-    : Layer(settings),
-      typeface_(skia::AdoptRef(
+HeadsUpDisplayLayer::HeadsUpDisplayLayer()
+    : typeface_(skia::AdoptRef(
           SkTypeface::CreateFromName("times new roman", SkTypeface::kNormal))) {
   if (!typeface_) {
     typeface_ = skia::AdoptRef(

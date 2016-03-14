@@ -22,7 +22,6 @@
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_proto_converter.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -41,11 +40,11 @@ namespace cc {
 
 base::StaticAtomicSequenceNumber g_next_layer_id;
 
-scoped_refptr<Layer> Layer::Create(const LayerSettings& settings) {
-  return make_scoped_refptr(new Layer(settings));
+scoped_refptr<Layer> Layer::Create() {
+  return make_scoped_refptr(new Layer());
 }
 
-Layer::Layer(const LayerSettings& settings)
+Layer::Layer()
     : needs_push_properties_(false),
       num_dependents_need_push_properties_(0),
       // Layer IDs start from 1.
@@ -97,8 +96,7 @@ Layer::Layer(const LayerSettings& settings)
       replica_layer_(nullptr),
       client_(nullptr),
       num_unclipped_descendants_(0),
-      frame_timing_requests_dirty_(false) {
-}
+      frame_timing_requests_dirty_(false) {}
 
 Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no

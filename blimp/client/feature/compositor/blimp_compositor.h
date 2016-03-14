@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/client/blimp_client_export.h"
 #include "blimp/client/feature/compositor/blimp_input_manager.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"

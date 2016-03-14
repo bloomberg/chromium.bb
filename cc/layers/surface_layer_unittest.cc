@@ -49,7 +49,6 @@ class SurfaceLayerTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
-  LayerSettings layer_settings_;
 };
 
 void SatisfyCallback(SurfaceSequence* out, SurfaceSequence in) {
@@ -72,7 +71,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   SurfaceId required_id;
   std::set<SurfaceSequence> required_seq;
   scoped_refptr<SurfaceLayer> layer(SurfaceLayer::Create(
-      layer_settings_, base::Bind(&SatisfyCallback, &blank_change),
+      base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   layer->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
   layer_tree_host_->set_surface_id_namespace(1);
@@ -81,7 +80,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   scoped_ptr<FakeLayerTreeHost> layer_tree_host2 =
       FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
   scoped_refptr<SurfaceLayer> layer2(SurfaceLayer::Create(
-      layer_settings_, base::Bind(&SatisfyCallback, &blank_change),
+      base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   layer2->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
   layer_tree_host2->set_surface_id_namespace(2);
@@ -128,7 +127,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
   void BeginTest() override {
     layer_tree_host()->set_surface_id_namespace(1);
     layer_ = SurfaceLayer::Create(
-        layer_settings(), base::Bind(&SatisfyCallback, &satisfied_sequence_),
+        base::Bind(&SatisfyCallback, &satisfied_sequence_),
         base::Bind(&RequireCallback, &required_id_, &required_set_));
     layer_->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
 
@@ -146,7 +145,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     gfx::Size bounds(100, 100);
     layer_tree_host()->SetViewportSize(bounds);
 
-    blank_layer_ = SolidColorLayer::Create(layer_settings());
+    blank_layer_ = SolidColorLayer::Create();
     blank_layer_->SetIsDrawable(true);
     blank_layer_->SetBounds(gfx::Size(10, 10));
 

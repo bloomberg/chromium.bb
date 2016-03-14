@@ -30,11 +30,11 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
     : public LayerTreeHostOcclusionTest {
  public:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(100, 100));
     root->SetIsDrawable(true);
 
-    scoped_refptr<Layer> child = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child = Layer::Create();
     child->SetBounds(gfx::Size(50, 60));
     child->SetPosition(gfx::PointF(10.f, 5.5f));
     child->SetContentsOpaque(true);
@@ -76,18 +76,18 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
     : public LayerTreeHostOcclusionTest {
  public:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(100, 100));
     root->SetIsDrawable(true);
 
-    scoped_refptr<Layer> child = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child = Layer::Create();
     child->SetBounds(gfx::Size(1, 1));
     child->SetPosition(gfx::PointF(10.f, 5.5f));
     child->SetIsDrawable(true);
     child->SetForceRenderSurface(true);
     root->AddChild(child);
 
-    scoped_refptr<Layer> child2 = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 12));
     child2->SetPosition(gfx::PointF(13.f, 8.5f));
     child2->SetContentsOpaque(true);
@@ -128,29 +128,28 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     : public LayerTreeHostOcclusionTest {
  public:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(100, 100));
     root->SetIsDrawable(true);
 
-    scoped_refptr<Layer> child = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child = Layer::Create();
     child->SetBounds(gfx::Size(30, 40));
     child->SetPosition(gfx::PointF(10.f, 5.5f));
     child->SetIsDrawable(true);
     root->AddChild(child);
 
-    scoped_refptr<Layer> make_surface_bigger = Layer::Create(layer_settings());
+    scoped_refptr<Layer> make_surface_bigger = Layer::Create();
     make_surface_bigger->SetBounds(gfx::Size(100, 100));
     make_surface_bigger->SetPosition(gfx::PointF(-10.f, -15.f));
     make_surface_bigger->SetIsDrawable(true);
     child->AddChild(make_surface_bigger);
 
-    scoped_refptr<Layer> mask =
-        PictureLayer::Create(layer_settings(), &client_);
+    scoped_refptr<Layer> mask = PictureLayer::Create(&client_);
     mask->SetBounds(gfx::Size(30, 40));
     mask->SetIsDrawable(true);
     child->SetMaskLayer(mask.get());
 
-    scoped_refptr<Layer> child2 = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 12));
     child2->SetPosition(gfx::PointF(13.f, 8.5f));
     child2->SetContentsOpaque(true);
@@ -197,31 +196,30 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
     : public LayerTreeHostOcclusionTest {
  public:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(100, 100));
     root->SetIsDrawable(true);
 
     gfx::Transform scale;
     scale.Scale(2, 2);
 
-    scoped_refptr<Layer> child = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child = Layer::Create();
     child->SetBounds(gfx::Size(30, 40));
     child->SetTransform(scale);
     root->AddChild(child);
 
-    scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
+    scoped_refptr<Layer> grand_child = Layer::Create();
     grand_child->SetBounds(gfx::Size(100, 100));
     grand_child->SetPosition(gfx::PointF(-10.f, -15.f));
     grand_child->SetIsDrawable(true);
     child->AddChild(grand_child);
 
-    scoped_refptr<Layer> mask =
-        PictureLayer::Create(layer_settings(), &client_);
+    scoped_refptr<Layer> mask = PictureLayer::Create(&client_);
     mask->SetBounds(gfx::Size(30, 40));
     mask->SetIsDrawable(true);
     child->SetMaskLayer(mask.get());
 
-    scoped_refptr<Layer> child2 = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 11));
     child2->SetPosition(gfx::PointF(13.f, 15.f));
     child2->SetContentsOpaque(true);
@@ -266,30 +264,29 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
     : public LayerTreeHostOcclusionTest {
  public:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(100, 100));
     root->SetIsDrawable(true);
 
-    scoped_refptr<Layer> child = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child = Layer::Create();
     child->SetBounds(gfx::Size(1, 1));
     child->SetPosition(gfx::PointF(10.f, 5.5f));
     child->SetIsDrawable(true);
     child->SetForceRenderSurface(true);
     root->AddChild(child);
 
-    scoped_refptr<Layer> replica = Layer::Create(layer_settings());
+    scoped_refptr<Layer> replica = Layer::Create();
     gfx::Transform translate;
     translate.Translate(20.f, 4.f);
     replica->SetTransform(translate);
     child->SetReplicaLayer(replica.get());
 
-    scoped_refptr<Layer> mask =
-        PictureLayer::Create(layer_settings(), &client_);
+    scoped_refptr<Layer> mask = PictureLayer::Create(&client_);
     mask->SetBounds(gfx::Size(30, 40));
     mask->SetIsDrawable(true);
     child->SetMaskLayer(mask.get());
 
-    scoped_refptr<Layer> child2 = Layer::Create(layer_settings());
+    scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 12));
     child2->SetPosition(gfx::PointF(13.f, 8.5f));
     child2->SetContentsOpaque(true);

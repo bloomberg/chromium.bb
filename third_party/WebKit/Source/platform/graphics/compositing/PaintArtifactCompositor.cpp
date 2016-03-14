@@ -6,7 +6,6 @@
 
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/display_item_list_settings.h"
@@ -68,7 +67,7 @@ PaintArtifactCompositor::PaintArtifactCompositor()
 {
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return;
-    m_rootLayer = cc::Layer::Create(cc::LayerSettings());
+    m_rootLayer = cc::Layer::Create();
     m_webLayer = adoptPtr(Platform::current()->compositorSupport()->createLayerFromCCLayer(m_rootLayer.get()));
 }
 
@@ -185,7 +184,7 @@ scoped_refptr<cc::Layer> createClipLayer(const ClipPaintPropertyNode* node)
         transform.PreconcatTransform(undoClipOffset);
     }
 
-    scoped_refptr<cc::Layer> layer = cc::Layer::Create(cc::LayerSettings());
+    scoped_refptr<cc::Layer> layer = cc::Layer::Create();
     layer->SetIsDrawable(false);
     layer->SetMasksToBounds(true);
     layer->SetPosition(gfx::PointF());
@@ -306,7 +305,7 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
         transform.PreconcatTransform(undoClipOffset);
     }
 
-    scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(cc::LayerSettings(), contentLayerClient.get());
+    scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(contentLayerClient.get());
     layer->SetBounds(combinedBounds.size());
     layer->SetTransform(transform);
     layer->SetIsDrawable(true);

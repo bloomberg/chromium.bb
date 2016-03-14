@@ -99,7 +99,6 @@ LayerTreeSettings::LayerTreeSettings()
       scheduled_raster_task_limit(32),
       use_occlusion_for_tile_prioritization(false),
       image_decode_tasks_enabled(false),
-      use_compositor_animation_timelines(true),
       wait_for_beginframe_interval(true),
       abort_commit_before_output_surface_creation(true),
       use_mouse_wheel_gestures(false),
@@ -168,8 +167,6 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          use_occlusion_for_tile_prioritization ==
              other.use_occlusion_for_tile_prioritization &&
          image_decode_tasks_enabled == other.image_decode_tasks_enabled &&
-         use_compositor_animation_timelines ==
-             other.use_compositor_animation_timelines &&
          wait_for_beginframe_interval == other.wait_for_beginframe_interval &&
          use_mouse_wheel_gestures == other.use_mouse_wheel_gestures &&
          max_staging_buffer_usage_in_bytes ==
@@ -231,8 +228,6 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
   proto->set_use_occlusion_for_tile_prioritization(
       use_occlusion_for_tile_prioritization);
   proto->set_image_decode_tasks_enabled(image_decode_tasks_enabled);
-  proto->set_use_compositor_animation_timelines(
-      use_compositor_animation_timelines);
   proto->set_wait_for_beginframe_interval(wait_for_beginframe_interval);
   proto->set_use_mouse_wheel_gestures(use_mouse_wheel_gestures);
   proto->set_max_staging_buffer_usage_in_bytes(
@@ -298,8 +293,6 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
   use_occlusion_for_tile_prioritization =
       proto.use_occlusion_for_tile_prioritization();
   image_decode_tasks_enabled = proto.image_decode_tasks_enabled();
-  use_compositor_animation_timelines =
-      proto.use_compositor_animation_timelines();
   wait_for_beginframe_interval = proto.wait_for_beginframe_interval();
   use_mouse_wheel_gestures = proto.use_mouse_wheel_gestures();
   max_staging_buffer_usage_in_bytes = proto.max_staging_buffer_usage_in_bytes();

@@ -12,10 +12,6 @@
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cc {
-class LayerSettings;
-}
-
 namespace chrome {
 namespace android {
 

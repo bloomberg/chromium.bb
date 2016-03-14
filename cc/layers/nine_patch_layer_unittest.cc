@@ -4,7 +4,6 @@
 
 #include "cc/layers/nine_patch_layer.h"
 
-#include "cc/layers/layer_settings.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -47,8 +46,7 @@ class NinePatchLayerTest : public testing::Test {
 };
 
 TEST_F(NinePatchLayerTest, SetLayerProperties) {
-  scoped_refptr<NinePatchLayer> test_layer =
-      NinePatchLayer::Create(LayerSettings());
+  scoped_refptr<NinePatchLayer> test_layer = NinePatchLayer::Create();
   ASSERT_TRUE(test_layer.get());
   test_layer->SetIsDrawable(true);
   test_layer->SetBounds(gfx::Size(100, 100));

@@ -17,7 +17,6 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/layer_animation_controller.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/output/begin_frame_args.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"

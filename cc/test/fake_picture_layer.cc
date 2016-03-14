@@ -8,9 +8,8 @@
 
 namespace cc {
 
-FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
-                                   ContentLayerClient* client)
-    : PictureLayer(settings, client),
+FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
+    : PictureLayer(client),
       update_count_(0),
       push_properties_count_(0),
       always_update_resources_(false) {
@@ -19,10 +18,9 @@ FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
 }
 
 FakePictureLayer::FakePictureLayer(
-    const LayerSettings& settings,
     ContentLayerClient* client,
     scoped_ptr<DisplayListRecordingSource> source)
-    : PictureLayer(settings, client, std::move(source)),
+    : PictureLayer(client, std::move(source)),
       update_count_(0),
       push_properties_count_(0),
       always_update_resources_(false) {

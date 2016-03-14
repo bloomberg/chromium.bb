@@ -15,7 +15,6 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -55,10 +54,8 @@ class MockLayerImpl : public LayerImpl {
 class MockLayer : public Layer {
  public:
   static scoped_refptr<MockLayer> Create(
-      const LayerSettings& settings,
       std::vector<int>* layer_impl_destruction_list) {
-    return make_scoped_refptr(
-        new MockLayer(settings, layer_impl_destruction_list));
+    return make_scoped_refptr(new MockLayer(layer_impl_destruction_list));
   }
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override {
@@ -73,10 +70,8 @@ class MockLayer : public Layer {
   }
 
  private:
-  explicit MockLayer(const LayerSettings& settings,
-                     std::vector<int>* layer_impl_destruction_list)
-      : Layer(settings),
-        layer_impl_destruction_list_(layer_impl_destruction_list) {}
+  explicit MockLayer(std::vector<int>* layer_impl_destruction_list)
+      : layer_impl_destruction_list_(layer_impl_destruction_list) {}
   ~MockLayer() override {}
 
   std::vector<int>* layer_impl_destruction_list_;
@@ -170,30 +165,16 @@ void ExpectTreesAreIdentical(Layer* layer,
   }
 }
 
-class LayerTreeSettingsForTreeSynchronizerTest : public LayerTreeSettings {
- public:
-  LayerTreeSettingsForTreeSynchronizerTest() {
-    use_compositor_animation_timelines = true;
-  }
-};
-
 class TreeSynchronizerTest : public testing::Test {
  public:
   TreeSynchronizerTest()
       : client_(FakeLayerTreeHostClient::DIRECT_3D),
-        host_(FakeLayerTreeHost::Create(
-            &client_,
-            &task_graph_runner_,
-            LayerTreeSettingsForTreeSynchronizerTest())) {
-    layer_settings_.use_compositor_animation_timelines =
-        host_->settings().use_compositor_animation_timelines;
-  }
+        host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)) {}
 
  protected:
   FakeLayerTreeHostClient client_;
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> host_;
-  LayerSettings layer_settings_;
 
   bool is_equal(ScrollTree::ScrollOffsetMap map,
                 ScrollTree::ScrollOffsetMap other) {
@@ -227,9 +208,9 @@ TEST_F(TreeSynchronizerTest, SyncNullTree) {
 // Constructs a very simple tree and synchronizes it without trying to reuse any
 // preexisting layers.
 TEST_F(TreeSynchronizerTest, SyncSimpleTreeFromEmpty) {
-  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  layer_tree_root->AddChild(Layer::Create());
+  layer_tree_root->AddChild(Layer::Create());
 
   host_->SetRootLayer(layer_tree_root);
 
@@ -248,11 +229,9 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeReusingLayers) {
   std::vector<int> layer_impl_destruction_list;
 
   scoped_refptr<Layer> layer_tree_root =
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list);
-  layer_tree_root->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
-  layer_tree_root->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+      MockLayer::Create(&layer_impl_destruction_list);
+  layer_tree_root->AddChild(MockLayer::Create(&layer_impl_destruction_list));
+  layer_tree_root->AddChild(MockLayer::Create(&layer_impl_destruction_list));
 
   host_->SetRootLayer(layer_tree_root);
 
@@ -269,7 +248,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeReusingLayers) {
 
   // Add a new layer to the Layer side
   layer_tree_root->children()[0]->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+      MockLayer::Create(&layer_impl_destruction_list));
   // Remove one.
   layer_tree_root->children()[1]->RemoveFromParent();
   int second_layer_impl_id = layer_impl_tree_root->children()[1]->id();
@@ -295,11 +274,9 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndTrackStackingOrderChange) {
   // Set up the tree and sync once. child2 needs to be synced here, too, even
   // though we remove it to set up the intended scenario.
   scoped_refptr<Layer> layer_tree_root =
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list);
-  scoped_refptr<Layer> child2 =
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list);
-  layer_tree_root->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+      MockLayer::Create(&layer_impl_destruction_list);
+  scoped_refptr<Layer> child2 = MockLayer::Create(&layer_impl_destruction_list);
+  layer_tree_root->AddChild(MockLayer::Create(&layer_impl_destruction_list));
   layer_tree_root->AddChild(child2);
 
   host_->SetRootLayer(layer_tree_root);
@@ -336,9 +313,9 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndTrackStackingOrderChange) {
 }
 
 TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {
-  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  layer_tree_root->AddChild(Layer::Create());
+  layer_tree_root->AddChild(Layer::Create());
 
   host_->SetRootLayer(layer_tree_root);
 
@@ -389,21 +366,17 @@ TEST_F(TreeSynchronizerTest, ReuseLayerImplsAfterStructuralChange) {
   //                     |
   //                     +--- D
   scoped_refptr<Layer> layer_tree_root =
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list);
-  layer_tree_root->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+      MockLayer::Create(&layer_impl_destruction_list);
+  layer_tree_root->AddChild(MockLayer::Create(&layer_impl_destruction_list));
 
   scoped_refptr<Layer> layer_a = layer_tree_root->children()[0].get();
-  layer_a->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+  layer_a->AddChild(MockLayer::Create(&layer_impl_destruction_list));
 
   scoped_refptr<Layer> layer_b = layer_a->children()[0].get();
-  layer_b->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+  layer_b->AddChild(MockLayer::Create(&layer_impl_destruction_list));
 
   scoped_refptr<Layer> layer_c = layer_b->children()[0].get();
-  layer_b->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+  layer_b->AddChild(MockLayer::Create(&layer_impl_destruction_list));
   scoped_refptr<Layer> layer_d = layer_b->children()[1].get();
 
   host_->SetRootLayer(layer_tree_root);
@@ -451,11 +424,11 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeThenDestroy) {
   std::vector<int> layer_impl_destruction_list;
 
   scoped_refptr<Layer> old_layer_tree_root =
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list);
+      MockLayer::Create(&layer_impl_destruction_list);
   old_layer_tree_root->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+      MockLayer::Create(&layer_impl_destruction_list));
   old_layer_tree_root->AddChild(
-      MockLayer::Create(layer_settings_, &layer_impl_destruction_list));
+      MockLayer::Create(&layer_impl_destruction_list));
 
   host_->SetRootLayer(old_layer_tree_root);
 
@@ -479,7 +452,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeThenDestroy) {
 
   // Synchronize again. After the sync all LayerImpls from the old tree should
   // be deleted.
-  scoped_refptr<Layer> new_layer_tree_root = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> new_layer_tree_root = Layer::Create();
   host_->SetRootLayer(new_layer_tree_root);
   layer_impl_tree_root = TreeSynchronizer::SynchronizeTrees(
       new_layer_tree_root.get(), std::move(layer_impl_tree_root),
@@ -506,22 +479,22 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeThenDestroy) {
 
 // Constructs+syncs a tree with mask, replica, and replica mask layers.
 TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
-  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  layer_tree_root->AddChild(Layer::Create());
+  layer_tree_root->AddChild(Layer::Create());
+  layer_tree_root->AddChild(Layer::Create());
 
   // First child gets a mask layer.
-  scoped_refptr<Layer> mask_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> mask_layer = Layer::Create();
   layer_tree_root->children()[0]->SetMaskLayer(mask_layer.get());
 
   // Second child gets a replica layer.
-  scoped_refptr<Layer> replica_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> replica_layer = Layer::Create();
   layer_tree_root->children()[1]->SetReplicaLayer(replica_layer.get());
 
   // Third child gets a replica layer with a mask layer.
-  scoped_refptr<Layer> replica_layer_with_mask = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> replica_mask_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> replica_layer_with_mask = Layer::Create();
+  scoped_refptr<Layer> replica_mask_layer = Layer::Create();
   replica_layer_with_mask->SetMaskLayer(replica_mask_layer.get());
   layer_tree_root->children()[2]->
       SetReplicaLayer(replica_layer_with_mask.get());
@@ -574,11 +547,11 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
       settings, nullptr, &task_runner_provider, &stats_instrumentation,
       &shared_bitmap_manager, nullptr, &task_graph_runner, 0);
 
-  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> scroll_parent = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  scoped_refptr<Layer> scroll_parent = Layer::Create();
   layer_tree_root->AddChild(scroll_parent);
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
-  layer_tree_root->AddChild(Layer::Create(layer_settings_));
+  layer_tree_root->AddChild(Layer::Create());
+  layer_tree_root->AddChild(Layer::Create());
 
   host_->SetRootLayer(layer_tree_root);
 
@@ -613,7 +586,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
   }
 
   // Add an additional scroll layer.
-  scoped_refptr<Layer> additional_scroll_child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> additional_scroll_child = Layer::Create();
   layer_tree_root->AddChild(additional_scroll_child);
   additional_scroll_child->SetScrollParent(scroll_parent.get());
   layer_impl_tree_root = TreeSynchronizer::SynchronizeTrees(
@@ -639,11 +612,11 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
       settings, nullptr, &task_runner_provider, &stats_instrumentation,
       &shared_bitmap_manager, nullptr, &task_graph_runner, 0);
 
-  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> intervening = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> clip_child1 = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> clip_child2 = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  scoped_refptr<Layer> clip_parent = Layer::Create();
+  scoped_refptr<Layer> intervening = Layer::Create();
+  scoped_refptr<Layer> clip_child1 = Layer::Create();
+  scoped_refptr<Layer> clip_child2 = Layer::Create();
   layer_tree_root->AddChild(clip_parent);
   clip_parent->AddChild(intervening);
   intervening->AddChild(clip_child1);
@@ -678,7 +651,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
                           host_impl->active_tree());
 
   // Add an additional clip child.
-  scoped_refptr<Layer> additional_clip_child = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> additional_clip_child = Layer::Create();
   intervening->AddChild(additional_clip_child);
   additional_clip_child->SetClipParent(clip_parent.get());
   layer_impl_tree_root = TreeSynchronizer::SynchronizeTrees(
@@ -718,12 +691,11 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
   FakeLayerTreeHostImpl* host_impl = host_->host_impl();
   host_impl->CreatePendingTree();
 
-  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> scroll_clip_layer = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> scroll_layer = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> transient_scroll_clip_layer =
-      Layer::Create(layer_settings_);
-  scoped_refptr<Layer> transient_scroll_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  scoped_refptr<Layer> scroll_clip_layer = Layer::Create();
+  scoped_refptr<Layer> scroll_layer = Layer::Create();
+  scoped_refptr<Layer> transient_scroll_clip_layer = Layer::Create();
+  scoped_refptr<Layer> transient_scroll_layer = Layer::Create();
 
   layer_tree_root->AddChild(transient_scroll_clip_layer);
   transient_scroll_clip_layer->AddChild(transient_scroll_layer);
@@ -767,12 +739,11 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   FakeLayerTreeHostImpl* host_impl = host_->host_impl();
   host_impl->CreatePendingTree();
 
-  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> scroll_clip_layer = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> scroll_layer = Layer::Create(layer_settings_);
-  scoped_refptr<Layer> transient_scroll_clip_layer =
-      Layer::Create(layer_settings_);
-  scoped_refptr<Layer> transient_scroll_layer = Layer::Create(layer_settings_);
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  scoped_refptr<Layer> scroll_clip_layer = Layer::Create();
+  scoped_refptr<Layer> scroll_layer = Layer::Create();
+  scoped_refptr<Layer> transient_scroll_clip_layer = Layer::Create();
+  scoped_refptr<Layer> transient_scroll_layer = Layer::Create();
 
   layer_tree_root->AddChild(transient_scroll_clip_layer);
   transient_scroll_clip_layer->AddChild(transient_scroll_layer);

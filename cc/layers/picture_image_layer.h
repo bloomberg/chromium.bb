@@ -20,7 +20,7 @@ namespace cc {
 
 class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
  public:
-  static scoped_refptr<PictureImageLayer> Create(const LayerSettings& settings);
+  static scoped_refptr<PictureImageLayer> Create();
 
   void SetImage(skia::RefPtr<const SkImage> image);
 
@@ -39,7 +39,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   bool HasDrawableContent() const override;
 
  private:
-  explicit PictureImageLayer(const LayerSettings& settings);
+  PictureImageLayer();
   ~PictureImageLayer() override;
 
   skia::RefPtr<const SkImage> image_;

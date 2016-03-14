@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/compositor/layer/toolbar_layer.h"
 
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
@@ -150,21 +149,14 @@ void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
 
 ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
-      layer_(cc::Layer::Create(cc::LayerSettings())),
-      toolbar_background_layer_(
-          cc::SolidColorLayer::Create(cc::LayerSettings())),
-      url_bar_background_layer_(
-          cc::NinePatchLayer::Create(cc::LayerSettings())),
-      bitmap_layer_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
-      progress_bar_layer_(
-          cc::SolidColorLayer::Create(cc::LayerSettings())),
-      progress_bar_background_layer_(
-          cc::SolidColorLayer::Create(cc::LayerSettings())),
-      anonymize_layer_(
-          cc::SolidColorLayer::Create(cc::LayerSettings())),
-      debug_layer_(
-          cc::SolidColorLayer::Create(cc::LayerSettings())),
+      layer_(cc::Layer::Create()),
+      toolbar_background_layer_(cc::SolidColorLayer::Create()),
+      url_bar_background_layer_(cc::NinePatchLayer::Create()),
+      bitmap_layer_(cc::UIResourceLayer::Create()),
+      progress_bar_layer_(cc::SolidColorLayer::Create()),
+      progress_bar_background_layer_(cc::SolidColorLayer::Create()),
+      anonymize_layer_(cc::SolidColorLayer::Create()),
+      debug_layer_(cc::SolidColorLayer::Create()),
       brightness_(1.f) {
   toolbar_background_layer_->SetIsDrawable(true);
   layer_->AddChild(toolbar_background_layer_);

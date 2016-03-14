@@ -4,7 +4,6 @@
 
 #include "cc/layers/painted_scrollbar_layer.h"
 
-#include "cc/layers/layer_settings.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_scrollbar.h"
@@ -31,7 +30,6 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   FakeLayerTreeHostClient fake_client_(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
-  LayerSettings layer_settings_;
 
   layer_tree_host_ =
       FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
@@ -41,8 +39,7 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
 
   MockScrollbar* scrollbar = new MockScrollbar();
   scoped_refptr<PaintedScrollbarLayer> scrollbar_layer =
-      PaintedScrollbarLayer::Create(layer_settings_,
-                                    scoped_ptr<Scrollbar>(scrollbar), 1);
+      PaintedScrollbarLayer::Create(scoped_ptr<Scrollbar>(scrollbar), 1);
 
   scrollbar_layer->SetIsDrawable(true);
   scrollbar_layer->SetBounds(gfx::Size(100, 100));

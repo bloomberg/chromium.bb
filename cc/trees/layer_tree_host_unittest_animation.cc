@@ -43,14 +43,6 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
     player_->set_layer_animation_delegate(this);
   }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_compositor_animation_timelines = true;
-  }
-
-  void InitializeLayerSettings(LayerSettings* layer_settings) override {
-    layer_settings->use_compositor_animation_timelines = true;
-  }
-
   void AttachPlayersToTimeline() {
     layer_tree_host()->animation_host()->AddAnimationTimeline(timeline_.get());
     timeline_->AttachPlayer(player_.get());
@@ -275,7 +267,7 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
+    picture_ = FakePictureLayer::Create(&client_);
     picture_->SetBounds(gfx::Size(4, 4));
     client_.set_bounds(picture_->bounds());
     layer_tree_host()->root_layer()->AddChild(picture_);
@@ -340,7 +332,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
+    picture_ = FakePictureLayer::Create(&client_);
     picture_->SetBounds(gfx::Size(4, 4));
     client_.set_bounds(picture_->bounds());
 
@@ -433,7 +425,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
       : update_check_layer_() {}
 
   void SetupTree() override {
-    update_check_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    update_check_layer_ = FakePictureLayer::Create(&client_);
     update_check_layer_->SetOpacity(0.f);
     layer_tree_host()->SetRootLayer(update_check_layer_);
     client_.set_bounds(update_check_layer_->bounds());
@@ -489,7 +481,7 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
     if (layer_tree_host()->source_frame_number() == 1) {
       AttachPlayersToTimeline();
 
-      scoped_refptr<Layer> layer = Layer::Create(layer_settings());
+      scoped_refptr<Layer> layer = Layer::Create();
       player_->AttachLayer(layer->id());
       player_->set_layer_animation_delegate(this);
 
@@ -635,7 +627,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     : public LayerTreeHostAnimationTest {
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
+    picture_ = FakePictureLayer::Create(&client_);
     picture_->SetBounds(gfx::Size(4, 4));
     client_.set_bounds(picture_->bounds());
     layer_tree_host()->root_layer()->AddChild(picture_);
@@ -722,7 +714,7 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
 
-    scroll_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    scroll_layer_ = FakePictureLayer::Create(&client_);
     scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
     scroll_layer_->SetBounds(gfx::Size(1000, 1000));
     client_.set_bounds(scroll_layer_->bounds());
@@ -783,7 +775,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
 
-    scroll_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    scroll_layer_ = FakePictureLayer::Create(&client_);
     scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
     scroll_layer_->SetBounds(gfx::Size(10000, 10000));
     client_.set_bounds(scroll_layer_->bounds());
@@ -911,7 +903,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     } else if (layer_tree_host()->source_frame_number() == 2) {
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.f, 0.5f, true);
 
-      scoped_refptr<Layer> layer = Layer::Create(layer_settings());
+      scoped_refptr<Layer> layer = Layer::Create();
       layer_tree_host()->root_layer()->AddChild(layer);
       layer->SetBounds(gfx::Size(4, 4));
 
@@ -995,7 +987,7 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
 
-    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    layer_ = FakePictureLayer::Create(&client_);
     layer_->SetBounds(gfx::Size(2, 2));
     client_.set_bounds(layer_->bounds());
     // Transform the layer to 4,4 to start.
@@ -1073,7 +1065,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    layer_ = Layer::Create(layer_settings());
+    layer_ = Layer::Create();
     layer_->SetBounds(gfx::Size(4, 4));
     layer_tree_host()->root_layer()->AddChild(layer_);
 
@@ -1170,7 +1162,7 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    layer_ = Layer::Create(layer_settings());
+    layer_ = Layer::Create();
     layer_->SetBounds(gfx::Size(4, 4));
     layer_tree_host()->root_layer()->AddChild(layer_);
 
@@ -1233,7 +1225,7 @@ class LayerTreeHostAnimationTestRemoveAnimation
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    layer_ = FakePictureLayer::Create(&client_);
     layer_->SetBounds(gfx::Size(4, 4));
     client_.set_bounds(layer_->bounds());
     layer_tree_host()->root_layer()->AddChild(layer_);
@@ -1270,7 +1262,7 @@ class LayerTreeHostAnimationTestRemoveAnimation
         // added/deleted when something triggers a rebuild. Adding a layer
         // triggers a rebuild, and since the layer that had an animation before
         // no longer has one, it doesn't get a transform node in the rebuild.
-        layer_->AddChild(Layer::Create(layer_settings()));
+        layer_->AddChild(Layer::Create());
         break;
     }
   }
@@ -1315,7 +1307,7 @@ class LayerTreeHostAnimationTestIsAnimating
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    layer_ = FakePictureLayer::Create(&client_);
     layer_->SetBounds(gfx::Size(4, 4));
     client_.set_bounds(layer_->bounds());
     layer_tree_host()->root_layer()->AddChild(layer_);
@@ -1400,7 +1392,7 @@ class LayerTreeHostAnimationTestAnimationFinishesDuringCommit
 
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    layer_ = FakePictureLayer::Create(&client_);
     layer_->SetBounds(gfx::Size(4, 4));
     client_.set_bounds(layer_->bounds());
     layer_tree_host()->root_layer()->AddChild(layer_);
@@ -1476,7 +1468,7 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
 
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
+    picture_ = FakePictureLayer::Create(&client_);
     picture_->SetBounds(gfx::Size(4, 4));
     client_.set_bounds(picture_->bounds());
     layer_tree_host()->root_layer()->AddChild(picture_);
@@ -1609,7 +1601,7 @@ class LayerTreeHostAnimationTestRebuildPropertyTreesOnAnimationSetNeedsCommit
  public:
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
-    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    layer_ = FakePictureLayer::Create(&client_);
     layer_->SetBounds(gfx::Size(4, 4));
     client_.set_bounds(layer_->bounds());
     layer_tree_host()->root_layer()->AddChild(layer_);

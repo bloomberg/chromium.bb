@@ -16,7 +16,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
@@ -400,7 +399,6 @@ class PictureLayerImplTest : public testing::Test {
   FakePictureLayerImpl* pending_layer_;
   FakePictureLayerImpl* old_pending_layer_;
   FakePictureLayerImpl* active_layer_;
-  LayerSettings layer_settings_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImplTest);
@@ -4383,8 +4381,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
 
   FakeContentLayerClient client;
   client.set_bounds(layer_bounds);
-  scoped_refptr<PictureLayer> layer =
-      PictureLayer::Create(layer_settings_, &client);
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<FakeLayerTreeHost> host =
@@ -4448,8 +4445,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
 
   FakeContentLayerClient client;
   client.set_bounds(layer_bounds);
-  scoped_refptr<PictureLayer> layer =
-      PictureLayer::Create(layer_settings_, &client);
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   TestTaskGraphRunner task_graph_runner;
   scoped_ptr<FakeLayerTreeHost> host =

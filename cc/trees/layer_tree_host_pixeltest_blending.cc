@@ -141,8 +141,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
       canvas->drawRect(
           SkRect::MakeXYWH(0, i * kLaneHeight, kLaneWidth, kLaneHeight), paint);
     }
-    scoped_refptr<PictureImageLayer> layer =
-        PictureImageLayer::Create(layer_settings());
+    scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
     layer->SetIsDrawable(true);
     layer->SetBounds(gfx::Size(width, height));
     skia::RefPtr<const SkImage> image =
@@ -154,8 +153,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
   void SetupMaskLayer(scoped_refptr<Layer> layer) {
     const int kMaskOffset = 2;
     gfx::Size bounds = layer->bounds();
-    scoped_refptr<PictureImageLayer> mask =
-        PictureImageLayer::Create(layer_settings());
+    scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
     mask->SetIsDrawable(true);
     mask->SetIsMask(true);
     mask->SetBounds(bounds);

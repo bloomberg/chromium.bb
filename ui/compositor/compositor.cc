@@ -24,7 +24,6 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/latency_info_swap_promise.h"
@@ -88,7 +87,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       compositor_lock_(NULL),
       layer_animator_collection_(this),
       weak_ptr_factory_(this) {
-  root_web_layer_ = cc::Layer::Create(cc::LayerSettings());
+  root_web_layer_ = cc::Layer::Create();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -195,11 +194,10 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
 
-  if (settings.use_compositor_animation_timelines) {
-    animation_timeline_ = cc::AnimationTimeline::Create(
-        cc::AnimationIdProvider::NextTimelineId());
-    host_->animation_host()->AddAnimationTimeline(animation_timeline_.get());
-  }
+  animation_timeline_ =
+      cc::AnimationTimeline::Create(cc::AnimationIdProvider::NextTimelineId());
+  host_->animation_host()->AddAnimationTimeline(animation_timeline_.get());
+
   host_->SetRootLayer(root_web_layer_);
   host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
   host_->SetVisible(true);

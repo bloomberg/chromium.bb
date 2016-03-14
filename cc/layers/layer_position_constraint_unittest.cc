@@ -8,7 +8,6 @@
 
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/proto/layer_position_constraint.pb.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_proxy.h"
@@ -22,8 +21,7 @@ namespace {
 
 class LayerWithForcedDrawsContent : public Layer {
  public:
-  explicit LayerWithForcedDrawsContent(const LayerSettings& settings)
-      : Layer(settings) {}
+  LayerWithForcedDrawsContent() {}
 
   bool DrawsContent() const override;
 
@@ -88,16 +86,14 @@ class LayerPositionConstraintTest : public testing::Test {
   void CreateTreeForTest() {
     // scroll_layer_ is the inner viewport scroll layer and child_ is the outer
     // viewport scroll layer.
-    root_ = Layer::Create(layer_settings_);
-    inner_viewport_container_layer_ = Layer::Create(layer_settings_);
-    scroll_layer_ = Layer::Create(layer_settings_);
-    outer_viewport_container_layer_ = Layer::Create(layer_settings_);
-    child_transform_layer_ = Layer::Create(layer_settings_);
-    child_ = Layer::Create(layer_settings_);
-    grand_child_ =
-        make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings_));
-    great_grand_child_ =
-        make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings_));
+    root_ = Layer::Create();
+    inner_viewport_container_layer_ = Layer::Create();
+    scroll_layer_ = Layer::Create();
+    outer_viewport_container_layer_ = Layer::Create();
+    child_transform_layer_ = Layer::Create();
+    child_ = Layer::Create();
+    grand_child_ = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    great_grand_child_ = make_scoped_refptr(new LayerWithForcedDrawsContent());
 
     gfx::Transform IdentityMatrix;
     gfx::Point3F transform_origin;
@@ -175,7 +171,6 @@ class LayerPositionConstraintTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
-  LayerSettings layer_settings_;
   scoped_refptr<Layer> root_;
   scoped_refptr<Layer> inner_viewport_container_layer_;
   scoped_refptr<Layer> scroll_layer_;
@@ -554,7 +549,7 @@ TEST_F(LayerPositionConstraintTest,
 
   // Add one more layer to the test tree for this scenario.
   scoped_refptr<Layer> fixed_position_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings_));
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
   SetLayerPropertiesForTesting(fixed_position_child.get(), gfx::Transform(),
                                gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true);
@@ -711,7 +706,7 @@ TEST_F(
 
   // Add one more layer to the test tree for this scenario.
   scoped_refptr<Layer> fixed_position_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings_));
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
   SetLayerPropertiesForTesting(fixed_position_child.get(), gfx::Transform(),
                                gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true);
@@ -1043,7 +1038,7 @@ TEST_F(LayerPositionConstraintTest,
 
   // Add one more layer to the hierarchy for this test.
   scoped_refptr<Layer> great_great_grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings_));
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
   great_grand_child_->AddChild(great_great_grand_child);
 
   child_->SetIsContainerForFixedPositionLayers(true);
@@ -1096,7 +1091,7 @@ TEST_F(LayerPositionConstraintTest,
   // This test checks for correct scroll compensation when the fixed-position
   // container is the inner viewport scroll layer and has non-zero bounds delta.
   scoped_refptr<Layer> fixed_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings_));
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
   fixed_child->SetBounds(gfx::Size(300, 300));
   scroll_layer_->AddChild(fixed_child);
   fixed_child->SetPositionConstraint(fixed_to_top_left_);

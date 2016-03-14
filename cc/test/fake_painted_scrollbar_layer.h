@@ -18,7 +18,6 @@ namespace cc {
 class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
  public:
   static scoped_refptr<FakePaintedScrollbarLayer> Create(
-      const LayerSettings& settings,
       bool paint_during_update,
       bool has_thumb,
       int scrolling_layer_id);
@@ -48,8 +47,7 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
   using PaintedScrollbarLayer::UpdateThumbAndTrackGeometry;
 
  private:
-  FakePaintedScrollbarLayer(const LayerSettings& settings,
-                            FakeScrollbar* fake_scrollbar,
+  FakePaintedScrollbarLayer(FakeScrollbar* fake_scrollbar,
                             int scrolling_layer_id);
   ~FakePaintedScrollbarLayer() override;
 

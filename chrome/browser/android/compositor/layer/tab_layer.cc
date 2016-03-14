@@ -7,7 +7,6 @@
 #include "base/i18n/rtl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_lists.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
@@ -586,23 +585,17 @@ TabLayer::TabLayer(bool incognito,
     : incognito_(incognito),
       resource_manager_(resource_manager),
       layer_title_cache_(layer_title_cache),
-      layer_(cc::Layer::Create(cc::LayerSettings())),
+      layer_(cc::Layer::Create()),
       toolbar_layer_(ToolbarLayer::Create(resource_manager)),
-      title_(cc::Layer::Create(cc::LayerSettings())),
+      title_(cc::Layer::Create()),
       content_(ContentLayer::Create(tab_content_manager)),
-      padding_(
-          cc::SolidColorLayer::Create(cc::LayerSettings())),
-      close_button_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
-      front_border_(
-          cc::NinePatchLayer::Create(cc::LayerSettings())),
-      front_border_inner_shadow_(
-          cc::NinePatchLayer::Create(cc::LayerSettings())),
-      contour_shadow_(
-          cc::NinePatchLayer::Create(cc::LayerSettings())),
-      shadow_(cc::NinePatchLayer::Create(cc::LayerSettings())),
-      back_logo_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
+      padding_(cc::SolidColorLayer::Create()),
+      close_button_(cc::UIResourceLayer::Create()),
+      front_border_(cc::NinePatchLayer::Create()),
+      front_border_inner_shadow_(cc::NinePatchLayer::Create()),
+      contour_shadow_(cc::NinePatchLayer::Create()),
+      shadow_(cc::NinePatchLayer::Create()),
+      back_logo_(cc::UIResourceLayer::Create()),
       brightness_(1.f) {
   layer_->AddChild(shadow_);
   layer_->AddChild(contour_shadow_);

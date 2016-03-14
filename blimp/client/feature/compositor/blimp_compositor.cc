@@ -15,7 +15,6 @@
 #include "blimp/client/feature/compositor/blimp_context_provider.h"
 #include "blimp/client/feature/compositor/blimp_output_surface.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/output/output_surface.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/trees/layer_tree_host.h"

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "cc/blink/web_layer_impl.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
@@ -119,7 +118,7 @@ void ChildFrameCompositingHelper::OnContainerDestroy() {
 
 void ChildFrameCompositingHelper::ChildFrameGone() {
   scoped_refptr<cc::SolidColorLayer> crashed_layer =
-      cc::SolidColorLayer::Create(cc::LayerSettings());
+      cc::SolidColorLayer::Create();
   crashed_layer->SetMasksToBounds(true);
   crashed_layer->SetBackgroundColor(SK_ColorBLACK);
 
@@ -129,7 +128,7 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
     if (sad_bitmap && web_layer_->bounds().width > sad_bitmap->width() &&
         web_layer_->bounds().height > sad_bitmap->height()) {
       scoped_refptr<cc::PictureImageLayer> sad_layer =
-          cc::PictureImageLayer::Create(cc::LayerSettings());
+          cc::PictureImageLayer::Create();
       skia::RefPtr<SkImage> image =
           skia::AdoptRef(SkImage::NewFromBitmap(*sad_bitmap));
       sad_layer->SetImage(image);
@@ -213,8 +212,7 @@ void ChildFrameCompositingHelper::OnSetSurface(
                 sender, host_routing_id_,
                 browser_plugin_->browser_plugin_instance_id());
   scoped_refptr<cc::SurfaceLayer> surface_layer =
-      cc::SurfaceLayer::Create(cc::LayerSettings(),
-                               satisfy_callback, require_callback);
+      cc::SurfaceLayer::Create(satisfy_callback, require_callback);
   // TODO(oshima): This is a stopgap fix so that the compositor does not
   // scaledown the content when 2x frame data is added to 1x parent frame data.
   // Fix this in cc/.

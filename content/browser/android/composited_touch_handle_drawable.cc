@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "content/public/browser/android/compositor.h"
 #include "jni/HandleViewResources_jni.h"
@@ -97,7 +96,7 @@ CompositedTouchHandleDrawable::CompositedTouchHandleDrawable(
     jobject context)
     : dpi_scale_(dpi_scale),
       orientation_(ui::TouchHandleOrientation::UNDEFINED),
-      layer_(cc::UIResourceLayer::Create(cc::LayerSettings())) {
+      layer_(cc::UIResourceLayer::Create()) {
   g_selection_resources.Get().LoadIfNecessary(context);
   drawable_horizontal_padding_ratio_ =
       g_selection_resources.Get().GetDrawableHorizontalPaddingRatio();

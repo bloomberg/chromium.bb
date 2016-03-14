@@ -19,7 +19,6 @@
 #include "cc/blink/web_blend_mode.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
@@ -41,8 +40,7 @@ using blink::WebColor;
 namespace cc_blink {
 
 WebLayerImpl::WebLayerImpl()
-    : layer_(Layer::Create(cc::LayerSettings())),
-      contents_opaque_is_fixed_(false) {}
+    : layer_(Layer::Create()), contents_opaque_is_fixed_(false) {}
 
 WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer)
     : layer_(layer), contents_opaque_is_fixed_(false) {

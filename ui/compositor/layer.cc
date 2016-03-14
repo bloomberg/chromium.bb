@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -520,8 +519,7 @@ bool Layer::HasPendingThreadedAnimationsForTesting() const {
 }
 
 void Layer::SwitchCCLayerForTest() {
-  scoped_refptr<cc::Layer> new_layer =
-      cc::PictureLayer::Create(cc::LayerSettings(), this);
+  scoped_refptr<cc::Layer> new_layer = cc::PictureLayer::Create(this);
   SwitchToLayer(new_layer);
   content_layer_ = new_layer;
 }
@@ -535,7 +533,7 @@ void Layer::SetTextureMailbox(
   DCHECK(release_callback);
   if (!texture_layer_.get()) {
     scoped_refptr<cc::TextureLayer> new_layer =
-        cc::TextureLayer::CreateForMailbox(cc::LayerSettings(), this);
+        cc::TextureLayer::CreateForMailbox(this);
     new_layer->SetFlipped(true);
     SwitchToLayer(new_layer);
     texture_layer_ = new_layer;
@@ -578,8 +576,8 @@ void Layer::SetShowSurface(
     gfx::Size frame_size_in_dip) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
-  scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create(
-      cc::LayerSettings(), satisfy_callback, require_callback);
+  scoped_refptr<cc::SurfaceLayer> new_layer =
+      cc::SurfaceLayer::Create(satisfy_callback, require_callback);
   new_layer->SetSurfaceId(surface_id, scale, surface_size);
   SwitchToLayer(new_layer);
   surface_layer_ = new_layer;
@@ -594,8 +592,7 @@ void Layer::SetShowSolidColorContent() {
   if (solid_color_layer_.get())
     return;
 
-  scoped_refptr<cc::SolidColorLayer> new_layer =
-      cc::SolidColorLayer::Create(cc::LayerSettings());
+  scoped_refptr<cc::SolidColorLayer> new_layer = cc::SolidColorLayer::Create();
   SwitchToLayer(new_layer);
   solid_color_layer_ = new_layer;
 
@@ -964,13 +961,13 @@ LayerThreadedAnimationDelegate* Layer::GetThreadedAnimationDelegate() {
 
 void Layer::CreateCcLayer() {
   if (type_ == LAYER_SOLID_COLOR) {
-    solid_color_layer_ = cc::SolidColorLayer::Create(cc::LayerSettings());
+    solid_color_layer_ = cc::SolidColorLayer::Create();
     cc_layer_ = solid_color_layer_.get();
   } else if (type_ == LAYER_NINE_PATCH) {
-    nine_patch_layer_ = cc::NinePatchLayer::Create(cc::LayerSettings());
+    nine_patch_layer_ = cc::NinePatchLayer::Create();
     cc_layer_ = nine_patch_layer_.get();
   } else {
-    content_layer_ = cc::PictureLayer::Create(cc::LayerSettings(), this);
+    content_layer_ = cc::PictureLayer::Create(this);
     cc_layer_ = content_layer_.get();
   }
   cc_layer_->SetTransformOrigin(gfx::Point3F());

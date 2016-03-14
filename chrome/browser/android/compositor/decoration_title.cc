@@ -9,7 +9,6 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
@@ -33,13 +32,10 @@ DecorationTitle::DecorationTitle(LayerTitleCache* layer_title_cache,
                                  int favicon_end_padding,
                                  bool is_incognito,
                                  bool is_rtl)
-    : layer_(cc::Layer::Create(cc::LayerSettings())),
-      layer_opaque_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
-      layer_fade_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
-      layer_favicon_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
+    : layer_(cc::Layer::Create()),
+      layer_opaque_(cc::UIResourceLayer::Create()),
+      layer_fade_(cc::UIResourceLayer::Create()),
+      layer_favicon_(cc::UIResourceLayer::Create()),
       title_resource_id_(title_resource_id),
       favicon_resource_id_(favicon_resource_id),
       spinner_resource_id_(spinner_resource_id),

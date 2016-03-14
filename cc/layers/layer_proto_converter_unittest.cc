@@ -7,7 +7,6 @@
 #include "cc/layers/empty_content_layer_client.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/proto/layer.pb.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -48,7 +47,7 @@ TEST_F(LayerProtoConverterTest, TestKeepingRoot) {
                c
      The old root node will be reused during deserialization.
   */
-  scoped_refptr<Layer> old_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> old_root = Layer::Create();
   proto::LayerNode root_node;
   root_node.set_id(old_root->id());
   root_node.set_type(proto::LayerNode::LAYER);
@@ -144,7 +143,7 @@ TEST_F(LayerProtoConverterTest, TestSwappingRoot) {
   child_c_node->set_type(proto::LayerNode::LAYER);
   child_c_node->set_parent_id(child_b_node->id());
 
-  scoped_refptr<Layer> old_root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> old_root = Layer::Create();
   scoped_refptr<Layer> new_root =
       LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
 
@@ -175,13 +174,13 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
      Layers marked with + have descendants with changed properties.
      Layer b also has a mask layer and a replica layer.
   */
-  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_a = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b_mask = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b_replica = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_d = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_root = Layer::Create();
+  scoped_refptr<Layer> layer_src_a = Layer::Create();
+  scoped_refptr<Layer> layer_src_b = Layer::Create();
+  scoped_refptr<Layer> layer_src_b_mask = Layer::Create();
+  scoped_refptr<Layer> layer_src_b_replica = Layer::Create();
+  scoped_refptr<Layer> layer_src_c = Layer::Create();
+  scoped_refptr<Layer> layer_src_d = Layer::Create();
   layer_src_root->AddChild(layer_src_a);
   layer_src_root->AddChild(layer_src_b);
   layer_src_a->AddChild(layer_src_c);
@@ -294,10 +293,10 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerializationSingleChild) {
      Layers marked with + have descendants with changed properties.
      Layer b also has a mask layer.
   */
-  scoped_refptr<Layer> layer_src_root = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_b_mask = Layer::Create(LayerSettings());
-  scoped_refptr<Layer> layer_src_c = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> layer_src_root = Layer::Create();
+  scoped_refptr<Layer> layer_src_b = Layer::Create();
+  scoped_refptr<Layer> layer_src_b_mask = Layer::Create();
+  scoped_refptr<Layer> layer_src_c = Layer::Create();
   layer_src_root->AddChild(layer_src_b);
   layer_src_b->AddChild(layer_src_c);
   layer_src_b->SetMaskLayer(layer_src_b_mask.get());
@@ -361,7 +360,7 @@ TEST_F(LayerProtoConverterTest, DeserializeLayerProperties) {
   */
   proto::LayerUpdate updates;
 
-  scoped_refptr<Layer> root = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> root = Layer::Create();
   root->SetLayerTreeHost(layer_tree_host_.get());
   proto::LayerProperties* root_props = updates.add_layers();
   root_props->set_id(root->id());
@@ -369,7 +368,7 @@ TEST_F(LayerProtoConverterTest, DeserializeLayerProperties) {
   root_props->set_num_dependents_need_push_properties(1);
   root_props->mutable_base();
 
-  scoped_refptr<Layer> a = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> a = Layer::Create();
   a->SetLayerTreeHost(layer_tree_host_.get());
   proto::LayerProperties* a_props = updates.add_layers();
   a_props->set_id(a->id());
@@ -377,7 +376,7 @@ TEST_F(LayerProtoConverterTest, DeserializeLayerProperties) {
   a_props->set_num_dependents_need_push_properties(0);
   root->AddChild(a);
 
-  scoped_refptr<Layer> b = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> b = Layer::Create();
   b->SetLayerTreeHost(layer_tree_host_.get());
   proto::LayerProperties* b_props = updates.add_layers();
   b_props->set_id(b->id());
@@ -385,7 +384,7 @@ TEST_F(LayerProtoConverterTest, DeserializeLayerProperties) {
   b_props->set_num_dependents_need_push_properties(1);
   root->AddChild(b);
 
-  scoped_refptr<Layer> c = Layer::Create(LayerSettings());
+  scoped_refptr<Layer> c = Layer::Create();
   c->SetLayerTreeHost(layer_tree_host_.get());
   proto::LayerProperties* c_props = updates.add_layers();
   c_props->set_id(c->id());
@@ -415,8 +414,8 @@ TEST_F(LayerProtoConverterTest, DeserializeLayerProperties) {
 TEST_F(LayerProtoConverterTest, PictureLayerTypeSerialization) {
   // Make sure that PictureLayers serialize to the
   // proto::LayerType::PICTURE_LAYER type.
-  scoped_refptr<PictureLayer> layer = PictureLayer::Create(
-      LayerSettings(), EmptyContentLayerClient::GetInstance());
+  scoped_refptr<PictureLayer> layer =
+      PictureLayer::Create(EmptyContentLayerClient::GetInstance());
 
   proto::LayerNode layer_hierarchy;
   LayerProtoConverter::SerializeLayerHierarchy(layer.get(), &layer_hierarchy);
@@ -426,8 +425,8 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeSerialization) {
 TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
   // Make sure that proto::LayerType::PICTURE_LAYER ends up building a
   // PictureLayer.
-  scoped_refptr<Layer> old_root = PictureLayer::Create(
-      LayerSettings(), EmptyContentLayerClient::GetInstance());
+  scoped_refptr<Layer> old_root =
+      PictureLayer::Create(EmptyContentLayerClient::GetInstance());
   proto::LayerNode root_node;
   root_node.set_id(old_root->id());
   root_node.set_type(proto::LayerNode::PICTURE_LAYER);
@@ -448,8 +447,7 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
 TEST_F(LayerProtoConverterTest, HudLayerTypeSerialization) {
   // Make sure that PictureLayers serialize to the
   // proto::LayerType::HEADS_UP_DISPLAY_LAYER type.
-  scoped_refptr<HeadsUpDisplayLayer> layer =
-      HeadsUpDisplayLayer::Create(LayerSettings());
+  scoped_refptr<HeadsUpDisplayLayer> layer = HeadsUpDisplayLayer::Create();
 
   proto::LayerNode layer_hierarchy;
   LayerProtoConverter::SerializeLayerHierarchy(layer.get(), &layer_hierarchy);
@@ -459,7 +457,7 @@ TEST_F(LayerProtoConverterTest, HudLayerTypeSerialization) {
 TEST_F(LayerProtoConverterTest, HudLayerTypeDeserialization) {
   // Make sure that proto::LayerType::HEADS_UP_DISPLAY_LAYER ends up building a
   // HeadsUpDisplayLayer.
-  scoped_refptr<Layer> old_root = HeadsUpDisplayLayer::Create(LayerSettings());
+  scoped_refptr<Layer> old_root = HeadsUpDisplayLayer::Create();
   proto::LayerNode root_node;
   root_node.set_id(old_root->id());
   root_node.set_type(proto::LayerNode::HEADS_UP_DISPLAY_LAYER);

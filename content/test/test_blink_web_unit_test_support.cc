@@ -15,7 +15,6 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"

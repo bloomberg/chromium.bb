@@ -5,7 +5,6 @@
 #include "chrome/browser/android/compositor/layer/contextual_search_layer.h"
 
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
@@ -406,25 +405,16 @@ void ContextualSearchLayer::SetProperties(
 ContextualSearchLayer::ContextualSearchLayer(
     ui::ResourceManager* resource_manager)
     : OverlayPanelLayer(resource_manager),
-      search_context_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
+      search_context_(cc::UIResourceLayer::Create()),
       search_provider_icon_sprite_(CrushedSpriteLayer::Create()),
-      arrow_icon_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
-      search_promo_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
-      search_promo_container_(
-          cc::SolidColorLayer::Create(cc::LayerSettings())),
-      peek_promo_container_(
-          cc::SolidColorLayer::Create(cc::LayerSettings())),
-      peek_promo_ripple_(
-          cc::NinePatchLayer::Create(cc::LayerSettings())),
-      peek_promo_text_(
-          cc::UIResourceLayer::Create(cc::LayerSettings())),
-      progress_bar_(
-          cc::NinePatchLayer::Create(cc::LayerSettings())),
-      progress_bar_background_(
-          cc::NinePatchLayer::Create(cc::LayerSettings())) {
+      arrow_icon_(cc::UIResourceLayer::Create()),
+      search_promo_(cc::UIResourceLayer::Create()),
+      search_promo_container_(cc::SolidColorLayer::Create()),
+      peek_promo_container_(cc::SolidColorLayer::Create()),
+      peek_promo_ripple_(cc::NinePatchLayer::Create()),
+      peek_promo_text_(cc::UIResourceLayer::Create()),
+      progress_bar_(cc::NinePatchLayer::Create()),
+      progress_bar_background_(cc::NinePatchLayer::Create()) {
   // Search Peek Promo
   peek_promo_container_->SetIsDrawable(true);
   peek_promo_container_->SetBackgroundColor(kSearchBarBackgroundColor);

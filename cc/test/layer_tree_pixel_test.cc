@@ -106,8 +106,7 @@ void LayerTreePixelTest::AfterTest() {
 
 scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
     const gfx::Rect& rect, SkColor color) {
-  scoped_refptr<SolidColorLayer> layer =
-      SolidColorLayer::Create(layer_settings());
+  scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
   layer->SetIsDrawable(true);
   layer->SetBounds(rect.size());
   layer->SetPosition(gfx::PointF(rect.origin()));
@@ -197,7 +196,7 @@ void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
 }
 
 void LayerTreePixelTest::SetupTree() {
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> root = Layer::Create();
   root->SetBounds(content_root_->bounds());
   root->AddChild(content_root_);
   layer_tree_host()->SetRootLayer(root);

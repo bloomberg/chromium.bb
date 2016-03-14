@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/test/null_task_runner.h"
 #include "cc/animation/animation_player.h"
-#include "cc/layers/layer_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"

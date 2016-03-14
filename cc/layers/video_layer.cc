@@ -9,16 +9,14 @@
 namespace cc {
 
 scoped_refptr<VideoLayer> VideoLayer::Create(
-    const LayerSettings& settings,
     VideoFrameProvider* provider,
     media::VideoRotation video_rotation) {
-  return make_scoped_refptr(new VideoLayer(settings, provider, video_rotation));
+  return make_scoped_refptr(new VideoLayer(provider, video_rotation));
 }
 
-VideoLayer::VideoLayer(const LayerSettings& settings,
-                       VideoFrameProvider* provider,
+VideoLayer::VideoLayer(VideoFrameProvider* provider,
                        media::VideoRotation video_rotation)
-    : Layer(settings), provider_(provider), video_rotation_(video_rotation) {
+    : provider_(provider), video_rotation_(video_rotation) {
   DCHECK(provider_);
 }
 

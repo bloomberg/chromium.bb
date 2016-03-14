@@ -5,7 +5,6 @@
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/testing/PictureMatchers.h"
@@ -309,7 +308,7 @@ TEST_F(PaintArtifactCompositorTest, SiblingClips)
 
 TEST_F(PaintArtifactCompositorTest, ForeignLayerPassesThrough)
 {
-    scoped_refptr<cc::Layer> layer = cc::Layer::Create(cc::LayerSettings());
+    scoped_refptr<cc::Layer> layer = cc::Layer::Create();
 
     TestPaintArtifact artifact;
     artifact.chunk(PaintChunkProperties())
