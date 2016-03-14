@@ -119,6 +119,20 @@ TEST(CharacterTest, TestCharacterRangeCodePathSurrogate1)
     EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c14, 2));
     static UChar c15[] = { 0xDB40, 0xDDF0 };
     EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c15, 2));
+
+    // Eye + Speech Bubble
+    static UChar c16[] = { 0xD83D, 0xDC40 };
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c16, 2));
+    static UChar c17[] = { 0xD83D, 0xDC41 };
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c17, 2));
+    static UChar c18[] = { 0xD83D, 0xDC42 };
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c18, 2));
+    static UChar c19[] = { 0xD83D, 0xDDE7 };
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c19, 2));
+    static UChar c20[] = { 0xD83D, 0xDDE8 };
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c20, 2));
+    static UChar c21[] = { 0xD83D, 0xDDE9 };
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c21, 2));
 }
 
 TEST(CharacterTest, TestCharacterRangeCodePathString)
