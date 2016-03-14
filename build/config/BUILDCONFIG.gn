@@ -600,7 +600,15 @@ template("component") {
     _component_mode = "source_set"
   }
   target(_component_mode, target_name) {
-    forward_variables_from(invoker, "*")
+    # Explicitly forward visibility, implicitly forward everything else.
+    # Forwarding "*" doesn't recurse into nested scopes (to avoid copying all
+    # globals into each template invocation), so won't pick up file-scoped
+    # variables. Normally this isn't too bad, but visibility is commonly
+    # defined at the file scope. Explicitly forwarding visibility and then
+    # excluding it from the "*" set works around this problem.
+    # See http://crbug.com/594610
+    forward_variables_from(invoker, [ "visibility" ])
+    forward_variables_from(invoker, "*", [ "visibility" ])
 
     # All shared libraries must have the sanitizer deps to properly link in
     # asan mode (this target will be empty in other cases).

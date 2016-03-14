@@ -168,6 +168,8 @@ source_set("platform") {
 }
 
 component("ozone") {
+  visibility = []
+  visibility = [ "*" ]
   public_deps = [
     ":platform",
   ]
