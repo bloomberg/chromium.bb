@@ -38318,7 +38318,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.AbandonTimeUntilUsed" units="ms">
   <owner>davidben@chromium.org</owner>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a prerendered page is abandoned to when it is first used due
     to user navigation. If the page is swapped before begin abandoned, a zero is
@@ -38330,7 +38330,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated March 13 2015.
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Enumeration of what types of cookies were sent for a prerender.
   </summary>
@@ -38340,7 +38340,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated March 13 2015.
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>Enumeration of what cookie actions a prerender caused.</summary>
 </histogram>
 
@@ -38362,7 +38362,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Final status for prerender pages - either success, or why it was canceled.
   </summary>
@@ -38370,7 +38370,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.FinalStatusMatchComplete"
     enum="PrerenderFinalStatus">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Final status for prerender pages - either success, or why it was canceled.
     This is for the MatchComplete set of pages (including some pages that were
@@ -38419,7 +38419,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Enumeration of what events related to the local predictor have occurred
   </summary>
@@ -38429,7 +38429,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time to perform the LoggedIn Lookup for the local predictor. This operation
     checks whether a user his likely logged into a page that we would like to
@@ -38441,7 +38441,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The PrerenderLocalPredictor uses local browsing history and the prerender
     service to predict pages likely visited soon. Some of these URLs are
@@ -38456,7 +38456,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time to perform the Service Lookup for the local predictor. This operation
     queries a Google service to obtain pages to prerender, as well as whether
@@ -38468,7 +38468,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a prerendered page is started to when it is first used due to
     user navigation. If the page is never used, it is not included in this
@@ -38480,7 +38480,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time to perform the URL Lookup for the local predictor. This operation
     retrieves from the user's local browsing history the URLs corresponding to
@@ -38608,7 +38608,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.OmniboxNavigationsCouldPrerender">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     A boolean that indicates whether the Omnibox navigation being committed
     could have been prerendered by the Omnibox Prerender system. This provides
@@ -38621,7 +38621,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.OmniboxNavigationsUsedPrerenderCount">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The number of navigations that use a prerender initiated from the Omnibox.
     The count is incremented when the Prerendered tab is swapped in if the
@@ -38631,7 +38631,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.OmniboxPrerenderCount">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The number of prerenders initiated from the Omnibox. This is incremented
     when the NetworkActionPredictor suggests Prerendering as an optimal strategy
@@ -38643,7 +38643,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.PagespeedHeader.ServerCounts"
     enum="PagespeedHeaderServerType">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The number of responses received bucketed into the range [0,4]: bucket 0 is
     the total number of responses received; bucket 1 is the number of responses
@@ -38661,7 +38661,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.PagespeedHeader.VersionCounts"
     enum="PagespeedVersion">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The number of responses received that either have an X-Mod-Pagespeed header
     or have an X-Page-Speed header with a value in the X-Mod-Pagespeed format
@@ -38685,7 +38685,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     deprecated March 30, 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Indicates whether the user has ever visited (in the past) a URL for which a
     prerender is launched.
@@ -38791,7 +38791,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLT" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38802,7 +38802,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMiss" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38814,7 +38814,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMissAnyOnly" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38828,7 +38828,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMissBoth" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38842,7 +38842,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMissNonOverlapping" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38856,7 +38856,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.PerceivedPLTFirstAfterMissNonOverlappingOnly"
     units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38870,7 +38870,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTMatched" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38882,7 +38882,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTMatchedComplete" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38898,7 +38898,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTWindowed" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38910,7 +38910,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PerceivedPLTWindowNotMatched" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a user navigates to a page to when it loads. Since the pages
     may start loading before the user navigates to it, this does not include any
@@ -38922,7 +38922,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PercentLoadDoneAtSwapin">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     For prerenders that are swapped in, the percentage of the time from load
     start until the onload event fires that has elapsed at the time of the
@@ -38931,7 +38931,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PeriodicCleanupDeleteContentsTime" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     How long the cleanup portion of PrerenderManager::PeriodicCleanup takes, to
     measure jank.
@@ -38939,7 +38939,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PeriodicCleanupResourceCheckTime" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     How long the resource check portion of PrerenderManager::PeriodicCleanup
     takes, to measure jank.
@@ -38947,7 +38947,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PrerenderCountOf3Max">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     After launching a prerender, how many simultanious prerenders are recorded
     as running, out of a maximum of three.
@@ -38955,7 +38955,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PrerenderNotSwappedInPLT" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     For prerenders that finish loading before they are ever swapped in, their
     page load time until the onload event fires.
@@ -38963,14 +38963,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.PrerendersPerSessionCount">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The number of sessions that have at least X successful prerenders.
   </summary>
 </histogram>
 
 <histogram name="Prerender.RelTypesLinkAdded" enum="PrerenderRelTypes">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     For each prerender link added to a document, records the rel types present
     on the link element.
@@ -38978,7 +38978,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.RelTypesLinkStarted" enum="PrerenderRelTypes">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     For each prerender in a document which starts prerendering, records the rel
     types present on the link element.
@@ -39040,7 +39040,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.SchemeCancelReason"
     enum="PrerenderSchemeCancelReason">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The detailed reason why a prerender is canceled with
     FINAL_STATUS_UNSUPPORTED_SCHEME
@@ -39059,7 +39059,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated Dec 12 2014.
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>Time to perform the session storage namespace merge.</summary>
 </histogram>
 
@@ -39067,7 +39067,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     For simulated local browsing prerendering, the baseline PLT of pages without
     any prerendering for pages that would be prerendered.
@@ -39078,7 +39078,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     For simulated local browsing prerendering, the estimated PLT of pages with
     prerendering enabled for pages that would be prerendered.
@@ -39087,7 +39087,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.TabContentsDeleterSuppressedDialog"
     enum="BooleanSuppressed">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     A boolean that indicates how often we suppress a dialog from a tab when
     swapping it with a prerender.
@@ -39096,7 +39096,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.TabContentsDeleterTimeout"
     enum="BooleanCloseTimeout">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     A boolean that indicates how often we fail to delete an old prerendered tab
     before the timeout.
@@ -39107,19 +39107,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated April 2015
   </obsolete>
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Enumeration of what events related to the TabHelper class have occurred.
   </summary>
 </histogram>
 
 <histogram name="Prerender.TimeBetweenPrerenderRequests" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>Time between subsequent prerender requests.</summary>
 </histogram>
 
 <histogram name="Prerender.TimeSinceLastRecentVisit" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The time elapsed between the most recent visit to a URL and when an
     attempted prerender of the same URL is cancelled with
@@ -39149,7 +39149,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Prerender.TimeUntilUsed2" units="ms">
-  <owner>tburkard@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     Time from when a prerendered page is started to when it is first used due to
     user navigation. If the page is never used, it is not included in this
