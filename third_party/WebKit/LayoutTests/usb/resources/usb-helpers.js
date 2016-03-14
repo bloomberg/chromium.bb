@@ -16,10 +16,10 @@ function callWithKeyDown(functionCalledOnKeyPress) {
 
 function usbMocks(mojo) {
   return define('USB Mocks', [
-    'components/webusb/public/interfaces/webusb_permission_bubble.mojom',
+    'device/usb/public/interfaces/chooser_service.mojom',
     'device/usb/public/interfaces/device_manager.mojom',
     'device/usb/public/interfaces/device.mojom',
-  ], (permissionBubble, deviceManager, device, permissionProvider) => {
+  ], (chooserService, deviceManager, device) => {
     function assertDeviceInfoEquals(device, info) {
       assert_equals(device.guid, info.guid);
       assert_equals(device.usbVersionMajor, info.usb_version_major);
@@ -387,8 +387,8 @@ function usbMocks(mojo) {
       }
     }
 
-    class MockPermissionBubble
-        extends permissionBubble.WebUsbPermissionBubble.stubClass {
+    class MockChooserService
+        extends chooserService.ChooserService.stubClass {
       constructor() {
         super();
         this.router_ = null;
@@ -417,18 +417,18 @@ function usbMocks(mojo) {
           mockDeviceManager.bindToPipe(pipe);
         });
 
-    let mockPermissionBubble = new MockPermissionBubble;
+    let mockChooserService = new MockChooserService;
     mojo.serviceRegistry.addServiceOverrideForTesting(
-        permissionBubble.WebUsbPermissionBubble.name,
+        chooserService.ChooserService.name,
         pipe => {
-          mockPermissionBubble.bindToPipe(pipe);
+          mockChooserService.bindToPipe(pipe);
         });
 
     return fakeUsbDevices().then(fakeDevices => Promise.resolve({
       DeviceManager: deviceManager.DeviceManager,
       Device: device.Device,
       mockDeviceManager: mockDeviceManager,
-      mockPermissionBubble: mockPermissionBubble,
+      mockChooserService: mockChooserService,
       fakeDevices: fakeDevices,
       assertDeviceInfoEquals: assertDeviceInfoEquals,
       assertConfigurationInfoEquals: assertConfigurationInfoEquals,

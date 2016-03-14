@@ -38,7 +38,7 @@ usb_test(usb => {
 }, 'requestDevice rejects when no device is chosen');
 
 usb_test(usb => {
-  usb.mockPermissionBubble.setChosenDevice(usb.fakeDevices[0]);
+  usb.mockChooserService.setChosenDevice(usb.fakeDevices[0]);
   return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
     .then(device => {
       usb.assertDeviceInfoEquals(device, usb.fakeDevices[0]);

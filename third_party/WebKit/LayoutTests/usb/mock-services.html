@@ -12,6 +12,6 @@ usb_test(usb => {
   assert_true(usb.DeviceManager instanceof Object);
   assert_true(usb.Device instanceof Object);
   assert_true(usb.mockDeviceManager instanceof Object);
-  assert_true(usb.mockPermissionBubble instanceof Object);
+  assert_true(usb.mockChooserService instanceof Object);
 }, 'USB Mojo bindings and mock interfaces are available to tests.')
 </script>
