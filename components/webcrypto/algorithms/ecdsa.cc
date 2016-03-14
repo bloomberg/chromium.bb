@@ -4,6 +4,7 @@
 
 #include <openssl/ec.h>
 #include <openssl/ec_key.h>
+#include <openssl/ecdsa.h>
 #include <openssl/evp.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -138,16 +139,13 @@ Status ConvertWebCryptoSignatureToDerSignature(
     return Status::ErrorUnexpected();
   }
 
-  // Determine the size of the DER-encoded signature.
-  int der_encoding_size = i2d_ECDSA_SIG(ecdsa_sig.get(), NULL);
-  if (der_encoding_size < 0)
+  // Encode the signature.
+  uint8_t* der;
+  size_t der_len;
+  if (!ECDSA_SIG_to_bytes(&der, &der_len, ecdsa_sig.get()))
     return Status::OperationError();
-
-  // DER-encode the signature.
-  der_signature->resize(der_encoding_size);
-  uint8_t* result = der_signature->data();
-  if (0 > i2d_ECDSA_SIG(ecdsa_sig.get(), &result))
-    return Status::OperationError();
+  der_signature->assign(der, der + der_len);
+  OPENSSL_free(der);
 
   return Status::Success();
 }

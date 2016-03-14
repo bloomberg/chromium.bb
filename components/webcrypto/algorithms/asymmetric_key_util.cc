@@ -4,7 +4,8 @@
 
 #include "components/webcrypto/algorithms/asymmetric_key_util.h"
 
-#include <openssl/pkcs12.h>
+#include <openssl/bytestring.h>
+#include <openssl/evp.h>
 #include <stdint.h>
 #include <utility>
 
@@ -13,7 +14,9 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/status.h"
+#include "crypto/auto_cbb.h"
 #include "crypto/openssl_util.h"
+#include "crypto/scoped_openssl_types.h"
 
 namespace webcrypto {
 
@@ -22,38 +25,34 @@ namespace {
 // Exports an EVP_PKEY public key to the SPKI format.
 Status ExportPKeySpki(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedBIO bio(BIO_new(BIO_s_mem()));
 
-  // TODO(eroman): Use the OID specified by webcrypto spec.
-  //               http://crbug.com/373545
-  if (!i2d_PUBKEY_bio(bio.get(), key))
+  uint8_t* der;
+  size_t der_len;
+  crypto::AutoCBB cbb;
+  if (!CBB_init(cbb.get(), 0) || !EVP_marshal_public_key(cbb.get(), key) ||
+      !CBB_finish(cbb.get(), &der, &der_len)) {
     return Status::ErrorUnexpected();
-
-  char* data = NULL;
-  long len = BIO_get_mem_data(bio.get(), &data);
-  if (!data || len < 0)
-    return Status::ErrorUnexpected();
-
-  buffer->assign(data, data + len);
+  }
+  buffer->assign(der, der + der_len);
+  OPENSSL_free(der);
   return Status::Success();
 }
 
 // Exports an EVP_PKEY private key to the PKCS8 format.
 Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedBIO bio(BIO_new(BIO_s_mem()));
 
   // TODO(eroman): Use the OID specified by webcrypto spec.
   //               http://crbug.com/373545
-  if (!i2d_PKCS8PrivateKeyInfo_bio(bio.get(), key))
+  uint8_t* der;
+  size_t der_len;
+  crypto::AutoCBB cbb;
+  if (!CBB_init(cbb.get(), 0) || !EVP_marshal_private_key(cbb.get(), key) ||
+      !CBB_finish(cbb.get(), &der, &der_len)) {
     return Status::ErrorUnexpected();
-
-  char* data = NULL;
-  long len = BIO_get_mem_data(bio.get(), &data);
-  if (!data || len < 0)
-    return Status::ErrorUnexpected();
-
-  buffer->assign(data, data + len);
+  }
+  buffer->assign(der, der + der_len);
+  OPENSSL_free(der);
   return Status::Success();
 }
 
@@ -111,38 +110,37 @@ Status CheckPublicKeyCreationUsages(
 
 Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
                                     int expected_pkey_id,
-                                    crypto::ScopedEVP_PKEY* pkey) {
+                                    crypto::ScopedEVP_PKEY* out_pkey) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const uint8_t* ptr = key_data.bytes();
-  pkey->reset(d2i_PUBKEY(nullptr, &ptr, key_data.byte_length()));
-  if (!pkey->get() || ptr != key_data.bytes() + key_data.byte_length())
+  CBS cbs;
+  CBS_init(&cbs, key_data.bytes(), key_data.byte_length());
+  crypto::ScopedEVP_PKEY pkey(EVP_parse_public_key(&cbs));
+  if (!pkey || CBS_len(&cbs) != 0)
     return Status::DataError();
 
-  if (EVP_PKEY_id(pkey->get()) != expected_pkey_id)
+  if (EVP_PKEY_id(pkey.get()) != expected_pkey_id)
     return Status::DataError();  // Data did not define expected key type.
 
+  *out_pkey = std::move(pkey);
   return Status::Success();
 }
 
 Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
                                      int expected_pkey_id,
-                                     crypto::ScopedEVP_PKEY* pkey) {
+                                     crypto::ScopedEVP_PKEY* out_pkey) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const uint8_t* ptr = key_data.bytes();
-  crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free> p8inf(
-      d2i_PKCS8_PRIV_KEY_INFO(nullptr, &ptr, key_data.byte_length()));
-  if (!p8inf.get() || ptr != key_data.bytes() + key_data.byte_length())
+  CBS cbs;
+  CBS_init(&cbs, key_data.bytes(), key_data.byte_length());
+  crypto::ScopedEVP_PKEY pkey(EVP_parse_private_key(&cbs));
+  if (!pkey || CBS_len(&cbs) != 0)
     return Status::DataError();
 
-  pkey->reset(EVP_PKCS82PKEY(p8inf.get()));
-  if (!pkey->get())
-    return Status::DataError();
-
-  if (EVP_PKEY_id(pkey->get()) != expected_pkey_id)
+  if (EVP_PKEY_id(pkey.get()) != expected_pkey_id)
     return Status::DataError();  // Data did not define expected key type.
 
+  *out_pkey = std::move(pkey);
   return Status::Success();
 }
 

@@ -7,7 +7,6 @@
 #include <openssl/ec.h>
 #include <openssl/ec_key.h>
 #include <openssl/evp.h>
-#include <openssl/pkcs12.h>
 #include <stddef.h>
 #include <utility>
 
