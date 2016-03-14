@@ -72,7 +72,6 @@ bool FieldCanFitDataForFieldType(int max_length, ServerFieldType type) {
   }
 }
 
-
 }  // namespace
 
 // static
@@ -137,12 +136,39 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     // identification number", and others listed in the regex pattern used
     // below.
     // Note: Some sites use type="tel" or type="number" for numerical inputs.
-    const int kMatchNumAndTel = MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE;
+    // They also sometimes use type="password" for sensitive types.
+    const int kMatchNumTelAndPwd =
+        MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE | MATCH_PASSWORD;
     if (!credit_card_field->verification_ &&
-        ParseFieldSpecifics(scanner,
-                            base::UTF8ToUTF16(kCardCvcRe),
-                            kMatchNumAndTel | MATCH_PASSWORD,
+        ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kCardCvcRe),
+                            kMatchNumTelAndPwd,
                             &credit_card_field->verification_)) {
+      // A couple of sites have multiple verification codes right after another.
+      // Allow the classification of these codes one by one.
+      AutofillField* const saved_cvv = credit_card_field->verification_;
+
+      // Check if the verification code is the first detected field in the newly
+      // started card.
+      if (credit_card_field->numbers_.empty() &&
+          !credit_card_field->HasExpiration() &&
+          !credit_card_field->cardholder_ && scanner->SaveCursor() > 1) {
+        // Check if the previous field was a verification code.
+        scanner->RewindTo(scanner->SaveCursor() - 2);
+        if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kCardCvcRe),
+                                kMatchNumTelAndPwd,
+                                &credit_card_field->verification_)) {
+          // Reset the current cvv (The verification parse overwrote it).
+          credit_card_field->verification_ = saved_cvv;
+          // Put the scanner back to the field right after the current cvv.
+          scanner->Advance();
+          return std::move(credit_card_field);
+        } else {
+          // Put the scanner back to the field right after the current cvv.
+          scanner->Advance();
+          scanner->Advance();
+        }
+      }
+
       continue;
     }
 
@@ -150,8 +176,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     // doesn't have bad side effects.
     AutofillField* current_number_field;
     if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kCardNumberRe),
-                            kMatchNumAndTel | MATCH_PASSWORD,
-                            &current_number_field)) {
+                            kMatchNumTelAndPwd, &current_number_field)) {
       // Avoid autofilling any credit card number field having very low or high
       // |start_index| on the HTML form.
       size_t start_index = 0;
@@ -201,12 +226,10 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   // a strong enough signal that this is a credit card.  It is possible that
   // the number and name were parsed in a separate part of the form.  So if
   // the cvc and date were found independently they are returned.
-  bool has_cc_number_or_verification = (credit_card_field->verification_ ||
-                                        !credit_card_field->numbers_.empty());
-  bool has_date_or_mm_yy = (credit_card_field->expiration_date_ ||
-                            (credit_card_field->expiration_month_ &&
-                             credit_card_field->expiration_year_));
-  if (has_cc_number_or_verification && has_date_or_mm_yy)
+  const bool has_cc_number_or_verification =
+      (credit_card_field->verification_ ||
+       !credit_card_field->numbers_.empty());
+  if (has_cc_number_or_verification && credit_card_field->HasExpiration())
     return std::move(credit_card_field);
 
   scanner->RewindTo(saved_cursor);
@@ -480,6 +503,10 @@ ServerFieldType CreditCardField::GetExpirationYearType() const {
               : ((expiration_year_ && expiration_year_->max_length == 2)
                      ? CREDIT_CARD_EXP_2_DIGIT_YEAR
                      : CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
+
+bool CreditCardField::HasExpiration() const {
+  return expiration_date_ || (expiration_month_ && expiration_year_);
 }
 
 }  // namespace autofill

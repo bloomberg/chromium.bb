@@ -34,6 +34,21 @@ class CreditCardFieldTest : public testing::Test {
     field_ = make_scoped_ptr(static_cast<CreditCardField*>(field.release()));
   }
 
+  void MultipleParses() {
+    scoped_ptr<FormField> field;
+
+    AutofillScanner scanner(list_.get());
+    while (!scanner.IsEnd()) {
+      field = CreditCardField::Parse(&scanner);
+      field_ = make_scoped_ptr(static_cast<CreditCardField*>(field.release()));
+      if (field_ == nullptr) {
+        scanner.Advance();
+      } else {
+        AddClassifications();
+      }
+    }
+  }
+
   // Associates fields with their corresponding types, based on the previous
   // call to Parse().
   void AddClassifications() {
@@ -591,6 +606,172 @@ TEST_F(CreditCardFieldTest, ParseMultipleCreditCardNumbers) {
               field_candidates_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
             field_candidates_map_[ASCIIToUTF16("year5")].BestHeuristicType());
+}
+
+TEST_F(CreditCardFieldTest, ParseFirstAndLastNames) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name on Card");
+  field.name = ASCIIToUTF16("cc-fname");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("cc-lname");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("number3")));
+
+  field.label = ASCIIToUTF16("Exp Month");
+  field.name = ASCIIToUTF16("ccmonth");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("month4")));
+
+  field.label = ASCIIToUTF16("Exp Year");
+  field.name = ASCIIToUTF16("ccyear");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("year5")));
+
+  Parse();
+  ASSERT_NE(nullptr, field_.get());
+  AddClassifications();
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name1")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME_FIRST,
+            field_candidates_map_[ASCIIToUTF16("name1")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME_LAST,
+            field_candidates_map_[ASCIIToUTF16("name2")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number3")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number3")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month4")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month4")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year5")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+            field_candidates_map_[ASCIIToUTF16("year5")].BestHeuristicType());
+}
+
+TEST_F(CreditCardFieldTest, ParseConsecutiveCvc) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Name on Card");
+  field.name = ASCIIToUTF16("name_on_card");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name")));
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("number")));
+
+  field.label = ASCIIToUTF16("Exp Month");
+  field.name = ASCIIToUTF16("ccmonth");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("month")));
+
+  field.label = ASCIIToUTF16("Exp Year");
+  field.name = ASCIIToUTF16("ccyear");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("year")));
+
+  field.label = ASCIIToUTF16("Verification");
+  field.name = ASCIIToUTF16("verification");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("cvc")));
+
+  field.label = ASCIIToUTF16("Verification");
+  field.name = ASCIIToUTF16("verification");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("cvc2")));
+
+  MultipleParses();
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
+            field_candidates_map_[ASCIIToUTF16("name")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+            field_candidates_map_[ASCIIToUTF16("year")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("cvc")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
+            field_candidates_map_[ASCIIToUTF16("cvc")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("cvc2")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
+            field_candidates_map_[ASCIIToUTF16("cvc2")].BestHeuristicType());
+}
+
+TEST_F(CreditCardFieldTest, ParseNonConsecutiveCvc) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Name on Card");
+  field.name = ASCIIToUTF16("name_on_card");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name")));
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("number")));
+
+  field.label = ASCIIToUTF16("Exp Month");
+  field.name = ASCIIToUTF16("ccmonth");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("month")));
+
+  field.label = ASCIIToUTF16("Exp Year");
+  field.name = ASCIIToUTF16("ccyear");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("year")));
+
+  field.label = ASCIIToUTF16("Verification");
+  field.name = ASCIIToUTF16("verification");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("cvc")));
+
+  field.label = ASCIIToUTF16("Unknown");
+  field.name = ASCIIToUTF16("unknown");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("unknown")));
+
+  field.label = ASCIIToUTF16("Verification");
+  field.name = ASCIIToUTF16("verification");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("cvc2")));
+
+  MultipleParses();
+
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
+            field_candidates_map_[ASCIIToUTF16("name")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("month")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH,
+            field_candidates_map_[ASCIIToUTF16("month")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("year")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+            field_candidates_map_[ASCIIToUTF16("year")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("cvc")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
+            field_candidates_map_[ASCIIToUTF16("cvc")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("unknown")) ==
+              field_candidates_map_.end());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("cvc2")) ==
+              field_candidates_map_.end());
 }
 
 }  // namespace autofill

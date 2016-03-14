@@ -59,6 +59,10 @@ class CreditCardField : public FormField {
   // |CREDIT_CARD_EXP_2_DIGIT_YEAR|; otherwise |CREDIT_CARD_EXP_4_DIGIT_YEAR|.
   ServerFieldType GetExpirationYearType() const;
 
+  // Returns whether the expiration has been set for this credit card field.
+  // It can be either a date or both the month and the year.
+  bool HasExpiration() const;
+
   AutofillField* cardholder_;  // Optional.
 
   // Occasionally pages have separate fields for the cardholder's first and
