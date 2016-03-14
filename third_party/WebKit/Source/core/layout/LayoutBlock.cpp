@@ -251,6 +251,41 @@ static bool borderOrPaddingLogicalDimensionChanged(const ComputedStyle& oldStyle
         || oldStyle.paddingBottom() != newStyle.paddingBottom();
 }
 
+static bool canMergeContiguousAnonymousBlocks(LayoutObject* prev, LayoutObject* next)
+{
+    if ((prev && (!prev->isAnonymousBlock() || toLayoutBlock(prev)->continuation() || toLayoutBlock(prev)->beingDestroyed()))
+        || (next && (!next->isAnonymousBlock() || toLayoutBlock(next)->continuation() || toLayoutBlock(next)->beingDestroyed())))
+        return false;
+
+    if ((prev && (prev->isRubyRun() || prev->isRubyBase()))
+        || (next && (next->isRubyRun() || next->isRubyBase())))
+        return false;
+
+    return true;
+}
+
+static bool mergeContiguousAnonymousBlocks(LayoutObject* prev, LayoutObject*& next)
+{
+    if (!prev || !next || !canMergeContiguousAnonymousBlocks(prev, next))
+        return false;
+
+    prev->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
+    LayoutBlockFlow* nextBlock = toLayoutBlockFlow(next);
+    LayoutBlockFlow* prevBlock = toLayoutBlockFlow(prev);
+
+    // If the inlineness of children of the two block don't match, we'd need special code here
+    // (but there should be no need for it).
+    ASSERT(nextBlock->childrenInline() == prevBlock->childrenInline());
+    // Take all the children out of the |next| block and put them in
+    // the |prev| block.
+    nextBlock->moveAllChildrenIncludingFloatsTo(prevBlock, nextBlock->hasLayer() || prevBlock->hasLayer());
+    // Delete the now-empty block's lines and nuke it.
+    nextBlock->deleteLineBoxTree();
+    nextBlock->destroy();
+    next = nullptr;
+    return true;
+}
+
 static void addNextFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block)
 {
     if (!block->parent() || !block->parent()->isLayoutBlockFlow())
@@ -264,6 +299,9 @@ static void addNextFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block)
         toLayoutBlock(block->parent())->moveChildTo(block, child, nullptr, false);
         child = sibling;
     }
+
+    LayoutObject* next = block->nextSibling();
+    mergeContiguousAnonymousBlocks(block, next);
 }
 
 static void addPreviousFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block)
@@ -623,22 +661,6 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
     child->destroy();
 }
 
-static bool canMergeContiguousAnonymousBlocks(LayoutObject* oldChild, LayoutObject* prev, LayoutObject* next)
-{
-    if (oldChild->documentBeingDestroyed() || oldChild->isInline() || oldChild->virtualContinuation())
-        return false;
-
-    if ((prev && (!prev->isAnonymousBlock() || toLayoutBlock(prev)->continuation() || toLayoutBlock(prev)->beingDestroyed()))
-        || (next && (!next->isAnonymousBlock() || toLayoutBlock(next)->continuation() || toLayoutBlock(next)->beingDestroyed())))
-        return false;
-
-    if ((prev && (prev->isRubyRun() || prev->isRubyBase()))
-        || (next && (next->isRubyRun() || next->isRubyBase())))
-        return false;
-
-    return true;
-}
-
 void LayoutBlock::makeChildrenInlineIfPossible()
 {
     ASSERT(isLayoutBlockFlow());
@@ -685,6 +707,8 @@ void LayoutBlock::makeChildrenInlineIfPossible()
 
 void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child)
 {
+    if (!parent->canCollapseAnonymousBlockChild())
+        return;
     // It's possible that this block's destruction may have been triggered by the
     // child's removal. Just bail if the anonymous child block is already being
     // destroyed. See crbug.com/282088
@@ -718,30 +742,12 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
     // fold the inline content back together.
     LayoutObject* prev = oldChild->previousSibling();
     LayoutObject* next = oldChild->nextSibling();
-    bool canMergeAnonymousBlocks = canMergeContiguousAnonymousBlocks(oldChild, prev, next);
-    if (canMergeAnonymousBlocks && prev && next) {
-        prev->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
-        LayoutBlockFlow* nextBlock = toLayoutBlockFlow(next);
-        LayoutBlockFlow* prevBlock = toLayoutBlockFlow(prev);
-
-        // If the inlineness of children of the two block don't match, we'd need special code here
-        // (but there should be no need for it).
-        ASSERT(nextBlock->childrenInline() == prevBlock->childrenInline());
-
-        // Take all the children out of the |next| block and put them in
-        // the |prev| block.
-        nextBlock->moveAllChildrenIncludingFloatsTo(prevBlock, nextBlock->hasLayer() || prevBlock->hasLayer());
-
-        // Delete the now-empty block's lines and nuke it.
-        nextBlock->deleteLineBoxTree();
-        nextBlock->destroy();
-        next = nullptr;
-    }
+    bool mergedAnonymousBlocks = !oldChild->documentBeingDestroyed() && !oldChild->isInline() && !oldChild->virtualContinuation() && mergeContiguousAnonymousBlocks(prev, next);
 
     LayoutBox::removeChild(oldChild);
 
     LayoutObject* child = prev ? prev : next;
-    if (canMergeAnonymousBlocks && child && !child->previousSibling() && !child->nextSibling() && canCollapseAnonymousBlockChild()) {
+    if (mergedAnonymousBlocks && child && !child->previousSibling() && !child->nextSibling()) {
         // The removal has knocked us down to containing only a single anonymous
         // box.  We can go ahead and pull the content right back up into our
         // box.
