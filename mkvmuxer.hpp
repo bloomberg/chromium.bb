@@ -10,6 +10,8 @@
 #define MKVMUXER_HPP
 
 #include <cstddef>
+#include <list>
+#include <map>
 
 #include "mkvmuxertypes.hpp"
 #include "webmids.hpp"
@@ -101,8 +103,9 @@ class Frame {
   uint64 add_id() const { return add_id_; }
   const uint8* additional() const { return additional_; }
   uint64 additional_length() const { return additional_length_; }
-  void set_duration(uint64 duration) { duration_ = duration; }
+  void set_duration(uint64 duration);
   uint64 duration() const { return duration_; }
+  bool duration_set() const { return duration_set_; }
   const uint8* frame() const { return frame_; }
   void set_is_key(bool key) { is_key_ = key; }
   bool is_key() const { return is_key_; }
@@ -133,6 +136,11 @@ class Frame {
 
   // Duration of the frame in nanoseconds.
   uint64 duration_;
+
+  // Flag indicating that |duration_| has been set. Setting duration causes the
+  // frame to be written out as a Block with BlockDuration instead of as a
+  // SimpleBlock.
+  bool duration_set_;
 
   // Pointer to the data. Owned by this class.
   uint8* frame_;
@@ -978,7 +986,8 @@ class Cluster {
   // |timecode| is the absolute timecode of the cluster. |cues_pos| is the
   // position for the cluster within the segment that should be written in
   // the cues element. |timecode_scale| is the timecode scale of the segment.
-  Cluster(uint64 timecode, int64 cues_pos, uint64 timecode_scale);
+  Cluster(uint64 timecode, int64 cues_pos, uint64 timecode_scale,
+          bool write_last_frame_with_duration = false);
   ~Cluster();
 
   bool Init(IMkvWriter* ptr_writer);
@@ -1055,8 +1064,21 @@ class Cluster {
   void AddPayloadSize(uint64 size);
 
   // Closes the cluster so no more data can be written to it. Will update the
-  // cluster's size if |writer_| is seekable. Returns true on success.
+  // cluster's size if |writer_| is seekable. Returns true on success. This
+  // variant of Finalize() fails when |write_last_frame_with_duration_| is set
+  // to true.
   bool Finalize();
+
+  // Closes the cluster so no more data can be written to it. Will update the
+  // cluster's size if |writer_| is seekable. Returns true on success.
+  // Inputs:
+  //   set_last_frame_duration: Boolean indicating whether or not the duration
+  //                            of the last frame should be set. If set to
+  //                            false, the |duration| value is ignored and
+  //                            |write_last_frame_with_duration_| will not be
+  //                            honored.
+  //   duration: Duration of the Cluster in timecode scale.
+  bool Finalize(bool set_last_frame_duration, uint64 duration);
 
   // Returns the size in bytes for the entire Cluster element.
   uint64 Size() const;
@@ -1071,8 +1093,17 @@ class Cluster {
   int64 position_for_cues() const { return position_for_cues_; }
   uint64 timecode() const { return timecode_; }
   uint64 timecode_scale() const { return timecode_scale_; }
+  void set_write_last_frame_with_duration(bool write_last_frame_with_duration) {
+    write_last_frame_with_duration_ = write_last_frame_with_duration;
+  }
+  bool write_last_frame_with_duration() const {
+    return write_last_frame_with_duration_;
+  }
 
  private:
+  // Iterator type for the |stored_frames_| map.
+  typedef std::map<uint64, std::list<Frame*> >::iterator FrameMapIterator;
+
   // Utility method that confirms that blocks can still be added, and that the
   // cluster header has been written. Used by |DoWriteFrame*|. Returns true
   // when successful.
@@ -1084,6 +1115,10 @@ class Cluster {
 
   // Does some verification and calls WriteFrame.
   bool DoWriteFrame(const Frame* const frame);
+
+  // Either holds back the given frame, or writes it out depending on whether or
+  // not |write_last_frame_with_duration_| is set.
+  bool QueueOrWriteFrame(const Frame* const frame);
 
   // Outputs the Cluster header to |writer_|. Returns true on success.
   bool WriteClusterHeader();
@@ -1111,6 +1146,19 @@ class Cluster {
 
   // The timecode scale of the Segment containing the cluster.
   const uint64 timecode_scale_;
+
+  // Flag indicating whether the last frame of the cluster should be written as
+  // a Block with Duration. If set to true, then it will result in holding back
+  // of frames and the parameterized version of Finalize() must be called to
+  // finish writing the Cluster.
+  bool write_last_frame_with_duration_;
+
+  // Map used to hold back frames, if required. Track number is the key.
+  std::map<uint64, std::list<Frame*> > stored_frames_;
+
+  // Map from track number to the timestamp of the last block written for that
+  // track.
+  std::map<uint64, uint64> last_block_timestamp_;
 
   // Pointer to the writer object. Not owned by this class.
   IMkvWriter* writer_;
@@ -1387,6 +1435,9 @@ class Segment {
   // Toggles whether to output a cues element.
   void OutputCues(bool output_cues);
 
+  // Toggles whether to write the last frame in each Cluster with Duration.
+  void AccurateClusterDuration(bool accurate_cluster_duration);
+
   // Sets if the muxer will output files in chunks or not. |chunking| is a
   // flag telling whether or not to turn on chunking. |filename| is the base
   // filename for the chunk files. The header chunk file will be named
@@ -1586,6 +1637,10 @@ class Segment {
   // TODO(fgalligan): Should we add support for more than one Cues element?
   // Flag whether or not the muxer should output a Cues element.
   bool output_cues_;
+
+  // Flag whether or not the last frame in each Cluster will have a Duration
+  // element in it.
+  bool accurate_cluster_duration_;
 
   // The size of the EBML header, used to validate the header if
   // WriteEbmlHeader() is called more than once.

@@ -54,6 +54,8 @@ void Usage() {
   printf("  -video_track_number <int>   >0 Changes the video track number\n");
   printf("  -chunking <string>          Chunk output\n");
   printf("  -copy_tags <int>            >0 Copies the tags\n");
+  printf("  -accurate_cluster_duration <int> ");
+  printf(">0 Writes the last frame in each cluster with Duration\n");
   printf("\n");
   printf("Video options:\n");
   printf("  -display_width <int>        Display width in pixels\n");
@@ -164,6 +166,7 @@ int main(int argc, char* argv[]) {
   bool chunking = false;
   bool copy_tags = false;
   const char* chunk_name = NULL;
+  bool accurate_cluster_duration = false;
 
   bool output_cues_block_number = true;
 
@@ -219,6 +222,10 @@ int main(int argc, char* argv[]) {
       chunk_name = argv[++i];
     } else if (!strcmp("-copy_tags", argv[i]) && i < argc_check) {
       copy_tags = strtol(argv[++i], &end, 10) == 0 ? false : true;
+    } else if (!strcmp("-accurate_cluster_duration", argv[i]) &&
+               i < argc_check) {
+      accurate_cluster_duration =
+          strtol(argv[++i], &end, 10) == 0 ? false : true;
     } else if (!strcmp("-display_width", argv[i]) && i < argc_check) {
       display_width = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-display_height", argv[i]) && i < argc_check) {
@@ -296,6 +303,8 @@ int main(int argc, char* argv[]) {
     printf("\n Could not initialize muxer segment!\n");
     return EXIT_FAILURE;
   }
+
+  muxer_segment.AccurateClusterDuration(accurate_cluster_duration);
 
   if (live_mode)
     muxer_segment.set_mode(libwebm::mkvmuxer::Segment::kLive);

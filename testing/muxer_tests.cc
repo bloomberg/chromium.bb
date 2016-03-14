@@ -96,13 +96,14 @@ class MuxerTest : public testing::Test {
     is_writer_open_ = false;
   }
 
-  bool SegmentInit(bool output_cues) {
+  bool SegmentInit(bool output_cues, bool accurate_cluster_duration) {
     if (!segment_.Init(writer_.get()))
       return false;
     SegmentInfo* const info = segment_.GetSegmentInfo();
     info->set_writing_app(kAppString);
     info->set_muxing_app(kAppString);
     segment_.OutputCues(output_cues);
+    segment_.AccurateClusterDuration(accurate_cluster_duration);
     return true;
   }
 
@@ -116,7 +117,7 @@ class MuxerTest : public testing::Test {
 };
 
 TEST_F(MuxerTest, SegmentInfo) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   SegmentInfo* const info = segment_.GetSegmentInfo();
   info->set_timecode_scale(kTimeCodeScale);
   info->set_duration(2.345);
@@ -133,7 +134,7 @@ TEST_F(MuxerTest, SegmentInfo) {
 }
 
 TEST_F(MuxerTest, AddTracks) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
 
   // Add a Video Track
   AddVideoTrack();
@@ -177,7 +178,7 @@ TEST_F(MuxerTest, AddTracks) {
 }
 
 TEST_F(MuxerTest, AddChapters) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
 
   // Add a Chapter
@@ -194,7 +195,7 @@ TEST_F(MuxerTest, AddChapters) {
 }
 
 TEST_F(MuxerTest, SimpleBlock) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
 
   // Valid Frame
@@ -222,7 +223,7 @@ TEST_F(MuxerTest, SimpleBlock) {
 }
 
 TEST_F(MuxerTest, SimpleBlockWithAddGenericFrame) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
 
   Frame frame;
@@ -254,7 +255,7 @@ TEST_F(MuxerTest, SimpleBlockWithAddGenericFrame) {
 }
 
 TEST_F(MuxerTest, MetadataBlock) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   Track* const track = segment_.AddTrack(kMetadataTrackNumber);
   track->set_uid(kMetadataTrackNumber);
   track->set_type(kMetadataTrackType);
@@ -285,7 +286,7 @@ TEST_F(MuxerTest, MetadataBlock) {
 }
 
 TEST_F(MuxerTest, TrackType) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   Track* const track = segment_.AddTrack(kMetadataTrackNumber);
   track->set_uid(kMetadataTrackNumber);
   track->set_codec_id(kMetadataCodecId);
@@ -305,7 +306,7 @@ TEST_F(MuxerTest, TrackType) {
 }
 
 TEST_F(MuxerTest, BlockWithAdditional) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
 
   // Valid Frame
@@ -346,7 +347,7 @@ TEST_F(MuxerTest, BlockWithAdditional) {
 }
 
 TEST_F(MuxerTest, BlockAdditionalWithAddGenericFrame) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
 
   Frame frame;
@@ -381,7 +382,7 @@ TEST_F(MuxerTest, BlockAdditionalWithAddGenericFrame) {
 }
 
 TEST_F(MuxerTest, SegmentDurationComputation) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
 
   Frame frame;
@@ -409,7 +410,7 @@ TEST_F(MuxerTest, SegmentDurationComputation) {
 }
 
 TEST_F(MuxerTest, ForceNewCluster) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
 
   EXPECT_TRUE(segment_.AddFrame(dummy_data_, kFrameLength, kVideoTrackNumber, 0,
@@ -431,7 +432,7 @@ TEST_F(MuxerTest, ForceNewCluster) {
 }
 
 TEST_F(MuxerTest, OutputCues) {
-  EXPECT_TRUE(SegmentInit(true));
+  EXPECT_TRUE(SegmentInit(true, false));
   AddVideoTrack();
 
   EXPECT_TRUE(
@@ -451,7 +452,7 @@ TEST_F(MuxerTest, OutputCues) {
 }
 
 TEST_F(MuxerTest, CuesBeforeClusters) {
-  EXPECT_TRUE(SegmentInit(true));
+  EXPECT_TRUE(SegmentInit(true, false));
   AddVideoTrack();
 
   EXPECT_TRUE(
@@ -484,7 +485,7 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
 }
 
 TEST_F(MuxerTest, MaxClusterSize) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
   const uint64 kMaxClusterSize = 20;
   segment_.set_max_cluster_size(kMaxClusterSize);
@@ -509,7 +510,7 @@ TEST_F(MuxerTest, MaxClusterSize) {
 }
 
 TEST_F(MuxerTest, MaxClusterDuration) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
   const uint64 kMaxClusterDuration = 4000000;
   segment_.set_max_cluster_duration(kMaxClusterDuration);
@@ -537,7 +538,7 @@ TEST_F(MuxerTest, MaxClusterDuration) {
 
 TEST_F(MuxerTest, SetCuesTrackNumber) {
   const uint64 kTrackNumber = 10;
-  EXPECT_TRUE(SegmentInit(true));
+  EXPECT_TRUE(SegmentInit(true, false));
   const uint64 vid_track =
       segment_.AddVideoTrack(kWidth, kHeight, kTrackNumber);
   EXPECT_EQ(kTrackNumber, vid_track);
@@ -566,7 +567,7 @@ TEST_F(MuxerTest, SetCuesTrackNumber) {
 }
 
 TEST_F(MuxerTest, BlockWithDiscardPadding) {
-  EXPECT_TRUE(SegmentInit(false));
+  EXPECT_TRUE(SegmentInit(false, false));
   AddAudioTrack();
 
   int timecode = 1000;
@@ -586,6 +587,120 @@ TEST_F(MuxerTest, BlockWithDiscardPadding) {
   CloseWriter();
 
   EXPECT_TRUE(CompareFiles(GetTestFilePath("discard_padding.webm"), filename_));
+}
+
+TEST_F(MuxerTest, AccurateClusterDuration) {
+  EXPECT_TRUE(SegmentInit(false, true));
+  AddVideoTrack();
+
+  Frame frame;
+  frame.Init(dummy_data_, kFrameLength);
+  frame.set_track_number(kVideoTrackNumber);
+  frame.set_timestamp(0);
+  frame.set_is_key(true);
+  EXPECT_TRUE(segment_.AddGenericFrame(&frame));
+  segment_.ForceNewClusterOnNextFrame();
+  frame.set_timestamp(2000000);
+  frame.set_is_key(false);
+  EXPECT_TRUE(segment_.AddGenericFrame(&frame));
+  frame.set_timestamp(4000000);
+  EXPECT_TRUE(segment_.AddGenericFrame(&frame));
+  segment_.ForceNewClusterOnNextFrame();
+  frame.set_timestamp(6000000);
+  EXPECT_TRUE(segment_.AddGenericFrame(&frame));
+  segment_.Finalize();
+
+  CloseWriter();
+
+  EXPECT_TRUE(CompareFiles(GetTestFilePath("accurate_cluster_duration.webm"),
+                           filename_));
+}
+
+// Tests AccurateClusterDuration flag with the duration of the very last block
+// of the file set explicitly.
+TEST_F(MuxerTest, AccurateClusterDurationExplicitLastFrameDuration) {
+  EXPECT_TRUE(SegmentInit(false, true));
+  AddVideoTrack();
+
+  Frame frame;
+  frame.Init(dummy_data_, kFrameLength);
+  frame.set_track_number(kVideoTrackNumber);
+  frame.set_timestamp(0);
+  frame.set_is_key(true);
+  EXPECT_TRUE(segment_.AddGenericFrame(&frame));
+  segment_.ForceNewClusterOnNextFrame();
+  frame.set_timestamp(2000000);
+  frame.set_is_key(false);
+  EXPECT_TRUE(segment_.AddGenericFrame(&frame));
+  frame.set_timestamp(4000000);
+  EXPECT_TRUE(segment_.AddGenericFrame(&frame));
+  segment_.ForceNewClusterOnNextFrame();
+  frame.set_timestamp(6000000);
+  frame.set_duration(2000000);
+  EXPECT_TRUE(segment_.AddGenericFrame(&frame));
+  segment_.Finalize();
+
+  // SegmentInfo's duration is in timecode scale
+  EXPECT_EQ(8, segment_.GetSegmentInfo()->duration());
+
+  CloseWriter();
+
+  EXPECT_TRUE(CompareFiles(
+      GetTestFilePath("accurate_cluster_duration_last_frame.webm"), filename_));
+}
+
+TEST_F(MuxerTest, AccurateClusterDurationTwoTracks) {
+  EXPECT_TRUE(SegmentInit(false, true));
+  AddVideoTrack();
+  AddAudioTrack();
+
+  Frame video_frame;
+  video_frame.Init(dummy_data_, kFrameLength);
+  video_frame.set_track_number(kVideoTrackNumber);
+  Frame audio_frame;
+  audio_frame.Init(dummy_data_, kFrameLength);
+  audio_frame.set_track_number(kAudioTrackNumber);
+  std::array<std::uint64_t, 2> cluster_timestamps = {{0, 40000000}};
+  for (const std::uint64_t cluster_timestamp : cluster_timestamps) {
+    // Add video and audio frames with timestamp 0.
+    video_frame.set_timestamp(cluster_timestamp);
+    video_frame.set_is_key(true);
+    EXPECT_TRUE(segment_.AddGenericFrame(&video_frame));
+    audio_frame.set_timestamp(cluster_timestamp);
+    audio_frame.set_is_key(true);
+    EXPECT_TRUE(segment_.AddGenericFrame(&audio_frame));
+
+    // Add 3 consecutive audio frames.
+    std::array<std::uint64_t, 3> audio_timestamps = {
+        {10000000, 20000000, 30000000}};
+    for (const std::uint64_t audio_timestamp : audio_timestamps) {
+      audio_frame.set_timestamp(cluster_timestamp + audio_timestamp);
+      // Explicitly set duration for the very last audio frame.
+      if (cluster_timestamp == 40000000 && audio_timestamp == 30000000) {
+        audio_frame.set_duration(10000000);
+      }
+      EXPECT_TRUE(segment_.AddGenericFrame(&audio_frame));
+    }
+
+    // Add a video frame with timestamp 33ms.
+    video_frame.set_is_key(false);
+    // Explicitly set duration for the very last video frame.
+    if (cluster_timestamp == 40000000) {
+      video_frame.set_duration(7000000);
+    }
+    video_frame.set_timestamp(cluster_timestamp + 33000000);
+    EXPECT_TRUE(segment_.AddGenericFrame(&video_frame));
+    segment_.ForceNewClusterOnNextFrame();
+  }
+  segment_.Finalize();
+
+  // SegmentInfo's duration is in timecode scale
+  EXPECT_EQ(80, segment_.GetSegmentInfo()->duration());
+
+  CloseWriter();
+
+  EXPECT_TRUE(CompareFiles(
+      GetTestFilePath("accurate_cluster_duration_two_tracks.webm"), filename_));
 }
 
 }  // namespace test

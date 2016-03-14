@@ -18,6 +18,7 @@
 #include <ctime>
 #include <memory>
 #include <new>
+#include <vector>
 
 #include "mkvmuxerutil.hpp"
 #include "mkvparser/mkvparser.hpp"
@@ -148,6 +149,7 @@ Frame::Frame()
       additional_(NULL),
       additional_length_(0),
       duration_(0),
+      duration_set_(false),
       frame_(NULL),
       is_key_(false),
       length_(0),
@@ -180,6 +182,7 @@ bool Frame::CopyFrom(const Frame& frame) {
     return false;
   }
   duration_ = frame.duration();
+  duration_set_ = frame.duration_set();
   is_key_ = frame.is_key();
   track_number_ = frame.track_number();
   timestamp_ = frame.timestamp();
@@ -238,6 +241,11 @@ bool Frame::IsValid() const {
 
 bool Frame::CanBeSimpleBlock() const {
   return additional_ == NULL && discard_padding_ == 0 && duration_ == 0;
+}
+
+void Frame::set_duration(uint64 duration) {
+  duration_ = duration;
+  duration_set_ = true;
 }
 
 void Frame::set_reference_block_timestamp(int64 reference_block_timestamp) {
@@ -2071,7 +2079,8 @@ bool Tags::ExpandTagsArray() {
 //
 // Cluster class
 
-Cluster::Cluster(uint64 timecode, int64 cues_pos, uint64 timecode_scale)
+Cluster::Cluster(uint64 timecode, int64 cues_pos, uint64 timecode_scale,
+                 bool write_last_frame_with_duration)
     : blocks_added_(0),
       finalized_(false),
       header_written_(false),
@@ -2080,6 +2089,7 @@ Cluster::Cluster(uint64 timecode, int64 cues_pos, uint64 timecode_scale)
       size_position_(-1),
       timecode_(timecode),
       timecode_scale_(timecode_scale),
+      write_last_frame_with_duration_(write_last_frame_with_duration),
       writer_(NULL) {}
 
 Cluster::~Cluster() {}
@@ -2092,7 +2102,9 @@ bool Cluster::Init(IMkvWriter* ptr_writer) {
   return true;
 }
 
-bool Cluster::AddFrame(const Frame* const frame) { return DoWriteFrame(frame); }
+bool Cluster::AddFrame(const Frame* const frame) {
+  return QueueOrWriteFrame(frame);
+}
 
 bool Cluster::AddFrame(const uint8* data, uint64 length, uint64 track_number,
                        uint64 abs_timecode, bool is_key) {
@@ -2102,7 +2114,7 @@ bool Cluster::AddFrame(const uint8* data, uint64 length, uint64 track_number,
   frame.set_track_number(track_number);
   frame.set_timestamp(abs_timecode);
   frame.set_is_key(is_key);
-  return DoWriteFrame(&frame);
+  return QueueOrWriteFrame(&frame);
 }
 
 bool Cluster::AddFrameWithAdditional(const uint8* data, uint64 length,
@@ -2121,7 +2133,7 @@ bool Cluster::AddFrameWithAdditional(const uint8* data, uint64 length,
   frame.set_track_number(track_number);
   frame.set_timestamp(abs_timecode);
   frame.set_is_key(is_key);
-  return DoWriteFrame(&frame);
+  return QueueOrWriteFrame(&frame);
 }
 
 bool Cluster::AddFrameWithDiscardPadding(const uint8* data, uint64 length,
@@ -2135,7 +2147,7 @@ bool Cluster::AddFrameWithDiscardPadding(const uint8* data, uint64 length,
   frame.set_track_number(track_number);
   frame.set_timestamp(abs_timecode);
   frame.set_is_key(is_key);
-  return DoWriteFrame(&frame);
+  return QueueOrWriteFrame(&frame);
 }
 
 bool Cluster::AddMetadata(const uint8* data, uint64 length, uint64 track_number,
@@ -2147,13 +2159,58 @@ bool Cluster::AddMetadata(const uint8* data, uint64 length, uint64 track_number,
   frame.set_timestamp(abs_timecode);
   frame.set_duration(duration_timecode);
   frame.set_is_key(true);  // All metadata blocks are keyframes.
-  return DoWriteFrame(&frame);
+  return QueueOrWriteFrame(&frame);
 }
 
 void Cluster::AddPayloadSize(uint64 size) { payload_size_ += size; }
 
 bool Cluster::Finalize() {
-  if (!writer_ || finalized_ || size_position_ == -1)
+  return !write_last_frame_with_duration_ && Finalize(false, 0);
+}
+
+bool Cluster::Finalize(bool set_last_frame_duration, uint64 duration) {
+  if (!writer_ || finalized_)
+    return false;
+
+  if (write_last_frame_with_duration_) {
+    // Write out held back Frames. This essentially performs a k-way merge
+    // across all tracks in the increasing order of timestamps.
+    while (!stored_frames_.empty()) {
+      Frame* frame = stored_frames_.begin()->second.front();
+
+      // Get the next frame to write (frame with least timestamp across all
+      // tracks).
+      for (FrameMapIterator frames_iterator = ++stored_frames_.begin();
+           frames_iterator != stored_frames_.end(); ++frames_iterator) {
+        if (frames_iterator->second.front()->timestamp() < frame->timestamp()) {
+          frame = frames_iterator->second.front();
+        }
+      }
+
+      // Set the duration if it's the last frame for the track.
+      if (set_last_frame_duration &&
+          stored_frames_[frame->track_number()].size() == 1 &&
+          !frame->duration_set()) {
+        frame->set_duration(duration - frame->timestamp());
+        if (!frame->is_key() && !frame->reference_block_timestamp_set()) {
+          frame->set_reference_block_timestamp(
+              last_block_timestamp_[frame->track_number()]);
+        }
+      }
+
+      // Write the frame and remove it from |stored_frames_|.
+      const bool wrote_frame = DoWriteFrame(frame);
+      stored_frames_[frame->track_number()].pop_front();
+      if (stored_frames_[frame->track_number()].empty()) {
+        stored_frames_.erase(frame->track_number());
+      }
+      delete frame;
+      if (!wrote_frame)
+        return false;
+    }
+  }
+
+  if (size_position_ == -1)
     return false;
 
   if (writer_->Seekable()) {
@@ -2220,6 +2277,62 @@ bool Cluster::DoWriteFrame(const Frame* const frame) {
     return false;
 
   PostWriteBlock(element_size);
+  last_block_timestamp_[frame->track_number()] = frame->timestamp();
+  return true;
+}
+
+bool Cluster::QueueOrWriteFrame(const Frame* const frame) {
+  if (!frame || !frame->IsValid())
+    return false;
+
+  // If |write_last_frame_with_duration_| is not set, then write the frame right
+  // away.
+  if (!write_last_frame_with_duration_) {
+    return DoWriteFrame(frame);
+  }
+
+  // Queue the current frame.
+  uint64 track_number = frame->track_number();
+  Frame* const frame_to_store = new Frame();
+  frame_to_store->CopyFrom(*frame);
+  stored_frames_[track_number].push_back(frame_to_store);
+
+  // Iterate through all queued frames in the current track except the last one
+  // and write it if it is okay to do so (i.e.) no other track has an held back
+  // frame with timestamp <= the timestamp of the frame in question.
+  std::vector<std::list<Frame*>::iterator> frames_to_erase;
+  for (std::list<Frame *>::iterator
+           current_track_iterator = stored_frames_[track_number].begin(),
+           end = --stored_frames_[track_number].end();
+       current_track_iterator != end; ++current_track_iterator) {
+    const Frame* const frame_to_write = *current_track_iterator;
+    bool okay_to_write = true;
+    for (FrameMapIterator track_iterator = stored_frames_.begin();
+         track_iterator != stored_frames_.end(); ++track_iterator) {
+      if (track_iterator->first == track_number) {
+        continue;
+      }
+      if (track_iterator->second.front()->timestamp() <
+          frame_to_write->timestamp()) {
+        okay_to_write = false;
+        break;
+      }
+    }
+    if (okay_to_write) {
+      const bool wrote_frame = DoWriteFrame(frame_to_write);
+      delete frame_to_write;
+      if (!wrote_frame)
+        return false;
+      frames_to_erase.push_back(current_track_iterator);
+    } else {
+      break;
+    }
+  }
+  for (std::vector<std::list<Frame*>::iterator>::iterator iterator =
+           frames_to_erase.begin();
+       iterator != frames_to_erase.end(); ++iterator) {
+    stored_frames_[track_number].erase(*iterator);
+  }
   return true;
 }
 
@@ -2716,15 +2829,17 @@ bool Segment::Finalize() {
   if (WriteFramesAll() < 0)
     return false;
 
+  if (cluster_list_size_ > 0) {
+    // Update last cluster's size
+    Cluster* const old_cluster = cluster_list_[cluster_list_size_ - 1];
+
+    // For the last frame of the last Cluster, we don't write it as a BlockGroup
+    // with Duration unless the frame itself has duration set explicitly.
+    if (!old_cluster || !old_cluster->Finalize(false, 0))
+      return false;
+  }
+
   if (mode_ == kFile) {
-    if (cluster_list_size_ > 0) {
-      // Update last cluster's size
-      Cluster* const old_cluster = cluster_list_[cluster_list_size_ - 1];
-
-      if (!old_cluster || !old_cluster->Finalize())
-        return false;
-    }
-
     if (chunking_ && chunk_writer_cluster_) {
       chunk_writer_cluster_->Close();
       chunk_count_++;
@@ -3023,6 +3138,10 @@ bool Segment::AddGenericFrame(const Frame* frame) {
 
 void Segment::OutputCues(bool output_cues) { output_cues_ = output_cues; }
 
+void Segment::AccurateClusterDuration(bool accurate_cluster_duration) {
+  accurate_cluster_duration_ = accurate_cluster_duration;
+}
+
 bool Segment::SetChunking(bool chunking, const char* filename) {
   if (chunk_count_ > 0)
     return false;
@@ -3288,18 +3407,16 @@ bool Segment::MakeNewCluster(uint64 frame_timestamp_ns) {
   if (!WriteFramesLessThan(frame_timestamp_ns))
     return false;
 
-  if (mode_ == kFile) {
-    if (cluster_list_size_ > 0) {
-      // Update old cluster's size
-      Cluster* const old_cluster = cluster_list_[cluster_list_size_ - 1];
+  if (cluster_list_size_ > 0) {
+    // Update old cluster's size
+    Cluster* const old_cluster = cluster_list_[cluster_list_size_ - 1];
 
-      if (!old_cluster || !old_cluster->Finalize())
-        return false;
-    }
-
-    if (output_cues_)
-      new_cuepoint_ = true;
+    if (!old_cluster || !old_cluster->Finalize(true, frame_timestamp_ns))
+      return false;
   }
+
+  if (output_cues_)
+    new_cuepoint_ = true;
 
   if (chunking_ && cluster_list_size_ > 0) {
     chunk_writer_cluster_->Close();
@@ -3327,8 +3444,9 @@ bool Segment::MakeNewCluster(uint64 frame_timestamp_ns) {
 
   Cluster*& cluster = cluster_list_[cluster_list_size_];
   const int64 offset = MaxOffset();
-  cluster = new (std::nothrow) Cluster(cluster_timecode,  // NOLINT
-                                       offset, segment_info_.timecode_scale());
+  cluster = new (std::nothrow)
+      Cluster(cluster_timecode, offset, segment_info_.timecode_scale(),
+              accurate_cluster_duration_);
   if (!cluster)
     return false;
 
