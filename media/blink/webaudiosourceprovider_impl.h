@@ -24,19 +24,28 @@ class WebAudioSourceProviderClient;
 
 namespace media {
 
-// WebAudioSourceProviderImpl provides a bridge between classes:
-//     blink::WebAudioSourceProvider <---> AudioRendererSink
+// WebAudioSourceProviderImpl is either one of two things (but not both):
+// - a connection between a RestartableAudioRendererSink (the |sink_|) passed in
+//   constructor and an AudioRendererSink::RenderCallback passed on Initialize()
+//   by means of an internal AudioRendererSink::RenderCallback.
+// - a connection between the said AudioRendererSink::RenderCallback and a
+//   blink::WebAudioSourceProviderClient passed via setClient() (the |client_|),
+//   again using the internal AudioRendererSink::RenderCallback. Blink calls
+//   provideInput() periodically to fetch the appropriate data.
 //
-// WebAudioSourceProviderImpl wraps an existing audio sink that is used unless
-// WebKit has set a client via setClient(). While a client is set WebKit will
-// periodically call provideInput() to render a certain number of audio
-// sample-frames using the sink's RenderCallback to get the data.
+// In either case, the internal RenderCallback allows for delivering a copy of
+// the data if a listener is configured. WASPImpl is also a
+// RestartableAudioRendererSink itself in order to be controlled (Play(),
+// Pause() etc).
 //
 // All calls are protected by a lock.
 class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
     : NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
       NON_EXPORTED_BASE(public RestartableAudioRendererSink) {
  public:
+  using CopyAudioCB = base::Callback<
+      void(scoped_ptr<AudioBus>, uint32_t delay_milliseconds, int sample_rate)>;
+
   explicit WebAudioSourceProviderImpl(
       const scoped_refptr<RestartableAudioRendererSink>& sink);
 
@@ -55,35 +64,39 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
   void Initialize(const AudioParameters& params,
                   RenderCallback* renderer) override;
 
- protected:
-  ~WebAudioSourceProviderImpl() override;
+  // These methods allow a client to get a copy of the rendered audio.
+  void SetCopyAudioCallback(const CopyAudioCB& callback);
+  void ClearCopyAudioCallback();
 
  private:
+  friend class WebAudioSourceProviderImplTest;
+  ~WebAudioSourceProviderImpl() override;
+
   // Calls setFormat() on |client_| from the Blink renderer thread.
   void OnSetFormat();
 
-  // Closure that posts a task to call OnSetFormat() on the renderer thread.
-  base::Closure set_format_cb_;
+  int RenderForTesting(AudioBus* audio_bus);
 
-  // Set to true when Initialize() is called.
-  int channels_;
-  int sample_rate_;
+  // Used to keep the volume across reconfigurations.
   double volume_;
 
   // Tracks the current playback state.
   enum PlaybackState { kStopped, kStarted, kPlaying };
   PlaybackState state_;
 
-  // Where audio comes from.
-  AudioRendererSink::RenderCallback* renderer_;
-
+  // Closure that calls OnSetFormat() on |client_| on the renderer thread.
+  base::Closure set_format_cb_;
   // When set via setClient() it overrides |sink_| for consuming audio.
   blink::WebAudioSourceProviderClient* client_;
 
   // Where audio ends up unless overridden by |client_|.
   base::Lock sink_lock_;
-  scoped_refptr<RestartableAudioRendererSink> sink_;
+  const scoped_refptr<RestartableAudioRendererSink> sink_;
   scoped_ptr<AudioBus> bus_wrapper_;
+
+  // An inner class acting as a T filter where actual data can be tapped.
+  class TeeFilter;
+  scoped_ptr<TeeFilter> tee_filter_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebAudioSourceProviderImpl> weak_factory_;
