@@ -223,28 +223,24 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
   ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
 
-  // Create and run menu.  Display an empty menu if model is NULL.
-  views::MenuRunner::RunResult result;
-  if (model_.get()) {
-    views::MenuModelAdapter menu_delegate(model_.get());
-    menu_delegate.set_triggerable_event_flags(triggerable_event_flags());
-    menu_runner_.reset(new views::MenuRunner(menu_delegate.CreateMenu(),
-                                             views::MenuRunner::HAS_MNEMONICS));
-    result = menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                                     gfx::Rect(menu_position, gfx::Size(0, 0)),
-                                     views::MENU_ANCHOR_TOPLEFT, source_type);
-  } else {
-    views::MenuDelegate menu_delegate;
-    views::MenuItemView* menu = new views::MenuItemView(&menu_delegate);
-    menu_runner_.reset(
-        new views::MenuRunner(menu, views::MenuRunner::HAS_MNEMONICS));
-    result = menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                                     gfx::Rect(menu_position, gfx::Size(0, 0)),
-                                     views::MENU_ANCHOR_TOPLEFT, source_type);
-  }
-  if (result == views::MenuRunner::MENU_DELETED)
+  // Exit if the model is null.
+  if (!model_.get())
     return;
 
+  // Create and run menu.
+  menu_model_adapter_.reset(new views::MenuModelAdapter(
+      model_.get(),
+      base::Bind(&ToolbarButton::OnMenuClosed, base::Unretained(this))));
+  menu_model_adapter_->set_triggerable_event_flags(triggerable_event_flags());
+  menu_runner_.reset(new views::MenuRunner(
+      menu_model_adapter_->CreateMenu(),
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
+  ignore_result(menu_runner_->RunMenuAt(
+      GetWidget(), nullptr, gfx::Rect(menu_position, gfx::Size(0, 0)),
+      views::MENU_ANCHOR_TOPLEFT, source_type));
+}
+
+void ToolbarButton::OnMenuClosed() {
   ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
 
   menu_showing_ = false;
@@ -257,6 +253,8 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   // Set the state back to normal after the drop down menu is closed.
   if (state() != STATE_DISABLED)
     SetState(STATE_NORMAL);
+
+  menu_model_adapter_.reset();
 }
 
 const char* ToolbarButton::GetClassName() const {

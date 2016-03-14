@@ -20,6 +20,7 @@ class MenuModel;
 
 namespace views {
 class InkDropDelegate;
+class MenuModelAdapter;
 class MenuRunner;
 }
 
@@ -68,6 +69,9 @@ class ToolbarButton : public views::LabelButton,
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
 
  private:
+  // Callback for MenuModelAdapter.
+  void OnMenuClosed();
+
   // views::LabelButton:
   const char* GetClassName() const override;
 
@@ -82,6 +86,9 @@ class ToolbarButton : public views::LabelButton,
 
   // Y position of mouse when left mouse button is pressed.
   int y_position_on_lbuttondown_;
+
+  // The model adapter for the drop down menu.
+  scoped_ptr<views::MenuModelAdapter> menu_model_adapter_;
 
   // Menu runner to display drop down menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
