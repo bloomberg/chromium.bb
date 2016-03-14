@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/security_key/gnubby_auth_handler.h"
+
 #include <stdint.h>
 #include <unistd.h>
 
@@ -19,7 +21,6 @@
 #include "net/socket/stream_socket.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #include "remoting/base/logging.h"
-#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/host/security_key/gnubby_socket.h"
 
 namespace {
@@ -140,7 +141,7 @@ void GnubbyAuthHandlerLinux::CreateGnubbyConnection() {
     // socket below. Consider moving this class to a different thread if this
     // causes any problems. See crbug.com/509807.
     // TODO(joedow): Since this code now runs as a host extension, we should
-    //               perform our IO on a separate thread.
+    //               perform our IO on a separate thread: crbug.com/591739
     base::ThreadRestrictions::ScopedAllowIO allow_io;
 
     // If the file already exists, a socket in use error is returned.

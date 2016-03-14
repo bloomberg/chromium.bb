@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "remoting/host/security_key/fake_remote_security_key_ipc_client.h"
 
 #include "base/callback.h"
