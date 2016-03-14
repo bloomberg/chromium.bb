@@ -120,23 +120,8 @@
                  '--scm=1',
                  '--branding=<(branding)'],
     },
-    {
-      'postbuild_name': 'Symlink Libraries',
-      'action': [
-        'ln',
-        '-fns',
-        'Versions/Current/Libraries',
-        '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Libraries'
-      ],
-    },
   ],
   'copies': [
-    {
-      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
-      'files': [
-        '<(PRODUCT_DIR)/exif.so',
-      ],
-    },
     {
       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Helpers',
       'files': [

@@ -101,13 +101,6 @@
         ],
       },
     }],
-    ['chromeos==1', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/libexif.so',
-        ],
-      },
-    }],
   ],
   'includes': [
     '../base/base.isolate',

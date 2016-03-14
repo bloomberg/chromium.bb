@@ -25,10 +25,9 @@ class DataSource;
 namespace metadata {
 
 // This class takes a MIME type and data source and parses its metadata. It
-// handles audio, video, and images. It delegates its operations to FFMPEG,
-// libexif, etc. This class lives and operates on the utility thread of the
-// utility process, as we wish to sandbox potentially dangerous operations
-// on user-provided data.
+// handles audio, video, and images. It delegates its operations to FFMPEG.
+// This class lives and operates on the utility thread of the utility process,
+// as we wish to sandbox potentially dangerous operations on user-provided data.
 class MediaMetadataParser {
  public:
   typedef extensions::api::media_galleries::MediaMetadata MediaMetadata;

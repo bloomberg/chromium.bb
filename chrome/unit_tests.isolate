@@ -96,7 +96,6 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
-          '<(PRODUCT_DIR)/exif.so',
           '<(PRODUCT_DIR)/osmesa.so',
           '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/',
         ],
@@ -106,7 +105,6 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework.dSYM/',
-          '<(PRODUCT_DIR)/exif.so.dSYM/',
           '<(PRODUCT_DIR)/osmesa.so.dSYM/',
           '<(PRODUCT_DIR)/unit_tests.dSYM/',
         ],
@@ -120,7 +118,6 @@
           '../ui/base/glib/',
           '<(PRODUCT_DIR)/blacklist_test_dll_1.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/libexif.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
           '<(PRODUCT_DIR)/verifier_test_dll_1.dll',
           '<(PRODUCT_DIR)/verifier_test_dll_2.dll',
@@ -149,7 +146,6 @@
         'files': [
           '../chromeos/test/data/network/',
           '<(PRODUCT_DIR)/keyboard_resources.pak',
-          '<(PRODUCT_DIR)/libexif.so',
           '<(PRODUCT_DIR)/test_data/chrome/browser/resources/chromeos/',
         ],
       },

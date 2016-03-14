@@ -44,8 +44,6 @@ DEBIAN_PACKAGES="\
   libdrm2
   libelf1
   libelf-dev
-  libexif12
-  libexif-dev
   libexpat1
   libexpat1-dev
   libffi6
