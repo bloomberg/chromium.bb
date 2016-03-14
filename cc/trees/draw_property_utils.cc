@@ -530,6 +530,8 @@ void ComputeClips(ClipTree* clip_tree,
     // clip node's target space.
     gfx::RectF parent_combined_clip_in_target_space =
         parent_clip_node->data.combined_clip_in_target_space;
+    gfx::RectF parent_clip_in_target_space =
+        parent_clip_node->data.clip_in_target_space;
     if (parent_clip_node->data.target_id != clip_node->data.target_id &&
         non_root_surfaces_enabled) {
       success &= transform_tree.ComputeTransformWithDestinationSublayerScale(
@@ -548,6 +550,8 @@ void ComputeClips(ClipTree* clip_tree,
       parent_combined_clip_in_target_space = MathUtil::ProjectClippedRect(
           parent_to_current,
           parent_clip_node->data.combined_clip_in_target_space);
+      parent_clip_in_target_space = MathUtil::ProjectClippedRect(
+          parent_to_current, parent_clip_node->data.clip_in_target_space);
     }
     // Only nodes affected by ancestor clips will have their clip adjusted due
     // to intersecting with an ancestor clip. But, we still need to propagate
@@ -579,8 +583,7 @@ void ComputeClips(ClipTree* clip_tree,
         clip_node->data.clip_in_target_space =
             parent_clip_node->data.clip_in_target_space;
       } else if (!clip_node->data.target_is_clipped) {
-        clip_node->data.clip_in_target_space =
-            parent_combined_clip_in_target_space;
+        clip_node->data.clip_in_target_space = parent_clip_in_target_space;
       } else {
         // Render Surface applies clip and the owning layer itself applies
         // no clip. So, clip_in_target_space is not used and hence we can set
@@ -615,8 +618,6 @@ void ComputeClips(ClipTree* clip_tree,
               : !parent_clip_node->data
                      .layers_are_clipped_when_surfaces_disabled;
       if (!layer_clipping_uses_only_local_clip) {
-        gfx::RectF parent_clip_in_target_space = MathUtil::ProjectClippedRect(
-            parent_to_current, parent_clip_node->data.clip_in_target_space);
         clip_node->data.clip_in_target_space = gfx::IntersectRects(
             parent_clip_in_target_space, source_clip_in_target_space);
       } else {

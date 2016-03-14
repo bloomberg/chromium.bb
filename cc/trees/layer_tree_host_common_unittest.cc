@@ -9326,8 +9326,8 @@ TEST_F(LayerTreeHostCommonTest,
 
   EXPECT_TRUE(test_layer->is_clipped());
   EXPECT_FALSE(test_layer->render_target()->render_surface()->is_clipped());
-  EXPECT_EQ(gfx::Rect(-2, -2, 28, 28), test_layer->clip_rect());
-  EXPECT_EQ(gfx::Rect(26, 26), test_layer->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(-2, -2, 30, 30), test_layer->clip_rect());
+  EXPECT_EQ(gfx::Rect(28, 28), test_layer->drawable_content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
