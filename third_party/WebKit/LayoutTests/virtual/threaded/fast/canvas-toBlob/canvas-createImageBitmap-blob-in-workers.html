@@ -6,13 +6,12 @@
 <body>
 <script>
 jsTestIsAsync = true;
-var worker = startWorker('../../../../fast/canvas/resources/canvas-createImageBitmap-blob-in-workers.js');
+var worker = new Worker('../../../../fast/canvas/resources/canvas-createImageBitmap-blob-in-workers.js');
 
-description('Test createImageBitmap with blob in workers.');
+description('Test race condition for createImageBitmap from blob in workers and main.');
 
 var imgWidth = 20;
 var imgHeight = 20;
-var imageData2;
 var numOfBitmaps = 5;
 var bitmapArray = [];
 
@@ -35,46 +34,55 @@ function compareImageData(data1, data2)
     }
 }
 
-var newImg = new Image();
-newImg.onload = function() {
-    var canvas2 = document.createElement("canvas");
-    var ctx2 = canvas2.getContext("2d");
-    ctx2.drawImage(newImg, 0, 0, imgWidth, imgHeight);
-    imageData2 = ctx2.getImageData(0, 0, imgWidth, imgHeight).data;
+var getMessageFromWorker = new Promise((resolve, reject) => {
+    function onMessage(e) {
+        resolve(e.data.data);
+        worker.removeEventListener("message", onMessage);
+    }
+    worker.addEventListener("message", onMessage);
+});
 
+// check that the created ImageBitmaps from worker and main have the same pixel
+// data as the source, which is the canvas1.toBlob
+var newImg = new Image();
+canvas1.toBlob(function(blob) {
+    worker.postMessage(blob);
+    for (var i = 0; i < numOfBitmaps; i++) {
+        createImageBitmap(blob).then(imageBitmap => {
+            bitmapArray.push(imageBitmap);
+            if (bitmapArray.length == numOfBitmaps) {
+                var url = URL.createObjectURL(blob);
+                newImg.src = url;
+            }
+        });
+    }
+});
+
+var imageLoaded = new Promise((resolve, reject) => {
+    newImg.onload = function() {
+        var canvas2 = document.createElement("canvas");
+        var ctx2 = canvas2.getContext("2d");
+        ctx2.drawImage(newImg, 0, 0, imgWidth, imgHeight);
+        resolve(ctx2.getImageData(0, 0, imgWidth, imgHeight).data);
+    };
+});
+
+Promise.all([imageLoaded, getMessageFromWorker]).then(([imageDataFromImg, imageBitmapFromWorker]) => {
     var canvas3 = document.createElement("canvas");
     var ctx3 = canvas3.getContext("2d");
     for (var i = 0; i < numOfBitmaps; i++) {
         ctx3.clearRect(0, 0, imgWidth, imgHeight);
         ctx3.drawImage(bitmapArray[i], 0, 0, imgWidth, imgHeight);
         var imageData = ctx3.getImageData(0, 0, imgWidth, imgHeight).data;
-        compareImageData(imageData, imageData2);
+        compareImageData(imageData, imageDataFromImg);
     }
 
-    worker.onmessage = function(e) {
-        var newImageBitmap = e.data.data;
-        ctx3.clearRect(0, 0, imgWidth, imgHeight);
-        ctx3.drawImage(newImageBitmap, 0, 0, imgWidth, imgHeight);
-        var imageData = ctx3.getImageData(0, 0, imgWidth, imgHeight).data;
-        compareImageData(imageData, imageData2);
-        testPassed("ImageBitmaps created from blob in worker and in main have the same pixel data");
-        finishJSTest();
-    }
-}
-
-canvas1.toBlob(function(blob) {
-    worker.postMessage(blob);
-    var setImgSrc = false;
-    for (var i = 0; i < numOfBitmaps; i++) {
-        createImageBitmap(blob).then(imageBitmap => {
-            bitmapArray.push(imageBitmap);
-            if (i >= numOfBitmaps - 1 && setImgSrc == false) {
-                var url = URL.createObjectURL(blob);
-                newImg.src = url;
-                setImgSrc = true;
-            }
-        });
-    }
+    ctx3.clearRect(0, 0, imgWidth, imgHeight);
+    ctx3.drawImage(imageBitmapFromWorker, 0, 0, imgWidth, imgHeight);
+    var imageData = ctx3.getImageData(0, 0, imgWidth, imgHeight).data;
+    compareImageData(imageData, imageDataFromImg);
+    testPassed("ImageBitmaps created from blob in worker and in main have the same pixel data");
+    finishJSTest();
 });
 
 </script>
