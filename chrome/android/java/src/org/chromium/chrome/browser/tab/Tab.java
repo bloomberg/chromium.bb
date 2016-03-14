@@ -566,8 +566,10 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mWindowAndroid = window;
         mLaunchType = type;
         if (mThemedApplicationContext != null) {
-            mLoFiBarPopupController = new LoFiBarPopupController(
-                    mThemedApplicationContext, getSnackbarManager());
+            if (getSnackbarManager() != null) {
+                mLoFiBarPopupController = new LoFiBarPopupController(
+                        mThemedApplicationContext, getSnackbarManager());
+            }
             Resources resources = mThemedApplicationContext.getResources();
             mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
             mDefaultThemeColor = mIncognito
