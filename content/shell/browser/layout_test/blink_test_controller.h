@@ -16,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -32,10 +33,6 @@
 #endif
 
 class SkBitmap;
-
-namespace test_runner {
-struct LayoutDumpFlags;
-}
 
 namespace url {
 class Origin;
@@ -194,8 +191,10 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
-  void OnInitiateLayoutDump(
-      const test_runner::LayoutDumpFlags& layout_dump_flags);
+  void OnInitiateLayoutDump();
+  void OnLayoutDumpFlagsChanged(
+      RenderFrameHost* sender,
+      const base::DictionaryValue& changed_layout_dump_flags);
   void OnLayoutDumpResponse(RenderFrameHost* sender, const std::string& dump);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);
@@ -266,6 +265,11 @@ class BlinkTestController : public base::NonThreadSafe,
   // Renderer processes are observed to detect crashes.
   ScopedObserver<RenderProcessHost, RenderProcessHostObserver>
       render_process_host_observer_;
+
+  // Changes reported by OnLayoutDumpFlagsChanged that have accumulated since
+  // PrepareForLayoutTest (i.e. changes that need to be send to a fresh
+  // renderer created while test is in progress).
+  base::DictionaryValue accumulated_layout_dump_flags_changes_;
 
 #if defined(OS_ANDROID)
   // Because of the nested message pump implementation, Android needs to allow

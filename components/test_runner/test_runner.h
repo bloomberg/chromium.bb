@@ -74,6 +74,8 @@ class TestRunner : public WebTestRunner,
   bool ShouldDumpAsAudio() const override;
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
   const LayoutDumpFlags& GetLayoutDumpFlags() override;
+  void ReplicateLayoutDumpFlagsChanges(
+      const base::DictionaryValue& changed_values) override;
   bool HasCustomTextDump(std::string* custom_text_dump) const override;
   bool ShouldDumpBackForwardList() const override;
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
@@ -622,6 +624,9 @@ class TestRunner : public WebTestRunner,
 
   void GetManifestThen(v8::Local<v8::Function> callback);
 
+  // Takes care of notifying the delegate after a change to layout dump flags.
+  void OnLayoutDumpFlagsChanged();
+
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
 
@@ -660,9 +665,6 @@ class TestRunner : public WebTestRunner,
   // window. By default, set to true but toggled to false using
   // setCloseRemainingWindowsWhenComplete().
   bool close_remaining_windows_;
-
-  // If true, don't dump output until notifyDone is called.
-  bool wait_until_done_;
 
   // If true, ends the test when a URL is loaded externally via
   // WebFrameClient::loadURLExternally().
@@ -703,9 +705,6 @@ class TestRunner : public WebTestRunner,
   // If true, the test_shell will write a descriptive line for each editing
   // command.
   bool dump_editting_callbacks_;
-
-  // If true, the test_shell will generate pixel results in DumpAsText mode
-  bool generate_pixel_results_;
 
   // Flags controlling what content gets dumped as a layout text result.
   LayoutDumpFlags layout_dump_flags_;

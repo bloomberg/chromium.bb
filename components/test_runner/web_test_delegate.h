@@ -17,6 +17,10 @@
 
 #define WEBTESTRUNNER_NEW_HISTORY_CAPTURE
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
@@ -211,6 +215,10 @@ class WebTestDelegate {
 
   // Sets the POSIX locale of the current process.
   virtual void SetLocale(const std::string& locale) = 0;
+
+  // Invoked when layout dump flags change.
+  virtual void OnLayoutDumpFlagsChanged(
+      const base::DictionaryValue& changed_values) = 0;
 
   // Invoked when the test finished.
   virtual void TestFinished() = 0;

@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/test_runner/app_banner_client.h"
@@ -34,6 +35,7 @@
 #include "components/test_runner/layout_dump_flags.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/test_interfaces.h"
+#include "components/test_runner/tracked_dictionary.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
@@ -78,6 +80,7 @@
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
@@ -96,6 +99,7 @@ using blink::WebDeviceOrientationData;
 using blink::WebElement;
 using blink::WebLocalFrame;
 using blink::WebHistoryItem;
+using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebPoint;
 using blink::WebRect;
@@ -610,6 +614,29 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
   setlocale(LC_ALL, locale.c_str());
 }
 
+void BlinkTestRunner::OnLayoutDumpFlagsChanged(
+    const base::DictionaryValue& changed_values) {
+  // Ignore changes that happen before we got the initial, accumulated
+  // layout flag changes in ShellViewMsg_ReplicateTestConfiguration.
+  if (!is_main_window_)
+    return;
+
+  // Message needs to be send via a local frame to eventually reach
+  // WebContentsObserver via OnMessage(..., RenderFrameHost*) overload - this
+  // lets BlinkTestController figure out the originator of the message.
+  RenderFrame* local_frame = nullptr;
+  for (WebFrame* frame = render_view()->GetWebView()->mainFrame(); frame;
+       frame = frame->traverseNext(false)) {
+    if (frame->isWebLocalFrame()) {
+      local_frame = RenderFrame::FromWebFrame(frame);
+      break;
+    }
+  }
+  DCHECK(local_frame);
+  Send(new ShellViewHostMsg_LayoutDumpFlagsChanged(local_frame->GetRoutingID(),
+                                                   changed_values));
+}
+
 void BlinkTestRunner::TestFinished() {
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
     Send(new ShellViewHostMsg_TestFinishedInSecondaryRenderer(routing_id()));
@@ -903,8 +930,7 @@ void BlinkTestRunner::CaptureDump() {
     return;
   }
 
-  Send(
-      new ShellViewHostMsg_InitiateLayoutDump(routing_id(), layout_dump_flags));
+  Send(new ShellViewHostMsg_InitiateLayoutDump(routing_id()));
   // OnLayoutDumpCompleted will be eventually called by an IPC from the browser.
 }
 

@@ -50,6 +50,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_DidChangeOpener::ID:
     // Used in layout tests; handled in BlinkTestController.
     case ShellViewHostMsg_PrintMessage::ID:
+    case ShellViewHostMsg_LayoutDumpFlagsChanged::ID:
       return true;
     default:
       break;

@@ -8,13 +8,17 @@
 #include <string>
 #include <vector>
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace blink {
 class WebContentSettingsClient;
 }
 
 namespace test_runner {
 
-struct LayoutDumpFlags;
+class LayoutDumpFlags;
 
 class WebTestRunner {
  public:
@@ -34,6 +38,10 @@ class WebTestRunner {
   // Gets layout dump flags (i.e. dump-as-text or dump-as-markup) requested
   // by the test (i.e. via testRunner.dumpAsText() called from javascript).
   virtual const LayoutDumpFlags& GetLayoutDumpFlags() = 0;
+
+  // Replicates changes to layout dump flags.
+  virtual void ReplicateLayoutDumpFlagsChanges(
+      const base::DictionaryValue& changed_values) = 0;
 
   // If custom text dump is present (i.e. if testRunner.setCustomTextOutput has
   // been called from javascript), then returns |true| and populates the

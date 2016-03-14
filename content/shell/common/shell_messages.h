@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "components/test_runner/layout_dump_flags.h"
+#include "base/values.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_state.h"
 #include "content/shell/common/leak_detection_result.h"
@@ -28,15 +28,6 @@ IPC_STRUCT_TRAITS_MEMBER(expected_pixel_hash)
 IPC_STRUCT_TRAITS_MEMBER(initial_size)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(test_runner::LayoutDumpFlags)
-  IPC_STRUCT_TRAITS_MEMBER(dump_as_text)
-  IPC_STRUCT_TRAITS_MEMBER(dump_child_frames_as_text)
-  IPC_STRUCT_TRAITS_MEMBER(dump_as_markup)
-  IPC_STRUCT_TRAITS_MEMBER(dump_child_frames_as_markup)
-  IPC_STRUCT_TRAITS_MEMBER(dump_child_frame_scroll_positions)
-  IPC_STRUCT_TRAITS_MEMBER(is_printing)
-IPC_STRUCT_TRAITS_END()
-
 // Tells the renderer to reset all test runners.
 IPC_MESSAGE_ROUTED0(ShellViewMsg_Reset)
 
@@ -49,8 +40,14 @@ IPC_MESSAGE_ROUTED1(ShellViewMsg_SetTestConfiguration,
                     content::ShellTestConfiguration)
 
 // Replicates test config (for an already started test) to a new renderer.
-IPC_MESSAGE_ROUTED1(ShellViewMsg_ReplicateTestConfiguration,
-                    content::ShellTestConfiguration)
+IPC_MESSAGE_ROUTED2(
+    ShellViewMsg_ReplicateTestConfiguration,
+    content::ShellTestConfiguration,
+    base::DictionaryValue /* accumulated_layout_dump_flags_changes */)
+
+// Used to broadcast changes happening in one renderer to all other renderers.
+IPC_MESSAGE_ROUTED1(ShellViewMsg_ReplicateLayoutDumpFlagsChanges,
+                    base::DictionaryValue /* changed_layout_dump_flags */)
 
 // Tells the main window that a secondary renderer in a different process thinks
 // the test is finished.
@@ -69,24 +66,26 @@ IPC_MESSAGE_ROUTED3(
 IPC_MESSAGE_ROUTED0(ShellViewMsg_TryLeakDetection)
 
 // Asks a frame to dump its contents into a string and send them back over IPC.
-IPC_MESSAGE_ROUTED1(ShellViewMsg_LayoutDumpRequest,
-                    test_runner::LayoutDumpFlags)
+IPC_MESSAGE_ROUTED0(ShellViewMsg_LayoutDumpRequest)
 
 // Notifies BlinkTestRunner that the layout dump has completed
 // (and that it can proceed with finishing up the test).
 IPC_MESSAGE_ROUTED1(ShellViewMsg_LayoutDumpCompleted,
                     std::string /* completed/stitched layout dump */)
 
+// Notifies the browser that one of renderers has changed layout dump flags.
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LayoutDumpFlagsChanged,
+                    base::DictionaryValue /* changed_layout_dump_flags */)
+
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
                     std::string /* dump */)
 
-// Asks the browser process to perform a layout dump (potentially spanning
-// multiple cross-process frames) using the given flags.  This triggers
-// multiple ShellViewMsg_LayoutDumpRequest / ShellViewHostMsg_LayoutDumpResponse
-// messages and ends with sending of ShellViewMsg_LayoutDumpCompleted.
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_InitiateLayoutDump,
-                    test_runner::LayoutDumpFlags)
+// Asks the browser process to perform a layout dump spanning all the
+// (potentially cross-process) frames.  This triggers multiple
+// ShellViewMsg_LayoutDumpRequest / ShellViewHostMsg_LayoutDumpResponse messages
+// and ends with sending of ShellViewMsg_LayoutDumpCompleted.
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_InitiateLayoutDump)
 
 // Sends a layout dump of a frame (response to ShellViewMsg_LayoutDumpRequest).
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LayoutDumpResponse, std::string /* dump */)

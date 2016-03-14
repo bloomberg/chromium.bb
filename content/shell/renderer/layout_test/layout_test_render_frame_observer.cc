@@ -34,6 +34,8 @@ bool LayoutTestRenderFrameObserver::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LayoutTestRenderFrameObserver, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_LayoutDumpRequest, OnLayoutDumpRequest)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_ReplicateLayoutDumpFlagsChanges,
+                        OnReplicateLayoutDumpFlagsChanges)
     IPC_MESSAGE_HANDLER(ShellViewMsg_ReplicateTestConfiguration,
                         OnReplicateTestConfiguration)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetTestConfiguration,
@@ -44,18 +46,33 @@ bool LayoutTestRenderFrameObserver::OnMessageReceived(
   return handled;
 }
 
-void LayoutTestRenderFrameObserver::OnLayoutDumpRequest(
-    const test_runner::LayoutDumpFlags& layout_dump_flags) {
+void LayoutTestRenderFrameObserver::OnLayoutDumpRequest() {
+  const test_runner::LayoutDumpFlags& layout_dump_flags =
+      LayoutTestRenderProcessObserver::GetInstance()
+          ->test_interfaces()
+          ->TestRunner()
+          ->GetLayoutDumpFlags();
   std::string dump =
       test_runner::DumpLayout(render_frame()->GetWebFrame(), layout_dump_flags);
   Send(new ShellViewHostMsg_LayoutDumpResponse(routing_id(), dump));
 }
 
+void LayoutTestRenderFrameObserver::OnReplicateLayoutDumpFlagsChanges(
+    const base::DictionaryValue& changed_layout_dump_flags) {
+  LayoutTestRenderProcessObserver::GetInstance()
+      ->test_interfaces()
+      ->TestRunner()
+      ->ReplicateLayoutDumpFlagsChanges(changed_layout_dump_flags);
+}
+
 void LayoutTestRenderFrameObserver::OnReplicateTestConfiguration(
-    const ShellTestConfiguration& test_config) {
+    const ShellTestConfiguration& test_config,
+    const base::DictionaryValue& accumulated_layout_dump_flags_changes) {
   LayoutTestRenderProcessObserver::GetInstance()
       ->main_test_runner()
       ->OnReplicateTestConfiguration(test_config);
+
+  OnReplicateLayoutDumpFlagsChanges(accumulated_layout_dump_flags_changes);
 }
 
 void LayoutTestRenderFrameObserver::OnSetTestConfiguration(
