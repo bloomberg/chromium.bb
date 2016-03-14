@@ -1386,15 +1386,6 @@ crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/ca
 crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
 crbug.com/593567 [ Linux Win Debug ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 
-crbug.com/593861 css3/masking/mask-repeat-round-content.html [ NeedsRebaseline ]
-crbug.com/593861 css3/masking/mask-repeat-space-border.html [ NeedsRebaseline ]
-crbug.com/593861 css3/masking/mask-repeat-space-content.html [ NeedsRebaseline ]
-crbug.com/593861 css3/masking/mask-repeat-space-padding.html [ NeedsRebaseline ]
-crbug.com/593861 fast/backgrounds/background-repeat-with-background-color.html [ NeedsRebaseline ]
-crbug.com/593861 fast/images/color-profile-mask-image-svg.html [ NeedsRebaseline ]
-crbug.com/593861 ietestcenter/css3/bordersbackgrounds/background-repeat-space-padding-box.htm [ NeedsRebaseline ]
-crbug.com/593861 svg/as-background-image/background-repeat.html [ NeedsRebaseline ]
-
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/fixed-scroll-in-empty-root-layer.html [ Failure ]
