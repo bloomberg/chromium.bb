@@ -41,7 +41,8 @@ class FakeDisplayListRasterSource : public DisplayListRasterSource {
   void PlaybackToCanvas(SkCanvas* canvas,
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
-                        float contents_scale) const override;
+                        float contents_scale,
+                        bool include_images) const override;
 
  protected:
   FakeDisplayListRasterSource(

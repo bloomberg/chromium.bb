@@ -148,11 +148,13 @@ void FakeDisplayListRasterSource::PlaybackToCanvas(
     SkCanvas* canvas,
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
-    float contents_scale) const {
+    float contents_scale,
+    bool include_images) const {
   if (playback_allowed_event_)
     playback_allowed_event_->Wait();
-  DisplayListRasterSource::PlaybackToCanvas(
-      canvas, canvas_bitmap_rect, canvas_playback_rect, contents_scale);
+  DisplayListRasterSource::PlaybackToCanvas(canvas, canvas_bitmap_rect,
+                                            canvas_playback_rect,
+                                            contents_scale, include_images);
 }
 
 }  // namespace cc

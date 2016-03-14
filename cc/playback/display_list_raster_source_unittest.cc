@@ -290,8 +290,9 @@ TEST(DisplayListRasterSourceTest, RasterFullContents) {
       SkCanvas canvas(bitmap);
       canvas.clear(SK_ColorTRANSPARENT);
 
+      const bool include_images = true;
       raster->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect,
-                               contents_scale);
+                               contents_scale, include_images);
 
       SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
       int num_pixels = bitmap.width() * bitmap.height();
@@ -342,8 +343,9 @@ TEST(DisplayListRasterSourceTest, RasterPartialContents) {
   // Playback the full rect which should make everything white.
   gfx::Rect raster_full_rect(content_bounds);
   gfx::Rect playback_rect(content_bounds);
+  const bool include_images = true;
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           contents_scale);
+                           contents_scale, include_images);
 
   {
     SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -374,7 +376,7 @@ TEST(DisplayListRasterSourceTest, RasterPartialContents) {
   // that touches the edge pixels of the recording.
   playback_rect.Inset(1, 2, 0, 1);
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           contents_scale);
+                           contents_scale, include_images);
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
   int num_black = 0;
@@ -438,8 +440,9 @@ TEST(DisplayListRasterSourceTest, RasterPartialClear) {
   // Playback the full rect which should make everything light gray (alpha=10).
   gfx::Rect raster_full_rect(content_bounds);
   gfx::Rect playback_rect(content_bounds);
+  const bool include_images = true;
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           contents_scale);
+                           contents_scale, include_images);
 
   {
     SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -478,7 +481,7 @@ TEST(DisplayListRasterSourceTest, RasterPartialClear) {
   playback_rect =
       gfx::Rect(gfx::ScaleToCeiledSize(partial_bounds, contents_scale));
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           contents_scale);
+                           contents_scale, include_images);
 
   // Test that the whole playback_rect was cleared and repainted with new alpha.
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -518,7 +521,9 @@ TEST(DisplayListRasterSourceTest, RasterContentsTransparent) {
   bitmap.allocN32Pixels(canvas_rect.width(), canvas_rect.height());
   SkCanvas canvas(bitmap);
 
-  raster->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect, contents_scale);
+  const bool include_images = true;
+  raster->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect, contents_scale,
+                           include_images);
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
   int num_pixels = bitmap.width() * bitmap.height();

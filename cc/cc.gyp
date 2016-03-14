@@ -371,6 +371,8 @@
         'playback/image_hijack_canvas.h',
         'playback/largest_display_item.cc',
         'playback/largest_display_item.h',
+        'playback/skip_image_canvas.cc',
+        'playback/skip_image_canvas.h',
         'playback/transform_display_item.cc',
         'playback/transform_display_item.h',
         'proto/base_conversions.cc',

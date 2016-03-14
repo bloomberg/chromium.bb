@@ -366,18 +366,24 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
   TRACE_EVENT0("cc", "SoftwareRenderer::DrawPictureQuad");
 
+  const bool include_images = true;
   if (needs_transparency || disable_image_filtering) {
     // TODO(aelias): This isn't correct in all cases. We should detect these
     // cases and fall back to a persistent bitmap backing
     // (http://crbug.com/280374).
+    // TODO(vmpstr): Fold this canvas into playback and have raster source
+    // accept a set of settings on playback that will determine which canvas to
+    // apply. (http://crbug.com/594679)
     skia::OpacityFilterCanvas filtered_canvas(current_canvas_,
                                               quad->shared_quad_state->opacity,
                                               disable_image_filtering);
     quad->raster_source->PlaybackToSharedCanvas(
-        &filtered_canvas, quad->content_rect, quad->contents_scale);
+        &filtered_canvas, quad->content_rect, quad->contents_scale,
+        include_images);
   } else {
     quad->raster_source->PlaybackToSharedCanvas(
-        current_canvas_, quad->content_rect, quad->contents_scale);
+        current_canvas_, quad->content_rect, quad->contents_scale,
+        include_images);
   }
 }
 

@@ -48,14 +48,16 @@ class CC_EXPORT DisplayListRasterSource
   virtual void PlaybackToCanvas(SkCanvas* canvas,
                                 const gfx::Rect& canvas_bitmap_rect,
                                 const gfx::Rect& canvas_playback_rect,
-                                float contents_scale) const;
+                                float contents_scale,
+                                bool include_images) const;
 
   // Similar to above, except that the canvas passed here can (or was already)
   // rasterized into by another raster source. That is, it is not safe to clear
   // the canvas or discard its underlying memory.
   void PlaybackToSharedCanvas(SkCanvas* canvas,
                               const gfx::Rect& canvas_rect,
-                              float contents_scale) const;
+                              float contents_scale,
+                              bool include_images) const;
 
   // Returns whether the given rect at given scale is of solid color in
   // this raster source, as well as the solid color value.

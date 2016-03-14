@@ -459,8 +459,9 @@ TEST_F(PictureLayerImplTest, TileGridAlignment) {
   std::vector<SkRect>::const_iterator rect_iter = rects.begin();
   for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
     MockCanvas mock_canvas(1000, 1000);
+    const bool include_images = true;
     updated_active_raster_source->PlaybackToSharedCanvas(
-        &mock_canvas, (*tile_iter)->content_rect(), 1.0f);
+        &mock_canvas, (*tile_iter)->content_rect(), 1.0f, include_images);
 
     // This test verifies that when drawing the contents of a specific tile
     // at content scale 1.0, the playback canvas never receives content from
