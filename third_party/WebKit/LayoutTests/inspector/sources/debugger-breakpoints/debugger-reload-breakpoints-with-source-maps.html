@@ -41,11 +41,13 @@ var test = function()
 
         function waitForBreakpoints()
         {
-            var breakpointAddCounter = 2;
+            var breakpointAddCounter = 4; // Before source map loaded and after.
             var jsBreakpoints = WebInspector.panels.sources.sidebarPanes.jsBreakpoints;
             jsBreakpoints.didReceiveBreakpointLineForTest = function(uiSourceCode)
             {
                 if (WebInspector.CompilerScriptMapping.StubProjectID === uiSourceCode.project().id())
+                    return;
+                if (!uiSourceCode.url().endsWith("source1.js"))
                     return;
                 --breakpointAddCounter;
                 if (breakpointAddCounter)
