@@ -129,7 +129,8 @@ class MESSAGE_CENTER_EXPORT Notification {
     optional_fields_.vibration_pattern = vibration_pattern;
   }
 
-  // This property currently has no effect on non-Android platforms.
+  // This property currently only works in platforms that support native
+  // notifications.
   // It determines whether the sound and vibration effects should signal
   // if the notification is replacing another notification.
   bool renotify() const { return optional_fields_.renotify; }

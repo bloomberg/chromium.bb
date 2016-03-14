@@ -167,6 +167,23 @@ void NotificationUIManagerMac::Add(const Notification& notification,
       !notification.tag().empty()) {
     [toast setValue:base::SysUTF8ToNSString(notification.tag())
              forKey:@"identifier"];
+
+    // If renotify is needed, delete the notification with the same tag
+    // from the notification center before displaying this one.
+    if (notification.renotify()) {
+      NSUserNotificationCenter* notification_center =
+          [NSUserNotificationCenter defaultUserNotificationCenter];
+      for (NSUserNotification* existing_notification in
+           [notification_center deliveredNotifications]) {
+        NSString* identifier =
+            [existing_notification valueForKey:@"identifier"];
+        if ([identifier isEqual:base::SysUTF8ToNSString(notification.tag())]) {
+          [notification_center
+              removeDeliveredNotification:existing_notification];
+          break;
+        }
+      }
+    }
   }
 
   int64_t persistent_notification_id = delegate->persistent_notification_id();
