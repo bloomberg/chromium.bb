@@ -197,6 +197,7 @@ onerror
 onfocus
 onfocusin
 onfocusout
+ongotpointercapture
 onhashchange
 oninput
 oninvalid
@@ -208,6 +209,7 @@ onload
 onloadeddata
 onloadedmetadata
 onloadstart
+onlostpointercapture
 onmessage
 onmousedown
 onmouseenter

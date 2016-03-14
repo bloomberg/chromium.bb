@@ -69,21 +69,36 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
 
     // Set whether node under pointer has received pointerover or not.
-    int pointerId = pointerEvent->pointerId();
-    if ((pointerEvent->type() == EventTypeNames::pointerout
-        || pointerEvent->type() == EventTypeNames::pointerover)
+    const int pointerId = pointerEvent->pointerId();
+    const AtomicString& eventType = pointerEvent->type();
+    if ((eventType == EventTypeNames::pointerout
+        || eventType == EventTypeNames::pointerover)
         && m_nodeUnderPointer.contains(pointerId)) {
         RefPtrWillBeRawPtr<EventTarget> targetUnderPointer =
             m_nodeUnderPointer.get(pointerId).target;
         if (targetUnderPointer == target) {
             m_nodeUnderPointer.set(pointerId, EventTargetAttributes
                 (targetUnderPointer,
-                pointerEvent->type() == EventTypeNames::pointerover));
+                eventType == EventTypeNames::pointerover));
         }
     }
+
+    // TODO(crbug.com/587955): The following is a hack to work around this bug
+    if (pointerId == 1) {
+        if (eventType == EventTypeNames::pointerover) {
+            m_nodeUnderPointer.set(pointerId, EventTargetAttributes
+                (target, true));
+        }
+        if (eventType == EventTypeNames::pointerout
+            && m_nodeUnderPointer.get(pointerId).target == target) {
+            m_nodeUnderPointer.set(pointerId, EventTargetAttributes
+                (target, false));
+        }
+    }
+
     if (!RuntimeEnabledFeatures::pointerEventEnabled())
         return WebInputEventResult::NotHandled;
-    if (!checkForListener || target->hasEventListeners(pointerEvent->type())) {
+    if (!checkForListener || target->hasEventListeners(eventType)) {
         DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);
         return EventHandler::toWebInputEventResult(dispatchResult);
     }
@@ -140,7 +155,7 @@ void PointerEventManager::sendNodeTransitionEvents(
 
     // Dispatch pointerout/mouseout events
     if (isInDocument(exitedTarget)) {
-        dispatchPointerEvent(exitedTarget, m_pointerEventFactory.create(
+        dispatchPointerEvent(exitedTarget, m_pointerEventFactory.createPointerTransitionEvent(
             pointerEvent, EventTypeNames::pointerout, enteredTarget));
         if (sendMouseEvent) {
             dispatchMouseEvent(exitedTarget,
@@ -207,7 +222,7 @@ void PointerEventManager::sendNodeTransitionEvents(
     // Dispatch pointerleave/mouseleave events, in child-to-parent order.
     for (size_t j = 0; j < exitedAncestorIndex; j++) {
         dispatchPointerEvent(exitedAncestors[j].get(),
-            m_pointerEventFactory.create(
+            m_pointerEventFactory.createPointerTransitionEvent(
                 pointerEvent, EventTypeNames::pointerleave, enteredTarget),
             !exitedNodeHasCapturingAncestor);
         if (sendMouseEvent) {
@@ -219,7 +234,7 @@ void PointerEventManager::sendNodeTransitionEvents(
 
     // Dispatch pointerover/mouseover.
     if (isInDocument(enteredTarget)) {
-        dispatchPointerEvent(enteredTarget, m_pointerEventFactory.create(
+        dispatchPointerEvent(enteredTarget, m_pointerEventFactory.createPointerTransitionEvent(
             pointerEvent, EventTypeNames::pointerover, exitedTarget));
         if (sendMouseEvent) {
             dispatchMouseEvent(enteredTarget,
@@ -240,7 +255,7 @@ void PointerEventManager::sendNodeTransitionEvents(
     // Dispatch pointerenter/mouseenter events, in parent-to-child order.
     for (size_t i = enteredAncestorIndex; i > 0; i--) {
         dispatchPointerEvent(enteredAncestors[i-1].get(),
-            m_pointerEventFactory.create(
+            m_pointerEventFactory.createPointerTransitionEvent(
                 pointerEvent, EventTypeNames::pointerenter, exitedTarget),
             !enteredNodeHasCapturingAncestor);
         if (sendMouseEvent) {
@@ -262,7 +277,8 @@ void PointerEventManager::setNodeUnderPointer(
             pointerEvent->pointerId());
         if (!target) {
             m_nodeUnderPointer.remove(pointerEvent->pointerId());
-        } else {
+        } else if (target
+            != m_nodeUnderPointer.get(pointerEvent->pointerId()).target) {
             m_nodeUnderPointer.set(pointerEvent->pointerId(),
                 EventTargetAttributes(target, false));
         }
@@ -277,7 +293,7 @@ void PointerEventManager::setNodeUnderPointer(
 void PointerEventManager::sendTouchCancelPointerEvent(PassRefPtrWillBeRawPtr<EventTarget> prpTarget, const PlatformTouchPoint& point)
 {
     RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancel(point);
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancelEvent(point);
 
     processPendingPointerCapture(pointerEvent, target);
 
@@ -337,6 +353,7 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
 
     // TODO(crbug.com/587955): We should call setNodeUnderPointer here but it causes sending
     // transition events that should be first removed from EventHandler.
+    // setNodeUnderPointer(pointerEvent, target);
 
     RefPtrWillBeRawPtr<EventTarget> effectiveTarget =
         getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId());
@@ -390,43 +407,64 @@ void PointerEventManager::processPendingPointerCapture(
     const PassRefPtrWillBeRawPtr<EventTarget> prpHitTestTarget,
     const PlatformMouseEvent& mouseEvent, bool sendMouseEvent)
 {
-    // TODO(nzolghadr): Process sending got/lostpointercapture
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
     RefPtrWillBeRawPtr<EventTarget> hitTestTarget = prpHitTestTarget;
     int pointerId = pointerEvent->pointerId();
-    bool hasPointerCaptureTarget = m_pointerCaptureTarget.contains(pointerId);
-    bool hasPendingPointerCaptureTarget = m_pendingPointerCaptureTarget.contains(pointerId);
     const RefPtrWillBeRawPtr<EventTarget> pointerCaptureTarget =
-        hasPointerCaptureTarget ? m_pointerCaptureTarget.get(pointerId) : nullptr;
+        m_pointerCaptureTarget.contains(pointerId)
+        ? m_pointerCaptureTarget.get(pointerId) : nullptr;
     const RefPtrWillBeRawPtr<EventTarget> pendingPointerCaptureTarget =
-        hasPendingPointerCaptureTarget ? m_pendingPointerCaptureTarget.get(pointerId) : nullptr;
+        m_pendingPointerCaptureTarget.contains(pointerId)
+        ? m_pendingPointerCaptureTarget.get(pointerId) : nullptr;
+    const EventTargetAttributes &nodeUnderPointerAtt =
+        m_nodeUnderPointer.contains(pointerId)
+        ? m_nodeUnderPointer.get(pointerId) : EventTargetAttributes();
 
-    if (hasPendingPointerCaptureTarget
-        && (pointerCaptureTarget != pendingPointerCaptureTarget)) {
-        if (!hasPointerCaptureTarget
-            && pendingPointerCaptureTarget != hitTestTarget
-            && m_nodeUnderPointer.contains(pointerId)
-            && m_nodeUnderPointer.get(pointerId).hasRecievedOverEvent) {
-            sendNodeTransitionEvents(hitTestTarget, nullptr, pointerEvent,
-                mouseEvent, sendMouseEvent);
+    if (pointerCaptureTarget != pendingPointerCaptureTarget) {
+        if (pendingPointerCaptureTarget != nodeUnderPointerAtt.target
+            && nodeUnderPointerAtt.hasRecievedOverEvent) {
+            sendNodeTransitionEvents(nodeUnderPointerAtt.target, nullptr,
+                pointerEvent, mouseEvent, sendMouseEvent);
+        }
+        if (pointerCaptureTarget) {
+            // Re-target lostpointercapture to the document when the element is
+            // no longer participating in the tree.
+            EventTarget* target = pointerCaptureTarget.get();
+            if (target->toNode()
+                && !target->toNode()->inDocument()) {
+                target = target->toNode()->ownerDocument();
+            }
+            if (target) {
+                dispatchPointerEvent(target,
+                    m_pointerEventFactory.createPointerCaptureEvent(
+                    pointerEvent, EventTypeNames::lostpointercapture));
+            }
         }
     }
 
     // Set pointerCaptureTarget from pendingPointerCaptureTarget. This does
     // affect the behavior of sendNodeTransitionEvents function. So the
-    // ordering of the surrounding blocks of code is important.
-    if (!hasPendingPointerCaptureTarget)
-        m_pointerCaptureTarget.remove(pointerId);
+    // ordering of the surrounding blocks of code for sending transition events
+    // are important.
+    if (pendingPointerCaptureTarget)
+        m_pointerCaptureTarget.set(pointerId, pendingPointerCaptureTarget);
     else
-        m_pointerCaptureTarget.set(pointerId, m_pendingPointerCaptureTarget.get(pointerId));
+        m_pointerCaptureTarget.remove(pointerId);
 
-    if (hasPointerCaptureTarget && (pointerCaptureTarget != pendingPointerCaptureTarget)) {
-        if (!hasPendingPointerCaptureTarget && pointerCaptureTarget != hitTestTarget) {
+    if (pointerCaptureTarget != pendingPointerCaptureTarget) {
+        if (pendingPointerCaptureTarget) {
+            dispatchPointerEvent(pendingPointerCaptureTarget,
+                m_pointerEventFactory.createPointerCaptureEvent(
+                pointerEvent, EventTypeNames::gotpointercapture));
+        }
+        if ((pendingPointerCaptureTarget == hitTestTarget
+            || !pendingPointerCaptureTarget)
+            && (nodeUnderPointerAtt.target != hitTestTarget
+            || !nodeUnderPointerAtt.hasRecievedOverEvent)) {
             sendNodeTransitionEvents(nullptr, hitTestTarget, pointerEvent,
                 mouseEvent, sendMouseEvent);
         }
     }
-
 }
 
 void PointerEventManager::removeTargetFromPointerCapturingMapping(
@@ -464,9 +502,7 @@ void PointerEventManager::removePointer(
 
 void PointerEventManager::elementRemoved(EventTarget* target)
 {
-    removeTargetFromPointerCapturingMapping(m_pointerCaptureTarget, target);
     removeTargetFromPointerCapturingMapping(m_pendingPointerCaptureTarget, target);
-    // TODO(nzolghadr): Process sending lostpointercapture to the document
 }
 
 void PointerEventManager::setPointerCapture(int pointerId, EventTarget* target)

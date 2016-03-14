@@ -167,7 +167,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(const AtomicStr
 }
 
 
-PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::createPointerCancel(const PlatformTouchPoint& touchPoint)
+PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::createPointerCancelEvent(const PlatformTouchPoint& touchPoint)
 {
     PointerEventInit pointerEventInit;
 
@@ -179,11 +179,33 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::createPointerCancel(co
     return PointerEvent::create(EventTypeNames::pointercancel, pointerEventInit);
 }
 
-PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(
+PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::createPointerCaptureEvent(
+    PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent,
+    const AtomicString& type)
+{
+    ASSERT(type == EventTypeNames::gotpointercapture
+        || type == EventTypeNames::lostpointercapture);
+
+    PointerEventInit pointerEventInit;
+    pointerEventInit.setPointerId(pointerEvent->pointerId());
+    pointerEventInit.setPointerType(pointerEvent->pointerType());
+    pointerEventInit.setIsPrimary(pointerEvent->isPrimary());
+    pointerEventInit.setBubbles(true);
+    pointerEventInit.setCancelable(false);
+
+    return PointerEvent::create(type, pointerEventInit);
+}
+
+PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::createPointerTransitionEvent(
     PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent,
     const AtomicString& type,
     PassRefPtrWillBeRawPtr<EventTarget> relatedTarget)
 {
+    ASSERT(type == EventTypeNames::pointerout
+        || type == EventTypeNames::pointerleave
+        || type == EventTypeNames::pointerover
+        || type == EventTypeNames::pointerenter);
+
     PointerEventInit pointerEventInit;
 
     pointerEventInit.setPointerId(pointerEvent->pointerId());

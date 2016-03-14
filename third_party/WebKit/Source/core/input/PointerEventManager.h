@@ -70,7 +70,9 @@ private:
         }
         RefPtrWillBeMember<EventTarget> target;
         bool hasRecievedOverEvent;
-        EventTargetAttributes() {}
+        EventTargetAttributes()
+        : target(nullptr)
+        , hasRecievedOverEvent(false) {}
         EventTargetAttributes(PassRefPtrWillBeRawPtr<EventTarget> target,
             bool hasRecievedOverEvent)
         : target(target)

@@ -27,7 +27,7 @@ protected:
         WebPointerProperties::PointerType, int rawId,
         int uniqueId, bool isPrimary,
         PlatformEvent::Modifiers = PlatformEvent::NoModifiers);
-    void cloneAndCheckPointerEvent(
+    void createAndCheckPointerTransitionEvent(
         PassRefPtrWillBeRawPtr<PointerEvent>,
         const AtomicString&);
 
@@ -78,20 +78,20 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactoryTest::createAndCheckTouc
     int uniqueId, bool isPrimary,
     PlatformTouchPoint::TouchState state)
 {
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancel(
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancelEvent(
         PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId, state));
     EXPECT_EQ(uniqueId, pointerEvent->pointerId());
     EXPECT_EQ(isPrimary, pointerEvent->isPrimary());
     return pointerEvent;
 }
 
-void PointerEventFactoryTest::cloneAndCheckPointerEvent(
+void PointerEventFactoryTest::createAndCheckPointerTransitionEvent(
     PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
     const AtomicString& type)
 {
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
-    RefPtrWillBeRawPtr<PointerEvent> clonePointerEvent =
-        m_pointerEventFactory.create(pointerEvent, type, nullptr);
+    RefPtrWillBeRawPtr<PointerEvent> clonePointerEvent = m_pointerEventFactory.
+        createPointerTransitionEvent(pointerEvent, type, nullptr);
     EXPECT_EQ(clonePointerEvent->pointerType(), pointerEvent->pointerType());
     EXPECT_EQ(clonePointerEvent->pointerId(), pointerEvent->pointerId());
     EXPECT_EQ(clonePointerEvent->isPrimary(), pointerEvent->isPrimary());
@@ -130,7 +130,7 @@ TEST_F(PointerEventFactoryTest, MousePointer)
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent1 = createAndCheckMouseEvent(WebPointerProperties::PointerType::Mouse, 0, m_expectedMouseId, true);
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent2 = createAndCheckMouseEvent(WebPointerProperties::PointerType::Mouse, 0, m_expectedMouseId, true, PlatformEvent::LeftButtonDown);
 
-    cloneAndCheckPointerEvent(pointerEvent1, EventTypeNames::pointerout);
+    createAndCheckPointerTransitionEvent(pointerEvent1, EventTypeNames::pointerout);
 
     EXPECT_TRUE(m_pointerEventFactory.isActive(m_expectedMouseId));
     EXPECT_TRUE(m_pointerEventFactory.isActiveButtonsState(m_expectedMouseId));
@@ -174,8 +174,8 @@ TEST_F(PointerEventFactoryTest, TouchPointerReleasedAndPressedAgain)
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent1 = createAndCheckTouchEvent(WebPointerProperties::PointerType::Touch, 0, m_mappedIdStart, true);
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent2 = createAndCheckTouchEvent(WebPointerProperties::PointerType::Touch, 1, m_mappedIdStart+1, false);
 
-    cloneAndCheckPointerEvent(pointerEvent1, EventTypeNames::pointerleave);
-    cloneAndCheckPointerEvent(pointerEvent2, EventTypeNames::pointerenter);
+    createAndCheckPointerTransitionEvent(pointerEvent1, EventTypeNames::pointerleave);
+    createAndCheckPointerTransitionEvent(pointerEvent2, EventTypeNames::pointerenter);
 
     EXPECT_TRUE(m_pointerEventFactory.isActive(m_mappedIdStart));
     EXPECT_TRUE(m_pointerEventFactory.isActive(m_mappedIdStart+1));

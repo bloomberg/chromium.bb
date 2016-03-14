@@ -39,12 +39,18 @@ public:
         const double width, const double height,
         const double clientX, const double clientY);
 
-    PassRefPtrWillBeRawPtr<PointerEvent> createPointerCancel(
+    PassRefPtrWillBeRawPtr<PointerEvent> createPointerCancelEvent(
         const PlatformTouchPoint&);
 
-    PassRefPtrWillBeRawPtr<PointerEvent> create(
+    // For creating capture events (i.e got/lostpointercapture)
+    PassRefPtrWillBeRawPtr<PointerEvent> createPointerCaptureEvent(
         PassRefPtrWillBeRawPtr<PointerEvent>,
-        const AtomicString& type,
+        const AtomicString&);
+
+    // For creating transition events (i.e pointerout/leave/over/enter)
+    PassRefPtrWillBeRawPtr<PointerEvent> createPointerTransitionEvent(
+        PassRefPtrWillBeRawPtr<PointerEvent>,
+        const AtomicString&,
         PassRefPtrWillBeRawPtr<EventTarget>);
 
     // Clear all the existing ids.

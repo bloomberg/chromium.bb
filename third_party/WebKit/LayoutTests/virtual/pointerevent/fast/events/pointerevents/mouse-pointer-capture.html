@@ -6,6 +6,10 @@ div.box {
   padding: 20px;
   float: left;
 }
+#grey {
+  width: 50px;
+  height: 50px;
+}
 </style>
 
 <div id="grey" class="box" style="background-color:grey">
@@ -20,7 +24,9 @@ div.box {
 <script>
 description("Verifies that pointer capture works for mouse.");
 
-var implicitRelease = false;
+var implicitReleaseOutside = false;
+var explicitRelease = false;
+var removeElement = false;
 var pointerMoveCount = 0;
 
 var rect = document.getElementById("green").getBoundingClientRect();
@@ -37,8 +43,14 @@ var y3 = rect.top + 5;
 
 function init() {
   var eventList = ["mouseenter", "mouseleave", "mouseover", "mouseout", "mousemove", "mousedown", "mouseup",
-                   "pointerenter", "pointerleave", "pointerover", "pointerout", "pointermove", "pointerdown", "pointerup"];
+                   "pointerenter", "pointerleave", "pointerover", "pointerout", "pointermove", "pointerdown", "pointerup",
+                   "gotpointercapture", "lostpointercapture"];
 
+  document.addEventListener("lostpointercapture", function(event) {
+    if (event.eventPhase == Event.AT_TARGET) {
+      debug("document received " + event.type);
+    }
+  });
   ["grey", "green", "blue"].forEach(function(id) {
     var targetDiv = document.getElementById(id);
     eventList.forEach(function(eventName) {
@@ -49,17 +61,21 @@ function init() {
             debug("    **** Set Pointer Capture  ***** ");
             targetDiv.setPointerCapture(event.pointerId);
           }
-          if (implicitRelease && id == "green" && event.type == "pointermove") {
-            if (pointerMoveCount++ > 3) {
+          if (id == "green" && event.type == "pointermove") {
+            if (explicitRelease && pointerMoveCount++ > 3) {
               debug("    **** Release Pointer Capture  ***** ");
               targetDiv.releasePointerCapture(event.pointerId);
-              implicitRelease = false;
+              explicitRelease = false;
+            }
+            if (removeElement && pointerMoveCount++ > 3) {
+              debug("    **** Remove Element ***** ");
+              targetDiv.parentNode.removeChild(targetDiv);
+              removeElement = false;
             }
           }
         }
       });
     });
-
   });
 }
 
@@ -75,30 +91,55 @@ function testScenario() {
 
   debug("    **** Move to blue box & jiggle ****");
   eventSender.mouseMoveTo(x3, y3);
-  eventSender.mouseMoveTo(x3+1, y3+1);
-  eventSender.mouseMoveTo(x3, y3);
-  
-  debug("    **** Move back to green & again to blue & mouse release  ***** ");
-  eventSender.mouseMoveTo(x1, y1);
-  eventSender.mouseMoveTo(x3, y3);
-  eventSender.mouseUp(1);
 
-  debug("    **** Jiggle in blue box ***** ");
+  if (implicitReleaseOutside) {
+    debug("    **** Release the mouse outside of the page & move back to blue box ****");
+    eventSender.setMouseButtonState(-1, []);
+  }
   eventSender.mouseMoveTo(x3+1, y3+1);
+  eventSender.mouseMoveTo(x3, y3);
+
+  if (!implicitReleaseOutside) {
+    debug("    **** Move back to green & again to blue & mouse release ***** ");
+    eventSender.mouseMoveTo(x1, y1);
+    eventSender.mouseMoveTo(x3, y3);
+    eventSender.mouseUp(1);
+
+    debug("    **** Jiggle in blue box ***** ");
+    eventSender.mouseMoveTo(x3+1, y3+1);
+  }
 
   debug("    **** Move to (0,0) ***** ");
   eventSender.mouseMoveTo(0, 0);
+  eventSender.mouseDown(0);
+  eventSender.mouseUp(0);
+  eventSender.leapForward(500);
 }
 
 function runTests() {
-  debug(" ======= Set pointer capture and release implicitly  ======= ");
+  debug(" ======= Set pointer capture and release implicitly  =======");
   testScenario();
 
-  implicitRelease = true;
+  implicitReleaseOutside = true;
   debug("");
-  debug(" ======= Set pointer capture and release explicitly  ======= ");
+  debug(" ======= Set pointer capture and release implicitly outside of the page =======");
   testScenario();
-  }
+  implicitReleaseOutside = false;
+
+  explicitRelease = true;
+  pointerMoveCount = 0;
+  debug("");
+  debug(" ======= Set pointer capture and release explicitly  =======");
+  testScenario();
+  explicitRelease = false;
+
+  removeElement = true;
+  pointerMoveCount = 0;
+  debug("");
+  debug(" ======= Set pointer capture and remove element  =======");
+  testScenario();
+  removeElement = false;
+}
 
 init();
 if (window.eventSender)
