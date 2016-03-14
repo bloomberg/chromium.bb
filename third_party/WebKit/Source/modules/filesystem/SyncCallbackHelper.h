@@ -114,12 +114,18 @@ private:
             m_helper->setResult(arg);
         }
 
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(m_helper);
+            SuccessCallback::trace(visitor);
+        }
+
     private:
         explicit SuccessCallbackImpl(HelperType* helper)
             : m_helper(helper)
         {
         }
-        Persistent<HelperType> m_helper;
+        Member<HelperType> m_helper;
     };
 
     class ErrorCallbackImpl final : public ErrorCallback {
@@ -135,12 +141,18 @@ private:
             m_helper->setError(error->code());
         }
 
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(m_helper);
+            ErrorCallback::trace(visitor);
+        }
+
     private:
         explicit ErrorCallbackImpl(HelperType* helper)
             : m_helper(helper)
         {
         }
-        Persistent<HelperType> m_helper;
+        Member<HelperType> m_helper;
     };
 
     void setError(FileError::ErrorCode code)
