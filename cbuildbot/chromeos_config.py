@@ -498,6 +498,7 @@ _x86_internal_release_boards = frozenset([
     'tidus',
     'tricky',
     'ultima',
+    'umaro',
     'winky',
     'wizpig',
     'wolf',
@@ -2827,6 +2828,7 @@ def GetConfig():
   _AddGroupConfig(
       'strago-c', 'edgar', (
           'setzer',
+          'umaro',
       ),
       important=False,
   )

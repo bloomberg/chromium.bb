@@ -173,6 +173,7 @@ stout-paladin
 [strago-c-release-group]
   edgar-release
   setzer-release
+  umaro-release
 strago-paladin
 [strago-release-group]
   celes-release
