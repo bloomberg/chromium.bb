@@ -5,6 +5,7 @@
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 
@@ -137,11 +138,22 @@ MojoSharedBufferVideoFrame::~MojoSharedBufferVideoFrame() {
     ALLOW_UNUSED_LOCAL(result);
     DCHECK_EQ(result, MOJO_RESULT_OK);
   }
+
+  // Call |mojo_shared_buffer_done_cb_| to take ownership of
+  // |shared_buffer_handle_|.
+  if (!mojo_shared_buffer_done_cb_.is_null())
+    mojo_shared_buffer_done_cb_.Run(std::move(shared_buffer_handle_),
+                                    shared_buffer_size_);
 }
 
 size_t MojoSharedBufferVideoFrame::PlaneOffset(size_t plane) const {
   DCHECK(IsValidPlane(plane, format()));
   return offsets_[plane];
+}
+
+void MojoSharedBufferVideoFrame::SetMojoSharedBufferDoneCB(
+    const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb) {
+  mojo_shared_buffer_done_cb_ = mojo_shared_buffer_done_cb;
 }
 
 const mojo::SharedBufferHandle& MojoSharedBufferVideoFrame::Handle() const {

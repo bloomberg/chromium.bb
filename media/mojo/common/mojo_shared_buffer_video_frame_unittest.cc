@@ -17,6 +17,23 @@
 
 namespace media {
 
+namespace {
+
+void CompareDestructionCallbackValues(
+    mojo::SharedBufferHandle expected_handle,
+    uint32_t expected_handle_size,
+    bool* callback_called,
+    mojo::ScopedSharedBufferHandle actual_handle,
+    uint32_t actual_handle_size) {
+  // Compare expected vs actual. Ownership of the memory is transferred with
+  // |actual_handle|, thus it is a ScopedSharedBufferHandle.
+  EXPECT_EQ(expected_handle, actual_handle.get());
+  EXPECT_EQ(expected_handle_size, actual_handle_size);
+  *callback_called = true;
+}
+
+}  // namespace
+
 TEST(MojoSharedBufferVideoFrameTest, CreateFrameWithSharedMemory) {
   const int kWidth = 16;
   const int kHeight = 9;
@@ -117,6 +134,45 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameOddWidth) {
   // The size should be >= 15x9.
   EXPECT_GE(frame->coded_size().width(), kWidth);
   EXPECT_GE(frame->coded_size().height(), kHeight);
+}
+
+TEST(MojoSharedBufferVideoFrameTest, TestDestructionCallback) {
+  const VideoPixelFormat format = PIXEL_FORMAT_YV12;
+  const int kWidth = 32;
+  const int kHeight = 18;
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1338);
+
+  // Allocate some shared memory.
+  gfx::Size size(kWidth, kHeight);
+  gfx::Rect visible_rect(size);
+  size_t requested_size = VideoFrame::AllocationSize(format, size);
+  mojo::ScopedSharedBufferHandle handle;
+  MojoResult result =
+      mojo::CreateSharedBuffer(nullptr, requested_size, &handle);
+  ASSERT_EQ(result, MOJO_RESULT_OK);
+
+  // Keep track of the original handle. MojoSharedBufferVideoFrame::Create()
+  // will get ownership of the memory.
+  mojo::SharedBufferHandle original_handle = handle.get();
+
+  // Allocate frame.
+  scoped_refptr<MojoSharedBufferVideoFrame> frame =
+      MojoSharedBufferVideoFrame::Create(
+          format, size, visible_rect, size, std::move(handle), requested_size,
+          0, 0, 0, kWidth, kWidth, kWidth, kTimestamp);
+  ASSERT_TRUE(frame.get());
+  EXPECT_EQ(frame->format(), format);
+
+  // Set the destruction callback.
+  bool callback_called = false;
+  frame->SetMojoSharedBufferDoneCB(base::Bind(&CompareDestructionCallbackValues,
+                                              original_handle, requested_size,
+                                              &callback_called));
+  EXPECT_FALSE(callback_called);
+
+  // Force destruction of |frame|.
+  frame = nullptr;
+  EXPECT_TRUE(callback_called);
 }
 
 }  // namespace media

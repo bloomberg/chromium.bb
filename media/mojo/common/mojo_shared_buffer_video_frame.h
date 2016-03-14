@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
@@ -33,6 +34,12 @@ class VideoFrame;
 // object. These frames are ref-counted.
 class MojoSharedBufferVideoFrame : public VideoFrame {
  public:
+  // Callback called when this object is destructed. Ownership of the shared
+  // memory is transferred to the callee.
+  using MojoSharedBufferDoneCB =
+      base::Callback<void(mojo::ScopedSharedBufferHandle buffer,
+                          uint32_t capacity)>;
+
   // Creates a new I420 frame in shared memory with provided parameters
   // (coded_size() == natural_size() == visible_rect()), or returns nullptr.
   // Buffers for the frame are allocated but not initialized. The caller must
@@ -44,6 +51,8 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
 
   // Creates a MojoSharedBufferVideoFrame that uses the memory in |handle|.
   // This will take ownership of |handle|, so the caller can no longer use it.
+  // |mojo_shared_buffer_done_cb|, if not null, is called on destruction,
+  // and is passed ownership of |handle|.
   static scoped_refptr<MojoSharedBufferVideoFrame> Create(
       VideoPixelFormat format,
       const gfx::Size& coded_size,
@@ -62,6 +71,11 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // Returns the offsets relative to the start of |shared_buffer| for the
   // |plane| specified.
   size_t PlaneOffset(size_t plane) const;
+
+  // Sets the callback to be called to free the shared buffer. If not null,
+  // it is called on destruction, and is passed ownership of |handle|.
+  void SetMojoSharedBufferDoneCB(
+      const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb);
 
  private:
   // mojo::TypeConverter added as a friend so that MojoSharedBufferVideoFrame
@@ -99,6 +113,7 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   size_t shared_buffer_size_;
   uint8_t* shared_buffer_data_;
   size_t offsets_[kMaxPlanes];
+  MojoSharedBufferDoneCB mojo_shared_buffer_done_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoSharedBufferVideoFrame);
 };

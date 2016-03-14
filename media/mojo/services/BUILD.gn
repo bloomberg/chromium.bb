@@ -92,6 +92,8 @@ source_set("cdm_service") {
   ]
 
   sources = [
+    "mojo_cdm_allocator.cc",
+    "mojo_cdm_allocator.h",
     "mojo_cdm_promise.cc",
     "mojo_cdm_promise.h",
     "mojo_cdm_service.cc",
@@ -207,6 +209,26 @@ mojo_native_application("media") {
     ":application",
     "//mojo/logging",
     "//mojo/public/c/system:for_shared_library",
+  ]
+}
+
+test("media_mojo_services_unittests") {
+  sources = [
+    "mojo_cdm_allocator_unittest.cc",
+  ]
+
+  deps = [
+    ":cdm_service",
+    "//base",
+    "//base/test:test_support",
+    "//media",
+    "//media/base:test_support",
+    "//media/mojo/common",
+    "//media/mojo/interfaces",
+    "//mojo/edk/system",
+    "//mojo/edk/test:run_all_unittests",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
