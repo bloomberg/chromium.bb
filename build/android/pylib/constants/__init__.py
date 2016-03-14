@@ -9,6 +9,7 @@
 # pylint: disable=W0212
 
 import collections
+import glob
 import logging
 import os
 import subprocess
@@ -260,6 +261,15 @@ def CheckOutputDirectory():
     if os.path.exists('build.ninja'):
       output_dir = os.getcwd()
       SetOutputDirectory(output_dir)
+    elif os.environ.get('CHROME_HEADLESS'):
+      # When running on bots, see if the output directory is obvious.
+      dirs = glob.glob(os.path.join(DIR_SOURCE_ROOT, 'out', '*', 'build.ninja'))
+      if len(dirs) == 1:
+        SetOutputDirectory(dirs[0])
+      else:
+        raise Exception('Neither CHROMIUM_OUTPUT_DIR nor CHROMIUM_OUT_DIR '
+                        'has been set. CHROME_HEADLESS detected, but multiple '
+                        'out dirs exist: %r' % dirs)
     else:
       raise Exception('Neither CHROMIUM_OUTPUT_DIR nor CHROMIUM_OUT_DIR '
                       'has been set')
