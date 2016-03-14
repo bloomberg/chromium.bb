@@ -2135,3 +2135,31 @@ blink_platform.dll!qcms_transform_data_rgba_out_lut_sse2
 blink_platform.dll!qcms_transform_data_type
 blink_platform.dll!blink::JPEGImageDecoder::outputScanlines
 blink_platform.dll!blink::JPEGImageReader::decode
+
+UNADDRESSABLE ACCESS
+name=bug_594614a
+*!std::basic_string<>::assign
+*!net::HostResolverImplTest_CancelWithinCallback_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+UNADDRESSABLE ACCESS
+name=bug_594614b
+*!std::basic_string<>::assign
+*!net::HostResolverImplTest_DeleteWithinCallback_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+UNADDRESSABLE ACCESS
+name=bug_594618
+chromium_sqlite3.dll!sqlite3ExprSkipCollate
+chromium_sqlite3.dll!isDistinctRedundant
+chromium_sqlite3.dll!sqlite3WhereBegin
+chromium_sqlite3.dll!sqlite3Select
+chromium_sqlite3.dll!yy_reduce
+chromium_sqlite3.dll!sqlite3Parser
+chromium_sqlite3.dll!sqlite3RunParser
+chromium_sqlite3.dll!sqlite3Prepare
+chromium_sqlite3.dll!sqlite3LockAndPrepare
+chromium_sqlite3.dll!sqlite3_prepare_v2
+sql.dll!sql::Connection::GetUniqueStatement
+*!net::SQLitePersistentCookieStore::Backend::InitializeDatabase
+*!net::SQLitePersistentCookieStore::Backend::LoadAndNotifyInBackground
