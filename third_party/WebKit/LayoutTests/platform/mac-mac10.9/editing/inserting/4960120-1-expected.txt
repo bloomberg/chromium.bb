@@ -14,6 +14,5 @@ layer at (8,42) size 161x32 clip at (9,43) size 159x30
     LayoutBlockFlow {DIV} at (3,3) size 155x26
       LayoutText {#text} at (0,0) size 0x13
         text run at (0,0) width 0: " "
-      LayoutText {#text} at (0,13) size 0x13
-        text run at (0,13) width 0: " "
-caret: position 0 of child 1 {#text} of child 0 {DIV} of {#document-fragment} of child 2 {TEXTAREA} of body
+      LayoutBR {BR} at (0,13) size 0x13
+caret: position 0 of child 1 {BR} of child 0 {DIV} of {#document-fragment} of child 2 {TEXTAREA} of body

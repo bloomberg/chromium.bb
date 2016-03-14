@@ -769,7 +769,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-v
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-vlr-007.xht [ Failure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
-crbug.com/593184 editing/inserting/4960120-1.html [ NeedsRebaseline ]
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ Failure ]
 
 crbug.com/443379 imported/web-platform-tests/gamepad/idlharness.html [ Failure Timeout ]
