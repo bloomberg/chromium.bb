@@ -244,12 +244,6 @@ HistogramBase* CreatePersistentHistogram(
   // validated below; the local copy is to ensure that the contents cannot
   // be externally changed between validation and use.
   PersistentHistogramData histogram_data = *histogram_data_ptr;
-  CHECK_EQ(histogram_data.histogram_type, histogram_data_ptr->histogram_type);
-  CHECK_EQ(histogram_data.flags, histogram_data_ptr->flags);
-  CHECK_EQ(histogram_data.minimum, histogram_data_ptr->minimum);
-  CHECK_EQ(histogram_data.maximum, histogram_data_ptr->maximum);
-  CHECK_EQ(histogram_data.bucket_count, histogram_data_ptr->bucket_count);
-  CHECK_EQ(histogram_data.ranges_checksum, histogram_data_ptr->ranges_checksum);
 
   HistogramBase::Sample* ranges_data =
       allocator->GetAsObject<HistogramBase::Sample>(histogram_data.ranges_ref,
@@ -294,8 +288,6 @@ HistogramBase* CreatePersistentHistogram(
   HistogramBase::AtomicCount* logged_data =
       counts_data + histogram_data.bucket_count;
 
-  CHECK_LT(0, histogram_data.minimum);
-  CHECK_LT(0, histogram_data.maximum);
   std::string name(histogram_data_ptr->name);
   HistogramBase* histogram = nullptr;
   switch (histogram_data.histogram_type) {
