@@ -97,31 +97,32 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionDisabled,
   EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
 }
 
-// Prefetch should be allowed depending on preference and network type.
+// When initiated from the renderer, prefetch should be allowed regardless of
+// the network type.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, PreferenceWorks) {
   // Set real NetworkChangeNotifier singleton aside.
   scoped_ptr<NetworkChangeNotifier::DisableForTest> disable_for_test(
       new NetworkChangeNotifier::DisableForTest);
 
-  // Preference defaults to WIFI_ONLY: prefetch when not on cellular.
+  // Preference defaults to ALWAYS.
   {
     scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
     EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
   {
     scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
-    EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
+    EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
 
-  // Set preference to NEVER: never prefetch.
+  // Set preference to NEVER: prefetch should be unaffected.
   SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_NEVER);
   {
     scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifierWIFI);
-    EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
+    EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
   {
     scoped_ptr<NetworkChangeNotifier> mock(new MockNetworkChangeNotifier4G);
-    EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
+    EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
   }
 }
 
