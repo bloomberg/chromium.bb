@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 
+#include <cmath>
 #include <utility>
 
 #include "base/macros.h"
@@ -54,7 +55,7 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
                                        double score) override {
     GURL origin_gurl(origin.get());
     if (!origin_gurl.is_valid() || score < 0 ||
-        score > SiteEngagementScore::kMaxPoints) {
+        score > SiteEngagementScore::kMaxPoints || isnan(score)) {
       return;
     }
 
@@ -78,12 +79,6 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
   // Set up the chrome://site-engagement/ source.
   scoped_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUISiteEngagementHost));
-  source->AddResourcePath("engagement_table.html",
-                          IDR_SITE_ENGAGEMENT_ENGAGEMENT_TABLE_HTML);
-  source->AddResourcePath("engagement_table.css",
-                          IDR_SITE_ENGAGEMENT_ENGAGEMENT_TABLE_CSS);
-  source->AddResourcePath("engagement_table.js",
-                          IDR_SITE_ENGAGEMENT_ENGAGEMENT_TABLE_JS);
   source->AddResourcePath("site_engagement.js", IDR_SITE_ENGAGEMENT_JS);
   source->AddResourcePath(
       "chrome/browser/ui/webui/engagement/site_engagement.mojom",

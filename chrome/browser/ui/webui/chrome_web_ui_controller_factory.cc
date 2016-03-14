@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/device_log_ui.h"
 #include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
+#include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
@@ -104,7 +105,6 @@
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/ui/webui/copresence_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
-#include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
@@ -417,10 +417,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
        ::switches::AboutInSettingsEnabled())) {
     return &NewWebUI<options::OptionsUI>;
   }
-  if (SiteEngagementService::IsEnabled() &&
-      url.host() == chrome::kChromeUISiteEngagementHost) {
-    return &NewWebUI<SiteEngagementUI>;
-  }
   if (url.host() == chrome::kChromeUISyncFileSystemInternalsHost)
     return &NewWebUI<SyncFileSystemInternalsUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
@@ -585,6 +581,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (dom_distiller::IsEnableDomDistillerSet() &&
       url.host() == dom_distiller::kChromeUIDomDistillerHost) {
     return &NewWebUI<dom_distiller::DomDistillerUi>;
+  }
+
+  if (SiteEngagementService::IsEnabled() &&
+      url.host() == chrome::kChromeUISiteEngagementHost) {
+    return &NewWebUI<SiteEngagementUI>;
   }
 
   return NULL;

@@ -328,14 +328,9 @@
       <if expr="enable_google_now">
         <include name="IDR_GOOGLE_NOW_MANIFEST" file="resources\google_now\manifest.json" type="BINDATA" />
       </if>
-      <if expr="not is_android">
-        <include name="IDR_SITE_ENGAGEMENT_HTML" file="resources\engagement\site_engagement.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_SITE_ENGAGEMENT_JS" file="resources\engagement\site_engagement.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_SITE_ENGAGEMENT_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\engagement\site_engagement.mojom.js" use_base_dir="false" type="BINDATA"/>
-        <include name="IDR_SITE_ENGAGEMENT_ENGAGEMENT_TABLE_CSS" file="resources\engagement\engagement_table.css" type="BINDATA" />
-        <include name="IDR_SITE_ENGAGEMENT_ENGAGEMENT_TABLE_HTML" file="resources\engagement\engagement_table.html" type="BINDATA" />
-        <include name="IDR_SITE_ENGAGEMENT_ENGAGEMENT_TABLE_JS" file="resources\engagement\engagement_table.js" type="BINDATA" />
-      </if>
+      <include name="IDR_SITE_ENGAGEMENT_HTML" file="resources\engagement\site_engagement.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SITE_ENGAGEMENT_JS" file="resources\engagement\site_engagement.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SITE_ENGAGEMENT_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\engagement\site_engagement.mojom.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_SYNC_CONFIRMATION_CSS" file="resources\sync_confirmation\sync_confirmation.css" type="BINDATA" />
       <include name="IDR_SYNC_CONFIRMATION_HTML" file="resources\sync_confirmation\sync_confirmation.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_SYNC_CONFIRMATION_JS" file="resources\sync_confirmation\sync_confirmation.js" type="BINDATA" />
