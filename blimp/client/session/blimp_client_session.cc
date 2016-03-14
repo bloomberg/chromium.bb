@@ -15,11 +15,13 @@
 #include "blimp/client/feature/navigation_feature.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
+#include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
 #include "blimp/net/browser_connection_handler.h"
 #include "blimp/net/client_connection_manager.h"
 #include "blimp/net/common.h"
+#include "blimp/net/connection_handler.h"
 #include "blimp/net/null_blimp_message_processor.h"
 #include "blimp/net/ssl_client_transport.h"
 #include "blimp/net/tcp_client_transport.h"
@@ -30,14 +32,44 @@
 
 namespace blimp {
 namespace client {
+namespace {
+
+// Posts network events to an observer across the IO/UI thread boundary.
+class CrossThreadNetworkEventObserver : public NetworkEventObserver {
+ public:
+  CrossThreadNetworkEventObserver(
+      const base::WeakPtr<NetworkEventObserver>& target,
+      const scoped_refptr<base::TaskRunner>& task_runner)
+      : target_(target), task_runner_(task_runner) {}
+
+  ~CrossThreadNetworkEventObserver() override {}
+
+  void OnConnected() override {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&NetworkEventObserver::OnConnected, target_));
+  }
+
+  void OnDisconnected(int result) override {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&NetworkEventObserver::OnDisconnected, target_, result));
+  }
+
+ private:
+  base::WeakPtr<NetworkEventObserver> target_;
+  scoped_refptr<base::TaskRunner> task_runner_;
+};
+
+}  // namespace
 
 // This class's functions and destruction are all invoked on the IO thread by
 // the BlimpClientSession.
-class ClientNetworkComponents {
+class ClientNetworkComponents : public ConnectionHandler,
+                                public ConnectionErrorObserver {
  public:
   // Can be created on any thread.
-  ClientNetworkComponents();
-  ~ClientNetworkComponents();
+  explicit ClientNetworkComponents(scoped_ptr<NetworkEventObserver> observer);
+  ~ClientNetworkComponents() override;
 
   // Sets up network components.
   void Initialize();
@@ -49,21 +81,29 @@ class ClientNetworkComponents {
   BrowserConnectionHandler* GetBrowserConnectionHandler();
 
  private:
+  // ConnectionHandler implementation.
+  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
+
+  // ConnectionErrorObserver implementation.
+  void OnConnectionError(int error) override;
+
   scoped_ptr<BrowserConnectionHandler> connection_handler_;
   scoped_ptr<ClientConnectionManager> connection_manager_;
+  scoped_ptr<NetworkEventObserver> network_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientNetworkComponents);
 };
 
-ClientNetworkComponents::ClientNetworkComponents()
-    : connection_handler_(new BrowserConnectionHandler) {}
+ClientNetworkComponents::ClientNetworkComponents(
+    scoped_ptr<NetworkEventObserver> network_observer)
+    : connection_handler_(new BrowserConnectionHandler),
+      network_observer_(std::move(network_observer)) {}
 
 ClientNetworkComponents::~ClientNetworkComponents() {}
 
 void ClientNetworkComponents::Initialize() {
   DCHECK(!connection_manager_);
-  connection_manager_ =
-      make_scoped_ptr(new ClientConnectionManager(connection_handler_.get()));
+  connection_manager_ = make_scoped_ptr(new ClientConnectionManager(this));
 }
 
 void ClientNetworkComponents::ConnectWithAssignment(
@@ -94,13 +134,27 @@ ClientNetworkComponents::GetBrowserConnectionHandler() {
   return connection_handler_.get();
 }
 
+void ClientNetworkComponents::HandleConnection(
+    scoped_ptr<BlimpConnection> connection) {
+  connection->AddConnectionErrorObserver(this);
+  network_observer_->OnConnected();
+  connection_handler_->HandleConnection(std::move(connection));
+}
+
+void ClientNetworkComponents::OnConnectionError(int result) {
+  network_observer_->OnDisconnected(result);
+}
+
 BlimpClientSession::BlimpClientSession()
     : io_thread_("BlimpIOThread"),
       tab_control_feature_(new TabControlFeature),
       navigation_feature_(new NavigationFeature),
       render_widget_feature_(new RenderWidgetFeature),
-      net_components_(new ClientNetworkComponents),
       weak_factory_(this) {
+  net_components_.reset(new ClientNetworkComponents(
+      make_scoped_ptr(new CrossThreadNetworkEventObserver(
+          weak_factory_.GetWeakPtr(),
+          base::SequencedTaskRunnerHandle::Get()))));
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(options);
@@ -169,6 +223,10 @@ void BlimpClientSession::RegisterFeatures() {
   thread_pipe_manager_->RegisterFeature(BlimpMessage::RENDER_WIDGET,
                                         render_widget_feature_.get());
 }
+
+void BlimpClientSession::OnConnected() {}
+
+void BlimpClientSession::OnDisconnected(int result) {}
 
 TabControlFeature* BlimpClientSession::GetTabControlFeature() const {
   return tab_control_feature_.get();

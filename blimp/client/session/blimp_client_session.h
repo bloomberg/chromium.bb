@@ -35,6 +35,15 @@ class NavigationFeature;
 class RenderWidgetFeature;
 class TabControlFeature;
 
+class NetworkEventObserver {
+ public:
+  NetworkEventObserver() {}
+  virtual ~NetworkEventObserver() {}
+
+  virtual void OnConnected() = 0;
+  virtual void OnDisconnected(int result) = 0;
+};
+
 // BlimpClientSession represents a single active session of Blimp on the client
 // regardless of whether or not the client application is in the background or
 // foreground.  The only time this session is invalid is during initialization
@@ -43,7 +52,7 @@ class TabControlFeature;
 // This session glues together the feature proxy components and the network
 // layer.  The network components must be interacted with on the IO thread.  The
 // feature proxies must be interacted with on the UI thread.
-class BLIMP_CLIENT_EXPORT BlimpClientSession {
+class BLIMP_CLIENT_EXPORT BlimpClientSession : public NetworkEventObserver {
  public:
   BlimpClientSession();
 
@@ -64,7 +73,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
                                      const Assignment& assignment);
 
  protected:
-  virtual ~BlimpClientSession();
+  ~BlimpClientSession() override;
 
   // Notified every time the AssignmentSource returns the result of an attempted
   // assignment request.
@@ -72,6 +81,10 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
 
  private:
   void RegisterFeatures();
+
+  // NetworkEventObserver implementation.
+  void OnConnected() override;
+  void OnDisconnected(int result) override;
 
   base::Thread io_thread_;
   scoped_ptr<TabControlFeature> tab_control_feature_;

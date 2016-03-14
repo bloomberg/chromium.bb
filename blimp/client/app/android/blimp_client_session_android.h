@@ -31,12 +31,16 @@ class BlimpClientSessionAndroid : public BlimpClientSession {
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
-  // BlimpClientSession overrides.
+ private:
+  ~BlimpClientSessionAndroid() override;
+
+  // BlimpClientSession implementation.
   void OnAssignmentConnectionAttempted(
       AssignmentSource::Result result) override;
 
- private:
-  ~BlimpClientSessionAndroid() override;
+  // NetworkEventObserver implementation.
+  void OnConnected() override;
+  void OnDisconnected(int error_code) override;
 
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

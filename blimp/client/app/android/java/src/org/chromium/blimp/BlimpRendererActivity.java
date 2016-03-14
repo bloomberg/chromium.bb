@@ -170,4 +170,17 @@ public class BlimpRendererActivity extends Activity
     public void onAssignmentReceived(int result, int suggestedMessageResourceId) {
         Toast.makeText(this, suggestedMessageResourceId, Toast.LENGTH_LONG).show();
     }
+
+    @Override
+    public void onConnected() {
+        Toast.makeText(this, R.string.network_connected, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDisconnected(String reason) {
+        Toast.makeText(this,
+                     String.format(getResources().getString(R.string.network_disconnected), reason),
+                     Toast.LENGTH_LONG)
+                .show();
+    }
 }

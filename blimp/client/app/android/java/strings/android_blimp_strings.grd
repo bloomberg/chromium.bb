@@ -136,6 +136,12 @@
       <message name="IDS_ASSIGNMENT_SUCCESS" desc="Message for when getting an assignment succeeds.">
         Assignment succeeded.
       </message>
+      <message name="IDS_NETWORK_CONNECTED" desc="Message for when a connection is authenticated.">
+        Engine connected.
+      </message>
+      <message name="IDS_NETWORK_DISCONNECTED" desc="Message for when a connection terminates.">
+        Engine disconnected, reason: %1$s
+      </message>
     </messages>
   </release>
 </grit>

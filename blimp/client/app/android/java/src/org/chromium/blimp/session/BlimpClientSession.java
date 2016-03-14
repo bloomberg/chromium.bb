@@ -29,6 +29,19 @@ public class BlimpClientSession {
          *                                   user if necessary.
          */
         void onAssignmentReceived(int result, int suggestedMessageResourceId);
+
+        /**
+         * Called when a connection to the engine was made successfully.
+         */
+        void onConnected();
+
+        /**
+         * Called when the engine connection was dropped.
+         * @param reason The string-based error code.
+         *               See net/base/net_errors.h for a complete list of codes
+         *               and their explanations.
+         */
+        void onDisconnected(String reason);
     }
 
     private final Callback mCallback;
@@ -100,6 +113,17 @@ public class BlimpClientSession {
                 break;
         }
         mCallback.onAssignmentReceived(result, resultMessageResourceId);
+    }
+
+    @CalledByNative
+    void onConnected() {
+        assert mCallback != null;
+        mCallback.onConnected();
+    }
+
+    @CalledByNative
+    void onDisconnected(String reason) {
+        mCallback.onDisconnected(reason);
     }
 
     @CalledByNative
