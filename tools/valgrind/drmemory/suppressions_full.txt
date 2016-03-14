@@ -2215,3 +2215,10 @@ chromium_sqlite3.dll!sqlite3Prepare
 chromium_sqlite3.dll!sqlite3LockAndPrepare
 chromium_sqlite3.dll!sqlite3_prepare_v2
 sql.dll!sql::Connection::ExecuteAndReturnErrorCode
+
+UNINITIALIZED READ
+name=bug_594808
+net.dll!net::ShouldSniffMimeType
+content.dll!content::MimeTypeResourceHandler::ShouldSniffContent
+content.dll!content::MimeTypeResourceHandler::OnResponseStarted
+content.dll!content::ThrottlingResourceHandler::OnResponseStarted
