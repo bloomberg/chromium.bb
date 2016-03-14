@@ -548,6 +548,7 @@
         'system_monitor/system_monitor_unittest.cc',
         'task/cancelable_task_tracker_unittest.cc',
         'task_runner_util_unittest.cc',
+        'task_scheduler/scheduler_lock_unittest.cc',
         'template_util_unittest.cc',
         'test/histogram_tester_unittest.cc',
         'test/test_pending_task_unittest.cc',
