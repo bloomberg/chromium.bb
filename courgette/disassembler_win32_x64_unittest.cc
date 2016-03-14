@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "courgette/base_test_unittest.h"
@@ -37,16 +40,16 @@ void DisassemblerWin32X64Test::TestExe() const {
       disassembler->RVAToSection(0x00401234 - 0x00400000)),
       std::string(".text"));
 
-  EXPECT_EQ(0, disassembler->RVAToFileOffset(0));
-  EXPECT_EQ(1024, disassembler->RVAToFileOffset(4096));
-  EXPECT_EQ(46928, disassembler->RVAToFileOffset(50000));
+  EXPECT_EQ(0U, disassembler->RVAToFileOffset(0));
+  EXPECT_EQ(1024U, disassembler->RVAToFileOffset(4096));
+  EXPECT_EQ(46928U, disassembler->RVAToFileOffset(50000));
 
   std::vector<courgette::RVA> relocs;
   bool can_parse_relocs = disassembler->ParseRelocs(&relocs);
   EXPECT_TRUE(can_parse_relocs);
   EXPECT_TRUE(base::STLIsSorted(relocs));
 
-  const uint8_t* offset_p = disassembler->OffsetToPointer(0);
+  const uint8_t* offset_p = disassembler->FileOffsetToPointer(0);
   EXPECT_EQ(reinterpret_cast<const void*>(file1.c_str()),
             reinterpret_cast<const void*>(offset_p));
   EXPECT_EQ('M', offset_p[0]);
