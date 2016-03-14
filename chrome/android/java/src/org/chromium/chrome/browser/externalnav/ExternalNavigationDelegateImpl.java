@@ -221,7 +221,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return isPackageSpecializedHandler(infos, null);
     }
 
-    private static boolean isPackageSpecializedHandler(List<ResolveInfo> handlers,
+    static boolean isPackageSpecializedHandler(List<ResolveInfo> handlers,
             String packageName) {
         if (handlers == null || handlers.size() == 0) return false;
         for (ResolveInfo resolveInfo : handlers) {
@@ -231,7 +231,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                 // Error on the side of staying in the browser, ignore
                 continue;
             }
-            if (filter.countDataAuthorities() == 0 || filter.countDataPaths() == 0) {
+            if (filter.countDataAuthorities() == 0 && filter.countDataPaths() == 0) {
                 // Generic handler, skip
                 continue;
             }
