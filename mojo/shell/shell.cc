@@ -439,36 +439,20 @@ void Shell::SetInstanceQuitCallback(
 }
 
 void Shell::Connect(scoped_ptr<ConnectParams> params) {
-  TRACE_EVENT_INSTANT1("mojo_shell", "Shell::Connect",
-                       TRACE_EVENT_SCOPE_THREAD, "original_name",
-                       params->target().name());
-  DCHECK(IsValidName(params->target().name()));
-  DCHECK(base::IsValidGUID(params->target().user_id()));
-  DCHECK_NE(mojom::kInheritUserID, params->target().user_id());
-
-  // Connect to an existing matching instance, if possible.
-  if (ConnectToExistingInstance(&params))
-    return;
-
-  std::string name = params->target().name();
-  shell_resolver_->ResolveMojoName(
-      name,
-      base::Bind(&Shell::OnGotResolvedName,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&params)));
+  Connect(std::move(params), nullptr);
 }
 
 mojom::ShellClientRequest Shell::InitInstanceForEmbedder(
     const std::string& name) {
-  DCHECK(!embedder_instance_);
+  scoped_ptr<ConnectParams> params(new ConnectParams);
 
-  Identity target(name, mojom::kRootUserID);
-  DCHECK(!GetExistingInstance(target));
+  Identity embedder_identity(name, mojom::kRootUserID);
+  params->set_source(embedder_identity);
+  params->set_target(embedder_identity);
 
   mojom::ShellClientPtr client;
   mojom::ShellClientRequest request = GetProxy(&client);
-  embedder_instance_ =
-      CreateInstance(target, GetPermissiveCapabilities(), std::move(client));
-  DCHECK(embedder_instance_);
+  Connect(std::move(params), std::move(client));
 
   return request;
 }
@@ -533,6 +517,28 @@ void Shell::OnInstanceError(Instance* instance) {
                                  });
   if (!instance_quit_callback_.is_null())
     instance_quit_callback_.Run(identity);
+}
+
+void Shell::Connect(scoped_ptr<ConnectParams> params,
+                    mojom::ShellClientPtr client) {
+  TRACE_EVENT_INSTANT1("mojo_shell", "Shell::Connect",
+                       TRACE_EVENT_SCOPE_THREAD, "original_name",
+                       params->target().name());
+  DCHECK(IsValidName(params->target().name()));
+  DCHECK(base::IsValidGUID(params->target().user_id()));
+  DCHECK_NE(mojom::kInheritUserID, params->target().user_id());
+  DCHECK(!client.is_bound() || !identity_to_instance_.count(params->target()));
+
+  // Connect to an existing matching instance, if possible.
+  if (!client.is_bound() && ConnectToExistingInstance(&params))
+    return;
+
+  std::string name = params->target().name();
+  shell_resolver_->ResolveMojoName(
+      name,
+      base::Bind(&Shell::OnGotResolvedName,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
+                 base::Passed(&client)));
 }
 
 Shell::Instance* Shell::GetExistingInstance(const Identity& identity) const {
@@ -627,6 +633,7 @@ void Shell::OnShellClientFactoryLost(const Identity& which) {
 }
 
 void Shell::OnGotResolvedName(scoped_ptr<ConnectParams> params,
+                              mojom::ShellClientPtr client,
                               const String& resolved_name,
                               const String& resolved_instance,
                               mojom::CapabilitySpecPtr capabilities_ptr,
@@ -655,12 +662,20 @@ void Shell::OnGotResolvedName(scoped_ptr<ConnectParams> params,
 
   mojom::ClientProcessConnectionPtr client_process_connection =
       params->TakeClientProcessConnection();
-  mojom::ShellClientPtr client;
-  mojom::ShellClientRequest request = GetProxy(&client);
+
+  mojom::ShellClientRequest request;
+  if (!client.is_bound())
+    request = GetProxy(&client);
+
   Instance* instance = CreateInstance(target, capabilities, std::move(client));
   instance->ConnectToClient(std::move(params));
 
-  if (LoadWithLoader(target, &request))
+  // If a ShellClientPtr was provided, there's no more work to do: someone
+  // is already holding a corresponding ShellClientRequest.
+  if (!request.is_pending())
+    return;
+
+  if (client_process_connection.is_null() && LoadWithLoader(target, &request))
     return;
 
   CHECK(!file_url.is_null() && !capabilities_ptr.is_null());

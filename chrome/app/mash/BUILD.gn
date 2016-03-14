@@ -29,7 +29,6 @@ source_set("mash") {
     "//url",
   ]
   data_deps = [
-    ":chrome_manifest",
     ":manifest",
   ]
 
@@ -63,10 +62,4 @@ mojo_application_manifest("manifest") {
     deps += [ "//components/font_service:manifest" ]
     packaged_applications += [ "font_service" ]
   }
-}
-
-mojo_application_manifest("chrome_manifest") {
-  type = "exe"
-  application_name = "chrome"
-  source = "chrome_manifest.json"
 }

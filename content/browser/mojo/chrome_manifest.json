@@ -1,0 +1,14 @@
+{
+  "manifest_version": 1,
+  "name": "exe:chrome",
+  "display_name": "Chrome",
+  "capabilities": {
+    "required": {
+      "*": { "interfaces": [ "*" ] },
+      "mojo:shell": {
+        "classes": [ "client_process", "instance_name" ],
+        "interfaces": [ "*" ]
+      }
+    }
+  }
+}

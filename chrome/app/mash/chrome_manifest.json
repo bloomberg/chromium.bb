@@ -1,5 +1,0 @@
-{
-  "name": "exe:chrome",
-  "display_name": "Chrome",
-  "capabilities": { "*": [ "*" ] }
-}

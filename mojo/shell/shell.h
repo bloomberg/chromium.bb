@@ -72,9 +72,8 @@ class Shell : public ShellClient {
   void Connect(scoped_ptr<ConnectParams> params);
 
   // Creates a new Instance identified as |name|. This is intended for use by
-  // the Shell's embedder to register itself with the shell. The name is never
-  // resolved and there must not be an existing instance associated with it.
-  // This must only be called once.
+  // the Shell's embedder to register itself with the shell. This must only be
+  // called once.
   mojom::ShellClientRequest InitInstanceForEmbedder(const std::string& name);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForName().
@@ -105,6 +104,15 @@ class Shell : public ShellClient {
 
   // Removes a Instance when it encounters an error.
   void OnInstanceError(Instance* instance);
+
+  // Completes a connection between a source and target application as defined
+  // by |params|, exchanging InterfaceProviders between them. If no existing
+  // instance of the target application is running, one will be loaded.
+  //
+  // If |client| is not null, there must not be an instance of the target
+  // application already running. The shell will create a new instance and use
+  // |client| to control.
+  void Connect(scoped_ptr<ConnectParams> params, mojom::ShellClientPtr client);
 
   // Returns a running instance matching |identity|.
   Instance* GetExistingInstance(const Identity& identity) const;
@@ -139,12 +147,15 @@ class Shell : public ShellClient {
 
   // Callback when remote Catalog resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
+  // |client| if provided is a ShellClientPtr which should be used to manage the
+  // new application instance. This may be null.
   // |resolved_name| is the mojo: name identifying the physical package
   // application.
   // |file_url| is the resolved file:// URL of the physical package.
-  // |base_filter| is the CapabilitySpecPtr the requested application should be
+  // |capabilities| is the CapabilitySpecPtr the requested application should be
   // run with, from its manifest.
   void OnGotResolvedName(scoped_ptr<ConnectParams> params,
+                         mojom::ShellClientPtr client,
                          const String& resolved_name,
                          const String& resolved_instance,
                          mojom::CapabilitySpecPtr capabilities,
@@ -173,9 +184,6 @@ class Shell : public ShellClient {
   IdentityToShellClientFactoryMap shell_client_factories_;
   // Counter used to assign ids to content handlers.
   uint32_t shell_client_factory_id_counter_;
-
-  // The Instance created by the shell embedder, if any.
-  Instance* embedder_instance_ = nullptr;
 
   InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
 

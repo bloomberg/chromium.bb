@@ -71,6 +71,7 @@ source_set("browser") {
   ]
 
   data_deps = [
+    ":chrome_manifest",
     ":chrome_renderer_manifest",
   ]
 
@@ -541,6 +542,12 @@ source_set("browser") {
       "vr/android/cardboard/cardboard_vr_device_provider.h",
     ]
   }
+}
+
+mojo_application_manifest("chrome_manifest") {
+  type = "exe"
+  application_name = "chrome"
+  source = "mojo/chrome_manifest.json"
 }
 
 mojo_application_manifest("chrome_renderer_manifest") {
