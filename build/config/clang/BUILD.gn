@@ -20,7 +20,7 @@ config("find_bad_constructs") {
             "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib",
             root_build_dir),
       ]
-    } else if (is_linux) {
+    } else if (is_linux || is_android) {
       cflags += [
         "-Xclang",
         "-load",
