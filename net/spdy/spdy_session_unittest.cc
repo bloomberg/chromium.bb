@@ -1351,10 +1351,8 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
 
   // Verify that there is one unclaimed push stream.
   EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  SpdySession::PushedStreamMap::iterator iter =
-      session_->unclaimed_pushed_streams_.find(
-          GURL("http://www.example.org/a.dat"));
-  EXPECT_TRUE(session_->unclaimed_pushed_streams_.end() != iter);
+  EXPECT_EQ(1u, session_->count_unclaimed_pushed_streams_for_url(
+                    GURL("http://www.example.org/a.dat")));
 
   // Unclaimed push body consumed bytes from the session window.
   EXPECT_EQ(
@@ -1370,9 +1368,8 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
 
   // Verify that the second pushed stream evicted the first pushed stream.
   EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  iter = session_->unclaimed_pushed_streams_.find(
-      GURL("http://www.example.org/0.dat"));
-  EXPECT_TRUE(session_->unclaimed_pushed_streams_.end() != iter);
+  EXPECT_EQ(1u, session_->count_unclaimed_pushed_streams_for_url(
+                    GURL("http://www.example.org/0.dat")));
 
   // Verify that the session window reclaimed the evicted stream body.
   EXPECT_EQ(SpdySession::GetDefaultInitialWindowSize(GetProtocol()),
@@ -3255,7 +3252,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
                                        BoundNetLog());
   // Get a session for |key2|, which should return the session created earlier.
   base::WeakPtr<SpdySession> session2 =
-      spdy_session_pool_->FindAvailableSession(key2, BoundNetLog());
+      spdy_session_pool_->FindAvailableSession(key2, GURL(), BoundNetLog());
   ASSERT_EQ(session1.get(), session2.get());
   EXPECT_FALSE(pool->IsStalled());
 

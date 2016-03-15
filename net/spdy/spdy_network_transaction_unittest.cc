@@ -559,7 +559,7 @@ class SpdyNetworkTransactionTest
     BoundNetLog log;
     HttpNetworkSession* session = helper.session();
     base::WeakPtr<SpdySession> spdy_session =
-        session->spdy_session_pool()->FindAvailableSession(key, log);
+        session->spdy_session_pool()->FindAvailableSession(key, url, log);
     ASSERT_TRUE(spdy_session != NULL);
     EXPECT_EQ(0u, spdy_session->num_active_streams());
     EXPECT_EQ(0u, spdy_session->num_unclaimed_pushed_streams());
@@ -5505,9 +5505,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
   // A list of the URL to fetch, followed by the URL being pushed.
   static const char* const kTestCases[] = {
       "https://www.example.org/foo.html",
-      "https://www.example.org:81/foo.js",  // Bad port
-
-      "https://www.example.org/foo.html",
       "http://www.example.org/foo.js",  // Bad protocol
 
       "https://www.example.org/foo.html",
@@ -5603,6 +5600,324 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     EXPECT_TRUE(response.headers.get() != NULL);
     EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
   }
+}
+
+// Verify that push works cross origin as long as the certificate is valid for
+// the pushed authority.
+TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
+  // "spdy_pooling.pem" is valid for both www.example.org and mail.example.org.
+  const char* url_to_fetch = "https://www.example.org";
+  const char* url_to_push = "https://mail.example.org";
+
+  scoped_ptr<SpdyFrame> headers(
+      spdy_util_.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
+  MockWrite writes[] = {
+      CreateMockWrite(*headers, 0),
+  };
+
+  scoped_ptr<SpdyFrame> reply(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  scoped_ptr<SpdyFrame> push(
+      spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
+  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  const char kPushedData[] = "pushed";
+  scoped_ptr<SpdyFrame> pushed_body(spdy_util_.ConstructSpdyBodyFrame(
+      2, kPushedData, strlen(kPushedData), true));
+  MockRead reads[] = {
+      CreateMockRead(*reply, 1),
+      CreateMockRead(*push, 2),
+      CreateMockRead(*body, 3),
+      CreateMockRead(*pushed_body, 4),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(url_to_fetch);
+  request.load_flags = 0;
+
+  BoundNetLog log;
+  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, log, GetParam(),
+                                     nullptr);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  HttpNetworkTransaction* trans0 = helper.trans();
+  TestCompletionCallback callback0;
+  int rv = trans0->Start(&request, callback0.callback(), log);
+  rv = callback0.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
+  HostPortPair host_port_pair("www.example.org", 443);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> spdy_session =
+      spdy_session_pool->FindAvailableSession(key, GURL(), log);
+
+  EXPECT_FALSE(spdy_session->unclaimed_pushed_streams_.empty());
+  EXPECT_EQ(1u, spdy_session->unclaimed_pushed_streams_.size());
+  EXPECT_EQ(1u,
+            spdy_session->unclaimed_pushed_streams_.count(GURL(url_to_push)));
+
+  scoped_ptr<HttpNetworkTransaction> trans1(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpRequestInfo push_request;
+  push_request.method = "GET";
+  push_request.url = GURL(url_to_push);
+  push_request.load_flags = 0;
+  TestCompletionCallback callback1;
+  rv = trans1->Start(&push_request, callback1.callback(), log);
+  rv = callback1.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  EXPECT_TRUE(spdy_session->unclaimed_pushed_streams_.empty());
+  EXPECT_EQ(0u, spdy_session->unclaimed_pushed_streams_.size());
+
+  helper.VerifyDataConsumed();
+  VerifyStreamsClosed(helper);
+
+  HttpResponseInfo response = *trans0->GetResponseInfo();
+  EXPECT_TRUE(response.headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
+
+  std::string result0;
+  ReadResult(trans0, &result0);
+  EXPECT_EQ("hello!", result0);
+
+  HttpResponseInfo push_response = *trans1->GetResponseInfo();
+  EXPECT_TRUE(push_response.headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200", push_response.headers->GetStatusLine());
+
+  std::string result1;
+  ReadResult(trans1.get(), &result1);
+  EXPECT_EQ(kPushedData, result1);
+}
+
+// Verify that push works cross origin, even if there is already a connection
+// open to origin of pushed resource.
+TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
+  // Running this test via Alt-Svc is too complicated to be worthwhile.
+  if (GetParam().ssl_type != HTTPS_SPDY_VIA_NPN)
+    return;
+
+  const char* url_to_fetch0 = "https://mail.example.org/foo";
+  const char* url_to_fetch1 = "https://docs.example.org";
+  const char* url_to_push = "https://mail.example.org/bar";
+
+  SpdyTestUtil spdy_util_0(GetParam().protocol,
+                           GetParam().priority_to_dependency);
+
+  scoped_ptr<SpdyFrame> headers0(
+      spdy_util_0.ConstructSpdyGet(url_to_fetch0, 1, LOWEST));
+  MockWrite writes0[] = {
+      CreateMockWrite(*headers0, 0),
+  };
+
+  scoped_ptr<SpdyFrame> reply0(
+      spdy_util_0.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  const char kData0[] = "first";
+  scoped_ptr<SpdyFrame> body0(
+      spdy_util_0.ConstructSpdyBodyFrame(1, kData0, strlen(kData0), true));
+  MockRead reads0[] = {
+      CreateMockRead(*reply0, 1),
+      CreateMockRead(*body0, 2),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)
+  };
+
+  SequencedSocketData data0(reads0, arraysize(reads0), writes0,
+                            arraysize(writes0));
+
+  SpdyTestUtil spdy_util_1(GetParam().protocol,
+                           GetParam().priority_to_dependency);
+
+  scoped_ptr<SpdyFrame> headers1(
+      spdy_util_1.ConstructSpdyGet(url_to_fetch1, 1, LOWEST));
+  MockWrite writes1[] = {
+      CreateMockWrite(*headers1, 0),
+  };
+
+  scoped_ptr<SpdyFrame> reply1(
+      spdy_util_1.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  scoped_ptr<SpdyFrame> push(
+      spdy_util_1.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
+  const char kData1[] = "second";
+  scoped_ptr<SpdyFrame> body1(
+      spdy_util_1.ConstructSpdyBodyFrame(1, kData1, strlen(kData1), true));
+  const char kPushedData[] = "pushed";
+  scoped_ptr<SpdyFrame> pushed_body(spdy_util_1.ConstructSpdyBodyFrame(
+      2, kPushedData, strlen(kPushedData), true));
+
+  MockRead reads1[] = {
+      CreateMockRead(*reply1, 1),
+      CreateMockRead(*push, 2),
+      CreateMockRead(*body1, 3),
+      CreateMockRead(*pushed_body, 4),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
+  };
+
+  SequencedSocketData data1(reads1, arraysize(reads1), writes1,
+                            arraysize(writes1));
+
+  // Request |url_to_fetch0| to open connection to mail.example.org.
+  HttpRequestInfo request0;
+  request0.method = "GET";
+  request0.url = GURL(url_to_fetch0);
+  request0.load_flags = 0;
+
+  BoundNetLog log;
+  NormalSpdyTransactionHelper helper(request0, DEFAULT_PRIORITY, log,
+                                     GetParam(), nullptr);
+  helper.RunPreTestSetup();
+
+  // "spdy_pooling.pem" is valid for www.example.org, but not for
+  // docs.example.org.
+  scoped_ptr<SSLSocketDataProvider> ssl_provider0(
+      new SSLSocketDataProvider(ASYNC, OK));
+  ssl_provider0->cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
+
+  // "wildcard.pem" is valid for both www.example.org and docs.example.org.
+  scoped_ptr<SSLSocketDataProvider> ssl_provider1(
+      new SSLSocketDataProvider(ASYNC, OK));
+  ssl_provider1->cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+  helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
+
+  HttpNetworkTransaction* trans0 = helper.trans();
+  TestCompletionCallback callback0;
+  int rv = trans0->Start(&request0, callback0.callback(), log);
+  rv = callback0.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  // Request |url_to_fetch1|, during which docs.example.org pushes
+  // |url_to_push|, which happens to be for www.example.org, to which there is
+  // already an open connection.
+  scoped_ptr<HttpNetworkTransaction> trans1(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL(url_to_fetch1);
+  request1.load_flags = 0;
+  TestCompletionCallback callback1;
+  rv = trans1->Start(&request1, callback1.callback(), log);
+  rv = callback1.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
+  HostPortPair host_port_pair0("mail.example.org", 443);
+  SpdySessionKey key0(host_port_pair0, ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> spdy_session0 =
+      spdy_session_pool->FindAvailableSession(key0, GURL(), log);
+
+  EXPECT_TRUE(spdy_session0->unclaimed_pushed_streams_.empty());
+  EXPECT_EQ(0u, spdy_session0->unclaimed_pushed_streams_.size());
+
+  HostPortPair host_port_pair1("docs.example.org", 443);
+  SpdySessionKey key1(host_port_pair1, ProxyServer::Direct(),
+                      PRIVACY_MODE_DISABLED);
+  base::WeakPtr<SpdySession> spdy_session1 =
+      spdy_session_pool->FindAvailableSession(key1, GURL(), log);
+
+  EXPECT_FALSE(spdy_session1->unclaimed_pushed_streams_.empty());
+  EXPECT_EQ(1u, spdy_session1->unclaimed_pushed_streams_.size());
+  EXPECT_EQ(1u,
+            spdy_session1->unclaimed_pushed_streams_.count(GURL(url_to_push)));
+
+  // Request |url_to_push|, which should be served from the pushed resource.
+  scoped_ptr<HttpNetworkTransaction> trans2(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpRequestInfo push_request;
+  push_request.method = "GET";
+  push_request.url = GURL(url_to_push);
+  push_request.load_flags = 0;
+  TestCompletionCallback callback2;
+  rv = trans2->Start(&push_request, callback2.callback(), log);
+  rv = callback2.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  EXPECT_TRUE(spdy_session0->unclaimed_pushed_streams_.empty());
+  EXPECT_EQ(0u, spdy_session0->unclaimed_pushed_streams_.size());
+
+  EXPECT_TRUE(spdy_session1->unclaimed_pushed_streams_.empty());
+  EXPECT_EQ(0u, spdy_session1->unclaimed_pushed_streams_.size());
+
+  helper.VerifyDataConsumed();
+  VerifyStreamsClosed(helper);
+
+  HttpResponseInfo response0 = *trans0->GetResponseInfo();
+  EXPECT_TRUE(response0.headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200", response0.headers->GetStatusLine());
+
+  std::string result0;
+  ReadResult(trans0, &result0);
+  EXPECT_EQ(kData0, result0);
+
+  HttpResponseInfo response1 = *trans1->GetResponseInfo();
+  EXPECT_TRUE(response1.headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200", response1.headers->GetStatusLine());
+
+  std::string result1;
+  ReadResult(trans1.get(), &result1);
+  EXPECT_EQ(kData1, result1);
+
+  HttpResponseInfo push_response = *trans2->GetResponseInfo();
+  EXPECT_TRUE(push_response.headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200", push_response.headers->GetStatusLine());
+
+  std::string result2;
+  ReadResult(trans2.get(), &result2);
+  EXPECT_EQ(kPushedData, result2);
+}
+
+TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidCrossOrigin) {
+  // "spdy_pooling.pem" is valid for www.example.org,
+  // but not for invalid.example.org.
+  const char* url_to_fetch = "https://www.example.org";
+  const char* url_to_push = "https://invalid.example.org";
+
+  scoped_ptr<SpdyFrame> headers(
+      spdy_util_.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
+  MockWrite writes[] = {
+      CreateMockWrite(*headers, 0),
+      CreateMockWrite(*rst, 3),
+  };
+
+  scoped_ptr<SpdyFrame> reply(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  scoped_ptr<SpdyFrame> push(
+      spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
+  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  const char kPushedData[] = "pushed";
+  scoped_ptr<SpdyFrame> pushed_body(spdy_util_.ConstructSpdyBodyFrame(
+      2, kPushedData, strlen(kPushedData), true));
+  MockRead reads[] = {
+      CreateMockRead(*reply, 1),
+      CreateMockRead(*push, 2),
+      CreateMockRead(*body, 4),
+      CreateMockRead(*pushed_body, 5),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(url_to_fetch);
+  request.load_flags = 0;
+
+  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
+                                     GetParam(), nullptr);
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
 }
 
 TEST_P(SpdyNetworkTransactionTest, RetryAfterRefused) {

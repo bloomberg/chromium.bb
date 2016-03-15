@@ -90,8 +90,11 @@ class NET_EXPORT SpdySessionPool
       int certificate_error_code,
       bool is_secure);
 
-  // Find an available session for the given key, or NULL if there isn't one.
+  // Return an available session for |key| that has an unclaimed push stream for
+  // |url| if such exists and |url| is not empty, or else an available session
+  // for |key| if such exists, or else nullptr.
   base::WeakPtr<SpdySession> FindAvailableSession(const SpdySessionKey& key,
+                                                  const GURL& url,
                                                   const BoundNetLog& net_log);
 
   // Remove all mappings and aliases for the given session, which must
@@ -118,6 +121,13 @@ class NET_EXPORT SpdySessionPool
   // Close all SpdySessions, including any new ones created in the process of
   // closing the current ones.
   void CloseAllSessions();
+
+  // (Un)register a SpdySession with an unclaimed pushed stream for |url|, so
+  // that the right SpdySession can be served by FindAvailableSession.
+  void RegisterUnclaimedPushedStream(GURL url,
+                                     base::WeakPtr<SpdySession> spdy_session);
+  void UnregisterUnclaimedPushedStream(const GURL& url,
+                                       SpdySession* spdy_session);
 
   // Creates a Value summary of the state of the spdy session pool.
   scoped_ptr<base::Value> SpdySessionPoolInfoToValue() const;
@@ -153,6 +163,7 @@ class NET_EXPORT SpdySessionPool
   typedef std::map<SpdySessionKey, base::WeakPtr<SpdySession> >
       AvailableSessionMap;
   typedef std::map<IPEndPoint, SpdySessionKey> AliasMap;
+  typedef std::map<GURL, WeakSessionList> UnclaimedPushedStreamMap;
 
   // Returns true iff |session| is in |available_sessions_|.
   bool IsSessionAvailable(const base::WeakPtr<SpdySession>& session) const;
@@ -201,6 +212,13 @@ class NET_EXPORT SpdySessionPool
 
   // A map of IPEndPoint aliases for sessions.
   AliasMap aliases_;
+
+  // A map of all SpdySessions owned by |this| that have an unclaimed pushed
+  // streams for a GURL.  Might contain invalid WeakPtr's.
+  // A single SpdySession can only have at most one pushed stream for each GURL,
+  // but it is possible that multiple SpdySessions have pushed streams for the
+  // same GURL.
+  UnclaimedPushedStreamMap unclaimed_pushed_streams_;
 
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   HostResolver* const resolver_;

@@ -480,7 +480,7 @@ SpdyURLRequestContext::~SpdyURLRequestContext() {
 }
 
 bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key) {
-  return pool->FindAvailableSession(key, BoundNetLog()) != NULL;
+  return pool->FindAvailableSession(key, GURL(), BoundNetLog()) != NULL;
 }
 
 namespace {

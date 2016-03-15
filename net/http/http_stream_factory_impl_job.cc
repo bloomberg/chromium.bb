@@ -604,14 +604,16 @@ void HttpStreamFactoryImpl::Job::OnPreconnectsComplete() {
 int HttpStreamFactoryImpl::Job::OnHostResolution(
     SpdySessionPool* spdy_session_pool,
     const SpdySessionKey& spdy_session_key,
+    const GURL& origin_url,
     const AddressList& addresses,
     const BoundNetLog& net_log) {
   // It is OK to dereference spdy_session_pool, because the
   // ClientSocketPoolManager will be destroyed in the same callback that
   // destroys the SpdySessionPool.
-  return
-      spdy_session_pool->FindAvailableSession(spdy_session_key, net_log) ?
-      ERR_SPDY_SESSION_ALREADY_EXISTS : OK;
+  return spdy_session_pool->FindAvailableSession(spdy_session_key, origin_url,
+                                                 net_log)
+             ? ERR_SPDY_SESSION_ALREADY_EXISTS
+             : OK;
 }
 
 void HttpStreamFactoryImpl::Job::OnIOComplete(int result) {
@@ -1105,7 +1107,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   OnHostResolutionCallback resolution_callback =
       CanUseExistingSpdySession()
           ? base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
-                       spdy_session_key)
+                       spdy_session_key, origin_url_)
           : OnHostResolutionCallback();
   if (stream_factory_->for_websockets_) {
     // TODO(ricea): Re-enable NPN when WebSockets over SPDY is supported.
@@ -1145,7 +1147,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     SpdySessionKey spdy_session_key = GetSpdySessionKey();
     existing_spdy_session_ =
         session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key, net_log_);
+            spdy_session_key, origin_url_, net_log_);
     if (existing_spdy_session_) {
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
@@ -1762,7 +1764,8 @@ int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::FindAvailableSession(
     const SpdySessionKey& key,
     const BoundNetLog& net_log,
     base::WeakPtr<SpdySession>* spdy_session) {
-  *spdy_session = spdy_session_pool_->FindAvailableSession(key, net_log);
+  *spdy_session =
+      spdy_session_pool_->FindAvailableSession(key, origin_url_, net_log);
   return CheckAlternativeServiceValidityForOrigin(*spdy_session);
 }
 

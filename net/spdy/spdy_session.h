@@ -223,8 +223,56 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // TODO(akalin): Use base::TickClock when it becomes available.
   typedef base::TimeTicks (*TimeFunc)(void);
 
-  // Returns true if |hostname| can be pooled into an existing connection
-  // associated with |ssl_info|.
+  // Container class for unclaimed pushed streams on a SpdySession.  Guarantees
+  // that |spdy_session_.pool_| gets notified every time a stream is pushed or
+  // an unclaimed pushed stream is claimed.
+  class UnclaimedPushedStreamContainer {
+   public:
+    struct PushedStreamInfo {
+      PushedStreamInfo() : stream_id(0) {}
+      PushedStreamInfo(SpdyStreamId stream_id, base::TimeTicks creation_time)
+          : stream_id(stream_id), creation_time(creation_time) {}
+      ~PushedStreamInfo() {}
+
+      SpdyStreamId stream_id;
+      base::TimeTicks creation_time;
+    };
+    using PushedStreamMap = std::map<GURL, PushedStreamInfo>;
+    using iterator = PushedStreamMap::iterator;
+    using const_iterator = PushedStreamMap::const_iterator;
+
+    UnclaimedPushedStreamContainer() = delete;
+    explicit UnclaimedPushedStreamContainer(SpdySession* spdy_session);
+    ~UnclaimedPushedStreamContainer();
+
+    bool empty() const { return streams_.empty(); }
+    size_t size() const { return streams_.size(); }
+    const_iterator begin() const { return streams_.begin(); }
+    const_iterator end() const { return streams_.end(); }
+    const_iterator find(const GURL& url) const { return streams_.find(url); }
+    size_t count(const GURL& url) const { return streams_.count(url); }
+    const_iterator lower_bound(const GURL& url) const {
+      return streams_.lower_bound(url);
+    }
+
+    size_t erase(const GURL& url);
+    iterator erase(const_iterator it);
+    iterator insert(const_iterator position,
+                    const GURL& url,
+                    SpdyStreamId stream_id,
+                    const base::TimeTicks& creation_time);
+
+   private:
+    SpdySession* spdy_session_;
+
+    // (Bijective) map from the URL to the ID of the streams that have
+    // already started to be pushed by the server, but do not have
+    // consumers yet. Contains a subset of |active_streams_|.
+    PushedStreamMap streams_;
+  };
+
+  // Returns true if |new_hostname| can be pooled into an existing connection to
+  // |old_hostname| associated with |ssl_info|.
   static bool CanPool(TransportSecurityState* transport_security_state,
                       const SSLInfo& ssl_info,
                       const std::string& old_hostname,
@@ -434,10 +482,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Access to the number of active and pending streams.  These are primarily
   // available for testing and diagnostics.
   size_t num_active_streams() const { return active_streams_.size(); }
-  size_t num_unclaimed_pushed_streams() const {
-    return unclaimed_pushed_streams_.size();
-  }
+  size_t num_unclaimed_pushed_streams() const;
   size_t num_created_streams() const { return created_streams_.size(); }
+  size_t count_unclaimed_pushed_streams_for_url(const GURL& url) const;
 
   size_t num_pushed_streams() const { return num_pushed_streams_; }
   size_t num_active_pushed_streams() const {
@@ -550,6 +597,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                            CancelReservedStreamOnHeadersReceived);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, RejectInvalidUnknownFrames);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionPoolTest, IPAddressChanged);
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
+                           ServerPushValidCrossOrigin);
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
+                           ServerPushValidCrossOriginWithOpenSession);
 
   typedef std::deque<base::WeakPtr<SpdyStreamRequest> >
       PendingStreamRequestQueue;
@@ -563,16 +614,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     bool waiting_for_syn_reply;
   };
   typedef std::map<SpdyStreamId, ActiveStreamInfo> ActiveStreamMap;
-
-  struct PushedStreamInfo {
-    PushedStreamInfo();
-    PushedStreamInfo(SpdyStreamId stream_id, base::TimeTicks creation_time);
-    ~PushedStreamInfo();
-
-    SpdyStreamId stream_id;
-    base::TimeTicks creation_time;
-  };
-  typedef std::map<GURL, PushedStreamInfo> PushedStreamMap;
 
   typedef std::set<SpdyStream*> CreatedStreamSet;
 
@@ -1017,10 +1058,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   std::map<SpdyStreamId, SpdyStream*>
       active_streams_by_priority_[NUM_PRIORITIES];
 
-  // (Bijective) map from the URL to the ID of the streams that have
-  // already started to be pushed by the server, but do not have
-  // consumers yet. Contains a subset of |active_streams_|.
-  PushedStreamMap unclaimed_pushed_streams_;
+  UnclaimedPushedStreamContainer unclaimed_pushed_streams_;
 
   // Set of all created streams but that have not yet sent any frames.
   //

@@ -593,15 +593,51 @@ SpdySession::ActiveStreamInfo::ActiveStreamInfo(SpdyStream* stream)
 
 SpdySession::ActiveStreamInfo::~ActiveStreamInfo() {}
 
-SpdySession::PushedStreamInfo::PushedStreamInfo() : stream_id(0) {}
+SpdySession::UnclaimedPushedStreamContainer::UnclaimedPushedStreamContainer(
+    SpdySession* spdy_session)
+    : spdy_session_(spdy_session) {}
+SpdySession::UnclaimedPushedStreamContainer::~UnclaimedPushedStreamContainer() {
+}
 
-SpdySession::PushedStreamInfo::PushedStreamInfo(
+size_t SpdySession::UnclaimedPushedStreamContainer::erase(const GURL& url) {
+  const_iterator it = find(url);
+  if (it != end()) {
+    streams_.erase(it);
+    return 1;
+  }
+  return 0;
+}
+
+SpdySession::UnclaimedPushedStreamContainer::iterator
+SpdySession::UnclaimedPushedStreamContainer::erase(const_iterator it) {
+  DCHECK(spdy_session_->pool_);
+  DCHECK(it != end());
+  // Only allow cross-origin push for secure resources.
+  if (it->first.SchemeIsCryptographic()) {
+    spdy_session_->pool_->UnregisterUnclaimedPushedStream(it->first,
+                                                          spdy_session_);
+  }
+  return streams_.erase(it);
+}
+
+SpdySession::UnclaimedPushedStreamContainer::iterator
+SpdySession::UnclaimedPushedStreamContainer::insert(
+    const_iterator position,
+    const GURL& url,
     SpdyStreamId stream_id,
-    base::TimeTicks creation_time)
-    : stream_id(stream_id),
-      creation_time(creation_time) {}
-
-SpdySession::PushedStreamInfo::~PushedStreamInfo() {}
+    const base::TimeTicks& creation_time) {
+  DCHECK(spdy_session_->pool_);
+  // Only allow cross-origin push for https resources.
+  if (url.SchemeIsCryptographic()) {
+    spdy_session_->pool_->RegisterUnclaimedPushedStream(
+        url, spdy_session_->GetWeakPtr());
+  }
+  return streams_.insert(
+      position,
+      std::make_pair(
+          url, SpdySession::UnclaimedPushedStreamContainer::PushedStreamInfo(
+                   stream_id, creation_time)));
+}
 
 // static
 bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
@@ -667,6 +703,7 @@ SpdySession::SpdySession(
       read_buffer_(new IOBuffer(kReadBufferSize)),
       stream_hi_water_mark_(kFirstStreamId),
       last_accepted_push_stream_id_(0),
+      unclaimed_pushed_streams_(this),
       num_pushed_streams_(0u),
       num_active_pushed_streams_(0u),
       in_flight_write_frame_type_(DATA),
@@ -1828,7 +1865,7 @@ void SpdySession::LogAbandonedActiveStream(ActiveStreamMap::const_iterator it,
   ++streams_abandoned_count_;
   if (it->second.stream->type() == SPDY_PUSH_STREAM &&
       unclaimed_pushed_streams_.find(it->second.stream->url()) !=
-      unclaimed_pushed_streams_.end()) {
+          unclaimed_pushed_streams_.end()) {
   }
 }
 
@@ -1908,6 +1945,15 @@ bool SpdySession::GetLoadTimingInfo(SpdyStreamId stream_id,
                                     LoadTimingInfo* load_timing_info) const {
   return connection_->GetLoadTimingInfo(stream_id != kFirstStreamId,
                                         load_timing_info);
+}
+
+size_t SpdySession::num_unclaimed_pushed_streams() const {
+  return unclaimed_pushed_streams_.size();
+}
+
+size_t SpdySession::count_unclaimed_pushed_streams_for_url(
+    const GURL& url) const {
+  return unclaimed_pushed_streams_.count(url);
 }
 
 int SpdySession::GetPeerAddress(IPEndPoint* address) const {
@@ -2013,7 +2059,8 @@ void SpdySession::DeleteStream(scoped_ptr<SpdyStream> stream, int status) {
 }
 
 base::WeakPtr<SpdyStream> SpdySession::GetActivePushStream(const GURL& url) {
-  PushedStreamMap::iterator unclaimed_it = unclaimed_pushed_streams_.find(url);
+  UnclaimedPushedStreamContainer::const_iterator unclaimed_it =
+      unclaimed_pushed_streams_.find(url);
   if (unclaimed_it == unclaimed_pushed_streams_.end())
     return base::WeakPtr<SpdyStream>();
 
@@ -2331,7 +2378,8 @@ void SpdySession::DeleteExpiredPushedStreams() {
   base::TimeTicks minimum_freshness = time_func_() -
       base::TimeDelta::FromSeconds(kMinPushedStreamLifetimeSeconds);
   std::vector<SpdyStreamId> streams_to_close;
-  for (PushedStreamMap::iterator it = unclaimed_pushed_streams_.begin();
+  for (UnclaimedPushedStreamContainer::const_iterator it =
+           unclaimed_pushed_streams_.begin();
        it != unclaimed_pushed_streams_.end(); ++it) {
     if (minimum_freshness > it->second.creation_time)
       streams_to_close.push_back(it->second.stream_id);
@@ -2715,24 +2763,41 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
       if (gurl.SchemeIs("https")) {
         EnqueueResetStreamFrame(
             stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
-            base::StringPrintf("Rejected push of Cross Origin HTTPS content %d",
+            base::StringPrintf("Rejected push of cross origin HTTPS content %d "
+                               "from trusted proxy",
                                associated_stream_id));
         return false;
       }
     } else {
       GURL associated_url(associated_it->second.stream->GetUrlFromHeaders());
-      if (associated_url.GetOrigin() != gurl.GetOrigin()) {
-        EnqueueResetStreamFrame(
-            stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
-            base::StringPrintf("Rejected Cross Origin Push Stream %d",
-                               associated_stream_id));
-        return false;
+      if (associated_url.SchemeIs("https")) {
+        SSLInfo ssl_info;
+        CHECK(connection_->socket()->GetSSLInfo(&ssl_info));
+        if (!gurl.SchemeIs("https") ||
+            !CanPool(transport_security_state_, ssl_info, associated_url.host(),
+                     gurl.host())) {
+          EnqueueResetStreamFrame(
+              stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
+              base::StringPrintf("Rejected push stream %d on secure connection",
+                                 associated_stream_id));
+          return false;
+        }
+      } else {
+        // TODO(bnc): Change SpdyNetworkTransactionTests to use secure sockets.
+        if (associated_url.GetOrigin() != gurl.GetOrigin()) {
+          EnqueueResetStreamFrame(
+              stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
+              base::StringPrintf(
+                  "Rejected cross origin push stream %d on insecure connection",
+                  associated_stream_id));
+          return false;
+        }
       }
     }
   }
 
   // There should not be an existing pushed stream with the same path.
-  PushedStreamMap::iterator pushed_it =
+  UnclaimedPushedStreamContainer::const_iterator pushed_it =
       unclaimed_pushed_streams_.lower_bound(gurl);
   if (pushed_it != unclaimed_pushed_streams_.end() &&
       pushed_it->first == gurl) {
@@ -2760,10 +2825,9 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   last_compressed_frame_len_ = 0;
 
-  PushedStreamMap::iterator inserted_pushed_it =
-      unclaimed_pushed_streams_.insert(
-          pushed_it,
-          std::make_pair(gurl, PushedStreamInfo(stream_id, time_func_())));
+  UnclaimedPushedStreamContainer::const_iterator inserted_pushed_it =
+      unclaimed_pushed_streams_.insert(pushed_it, gurl, stream_id,
+                                       time_func_());
   DCHECK(inserted_pushed_it != pushed_it);
   DeleteExpiredPushedStreams();
 
