@@ -687,6 +687,32 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   base::debug::SetCrashKeyValue(
       "rvinit_main_frame_id", base::IntToString(params.main_frame_routing_id));
 
+  webview()->setDisplayMode(display_mode_);
+  webview()->settings()->setPreferCompositingToLCDTextEnabled(
+      PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
+  webview()->settings()->setThreadedScrollingEnabled(
+      !command_line.HasSwitch(switches::kDisableThreadedScrolling));
+  webview()->settings()->setRootLayerScrolls(
+      command_line.HasSwitch(switches::kRootLayerScrolls));
+  webview()->setShowFPSCounter(
+      command_line.HasSwitch(cc::switches::kShowFPSCounter));
+
+  ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
+
+  if (switches::IsTouchDragDropEnabled())
+    webview()->settings()->setTouchDragDropEnabled(true);
+
+  WebSettings::SelectionStrategyType selection_strategy =
+      WebSettings::SelectionStrategyType::Character;
+  const std::string selection_strategy_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kTouchTextSelectionStrategy);
+  if (selection_strategy_str == "direction")
+    selection_strategy = WebSettings::SelectionStrategyType::Direction;
+  webview()->settings()->setSelectionStrategy(selection_strategy);
+
+  ApplyBlinkSettings(command_line, webview()->settings());
+
   if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, params.main_frame_routing_id, params.main_frame_widget_routing_id,
@@ -729,30 +755,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // completing initialization.  Otherwise, we can finish it now.
   if (opener_id_ == MSG_ROUTING_NONE)
     did_show_ = true;
-  UpdateWebViewWithDeviceScaleFactor();
-  webview()->setDisplayMode(display_mode_);
-  webview()->settings()->setPreferCompositingToLCDTextEnabled(
-      PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
-  webview()->settings()->setThreadedScrollingEnabled(
-      !command_line.HasSwitch(switches::kDisableThreadedScrolling));
-  webview()->settings()->setRootLayerScrolls(
-      command_line.HasSwitch(switches::kRootLayerScrolls));
-  webview()->setShowFPSCounter(
-      command_line.HasSwitch(cc::switches::kShowFPSCounter));
-
-  ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
-
-  if (switches::IsTouchDragDropEnabled())
-    webview()->settings()->setTouchDragDropEnabled(true);
-
-  WebSettings::SelectionStrategyType selection_strategy =
-      WebSettings::SelectionStrategyType::Character;
-  const std::string selection_strategy_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTouchTextSelectionStrategy);
-  if (selection_strategy_str == "direction")
-    selection_strategy = WebSettings::SelectionStrategyType::Direction;
-  webview()->settings()->setSelectionStrategy(selection_strategy);
 
   // Set the main frame's name.  Only needs to be done for WebLocalFrames,
   // since the remote case was handled as part of SetReplicatedState on the
@@ -767,9 +769,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (params.window_was_created_with_opener)
     webview()->setOpenedByDOM();
 
+  UpdateWebViewWithDeviceScaleFactor();
   OnSetRendererPrefs(params.renderer_preferences);
-
-  ApplyBlinkSettings(command_line, webview()->settings());
 
   if (!params.enable_auto_resize) {
     OnResize(params.initial_size);
