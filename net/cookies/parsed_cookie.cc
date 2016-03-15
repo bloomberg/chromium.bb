@@ -182,6 +182,12 @@ bool ParsedCookie::IsValid() const {
   return !pairs_.empty();
 }
 
+CookieSameSite ParsedCookie::SameSite() const {
+  return (same_site_index_ == 0)
+             ? CookieSameSite::DEFAULT_MODE
+             : StringToCookieSameSite(pairs_[same_site_index_].second);
+}
+
 CookiePriority ParsedCookie::Priority() const {
   return (priority_index_ == 0)
              ? COOKIE_PRIORITY_DEFAULT
@@ -230,8 +236,8 @@ bool ParsedCookie::SetIsHttpOnly(bool is_http_only) {
   return SetBool(&httponly_index_, kHttpOnlyTokenName, is_http_only);
 }
 
-bool ParsedCookie::SetIsSameSite(bool is_same_site) {
-  return SetBool(&same_site_index_, kSameSiteTokenName, is_same_site);
+bool ParsedCookie::SetSameSite(const std::string& is_same_site) {
+  return SetString(&same_site_index_, kSameSiteTokenName, is_same_site);
 }
 
 bool ParsedCookie::SetPriority(const std::string& priority) {
@@ -244,8 +250,7 @@ std::string ParsedCookie::ToCookieLine() const {
     if (!out.empty())
       out.append("; ");
     out.append(it->first);
-    if (it->first != kSecureTokenName && it->first != kHttpOnlyTokenName &&
-        it->first != kSameSiteTokenName) {
+    if (it->first != kSecureTokenName && it->first != kHttpOnlyTokenName) {
       out.append("=");
       out.append(it->second);
     }

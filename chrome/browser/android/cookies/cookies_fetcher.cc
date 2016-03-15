@@ -85,7 +85,7 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
         base::android::ConvertUTF8ToJavaString(env, i->Path()).obj(),
         i->CreationDate().ToInternalValue(), i->ExpiryDate().ToInternalValue(),
         i->LastAccessDate().ToInternalValue(), i->IsSecure(), i->IsHttpOnly(),
-        i->IsSameSite(), i->Priority());
+        static_cast<int>(i->SameSite()), i->Priority());
     env->SetObjectArrayElement(joa.obj(), index++, java_cookie.obj());
   }
 
@@ -107,7 +107,7 @@ void CookiesFetcher::RestoreCookies(JNIEnv* env,
                                     int64_t last_access,
                                     bool secure,
                                     bool httponly,
-                                    bool same_site,
+                                    int same_site,
                                     int priority) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile->HasOffTheRecordProfile()) {
@@ -126,7 +126,8 @@ void CookiesFetcher::RestoreCookies(JNIEnv* env,
       base::android::ConvertJavaStringToUTF8(env, path),
       base::Time::FromInternalValue(creation),
       base::Time::FromInternalValue(expiration),
-      base::Time::FromInternalValue(last_access), secure, httponly, same_site,
+      base::Time::FromInternalValue(last_access), secure, httponly,
+      static_cast<net::CookieSameSite>(same_site),
       static_cast<net::CookiePriority>(priority));
 
   // The rest must be done from the IO thread.
@@ -162,7 +163,7 @@ void CookiesFetcher::RestoreToCookieJarInternal(
   store->SetCookieWithDetailsAsync(
       cookie.Source(), cookie.Name(), cookie.Value(), cookie.Domain(),
       cookie.Path(), base::Time(), cookie.ExpiryDate(), cookie.LastAccessDate(),
-      cookie.IsSecure(), cookie.IsHttpOnly(), cookie.IsSameSite(),
+      cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(),
       experimental_features_enabled, cookie.Priority(), cb);
 }
 

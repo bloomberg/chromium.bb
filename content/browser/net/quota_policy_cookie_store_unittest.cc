@@ -96,10 +96,10 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
                  const std::string& domain,
                  const std::string& path,
                  const base::Time& creation) {
-    store_->AddCookie(
-        net::CanonicalCookie(
-            GURL(), name, value, domain, path, creation, creation, creation,
-            false, false, false, net::COOKIE_PRIORITY_DEFAULT));
+    store_->AddCookie(net::CanonicalCookie(
+        GURL(), name, value, domain, path, creation, creation, creation, false,
+        false, net::CookieSameSite::DEFAULT_MODE,
+        net::COOKIE_PRIORITY_DEFAULT));
   }
 
   void DestroyStore() {

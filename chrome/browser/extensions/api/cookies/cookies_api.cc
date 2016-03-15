@@ -395,9 +395,7 @@ void CookiesSetFunction::SetCookieOnIOThread() {
                                          : std::string(),
       parsed_args_->details.path.get() ? *parsed_args_->details.path
                                        : std::string(),
-      base::Time(),
-      expiration_time,
-      base::Time(),
+      base::Time(), expiration_time, base::Time(),
       parsed_args_->details.secure.get() ? *parsed_args_->details.secure.get()
                                          : false,
       parsed_args_->details.http_only.get() ? *parsed_args_->details.http_only
@@ -405,8 +403,8 @@ void CookiesSetFunction::SetCookieOnIOThread() {
       // TODO(mkwst): If we decide to ship First-party-only cookies, we'll need
       // to extend the extension API to support them. For the moment, we'll set
       // all cookies as non-First-party-only.
-      false, are_experimental_cookie_features_enabled,
-      net::COOKIE_PRIORITY_DEFAULT,
+      net::CookieSameSite::DEFAULT_MODE,
+      are_experimental_cookie_features_enabled, net::COOKIE_PRIORITY_DEFAULT,
       base::Bind(&CookiesSetFunction::PullCookie, this));
 }
 

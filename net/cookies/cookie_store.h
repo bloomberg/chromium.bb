@@ -91,7 +91,7 @@ class NET_EXPORT CookieStore {
       base::Time last_access_time,
       bool secure,
       bool http_only,
-      bool same_site,
+      CookieSameSite same_site,
       bool enforce_strict_secure,
       CookiePriority priority,
       const SetCookiesCallback& callback) = 0;

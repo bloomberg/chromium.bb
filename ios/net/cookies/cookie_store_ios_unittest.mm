@@ -100,7 +100,7 @@ class RoundTripTestCookieStore : public net::CookieStore {
                                  base::Time last_access_time,
                                  bool secure,
                                  bool http_only,
-                                 bool same_site,
+                                 CookieSameSite same_site,
                                  bool enforce_strict_secure,
                                  CookiePriority priority,
                                  const SetCookiesCallback& callback) override {
@@ -264,8 +264,7 @@ class TestPersistentCookieStore
         base::Time(),  // last_access
         false,         // secure
         false,         // httponly
-        false,         // same_site
-        net::COOKIE_PRIORITY_DEFAULT);
+        net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
     cookies.push_back(bad_canonical_cookie);
     loaded_callback_.Run(cookies);
   }

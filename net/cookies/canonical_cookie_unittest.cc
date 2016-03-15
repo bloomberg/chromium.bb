@@ -19,7 +19,7 @@ TEST(CanonicalCookieTest, Constructor) {
 
   CanonicalCookie cookie(url, "A", "2", "www.example.com", "/test",
                          current_time, base::Time(), current_time, false, false,
-                         false, COOKIE_PRIORITY_DEFAULT);
+                         CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
   EXPECT_EQ(url.GetOrigin(), cookie.Source());
   EXPECT_EQ("A", cookie.Name());
   EXPECT_EQ("2", cookie.Value());
@@ -27,11 +27,12 @@ TEST(CanonicalCookieTest, Constructor) {
   EXPECT_EQ("/test", cookie.Path());
   EXPECT_FALSE(cookie.IsSecure());
   EXPECT_FALSE(cookie.IsHttpOnly());
-  EXPECT_FALSE(cookie.IsSameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie.SameSite());
 
   CanonicalCookie cookie2(url, "A", "2", std::string(), std::string(),
                           current_time, base::Time(), current_time, false,
-                          false, false, COOKIE_PRIORITY_DEFAULT);
+                          false, CookieSameSite::DEFAULT_MODE,
+                          COOKIE_PRIORITY_DEFAULT);
   EXPECT_EQ(url.GetOrigin(), cookie.Source());
   EXPECT_EQ("A", cookie2.Name());
   EXPECT_EQ("2", cookie2.Value());
@@ -39,7 +40,7 @@ TEST(CanonicalCookieTest, Constructor) {
   EXPECT_EQ("", cookie2.Path());
   EXPECT_FALSE(cookie2.IsSecure());
   EXPECT_FALSE(cookie2.IsHttpOnly());
-  EXPECT_FALSE(cookie2.IsSameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie2.SameSite());
 }
 
 TEST(CanonicalCookieTest, Create) {
@@ -82,19 +83,28 @@ TEST(CanonicalCookieTest, Create) {
                                    httponly_options);
   EXPECT_TRUE(cookie->IsHttpOnly());
 
-  // Test creating http only cookies.
+  // Test creating SameSite cookies.
   CookieOptions same_site_options;
   same_site_options.set_include_same_site();
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", creation_time,
+                                   same_site_options);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", creation_time,
+                                   same_site_options);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::LAX_MODE, cookie->SameSite());
   cookie = CanonicalCookie::Create(url, "A=2; SameSite", creation_time,
                                    same_site_options);
   EXPECT_TRUE(cookie.get());
-  EXPECT_TRUE(cookie->IsSameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
 
   // Test the creating cookies using specific parameter instead of a cookie
   // string.
   cookie = CanonicalCookie::Create(url, "A", "2", "www.example.com", "/test",
                                    creation_time, base::Time(), false, false,
-                                   false, false, COOKIE_PRIORITY_DEFAULT);
+                                   CookieSameSite::DEFAULT_MODE, false,
+                                   COOKIE_PRIORITY_DEFAULT);
   EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
@@ -102,11 +112,12 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_EQ("/test", cookie->Path());
   EXPECT_FALSE(cookie->IsSecure());
   EXPECT_FALSE(cookie->IsHttpOnly());
-  EXPECT_FALSE(cookie->IsSameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
 
   cookie = CanonicalCookie::Create(url, "A", "2", ".www.example.com", "/test",
                                    creation_time, base::Time(), false, false,
-                                   false, false, COOKIE_PRIORITY_DEFAULT);
+                                   CookieSameSite::DEFAULT_MODE, false,
+                                   COOKIE_PRIORITY_DEFAULT);
   EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
@@ -114,7 +125,7 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_EQ("/test", cookie->Path());
   EXPECT_FALSE(cookie->IsSecure());
   EXPECT_FALSE(cookie->IsHttpOnly());
-  EXPECT_FALSE(cookie->IsSameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
 }
 
 TEST(CanonicalCookieTest, EmptyExpiry) {
@@ -159,7 +170,7 @@ TEST(CanonicalCookieTest, IsEquivalent) {
   base::Time expiration_time = creation_time + base::TimeDelta::FromDays(2);
   bool secure(false);
   bool httponly(false);
-  bool same_site(false);
+  CookieSameSite same_site(CookieSameSite::NO_RESTRICTION);
 
   // Test that a cookie is equivalent to itself.
   scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(
@@ -205,8 +216,8 @@ TEST(CanonicalCookieTest, IsEquivalent) {
 
   other_cookie.reset(new CanonicalCookie(
       url, cookie_name, cookie_name, cookie_domain, cookie_path, creation_time,
-      expiration_time, last_access_time, secure, httponly, true,
-      COOKIE_PRIORITY_LOW));
+      expiration_time, last_access_time, secure, httponly,
+      CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_LOW));
   EXPECT_TRUE(cookie->IsEquivalent(*other_cookie));
 
   // Tests that use different variations of attribute values that
@@ -249,7 +260,7 @@ TEST(CanonicalCookieTest, IsEquivalentForSecureCookieMatching) {
   base::Time expiration_time = creation_time + base::TimeDelta::FromDays(2);
   bool secure(false);
   bool httponly(false);
-  bool same_site(false);
+  CookieSameSite same_site(CookieSameSite::NO_RESTRICTION);
 
   // Test that a cookie is equivalent to itself.
   scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(
@@ -299,8 +310,8 @@ TEST(CanonicalCookieTest, IsEquivalentForSecureCookieMatching) {
 
   other_cookie.reset(new CanonicalCookie(
       url, cookie_name, cookie_name, cookie_domain, cookie_path, creation_time,
-      expiration_time, last_access_time, secure, httponly, true,
-      COOKIE_PRIORITY_LOW));
+      expiration_time, last_access_time, secure, httponly,
+      CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_LOW));
   EXPECT_TRUE(cookie->IsEquivalentForSecureCookieMatching(*other_cookie));
 
   // The following 3 tests' expected results differ from their IsEquivalent
@@ -444,34 +455,34 @@ TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
 
   // Same-site cookies are not included for cross-site requests,
   // even if other properties match:
-  cookie = CanonicalCookie::Create(secure_url, "A=2; SameSite", creation_time,
-                                   options);
-  EXPECT_TRUE(cookie->IsSameSite());
-  EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure; SameSite",
+  cookie = CanonicalCookie::Create(secure_url, "A=2; SameSite=Strict",
                                    creation_time, options);
-  EXPECT_TRUE(cookie->IsSameSite());
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
+  EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
+  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure; SameSite=Strict",
+                                   creation_time, options);
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
   cookie = CanonicalCookie::Create(secure_url_with_path,
-                                   "A=2; SameSite; path=/foo/bar",
+                                   "A=2; SameSite=Strict; path=/foo/bar",
                                    creation_time, options);
-  EXPECT_TRUE(cookie->IsSameSite());
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
 
   // Same-site cookies are included for same-site requests:
   options.set_include_same_site();
-  cookie = CanonicalCookie::Create(secure_url, "A=2; SameSite", creation_time,
-                                   options);
-  EXPECT_TRUE(cookie->IsSameSite());
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure; SameSite",
+  cookie = CanonicalCookie::Create(secure_url, "A=2; SameSite=Strict",
                                    creation_time, options);
-  EXPECT_TRUE(cookie->IsSameSite());
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
+  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
+  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure; SameSite=Strict",
+                                   creation_time, options);
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
   EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
   cookie = CanonicalCookie::Create(secure_url_with_path,
-                                   "A=2; SameSite; path=/foo/bar",
+                                   "A=2; SameSite=Strict; path=/foo/bar",
                                    creation_time, options);
-  EXPECT_TRUE(cookie->IsSameSite());
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
   EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url_with_path, options));
 }
 
@@ -635,21 +646,21 @@ TEST(CanonicalCookieTest, EnforceSecureCookiesRequireSecureScheme) {
   EXPECT_TRUE(https_cookie_secure.get());
 
   scoped_ptr<CanonicalCookie> http_cookie_no_secure_extended(
-      CanonicalCookie::Create(http_url, "a", "b", "", "", creation_time,
-                              creation_time, false, false, false, true,
-                              COOKIE_PRIORITY_DEFAULT));
+      CanonicalCookie::Create(
+          http_url, "a", "b", "", "", creation_time, creation_time, false,
+          false, CookieSameSite::STRICT_MODE, true, COOKIE_PRIORITY_DEFAULT));
   scoped_ptr<CanonicalCookie> http_cookie_secure_extended(
-      CanonicalCookie::Create(http_url, "a", "b", "", "", creation_time,
-                              creation_time, true, false, false, true,
-                              COOKIE_PRIORITY_DEFAULT));
+      CanonicalCookie::Create(
+          http_url, "a", "b", "", "", creation_time, creation_time, true, false,
+          CookieSameSite::STRICT_MODE, true, COOKIE_PRIORITY_DEFAULT));
   scoped_ptr<CanonicalCookie> https_cookie_no_secure_extended(
-      CanonicalCookie::Create(https_url, "a", "b", "", "", creation_time,
-                              creation_time, false, false, false, true,
-                              COOKIE_PRIORITY_DEFAULT));
+      CanonicalCookie::Create(
+          https_url, "a", "b", "", "", creation_time, creation_time, false,
+          false, CookieSameSite::STRICT_MODE, true, COOKIE_PRIORITY_DEFAULT));
   scoped_ptr<CanonicalCookie> https_cookie_secure_extended(
-      CanonicalCookie::Create(https_url, "a", "b", "", "", creation_time,
-                              creation_time, true, false, false, true,
-                              COOKIE_PRIORITY_DEFAULT));
+      CanonicalCookie::Create(
+          https_url, "a", "b", "", "", creation_time, creation_time, true,
+          false, CookieSameSite::STRICT_MODE, true, COOKIE_PRIORITY_DEFAULT));
 
   EXPECT_TRUE(http_cookie_no_secure_extended.get());
   EXPECT_FALSE(http_cookie_secure_extended.get());

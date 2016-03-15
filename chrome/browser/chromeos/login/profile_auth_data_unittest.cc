@@ -221,12 +221,12 @@ void ProfileAuthDataTest::PopulateBrowserContext(
   cookies->SetCookieWithDetailsAsync(
       GURL(kSAMLIdPCookieURL), kCookieName, cookie_value, std::string(),
       std::string(), base::Time(), base::Time(), base::Time(), true, false,
-      false, false, net::COOKIE_PRIORITY_DEFAULT,
+      net::CookieSameSite::DEFAULT_MODE, false, net::COOKIE_PRIORITY_DEFAULT,
       net::CookieStore::SetCookiesCallback());
   cookies->SetCookieWithDetailsAsync(
       GURL(kGAIACookieURL), kCookieName, cookie_value, std::string(),
       std::string(), base::Time(), base::Time(), base::Time(), true, false,
-      false, false, net::COOKIE_PRIORITY_DEFAULT,
+      net::CookieSameSite::DEFAULT_MODE, false, net::COOKIE_PRIORITY_DEFAULT,
       net::CookieStore::SetCookiesCallback());
 
   GetChannelIDs(browser_context)

@@ -380,7 +380,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
                            base::Time last_access_time,
                            bool secure,
                            bool http_only,
-                           bool same_site,
+                           CookieSameSite same_site,
                            bool enforce_strict_secure,
                            CookiePriority priority,
                            const SetCookiesCallback& callback)
@@ -417,7 +417,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
   base::Time last_access_time_;
   bool secure_;
   bool http_only_;
-  bool same_site_;
+  CookieSameSite same_site_;
   bool enforce_strict_secure_;
   CookiePriority priority_;
   SetCookiesCallback callback_;
@@ -824,7 +824,7 @@ void CookieMonster::SetCookieWithDetailsAsync(
     Time last_access_time,
     bool secure,
     bool http_only,
-    bool same_site,
+    CookieSameSite same_site,
     bool enforce_strict_secure,
     CookiePriority priority,
     const SetCookiesCallback& callback) {
@@ -1014,7 +1014,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                                          base::Time last_access_time,
                                          bool secure,
                                          bool http_only,
-                                         bool same_site,
+                                         CookieSameSite same_site,
                                          bool enforce_strict_secure,
                                          CookiePriority priority) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1677,7 +1677,9 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   }
 
   // See InitializeHistograms() for details.
-  int32_t type_sample = cc->IsSameSite() ? 1 << COOKIE_TYPE_SAME_SITE : 0;
+  int32_t type_sample = cc->SameSite() != CookieSameSite::NO_RESTRICTION
+                            ? 1 << COOKIE_TYPE_SAME_SITE
+                            : 0;
   type_sample |= cc->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
   type_sample |= cc->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
   histogram_cookie_type_->Add(type_sample);

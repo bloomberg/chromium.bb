@@ -2664,7 +2664,7 @@ TEST_F(URLRequestTest, SameSiteCookiesEnabled) {
   {
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
-        test_server.GetURL("/set-cookie?SameSiteCookieToSet=1;SameSite"),
+        test_server.GetURL("/set-cookie?SameSiteCookieToSet=1;SameSite=Strict"),
         DEFAULT_PRIORITY, &d));
     req->Start();
     base::RunLoop().Run();

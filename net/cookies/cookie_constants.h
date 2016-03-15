@@ -18,12 +18,26 @@ enum CookiePriority {
   COOKIE_PRIORITY_DEFAULT = COOKIE_PRIORITY_MEDIUM
 };
 
+enum class CookieSameSite {
+  NO_RESTRICTION = 0,
+  LAX_MODE = 1,
+  STRICT_MODE = 2,
+  DEFAULT_MODE = NO_RESTRICTION
+};
+
 // Returns the Set-Cookie header priority token corresponding to |priority|.
-NET_EXPORT const std::string CookiePriorityToString(CookiePriority priority);
+//
+// TODO(mkwst): Remove this once its callsites are refactored.
+NET_EXPORT std::string CookiePriorityToString(CookiePriority priority);
 
 // Converts the Set-Cookie header priority token |priority| to a CookiePriority.
 // Defaults to COOKIE_PRIORITY_DEFAULT for empty or unrecognized strings.
 NET_EXPORT CookiePriority StringToCookiePriority(const std::string& priority);
+
+// Converst the Set-Cookie header SameSite token |same_site| to a
+// CookieSameSite. Defaults to CookieSameSite::DEFAULT_MODE for empty or
+// unrecognized strings.
+NET_EXPORT CookieSameSite StringToCookieSameSite(const std::string& same_site);
 
 }  // namespace net
 

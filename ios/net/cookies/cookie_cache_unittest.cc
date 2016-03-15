@@ -18,7 +18,8 @@ CanonicalCookie MakeCookie(const GURL& url,
                            const std::string& name,
                            const std::string& value) {
   return CanonicalCookie(url, name, value, url.host(), url.path(), base::Time(),
-                         base::Time(), base::Time(), false, false, false,
+                         base::Time(), base::Time(), false, false,
+                         net::CookieSameSite::DEFAULT_MODE,
                          net::COOKIE_PRIORITY_DEFAULT);
 }
 

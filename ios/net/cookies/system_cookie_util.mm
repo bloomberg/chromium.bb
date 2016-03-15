@@ -72,8 +72,10 @@ net::CanonicalCookie CanonicalCookieFromSystemCookie(
       base::SysNSStringToUTF8([cookie domain]),
       base::SysNSStringToUTF8([cookie path]), ceation_time,
       base::Time::FromDoubleT([[cookie expiresDate] timeIntervalSince1970]),
-      base::Time(), [cookie isSecure], [cookie isHTTPOnly], false,
-      net::COOKIE_PRIORITY_DEFAULT);
+      base::Time(), [cookie isSecure], [cookie isHTTPOnly],
+      // TODO(mkwst): When iOS begins to support 'SameSite' and 'Priority'
+      // attributes, pass them through here.
+      net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
 }
 
 // Converts net::CanonicalCookie to NSHTTPCookie.

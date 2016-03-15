@@ -373,6 +373,41 @@ CookiePriority DBCookiePriorityToCookiePriority(DBCookiePriority value) {
   return COOKIE_PRIORITY_DEFAULT;
 }
 
+// Possible values for the 'samesite' column
+enum DBCookieSameSite {
+  kCookieSameSiteNoRestriction = 0,
+  kCookieSameSiteLax = 1,
+  kCookieSameSiteStrict = 2,
+};
+
+DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
+  switch (value) {
+    case CookieSameSite::NO_RESTRICTION:
+      return kCookieSameSiteNoRestriction;
+    case CookieSameSite::LAX_MODE:
+      return kCookieSameSiteLax;
+    case CookieSameSite::STRICT_MODE:
+      return kCookieSameSiteStrict;
+  }
+
+  NOTREACHED();
+  return kCookieSameSiteNoRestriction;
+}
+
+CookieSameSite DBCookieSameSiteToCookieSameSite(DBCookieSameSite value) {
+  switch (value) {
+    case kCookieSameSiteNoRestriction:
+      return CookieSameSite::NO_RESTRICTION;
+    case kCookieSameSiteLax:
+      return CookieSameSite::LAX_MODE;
+    case kCookieSameSiteStrict:
+      return CookieSameSite::STRICT_MODE;
+  }
+
+  NOTREACHED();
+  return CookieSameSite::DEFAULT_MODE;
+}
+
 // Increments a specified TimeDelta by the duration between this object's
 // constructor and destructor. Not thread safe. Multiple instances may be
 // created with the same delta instance as long as their lifetimes are nested.
@@ -414,8 +449,9 @@ bool InitTable(sql::Connection* db) {
       "persistent INTEGER NOT NULL DEFAULT 1,"
       "priority INTEGER NOT NULL DEFAULT %d,"
       "encrypted_value BLOB DEFAULT '',"
-      "firstpartyonly INTEGER NOT NULL DEFAULT 0)",
-      CookiePriorityToDBCookiePriority(COOKIE_PRIORITY_DEFAULT)));
+      "firstpartyonly INTEGER NOT NULL DEFAULT %d)",
+      CookiePriorityToDBCookiePriority(COOKIE_PRIORITY_DEFAULT),
+      CookieSameSiteToDBCookieSameSite(CookieSameSite::DEFAULT_MODE)));
   if (!db->Execute(stmt.c_str()))
     return false;
 
@@ -795,7 +831,8 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
         Time::FromInternalValue(smt.ColumnInt64(10)),  // last_access_utc
         smt.ColumnInt(7) != 0,                         // secure
         smt.ColumnInt(8) != 0,                         // httponly
-        smt.ColumnInt(9) != 0,                         // firstpartyonly
+        DBCookieSameSiteToCookieSameSite(
+            static_cast<DBCookieSameSite>(smt.ColumnInt(9))),  // samesite
         DBCookiePriorityToCookiePriority(
             static_cast<DBCookiePriority>(smt.ColumnInt(13)))));  // priority
     DLOG_IF(WARNING, cc->CreationDate() > Time::Now())
@@ -1130,7 +1167,8 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         add_smt.BindInt64(6, po->cc().ExpiryDate().ToInternalValue());
         add_smt.BindInt(7, po->cc().IsSecure());
         add_smt.BindInt(8, po->cc().IsHttpOnly());
-        add_smt.BindInt(9, po->cc().IsSameSite());
+        add_smt.BindInt(9,
+                        CookieSameSiteToDBCookieSameSite(po->cc().SameSite()));
         add_smt.BindInt64(10, po->cc().LastAccessDate().ToInternalValue());
         add_smt.BindInt(11, po->cc().IsPersistent());
         add_smt.BindInt(12, po->cc().IsPersistent());

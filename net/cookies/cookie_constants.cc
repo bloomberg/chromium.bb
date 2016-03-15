@@ -10,12 +10,17 @@
 namespace net {
 
 namespace {
+
 const char kPriorityLow[] = "low";
 const char kPriorityMedium[] = "medium";
 const char kPriorityHigh[] = "high";
+
+const char kSameSiteLax[] = "lax";
+const char kSameSiteStrict[] = "strict";
+
 }  // namespace
 
-NET_EXPORT const std::string CookiePriorityToString(CookiePriority priority) {
+std::string CookiePriorityToString(CookiePriority priority) {
   switch(priority) {
     case COOKIE_PRIORITY_HIGH:
       return kPriorityHigh;
@@ -29,7 +34,7 @@ NET_EXPORT const std::string CookiePriorityToString(CookiePriority priority) {
   return std::string();
 }
 
-NET_EXPORT CookiePriority StringToCookiePriority(const std::string& priority) {
+CookiePriority StringToCookiePriority(const std::string& priority) {
   std::string priority_comp = base::ToLowerASCII(priority);
 
   if (priority_comp == kPriorityHigh)
@@ -40,6 +45,14 @@ NET_EXPORT CookiePriority StringToCookiePriority(const std::string& priority) {
     return COOKIE_PRIORITY_LOW;
 
   return COOKIE_PRIORITY_DEFAULT;
+}
+
+CookieSameSite StringToCookieSameSite(const std::string& same_site) {
+  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteLax))
+    return CookieSameSite::LAX_MODE;
+  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteStrict))
+    return CookieSameSite::STRICT_MODE;
+  return CookieSameSite::DEFAULT_MODE;
 }
 
 }  // namespace net

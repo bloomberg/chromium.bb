@@ -50,7 +50,7 @@ class NET_EXPORT ParsedCookie {
   const std::string& MaxAge() const { return pairs_[maxage_index_].second; }
   bool IsSecure() const { return secure_index_ != 0; }
   bool IsHttpOnly() const { return httponly_index_ != 0; }
-  bool IsSameSite() const { return same_site_index_ != 0; }
+  CookieSameSite SameSite() const;
   CookiePriority Priority() const;
 
   // Returns the number of attributes, for example, returning 2 for:
@@ -70,7 +70,7 @@ class NET_EXPORT ParsedCookie {
   bool SetMaxAge(const std::string& maxage);
   bool SetIsSecure(bool is_secure);
   bool SetIsHttpOnly(bool is_http_only);
-  bool SetIsSameSite(bool is_same_site);
+  bool SetSameSite(const std::string& same_site);
   bool SetPriority(const std::string& priority);
 
   // Returns the cookie description as it appears in a HTML response header.

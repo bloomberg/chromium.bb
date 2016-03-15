@@ -171,7 +171,7 @@ class CookieStoreTest : public testing::Test {
                             const base::Time last_access_time,
                             bool secure,
                             bool http_only,
-                            bool same_site,
+                            CookieSameSite same_site,
                             CookiePriority priority) {
     DCHECK(cs);
     ResultSavingCookieCallback<bool> callback;
@@ -347,40 +347,40 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
 
   EXPECT_TRUE(this->SetCookieWithDetails(
       cs, this->www_google_foo_.url(), "A", "B", std::string(), "/foo",
-      one_hour_ago, one_hour_from_now, base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT));
+      one_hour_ago, one_hour_from_now, base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   // Note that for the creation time to be set exactly, without modification,
   // it must be different from the one set by the line above.
   EXPECT_TRUE(this->SetCookieWithDetails(
       cs, this->www_google_bar_.url(), "C", "D", this->www_google_bar_.domain(),
-      "/bar", two_hours_ago, base::Time(), one_hour_ago, false, true, false,
-      COOKIE_PRIORITY_DEFAULT));
+      "/bar", two_hours_ago, base::Time(), one_hour_ago, false, true,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   EXPECT_TRUE(this->SetCookieWithDetails(
       cs, this->http_www_google_.url(), "E", "F", std::string(), std::string(),
-      base::Time(), base::Time(), base::Time(), true, false, false,
-      COOKIE_PRIORITY_DEFAULT));
+      base::Time(), base::Time(), base::Time(), true, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
   // Test that malformed attributes fail to set the cookie.
   EXPECT_FALSE(this->SetCookieWithDetails(
       cs, this->www_google_foo_.url(), " A", "B", std::string(), "/foo",
-      base::Time(), base::Time(), base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT));
+      base::Time(), base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(this->SetCookieWithDetails(
       cs, this->www_google_foo_.url(), "A;", "B", std::string(), "/foo",
-      base::Time(), base::Time(), base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT));
+      base::Time(), base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(this->SetCookieWithDetails(
       cs, this->www_google_foo_.url(), "A=", "B", std::string(), "/foo",
-      base::Time(), base::Time(), base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT));
+      base::Time(), base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(this->SetCookieWithDetails(
       cs, this->www_google_foo_.url(), "A", "B", "google.ozzzzzzle", "foo",
-      base::Time(), base::Time(), base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT));
+      base::Time(), base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(this->SetCookieWithDetails(
       cs, this->www_google_foo_.url(), "A=", "B", std::string(), "foo",
-      base::Time(), base::Time(), base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT));
+      base::Time(), base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
   // Get all the cookies for a given URL, regardless of properties. This 'get()'
   // operation shouldn't update the access time, as the test checks that the

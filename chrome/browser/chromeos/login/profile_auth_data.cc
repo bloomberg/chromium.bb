@@ -50,7 +50,7 @@ void ImportCookies(const net::CookieList& cookies,
     cookie_store->SetCookieWithDetailsAsync(
         cookie.Source(), cookie.Name(), cookie.Value(), domain, cookie.Path(),
         cookie.CreationDate(), cookie.ExpiryDate(), cookie.LastAccessDate(),
-        cookie.IsSecure(), cookie.IsHttpOnly(), cookie.IsSameSite(),
+        cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(),
         // enforce_strict_secure should have been applied on the original
         // cookie, prior to import.
         false, cookie.Priority(), net::CookieStore::SetCookiesCallback());

@@ -187,72 +187,73 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     // Domain cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_1, "dom_1", "X", ".harvard.edu", "/",
-        base::Time(), base::Time(), base::Time(), false, false, false,
-        COOKIE_PRIORITY_DEFAULT));
+        base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2, "dom_2", "X", ".math.harvard.edu", "/",
-        base::Time(), base::Time(), base::Time(), false, false, false,
-        COOKIE_PRIORITY_DEFAULT));
+        base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_3, "dom_3", "X",
         ".bourbaki.math.harvard.edu", "/", base::Time(), base::Time(),
-        base::Time(), false, false, false, COOKIE_PRIORITY_DEFAULT));
+        base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+        COOKIE_PRIORITY_DEFAULT));
 
     // Host cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_1, "host_1", "X", std::string(), "/",
-        base::Time(), base::Time(), base::Time(), false, false, false,
-        COOKIE_PRIORITY_DEFAULT));
+        base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2, "host_2", "X", std::string(), "/",
-        base::Time(), base::Time(), base::Time(), false, false, false,
-        COOKIE_PRIORITY_DEFAULT));
+        base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_3, "host_3", "X", std::string(), "/",
-        base::Time(), base::Time(), base::Time(), false, false, false,
-        COOKIE_PRIORITY_DEFAULT));
+        base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // http_only cookie
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2, "httpo_check", "x", std::string(), "/",
-        base::Time(), base::Time(), base::Time(), false, true, false,
-        COOKIE_PRIORITY_DEFAULT));
+        base::Time(), base::Time(), base::Time(), false, true,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // same-site cookie
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2, "firstp_check", "x", std::string(),
-        "/", base::Time(), base::Time(), base::Time(), false, false, true,
-        COOKIE_PRIORITY_DEFAULT));
+        "/", base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // Secure cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2_secure, "sec_dom", "X",
         ".math.harvard.edu", "/", base::Time(), base::Time(), base::Time(),
-        true, false, false, COOKIE_PRIORITY_DEFAULT));
+        true, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2_secure, "sec_host", "X", std::string(),
-        "/", base::Time(), base::Time(), base::Time(), true, false, false,
-        COOKIE_PRIORITY_DEFAULT));
+        "/", base::Time(), base::Time(), base::Time(), true, false,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // Domain path cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2, "dom_path_1", "X", ".math.harvard.edu",
-        "/dir1", base::Time(), base::Time(), base::Time(), false, false, false,
-        COOKIE_PRIORITY_DEFAULT));
+        "/dir1", base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2, "dom_path_2", "X", ".math.harvard.edu",
         "/dir1/dir2", base::Time(), base::Time(), base::Time(), false, false,
-        false, COOKIE_PRIORITY_DEFAULT));
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     // Host path cookies
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2, "host_path_1", "X", std::string(),
-        "/dir1", base::Time(), base::Time(), base::Time(), false, false, false,
-        COOKIE_PRIORITY_DEFAULT));
+        "/dir1", base::Time(), base::Time(), base::Time(), false, false,
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
     EXPECT_TRUE(this->SetCookieWithDetails(
         cm, url_top_level_domain_plus_2, "host_path_2", "X", std::string(),
         "/dir1/dir2", base::Time(), base::Time(), base::Time(), false, false,
-        false, COOKIE_PRIORITY_DEFAULT));
+        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
     EXPECT_EQ(14U, this->GetAllCookies(cm).size());
   }
@@ -622,7 +623,7 @@ struct CookiesInputInfo {
   const base::Time expiration_time;
   bool secure;
   bool http_only;
-  bool same_site;
+  CookieSameSite same_site;
   CookiePriority priority;
 };
 
@@ -855,14 +856,14 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
 TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
   MockSetCookiesCallback set_cookies_callback;
   CookieList list;
-  list.push_back(CanonicalCookie(http_www_google_.url(), "A", "B",
-                                 http_www_google_.domain(), "/",
-                                 base::Time::Now(), base::Time(), base::Time(),
-                                 false, true, false, COOKIE_PRIORITY_DEFAULT));
-  list.push_back(CanonicalCookie(http_www_google_.url(), "C", "D",
-                                 http_www_google_.domain(), "/",
-                                 base::Time::Now(), base::Time(), base::Time(),
-                                 false, true, false, COOKIE_PRIORITY_DEFAULT));
+  list.push_back(CanonicalCookie(
+      http_www_google_.url(), "A", "B", http_www_google_.domain(), "/",
+      base::Time::Now(), base::Time(), base::Time(), false, true,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+  list.push_back(CanonicalCookie(
+      http_www_google_.url(), "C", "D", http_www_google_.domain(), "/",
+      base::Time::Now(), base::Time(), base::Time(), false, true,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
   BeginWith(
       SetAllCookiesAction(&cookie_monster(), list, &set_cookies_callback));
@@ -910,7 +911,7 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookieWithDetails) {
                                   base::Time(),
                                   false,
                                   false,
-                                  false,
+                                  CookieSameSite::DEFAULT_MODE,
                                   COOKIE_PRIORITY_DEFAULT};
   BeginWithForDomainKey(
       http_www_google_.domain(),
@@ -927,7 +928,7 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookieWithDetails) {
                                       base::Time(),
                                       false,
                                       false,
-                                      false,
+                                      CookieSameSite::DEFAULT_MODE,
                                       COOKIE_PRIORITY_DEFAULT};
   EXPECT_CALL(set_cookies_callback, Invoke(true))
       .WillOnce(SetCookieWithDetailsAction(&cookie_monster(), cookie_info_exp,
@@ -1743,15 +1744,15 @@ TEST_F(CookieMonsterTest, UniqueCreationTime) {
   EXPECT_TRUE(SetCookieWithDetails(
       cm.get(), http_www_google_.url(), "setCookieWithDetails1", "A",
       http_www_google_.Format(".%D"), "/", Time(), Time(), Time(), false, false,
-      false, COOKIE_PRIORITY_DEFAULT));
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   EXPECT_TRUE(SetCookieWithDetails(
       cm.get(), http_www_google_.url(), "setCookieWithDetails2", "A",
       http_www_google_.Format(".%D"), "/", Time(), Time(), Time(), false, false,
-      false, COOKIE_PRIORITY_DEFAULT));
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   EXPECT_TRUE(SetCookieWithDetails(
       cm.get(), http_www_google_.url(), "setCookieWithDetails3", "A",
       http_www_google_.Format(".%D"), "/", Time(), Time(), Time(), false, false,
-      false, COOKIE_PRIORITY_DEFAULT));
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
   // Now we check
   CookieList cookie_list(GetAllCookies(cm.get()));
@@ -1811,36 +1812,14 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
   base::Time expires(base::Time::Now() + base::TimeDelta::FromSeconds(100));
 
   const CookiesInputInfo input_info[] = {
-      {GURL("http://a.b.google.com"),
-       "a",
-       "1",
-       "",
-       "/path/to/cookie",
-       expires,
-       false,
-       false,
-       false,
-       COOKIE_PRIORITY_DEFAULT},
-      {GURL("https://www.google.com"),
-       "b",
-       "2",
-       ".google.com",
-       "/path/from/cookie",
-       expires + TimeDelta::FromSeconds(10),
-       true,
-       true,
-       false,
-       COOKIE_PRIORITY_DEFAULT},
-      {GURL("https://google.com"),
-       "c",
-       "3",
-       "",
-       "/another/path/to/cookie",
-       base::Time::Now() + base::TimeDelta::FromSeconds(100),
-       true,
-       false,
-       true,
-       COOKIE_PRIORITY_DEFAULT}};
+      {GURL("http://a.b.google.com"), "a", "1", "", "/path/to/cookie", expires,
+       false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT},
+      {GURL("https://www.google.com"), "b", "2", ".google.com",
+       "/path/from/cookie", expires + TimeDelta::FromSeconds(10), true, true,
+       CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT},
+      {GURL("https://google.com"), "c", "3", "", "/another/path/to/cookie",
+       base::Time::Now() + base::TimeDelta::FromSeconds(100), true, false,
+       CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT}};
   const int INPUT_DELETE = 1;
 
   // Create new cookies and flush them to the store.
@@ -1880,7 +1859,7 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
                 output->CreationDate().ToInternalValue());
       EXPECT_EQ(input->secure, output->IsSecure());
       EXPECT_EQ(input->http_only, output->IsHttpOnly());
-      EXPECT_EQ(input->same_site, output->IsSameSite());
+      EXPECT_EQ(input->same_site, output->SameSite());
       EXPECT_TRUE(output->IsPersistent());
       EXPECT_EQ(input->expiration_time.ToInternalValue(),
                 output->ExpiryDate().ToInternalValue());
@@ -2316,18 +2295,18 @@ TEST_F(CookieMonsterTest, SetAllCookies) {
   EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "Y=Z; path=/"));
 
   CookieList list;
-  list.push_back(CanonicalCookie(http_www_google_.url(), "A", "B",
-                                 http_www_google_.url().host(), "/",
-                                 base::Time::Now(), base::Time(), base::Time(),
-                                 false, false, false, COOKIE_PRIORITY_DEFAULT));
-  list.push_back(CanonicalCookie(http_www_google_.url(), "W", "X",
-                                 http_www_google_.url().host(), "/bar",
-                                 base::Time::Now(), base::Time(), base::Time(),
-                                 false, false, false, COOKIE_PRIORITY_DEFAULT));
-  list.push_back(CanonicalCookie(http_www_google_.url(), "Y", "Z",
-                                 http_www_google_.url().host(), "/",
-                                 base::Time::Now(), base::Time(), base::Time(),
-                                 false, false, false, COOKIE_PRIORITY_DEFAULT));
+  list.push_back(CanonicalCookie(
+      http_www_google_.url(), "A", "B", http_www_google_.url().host(), "/",
+      base::Time::Now(), base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+  list.push_back(CanonicalCookie(
+      http_www_google_.url(), "W", "X", http_www_google_.url().host(), "/bar",
+      base::Time::Now(), base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+  list.push_back(CanonicalCookie(
+      http_www_google_.url(), "Y", "Z", http_www_google_.url().host(), "/",
+      base::Time::Now(), base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
   // SetAllCookies must not flush.
   ASSERT_EQ(0, store->flush_count());
@@ -2359,49 +2338,50 @@ TEST_F(CookieMonsterTest, ComputeCookieDiff) {
   base::Time now = base::Time::Now();
   base::Time creation_time = now - base::TimeDelta::FromSeconds(1);
 
-  CanonicalCookie cookie1(http_www_google_.url(), "A", "B",
-                          http_www_google_.url().host(), "/", creation_time,
-                          base::Time(), base::Time(), false, false, false,
-                          COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie2(http_www_google_.url(), "C", "D",
-                          http_www_google_.url().host(), "/", creation_time,
-                          base::Time(), base::Time(), false, false, false,
-                          COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie3(http_www_google_.url(), "E", "F",
-                          http_www_google_.url().host(), "/", creation_time,
-                          base::Time(), base::Time(), false, false, false,
-                          COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie4(http_www_google_.url(), "G", "H",
-                          http_www_google_.url().host(), "/", creation_time,
-                          base::Time(), base::Time(), false, false, false,
-                          COOKIE_PRIORITY_DEFAULT);
+  CanonicalCookie cookie1(
+      http_www_google_.url(), "A", "B", http_www_google_.url().host(), "/",
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+  CanonicalCookie cookie2(
+      http_www_google_.url(), "C", "D", http_www_google_.url().host(), "/",
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+  CanonicalCookie cookie3(
+      http_www_google_.url(), "E", "F", http_www_google_.url().host(), "/",
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+  CanonicalCookie cookie4(
+      http_www_google_.url(), "G", "H", http_www_google_.url().host(), "/",
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
   CanonicalCookie cookie4_with_new_value(
       http_www_google_.url(), "G", "iamnew", http_www_google_.url().host(), "/",
-      creation_time, base::Time(), base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie5(http_www_google_.url(), "I", "J",
-                          http_www_google_.url().host(), "/", creation_time,
-                          base::Time(), base::Time(), false, false, false,
-                          COOKIE_PRIORITY_DEFAULT);
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+  CanonicalCookie cookie5(
+      http_www_google_.url(), "I", "J", http_www_google_.url().host(), "/",
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
   CanonicalCookie cookie5_with_new_creation_time(
       http_www_google_.url(), "I", "J", http_www_google_.url().host(), "/", now,
-      base::Time(), base::Time(), false, false, false, COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie6(http_www_google_.url(), "K", "L",
-                          http_www_google_.url().host(), "/foo", creation_time,
-                          base::Time(), base::Time(), false, false, false,
-                          COOKIE_PRIORITY_DEFAULT);
+      base::Time(), base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      COOKIE_PRIORITY_DEFAULT);
+  CanonicalCookie cookie6(
+      http_www_google_.url(), "K", "L", http_www_google_.url().host(), "/foo",
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
   CanonicalCookie cookie6_with_new_path(
       http_www_google_.url(), "K", "L", http_www_google_.url().host(), "/bar",
-      creation_time, base::Time(), base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT);
-  CanonicalCookie cookie7(http_www_google_.url(), "M", "N",
-                          http_www_google_.url().host(), "/foo", creation_time,
-                          base::Time(), base::Time(), false, false, false,
-                          COOKIE_PRIORITY_DEFAULT);
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+  CanonicalCookie cookie7(
+      http_www_google_.url(), "M", "N", http_www_google_.url().host(), "/foo",
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
   CanonicalCookie cookie7_with_new_path(
       http_www_google_.url(), "M", "N", http_www_google_.url().host(), "/bar",
-      creation_time, base::Time(), base::Time(), false, false, false,
-      COOKIE_PRIORITY_DEFAULT);
+      creation_time, base::Time(), base::Time(), false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
 
   CookieList old_cookies;
   old_cookies.push_back(cookie1);
@@ -2495,7 +2475,7 @@ TEST_F(CookieMonsterTest, HistogramCheck) {
   ASSERT_TRUE(SetCookieWithDetails(
       cm.get(), GURL("http://fake.a.url"), "a", "b", "a.url", "/", base::Time(),
       base::Time::Now() + base::TimeDelta::FromMinutes(59), base::Time(), false,
-      false, false, COOKIE_PRIORITY_DEFAULT));
+      false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
 
   scoped_ptr<base::HistogramSamples> samples2(
       expired_histogram->SnapshotSamples());
@@ -2613,12 +2593,12 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
 
   // We have to manually build this cookie because it contains a control
   // character, and our cookie line parser rejects control characters.
-  CanonicalCookie* cc =
-      new CanonicalCookie(url, "baz",
-                          "\x05"
-                          "boo",
-                          domain, path, now2, later, now2, false, false, false,
-                          COOKIE_PRIORITY_DEFAULT);
+  CanonicalCookie* cc = new CanonicalCookie(
+      url, "baz",
+      "\x05"
+      "boo",
+      domain, path, now2, later, now2, false, false,
+      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
   initial_cookies.push_back(cc);
 
   AddCookieToList(domain, "hello=world; path=" + path, now3, &initial_cookies);

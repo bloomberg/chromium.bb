@@ -373,10 +373,10 @@ void GaiaCookieManagerService::TriggerListAccounts() {
 
 void GaiaCookieManagerService::ForceOnCookieChangedProcessing() {
   GURL google_url = GaiaUrls::GetInstance()->google_url();
-  net::CanonicalCookie cookie(google_url, kGaiaCookieName, "",
-                              google_url.host(), "", base::Time(), base::Time(),
-                              base::Time(), false, false, false,
-                              net::COOKIE_PRIORITY_DEFAULT);
+  net::CanonicalCookie cookie(
+      google_url, kGaiaCookieName, "", google_url.host(), "", base::Time(),
+      base::Time(), base::Time(), false, false,
+      net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
   OnCookieChanged(cookie, true);
 }
 

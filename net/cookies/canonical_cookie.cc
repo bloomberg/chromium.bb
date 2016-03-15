@@ -134,7 +134,7 @@ CanonicalCookie::CanonicalCookie(const GURL& url,
                                  const base::Time& last_access,
                                  bool secure,
                                  bool httponly,
-                                 bool same_site,
+                                 CookieSameSite same_site,
                                  CookiePriority priority)
     : source_(url.SchemeIsFile() ? url : url.GetOrigin()),
       name_(name),
@@ -158,7 +158,7 @@ CanonicalCookie::CanonicalCookie(const GURL& url, const ParsedCookie& pc)
       last_access_date_(Time()),
       secure_(pc.IsSecure()),
       httponly_(pc.IsHttpOnly()),
-      same_site_(pc.IsSameSite()),
+      same_site_(pc.SameSite()),
       priority_(pc.Priority()) {
   if (pc.HasExpires())
     expiry_date_ = CanonExpiration(pc, creation_date_, creation_date_);
@@ -277,7 +277,7 @@ scoped_ptr<CanonicalCookie> CanonicalCookie::Create(
       url, parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain,
       cookie_path, creation_time, cookie_expires, creation_time,
       parsed_cookie.IsSecure(), parsed_cookie.IsHttpOnly(),
-      parsed_cookie.IsSameSite(), parsed_cookie.Priority()));
+      parsed_cookie.SameSite(), parsed_cookie.Priority()));
 }
 
 // static
@@ -291,7 +291,7 @@ scoped_ptr<CanonicalCookie> CanonicalCookie::Create(
     const base::Time& expiration,
     bool secure,
     bool http_only,
-    bool same_site,
+    CookieSameSite same_site,
     bool enforce_strict_secure,
     CookiePriority priority) {
   // Expect valid attribute tokens and values, as defined by the ParsedCookie
@@ -422,8 +422,14 @@ bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
   if (!IsOnPath(url.path()))
     return false;
   // Don't include same-site cookies for cross-site requests.
-  if (IsSameSite() && !options.include_same_site())
+  //
+  // TODO(mkwst): This currently treats both "strict" and "lax" SameSite cookies
+  // in the same way. https://codereview.chromium.org/1783813002 will eventually
+  // distinguish between them based on attributes of the request.
+  if (SameSite() != CookieSameSite::NO_RESTRICTION &&
+      !options.include_same_site()) {
     return false;
+  }
 
   return true;
 }
