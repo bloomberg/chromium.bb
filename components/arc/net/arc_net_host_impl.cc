@@ -92,6 +92,11 @@ void ArcNetHostImpl::GetNetworks(GetNetworksRequestType type,
           kGetNetworksListLimit);
 
   // Extract info for each network and add it to the list.
+  // Even if there's no WiFi, an empty (size=0) list must be returned and not a
+  // null one. The explicitly sized New() constructor ensures the non-null
+  // property.
+  mojo::Array<WifiConfigurationPtr> networks =
+      mojo::Array<WifiConfigurationPtr>::New(0);
   for (base::Value* value : *network_properties_list) {
     WifiConfigurationPtr wc = WifiConfiguration::New();
 
@@ -130,9 +135,9 @@ void ArcNetHostImpl::GetNetworks(GetNetworksRequestType type,
     DCHECK(!tmp.empty());
     wc->bssid = tmp;
 
-    data->networks.push_back(std::move(wc));
+    networks.push_back(std::move(wc));
   }
-
+  data->networks = std::move(networks);
   callback.Run(std::move(data));
 }
 
