@@ -442,7 +442,7 @@ files-toggle-ripple::shadow .ripple.activated {
 .gallery .image-wrapper {
   height: 100%;
   overflow: hidden;
-  position: relative;
+  position: absolute;
   width: 100%;
 }
 
@@ -461,6 +461,23 @@ files-toggle-ripple::shadow .ripple.activated {
   to {
     opacity: 1;
   }
+}
+
+.gallery .ribbon-image > .indicator {
+  -webkit-transition: opacity 500ms ease-in;
+  background-image: -webkit-image-set(
+      url(../images/100/slide_view.png) 1x,
+      url(../images/200/slide_view.png) 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.gallery .ribbon-image > .indicator.loading {
+  opacity: 0.2;
 }
 
 .gallery .ribbon-image[selected] > .selection-frame {

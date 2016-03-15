@@ -436,6 +436,7 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
     this.selectionModel_.setIndexSelected(index, true);
   }.bind(this));
 
+  util.createChild(thumbnail, 'indicator loading');
   util.createChild(thumbnail, 'image-wrapper');
   util.createChild(thumbnail, 'selection-frame');
 
@@ -461,6 +462,10 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
   if (!item.getThumbnailMetadataItem())
     return;
 
+  var hideIndicator = function() {
+    thumbnail.querySelector('.indicator').classList.toggle('loading', false);
+  };
+
   this.thumbnailModel_.get([item.getEntry()]).then(function(metadataList) {
     var loader = new ThumbnailLoader(
         item.getEntry(),
@@ -473,7 +478,7 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
         thumbnail.querySelector('.image-wrapper'),
         ThumbnailLoader.FillMode.AUTO,
         ThumbnailLoader.OptimizationMode.NEVER_DISCARD,
-        undefined /* opt_onSuccess */,
+        hideIndicator /* opt_onSuccess */,
         undefined /* opt_onError */,
         undefined /* opt_onGeneric */,
         0.35 /* opt_autoFillThreshold */,
