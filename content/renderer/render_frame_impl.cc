@@ -235,7 +235,7 @@
 #include "media/renderers/default_renderer_factory.h"
 #endif
 
-#if defined(ENABLE_MOJO_AUDIO_DECODER)
+#if defined(ENABLE_MOJO_AUDIO_DECODER) || defined(ENABLE_MOJO_VIDEO_DECODER)
 #include "media/mojo/services/mojo_decoder_factory.h"  // nogncheck
 #endif
 
@@ -5996,10 +5996,10 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
 }
 
 media::DecoderFactory* RenderFrameImpl::GetDecoderFactory() {
-#if defined(ENABLE_MOJO_AUDIO_DECODER)
+#if defined(ENABLE_MOJO_AUDIO_DECODER) || defined(ENABLE_MOJO_VIDEO_DECODER)
   if (!decoder_factory_) {
     decoder_factory_.reset(
-        new media::MojoDecoderFactory(GetMediaServiceFactory()));
+        new media::MojoDecoderFactory(GetMediaInterfaceProvider()));
   }
 #endif
   return decoder_factory_.get();

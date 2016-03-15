@@ -7,24 +7,22 @@
 
 #include "base/macros.h"
 #include "media/base/decoder_factory.h"
+#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 
-namespace interfaces {
-class ServiceFactory;
-}
-
 class MojoDecoderFactory : public DecoderFactory {
  public:
-  explicit MojoDecoderFactory(interfaces::ServiceFactory* service_factory);
+  explicit MojoDecoderFactory(
+      mojo::shell::mojom::InterfaceProvider* interface_provider);
   ~MojoDecoderFactory() final;
 
   void CreateAudioDecoders(ScopedVector<AudioDecoder>* audio_decoders) final;
 
-  // TODO(xhwang): Add video decoder support if needed.
+  void CreateVideoDecoders(ScopedVector<VideoDecoder>* video_decoders) final;
 
  private:
-  interfaces::ServiceFactory* service_factory_;
+  mojo::shell::mojom::InterfaceProvider* interface_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoDecoderFactory);
 };

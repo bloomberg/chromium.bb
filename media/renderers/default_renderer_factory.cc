@@ -56,6 +56,8 @@ ScopedVector<AudioDecoder> DefaultRendererFactory::CreateAudioDecoders(
 
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));
 
+  // Use an external decoder only if we cannot otherwise decode in the
+  // renderer.
   if (decoder_factory_)
     decoder_factory_->CreateAudioDecoders(&audio_decoders);
 
@@ -68,6 +70,11 @@ ScopedVector<VideoDecoder> DefaultRendererFactory::CreateVideoDecoders(
     GpuVideoAcceleratorFactories* gpu_factories) {
   // Create our video decoders and renderer.
   ScopedVector<VideoDecoder> video_decoders;
+
+  // Prefer an external decoder since one will only exist if it is hardware
+  // accelerated.
+  if (decoder_factory_)
+    decoder_factory_->CreateVideoDecoders(&video_decoders);
 
   // |gpu_factories_| requires that its entry points be called on its
   // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
@@ -86,9 +93,6 @@ ScopedVector<VideoDecoder> DefaultRendererFactory::CreateVideoDecoders(
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   video_decoders.push_back(new FFmpegVideoDecoder());
 #endif
-
-  if (decoder_factory_)
-    decoder_factory_->CreateVideoDecoders(&video_decoders);
 
   return video_decoders;
 }

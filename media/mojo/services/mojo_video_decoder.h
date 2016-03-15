@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_AUDIO_DECODER_H_
-#define MEDIA_MOJO_SERVICES_MOJO_AUDIO_DECODER_H_
+#ifndef MEDIA_MOJO_SERVICES_MOJO_VIDEO_DECODER_H_
+#define MEDIA_MOJO_SERVICES_MOJO_VIDEO_DECODER_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "media/base/audio_decoder.h"
+#include "media/base/video_decoder.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -15,15 +15,16 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-// An AudioDecoder that proxies to an interfaces::AudioDecoder.
-class MojoAudioDecoder : public AudioDecoder {
+// A VideoDecoder that proxies to an interfaces::VideoDecoder.
+class MojoVideoDecoder : public VideoDecoder {
  public:
-  MojoAudioDecoder();
-  ~MojoAudioDecoder() final;
+  MojoVideoDecoder();
+  ~MojoVideoDecoder() final;
 
-  // AudioDecoder implementation.
+  // VideoDecoder implementation.
   std::string GetDisplayName() const final;
-  void Initialize(const AudioDecoderConfig& config,
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
                   CdmContext* cdm_context,
                   const InitCB& init_cb,
                   const OutputCB& output_cb) final;
@@ -31,13 +32,15 @@ class MojoAudioDecoder : public AudioDecoder {
               const DecodeCB& decode_cb) final;
   void Reset(const base::Closure& closure) final;
   bool NeedsBitstreamConversion() const final;
+  bool CanReadWithoutStalling() const final;
+  int GetMaxDecodeRequests() const final;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoAudioDecoder);
+  DISALLOW_COPY_AND_ASSIGN(MojoVideoDecoder);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_AUDIO_DECODER_H_
+#endif  // MEDIA_MOJO_SERVICES_MOJO_VIDEO_DECODER_H_
