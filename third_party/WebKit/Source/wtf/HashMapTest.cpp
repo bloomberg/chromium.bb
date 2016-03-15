@@ -474,6 +474,36 @@ TEST(HashMapTest, MoveOnlyKeyType)
     map.clear();
 }
 
+class CountCopy final {
+public:
+    CountCopy() : m_counter(nullptr) { }
+    explicit CountCopy(int& counter) : m_counter(&counter) { }
+    CountCopy(const CountCopy& other) : m_counter(other.m_counter)
+    {
+        if (m_counter)
+            ++*m_counter;
+    }
+
+private:
+    int* m_counter;
+};
+
+TEST(HashMapTest, MoveShouldNotMakeCopy)
+{
+    HashMap<int, CountCopy> map;
+    int counter = 0;
+    map.add(1, CountCopy(counter));
+
+    HashMap<int, CountCopy> other(map);
+    counter = 0;
+    map = std::move(other);
+    EXPECT_EQ(0, counter);
+
+    counter = 0;
+    HashMap<int, CountCopy> yetAnother(std::move(map));
+    EXPECT_EQ(0, counter);
+}
+
 } // anonymous namespace
 
 } // namespace WTF

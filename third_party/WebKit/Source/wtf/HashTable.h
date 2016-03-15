@@ -424,8 +424,10 @@ public:
     }
 
     HashTable(const HashTable&);
+    HashTable(HashTable&&);
     void swap(HashTable&);
     HashTable& operator=(const HashTable&);
+    HashTable& operator=(HashTable&&);
 
     // When the hash table is empty, just return the same iterator for end as
     // for begin.  This is more efficient because we don't have to skip all the
@@ -1232,6 +1234,25 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::H
 }
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::HashTable(HashTable&& other)
+    : m_table(nullptr)
+    , m_tableSize(0)
+    , m_keyCount(0)
+    , m_deletedCount(0)
+    , m_queueFlag(false)
+#if ENABLE(ASSERT)
+    , m_accessForbidden(false)
+    , m_modifications(0)
+#endif
+#if DUMP_HASHTABLE_STATS_PER_TABLE
+    , m_stats(adoptPtr(new Stats(*other.m_stats)))
+#endif
+{
+    swap(other);
+}
+
+
+template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::swap(HashTable& other)
 {
     ASSERT(!m_accessForbidden);
@@ -1259,6 +1280,13 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>& H
 {
     HashTable tmp(other);
     swap(tmp);
+    return *this;
+}
+
+template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>& HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::operator=(HashTable&& other)
+{
+    swap(other);
     return *this;
 }
 

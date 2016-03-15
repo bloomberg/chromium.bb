@@ -203,6 +203,69 @@ TEST(HashSetTest, HashSetRefPtr)
     EXPECT_EQ(1, DummyRefCounted::s_refInvokesCount);
 }
 
+class CountCopy final {
+public:
+    static int* const kDeletedValue;
+
+    explicit CountCopy(int* counter = nullptr) : m_counter(counter) { }
+    CountCopy(const CountCopy& other) : m_counter(other.m_counter)
+    {
+        if (m_counter && m_counter != kDeletedValue)
+            ++*m_counter;
+    }
+    const int* counter() const { return m_counter; }
+
+private:
+    int* m_counter;
+};
+
+int* const CountCopy::kDeletedValue = reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
+
+struct CountCopyHashTraits : public GenericHashTraits<CountCopy> {
+    static const bool emptyValueIsZero = false;
+    static const bool hasIsEmptyValueFunction = true;
+    static bool isEmptyValue(const CountCopy& value) { return !value.counter(); }
+    static void constructDeletedValue(CountCopy& slot, bool) { slot = CountCopy(CountCopy::kDeletedValue); }
+    static bool isDeletedValue(const CountCopy& value) { return value.counter() == CountCopy::kDeletedValue; }
+};
+
+struct CountCopyHash : public PtrHash<const int*> {
+    static unsigned hash(const CountCopy& value) { return PtrHash<const int*>::hash(value.counter()); }
+    static bool equal(const CountCopy& left, const CountCopy& right)
+    {
+        return PtrHash<const int*>::equal(left.counter(), right.counter());
+    }
+    static const bool safeToCompareToEmptyOrDeleted = true;
+};
+
+} // anonymous namespace
+
+template <>
+struct HashTraits<CountCopy> : public CountCopyHashTraits { };
+
+template <>
+struct DefaultHash<CountCopy> {
+    using Hash = CountCopyHash;
+};
+
+namespace {
+
+TEST(HashSetTest, MoveShouldNotMakeCopy)
+{
+    HashSet<CountCopy> set;
+    int counter = 0;
+    set.add(CountCopy(&counter));
+
+    HashSet<CountCopy> other(set);
+    counter = 0;
+    set = std::move(other);
+    EXPECT_EQ(0, counter);
+
+    counter = 0;
+    HashSet<CountCopy> yetAnother(std::move(set));
+    EXPECT_EQ(0, counter);
+}
+
 } // anonymous namespace
 
 } // namespace WTF

@@ -719,6 +719,87 @@ TEST(LinkedHashSetTest, Swap)
     swapTestHelper<LinkedHashSet<int>>();
 }
 
+class CountCopy final {
+public:
+    static int* const kDeletedValue;
+
+    explicit CountCopy(int* counter = nullptr) : m_counter(counter) { }
+    CountCopy(const CountCopy& other) : m_counter(other.m_counter)
+    {
+        if (m_counter && m_counter != kDeletedValue)
+            ++*m_counter;
+    }
+    const int* counter() const { return m_counter; }
+
+private:
+    int* m_counter;
+};
+
+int* const CountCopy::kDeletedValue = reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
+
+struct CountCopyHashTraits : public GenericHashTraits<CountCopy> {
+    static bool isEmptyValue(const CountCopy& value) { return !value.counter(); }
+    static void constructDeletedValue(CountCopy& slot, bool) { slot = CountCopy(CountCopy::kDeletedValue); }
+    static bool isDeletedValue(const CountCopy& value) { return value.counter() == CountCopy::kDeletedValue; }
+};
+
+struct CountCopyHash : public PtrHash<const int*> {
+    static unsigned hash(const CountCopy& value) { return PtrHash<const int*>::hash(value.counter()); }
+    static bool equal(const CountCopy& left, const CountCopy& right)
+    {
+        return PtrHash<const int*>::equal(left.counter(), right.counter());
+    }
+};
+
+} // anonymous namespace
+
+template <>
+struct HashTraits<CountCopy> : public CountCopyHashTraits { };
+
+template <>
+struct DefaultHash<CountCopy> {
+    using Hash = CountCopyHash;
+};
+
+namespace {
+
+template <typename Set>
+int moveConstructorCopyCount()
+{
+    Set set;
+    int counter = 0;
+    set.add(CountCopy(&counter));
+
+    counter = 0;
+    Set other(std::move(set));
+    return counter;
+}
+
+template <typename Set>
+int moveAssignmentCopyCount()
+{
+    Set set;
+    int counter = 0;
+    set.add(CountCopy(&counter));
+
+    Set other(set);
+    counter = 0;
+    set = std::move(other);
+    return counter;
+}
+
+TEST(ListHashSetTest, MoveShouldNotMakeCopy)
+{
+    EXPECT_EQ(0, moveConstructorCopyCount<ListHashSet<CountCopy>>());
+    EXPECT_EQ(0, moveAssignmentCopyCount<ListHashSet<CountCopy>>());
+}
+
+TEST(LinkedHashSetTest, MoveAssignmentShouldNotMakeACopy)
+{
+    EXPECT_EQ(0, moveConstructorCopyCount<LinkedHashSet<CountCopy>>());
+    EXPECT_EQ(0, moveAssignmentCopyCount<LinkedHashSet<CountCopy>>());
+}
+
 } // anonymous namespace
 
 } // namespace WTF

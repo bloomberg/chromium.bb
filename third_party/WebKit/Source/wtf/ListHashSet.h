@@ -97,7 +97,9 @@ public:
 
     ListHashSet();
     ListHashSet(const ListHashSet&);
+    ListHashSet(ListHashSet&&);
     ListHashSet& operator=(const ListHashSet&);
+    ListHashSet& operator=(ListHashSet&&);
     void finalize();
 
     void swap(ListHashSet&);
@@ -681,10 +683,25 @@ inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(const ListHashSet& othe
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
+inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(ListHashSet&& other)
+    : m_head(nullptr)
+    , m_tail(nullptr)
+{
+    swap(other);
+}
+
+template <typename T, size_t inlineCapacity, typename U, typename V>
 inline ListHashSet<T, inlineCapacity, U, V>& ListHashSet<T, inlineCapacity, U, V>::operator=(const ListHashSet& other)
 {
     ListHashSet tmp(other);
     swap(tmp);
+    return *this;
+}
+
+template <typename T, size_t inlineCapacity, typename U, typename V>
+inline ListHashSet<T, inlineCapacity, U, V>& ListHashSet<T, inlineCapacity, U, V>::operator=(ListHashSet&& other)
+{
+    swap(other);
     return *this;
 }
 

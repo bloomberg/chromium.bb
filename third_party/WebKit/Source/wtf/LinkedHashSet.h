@@ -198,7 +198,9 @@ public:
 
     LinkedHashSet();
     LinkedHashSet(const LinkedHashSet&);
+    LinkedHashSet(LinkedHashSet&&);
     LinkedHashSet& operator=(const LinkedHashSet&);
+    LinkedHashSet& operator=(LinkedHashSet&&);
 
     // Needs finalization. The anchor needs to unlink itself from the chain.
     ~LinkedHashSet();
@@ -514,10 +516,24 @@ inline LinkedHashSet<T, U, V, W>::LinkedHashSet(const LinkedHashSet& other)
 }
 
 template<typename T, typename U, typename V, typename W>
+inline LinkedHashSet<T, U, V, W>::LinkedHashSet(LinkedHashSet&& other)
+    : m_anchor()
+{
+    swap(other);
+}
+
+template<typename T, typename U, typename V, typename W>
 inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(const LinkedHashSet& other)
 {
     LinkedHashSet tmp(other);
     swap(tmp);
+    return *this;
+}
+
+template<typename T, typename U, typename V, typename W>
+inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(LinkedHashSet&& other)
+{
+    swap(other);
     return *this;
 }
 
