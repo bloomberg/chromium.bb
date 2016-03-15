@@ -156,7 +156,7 @@ const char* const invalid[] = {
     "\xed\xa0\x80", "\xed\x0a\x8f", "\xed\xbf\xbf",
     //
     // overlong sequences
-    "\xc0\x80"               // U+0000
+    "\xc0\x80",              // U+0000
     "\xc1\x80",              // "A"
     "\xc1\x81",              // "B"
     "\xe0\x80\x80",          // U+0000
