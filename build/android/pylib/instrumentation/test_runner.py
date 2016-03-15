@@ -244,7 +244,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
       permissions = apk_under_test.GetPermissions() if apk_under_test else None
       self.device.ClearApplicationState(
           self.package_info.package, permissions=permissions)
-      self.device.ClearApplicationState(self.package_info.package)
 
   def TearDownPerfMonitoring(self, test):
     """Cleans up performance monitoring if the specified test required it.
