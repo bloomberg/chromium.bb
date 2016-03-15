@@ -12,33 +12,7 @@
         "$ref": "types.private.ChromeDirectSetting",
         "value": ["easy_unlock.proximity_required", {"type":"boolean"}],
         "description": "If true, a remote Easy Unlock device can only unlock the local device if it is in very close proximity (roughly, within a foot). This preference's value is a boolean, defaulting to <code>false</code>."
-      },
-      "googleGeolocationAccessEnabled": {
-        "nocompile": true,
-        "$ref": "types.private.ChromeDirectSetting",
-        "value": ["googlegeolocationaccess.enabled", {"type":"boolean"}],
-        "description": "If enabled, Google services can access the user's location. This preference's value is a boolean, defaulting to <code>false</code>."
       }
-    },
-    "functions": [
-      {
-        "name": "getSyncCategoriesWithoutPassphrase",
-        "description": "Returns a list of sync categories the user has enabled without using a custom passphrase for encryption. The possible values are those that can be returned from syncer::ModelTypeToString in sync/syncable/model_type.cc.",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name": "categories",
-                "type": "array",
-                "items": {"type": "string"}
-              }
-            ]
-          }
-        ]
-      }
-    ]
+    }
   }
 ]

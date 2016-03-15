@@ -1577,12 +1577,6 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // corresponding access token.
 const char kGeolocationAccessToken[] = "geolocation.access_token";
 
-#if BUILDFLAG(ENABLE_GOOGLE_NOW)
-// Boolean that is true when Google services can use the user's location.
-const char kGoogleGeolocationAccessEnabled[] =
-    "googlegeolocationaccess.enabled";
-#endif
-
 // Boolean that specifies whether to enable the Google Now Launcher extension.
 // Note: This is not the notifications component gated by ENABLE_GOOGLE_NOW.
 const char kGoogleNowLauncherEnabled[] = "google_now_launcher.enabled";

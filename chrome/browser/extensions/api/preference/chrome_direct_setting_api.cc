@@ -31,7 +31,6 @@ class PreferenceWhitelist {
     // installed. Otherwise, users may install your extension, the extension may
     // toggle settings, and after the extension has been disabled/uninstalled
     // the toggled setting remains in place. See http://crbug.com/164227#c157 .
-    whitelist_.insert("googlegeolocationaccess.enabled");
     // The following settings need to be checked and probably removed. See
     // http://crbug.com/164227#c157 .
     whitelist_.insert("easy_unlock.proximity_required");

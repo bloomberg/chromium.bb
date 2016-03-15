@@ -562,9 +562,6 @@ extern const char kWebAppCreateInQuickLaunchBar[];
 
 extern const char kGeolocationAccessToken[];
 
-#if BUILDFLAG(ENABLE_GOOGLE_NOW)
-extern const char kGoogleGeolocationAccessEnabled[];
-#endif
 extern const char kGoogleNowLauncherEnabled[];
 
 extern const char kDefaultAudioCaptureDevice[];

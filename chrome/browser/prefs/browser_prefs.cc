@@ -272,6 +272,12 @@ const char kOverscrollVerticalResistThreshold[] =
     "overscroll.vertical_resist_threshold";
 #endif  // defined(USE_AURA)
 
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
+// Deprecated 3/2016
+const char kGoogleGeolocationAccessEnabled[] =
+    "googlegeolocationaccess.enabled";
+#endif
+
 }  // namespace
 
 namespace chrome {
@@ -580,6 +586,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(kURLsToRestoreOnStartupOld);
   registry->RegisterInt64Pref(kRestoreStartupURLsMigrationTime, 0);
   registry->RegisterBooleanPref(kRestoreOnStartupMigrated, false);
+
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
+  registry->RegisterBooleanPref(kGoogleGeolocationAccessEnabled, false);
+#endif
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -656,6 +666,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kOverscrollHorizontalResistThreshold);
   profile_prefs->ClearPref(kOverscrollVerticalResistThreshold);
 #endif  // defined(USE_AURA)
+
+#if BUILDFLAG(ENABLE_GOOGLE_NOW)
+  // Added 3/2016.
+  profile_prefs->ClearPref(kGoogleGeolocationAccessEnabled);
+#endif
 }
 
 }  // namespace chrome
