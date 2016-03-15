@@ -685,15 +685,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   EXPECT_EQ(3, controller.GetEntryCount());
 
-  // ... and replace it with a failed load. (Note that when you set the
-  // should_replace_current_entry flag, the navigation is classified as NEW_PAGE
-  // because that is a classification of the renderer's behavior, and the flag
-  // is a browser-side flag.)
+  // ... and replace it with a failed load.
+  // TODO(creis): Make this be NEW_PAGE along with the other location.replace
+  // cases.  There isn't much impact to having this be EXISTING_PAGE for now.
+  // See https://crbug.com/317872.
   {
     FrameNavigateParamsCapturer capturer(root);
     NavigateToURLAndReplace(shell(), error_url);
     capturer.Wait();
-    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
     NavigationEntry* entry = controller.GetLastCommittedEntry();
     EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
     EXPECT_EQ(3, controller.GetEntryCount());
@@ -792,6 +792,20 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
               capturer.params().transition);
     EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
     EXPECT_TRUE(capturer.details().is_in_page);
+  }
+
+  if (AreAllSitesIsolatedForTesting()) {
+    // Cross-process location.replace().
+    FrameNavigateParamsCapturer capturer(root);
+    GURL frame_url(embedded_test_server()->GetURL(
+        "foo.com", "/navigation_controller/simple_page_1.html"));
+    std::string script = "location.replace('" + frame_url.spec() + "')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    EXPECT_FALSE(capturer.details().is_in_page);
   }
 }
 
@@ -916,6 +930,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   {
     // location.replace().
+    // TODO(creis): Change this to be NEW_PAGE with replacement in
+    // https://crbug.com/317872.
     FrameNavigateParamsCapturer capturer(root);
     GURL frame_url(embedded_test_server()->GetURL(
         "/navigation_controller/simple_page_1.html"));
@@ -2912,6 +2928,63 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   GURL url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   DoReplaceStateWhilePending(shell(), url, url, "simple_page_1.html");
+}
+
+// Ensure that a pending NavigationEntry for a different navigation doesn't
+// cause a commit to be incorrectly treated as a replacement.
+// See https://crbug.com/593153.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       OtherCommitDuringPendingEntryWithReplacement) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Load an initial page.
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  int entry_count = controller.GetEntryCount();
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(start_url, controller.GetLastCommittedEntry()->GetURL());
+
+  // Start a cross-process navigation with replacement, which never completes.
+  GURL foo_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/page_with_links.html"));
+  NavigationStallDelegate stall_delegate(foo_url);
+  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  NavigationController::LoadURLParams params(foo_url);
+  params.should_replace_current_entry = true;
+  controller.LoadURLWithParams(params);
+
+  // That should be the pending entry.
+  NavigationEntryImpl* entry = controller.GetPendingEntry();
+  ASSERT_NE(nullptr, entry);
+  EXPECT_EQ(foo_url, entry->GetURL());
+  EXPECT_EQ(entry_count, controller.GetEntryCount());
+
+  {
+    // Now the existing page uses history.pushState() while the pending entry
+    // for the other navigation still exists.
+    FrameNavigateParamsCapturer capturer(root);
+    capturer.set_wait_for_load(false);
+    std::string script = "history.pushState({}, '', 'pushed')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
+  }
+
+  // The in-page navigation should not have replaced the previous entry.
+  GURL push_state_url(
+      embedded_test_server()->GetURL("/navigation_controller/pushed"));
+  EXPECT_EQ(entry_count + 1, controller.GetEntryCount());
+  EXPECT_EQ(push_state_url, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(start_url, controller.GetEntryAtIndex(0)->GetURL());
+
+  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // Ensure the renderer process does not get confused about the current entry

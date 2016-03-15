@@ -228,7 +228,6 @@ NavigationControllerImpl::NavigationControllerImpl(
     : browser_context_(browser_context),
       pending_entry_(NULL),
       failed_pending_entry_id_(0),
-      failed_pending_entry_should_replace_(false),
       last_committed_entry_index_(-1),
       pending_entry_index_(-1),
       transient_entry_index_(-1),
@@ -860,20 +859,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
       pending_entry_->restore_type() != NavigationEntryImpl::RESTORE_NONE)
     pending_entry_->set_restore_type(NavigationEntryImpl::RESTORE_NONE);
 
-  // If we are doing a cross-site reload, we need to replace the existing
-  // navigation entry, not add another entry to the history. This has the side
-  // effect of removing forward browsing history, if such existed. Or if we are
-  // doing a cross-site redirect navigation, we will do a similar thing.
-  //
-  // If this is an error load, we may have already removed the pending entry
-  // when we got the notice of the load failure. If so, look at the copy of the
-  // pending parameters that were saved.
-  if (params.url_is_unreachable && failed_pending_entry_id_ != 0) {
-    details->did_replace_entry = failed_pending_entry_should_replace_;
-  } else {
-    details->did_replace_entry = pending_entry_ &&
-                                 pending_entry_->should_replace_entry();
-  }
+  // The renderer tells us whether the navigation replaces the current entry.
+  details->did_replace_entry = params.should_replace_current_entry;
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
@@ -1016,6 +1003,18 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
 
     // Valid subframe navigation.
     return NAVIGATION_TYPE_NEW_SUBFRAME;
+  }
+
+  // Cross-process location.replace navigations should be classified as New with
+  // replacement rather than ExistingPage, since it is not safe to reuse the
+  // NavigationEntry.
+  // TODO(creis): Have the renderer classify location.replace as
+  // did_create_new_entry for all cases and eliminate this special case.  This
+  // requires updating several test expectations.  See https://crbug.com/317872.
+  if (!rfh->GetParent() && GetLastCommittedEntry() &&
+      GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance() &&
+      params.should_replace_current_entry) {
+    return NAVIGATION_TYPE_NEW_PAGE;
   }
 
   // We only clear the session history when navigating to a new page.
@@ -2001,8 +2000,6 @@ void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
 
   if (was_failure && pending_entry_) {
     failed_pending_entry_id_ = pending_entry_->GetUniqueID();
-    failed_pending_entry_should_replace_ =
-        pending_entry_->should_replace_entry();
   } else {
     failed_pending_entry_id_ = 0;
   }

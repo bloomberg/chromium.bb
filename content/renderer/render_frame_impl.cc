@@ -3742,18 +3742,7 @@ void RenderFrameImpl::willSendRequest(
   // Attach |should_replace_current_entry| state to requests so that, should
   // this navigation later require a request transfer, all state is preserved
   // when it is re-created in the new process.
-  bool should_replace_current_entry = false;
-  if (navigation_state->IsContentInitiated()) {
-    should_replace_current_entry = data_source->replacesCurrentHistoryItem();
-  } else {
-    // If the navigation is browser-initiated, the NavigationState contains the
-    // correct value instead of the WebDataSource.
-    //
-    // TODO(davidben): Avoid this awkward duplication of state. See comment on
-    // NavigationState::should_replace_current_entry().
-    should_replace_current_entry =
-        navigation_state->common_params().should_replace_current_entry;
-  }
+  bool should_replace_current_entry = data_source->replacesCurrentHistoryItem();
 
   int provider_id = kInvalidServiceWorkerProviderId;
   if (request.getFrameType() == blink::WebURLRequest::FrameTypeTopLevel ||
@@ -4392,6 +4381,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.intended_as_new_entry =
       navigation_state->request_params().intended_as_new_entry;
   params.did_create_new_entry = commit_type == blink::WebStandardCommit;
+  params.should_replace_current_entry = ds->replacesCurrentHistoryItem();
   params.post_id = -1;
   params.page_id = render_view_->page_id_;
   params.nav_entry_id = navigation_state->request_params().nav_entry_id;
@@ -5217,11 +5207,9 @@ void RenderFrameImpl::OpenURL(const GURL& url,
   if (IsBrowserInitiated(pending_navigation_params_.get())) {
     // This is necessary to preserve the should_replace_current_entry value on
     // cross-process redirects, in the event it was set by a previous process.
-    //
-    // TODO(davidben): Avoid this awkward duplication of state. See comment on
-    // NavigationState::should_replace_current_entry().
-    params.should_replace_current_entry =
-        pending_navigation_params_->common_params.should_replace_current_entry;
+    WebDataSource* ds = frame_->provisionalDataSource();
+    DCHECK(ds);
+    params.should_replace_current_entry = ds->replacesCurrentHistoryItem();
   } else {
     params.should_replace_current_entry =
         should_replace_current_entry && render_view_->history_list_length_;
@@ -5298,8 +5286,12 @@ void RenderFrameImpl::NavigateInternal(
   pending_navigation_params_->common_params.navigation_start =
       base::TimeTicks();
 
-  // Create parameters for a standard navigation.
-  blink::WebFrameLoadType load_type = blink::WebFrameLoadType::Standard;
+  // Create parameters for a standard navigation, indicating whether it should
+  // replace the current NavigationEntry.
+  blink::WebFrameLoadType load_type =
+      common_params.should_replace_current_entry
+          ? blink::WebFrameLoadType::ReplaceCurrentItem
+          : blink::WebFrameLoadType::Standard;
   blink::WebHistoryLoadType history_load_type =
       blink::WebHistoryDifferentDocumentLoad;
   bool should_load_request = false;
@@ -5429,15 +5421,6 @@ void RenderFrameImpl::NavigateInternal(
     pending_navigation_params_->common_params.navigation_start =
         SanitizeNavigationTiming(load_type, common_params.navigation_start,
                                  renderer_navigation_start);
-
-    // PlzNavigate: Check if the load should replace the current item.
-    // TODO(clamy): Remove this when
-    // https://codereview.chromium.org/1250163002/ lands and makes it default
-    // for the current architecture.
-    if (browser_side_navigation && common_params.should_replace_current_entry) {
-      DCHECK(load_type == blink::WebFrameLoadType::Standard);
-      load_type = blink::WebFrameLoadType::ReplaceCurrentItem;
-    }
 
     // PlzNavigate: check if the navigation being committed originated as a
     // client redirect.

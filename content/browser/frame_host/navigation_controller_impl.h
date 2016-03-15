@@ -376,8 +376,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   NavigationEntryImpl* pending_entry_;
 
   // If a new entry fails loading, details about it are temporarily held here
-  // until the error page is shown. These variables are only valid if
-  // |failed_pending_entry_id_| is not 0.
+  // until the error page is shown (or 0 otherwise).
   //
   // TODO(avi): We need a better way to handle the connection between failed
   // loads and the subsequent load of the error page. This current approach has
@@ -385,7 +384,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   // error page loaded, and 2. This doesn't work very well for frames.
   // http://crbug.com/474261
   int failed_pending_entry_id_;
-  bool failed_pending_entry_should_replace_;
 
   // The index of the currently visible entry.
   int last_committed_entry_index_;
