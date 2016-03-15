@@ -139,10 +139,16 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #if defined(OS_WIN)
 #if defined(__clang__)
   html_source->AddString("compiler", "clang");
+#elif defined(_MSC_VER) && _MSC_VER == 1900
+  html_source->AddString("compiler", "MSVC 2015");
+#elif defined(_MSC_VER) && _MSC_VER == 1800
+  html_source->AddString("compiler", "MSVC 2013");
+#elif defined(_MSC_VER)
+#error "Unsupported version of MSVC."
 #else
-  html_source->AddString("compiler", "MSVC");
+  html_source->AddString("compiler", "Unknown");
 #endif
-#endif
+#endif  // defined(OS_WIN)
 
   html_source->SetJsonPath("strings.js");
   html_source->AddResourcePath(version_ui::kVersionJS, IDR_VERSION_UI_JS);
