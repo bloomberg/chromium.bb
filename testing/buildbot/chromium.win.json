@@ -1692,6 +1692,9 @@
         "test": "events_unittests"
       },
       {
+        "test": "interactive_ui_tests"
+      },
+      {
         "test": "ipc_mojo_unittests"
       },
       {
