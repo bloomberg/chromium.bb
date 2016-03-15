@@ -1555,9 +1555,6 @@ function CommandLineAPI(commandLineAPIImpl, callFrame)
      */
     function inScopeVariables(member)
     {
-        if (!callFrame)
-            return (member in inspectedGlobalObject);
-
         var scopeChain = callFrame.scopeChain;
         for (var i = 0; i < scopeChain.length; ++i) {
             if (member in scopeChain[i])
@@ -1590,7 +1587,7 @@ function CommandLineAPI(commandLineAPIImpl, callFrame)
 
     for (var i = 0; i < CommandLineAPI.members_.length; ++i) {
         var member = CommandLineAPI.members_[i];
-        if (inScopeVariables(member))
+        if (callFrame && inScopeVariables(member))
             continue;
 
         this[member] = bind(commandLineAPIImpl[member], commandLineAPIImpl);
@@ -1599,10 +1596,10 @@ function CommandLineAPI(commandLineAPIImpl, callFrame)
 
     for (var i = 0; i < 5; ++i) {
         var member = "$" + i;
-        if (inScopeVariables(member))
+        if (callFrame && inScopeVariables(member))
             continue;
 
-        this.__defineGetter__("$" + i, bind(commandLineAPIImpl._inspectedObject, commandLineAPIImpl, i));
+        this[member] = bind(commandLineAPIImpl._inspectedObject, commandLineAPIImpl, i);
     }
 
     this.$_ = injectedScript._lastResult;

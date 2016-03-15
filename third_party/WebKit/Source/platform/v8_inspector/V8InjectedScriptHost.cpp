@@ -548,11 +548,22 @@ bool V8Debugger::isCommandLineAPIMethod(const String16& name)
     if (methods.size() == 0) {
         const char* members[] = { "$", "$$", "$x", "dir", "dirxml", "keys", "values", "profile", "profileEnd",
             "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners",
-            "debug", "undebug", "monitor", "unmonitor", "table", "$_", "$0", "$1", "$2", "$3", "$4" };
+            "debug", "undebug", "monitor", "unmonitor", "table", "$_" };
         for (size_t i = 0; i < sizeof(members) / sizeof(const char*); ++i)
             methods.add(members[i]);
     }
     return methods.find(name) != methods.end();
+}
+
+bool V8Debugger::isCommandLineAPIGetter(const String16& name)
+{
+    DEFINE_STATIC_LOCAL(protocol::HashSet<String16>, getters, ());
+    if (getters.size() == 0) {
+        const char* members[] = { "$0", "$1", "$2", "$3", "$4" };
+        for (size_t i = 0; i < sizeof(members) / sizeof(const char*); ++i)
+            getters.add(members[i]);
+    }
+    return getters.find(name) != getters.end();
 }
 
 namespace {

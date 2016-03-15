@@ -288,7 +288,9 @@ static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const Atomic
     if (!InspectorInstrumentation::hasFrontends())
         return false;
 
-    if (!V8Debugger::isCommandLineAPIMethod(nameString))
+    bool isGetter = V8Debugger::isCommandLineAPIGetter(nameString);
+    bool isMethod = !isGetter && V8Debugger::isCommandLineAPIMethod(nameString);
+    if (!isGetter && !isMethod)
         return false;
 
     v8::Isolate* isolate = info.GetIsolate();
@@ -300,8 +302,17 @@ static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const Atomic
     if (v8Call(global->Get(context, V8Debugger::commandLineAPISymbol(isolate)), commandLineAPI)) {
         v8::Local<v8::Value> value;
         if (commandLineAPI->IsObject() && v8Call(commandLineAPI->ToObject(isolate)->Get(context, name), value)) {
-            v8SetReturnValue(info, value);
-            return true;
+            if (isMethod) {
+                v8SetReturnValue(info, value);
+                return true;
+            }
+            if (isGetter && value->IsFunction()) {
+                v8::Local<v8::Function> getterFunction = v8::Local<v8::Function>::Cast(value);
+                if (getterFunction->Call(context, commandLineAPI, 0, nullptr).ToLocal(&value)) {
+                    v8SetReturnValue(info, value);
+                    return true;
+                }
+            }
         }
     }
 
