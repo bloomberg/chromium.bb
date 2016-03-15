@@ -10,7 +10,6 @@ import android.view.View;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -60,7 +59,6 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testHttpGetDownload() throws Exception {
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/get.html"));
         waitForFocus();
@@ -77,7 +75,6 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testDangerousDownload() throws Exception {
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/dangerous.html"));
         waitForFocus();
@@ -95,7 +92,6 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testHttpPostDownload() throws Exception {
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();
@@ -139,7 +135,6 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testDuplicateHttpPostDownload_Overwrite() throws Exception {
         // Download a file.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
@@ -169,7 +164,6 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testDuplicateHttpPostDownload_CreateNew() throws Exception {
         // Download a file.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
@@ -202,7 +196,6 @@ public class DownloadTest extends DownloadTestBase {
     */
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testDuplicateHttpPostDownload_Dismiss() throws Exception {
         // Download a file.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
@@ -232,7 +225,6 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testDuplicateHttpPostDownload_AllowMultipleInfoBars() throws Exception {
         assertFalse(hasDownload("superbo.txt", SUPERBO_CONTENTS));
         // Download a file.
@@ -328,7 +320,6 @@ public class DownloadTest extends DownloadTestBase {
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testDuplicateHttpPostDownload_OpenNewTabAndReplace() throws Exception {
         final String url =
                 mTestServer.getURL("/chrome/test/data/android/download/get.html");
@@ -367,7 +358,6 @@ public class DownloadTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Downloads"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/591224")
     public void testUrlEscaping() throws Exception {
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/urlescaping.html"));
         waitForFocus();

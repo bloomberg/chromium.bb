@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -95,7 +94,6 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Navigation"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/592642")
     public void testContentUrlFromFile() throws InterruptedException, IOException {
         final String target = "content_from_file";
         final File file = new File(Environment.getExternalStorageDirectory(), target + ".html");
@@ -115,7 +113,6 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Navigation"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/592642")
     public void testFileUrlNavigation() throws InterruptedException, IOException {
         final File file = new File(Environment.getExternalStorageDirectory(),
                 "url_navigation_test.html");
