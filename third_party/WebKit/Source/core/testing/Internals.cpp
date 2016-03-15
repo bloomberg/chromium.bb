@@ -1867,6 +1867,12 @@ double Internals::effectiveMediaVolume(HTMLMediaElement* mediaElement)
     return mediaElement->effectiveMediaVolume();
 }
 
+String Internals::effectivePreload(HTMLMediaElement* mediaElement)
+{
+    ASSERT(mediaElement);
+    return mediaElement->effectivePreload();
+}
+
 void Internals::mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement* mediaElement, bool available)
 {
     ASSERT(mediaElement);

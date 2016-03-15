@@ -97,7 +97,7 @@ public:
         LoadMediaResource = 1 << 0,
         LoadTextTrackResource = 1 << 1
     };
-    void scheduleDelayedAction(DelayedActionType);
+    void scheduleTextTrackResourceLoad();
 
     bool hasRemoteRoutes() const { return m_remoteRoutesAvailable; }
     bool isPlayingRemotely() const { return m_playingRemotely; }
@@ -115,6 +115,7 @@ public:
     String preload() const;
     void setPreload(const AtomicString&);
     WebMediaPlayer::Preload preloadType() const;
+    String effectivePreload() const;
     WebMediaPlayer::Preload effectivePreloadType() const;
 
     TimeRanges* buffered() const;
@@ -345,7 +346,8 @@ private:
     void scheduleEvent(const AtomicString& eventName); // FIXME: Rename to scheduleNamedEvent for clarity.
 
     // loading
-    void prepareForLoad();
+    void invokeLoadAlgorithm();
+    void invokeResourceSelectionAlgorithm();
     void loadInternal();
     void selectMediaResource();
     void loadResource(const KURL&, ContentType&);
@@ -354,14 +356,14 @@ private:
     WebMediaPlayer::LoadType loadType() const;
     void scheduleNextSourceChild();
     void loadNextSourceChild();
-    void clearMediaPlayer(int flags);
+    void clearMediaPlayer();
     void clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
     bool havePotentialSourceChild();
     void noneSupported();
     void mediaEngineError(MediaError*);
     void cancelPendingEventsAndCallbacks();
     void waitForSourceChange();
-    void prepareToPlay();
+    void setIgnorePreloadNone();
 
     KURL selectNextSourceChild(ContentType*, InvalidURLAction);
 
@@ -552,8 +554,7 @@ private:
 
     bool m_closedCaptionsVisible : 1;
 
-    bool m_havePreparedToPlay : 1;
-
+    bool m_ignorePreloadNone : 1;
     bool m_tracksAreReady : 1;
     bool m_processingPreferenceChange : 1;
     bool m_remoteRoutesAvailable : 1;

@@ -266,6 +266,7 @@ public:
     void setIsCursorVisible(Document*, bool, ExceptionState&);
 
     double effectiveMediaVolume(HTMLMediaElement*);
+    String effectivePreload(HTMLMediaElement*);
 
     void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement*, bool);
     void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement*, bool);

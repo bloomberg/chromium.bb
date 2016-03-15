@@ -214,6 +214,7 @@
     [RaisesException] void setIsCursorVisible(Document document, boolean isVisible);
 
     double effectiveMediaVolume(HTMLMediaElement mediaElement);
+    DOMString effectivePreload(HTMLMediaElement mediaElement);
     void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
     void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);
     void setAllowHiddenVolumeControls(HTMLMediaElement mediaElement, boolean allow);

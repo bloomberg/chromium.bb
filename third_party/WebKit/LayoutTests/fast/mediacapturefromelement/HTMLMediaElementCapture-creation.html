@@ -19,22 +19,24 @@ test(function() {
 test(function() {
   var video = document.createElement('video');
   video.src = "file:///super_duper_videos/amazing_video.webm";
-  video.load();
-  var stream = video.captureStream();
+  video.onloadstart = function() {
+    var stream = video.captureStream();
 
-  assert_not_equals(stream, null);
-  assert_equals(1, stream.getVideoTracks().length);
-  assert_equals(0, stream.getAudioTracks().length);
+    assert_not_equals(stream, null);
+    assert_equals(1, stream.getVideoTracks().length);
+    assert_equals(0, stream.getAudioTracks().length);
+  }
 }, 'check <video> captureStream().');
 
 test(function() {
   var audio = document.createElement('audio');
   audio.src = "file:///super_duper_videos/amazing_audio_file.webm";
-  audio.load();
-  var stream = audio.captureStream();
+  audio.onloadstart = function() {
+    var stream = audio.captureStream();
 
-  // TODO(mcasas): http://crbug.com/575492, implement <audio>.captureStream().
-  assert_equals(stream, null);
+    // TODO(mcasas): http://crbug.com/575492, implement <audio>.captureStream().
+    assert_equals(stream, null);
+  };
 }, 'check <audio> captureStream().');
 
 test(function() {
@@ -52,7 +54,6 @@ test(function() {
       return video.setMediaKeys(mediaKeys);
   }).then(function(result) {
       video.src = "../../media/content/test-encrypted.webm";
-      video.load();
       assert_throws("NotSupportedError",
                     function() { var stream = video.captureStream(); },
                     "Cannot create a captureStream() out of a protected <video>");
