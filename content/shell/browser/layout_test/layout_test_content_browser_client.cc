@@ -98,10 +98,6 @@ void LayoutTestContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->AppendSwitch(switches::kEnableFontAntialiasing);
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExposeInternalsForTesting)) {
-    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kStableReleaseMode)) {
     command_line->AppendSwitch(switches::kStableReleaseMode);
   }

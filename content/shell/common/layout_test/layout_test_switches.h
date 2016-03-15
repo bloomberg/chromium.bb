@@ -20,7 +20,6 @@ extern const char kEnableFontAntialiasing[];
 extern const char kAlwaysUseComplexText[];
 extern const char kEnableLeakDetection[];
 extern const char kEncodeBinary[];
-extern const char kExposeInternalsForTesting[];
 extern const char kRunLayoutTest[];
 extern const char kStableReleaseMode[];
 

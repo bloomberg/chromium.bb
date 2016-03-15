@@ -19,6 +19,10 @@ const char kContentShellDataPath[] = "data-path";
 // The directory breakpad should store minidumps in.
 const char kCrashDumpsDir[] = "crash-dumps-dir";
 
+// Exposes the window.internals object to JavaScript for interactive development
+// and debugging of layout tests that rely on it.
+const char kExposeInternalsForTesting[] = "expose-internals-for-testing";
+
 // Enable site isolation (--site-per-process style isolation) for a subset of
 // sites. The argument is a wildcard pattern which will be matched against the
 // site URL to determine which sites to isolate. This can be used to isolate

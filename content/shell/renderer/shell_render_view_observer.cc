@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/shell_switches.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 

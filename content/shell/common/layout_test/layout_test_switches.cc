@@ -35,10 +35,6 @@ const char kEnableLeakDetection[] = "enable-leak-detection";
 // Encode binary layout test results (images, audio) using base64.
 const char kEncodeBinary[] = "encode-binary";
 
-// Exposes the window.internals object to JavaScript for interactive development
-// and debugging of layout tests that rely on it.
-const char kExposeInternalsForTesting[] = "expose-internals-for-testing";
-
 // Request the render trees of pages to be dumped as text once they have
 // finished loading.
 const char kRunLayoutTest[] = "run-layout-test";
