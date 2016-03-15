@@ -390,14 +390,9 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
 
   // Disable pen flicks (http://crbug.com/506977)
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    ATOM atom = ::GlobalAddAtom(MICROSOFT_TABLETPENSERVICE_PROPERTY);
-    DCHECK(atom);
-
     ::SetProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY,
         reinterpret_cast<HANDLE>(TABLET_DISABLE_FLICKS |
             TABLET_DISABLE_FLICKFALLBACKKEYS));
-
-    ::GlobalDeleteAtom(atom);
   }
 }
 
