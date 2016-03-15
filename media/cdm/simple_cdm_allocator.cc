@@ -58,7 +58,7 @@ SimpleCdmAllocator::~SimpleCdmAllocator() {}
 // Creates a new SimpleCdmBuffer on every request. It does not keep track of
 // the memory allocated, so the caller is responsible for calling Destroy()
 // on the buffer when it is no longer needed.
-cdm::Buffer* SimpleCdmAllocator::CreateCdmBuffer(uint32_t capacity) {
+cdm::Buffer* SimpleCdmAllocator::CreateCdmBuffer(size_t capacity) {
   if (!capacity)
     return nullptr;
 

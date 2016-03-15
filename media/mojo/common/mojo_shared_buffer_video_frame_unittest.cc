@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -21,10 +22,10 @@ namespace {
 
 void CompareDestructionCallbackValues(
     mojo::SharedBufferHandle expected_handle,
-    uint32_t expected_handle_size,
+    size_t expected_handle_size,
     bool* callback_called,
     mojo::ScopedSharedBufferHandle actual_handle,
-    uint32_t actual_handle_size) {
+    size_t actual_handle_size) {
   // Compare expected vs actual. Ownership of the memory is transferred with
   // |actual_handle|, thus it is a ScopedSharedBufferHandle.
   EXPECT_EQ(expected_handle, actual_handle.get());

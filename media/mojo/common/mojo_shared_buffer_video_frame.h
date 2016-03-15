@@ -38,7 +38,7 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // memory is transferred to the callee.
   using MojoSharedBufferDoneCB =
       base::Callback<void(mojo::ScopedSharedBufferHandle buffer,
-                          uint32_t capacity)>;
+                          size_t capacity)>;
 
   // Creates a new I420 frame in shared memory with provided parameters
   // (coded_size() == natural_size() == visible_rect()), or returns nullptr.

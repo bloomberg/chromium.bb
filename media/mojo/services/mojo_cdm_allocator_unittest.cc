@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <cstring>
@@ -22,7 +23,7 @@ class MojoCdmAllocatorTest : public testing::Test {
   ~MojoCdmAllocatorTest() override {}
 
  protected:
-  cdm::Buffer* CreateCdmBuffer(uint32_t capacity) {
+  cdm::Buffer* CreateCdmBuffer(size_t capacity) {
     return allocator_.CreateCdmBuffer(capacity);
   }
 

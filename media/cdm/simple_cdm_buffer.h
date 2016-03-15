@@ -5,7 +5,9 @@
 #ifndef MEDIA_CDM_SIMPLE_CDM_BUFFER_H_
 #define MEDIA_CDM_SIMPLE_CDM_BUFFER_H_
 
+#include <stddef.h>
 #include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"
@@ -17,7 +19,7 @@ namespace media {
 // implementation that stores the data in a std::vector<uint8_t>.
 class SimpleCdmBuffer : public cdm::Buffer {
  public:
-  static SimpleCdmBuffer* Create(uint32_t capacity);
+  static SimpleCdmBuffer* Create(size_t capacity);
 
   // cdm::Buffer implementation.
   void Destroy() final;

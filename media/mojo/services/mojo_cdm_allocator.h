@@ -5,6 +5,7 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_CDM_ALLOCATOR_H_
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_ALLOCATOR_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
@@ -25,7 +26,7 @@ class MojoCdmAllocator : public CdmAllocator {
   ~MojoCdmAllocator() final;
 
   // CdmAllocator implementation.
-  cdm::Buffer* CreateCdmBuffer(uint32_t capacity) final;
+  cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   scoped_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
 
  private:
@@ -35,17 +36,17 @@ class MojoCdmAllocator : public CdmAllocator {
   // ScopedSharedBufferHandle so that we can efficiently find an available
   // buffer of a particular size. Any buffers in the map are unmapped.
   using AvailableBufferMap =
-      std::multimap<uint32_t, mojo::ScopedSharedBufferHandle>;
+      std::multimap<size_t, mojo::ScopedSharedBufferHandle>;
 
   // Allocates a mojo::SharedBufferHandle of at least |capacity| bytes.
   // |capacity| will be changed to reflect the actual size of the buffer
   // allocated.
-  mojo::ScopedSharedBufferHandle AllocateNewBuffer(uint32_t* capacity);
+  mojo::ScopedSharedBufferHandle AllocateNewBuffer(size_t* capacity);
 
   // Returns |buffer| to the map of available buffers, ready to be used the
   // next time CreateCdmBuffer() is called.
   void AddBufferToAvailableMap(mojo::ScopedSharedBufferHandle buffer,
-                               uint32_t capacity);
+                               size_t capacity);
 
   // Returns the MojoHandle for a cdm::Buffer allocated by this class.
   MojoHandle GetHandleForTesting(cdm::Buffer* buffer);

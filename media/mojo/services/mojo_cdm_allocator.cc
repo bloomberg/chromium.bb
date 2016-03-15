@@ -4,8 +4,11 @@
 
 #include "media/mojo/services/mojo_cdm_allocator.h"
 
+#include <limits>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/cdm_helpers.h"
@@ -20,7 +23,7 @@ namespace media {
 namespace {
 
 typedef base::Callback<void(mojo::ScopedSharedBufferHandle buffer,
-                            uint32_t capacity)>
+                            size_t capacity)>
     MojoSharedBufferDoneCB;
 
 VideoPixelFormat CdmVideoFormatToVideoPixelFormat(cdm::VideoFormat format) {
@@ -41,11 +44,15 @@ class MojoCdmBuffer : public cdm::Buffer {
  public:
   static MojoCdmBuffer* Create(
       mojo::ScopedSharedBufferHandle buffer,
-      uint32_t capacity,
+      size_t capacity,
       const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb) {
     DCHECK(buffer.is_valid());
     DCHECK(!mojo_shared_buffer_done_cb.is_null());
-    return new MojoCdmBuffer(std::move(buffer), capacity,
+
+    // cdm::Buffer interface limits capacity to uint32.
+    DCHECK_LE(capacity, std::numeric_limits<uint32_t>::max());
+    return new MojoCdmBuffer(std::move(buffer),
+                             base::checked_cast<uint32_t>(capacity),
                              mojo_shared_buffer_done_cb);
   }
 
@@ -166,7 +173,7 @@ MojoCdmAllocator::~MojoCdmAllocator() {}
 // Creates a cdm::Buffer, reusing an existing buffer if one is available.
 // If not, a new buffer is created using AllocateNewBuffer(). The caller is
 // responsible for calling Destroy() on the buffer when it is no longer needed.
-cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(uint32_t capacity) {
+cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(size_t capacity) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!capacity)
@@ -204,15 +211,15 @@ scoped_ptr<VideoFrameImpl> MojoCdmAllocator::CreateCdmVideoFrame() {
 }
 
 mojo::ScopedSharedBufferHandle MojoCdmAllocator::AllocateNewBuffer(
-    uint32_t* capacity) {
+    size_t* capacity) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Always pad new allocated buffer so that we don't need to reallocate
   // buffers frequently if requested sizes fluctuate slightly.
-  static const uint32_t kBufferPadding = 512;
+  static const size_t kBufferPadding = 512;
 
   // Maximum number of free buffers we can keep when allocating new buffers.
-  static const uint32_t kFreeLimit = 3;
+  static const size_t kFreeLimit = 3;
 
   // Destroy the smallest buffer before allocating a new bigger buffer if the
   // number of free buffers exceeds a limit. This mechanism helps avoid ending
@@ -224,7 +231,7 @@ mojo::ScopedSharedBufferHandle MojoCdmAllocator::AllocateNewBuffer(
   // Creation of shared memory may be expensive if it involves synchronous IPC
   // calls. That's why we try to avoid AllocateNewBuffer() as much as we can.
   mojo::ScopedSharedBufferHandle handle;
-  base::CheckedNumeric<uint32_t> requested_capacity(*capacity);
+  base::CheckedNumeric<size_t> requested_capacity(*capacity);
   requested_capacity += kBufferPadding;
   MojoResult result = mojo::CreateSharedBuffer(
       nullptr, requested_capacity.ValueOrDie(), &handle);
@@ -237,7 +244,7 @@ mojo::ScopedSharedBufferHandle MojoCdmAllocator::AllocateNewBuffer(
 
 void MojoCdmAllocator::AddBufferToAvailableMap(
     mojo::ScopedSharedBufferHandle buffer,
-    uint32_t capacity) {
+    size_t capacity) {
   DCHECK(thread_checker_.CalledOnValidThread());
   available_buffers_.insert(std::make_pair(capacity, std::move(buffer)));
 }

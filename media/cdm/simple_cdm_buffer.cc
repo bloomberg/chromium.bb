@@ -4,14 +4,20 @@
 
 #include "media/cdm/simple_cdm_buffer.h"
 
+#include <limits>
+
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace media {
 
 // static
-SimpleCdmBuffer* SimpleCdmBuffer::Create(uint32_t capacity) {
+SimpleCdmBuffer* SimpleCdmBuffer::Create(size_t capacity) {
   DCHECK(capacity);
-  return new SimpleCdmBuffer(capacity);
+
+  // cdm::Buffer interface limits capacity to uint32.
+  DCHECK_LE(capacity, std::numeric_limits<uint32_t>::max());
+  return new SimpleCdmBuffer(base::checked_cast<uint32_t>(capacity));
 }
 
 SimpleCdmBuffer::SimpleCdmBuffer(uint32_t capacity)

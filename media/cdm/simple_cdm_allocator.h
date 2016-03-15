@@ -5,6 +5,7 @@
 #ifndef MEDIA_CDM_SIMPLE_CDM_ALLOCATOR_H_
 #define MEDIA_CDM_SIMPLE_CDM_ALLOCATOR_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/macros.h"
@@ -19,7 +20,7 @@ class SimpleCdmAllocator : public CdmAllocator {
   ~SimpleCdmAllocator() final;
 
   // CdmAllocator implementation.
-  cdm::Buffer* CreateCdmBuffer(uint32_t capacity) final;
+  cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   scoped_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
 
  private:
