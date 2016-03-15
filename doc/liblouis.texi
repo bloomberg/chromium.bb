@@ -129,7 +129,7 @@ How to Write Translation Tables
 * The Context and Multipass Opcodes::
 * The correct Opcode::
 * Miscellaneous Opcodes::
-* Deprecated Opcodes::
+
 
 Testing Translation Tables interactively
 
@@ -265,7 +265,6 @@ program in which you can test your work.
 * The Context and Multipass Opcodes::
 * The correct Opcode::
 * Miscellaneous Opcodes::
-* Deprecated Opcodes::
 @end menu
 
 @node Overview
@@ -1551,35 +1550,6 @@ has been defined with @code{multind}. A @code{multind} entry may not
 contain a comment because liblouis would attempt to interpret it as an
 opcode.
 
-@end table
-
-@node Deprecated Opcodes
-@section Deprecated Opcodes
-
-The following opcodes are an early attempt to handle emphasis. They
-have been deprecated by more specific opcodes, but are kept for
-backward compatibility.
-
-@table @code
-@deprecatedopcode{italsign, dots, lastworditalbefore}
-
-@deprecatedopcode{begital, dots, firstletterital}
-
-@deprecatedopcode{endital, dots, lastletterital}
-
-@deprecatedopcode{boldsign, dots, lastwordboldbefore}
-
-@deprecatedopcode{begbold, dots, firstletterbold}
-
-@deprecatedopcode{endbold, dots, lastletterbold}
-
-@deprecatedopcode{undersign, dots, lastwordunderbefore}
-
-@deprecatedopcode{begunder, dots, firstletterunder}
-
-@deprecatedopcode{endunder, dots, lastletterunder}
-
-@deprecatedopcode{literal, characters, compbrl}
 @end table
 
 @node Notes on Back-Translation
