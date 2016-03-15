@@ -34,6 +34,7 @@ v8::Local<v8::FunctionTemplate> InspectorWrapperBase::createWrapperTemplate(v8::
 
 v8::Local<v8::Object> InspectorWrapperBase::createWrapper(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context)
 {
+    v8::MicrotasksScope microtasks(context->GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Function> function;
     if (!constructorTemplate->GetFunction(context).ToLocal(&function))
         return v8::Local<v8::Object>();
