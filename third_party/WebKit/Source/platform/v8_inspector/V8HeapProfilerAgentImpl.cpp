@@ -280,11 +280,9 @@ void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, c
 void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const String16& objectId, String16* heapSnapshotObjectId)
 {
     v8::HandleScope handles(m_isolate);
-    v8::Local<v8::Value> value = m_runtimeAgent->findObject(objectId);
-    if (value.IsEmpty() || value->IsUndefined()) {
-        *errorString = "Object with given id not found";
+    v8::Local<v8::Value> value = m_runtimeAgent->findObject(errorString, objectId);
+    if (value.IsEmpty() || value->IsUndefined())
         return;
-    }
 
     v8::SnapshotObjectId id = m_isolate->GetHeapProfiler()->GetObjectId(value);
     *heapSnapshotObjectId = String16::number(id);

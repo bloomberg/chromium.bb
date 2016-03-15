@@ -107,16 +107,12 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     OwnPtr<RemoteObject>* result,
     Maybe<bool>* wasThrown)
 {
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
-    if (!remoteId) {
-        *errorString = "Invalid object id";
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
+    if (!remoteId)
         return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
         return;
-    }
     String16 arguments;
     if (optionalArguments.isJust())
         arguments = protocol::toValue(optionalArguments.fromJust())->toJSONString();
@@ -135,16 +131,12 @@ void V8RuntimeAgentImpl::getProperties(
     Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
     Maybe<ExceptionDetails>* exceptionDetails)
 {
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
-    if (!remoteId) {
-        *errorString = "Invalid object id";
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
+    if (!remoteId)
         return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
         return;
-    }
 
     IgnoreExceptionsScope ignoreExceptionsScope(m_debugger);
 
@@ -156,12 +148,10 @@ void V8RuntimeAgentImpl::getProperties(
 
 void V8RuntimeAgentImpl::releaseObject(ErrorString* errorString, const String16& objectId)
 {
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
-    if (!remoteId) {
-        *errorString = "Invalid object id";
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
+    if (!remoteId)
         return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
     bool pausingOnNextStatement = m_debugger->pausingOnNextStatement();
@@ -376,12 +366,12 @@ void V8RuntimeAgentImpl::disposeObjectGroup(const String16& groupName)
     m_injectedScriptManager->releaseObjectGroup(groupName);
 }
 
-v8::Local<v8::Value> V8RuntimeAgentImpl::findObject(const String16& objectId, v8::Local<v8::Context>* context, String16* groupName)
+v8::Local<v8::Value> V8RuntimeAgentImpl::findObject(ErrorString* errorString, const String16& objectId, v8::Local<v8::Context>* context, String16* groupName)
 {
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
     if (!remoteId)
         return v8::Local<v8::Value>();
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId->contextId());
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return v8::Local<v8::Value>();
     if (context)

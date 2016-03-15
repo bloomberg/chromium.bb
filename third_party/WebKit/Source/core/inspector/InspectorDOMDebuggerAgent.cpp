@@ -359,11 +359,9 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
 
     v8::Local<v8::Context> context;
     String16 objectGroup;
-    v8::Local<v8::Value> value = m_runtimeAgent->findObject(objectId, &context, &objectGroup);
-    if (value.IsEmpty()) {
-        *errorString = "No object with passed objectId";
+    v8::Local<v8::Value> value = m_runtimeAgent->findObject(errorString, objectId, &context, &objectGroup);
+    if (value.IsEmpty())
         return;
-    }
     v8::Context::Scope scope(context);
     *listenersArray = protocol::Array<protocol::DOMDebugger::EventListener>::create();
     eventListeners(context, value, objectGroup, listenersArray->get());

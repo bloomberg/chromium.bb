@@ -55,12 +55,6 @@ InjectedScriptHostClass.prototype.functionDetails = function(obj) {}
 
 /**
  * @param {!Object} obj
- * @return {?Object}
- */
-InjectedScriptHostClass.prototype.generatorObjectDetails = function(obj) {}
-
-/**
- * @param {!Object} obj
  * @return {?Array.<*>}
  */
 InjectedScriptHostClass.prototype.collectionEntries = function(obj) {}

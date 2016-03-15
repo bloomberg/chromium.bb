@@ -39,7 +39,7 @@ public:
     virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) = 0;
     // FIXME: remove when console.table moves into V8 inspector.
     virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) = 0;
-    virtual v8::Local<v8::Value> findObject(const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* objectGroup = nullptr) = 0;
+    virtual v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* objectGroup = nullptr) = 0;
     virtual void disposeObjectGroup(const String16&) = 0;
     virtual void addInspectedObject(PassOwnPtr<Inspectable>) = 0;
     virtual void clearInspectedObjects() = 0;

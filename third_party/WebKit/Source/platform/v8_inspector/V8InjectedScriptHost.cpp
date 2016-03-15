@@ -185,19 +185,6 @@ void V8InjectedScriptHost::functionDetailsCallback(const v8::FunctionCallbackInf
     v8SetReturnValue(info, result);
 }
 
-void V8InjectedScriptHost::generatorObjectDetailsCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1 || !info[0]->IsObject())
-        return;
-
-    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(info[0]);
-
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    if (!host->debugger())
-        return;
-    v8SetReturnValue(info, host->debugger()->generatorObjectDetails(object));
-}
-
 void V8InjectedScriptHost::collectionEntriesCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1 || !info[0]->IsObject())
@@ -581,7 +568,6 @@ const InjectedScriptHostWrapper::V8MethodConfiguration V8InjectedScriptHostMetho
     {"isTypedArray", V8InjectedScriptHost::isTypedArrayCallback},
     {"subtype", V8InjectedScriptHost::subtypeCallback},
     {"functionDetails", V8InjectedScriptHost::functionDetailsCallback},
-    {"generatorObjectDetails", V8InjectedScriptHost::generatorObjectDetailsCallback},
     {"collectionEntries", V8InjectedScriptHost::collectionEntriesCallback},
     {"getInternalProperties", V8InjectedScriptHost::getInternalPropertiesCallback},
     {"getEventListeners", V8InjectedScriptHost::getEventListenersCallback},

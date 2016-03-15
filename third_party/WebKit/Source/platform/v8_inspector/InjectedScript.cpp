@@ -234,16 +234,6 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String16
     *result = FunctionDetails::parse(resultValue.get(), &errors);
 }
 
-void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, OwnPtr<GeneratorObjectDetails>* result)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getGeneratorObjectDetails");
-    function.appendArgument(objectId);
-    OwnPtr<protocol::Value> resultValue = makeCall(function);
-    protocol::ErrorSupport errors(errorString);
-    *result = GeneratorObjectDetails::parse(resultValue.get(), &errors);
-}
-
 void InjectedScript::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<Array<CollectionEntry>>* result)
 {
     v8::HandleScope handles(m_isolate);
@@ -340,16 +330,46 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "wrapObject");
+    v8::Local<v8::Value> wrappedObject;
+    ErrorString errorString;
+    if (!wrapValue(&errorString, value, groupName, generatePreview).ToLocal(&wrappedObject))
+        return nullptr;
+    protocol::ErrorSupport errors;
+    return protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), wrappedObject).get(), &errors);
+}
+
+bool InjectedScript::wrapObjectProperty(ErrorString* error, v8::Local<v8::Object> object, v8::Local<v8::Value> key, const String16& groupName, bool generatePreview) const
+{
+    v8::Local<v8::Value> property;
+    if (!object->Get(context(), key).ToLocal(&property)) {
+        *error = "Internal error.";
+        return false;
+    }
+    v8::Local<v8::Value> wrappedProperty;
+    if (!wrapValue(error, property, groupName, generatePreview).ToLocal(&wrappedProperty))
+        return false;
+    v8::Maybe<bool> success = object->Set(context(), key, wrappedProperty);
+    if (success.IsNothing() || !success.FromJust()) {
+        *error = "Internal error.";
+        return false;
+    }
+    return true;
+}
+
+v8::MaybeLocal<v8::Value> InjectedScript::wrapValue(ErrorString* error, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview) const
+{
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "wrapObject");
     function.appendArgument(value);
     function.appendArgument(groupName);
     function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(generatePreview);
     bool hadException = false;
     v8::Local<v8::Value> r = callFunctionWithEvalEnabled(function, hadException);
-    if (hadException)
-        return nullptr;
-    protocol::ErrorSupport errors;
-    return protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), r).get(), &errors);
+    if (hadException) {
+        *error = "Internal error.";
+        return v8::MaybeLocal<v8::Value>();
+    }
+    return r;
 }
 
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const

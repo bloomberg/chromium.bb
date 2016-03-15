@@ -73,9 +73,15 @@ InjectedScript* InjectedScriptManager::findInjectedScript(int id) const
     return nullptr;
 }
 
-InjectedScript* InjectedScriptManager::findInjectedScript(RemoteObjectIdBase* objectId) const
+InjectedScript* InjectedScriptManager::findInjectedScript(ErrorString* errorString, RemoteObjectIdBase* objectId) const
 {
-    return objectId ? findInjectedScript(objectId->contextId()) : nullptr;
+    InjectedScript* injectedScript = nullptr;
+    if (objectId) {
+        injectedScript = findInjectedScript(objectId->contextId());
+        if (!injectedScript)
+            *errorString = "Inspected frame has gone";
+    }
+    return injectedScript;
 }
 
 void InjectedScriptManager::discardInjectedScripts()

@@ -33,6 +33,7 @@
 #include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include <v8.h>
 
 namespace blink {
@@ -55,7 +56,7 @@ public:
 
     InjectedScript* injectedScriptFor(v8::Local<v8::Context>);
     InjectedScript* findInjectedScript(int) const;
-    InjectedScript* findInjectedScript(RemoteObjectIdBase*) const;
+    InjectedScript* findInjectedScript(ErrorString*, RemoteObjectIdBase*) const;
     void discardInjectedScripts();
     int discardInjectedScriptFor(v8::Local<v8::Context>);
     void discardInjectedScript(int);

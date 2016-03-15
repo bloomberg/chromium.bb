@@ -27,31 +27,39 @@ PassOwnPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(
 
 RemoteObjectId::RemoteObjectId() : RemoteObjectIdBase(), m_id(0) { }
 
-PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(const String16& objectId)
+PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(ErrorString* errorString, const String16& objectId)
 {
     OwnPtr<RemoteObjectId> result = adoptPtr(new RemoteObjectId());
     OwnPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
-    if (!parsedObjectId)
+    if (!parsedObjectId) {
+        *errorString = "Invalid remote object id";
         return nullptr;
+    }
 
     bool success = parsedObjectId->getNumber("id", &result->m_id);
-    if (success)
-        return result.release();
-    return nullptr;
+    if (!success) {
+        *errorString = "Invalid remote object id";
+        return nullptr;
+    }
+    return result.release();
 }
 
 RemoteCallFrameId::RemoteCallFrameId() : RemoteObjectIdBase(), m_frameOrdinal(0) { }
 
-PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String16& objectId)
+PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(ErrorString* errorString, const String16& objectId)
 {
     OwnPtr<RemoteCallFrameId> result = adoptPtr(new RemoteCallFrameId());
     OwnPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
-    if (!parsedObjectId)
+    if (!parsedObjectId) {
+        *errorString = "Invalid call frame id";
         return nullptr;
+    }
 
     bool success = parsedObjectId->getNumber("ordinal", &result->m_frameOrdinal);
-    if (!success)
+    if (!success) {
+        *errorString = "Invalid call frame id";
         return nullptr;
+    }
 
     return result.release();
 }

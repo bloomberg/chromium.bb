@@ -22,6 +22,7 @@
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
+#include "platform/v8_inspector/public/V8ToProtocolValue.h"
 
 using blink::protocol::Array;
 using blink::protocol::Maybe;
@@ -634,16 +635,12 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
-    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(callFrameId);
-    if (!remoteId) {
-        *errorString = "Invalid call frame id";
+    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
+    if (!remoteId)
         return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
         return;
-    }
 
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
@@ -669,50 +666,67 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
 {
     if (!checkEnabled(errorString))
         return;
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(functionId);
-    if (!remoteId) {
-        *errorString = "Invalid object id";
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, functionId);
+    if (!remoteId)
         return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Function object id is obsolete";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
         return;
-    }
     injectedScript->getFunctionDetails(errorString, functionId, details);
 }
 
-void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, OwnPtr<GeneratorObjectDetails>* details)
+void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, OwnPtr<GeneratorObjectDetails>* outDetails)
 {
     if (!checkEnabled(errorString))
         return;
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
-    if (!remoteId) {
-        *errorString = "Invalid object id";
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
+    if (!remoteId)
+        return;
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
+        return;
+
+    v8::HandleScope scope(m_isolate);
+    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Context::Scope contextScope(context);
+
+    v8::Local<v8::Object> object;
+    v8::Local<v8::Value> value = injectedScript->findObject(*remoteId);
+    if (value.IsEmpty() || !value->IsObject() || !value->ToObject(context).ToLocal(&object)) {
+        *errorString = "Could not find object with given id";
         return;
     }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
+
+    v8::Local<v8::Object> detailsObject;
+    v8::Local<v8::Value> detailsValue = debugger().generatorObjectDetails(object);
+    if (!detailsValue->IsObject() || !detailsValue->ToObject(context).ToLocal(&detailsObject)) {
+        *errorString = "Internal error";
         return;
     }
-    injectedScript->getGeneratorObjectDetails(errorString, objectId, details);
+
+    String16 groupName = injectedScript->objectGroupName(*remoteId);
+    if (!injectedScript->wrapObjectProperty(errorString, detailsObject, toV8String(m_isolate, "function"), groupName, false))
+        return;
+
+    protocol::ErrorSupport errors;
+    OwnPtr<GeneratorObjectDetails> protocolDetails = GeneratorObjectDetails::parse(toProtocolValue(context, detailsObject).get(), &errors);
+    if (!protocolDetails) {
+        *errorString = "Internal error";
+        return;
+    }
+    *outDetails = protocolDetails.release();
 }
 
 void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<protocol::Array<CollectionEntry>>* entries)
 {
     if (!checkEnabled(errorString))
         return;
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
-    if (!remoteId) {
-        *errorString = "Invalid object id";
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
+    if (!remoteId)
         return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
         return;
-    }
     injectedScript->getCollectionEntries(errorString, objectId, entries);
 }
 
@@ -890,16 +904,12 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
-    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(callFrameId);
-    if (!remoteId) {
-        *errorString = "Invalid call frame id";
+    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
+    if (!remoteId)
         return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
         return;
-    }
 
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
@@ -923,27 +933,19 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
             *errorString = "Attempt to access callframe when debugger is not on pause";
             return;
         }
-        OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(callFrameId.fromJust());
-        if (!remoteId) {
-            *errorString = "Invalid call frame id";
+        OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId.fromJust());
+        if (!remoteId)
             return;
-        }
-        injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-        if (!injectedScript) {
-            *errorString = "Inspected frame has gone";
+        injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+        if (!injectedScript)
             return;
-        }
     } else if (functionObjectId.isJust()) {
-        OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(functionObjectId.fromJust());
-        if (!remoteId) {
-            *errorString = "Invalid object id";
+        OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, functionObjectId.fromJust());
+        if (!remoteId)
             return;
-        }
-        injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-        if (!injectedScript) {
-            *errorString = "Function object id cannot be resolved";
+        injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+        if (!injectedScript)
             return;
-        }
     } else {
         *errorString = "Either call frame or function object must be specified";
         return;
