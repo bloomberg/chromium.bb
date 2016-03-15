@@ -52,7 +52,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   ~AudioManagerBase() override;
 
   // AudioManager:
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner() override;
   base::string16 GetAudioInputDeviceModel() override;
   void ShowAudioInputSettings() override;
@@ -171,12 +171,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   base::ObserverList<AudioDeviceListener> output_listeners_;
 
   // Thread used to interact with audio streams created by this audio manager.
-  base::Thread audio_thread_;
-
-  // The task runner of the audio thread this object runs on. Used for internal
-  // tasks which run on the audio thread even after Shutdown() has been started
-  // and GetTaskRunner() starts returning NULL.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_ptr<base::Thread> audio_thread_;
 
   // Map of cached AudioOutputDispatcher instances.  Must only be touched
   // from the audio thread (no locking).

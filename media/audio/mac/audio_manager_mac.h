@@ -29,6 +29,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   AudioManagerMac(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner() override;
   bool HasAudioOutputDevices() override;
   bool HasAudioInputDevices() override;
   void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override;
@@ -121,6 +123,9 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   void HandleDeviceChanges();
 
   scoped_ptr<AudioDeviceListenerMac> output_device_listener_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_ptr<base::Thread> worker_thread_;
 
   // Track the output sample-rate and the default output device
   // so we can intelligently handle device notifications only when necessary.

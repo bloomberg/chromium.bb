@@ -50,7 +50,7 @@ class MockAudioManager : public media::AudioManager {
       const media::AudioParameters& params,
       const std::string& device_id) override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner() override;
 
   void AddOutputDeviceChangeListener(AudioDeviceListener* listener) override;

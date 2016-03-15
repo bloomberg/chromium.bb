@@ -63,8 +63,7 @@ media::AudioInputStream* MockAudioManager::MakeAudioInputStream(
   return NULL;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> MockAudioManager::GetTaskRunner()
-    const {
+scoped_refptr<base::SingleThreadTaskRunner> MockAudioManager::GetTaskRunner() {
   return task_runner_;
 }
 

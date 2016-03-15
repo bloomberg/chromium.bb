@@ -370,24 +370,47 @@ AudioManagerMac::AudioManagerMac(AudioLogFactory* audio_log_factory)
       current_output_device_(kAudioDeviceUnknown) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 
+  // CoreAudio calls must occur on the main thread of the process, which in our
+  // case is sadly the browser UI thread.  Failure to execute calls on the right
+  // thread leads to crashes and odd behavior.  See http://crbug.com/158170.
+  // TODO(dalecurtis): We should require the message loop to be passed in.
+  task_runner_ = base::MessageLoopForUI::IsCurrent()
+                     ? base::ThreadTaskRunnerHandle::Get()
+                     : AudioManagerBase::GetTaskRunner();
+
   // Task must be posted last to avoid races from handing out "this" to the
   // audio thread.  Always PostTask even if we're on the right thread since
   // AudioManager creation is on the startup path and this may be slow.
-  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-      &AudioManagerMac::InitializeOnAudioThread, base::Unretained(this)));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&AudioManagerMac::InitializeOnAudioThread,
+                                    base::Unretained(this)));
 }
 
 AudioManagerMac::~AudioManagerMac() {
-  if (GetTaskRunner()->BelongsToCurrentThread()) {
+  if (task_runner_->BelongsToCurrentThread()) {
     ShutdownOnAudioThread();
   } else {
     // It's safe to post a task here since Shutdown() will wait for all tasks to
     // complete before returning.
-    GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-        &AudioManagerMac::ShutdownOnAudioThread, base::Unretained(this)));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&AudioManagerMac::ShutdownOnAudioThread,
+                                      base::Unretained(this)));
   }
 
   Shutdown();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> AudioManagerMac::GetTaskRunner() {
+  return task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+AudioManagerMac::GetWorkerTaskRunner() {
+  if (!worker_thread_) {
+    worker_thread_.reset(new base::Thread("AudioWorkerThread"));
+    CHECK(worker_thread_->Start());
+  }
+  return worker_thread_->task_runner();
 }
 
 bool AudioManagerMac::HasAudioOutputDevices() {
@@ -398,6 +421,7 @@ bool AudioManagerMac::HasAudioInputDevices() {
   return HasAudioHardware(kAudioHardwarePropertyDefaultInputDevice);
 }
 
+// static
 bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
                                         AudioObjectPropertyScope scope,
                                         int* channels) {
@@ -441,6 +465,7 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
   return true;
 }
 
+// static
 int AudioManagerMac::HardwareSampleRateForDevice(AudioDeviceID device_id) {
   DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   Float64 nominal_sample_rate;
@@ -466,6 +491,7 @@ int AudioManagerMac::HardwareSampleRateForDevice(AudioDeviceID device_id) {
   return static_cast<int>(nominal_sample_rate);
 }
 
+// static
 int AudioManagerMac::HardwareSampleRate() {
   // Determine the default output device's sample-rate.
   AudioDeviceID device_id = kAudioObjectUnknown;
@@ -524,7 +550,7 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
 
 std::string AudioManagerMac::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   AudioDeviceID device = GetAudioDeviceIdByUId(true, input_device_id);
   if (device == kAudioObjectUnknown)
     return std::string();
@@ -649,7 +675,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
 }
 
 std::string AudioManagerMac::GetDefaultOutputDeviceID() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   AudioDeviceID device_id = kAudioObjectUnknown;
   if (!GetDefaultOutputDevice(&device_id))
     return std::string();
@@ -748,12 +774,12 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
 }
 
 void AudioManagerMac::InitializeOnAudioThread() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   power_observer_.reset(new AudioPowerObserver());
 }
 
 void AudioManagerMac::ShutdownOnAudioThread() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   output_device_listener_.reset();
   power_observer_.reset();
 
@@ -772,7 +798,7 @@ void AudioManagerMac::ShutdownOnAudioThread() {
 }
 
 void AudioManagerMac::HandleDeviceChanges() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   const int new_sample_rate = HardwareSampleRate();
   AudioDeviceID new_output_device;
   GetDefaultOutputDevice(&new_output_device);
@@ -814,17 +840,17 @@ int AudioManagerMac::ChooseBufferSize(bool is_input, int sample_rate) {
 }
 
 bool AudioManagerMac::ShouldDeferStreamStart() const {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return power_observer_->ShouldDeferStreamStart();
 }
 
 bool AudioManagerMac::IsOnBatteryPower() const {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return power_observer_->IsOnBatteryPower();
 }
 
 size_t AudioManagerMac::GetNumberOfResumeNotifications() const {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return power_observer_->num_resume_notifications();
 }
 
@@ -834,7 +860,7 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
                                             size_t desired_buffer_size,
                                             bool* size_was_changed,
                                             size_t* io_buffer_frame_size) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   const bool is_input = (element == 1);
   DVLOG(1) << "MaybeChangeBufferSize(id=0x" << std::hex << device_id
            << ", is_input=" << is_input << ", desired_buffer_size=" << std::dec

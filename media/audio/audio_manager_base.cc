@@ -91,23 +91,7 @@ AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
       // block the UI thread when swapping devices.
       output_listeners_(
           base::ObserverList<AudioDeviceListener>::NOTIFY_EXISTING_ONLY),
-      audio_thread_("AudioThread"),
       audio_log_factory_(audio_log_factory) {
-#if defined(OS_WIN)
-  audio_thread_.init_com_with_mta(true);
-#elif defined(OS_MACOSX)
-  // CoreAudio calls must occur on the main thread of the process, which in our
-  // case is sadly the browser UI thread.  Failure to execute calls on the right
-  // thread leads to crashes and odd behavior.  See http://crbug.com/158170.
-  // TODO(dalecurtis): We should require the message loop to be passed in.
-  if (base::MessageLoopForUI::IsCurrent()) {
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    return;
-  }
-#endif
-
-  CHECK(audio_thread_.Start());
-  task_runner_ = audio_thread_.task_runner();
 }
 
 AudioManagerBase::~AudioManagerBase() {
@@ -116,7 +100,7 @@ AudioManagerBase::~AudioManagerBase() {
   // stopping the thread, resulting an unexpected behavior.
   // This way we make sure activities of the audio streams are all stopped
   // before we destroy them.
-  CHECK(!audio_thread_.IsRunning());
+  CHECK(!audio_thread_);
   // All the output streams should have been deleted.
   DCHECK_EQ(0, num_output_streams_);
   // All the input streams should have been deleted.
@@ -127,18 +111,20 @@ base::string16 AudioManagerBase::GetAudioInputDeviceModel() {
   return base::string16();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> AudioManagerBase::GetTaskRunner()
-    const {
-  return task_runner_;
+scoped_refptr<base::SingleThreadTaskRunner> AudioManagerBase::GetTaskRunner() {
+  if (!audio_thread_) {
+    audio_thread_.reset(new base::Thread("AudioThread"));
+#if defined(OS_WIN)
+    audio_thread_->init_com_with_mta(true);
+#endif
+    CHECK(audio_thread_->Start());
+  }
+  return audio_thread_->task_runner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 AudioManagerBase::GetWorkerTaskRunner() {
-  // Lazily start the worker thread.
-  if (!audio_thread_.IsRunning())
-    CHECK(audio_thread_.Start());
-
-  return audio_thread_.task_runner();
+  return GetTaskRunner();
 }
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
@@ -146,7 +132,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     const std::string& device_id) {
   // TODO(miu): Fix ~50 call points across several unit test modules to call
   // this method on the audio thread, then uncomment the following:
-  // DCHECK(task_runner_->BelongsToCurrentThread());
+  // DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   if (!params.IsValid()) {
     DLOG(ERROR) << "Audio parameters are invalid";
@@ -195,7 +181,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
     const std::string& device_id) {
   // TODO(miu): Fix ~20 call points across several unit test modules to call
   // this method on the audio thread, then uncomment the following:
-  // DCHECK(task_runner_->BelongsToCurrentThread());
+  // DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   if (!params.IsValid() || (params.channels() > kMaxInputChannels) ||
       device_id.empty()) {
@@ -239,7 +225,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     const AudioParameters& params,
     const std::string& device_id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   // If the caller supplied an empty device id to select the default device,
   // we fetch the actual device id of the default device so that the lookup
@@ -337,19 +323,24 @@ void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
 void AudioManagerBase::Shutdown() {
   // Only true when we're sharing the UI message loop with the browser.  The UI
   // loop is no longer running at this time and browser destruction is imminent.
-  if (task_runner_->BelongsToCurrentThread()) {
+  auto task_runner = GetTaskRunner();
+  if (task_runner->BelongsToCurrentThread()) {
     ShutdownOnAudioThread();
   } else {
-    task_runner_->PostTask(FROM_HERE, base::Bind(
-        &AudioManagerBase::ShutdownOnAudioThread, base::Unretained(this)));
+    task_runner->PostTask(FROM_HERE,
+                          base::Bind(&AudioManagerBase::ShutdownOnAudioThread,
+                                     base::Unretained(this)));
   }
 
   // Stop() will wait for any posted messages to be processed first.
-  audio_thread_.Stop();
+  if (audio_thread_) {
+    audio_thread_->Stop();
+    audio_thread_.reset();
+  }
 }
 
 void AudioManagerBase::ShutdownOnAudioThread() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   while (!output_dispatchers_.empty()) {
     output_dispatchers_.back()->dispatcher->Shutdown();
     output_dispatchers_.pop_back();
@@ -358,18 +349,18 @@ void AudioManagerBase::ShutdownOnAudioThread() {
 
 void AudioManagerBase::AddOutputDeviceChangeListener(
     AudioDeviceListener* listener) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   output_listeners_.AddObserver(listener);
 }
 
 void AudioManagerBase::RemoveOutputDeviceChangeListener(
     AudioDeviceListener* listener) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   output_listeners_.RemoveObserver(listener);
 }
 
 void AudioManagerBase::NotifyAllOutputDeviceChangeListeners() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   DVLOG(1) << "Firing OnDeviceChange() notifications.";
   FOR_EACH_OBSERVER(AudioDeviceListener, output_listeners_, OnDeviceChange());
 }

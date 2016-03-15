@@ -95,7 +95,7 @@ class MockAudioManagerAlsa : public AudioManagerAlsa {
 
   // We don't mock this method since all tests will do the same thing
   // and use the current task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override {
     return base::MessageLoop::current()->task_runner();
   }
 
