@@ -160,7 +160,7 @@ data_offer_update_action(struct weston_data_offer *offer)
 {
 	uint32_t action;
 
-	if (!offer->source || !offer->source->actions_set)
+	if (!offer->source)
 		return;
 
 	action = data_offer_choose_action(offer);
@@ -293,7 +293,7 @@ destroy_offer_data_source(struct wl_listener *listener, void *data)
 	offer->source = NULL;
 }
 
-static struct wl_resource *
+static struct weston_data_offer *
 weston_data_source_send_offer(struct weston_data_source *source,
 			      struct wl_resource *target)
 {
@@ -331,9 +331,8 @@ weston_data_source_send_offer(struct weston_data_source *source,
 
 	source->offer = offer;
 	source->accepted = false;
-	data_offer_update_action(offer);
 
-	return offer->resource;
+	return offer;
 }
 
 static void
@@ -533,11 +532,13 @@ weston_drag_set_focus(struct weston_drag *drag,
 
 	if (drag->data_source) {
 		drag->data_source->accepted = false;
-		offer_resource = weston_data_source_send_offer(drag->data_source,
-							       resource);
-		if (offer_resource == NULL)
+		offer = weston_data_source_send_offer(drag->data_source, resource);
+		if (offer == NULL)
 			return;
 
+		data_offer_update_action(offer);
+
+		offer_resource = offer->resource;
 		if (wl_resource_get_version (offer_resource) >=
 		    WL_DATA_OFFER_SOURCE_ACTIONS_SINCE_VERSION) {
 			wl_data_offer_send_source_actions (offer_resource,
@@ -1095,7 +1096,8 @@ destroy_selection_data_source(struct wl_listener *listener, void *data)
 WL_EXPORT void
 weston_seat_send_selection(struct weston_seat *seat, struct wl_client *client)
 {
-	struct wl_resource *data_device, *offer;
+	struct weston_data_offer *offer;
+	struct wl_resource *data_device;
 
 	wl_resource_for_each(data_device, &seat->drag_resource_list) {
 		if (wl_resource_get_client(data_device) != client)
@@ -1103,8 +1105,8 @@ weston_seat_send_selection(struct weston_seat *seat, struct wl_client *client)
 
 		if (seat->selection_data_source) {
 			offer = weston_data_source_send_offer(seat->selection_data_source,
-								data_device);
-			wl_data_device_send_selection(data_device, offer);
+							      data_device);
+			wl_data_device_send_selection(data_device, offer->resource);
 		} else {
 			wl_data_device_send_selection(data_device, NULL);
 		}
