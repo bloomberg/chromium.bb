@@ -203,6 +203,29 @@ Polymer({
     },
 
     /**
+     * Records the value of |isSearchFocused_| when a window blur event is
+     * received. This used to handle search focus edge cases. See
+     * |setSearchFocusHandlers_| for details.
+     * @private {boolean}
+     */
+    isSearchFocusedOnWindowBlur_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Temporarily set when the window focus event handler needs to reset
+     * |isSearchFocused_| to the correct value but needs to know whether the
+     * search input focus handler will run. See |setSearchFocusHandlers_| for
+     * details.
+     * @private {boolean}
+     */
+    isSearchFocusedShouldBeSet_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the user is currently searching for a sink.
      * @private {boolean}
      */
@@ -1132,6 +1155,7 @@ Polymer({
   isUserSearchingChanged_: function(isUserSearching) {
     if (isUserSearching) {
       this.currentView_ = media_router.MediaRouterView.FILTER;
+      this.updateElementPositioning_();
       this.filterSinks_(this.searchInputText_);
     } else {
       this.currentView_ = media_router.MediaRouterView.SINK_LIST;
@@ -1467,28 +1491,50 @@ Polymer({
   setSearchFocusHandlers_: function() {
     var search = this.$['sink-search-input'];
 
-    // If the search input is focused and the whole window is losing focus, the
-    // search input will see a blur event first and then the window. The search
-    // event listener sets |isSearchFocused_| to false on the next event loop
-    // but then the event continues bubbling up. When it reaches the window
-    // event listener, it is still |true|. The window event listener queues its
-    // own action for the next event loop which keeps |isSearchFocused_| at the
-    // same value.
+    // The window can see a blur event for two important cases: the window is
+    // actually losing focus or keyboard focus is wrapping from the end of the
+    // document to the beginning. To handle both cases, we save the state of
+    // |isSearchFocused_| during the window blur event.
     //
-    // So if only the search input is losing focus, |isSearchFocused_| will
-    // successfully be set to |false| during the next event loop. If the whole
-    // window is losing focus, which is the cause for the search input's blur
-    // event, it will be set to |false| and then immediately restored to |true|.
+    // The corresponding window focus event can do nothing if |isSearchFocused_|
+    // was false during the blur event. If the search input is gaining focus now
+    // it will work correctly. There are two cases when the input had focus
+    // during the window blur event: the input still has focus and the input
+    // lost focus. These cases are handled by the logic around
+    // |isSearchFocusedShouldBeSet_| and |isSearchFocused_|.
+    //
+    // Because the window focus event will always happen first, it doesn't know
+    // whether the input focus handler will later run or not. If it is not going
+    // to run, then |isSearchFocused_| should be set to |false|, otherwise it
+    // should be |true|. So the window focus handler just sets
+    // |isSearchFocused_| to |false| and makes a note in
+    // |isSearchFocusedShouldBeSet_| that |isSearchFocused_| should actually be
+    // set to true if the search focus handler runs. The |setTimeout| in the
+    // window focus handler clears this note as soon as all focus event handlers
+    // have run.
     window.addEventListener('blur', function() {
-      var saveSearchFocusState = this.isSearchFocused_;
-      setTimeout(function() {
-        this.isSearchFocused_ = saveSearchFocusState;
-      }.bind(this));
+      this.isSearchFocusedOnWindowBlur_ = this.isSearchFocused_;
+    }.bind(this));
+    window.addEventListener('focus', function() {
+      if (this.isSearchFocusedOnWindowBlur_) {
+        this.isSearchFocusedOnWindowBlur_ = false;
+        this.isSearchFocusedShouldBeSet_ = true;
+        this.isSearchFocused_ = false;
+        setTimeout(function() {
+          this.isSearchFocusedShouldBeSet_ = false;
+        }.bind(this));
+      }
     }.bind(this));
     search.addEventListener('blur', function() {
+      // This lets normal blur cases work as expected, but doesn't get in the
+      // way of the window blur handler capturing the "current" state. This is
+      // the case because this will be run after all the blur handlers are done.
       setTimeout(function() { this.isSearchFocused_ = false; }.bind(this));
     }.bind(this));
     search.addEventListener('focus', function() {
+      if (this.isSearchFocusedShouldBeSet_) {
+        this.isSearchFocused_ = true;
+      }
       if (!this.isSearchFocused_) {
         this.isSearchFocused_ = true;
         this.isUserSearching_ = true;
@@ -1647,6 +1693,10 @@ Polymer({
       this.$['sink-list'].style.maxHeight =
           this.dialogHeight_ - headerHeight - firstRunFlowHeight -
               issueHeight - searchHeight + 'px';
+      var searchResults = this.$$('#search-results');
+      if (searchResults) {
+        searchResults.style.maxHeight = this.$['sink-list'].style.maxHeight;
+      }
     });
   },
 
