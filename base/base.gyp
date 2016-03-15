@@ -22,7 +22,7 @@
       },
       'dependencies': [
         'allocator/allocator.gyp:allocator',
-        'allocator/allocator.gyp:allocator_features',
+        'allocator/allocator.gyp:allocator_features#target',
         'base_debugging_flags#target',
         'base_static',
         'base_build_date#target',

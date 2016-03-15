@@ -380,9 +380,10 @@
     },  # 'allocator' target.
     {
       # GN: //base/allocator:features
+      # When referenced from a target that might be compiled in the host
+      # toolchain, always refer to 'allocator_features#target'.
       'target_name': 'allocator_features',
       'includes': [ '../../build/buildflag_header.gypi' ],
-      'toolsets': ['host', 'target'],
       'variables': {
         'buildflag_header_path': 'base/allocator/features.h',
         'buildflag_flags': [
