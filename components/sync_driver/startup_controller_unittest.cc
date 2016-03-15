@@ -162,9 +162,18 @@ TEST_F(StartupControllerTest, Managed) {
   ExpectNotStarted();
 }
 
-// Test that sync doesn't start until all conditions are met and a
-// data type triggers sync startup.
-TEST_F(StartupControllerTest, DataTypeTriggered) {
+// Test that a data type triggering startup starts sync immediately.
+TEST_F(StartupControllerTest, NoDeferralDataTypeTrigger) {
+  sync_prefs()->SetFirstSetupComplete();
+  signin()->set_account_id(kTestUser);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
+  controller()->OnDataTypeRequestsSyncStartup(syncer::SESSIONS);
+  ExpectStarted();
+}
+
+// Test that a data type trigger interrupts the deferral timer and starts
+// sync immediately.
+TEST_F(StartupControllerTest, DataTypeTriggerInterruptsDeferral) {
   sync_prefs()->SetFirstSetupComplete();
   signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
@@ -222,13 +231,26 @@ TEST_F(StartupControllerTest, FallbackTimerWaits) {
   ExpectNotStarted();
 }
 
-// Test that start isn't deferred when setup is in progress.
-TEST_F(StartupControllerTest, NoDeferralWithSetupInProgress) {
+// Test that sync starts immediately when setup in progress is true.
+TEST_F(StartupControllerTest, NoDeferralSetupInProgressTrigger) {
   sync_prefs()->SetFirstSetupComplete();
   signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
-  controller()->set_setup_in_progress(true);
+
+  controller()->SetSetupInProgress(true);
+  ExpectStarted();
+}
+
+// Test that setup in progress being set to true interrupts the deferral timer
+// and starts sync immediately.
+TEST_F(StartupControllerTest, SetupInProgressTriggerInterruptsDeferral) {
+  sync_prefs()->SetFirstSetupComplete();
+  signin()->set_account_id(kTestUser);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
+  ExpectStartDeferred();
+
+  controller()->SetSetupInProgress(true);
   ExpectStarted();
 }
 
@@ -252,7 +274,7 @@ TEST_F(StartupControllerTest, ResetDuringSetup) {
   token_service()->UpdateCredentials(kTestUser, kTestToken);
 
   // Simulate UI telling us setup is in progress.
-  controller()->set_setup_in_progress(true);
+  controller()->SetSetupInProgress(true);
 
   // This could happen if the UI triggers a stop-syncing permanently call.
   controller()->Reset(syncer::UserTypes());

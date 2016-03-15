@@ -1476,7 +1476,7 @@ void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
   if (startup_controller_->IsSetupInProgress() == setup_in_progress)
     return;
 
-  startup_controller_->set_setup_in_progress(setup_in_progress);
+  startup_controller_->SetSetupInProgress(setup_in_progress);
   if (!setup_in_progress && IsBackendInitialized())
     ReconfigureDatatypeManager();
   NotifyObservers();

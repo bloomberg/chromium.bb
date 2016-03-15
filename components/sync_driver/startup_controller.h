@@ -50,7 +50,9 @@ class StartupController {
   // See setup_in_progress_.
   void Reset(const syncer::ModelTypeSet registered_types);
 
-  void set_setup_in_progress(bool in_progress);
+  // Sets the setup in progress flag and tries to start sync if it's true.
+  void SetSetupInProgress(bool setup_in_progress);
+
   bool IsSetupInProgress() const { return setup_in_progress_; }
   base::Time start_backend_time() const { return start_backend_time_; }
   std::string GetBackendInitializationStateString() const;
@@ -82,7 +84,7 @@ class StartupController {
   // data types.
   // Note: this is explicitly controlled by higher layers (UI) and is meant to
   // reflect what the UI claims the setup state to be. Therefore, only set this
-  // due to explicit requests to do so via set_setup_in_progress.
+  // due to explicit requests to do so via SetSetupInProgress.
   bool setup_in_progress_;
 
   const sync_driver::SyncPrefs* sync_prefs_;

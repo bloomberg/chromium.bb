@@ -78,8 +78,11 @@ void StartupController::Reset(const syncer::ModelTypeSet registered_types) {
   registered_types_ = registered_types;
 }
 
-void StartupController::set_setup_in_progress(bool in_progress) {
-  setup_in_progress_ = in_progress;
+void StartupController::SetSetupInProgress(bool setup_in_progress) {
+  setup_in_progress_ = setup_in_progress;
+  if (setup_in_progress_) {
+    TryStart();
+  }
 }
 
 bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
