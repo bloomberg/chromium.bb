@@ -97,6 +97,14 @@ class GpuWatchdogThread : public base::Thread,
   volatile bool armed_;
   GpuWatchdogTaskObserver task_observer_;
 
+  // True if the watchdog should wait for a certain amount of CPU to be used
+  // before killing the process.
+  bool use_thread_cpu_time_;
+
+  // The number of consecutive acknowledgements that had a latency less than
+  // 50ms.
+  int responsive_acknowledge_count_;
+
 #if defined(OS_WIN)
   void* watched_thread_handle_;
   base::TimeDelta arm_cpu_time_;
@@ -107,6 +115,9 @@ class GpuWatchdogThread : public base::Thread,
   base::Time suspension_timeout_;
 
   bool suspended_;
+
+  // This is the time the last check was sent.
+  base::Time check_time_;
 
 #if defined(OS_CHROMEOS)
   FILE* tty_file_;

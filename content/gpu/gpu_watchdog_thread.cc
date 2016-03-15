@@ -42,6 +42,8 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       timeout_(base::TimeDelta::FromMilliseconds(timeout)),
       armed_(false),
       task_observer_(this),
+      use_thread_cpu_time_(true),
+      responsive_acknowledge_count_(0),
 #if defined(OS_WIN)
       watched_thread_handle_(0),
       arm_cpu_time_(),
@@ -159,12 +161,30 @@ void GpuWatchdogThread::OnAcknowledge() {
   weak_factory_.InvalidateWeakPtrs();
   armed_ = false;
 
-  if (suspended_)
+  if (suspended_) {
+    responsive_acknowledge_count_ = 0;
     return;
+  }
+
+  base::Time current_time = base::Time::Now();
+
+  // The watchdog waits until at least 6 consecutive checks have returned in
+  // less than 50 ms before it will start ignoring the CPU time in determining
+  // whether to timeout. This is a compromise to allow startups that are slow
+  // due to disk contention to avoid timing out, but once the GPU process is
+  // running smoothly the watchdog will be able to detect hangs that don't use
+  // the CPU.
+  if ((current_time - check_time_) < base::TimeDelta::FromMilliseconds(50))
+    responsive_acknowledge_count_++;
+  else
+    responsive_acknowledge_count_ = 0;
+
+  if (responsive_acknowledge_count_ >= 6)
+    use_thread_cpu_time_ = false;
 
   // If it took a long time for the acknowledgement, assume the computer was
   // recently suspended.
-  bool was_suspended = (base::Time::Now() > suspension_timeout_);
+  bool was_suspended = (current_time > suspension_timeout_);
 
   // The monitored thread has responded. Post a task to check it again.
   task_runner()->PostDelayedTask(
@@ -190,10 +210,11 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
   arm_cpu_time_ = GetWatchedThreadTime();
 #endif
 
+  check_time_ = base::Time::Now();
   // Immediately after the computer is woken up from being suspended it might
   // be pretty sluggish, so allow some extra time before the next timeout.
   base::TimeDelta timeout = timeout_ * (after_suspend ? 3 : 1);
-  suspension_timeout_ = base::Time::Now() + timeout * 2;
+  suspension_timeout_ = check_time_ + timeout * 2;
 
   // Post a task to the monitored thread that does nothing but wake up the
   // TaskObserver. Any other tasks that are pending on the watched thread will
@@ -219,7 +240,7 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   // Defer termination until a certain amount of CPU time has elapsed on the
   // watched thread.
   base::TimeDelta time_since_arm = GetWatchedThreadTime() - arm_cpu_time_;
-  if (time_since_arm < timeout_) {
+  if (use_thread_cpu_time_ && (time_since_arm < timeout_)) {
     message_loop()->PostDelayedTask(
         FROM_HERE,
         base::Bind(
