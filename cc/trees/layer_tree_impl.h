@@ -455,6 +455,7 @@ class CC_EXPORT LayerTreeImpl {
   bool TransformAnimationBoundsForBox(const LayerImpl* layer,
                                       const gfx::BoxF& box,
                                       gfx::BoxF* bounds) const;
+  void ScrollAnimationAbort(bool needs_completion);
 
   bool have_scroll_event_handlers() const {
     return have_scroll_event_handlers_;

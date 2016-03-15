@@ -2065,6 +2065,12 @@ bool LayerTreeImpl::TransformAnimationBoundsForBox(const LayerImpl* layer,
              : true;
 }
 
+void LayerTreeImpl::ScrollAnimationAbort(bool needs_completion) {
+  DCHECK(layer_tree_host_impl_->animation_host());
+  layer_tree_host_impl_->animation_host()->ScrollAnimationAbort(
+      needs_completion);
+}
+
 void LayerTreeImpl::ResetAllChangeTracking(PropertyTrees::ResetFlags flag) {
   layers_that_should_push_properties_.clear();
   for (auto* layer : *this)

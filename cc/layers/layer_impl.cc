@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/animation/animation_host.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
@@ -483,8 +482,8 @@ void LayerImpl::set_main_thread_scrolling_reasons(
           MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects &&
       layer_tree_impl()) {
     if (layer_tree_impl()->ScrollOffsetIsAnimatingOnImplOnly(this)) {
-      layer_tree_impl()->animation_host()->ScrollAnimationAbort(
-          true /* needs_completion */);
+      const bool needs_completion = true;
+      layer_tree_impl()->ScrollAnimationAbort(needs_completion);
     }
   }
 
