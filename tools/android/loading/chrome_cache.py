@@ -20,6 +20,7 @@ _SRC_DIR = os.path.abspath(os.path.join(
 sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 from pylib import constants
 
+import device_setup
 import options
 
 
@@ -43,19 +44,8 @@ def _RemoteCacheDirectory():
       constants.PACKAGE_INFO[OPTIONS.chrome_package_name].package)
 
 
-def _UpdateTimestampFromAdbStat(filename, stat):
-  os.utime(filename, (stat.st_time, stat.st_time))
-
-
 def _AdbShell(adb, cmd):
   adb.Shell(subprocess.list2cmdline(cmd))
-
-
-def _AdbUtime(adb, filename, timestamp):
-  """Adb equivalent of os.utime(filename, (timestamp, timestamp))
-  """
-  touch_stamp = datetime.fromtimestamp(timestamp).strftime('%Y%m%d.%H%M%S')
-  _AdbShell(adb, ['touch', '-t', touch_stamp, filename])
 
 
 def PullBrowserCache(device):
@@ -71,8 +61,16 @@ def PullBrowserCache(device):
   _REAL_INDEX_FILE_NAME = 'the-real-index'
 
   remote_cache_directory = _RemoteCacheDirectory()
-  print remote_cache_directory
   save_target = tempfile.mkdtemp(suffix='.cache')
+
+  # Pull the cache recursively.
+  device.adb.Pull(remote_cache_directory, save_target)
+
+  # Update the modification time stamp on the local cache copy.
+  def _UpdateTimestampFromAdbStat(filename, stat):
+    assert os.path.exists(filename)
+    os.utime(filename, (stat.st_time, stat.st_time))
+
   for filename, stat in device.adb.Ls(remote_cache_directory):
     if filename == '..':
       continue
@@ -81,7 +79,6 @@ def PullBrowserCache(device):
       continue
     original_file = os.path.join(remote_cache_directory, filename)
     saved_file = os.path.join(save_target, filename)
-    device.adb.Pull(original_file, saved_file)
     _UpdateTimestampFromAdbStat(saved_file, stat)
     if filename == _INDEX_DIRECTORY_NAME:
       # The directory containing the index was pulled recursively, update the
@@ -119,11 +116,16 @@ def PushBrowserCache(device, local_cache_path):
   # Push cache content.
   device.adb.Push(local_cache_path, remote_cache_directory)
 
+  # Command queue to touch all files with correct timestamp.
+  command_queue = []
+
   # Walk through the local cache to update mtime on the device.
   def MirrorMtime(local_path):
     cache_relative_path = os.path.relpath(local_path, start=local_cache_path)
     remote_path = os.path.join(remote_cache_directory, cache_relative_path)
-    _AdbUtime(device.adb, remote_path, os.stat(local_path).st_mtime)
+    timestamp = os.stat(local_path).st_mtime
+    touch_stamp = datetime.fromtimestamp(timestamp).strftime('%Y%m%d.%H%M%S')
+    command_queue.append(['touch', '-t', touch_stamp, remote_path])
 
   for local_directory_path, dirnames, filenames in os.walk(
         local_cache_path, topdown=False):
@@ -132,6 +134,8 @@ def PushBrowserCache(device, local_cache_path):
     for dirname in dirnames:
       MirrorMtime(os.path.join(local_directory_path, dirname))
   MirrorMtime(local_cache_path)
+
+  device_setup.DeviceSubmitShellCommandQueue(device, command_queue)
 
 
 def ZipDirectoryContent(root_directory_path, archive_dest_path):
