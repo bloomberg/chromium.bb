@@ -71,7 +71,6 @@ private:
 
     void movePendingScript(ScriptRunner*, ScriptLoader*);
     bool removePendingInOrderScript(ScriptLoader*);
-    void scheduleReadyInOrderScripts();
 
     void postTask(const WebTraceLocation&);
 

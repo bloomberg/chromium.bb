@@ -224,13 +224,4 @@ bool PendingScript::isReady() const
     return true;
 }
 
-bool PendingScript::errorOccurred() const
-{
-    if (resource())
-        return resource()->errorOccurred();
-    if (m_streamer && m_streamer->resource())
-        return m_streamer->resource()->errorOccurred();
-    return false;
-}
-
 } // namespace blink
