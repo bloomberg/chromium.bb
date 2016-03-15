@@ -1,0 +1,5 @@
+{
+  "name": "mojo:network_service",
+  "display_name": "Network Service",
+  "capabilities": { "*": [ "*" ] }
+}

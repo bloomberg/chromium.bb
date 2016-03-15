@@ -14,7 +14,7 @@
 #include "mojo/services/network/public/cpp/udp_socket_wrapper.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/udp_socket.mojom.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell_test.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -317,13 +317,14 @@ class UDPSocketReceiverImpl : public UDPSocketReceiver {
   DISALLOW_COPY_AND_ASSIGN(UDPSocketReceiverImpl);
 };
 
-class UDPSocketAppTest : public test::ApplicationTestBase {
+class UDPSocketTest : public test::ShellTest {
  public:
-  UDPSocketAppTest() : receiver_binding_(&receiver_) {}
-  ~UDPSocketAppTest() override {}
+  UDPSocketTest() : ShellTest("exe:network_service_unittests"),
+                    receiver_binding_(&receiver_) {}
+  ~UDPSocketTest() override {}
 
   void SetUp() override {
-    ApplicationTestBase::SetUp();
+    ShellTest::SetUp();
     connector()->ConnectToInterface("mojo:network_service", &network_service_);
     network_service_->CreateUDPSocket(GetProxy(&socket_));
   }
@@ -334,12 +335,12 @@ class UDPSocketAppTest : public test::ApplicationTestBase {
   UDPSocketReceiverImpl receiver_;
   Binding<UDPSocketReceiver> receiver_binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(UDPSocketAppTest);
+  DISALLOW_COPY_AND_ASSIGN(UDPSocketTest);
 };
 
 }  // namespace
 
-TEST_F(UDPSocketAppTest, Settings) {
+TEST_F(UDPSocketTest, Settings) {
   TestCallback callback1;
   socket_->AllowAddressReuse(callback1.callback());
   callback1.WaitForResult();
@@ -390,7 +391,7 @@ TEST_F(UDPSocketAppTest, Settings) {
   EXPECT_GT(callback9.result(), 0u);
 }
 
-TEST_F(UDPSocketAppTest, TestReadWrite) {
+TEST_F(UDPSocketTest, TestReadWrite) {
   TestCallbackWithAddressAndReceiver callback1;
   socket_->Bind(GetLocalHostWithAnyPort(), callback1.callback());
   callback1.WaitForResult();
@@ -438,7 +439,7 @@ TEST_F(UDPSocketAppTest, TestReadWrite) {
   }
 }
 
-TEST_F(UDPSocketAppTest, TestConnectedReadWrite) {
+TEST_F(UDPSocketTest, TestConnectedReadWrite) {
   TestCallbackWithAddressAndReceiver callback1;
   socket_->Bind(GetLocalHostWithAnyPort(), callback1.callback());
   callback1.WaitForResult();
@@ -516,7 +517,7 @@ TEST_F(UDPSocketAppTest, TestConnectedReadWrite) {
   }
 }
 
-TEST_F(UDPSocketAppTest, TestWrapperReadWrite) {
+TEST_F(UDPSocketTest, TestWrapperReadWrite) {
   UDPSocketWrapper socket(std::move(socket_), 4, 4);
 
   TestCallbackWithAddress callback1;
@@ -568,7 +569,7 @@ TEST_F(UDPSocketAppTest, TestWrapperReadWrite) {
   }
 }
 
-TEST_F(UDPSocketAppTest, TestWrapperConnectedReadWrite) {
+TEST_F(UDPSocketTest, TestWrapperConnectedReadWrite) {
   UDPSocketWrapper socket(std::move(socket_), 4, 4);
 
   TestCallbackWithAddress callback1;

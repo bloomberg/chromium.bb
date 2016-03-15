@@ -38,6 +38,7 @@ class NetworkServiceDelegate : public ShellClient,
   void Initialize(Connector* connector, const Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(Connection* connection) override;
+  void ShellConnectionLost() override;
 
   // InterfaceFactory<NetworkService> implementation.
   void Create(Connection* connection,

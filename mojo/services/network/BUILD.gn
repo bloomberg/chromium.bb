@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
+import("//testing/test.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -123,14 +125,20 @@ source_set("sources") {
   ]
 }
 
-mojo_native_application("apptests") {
-  output_name = "network_service_apptests"
+group("network_service_unittests") {
   testonly = true
+  deps = [
+    ":unittests",
+  ]
+}
+
+test("unittests") {
+  output_name = "network_service_unittests"
 
   sources = [
-    "http_server_apptest.cc",
-    "udp_socket_apptest.cc",
-    "url_loader_impl_apptest.cc",
+    "http_server_unittest.cc",
+    "udp_socket_unittest.cc",
+    "url_loader_impl_unittest.cc",
   ]
 
   deps = [
@@ -142,10 +150,21 @@ mojo_native_application("apptests") {
     "//mojo/public/cpp/bindings:callback",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
+    "//mojo/shell/public/cpp:shell_test_support",
     "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/cpp:test_support",
+    "//mojo/shell/public/cpp/test:run_all_shelltests",
     "//net",
     "//net:test_support",
     "//testing/gtest",
   ]
+
+  data_deps = [
+    ":test_manifest",
+  ]
+}
+
+mojo_application_manifest("test_manifest") {
+  type = "exe"
+  application_name = "network_service_unittests"
+  source = "test_manifest.json"
 }

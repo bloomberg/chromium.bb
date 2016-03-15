@@ -13,8 +13,8 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/url_loader_impl.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/message_loop_ref.h"
+#include "mojo/shell/public/cpp/shell_test.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -107,23 +107,21 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   base::Closure quit_closure_;
 };
 
-class UrlLoaderImplTest : public test::ApplicationTestBase {
+class UrlLoaderImplTest : public test::ShellTest {
  public:
-  UrlLoaderImplTest() : message_loop_(common::MessagePumpMojo::Create()) {}
+  UrlLoaderImplTest() : ShellTest("exe:network_service_unittests") {}
 
  protected:
-  bool ShouldCreateDefaultRunLoop() override {
-    return false;
-  }
-
   void SetUp() override {
-    ApplicationTestBase::SetUp();
+    ShellTest::SetUp();
+
+    wait_for_request_.reset(new base::RunLoop);
 
     scoped_ptr<net::TestURLRequestContext> url_request_context(
         new net::TestURLRequestContext(true));
     ASSERT_TRUE(url_request_job_factory_.SetProtocolHandler(
         "http", make_scoped_ptr(new TestProtocolHandler(
-            wait_for_request_.QuitClosure()))));
+            wait_for_request_->QuitClosure()))));
     url_request_context->set_job_factory(&url_request_job_factory_);
     url_request_context->Init();
     network_context_.reset(new NetworkContext(std::move(url_request_context)));
@@ -138,12 +136,11 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
     return network_context_->GetURLLoaderCountForTesting() > 0u;
   }
 
-  base::MessageLoop message_loop_;
   net::TestJobInterceptor* job_interceptor_;
   net::URLRequestJobFactoryImpl url_request_job_factory_;
   scoped_ptr<NetworkContext> network_context_;
   URLLoaderPtr url_loader_proxy_;
-  base::RunLoop wait_for_request_;
+  scoped_ptr<base::RunLoop> wait_for_request_;
 };
 
 TEST_F(UrlLoaderImplTest, ClosedBeforeAnyCall) {
@@ -160,7 +157,7 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnTheNetwork) {
   URLResponsePtr response;
   url_loader_proxy_->Start(std::move(request),
                            base::Bind(&PassA<URLResponsePtr>, &response));
-  wait_for_request_.Run();
+  wait_for_request_->Run();
 
   EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
@@ -191,7 +188,7 @@ TEST_F(UrlLoaderImplTest, ClosedWhileWaitingOnThePipeToBeWriteable) {
   URLResponsePtr response;
   url_loader_proxy_->Start(std::move(request),
                            base::Bind(&PassA<URLResponsePtr>, &response));
-  wait_for_request_.Run();
+  wait_for_request_->Run();
 
   EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
@@ -232,7 +229,7 @@ TEST_F(UrlLoaderImplTest, RequestCompleted) {
   URLResponsePtr response;
   url_loader_proxy_->Start(std::move(request),
                            base::Bind(&PassA<URLResponsePtr>, &response));
-  wait_for_request_.Run();
+  wait_for_request_->Run();
 
   EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);
@@ -263,7 +260,7 @@ TEST_F(UrlLoaderImplTest, RequestFailed) {
   URLResponsePtr response;
   url_loader_proxy_->Start(std::move(request),
                            base::Bind(&PassA<URLResponsePtr>, &response));
-  wait_for_request_.Run();
+  wait_for_request_->Run();
 
   EXPECT_TRUE(IsUrlLoaderValid());
   EXPECT_FALSE(response);

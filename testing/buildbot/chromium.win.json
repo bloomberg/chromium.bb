@@ -1731,6 +1731,9 @@
         "test": "mus_ws_unittests"
       },
       {
+        "test": "network_service_unittests"
+      },
+      {
         "test": "resource_provider_unittests"
       },
       {

@@ -24,12 +24,6 @@
 # WARNING: If you add a test make sure the gn target mojo_apptests depends upon
 # it.
 tests = [
-    # TODO(rockot): Flaky. Failing with "Unrecognized --gtest_list_tests output"
-    # http://crbug.com/569367.
-#  {
-#    'test': 'mojo:network_service_apptests',
-#    'type': 'gtest_isolated',
-#  },
   {
     'test': 'mojo:resource_provider_apptests',
     'type': 'gtest_isolated',

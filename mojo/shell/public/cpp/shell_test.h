@@ -71,6 +71,8 @@ class ShellTest : public testing::Test {
   // work.
   virtual scoped_ptr<ShellClient> CreateShellClient();
 
+  virtual scoped_ptr<base::MessageLoop> CreateMessageLoop();
+
   // Call to set Initialize() metadata when GetShellClient() is overridden.
   void InitializeCalled(Connector* connector,
                         const std::string& name,

@@ -397,6 +397,10 @@
     "label": "//net:net_unittests",
     "type": "console_test_launcher",
   },
+  "network_service_unittests": {
+    "label": "//mojo/services/network:unittests",
+    "type": "unknown",
+  },
   "ozone_unittests": {
     "label": "//ui/ozone:ozone_unittests",
     "type": "unknown",

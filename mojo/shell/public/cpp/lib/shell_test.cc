@@ -32,6 +32,10 @@ scoped_ptr<ShellClient> ShellTest::CreateShellClient() {
   return make_scoped_ptr(new ShellTestClient(this));
 }
 
+scoped_ptr<base::MessageLoop> ShellTest::CreateMessageLoop() {
+  return make_scoped_ptr(new base::MessageLoop);
+}
+
 void ShellTest::InitializeCalled(Connector* connector,
                                  const std::string& name,
                                  const std::string& user_id,
@@ -44,7 +48,7 @@ void ShellTest::InitializeCalled(Connector* connector,
 
 void ShellTest::SetUp() {
   shell_client_ = CreateShellClient();
-  message_loop_.reset(new base::MessageLoop);
+  message_loop_ = CreateMessageLoop();
   background_shell_.reset(new shell::BackgroundShell);
   background_shell_->Init(nullptr);
   shell_connection_.reset(new ShellConnection(

@@ -595,7 +595,6 @@ group("mojo_apptests") {
       "//components/resource_provider:resource_provider_unittests",
       "//mash/wm:tests",
       "//media/mojo/services:tests",
-      "//mojo/services/network:apptests",
       "//ui/views/mus:tests",
     ]
   }

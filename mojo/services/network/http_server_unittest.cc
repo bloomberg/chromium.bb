@@ -26,7 +26,7 @@
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell_test.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -545,16 +545,15 @@ class HttpServerDelegateImpl : public HttpServerDelegate {
   DISALLOW_COPY_AND_ASSIGN(HttpServerDelegateImpl);
 };
 
-class HttpServerAppTest : public test::ApplicationTestBase {
+class HttpServerTest : public test::ShellTest {
  public:
-  HttpServerAppTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
-  ~HttpServerAppTest() override {}
+  HttpServerTest()
+      : ShellTest("exe:network_service_unittests") {}
+  ~HttpServerTest() override {}
 
  protected:
-  bool ShouldCreateDefaultRunLoop() override { return false; }
-
   void SetUp() override {
-    ApplicationTestBase::SetUp();
+    ShellTest::SetUp();
 
     scoped_ptr<Connection> connection =
         connector()->Connect("mojo:network_service");
@@ -562,30 +561,34 @@ class HttpServerAppTest : public test::ApplicationTestBase {
     connection->GetInterface(&web_socket_factory_);
   }
 
+  scoped_ptr<base::MessageLoop> CreateMessageLoop() override {
+    return make_scoped_ptr(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+  }
+
   void CreateHttpServer(HttpServerDelegatePtr delegate,
                         NetAddressPtr* out_bound_to) {
+    base::RunLoop loop;
     network_service_->CreateHttpServer(
         GetLocalHostWithAnyPort(), std::move(delegate),
-        [out_bound_to](NetworkErrorPtr result, NetAddressPtr bound_to) {
+        [out_bound_to, &loop](NetworkErrorPtr result, NetAddressPtr bound_to) {
           ASSERT_EQ(net::OK, result->code);
           EXPECT_NE(0u, bound_to->ipv4->port);
           *out_bound_to = std::move(bound_to);
+          loop.Quit();
         });
-    network_service_.WaitForIncomingResponse();
+    loop.Run();
   }
 
   NetworkServicePtr network_service_;
   WebSocketFactoryPtr web_socket_factory_;
 
  private:
-  base::MessageLoop message_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpServerAppTest);
+  DISALLOW_COPY_AND_ASSIGN(HttpServerTest);
 };
 
 }  // namespace
 
-TEST_F(HttpServerAppTest, BasicHttpRequestResponse) {
+TEST_F(HttpServerTest, BasicHttpRequestResponse) {
   NetAddressPtr bound_to;
   HttpServerDelegatePtr server_delegate_ptr;
   HttpServerDelegateImpl server_delegate_impl(&server_delegate_ptr);
@@ -618,7 +621,7 @@ TEST_F(HttpServerAppTest, BasicHttpRequestResponse) {
   CheckResponse(response_data, response_message);
 }
 
-TEST_F(HttpServerAppTest, HttpRequestResponseWithBody) {
+TEST_F(HttpServerTest, HttpRequestResponseWithBody) {
   NetAddressPtr bound_to;
   HttpServerDelegatePtr server_delegate_ptr;
   HttpServerDelegateImpl server_delegate_impl(&server_delegate_ptr);
@@ -657,7 +660,7 @@ TEST_F(HttpServerAppTest, HttpRequestResponseWithBody) {
   CheckResponse(response_data, response_message);
 }
 
-TEST_F(HttpServerAppTest, WebSocket) {
+TEST_F(HttpServerTest, WebSocket) {
   NetAddressPtr bound_to;
   HttpServerDelegatePtr server_delegate_ptr;
   HttpServerDelegateImpl server_delegate_impl(&server_delegate_ptr);
