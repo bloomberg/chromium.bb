@@ -35,8 +35,7 @@ class MockVideoRenderer : public cricket::VideoRenderer {
 
 class MockAudioSource : public webrtc::AudioSourceInterface {
  public:
-  explicit MockAudioSource(
-      const webrtc::MediaConstraintsInterface* constraints, bool remote);
+  explicit MockAudioSource(const cricket::AudioOptions& options, bool remote);
 
   void RegisterObserver(webrtc::ObserverInterface* observer) override;
   void UnregisterObserver(webrtc::ObserverInterface* observer) override;
@@ -48,15 +47,6 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
   // Changes the state of the source to ended and notifies the observer.
   void SetEnded();
 
-  const webrtc::MediaConstraintsInterface::Constraints& optional_constraints() {
-    return optional_constraints_;
-  }
-
-  const webrtc::MediaConstraintsInterface::Constraints&
-  mandatory_constraints() {
-    return mandatory_constraints_;
-  }
-
  protected:
   ~MockAudioSource() override;
 
@@ -64,8 +54,6 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
   bool remote_;
   ObserverSet observers_;
   MediaSourceInterface::SourceState state_;
-  webrtc::MediaConstraintsInterface::Constraints optional_constraints_;
-  webrtc::MediaConstraintsInterface::Constraints mandatory_constraints_;
 };
 
 class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
@@ -137,16 +125,14 @@ class MockPeerConnectionDependencyFactory
 
   scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-      const webrtc::MediaConstraintsInterface* constraints,
       blink::WebFrame* frame,
       webrtc::PeerConnectionObserver* observer) override;
   scoped_refptr<webrtc::AudioSourceInterface> CreateLocalAudioSource(
-      const webrtc::MediaConstraintsInterface* constraints) override;
+      const cricket::AudioOptions& options) override;
   WebRtcVideoCapturerAdapter* CreateVideoCapturer(
       bool is_screen_capture) override;
   scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(
-      cricket::VideoCapturer* capturer,
-      const blink::WebMediaConstraints& constraints) override;
+      cricket::VideoCapturer* capturer) override;
   void CreateWebAudioSource(blink::WebMediaStreamSource* source) override;
   scoped_refptr<webrtc::MediaStreamInterface> CreateLocalMediaStream(
       const std::string& label) override;

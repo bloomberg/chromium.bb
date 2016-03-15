@@ -13,127 +13,127 @@ namespace content {
 
 namespace {
 
-// Convert a string ("true", "false") to a boolean.
-bool ConvertStringToBoolean(const std::string& string, bool* value) {
-  static const char kValueTrue[] = "true";
-  static const char kValueFalse[] = "false";
+template <typename P, typename T>
+bool ScanConstraintsForExactValue(const blink::WebMediaConstraints& constraints,
+                                  P picker,
+                                  T* value) {
+  const auto& the_field = constraints.basic().*picker;
+  if (the_field.hasExact()) {
+    *value = the_field.exact();
+    return true;
+  }
+  for (const auto& advanced_constraint : constraints.advanced()) {
+    const auto& the_field = advanced_constraint.*picker;
+    if (the_field.hasExact()) {
+      *value = the_field.exact();
+      return true;
+    }
+  }
+  return false;
+}
 
-  *value = (string == kValueTrue);
-  return *value || (string == kValueFalse);
+template <typename P, typename T>
+bool ScanConstraintsForMaxValue(const blink::WebMediaConstraints& constraints,
+                                P picker,
+                                T* value) {
+  const auto& the_field = constraints.basic().*picker;
+  if (the_field.hasMax()) {
+    *value = the_field.max();
+    return true;
+  }
+  for (const auto& advanced_constraint : constraints.advanced()) {
+    const auto& the_field = advanced_constraint.*picker;
+    if (the_field.hasMax()) {
+      *value = the_field.max();
+      return true;
+    }
+  }
+  return false;
+}
+
+template <typename P, typename T>
+bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
+                                P picker,
+                                T* value) {
+  const auto& the_field = constraints.basic().*picker;
+  if (the_field.hasMin()) {
+    *value = the_field.min();
+    return true;
+  }
+  for (const auto& advanced_constraint : constraints.advanced()) {
+    const auto& the_field = advanced_constraint.*picker;
+    if (the_field.hasMin()) {
+      *value = the_field.min();
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
 
-bool GetConstraintValueAsBoolean(const blink::WebMediaConstraints& constraints,
-                                 const std::string& name,
-                                 bool* value) {
-  return GetMandatoryConstraintValueAsBoolean(constraints, name, value) ||
-         GetOptionalConstraintValueAsBoolean(constraints, name, value);
-}
-
-bool GetConstraintValueAsInteger(const blink::WebMediaConstraints& constraints,
-                                 const std::string& name,
-                                 int* value) {
-  return GetMandatoryConstraintValueAsInteger(constraints, name, value) ||
-         GetOptionalConstraintValueAsInteger(constraints, name, value);
-}
-
-bool GetConstraintValueAsDouble(const blink::WebMediaConstraints& constraints,
-                                 const std::string& name,
-                                 double* value) {
-  return GetMandatoryConstraintValueAsDouble(constraints, name, value) ||
-         GetOptionalConstraintValueAsDouble(constraints, name, value);
-}
-
-bool GetConstraintValueAsString(const blink::WebMediaConstraints& constraints,
-                                const std::string& name,
-                                std::string* value) {
-  blink::WebString value_str;
-  base::string16 name_16 = base::UTF8ToUTF16(name);
-  if (!constraints.getMandatoryConstraintValue(name_16, value_str) &&
-      !constraints.getOptionalConstraintValue(name_16, value_str)) {
-    return false;
-  }
-
-  *value = value_str.utf8();
-  return true;
-}
-
-bool GetMandatoryConstraintValueAsBoolean(
+bool GetConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
+    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
     bool* value) {
-  blink::WebString value_str;
-  if (!constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name),
-                                               value_str)) {
-    return false;
-  }
-
-  return ConvertStringToBoolean(value_str.utf8(), value);
+  return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
-bool GetMandatoryConstraintValueAsInteger(
+bool GetConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
+    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value) {
-  blink::WebString value_str;
-  if (!constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name),
-                                               value_str)) {
-    return false;
-  }
-
-  return base::StringToInt(value_str.utf8(), value);
+  return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
-bool GetMandatoryConstraintValueAsDouble(
+bool GetConstraintMinAsInteger(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    double* value) {
-  blink::WebString value_str;
-  if (!constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name),
-                                               value_str)) {
-    return false;
-  }
-  return base::StringToDouble(value_str.utf8(), value);
-}
-
-bool GetOptionalConstraintValueAsBoolean(
-    const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    bool* value) {
-  blink::WebString value_str;
-  if (!constraints.getOptionalConstraintValue(base::UTF8ToUTF16(name),
-                                              value_str)) {
-    return false;
-  }
-
-  return ConvertStringToBoolean(value_str.utf8(), value);
-}
-
-bool GetOptionalConstraintValueAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const std::string& name,
+    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value) {
-  blink::WebString value_str;
-  if (!constraints.getOptionalConstraintValue(base::UTF8ToUTF16(name),
-                                              value_str)) {
-    return false;
-  }
-
-  return base::StringToInt(value_str.utf8(), value);
+  return ScanConstraintsForMinValue(constraints, picker, value);
 }
 
-bool GetOptionalConstraintValueAsDouble(
+bool GetConstraintMaxAsInteger(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    double* value) {
-  blink::WebString value_str;
-  if (!constraints.getOptionalConstraintValue(base::UTF8ToUTF16(name),
-                                              value_str)) {
-    return false;
-  }
+    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    int* value) {
+  return ScanConstraintsForMaxValue(constraints, picker, value);
+}
 
-  return base::StringToDouble(value_str.utf8(), value);
+bool GetConstraintValueAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    double* value) {
+  return ScanConstraintsForExactValue(constraints, picker, value);
+}
+
+bool GetConstraintMaxAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    double* value) {
+  return ScanConstraintsForExactValue(constraints, picker, value);
+}
+
+bool GetConstraintValueAsString(
+    const blink::WebMediaConstraints& constraints,
+    const blink::StringConstraint blink::WebMediaTrackConstraintSet::*picker,
+    std::string* value) {
+  blink::WebVector<blink::WebString> return_value;
+  if (ScanConstraintsForExactValue(constraints, picker, &return_value)) {
+    *value = return_value[0].utf8();
+    return true;
+  }
+  return false;
+}
+
+rtc::Optional<bool> ConstraintToOptional(
+    const blink::WebMediaConstraints& constraints,
+    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker) {
+  bool value;
+  if (GetConstraintValueAsBoolean(constraints, picker, &value)) {
+    return rtc::Optional<bool>(value);
+  }
+  return rtc::Optional<bool>();
 }
 
 }  // namespace content

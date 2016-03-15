@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 
 namespace content {
@@ -22,6 +23,7 @@ class MockConstraintFactory {
   blink::WebMediaTrackConstraintSet& AddAdvanced();
 
   void DisableDefaultAudioConstraints();
+  void Reset();
 
  private:
   blink::WebMediaTrackConstraintSet basic_;

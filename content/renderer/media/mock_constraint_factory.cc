@@ -42,4 +42,9 @@ void MockConstraintFactory::DisableDefaultAudioConstraints() {
   basic_.googBeamforming.setExact(false);
 }
 
+void MockConstraintFactory::Reset() {
+  basic_ = blink::WebMediaTrackConstraintSet();
+  advanced_.clear();
+}
+
 }  // namespace content

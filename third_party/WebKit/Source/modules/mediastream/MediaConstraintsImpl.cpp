@@ -46,7 +46,26 @@
 
 namespace blink {
 
+
 namespace MediaConstraintsImpl {
+
+// Old type/value form of constraint. Used in parsing old-style constraints.
+struct WebMediaConstraint {
+    WebMediaConstraint()
+    {
+    }
+
+    WebMediaConstraint(WebString name, WebString value)
+        : m_name(name)
+        , m_value(value)
+    {
+    }
+
+    WebString m_name;
+    WebString m_value;
+};
+
+
 
 // Legal constraint names.
 // Temporary Note: Comments about source are where they are copied from.
@@ -123,12 +142,16 @@ const char kCpuOveruseEncodeRsdThreshold[] = "googCpuOveruseEncodeRsdThreshold";
 const char kCpuOveruseEncodeUsage[] = "googCpuOveruseEncodeUsage";
 const char kHighStartBitrate[] = "googHighStartBitrate";
 const char kPayloadPadding[] = "googPayloadPadding";
+// From webrtc_audio_capturer
+const char kAudioLatency[] = "latencyMs";
+// From media_stream_video_capturer_source
+
 // End of names from libjingle
 // Names that have been used in the past, but should now be ignored.
 // Kept around for backwards compatibility.
 // https://crbug.com/579729
 const char kGoogLeakyBucket[] = "googLeakyBucket";
-
+const char kPowerLineFrequency[] = "googPowerLineFrequency";
 // Names used for testing.
 const char kTestConstraint1[] = "valid_and_supported_1";
 const char kTestConstraint2[] = "valid_and_supported_2";
@@ -315,9 +338,23 @@ static void parseOldStyleNames(ExecutionContext* context, const WebVector<WebMed
         } else if (constraint.m_name.equals(kNoiseReduction)) {
             result.googNoiseReduction.setExact(toBoolean(constraint.m_value));
         } else if (constraint.m_name.equals(kOfferToReceiveAudio)) {
-            result.offerToReceiveAudio.setExact(constraint.m_value);
+            // This constraint has formerly been defined both as a boolean
+            // and as an integer. Allow both forms.
+            if (constraint.m_value.equals("true"))
+                result.offerToReceiveAudio.setExact(1);
+            else if (constraint.m_value.equals("false"))
+                result.offerToReceiveAudio.setExact(0);
+            else
+                result.offerToReceiveAudio.setExact(atoi(constraint.m_value.utf8().c_str()));
         } else if (constraint.m_name.equals(kOfferToReceiveVideo)) {
-            result.offerToReceiveVideo.setExact(constraint.m_value);
+            // This constraint has formerly been defined both as a boolean
+            // and as an integer. Allow both forms.
+            if (constraint.m_value.equals("true"))
+                result.offerToReceiveVideo.setExact(1);
+            else if (constraint.m_value.equals("false"))
+                result.offerToReceiveVideo.setExact(0);
+            else
+                result.offerToReceiveVideo.setExact(atoi(constraint.m_value.utf8().c_str()));
         } else if (constraint.m_name.equals(kVoiceActivityDetection)) {
             result.voiceActivityDetection.setExact(toBoolean(constraint.m_value));
         } else if (constraint.m_name.equals(kIceRestart)) {
@@ -356,6 +393,10 @@ static void parseOldStyleNames(ExecutionContext* context, const WebVector<WebMed
             result.googHighStartBitrate.setExact(atoi(constraint.m_value.utf8().c_str()));
         } else if (constraint.m_name.equals(kPayloadPadding)) {
             result.googPayloadPadding.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kAudioLatency)) {
+            result.googLatencyMs.setExact(atoi(constraint.m_value.utf8().c_str()));
+        } else if (constraint.m_name.equals(kPowerLineFrequency)) {
+            result.googPowerLineFrequency.setExact(atoi(constraint.m_value.utf8().c_str()));
         } else if (constraint.m_name.equals(kGoogLeakyBucket)) {
             context->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel,
                 "Obsolete constraint named " + String(constraint.m_name)
@@ -394,9 +435,13 @@ static WebMediaConstraints createFromNamedConstraints(ExecutionContext* context,
     // We ignore unknow names and syntax errors in optional constraints.
     MediaErrorState ignoredErrorState;
     parseOldStyleNames(context, optional, false, advanced, ignoredErrorState);
-    WebVector<WebMediaTrackConstraintSet> advancedVector(&advanced, 1);
-    // Use the 4-argument initializer until Chrome has been converted.
-    constraints.initialize(optional, mandatory, basic, advancedVector);
+    if (advanced.isEmpty()) {
+        WebVector<WebMediaTrackConstraintSet> emptyVector;
+        constraints.initialize(basic, emptyVector);
+    } else {
+        WebVector<WebMediaTrackConstraintSet> advancedVector(&advanced, 1);
+        constraints.initialize(basic, advancedVector);
+    }
     return constraints;
 }
 

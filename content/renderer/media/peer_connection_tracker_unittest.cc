@@ -7,7 +7,6 @@
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
-#include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "ipc/ipc_message_macros.h"
 #include "testing/gmock/include/gmock/gmock.h"

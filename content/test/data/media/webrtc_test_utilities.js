@@ -80,9 +80,13 @@ function detectVideo(videoElementName, predicate, callback) {
     // Check that there is an old and a new picture with the same size to
     // compare and use the function |predicate| to detect the video state in
     // that case.
+    // There's a failure(?) mode here where the video generated claims to
+    // have size 2x2. Don't consider that a valid video.
     if (oldPixels.length == pixels.length &&
         predicate(pixels, oldPixels)) {
       console.log('Done looking at video in element ' + videoElementName);
+      console.log('DEBUG: video.width = ' + videoElement.videoWidth);
+      console.log('DEBUG: video.height = ' + videoElement.videoHeight);
       clearInterval(waitVideo);
       callback(videoElement.videoWidth, videoElement.videoHeight);
     }
@@ -91,6 +95,10 @@ function detectVideo(videoElementName, predicate, callback) {
     if (elapsedTime > 3000) {
       startTimeMs = new Date().getTime();
       console.log('Still waiting for video to satisfy ' + predicate.toString());
+      console.log('DEBUG: video.width = ' + videoElement.videoWidth);
+      console.log('DEBUG: video.height = ' + videoElement.videoHeight);
+      // clearInterval(waitVideo);
+      // callback(0, 0);
     }
   }, 200);
 }

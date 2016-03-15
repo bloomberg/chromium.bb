@@ -49,7 +49,6 @@ namespace content {
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class MediaStreamAudioSource;
-class RTCMediaConstraints;
 class WebAudioCapturerSource;
 class WebRtcAudioCapturer;
 class WebRtcAudioDeviceImpl;
@@ -105,8 +104,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // Asks the PeerConnection factory to create a Video Source.
   // The video source takes ownership of |capturer|.
   virtual scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(
-      cricket::VideoCapturer* capturer,
-      const blink::WebMediaConstraints& constraints);
+      cricket::VideoCapturer* capturer);
 
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.
@@ -114,7 +112,6 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   virtual scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(
           const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-          const webrtc::MediaConstraintsInterface* constraints,
           blink::WebFrame* web_frame,
           webrtc::PeerConnectionObserver* observer);
 
@@ -145,9 +142,8 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
  protected:
   // Asks the PeerConnection factory to create a Local Audio Source.
-  virtual scoped_refptr<webrtc::AudioSourceInterface>
-      CreateLocalAudioSource(
-          const webrtc::MediaConstraintsInterface* constraints);
+  virtual scoped_refptr<webrtc::AudioSourceInterface> CreateLocalAudioSource(
+      const cricket::AudioOptions& options);
 
   // Creates a media::AudioCapturerSource with an implementation that is
   // specific for a WebAudio source. The created WebAudioCapturerSource

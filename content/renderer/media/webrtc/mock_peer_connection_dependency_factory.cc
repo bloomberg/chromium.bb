@@ -167,12 +167,9 @@ bool MockVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
   return true;
 }
 
-MockAudioSource::MockAudioSource(
-    const webrtc::MediaConstraintsInterface* constraints, bool remote)
-    : remote_(remote), state_(MediaSourceInterface::kLive),
-      optional_constraints_(constraints->GetOptional()),
-      mandatory_constraints_(constraints->GetMandatory()) {
-}
+MockAudioSource::MockAudioSource(const cricket::AudioOptions& options,
+                                 bool remote)
+    : remote_(remote), state_(MediaSourceInterface::kLive) {}
 
 MockAudioSource::~MockAudioSource() {}
 
@@ -340,7 +337,6 @@ MockPeerConnectionDependencyFactory::~MockPeerConnectionDependencyFactory() {}
 scoped_refptr<webrtc::PeerConnectionInterface>
 MockPeerConnectionDependencyFactory::CreatePeerConnection(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-    const webrtc::MediaConstraintsInterface* constraints,
     blink::WebFrame* frame,
     webrtc::PeerConnectionObserver* observer) {
   return new rtc::RefCountedObject<MockPeerConnectionImpl>(this, observer);
@@ -348,9 +344,9 @@ MockPeerConnectionDependencyFactory::CreatePeerConnection(
 
 scoped_refptr<webrtc::AudioSourceInterface>
 MockPeerConnectionDependencyFactory::CreateLocalAudioSource(
-    const webrtc::MediaConstraintsInterface* constraints) {
+    const cricket::AudioOptions& options) {
   last_audio_source_ =
-      new rtc::RefCountedObject<MockAudioSource>(constraints, false);
+      new rtc::RefCountedObject<MockAudioSource>(options, false);
   return last_audio_source_;
 }
 
@@ -362,8 +358,7 @@ MockPeerConnectionDependencyFactory::CreateVideoCapturer(
 
 scoped_refptr<webrtc::VideoTrackSourceInterface>
 MockPeerConnectionDependencyFactory::CreateVideoSource(
-    cricket::VideoCapturer* capturer,
-    const blink::WebMediaConstraints& constraints) {
+    cricket::VideoCapturer* capturer) {
   // Video source normally take ownership of |capturer|.
   delete capturer;
   NOTIMPLEMENTED();

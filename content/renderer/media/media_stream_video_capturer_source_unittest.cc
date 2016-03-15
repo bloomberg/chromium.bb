@@ -15,7 +15,7 @@
 #include "content/child/child_process.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/mock_media_constraint_factory.h"
+#include "content/renderer/media/mock_constraint_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -90,9 +90,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     webkit_source_id_ = webkit_source_.id();
   }
 
-  MockMediaConstraintFactory* constraint_factory() {
-    return &constraint_factory_;
-  }
+  MockConstraintFactory* constraint_factory() { return &constraint_factory_; }
 
   blink::WebMediaStreamTrack StartSource() {
     bool enabled = true;
@@ -131,7 +129,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   MockVideoCapturerSource* delegate_;     // owned by |source|.
   blink::WebString webkit_source_id_;
   bool source_stopped_;
-  MockMediaConstraintFactory constraint_factory_;
+  MockConstraintFactory constraint_factory_;
 };
 
 TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureFixedResolutionByDefault) {
@@ -192,12 +190,11 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   InitWithDeviceInfo(device_info);
 
   // Specify max and min size constraints that have the same ~16:9 aspect ratio.
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxWidth, 1920);
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxHeight, 1080);
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMinWidth, 854);
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMinHeight, 480);
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxFrameRate,
-                                     60.0);
+  constraint_factory()->basic().width.setMax(1920);
+  constraint_factory()->basic().height.setMax(1080);
+  constraint_factory()->basic().width.setMin(854);
+  constraint_factory()->basic().height.setMin(480);
+  constraint_factory()->basic().frameRate.setMax(60.0);
 
   media::VideoCaptureParams expected_params;
   expected_params.requested_format.frame_size.SetSize(1920, 1080);
@@ -226,12 +223,11 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   InitWithDeviceInfo(device_info);
 
   // Specify max and min size constraints with different aspect ratios.
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxWidth, 1920);
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxHeight, 1080);
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMinWidth, 0);
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMinHeight, 0);
-  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxFrameRate,
-                                     60.0);
+  constraint_factory()->basic().width.setMax(1920);
+  constraint_factory()->basic().height.setMax(1080);
+  constraint_factory()->basic().width.setMin(0);
+  constraint_factory()->basic().height.setMin(0);
+  constraint_factory()->basic().frameRate.setMax(60.0);
 
   media::VideoCaptureParams expected_params;
   expected_params.requested_format.frame_size.SetSize(1920, 1080);
@@ -259,10 +255,10 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
     StreamDeviceInfo device_info;
     device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
     InitWithDeviceInfo(device_info);
-    constraint_factory_ = MockMediaConstraintFactory();
+    constraint_factory_.Reset();
 
-    constraint_factory()->AddOptional(GetPowerLineFrequencyForTesting(),
-                                      frequency);
+    constraint_factory()->AddAdvanced().googPowerLineFrequency.setExact(
+        frequency);
 
     media::VideoCaptureParams expected_params;
     expected_params.requested_format.frame_size.SetSize(
@@ -291,38 +287,6 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
     // When the track goes out of scope, the source will be stopped.
     EXPECT_CALL(mock_delegate(), StopCapture());
   }
-}
-
-TEST_F(MediaStreamVideoCapturerSourceTest,
-       InvalidPowerLineFrequencyHandledProperly) {
-  // Test out other varieties of invalid input, like non-numeric strings.
-  StreamDeviceInfo device_info;
-  device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
-  InitWithDeviceInfo(device_info);
-  constraint_factory_ = MockMediaConstraintFactory();
-
-  constraint_factory()->AddOptional(GetPowerLineFrequencyForTesting(),
-                                    std::string("this is not a frequency"));
-
-  media::VideoCaptureParams expected_params;
-  expected_params.requested_format.frame_size.SetSize(
-      MediaStreamVideoSource::kDefaultWidth,
-      MediaStreamVideoSource::kDefaultHeight);
-  expected_params.requested_format.frame_rate =
-      MediaStreamVideoSource::kDefaultFrameRate;
-  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  expected_params.resolution_change_policy =
-      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
-  // Invalid frequencies should result in default setting.
-  expected_params.power_line_frequency =
-      media::PowerLineFrequency::FREQUENCY_DEFAULT;
-
-  InSequence s;
-  EXPECT_CALL(mock_delegate(), GetCurrentSupportedFormats(_, _, _, _));
-  EXPECT_CALL(mock_delegate(), StartCapture(expected_params, _, _));
-  blink::WebMediaStreamTrack track = StartSource();
-  // When the track goes out of scope, the source will be stopped.
-  EXPECT_CALL(mock_delegate(), StopCapture());
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {

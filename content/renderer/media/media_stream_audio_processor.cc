@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
-#include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_converter.h"

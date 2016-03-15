@@ -69,12 +69,10 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
       const override;
 
   // JSEP01 APIs
-  void CreateOffer(
-      webrtc::CreateSessionDescriptionObserver* observer,
-      const webrtc::MediaConstraintsInterface* constraints) override;
-  void CreateAnswer(
-      webrtc::CreateSessionDescriptionObserver* observer,
-      const webrtc::MediaConstraintsInterface* constraints) override;
+  void CreateOffer(webrtc::CreateSessionDescriptionObserver* observer,
+                   const RTCOfferAnswerOptions& options) override;
+  void CreateAnswer(webrtc::CreateSessionDescriptionObserver* observer,
+                    const RTCOfferAnswerOptions& options) override;
   MOCK_METHOD2(SetLocalDescription,
                void(webrtc::SetSessionDescriptionObserver* observer,
                     webrtc::SessionDescriptionInterface* desc));
@@ -87,8 +85,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   void SetRemoteDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
       webrtc::SessionDescriptionInterface* desc);
-  bool UpdateIce(const IceServers& configuration,
-                 const webrtc::MediaConstraintsInterface* constraints) override;
+  bool UpdateIce(const IceServers& configuration) override;
   bool AddIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
   void RegisterUMAObserver(webrtc::UMAObserver* observer) override;
 

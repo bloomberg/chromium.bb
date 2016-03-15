@@ -37,7 +37,6 @@ class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RemoteMediaStreamImpl;
 class RtcDataChannelHandler;
-class RTCMediaConstraints;
 class WebRtcMediaStreamAdapter;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
@@ -100,10 +99,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Destroy all existing RTCPeerConnectionHandler objects.
   static void DestructAllHandlers();
 
-  static void ConvertOfferOptionsToConstraints(
-      const blink::WebRTCOfferOptions& options,
-      RTCMediaConstraints* output);
-
   void associateWithFrame(blink::WebFrame* frame);
 
   // Initialize method only used for unit test.
@@ -134,8 +129,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   blink::WebRTCSessionDescription localDescription() override;
   blink::WebRTCSessionDescription remoteDescription() override;
 
-  bool updateICE(const blink::WebRTCConfiguration& server_configuration,
-                 const blink::WebMediaConstraints& options) override;
+  bool updateICE(
+      const blink::WebRTCConfiguration& server_configuration) override;
   bool addICECandidate(const blink::WebRTCICECandidate& candidate) override;
   bool addICECandidate(const blink::WebRTCVoidRequest& request,
                        const blink::WebRTCICECandidate& candidate) override;
@@ -224,6 +219,15 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,
                                               const char* trace_event_name);
+
+  // Not sure why these statics are class members at all.
+  static void ConvertOfferOptionsToWebrtcOfferOptions(
+      const blink::WebRTCOfferOptions& options,
+      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output);
+
+  static void ConvertConstraintsToWebrtcOfferOptions(
+      const blink::WebMediaConstraints& options,
+      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output);
 
   base::ThreadChecker thread_checker_;
 

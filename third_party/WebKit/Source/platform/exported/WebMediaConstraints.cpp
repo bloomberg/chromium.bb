@@ -71,24 +71,16 @@ void maybeEmitNamedBoolean(StringBuilder& builder, bool emit, const char* name, 
 class WebMediaConstraintsPrivate final : public RefCounted<WebMediaConstraintsPrivate> {
 public:
     static PassRefPtr<WebMediaConstraintsPrivate> create();
-    static PassRefPtr<WebMediaConstraintsPrivate> create(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
     static PassRefPtr<WebMediaConstraintsPrivate> create(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
 
     bool isEmpty() const;
-    void getOptionalConstraints(WebVector<WebMediaConstraint>&);
-    void getMandatoryConstraints(WebVector<WebMediaConstraint>&);
-    bool getMandatoryConstraintValue(const WebString& name, WebString& value);
-    bool getOptionalConstraintValue(const WebString& name, WebString& value);
     const WebMediaTrackConstraintSet& basic() const;
     const WebVector<WebMediaTrackConstraintSet>& advanced() const;
     const String toString() const;
 
 private:
-    WebMediaConstraintsPrivate(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
     WebMediaConstraintsPrivate(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
 
-    WebVector<WebMediaConstraint> m_optional;
-    WebVector<WebMediaConstraint> m_mandatory;
     WebMediaTrackConstraintSet m_basic;
     WebVector<WebMediaTrackConstraintSet> m_advanced;
 };
@@ -100,15 +92,13 @@ PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create()
     return adoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
-PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
+PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
 {
-    return adoptRef(new WebMediaConstraintsPrivate(optional, mandatory, basic, advanced));
+    return adoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
-WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
-    : m_optional(optional)
-    , m_mandatory(mandatory)
-    , m_basic(basic)
+WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
+    : m_basic(basic)
     , m_advanced(advanced)
 {
 }
@@ -117,53 +107,7 @@ bool WebMediaConstraintsPrivate::isEmpty() const
 {
     // TODO(hta): When generating advanced constraints, make sure no empty
     // elements can be added to the m_advanced vector.
-    return m_basic.isEmpty() && m_advanced.isEmpty()
-        && m_optional.isEmpty() && m_mandatory.isEmpty();
-}
-
-PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
-{
-    return adoptRef(new WebMediaConstraintsPrivate(basic, advanced));
-}
-
-WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
-    : m_optional()
-    , m_mandatory()
-    , m_basic(basic)
-    , m_advanced(advanced)
-{
-}
-
-void WebMediaConstraintsPrivate::getOptionalConstraints(WebVector<WebMediaConstraint>& constraints)
-{
-    constraints = m_optional;
-}
-
-void WebMediaConstraintsPrivate::getMandatoryConstraints(WebVector<WebMediaConstraint>& constraints)
-{
-    constraints = m_mandatory;
-}
-
-bool WebMediaConstraintsPrivate::getMandatoryConstraintValue(const WebString& name, WebString& value)
-{
-    for (size_t i = 0; i < m_mandatory.size(); ++i) {
-        if (m_mandatory[i].m_name == name) {
-            value = m_mandatory[i].m_value;
-            return true;
-        }
-    }
-    return false;
-}
-
-bool WebMediaConstraintsPrivate::getOptionalConstraintValue(const WebString& name, WebString& value)
-{
-    for (size_t i = 0; i < m_optional.size(); ++i) {
-        if (m_optional[i].m_name == name) {
-            value = m_optional[i].m_value;
-            return true;
-        }
-    }
-    return false;
+    return m_basic.isEmpty() && m_advanced.isEmpty();
 }
 
 const WebMediaTrackConstraintSet& WebMediaConstraintsPrivate::basic() const
@@ -476,6 +420,8 @@ WebMediaTrackConstraintSet::WebMediaTrackConstraintSet()
     , googCpuOveruseEncodeUsage("googCpuOveruseEncodeUsage")
     , googHighStartBitrate("googHighStartBitrate")
     , googPayloadPadding("googPayloadPadding")
+    , googLatencyMs("latencyMs")
+    , googPowerLineFrequency("googPowerLineFrequency")
 {
 }
 
@@ -499,7 +445,8 @@ std::vector<const BaseConstraint*> WebMediaTrackConstraintSet::allConstraints() 
         &googScreencastMinBitrate, &googCpuOveruseDetection,
         &googCpuUnderuseThreshold, &googCpuOveruseThreshold,
         &googCpuUnderuseEncodeRsdThreshold, &googCpuOveruseEncodeRsdThreshold,
-        &googCpuOveruseEncodeUsage, &googHighStartBitrate, &googPayloadPadding
+        &googCpuOveruseEncodeUsage, &googHighStartBitrate, &googPayloadPadding,
+        &googLatencyMs, &googPowerLineFrequency
     };
     const int elementCount = sizeof(temp) / sizeof(temp[0]);
     return std::vector<const BaseConstraint*>(&temp[0], &temp[elementCount]);
@@ -568,40 +515,10 @@ bool WebMediaConstraints::isEmpty() const
     return m_private.isNull() || m_private->isEmpty();
 }
 
-void WebMediaConstraints::getMandatoryConstraints(WebVector<WebMediaConstraint>& constraints) const
-{
-    ASSERT(!isNull());
-    m_private->getMandatoryConstraints(constraints);
-}
-
-void WebMediaConstraints::getOptionalConstraints(WebVector<WebMediaConstraint>& constraints) const
-{
-    ASSERT(!isNull());
-    m_private->getOptionalConstraints(constraints);
-}
-
-bool WebMediaConstraints::getMandatoryConstraintValue(const WebString& name, WebString& value) const
-{
-    ASSERT(!isNull());
-    return m_private->getMandatoryConstraintValue(name, value);
-}
-
-bool WebMediaConstraints::getOptionalConstraintValue(const WebString& name, WebString& value) const
-{
-    ASSERT(!isNull());
-    return m_private->getOptionalConstraintValue(name, value);
-}
-
 void WebMediaConstraints::initialize()
 {
     ASSERT(isNull());
     m_private = WebMediaConstraintsPrivate::create();
-}
-
-void WebMediaConstraints::initialize(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
-{
-    ASSERT(isNull());
-    m_private = WebMediaConstraintsPrivate::create(optional, mandatory, basic, advanced);
 }
 
 void WebMediaConstraints::initialize(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)

@@ -691,8 +691,6 @@
       'renderer/media/rtc_data_channel_handler.h',
       'renderer/media/rtc_dtmf_sender_handler.cc',
       'renderer/media/rtc_dtmf_sender_handler.h',
-      'renderer/media/rtc_media_constraints.cc',
-      'renderer/media/rtc_media_constraints.h',
       'renderer/media/rtc_peer_connection_handler.cc',
       'renderer/media/rtc_peer_connection_handler.h',
       'renderer/media/rtc_video_decoder.cc',

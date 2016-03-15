@@ -48,8 +48,7 @@ class MockWebRTCPeerConnectionHandler
       const blink::WebRTCSessionDescription& remote_description) override;
   blink::WebRTCSessionDescription localDescription() override;
   blink::WebRTCSessionDescription remoteDescription() override;
-  bool updateICE(const blink::WebRTCConfiguration& configuration,
-                 const blink::WebMediaConstraints& constraints) override;
+  bool updateICE(const blink::WebRTCConfiguration& configuration) override;
   bool addICECandidate(const blink::WebRTCICECandidate& ice_candidate) override;
   bool addICECandidate(const blink::WebRTCVoidRequest& request,
                        const blink::WebRTCICECandidate& ice_candidate) override;

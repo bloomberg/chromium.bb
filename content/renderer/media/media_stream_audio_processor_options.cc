@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_source.h"
-#include "content/renderer/media/rtc_media_constraints.h"
 #include "media/audio/audio_parameters.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
@@ -137,24 +136,30 @@ bool ScanConstraintsForBoolean(
   return the_default;
 }
 
+void SetIfNotSet(rtc::Optional<bool>* field, bool value) {
+  if (!*field) {
+    *field = rtc::Optional<bool>(value);
+  }
+}
+
 }  // namespace
 
 // TODO(xians): Remove this method after the APM in WebRtc is deprecated.
 void MediaAudioConstraints::ApplyFixedAudioConstraints(
-    RTCMediaConstraints* constraints) {
-  for (size_t i = 0; i < arraysize(kDefaultAudioConstraints); ++i) {
-    bool already_set_value;
-    if (!webrtc::FindConstraint(constraints, kDefaultAudioConstraints[i].key,
-                                &already_set_value, NULL)) {
-      const std::string value = kDefaultAudioConstraints[i].value ?
-          webrtc::MediaConstraintsInterface::kValueTrue :
-          webrtc::MediaConstraintsInterface::kValueFalse;
-      constraints->AddOptional(kDefaultAudioConstraints[i].key, value, false);
-    } else {
-      DVLOG(1) << "Constraint " << kDefaultAudioConstraints[i].key
-               << " already set to " << already_set_value;
-    }
-  }
+    cricket::AudioOptions* options) {
+  SetIfNotSet(&options->echo_cancellation, true);
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  SetIfNotSet(&options->extended_filter_aec, false);
+#else
+  // Enable the extended filter mode AEC on all non-mobile platforms.
+  SetIfNotSet(&options->extended_filter_aec, true);
+#endif
+  SetIfNotSet(&options->auto_gain_control, true);
+  SetIfNotSet(&options->experimental_agc, true);
+  SetIfNotSet(&options->noise_suppression, true);
+  SetIfNotSet(&options->highpass_filter, true);
+  SetIfNotSet(&options->typing_detection, true);
+  SetIfNotSet(&options->experimental_ns, true);
 }
 
 MediaAudioConstraints::MediaAudioConstraints(

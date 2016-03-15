@@ -589,13 +589,13 @@ void RTCPeerConnection::updateIce(ExecutionContext* context, const Dictionary& r
         return;
 
     MediaErrorState mediaErrorState;
-    WebMediaConstraints constraints = MediaConstraintsImpl::create(context, mediaConstraints, mediaErrorState);
     if (mediaErrorState.hadException()) {
         mediaErrorState.raiseException(exceptionState);
         return;
     }
 
-    bool valid = m_peerHandler->updateICE(configuration, constraints);
+    // Constraints are ignored.
+    bool valid = m_peerHandler->updateICE(configuration);
     if (!valid)
         exceptionState.throwDOMException(SyntaxError, "Could not update the ICE Agent with the given configuration.");
 }

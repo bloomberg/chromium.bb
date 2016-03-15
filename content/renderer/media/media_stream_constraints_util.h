@@ -8,11 +8,8 @@
 #include <string>
 
 #include "content/common/content_export.h"
-
-namespace blink {
-class WebMediaConstraints;
-class WebString;
-}
+#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/webrtc/base/optional.h"
 
 namespace content {
 
@@ -21,7 +18,7 @@ namespace content {
 // constraints.
 bool CONTENT_EXPORT GetConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
+    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
     bool* value);
 
 // Method to get int value of constraint with |name| from constraints.
@@ -29,7 +26,17 @@ bool CONTENT_EXPORT GetConstraintValueAsBoolean(
 // constraints.
 bool CONTENT_EXPORT GetConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
+    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    int* value);
+
+bool CONTENT_EXPORT GetConstraintMinAsInteger(
+    const blink::WebMediaConstraints& constraints,
+    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    int* value);
+
+bool CONTENT_EXPORT GetConstraintMaxAsInteger(
+    const blink::WebMediaConstraints& constraints,
+    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
 
 // Method to get double precision value of constraint with |name| from
@@ -37,7 +44,12 @@ bool CONTENT_EXPORT GetConstraintValueAsInteger(
 // or Optional constraints.
 bool CONTENT_EXPORT GetConstraintValueAsDouble(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
+    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    double* value);
+
+bool CONTENT_EXPORT GetConstraintMaxAsDouble(
+    const blink::WebMediaConstraints& constraints,
+    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value);
 
 // Method to get std::string value of constraint with |name| from constraints.
@@ -45,50 +57,12 @@ bool CONTENT_EXPORT GetConstraintValueAsDouble(
 // constraints.
 bool CONTENT_EXPORT GetConstraintValueAsString(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
+    const blink::StringConstraint blink::WebMediaTrackConstraintSet::*picker,
     std::string* value);
 
-// Method to get boolean value of constraint with |name| from the
-// mandatory constraints.
-bool CONTENT_EXPORT GetMandatoryConstraintValueAsBoolean(
+rtc::Optional<bool> ConstraintToOptional(
     const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    bool* value);
-
-// Method to get int value of constraint with |name| from the
-// mandatory constraints.
-bool CONTENT_EXPORT GetMandatoryConstraintValueAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    int* value);
-
-// Method to get double value of constraint with |name| from the
-// mandatory constraints.
-bool CONTENT_EXPORT GetMandatoryConstraintValueAsDouble(
-    const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    double* value);
-
-// Method to get bool value of constraint with |name| from the
-// optional constraints.
-bool CONTENT_EXPORT GetOptionalConstraintValueAsBoolean(
-    const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    bool* value);
-
-// Method to get int value of constraint with |name| from the
-// optional constraints.
-bool CONTENT_EXPORT GetOptionalConstraintValueAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    int* value);
-
-// Method to get double value of constraint with |name| from the
-// optional constraints.
-bool CONTENT_EXPORT GetOptionalConstraintValueAsDouble(
-    const blink::WebMediaConstraints& constraints,
-    const std::string& name,
-    double* value);
+    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker);
 
 }  // namespace content
 

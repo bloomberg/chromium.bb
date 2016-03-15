@@ -7,7 +7,7 @@
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_video_source.h"
-#include "content/renderer/media/mock_media_constraint_factory.h"
+#include "content/renderer/media/mock_constraint_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -19,127 +19,76 @@ TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {
   static const std::string kValueTrue = "true";
   static const std::string kValueFalse = "false";
 
-  MockMediaConstraintFactory constraint_factory;
+  MockConstraintFactory constraint_factory;
   // Mandatory constraints.
-  constraint_factory.AddMandatory(MediaAudioConstraints::kEchoCancellation,
-                                  kValueTrue);
-  constraint_factory.AddMandatory(MediaAudioConstraints::kGoogEchoCancellation,
-                                  kValueFalse);
+  constraint_factory.basic().echoCancellation.setExact(true);
+  constraint_factory.basic().googEchoCancellation.setExact(false);
   blink::WebMediaConstraints constraints =
       constraint_factory.CreateWebMediaConstraints();
   bool value_true = false;
   bool value_false = false;
-  EXPECT_TRUE(GetMandatoryConstraintValueAsBoolean(
-      constraints, MediaAudioConstraints::kEchoCancellation, &value_true));
-  EXPECT_TRUE(GetMandatoryConstraintValueAsBoolean(
-      constraints, MediaAudioConstraints::kGoogEchoCancellation, &value_false));
+  EXPECT_TRUE(GetConstraintValueAsBoolean(
+      constraints, &blink::WebMediaTrackConstraintSet::echoCancellation,
+      &value_true));
+  EXPECT_TRUE(GetConstraintValueAsBoolean(
+      constraints, &blink::WebMediaTrackConstraintSet::googEchoCancellation,
+      &value_false));
   EXPECT_TRUE(value_true);
   EXPECT_FALSE(value_false);
 
-  // Optional constraints.
-  constraint_factory.AddOptional(MediaAudioConstraints::kEchoCancellation,
-                                 kValueFalse);
-  constraint_factory.AddOptional(MediaAudioConstraints::kGoogEchoCancellation,
-                                 kValueTrue);
+  // Optional constraints, represented as "advanced"
+  constraint_factory.Reset();
+  constraint_factory.AddAdvanced().echoCancellation.setExact(false);
+  constraint_factory.AddAdvanced().googEchoCancellation.setExact(true);
   constraints = constraint_factory.CreateWebMediaConstraints();
-  EXPECT_TRUE(GetOptionalConstraintValueAsBoolean(
-      constraints, MediaAudioConstraints::kEchoCancellation, &value_false));
-  EXPECT_TRUE(GetOptionalConstraintValueAsBoolean(
-      constraints, MediaAudioConstraints::kGoogEchoCancellation,
+  EXPECT_TRUE(GetConstraintValueAsBoolean(
+      constraints, &blink::WebMediaTrackConstraintSet::echoCancellation,
+      &value_false));
+  EXPECT_TRUE(GetConstraintValueAsBoolean(
+      constraints, &blink::WebMediaTrackConstraintSet::googEchoCancellation,
       &value_true));
   EXPECT_TRUE(value_true);
   EXPECT_FALSE(value_false);
+
+  // A mandatory constraint should override an optional one.
+  constraint_factory.Reset();
+  constraint_factory.AddAdvanced().echoCancellation.setExact(false);
+  constraint_factory.basic().echoCancellation.setExact(true);
+  constraints = constraint_factory.CreateWebMediaConstraints();
+  EXPECT_TRUE(GetConstraintValueAsBoolean(
+      constraints, &blink::WebMediaTrackConstraintSet::echoCancellation,
+      &value_true));
+  EXPECT_TRUE(value_true);
 }
 
-TEST_F(MediaStreamConstraintsUtilTest, MandatoryDoubleConstraints) {
-  MockMediaConstraintFactory constraint_factory;
-  const std::string test_key = "test key";
+TEST_F(MediaStreamConstraintsUtilTest, DoubleConstraints) {
+  MockConstraintFactory constraint_factory;
   const double test_value= 0.01f;
 
-  constraint_factory.AddMandatory(test_key, test_value);
+  constraint_factory.basic().aspectRatio.setExact(test_value);
   blink::WebMediaConstraints constraints =
       constraint_factory.CreateWebMediaConstraints();
 
   double value;
-  EXPECT_FALSE(GetOptionalConstraintValueAsDouble(constraints, test_key,
-                                                  &value));
-  EXPECT_TRUE(GetMandatoryConstraintValueAsDouble(constraints, test_key,
-                                                  &value));
-  EXPECT_EQ(test_value, value);
-
-  value = 0;
-  EXPECT_TRUE(GetConstraintValueAsDouble(constraints, test_key, &value));
-  EXPECT_EQ(test_value, value);
-}
-
-TEST_F(MediaStreamConstraintsUtilTest, OptionalDoubleConstraints) {
-  MockMediaConstraintFactory constraint_factory;
-  const std::string test_key = "test key";
-  const double test_value= 0.01f;
-
-  constraint_factory.AddOptional(test_key, test_value);
-  blink::WebMediaConstraints constraints =
-      constraint_factory.CreateWebMediaConstraints();
-
-  double value;
-  EXPECT_FALSE(GetMandatoryConstraintValueAsDouble(constraints, test_key,
-                                                   &value));
-  EXPECT_TRUE(GetOptionalConstraintValueAsDouble(constraints, test_key,
-                                                 &value));
-  EXPECT_EQ(test_value, value);
-
-  value = 0;
-  EXPECT_TRUE(GetConstraintValueAsDouble(constraints, test_key, &value));
+  EXPECT_FALSE(GetConstraintValueAsDouble(
+      constraints, &blink::WebMediaTrackConstraintSet::frameRate, &value));
+  EXPECT_TRUE(GetConstraintValueAsDouble(
+      constraints, &blink::WebMediaTrackConstraintSet::aspectRatio, &value));
   EXPECT_EQ(test_value, value);
 }
 
 TEST_F(MediaStreamConstraintsUtilTest, IntConstraints) {
-  MockMediaConstraintFactory constraint_factory;
-  int width = 600;
-  int height = 480;
-  constraint_factory.AddMandatory(MediaStreamVideoSource::kMaxWidth, width);
-  constraint_factory.AddMandatory(MediaStreamVideoSource::kMaxHeight, height);
+  MockConstraintFactory constraint_factory;
+  const int test_value = 327;
+
+  constraint_factory.basic().width.setExact(test_value);
   blink::WebMediaConstraints constraints =
       constraint_factory.CreateWebMediaConstraints();
-  int value_width = 0;
-  int value_height = 0;
-  EXPECT_TRUE(GetMandatoryConstraintValueAsInteger(
-      constraints, MediaStreamVideoSource::kMaxWidth, &value_width));
-  EXPECT_TRUE(GetMandatoryConstraintValueAsInteger(
-      constraints, MediaStreamVideoSource::kMaxHeight, &value_height));
-  EXPECT_EQ(width, value_width);
-  EXPECT_EQ(height, value_height);
 
-  width = 720;
-  height = 600;
-  constraint_factory.AddOptional(MediaStreamVideoSource::kMaxWidth, width);
-  constraint_factory.AddOptional(MediaStreamVideoSource::kMaxHeight, height);
-  constraints = constraint_factory.CreateWebMediaConstraints();
-  EXPECT_TRUE(GetOptionalConstraintValueAsInteger(
-      constraints, MediaStreamVideoSource::kMaxWidth, &value_width));
-  EXPECT_TRUE(GetOptionalConstraintValueAsInteger(
-      constraints, MediaStreamVideoSource::kMaxHeight, &value_height));
-  EXPECT_EQ(width, value_width);
-  EXPECT_EQ(height, value_height);
-}
-
-TEST_F(MediaStreamConstraintsUtilTest, WrongBooleanConstraints) {
-  static const std::string kWrongValueTrue = "True";
-  static const std::string kWrongValueFalse = "False";
-  MockMediaConstraintFactory constraint_factory;
-  constraint_factory.AddMandatory(MediaAudioConstraints::kEchoCancellation,
-                                  kWrongValueTrue);
-  constraint_factory.AddMandatory(MediaAudioConstraints::kGoogEchoCancellation,
-                                  kWrongValueFalse);
-  blink::WebMediaConstraints constraints =
-      constraint_factory.CreateWebMediaConstraints();
-  bool value_false = false;
-  EXPECT_FALSE(GetMandatoryConstraintValueAsBoolean(
-      constraints, MediaAudioConstraints::kEchoCancellation, &value_false));
-  EXPECT_FALSE(value_false);
-  EXPECT_FALSE(GetMandatoryConstraintValueAsBoolean(
-      constraints, MediaAudioConstraints::kGoogEchoCancellation, &value_false));
-  EXPECT_FALSE(value_false);
+  int value;
+  EXPECT_TRUE(GetConstraintValueAsInteger(
+      constraints, &blink::WebMediaTrackConstraintSet::width, &value));
+  EXPECT_EQ(test_value, value);
 }
 
 }  // namespace content

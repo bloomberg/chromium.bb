@@ -13,12 +13,12 @@
 #include "content/public/common/media_stream_request.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/media/base/mediachannel.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 
 namespace webrtc {
 
 class EchoCancellation;
-class MediaConstraintsInterface;
 class TypingDetection;
 
 }
@@ -28,7 +28,6 @@ namespace content {
 class RTCMediaConstraints;
 
 using webrtc::AudioProcessing;
-using webrtc::MediaConstraintsInterface;
 
 // A helper class to parse audio constraints from a blink::WebMediaConstraints
 // object.
@@ -48,11 +47,13 @@ class CONTENT_EXPORT MediaAudioConstraints {
   static const char kGoogTypingNoiseDetection[];
   static const char kGoogAudioMirroring[];
 
-  // Merge |constraints| with |kDefaultAudioConstraints|. For any key which
-  // exists in both, the value from |constraints| is maintained, including its
-  // mandatory/optional status. New values from |kDefaultAudioConstraints| will
-  // be added with optional status.
-  static void ApplyFixedAudioConstraints(RTCMediaConstraints* constraints);
+  // Merge |options| with |kDefaultAudioConstraints|. For any key which
+  // exists in both, the value from |options| is maintained.
+  // New values from |kDefaultAudioConstraints| will
+  // be added.
+  // TODO(hta): Switch to an interface without "cricket::" when webrtc has one.
+
+  static void ApplyFixedAudioConstraints(cricket::AudioOptions* options);
 
   // |effects| is the bitmasks telling whether certain platform
   // hardware audio effects are enabled, like hardware echo cancellation. If

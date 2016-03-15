@@ -32,10 +32,10 @@
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_identity_store.h"
-#include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_decoder_factory.h"
 #include "content/renderer/media/rtc_video_encoder_factory.h"
@@ -70,6 +70,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/base/ssladapter.h"
+#include "third_party/webrtc/media/base/mediachannel.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 
 #if defined(OS_ANDROID)
@@ -99,52 +100,6 @@ WebRTCIPHandlingPolicy GetWebRTCIPHandlingPolicy(
 }
 
 }  // namespace
-
-// Map of corresponding media constraints and platform effects.
-struct {
-  const char* constraint;
-  const media::AudioParameters::PlatformEffectsMask effect;
-} const kConstraintEffectMap[] = {
-  { webrtc::MediaConstraintsInterface::kGoogEchoCancellation,
-    media::AudioParameters::ECHO_CANCELLER },
-};
-
-// If any platform effects are available, check them against the constraints.
-// Disable effects to match false constraints, but if a constraint is true, set
-// the constraint to false to later disable the software effect.
-//
-// This function may modify both |constraints| and |effects|.
-void HarmonizeConstraintsAndEffects(RTCMediaConstraints* constraints,
-                                    int* effects) {
-  if (*effects != media::AudioParameters::NO_EFFECTS) {
-    for (size_t i = 0; i < arraysize(kConstraintEffectMap); ++i) {
-      bool value;
-      size_t is_mandatory = 0;
-      if (!webrtc::FindConstraint(constraints,
-                                  kConstraintEffectMap[i].constraint,
-                                  &value,
-                                  &is_mandatory) || !value) {
-        // If the constraint is false, or does not exist, disable the platform
-        // effect.
-        *effects &= ~kConstraintEffectMap[i].effect;
-        DVLOG(1) << "Disabling platform effect: "
-                 << kConstraintEffectMap[i].effect;
-      } else if (*effects & kConstraintEffectMap[i].effect) {
-        // If the constraint is true, leave the platform effect enabled, and
-        // set the constraint to false to later disable the software effect.
-        if (is_mandatory) {
-          constraints->AddMandatory(kConstraintEffectMap[i].constraint,
-              webrtc::MediaConstraintsInterface::kValueFalse, true);
-        } else {
-          constraints->AddOptional(kConstraintEffectMap[i].constraint,
-              webrtc::MediaConstraintsInterface::kValueFalse, true);
-        }
-        DVLOG(1) << "Disabling constraint: "
-                 << kConstraintEffectMap[i].constraint;
-      }
-    }
-  }
-}
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
     P2PSocketDispatcher* p2p_socket_dispatcher)
@@ -181,14 +136,52 @@ bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
 
   // Do additional source initialization if the audio source is a valid
   // microphone or tab audio.
-  RTCMediaConstraints native_audio_constraints(audio_constraints);
-  MediaAudioConstraints::ApplyFixedAudioConstraints(&native_audio_constraints);
 
   StreamDeviceInfo device_info = source_data->device_info();
-  RTCMediaConstraints constraints = native_audio_constraints;
-  // May modify both |constraints| and |effects|.
-  HarmonizeConstraintsAndEffects(&constraints,
-                                 &device_info.device.input.effects);
+
+  cricket::AudioOptions options;
+  // Apply relevant constraints.
+  options.echo_cancellation = ConstraintToOptional(
+      audio_constraints, &blink::WebMediaTrackConstraintSet::echoCancellation);
+  options.delay_agnostic_aec = ConstraintToOptional(
+      audio_constraints,
+      &blink::WebMediaTrackConstraintSet::googDAEchoCancellation);
+  options.auto_gain_control = ConstraintToOptional(
+      audio_constraints,
+      &blink::WebMediaTrackConstraintSet::googAutoGainControl);
+  options.experimental_agc = ConstraintToOptional(
+      audio_constraints,
+      &blink::WebMediaTrackConstraintSet::googExperimentalAutoGainControl);
+  options.noise_suppression = ConstraintToOptional(
+      audio_constraints,
+      &blink::WebMediaTrackConstraintSet::googNoiseSuppression);
+  options.experimental_ns = ConstraintToOptional(
+      audio_constraints,
+      &blink::WebMediaTrackConstraintSet::googExperimentalNoiseSuppression);
+  options.highpass_filter = ConstraintToOptional(
+      audio_constraints,
+      &blink::WebMediaTrackConstraintSet::googHighpassFilter);
+  options.typing_detection = ConstraintToOptional(
+      audio_constraints,
+      &blink::WebMediaTrackConstraintSet::googTypingNoiseDetection);
+  options.stereo_swapping = ConstraintToOptional(
+      audio_constraints,
+      &blink::WebMediaTrackConstraintSet::googAudioMirroring);
+
+  MediaAudioConstraints::ApplyFixedAudioConstraints(&options);
+
+  if (device_info.device.input.effects &
+      media::AudioParameters::ECHO_CANCELLER) {
+    // TODO(hta): Figure out if we should be looking at echoCancellation.
+    // Previous code had googEchoCancellation only.
+    const blink::BooleanConstraint& echoCancellation =
+        audio_constraints.basic().googEchoCancellation;
+    if (echoCancellation.hasExact() && !echoCancellation.exact()) {
+      device_info.device.input.effects &=
+          ~media::AudioParameters::ECHO_CANCELLER;
+    }
+    options.echo_cancellation = rtc::Optional<bool>(false);
+  }
 
   scoped_ptr<WebRtcAudioCapturer> capturer = CreateAudioCapturer(
       render_frame_id, device_info, audio_constraints, source_data);
@@ -211,7 +204,7 @@ bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
   // Currently there are a few constraints that are parsed by libjingle and
   // the state is set to ended if parsing fails.
   scoped_refptr<webrtc::AudioSourceInterface> rtc_source(
-      CreateLocalAudioSource(&constraints).get());
+      CreateLocalAudioSource(options).get());
   if (rtc_source->state() != webrtc::MediaSourceInterface::kLive) {
     DLOG(WARNING) << "Failed to create rtc LocalAudioSource.";
     return false;
@@ -234,11 +227,9 @@ PeerConnectionDependencyFactory::CreateVideoCapturer(
 
 scoped_refptr<webrtc::VideoTrackSourceInterface>
 PeerConnectionDependencyFactory::CreateVideoSource(
-    cricket::VideoCapturer* capturer,
-    const blink::WebMediaConstraints& constraints) {
-  RTCMediaConstraints webrtc_constraints(constraints);
+    cricket::VideoCapturer* capturer) {
   scoped_refptr<webrtc::VideoTrackSourceInterface> source =
-      GetPcFactory()->CreateVideoSource(capturer, &webrtc_constraints).get();
+      GetPcFactory()->CreateVideoSource(capturer).get();
   return source;
 }
 
@@ -390,7 +381,6 @@ bool PeerConnectionDependencyFactory::PeerConnectionFactoryCreated() {
 scoped_refptr<webrtc::PeerConnectionInterface>
 PeerConnectionDependencyFactory::CreatePeerConnection(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-    const webrtc::MediaConstraintsInterface* constraints,
     blink::WebFrame* web_frame,
     webrtc::PeerConnectionObserver* observer) {
   CHECK(web_frame);
@@ -513,7 +503,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       port_config, requesting_origin, chrome_worker_thread_.task_runner()));
 
   return GetPcFactory()
-      ->CreatePeerConnection(config, constraints, std::move(port_allocator),
+      ->CreatePeerConnection(config, std::move(port_allocator),
                              std::move(identity_store), observer)
       .get();
 }
@@ -526,9 +516,9 @@ PeerConnectionDependencyFactory::CreateLocalMediaStream(
 
 scoped_refptr<webrtc::AudioSourceInterface>
 PeerConnectionDependencyFactory::CreateLocalAudioSource(
-    const webrtc::MediaConstraintsInterface* constraints) {
+    const cricket::AudioOptions& options) {
   scoped_refptr<webrtc::AudioSourceInterface> source =
-      GetPcFactory()->CreateAudioSource(constraints).get();
+      GetPcFactory()->CreateAudioSource(options).get();
   return source;
 }
 
@@ -605,7 +595,8 @@ void PeerConnectionDependencyFactory::CreateWebAudioSource(
 
   // Create a LocalAudioSource object which holds audio options.
   // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
-  source_data->SetLocalAudioSource(CreateLocalAudioSource(NULL).get());
+  cricket::AudioOptions options;
+  source_data->SetLocalAudioSource(CreateLocalAudioSource(options).get());
   source->setExtraData(source_data);
 }
 

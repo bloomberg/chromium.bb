@@ -21,6 +21,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -217,37 +218,25 @@ void UserMediaClientImpl::requestUserMedia(
            << ", video=" << (controls.video.requested) << " ], "
            << security_origin.spec() << ")";
 
-  blink::WebString audio_device_id;
-  bool mandatory_audio = false;
+  std::string audio_device_id;
   if (!user_media_request.isNull() && user_media_request.audio()) {
-    mandatory_audio =
-        user_media_request.audioConstraints().getMandatoryConstraintValue(
-            base::UTF8ToUTF16(kMediaStreamSourceInfoId), audio_device_id);
-    if (!mandatory_audio) {
-      user_media_request.audioConstraints().getOptionalConstraintValue(
-          base::UTF8ToUTF16(kMediaStreamSourceInfoId), audio_device_id);
-    }
+    GetConstraintValueAsString(user_media_request.audioConstraints(),
+                               &blink::WebMediaTrackConstraintSet::deviceId,
+                               &audio_device_id);
   }
 
-  blink::WebString video_device_id;
-  bool mandatory_video = false;
+  std::string video_device_id;
   if (!user_media_request.isNull() && user_media_request.video()) {
-    mandatory_video =
-        user_media_request.videoConstraints().getMandatoryConstraintValue(
-            base::UTF8ToUTF16(kMediaStreamSourceInfoId), video_device_id);
-    if (!mandatory_video) {
-      user_media_request.videoConstraints().getOptionalConstraintValue(
-          base::UTF8ToUTF16(kMediaStreamSourceInfoId), video_device_id);
-    }
+    GetConstraintValueAsString(user_media_request.videoConstraints(),
+                               &blink::WebMediaTrackConstraintSet::deviceId,
+                               &video_device_id);
   }
 
   WebRtcLogMessage(base::StringPrintf(
       "MSI::requestUserMedia. request_id=%d"
-      ", audio source id=%s mandatory= %s "
-      ", video source id=%s mandatory= %s",
-      request_id, audio_device_id.utf8().c_str(),
-      mandatory_audio ? "true" : "false", video_device_id.utf8().c_str(),
-      mandatory_video ? "true" : "false"));
+      ", audio source id=%s"
+      ", video source id=%s",
+      request_id, audio_device_id.c_str(), video_device_id.c_str()));
 
   user_media_requests_.push_back(
       new UserMediaRequestInfo(request_id, user_media_request,

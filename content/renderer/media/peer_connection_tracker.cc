@@ -467,8 +467,7 @@ void PeerConnectionTracker::TrackSetSessionDescription(
 
 void PeerConnectionTracker::TrackUpdateIce(
     RTCPeerConnectionHandler* pc_handler,
-    const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-    const blink::WebMediaConstraints& options) {
+    const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
   DCHECK(main_thread_.CalledOnValidThread());
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
@@ -478,9 +477,8 @@ void PeerConnectionTracker::TrackUpdateIce(
   result << "servers: " << SerializeServers(config.servers)
          << "iceTransportType: " << SerializeIceTransportType(config.type)
          << "bundlePolicy: " << SerializeBundlePolicy(config.bundle_policy)
-         << "rtcpMuxPolicy: "
-         << SerializeRtcpMuxPolicy(config.rtcp_mux_policy)
-         << "constraints: {" << SerializeMediaConstraints(options) << "}";
+         << "rtcpMuxPolicy: " << SerializeRtcpMuxPolicy(config.rtcp_mux_policy)
+         << "}";
 
   SendPeerConnectionUpdate(
       id,

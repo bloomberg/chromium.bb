@@ -324,8 +324,7 @@ WebRTCSessionDescription MockWebRTCPeerConnectionHandler::remoteDescription() {
 }
 
 bool MockWebRTCPeerConnectionHandler::updateICE(
-    const WebRTCConfiguration& configuration,
-    const WebMediaConstraints& constraints) {
+    const WebRTCConfiguration& configuration) {
   return true;
 }
 

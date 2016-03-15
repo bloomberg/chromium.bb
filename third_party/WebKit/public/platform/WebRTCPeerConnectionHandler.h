@@ -61,7 +61,7 @@ public:
     virtual void setRemoteDescription(const WebRTCVoidRequest&, const WebRTCSessionDescription&) = 0;
     virtual WebRTCSessionDescription localDescription() = 0;
     virtual WebRTCSessionDescription remoteDescription() = 0;
-    virtual bool updateICE(const WebRTCConfiguration&, const WebMediaConstraints&) = 0;
+    virtual bool updateICE(const WebRTCConfiguration&) = 0;
 
     // DEPRECATED
     virtual bool addICECandidate(const WebRTCICECandidate&) { return false; }

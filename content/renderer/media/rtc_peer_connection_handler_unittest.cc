@@ -24,7 +24,6 @@
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/peer_connection_tracker.h"
-#include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
@@ -147,11 +146,10 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                void(RTCPeerConnectionHandler* pc_handler,
                     const std::string& sdp, const std::string& type,
                     Source source));
-  MOCK_METHOD3(
+  MOCK_METHOD2(
       TrackUpdateIce,
       void(RTCPeerConnectionHandler* pc_handler,
-           const webrtc::PeerConnectionInterface::RTCConfiguration& config,
-           const blink::WebMediaConstraints& options));
+           const webrtc::PeerConnectionInterface::RTCConfiguration& config));
   MOCK_METHOD4(TrackAddIceCandidate,
                void(RTCPeerConnectionHandler* pc_handler,
                     const blink::WebRTCICECandidate& candidate,
@@ -374,6 +372,7 @@ TEST_F(RTCPeerConnectionHandlerTest, DestructAllHandlers) {
       .Times(1);
   RTCPeerConnectionHandler::DestructAllHandlers();
 }
+
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
   blink::WebRTCSessionDescriptionRequest request;
   blink::WebMediaConstraints options;
@@ -452,13 +451,12 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
 
 TEST_F(RTCPeerConnectionHandlerTest, updateICE) {
   blink::WebRTCConfiguration config;
-  blink::WebMediaConstraints constraints;
 
-  EXPECT_CALL(*mock_tracker_.get(), TrackUpdateIce(pc_handler_.get(), _, _));
+  EXPECT_CALL(*mock_tracker_.get(), TrackUpdateIce(pc_handler_.get(), _));
   // TODO(perkj): Test that the parameters in |config| can be translated when a
   // WebRTCConfiguration can be constructed. It's WebKit class and can't be
   // initialized from a test.
-  EXPECT_TRUE(pc_handler_->updateICE(config, constraints));
+  EXPECT_TRUE(pc_handler_->updateICE(config));
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {

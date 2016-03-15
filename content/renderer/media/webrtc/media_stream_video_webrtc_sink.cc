@@ -10,19 +10,9 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-
-namespace {
-
-bool ConstraintKeyExists(const blink::WebMediaConstraints& constraints,
-                         const blink::WebString& name) {
-  blink::WebString value_str;
-  return constraints.getMandatoryConstraintValue(name, value_str) ||
-      constraints.getOptionalConstraintValue(name, value_str);
-}
-
-}  // anonymouse namespace
 
 namespace content {
 
@@ -138,15 +128,17 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   const blink::WebMediaConstraints& constraints =
       MediaStreamVideoTrack::GetVideoTrack(track)->constraints();
 
-  bool is_screencast = ConstraintKeyExists(
-      constraints, base::UTF8ToUTF16(kMediaStreamSource));
+  // Check for presence of mediaStreamSource constraint. The value is ignored.
+  std::string value;
+  bool is_screencast = GetConstraintValueAsString(
+      constraints, &blink::WebMediaTrackConstraintSet::mediaStreamSource,
+      &value);
   WebRtcVideoCapturerAdapter* capture_adapter =
       factory->CreateVideoCapturer(is_screencast);
 
   // |video_source| owns |capture_adapter|
   scoped_refptr<webrtc::VideoTrackSourceInterface> video_source(
-      factory->CreateVideoSource(capture_adapter,
-                                 track.source().constraints()));
+      factory->CreateVideoSource(capture_adapter));
 
   video_track_ = factory->CreateLocalVideoTrack(web_track_.id().utf8(),
                                                 video_source.get());
