@@ -45,7 +45,6 @@ ppapi_scons_files['irt_variant_test_scons_files'] = [
 ]
 
 ppapi_scons_files['untrusted_scons_files'] = [
-    'src/shared/ppapi/nacl.scons',
     'src/untrusted/irt_stub/nacl.scons',
 ]
 
