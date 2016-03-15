@@ -803,7 +803,9 @@ void ToolbarView::OnShowHomeButtonChanged() {
 }
 
 int ToolbarView::content_shadow_height() const {
-  return GetLayoutConstant(
-      (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) ?
-          TOOLBAR_CONTENT_SHADOW_HEIGHT_ASH : TOOLBAR_CONTENT_SHADOW_HEIGHT);
+#if defined(USE_ASH)
+  return GetLayoutConstant(TOOLBAR_CONTENT_SHADOW_HEIGHT_ASH);
+#else
+  return GetLayoutConstant(TOOLBAR_CONTENT_SHADOW_HEIGHT);
+#endif
 }

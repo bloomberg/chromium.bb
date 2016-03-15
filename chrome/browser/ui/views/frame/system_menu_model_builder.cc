@@ -62,11 +62,9 @@ void SystemMenuModelBuilder::Init() {
   menu_model_.reset(model);
   BuildMenu(model);
 #if defined(OS_WIN)
-  // On Windows with HOST_DESKTOP_TYPE_NATIVE we put the menu items in the
-  // system menu (not at the end). Doing this necessitates adding a trailing
-  // separator.
-  if (browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE)
-    model->AddSeparator(ui::NORMAL_SEPARATOR);
+  // On Windows we put the menu items in the system menu (not at the end). Doing
+  // this necessitates adding a trailing separator.
+  model->AddSeparator(ui::NORMAL_SEPARATOR);
 #endif
 }
 

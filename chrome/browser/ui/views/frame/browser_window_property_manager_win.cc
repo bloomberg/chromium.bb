@@ -102,8 +102,7 @@ void BrowserWindowPropertyManager::UpdateWindowProperties() {
 scoped_ptr<BrowserWindowPropertyManager>
     BrowserWindowPropertyManager::CreateBrowserWindowPropertyManager(
         BrowserView* view, HWND hwnd) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
-      view->browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return nullptr;
 
   scoped_ptr<BrowserWindowPropertyManager> browser_window_property_manager(

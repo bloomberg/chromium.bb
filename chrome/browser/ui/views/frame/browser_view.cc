@@ -682,7 +682,7 @@ WebContents* BrowserView::GetActiveWebContents() const {
 // BrowserView, BrowserWindow implementation:
 
 void BrowserView::Show() {
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(USE_ASH)
   // The Browser associated with this browser window must become the active
   // browser at the time |Show()| is called. This is the natural behavior under
   // Windows and Ash, but other platforms will not trigger
@@ -690,8 +690,7 @@ void BrowserView::Show() {
   // calls to Browser::GetLastActive() will return the wrong result if we do not
   // explicitly set it here.
   // A similar block also appears in BrowserWindowCocoa::Show().
-  if (browser()->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
-    BrowserList::SetLastActive(browser());
+  BrowserList::SetLastActive(browser());
 #endif
 
   // If the window is already visible, just activate it.
@@ -1709,12 +1708,13 @@ views::View* BrowserView::GetInitiallyFocusedView() {
 }
 
 bool BrowserView::ShouldShowWindowTitle() const {
+#if defined(USE_ASH)
   // For Ash only, trusted windows (apps and settings) do not show a title,
   // crbug.com/119411. Child windows (i.e. popups) do show a title.
-  if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
-      browser_->is_trusted_source() &&
+  if (browser_->is_trusted_source() &&
       !browser_->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME))
     return false;
+#endif  // USE_ASH
 
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
@@ -1743,12 +1743,13 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
 }
 
 bool BrowserView::ShouldShowWindowIcon() const {
+#if defined(USE_ASH)
   // For Ash only, trusted windows (apps and settings) do not show an icon,
   // crbug.com/119411. Child windows (i.e. popups) do show an icon.
-  if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
-      browser_->is_trusted_source() &&
+  if (browser_->is_trusted_source() &&
       !browser_->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME))
     return false;
+#endif  // USE_ASH
 
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
@@ -2391,14 +2392,16 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
-  // Kiosk mode needs the whole screen, and if we're not in an Ash desktop
-  // immersive fullscreen doesn't exist.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) ||
-      browser()->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH) {
+#if defined(USE_ASH)
+  // Kiosk mode needs the whole screen.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return false;
-  }
 
   return url.is_empty();
+#else
+  // No immersive except in Ash.
+  return false;
+#endif  // !USE_ASH
 }
 
 void BrowserView::LoadAccelerators() {
