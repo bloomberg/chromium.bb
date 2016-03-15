@@ -113,7 +113,7 @@ FractionalScrollOffsets status=experimental
 MediaCapture
 MediaCaptureFromCanvas status=experimental
 MediaCaptureFromVideo status=test
-MediaConstraints status=test
+MediaConstraints status=experimental
 MediaDevices status=stable
 MediaRecorder status=stable
 MediaSession
