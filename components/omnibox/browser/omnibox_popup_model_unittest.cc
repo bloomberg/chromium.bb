@@ -17,7 +17,7 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 200;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        true, &contents_max_width, &description_max_width);
+        false, true, &contents_max_width, &description_max_width);
     EXPECT_EQ(contents_width, contents_max_width);
     EXPECT_EQ(description_width, description_max_width);
 
@@ -27,7 +27,7 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 100;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        true, &contents_max_width, &description_max_width);
+        false, true, &contents_max_width, &description_max_width);
     EXPECT_EQ(contents_width, contents_max_width);
     EXPECT_EQ(0, description_max_width);
 
@@ -38,9 +38,20 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 384;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        true, &contents_max_width, &description_max_width);
+        false, true, &contents_max_width, &description_max_width);
     EXPECT_EQ(contents_width, contents_max_width);
     EXPECT_EQ(0, description_max_width);
+
+    // If contents and description are on separate lines, each can take the full
+    // available width.
+    contents_width = 300;
+    description_width = 100;
+    available_width = 384;
+    OmniboxPopupModel::ComputeMatchMaxWidths(
+        contents_width, separator_width, description_width, available_width,
+        true, true, &contents_max_width, &description_max_width);
+    EXPECT_EQ(contents_width, contents_max_width);
+    EXPECT_EQ(description_width, description_max_width);
 
     // Both contents and description will be limited.
     contents_width = 310;
@@ -48,10 +59,7 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 400;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        true, &contents_max_width, &description_max_width);
-    OmniboxPopupModel::ComputeMatchMaxWidths(
-        310, separator_width, 150, 400, true, &contents_max_width,
-        &description_max_width);
+        false, true, &contents_max_width, &description_max_width);
     EXPECT_EQ(kMinimumContentsWidth, contents_max_width);
     EXPECT_EQ(available_width - kMinimumContentsWidth - separator_width,
               description_max_width);
@@ -62,9 +70,31 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 200;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        true, &contents_max_width, &description_max_width);
+        false, true, &contents_max_width, &description_max_width);
     EXPECT_EQ(available_width, contents_max_width);
     EXPECT_EQ(0, description_max_width);
+
+    // Large contents will be truncated but small description won't if two line
+    // suggestion.
+    contents_width = 400;
+    description_width = 100;
+    available_width = 200;
+    OmniboxPopupModel::ComputeMatchMaxWidths(
+        contents_width, separator_width, description_width, available_width,
+        true, true, &contents_max_width, &description_max_width);
+    EXPECT_EQ(available_width, contents_max_width);
+    EXPECT_EQ(description_width, description_max_width);
+
+    // Large description will be truncated but small contents won't if two line
+    // suggestion.
+    contents_width = 100;
+    description_width = 400;
+    available_width = 200;
+    OmniboxPopupModel::ComputeMatchMaxWidths(
+        contents_width, separator_width, description_width, available_width,
+        true, true, &contents_max_width, &description_max_width);
+    EXPECT_EQ(contents_width, contents_max_width);
+    EXPECT_EQ(available_width, description_max_width);
 
     // Half and half.
     contents_width = 395;
@@ -72,7 +102,7 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 700;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        true, &contents_max_width, &description_max_width);
+        false, true, &contents_max_width, &description_max_width);
     EXPECT_EQ(345, contents_max_width);
     EXPECT_EQ(345, description_max_width);
 
@@ -83,7 +113,7 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 700;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        false, &contents_max_width, &description_max_width);
+        false, false, &contents_max_width, &description_max_width);
     EXPECT_EQ(contents_width, contents_max_width);
     EXPECT_EQ((available_width - contents_width - separator_width),
               description_max_width);
@@ -95,7 +125,7 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 699;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        true, &contents_max_width, &description_max_width);
+        false, true, &contents_max_width, &description_max_width);
     EXPECT_EQ(345, contents_max_width);
     EXPECT_EQ(344, description_max_width);
 
@@ -105,8 +135,7 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     available_width = 0;
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
-        true, &contents_max_width, &description_max_width);
+        false, true, &contents_max_width, &description_max_width);
     EXPECT_EQ(0, contents_max_width);
     EXPECT_EQ(0, description_max_width);
 }
-

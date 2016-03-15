@@ -45,15 +45,17 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
                                               int separator_width,
                                               int description_width,
                                               int available_width,
+                                              bool description_on_separate_line,
                                               bool allow_shrinking_contents,
                                               int* contents_max_width,
                                               int* description_max_width) {
   available_width = std::max(available_width, 0);
   *contents_max_width = std::min(contents_width, available_width);
-  *description_max_width = description_width;
+  *description_max_width = std::min(description_width, available_width);
 
-  // If the description is empty, the contents can get the full width.
-  if (!description_width)
+  // If the description is empty, or the contents and description are on
+  // separate lines, each can get the full available width.
+  if (!description_width || description_on_separate_line)
     return;
 
   // If we want to display the description, we need to reserve enough space for
@@ -75,8 +77,9 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
           (available_width + 1) / 2, available_width - description_width);
 
       const int kMinimumContentsWidth = 300;
-      *contents_max_width = std::min(std::min(
-          std::max(*contents_max_width, kMinimumContentsWidth), contents_width),
+      *contents_max_width = std::min(
+          std::min(std::max(*contents_max_width, kMinimumContentsWidth),
+                   contents_width),
           available_width);
     }
 

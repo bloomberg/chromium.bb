@@ -357,6 +357,7 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
       separator_width_,
       description ? description->GetContentWidth() : 0,
       mirroring_context_->remaining_width(x),
+      match.answer != nullptr,
       !AutocompleteMatch::IsSearchType(match.type),
       &contents_max_width,
       &description_max_width);

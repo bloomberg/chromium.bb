@@ -446,7 +446,9 @@ NSAttributedString* CreateClassifiedAttributedString(
   OmniboxPopupModel::ComputeMatchMaxWidths(
       ceilf(contentsWidth), ceilf(separatorWidth), ceilf(descriptionWidth),
       ceilf(remainingWidth),
-      !AutocompleteMatch::IsSearchType([cellData matchType]), &contentsMaxWidth,
+      [cellData isAnswer],
+      !AutocompleteMatch::IsSearchType([cellData matchType]),
+      &contentsMaxWidth,
       &descriptionMaxWidth);
 
   NSRect imageRect = cellFrame;
