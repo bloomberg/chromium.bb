@@ -48,6 +48,7 @@ class RasterTaskImpl : public RasterTask {
                  const gfx::Rect& content_rect,
                  const gfx::Rect& invalid_content_rect,
                  float contents_scale,
+                 bool include_images,
                  TileResolution tile_resolution,
                  int layer_id,
                  uint64_t source_prepare_tiles_id,
@@ -64,6 +65,7 @@ class RasterTaskImpl : public RasterTask {
         content_rect_(content_rect),
         invalid_content_rect_(invalid_content_rect),
         contents_scale_(contents_scale),
+        include_images_(include_images),
         tile_resolution_(tile_resolution),
         layer_id_(layer_id),
         source_prepare_tiles_id_(source_prepare_tiles_id),
@@ -89,10 +91,9 @@ class RasterTaskImpl : public RasterTask {
 
     DCHECK(raster_source_);
 
-    bool include_images = tile_resolution_ != LOW_RESOLUTION;
     raster_buffer_->Playback(raster_source_.get(), content_rect_,
                              invalid_content_rect_, new_content_id_,
-                             contents_scale_, include_images);
+                             contents_scale_, include_images_);
   }
 
   // Overridden from TileTask:
@@ -115,6 +116,7 @@ class RasterTaskImpl : public RasterTask {
   gfx::Rect content_rect_;
   gfx::Rect invalid_content_rect_;
   float contents_scale_;
+  bool include_images_;
   TileResolution tile_resolution_;
   int layer_id_;
   uint64_t source_prepare_tiles_id_;
@@ -835,12 +837,19 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
                                                DetermineResourceFormat(tile));
   }
 
+  // For LOW_RESOLUTION tiles, we don't draw or predecode images.
+  const bool include_images =
+      prioritized_tile.priority().resolution != LOW_RESOLUTION;
+
   // Create and queue all image decode tasks that this tile depends on.
   ImageDecodeTask::Vector decode_tasks;
   std::vector<DrawImage>& images = scheduled_draw_images_[tile->id()];
   images.clear();
-  prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-      tile->enclosing_layer_rect(), tile->contents_scale(), &images);
+  if (include_images) {
+    prioritized_tile.raster_source()->GetDiscardableImagesInRect(
+        tile->enclosing_layer_rect(), tile->contents_scale(), &images);
+  }
+
   for (auto it = images.begin(); it != images.end();) {
     scoped_refptr<ImageDecodeTask> task;
     bool need_to_unref_when_finished =
@@ -857,7 +866,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
 
   return make_scoped_refptr(new RasterTaskImpl(
       resource, prioritized_tile.raster_source(), tile->content_rect(),
-      tile->invalidated_content_rect(), tile->contents_scale(),
+      tile->invalidated_content_rect(), tile->contents_scale(), include_images,
       prioritized_tile.priority().resolution, tile->layer_id(),
       prepare_tiles_count_, static_cast<const void*>(tile), tile->id(),
       tile->invalidated_id(), resource_content_id, tile->source_frame_number(),
