@@ -184,6 +184,9 @@ const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 // messages.
 const char kDisableGpuWatchdog[]            = "disable-gpu-watchdog";
 
+// Disable in-process stack traces.
+const char kDisableInProcessStackTraces[]   = "disable-in-process-stack-traces";
+
 // Suppresses hang monitor dialogs in renderer processes.  This may allow slow
 // unload handlers on a page to prevent the tab from closing, but the Task
 // Manager can be used to terminate the offending process in this case.

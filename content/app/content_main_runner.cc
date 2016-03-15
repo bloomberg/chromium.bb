@@ -205,7 +205,10 @@ void CommonSubprocessInit(const std::string& process_type) {
 #if !defined(OFFICIAL_BUILD)
   // Print stack traces to stderr when crashes occur. This opens up security
   // holes so it should never be enabled for official builds.
-  base::debug::EnableInProcessStackDumping();
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInProcessStackTraces)) {
+    base::debug::EnableInProcessStackDumping();
+  }
 #if defined(OS_WIN)
   base::RouteStdioToConsole(false);
   LoadLibraryA("dbghelp.dll");
