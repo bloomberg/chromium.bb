@@ -1,14 +1,18 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import os
 import shlex
 
+from core import path_util
 from core import perf_benchmark
+from page_sets import google_pages
 
 from measurements import v8_detached_context_age_in_gc
 from measurements import v8_gc_times
 import page_sets
 from telemetry import benchmark
+from telemetry import story
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
 from telemetry.web_perf.metrics import v8_gc_latency
@@ -164,3 +168,33 @@ class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
   @classmethod
   def Name(cls):
     return 'v8.mobile_infinite_scroll'
+
+
+# Currently, this does not output any metrics
+# TODO(cbruni): adjust the metrics so that this output v8 metrics.
+@benchmark.Disabled('all')
+class V8Adword(perf_benchmark.PerfBenchmark):
+  """Measures V8 Execution metrics on the Adword page."""
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    category_filter = tracing_category_filter.TracingCategoryFilter('v8')
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetLegacyTimelineBasedMetrics([v8_execution.V8ExecutionMetric()])
+    return options
+
+  def CreateStorySet(self, options):
+    """Creates the instance of StorySet used to run the benchmark.
+
+    Can be overridden by subclasses.
+    """
+    del options  # unused
+    story_set = story.StorySet(
+        archive_data_file=os.path.join(
+            path_util.GetPerfStorySetsDir(), 'data', 'v8_pages.json'),
+        cloud_storage_bucket=story.PARTNER_BUCKET)
+    story_set.AddStory(google_pages.AdwordCampaignDesktopPage(story_set))
+    return story_set
+
+  @classmethod
+  def Name(cls):
+    return 'v8.adwords'
