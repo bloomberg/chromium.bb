@@ -228,8 +228,6 @@ source_set("common") {
                  "gpu/media/vt_mac.h",
                  "gpu/media/vt_video_decode_accelerator_mac.cc",
                  "gpu/media/vt_video_decode_accelerator_mac.h",
-                 "gpu/media/vt_video_encode_accelerator_mac.cc",
-                 "gpu/media/vt_video_encode_accelerator_mac.h",
                ] + get_target_outputs(":libvt_generate_stubs")
 
     sources -= [ "plugin_list_posix.cc" ]

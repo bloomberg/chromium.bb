@@ -12,7 +12,6 @@
 #include "base/power_monitor/power_observer.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/mac/videotoolbox_glue.h"
-#include "media/base/mac/videotoolbox_helpers.h"
 #include "media/cast/sender/size_adaptable_video_encoder_base.h"
 #include "media/cast/sender/video_encoder.h"
 
@@ -75,6 +74,11 @@ class H264VideoToolboxEncoder : public VideoEncoder,
   // Update the encoder's target frame size by resetting the compression
   // session. This will also update the video frame factory.
   void UpdateFrameSize(const gfx::Size& size_needed);
+
+  // Set a compression session property.
+  bool SetSessionProperty(CFStringRef key, int32_t value);
+  bool SetSessionProperty(CFStringRef key, bool value);
+  bool SetSessionProperty(CFStringRef key, CFStringRef value);
 
   // Compression session callback function to handle compressed frames.
   static void CompressionCallback(void* encoder_opaque,

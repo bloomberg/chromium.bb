@@ -25,7 +25,8 @@ scoped_ptr<VideoEncoder> VideoEncoder::Create(
   // On MacOS or IOS, attempt to use the system VideoToolbox library to
   // perform optimized H.264 encoding.
 #if defined(OS_MACOSX) || defined(OS_IOS)
-  if (H264VideoToolboxEncoder::IsSupported(video_config)) {
+  if (!video_config.use_external_encoder &&
+      H264VideoToolboxEncoder::IsSupported(video_config)) {
     return scoped_ptr<VideoEncoder>(new H264VideoToolboxEncoder(
         cast_environment, video_config, status_change_cb));
   }

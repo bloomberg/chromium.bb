@@ -87,9 +87,6 @@ class GpuVideoEncodeAccelerator
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   static scoped_ptr<media::VideoEncodeAccelerator> CreateAndroidVEA();
 #endif
-#if defined(OS_MACOSX)
-  static scoped_ptr<media::VideoEncodeAccelerator> CreateVTVEA();
-#endif
 
   // IPC handlers, proxying media::VideoEncodeAccelerator for the renderer
   // process.
