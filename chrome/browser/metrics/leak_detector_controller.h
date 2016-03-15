@@ -30,9 +30,6 @@ class LeakDetectorController : public LeakDetector::Observer {
   void OnLeakFound(const LeakDetector::LeakReport& report) override;
 
  private:
-  // Leak detector interface object.
-  LeakDetector detector_;
-
   // All leak reports received through OnLeakFound() are stored in protobuf
   // format.
   std::vector<MemoryLeakReportProto> stored_reports_;

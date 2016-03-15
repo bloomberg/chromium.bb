@@ -6,8 +6,8 @@
 
 #include <set>
 
+#include "base/allocator/allocator_extension.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,17 +59,16 @@ class TestObserver : public LeakDetector::Observer {
 
 class LeakDetectorTest : public ::testing::Test {
  public:
-  LeakDetectorTest()
-      : detector_(new LeakDetector(kDefaultSamplingRate,
-                                   kDefaultMaxCallStackUnwindDepth,
-                                   kDefaultAnalysisIntervalBytes,
-                                   kDefaultSizeSuspicionThreshold,
-                                   kDefaultCallStackSuspicionThreshold)) {}
+  LeakDetectorTest() : detector_(LeakDetector::GetInstance()) {
+    detector_->Init(kDefaultSamplingRate, kDefaultMaxCallStackUnwindDepth,
+                    kDefaultAnalysisIntervalBytes,
+                    kDefaultSizeSuspicionThreshold,
+                    kDefaultCallStackSuspicionThreshold);
+  }
 
  protected:
-  // Use a scoped_ptr to hold the test object so it can be destroyed before the
-  // test is over.
-  scoped_ptr<LeakDetector> detector_;
+  // Points to the instance of LeakDetector returned by GetInstance().
+  LeakDetector* detector_;
 
  private:
   // For supporting content::BrowserThread operations.
@@ -105,10 +104,6 @@ TEST_F(LeakDetectorTest, NotifyObservers) {
   // Pass both sets of reports to the leak detector.
   detector_->NotifyObservers(reports1);
   detector_->NotifyObservers(reports2);
-
-  // Shut down the leak detector before checking the reports, so that the
-  // stored reports can be examined without new reports being generated.
-  detector_.reset();
 
   // Check that all three observers got both sets of reports, passed in
   // separately.

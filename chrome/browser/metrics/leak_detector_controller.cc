@@ -21,18 +21,16 @@ const int kCallStackSuspicionThreshold = 4;
 
 }  // namespace
 
-LeakDetectorController::LeakDetectorController()
-    : detector_(kSamplingRate,
-                kMaxStackDepth,
-                kAnalysisIntervalBytes,
-                kSizeSuspicionThreshold,
-                kCallStackSuspicionThreshold) {
-  detector_.AddObserver(this);
+LeakDetectorController::LeakDetectorController() {
+  LeakDetector* detector = LeakDetector::GetInstance();
+  detector->AddObserver(this);
+  detector->Init(kSamplingRate, kMaxStackDepth, kAnalysisIntervalBytes,
+                 kSizeSuspicionThreshold, kCallStackSuspicionThreshold);
 }
 
 LeakDetectorController::~LeakDetectorController() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  detector_.RemoveObserver(this);
+  LeakDetector::GetInstance()->RemoveObserver(this);
 }
 
 void LeakDetectorController::OnLeakFound(
