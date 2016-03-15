@@ -23,21 +23,18 @@ namespace {
 // browser_theme_pack.cc.
 
 // Default colors.
-#if defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
 // Used for theme fallback colors.
-const SkColor kDefaultColorFrame[] = {
-    SkColorSetRGB(0xC3, 0xC3, 0xC4), SkColorSetRGB(204, 204, 204)};
-const SkColor kDefaultColorFrameInactive[] = {
-    SkColorSetRGB(0xCD, 0xCD, 0xCE), SkColorSetRGB(220, 220, 220)};
-#elif defined(OS_MACOSX)
 const SkColor kDefaultColorFrame[] = {
     SkColorSetRGB(224, 224, 224), SkColorSetRGB(204, 204, 204)};
 const SkColor kDefaultColorFrameInactive[] = {
     SkColorSetRGB(246, 246, 246), SkColorSetRGB(246, 246, 246)};
 #else
-const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
-const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
-#endif  // OS_CHROMEOS
+const SkColor kDefaultColorFrame[] = {
+    SkColorSetRGB(0xC3, 0xC3, 0xC4), SkColorSetRGB(204, 204, 204)};
+const SkColor kDefaultColorFrameInactive[] = {
+    SkColorSetRGB(0xCD, 0xCD, 0xCE), SkColorSetRGB(220, 220, 220)};
+#endif
 
 // These colors are the same between CrOS and !CrOS for MD, so this ifdef can be
 // removed when we stop supporting pre-MD.
@@ -304,21 +301,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
   switch (id) {
     // Properties stored in theme pack.
     case COLOR_FRAME:
-      if (otr)
-        return kDefaultColorFrameIncognito[mode];
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-      return kDefaultColorFrame[mode];
-#else
-      return kDefaultColorFrame;
-#endif  // OS_CHROMEOS || OS_MACOSX
+      return otr ? kDefaultColorFrameIncognito[mode] : kDefaultColorFrame[mode];
     case COLOR_FRAME_INACTIVE:
-      if (otr)
-        return kDefaultColorFrameIncognitoInactive[mode];
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-      return kDefaultColorFrameInactive[mode];
-#else
-      return kDefaultColorFrameInactive;
-#endif  // OS_CHROMEOS || OS_MACOSX
+      return otr ? kDefaultColorFrameIncognitoInactive[mode]
+                 : kDefaultColorFrameInactive[mode];
     case COLOR_TOOLBAR:
       return otr ? kDefaultColorToolbarIncognito[mode]
                  : kDefaultColorToolbar[mode];
