@@ -13,3 +13,9 @@ var performance = {};
  * @return {number}
  */
 performance.now = function() {};
+
+/** @interface */
+var InputDeviceCapabilities;
+
+/** @type {?InputDeviceCapabilities} */
+Event.prototype.sourceCapabilities;

@@ -84,6 +84,10 @@ Polymer({
     },
   },
 
+  listeners: {
+    'focus': 'onFocus_',
+  },
+
   attached: function() {
     // isRTL() only works after i18n_template.js runs to set <html dir>.
     // Set the back button icon based on text direction.
@@ -132,18 +136,6 @@ Polymer({
   },
 
   /**
-   * Handles a click on the arrow button by firing an arrow-click event.
-   *
-   * @private
-   */
-  onHeaderOrArrowClick_: function() {
-    if (this.view == media_router.MediaRouterView.SINK_LIST ||
-        this.view == media_router.MediaRouterView.CAST_MODE_LIST) {
-      this.fire('header-or-arrow-click');
-    }
-  },
-
-  /**
    * Handles a click on the back button by firing a back-click event.
    *
    * @private
@@ -161,6 +153,32 @@ Polymer({
     this.fire('close-dialog', {
       pressEscToClose: false,
     });
+  },
+
+  /**
+   * Called when a focus event is triggered.
+   *
+   * @param {!Event} event The event object.
+   * @private
+   */
+  onFocus_: function(event) {
+    // If the focus event was not triggered by the user, remove focus from
+    // the element. This prevents unexpected focusing such as when the dialog
+    // is initially loaded.
+    if (!event.sourceCapabilities)
+      event.path[0].blur();
+  },
+
+  /**
+   * Handles a click on the arrow button by firing an arrow-click event.
+   *
+   * @private
+   */
+  onHeaderOrArrowClick_: function() {
+    if (this.view == media_router.MediaRouterView.SINK_LIST ||
+        this.view == media_router.MediaRouterView.CAST_MODE_LIST) {
+      this.fire('header-or-arrow-click');
+    }
   },
 
   /**
