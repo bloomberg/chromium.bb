@@ -1346,6 +1346,8 @@ crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/iframe-object-on
 crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/updateLayoutForHitTest.html [ Failure Pass ]
 
+crbug.com/589525 svg/text/combining-character-queries.html [ NeedsRebaseline ]
+
 crbug.com/593888 [ Linux Debug ] fast/dom/htmlcollection-reachable.html [ Timeout ]
 
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]

@@ -135,7 +135,7 @@ unsigned SVGTextMetricsCalculator::updateSubrunRangesForCurrentPosition()
         unsigned subrunEnd = m_bidiRun ? m_bidiRun->stop() : m_run.charactersLength();
         TextDirection subrunDirection = m_bidiRun ? m_bidiRun->direction() : m_text.styleRef().direction();
         TextRun subRun = SVGTextMetrics::constructTextRun(m_text, subrunStart, subrunEnd - subrunStart, subrunDirection);
-        m_subrunRanges = m_text.scaledFont().individualCharacterRanges(subRun, 0, subRun.length() - 1);
+        m_subrunRanges = m_text.scaledFont().individualCharacterRanges(subRun);
 
         // TODO(pdr): We only have per-glyph data so we need to synthesize per-
         // grapheme data. E.g., if 'fi' is shaped into a single glyph, we do not

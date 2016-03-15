@@ -37,6 +37,8 @@ public:
     int offsetForPosition(const TextRun&, float targetX) const;
     CharacterRange getCharacterRange(TextDirection, float totalWidth,
         unsigned from, unsigned to) const;
+    Vector<CharacterRange> individualCharacterRanges(TextDirection,
+        float totalWidth) const;
 
 private:
     float fillFastHorizontalGlyphBuffer(GlyphBuffer*, TextDirection) const;
@@ -47,6 +49,9 @@ private:
     static float fillGlyphBufferForTextEmphasisRun(GlyphBuffer*, const ShapeResult::RunInfo*,
         const TextRun&, const GlyphData*, float initialAdvance, unsigned from, unsigned to,
         unsigned runOffset);
+
+    static void addRunInfoRanges(const ShapeResult::RunInfo&, float offset,
+        Vector<CharacterRange>&);
 
     // Empirically, cases where we get more than 50 ShapeResults are extremely rare.
     Vector<RefPtr<ShapeResult>, 64>m_results;

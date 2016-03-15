@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<meta charset="utf8">
+<style>
+    .testTextRun {
+        font-size: 35px;
+    }
+    .description {
+        font-size: 12px;
+        text-anchor: middle;
+    }
+    #highlightContainer text {
+        text-anchor: middle;
+        font-size: 8px;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+</style>
+<svg width="600px" height="500px" xmlns="http://www.w3.org/2000/svg">
+    <g id="highlightContainer"/>
+    <g>
+        <!-- multiple combining diacritics in LTR -->
+        <text x="50" y="50" class="testTextRun" font-family="cursive">ab&#x030c;c&#x030c;&#x030c;</text>
+        <text x="200" y="50" class="testTextRun" font-family="serif">ab&#x030c;c&#x030c;&#x030c;</text>
+        <text x="350" y="50" class="testTextRun" font-family="sans-serif">ab&#x030c;c&#x030c;&#x030c;</text>
+
+        <!-- multiple combining diacritics in RTL -->
+        <text x="100" y="125" class="testTextRun" font-family="cursive" direction="rtl">&#8207;a&#8207;b&#x030c;&#8207;c&#x030c;&#x030c;</text>
+        <text x="250" y="125" class="testTextRun" font-family="serif" direction="rtl">&#8207;a&#8207;b&#x030c;&#8207;c&#x030c;&#x030c;</text>
+        <text x="400" y="125" class="testTextRun" font-family="sans-serif" direction="rtl">&#8207;a&#8207;b&#x030c;&#8207;c&#x030c;&#x030c;</text>
+
+        <!-- multiple combining diacritics on ligatures in LTR -->
+        <text x="50" y="200" class="testTextRun" font-family="cursive">fi&#x030c; ffi&#x030c;&#x030c;</text>
+        <text x="200" y="200" class="testTextRun" font-family="serif">fi&#x030c; ffi&#x030c;&#x030c;</text>
+        <text x="350" y="200" class="testTextRun" font-family="sans-serif">fi&#x030c; ffi&#x030c;&#x030c;</text>
+
+        <!-- combining diacritics on ligatures in mixed bidi runs -->
+        <text x="50" y="275" class="testTextRun" font-family="cursive">ff&#x030c;&#1600;&#1600;&#1604;&#1575;ff&#x030c;</text>
+        <text x="200" y="275" class="testTextRun" font-family="serif">ff&#x030c;&#1600;&#1600;&#1604;&#1575;ff&#x030c;</text>
+        <text x="350" y="275" class="testTextRun" font-family="sans-serif">ff&#x030c;&#1600;&#1600;&#1604;&#1575;ff&#x030c;</text>
+
+        <!-- combining diacritics which are wider than characters in mixed bidi runs -->
+        <text x="50" y="350" class="testTextRun" font-family="cursive"> &#x030c;&#64944;i&#819;</text>
+        <text x="200" y="350" class="testTextRun" font-family="serif"> &#x030c;&#64944;i&#819;</text>
+        <text x="350" y="350" class="testTextRun" font-family="sans-serif"> &#x030c;&#64944;i&#819;</text>
+    </g>
+</svg>
+<script>
+    function highlightGlyph(text, index, color) {
+        var extent = text.getExtentOfChar(index);
+        // Highlight rect that we've selected using the extent information
+        var rectElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rectElement.setAttribute("x", extent.x);
+        rectElement.setAttribute("y", extent.y);
+        rectElement.setAttribute("width", extent.width);
+        rectElement.setAttribute("height", extent.height);
+        rectElement.setAttribute("fill-opacity", "0.3");
+        rectElement.setAttribute("fill", color);
+        document.getElementById("highlightContainer").appendChild(rectElement);
+        // Output the start offset
+        var textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        textElement.setAttribute("x", extent.x + extent.width / 2);
+        textElement.setAttribute("y", extent.y + extent.height + 7);
+        textElement.appendChild(document.createTextNode(index));
+        document.getElementById("highlightContainer").appendChild(textElement);
+    }
+
+    var colors = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+    // Highlight each glyph with a semi-transparent rectangle and
+    // a number corresponding to the queried character index.
+    var textElements = document.querySelectorAll(".testTextRun");
+    for (var elemNum = 0; elemNum < textElements.length; ++elemNum) {
+        var text = textElements[elemNum];
+        var charCount = text.getNumberOfChars();
+        for (var index = 0; index < charCount; ++index)
+            highlightGlyph(text, index, colors[index % colors.length]);
+    }
+</script>

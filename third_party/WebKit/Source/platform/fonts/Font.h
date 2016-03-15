@@ -87,7 +87,7 @@ public:
 
     int offsetForPosition(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForText(const TextRun&, const FloatPoint&, int h, int from = 0, int to = -1, bool accountForGlyphBounds = false) const;
-    Vector<CharacterRange> individualCharacterRanges(const TextRun&, int from, int to) const;
+    Vector<CharacterRange> individualCharacterRanges(const TextRun&) const;
 
     // Metrics that we query the FontFallbackList for.
     const FontMetrics& getFontMetrics() const
