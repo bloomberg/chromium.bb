@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
@@ -15,6 +19,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentActivity;
+import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -74,6 +79,23 @@ public abstract class ActivityDelegate {
 
         return TextUtils.equals(className, desiredClassName)
                 || TextUtils.equals(className, desiredLegacyClassName);
+    }
+
+    /**
+     * Finishes all DocumentActivities that appear in Android's Recents.
+     */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void finishAllDocumentActivities() {
+        Context context = ApplicationStatus.getApplicationContext();
+        ActivityManager activityManager =
+                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+
+        for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
+            Intent intent = DocumentUtils.getBaseIntentFromTask(task);
+            if (isValidActivity(false, intent) || isValidActivity(true, intent)) {
+                task.finishAndRemoveTask();
+            }
+        }
     }
 
     /**

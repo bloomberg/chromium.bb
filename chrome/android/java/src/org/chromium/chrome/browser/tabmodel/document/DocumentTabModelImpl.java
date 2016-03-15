@@ -21,11 +21,11 @@ import com.google.protobuf.nano.MessageNano;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentMetricIds;
+import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.IncognitoNotificationManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -53,12 +53,8 @@ import java.util.concurrent.TimeUnit;
 public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentTabModel {
     private static final String TAG = "DocumentTabModel";
 
-    @VisibleForTesting
     public static final String PREF_PACKAGE = "com.google.android.apps.chrome.document";
-
-    @VisibleForTesting
     public static final String PREF_LAST_SHOWN_TAB_ID_REGULAR = "last_shown_tab_id.regular";
-
     public static final String PREF_LAST_SHOWN_TAB_ID_INCOGNITO = "last_shown_tab_id.incognito";
 
     /** TabModel is uninitialized. */
@@ -176,11 +172,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         mInitializationObservers = new ObserverList<InitializationObserver>();
         mObservers = new ObserverList<TabModelObserver>();
 
-        SharedPreferences prefs = mContext.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
         long time = SystemClock.elapsedRealtime();
-        mLastShownTabId = prefs.getInt(
-                isIncognito() ? PREF_LAST_SHOWN_TAB_ID_INCOGNITO : PREF_LAST_SHOWN_TAB_ID_REGULAR,
-                Tab.INVALID_TAB_ID);
+        mLastShownTabId = DocumentUtils.getLastShownTabIdFromPrefs(mContext, isIncognito());
         mSharedPrefsLoadTime = SystemClock.elapsedRealtime() - time;
 
         // Restore the tab list.
@@ -335,7 +328,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
         int tabId = tab.getId();
         Entry entry = mEntryMap.get(tabId);
-        if (!isIncognito() && entry != null && entry.getTabState() != null) {
+        if (!isIncognito() && entry != null && entry.getTabState() != null
+                && isNativeInitialized()) {
             entry.getTabState().contentsState.createHistoricalTab();
         }
 
