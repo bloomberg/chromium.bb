@@ -203,18 +203,16 @@ bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& mime_type,
   // HW-acceleration but it doesn't. Android Media guidance is that the
   // "OMX.google" prefix is always used for SW decoders, so that's what we
   // use. "OMX.SEC.*" codec is Samsung software implementation - report it
-  // as unaccelerated as well. Also temporary blacklist Exynos and MediaTek
-  // devices while HW decoder video freezes and distortions are
-  // investigated - http://crbug.com/446974.
+  // as unaccelerated as well. MediaTek hardware vp8 is known slower than
+  // the software implementation. http://crbug.com/446974.
   if (codec_name.length() > 0) {
-    return (base::StartsWith(codec_name, "OMX.google.",
-                             base::CompareCase::SENSITIVE) ||
-            base::StartsWith(codec_name, "OMX.SEC.",
-                             base::CompareCase::SENSITIVE) ||
-            base::StartsWith(codec_name, "OMX.MTK.",
-                             base::CompareCase::SENSITIVE) ||
-            base::StartsWith(codec_name, "OMX.Exynos.",
-                             base::CompareCase::SENSITIVE));
+    return base::StartsWith(codec_name, "OMX.google.",
+                            base::CompareCase::SENSITIVE) ||
+           base::StartsWith(codec_name, "OMX.SEC.",
+                            base::CompareCase::SENSITIVE) ||
+           (base::StartsWith(codec_name, "OMX.MTK.",
+                             base::CompareCase::SENSITIVE) &&
+            mime_type == "video/x-vnd.on2.vp8");
   }
   return true;
 }
@@ -253,6 +251,13 @@ bool MediaCodecUtil::IsVp8DecoderAvailable() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, "vp8");
   return Java_MediaCodecUtil_isDecoderSupportedForDevice(env, j_mime.obj());
+}
+
+// static
+bool MediaCodecUtil::IsVp8EncoderAvailable() {
+  // Currently the vp8 encoder and decoder blacklists cover the same devices,
+  // but we have a second method for clarity in future issues.
+  return IsVp8DecoderAvailable();
 }
 
 }  // namespace media

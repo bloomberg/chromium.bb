@@ -114,6 +114,11 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
   };
 
   for (const auto& supported_codec : kSupportedCodecs) {
+    if (supported_codec.codec == media::kCodecVP8 &&
+        !media::MediaCodecUtil::IsVp8EncoderAvailable()) {
+      continue;
+    }
+
     if (VideoCodecBridge::IsKnownUnaccelerated(supported_codec.codec,
                                                media::MEDIA_CODEC_ENCODER)) {
       continue;

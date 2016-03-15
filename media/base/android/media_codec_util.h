@@ -66,8 +66,9 @@ class MEDIA_EXPORT MediaCodecUtil {
 
   static bool RegisterMediaCodecUtil(JNIEnv* env);
 
-  // Indicates if the vp8 decoder is available on this device.
+  // Indicates if the vp8 decoder or encoder is available on this device.
   static bool IsVp8DecoderAvailable();
+  static bool IsVp8EncoderAvailable();
 };
 
 }  // namespace media
