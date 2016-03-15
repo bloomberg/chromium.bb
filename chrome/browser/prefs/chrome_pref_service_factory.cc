@@ -31,6 +31,8 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/component_updater/pref_names.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/default_pref_store.h"
 #include "components/prefs/json_pref_store.h"
@@ -55,11 +57,6 @@
 #include "grit/browser_resources.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/browser/configuration_policy_pref_store.h"
-#endif
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/pref_names.h"
@@ -426,12 +423,10 @@ void PrepareFactory(
     scoped_refptr<PersistentPrefStore> user_pref_store,
     const scoped_refptr<PrefStore>& extension_prefs,
     bool async) {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::BrowserPolicyConnector* policy_connector =
       g_browser_process->browser_policy_connector();
   factory->SetManagedPolicies(policy_service, policy_connector);
   factory->SetRecommendedPolicies(policy_service, policy_connector);
-#endif  // ENABLE_CONFIGURATION_POLICY
 
 #if defined(ENABLE_SUPERVISED_USERS)
   if (supervised_user_settings) {

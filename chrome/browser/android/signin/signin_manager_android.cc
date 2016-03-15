@@ -20,6 +20,8 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -27,6 +29,10 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -34,20 +40,10 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "jni/SigninManager_jni.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
-#include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/cloud/cloud_policy_core.h"
-#include "components/policy/core/common/cloud/cloud_policy_store.h"
-#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
-#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/url_request/url_request_context_getter.h"
-#endif
 
 using bookmarks::BookmarkModel;
 
@@ -103,7 +99,6 @@ void SigninManagerAndroid::CheckPolicyBeforeSignIn(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& username) {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   username_ = base::android::ConvertJavaStringToUTF8(env, username);
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
@@ -113,20 +108,11 @@ void SigninManagerAndroid::CheckPolicyBeforeSignIn(
                      .account_id,
       base::Bind(&SigninManagerAndroid::OnPolicyRegisterDone,
                  weak_factory_.GetWeakPtr()));
-#else
-  // This shouldn't be called when ShouldLoadPolicyForUser() is false.
-  NOTREACHED();
-  base::android::ScopedJavaLocalRef<jstring> domain;
-  Java_SigninManager_onPolicyCheckedBeforeSignIn(env,
-                                                 java_signin_manager_.obj(),
-                                                 domain.obj());
-#endif
 }
 
 void SigninManagerAndroid::FetchPolicyBeforeSignIn(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   if (!dm_token_.empty()) {
     policy::UserPolicySigninService* service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
@@ -141,7 +127,7 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
     client_id_.clear();
     return;
   }
-#endif
+
   // This shouldn't be called when ShouldLoadPolicyForUser() is false, or when
   // CheckPolicyBeforeSignIn() failed.
   NOTREACHED();
@@ -152,11 +138,9 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
 void SigninManagerAndroid::AbortSignIn(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   service->ShutdownUserCloudPolicyManager();
-#endif
 }
 
 void SigninManagerAndroid::OnSignInCompleted(
@@ -180,7 +164,6 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj) {
   base::android::ScopedJavaLocalRef<jstring> domain;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::UserCloudPolicyManager* manager =
       policy::UserCloudPolicyManagerFactory::GetForBrowserContext(profile_);
   policy::CloudPolicyStore* store = manager->core()->store();
@@ -190,7 +173,6 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
         base::android::ConvertUTF8ToJavaString(
             env, gaia::ExtractDomainName(store->policy()->username())));
   }
-#endif
 
   return domain;
 }
@@ -207,8 +189,6 @@ void SigninManagerAndroid::WipeProfileData(
       profile_, base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
                            weak_factory_.GetWeakPtr(), java_callback));
 }
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
 
 void SigninManagerAndroid::OnPolicyRegisterDone(
     const std::string& dm_token,
@@ -237,8 +217,6 @@ void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
       base::android::AttachCurrentThread(),
       java_signin_manager_.obj());
 }
-
-#endif
 
 void SigninManagerAndroid::OnBrowsingDataRemoverDone(
     const base::android::ScopedJavaGlobalRef<jobject>& callback) {
@@ -307,13 +285,9 @@ static jboolean ShouldLoadPolicyForUser(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username) {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   std::string username =
       base::android::ConvertJavaStringToUTF8(env, j_username);
   return !policy::BrowserPolicyConnector::IsNonEnterpriseUser(username);
-#else
-  return false;
-#endif
 }
 
 // static

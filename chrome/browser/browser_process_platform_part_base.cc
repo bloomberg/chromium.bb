@@ -6,11 +6,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#endif
 
 BrowserProcessPlatformPartBase::BrowserProcessPlatformPartBase() {
 }
@@ -39,10 +36,8 @@ void BrowserProcessPlatformPartBase::AttemptExit() {
 void BrowserProcessPlatformPartBase::PreMainMessageLoopRun() {
 }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
 scoped_ptr<policy::BrowserPolicyConnector>
 BrowserProcessPlatformPartBase::CreateBrowserPolicyConnector() {
   return scoped_ptr<policy::BrowserPolicyConnector>(
       new policy::ChromeBrowserPolicyConnector());
 }
-#endif

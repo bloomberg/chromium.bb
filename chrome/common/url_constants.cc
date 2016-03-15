@@ -616,6 +616,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUINewTabHost,
   kChromeUIOmniboxHost,
   kChromeUIPasswordManagerInternalsHost,
+  kChromeUIPolicyHost,
   kChromeUIPredictorsHost,
   kChromeUIProfilerHost,
   kChromeUISignInInternalsHost,
@@ -686,9 +687,6 @@ const char* const kChromeHostURLs[] = {
 #endif
 #if !defined(DISABLE_NACL)
   kChromeUINaClHost,
-#endif
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  kChromeUIPolicyHost,
 #endif
 #if defined(ENABLE_EXTENSIONS)
   kChromeUIExtensionsHost,

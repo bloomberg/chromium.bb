@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_content/default_content_predicate_evaluators.h"
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
+#include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -28,10 +29,6 @@
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
@@ -62,11 +59,9 @@ void ChromeExtensionsAPIClient::AddAdditionalValueStoreCaches(
   (*caches)[settings_namespace::SYNC] =
       new SyncValueStoreCache(factory, observers, context->GetPath());
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // Add support for chrome.storage.managed.
   (*caches)[settings_namespace::MANAGED] =
       new ManagedValueStoreCache(context, factory, observers);
-#endif
 }
 
 void ChromeExtensionsAPIClient::AttachWebContentsHelpers(

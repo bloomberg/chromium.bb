@@ -42,6 +42,8 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/browser/ui/webui/plugins/plugins_ui.h"
+#include "chrome/browser/ui/webui/policy_material_design_ui.h"
+#include "chrome/browser/ui/webui/policy_ui.h"
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
@@ -77,11 +79,6 @@
 
 #if !defined(DISABLE_NACL)
 #include "chrome/browser/ui/webui/nacl_ui.h"
-#endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/ui/webui/policy_material_design_ui.h"
-#include "chrome/browser/ui/webui/policy_ui.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -531,14 +528,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 #endif  // (USE_NSS_CERTS || USE_OPENSSL_CERTS) && USE_AURA
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   if (url.host() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
   if (url.host() == chrome::kChromeUIMdPolicyHost &&
       switches::MdPolicyPageEnabled()) {
     return &NewWebUI<PolicyMaterialDesignUI>;
   }
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(ENABLE_APP_LIST)
   if (url.host() == chrome::kChromeUIAppListStartPageHost)

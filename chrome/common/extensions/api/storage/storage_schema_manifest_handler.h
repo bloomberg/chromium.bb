@@ -20,14 +20,12 @@ class StorageSchemaManifestHandler : public ManifestHandler {
   StorageSchemaManifestHandler();
   ~StorageSchemaManifestHandler() override;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // Returns the managed storage schema defined for |extension|.
   // If the schema is invalid then the Schema returned is invalid too, and
   // the failure reason is stored in |error|.
   // This function does file I/O and must be called on a thread that allows I/O.
   static policy::Schema GetSchema(const Extension* extension,
                                   std::string* error);
-#endif
 
  private:
   // ManifestHandler implementation:

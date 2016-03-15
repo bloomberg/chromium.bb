@@ -134,7 +134,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   void OnSyncConfirmationUIClosed(
       LoginUIService::SyncConfirmationUIClosedResults results) override;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // User input handler for the signin confirmation dialog.
   class SigninDialogDelegate
     : public ui::ProfileSigninConfirmationDelegate {
@@ -172,8 +171,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // credentials transfer, load policy, and open the first window.
   void CompleteInitForNewProfile(Profile* profile,
                                  Profile::CreateStatus status);
-
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
   // Cancels the in-progress signin for this profile.
   void CancelSigninAndDelete();
@@ -231,12 +228,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // Callback executed when sync setup succeeds or fails.
   Callback sync_setup_completed_callback_;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // Policy credentials we keep while determining whether to create
   // a new profile for an enterprise user or not.
   std::string dm_token_;
   std::string client_id_;
-#endif
 
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 

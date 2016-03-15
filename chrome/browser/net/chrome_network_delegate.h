@@ -74,12 +74,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // Pass through to ChromeExtensionsNetworkDelegate::set_extension_info_map().
   void set_extension_info_map(extensions::InfoMap* extension_info_map);
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   void set_url_blacklist_manager(
       const policy::URLBlacklistManager* url_blacklist_manager) {
     url_blacklist_manager_ = url_blacklist_manager;
   }
-#endif
 
   // If |profile| is NULL or not set, events will be broadcast to all profiles,
   // otherwise they will only be sent to the specified profile.
@@ -208,9 +206,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   BooleanPrefMember* force_youtube_safety_mode_;
 
   // Weak, owned by our owner.
-#if defined(ENABLE_CONFIGURATION_POLICY)
   const policy::URLBlacklistManager* url_blacklist_manager_;
-#endif
   domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor_;
 
   // When true, allow access to all file:// URLs.

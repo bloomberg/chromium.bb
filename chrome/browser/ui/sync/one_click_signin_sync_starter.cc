@@ -9,13 +9,8 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "components/prefs/pref_service.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
-#endif
-
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -39,6 +34,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -150,7 +146,6 @@ void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
   // If this is a new signin (no account authenticated yet) try loading
   // policy for this user now, before any signed in services are initialized.
   if (!signin->IsAuthenticated()) {
-#if defined(ENABLE_CONFIGURATION_POLICY)
     policy::UserPolicySigninService* policy_service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
     policy_service->RegisterForPolicy(
@@ -159,9 +154,6 @@ void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
         base::Bind(&OneClickSigninSyncStarter::OnRegisteredForPolicy,
                    weak_pointer_factory_.GetWeakPtr()));
     return;
-#else
-    ConfirmAndSignin();
-#endif
   } else {
     // The user is already signed in - just tell SigninManager to continue
     // with its re-auth flow.
@@ -169,10 +161,9 @@ void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
   }
 }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
 OneClickSigninSyncStarter::SigninDialogDelegate::SigninDialogDelegate(
     base::WeakPtr<OneClickSigninSyncStarter> sync_starter)
-  : sync_starter_(sync_starter) {
+    : sync_starter_(sync_starter) {
 }
 
 OneClickSigninSyncStarter::SigninDialogDelegate::~SigninDialogDelegate() {
@@ -345,7 +336,6 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
     }
   }
 }
-#endif
 
 void OneClickSigninSyncStarter::CancelSigninAndDelete() {
   SigninManagerFactory::GetForProfile(profile_)

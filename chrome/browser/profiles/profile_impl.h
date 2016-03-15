@@ -213,10 +213,8 @@ class ProfileImpl : public Profile {
 // This can be removed once |prefs_| becomes a KeyedService too.
 // |profile_policy_connector_| in turn depends on |cloud_policy_manager_|,
 // which depends on |schema_registry_service_|.
-#if defined(ENABLE_CONFIGURATION_POLICY)
   scoped_ptr<policy::SchemaRegistryService> schema_registry_service_;
   scoped_ptr<policy::CloudPolicyManager> cloud_policy_manager_;
-#endif
   scoped_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 
   // Keep |pref_validation_delegate_| above |prefs_| so that the former outlives

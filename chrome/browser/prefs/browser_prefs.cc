@@ -77,6 +77,9 @@
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -99,12 +102,6 @@
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
-#endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
-#include "components/policy/core/common/policy_statistics_collector.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -311,10 +308,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   autofill::AutofillDialogController::RegisterPrefs(registry);
 #endif
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::BrowserPolicyConnector::RegisterPrefs(registry);
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
-#endif
 
 #if defined(ENABLE_EXTENSIONS)
   EasyUnlockService::RegisterPrefs(registry);
@@ -449,9 +444,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::AutofillDialogController::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
-#endif
 
 #if defined(ENABLE_EXTENSIONS)
   EasyUnlockService::RegisterProfilePrefs(registry);

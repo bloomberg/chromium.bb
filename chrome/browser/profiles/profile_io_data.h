@@ -213,11 +213,9 @@ class ProfileIOData {
     return resource_prefetch_predictor_observer_.get();
   }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::PolicyHeaderIOHelper* policy_header_helper() const {
     return policy_header_helper_.get();
   }
-#endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
   const SupervisedUserURLFilter* supervised_user_url_filter() const {
@@ -528,11 +526,9 @@ class ProfileIOData {
 
   BooleanPrefMember enable_metrics_;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // Pointed to by NetworkDelegate.
   mutable scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
   mutable scoped_ptr<policy::PolicyHeaderIOHelper> policy_header_helper_;
-#endif
 
   // Pointed to by URLRequestContext.
 #if defined(ENABLE_EXTENSIONS)

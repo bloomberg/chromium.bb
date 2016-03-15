@@ -37,10 +37,8 @@ class BrowserProcessPlatformPartBase {
   // Called at the end of BrowserProcessImpl::PreMainMessageLoopRun().
   virtual void PreMainMessageLoopRun();
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   virtual scoped_ptr<policy::BrowserPolicyConnector>
       CreateBrowserPolicyConnector();
-#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPartBase);

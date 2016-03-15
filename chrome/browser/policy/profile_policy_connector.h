@@ -67,7 +67,6 @@ class ProfilePolicyConnector : public KeyedService {
   const ConfigurationPolicyProvider* DeterminePolicyProviderForPolicy(
       const char* name) const;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_CHROMEOS)
   // Some of the user policy configuration affects browser global state, and
   // can only come from one Profile. |is_primary_user_| is true if this
@@ -81,7 +80,6 @@ class ProfilePolicyConnector : public KeyedService {
 
   scoped_ptr<ConfigurationPolicyProvider> wrapped_platform_policy_provider_;
   CloudPolicyManager* user_cloud_policy_manager_;
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
   // |policy_providers_| contains a list of the policy providers available for
   // the PolicyService of this connector, in decreasing order of priority.

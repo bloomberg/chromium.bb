@@ -12,8 +12,19 @@
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_bundle.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_map.h"
+#include "components/policy/core/common/schema_registry.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_system.h"
@@ -28,20 +39,6 @@
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/api/syncable_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/policy/core/common/policy_bundle.h"
-#include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_namespace.h"
-#include "components/policy/core/common/policy_types.h"
-#include "components/policy/core/common/schema.h"
-#include "components/policy/core/common/schema_map.h"
-#include "components/policy/core/common/schema_registry.h"
-#endif
 
 namespace extensions {
 
@@ -79,13 +76,11 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy_provider_.SetAutoRefresh();
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
-#endif
   }
 
   void ReplyWhenSatisfied(
@@ -132,7 +127,6 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     SendChangesToSyncableService(change_list, GetSyncableService());
   }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   void SetPolicies(const base::DictionaryValue& policies) {
     scoped_ptr<policy::PolicyBundle> bundle(new policy::PolicyBundle());
     policy::PolicyMap& policy_map = bundle->Get(policy::PolicyNamespace(
@@ -141,7 +135,6 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
                         policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD);
     policy_provider_.UpdatePolicy(std::move(bundle));
   }
-#endif
 
  private:
   const Extension* MaybeLoadAndReplyWhenSatisfied(
@@ -210,9 +203,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 
  protected:
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::MockConfigurationPolicyProvider policy_provider_;
-#endif
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SimpleTest) {
@@ -409,14 +400,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, IsStorageEnabled) {
   EXPECT_TRUE(frontend->IsStorageEnabled(LOCAL));
   EXPECT_TRUE(frontend->IsStorageEnabled(SYNC));
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   EXPECT_TRUE(frontend->IsStorageEnabled(MANAGED));
-#else
-  EXPECT_FALSE(frontend->IsStorageEnabled(MANAGED));
-#endif
 }
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
   // Verifies that the Schemas for the extensions domain are created on startup.
@@ -575,11 +560,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
-
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageDisabled) {
-  // Disable the 'managed' namespace. This is redundant when
-  // ENABLE_CONFIGURATION_POLICY is not defined.
+  // Disable the 'managed' namespace.
   StorageFrontend* frontend = StorageFrontend::Get(browser()->profile());
   frontend->DisableStorageForTesting(MANAGED);
   EXPECT_FALSE(frontend->IsStorageEnabled(MANAGED));

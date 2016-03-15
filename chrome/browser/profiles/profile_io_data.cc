@@ -41,6 +41,8 @@
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
+#include "chrome/browser/policy/cloud/policy_header_service_factory.h"
+#include "chrome/browser/policy/policy_helpers.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,6 +64,10 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/common/cloud/policy_header_io_helper.h"
+#include "components/policy/core/common/cloud/policy_header_service.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync_driver/pref_names.h"
@@ -95,15 +101,6 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/cloud/policy_header_service_factory.h"
-#include "chrome/browser/policy/policy_helpers.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
-#include "components/policy/core/common/cloud/policy_header_io_helper.h"
-#include "components/policy/core/common/cloud/policy_header_service.h"
-#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
-#endif
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_cookie_monster_delegate.h"
@@ -518,7 +515,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // ShutdownOnUIThread to release these observers on the right thread.
   // Don't pass it in |profile_params_| to make sure it is correctly cleaned up,
   // in particular when this ProfileIOData isn't |initialized_| during deletion.
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::URLBlacklist::SegmentURLCallback callback =
       static_cast<policy::URLBlacklist::SegmentURLCallback>(
           url_formatter::SegmentURL);
@@ -538,7 +534,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
           policy_header_service->CreatePolicyHeaderIOHelper(io_task_runner);
     }
   }
-#endif
 
   incognito_availibility_pref_.Init(
       prefs::kIncognitoModeAvailability, pref_service);
@@ -1038,9 +1033,7 @@ void ProfileIOData::Init(
   }
 #endif
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   network_delegate->set_url_blacklist_manager(url_blacklist_manager_.get());
-#endif
   network_delegate->set_profile(profile_params_->profile);
   network_delegate->set_profile_path(profile_params_->path);
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
@@ -1260,10 +1253,8 @@ void ProfileIOData::ShutdownOnUIThread(
   if (media_device_id_salt_.get())
     media_device_id_salt_->ShutdownOnUIThread();
   session_startup_pref_.Destroy();
-#if defined(ENABLE_CONFIGURATION_POLICY)
   if (url_blacklist_manager_)
     url_blacklist_manager_->ShutdownOnUIThread();
-#endif
   if (chrome_http_user_agent_settings_)
     chrome_http_user_agent_settings_->CleanupOnUIThread();
   incognito_availibility_pref_.Destroy();

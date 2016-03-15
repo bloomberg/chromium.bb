@@ -17,22 +17,16 @@
 #include "chrome/common/features.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
 
-
 #if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/browser_policy_connector.h"
-#else
-#include "components/policy/core/common/policy_service_stub.h"
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
@@ -85,9 +79,7 @@ TestingBrowserProcess::TestingBrowserProcess()
 
 TestingBrowserProcess::~TestingBrowserProcess() {
   EXPECT_FALSE(local_state_);
-#if defined(ENABLE_CONFIGURATION_POLICY)
   ShutdownBrowserPolicyConnector();
-#endif
 #if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionsBrowserClient::Set(nullptr);
 #endif
@@ -154,26 +146,16 @@ TestingBrowserProcess::promo_resource_service() {
 
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   if (!browser_policy_connector_) {
     EXPECT_FALSE(created_browser_policy_connector_);
     created_browser_policy_connector_ = true;
     browser_policy_connector_ = platform_part_->CreateBrowserPolicyConnector();
   }
   return browser_policy_connector_.get();
-#else
-  return nullptr;
-#endif
 }
 
 policy::PolicyService* TestingBrowserProcess::policy_service() {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   return browser_policy_connector()->GetPolicyService();
-#else
-  if (!policy_service_)
-    policy_service_.reset(new policy::PolicyServiceStub());
-  return policy_service_.get();
-#endif
 }
 
 IconManager* TestingBrowserProcess::icon_manager() {
@@ -411,10 +393,8 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
     // are also freed.
     network_time_tracker_.reset();
     notification_ui_manager_.reset();
-#if defined(ENABLE_CONFIGURATION_POLICY)
     ShutdownBrowserPolicyConnector();
     created_browser_policy_connector_ = false;
-#endif
   }
   local_state_ = local_state;
 }
@@ -424,13 +404,9 @@ void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
 }
 
 void TestingBrowserProcess::ShutdownBrowserPolicyConnector() {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   if (browser_policy_connector_)
     browser_policy_connector_->Shutdown();
   browser_policy_connector_.reset();
-#else
-  CHECK(false);
-#endif
 }
 
 void TestingBrowserProcess::SetSafeBrowsingService(

@@ -42,6 +42,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/domain_reliability/monitor.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -70,10 +71,6 @@
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #include "chrome/common/chrome_switches.h"
-#endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/url_blacklist_manager.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -295,9 +292,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       enable_do_not_track_(NULL),
       force_google_safe_search_(NULL),
       force_youtube_safety_mode_(NULL),
-#if defined(ENABLE_CONFIGURATION_POLICY)
       url_blacklist_manager_(NULL),
-#endif
       domain_reliability_monitor_(NULL),
       experimental_web_platform_features_enabled_(
           base::CommandLine::ForCurrentProcess()
@@ -382,7 +377,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "456327 URLRequest::ChromeNetworkDelegate::OnBeforeURLRequest"));
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // TODO(joaodasilva): This prevents extensions from seeing URLs that are
   // blocked. However, an extension might redirect the request to another URL,
   // which is not blocked.
@@ -400,7 +394,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
                                     &request->url().possibly_invalid_spec()));
     return error;
   }
-#endif
 
   // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
   tracked_objects::ScopedTracker tracking_profile2(

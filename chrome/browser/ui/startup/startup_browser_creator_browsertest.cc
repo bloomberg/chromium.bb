@@ -52,7 +52,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -66,7 +66,7 @@
 
 using testing::_;
 using testing::Return;
-#endif  // defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS)
 
 #if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
@@ -1250,11 +1250,6 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
 // the sync promo exist there.
 #if !defined(OS_CHROMEOS)
 
-// On a branded Linux build, policy is required to suppress the first-run
-// dialog.
-#if !defined(OS_LINUX) || !defined(GOOGLE_CHROME_BUILD) || \
-    defined(ENABLE_CONFIGURATION_POLICY)
-
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -1265,10 +1260,8 @@ class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
     return !IsWindows10OrNewer();
   }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::MockConfigurationPolicyProvider provider_;
   policy::PolicyMap policy_map_;
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 };
 
 void StartupBrowserCreatorFirstRunTest::SetUpCommandLine(
@@ -1277,7 +1270,6 @@ void StartupBrowserCreatorFirstRunTest::SetUpCommandLine(
 }
 
 void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
-#if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
   // Set a policy that prevents the first-run dialog from being shown.
   policy_map_.Set(policy::key::kMetricsReportingEnabled,
@@ -1292,7 +1284,6 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 }
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
@@ -1618,7 +1609,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
 // http://crbug.com/314819
 #define MAYBE_RestoreOnStartupURLsPolicySpecified \
@@ -1679,9 +1669,5 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 }
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
-
-#endif  // !defined(OS_LINUX) || !defined(GOOGLE_CHROME_BUILD) ||
-        // defined(ENABLE_CONFIGURATION_POLICY)
 
 #endif  // !defined(OS_CHROMEOS)

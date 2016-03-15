@@ -86,6 +86,7 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -129,12 +130,6 @@
 #if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/browser/browser_policy_connector.h"
-#else
-#include "components/policy/core/common/policy_service_stub.h"
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
@@ -321,14 +316,12 @@ void BrowserProcessImpl::StartTearDown() {
 
   message_center::MessageCenter::Shutdown();
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // The policy providers managed by |browser_policy_connector_| need to shut
   // down while the IO and FILE threads are still alive. The monitoring
   // framework owned by |browser_policy_connector_| relies on |gcm_driver_|, so
   // this must be shutdown before |gcm_driver_| below.
   if (browser_policy_connector_)
     browser_policy_connector_->Shutdown();
-#endif
 
   // The |gcm_driver_| must shut down while the IO thread is still alive.
   if (gcm_driver_)
@@ -636,26 +629,16 @@ message_center::MessageCenter* BrowserProcessImpl::message_center() {
 
 policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
   DCHECK(CalledOnValidThread());
-#if defined(ENABLE_CONFIGURATION_POLICY)
   if (!created_browser_policy_connector_) {
     DCHECK(!browser_policy_connector_);
     browser_policy_connector_ = platform_part_->CreateBrowserPolicyConnector();
     created_browser_policy_connector_ = true;
   }
   return browser_policy_connector_.get();
-#else
-  return NULL;
-#endif
 }
 
 policy::PolicyService* BrowserProcessImpl::policy_service() {
-#if defined(ENABLE_CONFIGURATION_POLICY)
   return browser_policy_connector()->GetPolicyService();
-#else
-  if (!policy_service_.get())
-    policy_service_.reset(new policy::PolicyServiceStub());
-  return policy_service_.get();
-#endif
 }
 
 IconManager* BrowserProcessImpl::icon_manager() {
@@ -1065,7 +1048,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Startup.BrowserProcessImpl_PreMainMessageLoopRunTime");
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // browser_policy_connector() is created very early because local_state()
   // needs policy to be initialized with the managed preference values.
   // However, policy fetches from the network and loading of disk caches
@@ -1073,7 +1055,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   // resume its initialization now that the loops are spinning and the
   // system request context is available for the fetchers.
   browser_policy_connector()->Init(local_state(), system_request_context());
-#endif
 
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
     ApplyDefaultBrowserPolicy();

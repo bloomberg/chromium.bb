@@ -40,6 +40,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -62,10 +63,6 @@
 
 #if !defined(DISABLE_NACL)
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
-#endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -365,10 +362,8 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     request->SetExtraRequestHeaders(headers);
   }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   if (io_data->policy_header_helper())
     io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
-#endif
 
   signin::AppendMirrorRequestHeaderHelper(request, GURL() /* redirect_url */,
                                           io_data, info->GetChildID(),
@@ -685,10 +680,8 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
         redirect_url, request);
   }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   if (io_data->policy_header_helper())
     io_data->policy_header_helper()->AddPolicyHeaders(redirect_url, request);
-#endif
 }
 
 // Notification that a request has completed.

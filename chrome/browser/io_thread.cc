@@ -104,11 +104,8 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "url/url_constants.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
 #include "policy/policy_constants.h"
-#endif
+#include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/event_router_forwarder.h"
@@ -496,7 +493,6 @@ IOThread::IOThread(
                             local_state);
   quick_check_enabled_.MoveToThread(io_thread_proxy);
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   is_spdy_disabled_by_policy_ = policy_service->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())).Get(
           policy::key::kDisableSpdy) != NULL;
@@ -506,7 +502,6 @@ IOThread::IOThread(
       std::string())).GetValue(policy::key::kQuicAllowed);
   if (value)
     value->GetAsBoolean(&is_quic_allowed_by_policy_);
-#endif  // ENABLE_CONFIGURATION_POLICY
 
   BrowserThread::SetDelegate(BrowserThread::IO, this);
 }
