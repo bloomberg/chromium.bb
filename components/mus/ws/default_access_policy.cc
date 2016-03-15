@@ -148,7 +148,7 @@ bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerWindow* window,
     const ServerWindow** new_parent,
     const ServerWindow** old_parent) const {
-  if (!WasCreatedByThisConnection(window) && !*new_parent && !*old_parent)
+  if (!WasCreatedByThisConnection(window))
     return false;
 
   if (*new_parent && !WasCreatedByThisConnection(*new_parent) &&

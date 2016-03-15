@@ -690,7 +690,7 @@ TEST_F(WindowTreeClientTest, WindowsRemovedWhenEmbedding) {
 
 // Verifies once Embed() has been invoked the parent connection can't see any
 // children.
-TEST_F(WindowTreeClientTest, DISABLED_CantAccessChildrenOfEmbeddedWindow) {
+TEST_F(WindowTreeClientTest, CantAccessChildrenOfEmbeddedWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
@@ -739,7 +739,7 @@ TEST_F(WindowTreeClientTest, DISABLED_CantAccessChildrenOfEmbeddedWindow) {
 }
 
 // Verifies once Embed() has been invoked the parent can't mutate the children.
-TEST_F(WindowTreeClientTest, DISABLED_CantModifyChildrenOfEmbeddedWindow) {
+TEST_F(WindowTreeClientTest, CantModifyChildrenOfEmbeddedWindow) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
@@ -816,7 +816,7 @@ TEST_F(WindowTreeClientTest, AddAncestorFails) {
 }
 
 // Verifies adding to root sends right notifications.
-TEST_F(WindowTreeClientTest, DISABLED_AddToRoot) {
+TEST_F(WindowTreeClientTest, AddToRoot) {
   // Create the embed point now so that the ids line up.
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
@@ -842,7 +842,7 @@ TEST_F(WindowTreeClientTest, DISABLED_AddToRoot) {
 }
 
 // Verifies HierarchyChanged is correctly sent for various adds/removes.
-TEST_F(WindowTreeClientTest, DISABLED_WindowHierarchyChangedWindows) {
+TEST_F(WindowTreeClientTest, WindowHierarchyChangedWindows) {
   // Create the embed point now so that the ids line up.
   Id window_1_1 = wt_client1()->NewWindow(1);
   // 1,2->1,11.
@@ -1116,7 +1116,7 @@ TEST_F(WindowTreeClientTest, ReuseDeletedWindowId) {
 }
 
 // Assertions for GetWindowTree.
-TEST_F(WindowTreeClientTest, DISABLED_GetWindowTree) {
+TEST_F(WindowTreeClientTest, GetWindowTree) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
 
@@ -1700,7 +1700,7 @@ TEST_F(WindowTreeClientTest, EmbedSupplyingWindowTreeClient) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
-TEST_F(WindowTreeClientTest, DISABLED_EmbedFailsFromOtherConnection) {
+TEST_F(WindowTreeClientTest, EmbedFailsFromOtherConnection) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
@@ -1737,7 +1737,7 @@ TEST_F(WindowTreeClientTest, EmbedFromOtherConnection) {
   EXPECT_EQ(std::string(), SingleChangeToDescription(*changes2()));
 }
 
-TEST_F(WindowTreeClientTest, DISABLED_CantEmbedFromConnectionRoot) {
+TEST_F(WindowTreeClientTest, CantEmbedFromConnectionRoot) {
   // Shouldn't be able to embed into the root.
   ASSERT_FALSE(EmbedUrl(connector(), wt1(), test_name(), root_window_id()));
 
