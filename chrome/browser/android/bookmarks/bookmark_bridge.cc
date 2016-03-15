@@ -716,6 +716,14 @@ void BookmarkBridge::DeleteBookmark(
     bookmark_model_->Remove(node);
 }
 
+void BookmarkBridge::RemoveAllUserBookmarks(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(IsLoaded());
+  bookmark_model_->RemoveAllUserBookmarks();
+}
+
 void BookmarkBridge::MoveBookmark(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

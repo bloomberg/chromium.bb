@@ -8,9 +8,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,9 +17,9 @@ import android.widget.TextView;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
+import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.OnClearBrowsingDataListener;
-import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
 
@@ -179,23 +177,16 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         } else {
             RecordUserAction.record("Signin_ImportDataPrompt_DontImport");
 
-            final Context context = getActivity();
-            final PrefServiceBridge.OnClearBrowsingDataListener listener = this;
-
-            // The ChromeBrowserProvider API currently enforces calls to not be on the UI thread.
-            // This is being reviewed in http://crbug.com/225050 and this code could be simplified.
-            new AsyncTask<Void, Void, Void>() {
+            final BookmarkModel model = new BookmarkModel();
+            model.runAfterBookmarkModelLoaded(new Runnable() {
                 @Override
-                protected Void doInBackground(Void... arg0) {
-                    ChromeBrowserProviderClient.removeAllUserBookmarks(context);
-                    return null;
+                public void run() {
+                    model.removeAllUserBookmarks();
+                    model.destroy();
+                    PrefServiceBridge.getInstance().clearBrowsingData(
+                            ConfirmImportSyncDataDialog.this, SYNC_DATA_TYPES);
                 }
-
-                @Override
-                protected void onPostExecute(Void result) {
-                    PrefServiceBridge.getInstance().clearBrowsingData(listener, SYNC_DATA_TYPES);
-                }
-            }.execute();
+            });
         }
     }
 

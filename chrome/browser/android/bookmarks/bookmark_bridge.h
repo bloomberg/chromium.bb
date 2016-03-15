@@ -169,6 +169,10 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_bookmark_id_obj);
 
+  void RemoveAllUserBookmarks(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   void MoveBookmark(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

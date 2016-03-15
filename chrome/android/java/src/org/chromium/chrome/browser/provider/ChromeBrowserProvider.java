@@ -628,6 +628,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         return context.getPackageName() + API_AUTHORITY_SUFFIX;
     }
 
+    @VisibleForTesting
     public static String getInternalAuthority(Context context) {
         return context.getPackageName() + AUTHORITY_SUFFIX;
     }

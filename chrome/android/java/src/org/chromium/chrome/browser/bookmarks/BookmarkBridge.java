@@ -594,6 +594,15 @@ public class BookmarkBridge {
     }
 
     /**
+     * Removes all the non-permanent bookmark nodes that are editable by the user. Observers are
+     * only notified when all nodes have been removed. There is no notification for individual node
+     * removals.
+     */
+    public void removeAllUserBookmarks() {
+        nativeRemoveAllUserBookmarks(mNativeBookmarkBridge);
+    }
+
+    /**
      * Move the bookmark to the new index within same folder or to a different folder.
      * @param bookmarkId The id of the bookmark that is being moved.
      * @param newParentId The parent folder id.
@@ -900,6 +909,7 @@ public class BookmarkBridge {
     private native BookmarkId nativeAddFolder(long nativeBookmarkBridge, BookmarkId parent,
             int index, String title);
     private native void nativeDeleteBookmark(long nativeBookmarkBridge, BookmarkId bookmarkId);
+    private native void nativeRemoveAllUserBookmarks(long nativeBookmarkBridge);
     private native void nativeMoveBookmark(long nativeBookmarkBridge, BookmarkId bookmarkId,
             BookmarkId newParentId, int index);
     private native BookmarkId nativeAddBookmark(long nativeBookmarkBridge, BookmarkId parent,
