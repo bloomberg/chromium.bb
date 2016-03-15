@@ -141,10 +141,14 @@ crbug.com/578297 [ Linux ] virtual/threaded/printing/webgl-oversized-printing.ht
 crbug.com/578297 [ Linux ] http/tests/media/media-source/mediasource-appendstream-quota-exceeded.html [ Slow ]
 
 # -----------------------------------------------------------------
-# Leaks in imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/*
+# Leaks in imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/*
 # -----------------------------------------------------------------
 crbug.com/594603 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Leak ]
 crbug.com/594603 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001a.html [ Leak ]
 crbug.com/594603 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001b.html [ Leak ]
 crbug.com/594603 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Leak ]
 crbug.com/594603 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-002.xhtml [ Leak ]
+crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Leak ]
+crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-16.html [ Leak ]
+crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Leak ]
+crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-18.html [ Leak ]
