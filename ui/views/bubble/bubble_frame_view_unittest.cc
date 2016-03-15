@@ -30,8 +30,11 @@ const int kMaximumClientWidth = 300;
 const int kMaximumClientHeight = 300;
 const int kPreferredClientWidth = 150;
 const int kPreferredClientHeight = 250;
-const int kExpectedBorderWidth = 22;
-const int kExpectedBorderHeight = 29;
+
+// These account for non-client areas like the title bar, footnote etc. However
+// these do not take the bubble border into consideration.
+const int kExpectedAdditionalWidth = 12;
+const int kExpectedAdditionalHeight = 12;
 
 class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
  public:
@@ -417,36 +420,40 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
 
 TEST_F(BubbleFrameViewTest, GetPreferredSize) {
   TestBubbleFrameView frame(this);
-  gfx::Size preferred_size = frame.GetPreferredSize();
+  gfx::Rect preferred_rect(frame.GetPreferredSize());
   // Expect that a border has been added to the preferred size.
-  EXPECT_EQ(kPreferredClientWidth + kExpectedBorderWidth,
-            preferred_size.width());
-  EXPECT_EQ(kPreferredClientHeight + kExpectedBorderHeight,
-            preferred_size.height());
+  preferred_rect.Inset(frame.bubble_border()->GetInsets());
+
+  gfx::Size expected_size(kPreferredClientWidth + kExpectedAdditionalWidth,
+                          kPreferredClientHeight + kExpectedAdditionalHeight);
+  EXPECT_EQ(expected_size, preferred_rect.size());
 }
 
 TEST_F(BubbleFrameViewTest, GetMinimumSize) {
   TestBubbleFrameView frame(this);
-  gfx::Size minimum_size = frame.GetMinimumSize();
+  gfx::Rect minimum_rect(frame.GetMinimumSize());
   // Expect that a border has been added to the minimum size.
-  EXPECT_EQ(kMinimumClientWidth + kExpectedBorderWidth, minimum_size.width());
-  EXPECT_EQ(kMinimumClientHeight + kExpectedBorderHeight,
-            minimum_size.height());
+  minimum_rect.Inset(frame.bubble_border()->GetInsets());
+
+  gfx::Size expected_size(kMinimumClientWidth + kExpectedAdditionalWidth,
+                          kMinimumClientHeight + kExpectedAdditionalHeight);
+  EXPECT_EQ(expected_size, minimum_rect.size());
 }
 
 TEST_F(BubbleFrameViewTest, GetMaximumSize) {
   TestBubbleFrameView frame(this);
-  gfx::Size maximum_size = frame.GetMaximumSize();
+  gfx::Rect maximum_rect(frame.GetMaximumSize());
 #if defined(OS_WIN)
   // On Windows, GetMaximumSize causes problems with DWM, so it should just be 0
   // (unlimited). See http://crbug.com/506206.
-  EXPECT_EQ(0, maximum_size.width());
-  EXPECT_EQ(0, maximum_size.height());
+  EXPECT_EQ(gfx::Size(), maximum_rect.size());
 #else
+  maximum_rect.Inset(frame.bubble_border()->GetInsets());
+
   // Should ignore the contents view's maximum size and use the preferred size.
-  EXPECT_EQ(kPreferredClientWidth + kExpectedBorderWidth, maximum_size.width());
-  EXPECT_EQ(kPreferredClientHeight + kExpectedBorderHeight,
-            maximum_size.height());
+  gfx::Size expected_size(kPreferredClientWidth + kExpectedAdditionalWidth,
+                          kPreferredClientHeight + kExpectedAdditionalHeight);
+  EXPECT_EQ(expected_size, maximum_rect.size());
 #endif
 }
 
