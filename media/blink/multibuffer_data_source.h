@@ -92,10 +92,12 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   // Returns true if the resource is local.
   bool assume_fully_buffered() override;
 
-  // Cancels any open network connections once reaching the deferred state for
-  // preload=metadata, non-streaming resources that have not started playback.
-  // If already deferred, connections will be immediately closed.
-  void OnBufferingHaveEnough() override;
+  // Cancels any open network connections once reaching the deferred state. If
+  // |always_cancel| is false this is done only for preload=metadata, non-
+  // streaming resources that have not started playback. If |always_cancel| is
+  // true, all resource types will have their connections canceled. If already
+  // deferred, connections will be immediately closed.
+  void OnBufferingHaveEnough(bool always_cancel) override;
 
   int64_t GetMemoryUsage() const override;
 

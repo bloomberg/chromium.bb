@@ -314,9 +314,10 @@ void MultibufferDataSource::SetBitrate(int bitrate) {
                             weak_factory_.GetWeakPtr(), bitrate));
 }
 
-void MultibufferDataSource::OnBufferingHaveEnough() {
+void MultibufferDataSource::OnBufferingHaveEnough(bool always_cancel) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  if (reader_ && preload_ == METADATA && !media_has_played_ && !IsStreaming()) {
+  if (reader_ && (always_cancel || (preload_ == METADATA &&
+                                    !media_has_played_ && !IsStreaming()))) {
     cancel_on_defer_ = true;
     if (!loading_)
       reader_.reset(nullptr);

@@ -253,10 +253,12 @@ void BufferedDataSource::SetBitrate(int bitrate) {
                                     bitrate));
 }
 
-void BufferedDataSource::OnBufferingHaveEnough() {
+void BufferedDataSource::OnBufferingHaveEnough(bool always_cancel) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  if (loader_ && preload_ == METADATA && !media_has_played_ && !IsStreaming())
+  if (loader_ && (always_cancel || (preload_ == METADATA &&
+                                    !media_has_played_ && !IsStreaming()))) {
     loader_->CancelUponDeferral();
+  }
 }
 
 int64_t BufferedDataSource::GetMemoryUsage() const {

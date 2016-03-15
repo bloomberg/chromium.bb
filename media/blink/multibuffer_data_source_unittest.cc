@@ -1203,13 +1203,54 @@ TEST_F(MultibufferDataSourceTest,
 
   ReadAt(kDataSize);
 
-  data_source_->OnBufferingHaveEnough();
+  data_source_->OnBufferingHaveEnough(false);
   ASSERT_TRUE(active_loader());
 
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   ReceiveData(kDataSize);
 
+  EXPECT_FALSE(active_loader_allownull());
+}
+
+TEST_F(MultibufferDataSourceTest,
+       ExternalResource_Response206_CancelAfterPlay) {
+  set_preload(BufferedDataSource::METADATA);
+  InitializeWith206Response();
+
+  EXPECT_EQ(MultibufferDataSource::METADATA, preload());
+  EXPECT_FALSE(is_local_source());
+
+  EXPECT_TRUE(data_source_->range_supported());
+  CheckReadThenDefer();
+
+  ReadAt(kDataSize);
+
+  // Marking the media as playing should prevent deferral. It also tells the
+  // data source to start buffering beyond the initial load.
+  data_source_->MediaIsPlaying();
+  data_source_->OnBufferingHaveEnough(false);
+  CheckCapacityDefer();
+  ASSERT_TRUE(active_loader());
+
+  // Read a bit from the beginning and ensure deferral hasn't happened yet.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  ReceiveData(kDataSize);
+  ASSERT_TRUE(active_loader());
+  data_source_->OnBufferingHaveEnough(true);
+  ASSERT_TRUE(active_loader());
+  ASSERT_FALSE(active_loader()->deferred());
+
+  // Deliver data until capacity is reached and verify deferral.
+  int bytes_received = 0;
+  EXPECT_CALL(host_, AddBufferedByteRange(_, _)).Times(testing::AtLeast(1));
+  while (active_loader_allownull() && !active_loader()->deferred()) {
+    ReceiveData(kDataSize);
+    bytes_received += kDataSize;
+  }
+  EXPECT_GT(bytes_received, 0);
+  EXPECT_LT(bytes_received + kDataSize, kFileSize);
   EXPECT_FALSE(active_loader_allownull());
 }
 

@@ -105,10 +105,12 @@ class BufferedDataSourceInterface : public DataSource {
   // Returns true if the resource is local.
   virtual bool assume_fully_buffered() = 0;
 
-  // Cancels any open network connections once reaching the deferred state for
-  // preload=metadata, non-streaming resources that have not started playback.
-  // If already deferred, connections will be immediately closed.
-  virtual void OnBufferingHaveEnough() = 0;
+  // Cancels any open network connections once reaching the deferred state. If
+  // |always_cancel| is false this is done only for preload=metadata, non-
+  // streaming resources that have not started playback. If |always_cancel| is
+  // true, all resource types will have their connections canceled. If already
+  // deferred, connections will be immediately closed.
+  virtual void OnBufferingHaveEnough(bool always_cancel) = 0;
 
   // Returns an estimate of the number of bytes held by the data source.
   virtual int64_t GetMemoryUsage() const = 0;
@@ -178,10 +180,12 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // Returns true if the resource is local.
   bool assume_fully_buffered() override;
 
-  // Cancels any open network connections once reaching the deferred state for
-  // preload=metadata, non-streaming resources that have not started playback.
-  // If already deferred, connections will be immediately closed.
-  void OnBufferingHaveEnough() override;
+  // Cancels any open network connections once reaching the deferred state. If
+  // |always_cancel| is false this is done only for preload=metadata, non-
+  // streaming resources that have not started playback. If |always_cancel| is
+  // true, all resource types will have their connections canceled. If already
+  // deferred, connections will be immediately closed.
+  void OnBufferingHaveEnough(bool always_cancel) override;
 
   // Returns an estimate of the number of bytes held by the data source.
   int64_t GetMemoryUsage() const override;
