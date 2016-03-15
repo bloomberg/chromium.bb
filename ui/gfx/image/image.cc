@@ -752,7 +752,12 @@ internal::ImageRep* Image::GetRepresentation(
 void Image::AddRepresentation(scoped_ptr<internal::ImageRep> rep) const {
   CHECK(storage_.get());
   RepresentationType type = rep->type();
-  storage_->representations().insert(std::make_pair(type, std::move(rep)));
+  auto result =
+      storage_->representations().insert(std::make_pair(type, std::move(rep)));
+
+  // insert should not fail (implies that there was already a representation of
+  // that type in the map).
+  CHECK(result.second) << "type was already in map.";
 }
 
 }  // namespace gfx
