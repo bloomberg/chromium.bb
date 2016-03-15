@@ -34,9 +34,10 @@ public:
         PassRefPtr<ClipPaintPropertyNode> overflowClip,
         PassRefPtr<TransformPaintPropertyNode> perspective,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation,
+        PassRefPtr<TransformPaintPropertyNode> scrollbarPaintOffset,
         PassOwnPtr<LocalBorderBoxProperties> localBorderBoxProperties)
     {
-        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, effect, overflowClip, perspective, scrollTranslation, localBorderBoxProperties));
+        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, effect, overflowClip, perspective, scrollTranslation, scrollbarPaintOffset, localBorderBoxProperties));
     }
 
     // The hierarchy of transform subtree created by a LayoutObject.
@@ -45,11 +46,16 @@ public:
     // +---[ transform ]                    The space created by CSS transform.
     //     |                                This is the local border box space, see: LocalBorderBoxProperties below.
     //     +---[ perspective ]              The space created by CSS perspective.
-    //         +---[ scrollTranslation ]    The space created by overflow clip.
+    //     |   +---[ scrollTranslation ]    The space created by overflow clip.
+    //     +---[ scrollbarPaintOffset ]     TODO(trchen): Remove this once we bake the paint offset into frameRect.
+    //                                      This is equivalent to the local border box space above,
+    //                                      with pixel snapped paint offset baked in. It is really redundant,
+    //                                      but it is a pain to teach scrollbars to paint with an offset.
     TransformPaintPropertyNode* paintOffsetTranslation() const { return m_paintOffsetTranslation.get(); }
     TransformPaintPropertyNode* transform() const { return m_transform.get(); }
     TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
     TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
+    TransformPaintPropertyNode* scrollbarPaintOffset() const { return m_scrollbarPaintOffset.get(); }
 
     EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
@@ -78,6 +84,7 @@ private:
         PassRefPtr<ClipPaintPropertyNode> overflowClip,
         PassRefPtr<TransformPaintPropertyNode> perspective,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation,
+        PassRefPtr<TransformPaintPropertyNode> scrollbarPaintOffset,
         PassOwnPtr<LocalBorderBoxProperties> localBorderBoxProperties)
         : m_paintOffsetTranslation(paintOffsetTranslation)
         , m_transform(transform)
@@ -85,6 +92,7 @@ private:
         , m_overflowClip(overflowClip)
         , m_perspective(perspective)
         , m_scrollTranslation(scrollTranslation)
+        , m_scrollbarPaintOffset(scrollbarPaintOffset)
         , m_localBorderBoxProperties(localBorderBoxProperties) { }
 
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
@@ -93,6 +101,7 @@ private:
     RefPtr<ClipPaintPropertyNode> m_overflowClip;
     RefPtr<TransformPaintPropertyNode> m_perspective;
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
+    RefPtr<TransformPaintPropertyNode> m_scrollbarPaintOffset;
 
     OwnPtr<LocalBorderBoxProperties> m_localBorderBoxProperties;
 };

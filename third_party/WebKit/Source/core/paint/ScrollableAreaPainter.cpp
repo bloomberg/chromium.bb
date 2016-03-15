@@ -7,6 +7,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
@@ -14,6 +15,7 @@
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 
 namespace blink {
 
@@ -125,6 +127,15 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext& context, cons
         return;
 
     {
+        Optional<ScopedPaintChunkProperties> scopedTransformProperty;
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            const auto* objectProperties = getScrollableArea().box().objectPaintProperties();
+            if (objectProperties && objectProperties->scrollbarPaintOffset()) {
+                PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
+                properties.transform = objectProperties->scrollbarPaintOffset();
+                scopedTransformProperty.emplace(context.getPaintController(), properties);
+            }
+        }
         if (getScrollableArea().horizontalScrollbar() && !getScrollableArea().layerForHorizontalScrollbar()) {
             TransformRecorder translateRecorder(context, *getScrollableArea().horizontalScrollbar(), AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
             getScrollableArea().horizontalScrollbar()->paint(context, adjustedCullRect);

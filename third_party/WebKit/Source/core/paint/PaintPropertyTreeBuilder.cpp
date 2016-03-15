@@ -206,6 +206,26 @@ static PassRefPtr<EffectPaintPropertyNode> createEffectIfNeeded(const LayoutObje
     return newEffectNode.release();
 }
 
+// TODO(trchen): Remove this once we bake the paint offset into frameRect.
+static PassRefPtr<TransformPaintPropertyNode> createScrollbarPaintOffsetIfNeeded(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
+{
+    IntPoint roundedPaintOffset = roundedIntPoint(context.paintOffset);
+    if (roundedPaintOffset == IntPoint())
+        return nullptr;
+
+    if (!object.isBoxModelObject())
+        return nullptr;
+    PaintLayerScrollableArea* scrollableArea = toLayoutBoxModelObject(object).getScrollableArea();
+    if (!scrollableArea)
+        return nullptr;
+    if (!scrollableArea->horizontalScrollbar() && !scrollableArea->verticalScrollbar())
+        return nullptr;
+
+    return TransformPaintPropertyNode::create(
+        TransformationMatrix().translate(roundedPaintOffset.x(), roundedPaintOffset.y()),
+        FloatPoint3D(), context.currentTransform);
+}
+
 static PassRefPtr<ClipPaintPropertyNode> createOverflowClipIfNeeded(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
     if (!object.isBox())
@@ -327,6 +347,7 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
     RefPtr<TransformPaintPropertyNode> newTransformNodeForTransform = createTransformIfNeeded(object, localContext);
     RefPtr<EffectPaintPropertyNode> newEffectNode = createEffectIfNeeded(object, localContext);
     OwnPtr<ObjectPaintProperties::LocalBorderBoxProperties> newRecordedContext = recordTreeContextIfNeeded(object, localContext);
+    RefPtr<TransformPaintPropertyNode> newTransformNodeForScrollbarPaintOffset = createScrollbarPaintOffsetIfNeeded(object, localContext);
     RefPtr<ClipPaintPropertyNode> newClipNodeForOverflowClip = createOverflowClipIfNeeded(object, localContext);
     // TODO(trchen): Insert flattening transform here, as specified by
     // http://www.w3.org/TR/css3-transforms/#transform-style-property
@@ -334,7 +355,7 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
     RefPtr<TransformPaintPropertyNode> newTransformNodeForScrollTranslation = createScrollTranslationIfNeeded(object, localContext);
     updateOutOfFlowContext(object, localContext);
 
-    if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newEffectNode || newClipNodeForOverflowClip || newTransformNodeForPerspective || newTransformNodeForScrollTranslation || newRecordedContext) {
+    if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newEffectNode || newClipNodeForOverflowClip || newTransformNodeForPerspective || newTransformNodeForScrollTranslation || newTransformNodeForScrollbarPaintOffset || newRecordedContext) {
         OwnPtr<ObjectPaintProperties> updatedPaintProperties = ObjectPaintProperties::create(
             newTransformNodeForPaintOffsetTranslation.release(),
             newTransformNodeForTransform.release(),
@@ -342,6 +363,7 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
             newClipNodeForOverflowClip.release(),
             newTransformNodeForPerspective.release(),
             newTransformNodeForScrollTranslation.release(),
+            newTransformNodeForScrollbarPaintOffset.release(),
             newRecordedContext.release());
         object.setObjectPaintProperties(updatedPaintProperties.release());
     } else {
