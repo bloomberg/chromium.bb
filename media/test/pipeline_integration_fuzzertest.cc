@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "media/base/eme_constants.h"
+#include "media/base/media.h"
 #include "media/base/pipeline_status.h"
 #include "media/test/pipeline_integration_test_base.h"
 
@@ -36,6 +37,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Media pipeline checks command line arguments internally.
   base::CommandLine::Init(0, nullptr);
+
+  media::InitializeMediaLibrary();
 
   media::PipelineIntegrationTestBase test;
 
