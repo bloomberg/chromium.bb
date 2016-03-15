@@ -2275,3 +2275,44 @@ base.dll!base::SharedMemory::Create
 base.dll!base::SharedMemory::CreateAndMapAnonymous
 content.dll!content::GpuMemoryBufferImplSharedMemory::Create
 content.dll!content::BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO
+
+HANDLE LEAK
+name=bug_595146
+system call NtCreateFile
+KERNELBASE.dll!CreateFileW
+KERNEL32.dll!CreateFileW
+base.dll!base::File::DoInitialize
+base.dll!base::File::Initialize
+net.dll!net::FileStream::Context::OpenFileImpl
+
+HANDLE LEAK
+name=bug_595149
+system call NtCreateIoCompletion
+KERNELBASE.dll!CreateIoCompletionPort
+base.dll!base::MessagePumpForIO::MessagePumpForIO
+
+HANDLE LEAK
+name=bug_595156
+system call NtCreateFile
+MSWSOCK.dll!*
+MSWSOCK.dll!*
+WS2_32.dll!WSASocketW
+net.dll!net::CreatePlatformSocket
+net.dll!net::TCPSocketWin::Open
+net.dll!net::TCPClientSocket::OpenSocket
+net.dll!net::TCPClientSocket::DoConnect
+net.dll!net::TCPClientSocket::DoConnectLoop
+net.dll!net::TCPClientSocket::Connect
+net.dll!net::TransportConnectJob::DoTransportConnect
+net.dll!net::TransportConnectJobHelper::DoLoop<>
+net.dll!net::TransportConnectJobHelper::DoConnectInternal<>
+net.dll!net::TransportConnectJob::ConnectInternal
+net.dll!net::internal::ClientSocketPoolBaseHelper::RequestSocketInternal
+
+UNADDRESSABLE ACCESS
+name=bug_595158a
+ucrtbase.dll!wcsnlen
+
+UNINITIALIZED READ
+name=bug_595158b
+ucrtbase.dll!wcsnlen
