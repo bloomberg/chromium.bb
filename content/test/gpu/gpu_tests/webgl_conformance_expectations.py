@@ -65,6 +65,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['win'], bug=525188)
     self.Flaky('conformance/extensions/ext-disjoint-timer-query.html',
         ['win'], bug=588617)
+    self.Flaky('deqp/data/gles2/shaders/constants.html', ['win'], bug=594922)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
