@@ -26,7 +26,6 @@
 #ifndef PendingScript_h
 #define PendingScript_h
 
-#include "bindings/core/v8/ScriptStreamer.h"
 #include "core/CoreExport.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
@@ -39,6 +38,7 @@ namespace blink {
 
 class Element;
 class ScriptSourceCode;
+class ScriptStreamer;
 
 // A container for an external script which may be loaded and executed.
 //
@@ -78,6 +78,7 @@ public:
     void streamingFinished();
 
     bool isReady() const;
+    bool errorOccurred() const;
 
     void dispose();
 

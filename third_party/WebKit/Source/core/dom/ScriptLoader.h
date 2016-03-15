@@ -81,6 +81,7 @@ public:
     void handleAsyncAttribute();
 
     virtual bool isReady() const { return m_pendingScript && m_pendingScript->isReady(); }
+    bool errorOccurred() const { return m_pendingScript && m_pendingScript->errorOccurred(); }
 
     // Clears the connection to the PendingScript (and Element and Resource).
     void detach();
