@@ -168,17 +168,6 @@ get_weston_view(struct ivi_layout_surface *ivisurf)
 }
 
 static void
-remove_configured_listener(struct ivi_layout_surface *ivisurf)
-{
-	struct wl_listener *link = NULL;
-	struct wl_listener *next = NULL;
-
-	wl_list_for_each_safe(link, next, &ivisurf->configured.listener_list, link) {
-		wl_list_remove(&link->link);
-	}
-}
-
-static void
 remove_all_notification(struct wl_list *listener_list)
 {
 	struct wl_listener *listener = NULL;
@@ -243,8 +232,6 @@ ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf)
 	wl_signal_emit(&layout->surface_notification.removed, ivisurf);
 
 	ivi_layout_remove_all_surface_transitions(ivisurf);
-
-	remove_configured_listener(ivisurf);
 
 	ivi_layout_surface_remove_notification(ivisurf);
 
@@ -778,7 +765,6 @@ commit_surface_list(struct ivi_layout *layout)
 			ivisurf->pending.prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 
 			if (configured && !is_surface_transition(ivisurf)) {
-				wl_signal_emit(&ivisurf->configured, ivisurf);
 				shell_surface_send_configure(ivisurf->surface,
 							     ivisurf->prop.dest_width,
 							     ivisurf->prop.dest_height);
@@ -795,7 +781,6 @@ commit_surface_list(struct ivi_layout *layout)
 			ivisurf->pending.prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 
 			if (configured && !is_surface_transition(ivisurf)) {
-				wl_signal_emit(&ivisurf->configured, ivisurf);
 				shell_surface_send_configure(ivisurf->surface,
 							     ivisurf->prop.dest_width,
 							     ivisurf->prop.dest_height);
@@ -2431,7 +2416,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 	}
 
 	wl_signal_init(&ivisurf->property_changed);
-	wl_signal_init(&ivisurf->configured);
 	ivisurf->id_surface = id_surface;
 	ivisurf->layout = layout;
 
@@ -2489,14 +2473,6 @@ ivi_layout_init_with_compositor(struct weston_compositor *ec)
 
 	layout->transitions = ivi_layout_transition_set_create(ec);
 	wl_list_init(&layout->pending_transition_list);
-}
-
-
-void
-ivi_layout_surface_add_configured_listener(struct ivi_layout_surface* ivisurf,
-					   struct wl_listener* listener)
-{
-	wl_signal_add(&ivisurf->configured, listener);
 }
 
 static struct ivi_layout_interface ivi_layout_interface = {

@@ -53,8 +53,6 @@ struct ivi_layout_surface {
 		struct wl_list link;
 		struct wl_list layer_list;
 	} order;
-
-	struct wl_signal configured;
 };
 
 struct ivi_layout_layer {
@@ -169,9 +167,7 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 			  uint32_t id_surface);
 void
 ivi_layout_init_with_compositor(struct weston_compositor *ec);
-void
-ivi_layout_surface_add_configured_listener(struct ivi_layout_surface* ivisurf,
-					   struct wl_listener* listener);
+
 /**
  * methods of interaction between transition animation with ivi-layout
  */

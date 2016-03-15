@@ -303,7 +303,6 @@ transition_move_resize_view_destroy(struct ivi_layout_transition *transition)
 		(struct move_resize_view_data *)transition->private_data;
 	struct ivi_layout_surface *layout_surface = data->surface;
 
-	wl_signal_emit(&layout_surface->configured, layout_surface);
 	shell_surface_send_configure(layout_surface->surface,
 				     layout_surface->prop.dest_width,
 				     layout_surface->prop.dest_height);
