@@ -129,6 +129,18 @@ void ScriptRunner::resume()
     }
 }
 
+void ScriptRunner::scheduleReadyInOrderScripts()
+{
+    while (!m_pendingInOrderScripts.isEmpty() && m_pendingInOrderScripts.first()->isReady()) {
+        // A ScriptLoader that failed is responsible for cancelling itself
+        // notifyScriptLoadError(); it continues this draining of ready scripts.
+        if (m_pendingInOrderScripts.first()->errorOccurred())
+            break;
+        m_inOrderScriptsToExecuteSoon.append(m_pendingInOrderScripts.takeFirst());
+        postTask(BLINK_FROM_HERE);
+    }
+}
+
 void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
     RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptLoader);
@@ -151,10 +163,7 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
         m_numberOfInOrderScriptsWithPendingNotification--;
 
-        while (!m_pendingInOrderScripts.isEmpty() && m_pendingInOrderScripts.first()->isReady()) {
-            m_inOrderScriptsToExecuteSoon.append(m_pendingInOrderScripts.takeFirst());
-            postTask(BLINK_FROM_HERE);
-        }
+        scheduleReadyInOrderScripts();
 
         break;
     }
@@ -196,6 +205,7 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         foundLoader = foundLoader || m_isDisposed;
 #endif
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundLoader);
+        scheduleReadyInOrderScripts();
         break;
     }
     m_document->decrementLoadEventDelayCount();

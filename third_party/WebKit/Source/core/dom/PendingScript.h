@@ -78,6 +78,7 @@ public:
     void streamingFinished();
 
     bool isReady() const;
+    bool errorOccurred() const;
 
     void dispose();
 
