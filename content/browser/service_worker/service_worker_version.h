@@ -250,17 +250,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const StatusCallback& callback);
 
-  // Sends an extendable message event to the associated embedded worker.
-  // TODO(nhiroki): This should be moved to ServiceWorkerDispatcherHost in favor
-  // of crbug.com/570820 after ExtendableMessageEvent is implemented
-  // (crbug.com/543198).
-  void DispatchExtendableMessageEvent(
-      ServiceWorkerProviderHost* sender_provider_host,
-      const base::string16& message,
-      const url::Origin& source_origin,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const StatusCallback& callback);
-
   // Sends a cross origin message event to the associated embedded worker and
   // asynchronously calls |callback| when the message was sent (or failed to
   // sent).
@@ -517,20 +506,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnStartSentAndScriptEvaluated(ServiceWorkerStatusCode status);
-
-  template <typename SourceInfo>
-  void DispatchExtendableMessageEventInternal(
-      const base::string16& message,
-      const url::Origin& source_origin,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const StatusCallback& callback,
-      const SourceInfo& source_info);
-  void DispatchExtendableMessageEventAfterStartWorker(
-      const base::string16& message,
-      const url::Origin& source_origin,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const ExtendableMessageEventSource& source,
-      const StatusCallback& callback);
 
   void DispatchMessageEventInternal(
       const base::string16& message,

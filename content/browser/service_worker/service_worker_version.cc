@@ -525,49 +525,6 @@ void ServiceWorkerVersion::RunAfterStartWorker(
                          error_callback, task));
 }
 
-void ServiceWorkerVersion::DispatchExtendableMessageEvent(
-    ServiceWorkerProviderHost* sender_provider_host,
-    const base::string16& message,
-    const url::Origin& source_origin,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
-    const StatusCallback& callback) {
-  for (const TransferredMessagePort& port : sent_message_ports)
-    MessagePortService::GetInstance()->HoldMessages(port.id);
-
-  switch (sender_provider_host->provider_type()) {
-    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
-    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
-    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
-      service_worker_client_utils::GetClient(
-          sender_provider_host,
-          base::Bind(
-              &ServiceWorkerVersion::DispatchExtendableMessageEventInternal<
-                  ServiceWorkerClientInfo>,
-              weak_factory_.GetWeakPtr(), message, source_origin,
-              sent_message_ports, callback));
-      break;
-    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
-      // TODO(nhiroki): Decrement a reference to ServiceWorkerHandle if starting
-      // worker fails. Handles are managed by ServiceWorkerDispatcherHost, and
-      // we might need to make a new path to ask the dispatcher host to release
-      // the handle from ServiceWorkerVersion (http://crbug.com/543198).
-      RunSoon(base::Bind(
-          &ServiceWorkerVersion::DispatchExtendableMessageEventInternal<
-              ServiceWorkerObjectInfo>,
-          weak_factory_.GetWeakPtr(), message, source_origin,
-          sent_message_ports, callback,
-          sender_provider_host->GetOrCreateServiceWorkerHandle(
-              sender_provider_host->running_hosted_version())));
-      break;
-    case SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME:
-    case SERVICE_WORKER_PROVIDER_UNKNOWN:
-      NOTREACHED() << sender_provider_host->provider_type();
-      RunSoon(base::Bind(&RunErrorMessageCallback, sent_message_ports, callback,
-                         SERVICE_WORKER_ERROR_FAILED));
-      break;
-  }
-}
-
 void ServiceWorkerVersion::DispatchMessageEvent(
     const base::string16& message,
     const std::vector<TransferredMessagePort>& sent_message_ports,
@@ -936,60 +893,6 @@ void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
     RunCallbacks(this, &start_callbacks_,
                  DeduceStartWorkerFailureReason(status));
   }
-}
-
-template <typename SourceInfo>
-void ServiceWorkerVersion::DispatchExtendableMessageEventInternal(
-    const base::string16& message,
-    const url::Origin& source_origin,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
-    const StatusCallback& callback,
-    const SourceInfo& source_info) {
-  if (!source_info.IsValid()) {
-    RunErrorMessageCallback(sent_message_ports, callback,
-                            SERVICE_WORKER_ERROR_FAILED);
-    return;
-  }
-  RunAfterStartWorker(
-      base::Bind(
-          &ServiceWorkerVersion::DispatchExtendableMessageEventAfterStartWorker,
-          weak_factory_.GetWeakPtr(), message, source_origin,
-          sent_message_ports, ExtendableMessageEventSource(source_info),
-          callback),
-      base::Bind(&RunErrorMessageCallback, sent_message_ports, callback));
-}
-
-void ServiceWorkerVersion::DispatchExtendableMessageEventAfterStartWorker(
-    const base::string16& message,
-    const url::Origin& source_origin,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
-    const ExtendableMessageEventSource& source,
-    const StatusCallback& callback) {
-  int request_id =
-      StartRequest(ServiceWorkerMetrics::EventType::MESSAGE, callback);
-
-  MessagePortMessageFilter* filter =
-      embedded_worker_->message_port_message_filter();
-  std::vector<int> new_routing_ids;
-  filter->UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
-
-  ServiceWorkerMsg_ExtendableMessageEvent_Params params;
-  params.message = message;
-  params.source_origin = source_origin;
-  params.message_ports = sent_message_ports;
-  params.new_routing_ids = new_routing_ids;
-  params.source = source;
-
-  // Hide the client url if the client has a unique origin.
-  if (source_origin.unique()) {
-    if (params.source.client_info.IsValid())
-      params.source.client_info.url = GURL();
-    else
-      params.source.service_worker_info.url = GURL();
-  }
-
-  DispatchSimpleEvent<ServiceWorkerHostMsg_ExtendableMessageEventFinished>(
-      request_id, ServiceWorkerMsg_ExtendableMessageEvent(request_id, params));
 }
 
 void ServiceWorkerVersion::OnGetClient(int request_id,

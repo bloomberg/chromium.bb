@@ -154,6 +154,23 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   void OnTerminateWorker(int handle_id);
 
+  template <typename SourceInfo>
+  void DispatchExtendableMessageEvent(
+      scoped_refptr<ServiceWorkerVersion> worker,
+      const base::string16& message,
+      const url::Origin& source_origin,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const SourceInfo& source_info);
+  void DispatchExtendableMessageEventAfterStartWorker(
+      scoped_refptr<ServiceWorkerVersion> worker,
+      const base::string16& message,
+      const url::Origin& source_origin,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const ExtendableMessageEventSource& source);
+  void DidFailToDispatchExtendableMessageEvent(
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      ServiceWorkerStatusCode status);
+
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,
       int64_t registration_handle_id);

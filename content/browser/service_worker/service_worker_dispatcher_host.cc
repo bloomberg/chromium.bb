@@ -10,11 +10,13 @@
 #include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/service_worker_client_utils.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_handle.h"
@@ -50,6 +52,11 @@ const char kInvalidStateErrorMessage[] = "The object is in an invalid state.";
 const uint32_t kFilteredMessageClasses[] = {
     ServiceWorkerMsgStart, EmbeddedWorkerMsgStart,
 };
+
+void RunSoon(const base::Closure& callback) {
+  if (!callback.is_null())
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+}
 
 bool CanUnregisterServiceWorker(const GURL& document_url,
                                 const GURL& pattern) {
@@ -694,9 +701,37 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     return;
   }
 
-  handle->version()->DispatchExtendableMessageEvent(
-      sender_provider_host, message, source_origin, sent_message_ports,
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  for (const TransferredMessagePort& port : sent_message_ports)
+    MessagePortService::GetInstance()->HoldMessages(port.id);
+
+  switch (sender_provider_host->provider_type()) {
+    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
+    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
+    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
+      service_worker_client_utils::GetClient(
+          sender_provider_host,
+          base::Bind(
+              &ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent<
+                  ServiceWorkerClientInfo>,
+              this, make_scoped_refptr(handle->version()), message,
+              source_origin, sent_message_ports));
+      break;
+    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
+      // TODO(nhiroki): Decrement a reference to ServiceWorkerHandle if starting
+      // worker fails (http://crbug.com/543198).
+      RunSoon(base::Bind(
+          &ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent<
+              ServiceWorkerObjectInfo>,
+          this, make_scoped_refptr(handle->version()), message, source_origin,
+          sent_message_ports,
+          sender_provider_host->GetOrCreateServiceWorkerHandle(
+              sender_provider_host->running_hosted_version())));
+      break;
+    case SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME:
+    case SERVICE_WORKER_PROVIDER_UNKNOWN:
+      NOTREACHED() << sender_provider_host->provider_type();
+      break;
+  }
 }
 
 void ServiceWorkerDispatcherHost::OnDeprecatedPostMessageToWorker(
@@ -828,6 +863,72 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
 
   Send(new ServiceWorkerMsg_AssociateRegistration(kDocumentMainThreadId,
                                                   provider_id, info, attrs));
+}
+
+template <typename SourceInfo>
+void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
+    scoped_refptr<ServiceWorkerVersion> worker,
+    const base::string16& message,
+    const url::Origin& source_origin,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
+    const SourceInfo& source_info) {
+  if (!source_info.IsValid()) {
+    DidFailToDispatchExtendableMessageEvent(sent_message_ports,
+                                            SERVICE_WORKER_ERROR_FAILED);
+    return;
+  }
+  worker->RunAfterStartWorker(
+      base::Bind(&ServiceWorkerDispatcherHost::
+                     DispatchExtendableMessageEventAfterStartWorker,
+                 this, worker, message, source_origin, sent_message_ports,
+                 ExtendableMessageEventSource(source_info)),
+      base::Bind(
+          &ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent,
+          this, sent_message_ports));
+}
+
+void ServiceWorkerDispatcherHost::
+    DispatchExtendableMessageEventAfterStartWorker(
+        scoped_refptr<ServiceWorkerVersion> worker,
+        const base::string16& message,
+        const url::Origin& source_origin,
+        const std::vector<TransferredMessagePort>& sent_message_ports,
+        const ExtendableMessageEventSource& source) {
+  int request_id =
+      worker->StartRequest(ServiceWorkerMetrics::EventType::MESSAGE,
+                           base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+
+  MessagePortMessageFilter* filter =
+      worker->embedded_worker()->message_port_message_filter();
+  std::vector<int> new_routing_ids;
+  filter->UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
+
+  ServiceWorkerMsg_ExtendableMessageEvent_Params params;
+  params.message = message;
+  params.source_origin = source_origin;
+  params.message_ports = sent_message_ports;
+  params.new_routing_ids = new_routing_ids;
+  params.source = source;
+
+  // Hide the client url if the client has a unique origin.
+  if (source_origin.unique()) {
+    if (params.source.client_info.IsValid())
+      params.source.client_info.url = GURL();
+    else
+      params.source.service_worker_info.url = GURL();
+  }
+
+  worker->DispatchSimpleEvent<
+      ServiceWorkerHostMsg_ExtendableMessageEventFinished>(
+      request_id, ServiceWorkerMsg_ExtendableMessageEvent(request_id, params));
+}
+
+void ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent(
+    const std::vector<TransferredMessagePort>& sent_message_ports,
+    ServiceWorkerStatusCode status) {
+  // Transfering the message ports failed, so destroy the ports.
+  for (const TransferredMessagePort& port : sent_message_ports)
+    MessagePortService::GetInstance()->ClosePort(port.id);
 }
 
 ServiceWorkerRegistrationHandle*
