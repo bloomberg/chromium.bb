@@ -77,7 +77,11 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
 
   static const char* const kValidFilePatterns[] = {
     "KERNEL32.dll",
-    "MSVC*",
+#if defined(COMPONENT_BUILD)
+    "MSVC*.dll",
+    "VCRUNTIME*.dll",
+    "api-ms-win-crt-*.dll",
+#endif
 #if defined(SYZYASAN)
     "syzyasan_rtl.dll",
 #endif
