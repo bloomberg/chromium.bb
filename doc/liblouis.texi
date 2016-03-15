@@ -130,6 +130,19 @@ How to Write Translation Tables
 * The correct Opcode::
 * Miscellaneous Opcodes::
 
+Emphasis Opcodes
+
+* Emphasis class::
+* Contexts::
+* Fallback behavior::
+* Computer braille::
+
+Contexts
+
+* None::
+* Letter::
+* Word::
+* Phrase::
 
 Testing Translation Tables interactively
 
@@ -660,27 +673,196 @@ numsign 3456
 @node Emphasis Opcodes
 @section Emphasis Opcodes
 
-These also define braille indicators, but they require more
-explanation. There are four sets, for italic, bold, underline and
-computer braille. In each of the first three sets there are seven
-opcodes, for use before the first word of a phrase, for use before the
-last word, for use after the last word, for use before the first
-letter (or character) if emphasis starts in the middle of a word, for
-use after the last letter (or character) if emphasis ends in the
-middle of a word, before a single letter (or character), and to
-specify the length of a phrase to which the first-word and
-last-word-before indicators apply. This rather elaborate set of
-emphasis opcodes was devised to try to meet all contingencies. It is
-unlikely that a translation table will contain all of them. The
-translator checks for their presence. If they are present, it first
-looks to see if the single-letter indicator should be used. Then it
-looks at the word (or phrase) indicators and finally at the
-multi-letter indicators.
+In many braille systems emphasis such as bold, italics or underline is
+indicated using special dot patterns that mark the start and often
+also the end. For some languages these braille indicators differ
+depending on the context, i.e. here is an separate indicator for an
+emphasized word and another one for an emphasized phrase. To
+accommodate for all these usage scenarios liblouis provides a number of
+opcodes for various contexts.
 
-The translator will apply up to two emphasis indicators to each phrase
-or string of characters, depending on what the @code{typeform}
-parameter in its calling sequence indicates (@pxref{Programming with
-liblouis}).
+At the same time some braille systems use different indicators for
+different kinds of emphasis while others know only one kind of
+emphasis. For that reason liblouis doesn't hard code any emphasis but
+the table author defines which kind of emphasis exist for a specific
+language using the @opcoderef{emphclass} opcode.
+
+@menu
+* Emphasis class::
+* Contexts::
+* Fallback behavior::
+* Computer braille::
+@end menu
+
+@node Emphasis class
+@subsection Emphasis class
+
+The @code{emphclass} opcode defines the classes of emphasis that are
+relevant for a particular language. For all emphasis that need special
+indicators an emphasis class has to be declared.
+
+@table @code
+@opcode{emphclass, <emphasis class>}
+Define an emphasis class to be used later in other emphasis related
+opcodes in the table.
+
+@example
+emphclass italic
+emphclass underline
+emphclass bold
+emphclass transnote
+@end example
+
+@end table
+
+@node Contexts
+@subsection Contexts
+
+In order to understand the capabilities of Liblouis for emphasis
+handling we have to look at the different contexts that are supported.
+
+@menu
+* None::
+* Letter::
+* Word::
+* Phrase::
+@end menu
+
+@node None
+@subsubsection None
+
+For some languages there is no such concept as contexts. Emphasis is
+always handled the same regardless of context. There is simply an
+indicator for the beginning of emphasis and another one for the end of
+the emphasis.
+
+@table @code
+@opcode{begemph, <emphasis class> <dot pattern>}
+Braille dot pattern to indicate the beginning of emphasis.
+
+@example
+begemph italic 46-3
+@end example
+
+@opcode{endemph, <emphasis class> <dot pattern>}
+Braille dot pattern to indicate the end of emphasis.
+
+@example
+endemph italic 46-36
+@end example
+
+@end table
+
+@node Letter
+@subsubsection Letter
+
+Some languages have special indicators for single letter emphasis.
+
+@table @code
+@opcode{emphletter, <emphasis class> <dot pattern>}
+Braille dot pattern to indicate that the next character is emphasized.
+
+@example
+emphletter italic 46-25
+@end example
+
+@end table
+
+@node Word
+@subsubsection Word
+
+Many languages have special indicators for emphasized words. Usually
+they start at the beginning of the word and and implicitly, i.e.
+without a closing indicator at the end of the word. There are also use
+cases where the emphasis starts in the middle of the word and an
+explicit closing indicator is required.
+
+@table @code
+@opcode{begemphword, <emphasis class> <dot pattern>}
+Braille dot pattern to indicate the beginning of an emphasized word
+or the beginning of emphasized characters within a word.
+
+@example
+begemphword underline 456-36
+@end example
+
+@opcode{endemphword, <emphasis class>  <dot pattern>}
+Generally emphasis with word context ends when the word ends. However
+when an indication is required to close a word emphasis then this
+opcode defines the Braille dot pattern that indicates the end of a word
+emphasis.
+
+@example
+endemphword transnote 6-3
+@end example
+
+If emphasis ends in the middle of a word the Braille dot pattern
+defined in this opcode is also used.
+
+@end table
+
+@node Phrase
+@subsubsection Phrase
+
+Many languages have a concept of a phrase where the emphasis is valid
+for a number of words. The beginning of the phase is indicated with a
+braille dot pattern and a closing indicator is put before or after the
+last word of the phrase. To define how many words are considered a
+phrase in your language use the @opcoderef{lenemphphrase}.
+
+@table @code
+@opcode{begemphphrase, <emphasis class> <dot pattern>}
+Braille dot pattern to indicate the beginning of a phrase.
+
+@example
+begemphphrase bold 456-46-46
+@end example
+
+@opcode{endemphphrase before, <emphasis class> before <dot pattern>}
+Braille dot pattern to indicate the end of a phrase. The closing indicator
+will be placed before the last word of the phrase.
+
+@example
+endemphphrase bold before 456-46
+@end example
+
+@opcode{endemphphrase after, <emphasis class> after <dot pattern>}
+Braille dot pattern to indicate the end of a phrase. The closing
+indicator will be placed after the last word of the phrase. If both
+@code{endemphphrase <emphasis class> before} and @code{endemphphrase <emphasis
+class> after} are defined an error will be signaled.
+
+@example
+endemphphrase underline after 6-3
+@end example
+
+@opcode{lenemphphrase, <emphasis class> <number>}
+Define how many words are required before a sequence of words is
+considered a phrase.
+
+@example
+lenemphphrase underline 3
+@end example
+
+@end table
+
+@node Fallback behavior
+@subsection Fallback behavior
+
+Many braille systems either handle emphasis using no contexts or
+otherwise by employing a combination of the letter, word and phrase
+contexts. So if a table defines any opcodes for the letter, word or
+phrase contexts then liblouis will signal an error for opcodes that
+define emphasis with no context. In other words contrary to previous
+versions of liblouis there is no fallback behavior.
+
+As a consequence of this is that there will only be emphasis for a
+context when the table defines it. So for example when defining a
+braille dot pattern for phrases and not for words liblouis will not
+indicate emphasis on words that aren't part of a phrase.
+
+@node Computer braille
+@subsection Computer braille
 
 For computer braille there are only two braille indicators, for the
 beginning and end of a sequence of characters to be rendered in
@@ -688,164 +870,7 @@ computer braille. Such a sequence may also have other emphasis. The
 computer braille indicators are applied not only when computer braille
 is indicated in the @code{typeform} parameter, but also when a
 sequence of characters is determined to be computer braille because it
-contains a subsequence defined by the @opcoderef{compbrl} or the
-@opcoderef{literal}.
-
-Here are the various emphasis opcodes.
-
-@table @code
-
-@opcode{firstwordital, dots}
-This is the braille indicator to be placed before the first word of an
-italicized phrase that is longer than the value given in the
-@opcoderef{lenitalphrase}. For example:
-
-@example
-firstwordital 46-46 English indicator
-@end example
-
-@opcode{lastworditalbefore, dots}
-This is the braille indicator to be placed before the last word of an
-italicized phrase. In addition, if @code{firstwordital} is not used,
-this braille indicator is doubled and placed before the first word. Do
-not use @code{lastworditalbefore} and @code{lastworditalafter} in the
-same table. For example:
-
-@example
-lastworditalbefore 4-6
-@end example
-
-@opcode{lastworditalafter, dots}
-This is the braille indicator to be placed after the last word of an
-italicized phrase. Do not use @code{lastworditalbefore} and
-@code{lastworditalafter} in the same table. See also the
-@opcoderef{lenitalphrase} for more information.
-
-@opcode{firstletterital, dots}
-This is the braille indicator to be placed before the first letter (or
-character) if italicization begins in the middle of a word.
-
-@opcode{lastletterital, dots}
-This is the braille indicator to be placed after the last letter (or
-character) when italicization ends in the middle of a word.
-
-@opcode{singleletterital, dots}
-This braille indicator is used if only a single letter (or character)
-is italicized.
-
-@opcode{lenitalphrase, number}
-If @code{lastworditalbefore} is used, an italicized phrase is checked
-to see how many words it contains. If this number is less than or
-equal to the number given in the @code{lenitalphrase} opcode, the
-@code{lastworditalbefore} sign is placed in front of each word. If it
-is greater, the @code{firstwordital} indicator is placed before the
-first word and the @code{lastworditalbefore} indicator is placed after
-the last word. Note that if the @code{firstwordital} opcode is not
-used its indicator is made up by doubling the dot pattern given in the
-@code{lastworditalbefore} entry. For example:
-
-@example
-lenitalphrase 4
-@end example
-
-@opcode{firstwordbold, dots}
-This is the braille indicator to be placed before the first word of a
-bold phrase. For example:
-
-@example
-firstwordbold 456-456
-@end example
-
-@opcode{lastwordboldbefore, dots}
-This is the braille indicator to be placed before the last word of a
-bold phrase. In addition, if @code{firstwordbold} is not used, this
-braille indicator is doubled and placed before the first word. Do not
-use @code{lastwordboldbefore} and @code{lastwordboldafter} in the same
-table. For example:
-
-@example
-lastwordboldbefore 456
-@end example
-
-@opcode{lastwordboldafter, dots}
-This is the braille indicator to be placed after the last word of a
-bold phrase. Do not use @code{lastwordboldbefore} and
-@code{lastwordboldafter} in the same table.
-
-@opcode{firstletterbold, dots}
-This is the braille indicator to be placed before the first letter (or
-character) if bold emphasis begins in the middle of a word.
-
-@opcode{lastletterbold, dots}
-This is the braille indicator to be placed after the last letter (or
-character) when bold emphasis ends in the middle of a word.
-
-@opcode{singleletterbold, dots}
-This braille indicator is used if only a single letter (or character)
-is in boldface.
-
-@opcode{lenboldphrase, number}
-If @code{lastwordboldbefore} is used, a bold phrase is checked to see
-how many words it contains. If this number is less than or equal to
-the number given in the @code{lenboldphrase} opcode, the
-@code{lastwordboldbefore} sign is placed in front of each word. If it
-is greater, the @code{firstwordbold} indicator is placed before the
-first word and the @code{lastwordboldbefore} indicator is placed after
-the last word. Note that if the @code{firstwordbold} opcode is not
-used its indicator is made up by doubling the dot pattern given in the
-@code{lastwordboldbefore} entry.
-
-@opcode{firstwordunder, dots}
-This is the braille indicator to be placed before the first word of an
-underlined phrase.
-
-@opcode{lastwordunderbefore, dots}
-This is the braille indicator to be placed before the last word of an
-underlined phrase. In addition, if @code{firstwordunder} is not used,
-this braille indicator is doubled and placed before the first word.
-
-@opcode{lastwordunderafter, dots}
-This is the braille indicator to be placed after the last word of an
-underlined phrase.
-
-@opcode{firstletterunder, dots}
-This is the braille indicator to be placed before the first letter (or
-character) if underline emphasis begins in the middle of a word.
-
-@opcode{lastletterunder, dots}
-This is the braille indicator to be placed after the last letter (or
-character) when underline emphasis ends in the middle of a word.
-
-@opcode{singleletterunder, dots}
-This braille indicator is used if only a single letter (or character)
-is underlined.
-
-@opcode{lenunderphrase, number}
-If @code{lastwordunderbefore} is used, an underlined phrase is checked
-to see how many words it contains. If this number is less than or
-equal to the number given in the @code{lenunderphrase} opcode, the
-@code{lastwordunderbefore} sign is placed in front of each word. If it
-is greater, the @code{firstwordunder} indicator is placed before the
-first word and the @code{lastwordunderbefore} indicator is placed
-after the last word. Note that if the @code{firstwordunder} opcode is
-not used its indicator is made up by doubling the dot pattern given in
-the @code{lastwordunderbefore} entry.
-
-@opcode{begcomp, dots}
-This braille indicator is placed before a sequence of characters
-translated in computer braille, whether this sequence is indicated in
-the @code{typeform} parameter (@pxref{Programming with liblouis}) or
-inferred because it contains a subsequence specified by the
-@opcoderef{compbrl}.
-
-@opcode{endcomp, dots}
-This braille indicator is placed after a sequence of characters
-translated in computer braille, whether this sequence is indicated in
-the @code{typeform} parameter (@pxref{Programming with liblouis}) or
-inferred because it contains a subsequence specified by the
-@opcoderef{compbrl}.
-
-@end table
+contains a subsequence defined by the @opcoderef{compbrl}.
 
 @node Special Symbol Opcodes
 @section Special Symbol Opcodes
@@ -1693,11 +1718,8 @@ dot pattern. They include @kbd{h}, @kbd{f}, @kbd{b}, @kbd{c}, @kbd{d},
 Show braille indicators. This shows the dot patterns for various
 opcodes such as the @opcoderef{capsign} and the @opcoderef{numsign}.
 It also shows emphasis dot patterns, such as those for the
-@c FIXME: the italword opcode should be documented
-@c @opcoderef{italword}, 
-@code{italword},
-the @opcoderef{firstletterbold}, etc. If a given
-opcode has not been used nothing is printed for it.
+@opcoderef{begemphword}, the @opcoderef{begemphphrase}, etc. If a
+given opcode has not been used nothing is printed for it.
 
 @item m
 Display various miscellaneous information about the table, such as the
@@ -1925,7 +1947,7 @@ all the tests are defined.
 Let's just look at a simple example how tests could be defined:
 
 @iftex
-@emph{(For technical reasons the unicode braille in the expected
+@emph{(For technical reasons the Unicode braille in the expected
 translation in the following YAML examples is not displayed correctly.
 Please refer to the example YAML file @file{example_test.yaml} in the
 @file{tests} directory of the source distribution or read these
@@ -2061,7 +2083,7 @@ for emphasis are @samp{italic}, @samp{underline}, @samp{bold},
 
 @item cursorPos
 A list of cursor positions for each input position. Useful when
-simulating screenreader interaction, to debug contraction and cursor
+simulating screen reader interaction, to debug contraction and cursor
 behavior as in the following example from the @file{en-GB-g2.ctb}
 test. Also note that in this example the additional options are not
 passed in using the ``flow style'' notation.
@@ -2136,7 +2158,7 @@ or any useful info that might be needed in case the test breaks
 (optional).
 @item cursorPos
 The position of the cursor within the given text (optional). Useful
-when simulating screenreader interaction, to debug contraction and
+when simulating screen reader interaction, to debug contraction and
 cursor behavior.
 @item mode
 The liblouis translation mode that should be used for this test
@@ -2162,7 +2184,7 @@ The expected braille output (required). The dots should be encoded in
 the liblouis ASCII-braille like encoding.
 @item brlCursorPos
 The expected position of the braille cursor in the braille output
-(optional). Useful when simulating screenreader interaction, to debug
+(optional). Useful when simulating screen reader interaction, to debug
 contraction and cursor behavior.
 @end table
 
