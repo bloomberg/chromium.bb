@@ -127,4 +127,21 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
             assertTrue(monitor.getVSyncPeriodInMicroseconds() < 1000000 / 30);
         }
     }
+
+    @MediumTest
+    public void testVSyncActivationFromIdle() throws InterruptedException {
+        // Check that the vsync period roughly matches the timestamps that the monitor generates.
+        VSyncDataCollector collector = new VSyncDataCollector(1);
+        VSyncMonitor monitor = createVSyncMonitor(collector);
+
+        requestVSyncMonitorUpdate(monitor);
+        collector.waitTillDone();
+        assertTrue(collector.isDone());
+
+        long period = monitor.getVSyncPeriodInMicroseconds() / 1000;
+        long delay = SystemClock.uptimeMillis() - collector.mLastVSyncCpuTimeMillis;
+
+        // The VSync should have activated immediately instead of at the next real vsync.
+        assertTrue(delay < period);
+    }
 }
