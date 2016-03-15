@@ -837,12 +837,12 @@ Output.prototype = {
   go: function() {
     // Speech.
     var queueMode = this.queueMode_;
-    if (Output.flushNextSpeechUtterance_) {
-      queueMode = cvox.QueueMode.FLUSH;
-      Output.flushNextSpeechUtterance_ = false;
-    }
-
     this.speechBuffer_.forEach(function(buff, i, a) {
+      if (Output.flushNextSpeechUtterance_ && buff.length > 0) {
+        queueMode = cvox.QueueMode.FLUSH;
+        Output.flushNextSpeechUtterance_ = false;
+      }
+
       var speechProps = {};
       (function() {
         var scopedBuff = buff;
