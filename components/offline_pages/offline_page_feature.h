@@ -11,6 +11,7 @@
 namespace offline_pages {
 
 extern const base::Feature kOffliningRecentPagesFeature;
+extern const base::Feature kOfflinePagesBackgroundLoadingFeature;
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
 enum class FeatureMode {
@@ -30,6 +31,9 @@ bool IsOfflinePagesEnabled();
 
 // Returns true if offlining of recent pages (aka 'Last N pages') is enabled.
 bool IsOffliningRecentPagesEnabled();
+
+// Returns true if saving offline pages in the background is enabled.
+bool IsOfflinePagesBackgroundLoadingEnabled();
 
 }  // namespace offline_pages
 

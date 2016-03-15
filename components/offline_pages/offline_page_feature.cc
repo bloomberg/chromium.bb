@@ -29,6 +29,10 @@ const base::Feature kOffliningRecentPagesFeature {
    "offline-recent-pages", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+const base::Feature kOfflinePagesBackgroundLoadingFeature {
+   "offline-pages-background-loading", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 FeatureMode GetOfflinePageFeatureMode() {
   // Note: It's important to query the field trial state first, to ensure that
   // UMA reports the correct group.
@@ -81,6 +85,11 @@ bool IsOfflinePagesEnabled() {
 bool IsOffliningRecentPagesEnabled() {
   return  base::FeatureList::IsEnabled(kOffliningRecentPagesFeature) &&
           IsOfflinePagesEnabled();
+}
+
+bool IsOfflinePagesBackgroundLoadingEnabled() {
+  return base::FeatureList::IsEnabled(kOfflinePagesBackgroundLoadingFeature)
+      && IsOfflinePagesEnabled();
 }
 
 }  // namespace offline_pages

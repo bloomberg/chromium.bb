@@ -1011,4 +1011,20 @@ TEST(CommandLineFlagsTest, OffliningRecentPages) {
   EXPECT_TRUE(offline_pages::IsOffliningRecentPagesEnabled());
 }
 
+TEST(CommandLineFlagsTest, OfflinePagesBackgroundLoading) {
+  // TODO(dimich): once offline pages are enabled by default, remove this.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOfflinePages);
+  // Disabled by default.
+  EXPECT_FALSE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
+
+  // Check if feature is correctly enabled by command-line flag.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      offline_pages::kOfflinePagesBackgroundLoadingFeature.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+  EXPECT_TRUE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
+}
+
 }  // namespace offline_pages

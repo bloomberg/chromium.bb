@@ -1597,6 +1597,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"offline-pages-mode", IDS_FLAGS_OFFLINE_PAGES_NAME,
      IDS_FLAGS_OFFLINE_PAGES_DESCRIPTION, kOsAndroid,
      MULTI_VALUE_TYPE(kEnableOfflinePagesChoices)},
+    {"offline-pages-background-loading",
+     IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_NAME,
+     IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesBackgroundLoadingFeature)},
 #endif  // defined(OS_ANDROID)
     {"low-priority-iframes", IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_NAME,
      IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_DESCRIPTION, kOsAll,

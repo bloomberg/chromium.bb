@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/common/chrome_features.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "jni/ChromeFeatureList_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -29,6 +30,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPSnippetsFeature,
     &kPhysicalWebFeature,
     &features::kSimplifiedFullscreenUI,
+    &offline_pages::kOfflinePagesBackgroundLoadingFeature,
 };
 
 }  // namespace

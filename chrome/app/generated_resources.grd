@@ -14361,11 +14361,17 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_OFFLINE_PAGES_AS_SAVED_PAGES" desc="Option to enable offline pages feature using name 'saved pages' shown in user-visible strings">
         Enabled as saved pages
       </message>
-      <message name="IDS_FLAGS_NTP_OFFLINE_PAGES_NAME" desc="Name for the flag to enable bading of offline pages on the NTP.">
+      <message name="IDS_FLAGS_NTP_OFFLINE_PAGES_NAME" desc="Name for the flag to enable badging of offline pages on the NTP.">
         Enable NTP offline pages
       </message>
-      <message name="IDS_FLAGS_NTP_OFFLINE_PAGES_DESCRIPTION" desc="Description for the flag to enable bading of offline pages on the NTP.">
+      <message name="IDS_FLAGS_NTP_OFFLINE_PAGES_DESCRIPTION" desc="Description for the flag to enable badging of offline pages on the NTP.">
         Enables badging of offline pages on the New Tab page. Only relevant if offline pages are enabled.
+      </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_NAME" desc="Name for the flag to enable offline pages to load in the background.">
+        Enables offline pages to load in the background
+      </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_DESCRIPTION" desc="Description for the flag to enable offline pages.">
+        Enables the browser to wake up and load offline pages automatically in the background.
       </message>
       <message name="IDS_FLAGS_NTP_POPULAR_SITES_NAME" desc="Name for the flag to enable showing non-personalized popular suggestions on the New Tab Page, when no personal suggestions are available yet.">
         Show popular sites on the New Tab page

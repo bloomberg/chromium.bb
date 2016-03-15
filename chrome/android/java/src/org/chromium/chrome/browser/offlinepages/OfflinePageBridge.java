@@ -8,9 +8,11 @@ import android.os.AsyncTask;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.components.offlinepages.FeatureMode;
@@ -29,6 +31,8 @@ import java.util.Set;
 public class OfflinePageBridge {
     public static final String BOOKMARK_NAMESPACE = "bookmark";
     public static final long INVALID_OFFLINE_ID = 0;
+    private static final String OFFLINE_PAGES_BACKGROUND_LOADING_FEATURE_NAME =
+            "offline-pages-background-loading";
 
     /**
      * Retrieves the OfflinePageBridge for the given profile, creating it the first time
@@ -186,6 +190,15 @@ public class OfflinePageBridge {
     public static boolean isEnabled() {
         ThreadUtils.assertOnUiThread();
         return getFeatureMode() != FeatureMode.DISABLED;
+    }
+
+    /**
+     * @return True if the offline pages feature is enabled, regardless whether bookmark or saved
+     *     page shown in UI strings.
+     */
+    @VisibleForTesting
+    public static boolean isBackgroundLoadingEnabled() {
+        return ChromeFeatureList.isEnabled(OFFLINE_PAGES_BACKGROUND_LOADING_FEATURE_NAME);
     }
 
     /**

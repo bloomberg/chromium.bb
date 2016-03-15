@@ -258,6 +258,14 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 mOfflinePageBridge.getOfflineUrlForOnlineUrl(offlinePage.getUrl()));
     }
 
+    @CommandLineFlags.Add("disable-features=offline-pages-background-loading")
+    @SmallTest
+    public void testBackgroundLoadSwitch() throws Exception {
+        // We should be able to call the C++ is enabled function from the Java side.
+        assertFalse("If background loading is off, we should see the feature disabled",
+                OfflinePageBridge.isBackgroundLoadingEnabled());
+    }
+
     private void savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
