@@ -1498,6 +1498,10 @@
     # Code signing for iOS binaries.  The bots need to be able to disable this.
     'chromium_ios_signing%': 1,
 
+    # Identity to use for code signing of iOS binaries.  Change this on machines
+    # with multiple identities in their security keychain.
+    'chromium_ios_signing_identity%': 'iPhone Developer',
+
     # This flag is only used when disable_nacl==0 and disables all those
     # subcomponents which would require the installation of a native_client
     # untrusted toolchain.
@@ -5510,7 +5514,7 @@
               'conditions': [
                 ['chromium_ios_signing', {
                   # iOS SDK wants everything for device signed.
-                  'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
+                  'CODE_SIGN_IDENTITY[sdk=iphoneos*]': '<(chromium_ios_signing_identity)',
                 }, {
                   'CODE_SIGNING_REQUIRED': 'NO',
                   'CODE_SIGN_IDENTITY[sdk=iphoneos*]': '',
