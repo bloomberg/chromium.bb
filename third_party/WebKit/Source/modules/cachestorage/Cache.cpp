@@ -518,7 +518,7 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, const Request* reque
 ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const HeapVector<Member<Request>>& requests, ExceptionState& exceptionState)
 {
     if (requests.isEmpty())
-        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+        return ScriptPromise::castUndefined(scriptState);
 
     HeapVector<RequestInfo> requestInfos;
     requestInfos.resize(requests.size());

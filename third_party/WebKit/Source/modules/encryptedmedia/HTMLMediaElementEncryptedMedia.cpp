@@ -324,7 +324,7 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptSt
     // 1. If mediaKeys and the mediaKeys attribute are the same object,
     //    return a resolved promise.
     if (thisElement.m_mediaKeys == mediaKeys)
-        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+        return ScriptPromise::castUndefined(scriptState);
 
     // 2. If this object's attaching media keys value is true, return a
     //    promise rejected with an InvalidStateError.

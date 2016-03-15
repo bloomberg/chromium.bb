@@ -27,12 +27,12 @@ ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* scriptState, Scrip
 
 ScriptPromise UnderlyingSourceBase::start(ScriptState* scriptState)
 {
-    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptPromise::castUndefined(scriptState);
 }
 
 ScriptPromise UnderlyingSourceBase::pull(ScriptState* scriptState)
 {
-    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptPromise::castUndefined(scriptState);
 }
 
 ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* scriptState, ScriptValue reason)
@@ -43,7 +43,7 @@ ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* scriptState, Scri
 
 ScriptPromise UnderlyingSourceBase::cancel(ScriptState* scriptState, ScriptValue reason)
 {
-    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptPromise::castUndefined(scriptState);
 }
 
 bool UnderlyingSourceBase::hasPendingActivity() const

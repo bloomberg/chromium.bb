@@ -101,7 +101,7 @@ ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reaso
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "this stream is locked to a ReadableStreamReader"));
     setIsDisturbed();
     if (m_state == Closed)
-        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+        return ScriptPromise::castUndefined(scriptState);
     if (m_state == Errored)
         return ScriptPromise::rejectWithDOMException(scriptState, m_exception);
 

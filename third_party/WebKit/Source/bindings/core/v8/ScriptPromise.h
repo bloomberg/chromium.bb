@@ -127,6 +127,9 @@ public:
     static ScriptPromise cast(ScriptState*, const ScriptValue& /*value*/);
     static ScriptPromise cast(ScriptState*, v8::Local<v8::Value> /*value*/);
 
+    // Constructs and returns a ScriptPromise resolved with undefined.
+    static ScriptPromise castUndefined(ScriptState*);
+
     static ScriptPromise reject(ScriptState*, const ScriptValue&);
     static ScriptPromise reject(ScriptState*, v8::Local<v8::Value>);
 

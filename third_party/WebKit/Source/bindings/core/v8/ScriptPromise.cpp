@@ -251,6 +251,11 @@ ScriptPromise ScriptPromise::then(v8::Local<v8::Function> onFulfilled, v8::Local
     return ScriptPromise(m_scriptState.get(), resultPromise);
 }
 
+ScriptPromise ScriptPromise::castUndefined(ScriptState* scriptState)
+{
+    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+}
+
 ScriptPromise ScriptPromise::cast(ScriptState* scriptState, const ScriptValue& value)
 {
     return ScriptPromise::cast(scriptState, value.v8Value());

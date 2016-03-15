@@ -160,7 +160,7 @@ void BodyStreamBuffer::pullSource()
 ScriptPromise BodyStreamBuffer::cancelSource(ScriptState* scriptState, ScriptValue)
 {
     close();
-    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptPromise::castUndefined(scriptState);
 }
 
 void BodyStreamBuffer::didGetReadable()

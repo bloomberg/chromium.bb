@@ -518,13 +518,13 @@ ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, R
     }
 
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
-        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+        return ScriptPromise::castUndefined(scriptState);
 
     ASSERT(sessionDescription);
 
     RTCVoidRequest* request = RTCVoidRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
     m_peerHandler->setLocalDescription(request, sessionDescription->webSessionDescription());
-    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptPromise::castUndefined(scriptState);
 }
 
 RTCSessionDescription* RTCPeerConnection::localDescription()
@@ -561,13 +561,13 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, 
     }
 
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
-        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+        return ScriptPromise::castUndefined(scriptState);
 
     ASSERT(sessionDescription);
 
     RTCVoidRequest* request = RTCVoidRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
     m_peerHandler->setRemoteDescription(request, sessionDescription->webSessionDescription());
-    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptPromise::castUndefined(scriptState);
 }
 
 RTCSessionDescription* RTCPeerConnection::remoteDescription()
@@ -695,14 +695,14 @@ ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, RTCIc
     ASSERT(errorCallback);
 
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
-        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+        return ScriptPromise::castUndefined(scriptState);
 
     RTCVoidRequest* request = RTCVoidRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
     bool implemented = m_peerHandler->addICECandidate(request, iceCandidate->webCandidate());
     if (!implemented)
         asyncCallErrorCallback(errorCallback, DOMException::create(OperationError, "This operation could not be completed."));
 
-    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptPromise::castUndefined(scriptState);
 }
 
 String RTCPeerConnection::signalingState() const

@@ -73,7 +73,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* scriptState)
     m_registered = true;
     m_client->registerBannerCallbacks(m_requestId, new AppBannerCallbacks(m_userChoice.get()));
     m_client->showAppBanner(m_requestId);
-    return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    return ScriptPromise::castUndefined(scriptState);
 }
 
 DEFINE_TRACE(BeforeInstallPromptEvent)
