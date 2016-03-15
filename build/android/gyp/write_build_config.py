@@ -291,6 +291,7 @@ def main(argv):
                                                       options.type)
 
   deps = Deps(direct_deps_config_paths)
+  all_inputs = deps.AllConfigPaths() + build_utils.GetPythonDependencies()
 
   # Remove other locale resources if there is alternative_locale_resource in
   # direct deps.
@@ -511,6 +512,7 @@ def main(argv):
             prev_config['native']['java_libraries_list'])
         library_paths.extend(prev_config['native']['libraries'])
 
+    all_inputs.extend(library_paths)
     config['native'] = {
       'libraries': library_paths,
       'java_libraries_list': java_libraries_list_holder[0],
@@ -521,9 +523,7 @@ def main(argv):
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        deps.AllConfigPaths() + build_utils.GetPythonDependencies())
+    build_utils.WriteDepfile(options.depfile, all_inputs)
 
 
 if __name__ == '__main__':
