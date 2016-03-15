@@ -14,6 +14,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
+class GURL;
+
 namespace content {
 
 class DownloadManager;
@@ -55,6 +57,9 @@ class CONTENT_EXPORT DownloadFile {
   // "Mark of the Web" information about its source.  No uniquification
   // will be performed.
   virtual void RenameAndAnnotate(const base::FilePath& full_path,
+                                 const std::string& client_guid,
+                                 const GURL& source_url,
+                                 const GURL& referrer_url,
                                  const RenameCompletionCallback& callback) = 0;
 
   // Detach the file so it is not deleted on destruction.
@@ -63,30 +68,8 @@ class CONTENT_EXPORT DownloadFile {
   // Abort the download and automatically close the file.
   virtual void Cancel() = 0;
 
-  virtual base::FilePath FullPath() const = 0;
+  virtual const base::FilePath& FullPath() const = 0;
   virtual bool InProgress() const = 0;
-  virtual int64_t CurrentSpeed() const = 0;
-
-  // Set |hash| with sha256 digest for the file.
-  // Returns true if digest is successfully calculated.
-  virtual bool GetHash(std::string* hash) = 0;
-
-  // Returns the current (intermediate) state of the hash as a byte string.
-  virtual std::string GetHashState() = 0;
-
-  // Set the application GUID to be used to identify the app to the
-  // system AV function when scanning downloaded files. Should be called
-  // before RenameAndAnnotate() to take effect.
-  virtual void SetClientGuid(const std::string& guid) = 0;
-
-  // For testing.  Must be called on FILE thread.
-  // TODO(rdsmith): Replace use of EnsureNoPendingDownloads()
-  // on the DownloadManager with a test-specific DownloadFileFactory
-  // which keeps track of the number of DownloadFiles.
-  static int GetNumberOfDownloadFiles();
-
- protected:
-  static int number_active_objects_;
 };
 
 }  // namespace content

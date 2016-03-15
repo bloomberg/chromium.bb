@@ -14,15 +14,7 @@ namespace content {
 //               Unfortunately, as it is, constructors of SaveFile don't always
 //               have access to the SavePackage at this point.
 SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
-    : file_(base::FilePath(),
-            info->url,
-            GURL(),
-            0,
-            calculate_hash,
-            std::string(),
-            base::File(),
-            net::BoundNetLog()),
-      info_(info) {
+    : file_(net::BoundNetLog()), info_(info) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   DCHECK(info);
@@ -34,7 +26,12 @@ SaveFile::~SaveFile() {
 }
 
 DownloadInterruptReason SaveFile::Initialize() {
-  return file_.Initialize(base::FilePath());
+  return file_.Initialize(base::FilePath(),
+                          base::FilePath(),
+                          base::File(),
+                          0,
+                          std::string(),
+                          scoped_ptr<crypto::SecureHash>());
 }
 
 DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
@@ -61,7 +58,7 @@ void SaveFile::Finish() {
 void SaveFile::AnnotateWithSourceInformation() {
   // TODO(gbillock): If this method is called, it should set the
   // file_.SetClientGuid() method first.
-  file_.AnnotateWithSourceInformation();
+  NOTREACHED();
 }
 
 base::FilePath SaveFile::FullPath() const {
@@ -74,10 +71,6 @@ bool SaveFile::InProgress() const {
 
 int64_t SaveFile::BytesSoFar() const {
   return file_.bytes_so_far();
-}
-
-bool SaveFile::GetHash(std::string* hash) {
-  return file_.GetHash(hash);
 }
 
 std::string SaveFile::DebugString() const {

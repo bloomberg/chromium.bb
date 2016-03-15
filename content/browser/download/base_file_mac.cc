@@ -9,12 +9,15 @@
 
 namespace content {
 
-DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
+DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
+    const std::string& client_guid,
+    const GURL& source_url,
+    const GURL& referrer_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!detached_);
 
-  AddQuarantineMetadataToFile(full_path_, source_url_, referrer_url_);
-  AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
+  AddQuarantineMetadataToFile(full_path_, source_url, referrer_url);
+  AddOriginMetadataToFile(full_path_, source_url, referrer_url);
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 

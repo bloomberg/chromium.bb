@@ -38,7 +38,6 @@ class SaveFile {
   base::FilePath FullPath() const;
   bool InProgress() const;
   int64_t BytesSoFar() const;
-  bool GetHash(std::string* hash);
   std::string DebugString() const;
 
   // Accessors.

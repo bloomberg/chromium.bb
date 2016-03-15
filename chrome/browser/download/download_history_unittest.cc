@@ -224,6 +224,7 @@ class DownloadHistoryTest : public testing::Test {
           row.last_modified,
           row.received_bytes,
           row.total_bytes,
+          std::string(),
           history::ToContentDownloadState(row.state),
           history::ToContentDownloadDangerType(row.danger_type),
           history::ToContentDownloadInterruptReason(row.interrupt_reason),

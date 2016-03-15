@@ -155,8 +155,21 @@ class CONTENT_EXPORT DownloadUrlParameters {
   // If |offset| is non-zero, then a byte range request will be issued to fetch
   // the range of bytes starting at |offset| through to the end of thedownload.
   void set_offset(int64_t offset) { save_info_.offset = offset; }
-  void set_hash_state(const std::string& hash_state) {
-    save_info_.hash_state = hash_state;
+
+  // If |offset| is non-zero, then |hash_of_partial_file| contains the raw
+  // SHA-256 hash of the first |offset| bytes of the target file. Only
+  // meaningful if a partial file exists and is identified by either the
+  // |file_path()| or |file()|.
+  void set_hash_of_partial_file(const std::string& hash_of_partial_file) {
+    save_info_.hash_of_partial_file = hash_of_partial_file;
+  }
+
+  // If |offset| is non-zero, then |hash_state| indicates the SHA-256 hash state
+  // of the first |offset| bytes of the target file. In this case, the prefix
+  // hash will be ignored since the |hash_state| is assumed to be correct if
+  // provided.
+  void set_hash_state(scoped_ptr<crypto::SecureHash> hash_state) {
+    save_info_.hash_state = std::move(hash_state);
   }
 
   // If |prompt| is true, then the user will be prompted for a filename. Ignored
@@ -191,14 +204,16 @@ class CONTENT_EXPORT DownloadUrlParameters {
     return save_info_.suggested_name;
   }
   int64_t offset() const { return save_info_.offset; }
-  const std::string& hash_state() const { return save_info_.hash_state; }
+  const std::string& hash_of_partial_file() const {
+    return save_info_.hash_of_partial_file;
+  }
   bool prompt() const { return save_info_.prompt_for_save_location; }
   const GURL& url() const { return url_; }
   bool do_not_prompt_for_login() const { return do_not_prompt_for_login_; }
 
-  // Note that this is state changing--the DownloadUrlParameters object
-  // will not have a file attached to it after this call.
-  base::File GetFile() { return std::move(save_info_.file); }
+  // STATE CHANGING: All save_info_ sub-objects will be in an indeterminate
+  // state following this call.
+  DownloadSaveInfo GetSaveInfo() { return std::move(save_info_); }
 
  private:
   OnStartedCallback callback_;

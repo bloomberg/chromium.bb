@@ -13,4 +13,13 @@ DownloadSaveInfo::DownloadSaveInfo()
 DownloadSaveInfo::~DownloadSaveInfo() {
 }
 
+DownloadSaveInfo::DownloadSaveInfo(DownloadSaveInfo&& that)
+    : file_path(std::move(that.file_path)),
+      suggested_name(std::move(that.suggested_name)),
+      file(std::move(that.file)),
+      offset(that.offset),
+      hash_state(std::move(that.hash_state)),
+      hash_of_partial_file(std::move(that.hash_of_partial_file)),
+      prompt_for_save_location(that.prompt_for_save_location) {}
+
 }  // namespace content

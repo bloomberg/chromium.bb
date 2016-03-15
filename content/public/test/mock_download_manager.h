@@ -44,6 +44,7 @@ class MockDownloadManager : public DownloadManager {
     std::string last_modified;
     int64_t received_bytes;
     int64_t total_bytes;
+    std::string hash;
     DownloadItem::DownloadState state;
     DownloadDangerType danger_type;
     DownloadInterruptReason interrupt_reason;
@@ -63,6 +64,7 @@ class MockDownloadManager : public DownloadManager {
                               const std::string& last_modified,
                               int64_t received_bytes,
                               int64_t total_bytes,
+                              const std::string& hash,
                               DownloadItem::DownloadState state,
                               DownloadDangerType danger_type,
                               DownloadInterruptReason interrupt_reason,
@@ -119,6 +121,7 @@ class MockDownloadManager : public DownloadManager {
                                    const std::string& last_modified,
                                    int64_t received_bytes,
                                    int64_t total_bytes,
+                                   const std::string& hash,
                                    DownloadItem::DownloadState state,
                                    DownloadDangerType danger_type,
                                    DownloadInterruptReason interrupt_reason,

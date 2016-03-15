@@ -179,6 +179,7 @@ base::string16 InterruptReasonStatusMessage(
       // fallthrough
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
   }
 
@@ -262,6 +263,7 @@ base::string16 InterruptReasonMessage(content::DownloadInterruptReason reason) {
       // fallthrough
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
   }
 

@@ -373,12 +373,10 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
   if (download_->GetState() == DownloadItem::IN_PROGRESS) {
-    download_->SetTotalBytes(size);
-    download_->DestinationUpdate(size, 0, std::string());
     // Must call OnAllDataSaved here in order for
     // GDataDownloadObserver::ShouldUpload() to return true.
     // ShouldCompleteDownload() may depend on the gdata uploader to finish.
-    download_->OnAllDataSaved(DownloadItem::kEmptyFileHash);
+    download_->OnAllDataSaved(size, scoped_ptr<crypto::SecureHash>());
   }
 
   if (!download_manager_->GetDelegate()) {
@@ -783,9 +781,9 @@ void SavePackage::Finish() {
     // with SavePackage flow.
     if (download_->GetState() == DownloadItem::IN_PROGRESS) {
       if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
-        download_->DestinationUpdate(
-            all_save_items_count_, CurrentSpeed(), std::string());
-        download_->OnAllDataSaved(DownloadItem::kEmptyFileHash);
+        download_->DestinationUpdate(all_save_items_count_, CurrentSpeed());
+        download_->OnAllDataSaved(all_save_items_count_,
+                                  scoped_ptr<crypto::SecureHash>());
       }
       download_->MarkAsComplete();
     }
@@ -816,8 +814,7 @@ void SavePackage::SaveFinished(SaveItemId save_item_id,
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
   if (download_ && (download_->GetState() == DownloadItem::IN_PROGRESS)) {
-    download_->DestinationUpdate(
-        completed_count(), CurrentSpeed(), std::string());
+    download_->DestinationUpdate(completed_count(), CurrentSpeed());
   }
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&

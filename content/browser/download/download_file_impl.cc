@@ -14,11 +14,13 @@
 #include "base/values.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_destination_observer.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "net/base/io_buffer.h"
 
 namespace content {
@@ -29,29 +31,19 @@ const int kMaxTimeBlockingFileThreadMs = 1000;
 // These constants control the default retry behavior for failing renames. Each
 // retry is performed after a delay that is twice the previous delay. The
 // initial delay is specified by kInitialRenameRetryDelayMs.
-const int kMaxRenameRetries = 3;
 const int kInitialRenameRetryDelayMs = 200;
 
-int DownloadFile::number_active_objects_ = 0;
+// Number of times a failing rename is retried before giving up.
+const int kMaxRenameRetries = 3;
 
 DownloadFileImpl::DownloadFileImpl(
-    const DownloadSaveInfo& save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    const GURL& url,
-    const GURL& referrer_url,
-    bool calculate_hash,
-    base::File file,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
-    : file_(save_info.file_path,
-            url,
-            referrer_url,
-            save_info.offset,
-            calculate_hash,
-            save_info.hash_state,
-            std::move(file),
-            bound_net_log),
+    : file_(bound_net_log),
+      save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
       stream_reader_(std::move(stream)),
       bytes_seen_(0),
@@ -61,7 +53,6 @@ DownloadFileImpl::DownloadFileImpl(
 
 DownloadFileImpl::~DownloadFileImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  --number_active_objects_;
 }
 
 void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
@@ -69,7 +60,12 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
 
   update_timer_.reset(new base::RepeatingTimer());
   DownloadInterruptReason result =
-      file_.Initialize(default_download_directory_);
+      file_.Initialize(save_info_->file_path,
+                       default_download_directory_,
+                       std::move(save_info_->file),
+                       save_info_->offset,
+                       save_info_->hash_of_partial_file,
+                       std::move(save_info_->hash_state));
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
@@ -90,8 +86,6 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
           callback, DOWNLOAD_INTERRUPT_REASON_NONE));
-
-  ++number_active_objects_;
 }
 
 DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
@@ -110,18 +104,23 @@ DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
 void DownloadFileImpl::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
-  RenameWithRetryInternal(
-      full_path, UNIQUIFY, kMaxRenameRetries, base::TimeTicks(), callback);
+  scoped_ptr<RenameParameters> parameters(
+      new RenameParameters(UNIQUIFY, full_path, callback));
+  RenameWithRetryInternal(std::move(parameters));
 }
 
 void DownloadFileImpl::RenameAndAnnotate(
     const base::FilePath& full_path,
+    const std::string& client_guid,
+    const GURL& source_url,
+    const GURL& referrer_url,
     const RenameCompletionCallback& callback) {
-  RenameWithRetryInternal(full_path,
-                          ANNOTATE_WITH_SOURCE_INFORMATION,
-                          kMaxRenameRetries,
-                          base::TimeTicks(),
-                          callback);
+  scoped_ptr<RenameParameters> parameters(new RenameParameters(
+      ANNOTATE_WITH_SOURCE_INFORMATION, full_path, callback));
+  parameters->client_guid = client_guid;
+  parameters->source_url = source_url;
+  parameters->referrer_url = referrer_url;
+  RenameWithRetryInternal(std::move(parameters));
 }
 
 base::TimeDelta DownloadFileImpl::GetRetryDelayForFailedRename(
@@ -140,16 +139,12 @@ bool DownloadFileImpl::ShouldRetryFailedRename(DownloadInterruptReason reason) {
 }
 
 void DownloadFileImpl::RenameWithRetryInternal(
-    const base::FilePath& full_path,
-    RenameOption option,
-    int retries_left,
-    base::TimeTicks time_of_first_failure,
-    const RenameCompletionCallback& callback) {
+    scoped_ptr<RenameParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  base::FilePath new_path(full_path);
+  base::FilePath new_path = parameters->new_path;
 
-  if ((option & UNIQUIFY) && full_path != file_.full_path()) {
+  if ((parameters->option & UNIQUIFY) && new_path != file_.full_path()) {
     int uniquifier =
         base::GetUniquePathNumber(new_path, base::FilePath::StringType());
     if (uniquifier > 0)
@@ -165,36 +160,36 @@ void DownloadFileImpl::RenameWithRetryInternal(
   // have less assurance that the file at file_.full_path() was the one we were
   // working with.
   if (ShouldRetryFailedRename(reason) && file_.in_progress() &&
-      retries_left > 0) {
-    int attempt_number = kMaxRenameRetries - retries_left;
+      parameters->retries_left > 0) {
+    int attempt_number = kMaxRenameRetries - parameters->retries_left;
+    --parameters->retries_left;
+    if (parameters->time_of_first_failure.is_null())
+      parameters->time_of_first_failure = base::TimeTicks::Now();
     BrowserThread::PostDelayedTask(
         BrowserThread::FILE,
         FROM_HERE,
         base::Bind(&DownloadFileImpl::RenameWithRetryInternal,
                    weak_factory_.GetWeakPtr(),
-                   full_path,
-                   option,
-                   --retries_left,
-                   time_of_first_failure.is_null() ? base::TimeTicks::Now()
-                                                   : time_of_first_failure,
-                   callback),
+                   base::Passed(std::move(parameters))),
         GetRetryDelayForFailedRename(attempt_number));
     return;
   }
 
-  if (!time_of_first_failure.is_null())
+  if (!parameters->time_of_first_failure.is_null())
     RecordDownloadFileRenameResultAfterRetry(
-        base::TimeTicks::Now() - time_of_first_failure, reason);
+        base::TimeTicks::Now() - parameters->time_of_first_failure, reason);
 
   if (reason == DOWNLOAD_INTERRUPT_REASON_NONE &&
-      (option & ANNOTATE_WITH_SOURCE_INFORMATION)) {
+      (parameters->option & ANNOTATE_WITH_SOURCE_INFORMATION)) {
     // Doing the annotation after the rename rather than before leaves
     // a very small window during which the file has the final name but
     // hasn't been marked with the Mark Of The Web.  However, it allows
     // anti-virus scanners on Windows to actually see the data
     // (http://crbug.com/127999) under the correct name (which is information
     // it uses).
-    reason = file_.AnnotateWithSourceInformation();
+    reason = file_.AnnotateWithSourceInformation(parameters->client_guid,
+                                                 parameters->source_url,
+                                                 parameters->referrer_url);
   }
 
   if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
@@ -209,8 +204,9 @@ void DownloadFileImpl::RenameWithRetryInternal(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, reason, new_path));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(parameters->completion_callback, reason, new_path));
 }
 
 void DownloadFileImpl::Detach() {
@@ -221,28 +217,12 @@ void DownloadFileImpl::Cancel() {
   file_.Cancel();
 }
 
-base::FilePath DownloadFileImpl::FullPath() const {
+const base::FilePath& DownloadFileImpl::FullPath() const {
   return file_.full_path();
 }
 
 bool DownloadFileImpl::InProgress() const {
   return file_.in_progress();
-}
-
-int64_t DownloadFileImpl::CurrentSpeed() const {
-  return rate_estimator_.GetCountPerSecond();
-}
-
-bool DownloadFileImpl::GetHash(std::string* hash) {
-  return file_.GetHash(hash);
-}
-
-std::string DownloadFileImpl::GetHashState() {
-  return file_.GetHashState();
-}
-
-void DownloadFileImpl::SetClientGuid(const std::string& guid) {
-  file_.SetClientGuid(guid);
 }
 
 void DownloadFileImpl::StreamActive() {
@@ -281,10 +261,6 @@ void DownloadFileImpl::StreamActive() {
               stream_reader_->GetStatus());
           SendUpdate();
           base::TimeTicks close_start(base::TimeTicks::Now());
-          if (reason == DOWNLOAD_INTERRUPT_REASON_NONE)
-            file_.Finish();
-          else
-            file_.FinishWithError();
           base::TimeTicks now(base::TimeTicks::Now());
           disk_writes_time_ += (now - close_start);
           RecordFileBandwidth(
@@ -322,24 +298,29 @@ void DownloadFileImpl::StreamActive() {
     // Our observer will clean us up.
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
-    SendUpdate();                       // Make info up to date before error.
+    SendUpdate();  // Make info up to date before error.
+    scoped_ptr<crypto::SecureHash> hash_state = file_.Finish();
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+        BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&DownloadDestinationObserver::DestinationError,
-                   observer_, reason));
+                   observer_,
+                   reason,
+                   file_.bytes_so_far(),
+                   base::Passed(&hash_state)));
   } else if (state == ByteStreamReader::STREAM_COMPLETE) {
     // Signal successful completion and shut down processing.
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
-    std::string hash;
-    if (!GetHash(&hash) || file_.IsEmptyHash(hash))
-      hash.clear();
     SendUpdate();
+    scoped_ptr<crypto::SecureHash> hash_state = file_.Finish();
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &DownloadDestinationObserver::DestinationCompleted,
-            observer_, hash));
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&DownloadDestinationObserver::DestinationCompleted,
+                   observer_,
+                   file_.bytes_so_far(),
+                   base::Passed(&hash_state)));
   }
   if (bound_net_log_.IsCapturing()) {
     bound_net_log_.AddEvent(
@@ -351,15 +332,23 @@ void DownloadFileImpl::StreamActive() {
 
 void DownloadFileImpl::SendUpdate() {
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&DownloadDestinationObserver::DestinationUpdate,
-                 observer_, file_.bytes_so_far(), CurrentSpeed(),
-                 GetHashState()));
+                 observer_,
+                 file_.bytes_so_far(),
+                 rate_estimator_.GetCountPerSecond()));
 }
 
-// static
-int DownloadFile::GetNumberOfDownloadFiles() {
-  return number_active_objects_;
-}
+DownloadFileImpl::RenameParameters::RenameParameters(
+    RenameOption option,
+    const base::FilePath& new_path,
+    const RenameCompletionCallback& completion_callback)
+    : option(option),
+      new_path(new_path),
+      retries_left(kMaxRenameRetries),
+      completion_callback(completion_callback) {}
+
+DownloadFileImpl::RenameParameters::~RenameParameters() {}
 
 }  // namespace content

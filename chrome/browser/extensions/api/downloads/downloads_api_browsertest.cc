@@ -441,6 +441,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
           std::string(),  // etag, last_modified
           1,
           1,                      // received_bytes, total_bytes
+          std::string(),          // hash
           history_info[i].state,  // state
           history_info[i].danger_type,
           (history_info[i].state != content::DownloadItem::CANCELLED

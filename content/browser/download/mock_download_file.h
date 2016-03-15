@@ -35,23 +35,24 @@ class MockDownloadFile : public DownloadFile {
   MOCK_METHOD2(RenameAndUniquify,
                void(const base::FilePath& full_path,
                     const RenameCompletionCallback& callback));
-  MOCK_METHOD2(RenameAndAnnotate,
+  MOCK_METHOD5(RenameAndAnnotate,
                void(const base::FilePath& full_path,
+                    const std::string& client_guid,
+                    const GURL& source_url,
+                    const GURL& referrer_url,
                     const RenameCompletionCallback& callback));
   MOCK_METHOD0(Detach, void());
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD0(Finish, void());
-  MOCK_CONST_METHOD0(FullPath, base::FilePath());
+  MOCK_CONST_METHOD0(FullPath, const base::FilePath&());
   MOCK_CONST_METHOD0(InProgress, bool());
   MOCK_CONST_METHOD0(BytesSoFar, int64_t());
   MOCK_CONST_METHOD0(CurrentSpeed, int64_t());
   MOCK_METHOD1(GetHash, bool(std::string* hash));
-  MOCK_METHOD0(GetHashState, std::string());
   MOCK_METHOD0(SendUpdate, void());
   MOCK_CONST_METHOD0(Id, int());
   MOCK_METHOD0(GetDownloadManager, DownloadManager*());
   MOCK_CONST_METHOD0(DebugString, std::string());
-  MOCK_METHOD1(SetClientGuid, void(const std::string&));
 };
 
 }  // namespace content

@@ -78,13 +78,8 @@ void DownloadRequestData::Attach(net::URLRequest* request,
                                  DownloadUrlParameters* parameters,
                                  uint32_t download_id) {
   DownloadRequestData* request_data = new DownloadRequestData;
-  request_data->save_info_.reset(new DownloadSaveInfo);
-  request_data->save_info_->file_path = parameters->file_path();
-  request_data->save_info_->suggested_name = parameters->suggested_name();
-  request_data->save_info_->file = parameters->GetFile();
-  request_data->save_info_->offset = parameters->offset();
-  request_data->save_info_->hash_state = parameters->hash_state();
-  request_data->save_info_->prompt_for_save_location = parameters->prompt();
+  request_data->save_info_.reset(
+      new DownloadSaveInfo(parameters->GetSaveInfo()));
   request_data->download_id_ = download_id;
   request_data->on_started_callback_ = parameters->callback();
   request->SetUserData(&kKey, request_data);
@@ -604,7 +599,8 @@ DownloadInterruptReason DownloadRequestCore::HandleSuccessfulServerResponse(
     if (http_headers.response_code() != net::HTTP_PARTIAL_CONTENT) {
       // Requested a partial range, but received the entire response.
       save_info->offset = 0;
-      save_info->hash_state.clear();
+      save_info->hash_of_partial_file.clear();
+      save_info->hash_state.reset();
       return DOWNLOAD_INTERRUPT_REASON_NONE;
     }
 

@@ -120,6 +120,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       const std::string& last_modified,
       int64_t received_bytes,
       int64_t total_bytes,
+      const std::string& hash,
       DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
@@ -140,6 +141,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
                                 last_modified,
                                 received_bytes,
                                 total_bytes,
+                                hash,
                                 state,
                                 danger_type,
                                 interrupt_reason,
@@ -364,17 +366,16 @@ void DownloadManagerImpl::StartDownloadWithId(
 
   if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE) {
     DCHECK(stream.get());
-    download_file.reset(file_factory_->CreateFile(
-        *info->save_info, default_download_directory, info->url(),
-        info->referrer_url, delegate_ && delegate_->GenerateFileHash(),
-        std::move(info->save_info->file), std::move(stream),
-        download->GetBoundNetLog(), download->DestinationObserverAsWeakPtr()));
-
-    if (download_file.get() && delegate_) {
-      download_file->SetClientGuid(
-          delegate_->ApplicationClientIdForFileScanning());
-    }
+    download_file.reset(
+        file_factory_->CreateFile(std::move(info->save_info),
+                                  default_download_directory,
+                                  std::move(stream),
+                                  download->GetBoundNetLog(),
+                                  download->DestinationObserverAsWeakPtr()));
   }
+  // It is important to leave info->save_info intact in the case of an interrupt
+  // so that the DownloadItem can salvage what it can out of a failed resumption
+  // attempt.
 
   download->Start(std::move(download_file), std::move(info->request_handle),
                   *info);
@@ -617,6 +618,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     const std::string& last_modified,
     int64_t received_bytes,
     int64_t total_bytes,
+    const std::string& hash,
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
@@ -642,6 +644,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       last_modified,
       received_bytes,
       total_bytes,
+      hash,
       state,
       danger_type,
       interrupt_reason,

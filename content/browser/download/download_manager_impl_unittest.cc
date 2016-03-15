@@ -93,6 +93,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
                          std::string(),
                          0,
                          0,
+                         std::string(),
                          DownloadItem::COMPLETE,
                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                          DOWNLOAD_INTERRUPT_REASON_NONE,
@@ -116,7 +117,9 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD3(UpdateProgress, void(int64_t, int64_t, const std::string&));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());
-  MOCK_METHOD1(OnAllDataSaved, void(const std::string&));
+  void OnAllDataSaved(int64_t, scoped_ptr<crypto::SecureHash>) override {
+    NOTREACHED();
+  }
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   void Start(scoped_ptr<DownloadFile> download_file,
              scoped_ptr<DownloadRequestHandleInterface> req_handle,
@@ -203,7 +206,6 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
                bool(DownloadItem*, const base::Closure&));
   MOCK_METHOD2(ShouldOpenDownload,
                bool(DownloadItem*, const DownloadOpenDelayedCallback&));
-  MOCK_METHOD0(GenerateFileHash, bool());
   MOCK_METHOD4(GetSaveDir, void(BrowserContext*,
                                 base::FilePath*, base::FilePath*, bool*));
   MOCK_METHOD5(ChooseSavePath, void(
@@ -255,6 +257,7 @@ class MockDownloadItemFactory
       const std::string& last_modofied,
       int64_t received_bytes,
       int64_t total_bytes,
+      const std::string& hash,
       DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
@@ -323,6 +326,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     const std::string& last_modified,
     int64_t received_bytes,
     int64_t total_bytes,
+    const std::string& hash,
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
@@ -388,22 +392,16 @@ class MockDownloadFileFactory
   virtual ~MockDownloadFileFactory() {}
 
   // Overridden method from DownloadFileFactory
-  MOCK_METHOD3(MockCreateFile,
-               MockDownloadFile*(const DownloadSaveInfo&,
-                                 bool,
-                                 ByteStreamReader*));
+  MOCK_METHOD2(MockCreateFile,
+               MockDownloadFile*(const DownloadSaveInfo&, ByteStreamReader*));
 
   virtual DownloadFile* CreateFile(
-      const DownloadSaveInfo& save_info,
+      scoped_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      const GURL& url,
-      const GURL& referrer_url,
-      bool calculate_hash,
-      base::File file_stream,
       scoped_ptr<ByteStreamReader> byte_stream,
       const net::BoundNetLog& bound_net_log,
-      base::WeakPtr<DownloadDestinationObserver> observer) {
-    return MockCreateFile(save_info, calculate_hash, byte_stream.get());
+      base::WeakPtr<DownloadDestinationObserver> observer) override {
+    return MockCreateFile(*save_info, byte_stream.get());
   }
 };
 
@@ -634,15 +632,12 @@ TEST_F(DownloadManagerTest, StartDownload) {
 
   // Doing nothing will set the default download directory to null.
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _, _));
-  EXPECT_CALL(GetMockDownloadManagerDelegate(), GenerateFileHash())
-      .WillOnce(Return(true));
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               ApplicationClientIdForFileScanning())
       .WillRepeatedly(Return("client-id"));
   MockDownloadFile* mock_file = new MockDownloadFile;
-  EXPECT_CALL(*mock_file, SetClientGuid("client-id"));
   EXPECT_CALL(*mock_download_file_factory_.get(),
-              MockCreateFile(Ref(*info->save_info.get()), true, stream.get()))
+              MockCreateFile(Ref(*info->save_info.get()), stream.get()))
       .WillOnce(Return(mock_file));
 
   download_manager_->StartDownload(std::move(info), std::move(stream),
@@ -749,6 +744,7 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
       std::string(),
       10,
       10,
+      std::string(),
       DownloadItem::INTERRUPTED,
       DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,

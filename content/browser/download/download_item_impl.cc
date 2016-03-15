@@ -40,6 +40,7 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
+#include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -100,8 +101,6 @@ bool IsDownloadResumptionEnabled() {
 
 const uint32_t DownloadItem::kInvalidId = 0;
 
-const char DownloadItem::kEmptyFileHash[] = "";
-
 // The maximum number of attempts we will make to resume automatically.
 const int DownloadItemImpl::kMaxAutoResumeAttempts = 5;
 
@@ -121,6 +120,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    const std::string& last_modified,
                                    int64_t received_bytes,
                                    int64_t total_bytes,
+                                   const std::string& hash,
                                    DownloadItem::DownloadState state,
                                    DownloadDangerType danger_type,
                                    DownloadInterruptReason interrupt_reason,
@@ -128,16 +128,12 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    const net::BoundNetLog& bound_net_log)
     : guid_(base::ToUpperASCII(guid)),
       download_id_(download_id),
-      current_path_(current_path),
       target_path_(target_path),
       url_chain_(url_chain),
       referrer_url_(referrer_url),
       mime_type_(mime_type),
       original_mime_type_(original_mime_type),
       total_bytes_(total_bytes),
-      received_bytes_(received_bytes),
-      last_modified_time_(last_modified),
-      etag_(etag),
       last_reason_(interrupt_reason),
       start_tick_(base::TimeTicks()),
       state_(ExternalToInternalState(state)),
@@ -145,8 +141,13 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       start_time_(start_time),
       end_time_(end_time),
       delegate_(delegate),
-      all_data_saved_(state == COMPLETE),
       opened_(opened),
+      current_path_(current_path),
+      received_bytes_(received_bytes),
+      all_data_saved_(state == COMPLETE),
+      hash_(hash),
+      last_modified_time_(last_modified),
+      etag_(etag),
       bound_net_log_(bound_net_log),
       weak_ptr_factory_(this) {
   delegate_->Attach();
@@ -179,14 +180,14 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       original_mime_type_(info.original_mime_type),
       remote_address_(info.remote_address),
       total_bytes_(info.total_bytes),
-      last_modified_time_(info.last_modified),
-      etag_(info.etag),
       last_reason_(info.result),
       start_tick_(base::TimeTicks::Now()),
       state_(INITIAL_INTERNAL),
       start_time_(info.start_time),
       delegate_(delegate),
       is_temporary_(!info.save_info->file_path.empty()),
+      last_modified_time_(info.last_modified),
+      etag_(info.etag),
       bound_net_log_(bound_net_log),
       weak_ptr_factory_(this) {
   delegate_->Attach();
@@ -215,7 +216,6 @@ DownloadItemImpl::DownloadItemImpl(
       request_handle_(std::move(request_handle)),
       guid_(base::ToUpperASCII(base::GenerateGUID())),
       download_id_(download_id),
-      current_path_(path),
       target_path_(path),
       url_chain_(1, url),
       mime_type_(mime_type),
@@ -224,6 +224,7 @@ DownloadItemImpl::DownloadItemImpl(
       state_(IN_PROGRESS_INTERNAL),
       start_time_(base::Time::Now()),
       delegate_(delegate),
+      current_path_(path),
       bound_net_log_(bound_net_log),
       weak_ptr_factory_(this) {
   delegate_->Attach();
@@ -378,8 +379,9 @@ void DownloadItemImpl::Resume() {
 void DownloadItemImpl::Cancel(bool user_cancel) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
-  Interrupt(user_cancel ? DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
-                        : DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
+  InterruptAndDiscardPartialState(
+      user_cancel ? DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
+                  : DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
   UpdateObservers();
 }
 
@@ -388,7 +390,7 @@ void DownloadItemImpl::Remove() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->AssertStateConsistent(this);
-  Interrupt(DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+  InterruptAndDiscardPartialState(DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   UpdateObservers();
   delegate_->AssertStateConsistent(this);
 
@@ -601,10 +603,6 @@ const std::string& DownloadItemImpl::GetHash() const {
   return hash_;
 }
 
-const std::string& DownloadItemImpl::GetHashState() const {
-  return hash_state_;
-}
-
 bool DownloadItemImpl::GetFileExternallyRemoved() const {
   return file_externally_removed_;
 }
@@ -796,8 +794,7 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
 
   if (verbose) {
     description += base::StringPrintf(
-        " total = %" PRId64
-        " received = %" PRId64
+        " total = %" PRId64 " received = %" PRId64
         " reason = %s"
         " paused = %c"
         " resume_mode = %s"
@@ -808,7 +805,8 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         " etag = '%s'"
         " has_download_file = %s"
         " url_chain = \n\t\"%s\"\n\t"
-        " full_path = \"%" PRFilePath "\"\n\t"
+        " current_path = \"%" PRFilePath
+        "\"\n\t"
         " target_path = \"%" PRFilePath "\"",
         GetTotalBytes(),
         GetReceivedBytes(),
@@ -862,10 +860,14 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
     case DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
     // The server disagreed with the file offset that we sent.
 
+    case DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH:
+    // The file on disk was found to not match the expected hash. Discard and
+    // start from beginning.
+
     case DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT:
       // The [possibly persisted] file offset disagreed with the file on disk.
 
-      // The intermediate stub is not usable and the server is resonding. Hence
+      // The intermediate stub is not usable and the server is responding. Hence
       // retrying the request from the beginning is likely to work.
       restart_required = true;
       break;
@@ -957,8 +959,7 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
     origin_state |= ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED;
   if (content_disposition_ != new_create_info.content_disposition)
     origin_state |= ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED;
-  RecordOriginStateOnResumption(new_create_info.save_info->offset != 0,
-                                origin_state);
+  RecordOriginStateOnResumption(received_bytes_ != 0, origin_state);
 
   url_chain_.insert(
       url_chain_.end(), chain_iter, new_create_info.url_chain.end());
@@ -994,16 +995,20 @@ void DownloadItemImpl::SetTotalBytes(int64_t total_bytes) {
   total_bytes_ = total_bytes;
 }
 
-void DownloadItemImpl::OnAllDataSaved(const std::string& final_hash) {
+void DownloadItemImpl::OnAllDataSaved(
+    int64_t total_bytes,
+    scoped_ptr<crypto::SecureHash> hash_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
+  SetTotalBytes(total_bytes);
+  UpdateProgress(total_bytes, 0);
+  SetHashState(std::move(hash_state));
+  hash_state_.reset();  // No need to retain hash_state_ since we are done with
+                        // the download and don't expect to receive any more
+                        // data.
+
   DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
-
-  // Store final hash and null out intermediate serialized hash state.
-  hash_ = final_hash;
-  hash_state_ = "";
-
   UpdateObservers();
 }
 
@@ -1017,8 +1022,7 @@ void DownloadItemImpl::MarkAsComplete() {
 }
 
 void DownloadItemImpl::DestinationUpdate(int64_t bytes_so_far,
-                                         int64_t bytes_per_sec,
-                                         const std::string& hash_state) {
+                                         int64_t bytes_per_sec) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the download is in any other state we don't expect any
   // DownloadDestinationObserver callbacks. An interruption or a cancellation
@@ -1026,19 +1030,15 @@ void DownloadItemImpl::DestinationUpdate(int64_t bytes_so_far,
   // reference held by the DownloadFile and hence cuts off any pending
   // callbacks.
   DCHECK(state_ == TARGET_PENDING_INTERNAL || state_ == IN_PROGRESS_INTERNAL);
+
+  // There must be no pending destination_error_.
+  DCHECK_EQ(destination_error_, DOWNLOAD_INTERRUPT_REASON_NONE);
+
   DVLOG(20) << __FUNCTION__ << " so_far=" << bytes_so_far
             << " per_sec=" << bytes_per_sec
             << " download=" << DebugString(true);
 
-  bytes_per_sec_ = bytes_per_sec;
-  hash_state_ = hash_state;
-  received_bytes_ = bytes_so_far;
-
-  // If we've received more data than we were expecting (bad server info?),
-  // revert to 'unknown size mode'.
-  if (received_bytes_ > total_bytes_)
-    total_bytes_ = 0;
-
+  UpdateProgress(bytes_so_far, bytes_per_sec);
   if (bound_net_log_.IsCapturing()) {
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_ITEM_UPDATED,
@@ -1048,7 +1048,10 @@ void DownloadItemImpl::DestinationUpdate(int64_t bytes_so_far,
   UpdateObservers();
 }
 
-void DownloadItemImpl::DestinationError(DownloadInterruptReason reason) {
+void DownloadItemImpl::DestinationError(
+    DownloadInterruptReason reason,
+    int64_t bytes_so_far,
+    scoped_ptr<crypto::SecureHash> secure_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the download is in any other state we don't expect any
   // DownloadDestinationObserver callbacks. An interruption or a cancellation
@@ -1063,14 +1066,19 @@ void DownloadItemImpl::DestinationError(DownloadInterruptReason reason) {
   // has completed and the intermediate file has been renamed to simplify
   // resumption conditions.
   if (state_ == TARGET_PENDING_INTERNAL) {
+    received_bytes_ = bytes_so_far;
+    hash_state_ = std::move(secure_hash);
+    hash_.clear();
     destination_error_ = reason;
     return;
   }
-  Interrupt(reason);
+  InterruptWithPartialState(bytes_so_far, std::move(secure_hash), reason);
   UpdateObservers();
 }
 
-void DownloadItemImpl::DestinationCompleted(const std::string& final_hash) {
+void DownloadItemImpl::DestinationCompleted(
+    int64_t total_bytes,
+    scoped_ptr<crypto::SecureHash> secure_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the download is in any other state we don't expect any
   // DownloadDestinationObserver callbacks. An interruption or a cancellation
@@ -1080,7 +1088,7 @@ void DownloadItemImpl::DestinationCompleted(const std::string& final_hash) {
   DCHECK(state_ == TARGET_PENDING_INTERNAL || state_ == IN_PROGRESS_INTERNAL);
   DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
 
-  OnAllDataSaved(final_hash);
+  OnAllDataSaved(total_bytes, std::move(secure_hash));
   MaybeCompleteDownload();
 }
 
@@ -1159,10 +1167,23 @@ void DownloadItemImpl::Start(
   if (new_create_info.result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     DCHECK(!download_file_.get());
 
+    // Download requests that are interrupted by Start() should result in a
+    // DownloadCreateInfo with an intact DownloadSaveInfo.
+    DCHECK(new_create_info.save_info);
+
+    int64_t offset = new_create_info.save_info->offset;
+    scoped_ptr<crypto::SecureHash> hash_state =
+        make_scoped_ptr(new_create_info.save_info->hash_state
+                            ? new_create_info.save_info->hash_state->Clone()
+                            : nullptr);
+
     // Interrupted downloads also need a target path.
     if (target_path_.empty()) {
-      TransitionTo(INTERRUPTED_TARGET_PENDING_INTERNAL);
+      received_bytes_ = offset;
+      hash_state_ = std::move(hash_state);
+      hash_.clear();
       destination_error_ = new_create_info.result;
+      TransitionTo(INTERRUPTED_TARGET_PENDING_INTERNAL);
       DetermineDownloadTarget();
       return;
     }
@@ -1170,7 +1191,8 @@ void DownloadItemImpl::Start(
     // Otherwise, this was a resumption attempt which ended with an
     // interruption. Continue with current target path.
     TransitionTo(TARGET_RESOLVED_INTERNAL);
-    Interrupt(new_create_info.result);
+    InterruptWithPartialState(
+        offset, std::move(hash_state), new_create_info.result);
     UpdateObservers();
     return;
   }
@@ -1200,7 +1222,12 @@ void DownloadItemImpl::OnDownloadFileInitialized(
   DVLOG(20) << __FUNCTION__
             << "() result:" << DownloadInterruptReasonToString(result);
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
-    // Whoops. That didn't work. Proceed as an interrupted download.
+    // Whoops. That didn't work. Proceed as an interrupted download, but reset
+    // the partial state. Currently, the partial stub cannot be recovered if the
+    // download file initialization fails.
+    received_bytes_ = 0;
+    hash_state_.reset();
+    hash_.clear();
     destination_error_ = result;
     TransitionTo(INTERRUPTED_TARGET_PENDING_INTERNAL);
   }
@@ -1245,7 +1272,8 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   // This was an interrupted download that was looking for a filename. Now that
   // it has one, transition to interrupted.
   if (state_ == INTERRUPTED_TARGET_PENDING_INTERNAL) {
-    Interrupt(destination_error_);
+    InterruptWithPartialState(
+        received_bytes_, std::move(hash_state_), destination_error_);
     destination_error_ = DOWNLOAD_INTERRUPT_REASON_NONE;
     UpdateObservers();
     return;
@@ -1293,33 +1321,36 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, TARGET_PENDING_INTERNAL);
   DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
+
   TransitionTo(TARGET_RESOLVED_INTERNAL);
 
+  // If the intermediate rename fails while there's also a destination_error_,
+  // then the former is considered the critical error since it requires
+  // discarding the partial state.
+  if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
+    // TODO(asanka): Even though the rename failed, it may still be possible to
+    // recover the partial state from the 'before' name.
+    InterruptAndDiscardPartialState(reason);
+    UpdateObservers();
+    return;
+  }
+
   if (DOWNLOAD_INTERRUPT_REASON_NONE != destination_error_) {
-    // Process destination error.  If both |reason| and |destination_error_|
-    // refer to actual errors, we want to use the |destination_error_| as the
-    // argument to the Interrupt() routine, as it happened first.
-    if (reason == DOWNLOAD_INTERRUPT_REASON_NONE)
-      SetFullPath(full_path);
-    Interrupt(destination_error_);
+    SetFullPath(full_path);
+    InterruptWithPartialState(
+        received_bytes_, std::move(hash_state_), destination_error_);
     destination_error_ = DOWNLOAD_INTERRUPT_REASON_NONE;
     UpdateObservers();
-  } else if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
-    Interrupt(reason);
-    // All file errors result in file deletion above; no need to cleanup.  The
-    // current_path_ should be empty. Resuming this download will force a
-    // restart and a re-doing of filename determination.
-    DCHECK(current_path_.empty());
-    UpdateObservers();
-  } else {
-    SetFullPath(full_path);
-    TransitionTo(IN_PROGRESS_INTERNAL);
-    // TODO(asanka): Calling UpdateObservers() prior to MaybeCompleteDownload()
-    // is not safe. The download could be in an underminate state after invoking
-    // observers. http://crbug.com/586610
-    UpdateObservers();
-    MaybeCompleteDownload();
+    return;
   }
+
+  SetFullPath(full_path);
+  TransitionTo(IN_PROGRESS_INTERNAL);
+  // TODO(asanka): Calling UpdateObservers() prior to MaybeCompleteDownload() is
+  // not safe. The download could be in an underminate state after invoking
+  // observers. http://crbug.com/586610
+  UpdateObservers();
+  MaybeCompleteDownload();
 }
 
 // When SavePackage downloads MHTML to GData (see
@@ -1379,10 +1410,15 @@ void DownloadItemImpl::OnDownloadCompleting() {
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
                  weak_ptr_factory_.GetWeakPtr());
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+      BrowserThread::FILE,
+      FROM_HERE,
       base::Bind(&DownloadFile::RenameAndAnnotate,
                  base::Unretained(download_file_.get()),
-                 GetTargetFilePath(), callback));
+                 GetTargetFilePath(),
+                 delegate_->GetApplicationClientIdForFileScanning(),
+                 GetURL(),
+                 GetReferrerUrl(),
+                 callback));
 }
 
 void DownloadItemImpl::OnDownloadRenamedToFinalName(
@@ -1402,11 +1438,10 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
             << " " << DebugString(false);
 
   if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
-    Interrupt(reason);
-
-    // All file errors should have resulted in in file deletion above. On
-    // resumption we will need to re-do filename determination.
-    DCHECK(current_path_.empty());
+    // Failure to perform the final rename is considered fatal. TODO(asanka): It
+    // may not be, in which case we should figure out whether we can recover the
+    // state.
+    InterruptAndDiscardPartialState(reason);
     UpdateObservers();
     return;
   }
@@ -1474,12 +1509,21 @@ void DownloadItemImpl::Completed() {
 
 // **** End of Download progression cascade
 
-// An error occurred somewhere.
-void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
+void DownloadItemImpl::InterruptAndDiscardPartialState(
+    DownloadInterruptReason reason) {
+  InterruptWithPartialState(0, scoped_ptr<crypto::SecureHash>(), reason);
+}
+
+void DownloadItemImpl::InterruptWithPartialState(
+    int64_t bytes_so_far,
+    scoped_ptr<crypto::SecureHash> hash_state,
+    DownloadInterruptReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, reason);
   DVLOG(20) << __FUNCTION__
             << "() reason:" << DownloadInterruptReasonToString(reason)
+            << " bytes_so_far:" << bytes_so_far
+            << " hash_state:" << (hash_state ? "Valid" : "Invalid")
             << " this=" << DebugString(true);
 
   // Somewhat counter-intuitively, it is possible for us to receive an
@@ -1520,6 +1564,7 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
 
     case RESUMING_INTERNAL:
     case INTERRUPTED_INTERNAL:
+      DCHECK(!download_file_);
       // The first non-cancel interrupt reason wins in cases where multiple
       // things go wrong.
       if (reason != DOWNLOAD_INTERRUPT_REASON_USER_CANCELED &&
@@ -1551,6 +1596,15 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
   // behave properly with setting all_data_saved_ to false here.
   all_data_saved_ = false;
 
+  if (current_path_.empty()) {
+    hash_state_.reset();
+    hash_.clear();
+    received_bytes_ = 0;
+  } else {
+    UpdateProgress(bytes_so_far, 0);
+    SetHashState(std::move(hash_state));
+  }
+
   if (request_handle_)
     request_handle_->CancelRequest();
 
@@ -1575,6 +1629,30 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
 
   TransitionTo(INTERRUPTED_INTERNAL);
   AutoResumeIfValid();
+}
+
+void DownloadItemImpl::UpdateProgress(int64_t bytes_so_far,
+                                      int64_t bytes_per_sec) {
+  received_bytes_ = bytes_so_far;
+  bytes_per_sec_ = bytes_per_sec;
+
+  // If we've received more data than we were expecting (bad server info?),
+  // revert to 'unknown size mode'.
+  if (received_bytes_ > total_bytes_)
+    total_bytes_ = 0;
+}
+
+void DownloadItemImpl::SetHashState(scoped_ptr<crypto::SecureHash> hash_state) {
+  hash_state_ = std::move(hash_state);
+  if (!hash_state_) {
+    hash_.clear();
+    return;
+  }
+
+  scoped_ptr<crypto::SecureHash> clone_of_hash_state(hash_state_->Clone());
+  std::vector<char> hash_value(clone_of_hash_state->GetHashLength());
+  clone_of_hash_state->Finish(&hash_value.front(), hash_value.size());
+  hash_.assign(hash_value.begin(), hash_value.end());
 }
 
 void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
@@ -1694,22 +1772,22 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
     case INTERRUPTED_INTERNAL:
       bound_net_log_.AddEvent(
           net::NetLog::TYPE_DOWNLOAD_ITEM_INTERRUPTED,
-          base::Bind(&ItemInterruptedNetLogCallback, last_reason_,
-                     received_bytes_, &hash_state_));
+          base::Bind(
+              &ItemInterruptedNetLogCallback, last_reason_, received_bytes_));
       break;
 
     case RESUMING_INTERNAL:
-      bound_net_log_.AddEvent(
-          net::NetLog::TYPE_DOWNLOAD_ITEM_RESUMED,
-          base::Bind(&ItemResumingNetLogCallback, false, last_reason_,
-                     received_bytes_, &hash_state_));
+      bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_RESUMED,
+                              base::Bind(&ItemResumingNetLogCallback,
+                                         false,
+                                         last_reason_,
+                                         received_bytes_));
       break;
 
     case CANCELLED_INTERNAL:
       bound_net_log_.AddEvent(
           net::NetLog::TYPE_DOWNLOAD_ITEM_CANCELED,
-          base::Bind(&ItemCanceledNetLogCallback, received_bytes_,
-                     &hash_state_));
+          base::Bind(&ItemCanceledNetLogCallback, received_bytes_));
       break;
 
     case MAX_DOWNLOAD_INTERNAL_STATE:
@@ -1810,9 +1888,10 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
   if (mode == RESUME_MODE_IMMEDIATE_RESTART ||
       mode == RESUME_MODE_USER_RESTART) {
     received_bytes_ = 0;
-    hash_state_ = "";
-    last_modified_time_ = "";
-    etag_ = "";
+    last_modified_time_.clear();
+    etag_.clear();
+    hash_.clear();
+    hash_state_.reset();
   }
 
   // Avoid using the WebContents even if it's still around. Resumption requests
@@ -1823,9 +1902,10 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
       GetURL(), -1, -1, -1, GetBrowserContext()->GetResourceContext()));
   download_params->set_file_path(GetFullPath());
   download_params->set_offset(GetReceivedBytes());
-  download_params->set_hash_state(GetHashState());
   download_params->set_last_modified(GetLastModifiedTime());
   download_params->set_etag(GetETag());
+  download_params->set_hash_of_partial_file(hash_);
+  download_params->set_hash_state(std::move(hash_state_));
 
   TransitionTo(RESUMING_INTERNAL);
   delegate_->ResumeInterruptedDownload(std::move(download_params), GetId());

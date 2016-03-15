@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_DESTINATION_OBSERVER_H_
-#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_DESTINATION_OBSERVER_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_DESTINATION_OBSERVER_H_
+#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_DESTINATION_OBSERVER_H_
 
 #include <stdint.h>
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "crypto/secure_hash.h"
 
 namespace content {
 
@@ -26,14 +28,17 @@ namespace content {
 class DownloadDestinationObserver {
  public:
   virtual void DestinationUpdate(int64_t bytes_so_far,
-                                 int64_t bytes_per_sec,
-                                 const std::string& hash_state) = 0;
+                                 int64_t bytes_per_sec) = 0;
 
-  virtual void DestinationError(DownloadInterruptReason reason) = 0;
+  virtual void DestinationError(DownloadInterruptReason reason,
+                                int64_t bytes_so_far,
+                                scoped_ptr<crypto::SecureHash> hash_state) = 0;
 
-  virtual void DestinationCompleted(const std::string& final_hash) = 0;
+  virtual void DestinationCompleted(
+      int64_t total_bytes,
+      scoped_ptr<crypto::SecureHash> hash_state) = 0;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_DESTINATION_OBSERVER_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_DESTINATION_OBSERVER_H_

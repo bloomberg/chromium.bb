@@ -1718,10 +1718,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   EXPECT_EQ(history::DownloadDangerType::NOT_DANGEROUS, row1.danger_type);
   EXPECT_LE(start, row1.start_time);
   EXPECT_GE(end, row1.end_time);
-  EXPECT_EQ(net::URLRequestSlowDownloadJob::kFirstDownloadSize,
-            row1.received_bytes);
-  EXPECT_EQ(net::URLRequestSlowDownloadJob::kFirstDownloadSize
-            + net::URLRequestSlowDownloadJob::kSecondDownloadSize,
+  EXPECT_EQ(0, row1.received_bytes);  // There's no ETag. So the intermediate
+                                      // state is discarded.
+  EXPECT_EQ(net::URLRequestSlowDownloadJob::kFirstDownloadSize +
+                net::URLRequestSlowDownloadJob::kSecondDownloadSize,
             row1.total_bytes);
   EXPECT_EQ(history::DownloadState::INTERRUPTED, row1.state);
   EXPECT_EQ(history::ToHistoryDownloadInterruptReason(

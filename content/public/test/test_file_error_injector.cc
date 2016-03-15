@@ -26,18 +26,14 @@ namespace {
 // A class that performs file operations and injects errors.
 class DownloadFileWithError: public DownloadFileImpl {
  public:
-  DownloadFileWithError(const DownloadSaveInfo& save_info,
-                         const base::FilePath& default_download_directory,
-                         const GURL& url,
-                         const GURL& referrer_url,
-                         bool calculate_hash,
-                         base::File file,
-                         scoped_ptr<ByteStreamReader> byte_stream,
-                         const net::BoundNetLog& bound_net_log,
-                         base::WeakPtr<DownloadDestinationObserver> observer,
-                         const TestFileErrorInjector::FileErrorInfo& error_info,
-                         const base::Closure& ctor_callback,
-                         const base::Closure& dtor_callback);
+  DownloadFileWithError(scoped_ptr<DownloadSaveInfo> save_info,
+                        const base::FilePath& default_download_directory,
+                        scoped_ptr<ByteStreamReader> byte_stream,
+                        const net::BoundNetLog& bound_net_log,
+                        base::WeakPtr<DownloadDestinationObserver> observer,
+                        const TestFileErrorInjector::FileErrorInfo& error_info,
+                        const base::Closure& ctor_callback,
+                        const base::Closure& dtor_callback);
 
   ~DownloadFileWithError() override;
 
@@ -49,6 +45,9 @@ class DownloadFileWithError: public DownloadFileImpl {
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(const base::FilePath& full_path,
+                         const std::string& client_guid,
+                         const GURL& source_url,
+                         const GURL& referrer_url,
                          const RenameCompletionCallback& callback) override;
 
  private:
@@ -96,24 +95,16 @@ static void RenameErrorCallback(
 }
 
 DownloadFileWithError::DownloadFileWithError(
-    const DownloadSaveInfo& save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    const GURL& url,
-    const GURL& referrer_url,
-    bool calculate_hash,
-    base::File file,
     scoped_ptr<ByteStreamReader> byte_stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
     const base::Closure& ctor_callback,
     const base::Closure& dtor_callback)
-    : DownloadFileImpl(save_info,
+    : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
-                       url,
-                       referrer_url,
-                       calculate_hash,
-                       std::move(file),
                        std::move(byte_stream),
                        bound_net_log,
                        observer),
@@ -195,6 +186,9 @@ void DownloadFileWithError::RenameAndUniquify(
 
 void DownloadFileWithError::RenameAndAnnotate(
     const base::FilePath& full_path,
+    const std::string& client_guid,
+    const GURL& source_url,
+    const GURL& referrer_url,
     const RenameCompletionCallback& callback) {
   DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
   RenameCompletionCallback callback_to_use = callback;
@@ -217,7 +211,8 @@ void DownloadFileWithError::RenameAndAnnotate(
                                  error_to_return);
   }
 
-  DownloadFileImpl::RenameAndAnnotate(full_path, callback_to_use);
+  DownloadFileImpl::RenameAndAnnotate(
+      full_path, client_guid, source_url, referrer_url, callback_to_use);
 }
 
 bool DownloadFileWithError::OverwriteError(
@@ -254,17 +249,12 @@ class DownloadFileWithErrorFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      const DownloadSaveInfo& save_info,
+      scoped_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      const GURL& url,
-      const GURL& referrer_url,
-      bool calculate_hash,
-      base::File file,
       scoped_ptr<ByteStreamReader> byte_stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
-  void ClearError();
   bool SetError(TestFileErrorInjector::FileErrorInfo error);
 
  private:
@@ -289,19 +279,19 @@ DownloadFileWithErrorFactory::DownloadFileWithErrorFactory(
 DownloadFileWithErrorFactory::~DownloadFileWithErrorFactory() {}
 
 DownloadFile* DownloadFileWithErrorFactory::CreateFile(
-    const DownloadSaveInfo& save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    const GURL& url,
-    const GURL& referrer_url,
-    bool calculate_hash,
-    base::File file,
     scoped_ptr<ByteStreamReader> byte_stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
-  return new DownloadFileWithError(
-      save_info, default_download_directory, url, referrer_url, calculate_hash,
-      std::move(file), std::move(byte_stream), bound_net_log, observer,
-      injected_error_, construction_callback_, destruction_callback_);
+  return new DownloadFileWithError(std::move(save_info),
+                                   default_download_directory,
+                                   std::move(byte_stream),
+                                   bound_net_log,
+                                   observer,
+                                   injected_error_,
+                                   construction_callback_,
+                                   destruction_callback_);
 }
 
 bool DownloadFileWithErrorFactory::SetError(
@@ -315,12 +305,9 @@ TestFileErrorInjector::TestFileErrorInjector(DownloadManager* download_manager)
       // DownloadManager is always a DownloadManagerImpl.
       download_manager_(static_cast<DownloadManagerImpl*>(download_manager)) {
   // Record the value of the pointer, for later validation.
-  created_factory_ =
-      new DownloadFileWithErrorFactory(
-          base::Bind(&TestFileErrorInjector::RecordDownloadFileConstruction,
-                     this),
-          base::Bind(&TestFileErrorInjector::RecordDownloadFileDestruction,
-                     this));
+  created_factory_ = new DownloadFileWithErrorFactory(
+      base::Bind(&TestFileErrorInjector::RecordDownloadFileConstruction, this),
+      base::Bind(&TestFileErrorInjector::RecordDownloadFileDestruction, this));
 
   // We will transfer ownership of the factory to the download manager.
   scoped_ptr<DownloadFileFactory> download_file_factory(

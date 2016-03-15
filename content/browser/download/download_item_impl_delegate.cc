@@ -56,6 +56,11 @@ bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
 void DownloadItemImplDelegate::CheckForFileRemoval(
     DownloadItemImpl* download_item) {}
 
+std::string DownloadItemImplDelegate::GetApplicationClientIdForFileScanning()
+    const {
+  return std::string();
+}
+
 void DownloadItemImplDelegate::ResumeInterruptedDownload(
     scoped_ptr<DownloadUrlParameters> params,
     uint32_t id) {}

@@ -69,6 +69,11 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   // to OnDownloadedFileRemoved().
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item);
 
+  // Return a GUID string used for identifying the application to the system AV
+  // function for scanning downloaded files. If an empty or invalid GUID string
+  // is returned, no client identification will be given to the AV function.
+  virtual std::string GetApplicationClientIdForFileScanning() const;
+
   // Called when an interrupted download is resumed.
   virtual void ResumeInterruptedDownload(
       scoped_ptr<content::DownloadUrlParameters> params,

@@ -13,6 +13,10 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
+namespace crypto {
+class SecureHash;
+}
+
 namespace net {
 class BoundNetLog;
 }
@@ -30,12 +34,8 @@ class CONTENT_EXPORT DownloadFileFactory {
   virtual ~DownloadFileFactory();
 
   virtual DownloadFile* CreateFile(
-      const DownloadSaveInfo& save_info,
+      scoped_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
-      const GURL& url,
-      const GURL& referrer_url,
-      bool calculate_hash,
-      base::File file,
       scoped_ptr<ByteStreamReader> byte_stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer);

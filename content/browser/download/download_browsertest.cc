@@ -31,6 +31,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
@@ -121,12 +122,8 @@ static DownloadManagerImpl* DownloadManagerForShell(Shell* shell) {
 
 class DownloadFileWithDelay : public DownloadFileImpl {
  public:
-  DownloadFileWithDelay(const DownloadSaveInfo& save_info,
+  DownloadFileWithDelay(scoped_ptr<DownloadSaveInfo> save_info,
                         const base::FilePath& default_download_directory,
-                        const GURL& url,
-                        const GURL& referrer_url,
-                        bool calculate_hash,
-                        base::File file,
                         scoped_ptr<ByteStreamReader> stream,
                         const net::BoundNetLog& bound_net_log,
                         scoped_ptr<PowerSaveBlocker> power_save_blocker,
@@ -141,6 +138,9 @@ class DownloadFileWithDelay : public DownloadFileImpl {
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(const base::FilePath& full_path,
+                         const std::string& client_guid,
+                         const GURL& source_url,
+                         const GURL& referrer_url,
                          const RenameCompletionCallback& callback) override;
 
  private:
@@ -168,12 +168,8 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      const DownloadSaveInfo& save_info,
+      scoped_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      const GURL& url,
-      const GURL& referrer_url,
-      bool calculate_hash,
-      base::File file,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
@@ -193,23 +189,15 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 };
 
 DownloadFileWithDelay::DownloadFileWithDelay(
-    const DownloadSaveInfo& save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    const GURL& url,
-    const GURL& referrer_url,
-    bool calculate_hash,
-    base::File file,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     scoped_ptr<PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer,
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
-    : DownloadFileImpl(save_info,
+    : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
-                       url,
-                       referrer_url,
-                       calculate_hash,
-                       std::move(file),
                        std::move(stream),
                        bound_net_log,
                        observer),
@@ -227,11 +215,19 @@ void DownloadFileWithDelay::RenameAndUniquify(
 }
 
 void DownloadFileWithDelay::RenameAndAnnotate(
-    const base::FilePath& full_path, const RenameCompletionCallback& callback) {
+    const base::FilePath& full_path,
+    const std::string& client_guid,
+    const GURL& source_url,
+    const GURL& referrer_url,
+    const RenameCompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DownloadFileImpl::RenameAndAnnotate(
-      full_path, base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
-                            owner_, callback));
+      full_path,
+      client_guid,
+      source_url,
+      referrer_url,
+      base::Bind(
+          DownloadFileWithDelay::RenameCallbackWrapper, owner_, callback));
 }
 
 // static
@@ -253,22 +249,21 @@ DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
 DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
 DownloadFile* DownloadFileWithDelayFactory::CreateFile(
-    const DownloadSaveInfo& save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    const GURL& url,
-    const GURL& referrer_url,
-    bool calculate_hash,
-    base::File file,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   scoped_ptr<PowerSaveBlocker> psb(PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonOther, "Download in progress"));
-  return new DownloadFileWithDelay(
-      save_info, default_download_directory, url, referrer_url, calculate_hash,
-      std::move(file), std::move(stream), bound_net_log, std::move(psb),
-      observer, weak_ptr_factory_.GetWeakPtr());
+  return new DownloadFileWithDelay(std::move(save_info),
+                                   default_download_directory,
+                                   std::move(stream),
+                                   bound_net_log,
+                                   std::move(psb),
+                                   observer,
+                                   weak_ptr_factory_.GetWeakPtr());
 }
 
 void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
@@ -296,22 +291,14 @@ void DownloadFileWithDelayFactory::WaitForSomeCallback() {
 
 class CountingDownloadFile : public DownloadFileImpl {
  public:
-  CountingDownloadFile(const DownloadSaveInfo& save_info,
+  CountingDownloadFile(scoped_ptr<DownloadSaveInfo> save_info,
                        const base::FilePath& default_downloads_directory,
-                       const GURL& url,
-                       const GURL& referrer_url,
-                       bool calculate_hash,
-                       base::File file,
                        scoped_ptr<ByteStreamReader> stream,
                        const net::BoundNetLog& bound_net_log,
                        scoped_ptr<PowerSaveBlocker> power_save_blocker,
                        base::WeakPtr<DownloadDestinationObserver> observer)
-      : DownloadFileImpl(save_info,
+      : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
-                         url,
-                         referrer_url,
-                         calculate_hash,
-                         std::move(file),
                          std::move(stream),
                          bound_net_log,
                          observer) {}
@@ -358,22 +345,20 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   DownloadFile* CreateFile(
-      const DownloadSaveInfo& save_info,
+      scoped_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
-      const GURL& url,
-      const GURL& referrer_url,
-      bool calculate_hash,
-      base::File file,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     scoped_ptr<PowerSaveBlocker> psb(PowerSaveBlocker::Create(
         PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         PowerSaveBlocker::kReasonOther, "Download in progress"));
-    return new CountingDownloadFile(save_info, default_downloads_directory, url,
-                                    referrer_url, calculate_hash,
-                                    std::move(file), std::move(stream),
-                                    bound_net_log, std::move(psb), observer);
+    return new CountingDownloadFile(std::move(save_info),
+                                    default_downloads_directory,
+                                    std::move(stream),
+                                    bound_net_log,
+                                    std::move(psb),
+                                    observer);
   }
 };
 
@@ -590,6 +575,10 @@ class DownloadContentTest : public ContentBrowserTest {
 
   TestShellDownloadManagerDelegate* GetDownloadManagerDelegate() {
     return test_delegate_.get();
+  }
+
+  const base::FilePath& GetDownloadDirectory() const {
+    return downloads_directory_.path();
   }
 
   // Create a DownloadTestObserverTerminal that will wait for the
@@ -1810,6 +1799,415 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumedDownload) {
   EXPECT_FALSE(base::PathExists(intermediate_path));
   EXPECT_FALSE(base::PathExists(target_path));
   EXPECT_TRUE(EnsureNoPendingDownloads());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  request_handler.StartServing(parameters);
+
+  base::FilePath intermediate_file_path =
+      GetDownloadDirectory().AppendASCII("intermediate");
+  std::vector<GURL> url_chain;
+
+  const int kIntermediateSize = 1331;
+  url_chain.push_back(request_handler.url());
+
+  DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
+      "F7FB1F59-7DE1-4845-AFDB-8A688F70F583",
+      1,
+      intermediate_file_path,
+      base::FilePath(),
+      url_chain,
+      GURL(),
+      "application/octet-stream",
+      "application/octet-stream",
+      base::Time::Now(),
+      base::Time(),
+      parameters.etag,
+      std::string(),
+      kIntermediateSize,
+      parameters.size,
+      std::string(),
+      DownloadItem::INTERRUPTED,
+      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      false);
+
+  download->Resume();
+  WaitForCompletion(download);
+
+  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                            parameters.size,
+                            download->GetTargetFilePath());
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+
+  // There will be two requests. The first one is issued optimistically assuming
+  // that the intermediate file exists and matches the size expectations set
+  // forth in the download metadata (i.e. assuming that a 1331 byte file exists
+  // at |intermediate_file_path|.
+  //
+  // However, once the response is received, DownloadFile will report that the
+  // intermediate file doesn't exist and hence the download is marked
+  // interrupted again.
+  //
+  // The second request reads the entire entity.
+  //
+  // N.b. we can't make any assumptions about how many bytes are transferred by
+  // the first request since response data will be bufferred until DownloadFile
+  // is done initializing.
+  //
+  // TODO(asanka): Ideally we'll check that the intermediate file matches
+  // expectations prior to issuing the first resumption request.
+  ASSERT_EQ(2u, completed_requests.size());
+  EXPECT_EQ(parameters.size, completed_requests[1].transferred_byte_count);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  request_handler.StartServing(parameters);
+
+  base::FilePath intermediate_file_path =
+      GetDownloadDirectory().AppendASCII("intermediate");
+  std::vector<GURL> url_chain;
+
+  const int kIntermediateSize = 1331;
+  std::vector<char> buffer(kIntermediateSize);
+  request_handler.GetPatternBytes(
+      parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
+  ASSERT_EQ(
+      kIntermediateSize,
+      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+
+  url_chain.push_back(request_handler.url());
+
+  DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
+      "F7FB1F59-7DE1-4845-AFDB-8A688F70F583",
+      1,
+      intermediate_file_path,
+      base::FilePath(),
+      url_chain,
+      GURL(),
+      "application/octet-stream",
+      "application/octet-stream",
+      base::Time::Now(),
+      base::Time(),
+      parameters.etag,
+      std::string(),
+      kIntermediateSize,
+      parameters.size,
+      std::string(),
+      DownloadItem::INTERRUPTED,
+      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      false);
+
+  download->Resume();
+  WaitForCompletion(download);
+
+  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                            parameters.size,
+                            download->GetTargetFilePath());
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+
+  // There's only one network request issued, and that is for the remainder of
+  // the file.
+  ASSERT_EQ(1u, completed_requests.size());
+  EXPECT_EQ(parameters.size - kIntermediateSize,
+            completed_requests[0].transferred_byte_count);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       ResumeRestoredDownload_EtagMismatch) {
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  request_handler.StartServing(parameters);
+
+  base::FilePath intermediate_file_path =
+      GetDownloadDirectory().AppendASCII("intermediate");
+  std::vector<GURL> url_chain;
+
+  const int kIntermediateSize = 1331;
+  std::vector<char> buffer(kIntermediateSize);
+  request_handler.GetPatternBytes(
+      parameters.pattern_generator_seed + 1, 0, buffer.size(), buffer.data());
+  ASSERT_EQ(
+      kIntermediateSize,
+      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+
+  url_chain.push_back(request_handler.url());
+
+  DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
+      "F7FB1F59-7DE1-4845-AFDB-8A688F70F583",
+      1,
+      intermediate_file_path,
+      base::FilePath(),
+      url_chain,
+      GURL(),
+      "application/octet-stream",
+      "application/octet-stream",
+      base::Time::Now(),
+      base::Time(),
+      "fake-etag",
+      std::string(),
+      kIntermediateSize,
+      parameters.size,
+      std::string(),
+      DownloadItem::INTERRUPTED,
+      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      false);
+
+  download->Resume();
+  WaitForCompletion(download);
+
+  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                            parameters.size,
+                            download->GetTargetFilePath());
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+
+  // There's only one network request issued. The If-Range header allows the
+  // server to respond with the entire entity in one go. The existing contents
+  // of the file should be discarded, and overwritten by the new contents.
+  ASSERT_EQ(1u, completed_requests.size());
+  EXPECT_EQ(parameters.size, completed_requests[0].transferred_byte_count);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       ResumeRestoredDownload_CorrectHash) {
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  request_handler.StartServing(parameters);
+
+  base::FilePath intermediate_file_path =
+      GetDownloadDirectory().AppendASCII("intermediate");
+  std::vector<GURL> url_chain;
+
+  const int kIntermediateSize = 1331;
+  std::vector<char> buffer(kIntermediateSize);
+  request_handler.GetPatternBytes(
+      parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
+  ASSERT_EQ(
+      kIntermediateSize,
+      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  // SHA-256 hash of the pattern bytes in buffer.
+  static const uint8_t kPartialHash[] = {
+      0x77, 0x14, 0xfd, 0x83, 0x06, 0x15, 0x10, 0x7a, 0x47, 0x15, 0xd3,
+      0xcf, 0xdd, 0x46, 0xa2, 0x61, 0x96, 0xff, 0xc3, 0xbb, 0x49, 0x30,
+      0xaf, 0x31, 0x3a, 0x64, 0x0b, 0xd5, 0xfa, 0xb1, 0xe3, 0x81};
+
+  url_chain.push_back(request_handler.url());
+
+  DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
+      "F7FB1F59-7DE1-4845-AFDB-8A688F70F583",
+      1,
+      intermediate_file_path,
+      base::FilePath(),
+      url_chain,
+      GURL(),
+      "application/octet-stream",
+      "application/octet-stream",
+      base::Time::Now(),
+      base::Time(),
+      parameters.etag,
+      std::string(),
+      kIntermediateSize,
+      parameters.size,
+      std::string(std::begin(kPartialHash), std::end(kPartialHash)),
+      DownloadItem::INTERRUPTED,
+      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      false);
+
+  download->Resume();
+  WaitForCompletion(download);
+
+  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                            parameters.size,
+                            download->GetTargetFilePath());
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+
+  // There's only one network request issued, and that is for the remainder of
+  // the file.
+  ASSERT_EQ(1u, completed_requests.size());
+  EXPECT_EQ(parameters.size - kIntermediateSize,
+            completed_requests[0].transferred_byte_count);
+
+  // SHA-256 hash of the entire 102400 bytes in the target file.
+  static const uint8_t kFullHash[] = {
+      0xa7, 0x44, 0x49, 0x86, 0x24, 0xc6, 0x84, 0x6c, 0x89, 0xdf, 0xd8,
+      0xec, 0xa0, 0xe0, 0x61, 0x12, 0xdc, 0x80, 0x13, 0xf2, 0x83, 0x49,
+      0xa9, 0x14, 0x52, 0x32, 0xf0, 0x95, 0x20, 0xca, 0x5b, 0x30};
+  EXPECT_EQ(std::string(std::begin(kFullHash), std::end(kFullHash)),
+            download->GetHash());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  request_handler.StartServing(parameters);
+
+  base::FilePath intermediate_file_path =
+      GetDownloadDirectory().AppendASCII("intermediate");
+  std::vector<GURL> url_chain;
+
+  const int kIntermediateSize = 1331;
+  std::vector<char> buffer(kIntermediateSize);
+  ASSERT_EQ(
+      kIntermediateSize,
+      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  // SHA-256 hash of the expected pattern bytes in buffer. This doesn't match
+  // the current contents of the intermediate file which should all be 0.
+  static const uint8_t kPartialHash[] = {
+      0x77, 0x14, 0xfd, 0x83, 0x06, 0x15, 0x10, 0x7a, 0x47, 0x15, 0xd3,
+      0xcf, 0xdd, 0x46, 0xa2, 0x61, 0x96, 0xff, 0xc3, 0xbb, 0x49, 0x30,
+      0xaf, 0x31, 0x3a, 0x64, 0x0b, 0xd5, 0xfa, 0xb1, 0xe3, 0x81};
+
+  url_chain.push_back(request_handler.url());
+
+  DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
+      "F7FB1F59-7DE1-4845-AFDB-8A688F70F583",
+      1,
+      intermediate_file_path,
+      base::FilePath(),
+      url_chain,
+      GURL(),
+      "application/octet-stream",
+      "application/octet-stream",
+      base::Time::Now(),
+      base::Time(),
+      parameters.etag,
+      std::string(),
+      kIntermediateSize,
+      parameters.size,
+      std::string(std::begin(kPartialHash), std::end(kPartialHash)),
+      DownloadItem::INTERRUPTED,
+      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      false);
+
+  download->Resume();
+  WaitForCompletion(download);
+
+  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                            parameters.size,
+                            download->GetTargetFilePath());
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+
+  // There will be two requests. The first one is issued optimistically assuming
+  // that the intermediate file exists and matches the size expectations set
+  // forth in the download metadata (i.e. assuming that a 1331 byte file exists
+  // at |intermediate_file_path|.
+  //
+  // However, once the response is received, DownloadFile will report that the
+  // intermediate file doesn't match the expected hash.
+  //
+  // The second request reads the entire entity.
+  //
+  // N.b. we can't make any assumptions about how many bytes are transferred by
+  // the first request since response data will be bufferred until DownloadFile
+  // is done initializing.
+  //
+  // TODO(asanka): Ideally we'll check that the intermediate file matches
+  // expectations prior to issuing the first resumption request.
+  ASSERT_EQ(2u, completed_requests.size());
+  EXPECT_EQ(parameters.size, completed_requests[1].transferred_byte_count);
+
+  // SHA-256 hash of the entire 102400 bytes in the target file.
+  static const uint8_t kFullHash[] = {
+      0xa7, 0x44, 0x49, 0x86, 0x24, 0xc6, 0x84, 0x6c, 0x89, 0xdf, 0xd8,
+      0xec, 0xa0, 0xe0, 0x61, 0x12, 0xdc, 0x80, 0x13, 0xf2, 0x83, 0x49,
+      0xa9, 0x14, 0x52, 0x32, 0xf0, 0x95, 0x20, 0xca, 0x5b, 0x30};
+  EXPECT_EQ(std::string(std::begin(kFullHash), std::end(kFullHash)),
+            download->GetHash());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  request_handler.StartServing(parameters);
+
+  base::FilePath intermediate_file_path =
+      GetDownloadDirectory().AppendASCII("intermediate");
+  std::vector<GURL> url_chain;
+
+  const int kIntermediateSize = 1331;
+  // Size of file is slightly shorter than the size known to DownloadItem.
+  std::vector<char> buffer(kIntermediateSize - 100);
+  request_handler.GetPatternBytes(
+      parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
+  ASSERT_EQ(
+      kIntermediateSize - 100,
+      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  url_chain.push_back(request_handler.url());
+
+  DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
+      "F7FB1F59-7DE1-4845-AFDB-8A688F70F583",
+      1,
+      intermediate_file_path,
+      base::FilePath(),
+      url_chain,
+      GURL(),
+      "application/octet-stream",
+      "application/octet-stream",
+      base::Time::Now(),
+      base::Time(),
+      parameters.etag,
+      std::string(),
+      kIntermediateSize,
+      parameters.size,
+      std::string(),
+      DownloadItem::INTERRUPTED,
+      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      false);
+
+  download->Resume();
+  WaitForCompletion(download);
+
+  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                            parameters.size,
+                            download->GetTargetFilePath());
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+
+  // There will be two requests. The first one is issued optimistically assuming
+  // that the intermediate file exists and matches the size expectations set
+  // forth in the download metadata (i.e. assuming that a 1331 byte file exists
+  // at |intermediate_file_path|.
+  //
+  // However, once the response is received, DownloadFile will report that the
+  // intermediate file is too short and hence the download is marked interrupted
+  // again.
+  //
+  // The second request reads the entire entity.
+  //
+  // N.b. we can't make any assumptions about how many bytes are transferred by
+  // the first request since response data will be bufferred until DownloadFile
+  // is done initializing.
+  //
+  // TODO(asanka): Ideally we'll check that the intermediate file matches
+  // expectations prior to issuing the first resumption request.
+  ASSERT_EQ(2u, completed_requests.size());
+  EXPECT_EQ(parameters.size, completed_requests[1].transferred_byte_count);
 }
 
 // Check that the cookie policy is correctly updated when downloading a file

@@ -16,10 +16,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_destination_observer.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "net/log/net_log.h"
@@ -66,6 +66,7 @@ class CONTENT_EXPORT DownloadItemImpl
                    const std::string& last_modified,
                    int64_t received_bytes,
                    int64_t total_bytes,
+                   const std::string& hash,
                    DownloadItem::DownloadState state,
                    DownloadDangerType danger_type,
                    DownloadInterruptReason interrupt_reason,
@@ -135,7 +136,6 @@ class CONTENT_EXPORT DownloadItemImpl
   base::FilePath GetFileNameToReportUser() const override;
   TargetDisposition GetTargetDisposition() const override;
   const std::string& GetHash() const override;
-  const std::string& GetHashState() const override;
   bool GetFileExternallyRemoved() const override;
   void DeleteFile(const base::Callback<void(bool)>& callback) override;
   bool IsDangerous() const override;
@@ -207,18 +207,20 @@ class CONTENT_EXPORT DownloadItemImpl
   // Called by SavePackage to set the total number of bytes on the item.
   virtual void SetTotalBytes(int64_t total_bytes);
 
-  virtual void OnAllDataSaved(const std::string& final_hash);
+  virtual void OnAllDataSaved(int64_t total_bytes,
+                              scoped_ptr<crypto::SecureHash> hash_state);
 
   // Called by SavePackage to display progress when the DownloadItem
   // should be considered complete.
   virtual void MarkAsComplete();
 
   // DownloadDestinationObserver
-  void DestinationUpdate(int64_t bytes_so_far,
-                         int64_t bytes_per_sec,
-                         const std::string& hash_state) override;
-  void DestinationError(DownloadInterruptReason reason) override;
-  void DestinationCompleted(const std::string& final_hash) override;
+  void DestinationUpdate(int64_t bytes_so_far, int64_t bytes_per_sec) override;
+  void DestinationError(DownloadInterruptReason reason,
+                        int64_t bytes_so_far,
+                        scoped_ptr<crypto::SecureHash> hash_state) override;
+  void DestinationCompleted(int64_t total_bytes,
+                            scoped_ptr<crypto::SecureHash> hash_state) override;
 
  private:
   // Fine grained states of a download.
@@ -428,8 +430,23 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Helper routines -----------------------------------------------------------
 
-  // Indicate that an error has occurred on the download.
-  void Interrupt(DownloadInterruptReason reason);
+  // Indicate that an error has occurred on the download. Discards partial
+  // state. The interrupted download will not be considered continuable, but may
+  // be restarted.
+  void InterruptAndDiscardPartialState(DownloadInterruptReason reason);
+
+  // Indiates that an error has occurred on the download. The |bytes_so_far| and
+  // |hash_state| should correspond to the state of the DownloadFile. If the
+  // interrupt reason allows, this partial state may be allowed to continue the
+  // interrupted download upon resumption.
+  void InterruptWithPartialState(int64_t bytes_so_far,
+                                 scoped_ptr<crypto::SecureHash> hash_state,
+                                 DownloadInterruptReason reason);
+
+  void UpdateProgress(int64_t bytes_so_far, int64_t bytes_per_sec);
+
+  // Set |hash_| and |hash_state_| based on |hash_state|.
+  void SetHashState(scoped_ptr<crypto::SecureHash> hash_state);
 
   // Destroy the DownloadFile object.  If |destroy_file| is true, the file is
   // destroyed with it.  Otherwise, DownloadFile::Detach() is called before
@@ -490,12 +507,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // considered to be |target_path_.BaseName()|.
   base::FilePath display_name_;
 
-  // Full path to the downloaded or downloading file. This is the path to the
-  // physical file, if one exists. The final target path is specified by
-  // |target_path_|. |current_path_| can be empty if the in-progress path hasn't
-  // been determined.
-  base::FilePath current_path_;
-
   // Target path of an in-progress download. We may be downloading to a
   // temporary or intermediate file (specified by |current_path_|.  Once the
   // download completes, we will rename the file to |target_path_|.
@@ -550,27 +561,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // Total bytes expected.
   int64_t total_bytes_ = 0;
 
-  // Current received bytes.
-  int64_t received_bytes_ = 0;
-
-  // Current speed. Calculated by the DownloadFile.
-  int64_t bytes_per_sec_ = 0;
-
-  // Sha256 hash of the content.  This might be empty either because
-  // the download isn't done yet or because the hash isn't needed
-  // (ChromeDownloadManagerDelegate::GenerateFileHash() returned false).
-  std::string hash_;
-
-  // A blob containing the state of the hash algorithm.  Only valid while the
-  // download is in progress.
-  std::string hash_state_;
-
-  // Server's time stamp for the file.
-  std::string last_modified_time_;
-
-  // Server's ETAG for the file.
-  std::string etag_;
-
   // Last reason.
   DownloadInterruptReason last_reason_ = DOWNLOAD_INTERRUPT_REASON_NONE;
 
@@ -598,9 +588,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // In progress downloads may be paused by the user, we note it here.
   bool is_paused_ = false;
 
-  // The number of times this download has been resumed automatically.
-  int auto_resume_count_ = 0;
-
   // A flag for indicating if the download should be opened at completion.
   bool open_when_complete_ = false;
 
@@ -615,14 +602,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // True if the item was downloaded temporarily.
   bool is_temporary_ = false;
 
-  // True if we've saved all the data for the download.
-  bool all_data_saved_ = false;
-
-  // Error return from DestinationError.  Stored separately from
-  // last_reason_ so that we can avoid handling destination errors until
-  // after file name determination has occurred.
-  DownloadInterruptReason destination_error_ = DOWNLOAD_INTERRUPT_REASON_NONE;
-
   // Did the user open the item either directly or indirectly (such as by
   // setting always open files of this type)? The shelf also sets this field
   // when the user closes the shelf before the item has been opened but should
@@ -632,11 +611,59 @@ class CONTENT_EXPORT DownloadItemImpl
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_ = false;
 
+  // Error return from DestinationError.  Stored separately from
+  // last_reason_ so that we can avoid handling destination errors until
+  // after file name determination has occurred.
+  DownloadInterruptReason destination_error_ = DOWNLOAD_INTERRUPT_REASON_NONE;
+
+  // The following fields describe the current state of the download file.
+
   // DownloadFile associated with this download.  Note that this
   // pointer may only be used or destroyed on the FILE thread.
   // This pointer will be non-null only while the DownloadItem is in
   // the IN_PROGRESS state.
   scoped_ptr<DownloadFile> download_file_;
+
+  // Full path to the downloaded or downloading file. This is the path to the
+  // physical file, if one exists. The final target path is specified by
+  // |target_path_|. |current_path_| can be empty if the in-progress path hasn't
+  // been determined.
+  base::FilePath current_path_;
+
+  // Current received bytes.
+  int64_t received_bytes_ = 0;
+
+  // Current speed. Calculated by the DownloadFile.
+  int64_t bytes_per_sec_ = 0;
+
+  // True if we've saved all the data for the download. If true, then the file
+  // at |current_path_| contains |received_bytes_|, which constitute the
+  // entirety of what we expect to save there. A digest of its contents can be
+  // found at |hash_|.
+  bool all_data_saved_ = false;
+
+  // The number of times this download has been resumed automatically. Will be
+  // reset to 0 if a resumption is performed in response to a Resume() call.
+  int auto_resume_count_ = 0;
+
+  // SHA256 hash of the possibly partial content. The hash is updated each time
+  // the download is interrupted, and when the all the data has been
+  // transferred. |hash_| contains the raw binary hash and is not hex encoded.
+  //
+  // While the download is in progress, and while resuming, |hash_| will be
+  // empty.
+  std::string hash_;
+
+  // In the event of an interruption, the DownloadDestinationObserver interface
+  // exposes the partial hash state. This state can be held by the download item
+  // in case it's needed for resumption.
+  scoped_ptr<crypto::SecureHash> hash_state_;
+
+  // Contents of the Last-Modified header for the most recent server response.
+  std::string last_modified_time_;
+
+  // Server's ETAG for the file.
+  std::string etag_;
 
   // Net log to use for this download.
   const net::BoundNetLog bound_net_log_;

@@ -51,6 +51,9 @@ INTERRUPT_REASON(FILE_SECURITY_CHECK_FAILED, 12)
 // a file (as part of resuming a previously interrupted download).
 INTERRUPT_REASON(FILE_TOO_SHORT, 13)
 
+// The partial file didn't match the expected hash.
+INTERRUPT_REASON(FILE_HASH_MISMATCH, 14)
+
 // Network errors.
 
 // Generic network failure.

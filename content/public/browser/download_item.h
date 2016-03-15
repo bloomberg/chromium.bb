@@ -82,8 +82,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   static const uint32_t kInvalidId;
 
-  static const char kEmptyFileHash[];
-
   // Interface that observers of a particular download must implement in order
   // to receive updates to the download's status.
   class CONTENT_EXPORT Observer {
@@ -239,12 +237,11 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   virtual TargetDisposition GetTargetDisposition() const = 0;
 
-  // Final hash of completely downloaded file; not valid if
-  // GetState() != COMPLETED.
+  // Final hash of completely downloaded file, or partial hash of an interrupted
+  // download; only valid if GetState() == COMPLETED or INTERRUPTED. If
+  // non-empty the returned string contains a raw SHA-256 hash (i.e. not hex
+  // encoded).
   virtual const std::string& GetHash() const = 0;
-
-  // Intermediate hash state, for persisting partial downloads.
-  virtual const std::string& GetHashState() const = 0;
 
   // True if the file associated with the download has been removed by
   // external action.

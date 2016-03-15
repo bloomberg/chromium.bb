@@ -50,7 +50,6 @@ scoped_ptr<base::Value> ItemRenamedNetLogCallback(
 scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
     DownloadInterruptReason reason,
     int64_t bytes_so_far,
-    const std::string* hash_state,
     net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is resumed.
@@ -58,7 +57,6 @@ scoped_ptr<base::Value> ItemResumingNetLogCallback(
     bool user_initiated,
     DownloadInterruptReason reason,
     int64_t bytes_so_far,
-    const std::string* hash_state,
     net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is completing.
@@ -75,7 +73,6 @@ scoped_ptr<base::Value> ItemFinishedNetLogCallback(
 // Returns NetLog parameters when a DownloadItem is canceled.
 scoped_ptr<base::Value> ItemCanceledNetLogCallback(
     int64_t bytes_so_far,
-    const std::string* hash_state,
     net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadFile is opened.

@@ -39,12 +39,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Note that the DownloadFileImpl automatically reads from the passed in
   // stream, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
-  DownloadFileImpl(const DownloadSaveInfo& save_info,
+  DownloadFileImpl(scoped_ptr<DownloadSaveInfo> save_info,
                    const base::FilePath& default_downloads_directory,
-                   const GURL& url,
-                   const GURL& referrer_url,
-                   bool calculate_hash,
-                   base::File file,
                    scoped_ptr<ByteStreamReader> byte_stream,
                    const net::BoundNetLog& bound_net_log,
                    base::WeakPtr<DownloadDestinationObserver> observer);
@@ -56,15 +52,14 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(const base::FilePath& full_path,
+                         const std::string& client_guid,
+                         const GURL& source_url,
+                         const GURL& referrer_url,
                          const RenameCompletionCallback& callback) override;
   void Detach() override;
   void Cancel() override;
-  base::FilePath FullPath() const override;
+  const base::FilePath& FullPath() const override;
   bool InProgress() const override;
-  int64_t CurrentSpeed() const override;
-  bool GetHash(std::string* hash) override;
-  std::string GetHashState() override;
-  void SetClientGuid(const std::string& guid) override;
 
  protected:
   // For test class overrides.
@@ -86,20 +81,29 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     ANNOTATE_WITH_SOURCE_INFORMATION = 1 << 1
   };
 
-  // Rename file_ to |new_path|.
-  // |option| specifies additional operations to be performed during the rename.
-  //     See RenameOption above.
-  // |retries_left| indicates how many times to retry the operation if the
-  //     rename fails with a transient error.
-  // |time_of_first_failure| Set to an empty base::TimeTicks during the first
-  //     call. Once the first failure is seen, subsequent calls of
-  //     RenameWithRetryInternal will have a non-empty value keeping track of
-  //     the time of first observed failure.  Used for UMA.
-  void RenameWithRetryInternal(const base::FilePath& new_path,
-                               RenameOption option,
-                               int retries_left,
-                               base::TimeTicks time_of_first_failure,
-                               const RenameCompletionCallback& callback);
+  struct RenameParameters {
+    RenameParameters(RenameOption option,
+                     const base::FilePath& new_path,
+                     const RenameCompletionCallback& completion_callback);
+    ~RenameParameters();
+
+    RenameOption option;
+    base::FilePath new_path;
+    std::string client_guid;  // See BaseFile::AnnotateWithSourceInformation()
+    GURL source_url;          // See BaseFile::AnnotateWithSourceInformation()
+    GURL referrer_url;        // See BaseFile::AnnotateWithSourceInformation()
+    int retries_left;         // RenameWithRetryInternal() will
+                              // automatically retry until this
+                              // count reaches 0. Each attempt
+                              // decrements this counter.
+    base::TimeTicks time_of_first_failure;  // Set to empty at first, but is set
+                                            // when a failure is first
+                                            // encountered. Used for UMA.
+    RenameCompletionCallback completion_callback;
+  };
+
+  // Rename file_ based on |parameters|.
+  void RenameWithRetryInternal(scoped_ptr<RenameParameters> parameters);
 
   // Send an update on our progress.
   void SendUpdate();
@@ -110,6 +114,11 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // The base file instance.
   BaseFile file_;
+
+  // DownloadSaveInfo provided during construction. Since the DownloadFileImpl
+  // can be created on any thread, this holds the save_info_ until it can be
+  // used to initialize file_ on the FILE thread.
+  scoped_ptr<DownloadSaveInfo> save_info_;
 
   // The default directory for creating the download file.
   base::FilePath default_download_directory_;

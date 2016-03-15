@@ -89,14 +89,11 @@ scoped_ptr<base::Value> ItemRenamedNetLogCallback(
 scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
     DownloadInterruptReason reason,
     int64_t bytes_so_far,
-    const std::string* hash_state,
     net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("interrupt_reason", DownloadInterruptReasonToString(reason));
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
-  dict->SetString("hash_state",
-                  base::HexEncode(hash_state->data(), hash_state->size()));
 
   return std::move(dict);
 }
@@ -105,15 +102,12 @@ scoped_ptr<base::Value> ItemResumingNetLogCallback(
     bool user_initiated,
     DownloadInterruptReason reason,
     int64_t bytes_so_far,
-    const std::string* hash_state,
     net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("user_initiated", user_initiated ? "true" : "false");
   dict->SetString("interrupt_reason", DownloadInterruptReasonToString(reason));
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
-  dict->SetString("hash_state",
-                  base::HexEncode(hash_state->data(), hash_state->size()));
 
   return std::move(dict);
 }
@@ -143,13 +137,10 @@ scoped_ptr<base::Value> ItemFinishedNetLogCallback(
 
 scoped_ptr<base::Value> ItemCanceledNetLogCallback(
     int64_t bytes_so_far,
-    const std::string* hash_state,
     net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
-  dict->SetString("hash_state",
-                  base::HexEncode(hash_state->data(), hash_state->size()));
 
   return std::move(dict);
 }

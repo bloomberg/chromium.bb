@@ -61,6 +61,7 @@ const InterruptReasonAssociation historical_reasons[] = {
     {"FILE_BLOCKED", 11},
     {"FILE_SECURITY_CHECK_FAILED", 12},
     {"FILE_TOO_SHORT", 13},
+    {"FILE_HASH_MISMATCH", 14},
     {"NETWORK_FAILED", 20},
     {"NETWORK_TIMEOUT", 21},
     {"NETWORK_DISCONNECTED", 22},

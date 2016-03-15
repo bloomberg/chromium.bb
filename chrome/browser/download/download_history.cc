@@ -282,6 +282,9 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
         it->last_modified,
         it->received_bytes,
         it->total_bytes,
+        std::string(),  // TODO(asanka): Need to persist and restore hash of
+                        // partial file for an interrupted download. No need to
+                        // store hash for a completed file.
         history::ToContentDownloadState(it->state),
         history::ToContentDownloadDangerType(it->danger_type),
         history::ToContentDownloadInterruptReason(it->interrupt_reason),

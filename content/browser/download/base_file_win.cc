@@ -352,22 +352,25 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
   return interrupt_reason;
 }
 
-DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
+DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
+    const std::string& client_guid,
+    const GURL& source_url,
+    const GURL& referrer_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!detached_);
 
   bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
   DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
-  std::string braces_guid = "{" + client_guid_ + "}";
+  std::string braces_guid = "{" + client_guid + "}";
   GUID guid = GUID_NULL;
-  if (base::IsValidGUID(client_guid_)) {
+  if (base::IsValidGUID(client_guid)) {
     HRESULT hr = CLSIDFromString(
         base::UTF8ToUTF16(braces_guid).c_str(), &guid);
     if (FAILED(hr))
       guid = GUID_NULL;
   }
 
-  HRESULT hr = AVScanFile(full_path_, source_url_.spec(), guid);
+  HRESULT hr = AVScanFile(full_path_, source_url.spec(), guid);
 
   // If the download file is missing after the call, then treat this as an
   // interrupted download.

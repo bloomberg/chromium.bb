@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "crypto/secure_hash.h"
 
 namespace content {
 
@@ -21,6 +22,7 @@ namespace content {
 struct CONTENT_EXPORT DownloadSaveInfo {
   DownloadSaveInfo();
   ~DownloadSaveInfo();
+  DownloadSaveInfo(DownloadSaveInfo&& that);
 
   // If non-empty, contains the full target path of the download that has been
   // determined prior to download initiation. This is considered to be a trusted
@@ -37,8 +39,15 @@ struct CONTENT_EXPORT DownloadSaveInfo {
   // The file offset at which to start the download.  May be 0.
   int64_t offset;
 
-  // The state of the hash at the start of the download.  May be empty.
-  std::string hash_state;
+  // The state of the hash. If specified, this hash state must indicate the
+  // state of the partial file for the first |offset| bytes.
+  scoped_ptr<crypto::SecureHash> hash_state;
+
+  // SHA-256 hash of the first |offset| bytes of the file. Only used if |offset|
+  // is non-zero and either |file_path| or |file| specifies the file which
+  // contains the |offset| number of bytes. Can be empty, in which case no
+  // verification is done on the existing file.
+  std::string hash_of_partial_file;
 
   // If |prompt_for_save_location| is true, and |file_path| is empty, then
   // the user will be prompted for a location to save the download. Otherwise,
