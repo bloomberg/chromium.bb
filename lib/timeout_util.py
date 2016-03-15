@@ -35,7 +35,8 @@ def Timedelta(num, zero_ok=False):
 
 @contextlib.contextmanager
 def Timeout(max_run_time,
-            error_message="Timeout occurred- waited %(time)s seconds."):
+            error_message="Timeout occurred- waited %(time)s seconds.",
+            reason_message=None):
   """ContextManager that alarms if code is ran for too long.
 
   Timeout can run nested and raises a TimeoutException if the timeout
@@ -44,9 +45,16 @@ def Timeout(max_run_time,
   Args:
     max_run_time: How long to wait before sending SIGALRM.  May be a number
       (in seconds) or a datetime.timedelta object.
-    error_message: String to wrap in the TimeoutError exception on timeout.
+    error_message: Optional string to wrap in the TimeoutError exception on
+      timeout. If not provided, default template will be used.
+    reason_message: Optional string to be appended to the TimeoutError
+      error_message string. Provide a custom message here if you want to have
+      a purpose-specific message without overriding the default template in
+      |error_message|.
   """
   max_run_time = int(Timedelta(max_run_time).total_seconds())
+  if reason_message:
+    error_message += reason_message
 
   # pylint: disable=W0613
   def kill_us(sig_num, frame):

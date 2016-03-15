@@ -69,7 +69,8 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage):
     extra_env = {}
     if self._run.config.useflags:
       extra_env['USE'] = ' '.join(self._run.config.useflags)
-    with timeout_util.Timeout(self.UNIT_TEST_TIMEOUT):
+    r = ' Reached UnitTestStage timeout.'
+    with timeout_util.Timeout(self.UNIT_TEST_TIMEOUT, reason_message=r):
       commands.RunUnitTests(self._build_root,
                             self._current_board,
                             blacklist=self._run.config.unittest_blacklist,
@@ -211,7 +212,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       for test_type in self._run.config.vm_tests:
         logging.info('Running VM test %s.', test_type)
         with cgroups.SimpleContainChildren('VMTest'):
-          with timeout_util.Timeout(self.TEST_TIMEOUT):
+          r = ' Reached VMTestStage test run timeout.'
+          with timeout_util.Timeout(self.TEST_TIMEOUT, reason_message=r):
             self._RunTest(test_type, test_results_dir)
 
     except Exception:
@@ -234,7 +236,8 @@ class GCETestStage(VMTestStage):
     try:
       logging.info('Running GCE tests...')
       with cgroups.SimpleContainChildren('GCETest'):
-        with timeout_util.Timeout(self.TEST_TIMEOUT):
+        r = ' Reached GCETestStage test run timeout.'
+        with timeout_util.Timeout(self.TEST_TIMEOUT, reason_message=r):
           self._RunTest(constants.GCE_VM_TEST_TYPE, test_results_dir)
 
     except Exception:
