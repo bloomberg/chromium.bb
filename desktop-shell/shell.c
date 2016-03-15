@@ -124,9 +124,7 @@ struct shell_surface {
 	enum shell_surface_type type;
 	char *title, *class;
 	int32_t saved_x, saved_y;
-	int32_t saved_width, saved_height;
 	bool saved_position_valid;
-	bool saved_size_valid;
 	bool saved_rotation_valid;
 	int unresponsive, grabbed;
 	uint32_t resize_edges;
@@ -2704,9 +2702,6 @@ set_full_output(struct shell_surface *shsurf)
 {
 	shsurf->saved_x = shsurf->view->geometry.x;
 	shsurf->saved_y = shsurf->view->geometry.y;
-	shsurf->saved_width = shsurf->surface->width;
-	shsurf->saved_height = shsurf->surface->height;
-	shsurf->saved_size_valid = true;
 	shsurf->saved_position_valid = true;
 
 	if (!wl_list_empty(&shsurf->rotation.transform.link)) {
@@ -3705,7 +3700,6 @@ create_common_surface(struct shell_client *owner, void *shell,
 	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
 	shsurf->saved_position_valid = false;
-	shsurf->saved_size_valid = false;
 	shsurf->saved_rotation_valid = false;
 	shsurf->surface = surface;
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
