@@ -275,6 +275,9 @@ void HTMLScriptRunner::execute(PassRefPtrWillBeRawPtr<Element> scriptElement, co
     if (hasParserBlockingScript()) {
         if (isExecutingScript())
             return; // Unwind to the outermost HTMLScriptRunner::execute before continuing parsing.
+
+        traceParserBlockingScript(m_parserBlockingScript.get(), !m_document->isScriptExecutionReady());
+
         // If preload scanner got created, it is missing the source after the current insertion point. Append it and scan.
         if (!hadPreloadScanner && m_host->hasPreloadScanner())
             m_host->appendCurrentInputStreamToPreloadScannerAndScan();
@@ -291,8 +294,6 @@ void HTMLScriptRunner::executeParsingBlockingScripts()
 {
     while (hasParserBlockingScript() && isPendingScriptReady(m_parserBlockingScript.get()))
         executeParsingBlockingScript();
-    if (hasParserBlockingScript())
-        traceParserBlockingScript(m_parserBlockingScript.get(), m_hasScriptsWaitingForResources);
 }
 
 void HTMLScriptRunner::executeScriptsWaitingForLoad(Resource* resource)
@@ -426,6 +427,8 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
                 m_parserBlockingScript->setElement(script);
                 m_parserBlockingScript->setStartingPosition(scriptStartPosition);
             } else {
+                ASSERT(m_scriptNestingLevel > 1);
+                m_parserBlockingScript->releaseElementAndClear();
                 ScriptSourceCode sourceCode(CompressibleString(script->textContent().impl()), documentURLForScriptExecution(m_document), scriptStartPosition);
                 doExecuteScript(script, sourceCode, scriptStartPosition);
             }
