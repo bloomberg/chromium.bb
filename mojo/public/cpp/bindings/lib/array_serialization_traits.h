@@ -194,7 +194,8 @@ struct ArraySerializer<
 
  private:
   template <typename T,
-            bool is_array = IsSpecializationOf<Array, T>::value,
+            bool is_array = IsSpecializationOf<Array, T>::value ||
+                            IsSpecializationOf<WTFArray, T>::value,
             bool is_string = std::is_same<T, String>::value ||
                              std::is_same<T, WTF::String>::value>
   struct SerializeCaller {

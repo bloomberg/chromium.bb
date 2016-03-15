@@ -113,10 +113,6 @@ mojom("test_wtf_types_blink") {
     "test_wtf_types.mojom",
   ]
 
-  deps = [
-    ":test_wtf_types",
-  ]
-
   for_blink = true
   variant = "blink"
 }

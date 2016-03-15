@@ -34,6 +34,11 @@ class TestWTFImpl : public TestWTF {
     callback.Run(str);
   }
 
+  void EchoStringArray(Array<String> arr,
+                       const EchoStringArrayCallback& callback) override {
+    callback.Run(std::move(arr));
+  }
+
  private:
   Binding<TestWTF> binding_;
 };
@@ -46,17 +51,22 @@ class WTFTypesTest : public testing::Test {
   base::MessageLoop loop_;
 };
 
-}  // namespace
-
-TEST_F(WTFTypesTest, WTFToWTFStringSerialization) {
-  Array<WTF::String> strs(4);
+WTFArray<WTF::String> ConstructStringArray() {
+  WTFArray<WTF::String> strs(4);
   // strs[0] is null.
   // strs[1] is empty.
   strs[1] = "";
   strs[2] = kHelloWorld;
   strs[3] = WTF::String::fromUTF8(kUTF8HelloWorld);
 
-  Array<WTF::String> cloned_strs = strs.Clone();
+  return strs;
+}
+
+}  // namespace
+
+TEST_F(WTFTypesTest, WTFToWTFSerialization_StringArray) {
+  WTFArray<WTF::String> strs = ConstructStringArray();
+  WTFArray<WTF::String> cloned_strs = strs.Clone();
 
   mojo::internal::SerializationContext context;
   size_t size = GetSerializedSize_(cloned_strs, &context);
@@ -68,31 +78,23 @@ TEST_F(WTFTypesTest, WTFToWTFStringSerialization) {
   SerializeArray_(std::move(cloned_strs), &buf, &data, &validate_params,
                   &context);
 
-  Array<WTF::String> strs2;
+  WTFArray<WTF::String> strs2;
   Deserialize_(data, &strs2, nullptr);
 
   EXPECT_TRUE(strs.Equals(strs2));
 }
 
-TEST_F(WTFTypesTest, WTFToMojoStringSerialization) {
-  Array<WTF::String> strs(4);
-  // strs[0] is null.
-  // strs[1] is empty.
-  strs[1] = "";
-  strs[2] = kHelloWorld;
-  strs[3] = WTF::String::fromUTF8(kUTF8HelloWorld);
-
-  Array<WTF::String> cloned_strs = strs.Clone();
+TEST_F(WTFTypesTest, WTFToMojoSerialization_StringArray) {
+  WTFArray<WTF::String> strs = ConstructStringArray();
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(cloned_strs, &context);
+  size_t size = GetSerializedSize_(strs, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
   mojo::internal::ArrayValidateParams validate_params(
       0, true, new mojo::internal::ArrayValidateParams(0, false, nullptr));
-  SerializeArray_(std::move(cloned_strs), &buf, &data, &validate_params,
-                  &context);
+  SerializeArray_(std::move(strs), &buf, &data, &validate_params, &context);
 
   Array<mojo::String> strs2;
   Deserialize_(data, &strs2, nullptr);
@@ -108,14 +110,9 @@ TEST_F(WTFTypesTest, SendString) {
   blink::TestWTFPtr ptr;
   TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));
 
-  WTF::String strs[4];
-  // strs[0] is null.
-  // strs[1] is empty.
-  strs[1] = "";
-  strs[2] = kHelloWorld;
-  strs[3] = WTF::String::fromUTF8(kUTF8HelloWorld);
+  WTFArray<WTF::String> strs = ConstructStringArray();
 
-  for (size_t i = 0; i < arraysize(strs); ++i) {
+  for (size_t i = 0; i < strs.size(); ++i) {
     base::RunLoop loop;
     // Test that a WTF::String is unchanged after the following conversion:
     //   - serialized;
@@ -126,6 +123,34 @@ TEST_F(WTFTypesTest, SendString) {
       EXPECT_EQ(strs[i], str);
       loop.Quit();
     });
+    loop.Run();
+  }
+}
+
+TEST_F(WTFTypesTest, SendStringArray) {
+  blink::TestWTFPtr ptr;
+  TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));
+
+  WTFArray<WTF::String> arrs[3];
+  // arrs[0] is empty.
+  // arrs[1] is null.
+  arrs[1] = nullptr;
+  arrs[2] = ConstructStringArray();
+
+  for (size_t i = 0; i < arraysize(arrs); ++i) {
+    WTFArray<WTF::String> expected_arr = arrs[i].Clone();
+    base::RunLoop loop;
+    // Test that a mojo::WTFArray<WTF::String> is unchanged after the following
+    // conversion:
+    //   - serialized;
+    //   - deserialized as mojo::Array<mojo::String>;
+    //   - serialized;
+    //   - deserialized as mojo::WTFArray<WTF::String>.
+    ptr->EchoStringArray(std::move(arrs[i]),
+                         [&loop, &expected_arr, &i](WTFArray<WTF::String> arr) {
+                           EXPECT_TRUE(expected_arr.Equals(arr));
+                           loop.Quit();
+                         });
     loop.Run();
   }
 }

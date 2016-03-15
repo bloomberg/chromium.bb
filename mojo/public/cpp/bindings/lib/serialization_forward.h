@@ -23,6 +23,9 @@ class Array;
 template <typename K, typename V>
 class Map;
 
+template <typename T>
+class WTFArray;
+
 namespace internal {
 
 template <typename T>
@@ -77,6 +80,26 @@ inline void SerializeArray_(
 template <typename E, typename F>
 inline bool Deserialize_(internal::Array_Data<F>* input,
                          Array<E>* output,
+                         internal::SerializationContext* context);
+
+// -----------------------------------------------------------------------------
+// Forward declaration for WTFArray.
+
+template <typename E>
+inline size_t GetSerializedSize_(const WTFArray<E>& input,
+                                 internal::SerializationContext* context);
+
+template <typename E, typename F>
+inline void SerializeArray_(
+    WTFArray<E> input,
+    internal::Buffer* buf,
+    internal::Array_Data<F>** output,
+    const internal::ArrayValidateParams* validate_params,
+    internal::SerializationContext* context);
+
+template <typename E, typename F>
+inline bool Deserialize_(internal::Array_Data<F>* input,
+                         WTFArray<E>* output,
                          internal::SerializationContext* context);
 
 // -----------------------------------------------------------------------------

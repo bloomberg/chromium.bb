@@ -36,6 +36,9 @@ class ScopedHandleBase;
 template <typename T>
 class StructPtr;
 
+template <typename T>
+class WTFArray;
+
 namespace internal {
 
 template <typename T, typename Enable = void>
@@ -47,6 +50,7 @@ template <typename T>
 struct ValueTraits<
     T,
     typename EnableIf<IsSpecializationOf<Array, T>::value ||
+                      IsSpecializationOf<WTFArray, T>::value ||
                       IsSpecializationOf<Map, T>::value ||
                       IsSpecializationOf<StructPtr, T>::value ||
                       IsSpecializationOf<InlinedStructPtr, T>::value>::type> {

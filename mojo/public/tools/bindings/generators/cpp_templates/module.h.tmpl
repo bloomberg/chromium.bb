@@ -19,7 +19,6 @@
 #include <ostream>
 
 #include "base/strings/string_piece.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
@@ -39,8 +38,10 @@
 #include "{{import.module.path}}.h"
 {%- endfor %}
 {%- if not for_blink %}
+#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 {%- else %}
+#include "mojo/public/cpp/bindings/wtf_array.h"
 #include "third_party/WebKit/Source/wtf/text/WTFString.h"
 {%- endif %}
 

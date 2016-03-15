@@ -204,9 +204,11 @@
         '..'
       ],
       'sources': [
+        'public/cpp/bindings/lib/wtf_array_serialization.h',
         'public/cpp/bindings/lib/wtf_serialization.h',
         'public/cpp/bindings/lib/wtf_string_serialization.cc',
         'public/cpp/bindings/lib/wtf_string_serialization.h',
+        'public/cpp/bindings/wtf_array.h',
       ],
       'dependencies': [
         'mojo_cpp_bindings',

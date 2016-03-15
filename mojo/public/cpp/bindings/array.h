@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/move.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
@@ -221,7 +222,7 @@ class Array {
   struct CloneTraits<U, true> {
     static inline void Clone(const std::vector<T>& src_vec,
                              std::vector<T>* dest_vec) {
-      dest_vec->clear();
+      DCHECK(dest_vec->empty());
       dest_vec->reserve(src_vec.size());
       for (const auto& element : src_vec)
         dest_vec->push_back(element.Clone());

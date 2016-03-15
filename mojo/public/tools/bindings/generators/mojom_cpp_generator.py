@@ -175,7 +175,8 @@ def GetCppArrayArgWrapperType(kind):
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
-    return "mojo::Array<%s> " % GetCppArrayArgWrapperType(kind.kind)
+    pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
+    return pattern % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::Map<%s, %s> " % (GetCppArrayArgWrapperType(kind.key_kind),
                                    GetCppArrayArgWrapperType(kind.value_kind))
@@ -212,7 +213,8 @@ def GetCppResultWrapperType(kind):
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
-    return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
+    pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
+    return pattern % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
                                   GetCppArrayArgWrapperType(kind.value_kind))
@@ -254,7 +256,8 @@ def GetCppWrapperType(kind):
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
-    return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
+    pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
+    return pattern % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
                                   GetCppArrayArgWrapperType(kind.value_kind))
@@ -288,7 +291,8 @@ def GetCppConstWrapperType(kind):
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
-    return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
+    pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
+    return pattern % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
                                   GetCppArrayArgWrapperType(kind.value_kind))

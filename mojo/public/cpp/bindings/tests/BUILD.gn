@@ -8,6 +8,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "array_common_test.h",
     "array_unittest.cc",
     "associated_interface_unittest.cc",
     "binding_callback_unittest.cc",
@@ -18,6 +19,7 @@ source_set("tests") {
     "connector_unittest.cc",
     "constant_unittest.cc",
     "container_test_util.cc",
+    "container_test_util.h",
     "equals_unittest.cc",
     "handle_passing_unittest.cc",
     "interface_ptr_unittest.cc",
@@ -49,6 +51,7 @@ source_set("tests") {
     "type_conversion_unittest.cc",
     "union_unittest.cc",
     "validation_unittest.cc",
+    "variant_test_util.h",
   ]
 
   deps = [
@@ -72,6 +75,11 @@ source_set("for_blink_tests") {
   testonly = true
 
   sources = [
+    "array_common_test.h",
+    "container_test_util.cc",
+    "container_test_util.h",
+    "variant_test_util.h",
+    "wtf_array_unittest.cc",
     "wtf_types_unittest.cc",
   ]
 
@@ -79,6 +87,7 @@ source_set("for_blink_tests") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/public/cpp/system",
+    "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//mojo/public/interfaces/bindings/tests:test_wtf_types",
     "//mojo/public/interfaces/bindings/tests:test_wtf_types_blink",
     "//testing/gtest",

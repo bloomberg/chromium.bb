@@ -127,9 +127,11 @@ source_set("callback") {
 
 source_set("wtf_support") {
   sources = [
+    "lib/wtf_array_serialization.h",
     "lib/wtf_serialization.h",
     "lib/wtf_string_serialization.cc",
     "lib/wtf_string_serialization.h",
+    "wtf_array.h",
   ]
 
   public_deps = [

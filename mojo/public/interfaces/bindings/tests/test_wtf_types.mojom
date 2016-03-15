@@ -7,8 +7,14 @@ module mojo.test;
 struct TestWTFCodeGeneration {
   string str;
   string? nullable_str;
+  array<string> strs;
+  array<string?> nullable_strs;
+  array<array<int32>> arrays;
+  array<bool> bools;
+  array<handle<message_pipe>> handles;
 };
 
 interface TestWTF {
   EchoString(string? str) => (string? str);
+  EchoStringArray(array<string?>? arr) => (array<string?>? arr);
 };

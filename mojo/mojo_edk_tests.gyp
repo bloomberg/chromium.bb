@@ -57,6 +57,7 @@
         'mojo_public.gyp:mojo_public_test_utils',
       ],
       'sources': [
+        'public/cpp/bindings/tests/array_common_test.h',
         'public/cpp/bindings/tests/array_unittest.cc',
         'public/cpp/bindings/tests/associated_interface_unittest.cc',
         'public/cpp/bindings/tests/binding_callback_unittest.cc',
@@ -67,6 +68,7 @@
         'public/cpp/bindings/tests/connector_unittest.cc',
         'public/cpp/bindings/tests/constant_unittest.cc',
         'public/cpp/bindings/tests/container_test_util.cc',
+        'public/cpp/bindings/tests/container_test_util.h',
         'public/cpp/bindings/tests/equals_unittest.cc',
         'public/cpp/bindings/tests/handle_passing_unittest.cc',
         'public/cpp/bindings/tests/interface_ptr_unittest.cc',
@@ -98,6 +100,7 @@
         'public/cpp/bindings/tests/type_conversion_unittest.cc',
         'public/cpp/bindings/tests/union_unittest.cc',
         'public/cpp/bindings/tests/validation_unittest.cc',
+        'public/cpp/bindings/tests/variant_test_util.h',
       ],
     },
     {
@@ -107,10 +110,16 @@
       'dependencies': [
         '../testing/gtest.gyp:gtest',
         'mojo_public.gyp:mojo_cpp_bindings',
+        'mojo_public.gyp:mojo_public_test_interfaces',
         'mojo_public.gyp:mojo_public_test_wtf_types',
         'mojo_public.gyp:mojo_public_test_wtf_types_blink',
       ],
       'sources': [
+        'public/cpp/bindings/tests/array_common_test.h',
+        'public/cpp/bindings/tests/container_test_util.cc',
+        'public/cpp/bindings/tests/container_test_util.h',
+        'public/cpp/bindings/tests/variant_test_util.h',
+        'public/cpp/bindings/tests/wtf_array_unittest.cc',
         'public/cpp/bindings/tests/wtf_types_unittest.cc',
       ],
     },

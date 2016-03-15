@@ -287,8 +287,8 @@ void Connector::WaitToReadMore() {
     // If the watch failed because the handle is invalid or its conditions can
     // no longer be met, we signal the error asynchronously to avoid reentry.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&Connector::OnWatcherHandleReady,
-                              weak_self_, rv));
+        FROM_HERE,
+        base::Bind(&Connector::OnWatcherHandleReady, weak_self_, rv));
   }
 
   if (register_sync_handle_watch_count_ > 0 &&
