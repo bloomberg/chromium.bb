@@ -577,8 +577,7 @@ int BrowserView::GetTabStripHeight() const {
   // We want to return tabstrip_->height(), but we might be called in the midst
   // of layout, when that hasn't yet been updated to reflect the current state.
   // So return what the tabstrip height _ought_ to be right now.
-  return tabstrip_ && IsTabStripVisible() ?
-      tabstrip_->GetPreferredSize().height() : 0;
+  return IsTabStripVisible() ? tabstrip_->GetPreferredSize().height() : 0;
 }
 
 gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
@@ -594,9 +593,19 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
 
 bool BrowserView::IsTabStripVisible() const {
   if (immersive_mode_controller_->ShouldHideTopViews() &&
-      immersive_mode_controller_->ShouldHideTabIndicators())
+      immersive_mode_controller_->ShouldHideTabIndicators()) {
     return false;
-  return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
+  }
+
+  // Return false if this window does not normally display a tabstrip.
+  if (!browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
+    return false;
+
+  // Return false if the tabstrip has not yet been created (by InitViews()),
+  // since callers may otherwise try to access it. Note that we can't just check
+  // this alone, as the tabstrip is created unconditionally even for windows
+  // that won't display it.
+  return tabstrip_ != nullptr;
 }
 
 bool BrowserView::IsOffTheRecord() const {

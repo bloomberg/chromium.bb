@@ -400,14 +400,15 @@ bool BrowserNonClientFrameViewAsh::DoesIntersectRect(
     return false;
   }
 
-  TabStrip* tabstrip = browser_view()->tabstrip();
-  if (!tabstrip || !browser_view()->IsTabStripVisible()) {
+  if (!browser_view()->IsTabStripVisible()) {
     // Claim |rect| if it is above the top of the topmost client area view.
     return rect.y() < GetTopInset(false);
   }
 
-  // Claim |rect| if it is above the bottom of the tabstrip in a non-tab
-  // portion.
+  // Claim |rect| only if it is above the bottom of the tabstrip in a non-tab
+  // portion. In particular, the avatar label/button is left of the tabstrip and
+  // the window controls are right of the tabstrip.
+  TabStrip* tabstrip = browser_view()->tabstrip();
   gfx::RectF rect_in_tabstrip_coords_f(rect);
   View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
   const gfx::Rect rect_in_tabstrip_coords(
