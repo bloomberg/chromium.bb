@@ -288,11 +288,17 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TabSwitchClosesPopup) {
   // Add a second tab to the browser and open an extension popup.
   chrome::NewTab(browser());
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(browser()->tab_strip_model()->GetWebContentsAt(1),
+            browser()->tab_strip_model()->GetActiveWebContents());
   OpenExtensionPopupViaAPI();
 
-  // Press CTRL+TAB to change active tabs, the extension popup should close.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_TAB, true, false, false, false));
+  content::WindowedNotificationObserver observer(
+      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      content::NotificationService::AllSources());
+  // Change active tabs, the extension popup should close.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  observer.Wait();
+
   EXPECT_FALSE(BrowserActionTestUtil(browser()).HasPopup());
 }
 
