@@ -228,6 +228,15 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_CA_DESCRIPTION},
       {"certificateManagerDeleteOtherTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_OTHER_TITLE},
+       // Encrypt password dialog
+      {"certificateManagerEncryptPasswordTitle",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_TITLE},
+      {"certificateManagerEncryptPasswordDescription",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_DESCRIPTION},
+      {"certificateManagerPassword",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_PASSWORD},
+      {"certificateManagerConfirmPassword",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_CONFIRM_PASSWORD},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
