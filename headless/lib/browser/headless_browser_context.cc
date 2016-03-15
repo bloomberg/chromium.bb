@@ -156,6 +156,11 @@ HeadlessBrowserContext::GetBackgroundSyncController() {
   return nullptr;
 }
 
+void HeadlessBrowserContext::SetOptionsForTesting(
+    const HeadlessBrowser::Options& options) {
+  options_ = options;
+}
+
 void HeadlessBrowserContext::SetURLRequestContextGetter(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
   resource_context_->set_url_request_context_getter(url_request_context_getter);

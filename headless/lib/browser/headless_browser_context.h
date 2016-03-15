@@ -44,6 +44,7 @@ class HeadlessBrowserContext : public content::BrowserContext {
   content::BackgroundSyncController* GetBackgroundSyncController() override;
 
   const HeadlessBrowser::Options& options() const { return options_; }
+  void SetOptionsForTesting(const HeadlessBrowser::Options& options);
 
   // Configure the URL request context getter to be used for serving URL
   // requests in this browser instance.

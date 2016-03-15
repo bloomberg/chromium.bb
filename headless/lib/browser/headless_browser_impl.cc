@@ -74,6 +74,12 @@ void HeadlessBrowserImpl::RunOnStartCallback() {
   on_start_callback_ = base::Callback<void(HeadlessBrowser*)>();
 }
 
+void HeadlessBrowserImpl::SetOptionsForTesting(
+    const HeadlessBrowser::Options& options) {
+  options_ = options;
+  browser_context()->SetOptionsForTesting(options);
+}
+
 int HeadlessBrowserMain(
     const HeadlessBrowser::Options& options,
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {

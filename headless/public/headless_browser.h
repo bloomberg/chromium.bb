@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "headless/public/headless_export.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 
 namespace base {
@@ -67,7 +68,13 @@ struct HeadlessBrowser::Options {
   std::string user_agent;
   std::string navigator_platform;
 
+  // Address at which DevTools should listen for connections. Disabled by
+  // default.
   net::IPEndPoint devtools_endpoint;
+
+  // Address of the HTTP/HTTPS proxy server to use. The system proxy settings
+  // are used by default.
+  net::HostPortPair proxy_server;
 
   // Optional message pump that overrides the default. Must outlive the browser.
   base::MessagePump* message_pump;
@@ -79,11 +86,13 @@ struct HeadlessBrowser::Options {
 class HeadlessBrowser::Options::Builder {
  public:
   Builder(int argc, const char** argv);
+  Builder();
   ~Builder();
 
   Builder& SetUserAgent(const std::string& user_agent);
   Builder& EnableDevToolsServer(const net::IPEndPoint& endpoint);
   Builder& SetMessagePump(base::MessagePump* message_pump);
+  Builder& SetProxyServer(const net::HostPortPair& proxy_server);
 
   Options Build();
 

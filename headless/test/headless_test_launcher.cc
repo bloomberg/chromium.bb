@@ -45,8 +45,8 @@ class HeadlessTestLauncherDelegate : public content::TestLauncherDelegate {
 
  protected:
   content::ContentMainDelegate* CreateContentMainDelegate() override {
-    // TODO(skyostil): Add a way to test custom options.
-    HeadlessBrowser::Options::Builder options_builder(0, nullptr);
+    // Use HeadlessBrowserTest::SetBrowserOptions to override these defaults.
+    HeadlessBrowser::Options::Builder options_builder;
     scoped_ptr<HeadlessBrowserImpl> browser(
         new HeadlessBrowserImplForTest(options_builder.Build()));
     return new HeadlessContentMainDelegate(std::move(browser));

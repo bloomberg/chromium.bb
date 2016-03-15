@@ -49,11 +49,13 @@ The main embedder API classes are:
 - `HeadlessBrowser::Options::Builder` - Defines the embedding options, e.g.:
   - `SetMessagePump` - Replaces the default base message pump. See
     `base::MessagePump`.
+  - `SetProxyServer` - Configures an HTTP/HTTPS proxy server to be used for
+    accessing the network.
 
-## Headless API
+## Client API
 
-The headless API is used to drive the browser and interact with the loaded web
-pages. Its main classes are:
+The headless client API is used to drive the browser and interact with loaded
+web pages. Its main classes are:
 
 - `HeadlessBrowser` - Represents the global headless browser instance.
 - `HeadlessWebContents` - Represents a single "tab" within the browser.

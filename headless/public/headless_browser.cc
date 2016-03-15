@@ -26,6 +26,8 @@ Options::~Options() {}
 
 Builder::Builder(int argc, const char** argv) : options_(argc, argv) {}
 
+Builder::Builder() : options_(0, nullptr) {}
+
 Builder::~Builder() {}
 
 Builder& Builder::SetUserAgent(const std::string& user_agent) {
@@ -40,6 +42,11 @@ Builder& Builder::EnableDevToolsServer(const net::IPEndPoint& endpoint) {
 
 Builder& Builder::SetMessagePump(base::MessagePump* message_pump) {
   options_.message_pump = message_pump;
+  return *this;
+}
+
+Builder& Builder::SetProxyServer(const net::HostPortPair& proxy_server) {
+  options_.proxy_server = proxy_server;
   return *this;
 }
 

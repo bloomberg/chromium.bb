@@ -24,6 +24,7 @@ class HEADLESS_EXPORT HeadlessWebContents {
    public:
     // Will be called on browser thread.
     virtual void DocumentOnLoadCompletedInMainFrame() = 0;
+    virtual void DidFinishNavigation(bool success) = 0;
 
    protected:
     Observer() {}

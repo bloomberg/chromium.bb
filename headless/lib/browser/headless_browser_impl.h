@@ -44,6 +44,11 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
 
   const HeadlessBrowser::Options& options() const { return options_; }
 
+  // Customize the options used by this headless browser instance. Note that
+  // options which take effect before the message loop has been started (e.g.,
+  // custom message pumps) cannot be set via this method.
+  void SetOptionsForTesting(const HeadlessBrowser::Options& options);
+
  protected:
   base::Callback<void(HeadlessBrowser*)> on_start_callback_;
   HeadlessBrowser::Options options_;

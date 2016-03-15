@@ -137,6 +137,8 @@ executable("headless_shell") {
 
   sources = [
     "app/headless_shell.cc",
+    "app/headless_shell_switches.cc",
+    "app/headless_shell_switches.h",
   ]
 
   deps = [

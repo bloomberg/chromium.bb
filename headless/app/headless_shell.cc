@@ -10,6 +10,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/content_switches.h"
+#include "headless/app/headless_shell_switches.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_web_contents.h"
 #include "net/base/ip_address.h"
@@ -68,6 +69,8 @@ class HeadlessShell : public HeadlessWebContents::Observer {
     ShutdownIfNeeded();
   }
 
+  void DidFinishNavigation(bool success) override {}
+
  private:
   HeadlessBrowser* browser_;  // Not owned.
   scoped_ptr<HeadlessWebContents> web_contents_;
@@ -94,6 +97,18 @@ int main(int argc, const char** argv) {
       builder.EnableDevToolsServer(net::IPEndPoint(
           devtools_address, base::checked_cast<uint16_t>(parsed_port)));
     }
+  }
+
+  if (command_line.HasSwitch(headless::switches::kProxyServer)) {
+    std::string proxy_server =
+        command_line.GetSwitchValueASCII(headless::switches::kProxyServer);
+    net::HostPortPair parsed_proxy_server =
+        net::HostPortPair::FromString(proxy_server);
+    if (parsed_proxy_server.host().empty() || !parsed_proxy_server.port()) {
+      LOG(ERROR) << "Malformed proxy server url";
+      return EXIT_FAILURE;
+    }
+    builder.SetProxyServer(parsed_proxy_server);
   }
 
   return HeadlessBrowserMain(
