@@ -95,7 +95,7 @@ class InitCommand(cr.Command):
           exit(1)
       generator = cr.context.args.CR_GENERATOR
       if not generator:
-        generator = 'gyp'
+        generator = 'gn'
       cr.context.derived.Set(
           CR_OUT_FULL=out,
           CR_OUT_BASE=base,
