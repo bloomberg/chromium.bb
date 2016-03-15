@@ -123,7 +123,6 @@ message BaseLayerProperties {
   repeated int32 clip_children_ids = 43;
 
   optional ScrollOffset scroll_offset = 44;
-  optional Vector2dF scroll_compensation_adjustment = 45;
 
   optional Rect update_rect = 46;
 

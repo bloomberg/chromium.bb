@@ -835,18 +835,6 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollCompensationAdjustment(
-    const gfx::Vector2dF& scroll_compensation_adjustment) {
-  if (scroll_compensation_adjustment_ == scroll_compensation_adjustment)
-    return;
-  scroll_compensation_adjustment_ = scroll_compensation_adjustment;
-  SetNeedsCommit();
-}
-
-gfx::Vector2dF Layer::ScrollCompensationAdjustment() const {
-  return scroll_compensation_adjustment_;
-}
-
 void Layer::SetScrollOffsetFromImplSide(
     const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
@@ -1283,7 +1271,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
         ->property_trees()
         ->scroll_tree.synced_scroll_offset(layer->id())
         ->set_clobber_active_value();
-  layer->SetScrollCompensationAdjustment(ScrollCompensationAdjustment());
 
   {
     TRACE_EVENT0("cc", "Layer::PushPropertiesTo::CopyOutputRequests");
@@ -1529,8 +1516,6 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   }
 
   ScrollOffsetToProto(scroll_offset_, base->mutable_scroll_offset());
-  Vector2dFToProto(scroll_compensation_adjustment_,
-                   base->mutable_scroll_compensation_adjustment());
 
   // TODO(nyquist): Figure out what to do with CopyRequests.
   // See crbug.com/570374.
@@ -1634,8 +1619,6 @@ void Layer::FromLayerSpecificPropertiesProto(
   }
 
   scroll_offset_ = ProtoToScrollOffset(base.scroll_offset());
-  scroll_compensation_adjustment_ =
-      ProtoToVector2dF(base.scroll_compensation_adjustment());
 
   update_rect_.Union(ProtoToRect(base.update_rect()));
 }

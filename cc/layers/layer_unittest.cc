@@ -180,8 +180,6 @@ class LayerSerializationTest : public testing::Test {
               dest->user_scrollable_horizontal_);
     EXPECT_EQ(src->user_scrollable_vertical_, dest->user_scrollable_vertical_);
     EXPECT_EQ(src->scroll_offset_, dest->scroll_offset_);
-    EXPECT_EQ(src->scroll_compensation_adjustment_,
-              dest->scroll_compensation_adjustment_);
     EXPECT_EQ(update_rect, dest->update_rect_);
 
     if (src->scroll_parent_) {
@@ -287,7 +285,6 @@ class LayerSerializationTest : public testing::Test {
     layer->user_scrollable_horizontal_ = false;
     layer->user_scrollable_vertical_ = true;
     layer->scroll_offset_ = gfx::ScrollOffset(3, 14);
-    layer->scroll_compensation_adjustment_ = gfx::Vector2dF(6.28f, 3.14f);
     layer->update_rect_ = gfx::Rect(14, 15);
 
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
@@ -337,7 +334,6 @@ class LayerSerializationTest : public testing::Test {
     layer->user_scrollable_horizontal_ = !layer->user_scrollable_horizontal_;
     layer->user_scrollable_vertical_ = !layer->user_scrollable_vertical_;
     layer->scroll_offset_ = gfx::ScrollOffset(3, 14);
-    layer->scroll_compensation_adjustment_ = gfx::Vector2dF(6.28f, 3.14f);
     layer->update_rect_ = gfx::Rect(14, 15);
 
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());

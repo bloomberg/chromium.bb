@@ -102,7 +102,6 @@ class WebLayerImpl : public blink::WebLayer {
   void setForceRenderSurface(bool force) override;
   void setScrollPositionDouble(blink::WebDoublePoint position) override;
   blink::WebDoublePoint scrollPositionDouble() const override;
-  void setScrollCompensationAdjustment(blink::WebDoublePoint position) override;
   void setScrollClipLayer(blink::WebLayer* clip_layer) override;
   bool scrollable() const override;
   void setUserScrollable(bool horizontal, bool vertical) override;

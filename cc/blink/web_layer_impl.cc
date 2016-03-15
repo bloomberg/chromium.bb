@@ -223,12 +223,6 @@ void WebLayerImpl::setScrollPositionDouble(blink::WebDoublePoint position) {
   layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
 }
 
-void WebLayerImpl::setScrollCompensationAdjustment(
-    blink::WebDoublePoint position) {
-  layer_->SetScrollCompensationAdjustment(
-      gfx::Vector2dF(position.x, position.y));
-}
-
 blink::WebDoublePoint WebLayerImpl::scrollPositionDouble() const {
   return blink::WebDoublePoint(layer_->scroll_offset().x(),
                                layer_->scroll_offset().y());

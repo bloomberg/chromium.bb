@@ -172,9 +172,8 @@ struct CC_EXPORT TransformNodeData {
   // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::ScrollOffset scroll_offset;
 
-  // We scroll snap where possible, but this has an effect on scroll
-  // compensation: the snap is yet more scrolling that must be compensated for.
-  // This value stores the snapped amount for this purpose.
+  // We scroll snap where possible, but this means fixed-pos elements must be
+  // adjusted.  This value stores the snapped amount for this purpose.
   gfx::Vector2dF scroll_snap;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.

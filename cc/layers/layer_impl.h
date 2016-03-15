@@ -431,12 +431,6 @@ class CC_EXPORT LayerImpl {
   gfx::ScrollOffset MaxScrollOffset() const;
   gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset) const;
   gfx::Vector2dF ClampScrollToMaxScrollOffset();
-  void SetScrollCompensationAdjustment(const gfx::Vector2dF& scroll_offset) {
-    scroll_compensation_adjustment_ = scroll_offset;
-  }
-  gfx::Vector2dF ScrollCompensationAdjustment() const {
-    return scroll_compensation_adjustment_;
-  }
 
   // Returns the delta of the scroll that was outside of the bounds of the
   // initial scroll
@@ -734,8 +728,6 @@ class CC_EXPORT LayerImpl {
   gfx::Transform transform_;
 
   LayerPositionConstraint position_constraint_;
-
-  gfx::Vector2dF scroll_compensation_adjustment_;
 
   int num_descendants_that_draw_content_;
 

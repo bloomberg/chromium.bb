@@ -382,23 +382,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
     if (webLayer) {
         webLayer->setScrollClipLayer(containerLayer);
-        // Non-layered Viewport constrained objects, e.g. fixed position elements, are
-        // positioned in Blink using integer coordinates. In that case, we don't want
-        // to set the WebLayer's scroll position at fractional precision otherwise the
-        // WebLayer's position after snapping to device pixel can be off with regard to
-        // fixed position elements.
-        if (m_lastMainThreadScrollingReasons & MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects) {
-            webLayer->setScrollPositionDouble(DoublePoint(scrollableArea->scrollPosition() - scrollableArea->minimumScrollPosition()));
-        } else {
-            DoublePoint scrollPosition(scrollableArea->scrollPositionDouble() - scrollableArea->minimumScrollPositionDouble());
-            IntPoint flooredScrollPosition(flooredIntPoint(scrollPosition));
-            DoublePoint fractionalPart(scrollPosition.x() - flooredScrollPosition.x(), scrollPosition.y() - flooredScrollPosition.y());
-            webLayer->setScrollPositionDouble(scrollPosition);
-            // Blink can only use the integer part of the scroll offset to position elements.
-            // Sends the fractional part of the scroll offset to CC as scroll adjustment for
-            // fixed-position layer.
-            webLayer->setScrollCompensationAdjustment(fractionalPart);
-        }
+        DoublePoint scrollPosition(scrollableArea->scrollPositionDouble() - scrollableArea->minimumScrollPositionDouble());
+        webLayer->setScrollPositionDouble(scrollPosition);
 
         webLayer->setBounds(scrollableArea->contentsSize());
         bool canScrollX = scrollableArea->userInputScrollable(HorizontalScrollbar);
