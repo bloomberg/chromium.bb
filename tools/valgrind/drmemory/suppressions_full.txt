@@ -2105,7 +2105,6 @@ content.dll!content::RenderWidgetHostViewAura::UpdateCursorIfOverSelf
 content.dll!content::RenderWidgetHostViewAura::SetIsLoading
 content.dll!content::RenderWidgetHostImpl::SetIsLoading
 content.dll!content::RenderFrameHostManager::SetIsLoading
-content.dll!content::WebContentsImpl::SetIsLoading
 
 HANDLE LEAK
 name=bug_571554_a
