@@ -37,6 +37,7 @@ import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityNodeProvider;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -57,11 +58,13 @@ import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFactory;
 import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge;
 import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
+import org.chromium.content.browser.input.AnimationIntervalProvider;
 import org.chromium.content.browser.input.FloatingPastePopupMenu;
 import org.chromium.content.browser.input.GamepadList;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.JoystickScrollProvider;
+import org.chromium.content.browser.input.JoystickZoomProvider;
 import org.chromium.content.browser.input.LegacyPastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu.PastePopupMenuDelegate;
@@ -349,6 +352,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     /**
+     * Returns interval between consecutive animation frames.
+     */
+    private static class SystemAnimationIntervalProvider implements AnimationIntervalProvider {
+        @Override
+        public long getLastAnimationFrameInterval() {
+            return AnimationUtils.currentAnimationTimeMillis();
+        }
+    }
+
+    /**
      * Interface that consumers of {@link ContentViewCore} must implement to allow the proper
      * dispatching of view methods through the containing view.
      *
@@ -471,6 +484,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     // Provides smooth gamepad joystick-driven scrolling.
     private final JoystickScrollProvider mJoystickScrollProvider;
+
+    // Provides smooth gamepad joystick-driven zooming.
+    private JoystickZoomProvider mJoystickZoomProvider;
 
     private boolean mIsMobileOptimizedHint;
 
@@ -1720,6 +1736,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             }
         } else if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
             if (mJoystickScrollProvider.onMotion(event)) return true;
+            if (mJoystickZoomProvider == null) {
+                mJoystickZoomProvider =
+                        new JoystickZoomProvider(this, new SystemAnimationIntervalProvider());
+            }
+            if (mJoystickZoomProvider.onMotion(event)) return true;
         }
         return mContainerViewInternals.super_onGenericMotionEvent(event);
     }
@@ -2733,6 +2754,44 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         nativePinchBy(mNativeContentViewCore, timeMs, xPix, yPix, delta);
         nativePinchEnd(mNativeContentViewCore, timeMs);
 
+        return true;
+    }
+
+    /**
+     * Send start of pinch zoom gesture.
+     *
+     * @param xPix X-coordinate of location from which pinch zoom would start.
+     * @param yPix Y-coordinate of location from which pinch zoom would start.
+     * @return whether the pinch zoom start gesture was sent.
+     */
+    public boolean pinchBegin(int xPix, int yPix) {
+        if (mNativeContentViewCore == 0) return false;
+        nativePinchBegin(mNativeContentViewCore, SystemClock.uptimeMillis(), xPix, yPix);
+        return true;
+    }
+
+    /**
+     * Send pinch zoom gesture.
+     *
+     * @param xPix X-coordinate of pinch zoom location.
+     * @param yPix Y-coordinate of pinch zoom location.
+     * @param delta the factor by which the current page scale should be multiplied by.
+     * @return whether the pinchby gesture was sent.
+     */
+    public boolean pinchBy(int xPix, int yPix, float delta) {
+        if (mNativeContentViewCore == 0) return false;
+        nativePinchBy(mNativeContentViewCore, SystemClock.uptimeMillis(), xPix, yPix, delta);
+        return true;
+    }
+
+    /**
+     * Stop pinch zoom gesture.
+     *
+     * @return whether the pinch stop gesture was sent.
+     */
+    public boolean pinchEnd() {
+        if (mNativeContentViewCore == 0) return false;
+        nativePinchEnd(mNativeContentViewCore, SystemClock.uptimeMillis());
         return true;
     }
 
