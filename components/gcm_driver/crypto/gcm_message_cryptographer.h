@@ -75,7 +75,7 @@ class GCMMessageCryptographer {
   FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, AuthSecretAffectsIKM);
   FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, InvalidRecordPadding);
   FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, NonceGeneration);
-  FRIEND_TEST_ALL_PREFIXES(GCMMessageCryptographerTest, ReferenceTest);
+  friend class GCMMessageCryptographerReferenceTest;
 
   // Size, in bytes, of the authentication tag included in the messages.
   static const size_t kAuthenticationTagBytes;
