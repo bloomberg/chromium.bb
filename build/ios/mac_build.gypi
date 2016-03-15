@@ -69,7 +69,8 @@
       '-Ddisable_nacl=1',
       # Pass through the Mac SDK version.
       '-Dmac_sdk=<(mac_sdk)',
-      '-Dparent_generator=<(parent_generator)'
+      '-Dparent_generator=<(parent_generator)',
+      '-DOS=mac',
     ],
 
     # Rerun gyp for each of the projects needed. This is what actually
