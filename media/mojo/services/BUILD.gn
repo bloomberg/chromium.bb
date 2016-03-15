@@ -10,7 +10,6 @@ import("//mojo/public/mojo_application_manifest.gni")
 # Target naming conventions:
 # - proxy: C++ implementations supported by mojo services.
 # - service: Mojo interface implementations.
-# - unittests: Unit tests for a particular class/file.
 # - test: Tests for a particular app, e.g. media.
 
 config("mojo_media_config") {
@@ -209,26 +208,6 @@ mojo_native_application("media") {
     ":application",
     "//mojo/logging",
     "//mojo/public/c/system:for_shared_library",
-  ]
-}
-
-test("media_mojo_services_unittests") {
-  sources = [
-    "mojo_cdm_allocator_unittest.cc",
-  ]
-
-  deps = [
-    ":cdm_service",
-    "//base",
-    "//base/test:test_support",
-    "//media",
-    "//media/base:test_support",
-    "//media/mojo/common",
-    "//media/mojo/interfaces",
-    "//mojo/edk/system",
-    "//mojo/edk/test:run_all_unittests",
-    "//testing/gmock",
-    "//testing/gtest",
   ]
 }
 
