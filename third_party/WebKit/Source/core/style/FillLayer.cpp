@@ -383,7 +383,7 @@ bool FillLayer::hasOpaqueImage(const LayoutObject* layoutObject) const
         return false;
 
     if (m_composite == CompositeSourceOver)
-        return m_image->knownToBeOpaque(layoutObject);
+        return m_image->knownToBeOpaque(*layoutObject);
 
     return false;
 }

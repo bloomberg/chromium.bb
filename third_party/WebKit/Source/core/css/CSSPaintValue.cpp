@@ -34,7 +34,7 @@ String CSSPaintValue::name() const
     return m_name->value();
 }
 
-PassRefPtr<Image> CSSPaintValue::image(const LayoutObject*, const IntSize&)
+PassRefPtr<Image> CSSPaintValue::image(const LayoutObject&, const IntSize&)
 {
     // TODO(ikilpatrick): implement.
     return nullptr;

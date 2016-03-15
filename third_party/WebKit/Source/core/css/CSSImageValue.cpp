@@ -111,7 +111,7 @@ String CSSImageValue::customCSSText() const
     return serializeURI(m_relativeURL);
 }
 
-bool CSSImageValue::knownToBeOpaque(const LayoutObject* layoutObject) const
+bool CSSImageValue::knownToBeOpaque(const LayoutObject& layoutObject) const
 {
     return m_cachedImage ? m_cachedImage->knownToBeOpaque(layoutObject) : false;
 }

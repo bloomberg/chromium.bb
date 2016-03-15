@@ -93,7 +93,7 @@ bool StyleFetchedImageSet::errorOccurred() const
     return m_bestFitImage->errorOccurred();
 }
 
-LayoutSize StyleFetchedImageSet::imageSize(const LayoutObject*, float multiplier, const LayoutSize& defaultObjectSize) const
+LayoutSize StyleFetchedImageSet::imageSize(const LayoutObject&, float multiplier, const LayoutSize& defaultObjectSize) const
 {
     if (m_bestFitImage->getImage() && m_bestFitImage->getImage()->isSVGImage())
         return imageSizeForSVGImage(toSVGImage(m_bestFitImage->getImage()), multiplier, defaultObjectSize);
@@ -128,7 +128,7 @@ void StyleFetchedImageSet::removeClient(LayoutObject* layoutObject)
     m_bestFitImage->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleFetchedImageSet::image(const LayoutObject*, const IntSize& containerSize, float zoom) const
+PassRefPtr<Image> StyleFetchedImageSet::image(const LayoutObject&, const IntSize& containerSize, float zoom) const
 {
     if (!m_bestFitImage->getImage()->isSVGImage())
         return m_bestFitImage->getImage();
@@ -136,9 +136,9 @@ PassRefPtr<Image> StyleFetchedImageSet::image(const LayoutObject*, const IntSize
     return SVGImageForContainer::create(toSVGImage(m_bestFitImage->getImage()), containerSize, zoom, m_url);
 }
 
-bool StyleFetchedImageSet::knownToBeOpaque(const LayoutObject* layoutObject) const
+bool StyleFetchedImageSet::knownToBeOpaque(const LayoutObject& layoutObject) const
 {
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(layoutObject, *m_bestFitImage.get()));
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(&layoutObject, *m_bestFitImage.get()));
     return m_bestFitImage->getImage()->currentFrameKnownToBeOpaque(Image::PreCacheMetadata);
 }
 

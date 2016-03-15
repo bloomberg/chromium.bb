@@ -52,12 +52,12 @@ public:
 
     String customCSSText() const;
 
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
     bool isFixedSize() const { return true; }
-    IntSize fixedSize(const LayoutObject*, const FloatSize&);
+    IntSize fixedSize(const LayoutObject&, const FloatSize&);
 
     bool isPending() const;
-    bool knownToBeOpaque(const LayoutObject*) const;
+    bool knownToBeOpaque(const LayoutObject&) const;
 
     void loadSubimages(Document*);
 

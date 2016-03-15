@@ -72,7 +72,7 @@ public:
 
     bool equals(const CSSImageValue&) const;
 
-    bool knownToBeOpaque(const LayoutObject*) const;
+    bool knownToBeOpaque(const LayoutObject&) const;
 
     PassRefPtrWillBeRawPtr<CSSImageValue> valueWithURLMadeAbsolute()
     {

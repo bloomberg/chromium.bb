@@ -72,7 +72,7 @@ LayoutSize LayoutListMarker::imageBulletSize() const
     // become particularly useful until we support the CSS3 marker pseudoclass to allow control over
     // the width and height of the marker box.
     LayoutUnit bulletWidth = style()->getFontMetrics().ascent() / LayoutUnit(2);
-    return m_image->imageSize(this, style()->effectiveZoom(), LayoutSize(bulletWidth, bulletWidth));
+    return m_image->imageSize(*this, style()->effectiveZoom(), LayoutSize(bulletWidth, bulletWidth));
 }
 
 void LayoutListMarker::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)

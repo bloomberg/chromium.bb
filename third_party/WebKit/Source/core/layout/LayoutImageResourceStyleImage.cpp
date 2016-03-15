@@ -66,7 +66,7 @@ PassRefPtr<Image> LayoutImageResourceStyleImage::image(const IntSize& size, floa
     // Generated content may trigger calls to image() while we're still pending, don't assert but gracefully exit.
     if (m_styleImage->isPendingImage())
         return nullptr;
-    return m_styleImage->image(m_layoutObject, size, zoom);
+    return m_styleImage->image(*m_layoutObject, size, zoom);
 }
 
 DEFINE_TRACE(LayoutImageResourceStyleImage)

@@ -126,7 +126,7 @@ void CSSImageGeneratorValue::putImage(const IntSize& size, PassRefPtr<Image> ima
     m_images.add(size, image);
 }
 
-PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject* layoutObject, const IntSize& size)
+PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject& layoutObject, const IntSize& size)
 {
     switch (getClassType()) {
     case CrossfadeClass:
@@ -160,7 +160,7 @@ bool CSSImageGeneratorValue::isFixedSize() const
     return false;
 }
 
-IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject* layoutObject, const FloatSize& defaultObjectSize)
+IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject& layoutObject, const FloatSize& defaultObjectSize)
 {
     switch (getClassType()) {
     case CrossfadeClass:
@@ -194,7 +194,7 @@ bool CSSImageGeneratorValue::isPending() const
     return false;
 }
 
-bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject* layoutObject) const
+bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject& layoutObject) const
 {
     switch (getClassType()) {
     case CrossfadeClass:

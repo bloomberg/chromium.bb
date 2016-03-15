@@ -86,7 +86,7 @@ namespace blink {
 
 class CSSGradientValue : public CSSImageGeneratorValue {
 public:
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
 
     void setFirstX(PassRefPtrWillBeRawPtr<CSSValue> val) { m_firstX = val; }
     void setFirstY(PassRefPtrWillBeRawPtr<CSSValue> val) { m_firstY = val; }
@@ -104,14 +104,14 @@ public:
     CSSGradientType gradientType() const { return m_gradientType; }
 
     bool isFixedSize() const { return false; }
-    IntSize fixedSize(const LayoutObject*) const { return IntSize(); }
+    IntSize fixedSize(const LayoutObject&) const { return IntSize(); }
 
     bool isPending() const { return false; }
-    bool knownToBeOpaque(const LayoutObject*) const;
+    bool knownToBeOpaque(const LayoutObject&) const;
 
     void loadSubimages(Document*) { }
 
-    void getStopColors(WillBeHeapVector<Color>& stopColors, const LayoutObject*) const;
+    void getStopColors(WillBeHeapVector<Color>& stopColors, const LayoutObject&) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 

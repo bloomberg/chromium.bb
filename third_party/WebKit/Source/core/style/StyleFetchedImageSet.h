@@ -62,14 +62,14 @@ public:
     bool canRender() const override;
     bool isLoaded() const override;
     bool errorOccurred() const override;
-    LayoutSize imageSize(const LayoutObject*, float multiplier, const LayoutSize& defaultObjectSize) const override;
+    LayoutSize imageSize(const LayoutObject&, float multiplier, const LayoutSize& defaultObjectSize) const override;
     bool imageHasRelativeSize() const override;
     bool usesImageContainerSize() const override;
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&, float) const override;
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float) const override;
     float imageScaleFactor() const override { return m_imageScaleFactor; }
-    bool knownToBeOpaque(const LayoutObject*) const override;
+    bool knownToBeOpaque(const LayoutObject&) const override;
     ImageResource* cachedImage() const override;
 
     DECLARE_VIRTUAL_TRACE();

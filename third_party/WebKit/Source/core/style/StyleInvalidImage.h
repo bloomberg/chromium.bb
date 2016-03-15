@@ -23,16 +23,16 @@ public:
 
     PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override { return cssValue(); }
 
-    LayoutSize imageSize(const LayoutObject*, float /*multiplier*/, const LayoutSize& /*defaultObjectSize*/) const override { return LayoutSize(); }
+    LayoutSize imageSize(const LayoutObject&, float /*multiplier*/, const LayoutSize& /*defaultObjectSize*/) const override { return LayoutSize(); }
     bool imageHasRelativeSize() const override { return false; }
     bool usesImageContainerSize() const override { return false; }
     void addClient(LayoutObject*) override { }
     void removeClient(LayoutObject*) override { }
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&, float) const override
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float) const override
     {
         return nullptr;
     }
-    bool knownToBeOpaque(const LayoutObject*) const override { return false; }
+    bool knownToBeOpaque(const LayoutObject&) const override { return false; }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

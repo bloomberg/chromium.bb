@@ -140,7 +140,7 @@ bool BoxPainter::isFillLayerOpaque(const FillLayer& layer, const LayoutObject& i
     // with no intrinsic size are treated as empty.
     return layer.hasOpaqueImage(&imageClient)
         && layer.image()->canRender()
-        && !layer.image()->imageSize(&imageClient, imageClient.style()->effectiveZoom(), LayoutSize()).isEmpty()
+        && !layer.image()->imageSize(imageClient, imageClient.style()->effectiveZoom(), LayoutSize()).isEmpty()
         && layer.hasRepeatXY();
 }
 
@@ -450,9 +450,9 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
             SkXfermode::Mode bgOp = WebCoreCompositeToSkiaComposite(bgLayer.composite(), bgLayer.blendMode());
             // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
             SkXfermode::Mode compositeOp = op == SkXfermode::kSrcOver_Mode ? bgOp : op;
-            const LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
+            const LayoutObject& clientForBackgroundImage = backgroundObject ? *backgroundObject : obj;
             RefPtr<Image> image = bgImage->image(clientForBackgroundImage, flooredIntSize(geometry.tileSize()), obj.style()->effectiveZoom());
-            InterpolationQuality interpolationQuality = chooseInterpolationQuality(*clientForBackgroundImage, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
+            InterpolationQuality interpolationQuality = chooseInterpolationQuality(clientForBackgroundImage, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
             if (bgLayer.maskSourceType() == MaskLuminance)
                 context.setColorFilter(ColorFilterLuminanceToAlpha);
             InterpolationQuality previousInterpolationQuality = context.imageInterpolationQuality();

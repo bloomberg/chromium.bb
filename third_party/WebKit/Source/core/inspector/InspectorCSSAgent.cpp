@@ -143,7 +143,7 @@ WillBeHeapVector<RawPtrWillBeMember<Element>> elementsFromRect(LayoutRect rect, 
 }
 
 // Blends the colors from the given gradient with the existing colors.
-void blendWithColorsFromGradient(CSSGradientValue* gradient, WillBeHeapVector<Color>& colors, bool& foundNonTransparentColor, bool& foundOpaqueColor, const LayoutObject* layoutObject)
+void blendWithColorsFromGradient(CSSGradientValue* gradient, WillBeHeapVector<Color>& colors, bool& foundNonTransparentColor, bool& foundOpaqueColor, const LayoutObject& layoutObject)
 {
     WillBeHeapVector<Color> stopColors;
     gradient->getStopColors(stopColors, layoutObject);
@@ -168,7 +168,7 @@ void blendWithColorsFromGradient(CSSGradientValue* gradient, WillBeHeapVector<Co
 }
 
 // Gets the colors from an image style, if one exists and it is a gradient.
-void addColorsFromImageStyle(const ComputedStyle& style, WillBeHeapVector<Color>& colors, bool& foundOpaqueColor, bool& foundNonTransparentColor, const LayoutObject* layoutObject)
+void addColorsFromImageStyle(const ComputedStyle& style, WillBeHeapVector<Color>& colors, bool& foundOpaqueColor, bool& foundNonTransparentColor, const LayoutObject& layoutObject)
 {
     const FillLayer& backgroundLayers = style.backgroundLayers();
     if (!backgroundLayers.hasImage())
@@ -246,7 +246,7 @@ bool getColorsFromRect(LayoutRect rect, Document& document, Element* topElement,
             }
         }
 
-        addColorsFromImageStyle(*style, colors, foundOpaqueColor, foundNonTransparentColor, layoutObject);
+        addColorsFromImageStyle(*style, colors, foundOpaqueColor, foundNonTransparentColor, *layoutObject);
 
         bool contains = foundTopElement || element->boundingBox().contains(rect);
         if (!contains && foundNonTransparentColor) {

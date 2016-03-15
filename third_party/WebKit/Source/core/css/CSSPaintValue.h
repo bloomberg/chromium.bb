@@ -23,12 +23,12 @@ public:
 
     String name() const;
 
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
     bool isFixedSize() const { return false; }
-    IntSize fixedSize(const LayoutObject*) { return IntSize(); }
+    IntSize fixedSize(const LayoutObject&) { return IntSize(); }
 
     bool isPending() const { return false; }
-    bool knownToBeOpaque(const LayoutObject*) const { return false; }
+    bool knownToBeOpaque(const LayoutObject&) const { return false; }
 
     void loadSubimages(Document*) { }
 

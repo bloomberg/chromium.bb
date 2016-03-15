@@ -47,7 +47,7 @@ static bool subimageIsPending(CSSValue* value)
     return false;
 }
 
-static bool subimageKnownToBeOpaque(CSSValue* value, const LayoutObject* layoutObject)
+static bool subimageKnownToBeOpaque(CSSValue* value, const LayoutObject& layoutObject)
 {
     if (value->isImageValue())
         return toCSSImageValue(value)->knownToBeOpaque(layoutObject);
@@ -84,9 +84,9 @@ static ImageResource* cachedImageForCSSValue(CSSValue* value, Document* document
     return nullptr;
 }
 
-static Image* renderableImageForCSSValue(CSSValue* value, const LayoutObject* layoutObject)
+static Image* renderableImageForCSSValue(CSSValue* value, const LayoutObject& layoutObject)
 {
-    ImageResource* cachedImage = cachedImageForCSSValue(value, &layoutObject->document());
+    ImageResource* cachedImage = cachedImageForCSSValue(value, &layoutObject.document());
 
     if (!cachedImage || cachedImage->errorOccurred() || cachedImage->getImage()->isNull())
         return nullptr;
@@ -159,7 +159,7 @@ PassRefPtrWillBeRawPtr<CSSCrossfadeValue> CSSCrossfadeValue::valueWithURLsMadeAb
     return CSSCrossfadeValue::create(fromValue.release(), toValue.release(), m_percentageValue);
 }
 
-IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* layoutObject, const FloatSize& defaultObjectSize)
+IntSize CSSCrossfadeValue::fixedSize(const LayoutObject& layoutObject, const FloatSize& defaultObjectSize)
 {
     Image* fromImage = renderableImageForCSSValue(m_fromValue.get(), layoutObject);
     Image* toImage = renderableImageForCSSValue(m_toValue.get(), layoutObject);
@@ -193,7 +193,7 @@ bool CSSCrossfadeValue::isPending() const
     return subimageIsPending(m_fromValue.get()) || subimageIsPending(m_toValue.get());
 }
 
-bool CSSCrossfadeValue::knownToBeOpaque(const LayoutObject* layoutObject) const
+bool CSSCrossfadeValue::knownToBeOpaque(const LayoutObject& layoutObject) const
 {
     return subimageKnownToBeOpaque(m_fromValue.get(), layoutObject) && subimageKnownToBeOpaque(m_toValue.get(), layoutObject);
 }
@@ -223,7 +223,7 @@ void CSSCrossfadeValue::loadSubimages(Document* document)
     m_crossfadeSubimageObserver.setReady(true);
 }
 
-PassRefPtr<Image> CSSCrossfadeValue::image(const LayoutObject* layoutObject, const IntSize& size)
+PassRefPtr<Image> CSSCrossfadeValue::image(const LayoutObject& layoutObject, const IntSize& size)
 {
     if (size.isEmpty())
         return nullptr;

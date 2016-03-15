@@ -46,7 +46,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::computedCSSValue() const
     return m_imageGeneratorValue->valueWithURLsMadeAbsolute();
 }
 
-LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* layoutObject, float multiplier, const LayoutSize& defaultObjectSize) const
+LayoutSize StyleGeneratedImage::imageSize(const LayoutObject& layoutObject, float multiplier, const LayoutSize& defaultObjectSize) const
 {
     if (m_fixedSize) {
         FloatSize unzoomedDefaultObjectSize(defaultObjectSize);
@@ -67,12 +67,12 @@ void StyleGeneratedImage::removeClient(LayoutObject* layoutObject)
     m_imageGeneratorValue->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject* layoutObject, const IntSize& size, float) const
+PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject& layoutObject, const IntSize& size, float) const
 {
     return m_imageGeneratorValue->image(layoutObject, size);
 }
 
-bool StyleGeneratedImage::knownToBeOpaque(const LayoutObject* layoutObject) const
+bool StyleGeneratedImage::knownToBeOpaque(const LayoutObject& layoutObject) const
 {
     return m_imageGeneratorValue->knownToBeOpaque(layoutObject);
 }

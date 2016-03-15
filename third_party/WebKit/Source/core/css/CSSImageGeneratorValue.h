@@ -59,13 +59,13 @@ public:
 
     void addClient(const LayoutObject*, const IntSize&);
     void removeClient(const LayoutObject*);
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
 
     bool isFixedSize() const;
-    IntSize fixedSize(const LayoutObject*, const FloatSize& defaultObjectSize);
+    IntSize fixedSize(const LayoutObject&, const FloatSize& defaultObjectSize);
 
     bool isPending() const;
-    bool knownToBeOpaque(const LayoutObject*) const;
+    bool knownToBeOpaque(const LayoutObject&) const;
 
     void loadSubimages(Document*);
 

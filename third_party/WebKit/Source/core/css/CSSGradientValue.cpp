@@ -51,18 +51,18 @@ DEFINE_TRACE(CSSGradientColorStop)
     visitor->trace(m_color);
 }
 
-PassRefPtr<Image> CSSGradientValue::image(const LayoutObject* layoutObject, const IntSize& size)
+PassRefPtr<Image> CSSGradientValue::image(const LayoutObject& layoutObject, const IntSize& size)
 {
     if (size.isEmpty())
         return nullptr;
 
     bool cacheable = isCacheable();
     if (cacheable) {
-        if (!clients().contains(layoutObject))
+        if (!clients().contains(&layoutObject))
             return nullptr;
 
         // Need to look up our size.  Create a string of width*height to use as a hash key.
-        Image* result = getImage(layoutObject, size);
+        Image* result = getImage(&layoutObject, size);
         if (result)
             return result;
     }
@@ -70,12 +70,12 @@ PassRefPtr<Image> CSSGradientValue::image(const LayoutObject* layoutObject, cons
     // We need to create an image.
     RefPtr<Gradient> gradient;
 
-    const ComputedStyle* rootStyle = layoutObject->document().documentElement()->computedStyle();
-    CSSToLengthConversionData conversionData(layoutObject->style(), rootStyle, layoutObject->view(), layoutObject->style()->effectiveZoom());
+    const ComputedStyle* rootStyle = layoutObject.document().documentElement()->computedStyle();
+    CSSToLengthConversionData conversionData(layoutObject.style(), rootStyle, layoutObject.view(), layoutObject.style()->effectiveZoom());
     if (isLinearGradientValue())
-        gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size, *layoutObject);
+        gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size, layoutObject);
     else
-        gradient = toCSSRadialGradientValue(this)->createGradient(conversionData, size, *layoutObject);
+        gradient = toCSSRadialGradientValue(this)->createGradient(conversionData, size, layoutObject);
 
     RefPtr<Image> newImage = GradientGeneratedImage::create(gradient, size);
     if (cacheable)
@@ -564,22 +564,20 @@ bool CSSGradientValue::isCacheable() const
     return true;
 }
 
-bool CSSGradientValue::knownToBeOpaque(const LayoutObject* object) const
+bool CSSGradientValue::knownToBeOpaque(const LayoutObject& object) const
 {
-    ASSERT(object);
     for (auto& stop : m_stops) {
-        if (!stop.isHint() && resolveStopColor(*stop.m_color, *object).hasAlpha())
+        if (!stop.isHint() && resolveStopColor(*stop.m_color, object).hasAlpha())
             return false;
     }
     return true;
 }
 
-void CSSGradientValue::getStopColors(WillBeHeapVector<Color>& stopColors, const LayoutObject* object) const
+void CSSGradientValue::getStopColors(WillBeHeapVector<Color>& stopColors, const LayoutObject& object) const
 {
-    ASSERT(object);
     for (auto& stop : m_stops) {
         if (!stop.isHint())
-            stopColors.append(resolveStopColor(*stop.m_color, *object));
+            stopColors.append(resolveStopColor(*stop.m_color, object));
     }
 
 }

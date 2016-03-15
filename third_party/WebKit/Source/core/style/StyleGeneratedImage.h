@@ -44,13 +44,13 @@ public:
     PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
     PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
 
-    LayoutSize imageSize(const LayoutObject*, float multiplier, const LayoutSize& defaultObjectSize) const override;
+    LayoutSize imageSize(const LayoutObject&, float multiplier, const LayoutSize& defaultObjectSize) const override;
     bool imageHasRelativeSize() const override { return !m_fixedSize; }
     bool usesImageContainerSize() const override { return !m_fixedSize; }
     void addClient(LayoutObject*) override;
     void removeClient(LayoutObject*) override;
-    PassRefPtr<Image> image(const LayoutObject*, const IntSize&, float) const override;
-    bool knownToBeOpaque(const LayoutObject*) const override;
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float) const override;
+    bool knownToBeOpaque(const LayoutObject&) const override;
 
     DECLARE_VIRTUAL_TRACE();
 

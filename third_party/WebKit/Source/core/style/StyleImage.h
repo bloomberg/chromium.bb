@@ -57,15 +57,15 @@ public:
     virtual bool canRender() const { return true; }
     virtual bool isLoaded() const { return true; }
     virtual bool errorOccurred() const { return false; }
-    virtual LayoutSize imageSize(const LayoutObject*, float multiplier, const LayoutSize& defaultObjectSize) const = 0;
+    virtual LayoutSize imageSize(const LayoutObject&, float multiplier, const LayoutSize& defaultObjectSize) const = 0;
     virtual bool imageHasRelativeSize() const = 0;
     virtual bool usesImageContainerSize() const = 0;
     virtual void addClient(LayoutObject*) = 0;
     virtual void removeClient(LayoutObject*) = 0;
-    virtual PassRefPtr<Image> image(const LayoutObject*, const IntSize&, float) const = 0;
+    virtual PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float) const = 0;
     virtual WrappedImagePtr data() const = 0;
     virtual float imageScaleFactor() const { return 1; }
-    virtual bool knownToBeOpaque(const LayoutObject*) const = 0;
+    virtual bool knownToBeOpaque(const LayoutObject&) const = 0;
     virtual ImageResource* cachedImage() const { return 0; }
 
     ALWAYS_INLINE bool isImageResource() const { return m_isImageResource; }

@@ -49,13 +49,13 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const Layout
     rectWithOutsets.expand(style.imageOutsets(ninePieceImage));
     LayoutRect borderImageRect = rectWithOutsets;
 
-    IntSize imageSize = roundedIntSize(styleImage->imageSize(&m_layoutObject, 1, borderImageRect.size()));
+    IntSize imageSize = roundedIntSize(styleImage->imageSize(m_layoutObject, 1, borderImageRect.size()));
 
     IntRectOutsets borderWidths(style.borderTopWidth(), style.borderRightWidth(),
         style.borderBottomWidth(), style.borderLeftWidth());
     NinePieceImageGrid grid(ninePieceImage, imageSize, pixelSnappedIntRect(borderImageRect), borderWidths);
 
-    RefPtr<Image> image = styleImage->image(&m_layoutObject, imageSize, style.effectiveZoom());
+    RefPtr<Image> image = styleImage->image(m_layoutObject, imageSize, style.effectiveZoom());
 
     InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_layoutObject, image.get(), 0, rectWithOutsets.size());
     InterpolationQuality previousInterpolationQuality = graphicsContext.imageInterpolationQuality();
