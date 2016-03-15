@@ -21,7 +21,8 @@ var blackColor = [0, 0, 0];
 var halfRed = [128, 0, 0];
 var halfGreen = [0, 128, 0];
 
-var blob = null;
+var blob1 = null;
+var blob2 = null;
 
 function promiseRejected()
 {
@@ -43,16 +44,19 @@ function generateTest()
     gl.clearColor(0,0,0,1);
     gl.clearDepth(1);
 
-    var p1 = createImageBitmap(blob).then(function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
-    var p2 = createImageBitmap(blob, {imageOrientation: "none", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
-    var p3 = createImageBitmap(blob, {imageOrientation: "none", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
-    var p4 = createImageBitmap(blob, {imageOrientation: "none", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
-    var p5 = createImageBitmap(blob, {imageOrientation: "flipY", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
-    var p6 = createImageBitmap(blob, {imageOrientation: "flipY", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
-    var p7 = createImageBitmap(blob, {imageOrientation: "flipY", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
-    Promise.all([p1, p2, p3, p4, p5, p6, p7]).then(function() {
+    var p1 = createImageBitmap(blob1).then(function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
+    var p2 = createImageBitmap(blob1, {imageOrientation: "none", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
+    var p3 = createImageBitmap(blob1, {imageOrientation: "none", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
+    var p4 = createImageBitmap(blob1, {imageOrientation: "none", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
+    var p5 = createImageBitmap(blob1, {imageOrientation: "flipY", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
+    var p6 = createImageBitmap(blob1, {imageOrientation: "flipY", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
+    var p7 = createImageBitmap(blob1, {imageOrientation: "flipY", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
+    var p8 = createImageBitmap(blob2).then(function(imageBitmap) { bitmaps.colorspaceDef = imageBitmap });
+    var p9 = createImageBitmap(blob2, {colorspaceConversion: "none"}).then(function(imageBitmap) { bitmaps.colorspaceNone = imageBitmap });
+    var p10 = createImageBitmap(blob2, {colorspaceConversion: "default"}).then(function(imageBitmap) { bitmaps.colorspaceDefault = imageBitmap });
+    Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function() {
         var alphaVal = 0.5;
-        var testPassed = runTest(bitmaps, alphaVal);
+        var testPassed = runTest(bitmaps, alphaVal, true);
         if (testPassed)
             pass();
         finishJSTest();
@@ -68,13 +72,20 @@ function init()
         testRunner.overridePreference("WebKitWebGLEnabled", "1");
         testRunner.dumpAsText();
     }
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", 'resources/red-green-semi-transparent.png');
-    xhr.responseType = 'blob';
-    xhr.send();
-    xhr.onload = function() {
-        blob = xhr.response;
-        generateTest();
+    var xhr1 = new XMLHttpRequest();
+    xhr1.open("GET", 'resources/red-green-semi-transparent.png');
+    xhr1.responseType = 'blob';
+    xhr1.send();
+    xhr1.onload = function() {
+        blob1 = xhr1.response;
+        var xhr2 = new XMLHttpRequest();
+        xhr2.open("GET", 'resources/square-with-colorspin-profile.png');
+        xhr2.responseType = 'blob';
+        xhr2.send();
+        xhr2.onload = function() {
+            blob2 = xhr2.response;
+            generateTest();
+        }
     }
 }
 
