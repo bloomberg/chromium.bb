@@ -81,8 +81,8 @@ public:
     void moveToFirst();
     void moveToLast();
     Element* owner() const;
-    static ScopedFocusNavigation createScopedFocusNavigation(const Element& root, const Element* current);
-    static ScopedFocusNavigation createScopedFocusNavigationForDocument(Document&);
+    static ScopedFocusNavigation createFor(const Element&);
+    static ScopedFocusNavigation createForDocument(Document&);
     static ScopedFocusNavigation ownedByNonFocusableFocusScopeOwner(Element&);
     static ScopedFocusNavigation ownedByShadowHost(const Element&);
     static ScopedFocusNavigation ownedByShadowInsertionPoint(HTMLShadowElement&);
@@ -203,14 +203,14 @@ Element* ScopedFocusNavigation::owner() const
     return nullptr;
 }
 
-ScopedFocusNavigation ScopedFocusNavigation::createScopedFocusNavigation(const Element& root, const Element* current)
+ScopedFocusNavigation ScopedFocusNavigation::createFor(const Element& current)
 {
-    if (SlotScopedTraversal::isSlotScoped(root))
-        return ScopedFocusNavigation(*SlotScopedTraversal::findScopeOwnerSlot(root), current);
-    return ScopedFocusNavigation(root.treeScope(), current);
+    if (SlotScopedTraversal::isSlotScoped(current))
+        return ScopedFocusNavigation(*SlotScopedTraversal::findScopeOwnerSlot(current), &current);
+    return ScopedFocusNavigation(current.treeScope(), &current);
 }
 
-ScopedFocusNavigation ScopedFocusNavigation::createScopedFocusNavigationForDocument(Document& document)
+ScopedFocusNavigation ScopedFocusNavigation::createForDocument(Document& document)
 {
     return ScopedFocusNavigation(document, nullptr);
 }
@@ -609,7 +609,7 @@ Element* findFocusableElementAcrossFocusScopesForward(ScopedFocusNavigation& sco
         Element* owner = currentScope.owner();
         if (!owner)
             break;
-        currentScope = ScopedFocusNavigation::createScopedFocusNavigation(*owner, owner);
+        currentScope = ScopedFocusNavigation::createFor(*owner);
         found = findFocusableElementRecursivelyForward(currentScope);
     }
     return findFocusableElementDescendingDownIntoFrameDocument(WebFocusTypeForward, found);
@@ -626,7 +626,7 @@ Element* findFocusableElementAcrossFocusScopesBackward(ScopedFocusNavigation& sc
         Element* owner = currentScope.owner();
         if (!owner)
             break;
-        currentScope = ScopedFocusNavigation::createScopedFocusNavigation(*owner, owner);
+        currentScope = ScopedFocusNavigation::createFor(*owner);
         if (isKeyboardFocusableShadowHost(*owner) && !isShadowHostDelegatesFocus(*owner)) {
             found = owner;
             break;
@@ -869,7 +869,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
         current = adjustToElement(frame->selection().start().anchorNode(), type);
 
     document->updateLayoutIgnorePendingStylesheets();
-    ScopedFocusNavigation scope = current ? ScopedFocusNavigation::createScopedFocusNavigation(*current, current) : ScopedFocusNavigation::createScopedFocusNavigationForDocument(*document);
+    ScopedFocusNavigation scope = current ? ScopedFocusNavigation::createFor(*current) : ScopedFocusNavigation::createForDocument(*document);
     RefPtrWillBeRawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, scope);
 
     if (!element) {
@@ -892,7 +892,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
         }
 
         // Chrome doesn't want focus, so we should wrap focus.
-        ScopedFocusNavigation scope = ScopedFocusNavigation::createScopedFocusNavigationForDocument(*toLocalFrame(m_page->mainFrame())->document());
+        ScopedFocusNavigation scope = ScopedFocusNavigation::createForDocument(*toLocalFrame(m_page->mainFrame())->document());
         element = findFocusableElementRecursively(type, scope);
         element = findFocusableElementDescendingDownIntoFrameDocument(type, element.get());
 
@@ -953,7 +953,7 @@ Element* FocusController::findFocusableElement(WebFocusType type, Element& eleme
 {
     // FIXME: No spacial navigation code yet.
     ASSERT(type == WebFocusTypeForward || type == WebFocusTypeBackward);
-    ScopedFocusNavigation scope = ScopedFocusNavigation::createScopedFocusNavigation(element, &element);
+    ScopedFocusNavigation scope = ScopedFocusNavigation::createFor(element);
     return findFocusableElementAcrossFocusScopes(type, scope);
 }
 
