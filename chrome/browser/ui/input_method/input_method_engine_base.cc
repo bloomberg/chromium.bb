@@ -27,6 +27,7 @@
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
@@ -417,6 +418,39 @@ std::string InputMethodEngineBase::AddRequest(
   request_map_[request_id] = std::make_pair(component_id, key_data);
 
   return request_id;
+}
+
+bool InputMethodEngineBase::SendKeyEvents(
+    int context_id,
+    const std::vector<KeyboardEvent>& events) {
+  // context_id  ==  0, means sending key events to non-input field.
+  // context_id_ == -1, means the focus is not in an input field.
+  if (!IsActive() ||
+      (context_id != 0 && (context_id != context_id_ || context_id_ == -1)))
+    return false;
+
+  for (size_t i = 0; i < events.size(); ++i) {
+    const KeyboardEvent& event = events[i];
+    const ui::EventType type =
+        (event.type == "keyup") ? ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED;
+    ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(event.key_code);
+
+    int flags = ui::EF_NONE;
+    flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
+    flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
+    flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
+    flags |= event.caps_lock ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
+
+    ui::KeyEvent ui_event(
+        type, key_code, ui::KeycodeConverter::CodeStringToDomCode(event.code),
+        flags, ui::KeycodeConverter::KeyStringToDomKey(event.key),
+        ui::EventTimeForNow());
+    base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
+                                                        &ui_event);
+    if (!SendKeyEvent(&ui_event, event.code))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace input_method

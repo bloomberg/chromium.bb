@@ -17,7 +17,9 @@
 namespace ui {
 
 InputMethodBase::InputMethodBase()
-    : delegate_(nullptr), text_input_client_(nullptr) {}
+    : sending_key_event_(false),
+      delegate_(nullptr),
+      text_input_client_(nullptr) {}
 
 InputMethodBase::~InputMethodBase() {
   FOR_EACH_OBSERVER(InputMethodObserver,
@@ -194,5 +196,11 @@ void InputMethodBase::UpdateCompositionText(const CompositionText& composition_,
 }
 
 void InputMethodBase::DeleteSurroundingText(int32_t offset, uint32_t length) {}
+
+void InputMethodBase::SendKeyEvent(KeyEvent* event) {
+  sending_key_event_ = true;
+  DispatchKeyEvent(event);
+  sending_key_event_ = false;
+}
 
 }  // namespace ui

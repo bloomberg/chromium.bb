@@ -154,8 +154,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   bool IsInterestedInKeyEvent() const override;
 
   // Send the sequence of key events.
-  virtual bool SendKeyEvents(int context_id,
-                             const std::vector<KeyboardEvent>& events) = 0;
+  bool SendKeyEvents(int context_id, const std::vector<KeyboardEvent>& events);
 
   // Set the current composition and associated properties.
   bool SetComposition(int context_id,
@@ -186,6 +185,9 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // Notifies InputContextHanlder to commit |text|.
   virtual void CommitTextToInputContext(int context_id,
                                         const std::string& text) = 0;
+  // Sends the key event to the window tree host.
+  virtual bool SendKeyEvent(ui::KeyEvent* ui_event,
+                            const std::string& code) = 0;
 
   ui::TextInputType current_input_type_;
 

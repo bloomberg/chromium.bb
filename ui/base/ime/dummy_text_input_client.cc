@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 #include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 
 DummyTextInputClient::DummyTextInputClient()
-    : text_input_type_(TEXT_INPUT_TYPE_NONE) {}
+    : text_input_type_(TEXT_INPUT_TYPE_NONE), insert_char_count_(0) {}
 
 DummyTextInputClient::DummyTextInputClient(TextInputType text_input_type)
-    : text_input_type_(text_input_type) {}
+    : text_input_type_(text_input_type), insert_char_count_(0) {}
 
 DummyTextInputClient::~DummyTextInputClient() {
 }
@@ -29,7 +30,10 @@ void DummyTextInputClient::ClearCompositionText() {
 void DummyTextInputClient::InsertText(const base::string16& text) {
 }
 
-void DummyTextInputClient::InsertChar(const KeyEvent& event) {}
+void DummyTextInputClient::InsertChar(const KeyEvent& event) {
+  ++insert_char_count_;
+  last_insert_char_ = event.GetCharacter();
+}
 
 TextInputType DummyTextInputClient::GetTextInputType() const {
   return text_input_type_;

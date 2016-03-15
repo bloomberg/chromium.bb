@@ -269,7 +269,7 @@
         "name": "sendKeyEvents",
         "type": "function",
         "description": "Sends the key events.  This function is expected to be used by virtual keyboards.  When key(s) on a virtual keyboard is pressed by a user, this function is used to propagate that event to the system.",
-        "platforms": ["chromeos"],
+        "platforms": ["chromeos", "win", "linux"],
         "parameters": [
           {
             "name": "parameters",
@@ -744,7 +744,7 @@
       {
         "name": "onKeyEvent",
         "type": "function",
-        "description": "This event is sent if this extension owns the active IME.",
+        "description": "Fired when a key event is sent from the operating system. The event will be sent to the extension if this extension owns the active IME.",
         "platforms": ["chromeos", "win", "linux"],
         "options": {
           "supportsFilters": false,

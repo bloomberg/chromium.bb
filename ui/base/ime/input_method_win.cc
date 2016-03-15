@@ -623,15 +623,16 @@ bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
 }
 
 void InputMethodWin::DispatchFabricatedKeyEvent(ui::KeyEvent* event) {
-  if (event->is_char()) {
-    if (GetTextInputClient()) {
-      ui::KeyEvent ch_event(*event);
-      ch_event.set_character(static_cast<base::char16>(event->key_code()));
-      GetTextInputClient()->InsertChar(ch_event);
-      return;
-    }
+  // The key event if from calling input.ime.sendKeyEvent or test.
+  ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
+  if (details.dispatcher_destroyed || details.target_destroyed ||
+      event->stopped_propagation()) {
+    return;
   }
-  ignore_result(DispatchKeyEventPostIME(event));
+
+  if ((event->is_char() || event->GetDomKey().IsCharacter()) &&
+      event->type() == ui::ET_KEY_PRESSED && GetTextInputClient())
+    GetTextInputClient()->InsertChar(*event);
 }
 
 void InputMethodWin::ConfirmCompositionText() {

@@ -49,9 +49,16 @@ class DummyTextInputClient : public TextInputClient {
   bool IsEditCommandEnabled(int command_id) override;
   void SetEditCommandForNextKeyEvent(int command_id) override;
 
+  int insert_char_count() const { return insert_char_count_; }
+  base::char16 last_insert_char() const { return last_insert_char_; }
+
   TextInputType text_input_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyTextInputClient);
+
+ private:
+  int insert_char_count_;
+  base::char16 last_insert_char_;
 };
 
 }  // namespace ui

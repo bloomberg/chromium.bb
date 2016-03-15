@@ -69,6 +69,7 @@ class UI_BASE_IME_EXPORT InputMethodBase
                              uint32_t cursor_pos,
                              bool visible) override;
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;
+  void SendKeyEvent(KeyEvent* event) override;
 
   // Sends a fake key event for IME composing without physical key events.
   // Returns true if the faked key event is stopped propagation.
@@ -101,6 +102,10 @@ class UI_BASE_IME_EXPORT InputMethodBase
 
   // Gets the bounds of the composition text or cursor in |client|.
   std::vector<gfx::Rect> GetCompositionBounds(const TextInputClient* client);
+
+  // Indicates whether the IME extension is currently sending a fake key event.
+  // This is used in SendKeyEvent.
+  bool sending_key_event_;
 
  private:
   void SetFocusedTextInputClientInternal(TextInputClient* client);

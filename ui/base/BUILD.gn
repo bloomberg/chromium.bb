@@ -675,7 +675,10 @@ source_set("test_support") {
       "ime/dummy_text_input_client.h",
     ]
 
-    deps += [ "//ui/base/ime" ]
+    deps += [
+      "//ui/base/ime",
+      "//ui/events",
+    ]
   }
 
   if (!use_aura) {

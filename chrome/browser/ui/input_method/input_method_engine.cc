@@ -8,6 +8,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 
 namespace {
 
@@ -28,13 +29,6 @@ InputMethodEngine::InputMethodEngine() : follow_cursor_window_(nullptr) {}
 
 InputMethodEngine::~InputMethodEngine() {
   CloseImeWindows();
-}
-
-bool InputMethodEngine::SendKeyEvents(
-    int context_id,
-    const std::vector<KeyboardEvent>& events) {
-  // TODO(azurewei) Implement SendKeyEvents funciton
-  return false;
 }
 
 bool InputMethodEngine::IsActive() const {
@@ -187,6 +181,21 @@ ui::ImeWindow* InputMethodEngine::FindWindowById(int window_id) const {
       return ime_window;
   }
   return nullptr;
+}
+
+bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
+                                     const std::string& code) {
+  DCHECK(event);
+  if (event->key_code() == ui::VKEY_UNKNOWN)
+    event->set_key_code(ui::DomCodeToUsLayoutKeyboardCode(event->code()));
+
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return false;
+  input_context->SendKeyEvent(event);
+
+  return true;
 }
 
 }  // namespace input_method

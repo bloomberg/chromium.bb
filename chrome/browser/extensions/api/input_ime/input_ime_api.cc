@@ -12,9 +12,14 @@ namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
 namespace SetComposition = extensions::api::input_ime::SetComposition;
 namespace CommitText = extensions::api::input_ime::CommitText;
+namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 
+namespace {
+const char kErrorEngineNotAvailable[] = "Engine is not available";
+const char kErrorSetKeyEventsFail[] = "Could not send key events";
+}
 namespace ui {
 
 ImeObserver::ImeObserver(const std::string& extension_id, Profile* profile)
@@ -327,6 +332,39 @@ ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
   }
   scoped_ptr<base::ListValue> output = CommitText::Results::Create(success);
   return RespondNow(ArgumentList(std::move(output)));
+}
+
+ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
+  InputMethodEngineBase* engine =
+      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+  if (!engine)
+    return RespondNow(Error(kErrorEngineNotAvailable));
+
+  scoped_ptr<SendKeyEvents::Params> parent_params(
+      SendKeyEvents::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(parent_params);
+  const SendKeyEvents::Params::Parameters& params = parent_params->parameters;
+  const std::vector<linked_ptr<input_ime::KeyboardEvent>>& key_data =
+      params.key_data;
+  std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
+
+  for (const auto& key_event : key_data) {
+    InputMethodEngineBase::KeyboardEvent event;
+    event.type = input_ime::ToString(key_event->type);
+    event.key = key_event->key;
+    event.code = key_event->code;
+    event.key_code = key_event->key_code.get() ? *(key_event->key_code) : 0;
+    event.alt_key = key_event->alt_key ? *(key_event->alt_key) : false;
+    event.ctrl_key = key_event->ctrl_key ? *(key_event->ctrl_key) : false;
+    event.shift_key = key_event->shift_key ? *(key_event->shift_key) : false;
+    event.caps_lock = key_event->caps_lock ? *(key_event->caps_lock) : false;
+    key_data_out.push_back(event);
+  }
+  if (!engine->SendKeyEvents(params.context_id, key_data_out))
+    return RespondNow(Error(kErrorSetKeyEventsFail));
+  return RespondNow(NoArguments());
 }
 
 InputImeAPI::InputImeAPI(content::BrowserContext* context)

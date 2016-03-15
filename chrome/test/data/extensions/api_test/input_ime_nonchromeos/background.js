@@ -52,5 +52,23 @@ chrome.test.runTests([
       win.addEventListener('unload', function() {});
       chrome.test.succeed();
     });
+  },
+
+  function testSendKeyEvents() {
+    chrome.input.ime.sendKeyEvents({
+      'contextID': 1,
+      'keyData': [{
+        'type': 'keydown',
+        'requestId': '0',
+        'key': 'a',
+        'code': 'KeyA'
+      }, {
+        'type': 'keyup',
+        'requestId': '1',
+        'key': 'a',
+        'code': 'KeyA'
+     }]
+    });
+    chrome.test.succeed();
   }
 ]);

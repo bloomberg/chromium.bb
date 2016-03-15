@@ -46,4 +46,6 @@ void MockIMEInputContextHandler::Reset() {
   last_commit_text_.clear();
 }
 
+void MockIMEInputContextHandler::SendKeyEvent(ui::KeyEvent* event) {}
+
 }  // namespace chromeos

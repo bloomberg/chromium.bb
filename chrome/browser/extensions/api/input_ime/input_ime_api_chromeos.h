@@ -103,18 +103,6 @@ class InputImeDeleteSurroundingTextFunction : public SyncExtensionFunction {
   bool RunSync() override;
 };
 
-class InputImeSendKeyEventsFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("input.ime.sendKeyEvents",
-                             INPUT_IME_SENDKEYEVENTS)
-
- protected:
-  ~InputImeSendKeyEventsFunction() override {}
-
-  // ExtensionFunction:
-  bool RunAsync() override;
-};
-
 class InputImeHideInputViewFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.hideInputView",

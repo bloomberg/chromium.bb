@@ -151,6 +151,17 @@ class InputImeCommitTextFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
+class InputImeSendKeyEventsFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.sendKeyEvents", INPUT_IME_SENDKEYEVENTS)
+
+ protected:
+  ~InputImeSendKeyEventsFunction() override {}
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class InputImeAPI : public BrowserContextKeyedAPI,
                     public ExtensionRegistryObserver,
                     public EventRouter::Observer {

@@ -10,6 +10,7 @@
 #include <string>
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/events/event.h"
 
 namespace ui {
 
@@ -25,6 +26,9 @@ class UI_BASE_IME_EXPORT IMEInputContextHandlerInterface {
 
   // Called when the engine request deleting surrounding string.
   virtual void DeleteSurroundingText(int32_t offset, uint32_t length) = 0;
+
+  // Called when the engine sends a key event.
+  virtual void SendKeyEvent(KeyEvent* event) = 0;
 };
 
 }  // namespace ui

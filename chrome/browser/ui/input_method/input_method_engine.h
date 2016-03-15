@@ -26,8 +26,6 @@ class InputMethodEngine : public InputMethodEngineBase,
   ~InputMethodEngine() override;
 
   // ui::IMEEngineHandlerInterface:
-  bool SendKeyEvents(int context_id,
-                     const std::vector<KeyboardEvent>& events) override;
   bool IsActive() const override;
   std::string GetExtensionId() const override;
 
@@ -54,6 +52,7 @@ class InputMethodEngine : public InputMethodEngineBase,
                          bool is_visible) override;
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
+  bool SendKeyEvent(ui::KeyEvent* ui_event, const std::string& code) override;
 
   // ui::ImeWindowObserver:
   void OnWindowDestroyed(ui::ImeWindow* ime_window) override;

@@ -28,7 +28,6 @@ namespace input_ime = extensions::api::input_ime;
 namespace DeleteSurroundingText =
     extensions::api::input_ime::DeleteSurroundingText;
 namespace UpdateMenuItems = extensions::api::input_ime::UpdateMenuItems;
-namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
 namespace HideInputView = extensions::api::input_ime::HideInputView;
 namespace SetMenuItems = extensions::api::input_ime::SetMenuItems;
 namespace SetCursorPosition = extensions::api::input_ime::SetCursorPosition;
@@ -375,43 +374,6 @@ bool InputImeHideInputViewFunction::RunAsync() {
     return true;
   }
   engine->HideInputView();
-  return true;
-}
-
-bool InputImeSendKeyEventsFunction::RunAsync() {
-  scoped_ptr<SendKeyEvents::Params> parent_params(
-      SendKeyEvents::Params::Create(*args_));
-  const SendKeyEvents::Params::Parameters& params =
-      parent_params->parameters;
-  InputMethodEngine* engine = GetActiveEngine(
-      Profile::FromBrowserContext(browser_context()), extension_id());
-  if (!engine) {
-    error_ = kErrorEngineNotAvailable;
-    return false;
-  }
-
-  const std::vector<linked_ptr<input_ime::KeyboardEvent> >& key_data =
-      params.key_data;
-  std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
-
-  for (size_t i = 0; i < key_data.size(); ++i) {
-    InputMethodEngineBase::KeyboardEvent event;
-    event.type = input_ime::ToString(key_data[i]->type);
-    event.key = key_data[i]->key;
-    event.code = key_data[i]->code;
-    event.key_code = key_data[i]->key_code.get() ? *(key_data[i]->key_code) : 0;
-    if (key_data[i]->alt_key)
-      event.alt_key = *(key_data[i]->alt_key);
-    if (key_data[i]->ctrl_key)
-      event.ctrl_key = *(key_data[i]->ctrl_key);
-    if (key_data[i]->shift_key)
-      event.shift_key = *(key_data[i]->shift_key);
-    if (key_data[i]->caps_lock)
-      event.caps_lock = *(key_data[i]->caps_lock);
-    key_data_out.push_back(event);
-  }
-
-  engine->SendKeyEvents(params.context_id, key_data_out);
   return true;
 }
 

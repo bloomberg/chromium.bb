@@ -38,6 +38,10 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, CreateWindowTest) {
 
   ASSERT_TRUE(RunExtensionTest("input_ime_nonchromeos")) << message_;
 
+  // Test the input.ime.sendKeyEvents API.
+  ASSERT_EQ(client->insert_char_count(), 1);
+  ASSERT_EQ(client->last_insert_char(), L'a');
+
   input_method->DetachTextInputClient(client.get());
 }
 

@@ -89,8 +89,6 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   ~InputMethodEngine() override;
 
   // IMEEngineHandlerInterface overrides.
-  bool SendKeyEvents(int context_id,
-                     const std::vector<KeyboardEvent>& events) override;
   bool SetCandidateWindowVisible(bool visible, std::string* error) override;
   bool SetCursorPosition(int context_id,
                          int candidate_id,
@@ -139,6 +137,7 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
                          bool is_visible) override;
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
+  bool SendKeyEvent(ui::KeyEvent* event, const std::string& code) override;
 
   // The current candidate window.
   scoped_ptr<ui::CandidateWindow> candidate_window_;

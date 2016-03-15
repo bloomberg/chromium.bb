@@ -65,6 +65,20 @@ void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
+  if (!event->HasNativeEvent() && sending_key_event_) {
+    // Faked key events that are sent from input.ime.sendKeyEvents.
+    ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
+    if (details.dispatcher_destroyed || details.target_destroyed ||
+        event->stopped_propagation()) {
+      return;
+    }
+    if ((event->is_char() || event->GetDomKey().IsCharacter()) &&
+        event->type() == ui::ET_KEY_PRESSED) {
+      GetTextInputClient()->InsertChar(*event);
+    }
+    return;
+  }
+
   suppress_next_result_ = false;
   composition_changed_ = false;
   result_text_.clear();

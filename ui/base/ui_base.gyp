@@ -726,7 +726,8 @@
       ],
       'conditions': [
         ['OS!="ios"', {
-          'dependecies': [
+          'dependencies': [
+            '../events/events.gyp:events',
             'ime/ui_base_ime.gyp:ui_base_ime',
           ],
           'sources': [

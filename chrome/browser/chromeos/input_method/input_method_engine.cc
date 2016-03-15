@@ -73,50 +73,6 @@ InputMethodEngine::InputMethodEngine()
 
 InputMethodEngine::~InputMethodEngine() {}
 
-bool InputMethodEngine::SendKeyEvents(
-    int context_id,
-    const std::vector<KeyboardEvent>& events) {
-  if (!IsActive()) {
-    return false;
-  }
-  // context_id  ==  0, means sending key events to non-input field.
-  // context_id_ == -1, means the focus is not in an input field.
-  if (context_id != 0 && (context_id != context_id_ || context_id_ == -1)) {
-    return false;
-  }
-
-  ui::EventProcessor* dispatcher =
-      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
-
-  for (size_t i = 0; i < events.size(); ++i) {
-    const KeyboardEvent& event = events[i];
-    const ui::EventType type =
-        (event.type == "keyup") ? ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED;
-    ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(event.key_code);
-    if (key_code == ui::VKEY_UNKNOWN)
-      key_code = ui::DomKeycodeToKeyboardCode(event.code);
-
-    int flags = ui::EF_NONE;
-    flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
-    flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
-    flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
-    flags |= event.caps_lock ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
-
-    ui::KeyEvent ui_event(
-        type, key_code,
-        ui::KeycodeConverter::CodeStringToDomCode(event.code), flags,
-        ui::KeycodeConverter::KeyStringToDomKey(event.key),
-        ui::EventTimeForNow());
-    base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
-                                                        &ui_event);
-    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&ui_event);
-    if (details.dispatcher_destroyed)
-      break;
-  }
-
-  return true;
-}
-
 const InputMethodEngine::CandidateWindowProperty&
 InputMethodEngine::GetCandidateWindowProperty() const {
   return candidate_window_property_;
@@ -366,6 +322,18 @@ void InputMethodEngine::CommitTextToInputContext(int context_id,
                                 25, 25);
     composition_text_.reset(new ui::CompositionText());
   }
+}
+
+bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
+                                     const std::string& code) {
+  DCHECK(event);
+  if (event->key_code() == ui::VKEY_UNKNOWN)
+    event->set_key_code(ui::DomKeycodeToKeyboardCode(code));
+
+  ui::EventProcessor* dispatcher =
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(event);
+  return !details.dispatcher_destroyed;
 }
 
 }  // namespace chromeos
