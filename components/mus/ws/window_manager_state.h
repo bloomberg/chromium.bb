@@ -87,6 +87,9 @@ class WindowManagerState : public EventDispatcherDelegate {
   // not be exposed.
   EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
 
+  void Activate(const gfx::Point& mouse_location_on_screen);
+  void Deactivate();
+
   // Processes an event from PlatformDisplay.
   void ProcessEvent(const ui::Event& event);
 

@@ -186,6 +186,21 @@ bool WindowManagerState::IsActive() const {
   return display()->GetActiveWindowManagerState() == this;
 }
 
+void WindowManagerState::Activate(const gfx::Point& mouse_location_on_screen) {
+  root_->SetVisible(true);
+  event_dispatcher_.Reset();
+  event_dispatcher_.SetMousePointerScreenLocation(mouse_location_on_screen);
+}
+
+void WindowManagerState::Deactivate() {
+  root_->SetVisible(false);
+  event_dispatcher_.Reset();
+  // The tree is no longer active, so no point in dispatching any further
+  // events.
+  std::queue<scoped_ptr<QueuedEvent>> event_queue;
+  event_queue.swap(event_queue_);
+}
+
 void WindowManagerState::ProcessEvent(const ui::Event& event) {
   // If this is still waiting for an ack from a previously sent event, then
   // queue up the event to be dispatched once the ack is received.

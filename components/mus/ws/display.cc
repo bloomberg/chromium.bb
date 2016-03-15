@@ -279,6 +279,11 @@ void Display::CreateWindowManagerStateFromService(
   window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
   wms->tree_ = connection_manager_->CreateTreeForWindowManager(
       this, service->window_manager_factory(), wms->root(), service->user_id());
+  if (!binding_) {
+    const bool is_active = service->user_id() ==
+                           connection_manager_->user_id_tracker()->active_id();
+    wms->root()->SetVisible(is_active);
+  }
 }
 
 ServerWindow* Display::GetRootWindow() {
@@ -445,6 +450,9 @@ void Display::OnWindowDestroyed(ServerWindow* window) {
 
 void Display::OnActiveUserIdChanged(const UserId& previously_active_id,
                                     const UserId& active_id) {
+  if (binding_)
+    return;
+
   WindowManagerState* previous_wms =
       GetWindowManagerStateForUser(previously_active_id);
   const gfx::Point mouse_location_on_screen =
@@ -452,14 +460,11 @@ void Display::OnActiveUserIdChanged(const UserId& previously_active_id,
           ? previous_wms->event_dispatcher()->mouse_pointer_last_location()
           : gfx::Point();
   if (previous_wms)
-    previous_wms->event_dispatcher()->Reset();
+    previous_wms->Deactivate();
 
   WindowManagerState* active_wms = GetWindowManagerStateForUser(active_id);
-  if (active_wms) {
-    active_wms->event_dispatcher()->Reset();
-    active_wms->event_dispatcher()->SetMousePointerScreenLocation(
-        mouse_location_on_screen);
-  }
+  if (active_wms)
+    active_wms->Activate(mouse_location_on_screen);
 }
 
 void Display::OnUserIdAdded(const UserId& id) {}
