@@ -7,6 +7,9 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 
+// Length of the animation in seconds.
+const NSTimeInterval kAnimationDuration = 0.18;
+
 @implementation CustomConstrainedWindowSheet
 
 - (id)initWithCustomWindow:(NSWindow*)customWindow {
@@ -16,21 +19,50 @@
   return self;
 }
 
+- (void)setUseSimpleAnimations:(BOOL)simpleAnimations {
+  useSimpleAnimations_ = simpleAnimations;
+}
+
 - (void)showSheetForWindow:(NSWindow*)window {
-  base::scoped_nsobject<NSAnimation> animation(
-      [[ConstrainedWindowAnimationShow alloc] initWithWindow:customWindow_]);
+  base::scoped_nsobject<NSAnimation> animation;
+  if (!useSimpleAnimations_) {
+    animation.reset(
+        [[ConstrainedWindowAnimationShow alloc] initWithWindow:customWindow_]);
+  }
   [window addChildWindow:customWindow_
                  ordered:NSWindowAbove];
   [self unhideSheet];
   [self updateSheetPosition];
   [customWindow_ makeKeyAndOrderFront:nil];
-  [animation startAnimation];
+
+  if (useSimpleAnimations_) {
+    [customWindow_ setAlphaValue:0.0];
+    [NSAnimationContext beginGrouping];
+    [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
+    [[customWindow_ animator] setAlphaValue:1.0];
+    [NSAnimationContext endGrouping];
+  } else {
+    [animation startAnimation];
+  }
 }
 
 - (void)closeSheetWithAnimation:(BOOL)withAnimation {
   if (withAnimation) {
-    base::scoped_nsobject<NSAnimation> animation(
-        [[ConstrainedWindowAnimationHide alloc] initWithWindow:customWindow_]);
+    base::scoped_nsobject<NSAnimation> animation;
+    if (useSimpleAnimations_) {
+      // Use a blocking animation, rather than -[NSWindow animator].
+      NSArray* animationArray = @[ @{
+        NSViewAnimationTargetKey : customWindow_,
+        NSViewAnimationEffectKey : NSViewAnimationFadeOutEffect,
+      } ];
+      animation.reset(
+          [[NSViewAnimation alloc] initWithViewAnimations:animationArray]);
+      [animation setDuration:kAnimationDuration];
+      [animation setAnimationBlockingMode:NSAnimationBlocking];
+    } else {
+      animation.reset([[ConstrainedWindowAnimationHide alloc]
+          initWithWindow:customWindow_]);
+    }
     [animation startAnimation];
   }
 

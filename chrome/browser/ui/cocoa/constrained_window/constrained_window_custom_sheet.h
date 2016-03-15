@@ -15,9 +15,15 @@
 @interface CustomConstrainedWindowSheet : NSObject<ConstrainedWindowSheet> {
  @protected
   base::scoped_nsobject<NSWindow> customWindow_;
+  BOOL useSimpleAnimations_;
 }
 
 - (id)initWithCustomWindow:(NSWindow*)customWindow;
+
+// Defaults to NO.
+// The standard animation uses private CGS APIs, which can crash the window
+// server. https://crbug.com/515627#c75
+- (void)setUseSimpleAnimations:(BOOL)simpleAnimations;
 
 @end
 

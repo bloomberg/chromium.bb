@@ -60,6 +60,10 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
 
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
+  // The extension install dialog can cause window server crashes when using the
+  // complex animations provided by private APIs, so use simple animations. See
+  // https://crbug.com/548824.
+  [sheet setUseSimpleAnimations:YES];
   constrained_window_ = CreateAndShowWebModalDialogMac(
       this, show_params->GetParentWebContents(), sheet);
 
