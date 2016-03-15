@@ -100,11 +100,6 @@ void RecordProcessingState(AudioTrackProcessingStates state) {
                             state, AUDIO_PROCESSING_MAX);
 }
 
-bool IsDelayAgnosticAecEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableDelayAgnosticAec);
-}
-
 // Checks if the default minimum starting volume value for the AGC is overridden
 // on the command line.
 bool GetStartupMinVolumeForAgc(int* startup_min_volume) {
@@ -526,8 +521,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       new webrtc::ExtendedFilter(goog_experimental_aec));
   config.Set<webrtc::ExperimentalNs>(
       new webrtc::ExperimentalNs(goog_experimental_ns));
-  if (IsDelayAgnosticAecEnabled())
-    config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
+  config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
   if (goog_beamforming) {
     const auto& geometry =
         GetArrayGeometryPreferringConstraints(audio_constraints, input_params);

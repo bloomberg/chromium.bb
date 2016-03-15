@@ -1423,10 +1423,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnablePotentiallyAnnoyingSecurityFeatures)},
 #endif
-    {"disable-delay-agnostic-aec", IDS_FLAGS_DISABLE_DELAY_AGNOSTIC_AEC_NAME,
-     IDS_FLAGS_DISABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION,
-     kOsWin | kOsLinux | kOsCrOS | kOsMac,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableDelayAgnosticAec)},
     {"mark-non-secure-as",  // FLAGS:RECORD_UMA
      IDS_MARK_NON_SECURE_AS_NAME, IDS_MARK_NON_SECURE_AS_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kMarkNonSecureAsChoices)},

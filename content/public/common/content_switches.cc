@@ -112,9 +112,6 @@ const char kDisableBlinkFeatures[]          = "disable-blink-features";
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
-// Disables Delay Agnostic AEC in WebRTC.
-const char kDisableDelayAgnosticAec[]       = "disable-delay-agnostic-aec";
-
 // Handles URL requests by NPAPI plugins through the renderer.
 const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 
