@@ -786,6 +786,8 @@
       'browser/url_request_util.h',
       'browser/user_script_loader.cc',
       'browser/user_script_loader.h',
+      'browser/value_store/lazy_leveldb.cc',
+      'browser/value_store/lazy_leveldb.h',
       'browser/value_store/leveldb_value_store.cc',
       'browser/value_store/leveldb_value_store.h',
       'browser/value_store/testing_value_store.cc',
