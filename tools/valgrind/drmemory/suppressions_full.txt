@@ -2244,3 +2244,23 @@ name=bug_595052
 system call NtFsControlFile parameter #6
 KERNELBASE.dll!WaitNamedPipeW
 ipc.dll!IPC::ChannelWin::IsNamedServerInitialized
+
+HANDLE LEAK
+name=bug_595093a
+system call NtCreateFile
+KERNELBASE.dll!CreateFileW
+KERNEL32.dll!CreateFileW
+net.dll!disk_cache::File::Init
+net.dll!disk_cache::MappedFile::Init
+net.dll!disk_cache::BackendImpl::InitBackingStore
+net.dll!disk_cache::BackendImpl::SyncInit
+net.dll!disk_cache::BackendIO::ExecuteBackendOperation
+
+HANDLE LEAK
+name=bug_595093b
+system call NtCreateSection
+KERNELBASE.dll!CreateFileMappingW
+net.dll!disk_cache::MappedFile::Init
+net.dll!disk_cache::BackendImpl::InitBackingStore
+net.dll!disk_cache::BackendImpl::SyncInit
+net.dll!disk_cache::BackendIO::ExecuteBackendOperation
