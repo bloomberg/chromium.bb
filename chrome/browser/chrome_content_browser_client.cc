@@ -2810,7 +2810,7 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
 void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  apps->insert(std::make_pair(GURL("mojo:media"),
+  apps->insert(std::make_pair("mojo:media",
                               base::Bind(&media::CreateMojoMediaApplication)));
 #endif
 }
@@ -2818,7 +2818,7 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
 void ChromeContentBrowserClient::RegisterOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  apps->insert(std::make_pair(GURL("mojo:media"),
+  apps->insert(std::make_pair("mojo:media",
                               base::ASCIIToUTF16("Media App")));
 #endif
 }
