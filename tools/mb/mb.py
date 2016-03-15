@@ -398,12 +398,7 @@ class MetaBuildWrapper(object):
         self.Print('')
         continue
 
-      INTERNAL_MASTERS = (
-        'chrome',
-        'chrome.continuous',
-        'official.desktop',
-        'official.desktop.continuous',
-      )
+      INTERNAL_MASTERS = ('official.desktop', 'official.desktop.continuous')
       if master in INTERNAL_MASTERS and not self.args.internal:
         # Skip these because the servers aren't accessible by default ...
         self.Print('  Skipped (internal)')
@@ -446,7 +441,7 @@ class MetaBuildWrapper(object):
         PrintBuilders(STAT_TBD, tbd)
         PrintBuilders(STAT_GYP, gyp)
       else:
-        self.Print('  ... ok')
+        self.Print('  ... done')
 
       stats[STAT_DONE] += len(done)
 

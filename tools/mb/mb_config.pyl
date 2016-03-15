@@ -51,7 +51,6 @@
     'gn_linux_upload': ['gn_linux_upload', 'official', 'goma'],
     'gn_official': ['gn', 'official'],
     'gn_official_goma': ['gn', 'official', 'goma'],
-    'gn_official_goma_lto': ['gn', 'official', 'goma', 'lto'],
     'gn_official_goma_minimal_symbols_android': ['gn', 'official', 'goma', 'minimal_symbols', 'android'],
     'gn_official_goma_minimal_symbols_android_arm64': ['gn', 'official', 'goma', 'minimal_symbols', 'android', 'arm64'],
     'gn_release_bot': ['gn', 'release_bot'],
@@ -59,8 +58,6 @@
     'gn_release_bot_minimal_symbols_x86': ['gn', 'release_bot_minimal_symbols', 'x86'],
     'gn_release_trybot': ['gn', 'release_trybot'],
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
-    'gyp_debug_bot': ['gyp', 'debug_bot'],
-    'gyp_debug_bot_x86': ['gyp', 'debug_bot', 'x86'],
     'gyp_official_goma': ['gyp', 'official', 'goma'],
     'gyp_official_goma_chromeos': ['gyp', 'official', 'goma', 'chromeos'],
     'gyp_official_goma_x86': ['gyp', 'official', 'goma', 'x86'],
@@ -74,7 +71,6 @@
     'gn_release_drmemory_drfuzz_x86': ['gn', 'release', 'drmemory', 'drfuzz', 'x86', 'proprietary_codecs'],
     'gn_release_drmemory_drfuzz': ['gn', 'release', 'drmemory', 'drfuzz', 'proprietary_codecs'],
     'gyp_valgrind_release_bot': ['gyp', 'valgrind', 'release_bot'],
-    'gyp_valgrind_debug_bot': ['gyp', 'valgrind', 'debug_bot'],
     'gyp_valgrind_chromeos_release_bot': ['gyp', 'chromeos', 'valgrind', 'release_bot'],
     'gyp_drmemory_shared_release_x86': ['gyp', 'drmemory', 'shared', 'release', 'x86'],
     'gyp_drmemory_shared_release_x64': ['gyp', 'drmemory', 'shared', 'release', 'x64'],
@@ -352,11 +348,6 @@
       'gyp_defines': 'lsan=1',
     },
 
-    'lto': {
-      'gn_args': 'is_lto=true',
-      'gyp_defines': 'use_lto=1',
-    },
-
     'mac_strip': {
       'gn_args': 'error', # TODO(GYP): Port mac_strip_release
       'gyp_defines': 'mac_strip_release=1',
@@ -489,12 +480,6 @@
   #
   # TODO(crbug.com/481692): Add in remaining bots on the waterfalls.
   'masters': {
-    'chrome': {
-      'precise64': 'gn_official',
-    },
-    'chrome.continuous': {
-      'precise64 trunk': 'gn_official',
-    },
     # Take care when changing any of these builders to ensure that you do not
     # include a configuration with 'chrome_with_codecs' since these builders
     # generated publicly advertised non-Official builds which are not allowed to
@@ -548,9 +533,6 @@
       'Linux Builder': 'swarming_gn_release_bot',
       'Linux Builder (dbg)': 'swarming_gn_debug_bot',
       'Linux Builder (dbg)(32)': 'swarming_gyp_debug_bot_no_symbols_x86',
-      'Linux GN': 'gn_release_bot',
-      'Linux GN (dbg)': 'gn_debug_bot',
-      'Linux GN Clobber': 'gn_release_bot',
       'Linux Tests': 'none',
       'Linux Tests (dbg)(1)': 'none',
       'Linux Tests (dbg)(1)(32)': 'none',
@@ -577,7 +559,6 @@
       'Win x64 GN': 'gn_release_bot_minimal_symbols',
       'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols',
       'Win8 Aura': 'gn_release_bot_minimal_symbols_x86',
-      'Win8 GN': 'gn_release_bot_minimal_symbols_x86',
       'Win8 GN (dbg)': 'gn_debug_bot_minimal_symbols_x86',
     },
     'chromium.webkit': {
@@ -618,9 +599,6 @@
       'Linux Tests (valgrind)(3)': 'none',
       'Linux Tests (valgrind)(4)': 'none',
       'Linux Tests (valgrind)(5)': 'none',
-      'Chromium Mac Builder (valgrind)': 'gyp_valgrind_debug_bot',
-      'Chromium Mac (valgrind)(1)': 'none',
-      'Chromium Mac (valgrind)(2)': 'none',
       'Chromium OS Builder (valgrind)': 'gyp_valgrind_chromeos_release_bot',
       'Chromium OS (valgrind)(1)': 'none',
       'Chromium OS (valgrind)(2)': 'none',
@@ -661,7 +639,6 @@
       'CFI Linux': 'gn_cfi_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
-      'LTO Linux Perf': 'gn_official_goma_lto',
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
@@ -682,11 +659,9 @@
       'GPU Linux Builder (dbg)': 'swarming_gpu_fyi_tests_gn_debug_bot',
       'Linux Release (NVIDIA)': 'none',
       'Linux Debug (NVIDIA)': 'none',
-      'Linux Release (Intel)': 'none',
       'Linux Release (Intel Graphics Stack)': 'none',
       'Linux Release (ATI)': 'none',
       'Linux Debug (NVIDIA)': 'none',
-      'Linux Release dEQP (NVIDIA)': 'none',
     },
     'chromium.webrtc.fyi': {
       'Android GN': 'android_gn_release_bot',
@@ -767,14 +742,10 @@
       'linux_chromium_compile_rel_ng': 'swarming_gn_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_cfi_rel_ng': 'gn_cfi_release_trybot',
-      'linux_chromium_gn_rel': 'gn_release_trybot',
       'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
       'linux_blink_oilpan_rel': 'swarming_gn_non_oilpan_release_trybot_minimal_symbols_x64',
       'linux_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_dbg_ng': 'swarming_gn_debug_trybot',
-      'linux_chromium_trusty_dbg': 'gyp_debug_bot',
-      'linux_chromium_trusty32_dbg': 'gyp_debug_bot_x86',
-      'linux_chromium_gn_dbg': 'gn_debug_bot',
       'linux_chromium_gn_chromeos_dbg': 'chromeos_gn_debug_bot',
       'linux_chromium_msan_rel_ng': 'swarming_msan_gyp_release_trybot',
       'linux_chromium_tsan_rel_ng': 'swarming_tsan_gyp_release_trybot',
@@ -840,7 +811,6 @@
       'win_chromium_x64_rel_ng': 'gn_release_trybot',
       'win8_chromium_ng': 'gn_release_trybot_x86',
       'win8_chromium_gn_dbg': 'gn_debug_bot_minimal_symbols_x86',
-      'win8_chromium_gn_rel': 'gn_release_trybot_x86',
       'win8_chromium_gn_upload': 'gn_release_bot_minimal_symbols_x86',
       'win_chromium_clang_upload': 'gn_release_bot',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
