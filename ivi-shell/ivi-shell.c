@@ -63,8 +63,6 @@ struct ivi_shell_surface
 	int32_t height;
 
 	struct wl_list link;
-
-	struct wl_listener configured_listener;
 };
 
 struct ivi_shell_setting
@@ -78,25 +76,6 @@ struct ivi_shell_setting
  */
 
 static void
-surface_configure_notify(struct wl_listener *listener, void *data)
-{
-	struct ivi_layout_surface *layout_surf =
-		(struct ivi_layout_surface *)data;
-
-	struct ivi_shell_surface *shell_surf =
-		container_of(listener,
-			     struct ivi_shell_surface,
-			     configured_listener);
-
-	int32_t dest_width = layout_surf->prop.dest_width;
-	int32_t dest_height = layout_surf->prop.dest_height;
-
-	if (shell_surf->resource)
-		ivi_surface_send_configure(shell_surf->resource,
-					   dest_width, dest_height);
-}
-
-static void
 ivi_shell_surface_configure(struct weston_surface *, int32_t, int32_t);
 
 static struct ivi_shell_surface *
@@ -106,6 +85,21 @@ get_ivi_shell_surface(struct weston_surface *surface)
 		return surface->configure_private;
 
 	return NULL;
+}
+
+void
+shell_surface_send_configure(struct weston_surface *surface,
+			     int32_t width, int32_t height)
+{
+	struct ivi_shell_surface *shsurf;
+
+	shsurf = get_ivi_shell_surface(surface);
+	assert(shsurf);
+	if (!shsurf)
+		return;
+
+	if (shsurf->resource)
+		ivi_surface_send_configure(shsurf->resource, width, height);
 }
 
 static void
@@ -255,9 +249,7 @@ application_surface_create(struct wl_client *client,
 	ivisurf->width = 0;
 	ivisurf->height = 0;
 	ivisurf->layout_surface = layout_surface;
-	ivisurf->configured_listener.notify = surface_configure_notify;
-	ivi_layout_surface_add_configured_listener(layout_surface,
-				     &ivisurf->configured_listener);
+
 	/*
 	 * The following code relies on wl_surface destruction triggering
 	 * immediateweston_surface destruction

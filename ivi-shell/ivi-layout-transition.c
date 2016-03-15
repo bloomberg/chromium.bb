@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "ivi-shell.h"
 #include "ivi-layout-export.h"
 #include "ivi-layout-private.h"
 
@@ -303,6 +304,9 @@ transition_move_resize_view_destroy(struct ivi_layout_transition *transition)
 	struct ivi_layout_surface *layout_surface = data->surface;
 
 	wl_signal_emit(&layout_surface->configured, layout_surface);
+	shell_surface_send_configure(layout_surface->surface,
+				     layout_surface->prop.dest_width,
+				     layout_surface->prop.dest_height);
 
 	if (transition->private_data) {
 		free(transition->private_data);

@@ -69,4 +69,8 @@ input_panel_setup(struct ivi_shell *shell);
 void
 input_panel_destroy(struct ivi_shell *shell);
 
+void
+shell_surface_send_configure(struct weston_surface *surface,
+			     int32_t width, int32_t height);
+
 #endif /* WESTON_IVI_SHELL_H */

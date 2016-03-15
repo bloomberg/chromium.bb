@@ -61,6 +61,7 @@
 #include <assert.h>
 
 #include "compositor.h"
+#include "ivi-shell.h"
 #include "ivi-layout-export.h"
 #include "ivi-layout-private.h"
 
@@ -776,8 +777,12 @@ commit_surface_list(struct ivi_layout *layout)
 			ivisurf->prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 			ivisurf->pending.prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 
-			if (configured && !is_surface_transition(ivisurf))
+			if (configured && !is_surface_transition(ivisurf)) {
 				wl_signal_emit(&ivisurf->configured, ivisurf);
+				shell_surface_send_configure(ivisurf->surface,
+							     ivisurf->prop.dest_width,
+							     ivisurf->prop.dest_height);
+			}
 		} else {
 			configured = 0;
 			if (ivisurf->prop.dest_width  != ivisurf->pending.prop.dest_width ||
@@ -789,8 +794,12 @@ commit_surface_list(struct ivi_layout *layout)
 			ivisurf->prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 			ivisurf->pending.prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 
-			if (configured && !is_surface_transition(ivisurf))
+			if (configured && !is_surface_transition(ivisurf)) {
 				wl_signal_emit(&ivisurf->configured, ivisurf);
+				shell_surface_send_configure(ivisurf->surface,
+							     ivisurf->prop.dest_width,
+							     ivisurf->prop.dest_height);
+			}
 		}
 	}
 }
