@@ -186,7 +186,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
   DCHECK(sync_client);
   ProfileSyncService::InitParams init_params =
       profile_sync_service_bundle_.CreateBasicInitParams(
-          browser_sync::AUTO_START, std::move(sync_client));
+          ProfileSyncService::AUTO_START, std::move(sync_client));
   sync_service_ =
       make_scoped_ptr(new TestProfileSyncService(std::move(init_params)));
 

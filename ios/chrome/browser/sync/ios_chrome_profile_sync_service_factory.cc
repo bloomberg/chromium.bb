@@ -131,7 +131,7 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
       make_scoped_ptr(new SigninManagerWrapper(signin));
   init_params.oauth2_token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
-  init_params.start_behavior = browser_sync::MANUAL_START;
+  init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client =
       make_scoped_ptr(new IOSChromeSyncClient(browser_state));
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);

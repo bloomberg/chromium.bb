@@ -43,7 +43,7 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
       new SigninManagerWrapper(SigninManagerFactory::GetForProfile(profile)));
   init_params.oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  init_params.start_behavior = browser_sync::MANUAL_START;
+  init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback =
       base::Bind(&browser_sync::EmptyNetworkTimeUpdate);

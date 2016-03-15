@@ -249,7 +249,7 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
 ProfileSyncServiceBundle::~ProfileSyncServiceBundle() {}
 
 ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
-    browser_sync::ProfileSyncServiceStartBehavior start_behavior,
+    ProfileSyncService::StartBehavior start_behavior,
     scoped_ptr<sync_driver::SyncClient> sync_client) {
   ProfileSyncService::InitParams init_params;
 

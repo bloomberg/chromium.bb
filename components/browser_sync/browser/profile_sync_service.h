@@ -215,6 +215,13 @@ class ProfileSyncService : public sync_driver::SyncService,
     UNKNOWN_ERROR,
   };
 
+  // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
+  // will begin syncing without the user needing to confirm sync settings.
+  enum StartBehavior {
+    AUTO_START,
+    MANUAL_START,
+  };
+
   // Bundles the arguments for ProfileSyncService construction. This is a
   // movable struct. Because of the non-POD data members, it needs out-of-line
   // constructors, so in particular the move constructor needs to be
@@ -227,8 +234,7 @@ class ProfileSyncService : public sync_driver::SyncService,
     scoped_ptr<sync_driver::SyncClient> sync_client;
     scoped_ptr<SigninManagerWrapper> signin_wrapper;
     ProfileOAuth2TokenService* oauth2_token_service = nullptr;
-    browser_sync::ProfileSyncServiceStartBehavior start_behavior =
-        browser_sync::MANUAL_START;
+    StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
     base::FilePath base_directory;
     scoped_refptr<net::URLRequestContextGetter> url_request_context;
@@ -941,7 +947,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   scoped_ptr<syncer::NetworkResources> network_resources_;
 
-  browser_sync::ProfileSyncServiceStartBehavior start_behavior_;
+  StartBehavior start_behavior_;
   scoped_ptr<browser_sync::StartupController> startup_controller_;
 
   // The full path to the sync data directory.

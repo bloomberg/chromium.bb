@@ -163,8 +163,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   // need to take care that ProfileSyncService doesn't get tripped up between
   // those two cases. Bug 88109.
   init_params.start_behavior = browser_defaults::kSyncAutoStarts
-                                   ? browser_sync::AUTO_START
-                                   : browser_sync::MANUAL_START;
+                                   ? ProfileSyncService::AUTO_START
+                                   : ProfileSyncService::MANUAL_START;
 
   init_params.sync_client =
       make_scoped_ptr(new browser_sync::ChromeSyncClient(profile));

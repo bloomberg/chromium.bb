@@ -89,7 +89,6 @@
 #include "sync/internal_api/public/read_transaction.h"
 #endif
 
-using browser_sync::ProfileSyncServiceStartBehavior;
 using browser_sync::SessionsSyncManager;
 using browser_sync::SyncBackendHost;
 using sync_driver::ChangeProcessor;
@@ -936,7 +935,7 @@ void ProfileSyncService::PostBackendInitialization() {
   }
 
   // Auto-start means IsFirstSetupComplete gets set automatically.
-  if (start_behavior_ == browser_sync::AUTO_START && !IsFirstSetupComplete()) {
+  if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
     // This will trigger a configure if it completes setup.
     SetFirstSetupComplete();
   } else if (CanConfigureDataTypes()) {

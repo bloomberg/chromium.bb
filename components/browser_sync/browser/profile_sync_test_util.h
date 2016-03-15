@@ -126,7 +126,7 @@ class ProfileSyncServiceBundle {
   // |sync_client|, and fills the rest with dummy values and objects owned by
   // the bundle.
   ProfileSyncService::InitParams CreateBasicInitParams(
-      browser_sync::ProfileSyncServiceStartBehavior start_behavior,
+      ProfileSyncService::StartBehavior start_behavior,
       scoped_ptr<sync_driver::SyncClient> sync_client);
 
   // Accessors

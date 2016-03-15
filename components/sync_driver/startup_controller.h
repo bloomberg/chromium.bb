@@ -19,17 +19,6 @@ class SyncPrefs;
 
 namespace browser_sync {
 
-// Defines the type of behavior the sync engine should use. If configured for
-// AUTO_START, the sync engine will automatically call SetFirstSetupComplete()
-// and start downloading data types as soon as sync credentials are available.
-// If configured for MANUAL_START, sync will not start until the user
-// completes sync setup, at which point the UI makes an explicit call to
-// complete sync setup.
-enum ProfileSyncServiceStartBehavior {
-  AUTO_START,
-  MANUAL_START,
-};
-
 // This class is used by ProfileSyncService to manage all logic and state
 // pertaining to initialization of the SyncBackendHost (colloquially referred
 // to as "the backend").
