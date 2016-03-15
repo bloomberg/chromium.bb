@@ -499,10 +499,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
   void OnBrowserAdded(Browser* browser) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(browser);
-    if (browser->host_desktop_type() == chrome::GetActiveDesktop()) {
-      MaybeFetchSRT(browser, version_);
-      BrowserList::RemoveObserver(this);
-    }
+    MaybeFetchSRT(browser, version_);
+    BrowserList::RemoveObserver(this);
   }
 
   // This method is called on the UI thread when the reporter run has completed.
