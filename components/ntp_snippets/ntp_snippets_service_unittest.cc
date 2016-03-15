@@ -4,6 +4,8 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippet.h"
@@ -75,6 +77,52 @@ class NTPSnippetsServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
 
+std::string GetTestJson(const std::string& content_creation_time_str,
+                        const std::string& expiry_time_str) {
+  char json_str_format[] =
+      "{ \"recos\": [ "
+      "{ \"contentInfo\": {"
+      "\"url\" : \"http://localhost/foobar\","
+      "\"site_title\" : \"Site Title\","
+      "\"favicon_url\" : \"http://localhost/favicon\","
+      "\"title\" : \"Title\","
+      "\"snippet\" : \"Snippet\","
+      "\"thumbnailUrl\" : \"http://localhost/salient_image\","
+      "\"creationTimestampSec\" : \"%s\","
+      "\"expiryTimestampSec\" : \"%s\""
+      "}}"
+      "]}";
+
+  return base::StringPrintf(json_str_format, content_creation_time_str.c_str(),
+                            expiry_time_str.c_str());
+}
+
+std::string GetTestJson(const std::string& content_creation_time_str) {
+  int64_t expiry_time =
+      (base::Time::Now() + base::TimeDelta::FromHours(1)).ToJavaTime() /
+      base::Time::kMillisecondsPerSecond;
+
+  return GetTestJson(content_creation_time_str,
+                     base::Int64ToString(expiry_time));
+}
+
+std::string GetTestJson(int64_t content_creation_time_sec) {
+  int64_t expiry_time =
+      (base::Time::Now() + base::TimeDelta::FromHours(1)).ToJavaTime() /
+      base::Time::kMillisecondsPerSecond;
+
+  return GetTestJson(base::Int64ToString(content_creation_time_sec),
+                     base::Int64ToString(expiry_time));
+}
+
+std::string GetTestExpiredJson(int64_t content_creation_time_sec) {
+  int64_t expiry_time =
+      (base::Time::Now()).ToJavaTime() / base::Time::kMillisecondsPerSecond;
+
+  return GetTestJson(base::Int64ToString(content_creation_time_sec),
+                     base::Int64ToString(expiry_time));
+}
+
 TEST_F(NTPSnippetsServiceTest, Create) {
   scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
   EXPECT_FALSE(service->is_loaded());
@@ -107,19 +155,10 @@ TEST_F(NTPSnippetsServiceTest, Loop) {
 TEST_F(NTPSnippetsServiceTest, Full) {
   scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
 
-  std::string json_str(
-      "{ \"recos\": [ "
-      "{ \"contentInfo\": {"
-      "\"url\" : \"http://localhost/foobar\","
-      "\"site_title\" : \"Site Title\","
-      "\"favicon_url\" : \"http://localhost/favicon\","
-      "\"title\" : \"Title\","
-      "\"snippet\" : \"Snippet\","
-      "\"thumbnailUrl\" : \"http://localhost/salient_image\","
-      "\"creationTimestampSec\" : 1448459205"
-      "}}"
-      "]}");
+  std::string json_str(GetTestJson(1448459205));
+
   EXPECT_TRUE(service->LoadFromJSONString(json_str));
+  EXPECT_EQ(service->size(), 1u);
 
   // The same for loop without the '&' should not compile.
   for (auto& snippet : *service) {
@@ -135,6 +174,33 @@ TEST_F(NTPSnippetsServiceTest, Full) {
         base::Time::FromUTCExploded({2015, 11, 4, 25, 13, 46, 45});
     EXPECT_EQ(then, snippet.publish_date());
   }
+}
+
+TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
+  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
+
+  std::string json_str(GetTestJson("aaa1448459205"));
+
+  EXPECT_TRUE(service->LoadFromJSONString(json_str));
+  EXPECT_EQ(service->size(), 1u);
+
+  // The same for loop without the '&' should not compile.
+  for (auto& snippet : *service) {
+    // Snippet here is a const.
+    EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+    EXPECT_EQ(snippet.title(), "Title");
+    EXPECT_EQ(snippet.snippet(), "Snippet");
+    EXPECT_EQ(base::Time::UnixEpoch(), snippet.publish_date());
+  }
+}
+
+TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
+  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
+
+  std::string json_str(GetTestExpiredJson(1448459205));
+
+  EXPECT_TRUE(service->LoadFromJSONString(json_str));
+  EXPECT_EQ(service->size(), 0u);
 }
 
 TEST_F(NTPSnippetsServiceTest, ObserverNotLoaded) {

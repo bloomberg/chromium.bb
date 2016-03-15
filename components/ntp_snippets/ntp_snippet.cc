@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/ntp_snippet.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
 namespace {
@@ -55,13 +56,26 @@ scoped_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   std::string snippet_str;
   if (dict.GetString(kSnippet, &snippet_str))
     snippet->set_snippet(snippet_str);
-  int creation_timestamp;
-  if (dict.GetInteger(kPublishDate, &creation_timestamp)) {
+  // creationTimestampSec is a uint64, which is stored using strings
+  std::string creation_timestamp_str;
+  if (dict.GetString(kPublishDate, &creation_timestamp_str)) {
+    int64_t creation_timestamp = 0;
+    if (!base::StringToInt64(creation_timestamp_str, &creation_timestamp)) {
+      // Even if there's an error in the conversion, some garbage data may still
+      // be written to the output var, so reset it
+      creation_timestamp = 0;
+    }
     snippet->set_publish_date(base::Time::UnixEpoch() +
                               base::TimeDelta::FromSeconds(creation_timestamp));
   }
-  int expiry_timestamp;
-  if (dict.GetInteger(kExpiryDate, &expiry_timestamp)) {
+  std::string expiry_timestamp_str;
+  if (dict.GetString(kExpiryDate, &expiry_timestamp_str)) {
+    int64_t expiry_timestamp = 0;
+    if (!base::StringToInt64(expiry_timestamp_str, &expiry_timestamp)) {
+      // Even if there's an error in the conversion, some garbage data may still
+      // be written to the output var, so reset it
+      expiry_timestamp = 0;
+    }
     snippet->set_expiry_date(base::Time::UnixEpoch() +
                              base::TimeDelta::FromSeconds(expiry_timestamp));
   }
@@ -84,12 +98,14 @@ scoped_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
   if (!snippet_.empty())
     dict->SetString(kSnippet, snippet_);
   if (!publish_date_.is_null()) {
-    dict->SetInteger(kPublishDate,
-                     (publish_date_ - base::Time::UnixEpoch()).InSeconds());
+    dict->SetString(kPublishDate,
+                    base::Int64ToString(
+                        (publish_date_ - base::Time::UnixEpoch()).InSeconds()));
   }
   if (!expiry_date_.is_null()) {
-    dict->SetInteger(kExpiryDate,
-                     (expiry_date_ - base::Time::UnixEpoch()).InSeconds());
+    dict->SetString(kExpiryDate,
+                    base::Int64ToString(
+                        (expiry_date_ - base::Time::UnixEpoch()).InSeconds()));
   }
 
   return dict;

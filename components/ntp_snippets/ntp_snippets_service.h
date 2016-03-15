@@ -147,6 +147,8 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   friend class NTPSnippetsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, Loop);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, Full);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, CreationTimestampParseFail);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, RemoveExpiredContent);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, ObserverLoaded);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, ObserverNotLoaded);
 
