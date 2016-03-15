@@ -110,15 +110,21 @@ bool LayoutTableCol::canHaveChildren() const
 
 LayoutRect LayoutTableCol::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    // For now, just paint invalidate the whole table.
-    // FIXME: Find a better way to do this, e.g., need to paint invalidate all the cells that we
-    // might have propagated a background color or borders into.
-    // FIXME: check for paintInvalidationContainer each time here?
+    // Entire table gets invalidated, instead of invalidating
+    // every cell in the column.
+    // This is simpler, but suboptimal.
 
-    LayoutTable* parentTable = table();
-    if (!parentTable)
+    LayoutTable* table = this->table();
+    if (!table)
         return LayoutRect();
-    return parentTable->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+
+    // The correctness of this method depends on the fact that LayoutTableCol's
+    // location is always zero.
+    ASSERT(this->location() == LayoutPoint());
+
+    LayoutRect r = table->visualOverflowRect();
+    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, r, paintInvalidationState);
+    return r;
 }
 
 void LayoutTableCol::imageChanged(WrappedImagePtr, const IntRect*)

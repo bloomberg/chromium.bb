@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 108, 106, 104]
+        [8, 108, 210, 104]
       ],
       "paintInvalidationClients": [
         "LayoutTableCell TD",
