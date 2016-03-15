@@ -82,7 +82,7 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
     const GURL& origin,
     content::WebContents* web_contents) {
   DCHECK(media_router_);
-  observer_.reset(new TestMediaSinksObserver(media_router_, source));
+  observer_.reset(new TestMediaSinksObserver(media_router_, source, origin));
   observer_->Init();
 
   DVLOG(1) << "Receiver name: " << receiver();

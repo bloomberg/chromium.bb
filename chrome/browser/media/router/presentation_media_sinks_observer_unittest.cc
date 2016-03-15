@@ -29,7 +29,8 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
     EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).WillOnce(Return(true));
     observer_.reset(new PresentationMediaSinksObserver(
         &router_, &listener_,
-        MediaSourceForPresentationUrl("http://example.com/presentation.html")));
+        MediaSourceForPresentationUrl("http://example.com/presentation.html"),
+        GURL("https://google.com")));
     EXPECT_TRUE(observer_->Init());
   }
 

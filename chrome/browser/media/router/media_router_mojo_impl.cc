@@ -165,7 +165,8 @@ void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
 
 void MediaRouterMojoImpl::OnSinksReceived(
     const mojo::String& media_source,
-    mojo::Array<interfaces::MediaSinkPtr> sinks) {
+    mojo::Array<interfaces::MediaSinkPtr> sinks,
+    mojo::Array<mojo::String> origins) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
   auto it = sinks_queries_.find(media_source);
@@ -174,20 +175,35 @@ void MediaRouterMojoImpl::OnSinksReceived(
     return;
   }
 
+  std::vector<GURL> origin_list;
+  origin_list.reserve(origins.size());
+  for (size_t i = 0; i < origins.size(); ++i) {
+    GURL origin(origins[i].get());
+    if (!origin.is_valid()) {
+      LOG(WARNING) << "Received invalid origin: " << origin
+                   << ". Dropping result.";
+      return;
+    }
+    origin_list.push_back(origin);
+  }
+
+  std::vector<MediaSink> sink_list;
+  sink_list.reserve(sinks.size());
+  for (size_t i = 0; i < sinks.size(); ++i)
+    sink_list.push_back(sinks[i].To<MediaSink>());
+
   auto* sinks_query = it->second;
   sinks_query->has_cached_result = true;
-  auto& cached_sink_list = sinks_query->cached_sink_list;
-  cached_sink_list.clear();
-  cached_sink_list.reserve(sinks.size());
-  for (size_t i = 0; i < sinks.size(); ++i)
-    cached_sink_list.push_back(sinks[i].To<MediaSink>());
+  sinks_query->origins.swap(origin_list);
+  sinks_query->cached_sink_list.swap(sink_list);
 
   if (!sinks_query->observers.might_have_observers()) {
     DVLOG_WITH_INSTANCE(1)
         << "Received sink list without any active observers: " << media_source;
   } else {
-    FOR_EACH_OBSERVER(MediaSinksObserver, sinks_query->observers,
-                      OnSinksReceived(cached_sink_list));
+    FOR_EACH_OBSERVER(
+        MediaSinksObserver, sinks_query->observers,
+        OnSinksUpdated(sinks_query->cached_sink_list, sinks_query->origins));
   }
 }
 
@@ -395,7 +411,7 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // |observer| can be immediately notified with an empty list.
   sinks_query->observers.AddObserver(observer);
   if (availability_ == interfaces::MediaRouter::SinkAvailability::UNAVAILABLE) {
-    observer->OnSinksReceived(std::vector<MediaSink>());
+    observer->OnSinksUpdated(std::vector<MediaSink>(), std::vector<GURL>());
   } else {
     // Need to call MRPM to start observing sinks if the query is new.
     if (new_query) {
@@ -403,7 +419,8 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
       RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
                             base::Unretained(this), source_id));
     } else if (sinks_query->has_cached_result) {
-      observer->OnSinksReceived(sinks_query->cached_sink_list);
+      observer->OnSinksUpdated(sinks_query->cached_sink_list,
+                               sinks_query->origins);
     }
   }
   return true;
@@ -699,6 +716,7 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
       query->is_active = false;
       query->has_cached_result = false;
       query->cached_sink_list.clear();
+      query->origins.clear();
     }
   } else {
     // Sinks are now available. Tell MRPM to start all sink queries again.

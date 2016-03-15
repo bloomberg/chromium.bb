@@ -163,8 +163,13 @@ TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
   MediaSource source2 = MediaSourceForPresentationUrl(presentation_url2);
   MockScreenAvailabilityListener listener1(presentation_url1);
   MockScreenAvailabilityListener listener2(presentation_url2);
-  int render_process_id = 10;
-  int render_frame_id1 = 1;
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int render_frame_id1 = main_frame->GetRoutingID();
+
+  // Note that |render_frame_id2| does not correspond to a real frame. As a
+  // result, the observer added with have an empty GURL as origin.
   int render_frame_id2 = 2;
 
   EXPECT_CALL(router_, RegisterMediaSinksObserver(_))
@@ -201,8 +206,10 @@ TEST_F(PresentationServiceDelegateImplTest, AddMultipleListenersToFrame) {
   MediaSource source2 = MediaSourceForPresentationUrl(presentation_url2);
   MockScreenAvailabilityListener listener1(presentation_url1);
   MockScreenAvailabilityListener listener2(presentation_url2);
-  int render_process_id = 10;
-  int render_frame_id = 1;
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int render_frame_id = main_frame->GetRoutingID();
 
   EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).Times(2);
   EXPECT_TRUE(delegate_impl_->AddScreenAvailabilityListener(
@@ -231,8 +238,10 @@ TEST_F(PresentationServiceDelegateImplTest, AddSameListenerTwice) {
   std::string presentation_url1("http://url1.fakeUrl");
   MediaSource source1(MediaSourceForPresentationUrl(presentation_url1));
   MockScreenAvailabilityListener listener1(presentation_url1);
-  int render_process_id = 1;
-  int render_frame_id = 0;
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int render_frame_id = main_frame->GetRoutingID();
 
   EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).WillOnce(Return(true));
   EXPECT_TRUE(delegate_impl_->AddScreenAvailabilityListener(
@@ -410,8 +419,11 @@ TEST_F(PresentationServiceDelegateImplTest, Reset) {
   std::string presentation_url1("http://url1.fakeUrl");
   MediaSource source = MediaSourceForPresentationUrl(presentation_url1);
   MockScreenAvailabilityListener listener1(presentation_url1);
-  int render_process_id = 1;
-  int render_frame_id = 0;
+
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int render_frame_id = main_frame->GetRoutingID();
 
   EXPECT_TRUE(delegate_impl_->AddScreenAvailabilityListener(
       render_process_id, render_frame_id, &listener1));
@@ -444,8 +456,10 @@ TEST_F(PresentationServiceDelegateImplTest, DelegateObservers) {
 TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
   const std::string presentation_url("http://url1.fakeUrl");
   MockScreenAvailabilityListener listener(presentation_url);
-  const int render_process_id = 10;
-  const int render_frame_id = 1;
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int render_frame_id = main_frame->GetRoutingID();
 
   EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).WillOnce(Return(false));
   EXPECT_CALL(listener, OnScreenAvailabilityNotSupported());

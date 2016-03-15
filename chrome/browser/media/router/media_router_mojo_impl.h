@@ -154,6 +154,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     // Cached list of sinks for the query, if |has_cached_result| is true.
     // Empty otherwise.
     std::vector<MediaSink> cached_sink_list;
+    std::vector<GURL> origins;
     base::ObserverList<MediaSinksObserver> observers;
 
    private:
@@ -267,7 +268,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
           callback) override;
   void OnIssue(interfaces::IssuePtr issue) override;
   void OnSinksReceived(const mojo::String& media_source,
-                       mojo::Array<interfaces::MediaSinkPtr> sinks) override;
+                       mojo::Array<interfaces::MediaSinkPtr> sinks,
+                       mojo::Array<mojo::String> origins) override;
   void OnRoutesUpdated(mojo::Array<interfaces::MediaRoutePtr> routes,
       const mojo::String& media_source,
       mojo::Array<mojo::String> joinable_route_ids) override;

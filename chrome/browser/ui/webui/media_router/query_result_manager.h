@@ -35,13 +35,14 @@ struct SinksQueryResult;
 //
 // Typical use:
 //
+//   GURL origin("https://origin.com");
 //   QueryResultManager::Observer* observer = ...;
 //   QueryResultManager result_manager(router);
 //   result_manager.AddObserver(observer);
 //   result_manager.StartSinksQuery(MediaCastMode::DEFAULT,
-//       MediaSourceForPresentationUrl("http://google.com"));
+//       MediaSourceForPresentationUrl("http://google.com"), origin);
 //   result_manager.StartSinksQuery(MediaCastMode::TAB_MIRROR,
-//       MediaSourceForTab(123));
+//       MediaSourceForTab(123), origin);
 //   ...
 //   [Updates will be received by observer via OnResultsUpdated()]
 //   ...
@@ -75,7 +76,8 @@ class QueryResultManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Requests a list of MediaSinks compatible with |source| for |cast_mode|.
+  // Requests a list of MediaSinks compatible with |source| for |cast_mode|
+  // from |origin|.
   // Results are sent to all observers registered with AddObserver().
   //
   // May start a new query in the Media Router for the registered source if
@@ -83,7 +85,9 @@ class QueryResultManager {
   // |cast_mode|, it is stopped.
   //
   // If |source| is empty, no new queries are begun.
-  void StartSinksQuery(MediaCastMode cast_mode, const MediaSource& source);
+  void StartSinksQuery(MediaCastMode cast_mode,
+                       const MediaSource& source,
+                       const GURL& origin);
 
   // Stops notifying observers for |cast_mode|.
   void StopSinksQuery(MediaCastMode cast_mode);

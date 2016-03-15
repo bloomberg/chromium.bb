@@ -482,6 +482,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   router()->OnSinkAvailabilityUpdated(
       interfaces::MediaRouter::SinkAvailability::AVAILABLE);
   MediaSource media_source(kSource);
+  GURL origin("https://google.com");
 
   // These should only be called once even if there is more than one observer
   // for a given source.
@@ -491,13 +492,13 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
               StartObservingMediaSinks(mojo::String(kSource2)));
 
   scoped_ptr<MockMediaSinksObserver> sinks_observer(
-      new MockMediaSinksObserver(router(), media_source));
+      new MockMediaSinksObserver(router(), media_source, origin));
   EXPECT_TRUE(sinks_observer->Init());
   scoped_ptr<MockMediaSinksObserver> extra_sinks_observer(
-      new MockMediaSinksObserver(router(), media_source));
+      new MockMediaSinksObserver(router(), media_source, origin));
   EXPECT_TRUE(extra_sinks_observer->Init());
   scoped_ptr<MockMediaSinksObserver> unrelated_sinks_observer(
-      new MockMediaSinksObserver(router(), MediaSource(kSource2)));
+      new MockMediaSinksObserver(router(), MediaSource(kSource2), origin));
   EXPECT_TRUE(unrelated_sinks_observer->Init());
   ProcessEventLoop();
 
@@ -519,23 +520,33 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   mojo_sinks[1]->icon_type =
       media_router::interfaces::MediaSink::IconType::CAST;
 
+  mojo::Array<mojo::String> mojo_origins(1);
+  mojo_origins[0] = origin.spec();
+
   base::RunLoop run_loop;
   EXPECT_CALL(*sinks_observer, OnSinksReceived(SequenceEquals(expected_sinks)));
   EXPECT_CALL(*extra_sinks_observer,
               OnSinksReceived(SequenceEquals(expected_sinks)))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  media_router_proxy_->OnSinksReceived(media_source.id(),
-                                       std::move(mojo_sinks));
+  media_router_proxy_->OnSinksReceived(media_source.id(), std::move(mojo_sinks),
+                                       std::move(mojo_origins));
   run_loop.Run();
 
   // Since the MediaRouterMojoImpl has already received results for
   // |media_source|, return cached results to observers that are subsequently
   // registered.
   scoped_ptr<MockMediaSinksObserver> cached_sinks_observer(
-      new MockMediaSinksObserver(router(), media_source));
+      new MockMediaSinksObserver(router(), media_source, origin));
   EXPECT_CALL(*cached_sinks_observer,
               OnSinksReceived(SequenceEquals(expected_sinks)));
   EXPECT_TRUE(cached_sinks_observer->Init());
+
+  // Different origin from cached result. Empty list will be returned.
+  scoped_ptr<MockMediaSinksObserver> cached_sinks_observer2(
+      new MockMediaSinksObserver(router(), media_source,
+                                 GURL("https://youtube.com")));
+  EXPECT_CALL(*cached_sinks_observer2, OnSinksReceived(IsEmpty()));
+  EXPECT_TRUE(cached_sinks_observer2->Init());
 
   base::RunLoop run_loop2;
   EXPECT_CALL(mock_media_route_provider_,
@@ -549,22 +560,25 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   extra_sinks_observer.reset();
   unrelated_sinks_observer.reset();
   cached_sinks_observer.reset();
+  cached_sinks_observer2.reset();
   run_loop2.Run();
 }
 
 TEST_F(MediaRouterMojoImplTest,
        RegisterMediaSinksObserverWithAvailabilityChange) {
+  GURL origin("https://google.com");
+
   // When availability is UNAVAILABLE, no calls should be made to MRPM.
   router()->OnSinkAvailabilityUpdated(
       interfaces::MediaRouter::SinkAvailability::UNAVAILABLE);
   MediaSource media_source(kSource);
   scoped_ptr<MockMediaSinksObserver> sinks_observer(
-      new MockMediaSinksObserver(router(), media_source));
+      new MockMediaSinksObserver(router(), media_source, origin));
   EXPECT_CALL(*sinks_observer, OnSinksReceived(IsEmpty()));
   EXPECT_TRUE(sinks_observer->Init());
   MediaSource media_source2(kSource2);
   scoped_ptr<MockMediaSinksObserver> sinks_observer2(
-      new MockMediaSinksObserver(router(), media_source2));
+      new MockMediaSinksObserver(router(), media_source2, origin));
   EXPECT_CALL(*sinks_observer2, OnSinksReceived(IsEmpty()));
   EXPECT_TRUE(sinks_observer2->Init());
   EXPECT_CALL(mock_media_route_provider_,

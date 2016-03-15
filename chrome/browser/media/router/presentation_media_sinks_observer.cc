@@ -13,8 +13,9 @@ namespace media_router {
 PresentationMediaSinksObserver::PresentationMediaSinksObserver(
     MediaRouter* router,
     content::PresentationScreenAvailabilityListener* listener,
-    const MediaSource& source)
-    : MediaSinksObserver(router, source),
+    const MediaSource& source,
+    const GURL& origin)
+    : MediaSinksObserver(router, source, origin),
       listener_(listener),
       previous_availablity_(UNKNOWN) {
   DCHECK(router);

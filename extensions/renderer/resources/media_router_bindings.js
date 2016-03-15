@@ -265,9 +265,13 @@ define('media_router_bindings', [
    * updated.
    * @param {!string} sourceUrn
    * @param {!Array<!MediaSink>} sinks
+   * @param {Array<string>=} opt_origins
    */
-  MediaRouter.prototype.onSinksReceived = function(sourceUrn, sinks) {
-    this.service_.onSinksReceived(sourceUrn, sinks.map(sinkToMojo_));
+  MediaRouter.prototype.onSinksReceived = function(sourceUrn, sinks,
+      opt_origins) {
+    // TODO(imcheng): Make origins required in M52+.
+    this.service_.onSinksReceived(sourceUrn, sinks.map(sinkToMojo_),
+        opt_origins || []);
   };
 
   /**

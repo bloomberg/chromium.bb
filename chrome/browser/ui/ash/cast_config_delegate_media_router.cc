@@ -17,6 +17,7 @@
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/url_constants.h"
 
 namespace {
 
@@ -83,9 +84,9 @@ class CastDeviceCache : public media_router::MediaRoutesObserver,
 CastDeviceCache::CastDeviceCache(ash::CastConfigDelegate* cast_config_delegate)
     : MediaRoutesObserver(GetMediaRouter()),
       MediaSinksObserver(GetMediaRouter(),
-                         media_router::MediaSourceForDesktop()),
-      cast_config_delegate_(cast_config_delegate) {
-}
+                         media_router::MediaSourceForDesktop(),
+                         GURL(chrome::kChromeUIMediaRouterURL)),
+      cast_config_delegate_(cast_config_delegate) {}
 
 CastDeviceCache::~CastDeviceCache() {}
 

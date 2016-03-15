@@ -27,11 +27,13 @@ class PresentationMediaSinksObserver : public MediaSinksObserver {
   // |router|: Media router that publishes sink query results.
   // |listener|: Notified when sinks availability changes.
   // |source|: Filters available sink.
+  // |origin|: Origin of request.
   // Does not take ownership of |listener| or |router|.
   PresentationMediaSinksObserver(
       MediaRouter* router,
       content::PresentationScreenAvailabilityListener* listener,
-      const MediaSource& source);
+      const MediaSource& source,
+      const GURL& origin);
   ~PresentationMediaSinksObserver() override;
 
   // MediaSinksObserver implementation.

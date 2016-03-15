@@ -359,8 +359,9 @@ void MediaRouterAndroid::OnSinksReceived(
   std::string source_urn = ConvertJavaStringToUTF8(env, jsource_urn);
   auto it = sinks_observers_.find(source_urn);
   if (it != sinks_observers_.end()) {
+    // TODO(imcheng): Pass origins to OnSinksUpdated (crbug.com/594858).
     FOR_EACH_OBSERVER(MediaSinksObserver, *it->second,
-                      OnSinksReceived(sinks_converted));
+                      OnSinksUpdated(sinks_converted, std::vector<GURL>()));
   }
 }
 

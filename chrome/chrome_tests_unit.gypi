@@ -1440,6 +1440,7 @@
       'browser/media/router/issue_unittest.cc',
       'browser/media/router/media_route_unittest.cc',
       'browser/media/router/media_sink_unittest.cc',
+      'browser/media/router/media_sinks_observer_unittest.cc',
       'browser/media/router/media_source_helper_unittest.cc',
       'browser/media/router/media_source_unittest.cc',
       'browser/media/router/presentation_media_sinks_observer_unittest.cc',

@@ -264,15 +264,18 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   query_result_manager_.reset(new QueryResultManager(router_));
   query_result_manager_->AddObserver(this);
 
+  // Use a placeholder URL as origin for mirroring.
+  GURL origin(chrome::kChromeUIMediaRouterURL);
+
   // Desktop mirror mode is always available.
   query_result_manager_->StartSinksQuery(MediaCastMode::DESKTOP_MIRROR,
-                                         MediaSourceForDesktop());
+                                         MediaSourceForDesktop(), origin);
   initiator_ = initiator;
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator);
   if (tab_id != -1) {
     MediaSource mirroring_source(MediaSourceForTab(tab_id));
     query_result_manager_->StartSinksQuery(MediaCastMode::TAB_MIRROR,
-                                           mirroring_source);
+                                           mirroring_source, origin);
   }
   UpdateCastModes();
 }
@@ -289,7 +292,9 @@ void MediaRouterUI::OnDefaultPresentationChanged(
     const PresentationRequest& presentation_request) {
   MediaSource source = presentation_request.GetMediaSource();
   presentation_request_.reset(new PresentationRequest(presentation_request));
-  query_result_manager_->StartSinksQuery(MediaCastMode::DEFAULT, source);
+  query_result_manager_->StartSinksQuery(
+      MediaCastMode::DEFAULT, source,
+      presentation_request_->frame_url().GetOrigin());
   // Register for MediaRoute updates.
   routes_observer_.reset(new UIMediaRoutesObserver(
       router_, source.id(),
@@ -366,13 +371,9 @@ bool MediaRouterUI::CreateOrConnectRoute(const MediaSink::Id& sink_id,
   }
 
   current_route_request_id_ = ++route_request_counter_;
-  GURL origin;
-  if (for_default_source) {
-    origin = presentation_request_->frame_url().GetOrigin();
-  } else {
-    // Requesting route for mirroring. Use a placeholder URL as origin.
-    origin = GURL(chrome::kChromeUIMediaRouterURL);
-  }
+  GURL origin = for_default_source
+                    ? presentation_request_->frame_url().GetOrigin()
+                    : GURL(chrome::kChromeUIMediaRouterURL);
   DCHECK(origin.is_valid());
 
   DVLOG(1) << "DoCreateRoute: origin: " << origin;

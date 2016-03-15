@@ -301,8 +301,11 @@ interface MediaRouter {
   RegisterMediaRouteProvider(MediaRouteProvider media_router_provider) =>
       (string instance_id);
 
-  // Called when the Media Route Manager receives a new list of sinks.
-  OnSinksReceived(string media_source, array<MediaSink> sinks);
+  // Called when the Media Route Manager receives a new list of |sinks|
+  // compatible with |media_source|. The result is only valid for |origins|. If
+  // |origins| is empty, the result is valid for any origin.
+  OnSinksReceived(string media_source, array<MediaSink> sinks,
+      array<string> origins);
 
   // Called when issues are reported for media routes.
   OnIssue(Issue issue);
