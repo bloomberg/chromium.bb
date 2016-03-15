@@ -741,9 +741,23 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     imageLoader().updateFromElement(behavior, m_referrerPolicy);
 
     // Images such as data: uri's can return immediately and may already have errored out.
-    bool imageHasLoaded = imageLoader().image() && !imageLoader().image()->errorOccurred();
+    bool imageHasLoaded = imageLoader().image() && !imageLoader().image()->isLoading() && !imageLoader().image()->errorOccurred();
     bool imageStillLoading = !imageHasLoaded && imageLoader().hasPendingActivity() && !imageLoader().hasPendingError() && !imageSourceURL().isEmpty();
-    if (imageHasLoaded || imageStillLoading)
+    bool imageHasImage = imageLoader().image() && imageLoader().image()->hasImage();
+
+    // Icky special case for deferred images:
+    // A deferred image is not loading, does have pending activity, does not
+    // have an error, but it does have an ImageResource associated
+    // with it, so imageHasLoaded will be true even though the image hasn't
+    // actually loaded. Fixing the definition of imageHasLoaded isn't
+    // sufficient, because a deferred image does have pending activity, does not
+    // have a pending error, and does have a source URL, so if imageHasLoaded
+    // was correct, imageStillLoading would become wrong.
+    //
+    // Instead of dealing with that, there's a separate check that the
+    // ImageResource has non-null image data associated with it, which isn't
+    // folded into imageHasLoaded above.
+    if ((imageHasLoaded && imageHasImage) || imageStillLoading)
         ensurePrimaryContent();
     else
         ensureFallbackContent();
