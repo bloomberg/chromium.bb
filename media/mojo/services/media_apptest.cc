@@ -143,7 +143,14 @@ TEST_F(MediaAppTest, InitializeCdm_InvalidKeySystem) {
   run_loop_->Run();
 }
 
-TEST_F(MediaAppTest, InitializeRenderer_Success) {
+// Sometimes fails on Linux. http://crbug.com/594977
+#if defined(OS_LINUX)
+#define MAYBE_InitializeRenderer_Success DISABLED_InitializeRenderer_Success
+#else
+#define MAYBE_InitializeRenderer_Success InitializeRenderer_Success
+#endif
+
+TEST_F(MediaAppTest, MAYBE_InitializeRenderer_Success) {
   InitializeRenderer(TestVideoConfig::Normal(), true);
   run_loop_->Run();
 }
