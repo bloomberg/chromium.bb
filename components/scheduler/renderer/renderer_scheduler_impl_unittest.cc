@@ -2787,4 +2787,20 @@ TEST_F(RendererSchedulerImplTest, DenyLongIdleDuringTouchStart) {
   EXPECT_GE(next_time_to_check, base::TimeDelta());
 }
 
+TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_TouchStartDuringFling) {
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  scheduler_->DidAnimateForInputOnCompositorThread();
+  // Note DidAnimateForInputOnCompositorThread does not by itself trigger a
+  // policy update.
+  EXPECT_EQ(RendererScheduler::UseCase::COMPOSITOR_GESTURE,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+
+  // Make sure TouchStart causes a policy change.
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart),
+      RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  EXPECT_EQ(RendererScheduler::UseCase::TOUCHSTART,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+}
+
 }  // namespace scheduler

@@ -842,7 +842,8 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
   any_thread_lock_.AssertAcquired();
   // Special case for flings. This is needed because we don't get notification
   // of a fling ending (although we do for cancellation).
-  if (AnyThread().fling_compositor_escalation_deadline > now) {
+  if (AnyThread().fling_compositor_escalation_deadline > now &&
+      !AnyThread().awaiting_touch_start_response) {
     *expected_use_case_duration =
         AnyThread().fling_compositor_escalation_deadline - now;
     return UseCase::COMPOSITOR_GESTURE;
