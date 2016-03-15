@@ -1,5 +1,3 @@
-CONSOLE WARNING: ::shadow pseudo-element is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
-CONSOLE WARNING: /deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
 crbug.com/337616: test for querySelectorAll with ::shadow and /deep/
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

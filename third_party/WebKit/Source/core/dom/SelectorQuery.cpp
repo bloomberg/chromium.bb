@@ -122,6 +122,7 @@ inline bool SelectorDataList::selectorMatches(const CSSSelector& selector, Eleme
 {
     SelectorChecker::Init init;
     init.mode = SelectorChecker::QueryingRules;
+    init.isQuerySelector = true;
     SelectorChecker checker(init);
     SelectorChecker::SelectorCheckingContext context(&element, SelectorChecker::VisitedMatchDisabled);
     context.selector = &selector;
@@ -148,7 +149,6 @@ Element* SelectorDataList::closest(Element& targetElement) const
     unsigned selectorCount = m_selectors.size();
     if (!selectorCount)
         return nullptr;
-
     if (m_needsUpdatedDistribution)
         targetElement.updateDistribution();
 

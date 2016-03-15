@@ -345,7 +345,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::ShadowPseudo:
         {
-            if (!m_isUARule && context.selector->getPseudoType() == CSSSelector::PseudoShadow)
+            if (!m_isUARule && !m_isQuerySelector && context.selector->getPseudoType() == CSSSelector::PseudoShadow)
                 Deprecation::countDeprecation(context.element->document(), UseCounter::CSSSelectorPseudoShadow);
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
             if (context.scope && context.scope->shadowHost() && context.scope->shadowHost()->treeScope() == context.element->treeScope())
@@ -360,7 +360,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::ShadowDeep:
         {
-            if (!m_isUARule)
+            if (!m_isUARule && !m_isQuerySelector)
                 Deprecation::countDeprecation(context.element->document(), UseCounter::CSSDeepCombinator);
             if (ShadowRoot* root = context.element->containingShadowRoot()) {
                 if (root->type() == ShadowRootType::UserAgent)

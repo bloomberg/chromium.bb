@@ -52,6 +52,7 @@ public:
     public:
         Mode mode = ResolvingStyle;
         bool isUARule = false;
+        bool isQuerySelector = false;
         ComputedStyle* elementStyle = nullptr;
         RawPtrWillBeMember<LayoutScrollbar> scrollbar = nullptr;
         ScrollbarPart scrollbarPart = NoPart;
@@ -60,6 +61,7 @@ public:
     explicit SelectorChecker(const Init& init)
         : m_mode(init.mode)
         , m_isUARule(init.isUARule)
+        , m_isQuerySelector(init.isQuerySelector)
         , m_elementStyle(init.elementStyle)
         , m_scrollbar(init.scrollbar)
         , m_scrollbarPart(init.scrollbarPart)
@@ -140,6 +142,7 @@ private:
 
     Mode m_mode;
     bool m_isUARule;
+    bool m_isQuerySelector;
     ComputedStyle* m_elementStyle;
     RawPtrWillBeMember<LayoutScrollbar> m_scrollbar;
     ScrollbarPart m_scrollbarPart;
