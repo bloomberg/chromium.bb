@@ -2264,3 +2264,14 @@ net.dll!disk_cache::MappedFile::Init
 net.dll!disk_cache::BackendImpl::InitBackingStore
 net.dll!disk_cache::BackendImpl::SyncInit
 net.dll!disk_cache::BackendIO::ExecuteBackendOperation
+
+HANDLE LEAK
+name=bug_595105
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+KERNEL32.dll!DuplicateHandle
+base.dll!`anonymous namespace'::CreateFileMappingWithReducedPermissions
+base.dll!base::SharedMemory::Create
+base.dll!base::SharedMemory::CreateAndMapAnonymous
+content.dll!content::GpuMemoryBufferImplSharedMemory::Create
+content.dll!content::BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO
