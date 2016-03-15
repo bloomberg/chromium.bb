@@ -17,6 +17,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -222,6 +224,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * Tests that WebappActivities handle window.open() properly in document mode.
      */
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     public void testWebappHandlesWindowOpenInDocumentMode() throws Exception {
         triggerWindowOpenAndWaitForDocumentLoad(ONCLICK_LINK, true);
@@ -240,6 +243,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * Tests that WebappActivities handle suppressed window.open() properly in document mode.
      */
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     public void testWebappHandlesSuppressedWindowOpenInDocumentMode() throws Exception {
         triggerWindowOpenAndWaitForDocumentLoad(HREF_NO_REFERRER_LINK, false);
