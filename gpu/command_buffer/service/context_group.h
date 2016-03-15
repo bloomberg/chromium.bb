@@ -121,6 +121,18 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return max_dual_source_draw_buffers_;
   }
 
+  uint32_t max_vertex_output_components() const {
+    return max_vertex_output_components_;
+  }
+
+  uint32_t max_fragment_input_components() const {
+    return max_fragment_input_components_;
+  }
+
+  int32_t min_program_texel_offset() const { return min_program_texel_offset_; }
+
+  int32_t max_program_texel_offset() const { return max_program_texel_offset_; }
+
   FeatureInfo* feature_info() {
     return feature_info_.get();
   }
@@ -261,6 +273,11 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   uint32_t max_color_attachments_;
   uint32_t max_draw_buffers_;
   uint32_t max_dual_source_draw_buffers_;
+
+  uint32_t max_vertex_output_components_;
+  uint32_t max_fragment_input_components_;
+  int32_t min_program_texel_offset_;
+  int32_t max_program_texel_offset_;
 
   ProgramCache* program_cache_;
 

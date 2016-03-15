@@ -89,6 +89,10 @@ const GLint TestHelper::kMaxVaryingVectors;
 const GLint TestHelper::kMaxVaryingFloats;
 const GLint TestHelper::kMaxVertexUniformVectors;
 const GLint TestHelper::kMaxVertexUniformComponents;
+const GLint TestHelper::kMaxVertexOutputComponents;
+const GLint TestHelper::kMaxFragmentInputComponents;
+const GLint TestHelper::kMaxProgramTexelOffset;
+const GLint TestHelper::kMinProgramTexelOffset;
 #endif
 
 std::vector<std::string> TestHelper::split_extensions_;
@@ -404,6 +408,23 @@ void TestHelper::SetupContextGroupInitExpectations(
         .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformComponents))
         .RetiresOnSaturation();
   }
+
+  EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, _))
+      .Times(testing::Between(0, 1))
+      .WillRepeatedly(SetArgumentPointee<1>(kMaxVertexOutputComponents))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, _))
+      .Times(testing::Between(0, 1))
+      .WillRepeatedly(SetArgumentPointee<1>(kMaxFragmentInputComponents))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, GetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET, _))
+      .Times(testing::Between(0, 1))
+      .WillRepeatedly(SetArgumentPointee<1>(kMaxProgramTexelOffset))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, GetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, _))
+      .Times(testing::Between(0, 1))
+      .WillRepeatedly(SetArgumentPointee<1>(kMinProgramTexelOffset))
+      .RetiresOnSaturation();
 
   bool use_default_textures = bind_generates_resource;
   SetupTextureManagerInitExpectations(

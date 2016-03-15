@@ -3213,6 +3213,17 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxCallStackDepth = 256;
   resources.MaxDualSourceDrawBuffers = group_->max_dual_source_draw_buffers();
 
+  ContextType context_type = feature_info_->context_type();
+  if (context_type != CONTEXT_TYPE_WEBGL1 &&
+      context_type != CONTEXT_TYPE_OPENGLES2) {
+    resources.MaxVertexOutputVectors =
+        group_->max_vertex_output_components() / 4;
+    resources.MaxFragmentInputVectors =
+        group_->max_fragment_input_components() / 4;
+    resources.MaxProgramTexelOffset = group_->max_program_texel_offset();
+    resources.MinProgramTexelOffset = group_->min_program_texel_offset();
+  }
+
   GLint range[2] = { 0, 0 };
   GLint precision = 0;
   GetShaderPrecisionFormatImpl(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
@@ -3221,7 +3232,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
 
   ShShaderSpec shader_spec;
-  switch (feature_info_->context_type()) {
+  switch (context_type) {
     case CONTEXT_TYPE_WEBGL1:
       shader_spec = SH_WEBGL_SPEC;
       resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
