@@ -1267,6 +1267,9 @@ template("android_java_prebuilt") {
 #     all other asset files.
 #   alternative_locale_resource_dep: The locale resource target which overrides
 #     any exsting locale resources in dep graph.
+#   requires_sdk_api_level_23: If defined and true, the apk is intended for
+#     installation only on Android M or later. In these releases the system
+#     linker does relocation unpacking, so we can enable it unconditionally.
 #
 #   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
 #     this directory will be included in the library. This is only supported to
@@ -1365,15 +1368,20 @@ template("android_apk") {
                                invoker.enable_relocation_packing
   _load_library_from_apk =
       defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
+  _requires_sdk_api_level_23 = defined(invoker.requires_sdk_api_level_23) &&
+                               invoker.requires_sdk_api_level_23
 
   assert(_use_chromium_linker || true)  # Mark as used.
+  assert(_requires_sdk_api_level_23 || true)
   if (_enable_relocation_packing) {
-    assert(_use_chromium_linker,
-           "enable_relocation_packing requires use_chromium_linker")
+    assert(_use_chromium_linker || _requires_sdk_api_level_23,
+           "enable_relocation_packing requires either use_chromium_linker " +
+               "or requires_sdk_api_level_23")
   }
   if (_load_library_from_apk) {
-    assert(_use_chromium_linker,
-           "load_library_from_apk requires use_chromium_linker")
+    assert(_use_chromium_linker || _requires_sdk_api_level_23,
+           "load_library_from_apk requires use_chromium_linker " +
+               "or requires_sdk_api_level_23")
   }
 
   # The dependency that makes the chromium linker, if any is needed.
