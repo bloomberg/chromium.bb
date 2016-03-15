@@ -8,7 +8,7 @@ UpdateLayoutTree Properties:
             frame : <string>
             stackTrace : <object>
         }
-        elementCount : 3
+        elementCount : 2
     }
     endTime : <number>
     frameId : <string>
@@ -16,6 +16,6 @@ UpdateLayoutTree Properties:
     startTime : <number>
     type : "UpdateLayoutTree"
 }
-Text details for UpdateLayoutTree: wrapCallFunctionForTimeline.js:8
+Text details for UpdateLayoutTree: timeline-recalculate-styles.html:20
 UpdateLayoutTree has a warning
 

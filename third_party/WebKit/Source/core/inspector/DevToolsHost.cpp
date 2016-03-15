@@ -30,6 +30,7 @@
 #include "core/inspector/DevToolsHost.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/dom/ExecutionContext.h"
@@ -146,7 +147,7 @@ void DevToolsHost::evaluateScript(const String& expression)
         return;
     ScriptState::Scope scope(scriptState);
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    v8::MicrotasksScope microtasks(scriptState->isolate(), v8::MicrotasksScope::kRunMicrotasks);
+    V8RecursionScope recursionScope(scriptState->isolate());
     v8::Local<v8::String> source = v8AtomicString(scriptState->isolate(), expression.utf8().data());
     V8ScriptRunner::compileAndRunInternalScript(source, scriptState->isolate(), String(), TextPosition());
 }

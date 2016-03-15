@@ -5,6 +5,7 @@
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 
 #include "content/public/renderer/render_frame.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace extensions {
@@ -55,8 +56,7 @@ void ExtensionsGuestViewContainer::CallElementResizeCallback(
       v8::Integer::New(element_resize_isolate_, new_size.height())};
 
   v8::Context::Scope context_scope(context);
-  v8::MicrotasksScope microtasks(
-      element_resize_isolate_, v8::MicrotasksScope::kDoNotRunMicrotasks);
+  blink::WebScopedMicrotaskSuppression suppression;
 
   callback->Call(context->Global(), argc, argv);
 }

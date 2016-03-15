@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/CachedMetadata.h"
@@ -399,7 +400,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     TRACE_EVENT1("v8", "v8.run", "fileName", TRACE_STR_COPY(*v8::String::Utf8Value(script->GetUnboundScript()->GetScriptName())));
 
-    if (v8::MicrotasksScope::GetCurrentDepth(isolate) >= kMaxRecursionDepth)
+    if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
         return throwStackOverflowExceptionIfNeeded(isolate);
 
     RELEASE_ASSERT(!context->isIteratingOverObservers());
@@ -411,7 +412,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate
             throwScriptForbiddenException(isolate);
             return v8::MaybeLocal<v8::Value>();
         }
-        v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+        V8RecursionScope recursionScope(isolate);
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::willExecuteScript(context, script->GetUnboundScript()->GetId());
         result = script->Run(isolate->GetCurrentContext());
         InspectorInstrumentation::didExecuteScript(cookie);
@@ -429,7 +430,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Local<
 
     TRACE_EVENT0("v8", "v8.run");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
-    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+    V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
     crashIfIsolateIsDead(isolate);
     return result;
@@ -439,7 +440,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledInternalScript(v8::Isolate*
 {
     TRACE_EVENT0("v8", "v8.run");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
-    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+    V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
     crashIfIsolateIsDead(isolate);
     return result;
@@ -450,7 +451,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> f
     TRACE_EVENT1("devtools.timeline,v8", "FunctionCall", "data", devToolsTraceEventData(isolate, context, function));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
-    if (v8::MicrotasksScope::GetCurrentDepth(isolate) >= kMaxRecursionDepth)
+    if (V8RecursionScope::recursionLevel(isolate) >= kMaxRecursionDepth)
         return v8::MaybeLocal<v8::Value>(throwStackOverflowExceptionIfNeeded(isolate));
 
     RELEASE_ASSERT(!context->isIteratingOverObservers());
@@ -459,7 +460,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> f
         throwScriptForbiddenException(isolate);
         return v8::MaybeLocal<v8::Value>();
     }
-    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+    V8RecursionScope recursionScope(isolate);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willExecuteScript(context, function->ScriptId());
     v8::MaybeLocal<v8::Value> result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
     crashIfIsolateIsDead(isolate);
@@ -471,7 +472,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callInternalFunction(v8::Local<v8::Fun
 {
     TRACE_EVENT0("v8", "v8.callFunction");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
-    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+    V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
     v8::MaybeLocal<v8::Value> result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
     crashIfIsolateIsDead(isolate);
     return result;
@@ -482,7 +483,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolat
     TRACE_EVENT0("v8", "v8.newInstance");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
-    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+    V8RecursionScope::MicrotaskSuppression scope(isolate);
     v8::MaybeLocal<v8::Object> result = objectTemplate->NewInstance(isolate->GetCurrentContext());
     crashIfIsolateIsDead(isolate);
     return result;
@@ -493,7 +494,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObject(v8::Isolate* isolat
     TRACE_EVENT0("v8", "v8.newInstance");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
-    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+    V8RecursionScope::MicrotaskSuppression scope(isolate);
     v8::MaybeLocal<v8::Object> result = function->NewInstance(isolate->GetCurrentContext(), argc, argv);
     crashIfIsolateIsDead(isolate);
     return result;
@@ -507,7 +508,7 @@ v8::MaybeLocal<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isola
         throwScriptForbiddenException(isolate);
         return v8::MaybeLocal<v8::Object>();
     }
-    v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+    V8RecursionScope scope(isolate);
     v8::MaybeLocal<v8::Object> result = function->NewInstance(isolate->GetCurrentContext(), argc, argv);
     crashIfIsolateIsDead(isolate);
     return result;

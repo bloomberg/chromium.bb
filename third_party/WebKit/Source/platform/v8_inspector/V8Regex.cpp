@@ -45,6 +45,7 @@ int V8Regex::match(const String16& string, int startFrom, int* matchLength) cons
     v8::Isolate* isolate = m_debugger->isolate();
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> context = m_debugger->regexContext();
+    v8::Context::Scope contextScope(context);
     v8::TryCatch tryCatch(isolate);
 
     v8::Local<v8::RegExp> regex = m_regex.Get(isolate);
@@ -53,7 +54,7 @@ int V8Regex::match(const String16& string, int startFrom, int* matchLength) cons
         return -1;
     v8::Local<v8::Value> argv[] = { toV8String(isolate, string.substring(startFrom)) };
     v8::Local<v8::Value> returnValue;
-    if (!exec.As<v8::Function>()->Call(context, regex, WTF_ARRAY_LENGTH(argv), argv).ToLocal(&returnValue))
+    if (!m_debugger->client()->callInternalFunction(exec.As<v8::Function>(), regex, WTF_ARRAY_LENGTH(argv), argv).ToLocal(&returnValue))
         return -1;
 
     // RegExp#exec returns null if there's no match, otherwise it returns an

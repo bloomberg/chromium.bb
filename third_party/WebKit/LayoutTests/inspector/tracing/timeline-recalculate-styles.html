@@ -11,18 +11,13 @@
 
 <script>
 
-function forceStyle()
+function performActions()
 {
     var element = document.createElement("div");
     element.className = "test-style";
     element.innerHTML = "<span>Test data</span>";
     document.querySelector('section > div').appendChild(element);
     var unused = element.offsetWidth;
-}
-
-function performActions()
-{
-    wrapCallFunctionForTimeline(forceStyle);
 }
 
 function test()

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,42 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8FunctionCall_h
-#define V8FunctionCall_h
+#ifndef WebScopedMicrotaskSuppression_h
+#define WebScopedMicrotaskSuppression_h
 
-#include "platform/inspector_protocol/Collections.h"
-#include "platform/inspector_protocol/String16.h"
-
-#include <v8.h>
+#include "../platform/WebPrivateOwnPtr.h"
 
 namespace blink {
 
-class V8DebuggerClient;
-
-class V8FunctionCall {
+// This class wraps V8RecursionScope::BypassMicrotaskCheckpoint. Please
+// see V8RecursionScope.h for full usage. Short story: Embedder calls into
+// script contexts which also host page script must do one of two things:
+//
+//   1. If the call may cause any page/author script to run, it must be
+//      captured for pre/post work (e.g. inspector instrumentation/microtask
+//      delivery) and thus be invoked through WebFrame (e.g. executeScript*,
+//      callFunction*).
+//   2. If the call will not cause any page/author script to run, the call
+//      should be made directly via the v8 context, but the callsite must be
+//      accompanied by a stack allocated WebScopedMicrotaskSuppression, e.g.:
+//
+//        ...
+//        {
+//            blink::WebScopedMicrotaskSuppression suppression;
+//            func->Call(global, argv, args);
+//        }
+//        ...
+//
+class WebScopedMicrotaskSuppression {
 public:
-    V8FunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& name);
+    WebScopedMicrotaskSuppression() { initialize(); }
+    ~WebScopedMicrotaskSuppression() { reset(); }
 
-    void appendArgument(v8::Local<v8::Value>);
-    void appendArgument(const String16&);
-    void appendArgument(int);
-    void appendArgument(bool);
-    void appendUndefinedArgument();
+private:
+    BLINK_EXPORT void initialize();
+    BLINK_EXPORT void reset();
 
-    v8::Local<v8::Value> call(bool& hadException, bool reportExceptions = true);
-    v8::Local<v8::Value> call();
-    v8::Local<v8::Function> function();
-    v8::Local<v8::Value> callWithoutExceptionHandling();
-    v8::Local<v8::Context> context() { return m_context; }
-
-protected:
-    V8DebuggerClient* m_client;
-    v8::Local<v8::Context> m_context;
-    protocol::Vector<v8::Local<v8::Value>> m_arguments;
-    v8::Local<v8::String> m_name;
-    v8::Local<v8::Value> m_value;
+    // Always declare this data member. When assertions are on in
+    // Release builds of Blink, this header may be included from
+    // Chromium with different preprocessor options than used when
+    // building Blink itself.
+    class Impl;
+    WebPrivateOwnPtr<Impl> m_impl;
 };
 
 } // namespace blink
 
-#endif // V8FunctionCall
+#endif

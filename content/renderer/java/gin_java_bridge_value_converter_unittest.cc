@@ -12,6 +12,7 @@
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/renderer/java/gin_java_bridge_value_converter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
 
 namespace content {
@@ -99,8 +100,7 @@ TEST_F(GinJavaBridgeValueConverterTest, TypedArrays) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
-  v8::MicrotasksScope microtasks_scope(
-      isolate_, v8::MicrotasksScope::kDoNotRunMicrotasks);
+  blink::WebScopedMicrotaskSuppression microtasks_scope;
 
   scoped_ptr<GinJavaBridgeValueConverter> converter(
       new GinJavaBridgeValueConverter());

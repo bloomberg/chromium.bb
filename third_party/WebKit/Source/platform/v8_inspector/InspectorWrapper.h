@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class V8DebuggerClient;
+
 class InspectorWrapperBase {
 public:
     struct V8MethodConfiguration {
@@ -26,7 +28,7 @@ public:
     static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*, const char* className, const protocol::Vector<V8MethodConfiguration>& methods, const protocol::Vector<V8AttributeConfiguration>& attributes);
 
 protected:
-    static v8::Local<v8::Object> createWrapper(v8::Local<v8::FunctionTemplate>, v8::Local<v8::Context>);
+    static v8::Local<v8::Object> createWrapper(V8DebuggerClient*, v8::Local<v8::FunctionTemplate>, v8::Local<v8::Context>);
     static void* unwrap(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name);
 
     static v8::Local<v8::String> v8InternalizedString(v8::Isolate*, const char* name);
@@ -69,10 +71,10 @@ public:
         return InspectorWrapperBase::createWrapperTemplate(isolate, className, methods, attributes);
     }
 
-    static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, T* object)
+    static v8::Local<v8::Object> wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, T* object)
     {
         v8::Context::Scope contextScope(context);
-        v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(constructorTemplate, context);
+        v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(client, constructorTemplate, context);
         if (result.IsEmpty())
             return v8::Local<v8::Object>();
         v8::Isolate* isolate = context->GetIsolate();
@@ -83,10 +85,10 @@ public:
         return result;
     }
 
-    static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassOwnPtr<T> object)
+    static v8::Local<v8::Object> wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassOwnPtr<T> object)
     {
         v8::Context::Scope contextScope(context);
-        v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(constructorTemplate, context);
+        v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(client, constructorTemplate, context);
         if (result.IsEmpty())
             return v8::Local<v8::Object>();
         v8::Isolate* isolate = context->GetIsolate();

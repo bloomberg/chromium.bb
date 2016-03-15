@@ -60,11 +60,10 @@ static bool inLiveEditScope = false;
 
 v8::MaybeLocal<v8::Value> V8DebuggerImpl::callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[])
 {
-    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.Get(m_isolate);
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString(functionName)));
     ASSERT(m_isolate->InContext());
-    return function->Call(m_isolate->GetCurrentContext(), debuggerScript, argc, argv);
+    return m_client->callInternalFunction(function, debuggerScript, argc, argv);
 }
 
 PassOwnPtr<V8Debugger> V8Debugger::create(v8::Isolate* isolate, V8DebuggerClient* client)
@@ -211,13 +210,14 @@ V8RuntimeAgentImpl* V8DebuggerImpl::getRuntimeAgentForContext(v8::Local<v8::Cont
 void V8DebuggerImpl::getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>& result)
 {
     v8::HandleScope scope(m_isolate);
+    v8::Context::Scope contextScope(debuggerContext());
+
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.Get(m_isolate);
     ASSERT(!debuggerScript->IsUndefined());
     v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString("getScripts")));
     v8::Local<v8::Value> argv[] = { v8::Integer::New(m_isolate, contextGroupId) };
     v8::Local<v8::Value> value;
-    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    if (!getScriptsFunction->Call(debuggerContext(), debuggerScript, WTF_ARRAY_LENGTH(argv), argv).ToLocal(&value))
+    if (!m_client->callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv).ToLocal(&value))
         return;
     ASSERT(value->IsArray());
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
@@ -492,7 +492,7 @@ PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames()
     ASSERT(!currentCallFrameV8.IsEmpty());
     if (!currentCallFrameV8->IsObject())
         return nullptr;
-    return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
+    return JavaScriptCallFrame::create(m_client, debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
 v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
@@ -512,7 +512,7 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
     v8::Local<v8::FunctionTemplate> wrapperTemplate = v8::Local<v8::FunctionTemplate>::New(m_isolate, m_callFrameWrapperTemplate);
     v8::Local<v8::Context> context = m_pausedContext.IsEmpty() ? m_isolate->GetCurrentContext() : m_pausedContext;
     v8::Context::Scope scope(context);
-    v8::Local<v8::Object> wrapper = V8JavaScriptCallFrame::wrap(wrapperTemplate, context, currentCallFrame.release());
+    v8::Local<v8::Object> wrapper = V8JavaScriptCallFrame::wrap(m_client, wrapperTemplate, context, currentCallFrame.release());
     return wrapper;
 }
 
@@ -533,7 +533,7 @@ PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrameNoScopes(int index)
     ASSERT(!currentCallFrameV8.IsEmpty());
     if (!currentCallFrameV8->IsObject())
         return nullptr;
-    return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
+    return JavaScriptCallFrame::create(m_client, debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
 static V8DebuggerImpl* toV8DebuggerImpl(v8::Local<v8::Value> data)
@@ -611,8 +611,7 @@ v8::Local<v8::Value> V8DebuggerImpl::callInternalGetterFunction(v8::Local<v8::Ob
 {
     v8::Local<v8::Value> getterValue = object->Get(v8InternalizedString(functionName));
     ASSERT(!getterValue.IsEmpty() && getterValue->IsFunction());
-    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    return v8::Local<v8::Function>::Cast(getterValue)->Call(m_isolate->GetCurrentContext(), object, 0, 0).ToLocalChecked();
+    return m_client->callInternalFunction(v8::Local<v8::Function>::Cast(getterValue), object, 0, 0).ToLocalChecked();
 }
 
 void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
@@ -722,7 +721,7 @@ void V8DebuggerImpl::compileDebuggerScript()
 
     v8::Local<v8::String> scriptValue = v8::String::NewFromUtf8(m_isolate, DebuggerScript_js, v8::NewStringType::kInternalized, sizeof(DebuggerScript_js)).ToLocalChecked();
     v8::Local<v8::Value> value;
-    if (!compileAndRunInternalScript(debuggerContext(), scriptValue).ToLocal(&value))
+    if (!m_client->compileAndRunInternalScript(scriptValue).ToLocal(&value))
         return;
     ASSERT(value->IsObject());
     m_debuggerScript.Reset(m_isolate, value.As<v8::Object>());
@@ -791,54 +790,7 @@ bool V8DebuggerImpl::isPaused()
     return !m_pausedContext.IsEmpty();
 }
 
-v8::MaybeLocal<v8::Value> V8DebuggerImpl::runCompiledScript(v8::Local<v8::Context> context, v8::Local<v8::Script> script)
-{
-    // TODO(dgozman): get rid of this check.
-    if (!m_client->isExecutionAllowed())
-        return v8::MaybeLocal<v8::Value>();
-
-    v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kRunMicrotasks);
-    int groupId = getGroupId(context);
-    V8DebuggerAgentImpl* agent = groupId ? m_debuggerAgentsMap.get(groupId) : nullptr;
-    if (agent)
-        agent->willExecuteScript(script->GetUnboundScript()->GetId());
-    v8::MaybeLocal<v8::Value> result = script->Run(context);
-    // Get agent from the map again, since it could have detached during script execution.
-    agent = groupId ? m_debuggerAgentsMap.get(groupId) : nullptr;
-    if (agent)
-        agent->didExecuteScript();
-    return result;
-}
-
-v8::MaybeLocal<v8::Value> V8DebuggerImpl::callFunction(v8::Local<v8::Function> function, v8::Local<v8::Context> context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[])
-{
-    // TODO(dgozman): get rid of this check.
-    if (!m_client->isExecutionAllowed())
-        return v8::MaybeLocal<v8::Value>();
-
-    v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kRunMicrotasks);
-    int groupId = getGroupId(context);
-    V8DebuggerAgentImpl* agent = groupId ? m_debuggerAgentsMap.get(groupId) : nullptr;
-    if (agent)
-        agent->willExecuteScript(function->ScriptId());
-    v8::MaybeLocal<v8::Value> result = function->Call(context, receiver, argc, info);
-    // Get agent from the map again, since it could have detached during script execution.
-    agent = groupId ? m_debuggerAgentsMap.get(groupId) : nullptr;
-    if (agent)
-        agent->didExecuteScript();
-    return result;
-}
-
-v8::MaybeLocal<v8::Value> V8DebuggerImpl::compileAndRunInternalScript(v8::Local<v8::Context> context, v8::Local<v8::String> source)
-{
-    v8::Local<v8::Script> script = compileInternalScript(context, source, String());
-    if (script.IsEmpty())
-        return v8::MaybeLocal<v8::Value>();
-    v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    return script->Run(context);
-}
-
-v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Context> context, v8::Local<v8::String> code, const String16& fileName)
+v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String> code, const String16& fileName)
 {
     // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
     // 1, whereas v8 starts at 0.
@@ -853,7 +805,7 @@ v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Contex
         v8::True(m_isolate)); // opaqueresource
     v8::ScriptCompiler::Source source(code, origin);
     v8::Local<v8::Script> script;
-    if (!v8::ScriptCompiler::Compile(context, &source, v8::ScriptCompiler::kNoCompileOptions).ToLocal(&script))
+    if (!v8::ScriptCompiler::Compile(m_isolate->GetCurrentContext(), &source, v8::ScriptCompiler::kNoCompileOptions).ToLocal(&script))
         return v8::Local<v8::Script>();
     return script;
 }

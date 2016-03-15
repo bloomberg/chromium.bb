@@ -13,6 +13,7 @@
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace guest_view {
@@ -42,8 +43,7 @@ void GuestViewRequest::ExecuteCallbackIfAvailable(
     return;
 
   v8::Context::Scope context_scope(context);
-  v8::MicrotasksScope microtasks(
-      isolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
+  blink::WebScopedMicrotaskSuppression suppression;
 
   callback->Call(context->Global(), argc, argv.get());
 }

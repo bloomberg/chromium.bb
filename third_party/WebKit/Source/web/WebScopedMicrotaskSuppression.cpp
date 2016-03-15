@@ -28,42 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8FunctionCall_h
-#define V8FunctionCall_h
+#include "public/web/WebScopedMicrotaskSuppression.h"
 
-#include "platform/inspector_protocol/Collections.h"
-#include "platform/inspector_protocol/String16.h"
-
-#include <v8.h>
+#include "bindings/core/v8/V8RecursionScope.h"
+#include "wtf/Assertions.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
-class V8DebuggerClient;
-
-class V8FunctionCall {
+#if ENABLE(ASSERT)
+class WebScopedMicrotaskSuppression::Impl : public V8RecursionScope::MicrotaskSuppression {
 public:
-    V8FunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& name);
-
-    void appendArgument(v8::Local<v8::Value>);
-    void appendArgument(const String16&);
-    void appendArgument(int);
-    void appendArgument(bool);
-    void appendUndefinedArgument();
-
-    v8::Local<v8::Value> call(bool& hadException, bool reportExceptions = true);
-    v8::Local<v8::Value> call();
-    v8::Local<v8::Function> function();
-    v8::Local<v8::Value> callWithoutExceptionHandling();
-    v8::Local<v8::Context> context() { return m_context; }
-
-protected:
-    V8DebuggerClient* m_client;
-    v8::Local<v8::Context> m_context;
-    protocol::Vector<v8::Local<v8::Value>> m_arguments;
-    v8::Local<v8::String> m_name;
-    v8::Local<v8::Value> m_value;
+    Impl(v8::Isolate* isolate)
+        : V8RecursionScope::MicrotaskSuppression(isolate)
+    {
+    }
 };
+#endif
+
+void WebScopedMicrotaskSuppression::initialize()
+{
+#if ENABLE(ASSERT)
+    m_impl.reset(new Impl(v8::Isolate::GetCurrent()));
+#endif
+}
+
+void WebScopedMicrotaskSuppression::reset()
+{
+#if ENABLE(ASSERT)
+    m_impl.reset(0);
+#endif
+}
 
 } // namespace blink
-
-#endif // V8FunctionCall

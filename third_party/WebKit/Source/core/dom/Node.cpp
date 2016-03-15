@@ -26,7 +26,6 @@
 
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSSelector.h"
@@ -45,6 +44,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
+#include "core/dom/Microtask.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ProcessingInstruction.h"

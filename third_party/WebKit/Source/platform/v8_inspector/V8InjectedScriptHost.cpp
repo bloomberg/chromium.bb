@@ -280,7 +280,7 @@ void V8InjectedScriptHost::evalCallback(const v8::FunctionCallbackInfo<v8::Value
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(isolate->GetCurrentContext(), info.Holder());
     if (!host->debugger())
         return;
-    if (!host->debugger()->compileAndRunInternalScript(isolate->GetCurrentContext(), expression).ToLocal(&result)) {
+    if (!host->debugger()->client()->compileAndRunInternalScript(expression).ToLocal(&result)) {
         v8SetReturnValue(info, tryCatch.ReThrow());
         return;
     }
@@ -333,7 +333,7 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsCallback(const v8::Functi
         global->Set(commandLineAPISymbolValue, commandLineAPI);
     }
 
-    v8::MaybeLocal<v8::Value> result = host->debugger()->runCompiledScript(context, script);
+    v8::MaybeLocal<v8::Value> result = host->debugger()->client()->runCompiledScript(context, script);
     if (result.IsEmpty()) {
         global->Delete(context, commandLineAPISymbolValue);
         setExceptionAsReturnValue(info, wrappedResult, tryCatch);
@@ -596,9 +596,9 @@ v8::Local<v8::FunctionTemplate> V8InjectedScriptHost::createWrapperTemplate(v8::
     return InjectedScriptHostWrapper::createWrapperTemplate(isolate, methods, attributes);
 }
 
-v8::Local<v8::Object> V8InjectedScriptHost::wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, InjectedScriptHost* host)
+v8::Local<v8::Object> V8InjectedScriptHost::wrap(V8DebuggerClient* client, v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, InjectedScriptHost* host)
 {
-    return InjectedScriptHostWrapper::wrap(constructorTemplate, context, host);
+    return InjectedScriptHostWrapper::wrap(client, constructorTemplate, context, host);
 }
 
 InjectedScriptHost* V8InjectedScriptHost::unwrap(v8::Local<v8::Context> context, v8::Local<v8::Object> object)

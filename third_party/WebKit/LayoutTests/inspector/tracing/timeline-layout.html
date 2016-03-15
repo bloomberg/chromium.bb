@@ -19,8 +19,8 @@ function invalidateAndForceLayout(element)
 
 function performActions()
 {
-    wrapCallFunctionForTimeline(() => invalidateAndForceLayout(document.getElementById("invalidate1")));
-    wrapCallFunctionForTimeline(() => invalidateAndForceLayout(document.getElementById("invalidate2")));
+    invalidateAndForceLayout(document.getElementById("invalidate1"));
+    invalidateAndForceLayout(document.getElementById("invalidate2"));
 }
 
 function test()

@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 
 namespace {
 
@@ -153,7 +154,7 @@ void GuestViewContainer::HandlePendingResponseCallback(
 void GuestViewContainer::RunDestructionCallback(bool embedder_frame_destroyed) {
   // Do not attempt to run |destruction_callback_| if the embedder frame was
   // destroyed. Trying to invoke callback on RenderFrame destruction results in
-  // assertion failure when calling v8::MicrotasksScope.
+  // assertion failure when calling WebScopedMicrotaskSuppression.
   if (embedder_frame_destroyed)
     return;
 
@@ -167,8 +168,7 @@ void GuestViewContainer::RunDestructionCallback(bool embedder_frame_destroyed) {
       return;
 
     v8::Context::Scope context_scope(context);
-    v8::MicrotasksScope microtasks(
-        destruction_isolate_, v8::MicrotasksScope::kDoNotRunMicrotasks);
+    blink::WebScopedMicrotaskSuppression suppression;
 
     callback->Call(context->Global(), 0 /* argc */, nullptr);
   }

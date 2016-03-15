@@ -28,49 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Microtask_h
-#define Microtask_h
+#include "core/dom/Microtask.h"
 
-#include "core/CoreExport.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
+#include "platform/ScriptForbiddenScope.h"
+#include "platform/Task.h"
 #include "public/platform/WebTaskRunner.h"
-#include "wtf/Allocator.h"
-#include "wtf/Functional.h"
-#include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
 namespace blink {
 
-// C++ calls into script contexts which are "owned" by blink (created in a
-// process where WebKit.cpp initializes v8) must declare their type:
-//
-//   1. Calls into page/author script from a frame
-//   2. Calls into page/author script from a worker
-//   3. Calls into internal script (typically setup/teardown work)
-//
-// Debug-time checking of this is enforced via v8::MicrotasksScope.
-//
-// Calls of type (1) should generally go through ScriptController, as inspector
-// instrumentation is needed. ScriptController allocates V8RecursionScope for you.
-//
-// Calls of type (2) should always stack-allocate a v8::MicrotasksScope(kRunMicrtoasks)
-// in the same block as the call into script.
-//
-// Calls of type (3) should stack allocate a v8::MicrotasksScope(kDoNotRunMicrotasks) --
-// this skips work that is spec'd to happen at the end of the outer-most
-// script stack frame of calls into page script:
-// http://www.whatwg.org/specs/web-apps/current-work/#perform-a-microtask-checkpoint
-class CORE_EXPORT Microtask {
-    STATIC_ONLY(Microtask);
-public:
-    static void performCheckpoint(v8::Isolate*);
+void Microtask::performCheckpoint(v8::Isolate* isolate)
+{
+    if (ScriptForbiddenScope::isScriptForbidden())
+        return;
+    v8::MicrotasksScope::PerformCheckpoint(isolate);
+}
 
-    // TODO(jochen): Make all microtasks pass in the ScriptState they want to be
-    // executed in. Until then, all microtasks have to keep track of their
-    // ScriptState themselves.
-    static void enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task>);
-    static void enqueueMicrotask(PassOwnPtr<SameThreadClosure>);
-};
+static void microtaskFunctionCallback(void* data)
+{
+    OwnPtr<WebTaskRunner::Task> task = adoptPtr(static_cast<WebTaskRunner::Task*>(data));
+    task->run();
+}
+
+void Microtask::enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task> callback)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    isolate->EnqueueMicrotask(&microtaskFunctionCallback, callback.leakPtr());
+}
+
+void Microtask::enqueueMicrotask(PassOwnPtr<SameThreadClosure> callback)
+{
+    enqueueMicrotask(adoptPtr(new SameThreadTask(callback)));
+}
 
 } // namespace blink
-
-#endif // Microtask_h

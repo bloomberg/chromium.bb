@@ -12,6 +12,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
+#include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
 #include "core/streams/ReadableStreamController.h"
@@ -149,7 +150,7 @@ public:
     {
         v8::Local<v8::String> source;
         v8::Local<v8::Script> script;
-        v8::MicrotasksScope microtasks(isolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
+        V8RecursionScope::MicrotaskSuppression microtasks(isolate());
         if (!v8Call(v8::String::NewFromUtf8(isolate(), s, v8::NewStringType::kNormal), source)) {
             ADD_FAILURE();
             return ScriptValue();

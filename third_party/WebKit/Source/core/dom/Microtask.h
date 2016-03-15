@@ -28,35 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/Microtask.h"
+#ifndef Microtask_h
+#define Microtask_h
 
-#include "platform/ScriptForbiddenScope.h"
-#include "platform/Task.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
+#include "public/platform/WebTaskRunner.h"
+#include "wtf/Allocator.h"
+#include "wtf/Functional.h"
+#include "wtf/PassOwnPtr.h"
+#include <v8.h>
 
 namespace blink {
 
-void Microtask::performCheckpoint(v8::Isolate* isolate)
-{
-    if (ScriptForbiddenScope::isScriptForbidden())
-        return;
-    v8::MicrotasksScope::PerformCheckpoint(isolate);
-}
+class CORE_EXPORT Microtask {
+    STATIC_ONLY(Microtask);
+public:
+    static void performCheckpoint(v8::Isolate*);
 
-static void microtaskFunctionCallback(void* data)
-{
-    OwnPtr<WebTaskRunner::Task> task = adoptPtr(static_cast<WebTaskRunner::Task*>(data));
-    task->run();
-}
-
-void Microtask::enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task> callback)
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    isolate->EnqueueMicrotask(&microtaskFunctionCallback, callback.leakPtr());
-}
-
-void Microtask::enqueueMicrotask(PassOwnPtr<SameThreadClosure> callback)
-{
-    enqueueMicrotask(adoptPtr(new SameThreadTask(callback)));
-}
+    // TODO(jochen): Make all microtasks pass in the ScriptState they want to be
+    // executed in. Until then, all microtasks have to keep track of their
+    // ScriptState themselves.
+    static void enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task>);
+    static void enqueueMicrotask(PassOwnPtr<SameThreadClosure>);
+};
 
 } // namespace blink
+
+#endif // Microtask_h
