@@ -14,9 +14,9 @@ namespace blink {
 
 class V8ContextInfo {
 public:
-    V8ContextInfo(v8::Local<v8::Context> context, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId)
+    V8ContextInfo(v8::Local<v8::Context> context, bool isDefault, const String16& origin, const String16& humanReadableName, const String16& frameId)
         : context(context)
-        , type(type)
+        , isDefault(isDefault)
         , origin(origin)
         , humanReadableName(humanReadableName)
         , frameId(frameId)
@@ -24,7 +24,7 @@ public:
     }
 
     v8::Local<v8::Context> context;
-    const String16 type;
+    bool isDefault;
     const String16 origin;
     const String16 humanReadableName;
     const String16 frameId;

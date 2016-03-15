@@ -15,7 +15,7 @@ function test()
     function executionContextChanged(event)
     {
         var executionContext = event.data;
-        InspectorTest.addResult("Execution context selected: " + (executionContext.isMainWorldContext ? executionContext.target().name() + ":" + executionContext.frameId : ""));
+        InspectorTest.addResult("Execution context selected: " + (executionContext.isDefault ? executionContext.target().name() + ":" + executionContext.frameId : ""));
     }
 
     function targetChanged(event)
@@ -26,12 +26,12 @@ function test()
 
     InspectorTest.addResult("Adding page target:");
     var pageTarget = InspectorTest.createMockTarget("page-target");
-    pageTarget.runtimeModel._executionContextCreated({id: "p1", name: "pageContext1", origin: "origin", name: "pageContext1Name", frameId: "pageFrame1"});
+    pageTarget.runtimeModel._executionContextCreated({id: "p1", isDefault: true, origin: "origin", name: "pageContext1Name", frameId: "pageFrame1"});
     InspectorTest.addResult("");
 
     InspectorTest.addResult("Adding sw target:");
     var swTarget = InspectorTest.createMockTarget("sw-target");
-    swTarget.runtimeModel._executionContextCreated({id: "sw1", name: "swContext1", origin: "origin", name: "swContext1Name", frameId: ""});
+    swTarget.runtimeModel._executionContextCreated({id: "sw1", isDefault: true, origin: "origin", name: "swContext1Name", frameId: ""});
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Removing page target:");
@@ -39,7 +39,7 @@ function test()
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Readding page target:");
-    pageTarget.runtimeModel._executionContextCreated({id: "p2", name: "", origin: "", name: "", frameId: "pageFrame1"});
+    pageTarget.runtimeModel._executionContextCreated({id: "p2", isDefault: true, origin: "", name: "", frameId: "pageFrame1"});
 
     InspectorTest.completeTest();
 }

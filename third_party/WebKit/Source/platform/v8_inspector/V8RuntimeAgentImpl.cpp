@@ -412,11 +412,10 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(const V8ContextInfo& info
     injectedScript->setOrigin(info.origin);
     OwnPtr<protocol::Runtime::ExecutionContextDescription> description = protocol::Runtime::ExecutionContextDescription::create()
         .setId(contextId)
+        .setIsDefault(info.isDefault)
         .setName(info.humanReadableName)
         .setOrigin(info.origin)
         .setFrameId(info.frameId).build();
-    if (!info.type.isEmpty())
-        description->setType(info.type);
     m_frontend->executionContextCreated(description.release());
 }
 

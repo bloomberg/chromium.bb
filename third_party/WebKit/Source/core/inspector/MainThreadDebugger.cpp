@@ -93,7 +93,7 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     DOMWrapperWorld& world = scriptState->world();
     V8Debugger::setContextDebugData(scriptState->context(), world.isMainWorld() ? "page" : "injected", contextGroupId(frame));
     if (s_instance)
-        s_instance->debugger()->contextCreated(V8ContextInfo(scriptState->context(), world.isMainWorld() ? "" : "Extension", origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
+        s_instance->debugger()->contextCreated(V8ContextInfo(scriptState->context(), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
 }
 
 void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
@@ -186,7 +186,7 @@ void MainThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVecto
         // If initializeMainWorld returns true, then is registered by didCreateScriptContext
         if (!frame->script().initializeMainWorld()) {
             ScriptState* scriptState = ScriptState::forMainWorld(frame);
-            contexts.append(V8ContextInfo(scriptState->context(), "", "", "", frameId));
+            contexts.append(V8ContextInfo(scriptState->context(), true, "", "", frameId));
         }
         frame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
@@ -194,7 +194,7 @@ void MainThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVecto
         for (const auto& pair : isolatedContexts) {
             String originString = pair.second ? pair.second->toRawString() : "";
             ScriptState* scriptState = pair.first;
-            contexts.append(V8ContextInfo(scriptState->context(), "Extension", originString, scriptState->world().isolatedWorldHumanReadableName(), frameId));
+            contexts.append(V8ContextInfo(scriptState->context(), false, originString, scriptState->world().isolatedWorldHumanReadableName(), frameId));
         }
         isolatedContexts.clear();
     }
