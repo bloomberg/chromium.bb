@@ -470,7 +470,6 @@
         'memory/ptr_util_unittest.cc',
         'memory/ref_counted_memory_unittest.cc',
         'memory/ref_counted_unittest.cc',
-        'memory/scoped_ptr_unittest.cc',
         'memory/scoped_vector_unittest.cc',
         'memory/shared_memory_mac_unittest.cc',
         'memory/shared_memory_unittest.cc',
