@@ -25,7 +25,9 @@ EXTENSIONS_TO_COMMENTS = {
     'cc': '//',
     'mm': '//',
     'js': '//',
-    'py': '#'
+    'py': '#',
+    'gn': '#',
+    'gni': '#',
 }
 
 def _GetHeader(filename):
