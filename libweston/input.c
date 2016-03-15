@@ -2762,7 +2762,7 @@ weston_seat_set_keyboard_focus(struct weston_seat *seat,
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
 
-	if (keyboard) {
+	if (keyboard && keyboard->focus != surface) {
 		weston_keyboard_set_focus(keyboard, surface);
 		wl_data_device_set_keyboard_focus(seat);
 	}

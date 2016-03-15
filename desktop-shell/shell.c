@@ -5223,7 +5223,6 @@ activate_binding(struct weston_seat *seat,
 		 struct desktop_shell *shell,
 		 struct weston_view *focus_view)
 {
-	struct focus_state *state;
 	struct weston_surface *focus;
 	struct weston_surface *main_surface;
 
@@ -5234,13 +5233,6 @@ activate_binding(struct weston_seat *seat,
 
 	main_surface = weston_surface_get_main_surface(focus);
 	if (get_shell_surface_type(main_surface) == SHELL_SURFACE_NONE)
-		return;
-
-	state = ensure_focus_state(shell, seat);
-	if (state == NULL)
-		return;
-
-	if (state->keyboard_focus == focus)
 		return;
 
 	activate(shell, focus, seat, true);
