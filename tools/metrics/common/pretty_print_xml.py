@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Utility file for pretty print xml file.
+"""Utility file for pretty printing xml file.
 
-The function PrettyPrintNode will be used for formatting both histograms.xml
+The function PrettyPrintXml will be used for formatting both histograms.xml
 and actions.xml.
 """
 
@@ -33,10 +33,9 @@ def LastLineLength(s):
 
 
 def XmlEscape(s):
-  """XML-escapes the given string, replacing magic characters (&<>") with their
-  escaped equivalents."""
-  s = s.replace("&", "&amp;").replace("<", "&lt;")
-  s = s.replace("\"", "&quot;").replace(">", "&gt;")
+  """Returns escaped string for the given string |s|."""
+  s = s.replace('&', '&amp;').replace('<', '&lt;')
+  s = s.replace('\"', '&quot;').replace('>', '&gt;')
   return s
 
 
@@ -44,12 +43,80 @@ class XmlStyle(object):
   """A class that stores all style specification for an output xml file."""
 
   def __init__(self, attribute_order, tags_that_have_extra_newline,
-               tags_that_dont_indent, tags_that_allow_single_line):
-    # List of tag names for top-level nodes whose children are not indented.
+               tags_that_dont_indent, tags_that_allow_single_line,
+               tags_alphabetization_rules):
     self.attribute_order = attribute_order
     self.tags_that_have_extra_newline = tags_that_have_extra_newline
     self.tags_that_dont_indent = tags_that_dont_indent
     self.tags_that_allow_single_line = tags_that_allow_single_line
+    self.tags_alphabetization_rules = tags_alphabetization_rules
+
+  def PrettyPrintXml(self, tree):
+    tree = self._TransformByAlphabetizing(tree)
+    tree = self.PrettyPrintNode(tree)
+    return tree
+
+  def _UnsafeAppendChild(self, parent, child):
+    """Append child to parent's list of children.
+
+    It ignores the possibility that the child is already in another node's
+    childNodes list.  Requires that the previous parent of child is discarded
+    (to avoid non-tree DOM graphs). This can provide a significant speedup as
+    O(n^2) operations are removed (in particular, each child insertion avoids
+    the need to traverse the old parent's entire list of children).
+
+    Args:
+      parent: the parent node to be appended to.
+      child: the child node to append to |parent| node.
+    """
+    child.parentNode = None
+    parent.appendChild(child)
+    child.parentNode = parent
+
+  def _TransformByAlphabetizing(self, node):
+    """Transform the given XML by alphabetizing nodes.
+
+    Args:
+      node: The minidom node to transform.
+
+    Returns:
+      The minidom node, with children appropriately alphabetized. Note that the
+      transformation is done in-place, i.e. the original minidom tree is
+      modified directly.
+    """
+    if node.nodeType != xml.dom.minidom.Node.ELEMENT_NODE:
+      for c in node.childNodes:
+        self._TransformByAlphabetizing(c)
+      return node
+
+    # Element node with a tag name that we alphabetize the children of?
+    if node.tagName in self.tags_alphabetization_rules:
+      # Put subnodes in a list of node, key pairs to allow for custom sorting.
+      subtag, key_function = self.tags_alphabetization_rules[node.tagName]
+      subnodes = []
+      last_key = -1
+      for c in node.childNodes:
+        if (c.nodeType == xml.dom.minidom.Node.ELEMENT_NODE and
+            c.tagName == subtag):
+          last_key = key_function(c)
+        # Subnodes that we don't want to rearrange use the last node's key,
+        # so they stay in the same relative position.
+        subnodes.append((c, last_key))
+
+      # Sort the subnode list.
+      subnodes.sort(key=lambda pair: pair[1])
+
+      # Re-add the subnodes, transforming each recursively.
+      while node.firstChild:
+        node.removeChild(node.firstChild)
+      for (c, _) in subnodes:
+        self._UnsafeAppendChild(node, self._TransformByAlphabetizing(c))
+      return node
+
+    # Recursively handle other element nodes and other node types.
+    for c in node.childNodes:
+      self._TransformByAlphabetizing(c)
+    return node
 
   def PrettyPrintNode(self, node, indent=0):
     """Pretty-prints the given XML node at the given indent level.
@@ -62,7 +129,7 @@ class XmlStyle(object):
       The pretty-printed string (including embedded newlines).
 
     Raises:
-      Error if the XML has unknown tags or attributes.
+      Error: if the XML has unknown tags or attributes.
     """
     # Handle the top-level document node.
     if node.nodeType == xml.dom.minidom.Node.DOCUMENT_NODE:
@@ -84,18 +151,24 @@ class XmlStyle(object):
       # Split the text into paragraphs at blank line boundaries.
       paragraphs = [[]]
       for l in lines:
-        if len(l.strip()) == 0 and len(paragraphs[-1]) > 0:
+        if paragraphs[-1] and not l.strip():
           paragraphs.append([])
         else:
           paragraphs[-1].append(l)
       # Remove trailing empty paragraph if present.
-      if len(paragraphs) > 0 and len(paragraphs[-1]) == 0:
+      if paragraphs and not paragraphs[-1]:
         paragraphs = paragraphs[:-1]
       # Wrap each paragraph and separate with two newlines.
       return '\n\n'.join([wrapper.fill('\n'.join(p)) for p in paragraphs])
 
     # Handle element nodes.
     if node.nodeType == xml.dom.minidom.Node.ELEMENT_NODE:
+      # Check if tag name is valid.
+      if node.tagName not in self.attribute_order:
+        logging.error('Unrecognized tag "%s"', node.tagName)
+        raise Error('Unrecognized tag "%s"', node.tagName)
+
+      # Newlines.
       newlines_after_open, newlines_before_close, newlines_after_close = (
           self.tags_that_have_extra_newline.get(node.tagName, (1, 1, 0)))
       # Open the tag.
@@ -110,20 +183,20 @@ class XmlStyle(object):
       attributes = node.attributes.keys()
       if attributes:
         # Reorder the attributes.
-        if node.tagName not in self.attribute_order:
-          unrecognized_attributes = attributes
-        else:
-          unrecognized_attributes = (
-              [a for a in attributes
-               if a not in self.attribute_order[node.tagName]])
-          attributes = [a for a in self.attribute_order[node.tagName]
-                        if a in attributes]
+        unrecognized_attributes = (
+            [a for a in attributes
+             if a not in self.attribute_order[node.tagName]])
+        attributes = [a for a in self.attribute_order[node.tagName]
+                      if a in attributes]
 
         for a in unrecognized_attributes:
           logging.error(
-              'Unrecognized attribute "%s" in tag "%s"' % (a, node.tagName))
+              'Unrecognized attribute "%s" in tag "%s"', a, node.tagName)
         if unrecognized_attributes:
-          raise Error()
+          raise Error(
+              'Unrecognized attributes {0} in tag "{1}"'.format(
+                  ', '.join('"{0}"'.format(a) for a in unrecognized_attributes),
+                  node.tagName))
 
         for a in attributes:
           value = XmlEscape(node.attributes[a].value)
@@ -164,7 +237,7 @@ class XmlStyle(object):
         # Recursively pretty-print the child nodes.
         child_nodes = [self.PrettyPrintNode(n, indent=new_indent)
                        for n in child_nodes]
-        child_nodes = [c for c in child_nodes if len(c.strip()) > 0]
+        child_nodes = [c for c in child_nodes if c.strip()]
 
         # Determine whether we can fit the entire node on a single line.
         close_tag = '</%s>' % node.tagName
@@ -189,5 +262,5 @@ class XmlStyle(object):
     # Ignore other node types. This could be a processing instruction
     # (<? ... ?>) or cdata section (<![CDATA[...]]!>), neither of which are
     # legal in the histograms XML at present.
-    logging.error('Ignoring unrecognized node data: %s' % node.toxml())
-    raise Error()
+    logging.error('Ignoring unrecognized node data: %s', node.toxml())
+    raise Error('Ignoring unrecognized node data: {0}'.format(node.toxml()))

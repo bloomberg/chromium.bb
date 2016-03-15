@@ -44,6 +44,7 @@ class NodeType(object):
         newlines that should be printed (after_open, before_close, after_close)
     single_line: True iff this node may be squashed into a single line.
   """
+
   def __init__(self, tag,
                dont_indent=False,
                extra_newlines=None,
@@ -53,10 +54,10 @@ class NodeType(object):
     self.extra_newlines = extra_newlines
     self.single_line = single_line
 
-  def Unmarshall(self, node):
+  def Unmarshall(self, unused_node):
     return None
 
-  def Marshall(self, doc, obj):
+  def Marshall(self, unused_doc, unused_obj):
     return None
 
   def GetAttributes(self):
@@ -74,6 +75,7 @@ class TextNodeType(NodeType):
   Args:
     tag: The name of XML tag for this type of node.
   """
+
   def __init__(self, tag, **kwargs):
     NodeType.__init__(self, tag, **kwargs)
 
@@ -97,6 +99,7 @@ class ChildType(object):
     node_type: The NodeType of the child.
     multiple: True if the child can be repeated.
   """
+
   def __init__(self, attr, node_type, multiple):
     self.attr = attr
     self.node_type = node_type
@@ -115,17 +118,18 @@ class ObjectNodeType(NodeType):
     string_attributes: A list of names of string attributes.
     children: A list of ChildTypes describing the objects children.
   """
+
   def __init__(self, tag,
-               int_attributes=[],
-               float_attributes=[],
-               string_attributes=[],
-               children=[],
+               int_attributes=None,
+               float_attributes=None,
+               string_attributes=None,
+               children=None,
                **kwargs):
     NodeType.__init__(self, tag, **kwargs)
-    self.int_attributes = int_attributes
-    self.float_attributes = float_attributes
-    self.string_attributes = string_attributes
-    self.children = children
+    self.int_attributes = int_attributes or []
+    self.float_attributes = float_attributes or []
+    self.string_attributes = string_attributes or []
+    self.children = children or []
 
   def __str__(self):
     return 'ObjectNodeType("%s")' % self.tag
@@ -142,7 +146,7 @@ class ObjectNodeType(NodeType):
       obj[attr] = float(node.getAttribute(attr))
 
     for attr in self.string_attributes:
-      obj[attr] = node.getAttribute(attr)
+      obj[attr] = unicode(node.getAttribute(attr))
 
     for child in self.children:
       nodes = node.getElementsByTagName(child.node_type.tag)
@@ -190,6 +194,7 @@ class DocumentType(object):
   Args:
     root_type: A NodeType describing the root tag of the document.
   """
+
   def __init__(self, root_type):
     self.root_type = root_type
 
@@ -205,7 +210,8 @@ class DocumentType(object):
         {t: types[t].GetAttributes() for t in types},
         {t: types[t].extra_newlines for t in types if types[t].extra_newlines},
         [t for t in types if types[t].dont_indent],
-        [t for t in types if types[t].single_line])
+        [t for t in types if types[t].single_line],
+        {})
 
   def ToXML(self, comments, obj):
     doc = minidom.Document()
