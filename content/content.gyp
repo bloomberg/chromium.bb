@@ -58,6 +58,33 @@
         'public/common/feature_h264_with_openh264_ffmpeg.h',
       ],
     },
+    {
+      # GN version: //content/browser:chrome_manifest
+      'target_name': 'chrome_manifest',
+      'type': 'none',
+      'variables': {
+        'application_type': 'exe',
+        'application_name': 'chrome',
+        'source_manifest': '<(DEPTH)/content/browser/mojo/chrome_manifest.json',
+      },
+      'includes': [
+        '../mojo/public/mojo_application_manifest.gypi',
+      ],
+    },
+    {
+      # GN version: //content/browser:chrome_renderer_manifest
+      'target_name': 'chrome_renderer_manifest',
+      'type': 'none',
+      'variables': {
+        'application_type': 'exe',
+        'application_name': 'chrome_renderer',
+        'source_manifest':
+            '<(DEPTH)/content/browser/mojo/chrome_renderer_manifest.json',
+      },
+      'includes': [
+        '../mojo/public/mojo_application_manifest.gypi',
+      ],
+    },
   ],
   'includes': [
     '../build/win_precompile.gypi',
@@ -183,6 +210,8 @@
             '../build/android/disable_gcc_lto.gypi',
           ],
           'dependencies': [
+            'chrome_manifest',
+            'chrome_renderer_manifest',
             'content_common',
             'content_resources',
           ],
@@ -380,7 +409,12 @@
           # GN version: //content/common and //content/public/common
           'target_name': 'content_common',
           'type': 'none',
-          'dependencies': ['content', 'content_resources'],
+          'dependencies': [
+            'chrome_manifest',
+            'chrome_renderer_manifest',
+            'content',
+            'content_resources'
+          ],
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
           'export_dependent_settings': ['content'],
