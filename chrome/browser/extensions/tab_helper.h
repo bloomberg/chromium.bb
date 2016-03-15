@@ -39,7 +39,7 @@ class Image;
 }
 
 namespace extensions {
-class ActiveScriptController;
+class ExtensionActionRunner;
 class BookmarkAppHelper;
 class Extension;
 class LocationBarController;
@@ -105,8 +105,8 @@ class TabHelper : public content::WebContentsObserver,
     return location_bar_controller_.get();
   }
 
-  ActiveScriptController* active_script_controller() {
-    return active_script_controller_.get();
+  ExtensionActionRunner* extension_action_runner() {
+    return extension_action_runner_.get();
   }
 
   ActiveTabPermissionGranter* active_tab_permission_granter() {
@@ -246,7 +246,7 @@ class TabHelper : public content::WebContentsObserver,
 
   scoped_ptr<LocationBarController> location_bar_controller_;
 
-  scoped_ptr<ActiveScriptController> active_script_controller_;
+  scoped_ptr<ExtensionActionRunner> extension_action_runner_;
 
   scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 

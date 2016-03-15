@@ -7,8 +7,8 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -511,9 +511,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  ActiveScriptController* controller =
-      ActiveScriptController::GetForWebContents(web_contents);
-  ASSERT_TRUE(controller);
+  ExtensionActionRunner* runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  ASSERT_TRUE(runner);
 
   int port = embedded_test_server()->port();
   const std::string kXhrPath = "simple.html";
@@ -526,10 +526,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
   // Grant activeTab permission, and perform another XHR. The extension should
   // receive the event.
-  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST,
-            controller->GetBlockedActions(extension));
-  controller->OnClicked(extension);
-  EXPECT_EQ(BLOCKED_ACTION_NONE, controller->GetBlockedActions(extension));
+  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
+  runner->OnClicked(extension);
+  EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
   PerformXhrInPage(web_contents, kHost, port, kXhrPath);
   EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
 
@@ -542,8 +541,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   base::RunLoop().RunUntilIdle();
   PerformXhrInPage(web_contents, kHost, port, kXhrPath);
   EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
-  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST,
-            controller->GetBlockedActions(extension));
+  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
 }
 
 }  // namespace extensions

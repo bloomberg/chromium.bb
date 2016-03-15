@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 
-#include "chrome/browser/extensions/active_script_controller.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -129,7 +129,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
       // It's important that this comes after the IPC is sent to the renderer,
       // so that any tasks executing in the renderer occur after it has the
       // updated permissions.
-      ActiveScriptController::GetForWebContents(web_contents())
+      ExtensionActionRunner::GetForWebContents(web_contents())
           ->OnActiveTabPermissionGranted(extension);
     }
   }

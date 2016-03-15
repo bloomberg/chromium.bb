@@ -9,13 +9,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
@@ -83,7 +83,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       script_executor_(
           new ScriptExecutor(web_contents, &script_execution_observers_)),
       location_bar_controller_(new LocationBarController(web_contents)),
-      active_script_controller_(new ActiveScriptController(web_contents)),
+      extension_action_runner_(new ExtensionActionRunner(web_contents)),
       webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()),
       image_loader_ptr_factory_(this),
       weak_ptr_factory_(this) {

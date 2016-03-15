@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "chrome/browser/extensions/active_script_controller.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/extensions/icon_with_badge_image_source.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -129,10 +129,10 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
-  extensions::ActiveScriptController* script_controller =
-      extensions::ActiveScriptController::GetForWebContents(web_contents);
-  ASSERT_TRUE(script_controller);
-  script_controller->RequestScriptInjectionForTesting(
+  extensions::ExtensionActionRunner* action_runner =
+      extensions::ExtensionActionRunner::GetForWebContents(web_contents);
+  ASSERT_TRUE(action_runner);
+  action_runner->RequestScriptInjectionForTesting(
       browser_action_ext.get(), extensions::UserScript::DOCUMENT_IDLE,
       base::Bind(&base::DoNothing));
   image_source =
@@ -141,7 +141,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_TRUE(image_source->paint_blocked_actions_decoration());
 
-  script_controller->OnClicked(browser_action_ext.get());
+  action_runner->OnClicked(browser_action_ext.get());
   image_source =
       browser_action->GetIconImageSourceForTesting(web_contents, kSize);
   EXPECT_FALSE(image_source->grayscale());
@@ -162,7 +162,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
-  script_controller->RequestScriptInjectionForTesting(
+  action_runner->RequestScriptInjectionForTesting(
       page_action_ext.get(), extensions::UserScript::DOCUMENT_IDLE,
       base::Bind(&base::DoNothing));
   image_source = page_action->GetIconImageSourceForTesting(web_contents, kSize);
@@ -191,7 +191,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
                            web_contents, false);
   toolbar_model()->SetVisibleIconCount(2u);
 
-  script_controller->OnClicked(page_action_ext.get());
+  action_runner->OnClicked(page_action_ext.get());
   image_source = page_action->GetIconImageSourceForTesting(web_contents, kSize);
   EXPECT_TRUE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());

@@ -9,10 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -126,10 +126,10 @@ TEST_F(LocationBarControllerUnitTest, LocationBarDisplaysPageActions) {
 
   // If we request a script injection, then the location bar controller should
   // also show a page action for that extension.
-  ActiveScriptController* active_script_controller =
-      ActiveScriptController::GetForWebContents(web_contents());
-  ASSERT_TRUE(active_script_controller);
-  active_script_controller->RequestScriptInjectionForTesting(
+  ExtensionActionRunner* action_runner =
+      ExtensionActionRunner::GetForWebContents(web_contents());
+  ASSERT_TRUE(action_runner);
+  action_runner->RequestScriptInjectionForTesting(
       no_action, UserScript::DOCUMENT_IDLE, base::Closure());
   current_actions = controller->GetCurrentActions();
   ASSERT_EQ(2u, current_actions.size());
@@ -141,7 +141,7 @@ TEST_F(LocationBarControllerUnitTest, LocationBarDisplaysPageActions) {
 
   // If we request a script injection for an extension that already has a
   // page action, only one action should be visible.
-  active_script_controller->RequestScriptInjectionForTesting(
+  action_runner->RequestScriptInjectionForTesting(
       page_action, UserScript::DOCUMENT_IDLE, base::Closure());
   current_actions = controller->GetCurrentActions();
   ASSERT_EQ(2u, current_actions.size());

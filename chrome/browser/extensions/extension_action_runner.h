@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVE_SCRIPT_CONTROLLER_H_
-#define CHROME_BROWSER_EXTENSIONS_ACTIVE_SCRIPT_CONTROLLER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_RUNNER_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_RUNNER_H_
 
 #include <stdint.h>
 
@@ -39,25 +39,23 @@ class ExtensionRegistry;
 
 // The provider for ExtensionActions corresponding to scripts which are actively
 // running or need permission.
-// TODO(rdevlin.cronin): This isn't really a controller, but it has good parity
-// with LocationBar"Controller".
-class ActiveScriptController : public content::WebContentsObserver,
-                               public ExtensionRegistryObserver {
+class ExtensionActionRunner : public content::WebContentsObserver,
+                              public ExtensionRegistryObserver {
  public:
-  explicit ActiveScriptController(content::WebContents* web_contents);
-  ~ActiveScriptController() override;
+  explicit ExtensionActionRunner(content::WebContents* web_contents);
+  ~ExtensionActionRunner() override;
 
-  // Returns the ActiveScriptController for the given |web_contents|, or NULL
+  // Returns the ExtensionActionRunner for the given |web_contents|, or NULL
   // if one does not exist.
-  static ActiveScriptController* GetForWebContents(
+  static ExtensionActionRunner* GetForWebContents(
       content::WebContents* web_contents);
 
-  // Notifies the ActiveScriptController that an extension has been granted
+  // Notifies the ExtensionActionRunner that an extension has been granted
   // active tab permissions. This will run any pending injections for that
   // extension.
   void OnActiveTabPermissionGranted(const Extension* extension);
 
-  // Notifies the ActiveScriptController that the action for |extension| has
+  // Notifies the ExtensionActionRunner that the action for |extension| has
   // been clicked, running any pending tasks that were previously shelved.
   void OnClicked(const Extension* extension);
 
@@ -175,9 +173,9 @@ class ActiveScriptController : public content::WebContentsObserver,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ActiveScriptController);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionActionRunner);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVE_SCRIPT_CONTROLLER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_RUNNER_H_

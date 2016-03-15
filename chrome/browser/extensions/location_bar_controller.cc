@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
-#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -43,14 +43,14 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
   if (!should_show_page_actions_)
     return current_actions;
 
-  ActiveScriptController* active_script_controller =
-      ActiveScriptController::GetForWebContents(web_contents_);
+  ExtensionActionRunner* action_executor =
+      ExtensionActionRunner::GetForWebContents(web_contents_);
   for (const scoped_refptr<const Extension>& extension: extensions) {
     // Right now, we can consolidate these actions because we only want to show
     // one action per extension. If clicking on an active script action ever
     // has a response, then we will need to split the actions.
     ExtensionAction* action = action_manager_->GetPageAction(*extension);
-    if (!action && active_script_controller->WantsToRun(extension.get())) {
+    if (!action && action_executor->WantsToRun(extension.get())) {
       ExtensionActionMap::iterator existing =
           active_script_actions_.find(extension->id());
       if (existing != active_script_actions_.end()) {

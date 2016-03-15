@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 
-#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
@@ -38,7 +38,7 @@ void NotifyWebRequestWithheldOnUI(int render_process_id,
                                   int render_frame_id,
                                   const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Track down the ActiveScriptController and the extension. Since this is
+  // Track down the ExtensionActionRunner and the extension. Since this is
   // asynchronous, we could hit a null anywhere along the path.
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
@@ -48,9 +48,9 @@ void NotifyWebRequestWithheldOnUI(int render_process_id,
       content::WebContents::FromRenderFrameHost(rfh);
   if (!web_contents)
     return;
-  extensions::ActiveScriptController* controller =
-      extensions::ActiveScriptController::GetForWebContents(web_contents);
-  if (!controller)
+  extensions::ExtensionActionRunner* runner =
+      extensions::ExtensionActionRunner::GetForWebContents(web_contents);
+  if (!runner)
     return;
 
   const extensions::Extension* extension =
@@ -60,7 +60,7 @@ void NotifyWebRequestWithheldOnUI(int render_process_id,
   if (!extension)
     return;
 
-  controller->OnWebRequestBlocked(extension);
+  runner->OnWebRequestBlocked(extension);
 }
 
 }  // namespace

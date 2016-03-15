@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -513,14 +513,14 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
       content::WebContentsTester::For(contents);
   web_contents_tester->NavigateAndCommit(kActiveUrl);
 
-  ActiveScriptController* active_script_controller =
-      ActiveScriptController::GetForWebContents(contents);
-  ASSERT_TRUE(active_script_controller);
+  ExtensionActionRunner* action_runner =
+      ExtensionActionRunner::GetForWebContents(contents);
+  ASSERT_TRUE(action_runner);
 
   // Pretend the extension wants to run.
   int run_count = 0;
   base::Closure increment_run_count(base::Bind(&Increment, &run_count));
-  active_script_controller->RequestScriptInjectionForTesting(
+  action_runner->RequestScriptInjectionForTesting(
       extension, UserScript::DOCUMENT_IDLE, increment_run_count);
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
@@ -565,7 +565,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
 
   // Since the extension has permission, it should have ran.
   EXPECT_EQ(1, run_count);
-  EXPECT_FALSE(active_script_controller->WantsToRun(extension));
+  EXPECT_FALSE(action_runner->WantsToRun(extension));
 
   // On another url, the mode should still be run on click.
   web_contents_tester->NavigateAndCommit(kOtherUrl);
@@ -580,7 +580,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnAllSites));
 
   // Request another run.
-  active_script_controller->RequestScriptInjectionForTesting(
+  action_runner->RequestScriptInjectionForTesting(
       extension, UserScript::DOCUMENT_IDLE, increment_run_count);
 
   // Change the mode to be "Run on all sites".
@@ -597,7 +597,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
 
   // It should have ran again.
   EXPECT_EQ(2, run_count);
-  EXPECT_FALSE(active_script_controller->WantsToRun(extension));
+  EXPECT_FALSE(action_runner->WantsToRun(extension));
 
   // On another url, the mode should also be run on all sites.
   web_contents_tester->NavigateAndCommit(kOtherUrl);
@@ -610,7 +610,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnSite));
   EXPECT_TRUE(menu.IsCommandIdChecked(kRunOnAllSites));
 
-  active_script_controller->RequestScriptInjectionForTesting(
+  action_runner->RequestScriptInjectionForTesting(
       extension, UserScript::DOCUMENT_IDLE, increment_run_count);
 
   // Return the mode to "Run on click".
@@ -626,7 +626,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
 
   // And the extension shouldn't have ran.
   EXPECT_EQ(2, run_count);
-  EXPECT_TRUE(active_script_controller->WantsToRun(extension));
+  EXPECT_TRUE(action_runner->WantsToRun(extension));
 
   // Install an extension requesting only a single host. Since the extension
   // doesn't request all hosts, it shouldn't have withheld permissions, and

@@ -382,7 +382,6 @@
       'browser/apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
       'browser/apps/drive/drive_app_mapping_unittest.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl_unittest.cc',
-      'browser/extensions/active_script_controller_unittest.cc',
       'browser/extensions/active_tab_unittest.cc',
       'browser/extensions/activity_log/activity_database_unittest.cc',
       'browser/extensions/activity_log/activity_log_enabled_unittest.cc',
@@ -471,6 +470,7 @@
       'browser/extensions/event_router_forwarder_unittest.cc',
       'browser/extensions/extension_action_icon_factory_unittest.cc',
       'browser/extensions/extension_action_manager_unittest.cc',
+      'browser/extensions/extension_action_runner_unittest.cc',
       'browser/extensions/extension_action_unittest.cc',
       'browser/extensions/extension_api_unittest.cc',
       'browser/extensions/extension_api_unittest.h',
@@ -1338,10 +1338,10 @@
     # TODO(tapted): Enable toolkit-views unit_tests on Mac when their
     # respective implementations are linked in. http://crbug.com/412234.
     'chrome_unit_tests_views_sources': [
+      '../ui/views/controls/webview/webview_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc',
       'browser/ui/views/website_settings/website_settings_popup_view_unittest.cc',
-      '../ui/views/controls/webview/webview_unittest.cc',
     ],
     # Views unit_tests for everywhere but ChromeOS.
     'chrome_unit_tests_views_non_chromeos_sources': [

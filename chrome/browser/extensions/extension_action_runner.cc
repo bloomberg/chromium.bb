@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/active_script_controller.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -35,18 +35,17 @@
 
 namespace extensions {
 
-ActiveScriptController::PendingScript::PendingScript(
+ExtensionActionRunner::PendingScript::PendingScript(
     UserScript::RunLocation run_location,
     const base::Closure& permit_script)
     : run_location(run_location), permit_script(permit_script) {}
 
-ActiveScriptController::PendingScript::PendingScript(
+ExtensionActionRunner::PendingScript::PendingScript(
     const PendingScript& other) = default;
 
-ActiveScriptController::PendingScript::~PendingScript() {}
+ExtensionActionRunner::PendingScript::~PendingScript() {}
 
-ActiveScriptController::ActiveScriptController(
-    content::WebContents* web_contents)
+ExtensionActionRunner::ExtensionActionRunner(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       num_page_requests_(0),
       browser_context_(web_contents->GetBrowserContext()),
@@ -56,26 +55,26 @@ ActiveScriptController::ActiveScriptController(
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
-ActiveScriptController::~ActiveScriptController() {
+ExtensionActionRunner::~ExtensionActionRunner() {
   LogUMA();
 }
 
 // static
-ActiveScriptController* ActiveScriptController::GetForWebContents(
+ExtensionActionRunner* ExtensionActionRunner::GetForWebContents(
     content::WebContents* web_contents) {
   if (!web_contents)
     return NULL;
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents);
-  return tab_helper ? tab_helper->active_script_controller() : NULL;
+  return tab_helper ? tab_helper->extension_action_runner() : NULL;
 }
 
-void ActiveScriptController::OnActiveTabPermissionGranted(
+void ExtensionActionRunner::OnActiveTabPermissionGranted(
     const Extension* extension) {
   if (WantsToRun(extension))
     OnClicked(extension);
 }
 
-void ActiveScriptController::OnClicked(const Extension* extension) {
+void ExtensionActionRunner::OnClicked(const Extension* extension) {
   DCHECK(ContainsKey(pending_scripts_, extension->id()) ||
          web_request_blocked_.count(extension->id()) != 0);
 
@@ -95,11 +94,11 @@ void ActiveScriptController::OnClicked(const Extension* extension) {
   NotifyChange(extension);
 }
 
-void ActiveScriptController::OnWebRequestBlocked(const Extension* extension) {
+void ExtensionActionRunner::OnWebRequestBlocked(const Extension* extension) {
   web_request_blocked_.insert(extension->id());
 }
 
-int ActiveScriptController::GetBlockedActions(const Extension* extension) {
+int ExtensionActionRunner::GetBlockedActions(const Extension* extension) {
   int blocked_actions = BLOCKED_ACTION_NONE;
   if (web_request_blocked_.count(extension->id()) != 0)
     blocked_actions |= BLOCKED_ACTION_WEB_REQUEST;
@@ -126,12 +125,12 @@ int ActiveScriptController::GetBlockedActions(const Extension* extension) {
   return blocked_actions;
 }
 
-bool ActiveScriptController::WantsToRun(const Extension* extension) {
+bool ExtensionActionRunner::WantsToRun(const Extension* extension) {
   return GetBlockedActions(extension) != BLOCKED_ACTION_NONE;
 }
 
 PermissionsData::AccessType
-ActiveScriptController::RequiresUserConsentForScriptInjection(
+ExtensionActionRunner::RequiresUserConsentForScriptInjection(
     const Extension* extension,
     UserScript::InjectionType type) {
   CHECK(extension);
@@ -155,7 +154,7 @@ ActiveScriptController::RequiresUserConsentForScriptInjection(
   return PermissionsData::ACCESS_DENIED;
 }
 
-void ActiveScriptController::RequestScriptInjection(
+void ExtensionActionRunner::RequestScriptInjection(
     const Extension* extension,
     UserScript::RunLocation run_location,
     const base::Closure& callback) {
@@ -171,7 +170,7 @@ void ActiveScriptController::RequestScriptInjection(
   was_used_on_page_ = true;
 }
 
-void ActiveScriptController::RunPendingScriptsForExtension(
+void ExtensionActionRunner::RunPendingScriptsForExtension(
     const Extension* extension) {
   DCHECK(extension);
 
@@ -200,7 +199,7 @@ void ActiveScriptController::RunPendingScriptsForExtension(
     pending_script.permit_script.Run();
 }
 
-void ActiveScriptController::OnRequestScriptInjectionPermission(
+void ExtensionActionRunner::OnRequestScriptInjectionPermission(
     const std::string& extension_id,
     UserScript::InjectionType script_type,
     UserScript::RunLocation run_location,
@@ -210,9 +209,9 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
     return;
   }
 
-  const Extension* extension =
-      ExtensionRegistry::Get(browser_context_)
-          ->enabled_extensions().GetByID(extension_id);
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
   // We shouldn't allow extensions which are no longer enabled to run any
   // scripts. Ignore the request.
   if (!extension)
@@ -229,7 +228,7 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
       // by this object.
       RequestScriptInjection(
           extension, run_location,
-          base::Bind(&ActiveScriptController::PermitScriptInjection,
+          base::Bind(&ExtensionActionRunner::PermitScriptInjection,
                      base::Unretained(this), request_id));
       break;
     case PermissionsData::ACCESS_DENIED:
@@ -240,7 +239,7 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
   }
 }
 
-void ActiveScriptController::PermitScriptInjection(int64_t request_id) {
+void ExtensionActionRunner::PermitScriptInjection(int64_t request_id) {
   // This only sends the response to the renderer - the process of adding the
   // extension to the list of |permitted_extensions_| is done elsewhere.
   // TODO(devlin): Instead of sending this to all frames, we should include the
@@ -251,23 +250,23 @@ void ActiveScriptController::PermitScriptInjection(int64_t request_id) {
       request_id));
 }
 
-void ActiveScriptController::NotifyChange(const Extension* extension) {
+void ExtensionActionRunner::NotifyChange(const Extension* extension) {
   ExtensionActionAPI* extension_action_api =
       ExtensionActionAPI::Get(browser_context_);
   ExtensionAction* extension_action =
-      ExtensionActionManager::Get(browser_context_)->
-          GetExtensionAction(*extension);
+      ExtensionActionManager::Get(browser_context_)
+          ->GetExtensionAction(*extension);
   // If the extension has an action, we need to notify that it's updated.
   if (extension_action) {
-    extension_action_api->NotifyChange(
-        extension_action, web_contents(), browser_context_);
+    extension_action_api->NotifyChange(extension_action, web_contents(),
+                                       browser_context_);
   }
 
   // We also notify that page actions may have changed.
   extension_action_api->NotifyPageActionsChanged(web_contents());
 }
 
-void ActiveScriptController::LogUMA() const {
+void ExtensionActionRunner::LogUMA() const {
   // We only log the permitted extensions metric if the feature was used at all
   // on the page, because otherwise the data will be boring.
   if (was_used_on_page_) {
@@ -280,11 +279,11 @@ void ActiveScriptController::LogUMA() const {
   }
 }
 
-bool ActiveScriptController::OnMessageReceived(
+bool ExtensionActionRunner::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ActiveScriptController, message)
+  IPC_BEGIN_MESSAGE_MAP(ExtensionActionRunner, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestScriptInjectionPermission,
                         OnRequestScriptInjectionPermission)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -292,7 +291,7 @@ bool ActiveScriptController::OnMessageReceived(
   return handled;
 }
 
-void ActiveScriptController::DidNavigateMainFrame(
+void ExtensionActionRunner::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (details.is_in_page)
@@ -306,15 +305,15 @@ void ActiveScriptController::DidNavigateMainFrame(
   was_used_on_page_ = false;
 }
 
-void ActiveScriptController::OnExtensionUnloaded(
+void ExtensionActionRunner::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
   PendingScriptMap::iterator iter = pending_scripts_.find(extension->id());
   if (iter != pending_scripts_.end()) {
     pending_scripts_.erase(iter);
-    ExtensionActionAPI::Get(browser_context_)->
-        NotifyPageActionsChanged(web_contents());
+    ExtensionActionAPI::Get(browser_context_)
+        ->NotifyPageActionsChanged(web_contents());
   }
 }
 

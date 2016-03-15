@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/values.h"
-#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -38,15 +38,15 @@ const char kAllHostsPermission[] = "*://*/*";
 
 }  // namespace
 
-// Unittests for the ActiveScriptController mostly test the internal logic
-// of the controller itself (when to allow/deny extension script injection).
+// Unittests for the ExtensionActionRunner mostly test the internal logic
+// of the runner itself (when to allow/deny extension script injection).
 // Testing real injection is allowed/denied as expected (i.e., that the
-// ActiveScriptController correctly interfaces in the system) is done in the
-// ActiveScriptControllerBrowserTests.
-class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
+// ExtensionActionRunner correctly interfaces in the system) is done in the
+// ExtensionActionRunnerBrowserTests.
+class ExtensionActionRunnerUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
-  ActiveScriptControllerUnitTest();
-  ~ActiveScriptControllerUnitTest() override;
+  ExtensionActionRunnerUnitTest();
+  ~ExtensionActionRunnerUnitTest() override;
 
   // Creates an extension with all hosts permission and adds it to the registry.
   const Extension* AddExtension();
@@ -66,9 +66,7 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
   // Returns the number of times a given extension has had a script execute.
   size_t GetExecutionCountForExtension(const std::string& extension_id) const;
 
-  ActiveScriptController* controller() const {
-    return active_script_controller_;
-  }
+  ExtensionActionRunner* runner() const { return extension_action_runner_; }
 
  private:
   // Returns a closure to use as a script execution for a given extension.
@@ -80,30 +78,29 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override;
 
-  // Since ActiveScriptController's behavior is behind a flag, override the
+  // Since ExtensionActionRunner's behavior is behind a flag, override the
   // feature switch.
   FeatureSwitch::ScopedOverride feature_override_;
 
-  // The associated ActiveScriptController.
-  ActiveScriptController* active_script_controller_;
+  // The associated ExtensionActionRunner.
+  ExtensionActionRunner* extension_action_runner_;
 
   // The map of observed executions, keyed by extension id.
   std::map<std::string, int> extension_executions_;
 
   scoped_refptr<const Extension> extension_;
 
-  DISALLOW_COPY_AND_ASSIGN(ActiveScriptControllerUnitTest);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionActionRunnerUnitTest);
 };
 
-ActiveScriptControllerUnitTest::ActiveScriptControllerUnitTest()
+ExtensionActionRunnerUnitTest::ExtensionActionRunnerUnitTest()
     : feature_override_(FeatureSwitch::scripts_require_action(),
                         FeatureSwitch::OVERRIDE_ENABLED),
-      active_script_controller_(nullptr) {}
+      extension_action_runner_(nullptr) {}
 
-ActiveScriptControllerUnitTest::~ActiveScriptControllerUnitTest() {
-}
+ExtensionActionRunnerUnitTest::~ExtensionActionRunnerUnitTest() {}
 
-const Extension* ActiveScriptControllerUnitTest::AddExtension() {
+const Extension* ExtensionActionRunnerUnitTest::AddExtension() {
   const std::string kId = crx_file::id_util::GenerateId("all_hosts_extension");
   extension_ =
       ExtensionBuilder()
@@ -125,35 +122,35 @@ const Extension* ActiveScriptControllerUnitTest::AddExtension() {
   return extension_.get();
 }
 
-const Extension* ActiveScriptControllerUnitTest::ReloadExtension() {
+const Extension* ExtensionActionRunnerUnitTest::ReloadExtension() {
   ExtensionRegistry::Get(profile())->RemoveEnabled(extension_->id());
   return AddExtension();
 }
 
-bool ActiveScriptControllerUnitTest::RequiresUserConsent(
+bool ExtensionActionRunnerUnitTest::RequiresUserConsent(
     const Extension* extension) const {
   PermissionsData::AccessType access_type =
-      controller()->RequiresUserConsentForScriptInjectionForTesting(
+      runner()->RequiresUserConsentForScriptInjectionForTesting(
           extension, UserScript::PROGRAMMATIC_SCRIPT);
   // We should never downright refuse access in these tests.
   DCHECK_NE(PermissionsData::ACCESS_DENIED, access_type);
   return access_type == PermissionsData::ACCESS_WITHHELD;
 }
 
-void ActiveScriptControllerUnitTest::RequestInjection(
+void ExtensionActionRunnerUnitTest::RequestInjection(
     const Extension* extension) {
   RequestInjection(extension, UserScript::DOCUMENT_IDLE);
 }
 
-void ActiveScriptControllerUnitTest::RequestInjection(
+void ExtensionActionRunnerUnitTest::RequestInjection(
     const Extension* extension,
     UserScript::RunLocation run_location) {
-  controller()->RequestScriptInjectionForTesting(
+  runner()->RequestScriptInjectionForTesting(
       extension, run_location,
       GetExecutionCallbackForExtension(extension->id()));
 }
 
-size_t ActiveScriptControllerUnitTest::GetExecutionCountForExtension(
+size_t ExtensionActionRunnerUnitTest::GetExecutionCountForExtension(
     const std::string& extension_id) const {
   std::map<std::string, int>::const_iterator iter =
       extension_executions_.find(extension_id);
@@ -162,21 +159,20 @@ size_t ActiveScriptControllerUnitTest::GetExecutionCountForExtension(
   return 0u;
 }
 
-base::Closure ActiveScriptControllerUnitTest::GetExecutionCallbackForExtension(
+base::Closure ExtensionActionRunnerUnitTest::GetExecutionCallbackForExtension(
     const std::string& extension_id) {
   // We use base unretained here, but if this ever gets executed outside of
   // this test's lifetime, we have a major problem anyway.
-  return base::Bind(&ActiveScriptControllerUnitTest::IncrementExecutionCount,
-                    base::Unretained(this),
-                    extension_id);
+  return base::Bind(&ExtensionActionRunnerUnitTest::IncrementExecutionCount,
+                    base::Unretained(this), extension_id);
 }
 
-void ActiveScriptControllerUnitTest::IncrementExecutionCount(
+void ExtensionActionRunnerUnitTest::IncrementExecutionCount(
     const std::string& extension_id) {
   ++extension_executions_[extension_id];
 }
 
-void ActiveScriptControllerUnitTest::SetUp() {
+void ExtensionActionRunnerUnitTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
   // Skip syncing for testing purposes.
@@ -187,13 +183,13 @@ void ActiveScriptControllerUnitTest::SetUp() {
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents());
   // These should never be null.
   DCHECK(tab_helper);
-  active_script_controller_ = tab_helper->active_script_controller();
-  DCHECK(active_script_controller_);
+  extension_action_runner_ = tab_helper->extension_action_runner();
+  DCHECK(extension_action_runner_);
 }
 
 // Test that extensions with all_hosts require permission to execute, and, once
 // that permission is granted, do execute.
-TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
+TEST_F(ExtensionActionRunnerUnitTest, RequestPermissionAndExecute) {
   const Extension* extension = AddExtension();
   ASSERT_TRUE(extension);
 
@@ -201,10 +197,9 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
 
   // Ensure that there aren't any executions pending.
   ASSERT_EQ(0u, GetExecutionCountForExtension(extension->id()));
-  ASSERT_FALSE(controller()->WantsToRun(extension));
+  ASSERT_FALSE(runner()->WantsToRun(extension));
 
-  ExtensionActionAPI* extension_action_api =
-      ExtensionActionAPI::Get(profile());
+  ExtensionActionAPI* extension_action_api = ExtensionActionAPI::Get(profile());
   ASSERT_FALSE(extension_action_api->HasBeenBlocked(extension, web_contents()));
 
   // Since the extension requests all_hosts, we should require user consent.
@@ -213,16 +208,16 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
   // Request an injection. The extension should want to run, but should not have
   // executed.
   RequestInjection(extension);
-  EXPECT_TRUE(controller()->WantsToRun(extension));
+  EXPECT_TRUE(runner()->WantsToRun(extension));
   EXPECT_TRUE(extension_action_api->HasBeenBlocked(extension, web_contents()));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Click to accept the extension executing.
-  controller()->OnClicked(extension);
+  runner()->OnClicked(extension);
 
   // The extension should execute, and the extension shouldn't want to run.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
   EXPECT_FALSE(extension_action_api->HasBeenBlocked(extension, web_contents()));
 
   // Since we already executed on the given page, we shouldn't need permission
@@ -244,9 +239,9 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
 
   // Grant access.
   RequestInjection(extension);
-  controller()->OnClicked(extension);
+  runner()->OnClicked(extension);
   EXPECT_EQ(2u, GetExecutionCountForExtension(extension->id()));
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
 
   // Navigating to another site should also clear the permissions.
   NavigateAndCommit(GURL("https://www.foo.com"));
@@ -255,7 +250,7 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
 
 // Test that injections that are not executed by the time the user navigates are
 // ignored and never execute.
-TEST_F(ActiveScriptControllerUnitTest, PendingInjectionsRemovedAtNavigation) {
+TEST_F(ExtensionActionRunnerUnitTest, PendingInjectionsRemovedAtNavigation) {
   const Extension* extension = AddExtension();
   ASSERT_TRUE(extension);
 
@@ -265,28 +260,28 @@ TEST_F(ActiveScriptControllerUnitTest, PendingInjectionsRemovedAtNavigation) {
 
   // Request an injection. The extension should want to run, but not execute.
   RequestInjection(extension);
-  EXPECT_TRUE(controller()->WantsToRun(extension));
+  EXPECT_TRUE(runner()->WantsToRun(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Reload. This should remove the pending injection, and we should not
   // execute anything.
   Reload();
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Request and accept a new injection.
   RequestInjection(extension);
-  controller()->OnClicked(extension);
+  runner()->OnClicked(extension);
 
   // The extension should only have executed once, even though a grand total
   // of two executions were requested.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
 }
 
 // Test that queueing multiple pending injections, and then accepting, triggers
 // them all.
-TEST_F(ActiveScriptControllerUnitTest, MultiplePendingInjection) {
+TEST_F(ExtensionActionRunnerUnitTest, MultiplePendingInjection) {
   const Extension* extension = AddExtension();
   ASSERT_TRUE(extension);
   NavigateAndCommit(GURL("https://www.google.com"));
@@ -300,14 +295,14 @@ TEST_F(ActiveScriptControllerUnitTest, MultiplePendingInjection) {
 
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
-  controller()->OnClicked(extension);
+  runner()->OnClicked(extension);
 
   // All pending injections should have executed.
   EXPECT_EQ(kNumInjections, GetExecutionCountForExtension(extension->id()));
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
 }
 
-TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
+TEST_F(ExtensionActionRunnerUnitTest, ActiveScriptsUseActiveTabPermissions) {
   const Extension* extension = AddExtension();
   NavigateAndCommit(GURL("https://www.google.com"));
 
@@ -341,7 +336,7 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
   EXPECT_TRUE(RequiresUserConsent(extension));
 
   RequestInjection(extension);
-  EXPECT_TRUE(controller()->WantsToRun(extension));
+  EXPECT_TRUE(runner()->WantsToRun(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Grant active tab.
@@ -350,10 +345,10 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsUseActiveTabPermissions) {
   // The pending injections should have run since active tab permission was
   // granted.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
 }
 
-TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
+TEST_F(ExtensionActionRunnerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
   const Extension* extension = AddExtension();
   ASSERT_TRUE(extension);
 
@@ -377,7 +372,7 @@ TEST_F(ActiveScriptControllerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
   EXPECT_TRUE(RequiresUserConsent(extension));
 }
 
-TEST_F(ActiveScriptControllerUnitTest, TestAlwaysRun) {
+TEST_F(ExtensionActionRunnerUnitTest, TestAlwaysRun) {
   const Extension* extension = AddExtension();
   ASSERT_TRUE(extension);
 
@@ -385,24 +380,24 @@ TEST_F(ActiveScriptControllerUnitTest, TestAlwaysRun) {
 
   // Ensure that there aren't any executions pending.
   ASSERT_EQ(0u, GetExecutionCountForExtension(extension->id()));
-  ASSERT_FALSE(controller()->WantsToRun(extension));
+  ASSERT_FALSE(runner()->WantsToRun(extension));
 
   // Since the extension requests all_hosts, we should require user consent.
   EXPECT_TRUE(RequiresUserConsent(extension));
 
   // Request an injection. The extension should want to run, but not execute.
   RequestInjection(extension);
-  EXPECT_TRUE(controller()->WantsToRun(extension));
+  EXPECT_TRUE(runner()->WantsToRun(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Allow the extension to always run on this origin.
   ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.GrantHostPermission(web_contents()->GetLastCommittedURL());
-  controller()->OnClicked(extension);
+  runner()->OnClicked(extension);
 
   // The extension should execute, and the extension shouldn't want to run.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
 
   // Since we already executed on the given page, we shouldn't need permission
   // for a second time.
@@ -436,50 +431,49 @@ TEST_F(ActiveScriptControllerUnitTest, TestAlwaysRun) {
   EXPECT_FALSE(RequiresUserConsent(extension));
 }
 
-TEST_F(ActiveScriptControllerUnitTest, TestDifferentScriptRunLocations) {
+TEST_F(ExtensionActionRunnerUnitTest, TestDifferentScriptRunLocations) {
   const Extension* extension = AddExtension();
   ASSERT_TRUE(extension);
 
   NavigateAndCommit(GURL("https://www.foo.com"));
 
-  EXPECT_EQ(BLOCKED_ACTION_NONE, controller()->GetBlockedActions(extension));
+  EXPECT_EQ(BLOCKED_ACTION_NONE, runner()->GetBlockedActions(extension));
 
   RequestInjection(extension, UserScript::DOCUMENT_END);
   EXPECT_EQ(BLOCKED_ACTION_SCRIPT_OTHER,
-            controller()->GetBlockedActions(extension));
+            runner()->GetBlockedActions(extension));
   RequestInjection(extension, UserScript::DOCUMENT_IDLE);
   EXPECT_EQ(BLOCKED_ACTION_SCRIPT_OTHER,
-            controller()->GetBlockedActions(extension));
+            runner()->GetBlockedActions(extension));
   RequestInjection(extension, UserScript::DOCUMENT_START);
   EXPECT_EQ(BLOCKED_ACTION_SCRIPT_AT_START | BLOCKED_ACTION_SCRIPT_OTHER,
-            controller()->GetBlockedActions(extension));
+            runner()->GetBlockedActions(extension));
 
-  controller()->OnClicked(extension);
-  EXPECT_EQ(BLOCKED_ACTION_NONE, controller()->GetBlockedActions(extension));
+  runner()->OnClicked(extension);
+  EXPECT_EQ(BLOCKED_ACTION_NONE, runner()->GetBlockedActions(extension));
 }
 
-TEST_F(ActiveScriptControllerUnitTest, TestWebRequestBlocked) {
+TEST_F(ExtensionActionRunnerUnitTest, TestWebRequestBlocked) {
   const Extension* extension = AddExtension();
   ASSERT_TRUE(extension);
 
   NavigateAndCommit(GURL("https://www.foo.com"));
 
-  EXPECT_EQ(BLOCKED_ACTION_NONE, controller()->GetBlockedActions(extension));
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_EQ(BLOCKED_ACTION_NONE, runner()->GetBlockedActions(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
 
-  controller()->OnWebRequestBlocked(extension);
-  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST,
-            controller()->GetBlockedActions(extension));
-  EXPECT_TRUE(controller()->WantsToRun(extension));
+  runner()->OnWebRequestBlocked(extension);
+  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner()->GetBlockedActions(extension));
+  EXPECT_TRUE(runner()->WantsToRun(extension));
 
   RequestInjection(extension);
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST | BLOCKED_ACTION_SCRIPT_OTHER,
-            controller()->GetBlockedActions(extension));
-  EXPECT_TRUE(controller()->WantsToRun(extension));
+            runner()->GetBlockedActions(extension));
+  EXPECT_TRUE(runner()->WantsToRun(extension));
 
   NavigateAndCommit(GURL("https://www.bar.com"));
-  EXPECT_EQ(BLOCKED_ACTION_NONE, controller()->GetBlockedActions(extension));
-  EXPECT_FALSE(controller()->WantsToRun(extension));
+  EXPECT_EQ(BLOCKED_ACTION_NONE, runner()->GetBlockedActions(extension));
+  EXPECT_FALSE(runner()->WantsToRun(extension));
 }
 
 }  // namespace extensions

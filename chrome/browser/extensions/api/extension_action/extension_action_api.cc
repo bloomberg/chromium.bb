@@ -14,8 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -181,13 +181,11 @@ ExtensionAction::ShowAction ExtensionActionAPI::ExecuteExtensionAction(
 
   int tab_id = SessionTabHelper::IdForTab(web_contents);
 
-  ActiveScriptController* active_script_controller =
-      ActiveScriptController::GetForWebContents(web_contents);
+  ExtensionActionRunner* action_runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
   bool has_pending_scripts = false;
-  if (active_script_controller &&
-      active_script_controller->WantsToRun(extension)) {
+  if (action_runner && action_runner->WantsToRun(extension))
     has_pending_scripts = true;
-  }
 
   // Grant active tab if appropriate.
   if (grant_active_tab_permissions) {
@@ -259,10 +257,9 @@ bool ExtensionActionAPI::PageActionWantsToRun(
 
 bool ExtensionActionAPI::HasBeenBlocked(const Extension* extension,
                                         content::WebContents* web_contents) {
-  ActiveScriptController* active_script_controller =
-      ActiveScriptController::GetForWebContents(web_contents);
-  return active_script_controller &&
-         active_script_controller->WantsToRun(extension);
+  ExtensionActionRunner* action_runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  return action_runner && action_runner->WantsToRun(extension);
 }
 
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
