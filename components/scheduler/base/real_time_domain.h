@@ -15,7 +15,7 @@ namespace scheduler {
 
 class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
  public:
-  RealTimeDomain();
+  explicit RealTimeDomain(const char* tracing_category);
   ~RealTimeDomain() override;
 
   // TimeDomain implementation:
@@ -34,6 +34,7 @@ class SCHEDULER_EXPORT RealTimeDomain : public TimeDomain {
       base::trace_event::TracedValue* state) const override;
 
  private:
+  const char* tracing_category_;          // NOT OWNED
   TaskQueueManager* task_queue_manager_;  // NOT OWNED
 
   DISALLOW_COPY_AND_ASSIGN(RealTimeDomain);

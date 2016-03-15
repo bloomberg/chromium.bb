@@ -157,9 +157,13 @@ void ThrottlingHelper::MaybeSchedulePumpThrottledTasksLocked(
   pending_pump_throttled_tasks_runtime_ = throttled_runtime;
 
   suspend_timers_when_backgrounded_closure_.Cancel();
+
+  base::TimeDelta delay = pending_pump_throttled_tasks_runtime_ - now;
+  TRACE_EVENT1(tracing_category_,
+               "ThrottlingHelper::MaybeSchedulePumpThrottledTasksLocked",
+               "delay_till_next_pump_ms", delay.InMilliseconds());
   task_runner_->PostDelayedTask(
-      from_here, suspend_timers_when_backgrounded_closure_.callback(),
-      pending_pump_throttled_tasks_runtime_ - now);
+      from_here, suspend_timers_when_backgrounded_closure_.callback(), delay);
 }
 
 }  // namespace scheduler

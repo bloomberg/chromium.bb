@@ -573,6 +573,13 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
                     main_thread_only().immediate_work_queue->Size());
   state->SetInteger("delayed_work_queue_size",
                     main_thread_only().delayed_work_queue->Size());
+  if (!main_thread_only().delayed_incoming_queue.empty()) {
+    base::TimeDelta delay_to_next_task =
+        (main_thread_only().delayed_incoming_queue.top().delayed_run_time -
+         main_thread_only().time_domain->CreateLazyNow().Now());
+    state->SetDouble("delay_to_next_task_ms",
+                      delay_to_next_task.InMillisecondsF());
+  }
   if (verbose_tracing_enabled) {
     state->BeginArray("immediate_incoming_queue");
     QueueAsValueInto(any_thread().immediate_incoming_queue, state);

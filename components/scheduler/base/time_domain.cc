@@ -228,6 +228,11 @@ void TimeDomain::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginArray("updatable_queue_set");
   for (auto& queue : updatable_queue_set_)
     state->AppendString(queue->GetName());
+  state->SetInteger("registered_delay_count", delayed_wakeup_multimap_.size());
+  if (!delayed_wakeup_multimap_.empty()) {
+    base::TimeDelta delay = delayed_wakeup_multimap_.begin()->first - Now();
+    state->SetDouble("next_delay_ms", delay.InMillisecondsF());
+  }
   state->EndArray();
   AsValueIntoInternal(state);
   state->EndDictionary();

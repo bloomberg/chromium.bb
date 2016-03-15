@@ -38,7 +38,7 @@ TaskQueueManager::TaskQueueManager(
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
-    : real_time_domain_(new RealTimeDomain()),
+    : real_time_domain_(new RealTimeDomain(tracing_category)),
       delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
       work_batch_size_(1),
