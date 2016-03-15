@@ -13,6 +13,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/protoc_out/third_party/libphonenumber',
     ],
     'defines': [
+      'I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS=1',
       'I18N_PHONENUMBERS_USE_ICU_REGEXP=1',
     ],
     'conditions': [
@@ -44,6 +45,7 @@
       '../protobuf/protobuf.gyp:protobuf_lite',
     ],
     'sources': [
+      'dist/cpp/src/phonenumbers/alternate_format.cc',
       'dist/cpp/src/phonenumbers/asyoutypeformatter.cc',
       'dist/cpp/src/phonenumbers/base/strings/string_piece.cc',
       'dist/cpp/src/phonenumbers/default_logger.cc',
@@ -78,6 +80,7 @@
         'dist/cpp/src',
       ],
       'defines': [
+        'I18N_PHONENUMBERS_USE_ALTERNATE_FORMATS=1',
         'I18N_PHONENUMBERS_USE_ICU_REGEXP=1',
       ],
       'conditions': [
