@@ -133,4 +133,7 @@ void FakeAppInstance::CanHandleResolution(const mojo::String& package_name,
   callback.Run(true);
 }
 
+void FakeAppInstance::UninstallPackage(const mojo::String& package_name) {
+}
+
 }  // namespace arc

@@ -357,12 +357,12 @@ TEST_F(AppContextMenuTest, ArcMenu) {
 
   ASSERT_EQ(3, menu->GetItemCount());
   EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
-  EXPECT_EQ(true, menu->IsEnabledAt(0));
-  EXPECT_EQ(false, menu->IsItemCheckedAt(0));
+  EXPECT_TRUE(menu->IsEnabledAt(0));
+  EXPECT_FALSE(menu->IsItemCheckedAt(0));
   EXPECT_EQ(-1, menu->GetCommandIdAt(1));  // separator
   EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(2));
-  EXPECT_EQ(true, menu->IsEnabledAt(2));
-  EXPECT_EQ(false, menu->IsItemCheckedAt(2));
+  EXPECT_TRUE(menu->IsEnabledAt(2));
+  EXPECT_FALSE(menu->IsItemCheckedAt(2));
 
   // Test activate request.
   EXPECT_EQ(0u, arc_test.app_instance()->launch_requests().size());
@@ -373,7 +373,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   const ScopedVector<arc::FakeAppInstance::Request>& launch_requests =
       arc_test.app_instance()->launch_requests();
   ASSERT_EQ(1u, launch_requests.size());
-  EXPECT_EQ(true, launch_requests[0]->IsForApp(app_info));
+  EXPECT_TRUE(launch_requests[0]->IsForApp(app_info));
 
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
@@ -382,11 +382,65 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   EXPECT_EQ(item.GetContextMenuModel(), menu);
   ASSERT_EQ(3, menu->GetItemCount());
   EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
-  EXPECT_EQ(false, menu->IsEnabledAt(0));
-  EXPECT_EQ(false, menu->IsItemCheckedAt(0));
+  EXPECT_FALSE(menu->IsEnabledAt(0));
+  EXPECT_FALSE(menu->IsItemCheckedAt(0));
   EXPECT_EQ(-1, menu->GetCommandIdAt(1));  // separator
   EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(2));
-  EXPECT_EQ(true, menu->IsEnabledAt(2));
-  EXPECT_EQ(false, menu->IsItemCheckedAt(2));
+  EXPECT_TRUE(menu->IsEnabledAt(2));
+  EXPECT_FALSE(menu->IsItemCheckedAt(2));
+}
+
+TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
+  ArcAppTest arc_test;
+  arc_test.SetUp(profile());
+  arc_test.bridge_service()->SetReady();
+
+  arc_test.app_instance()->RefreshAppList();
+  arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
+
+  {
+    // Verify menu of store
+    const arc::AppInfo& store_info = arc_test.fake_apps()[0];
+    const std::string store_id = ArcAppTest::GetAppId(store_info);
+    controller()->SetAppPinnable(store_id,
+                                 AppListControllerDelegate::PIN_EDITABLE);
+    ArcAppItem item(profile(), nullptr, store_id, std::string(), true);
+    ui::MenuModel* menu = item.GetContextMenuModel();
+    ASSERT_NE(nullptr, menu);
+
+    ASSERT_EQ(3, menu->GetItemCount());
+    EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
+    EXPECT_TRUE(menu->IsEnabledAt(0));
+    EXPECT_FALSE(menu->IsItemCheckedAt(0));
+    EXPECT_EQ(-1, menu->GetCommandIdAt(1));  // separator
+    EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(2));
+    EXPECT_TRUE(menu->IsEnabledAt(2));
+    EXPECT_FALSE(menu->IsItemCheckedAt(2));
+    // No "uninstall" entry.
+  }
+
+  {
+    // Verify normal app menu
+    const arc::AppInfo& app_info = arc_test.fake_apps()[1];
+    const std::string app_id = ArcAppTest::GetAppId(app_info);
+    controller()->SetAppPinnable(app_id,
+                                 AppListControllerDelegate::PIN_EDITABLE);
+    ArcAppItem item(profile(), nullptr, app_id, std::string(), true);
+    ui::MenuModel* menu = item.GetContextMenuModel();
+    ASSERT_NE(nullptr, menu);
+
+    ASSERT_EQ(5, menu->GetItemCount());
+    EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
+    EXPECT_TRUE(menu->IsEnabledAt(0));
+    EXPECT_FALSE(menu->IsItemCheckedAt(0));
+    EXPECT_EQ(-1, menu->GetCommandIdAt(1));  // separator
+    EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(2));
+    EXPECT_TRUE(menu->IsEnabledAt(2));
+    EXPECT_FALSE(menu->IsItemCheckedAt(2));
+    EXPECT_EQ(-1, menu->GetCommandIdAt(3));  // separator
+    EXPECT_EQ(app_list::AppContextMenu::UNINSTALL, menu->GetCommandIdAt(4));
+    EXPECT_TRUE(menu->IsEnabledAt(4));
+    EXPECT_FALSE(menu->IsItemCheckedAt(4));
+  }
 }
 #endif

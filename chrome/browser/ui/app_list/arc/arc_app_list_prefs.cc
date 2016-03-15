@@ -24,6 +24,7 @@ namespace {
 const char kName[] = "name";
 const char kPackageName[] = "package_name";
 const char kActivity[] = "activity";
+const char kSticky[] = "sticky";
 const char kLastLaunchTime[] = "lastlaunchtime";
 
 // Provider of write access to a dictionary storing ARC app prefs.
@@ -234,9 +235,11 @@ scoped_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   std::string name;
   std::string package_name;
   std::string activity;
+  bool sticky = false;
   app->GetString(kName, &name);
   app->GetString(kPackageName, &package_name);
   app->GetString(kActivity, &activity);
+  app->GetBoolean(kSticky, &sticky);
 
   base::Time last_launch_time;
   std::string last_launch_time_str;
@@ -253,6 +256,7 @@ scoped_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
                                            package_name,
                                            activity,
                                            last_launch_time,
+                                           sticky,
                                            ready_apps_.count(app_id) > 0));
   return app_info;
 }
@@ -332,6 +336,7 @@ void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
   app_dict->SetString(kName, app.name);
   app_dict->SetString(kPackageName, app.package_name);
   app_dict->SetString(kActivity, app.activity);
+  app_dict->SetBoolean(kSticky, app.sticky);
 
   // From now, app is available.
   if (!ready_apps_.count(app_id))
@@ -346,6 +351,7 @@ void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
                      app.package_name,
                      app.activity,
                      base::Time(),
+                     app.sticky,
                      true);
     FOR_EACH_OBSERVER(Observer,
                       observer_list_,
@@ -481,9 +487,11 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
                                   const std::string& package_name,
                                   const std::string& activity,
                                   const base::Time& last_launch_time,
+                                  bool sticky,
                                   bool ready)
     : name(name),
       package_name(package_name),
       activity(activity),
       last_launch_time(last_launch_time),
+      sticky(sticky),
       ready(ready) {}

@@ -128,12 +128,12 @@ bool LaunchAppWithRect(content::BrowserContext* context,
 
   scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (!app_info) {
-    VLOG(2) << "Cannot launch unavailable app:" << app_id << ".";
+    VLOG(2) << "Cannot launch unavailable app: " << app_id << ".";
     return false;
   }
 
   if (!app_info->ready) {
-    VLOG(2) << "Cannot launch not-ready app:" << app_id << ".";
+    VLOG(2) << "Cannot launch not-ready app: " << app_id << ".";
     return false;
   }
 
@@ -170,7 +170,7 @@ bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
 bool CanHandleResolution(content::BrowserContext* context,
     const std::string& app_id,
     const gfx::Rect& rect,
-    const CanHandleResolutionCallback callback) {
+    const CanHandleResolutionCallback& callback) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   scoped_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (!app_info) {
@@ -205,6 +205,29 @@ bool CanHandleResolution(content::BrowserContext* context,
                                     std::move(screen_rect),
                                     callback);
   return true;
+}
+
+void UninstallPackage(const std::string& package_name) {
+  VLOG(2) << "Uninstalling " << package_name;
+  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
+  if (!bridge_service) {
+    VLOG(2) << "Request to uninstall package when bridge service is not ready: "
+            << package_name << ".";
+    return;
+  }
+  arc::AppInstance* app_instance = bridge_service->app_instance();
+  if (!app_instance) {
+    VLOG(2) << "Request to uninstall package when bridge service is not ready: "
+            << package_name << ".";
+    return;
+  }
+
+  if (bridge_service->app_version() < 2) {
+    LOG(ERROR) << "Request to uninstall package when version "
+               << bridge_service->app_version() << " does not support it";
+    return;
+  }
+  app_instance->UninstallPackage(package_name);
 }
 
 }  // namespace arc

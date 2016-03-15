@@ -76,6 +76,7 @@ class FakeAppInstance : public AppInstance {
       const mojo::String& activity,
       ScreenRectPtr dimension,
       const CanHandleResolutionCallback& callback) override;
+  void UninstallPackage(const mojo::String& package_name) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<AppInfo>& apps);

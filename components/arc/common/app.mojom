@@ -1,6 +1,8 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Next MinVersion: 3
 
 module arc;
 
@@ -25,6 +27,7 @@ struct AppInfo {
   string name;
   string package_name;
   string activity;
+  [MinVersion=2] bool sticky;  // true if the app cannot be uninstalled
 };
 
 // Represents a rectangle to specify screen coordinates.
@@ -35,6 +38,7 @@ struct ScreenRect {
   int32 bottom;
 };
 
+// Next method ID: 4
 interface AppHost {
   // Receives a list of available ARC apps to Chrome. Members of AppInfo must
   // contain non-empty string.
@@ -67,7 +71,7 @@ interface AppInstance {
   // |activity|, which cannot be empty. |dimension_on_screen| can be null to
   // indicate to use the entire screen.
   LaunchApp(string package_name, string activity,
-            [MinVersion=1] ScreenRect? dimension);
+            [MinVersion=1] ScreenRect? dimension_on_screen);
 
   // Sends a request to ARC to refresh a list of ARC apps.
   // OnRefreshAppsList is expected in response to this message. However,
@@ -84,5 +88,9 @@ interface AppInstance {
   // Query if a given resolution can be handled by the application. Returns true
   // if it can.
   [MinVersion=1] CanHandleResolution(string package_name, string activity,
-                                     ScreenRect dimension) => (bool success);
+                                     ScreenRect dimension) => (bool can_handle);
+
+  // Sends a request to ARC to uninstall the given package.  Error (if ever
+  // happens) is ignored, and uninstall option should appear in the UI.
+  [MinVersion=2] UninstallPackage(string package_name);
 };

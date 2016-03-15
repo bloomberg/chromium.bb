@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_TEST_H_
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_TEST_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -30,6 +31,7 @@ class ArcAppTest {
 
   static std::string GetAppId(const arc::AppInfo& app_info);
 
+  // The 0th item is sticky but not the followings.
   const std::vector<arc::AppInfo>& fake_apps() const { return fake_apps_; }
 
   arc::FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
@@ -47,5 +49,4 @@ class ArcAppTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAppTest);
 };
 
-#endif // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_TEST_H_
-
+#endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_TEST_H_

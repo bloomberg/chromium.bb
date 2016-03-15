@@ -50,12 +50,14 @@ class ArcAppListPrefs : public KeyedService,
             const std::string& package_name,
             const std::string& activity,
             const base::Time& last_launch_time,
+            bool sticky,
             bool ready);
 
     std::string name;
     std::string package_name;
     std::string activity;
     base::Time last_launch_time;
+    bool sticky;
     bool ready;
   };
 

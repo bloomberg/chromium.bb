@@ -33,8 +33,10 @@ void ArcAppTest::SetUp(content::BrowserContext* browser_context) {
     app.name = base::StringPrintf("Fake App %d", i);
     app.package_name = base::StringPrintf("fake.app.%d", i);
     app.activity = base::StringPrintf("fake.app.%d.activity", i);
+    app.sticky = false;
     fake_apps_.push_back(app);
   }
+  fake_apps_[0].sticky = true;
 
   bridge_service_.reset(new arc::FakeArcBridgeService());
   app_instance_.reset(

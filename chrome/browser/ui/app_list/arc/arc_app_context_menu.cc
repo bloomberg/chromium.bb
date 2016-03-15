@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/generated_resources.h"
 
 ArcAppContextMenu::ArcAppContextMenu(
@@ -26,6 +27,10 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   // Create default items.
   AppContextMenu::BuildMenu(menu_model);
+  if (CanBeUninstalled()) {
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
+  }
 }
 
 bool ArcAppContextMenu::IsCommandIdEnabled(int command_id) const {
@@ -38,8 +43,30 @@ bool ArcAppContextMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id == LAUNCH_NEW)
-    delegate()->ExecuteLaunchCommand(event_flags);
-  else
-    AppContextMenu::ExecuteCommand(command_id, event_flags);
+  switch (command_id) {
+    case LAUNCH_NEW:
+      delegate()->ExecuteLaunchCommand(event_flags);
+      break;
+    case UNINSTALL:
+      UninstallPackage();
+      break;
+    default:
+      AppContextMenu::ExecuteCommand(command_id, event_flags);
+  }
+}
+
+void ArcAppContextMenu::UninstallPackage() {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id());
+  if (!app_info) {
+    LOG(ERROR) << "Package being uninstalling does not exist";
+    return;
+  }
+  arc::UninstallPackage(app_info->package_name);
+}
+
+bool ArcAppContextMenu::CanBeUninstalled() const {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id());
+  return app_info && app_info->ready && !app_info->sticky;
 }

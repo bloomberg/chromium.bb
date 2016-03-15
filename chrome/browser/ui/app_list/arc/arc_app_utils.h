@@ -15,6 +15,7 @@ class BrowserContext;
 }
 
 namespace arc {
+
 using CanHandleResolutionCallback = base::Callback<void(bool)>;
 
 // Launch an app and let the system decide how big and where to place it.
@@ -32,7 +33,10 @@ bool LaunchAppWithRect(content::BrowserContext* context,
 bool CanHandleResolution(content::BrowserContext* context,
     const std::string& app_id,
     const gfx::Rect& rect,
-    const CanHandleResolutionCallback callback);
+    const CanHandleResolutionCallback& callback);
+
+// Uninstalls the package in ARC.
+void UninstallPackage(const std::string& package_name);
 
 }  // namespace arc
 
