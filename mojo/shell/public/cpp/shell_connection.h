@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -54,6 +55,9 @@ class ShellConnection : public shell::mojom::ShellClient {
 
   Connector* connector() { return connector_.get(); }
 
+  // TODO(rockot): Remove this. http://crbug.com/594852.
+  void set_initialize_handler(const base::Closure& callback);
+
   // TODO(rockot): Remove this once we get rid of app tests.
   void SetAppTestConnectorForTesting(shell::mojom::ConnectorPtr connector);
 
@@ -71,6 +75,9 @@ class ShellConnection : public shell::mojom::ShellClient {
       const String& name) override;
 
   void OnConnectionError();
+
+  // A callback called when Initialize() is run.
+  base::Closure initialize_handler_;
 
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.

@@ -247,6 +247,7 @@ CONTENT_EXPORT extern const char kV8NativesPassedByFD[];
 CONTENT_EXPORT extern const char kV8SnapshotPassedByFD[];
 CONTENT_EXPORT extern const char kValidateInputEventStream[];
 CONTENT_EXPORT extern const char kWaitForDebuggerChildren[];
+CONTENT_EXPORT extern const char kWaitForMojoShell[];
 CONTENT_EXPORT extern const char kZygoteCmdPrefix[];
 CONTENT_EXPORT extern const char kZygoteProcess[];
 

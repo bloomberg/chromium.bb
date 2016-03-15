@@ -58,8 +58,8 @@ void SetParentPipeHandleFromCommandLine() {
   ScopedPlatformHandle platform_channel =
       PlatformChannelPair::PassClientHandleFromParentProcess(
           *base::CommandLine::ForCurrentProcess());
-  if (platform_channel.is_valid())
-    SetParentPipeHandle(std::move(platform_channel));
+  CHECK(platform_channel.is_valid());
+  SetParentPipeHandle(std::move(platform_channel));
 }
 
 void Init() {

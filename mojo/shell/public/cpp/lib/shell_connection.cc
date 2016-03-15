@@ -32,6 +32,10 @@ ShellConnection::ShellConnection(mojo::ShellClient* client,
 
 ShellConnection::~ShellConnection() {}
 
+void ShellConnection::set_initialize_handler(const base::Closure& callback) {
+  initialize_handler_ = callback;
+}
+
 void ShellConnection::SetAppTestConnectorForTesting(
     shell::mojom::ConnectorPtr connector) {
   pending_connector_request_ = nullptr;
@@ -44,6 +48,9 @@ void ShellConnection::SetAppTestConnectorForTesting(
 void ShellConnection::Initialize(shell::mojom::IdentityPtr identity,
                                  uint32_t id,
                                  const InitializeCallback& callback) {
+  if (!initialize_handler_.is_null())
+    initialize_handler_.Run();
+
   callback.Run(std::move(pending_connector_request_));
 
   DCHECK(binding_.is_bound());

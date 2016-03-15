@@ -5,6 +5,7 @@
 #include "ui/views/test/platform_test_helper.h"
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "mojo/shell/background/background_shell.h"
 #include "mojo/shell/background/tests/test_catalog_store.h"
 #include "mojo/shell/public/cpp/connector.h"
@@ -49,6 +50,12 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     shell_connection_.reset(new mojo::ShellConnection(
         shell_client_.get(),
         background_shell_->CreateShellClientRequest(kTestName)));
+
+    // TODO(rockot): Remove this RunLoop. http://crbug.com/594852.
+    base::RunLoop wait_loop;
+    shell_connection_->set_initialize_handler(wait_loop.QuitClosure());
+    wait_loop.Run();
+
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
     mojo::Connector* connector = shell_connection_->connector();

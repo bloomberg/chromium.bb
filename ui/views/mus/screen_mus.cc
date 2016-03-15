@@ -83,8 +83,10 @@ void ScreenMus::Init(mojo::Connector* connector) {
       display_manager_observer_binding_.CreateInterfacePtrAndBind());
 
   // We need the set of displays before we can continue. Wait for it.
-  wait_for_displays_loop_.reset(new base::RunLoop);
-  wait_for_displays_loop_->Run();
+  //
+  // TODO(rockot): Do something better here. This should not have to block tasks
+  // from running on the calling thread. http://crbug.com/594852.
+  display_manager_observer_binding_.WaitForIncomingMethodCall();
 
   // The WaitForIncomingMethodCall() should have supplied the set of Displays.
   DCHECK(displays_.size());
@@ -204,9 +206,6 @@ void ScreenMus::OnDisplays(mojo::Array<mus::mojom::DisplayPtr> displays) {
       WindowManagerFrameValues::SetInstance(frame_values);
     }
   }
-
-  DCHECK(wait_for_displays_loop_);
-  wait_for_displays_loop_->Quit();
 }
 
 void ScreenMus::OnDisplaysChanged(

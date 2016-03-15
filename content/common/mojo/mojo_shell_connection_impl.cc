@@ -8,10 +8,13 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/runner/common/client_util.h"
@@ -30,7 +33,13 @@ base::LazyInstance<MojoShellConnectionPtr>::Leaky lazy_tls_ptr =
 
 bool IsRunningInMojoShell() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      "mojo-platform-channel-handle");
+      mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch);
+}
+
+bool ShouldWaitForShell() {
+  return IsRunningInMojoShell() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWaitForMojoShell);
 }
 
 // static
@@ -61,6 +70,13 @@ void MojoShellConnectionImpl::BindToRequestFromCommandLine() {
   DCHECK(!shell_connection_);
   shell_connection_.reset(new mojo::ShellConnection(
       this, mojo::shell::GetShellClientRequestFromCommandLine()));
+
+  // TODO(rockot): Remove this. http://crbug.com/594852.
+  if (ShouldWaitForShell()) {
+    base::RunLoop wait_loop;
+    shell_connection_->set_initialize_handler(wait_loop.QuitClosure());
+    wait_loop.Run();
+  }
 }
 
 MojoShellConnectionImpl::MojoShellConnectionImpl(bool external) :
@@ -80,6 +96,10 @@ bool MojoShellConnectionImpl::AcceptConnection(mojo::Connection* connection) {
   for (auto listener : listeners_)
     found |= listener->AcceptConnection(connection);
   return found;
+}
+
+void MojoShellConnectionImpl::ShellConnectionLost() {
+  LOG(ERROR) << "Shell connection lost.";
 }
 
 mojo::Connector* MojoShellConnectionImpl::GetConnector() {

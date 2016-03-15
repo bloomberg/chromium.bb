@@ -49,6 +49,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
                   const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
+  void ShellConnectionLost() override;
 
   // MojoShellConnection:
   mojo::Connector* GetConnector() override;
