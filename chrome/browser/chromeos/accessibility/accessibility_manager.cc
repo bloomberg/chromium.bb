@@ -399,6 +399,12 @@ AccessibilityManager::AccessibilityManager()
       autoclick_delay_pref_handler_(prefs::kAccessibilityAutoclickDelayMs),
       virtual_keyboard_pref_handler_(
           prefs::kAccessibilityVirtualKeyboardEnabled),
+      caret_highlight_pref_handler_(prefs::kAccessibilityCaretHighlightEnabled),
+      cursor_highlight_pref_handler_(
+          prefs::kAccessibilityCursorHighlightEnabled),
+      focus_highlight_pref_handler_(prefs::kAccessibilityFocusHighlightEnabled),
+      select_to_speak_pref_handler_(prefs::kAccessibilitySelectToSpeakEnabled),
+      switch_access_pref_handler_(prefs::kAccessibilitySwitchAccessEnabled),
       large_cursor_enabled_(false),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
@@ -406,6 +412,11 @@ AccessibilityManager::AccessibilityManager()
       autoclick_enabled_(false),
       autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
       virtual_keyboard_enabled_(false),
+      caret_highlight_enabled_(false),
+      cursor_highlight_enabled_(false),
+      focus_highlight_enabled_(false),
+      select_to_speak_enabled_(false),
+      switch_access_enabled_(false),
       spoken_feedback_notification_(ui::A11Y_NOTIFICATION_NONE),
       should_speak_chrome_vox_announcements_on_user_screen_(true),
       system_sounds_enabled_(false),
@@ -866,6 +877,142 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   NotifyAccessibilityStatusChanged(details);
 }
 
+void AccessibilityManager::SetCaretHighlightEnabled(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kAccessibilityCaretHighlightEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsCaretHighlightEnabled() const {
+  return caret_highlight_enabled_;
+}
+
+void AccessibilityManager::UpdateCaretHighlightFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled = profile_->GetPrefs()->GetBoolean(
+      prefs::kAccessibilityCaretHighlightEnabled);
+
+  if (caret_highlight_enabled_ == enabled)
+    return;
+  caret_highlight_enabled_ = enabled;
+
+  // TODO(dmazzoni): implement feature here.
+}
+
+void AccessibilityManager::SetCursorHighlightEnabled(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kAccessibilityCursorHighlightEnabled,
+                           enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsCursorHighlightEnabled() const {
+  return cursor_highlight_enabled_;
+}
+
+void AccessibilityManager::UpdateCursorHighlightFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled = profile_->GetPrefs()->GetBoolean(
+      prefs::kAccessibilityCursorHighlightEnabled);
+
+  if (cursor_highlight_enabled_ == enabled)
+    return;
+  cursor_highlight_enabled_ = enabled;
+
+  // TODO(dmazzoni): implement feature here.
+}
+
+void AccessibilityManager::SetFocusHighlightEnabled(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kAccessibilityFocusHighlightEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsFocusHighlightEnabled() const {
+  return focus_highlight_enabled_;
+}
+
+void AccessibilityManager::UpdateFocusHighlightFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled = profile_->GetPrefs()->GetBoolean(
+      prefs::kAccessibilityFocusHighlightEnabled);
+
+  if (focus_highlight_enabled_ == enabled)
+    return;
+  focus_highlight_enabled_ = enabled;
+
+  // TODO(dmazzoni): implement feature here.
+}
+
+void AccessibilityManager::SetSelectToSpeakEnabled(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kAccessibilitySelectToSpeakEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsSelectToSpeakEnabled() const {
+  return select_to_speak_enabled_;
+}
+
+void AccessibilityManager::UpdateSelectToSpeakFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled = profile_->GetPrefs()->GetBoolean(
+      prefs::kAccessibilitySelectToSpeakEnabled);
+
+  if (select_to_speak_enabled_ == enabled)
+    return;
+  select_to_speak_enabled_ = enabled;
+
+  // TODO(dmazzoni): implement feature here.
+}
+
+void AccessibilityManager::SetSwitchAccessEnabled(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kAccessibilitySwitchAccessEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsSwitchAccessEnabled() const {
+  return switch_access_enabled_;
+}
+
+void AccessibilityManager::UpdateSwitchAccessFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled = profile_->GetPrefs()->GetBoolean(
+      prefs::kAccessibilitySwitchAccessEnabled);
+
+  if (switch_access_enabled_ == enabled)
+    return;
+  switch_access_enabled_ = enabled;
+
+  // TODO(dmazzoni): implement feature here.
+}
+
 bool AccessibilityManager::IsBrailleDisplayConnected() const {
   return braille_display_connected_;
 }
@@ -965,6 +1112,26 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         prefs::kAccessibilityVirtualKeyboardEnabled,
         base::Bind(&AccessibilityManager::UpdateVirtualKeyboardFromPref,
                    base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityCaretHighlightEnabled,
+        base::Bind(&AccessibilityManager::UpdateCaretHighlightFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityCursorHighlightEnabled,
+        base::Bind(&AccessibilityManager::UpdateCursorHighlightFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityFocusHighlightEnabled,
+        base::Bind(&AccessibilityManager::UpdateFocusHighlightFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAccessibilitySelectToSpeakEnabled,
+        base::Bind(&AccessibilityManager::UpdateSelectToSpeakFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAccessibilitySwitchAccessEnabled,
+        base::Bind(&AccessibilityManager::UpdateSwitchAccessFromPref,
+                   base::Unretained(this)));
 
     local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
@@ -985,6 +1152,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
   virtual_keyboard_pref_handler_.HandleProfileChanged(profile_, profile);
+  caret_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
+  cursor_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
+  focus_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
+  select_to_speak_pref_handler_.HandleProfileChanged(profile_, profile);
+  switch_access_pref_handler_.HandleProfileChanged(profile_, profile);
 
   bool had_profile = (profile_ != NULL);
   profile_ = profile;
@@ -1000,6 +1172,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
   UpdateVirtualKeyboardFromPref();
+  UpdateCaretHighlightFromPref();
+  UpdateCursorHighlightFromPref();
+  UpdateFocusHighlightFromPref();
+  UpdateSelectToSpeakFromPref();
+  UpdateSwitchAccessFromPref();
 }
 
 void AccessibilityManager::ActiveUserChanged(const AccountId& account_id) {
@@ -1088,6 +1265,16 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
           50);
     }
   }
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosCaretHighlight",
+                        IsCaretHighlightEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosCursorHighlight",
+                        IsCursorHighlightEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosFocusHighlight",
+                        IsFocusHighlightEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSelectToSpeak",
+                        IsSelectToSpeakEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSwitchAccess",
+                        IsSwitchAccessEnabled());
 }
 
 void AccessibilityManager::Observe(

@@ -30,6 +30,16 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool IsAutoclickEnabled() const override;
   void SetVirtualKeyboardEnabled(bool enabled) override;
   bool IsVirtualKeyboardEnabled() const override;
+  void SetCaretHighlightEnabled(bool enabled) override;
+  bool IsCaretHighlightEnabled() const override;
+  void SetCursorHighlightEnabled(bool enabled) override;
+  bool IsCursorHighlightEnabled() const override;
+  void SetFocusHighlightEnabled(bool enabled) override;
+  bool IsFocusHighlightEnabled() const override;
+  void SetSelectToSpeakEnabled(bool enabled) override;
+  bool IsSelectToSpeakEnabled() const override;
+  void SetSwitchAccessEnabled(bool enabled) override;
+  bool IsSwitchAccessEnabled() const override;
   bool ShouldShowAccessibilityMenu() const override;
   bool IsBrailleDisplayConnected() const override;
   void SilenceSpokenFeedback() const override;
@@ -43,14 +53,19 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   base::TimeDelta PlayShutdownSound() const override;
 
  private:
-  bool spoken_feedback_enabled_;
-  bool high_contrast_enabled_;
-  bool screen_magnifier_enabled_;
-  ui::MagnifierType screen_magnifier_type_;
-  bool large_cursor_enabled_;
-  bool autoclick_enabled_;
-  bool virtual_keyboard_enabled_;
-  ui::AccessibilityAlert accessibility_alert_;
+  bool spoken_feedback_enabled_ = false;
+  bool high_contrast_enabled_ = false;
+  bool screen_magnifier_enabled_ = false;
+  ui::MagnifierType screen_magnifier_type_ = ui::kDefaultMagnifierType;
+  bool large_cursor_enabled_ = false;
+  bool autoclick_enabled_ = false;
+  bool virtual_keyboard_enabled_ = false;
+  bool caret_highlight_enabled_ = false;
+  bool cursor_highlight_enabled_ = false;
+  bool focus_highligh_enabled_ = false;
+  bool select_to_speak_enabled_ = false;
+  bool switch_access_enabled_ = false;
+  ui::AccessibilityAlert accessibility_alert_ = ui::A11Y_ALERT_NONE;
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityDelegate);
 };
 

@@ -59,6 +59,36 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns if the a11y virtual keyboard is enabled.
   virtual bool IsVirtualKeyboardEnabled() const = 0;
 
+  // Invoked to enable or disable caret highlighting.
+  virtual void SetCaretHighlightEnabled(bool enabled) = 0;
+
+  // Returns if caret highlighting is enabled.
+  virtual bool IsCaretHighlightEnabled() const = 0;
+
+  // Invoked to enable or disable cursor highlighting.
+  virtual void SetCursorHighlightEnabled(bool enabled) = 0;
+
+  // Returns if cursor highlighting is enabled.
+  virtual bool IsCursorHighlightEnabled() const = 0;
+
+  // Invoked to enable or disable focus highlighting.
+  virtual void SetFocusHighlightEnabled(bool enabled) = 0;
+
+  // Returns if focus highlighting is enabled.
+  virtual bool IsFocusHighlightEnabled() const = 0;
+
+  // Invoked to enable or disable select-to-speak.
+  virtual void SetSelectToSpeakEnabled(bool enabled) = 0;
+
+  // Returns if select-to-speak is enabled.
+  virtual bool IsSelectToSpeakEnabled() const = 0;
+
+  // Invoked to enable or disable switch access.
+  virtual void SetSwitchAccessEnabled(bool enabled) = 0;
+
+  // Returns if switch access is enabled.
+  virtual bool IsSwitchAccessEnabled() const = 0;
+
   // Returns true when the accessibility menu should be shown.
   virtual bool ShouldShowAccessibilityMenu() const = 0;
 

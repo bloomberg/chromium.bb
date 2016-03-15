@@ -1800,6 +1800,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_PROTECT_SYNC_CREDENTIAL_ON_REAUTH_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kProtectSyncCredentialOnReauth)},
+#if defined(OS_CHROMEOS)
+    {"enable-experimental-accessibility-features",
+     IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_NAME,
+     IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         chromeos::switches::kEnableExperimentalAccessibilityFeatures)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

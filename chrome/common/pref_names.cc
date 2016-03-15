@@ -598,6 +598,21 @@ const char kAccessibilityAutoclickEnabled[] = "settings.a11y.autoclick";
 // stops and when an autoclick is triggered.
 const char kAccessibilityAutoclickDelayMs[] =
     "settings.a11y.autoclick_delay_ms";
+// A boolean pref which determines whether caret highlighting is enabled.
+const char kAccessibilityCaretHighlightEnabled[] =
+    "settings.a11y.caret_highlight";
+// A boolean pref which determines whether cursor highlighting is enabled.
+const char kAccessibilityCursorHighlightEnabled[] =
+    "settings.a11y.cursor_highlight";
+// A boolean pref which determines whether focus highlighting is enabled.
+const char kAccessibilityFocusHighlightEnabled[] =
+    "settings.a11y.focus_highlight";
+// A boolean pref which determines whether select-to-speak is enabled.
+const char kAccessibilitySelectToSpeakEnabled[] =
+    "settings.a11y.select_to_speak";
+// A boolean pref which determines whether switch access is enabled.
+const char kAccessibilitySwitchAccessEnabled[] =
+    "settings.a11y.switch_access";
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";

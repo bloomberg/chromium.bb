@@ -399,8 +399,14 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
        IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DESCRIPTION },
     { "accessibilityAutoclickDropdown",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DROPDOWN_DESCRIPTION },
+    { "accessibilityCaretHighlight",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CARET_HIGHLIGHT_DESCRIPTION },
+    { "accessibilityCursorHighlight",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CURSOR_HIGHLIGHT_DESCRIPTION },
     { "accessibilityExplanation",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_EXPLANATION },
+    { "accessibilityFocusHighlight",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION },
     { "accessibilityHighContrast",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION },
     { "accessibilityLargeCursor",
@@ -415,12 +421,16 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_OFF },
     { "accessibilityScreenMagnifierPartial",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL },
+    { "accessibilitySelectToSpeak",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION },
     { "accessibilitySettings",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SETTINGS },
     { "accessibilitySpokenFeedback",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION },
     { "accessibilityStickyKeys",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_STICKY_KEYS_DESCRIPTION },
+    { "accessibilitySwitchAccess",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_DESCRIPTION },
     { "accessibilityTapDragging",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_TOUCHPAD_TAP_DRAGGING_DESCRIPTION },
     { "accessibilityVirtualKeyboard",
@@ -709,6 +719,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                          prefs::kResolveTimezoneByGeolocation));
   values->SetBoolean("enableLanguageOptionsImeMenu",
                      chromeos::switches::IsImeMenuEnabled());
+  values->SetBoolean(
+      "enableExperimentalAccessibilityFeatures",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableExperimentalAccessibilityFeatures));
 #endif
 }
 

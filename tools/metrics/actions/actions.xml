@@ -9344,6 +9344,38 @@ should be able to be added at any place in this file.
   <description>Settings: About Chrome</description>
 </action>
 
+<action name="Options_AccessibilityCaretHighlight_Disable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Disable caret highlighting</description>
+</action>
+
+<action name="Options_AccessibilityCaretHighlight_Enable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Enable caret highlighting</description>
+</action>
+
+<action name="Options_AccessibilityCursorHighlight_Disable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    Settings: Accessibility: Disable cursor highlighting
+  </description>
+</action>
+
+<action name="Options_AccessibilityCursorHighlight_Enable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Enable cursor highlighting</description>
+</action>
+
+<action name="Options_AccessibilityFocusHighlight_Disable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Disable focus highlighting</description>
+</action>
+
+<action name="Options_AccessibilityFocusHighlight_Enable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Enable focus highlighting</description>
+</action>
+
 <action name="Options_AccessibilityHighContrastMode">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Accessibility: Toggle high contrast mode</description>
@@ -9410,6 +9442,16 @@ should be able to be added at any place in this file.
   <description>Settings: Accessibility: Enable screen magnifier</description>
 </action>
 
+<action name="Options_AccessibilitySelectToSpeak_Disable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Disable select-to-speak</description>
+</action>
+
+<action name="Options_AccessibilitySelectToSpeak_Enable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Enable select-to-speak</description>
+</action>
+
 <action name="Options_AccessibilitySpokenFeedback_Disable">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Accessibility: Disable ChromeVox</description>
@@ -9428,6 +9470,16 @@ should be able to be added at any place in this file.
 <action name="Options_AccessibilityStickyKeys_Enable">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Accessibility: Enable sticky keys</description>
+</action>
+
+<action name="Options_AccessibilitySwitchAccess_Disable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Disable switch access</description>
+</action>
+
+<action name="Options_AccessibilitySwitchAccess_Enable">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>Settings: Accessibility: Enable switch access</description>
 </action>
 
 <action name="Options_AccessibilitySystemMenu_Disable">

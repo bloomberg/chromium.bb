@@ -2306,6 +2306,27 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_LONG" desc="Label for a very long autoclick delay option in the settings.">
     very long
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CARET_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the caret (the text insertion point) to make it easier to see.">
+    Highlight the caret (when editing text)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CURSOR_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the mouse cursor to make it easier to see.">
+    Highlight the mouse cursor
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the focused object to make it easier to see.">
+    Highlight the object with keyboard focus
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to enable an option to hold a key and click to speak any on-screen text out loud.">
+    Select-to-speak: Hold down Search and click or drag to speak anything
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to enable switch access (for users with limited motor control).">
+    Switch access (control the computer with just one or two switches)
+  </message>
+  <message name="IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_NAME" desc="Name of the about:flag option for experimental accessibility features.">
+    Experimental acecssibility features
+  </message>
+  <message name="IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_DESCRIPTION" desc="Description of the about:flag option for experimental accessibility features.">
+    Enable additional accessibility features in the Settings page.
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_BUTTON_LABEL" desc="Label for the button opening display settings tab.">
     Display settings
   </message>

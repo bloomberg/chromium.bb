@@ -728,6 +728,8 @@ cr.define('options', function() {
         Preferences.getInstance().addEventListener(
             $('accessibility-autoclick-check').getAttribute('pref'),
             updateDelayDropdown);
+        $('experimental-accessibility-features').hidden =
+            !loadTimeData.getBoolean('enableExperimentalAccessibilityFeatures');
       }
 
       // Display management section (CrOS only).

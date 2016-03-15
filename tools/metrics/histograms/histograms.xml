@@ -101,6 +101,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.CrosCaretHighlight" enum="BooleanEnabled">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Whether the Chrome OS caret highlighting is on (checked once 45 secs after
+    startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosCursorHighlight" enum="BooleanEnabled">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Whether the Chrome OS cursor highlighting is on (checked once 45 secs after
+    startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosFocusHighlight" enum="BooleanEnabled">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Whether the Chrome OS focus highlighting is on (checked once 45 secs after
+    startup).
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosHighContrast" enum="BooleanEnabled">
   <owner>dmazzoni@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
@@ -128,6 +152,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.CrosSelectToSpeak" enum="BooleanEnabled">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Whether the Chrome OS select-to-speak is on (checked once 45 secs after
+    startup).
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosSpokenFeedback" enum="BooleanEnabled">
   <owner>dmazzoni@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
@@ -143,6 +175,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>tengs@chromium.org</owner>
   <summary>
     Whether the Chrome OS Sticky Keys feature is on (checked once 45 secs after
+    startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosSwitchAccess" enum="BooleanEnabled">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Whether the Chrome OS switch access is on (checked once 45 secs after
     startup).
   </summary>
 </histogram>
@@ -72889,6 +72929,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
+  <int value="1209221384" label="enable-experimental-accessibility-features"/>
   <int value="1210343926" label="enable-drop-sync-credential"/>
   <int value="1220464509" label="enable-first-run-ui-transitions"/>
   <int value="1221559505" label="enable-spelling-feedback-field-trial"/>

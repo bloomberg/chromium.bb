@@ -145,6 +145,11 @@ const char kEnablePhysicalKeyboardAutocorrect[] =
 const char kDisablePhysicalKeyboardAutocorrect[] =
     "disable-physical-keyboard-autocorrect";
 
+// Shows additional checkboxes in Settings to enable Chrome OS accessibility
+// features that haven't launched yet.
+const char kEnableExperimentalAccessibilityFeatures[] =
+    "enable-experimental-accessibility-features";
+
 // Enabled sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";
 

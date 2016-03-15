@@ -49,6 +49,36 @@
         "value": ["virtualKeyboard", {"type": "boolean"}],
         "platforms": ["chromeos"]
       },
+      "caretHighlight": {
+        "$ref": "types.ChromeSetting",
+        "description": "<p><strong>ChromeOS only.</strong></p><p>Caret highlighting. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
+        "value": ["caretHighlight", {"type": "boolean"}],
+        "platforms": ["chromeos"]
+      },
+      "cursorHighlight": {
+        "$ref": "types.ChromeSetting",
+        "description": "<p><strong>ChromeOS only.</strong></p><p>Cursor highlighting. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
+        "value": ["cursorHighlight", {"type": "boolean"}],
+        "platforms": ["chromeos"]
+      },
+      "focusHighlight": {
+        "$ref": "types.ChromeSetting",
+        "description": "<p><strong>ChromeOS only.</strong></p><p>Focus highlighting. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
+        "value": ["focusHighlight", {"type": "boolean"}],
+        "platforms": ["chromeos"]
+      },
+      "selectToSpeak": {
+        "$ref": "types.ChromeSetting",
+        "description": "<p><strong>ChromeOS only.</strong></p><p>Select-to-speak. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
+        "value": ["selectToSpeak", {"type": "boolean"}],
+        "platforms": ["chromeos"]
+      },
+      "switchAccess": {
+        "$ref": "types.ChromeSetting",
+        "description": "<p><strong>ChromeOS only.</strong></p><p>Switch access. The value indicates whether the feature is enabled or not. <code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.</p>",
+        "value": ["switchAccess", {"type": "boolean"}],
+        "platforms": ["chromeos"]
+      },
       "animationPolicy": {
         "$ref": "types.ChromeSetting",
         "description": "<code>get()</code> requires <code>accessibilityFeatures.read</code> permission. <code>set()</code> and <code>clear()</code> require <code>accessibilityFeatures.modify</code> permission.",

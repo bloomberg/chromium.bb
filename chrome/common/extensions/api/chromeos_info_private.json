@@ -21,6 +21,11 @@
                  "a11yScreenMagnifierEnabled",
                  "a11yAutoClickEnabled",
                  "a11yVirtualKeyboardEnabled",
+                 "a11yCaretHighlightEnabled",
+                 "a11yCursorHighlightEnabled",
+                 "a11yFocusHighlightEnabled",
+                 "a11ySelectToSpeakEnabled",
+                 "a11ySwitchAccessEnabled",
                  "sendFunctionKeys"],
         "description": "Chrome OS system property name"
       }

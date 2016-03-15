@@ -95,6 +95,26 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
 
   bool IsAutoclickEnabled() const override { return false; }
 
+  void SetCaretHighlightEnabled(bool enabled) override {}
+
+  bool IsCaretHighlightEnabled() const override { return false; }
+
+  void SetCursorHighlightEnabled(bool enabled) override {}
+
+  bool IsCursorHighlightEnabled() const override { return false; }
+
+  void SetFocusHighlightEnabled(bool enabled) override {}
+
+  bool IsFocusHighlightEnabled() const override { return false; }
+
+  void SetSelectToSpeakEnabled(bool enabled) override {}
+
+  bool IsSelectToSpeakEnabled() const override { return false; }
+
+  void SetSwitchAccessEnabled(bool enabled) override {}
+
+  bool IsSwitchAccessEnabled() const override { return false; }
+
   ui::MagnifierType GetMagnifierType() const override {
     return ui::kDefaultMagnifierType;
   }

@@ -165,6 +165,36 @@ class AccessibilityManager
   // Returns true if the virtual keyboard is enabled, otherwise false.
   bool IsVirtualKeyboardEnabled();
 
+  // Invoked to enable or disable caret highlighting.
+  void SetCaretHighlightEnabled(bool enabled);
+
+  // Returns if caret highlighting is enabled.
+  bool IsCaretHighlightEnabled() const;
+
+  // Invoked to enable or disable cursor highlighting.
+  void SetCursorHighlightEnabled(bool enabled);
+
+  // Returns if cursor highlighting is enabled.
+  bool IsCursorHighlightEnabled() const;
+
+  // Invoked to enable or disable focus highlighting.
+  void SetFocusHighlightEnabled(bool enabled);
+
+  // Returns if focus highlighting is enabled.
+  bool IsFocusHighlightEnabled() const;
+
+  // Invoked to enable or disable select-to-speak.
+  void SetSelectToSpeakEnabled(bool enabled);
+
+  // Returns if select-to-speak is enabled.
+  bool IsSelectToSpeakEnabled() const;
+
+  // Invoked to enable or disable switch access.
+  void SetSwitchAccessEnabled(bool enabled);
+
+  // Returns if switch access is enabled.
+  bool IsSwitchAccessEnabled() const;
+
   // Returns true if a braille display is connected to the system, otherwise
   // false.
   bool IsBrailleDisplayConnected() const;
@@ -246,6 +276,11 @@ class AccessibilityManager
   void UpdateAutoclickFromPref();
   void UpdateAutoclickDelayFromPref();
   void UpdateVirtualKeyboardFromPref();
+  void UpdateCaretHighlightFromPref();
+  void UpdateCursorHighlightFromPref();
+  void UpdateFocusHighlightFromPref();
+  void UpdateSelectToSpeakFromPref();
+  void UpdateSwitchAccessFromPref();
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
@@ -300,6 +335,11 @@ class AccessibilityManager
   PrefHandler autoclick_pref_handler_;
   PrefHandler autoclick_delay_pref_handler_;
   PrefHandler virtual_keyboard_pref_handler_;
+  PrefHandler caret_highlight_pref_handler_;
+  PrefHandler cursor_highlight_pref_handler_;
+  PrefHandler focus_highlight_pref_handler_;
+  PrefHandler select_to_speak_pref_handler_;
+  PrefHandler switch_access_pref_handler_;
 
   bool large_cursor_enabled_;
   bool sticky_keys_enabled_;
@@ -308,6 +348,11 @@ class AccessibilityManager
   bool autoclick_enabled_;
   int autoclick_delay_ms_;
   bool virtual_keyboard_enabled_;
+  bool caret_highlight_enabled_;
+  bool cursor_highlight_enabled_;
+  bool focus_highlight_enabled_;
+  bool select_to_speak_enabled_;
+  bool switch_access_enabled_;
 
   ui::AccessibilityNotificationVisibility spoken_feedback_notification_;
 

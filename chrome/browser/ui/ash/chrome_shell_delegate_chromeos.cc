@@ -147,6 +147,56 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::AccessibilityManager::Get()->IsVirtualKeyboardEnabled();
   }
 
+  void SetCaretHighlightEnabled(bool enabled) override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    chromeos::AccessibilityManager::Get()->SetCaretHighlightEnabled(enabled);
+  }
+
+  bool IsCaretHighlightEnabled() const override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsCaretHighlightEnabled();
+  }
+
+  void SetCursorHighlightEnabled(bool enabled) override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    chromeos::AccessibilityManager::Get()->SetCursorHighlightEnabled(enabled);
+  }
+
+  bool IsCursorHighlightEnabled() const override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsCursorHighlightEnabled();
+  }
+
+  void SetFocusHighlightEnabled(bool enabled) override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    chromeos::AccessibilityManager::Get()->SetFocusHighlightEnabled(enabled);
+  }
+
+  bool IsFocusHighlightEnabled() const override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsFocusHighlightEnabled();
+  }
+
+  void SetSelectToSpeakEnabled(bool enabled) override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    chromeos::AccessibilityManager::Get()->SetSelectToSpeakEnabled(enabled);
+  }
+
+  bool IsSelectToSpeakEnabled() const override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsSelectToSpeakEnabled();
+  }
+
+  void SetSwitchAccessEnabled(bool enabled) override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    chromeos::AccessibilityManager::Get()->SetSwitchAccessEnabled(enabled);
+  }
+
+  bool IsSwitchAccessEnabled() const override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsSwitchAccessEnabled();
+  }
+
   bool ShouldShowAccessibilityMenu() const override {
     DCHECK(chromeos::AccessibilityManager::Get());
     return chromeos::AccessibilityManager::Get()->
