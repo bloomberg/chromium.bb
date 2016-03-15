@@ -155,20 +155,6 @@ void
 ivi_layout_remove_all_surface_transitions(struct ivi_layout_surface *surface);
 
 /**
- * methods of interaction between ivi-shell with ivi-layout
- */
-struct weston_view *
-ivi_layout_get_weston_view(struct ivi_layout_surface *surface);
-void
-ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
-			     int32_t width, int32_t height);
-struct ivi_layout_surface*
-ivi_layout_surface_create(struct weston_surface *wl_surface,
-			  uint32_t id_surface);
-void
-ivi_layout_init_with_compositor(struct weston_compositor *ec);
-
-/**
  * methods of interaction between transition animation with ivi-layout
  */
 int32_t
@@ -203,9 +189,5 @@ ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 				  int32_t number);
 void
 ivi_layout_transition_move_layer_cancel(struct ivi_layout_layer *layer);
-int
-load_controller_modules(struct weston_compositor *compositor, const char *modules,
-			int *argc, char *argv[]);
-void
-ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf);
+
 #endif

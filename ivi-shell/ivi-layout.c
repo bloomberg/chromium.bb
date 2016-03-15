@@ -64,6 +64,7 @@
 #include "ivi-shell.h"
 #include "ivi-layout-export.h"
 #include "ivi-layout-private.h"
+#include "ivi-layout-shell.h"
 
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
