@@ -284,6 +284,8 @@ fuzzer_test("v8_wasm_fuzzer") {
   deps = [
     "//v8:wasm_fuzzer",
   ]
+  dict = "dicts/v8_wasm.dict"
+  libfuzzer_options = "v8_wasm_fuzzer.options"
 }
 
 fuzzer_test("v8_wasm_asmjs_fuzzer") {
