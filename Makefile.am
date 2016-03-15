@@ -461,6 +461,7 @@ demo_clients =					\
 	weston-resizor				\
 	weston-eventdemo			\
 	weston-clickdot				\
+	weston-confine				\
 	weston-transformed			\
 	weston-fullscreen			\
 	weston-stacking				\
@@ -668,6 +669,12 @@ weston_clickdot_SOURCES = 				\
 	shared/helpers.h
 weston_clickdot_LDADD = libtoytoolkit.la
 weston_clickdot_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
+
+weston_confine_SOURCES = 				\
+	clients/confine.c				\
+	shared/helpers.h
+weston_confine_LDADD = libtoytoolkit.la
+weston_confine_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_transformed_SOURCES = clients/transformed.c
 weston_transformed_LDADD = libtoytoolkit.la
