@@ -27,6 +27,11 @@ void Init::Initialize(mojo::Connector* connector,
   StartLogin();
 }
 
+bool Init::AcceptConnection(mojo::Connection* connection) {
+  connection->AddInterface<mojom::Login>(this);
+  return true;
+}
+
 void Init::LoginAs(const mojo::String& user_id) {
   user_access_manager_->SetActiveUser(user_id);
   connections_["mojo:mash_login"].reset();
@@ -34,6 +39,20 @@ void Init::LoginAs(const mojo::String& user_id) {
   mojo::Connector::ConnectParams params(
       mojo::Identity("mojo:mash_shell", user_id));
   connector_->Connect(&params);
+}
+
+void Init::Logout() {
+  // TODO(beng): need to kill the user session.
+  user_access_manager_->SetActiveUser(login_user_id_);
+  StartWindowManager();
+  StartLogin();
+}
+
+void Init::SwitchUser() {
+  // This doesn't kill the user session, merely starts the login UI.
+  user_access_manager_->SetActiveUser(login_user_id_);
+  StartWindowManager();
+  StartLogin();
 }
 
 void Init::Create(mojo::Connection* connection, mojom::LoginRequest request) {

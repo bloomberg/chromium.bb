@@ -5,6 +5,9 @@
 module mash.init.mojom;
 
 interface Login {
+  // TODO(beng): this should be guarded by a capability class.
   LoginAs(string user_id);
-};
 
+  Logout();
+  SwitchUser();
+};

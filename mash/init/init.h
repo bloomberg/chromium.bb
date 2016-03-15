@@ -34,9 +34,12 @@ class Init : public mojo::ShellClient,
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
                   uint32_t id) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // mojom::Login:
   void LoginAs(const mojo::String& user_id) override;
+  void Logout() override;
+  void SwitchUser() override;
 
   // mojo::InterfaceFactory<mojom::Login>:
   void Create(mojo::Connection* connection,
