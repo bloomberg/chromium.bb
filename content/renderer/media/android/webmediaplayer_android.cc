@@ -204,6 +204,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       stream_id_(0),
       is_player_initialized_(false),
       is_playing_(false),
+      is_play_pending_(false),
       needs_establish_peer_(true),
       has_size_info_(false),
       // Threaded compositing isn't enabled universally yet.
@@ -413,6 +414,14 @@ bool WebMediaPlayerAndroid::IsLocalResource() {
 
 void WebMediaPlayerAndroid::play() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMediaSuspend) &&
+      hasVideo() && player_manager_->render_frame()->IsHidden()) {
+    is_play_pending_ = true;
+    return;
+  }
+  is_play_pending_ = false;
 
   // For HLS streams, some devices cannot detect the video size unless a surface
   // texture is bind to it. See http://crbug.com/400145.
@@ -1525,7 +1534,10 @@ void WebMediaPlayerAndroid::OnHidden() {
   OnSuspendRequested(false);
 }
 
-void WebMediaPlayerAndroid::OnShown() {}
+void WebMediaPlayerAndroid::OnShown() {
+  if (is_play_pending_)
+    play();
+}
 
 void WebMediaPlayerAndroid::OnSuspendRequested(bool must_suspend) {
   // If we're idle or playing video, pause and release resources; audio only

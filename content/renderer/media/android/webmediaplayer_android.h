@@ -413,6 +413,9 @@ class WebMediaPlayerAndroid
   // Whether the media player is playing.
   bool is_playing_;
 
+  // Whether the media player is pending to play.
+  bool is_play_pending_;
+
   // Whether media player needs to re-establish the surface texture peer.
   bool needs_establish_peer_;
 
