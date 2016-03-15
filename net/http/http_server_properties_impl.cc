@@ -32,7 +32,6 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl()
       alternative_service_map_(AlternativeServiceMap::NO_AUTO_EVICT),
       spdy_settings_map_(SpdySettingsMap::NO_AUTO_EVICT),
       server_network_stats_map_(ServerNetworkStatsMap::NO_AUTO_EVICT),
-      alternative_service_probability_threshold_(1.0),
       quic_server_info_map_(QuicServerInfoMap::NO_AUTO_EVICT),
       max_server_configs_stored_in_properties_(kMaxQuicServersToPersist),
       weak_ptr_factory_(this) {
@@ -323,9 +322,8 @@ std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
 
 AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
     const HostPortPair& origin) {
-  // Copy alternative services with probability greater than or equal to the
-  // threshold into |alternative_services_above_threshold|.
-  AlternativeServiceVector alternative_services_above_threshold;
+  // Copy valid alternative services into |valid_alternative_services|.
+  AlternativeServiceVector valid_alternative_services;
   const base::Time now = base::Time::Now();
   AlternativeServiceMap::iterator map_it = alternative_service_map_.Get(origin);
   if (map_it != alternative_service_map_.end()) {
@@ -333,11 +331,6 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
          it != map_it->second.end();) {
       if (it->expiration < now) {
         it = map_it->second.erase(it);
-        continue;
-      }
-      if (it->probability == 0 ||
-          it->probability < alternative_service_probability_threshold_) {
-        ++it;
         continue;
       }
       AlternativeService alternative_service(it->alternative_service);
@@ -353,13 +346,13 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
         ++it;
         continue;
       }
-      alternative_services_above_threshold.push_back(alternative_service);
+      valid_alternative_services.push_back(alternative_service);
       ++it;
     }
     if (map_it->second.empty()) {
       alternative_service_map_.Erase(map_it);
     }
-    return alternative_services_above_threshold;
+    return valid_alternative_services;
   }
 
   CanonicalHostMap::const_iterator canonical = GetCanonicalHost(origin);
@@ -376,10 +369,6 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
       it = map_it->second.erase(it);
       continue;
     }
-    if (it->probability < alternative_service_probability_threshold_) {
-      ++it;
-      continue;
-    }
     AlternativeService alternative_service(it->alternative_service);
     if (alternative_service.host.empty()) {
       alternative_service.host = canonical->second.host();
@@ -392,25 +381,23 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
       ++it;
       continue;
     }
-    alternative_services_above_threshold.push_back(alternative_service);
+    valid_alternative_services.push_back(alternative_service);
     ++it;
   }
   if (map_it->second.empty()) {
     alternative_service_map_.Erase(map_it);
   }
-  return alternative_services_above_threshold;
+  return valid_alternative_services;
 }
 
 bool HttpServerPropertiesImpl::SetAlternativeService(
     const HostPortPair& origin,
     const AlternativeService& alternative_service,
-    double alternative_probability,
     base::Time expiration) {
   return SetAlternativeServices(
-      origin, AlternativeServiceInfoVector(
-                  /*size=*/1,
-                  AlternativeServiceInfo(alternative_service,
-                                         alternative_probability, expiration)));
+      origin,
+      AlternativeServiceInfoVector(
+          /*size=*/1, AlternativeServiceInfo(alternative_service, expiration)));
 }
 
 bool HttpServerPropertiesImpl::SetAlternativeServices(
@@ -695,11 +682,6 @@ void HttpServerPropertiesImpl::SetMaxServerConfigsStoredInProperties(
   }
 
   quic_server_info_map_.Swap(temp_map);
-}
-
-void HttpServerPropertiesImpl::SetAlternativeServiceProbabilityThreshold(
-    double threshold) {
-  alternative_service_probability_threshold_ = threshold;
 }
 
 AlternativeServiceMap::const_iterator

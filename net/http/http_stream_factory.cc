@@ -79,8 +79,8 @@ void HttpStreamFactory::ProcessAlternativeService(
     base::Time expiration =
         base::Time::Now() +
         base::TimeDelta::FromSeconds(alternative_service_entry.max_age);
-    AlternativeServiceInfo alternative_service_info(
-        alternative_service, alternative_service_entry.probability, expiration);
+    AlternativeServiceInfo alternative_service_info(alternative_service,
+                                                    expiration);
     alternative_service_info_vector.push_back(alternative_service_info);
   }
 
@@ -95,24 +95,9 @@ void HttpStreamFactory::ProcessAlternateProtocol(
     const HttpNetworkSession& session) {
   AlternateProtocol protocol = UNINITIALIZED_ALTERNATE_PROTOCOL;
   int port = 0;
-  double probability = 1;
   bool is_valid = true;
   for (size_t i = 0; i < alternate_protocol_values.size(); ++i) {
     base::StringPiece alternate_protocol_str = alternate_protocol_values[i];
-    if (base::StartsWith(alternate_protocol_str, "p=",
-                         base::CompareCase::SENSITIVE)) {
-      if (!base::StringToDouble(alternate_protocol_str.substr(2).as_string(),
-                                &probability) ||
-          probability < 0 || probability > 1) {
-        DVLOG(1) << kAlternateProtocolHeader
-                 << " header has unrecognizable probability: "
-                 << alternate_protocol_values[i];
-        is_valid = false;
-        break;
-      }
-      continue;
-    }
-
     std::vector<base::StringPiece> port_protocol_vector =
         base::SplitStringPiece(alternate_protocol_str, ":",
                                base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -153,7 +138,7 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   http_server_properties->SetAlternativeService(
       RewriteHost(http_host_port_pair),
       AlternativeService(protocol, "", static_cast<uint16_t>(port)),
-      probability, base::Time::Now() + base::TimeDelta::FromDays(30));
+      base::Time::Now() + base::TimeDelta::FromDays(30));
 }
 
 GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,
