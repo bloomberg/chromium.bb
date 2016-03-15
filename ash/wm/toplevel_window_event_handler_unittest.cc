@@ -17,6 +17,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -67,8 +68,8 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
     w1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     w1->set_id(1);
     w1->Init(ui::LAYER_TEXTURED);
-    aura::Window* parent = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), kShellWindowId_AlwaysOnTopContainer);
+    aura::Window* parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                               kShellWindowId_DefaultContainer);
     parent->AddChild(w1);
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
     w1->Show();
@@ -107,6 +108,36 @@ TEST_F(ToplevelWindowEventHandlerTest, Caption) {
   EXPECT_EQ("200,200", w1->bounds().origin().ToString());
   // Size should not have.
   EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
+}
+
+namespace {
+
+class CancelDragObserver : public aura::WindowObserver {
+ public:
+  CancelDragObserver() {}
+  ~CancelDragObserver() override {}
+
+  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override {
+    aura::client::CaptureClient* client =
+        aura::client::GetCaptureClient(params.target->GetRootWindow());
+    client->SetCapture(nullptr);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CancelDragObserver);
+};
+
+}  // namespace
+
+// Cancelling drag while starting window drag should not crash.
+TEST_F(ToplevelWindowEventHandlerTest, CancelWhileDragStart) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
+  CancelDragObserver observer;
+  w1->AddObserver(&observer);
+  gfx::Point origin = w1->bounds().origin();
+  DragFromCenterBy(w1.get(), 100, 100);
+  EXPECT_EQ(origin, w1->bounds().origin());
+  w1->RemoveObserver(&observer);
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomRight) {

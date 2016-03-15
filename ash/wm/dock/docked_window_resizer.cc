@@ -64,17 +64,21 @@ DockedWindowResizer::Create(WindowResizer* next_window_resizer,
 void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   last_location_ = location;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_);
+  base::WeakPtr<DockedWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
+
   if (!did_move_or_resize_) {
     did_move_or_resize_ = true;
-    StartedDragging();
+    StartedDragging(resizer);
   }
+  if (!resizer)
+    return;
+
   gfx::Point offset;
   gfx::Rect bounds(CalculateBoundsForDrag(location));
   MaybeSnapToEdge(bounds, &offset);
   gfx::Point modified_location(location);
   modified_location.Offset(offset.x(), offset.y());
 
-  base::WeakPtr<DockedWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
   next_window_resizer_->Drag(modified_location, event_flags);
   if (!resizer)
     return;
@@ -181,7 +185,8 @@ void DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
   }
 }
 
-void DockedWindowResizer::StartedDragging() {
+void DockedWindowResizer::StartedDragging(
+    base::WeakPtr<DockedWindowResizer>& resizer) {
   // During resizing the window width is preserved by DockedwindowLayoutManager.
   if (is_docked_ &&
       (details().bounds_change & WindowResizer::kBoundsChange_Resizes)) {
@@ -192,6 +197,8 @@ void DockedWindowResizer::StartedDragging() {
   // At this point we are not yet animating the window as it may not be
   // inside the docked area.
   dock_layout_->StartDragging(GetTarget());
+  if (!resizer)
+    return;
   // Reparent workspace windows during the drag to elevate them above workspace.
   // Other windows for which the DockedWindowResizer is instantiated include
   // panels and windows that are already docked. Those do not need reparenting.
@@ -205,6 +212,8 @@ void DockedWindowResizer::StartedDragging() {
     wm::ReparentChildWithTransientChildren(GetTarget(),
                                            GetTarget()->parent(),
                                            docked_container);
+    if (!resizer)
+      return;
   }
   if (is_docked_)
     dock_layout_->DockDraggedWindow(GetTarget());

@@ -54,7 +54,9 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
 
   // Tracks the window's initial position and attachment at the start of a drag
   // and informs the DockLayoutManager that a drag has started if necessary.
-  void StartedDragging();
+  // |resizer| can be used to check if the resizer has been deleted during
+  // StartedDragging.
+  void StartedDragging(base::WeakPtr<DockedWindowResizer>& resizer);
 
   // Informs the DockLayoutManager that the drag is complete if it was informed
   // of the drag start. |move_result| specifies if the drag was completed or
