@@ -52,7 +52,7 @@ void CircleLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setStyle(SkPaint::kFill_Style);
 
-  ui::PaintRecorder recorder(context, gfx::Size(radius_, radius_));
+  ui::PaintRecorder recorder(context, gfx::Size(2 * radius_, 2 * radius_));
   gfx::Canvas* canvas = recorder.canvas();
 
   canvas->DrawCircle(ToRoundedPoint(GetCenterPoint()), radius_, paint);
