@@ -1333,47 +1333,6 @@ or verify this branch is set up to track another (via the --track argument to
     return None
 
 
-def GetCodereviewSettingsInteractively():
-  """Prompt the user for settings."""
-  # TODO(ukai): ask code review system is rietveld or gerrit?
-  server = settings.GetDefaultServerUrl(error_ok=True)
-  prompt = 'Rietveld server (host[:port])'
-  prompt += ' [%s]' % (server or DEFAULT_SERVER)
-  newserver = ask_for_data(prompt + ':')
-  if not server and not newserver:
-    newserver = DEFAULT_SERVER
-  if newserver:
-    newserver = gclient_utils.UpgradeToHttps(newserver)
-    if newserver != server:
-      RunGit(['config', 'rietveld.server', newserver])
-
-  def SetProperty(initial, caption, name, is_url):
-    prompt = caption
-    if initial:
-      prompt += ' ("x" to clear) [%s]' % initial
-    new_val = ask_for_data(prompt + ':')
-    if new_val == 'x':
-      RunGit(['config', '--unset-all', 'rietveld.' + name], error_ok=True)
-    elif new_val:
-      if is_url:
-        new_val = gclient_utils.UpgradeToHttps(new_val)
-      if new_val != initial:
-        RunGit(['config', 'rietveld.' + name, new_val])
-
-  SetProperty(settings.GetDefaultCCList(), 'CC list', 'cc', False)
-  SetProperty(settings.GetDefaultPrivateFlag(),
-              'Private flag (rietveld only)', 'private', False)
-  SetProperty(settings.GetTreeStatusUrl(error_ok=True), 'Tree status URL',
-              'tree-status-url', False)
-  SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url', True)
-  SetProperty(settings.GetBugPrefix(), 'Bug Prefix', 'bug-prefix', False)
-  SetProperty(settings.GetRunPostUploadHook(), 'Run Post Upload Hook',
-              'run-post-upload-hook', False)
-
-  # TODO: configure a default branch to diff against, rather than this
-  # svn-based hackery.
-
-
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
@@ -1620,10 +1579,50 @@ def DownloadGerritHook(force):
 # upgraded. See http://crbug.com/579176.
 DownloadHooks = DownloadGerritHook
 
+
+def GetRietveldCodereviewSettingsInteractively():
+  """Prompt the user for settings."""
+  server = settings.GetDefaultServerUrl(error_ok=True)
+  prompt = 'Rietveld server (host[:port])'
+  prompt += ' [%s]' % (server or DEFAULT_SERVER)
+  newserver = ask_for_data(prompt + ':')
+  if not server and not newserver:
+    newserver = DEFAULT_SERVER
+  if newserver:
+    newserver = gclient_utils.UpgradeToHttps(newserver)
+    if newserver != server:
+      RunGit(['config', 'rietveld.server', newserver])
+
+  def SetProperty(initial, caption, name, is_url):
+    prompt = caption
+    if initial:
+      prompt += ' ("x" to clear) [%s]' % initial
+    new_val = ask_for_data(prompt + ':')
+    if new_val == 'x':
+      RunGit(['config', '--unset-all', 'rietveld.' + name], error_ok=True)
+    elif new_val:
+      if is_url:
+        new_val = gclient_utils.UpgradeToHttps(new_val)
+      if new_val != initial:
+        RunGit(['config', 'rietveld.' + name, new_val])
+
+  SetProperty(settings.GetDefaultCCList(), 'CC list', 'cc', False)
+  SetProperty(settings.GetDefaultPrivateFlag(),
+              'Private flag (rietveld only)', 'private', False)
+  SetProperty(settings.GetTreeStatusUrl(error_ok=True), 'Tree status URL',
+              'tree-status-url', False)
+  SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url', True)
+  SetProperty(settings.GetBugPrefix(), 'Bug Prefix', 'bug-prefix', False)
+  SetProperty(settings.GetRunPostUploadHook(), 'Run Post Upload Hook',
+              'run-post-upload-hook', False)
+
 @subcommand.usage('[repo root containing codereview.settings]')
 def CMDconfig(parser, args):
   """Edits configuration for this tree."""
 
+  print('WARNING: git cl config works for Rietveld only.\n'
+        'For Gerrit, see http://crbug.com/579160.')
+  # TODO(tandrii): add Gerrit support as part of http://crbug.com/579160.
   parser.add_option('--activate-update', action='store_true',
                     help='activate auto-updating [rietveld] section in '
                          '.git/config')
@@ -1641,8 +1640,7 @@ def CMDconfig(parser, args):
     return
 
   if len(args) == 0:
-    GetCodereviewSettingsInteractively()
-    DownloadGerritHook(True)
+    GetRietveldCodereviewSettingsInteractively()
     return 0
 
   url = args[0]
@@ -1651,7 +1649,6 @@ def CMDconfig(parser, args):
 
   # Load code review settings and download hooks (if available).
   LoadCodereviewSettingsFromFile(urllib2.urlopen(url))
-  DownloadGerritHook(True)
   return 0
 
 
