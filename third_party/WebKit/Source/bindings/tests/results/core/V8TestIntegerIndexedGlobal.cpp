@@ -154,9 +154,7 @@ static void installV8TestIntegerIndexedGlobalTemplate(v8::Local<v8::FunctionTemp
     V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalMethods));
 
     // Array iterator
-    if (RuntimeEnabledFeatures::iterableCollectionsEnabled()) {
-        instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
-    }
+    instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
 
     // Indexed properties
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestIntegerIndexedGlobalV8Internal::indexedPropertyGetterCallback, TestIntegerIndexedGlobalV8Internal::indexedPropertySetterCallback, 0, TestIntegerIndexedGlobalV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestIntegerIndexedGlobal>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);

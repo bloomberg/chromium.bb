@@ -335,13 +335,11 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
 
     {%- if has_array_iterator %}{{newline}}
     // Array iterator
-    {% filter runtime_enabled('RuntimeEnabledFeatures::iterableCollectionsEnabled') %}
     {% if is_global %}
     instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     {% else %}
     prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     {% endif %}
-    {% endfilter %}
     {% endif %}
 
     {%- set runtime_enabled_features = dict() %}
