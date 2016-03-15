@@ -51,7 +51,8 @@ public class AccountSigninActivity extends AppCompatActivity
             System.exit(-1);
         }
 
-        super.onCreate(savedInstanceState);
+        // We don't trust android to restore the saved state correctly, so pass null.
+        super.onCreate(null);
 
         mView = (AccountSigninView) LayoutInflater.from(this).inflate(
                 R.layout.account_signin_view, null);
