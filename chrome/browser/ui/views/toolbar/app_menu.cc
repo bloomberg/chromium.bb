@@ -647,17 +647,19 @@ class AppMenu::ZoomView : public AppMenuView {
     }
   }
 
-  // Overridden from AppMenuObserver.
-  void AppMenuDestroyed() override { AppMenuView::AppMenuDestroyed(); }
-
  private:
+  content::WebContents* GetActiveWebContents() const {
+    return menu() ?
+        menu()->browser_->tab_strip_model()->GetActiveWebContents() :
+        nullptr;
+  }
+
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change) {
     UpdateZoomControls();
   }
 
   void UpdateZoomControls() {
-    WebContents* selected_tab =
-        menu()->browser_->tab_strip_model()->GetActiveWebContents();
+    WebContents* selected_tab = GetActiveWebContents();
     int zoom = 100;
     if (selected_tab) {
       auto zoom_controller =
@@ -685,8 +687,7 @@ class AppMenu::ZoomView : public AppMenuView {
 
       int max_w = 0;
 
-      WebContents* selected_tab =
-          menu()->browser_->tab_strip_model()->GetActiveWebContents();
+      WebContents* selected_tab = GetActiveWebContents();
       if (selected_tab) {
         auto zoom_controller =
             ui_zoom::ZoomController::FromWebContents(selected_tab);
