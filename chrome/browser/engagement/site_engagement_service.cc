@@ -679,7 +679,7 @@ void SiteEngagementService::RecordMetrics() {
 }
 
 double SiteEngagementService::GetMedianEngagement(
-    std::map<GURL, double>& score_map) const {
+    const std::map<GURL, double>& score_map) const {
   if (score_map.size() == 0)
     return 0;
 
@@ -724,7 +724,7 @@ int SiteEngagementService::OriginsWithMaxDailyEngagement() const {
 }
 
 int SiteEngagementService::OriginsWithMaxEngagement(
-    std::map<GURL, double>& score_map) const {
+    const std::map<GURL, double>& score_map) const {
   int total_origins = 0;
 
   for (const auto& value : score_map)

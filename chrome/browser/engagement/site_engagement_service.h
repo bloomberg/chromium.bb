@@ -291,12 +291,12 @@ class SiteEngagementService : public KeyedService,
   void RecordMetrics();
 
   // Returns the median engagement score of all recorded origins.
-  double GetMedianEngagement(std::map<GURL, double>& score_map) const;
+  double GetMedianEngagement(const std::map<GURL, double>& score_map) const;
 
   // Returns the number of origins with maximum daily and total engagement
   // respectively.
   int OriginsWithMaxDailyEngagement() const;
-  int OriginsWithMaxEngagement(std::map<GURL, double>& score_map) const;
+  int OriginsWithMaxEngagement(const std::map<GURL, double>& score_map) const;
 
   void GetCountsForOriginsComplete(
       const history::OriginCountMap& origin_counts);

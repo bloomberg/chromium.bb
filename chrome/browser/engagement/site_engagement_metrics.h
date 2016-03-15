@@ -34,7 +34,7 @@ class SiteEngagementMetrics {
   static void RecordTotalOriginsEngaged(int total_origins);
   static void RecordMeanEngagement(double mean_engagement);
   static void RecordMedianEngagement(double median_engagement);
-  static void RecordEngagementScores(std::map<GURL, double> score_map);
+  static void RecordEngagementScores(const std::map<GURL, double>& score_map);
   static void RecordOriginsWithMaxEngagement(int total_origins);
   static void RecordOriginsWithMaxDailyEngagement(int total_origins);
   static void RecordPercentOriginsWithMaxEngagement(double percentage);

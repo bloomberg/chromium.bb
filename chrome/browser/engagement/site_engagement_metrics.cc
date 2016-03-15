@@ -80,7 +80,7 @@ void SiteEngagementMetrics::RecordMedianEngagement(double median_engagement) {
 }
 
 void SiteEngagementMetrics::RecordEngagementScores(
-    std::map<GURL, double> score_map) {
+    const std::map<GURL, double>& score_map) {
   if (score_map.size() == 0)
     return;
 
@@ -90,12 +90,16 @@ void SiteEngagementMetrics::RecordEngagementScores(
 
   for (const auto& value : score_map) {
     UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogram, value.second);
-    score_buckets.lower_bound(value.second)->second++;
-
     if (value.first.SchemeIs(url::kHttpsScheme))
       UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTPS, value.second);
     else if (value.first.SchemeIs(url::kHttpScheme))
       UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTP, value.second);
+
+    auto bucket = score_buckets.lower_bound(value.second);
+    if (bucket == score_buckets.end())
+      continue;
+
+    bucket->second++;
   }
 
   for (const auto& b : score_buckets) {
