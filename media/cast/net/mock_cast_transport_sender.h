@@ -36,15 +36,19 @@ class MockCastTransportSender : public CastTransportSender {
       const std::vector<uint32_t>& frame_ids));
   MOCK_METHOD2(ResendFrameForKickstart, void(uint32_t ssrc, uint32_t frame_id));
   MOCK_METHOD0(PacketReceiverForTesting, PacketReceiverCallback());
-  MOCK_METHOD1(AddValidSsrc, void(uint32_t ssrc));
-  MOCK_METHOD7(SendRtcpFromRtpReceiver,
-               void(uint32_t ssrc,
-                    uint32_t sender_ssrc,
-                    const RtcpTimeData& time_data,
-                    const RtcpCastMessage* cast_message,
-                    base::TimeDelta target_delay,
-                    const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-                    const RtpReceiverStatistics* rtp_receiver_statistics));
+  MOCK_METHOD2(AddValidRtpReceiver,
+               void(uint32_t rtp_sender_ssrc, uint32_t rtp_receiver_ssrc));
+  MOCK_METHOD2(InitializeRtpReceiverRtcpBuilder,
+               void(uint32_t rtp_receiver_ssrc, const RtcpTimeData& time_data));
+  MOCK_METHOD2(AddCastFeedback,
+               void(const RtcpCastMessage& cast_message,
+                    base::TimeDelta target_delay));
+  MOCK_METHOD1(
+      AddRtcpEvents,
+      void(const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events));
+  MOCK_METHOD1(AddRtpReceiverReport,
+               void(const RtcpReportBlock& rtp_report_block));
+  MOCK_METHOD0(SendRtcpFromRtpReceiver, void());
   MOCK_METHOD1(SetOptions, void(const base::DictionaryValue& options));
 };
 

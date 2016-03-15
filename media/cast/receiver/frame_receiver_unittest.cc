@@ -152,6 +152,9 @@ class FrameReceiverTest : public ::testing::Test {
 };
 
 TEST_F(FrameReceiverTest, RejectsUnparsablePackets) {
+  EXPECT_CALL(mock_transport_, AddValidRtpReceiver(_, _))
+      .WillRepeatedly(testing::Return());
+
   CreateFrameReceiverOfVideo();
 
   SimpleEventSubscriber event_subscriber;
@@ -169,12 +172,21 @@ TEST_F(FrameReceiverTest, RejectsUnparsablePackets) {
 }
 
 TEST_F(FrameReceiverTest, ReceivesOneFrame) {
+  EXPECT_CALL(mock_transport_, AddValidRtpReceiver(_, _))
+      .WillRepeatedly(testing::Return());
+
   CreateFrameReceiverOfAudio();
 
   SimpleEventSubscriber event_subscriber;
   cast_environment_->logger()->Subscribe(&event_subscriber);
 
-  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
+  EXPECT_CALL(mock_transport_, InitializeRtpReceiverRtcpBuilder(_, _))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddCastFeedback(_, _))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddRtcpEvents(_))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver())
       .WillRepeatedly(testing::Return());
 
   FeedLipSyncInfoIntoReceiver();
@@ -210,12 +222,21 @@ TEST_F(FrameReceiverTest, ReceivesOneFrame) {
 }
 
 TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
+  EXPECT_CALL(mock_transport_, AddValidRtpReceiver(_, _))
+      .WillRepeatedly(testing::Return());
+
   CreateFrameReceiverOfAudio();
 
   SimpleEventSubscriber event_subscriber;
   cast_environment_->logger()->Subscribe(&event_subscriber);
 
-  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
+  EXPECT_CALL(mock_transport_, InitializeRtpReceiverRtcpBuilder(_, _))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddCastFeedback(_, _))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddRtcpEvents(_))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver())
       .WillRepeatedly(testing::Return());
 
   const base::TimeDelta time_advance_per_frame =
@@ -313,12 +334,21 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
 }
 
 TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
+  EXPECT_CALL(mock_transport_, AddValidRtpReceiver(_, _))
+      .WillRepeatedly(testing::Return());
+
   CreateFrameReceiverOfVideo();
 
   SimpleEventSubscriber event_subscriber;
   cast_environment_->logger()->Subscribe(&event_subscriber);
 
-  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver(_, _, _, _, _, _, _))
+  EXPECT_CALL(mock_transport_, InitializeRtpReceiverRtcpBuilder(_, _))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddCastFeedback(_, _))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddRtcpEvents(_))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver())
       .WillRepeatedly(testing::Return());
 
   const base::TimeDelta time_advance_per_frame =

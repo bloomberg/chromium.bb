@@ -138,25 +138,32 @@ class CastTransportSenderWrapper : public CastTransportSender {
     return transport_->PacketReceiverForTesting();
   }
 
-  void AddValidSsrc(uint32_t ssrc) final {
-    return transport_->AddValidSsrc(ssrc);
+  void AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
+                           uint32_t rtp_receiver_ssrc) final {
+    return transport_->AddValidRtpReceiver(rtp_sender_ssrc, rtp_receiver_ssrc);
   }
 
-  void SendRtcpFromRtpReceiver(
-      uint32_t ssrc,
-      uint32_t sender_ssrc,
-      const RtcpTimeData& time_data,
-      const RtcpCastMessage* cast_message,
-      base::TimeDelta target_delay,
-      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-      const RtpReceiverStatistics* rtp_receiver_statistics) final {
-    return transport_->SendRtcpFromRtpReceiver(ssrc,
-                                               sender_ssrc,
-                                               time_data,
-                                               cast_message,
-                                               target_delay,
-                                               rtcp_events,
-                                               rtp_receiver_statistics);
+  void InitializeRtpReceiverRtcpBuilder(uint32_t rtp_receiver_ssrc,
+                                        const RtcpTimeData& time_data) final {
+    transport_->InitializeRtpReceiverRtcpBuilder(rtp_receiver_ssrc, time_data);
+  }
+
+  void AddCastFeedback(const RtcpCastMessage& cast_message,
+                       base::TimeDelta target_delay) final {
+    transport_->AddCastFeedback(cast_message, target_delay);
+  }
+
+  void AddRtcpEvents(
+      const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) final {
+    transport_->AddRtcpEvents(rtcp_events);
+  }
+
+  void AddRtpReceiverReport(const RtcpReportBlock& rtp_report_block) final {
+    transport_->AddRtpReceiverReport(rtp_report_block);
+  }
+
+  void SendRtcpFromRtpReceiver() final {
+    transport_->SendRtcpFromRtpReceiver();
   }
 
   void SetOptions(const base::DictionaryValue& options) final {}

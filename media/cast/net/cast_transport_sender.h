@@ -127,20 +127,31 @@ class CastTransportSender : public base::NonThreadSafe {
 
   // The following functions are needed for receving.
 
-  // Add a valid SSRC. This is used to verify that incoming packets
-  // come from the right sender. Without valid SSRCs, the return address cannot
-  // be automatically established.
-  virtual void AddValidSsrc(uint32_t ssrc) = 0;
+  // The RTP sender SSRC is used to verify that incoming packets come from the
+  // right sender. Without valid SSRCs, the return address cannot be
+  // automatically established. The RTP receiver SSRC is used to verify that the
+  // request to build the RTCP packet is from the right RTP receiver.
+  virtual void AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
+                                   uint32_t rtp_receiver_ssrc) = 0;
 
-  // Send an RTCP message from receiver to sender.
-  virtual void SendRtcpFromRtpReceiver(
-      uint32_t ssrc,
-      uint32_t sender_ssrc,
-      const RtcpTimeData& time_data,
-      const RtcpCastMessage* cast_message,
-      base::TimeDelta target_delay,
-      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-      const RtpReceiverStatistics* rtp_receiver_statistics) = 0;
+  // The following function are used to build and send a RTCP packet from
+  // RTP receiver to RTP sender.
+
+  // Initialize the RTCP builder on RTP receiver. This has to be called before
+  // adding other optional RTCP messages to the packet.
+  virtual void InitializeRtpReceiverRtcpBuilder(
+      uint32_t rtp_receiver_ssrc,
+      const RtcpTimeData& time_data) = 0;
+
+  virtual void AddCastFeedback(const RtcpCastMessage& cast_message,
+                               base::TimeDelta target_delay) = 0;
+  virtual void AddRtcpEvents(
+      const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) = 0;
+  virtual void AddRtpReceiverReport(
+      const RtcpReportBlock& rtp_report_block) = 0;
+
+  // Finalize the building of the RTCP packet and send out the built packet.
+  virtual void SendRtcpFromRtpReceiver() = 0;
 
   // Set options for the PacedSender and Wifi.
   virtual void SetOptions(const base::DictionaryValue& options) = 0;

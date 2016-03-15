@@ -480,6 +480,11 @@ base::TimeTicks ConvertNtpToTimeTicks(uint32_t ntp_seconds,
   return base::TimeTicks::UnixEpoch() + elapsed_since_unix_epoch;
 }
 
+uint32_t ConvertToNtpDiff(uint32_t delay_seconds, uint32_t delay_fraction) {
+  return ((delay_seconds & 0x0000FFFF) << 16) +
+         ((delay_fraction & 0xFFFF0000) >> 16);
+}
+
 namespace {
 enum {
   // Minimum number of bytes required to make a valid RTCP packet.

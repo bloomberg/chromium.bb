@@ -115,6 +115,21 @@ class FrameReceiver : public RtpPayloadFeedback,
   // Actually send the next RTCP report.
   void SendNextRtcpReport();
 
+  // Interface to send RTCP reports.
+  // |cast_message|, |rtcp_events| and |rtp_receiver_statistics| are optional;
+  // if |cast_message| is provided the RTCP receiver report will contain a Cast
+  // ACK/NACK feedback message; |target_delay| is sent together with
+  // |cast_message|. If |rtcp_events| is provided the RTCP receiver report will
+  // include event log messages
+  void SendRtcpReport(
+      uint32_t rtp_receiver_ssrc,
+      uint32_t rtp_sender_ssrc,
+      const RtcpTimeData& time_data,
+      const RtcpCastMessage* cast_message,
+      base::TimeDelta target_delay,
+      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
+      const RtpReceiverStatistics* rtp_receiver_statistics);
+
   const scoped_refptr<CastEnvironment> cast_environment_;
 
   // Transport used to send data back.

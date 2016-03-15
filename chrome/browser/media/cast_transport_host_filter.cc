@@ -85,8 +85,13 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
                         OnResendFrameForKickstart)
     IPC_MESSAGE_HANDLER(CastHostMsg_CancelSendingFrames,
                         OnCancelSendingFrames)
-    IPC_MESSAGE_HANDLER(CastHostMsg_AddValidSsrc,
-                        OnAddValidSsrc)
+    IPC_MESSAGE_HANDLER(CastHostMsg_AddValidRtpReceiver, OnAddValidRtpReceiver)
+    IPC_MESSAGE_HANDLER(CastHostMsg_InitializeRtpReceiverRtcpBuilder,
+                        OnInitializeRtpReceiverRtcpBuilder)
+    IPC_MESSAGE_HANDLER(CastHostMsg_AddCastFeedback, OnAddCastFeedback)
+    IPC_MESSAGE_HANDLER(CastHostMsg_AddRtcpEvents, OnAddRtcpEvents)
+    IPC_MESSAGE_HANDLER(CastHostMsg_AddRtpReceiverReport,
+                        OnAddRtpReceiverReport)
     IPC_MESSAGE_HANDLER(CastHostMsg_SendRtcpFromRtpReceiver,
                         OnSendRtcpFromRtpReceiver)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -252,30 +257,73 @@ void CastTransportHostFilter::OnSendSenderReport(
   }
 }
 
-void CastTransportHostFilter::OnAddValidSsrc(int32_t channel_id,
-                                             uint32_t ssrc) {
+void CastTransportHostFilter::OnAddValidRtpReceiver(
+    int32_t channel_id,
+    uint32_t rtp_sender_ssrc,
+    uint32_t rtp_receiver_ssrc) {
   media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
   if (sender) {
-    sender->AddValidSsrc(ssrc);
+    sender->AddValidRtpReceiver(rtp_sender_ssrc, rtp_receiver_ssrc);
   } else {
-    DVLOG(1)
-        << "CastTransportHostFilter::OnAddValidSsrc "
-        << "on non-existing channel";
+    DVLOG(1) << "CastTransportHostFilter::OnAddValidRtpReceiver "
+             << "on non-existing channel";
   }
 }
 
-void CastTransportHostFilter::OnSendRtcpFromRtpReceiver(
+void CastTransportHostFilter::OnInitializeRtpReceiverRtcpBuilder(
     int32_t channel_id,
-    const media::cast::SendRtcpFromRtpReceiver_Params& params) {
+    uint32_t rtp_receiver_ssrc,
+    const media::cast::RtcpTimeData& time_data) {
   media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
   if (sender) {
-    sender->SendRtcpFromRtpReceiver(params.ssrc,
-                                    params.sender_ssrc,
-                                    params.time_data,
-                                    params.cast_message.get(),
-                                    params.target_delay,
-                                    params.rtcp_events.get(),
-                                    params.rtp_receiver_statistics.get());
+    sender->InitializeRtpReceiverRtcpBuilder(rtp_receiver_ssrc, time_data);
+  } else {
+    DVLOG(1) << "CastTransportHostFilter::OnInitializeRtpReceiverRtcpBuilder "
+             << "on non-existing channel";
+  }
+}
+
+void CastTransportHostFilter::OnAddCastFeedback(
+    int32_t channel_id,
+    const media::cast::RtcpCastMessage& cast_message,
+    base::TimeDelta target_delay) {
+  media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
+  if (sender) {
+    sender->AddCastFeedback(cast_message, target_delay);
+  } else {
+    DVLOG(1) << "CastTransportHostFilter::OnAddCastFeedback "
+             << "on non-existing channel";
+  }
+}
+
+void CastTransportHostFilter::OnAddRtcpEvents(
+    int32_t channel_id,
+    const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) {
+  media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
+  if (sender) {
+    sender->AddRtcpEvents(rtcp_events);
+  } else {
+    DVLOG(1) << "CastTransportHostFilter::OnAddRtcpEvents "
+             << "on non-existing channel";
+  }
+}
+
+void CastTransportHostFilter::OnAddRtpReceiverReport(
+    int32_t channel_id,
+    const media::cast::RtcpReportBlock& rtp_receiver_report_block) {
+  media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
+  if (sender) {
+    sender->AddRtpReceiverReport(rtp_receiver_report_block);
+  } else {
+    DVLOG(1) << "CastTransportHostFilter::OnAddRtpReceiverReport "
+             << "on non-existing channel";
+  }
+}
+
+void CastTransportHostFilter::OnSendRtcpFromRtpReceiver(int32_t channel_id) {
+  media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
+  if (sender) {
+    sender->SendRtcpFromRtpReceiver();
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnSendRtcpFromRtpReceiver "

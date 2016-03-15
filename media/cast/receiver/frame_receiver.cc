@@ -57,13 +57,12 @@ FrameReceiver::FrameReceiver(
               true,
               config.rtp_max_delay_ms * config.target_frame_rate / 1000),
       rtcp_(cast_environment_->Clock(),
-            NULL,
             config.receiver_ssrc,
             config.sender_ssrc),
       is_waiting_for_consecutive_frame_(false),
       lip_sync_drift_(ClockDriftSmoother::GetDefaultTimeConstant()),
       weak_factory_(this) {
-  transport_->AddValidSsrc(config.sender_ssrc);
+  transport_->AddValidRtpReceiver(config.sender_ssrc, config.receiver_ssrc);
   DCHECK_GT(config.rtp_max_delay_ms, 0);
   DCHECK_GT(config.target_frame_rate, 0);
   decryptor_.Initialize(config.aes_key, config.aes_iv_mask);
@@ -195,9 +194,9 @@ void FrameReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
 
   ReceiverRtcpEventSubscriber::RtcpEvents rtcp_events;
   event_subscriber_.GetRtcpEventsWithRedundancy(&rtcp_events);
-  transport_->SendRtcpFromRtpReceiver(
-      rtcp_.local_ssrc(), rtcp_.remote_ssrc(), CreateRtcpTimeData(now),
-      &cast_message, target_playout_delay_, &rtcp_events, NULL);
+  SendRtcpReport(rtcp_.local_ssrc(), rtcp_.remote_ssrc(),
+                 CreateRtcpTimeData(now), &cast_message, target_playout_delay_,
+                 &rtcp_events, NULL);
 }
 
 void FrameReceiver::EmitAvailableEncodedFrames() {
@@ -349,10 +348,52 @@ void FrameReceiver::SendNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   RtpReceiverStatistics stats = stats_.GetStatistics();
-  transport_->SendRtcpFromRtpReceiver(rtcp_.local_ssrc(), rtcp_.remote_ssrc(),
-                                      CreateRtcpTimeData(now), NULL,
-                                      base::TimeDelta(), NULL, &stats);
+  SendRtcpReport(rtcp_.local_ssrc(), rtcp_.remote_ssrc(),
+                 CreateRtcpTimeData(now), NULL, base::TimeDelta(), NULL,
+                 &stats);
   ScheduleNextRtcpReport();
+}
+
+void FrameReceiver::SendRtcpReport(
+    uint32_t rtp_receiver_ssrc,
+    uint32_t rtp_sender_ssrc,
+    const RtcpTimeData& time_data,
+    const RtcpCastMessage* cast_message,
+    base::TimeDelta target_delay,
+    const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
+    const RtpReceiverStatistics* rtp_receiver_statistics) {
+  transport_->InitializeRtpReceiverRtcpBuilder(rtp_receiver_ssrc, time_data);
+  RtcpReportBlock report_block;
+  if (rtp_receiver_statistics) {
+    report_block.remote_ssrc = 0;  // Not needed to set send side.
+    report_block.media_ssrc =
+        rtp_sender_ssrc;  // SSRC of the RTP packet sender.
+    report_block.fraction_lost = rtp_receiver_statistics->fraction_lost;
+    report_block.cumulative_lost = rtp_receiver_statistics->cumulative_lost;
+    report_block.extended_high_sequence_number =
+        rtp_receiver_statistics->extended_high_sequence_number;
+    report_block.jitter = rtp_receiver_statistics->jitter;
+    report_block.last_sr = rtcp_.last_report_truncated_ntp();
+    base::TimeTicks last_report_received_time =
+        rtcp_.time_last_report_received();
+    if (!last_report_received_time.is_null()) {
+      uint32_t delay_seconds = 0;
+      uint32_t delay_fraction = 0;
+      base::TimeDelta delta = time_data.timestamp - last_report_received_time;
+      ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
+                             &delay_fraction);
+      report_block.delay_since_last_sr =
+          ConvertToNtpDiff(delay_seconds, delay_fraction);
+    } else {
+      report_block.delay_since_last_sr = 0;
+    }
+    transport_->AddRtpReceiverReport(report_block);
+  }
+  if (cast_message)
+    transport_->AddCastFeedback(*cast_message, target_delay);
+  if (rtcp_events)
+    transport_->AddRtcpEvents(*rtcp_events);
+  transport_->SendRtcpFromRtpReceiver();
 }
 
 }  // namespace cast

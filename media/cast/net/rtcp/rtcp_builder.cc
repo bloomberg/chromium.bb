@@ -115,7 +115,7 @@ class NackStringBuilder {
 }  // namespace
 
 RtcpBuilder::RtcpBuilder(uint32_t sending_ssrc)
-    : writer_(NULL, 0), ssrc_(sending_ssrc), ptr_of_length_(NULL) {}
+    : writer_(NULL, 0), local_ssrc_(sending_ssrc), ptr_of_length_(NULL) {}
 
 RtcpBuilder::~RtcpBuilder() {}
 
@@ -161,26 +161,6 @@ PacketRef RtcpBuilder::Finish() {
   return ret;
 }
 
-PacketRef RtcpBuilder::BuildRtcpFromReceiver(
-    const RtcpReportBlock* report_block,
-    const RtcpReceiverReferenceTimeReport* rrtr,
-    const RtcpCastMessage* cast_message,
-    const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-    base::TimeDelta target_delay) {
-  Start();
-
-  if (report_block)
-    AddRR(report_block);
-  if (rrtr)
-    AddRrtr(rrtr);
-  if (cast_message)
-    AddCast(cast_message, target_delay);
-  if (rtcp_events)
-    AddReceiverLog(*rtcp_events);
-
-  return Finish();
-}
-
 PacketRef RtcpBuilder::BuildRtcpFromSender(const RtcpSenderInfo& sender_info) {
   Start();
   AddSR(sender_info);
@@ -189,7 +169,7 @@ PacketRef RtcpBuilder::BuildRtcpFromSender(const RtcpSenderInfo& sender_info) {
 
 void RtcpBuilder::AddRR(const RtcpReportBlock* report_block) {
   AddRtcpHeader(kPacketTypeReceiverReport, report_block ? 1 : 0);
-  writer_.WriteU32(ssrc_);
+  writer_.WriteU32(local_ssrc_);
   if (report_block) {
     AddReportBlocks(*report_block);  // Adds 24 bytes.
   }
@@ -215,26 +195,26 @@ void RtcpBuilder::AddReportBlocks(const RtcpReportBlock& report_block) {
   writer_.WriteU32(report_block.delay_since_last_sr);
 }
 
-void RtcpBuilder::AddRrtr(const RtcpReceiverReferenceTimeReport* rrtr) {
+void RtcpBuilder::AddRrtr(const RtcpReceiverReferenceTimeReport& rrtr) {
   AddRtcpHeader(kPacketTypeXr, 0);
-  writer_.WriteU32(ssrc_);  // Add our own SSRC.
+  writer_.WriteU32(local_ssrc_);  // Add our own SSRC.
   writer_.WriteU8(4);       // Add block type.
   writer_.WriteU8(0);       // Add reserved.
   writer_.WriteU16(2);      // Block length.
 
   // Add the media (received RTP) SSRC.
-  writer_.WriteU32(rrtr->ntp_seconds);
-  writer_.WriteU32(rrtr->ntp_fraction);
+  writer_.WriteU32(rrtr.ntp_seconds);
+  writer_.WriteU32(rrtr.ntp_fraction);
 }
 
-void RtcpBuilder::AddCast(const RtcpCastMessage* cast,
+void RtcpBuilder::AddCast(const RtcpCastMessage& cast,
                           base::TimeDelta target_delay) {
   // See RTC 4585 Section 6.4 for application specific feedback messages.
   AddRtcpHeader(kPacketTypePayloadSpecific, 15);
-  writer_.WriteU32(ssrc_);              // Add our own SSRC.
-  writer_.WriteU32(cast->media_ssrc);  // Remote SSRC.
+  writer_.WriteU32(local_ssrc_);      // Add our own SSRC.
+  writer_.WriteU32(cast.media_ssrc);  // Remote SSRC.
   writer_.WriteU32(kCast);
-  writer_.WriteU8(static_cast<uint8_t>(cast->ack_frame_id));
+  writer_.WriteU8(static_cast<uint8_t>(cast.ack_frame_id));
   uint8_t* cast_loss_field_pos = reinterpret_cast<uint8_t*>(writer_.ptr());
   writer_.WriteU8(0);  // Overwritten with number_of_loss_fields.
   DCHECK_LE(target_delay.InMilliseconds(),
@@ -246,11 +226,11 @@ void RtcpBuilder::AddCast(const RtcpCastMessage* cast,
       kRtcpMaxCastLossFields, writer_.remaining() / 4);
 
   MissingFramesAndPacketsMap::const_iterator frame_it =
-      cast->missing_frames_and_packets.begin();
+      cast.missing_frames_and_packets.begin();
 
   NackStringBuilder nack_string_builder;
-  for (; frame_it != cast->missing_frames_and_packets.end() &&
-             number_of_loss_fields < max_number_of_loss_fields;
+  for (; frame_it != cast.missing_frames_and_packets.end() &&
+         number_of_loss_fields < max_number_of_loss_fields;
        ++frame_it) {
     nack_string_builder.PushFrame(frame_it->first);
     // Iterate through all frames with missing packets.
@@ -288,8 +268,7 @@ void RtcpBuilder::AddCast(const RtcpCastMessage* cast,
     }
   }
   VLOG_IF(1, !nack_string_builder.Empty())
-      << "SSRC: " << cast->media_ssrc
-      << ", ACK: " << cast->ack_frame_id
+      << "SSRC: " << cast.media_ssrc << ", ACK: " << cast.ack_frame_id
       << ", NACK: " << nack_string_builder.GetString();
   DCHECK_LE(number_of_loss_fields, kRtcpMaxCastLossFields);
   *cast_loss_field_pos = static_cast<uint8_t>(number_of_loss_fields);
@@ -297,7 +276,7 @@ void RtcpBuilder::AddCast(const RtcpCastMessage* cast,
 
 void RtcpBuilder::AddSR(const RtcpSenderInfo& sender_info) {
   AddRtcpHeader(kPacketTypeSenderReport, 0);
-  writer_.WriteU32(ssrc_);
+  writer_.WriteU32(local_ssrc_);
   writer_.WriteU32(sender_info.ntp_seconds);
   writer_.WriteU32(sender_info.ntp_fraction);
   writer_.WriteU32(sender_info.rtp_timestamp.lower_32_bits());
@@ -324,11 +303,11 @@ void RtcpBuilder::AddSR(const RtcpSenderInfo& sender_info) {
 */
 void RtcpBuilder::AddDlrrRb(const RtcpDlrrReportBlock& dlrr) {
   AddRtcpHeader(kPacketTypeXr, 0);
-  writer_.WriteU32(ssrc_);  // Add our own SSRC.
+  writer_.WriteU32(local_ssrc_);  // Add our own SSRC.
   writer_.WriteU8(5);  // Add block type.
   writer_.WriteU8(0);  // Add reserved.
   writer_.WriteU16(3);  // Block length.
-  writer_.WriteU32(ssrc_);  // Add the media (received RTP) SSRC.
+  writer_.WriteU32(local_ssrc_);  // Add the media (received RTP) SSRC.
   writer_.WriteU32(dlrr.last_rr);
   writer_.WriteU32(dlrr.delay_since_last_rr);
 }
@@ -345,7 +324,7 @@ void RtcpBuilder::AddReceiverLog(
   }
 
   AddRtcpHeader(kPacketTypeApplicationDefined, kReceiverLogSubtype);
-  writer_.WriteU32(ssrc_);  // Add our own SSRC.
+  writer_.WriteU32(local_ssrc_);  // Add our own SSRC.
   writer_.WriteU32(kCast);
 
   while (!receiver_log_message.empty() &&

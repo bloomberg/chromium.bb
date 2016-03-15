@@ -139,6 +139,10 @@ void ConvertTimeTicksToNtp(const base::TimeTicks& time,
                            uint32_t* ntp_seconds,
                            uint32_t* ntp_fractions);
 
+// Create a NTP diff from seconds and fractions of seconds; delay_fraction is
+// fractions of a second where 0x80000000 is half a second.
+uint32_t ConvertToNtpDiff(uint32_t delay_seconds, uint32_t delay_fraction);
+
 // Maps an NTP timestamp, comprised of two components, to a base::TimeTicks
 // value.
 base::TimeTicks ConvertNtpToTimeTicks(uint32_t ntp_seconds,

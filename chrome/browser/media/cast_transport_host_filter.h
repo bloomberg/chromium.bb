@@ -61,10 +61,23 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void OnResendFrameForKickstart(int32_t channel_id,
                                  uint32_t ssrc,
                                  uint32_t frame_id);
-  void OnAddValidSsrc(int32_t channel_id, uint32_t ssrc);
-  void OnSendRtcpFromRtpReceiver(
+  void OnAddValidRtpReceiver(int32_t channel_id,
+                             uint32_t rtp_sender_ssrc,
+                             uint32_t rtp_receiver_ssrc);
+  void OnInitializeRtpReceiverRtcpBuilder(
       int32_t channel_id,
-      const media::cast::SendRtcpFromRtpReceiver_Params& params);
+      uint32_t rtp_receiver_ssrc,
+      const media::cast::RtcpTimeData& time_data);
+  void OnAddCastFeedback(int32_t channel_id,
+                         const media::cast::RtcpCastMessage& cast_message,
+                         base::TimeDelta target_delay);
+  void OnAddRtcpEvents(
+      int32_t channel_id,
+      const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events);
+  void OnAddRtpReceiverReport(
+      int32_t channel_id,
+      const media::cast::RtcpReportBlock& rtp_receiver_report_block);
+  void OnSendRtcpFromRtpReceiver(int32_t channel_id);
 
   void OnNew(int32_t channel_id,
              const net::IPEndPoint& local_end_point,

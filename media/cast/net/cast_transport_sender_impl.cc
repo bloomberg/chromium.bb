@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/cast/net/cast_transport_defines.h"
-#include "media/cast/net/rtcp/receiver_rtcp_session.h"
 #include "media/cast/net/rtcp/sender_rtcp_session.h"
 #include "net/base/net_errors.h"
 
@@ -125,7 +124,7 @@ void CastTransportSenderImpl::InitializeAudio(
                          weak_factory_.GetWeakPtr(), AUDIO_EVENT),
       clock_, &pacer_, config.ssrc, config.feedback_ssrc));
   pacer_.RegisterAudioSsrc(config.ssrc);
-  AddValidSsrc(config.feedback_ssrc);
+  valid_sender_ssrcs_.insert(config.feedback_ssrc);
   transport_client_->OnStatusChanged(TRANSPORT_AUDIO_INITIALIZED);
 }
 
@@ -154,7 +153,7 @@ void CastTransportSenderImpl::InitializeVideo(
                          weak_factory_.GetWeakPtr(), VIDEO_EVENT),
       clock_, &pacer_, config.ssrc, config.feedback_ssrc));
   pacer_.RegisterVideoSsrc(config.ssrc);
-  AddValidSsrc(config.feedback_ssrc);
+  valid_sender_ssrcs_.insert(config.feedback_ssrc);
   transport_client_->OnStatusChanged(TRANSPORT_VIDEO_INITIALIZED);
 }
 
@@ -290,7 +289,7 @@ bool CastTransportSenderImpl::OnReceivedPacket(scoped_ptr<Packet> packet) {
     VLOG(1) << "Invalid RTP packet.";
     return false;
   }
-  if (valid_ssrcs_.find(ssrc) == valid_ssrcs_.end()) {
+  if (valid_sender_ssrcs_.find(ssrc) == valid_sender_ssrcs_.end()) {
     VLOG(1) << "Stale packet received.";
     return false;
   }
@@ -388,8 +387,10 @@ void CastTransportSenderImpl::OnReceivedCastMessage(
   }
 }
 
-void CastTransportSenderImpl::AddValidSsrc(uint32_t ssrc) {
-  valid_ssrcs_.insert(ssrc);
+void CastTransportSenderImpl::AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
+                                                  uint32_t rtp_receiver_ssrc) {
+  valid_sender_ssrcs_.insert(rtp_sender_ssrc);
+  valid_rtp_receiver_ssrcs_.insert(rtp_receiver_ssrc);
 }
 
 void CastTransportSenderImpl::SetOptions(const base::DictionaryValue& options) {
@@ -415,19 +416,68 @@ void CastTransportSenderImpl::SetOptions(const base::DictionaryValue& options) {
     wifi_options_autoreset_ = net::SetWifiOptions(wifi_options);
 }
 
-// TODO(isheriff): This interface needs clean up.
-// https://crbug.com/569259
-void CastTransportSenderImpl::SendRtcpFromRtpReceiver(
-    uint32_t ssrc,
-    uint32_t sender_ssrc,
-    const RtcpTimeData& time_data,
-    const RtcpCastMessage* cast_message,
-    base::TimeDelta target_delay,
-    const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-    const RtpReceiverStatistics* rtp_receiver_statistics) {
-  const ReceiverRtcpSession rtcp(clock_, &pacer_, ssrc, sender_ssrc);
-  rtcp.SendRtcpReport(time_data, cast_message, target_delay, rtcp_events,
-                      rtp_receiver_statistics);
+void CastTransportSenderImpl::InitializeRtpReceiverRtcpBuilder(
+    uint32_t rtp_receiver_ssrc,
+    const RtcpTimeData& time_data) {
+  if (valid_rtp_receiver_ssrcs_.find(rtp_receiver_ssrc) ==
+      valid_rtp_receiver_ssrcs_.end()) {
+    VLOG(1) << "Invalid RTP receiver ssrc in "
+            << "CastTransportSenderImpl::InitializeRtpReceiverRtcpBuilder.";
+    return;
+  }
+  if (rtcp_builder_at_rtp_receiver_) {
+    VLOG(1) << "Re-initialize rtcp_builder_at_rtp_receiver_ in "
+               "CastTransportSenderImpl.";
+    return;
+  }
+  rtcp_builder_at_rtp_receiver_.reset(new RtcpBuilder(rtp_receiver_ssrc));
+  rtcp_builder_at_rtp_receiver_->Start();
+  RtcpReceiverReferenceTimeReport rrtr;
+  rrtr.ntp_seconds = time_data.ntp_seconds;
+  rrtr.ntp_fraction = time_data.ntp_fraction;
+  rtcp_builder_at_rtp_receiver_->AddRrtr(rrtr);
+}
+
+void CastTransportSenderImpl::AddCastFeedback(
+    const RtcpCastMessage& cast_message,
+    base::TimeDelta target_delay) {
+  if (!rtcp_builder_at_rtp_receiver_) {
+    VLOG(1) << "rtcp_builder_at_rtp_receiver_ is not initialized before "
+               "calling CastTransportSenderImpl::AddCastFeedback.";
+    return;
+  }
+  rtcp_builder_at_rtp_receiver_->AddCast(cast_message, target_delay);
+}
+
+void CastTransportSenderImpl::AddRtcpEvents(
+    const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) {
+  if (!rtcp_builder_at_rtp_receiver_) {
+    VLOG(1) << "rtcp_builder_at_rtp_receiver_ is not initialized before "
+               "calling CastTransportSenderImpl::AddRtcpEvents.";
+    return;
+  }
+  rtcp_builder_at_rtp_receiver_->AddReceiverLog(rtcp_events);
+}
+
+void CastTransportSenderImpl::AddRtpReceiverReport(
+    const RtcpReportBlock& rtp_receiver_report_block) {
+  if (!rtcp_builder_at_rtp_receiver_) {
+    VLOG(1) << "rtcp_builder_at_rtp_receiver_ is not initialized before "
+               "calling CastTransportSenderImpl::AddRtpReceiverReport.";
+    return;
+  }
+  rtcp_builder_at_rtp_receiver_->AddRR(&rtp_receiver_report_block);
+}
+
+void CastTransportSenderImpl::SendRtcpFromRtpReceiver() {
+  if (!rtcp_builder_at_rtp_receiver_) {
+    VLOG(1) << "rtcp_builder_at_rtp_receiver_ is not initialized before "
+               "calling CastTransportSenderImpl::SendRtcpFromRtpReceiver.";
+    return;
+  }
+  pacer_.SendRtcpPacket(rtcp_builder_at_rtp_receiver_->local_ssrc(),
+                        rtcp_builder_at_rtp_receiver_->Finish());
+  rtcp_builder_at_rtp_receiver_.reset();
 }
 
 }  // namespace cast

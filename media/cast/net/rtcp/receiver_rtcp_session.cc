@@ -4,7 +4,6 @@
 
 #include "base/big_endian.h"
 #include "base/time/tick_clock.h"
-#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtcp/receiver_rtcp_session.h"
 #include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
@@ -13,23 +12,10 @@
 namespace media {
 namespace cast {
 
-namespace {
-
-// Create a NTP diff from seconds and fractions of seconds; delay_fraction is
-// fractions of a second where 0x80000000 is half a second.
-uint32_t ConvertToNtpDiff(uint32_t delay_seconds, uint32_t delay_fraction) {
-  return ((delay_seconds & 0x0000FFFF) << 16) +
-         ((delay_fraction & 0xFFFF0000) >> 16);
-}
-
-}  // namespace
-
 ReceiverRtcpSession::ReceiverRtcpSession(base::TickClock* clock,
-                                         PacedPacketSender* packet_sender,
                                          uint32_t local_ssrc,
                                          uint32_t remote_ssrc)
     : clock_(clock),
-      packet_sender_(packet_sender),
       local_ssrc_(local_ssrc),
       remote_ssrc_(remote_ssrc),
       last_report_truncated_ntp_(0),
@@ -94,45 +80,6 @@ void ReceiverRtcpSession::OnReceivedNtp(uint32_t ntp_seconds,
           << "measured=" << measured_offset.InMicroseconds() << " usec, "
           << "filtered=" << local_clock_ahead_by_.Current().InMicroseconds()
           << " usec.";
-}
-
-void ReceiverRtcpSession::SendRtcpReport(
-    RtcpTimeData time_data,
-    const RtcpCastMessage* cast_message,
-    base::TimeDelta target_delay,
-    const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-    const RtpReceiverStatistics* rtp_receiver_statistics) const {
-  RtcpReportBlock report_block;
-  RtcpReceiverReferenceTimeReport rrtr;
-  rrtr.ntp_seconds = time_data.ntp_seconds;
-  rrtr.ntp_fraction = time_data.ntp_fraction;
-
-  if (rtp_receiver_statistics) {
-    report_block.remote_ssrc = 0;            // Not needed to set send side.
-    report_block.media_ssrc = remote_ssrc_;  // SSRC of the RTP packet sender.
-    report_block.fraction_lost = rtp_receiver_statistics->fraction_lost;
-    report_block.cumulative_lost = rtp_receiver_statistics->cumulative_lost;
-    report_block.extended_high_sequence_number =
-        rtp_receiver_statistics->extended_high_sequence_number;
-    report_block.jitter = rtp_receiver_statistics->jitter;
-    report_block.last_sr = last_report_truncated_ntp_;
-    if (!time_last_report_received_.is_null()) {
-      uint32_t delay_seconds = 0;
-      uint32_t delay_fraction = 0;
-      base::TimeDelta delta = time_data.timestamp - time_last_report_received_;
-      ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
-                             &delay_fraction);
-      report_block.delay_since_last_sr =
-          ConvertToNtpDiff(delay_seconds, delay_fraction);
-    } else {
-      report_block.delay_since_last_sr = 0;
-    }
-  }
-  RtcpBuilder rtcp_builder(local_ssrc_);
-  packet_sender_->SendRtcpPacket(
-      local_ssrc_, rtcp_builder.BuildRtcpFromReceiver(
-                       rtp_receiver_statistics ? &report_block : NULL, &rrtr,
-                       cast_message, rtcp_events, target_delay));
 }
 
 void ReceiverRtcpSession::OnReceivedLipSyncInfo(RtpTimeTicks rtp_timestamp,

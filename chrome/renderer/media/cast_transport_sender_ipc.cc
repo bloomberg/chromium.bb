@@ -93,50 +93,40 @@ void CastTransportSenderIPC::ResendFrameForKickstart(uint32_t ssrc,
                                                frame_id));
 }
 
-void CastTransportSenderIPC::AddValidSsrc(uint32_t ssrc) {
-  Send(new CastHostMsg_AddValidSsrc(channel_id_, ssrc));
+void CastTransportSenderIPC::AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
+                                                 uint32_t rtp_receiver_ssrc) {
+  Send(new CastHostMsg_AddValidRtpReceiver(channel_id_, rtp_sender_ssrc,
+                                           rtp_receiver_ssrc));
 }
 
-void CastTransportSenderIPC::SendRtcpFromRtpReceiver(
-    uint32_t ssrc,
-    uint32_t sender_ssrc,
-    const media::cast::RtcpTimeData& time_data,
-    const media::cast::RtcpCastMessage* cast_message,
-    base::TimeDelta target_delay,
-    const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-    const media::cast::RtpReceiverStatistics* rtp_receiver_statistics) {
-  // To avoid copies, we put pointers to objects we don't really
-  // own into scoped pointers and then very carefully extract them again
-  // before the scoped pointers go out of scope.
-  media::cast::SendRtcpFromRtpReceiver_Params params;
-  params.ssrc = ssrc;
-  params.sender_ssrc = sender_ssrc;
-  params.time_data = time_data;
-  if (cast_message) {
-    params.cast_message.reset(
-        const_cast<media::cast::RtcpCastMessage*>(cast_message));
-  }
-  params.target_delay = target_delay;
-  if (rtcp_events) {
-    params.rtcp_events.reset(
-        const_cast<media::cast::ReceiverRtcpEventSubscriber::RtcpEvents*>(
-            rtcp_events));
-  }
-  if (rtp_receiver_statistics) {
-    params.rtp_receiver_statistics.reset(
-        const_cast<media::cast::RtpReceiverStatistics*>(
-            rtp_receiver_statistics));
-  }
-  // Note, params contains scoped_ptr<>, but this still works because
-  // CastHostMsg_SendRtcpFromRtpReceiver doesn't take ownership, it
-  // serializes it and remember the serialized form instead.
-  Send(new CastHostMsg_SendRtcpFromRtpReceiver(channel_id_, params));
-
-  ignore_result(params.rtp_receiver_statistics.release());
-  ignore_result(params.cast_message.release());
-  ignore_result(params.rtcp_events.release());
+void CastTransportSenderIPC::InitializeRtpReceiverRtcpBuilder(
+    uint32_t rtp_receiver_ssrc,
+    const media::cast::RtcpTimeData& time_data) {
+  Send(new CastHostMsg_InitializeRtpReceiverRtcpBuilder(
+      channel_id_, rtp_receiver_ssrc, time_data));
 }
 
+void CastTransportSenderIPC::AddCastFeedback(
+    const media::cast::RtcpCastMessage& cast_message,
+    base::TimeDelta target_delay) {
+  Send(
+      new CastHostMsg_AddCastFeedback(channel_id_, cast_message, target_delay));
+}
+
+void CastTransportSenderIPC::AddRtcpEvents(
+    const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) {
+  Send(new CastHostMsg_AddRtcpEvents(channel_id_, rtcp_events));
+}
+
+void CastTransportSenderIPC::AddRtpReceiverReport(
+    const media::cast::RtcpReportBlock& rtp_receiver_report_block) {
+  Send(new CastHostMsg_AddRtpReceiverReport(channel_id_,
+                                            rtp_receiver_report_block));
+}
+
+void CastTransportSenderIPC::SendRtcpFromRtpReceiver() {
+  Send(new CastHostMsg_SendRtcpFromRtpReceiver(channel_id_));
+}
 
 void CastTransportSenderIPC::OnNotifyStatusChange(
     media::cast::CastTransportStatus status) {

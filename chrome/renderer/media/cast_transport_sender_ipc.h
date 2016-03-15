@@ -51,16 +51,18 @@ class CastTransportSenderIPC
   void CancelSendingFrames(uint32_t ssrc,
                            const std::vector<uint32_t>& frame_ids) override;
   void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) override;
-  void AddValidSsrc(uint32_t ssrc) override;
-  void SendRtcpFromRtpReceiver(
-      uint32_t ssrc,
-      uint32_t sender_ssrc,
-      const media::cast::RtcpTimeData& time_data,
-      const media::cast::RtcpCastMessage* cast_message,
-      base::TimeDelta target_delay,
-      const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-      const media::cast::RtpReceiverStatistics* rtp_receiver_statistics)
-      override;
+  void AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
+                           uint32_t rtp_receiver_ssrc) override;
+  void InitializeRtpReceiverRtcpBuilder(
+      uint32_t rtp_receiver_ssrc,
+      const media::cast::RtcpTimeData& time_data) override;
+  void AddCastFeedback(const media::cast::RtcpCastMessage& cast_message,
+                       base::TimeDelta target_delay) override;
+  void AddRtcpEvents(const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents&
+                         rtcp_events) override;
+  void AddRtpReceiverReport(
+      const media::cast::RtcpReportBlock& rtp_receiver_report_block) override;
+  void SendRtcpFromRtpReceiver() override;
 
   void SetOptions(const base::DictionaryValue& options) final {}
 

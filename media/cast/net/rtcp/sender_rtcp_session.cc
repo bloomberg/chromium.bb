@@ -31,13 +31,6 @@ enum {
   kOutOfOrderMaxAgeMs = 500,
 };
 
-// Create a NTP diff from seconds and fractions of seconds; delay_fraction is
-// fractions of a second where 0x80000000 is half a second.
-uint32_t ConvertToNtpDiff(uint32_t delay_seconds, uint32_t delay_fraction) {
-  return ((delay_seconds & 0x0000FFFF) << 16) +
-         ((delay_fraction & 0xFFFF0000) >> 16);
-}
-
 // Parse a NTP diff value into a base::TimeDelta.
 base::TimeDelta ConvertFromNtpDiff(uint32_t ntp_delay) {
   int64_t delay_us =

@@ -42,6 +42,7 @@
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/pacing/paced_sender.h"
+#include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/net/rtcp/sender_rtcp_session.h"
 #include "media/cast/net/rtp/rtp_parser.h"
 #include "media/cast/net/rtp/rtp_sender.h"
@@ -98,16 +99,19 @@ class CastTransportSenderImpl : public CastTransportSender {
   void SetOptions(const base::DictionaryValue& options) final;
 
   // CastTransportReceiver implementation.
-  void AddValidSsrc(uint32_t ssrc) final;
+  void AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
+                           uint32_t rtp_receiver_ssrc) final;
 
-  void SendRtcpFromRtpReceiver(
-      uint32_t ssrc,
-      uint32_t sender_ssrc,
-      const RtcpTimeData& time_data,
-      const RtcpCastMessage* cast_message,
-      base::TimeDelta target_delay,
-      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-      const RtpReceiverStatistics* rtp_receiver_statistics) final;
+  // Building and sending RTCP packet from RTP receiver implementation.
+  void InitializeRtpReceiverRtcpBuilder(uint32_t rtp_receiver_ssrc,
+                                        const RtcpTimeData& time_data) final;
+  void AddCastFeedback(const RtcpCastMessage& cast_message,
+                       base::TimeDelta target_delay) final;
+  void AddRtcpEvents(
+      const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) final;
+  void AddRtpReceiverReport(
+      const RtcpReportBlock& rtp_receiver_report_block) final;
+  void SendRtcpFromRtpReceiver() final;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, NacksCancelRetransmits);
@@ -176,13 +180,20 @@ class CastTransportSenderImpl : public CastTransportSender {
   // audio packet.
   int64_t last_byte_acked_for_audio_;
 
-  // Packets that don't match these ssrcs are ignored.
-  std::set<uint32_t> valid_ssrcs_;
+  // Packets that don't match these sender ssrcs are ignored.
+  std::set<uint32_t> valid_sender_ssrcs_;
 
   // While non-null, global WiFi behavior modifications are in effect. This is
   // used, for example, to turn off WiFi scanning that tends to interfere with
   // the reliability of UDP packet transmission.
   scoped_ptr<net::ScopedWifiOptions> wifi_options_autoreset_;
+
+  // Do not initialize the |rtcp_builder_at_rtp_receiver_| if the RTP receiver
+  // SSRC does not match these ssrcs. Only RTP receiver needs to register its
+  // SSRC in this set.
+  std::set<uint32_t> valid_rtp_receiver_ssrcs_;
+
+  scoped_ptr<RtcpBuilder> rtcp_builder_at_rtp_receiver_;
 
   base::WeakPtrFactory<CastTransportSenderImpl> weak_factory_;
 

@@ -17,16 +17,12 @@
 namespace media {
 namespace cast {
 
-// This class represents a RTCP session on a RTP receiver. It provides an
-// interface to send RTCP reports (last report, RRTR, cast feedback, logs).
-//
 // The RTCP session on a receiver handles incoming RTCP SR packets and maintains
 // the offset of local clock from the remote clock and lip sync info (RTP
 // & NTP timestamps).
 class ReceiverRtcpSession : public RtcpSession {
  public:
   ReceiverRtcpSession(base::TickClock* clock,            // Not owned.
-                      PacedPacketSender* packet_sender,  // Not owned.
                       uint32_t local_ssrc,
                       uint32_t remote_ssrc);
 
@@ -34,18 +30,6 @@ class ReceiverRtcpSession : public RtcpSession {
 
   uint32_t local_ssrc() const { return local_ssrc_; }
   uint32_t remote_ssrc() const { return remote_ssrc_; }
-
-  // |cast_message|, |rtcp_events| and |rtp_receiver_statistics| are optional;
-  // if |cast_message| is provided the RTCP receiver report will append a Cast
-  // message containing Acks and Nacks; |target_delay| is sent together with
-  // |cast_message|. If |rtcp_events| is provided the RTCP receiver report will
-  // append the log messages.
-  void SendRtcpReport(
-      RtcpTimeData time_data,
-      const RtcpCastMessage* cast_message,
-      base::TimeDelta target_delay,
-      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-      const RtpReceiverStatistics* rtp_receiver_statistics) const;
 
   // Handle incoming RTCP packet.
   // Returns false if it is not a RTCP packet or it is not directed to
@@ -60,6 +44,14 @@ class ReceiverRtcpSession : public RtcpSession {
   bool GetLatestLipSyncTimes(RtpTimeTicks* rtp_timestamp,
                              base::TimeTicks* reference_time) const;
 
+  uint32_t last_report_truncated_ntp() const {
+    return last_report_truncated_ntp_;
+  }
+
+  base::TimeTicks time_last_report_received() const {
+    return time_last_report_received_;
+  }
+
  private:
   // Received NTP timestamps from RTCP SR packets.
   void OnReceivedNtp(uint32_t ntp_seconds, uint32_t ntp_fraction);
@@ -70,7 +62,6 @@ class ReceiverRtcpSession : public RtcpSession {
                              uint32_t ntp_fraction);
 
   base::TickClock* const clock_;      // Not owned.
-  PacedPacketSender* packet_sender_;  // Not owned.
   const uint32_t local_ssrc_;
   const uint32_t remote_ssrc_;
 

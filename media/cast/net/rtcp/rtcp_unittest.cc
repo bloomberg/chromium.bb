@@ -12,6 +12,7 @@
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtcp/receiver_rtcp_session.h"
+#include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/net/rtcp/rtcp_session.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 #include "media/cast/net/rtcp/sender_rtcp_session.h"
@@ -79,29 +80,28 @@ class RtcpTest : public ::testing::Test {
   RtcpTest()
       : sender_clock_(new base::SimpleTestTickClock()),
         receiver_clock_(new test::SkewedTickClock(sender_clock_.get())),
-        sender_to_receiver_(sender_clock_.get()),
-        receiver_to_sender_(sender_clock_.get()),
-        rtcp_for_sender_(
+        rtp_sender_pacer_(sender_clock_.get()),
+        rtp_receiver_pacer_(sender_clock_.get()),
+        rtcp_at_rtp_sender_(
             base::Bind(&RtcpTest::OnReceivedCastFeedback,
                        base::Unretained(this)),
             base::Bind(&RtcpTest::OnMeasuredRoundTripTime,
                        base::Unretained(this)),
             base::Bind(&RtcpTest::OnReceivedLogs, base::Unretained(this)),
             sender_clock_.get(),
-            &sender_to_receiver_,
+            &rtp_sender_pacer_,
             kSenderSsrc,
             kReceiverSsrc),
-        rtcp_for_receiver_(receiver_clock_.get(),
-                           &receiver_to_sender_,
-                           kReceiverSsrc,
-                           kSenderSsrc) {
+        rtcp_at_rtp_receiver_(receiver_clock_.get(),
+                              kReceiverSsrc,
+                              kSenderSsrc) {
     sender_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     receiver_clock_->SetSkew(
         1.0,  // No skew.
         base::TimeDelta::FromSeconds(kInitialReceiverClockOffsetSeconds));
 
-    sender_to_receiver_.set_rtcp_destination(&rtcp_for_receiver_);
-    receiver_to_sender_.set_rtcp_destination(&rtcp_for_sender_);
+    rtp_sender_pacer_.set_rtcp_destination(&rtcp_at_rtp_receiver_);
+    rtp_receiver_pacer_.set_rtcp_destination(&rtcp_at_rtp_sender_);
   }
 
   ~RtcpTest() override {}
@@ -133,12 +133,56 @@ class RtcpTest : public ::testing::Test {
     }
   }
 
+  PacketRef BuildRtcpPacketFromRtpReceiver(
+      const RtcpTimeData& time_data,
+      const RtcpCastMessage* cast_message,
+      base::TimeDelta target_delay,
+      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
+      const RtpReceiverStatistics* rtp_receiver_statistics) {
+    RtcpBuilder builder(rtcp_at_rtp_receiver_.local_ssrc());
+    builder.Start();
+    RtcpReceiverReferenceTimeReport rrtr;
+    rrtr.ntp_seconds = time_data.ntp_seconds;
+    rrtr.ntp_fraction = time_data.ntp_fraction;
+    builder.AddRrtr(rrtr);
+    RtcpReportBlock report_block;
+    if (rtp_receiver_statistics) {
+      report_block.remote_ssrc = 0;
+      report_block.media_ssrc = rtcp_at_rtp_receiver_.remote_ssrc();
+      report_block.fraction_lost = rtp_receiver_statistics->fraction_lost;
+      report_block.cumulative_lost = rtp_receiver_statistics->cumulative_lost;
+      report_block.extended_high_sequence_number =
+          rtp_receiver_statistics->extended_high_sequence_number;
+      report_block.jitter = rtp_receiver_statistics->jitter;
+      report_block.last_sr = rtcp_at_rtp_receiver_.last_report_truncated_ntp();
+      base::TimeTicks last_report_received_time =
+          rtcp_at_rtp_receiver_.time_last_report_received();
+      if (!last_report_received_time.is_null()) {
+        uint32_t delay_seconds = 0;
+        uint32_t delay_fraction = 0;
+        base::TimeDelta delta = time_data.timestamp - last_report_received_time;
+        ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
+                               &delay_fraction);
+        report_block.delay_since_last_sr =
+            ConvertToNtpDiff(delay_seconds, delay_fraction);
+      } else {
+        report_block.delay_since_last_sr = 0;
+      }
+      builder.AddRR(&report_block);
+    }
+    if (cast_message)
+      builder.AddCast(*cast_message, target_delay);
+    if (rtcp_events)
+      builder.AddReceiverLog(*rtcp_events);
+    return builder.Finish();
+  }
+
   scoped_ptr<base::SimpleTestTickClock> sender_clock_;
   scoped_ptr<test::SkewedTickClock> receiver_clock_;
-  FakeRtcpTransport sender_to_receiver_;
-  FakeRtcpTransport receiver_to_sender_;
-  SenderRtcpSession rtcp_for_sender_;
-  ReceiverRtcpSession rtcp_for_receiver_;
+  FakeRtcpTransport rtp_sender_pacer_;
+  FakeRtcpTransport rtp_receiver_pacer_;
+  SenderRtcpSession rtcp_at_rtp_sender_;
+  ReceiverRtcpSession rtcp_at_rtp_receiver_;
 
   base::TimeDelta current_round_trip_time_;
   RtcpCastMessage last_cast_message_;
@@ -153,26 +197,26 @@ TEST_F(RtcpTest, LipSyncGleanedFromSenderReport) {
   // received a RTCP packet.
   base::TimeTicks reference_time;
   RtpTimeTicks rtp_timestamp;
-  ASSERT_FALSE(rtcp_for_receiver_.GetLatestLipSyncTimes(&rtp_timestamp,
-                                                        &reference_time));
+  ASSERT_FALSE(rtcp_at_rtp_receiver_.GetLatestLipSyncTimes(&rtp_timestamp,
+                                                           &reference_time));
 
   // Send a Sender Report to the receiver.
   const base::TimeTicks reference_time_sent = sender_clock_->NowTicks();
   const RtpTimeTicks rtp_timestamp_sent =
       RtpTimeTicks().Expand(UINT32_C(0xbee5));
-  rtcp_for_sender_.SendRtcpReport(reference_time_sent, rtp_timestamp_sent, 1,
-                                  1);
+  rtcp_at_rtp_sender_.SendRtcpReport(reference_time_sent, rtp_timestamp_sent, 1,
+                                     1);
 
   // Now the receiver should have lip-sync info.  Confirm that the lip-sync
   // reference time is the same as that sent.
-  EXPECT_TRUE(rtcp_for_receiver_.GetLatestLipSyncTimes(&rtp_timestamp,
-                                                       &reference_time));
+  EXPECT_TRUE(rtcp_at_rtp_receiver_.GetLatestLipSyncTimes(&rtp_timestamp,
+                                                          &reference_time));
   const base::TimeTicks rolled_back_time =
       (reference_time -
        // Roll-back relative clock offset:
        base::TimeDelta::FromSeconds(kInitialReceiverClockOffsetSeconds) -
        // Roll-back packet transmission time (because RTT is not yet known):
-       sender_to_receiver_.packet_delay());
+       rtp_sender_pacer_.packet_delay());
   EXPECT_NEAR(0, (reference_time_sent - rolled_back_time).InMicroseconds(), 5);
   EXPECT_EQ(rtp_timestamp_sent, rtp_timestamp);
 }
@@ -181,7 +225,7 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
   const int iterations = 12;
 
   // Sender does not know the RTT yet.
-  ASSERT_EQ(base::TimeDelta(), rtcp_for_sender_.current_round_trip_time());
+  ASSERT_EQ(base::TimeDelta(), rtcp_at_rtp_sender_.current_round_trip_time());
 
   // Do a number of ping-pongs, checking how the round trip times are measured
   // by the sender.
@@ -189,30 +233,32 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
   for (int i = 0; i < iterations; ++i) {
     const base::TimeDelta one_way_trip_time =
         base::TimeDelta::FromMilliseconds(static_cast<int64_t>(1) << i);
-    sender_to_receiver_.set_packet_delay(one_way_trip_time);
-    receiver_to_sender_.set_packet_delay(one_way_trip_time);
+    rtp_sender_pacer_.set_packet_delay(one_way_trip_time);
+    rtp_receiver_pacer_.set_packet_delay(one_way_trip_time);
 
     // Sender --> Receiver
     base::TimeTicks reference_time_sent = sender_clock_->NowTicks();
     const RtpTimeTicks rtp_timestamp_sent =
         RtpTimeTicks().Expand<uint32_t>(0xbee5) + RtpTimeDelta::FromTicks(i);
-    rtcp_for_sender_.SendRtcpReport(reference_time_sent, rtp_timestamp_sent, 1,
-                                    1);
+    rtcp_at_rtp_sender_.SendRtcpReport(reference_time_sent, rtp_timestamp_sent,
+                                       1, 1);
     EXPECT_EQ(expected_rtt_according_to_sender,
-              rtcp_for_sender_.current_round_trip_time());
+              rtcp_at_rtp_sender_.current_round_trip_time());
 
     // Validate last reported callback value is same as that reported by method.
     EXPECT_EQ(current_round_trip_time_,
-              rtcp_for_sender_.current_round_trip_time());
+              rtcp_at_rtp_sender_.current_round_trip_time());
 
     // Receiver --> Sender
     RtpReceiverStatistics stats;
-    rtcp_for_receiver_.SendRtcpReport(
-        CreateRtcpTimeData(receiver_clock_->NowTicks()), nullptr,
-        base::TimeDelta(), nullptr, &stats);
+    rtp_receiver_pacer_.SendRtcpPacket(
+        rtcp_at_rtp_receiver_.local_ssrc(),
+        BuildRtcpPacketFromRtpReceiver(
+            CreateRtcpTimeData(receiver_clock_->NowTicks()), nullptr,
+            base::TimeDelta(), nullptr, &stats));
     expected_rtt_according_to_sender = one_way_trip_time * 2;
     EXPECT_EQ(expected_rtt_according_to_sender,
-              rtcp_for_sender_.current_round_trip_time());
+              rtcp_at_rtp_sender_.current_round_trip_time());
   }
 }
 
@@ -224,9 +270,11 @@ TEST_F(RtcpTest, ReportCastFeedback) {
   PacketIdSet missing_packets2 = {5, 6};
   cast_message.missing_frames_and_packets[2] = missing_packets2;
 
-  rtcp_for_receiver_.SendRtcpReport(
-      CreateRtcpTimeData(base::TimeTicks()), &cast_message,
-      base::TimeDelta::FromMilliseconds(kTargetDelayMs), nullptr, nullptr);
+  rtp_receiver_pacer_.SendRtcpPacket(
+      rtcp_at_rtp_receiver_.local_ssrc(),
+      BuildRtcpPacketFromRtpReceiver(
+          CreateRtcpTimeData(base::TimeTicks()), &cast_message,
+          base::TimeDelta::FromMilliseconds(kTargetDelayMs), nullptr, nullptr));
 
   EXPECT_EQ(last_cast_message_.ack_frame_id, cast_message.ack_frame_id);
   EXPECT_EQ(last_cast_message_.target_delay_ms, kTargetDelayMs);
@@ -241,17 +289,21 @@ TEST_F(RtcpTest, ReportCastFeedback) {
 TEST_F(RtcpTest, DropLateRtcpPacket) {
   RtcpCastMessage cast_message(kSenderSsrc);
   cast_message.ack_frame_id = 1;
-  rtcp_for_receiver_.SendRtcpReport(
-      CreateRtcpTimeData(receiver_clock_->NowTicks()), &cast_message,
-      base::TimeDelta::FromMilliseconds(kTargetDelayMs), nullptr, nullptr);
+  rtp_receiver_pacer_.SendRtcpPacket(
+      rtcp_at_rtp_receiver_.local_ssrc(),
+      BuildRtcpPacketFromRtpReceiver(
+          CreateRtcpTimeData(receiver_clock_->NowTicks()), &cast_message,
+          base::TimeDelta::FromMilliseconds(kTargetDelayMs), nullptr, nullptr));
 
   // Send a packet with old timestamp
   RtcpCastMessage late_cast_message(kSenderSsrc);
   late_cast_message.ack_frame_id = 2;
-  rtcp_for_receiver_.SendRtcpReport(
-      CreateRtcpTimeData(receiver_clock_->NowTicks() -
-                         base::TimeDelta::FromSeconds(10)),
-      &late_cast_message, base::TimeDelta(), nullptr, nullptr);
+  rtp_receiver_pacer_.SendRtcpPacket(
+      rtcp_at_rtp_receiver_.local_ssrc(),
+      BuildRtcpPacketFromRtpReceiver(
+          CreateRtcpTimeData(receiver_clock_->NowTicks() -
+                             base::TimeDelta::FromSeconds(10)),
+          &late_cast_message, base::TimeDelta(), nullptr, nullptr));
 
   // Validate data from second packet is dropped.
   EXPECT_EQ(last_cast_message_.ack_frame_id, cast_message.ack_frame_id);
@@ -259,9 +311,11 @@ TEST_F(RtcpTest, DropLateRtcpPacket) {
 
   // Re-send with fresh timestamp
   late_cast_message.ack_frame_id = 2;
-  rtcp_for_receiver_.SendRtcpReport(
-      CreateRtcpTimeData(receiver_clock_->NowTicks()), &late_cast_message,
-      base::TimeDelta(), nullptr, nullptr);
+  rtp_receiver_pacer_.SendRtcpPacket(
+      rtcp_at_rtp_receiver_.local_ssrc(),
+      BuildRtcpPacketFromRtpReceiver(
+          CreateRtcpTimeData(receiver_clock_->NowTicks()), &late_cast_message,
+          base::TimeDelta(), nullptr, nullptr));
   EXPECT_EQ(last_cast_message_.ack_frame_id, late_cast_message.ack_frame_id);
   EXPECT_EQ(last_cast_message_.target_delay_ms, 0);
 }
@@ -279,9 +333,11 @@ TEST_F(RtcpTest, ReportReceiverEvents) {
   ReceiverRtcpEventSubscriber::RtcpEvents rtcp_events;
   rtcp_events.push_back(std::make_pair(kRtpTimeStamp, event));
 
-  rtcp_for_receiver_.SendRtcpReport(
-      CreateRtcpTimeData(receiver_clock_->NowTicks()), nullptr,
-      base::TimeDelta(), &rtcp_events, nullptr);
+  rtp_receiver_pacer_.SendRtcpPacket(
+      rtcp_at_rtp_receiver_.local_ssrc(),
+      BuildRtcpPacketFromRtpReceiver(
+          CreateRtcpTimeData(receiver_clock_->NowTicks()), nullptr,
+          base::TimeDelta(), &rtcp_events, nullptr));
 
   ASSERT_EQ(1UL, last_logs_.size());
   RtcpReceiverFrameLogMessage frame_log = last_logs_.front();

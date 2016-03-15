@@ -27,38 +27,32 @@ class RtcpBuilder {
   explicit RtcpBuilder(uint32_t sending_ssrc);
   ~RtcpBuilder();
 
-  PacketRef BuildRtcpFromReceiver(
-      const RtcpReportBlock* report_block,
-      const RtcpReceiverReferenceTimeReport* rrtr,
-      const RtcpCastMessage* cast_message,
-      const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-      base::TimeDelta target_delay);
-
   PacketRef BuildRtcpFromSender(const RtcpSenderInfo& sender_info);
+
+  uint32_t local_ssrc() const { return local_ssrc_; }
+  void AddRR(const RtcpReportBlock* report_block);
+  void AddRrtr(const RtcpReceiverReferenceTimeReport& rrtr);
+  void AddCast(const RtcpCastMessage& cast_message,
+               base::TimeDelta target_delay);
+  void AddReceiverLog(
+      const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events);
+  void Start();
+  PacketRef Finish();
 
  private:
   void AddRtcpHeader(RtcpPacketFields payload, int format_or_count);
   void PatchLengthField();
-  void AddRR(const RtcpReportBlock* report_block);
-  void AddReportBlocks(const RtcpReportBlock& report_block);
-  void AddRrtr(const RtcpReceiverReferenceTimeReport* rrtr);
-  void AddCast(const RtcpCastMessage* cast_message,
-               base::TimeDelta target_delay);
   void AddSR(const RtcpSenderInfo& sender_info);
   void AddDlrrRb(const RtcpDlrrReportBlock& dlrr);
-  void AddReceiverLog(
-      const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events);
+  void AddReportBlocks(const RtcpReportBlock& report_block);
 
   bool GetRtcpReceiverLogMessage(
       const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events,
       RtcpReceiverLogMessage* receiver_log_message,
       size_t* total_number_of_messages_to_send);
 
-  void Start();
-  PacketRef Finish();
-
   base::BigEndianWriter writer_;
-  const uint32_t ssrc_;
+  const uint32_t local_ssrc_;
   char* ptr_of_length_;
   PacketRef packet_;
 
