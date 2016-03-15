@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/ws/connection_manager.h"
+#include "components/mus/ws/window_server.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
@@ -16,6 +15,7 @@
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -27,8 +27,8 @@
 namespace mus {
 namespace ws {
 
-ConnectionManager::ConnectionManager(
-    ConnectionManagerDelegate* delegate,
+WindowServer::WindowServer(
+    WindowServerDelegate* delegate,
     const scoped_refptr<mus::SurfacesState>& surfaces_state)
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
@@ -39,7 +39,7 @@ ConnectionManager::ConnectionManager(
       next_wm_change_id_(0),
       window_manager_factory_registry_(this, &user_id_tracker_) {}
 
-ConnectionManager::~ConnectionManager() {
+WindowServer::~WindowServer() {
   in_destructor_ = true;
 
   // Destroys the window trees results in querying for the display. Tear down
@@ -53,7 +53,7 @@ ConnectionManager::~ConnectionManager() {
   display_manager_.reset();
 }
 
-ServerWindow* ConnectionManager::CreateServerWindow(
+ServerWindow* WindowServer::CreateServerWindow(
     const WindowId& id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
   ServerWindow* window = new ServerWindow(this, id, properties);
@@ -61,13 +61,13 @@ ServerWindow* ConnectionManager::CreateServerWindow(
   return window;
 }
 
-ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
+ConnectionSpecificId WindowServer::GetAndAdvanceNextConnectionId() {
   const ConnectionSpecificId id = next_connection_id_++;
   DCHECK_LT(id, next_connection_id_);
   return id;
 }
 
-WindowTree* ConnectionManager::EmbedAtWindow(
+WindowTree* WindowServer::EmbedAtWindow(
     ServerWindow* root,
     const UserId& user_id,
     mojom::WindowTreeClientPtr client,
@@ -86,9 +86,9 @@ WindowTree* ConnectionManager::EmbedAtWindow(
   return tree;
 }
 
-WindowTree* ConnectionManager::AddTree(scoped_ptr<WindowTree> tree_impl_ptr,
-                                       scoped_ptr<WindowTreeBinding> binding,
-                                       mojom::WindowTreePtr tree_ptr) {
+WindowTree* WindowServer::AddTree(scoped_ptr<WindowTree> tree_impl_ptr,
+                                  scoped_ptr<WindowTreeBinding> binding,
+                                  mojom::WindowTreePtr tree_ptr) {
   CHECK_EQ(0u, tree_map_.count(tree_impl_ptr->id()));
   WindowTree* tree = tree_impl_ptr.get();
   tree_map_[tree->id()] = std::move(tree_impl_ptr);
@@ -96,7 +96,7 @@ WindowTree* ConnectionManager::AddTree(scoped_ptr<WindowTree> tree_impl_ptr,
   return tree;
 }
 
-WindowTree* ConnectionManager::CreateTreeForWindowManager(
+WindowTree* WindowServer::CreateTreeForWindowManager(
     Display* display,
     mojom::WindowManagerFactory* factory,
     ServerWindow* root,
@@ -115,7 +115,7 @@ WindowTree* ConnectionManager::CreateTreeForWindowManager(
   return tree;
 }
 
-void ConnectionManager::DestroyTree(WindowTree* tree) {
+void WindowServer::DestroyTree(WindowTree* tree) {
   scoped_ptr<WindowTree> tree_ptr;
   {
     auto iter = tree_map_.find(tree->id());
@@ -153,13 +153,12 @@ void ConnectionManager::DestroyTree(WindowTree* tree) {
     in_flight_wm_change_map_.erase(id);
 }
 
-WindowTree* ConnectionManager::GetTreeWithId(
-    ConnectionSpecificId connection_id) {
+WindowTree* WindowServer::GetTreeWithId(ConnectionSpecificId connection_id) {
   auto iter = tree_map_.find(connection_id);
   return iter == tree_map_.end() ? nullptr : iter->second.get();
 }
 
-ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
+ServerWindow* WindowServer::GetWindow(const WindowId& id) {
   // kInvalidConnectionId is used for Display and WindowManager nodes.
   if (id.connection_id == kInvalidConnectionId) {
     for (Display* display : display_manager_->displays()) {
@@ -172,23 +171,23 @@ ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
   return tree ? tree->GetWindow(id) : nullptr;
 }
 
-void ConnectionManager::SchedulePaint(ServerWindow* window,
-                                      const gfx::Rect& bounds) {
+void WindowServer::SchedulePaint(ServerWindow* window,
+                                 const gfx::Rect& bounds) {
   Display* display = display_manager_->GetDisplayContaining(window);
   if (display)
     display->SchedulePaint(window, bounds);
 }
 
-void ConnectionManager::OnTreeMessagedClient(ConnectionSpecificId id) {
+void WindowServer::OnTreeMessagedClient(ConnectionSpecificId id) {
   if (current_operation_)
     current_operation_->MarkTreeAsMessaged(id);
 }
 
-bool ConnectionManager::DidTreeMessageClient(ConnectionSpecificId id) const {
+bool WindowServer::DidTreeMessageClient(ConnectionSpecificId id) const {
   return current_operation_ && current_operation_->DidMessageTree(id);
 }
 
-mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
+mojom::ViewportMetricsPtr WindowServer::GetViewportMetricsForWindow(
     const ServerWindow* window) {
   const Display* display = display_manager_->GetDisplayContaining(window);
   if (display)
@@ -204,7 +203,7 @@ mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
   return metrics;
 }
 
-const WindowTree* ConnectionManager::GetTreeWithRoot(
+const WindowTree* WindowServer::GetTreeWithRoot(
     const ServerWindow* window) const {
   if (!window)
     return nullptr;
@@ -215,7 +214,7 @@ const WindowTree* ConnectionManager::GetTreeWithRoot(
   return nullptr;
 }
 
-void ConnectionManager::OnFirstWindowManagerFactorySet() {
+void WindowServer::OnFirstWindowManagerFactorySet() {
   if (display_manager_->has_active_or_pending_displays())
     return;
 
@@ -225,7 +224,7 @@ void ConnectionManager::OnFirstWindowManagerFactorySet() {
   delegate_->CreateDefaultDisplays();
 }
 
-uint32_t ConnectionManager::GenerateWindowManagerChangeId(
+uint32_t WindowServer::GenerateWindowManagerChangeId(
     WindowTree* source,
     uint32_t client_change_id) {
   const uint32_t wm_change_id = next_wm_change_id_++;
@@ -233,7 +232,7 @@ uint32_t ConnectionManager::GenerateWindowManagerChangeId(
   return wm_change_id;
 }
 
-void ConnectionManager::WindowManagerChangeCompleted(
+void WindowServer::WindowManagerChangeCompleted(
     uint32_t window_manager_change_id,
     bool success) {
   InFlightWindowManagerChange change;
@@ -246,7 +245,7 @@ void ConnectionManager::WindowManagerChangeCompleted(
   tree->OnChangeCompleted(change.client_change_id, success);
 }
 
-void ConnectionManager::WindowManagerCreatedTopLevelWindow(
+void WindowServer::WindowManagerCreatedTopLevelWindow(
     WindowTree* wm_tree,
     uint32_t window_manager_change_id,
     const ServerWindow* window) {
@@ -274,17 +273,16 @@ void ConnectionManager::WindowManagerCreatedTopLevelWindow(
                                              change.client_change_id, window);
 }
 
-void ConnectionManager::ProcessWindowBoundsChanged(
-    const ServerWindow* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+void WindowServer::ProcessWindowBoundsChanged(const ServerWindow* window,
+                                              const gfx::Rect& old_bounds,
+                                              const gfx::Rect& new_bounds) {
   for (auto& pair : tree_map_) {
     pair.second->ProcessWindowBoundsChanged(window, old_bounds, new_bounds,
                                             IsOperationSource(pair.first));
   }
 }
 
-void ConnectionManager::ProcessClientAreaChanged(
+void WindowServer::ProcessClientAreaChanged(
     const ServerWindow* window,
     const gfx::Insets& new_client_area,
     const std::vector<gfx::Rect>& new_additional_client_areas) {
@@ -295,13 +293,13 @@ void ConnectionManager::ProcessClientAreaChanged(
   }
 }
 
-void ConnectionManager::ProcessLostCapture(const ServerWindow* window) {
+void WindowServer::ProcessLostCapture(const ServerWindow* window) {
   for (auto& pair : tree_map_) {
     pair.second->ProcessLostCapture(window, IsOperationSource(pair.first));
   }
 }
 
-void ConnectionManager::ProcessWillChangeWindowHierarchy(
+void WindowServer::ProcessWillChangeWindowHierarchy(
     const ServerWindow* window,
     const ServerWindow* new_parent,
     const ServerWindow* old_parent) {
@@ -311,7 +309,7 @@ void ConnectionManager::ProcessWillChangeWindowHierarchy(
   }
 }
 
-void ConnectionManager::ProcessWindowHierarchyChanged(
+void WindowServer::ProcessWindowHierarchyChanged(
     const ServerWindow* window,
     const ServerWindow* new_parent,
     const ServerWindow* old_parent) {
@@ -321,10 +319,9 @@ void ConnectionManager::ProcessWindowHierarchyChanged(
   }
 }
 
-void ConnectionManager::ProcessWindowReorder(
-    const ServerWindow* window,
-    const ServerWindow* relative_window,
-    const mojom::OrderDirection direction) {
+void WindowServer::ProcessWindowReorder(const ServerWindow* window,
+                                        const ServerWindow* relative_window,
+                                        const mojom::OrderDirection direction) {
   // We'll probably do a bit of reshuffling when we add a transient window.
   if ((current_operation_type() == OperationType::ADD_TRANSIENT_WINDOW) ||
       (current_operation_type() ==
@@ -337,14 +334,13 @@ void ConnectionManager::ProcessWindowReorder(
   }
 }
 
-void ConnectionManager::ProcessWindowDeleted(const ServerWindow* window) {
+void WindowServer::ProcessWindowDeleted(const ServerWindow* window) {
   for (auto& pair : tree_map_)
     pair.second->ProcessWindowDeleted(window, IsOperationSource(pair.first));
 }
 
-void ConnectionManager::ProcessWillChangeWindowPredefinedCursor(
-    ServerWindow* window,
-    int32_t cursor_id) {
+void WindowServer::ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
+                                                           int32_t cursor_id) {
   for (auto& pair : tree_map_) {
     pair.second->ProcessCursorChanged(window, cursor_id,
                                       IsOperationSource(pair.first));
@@ -356,7 +352,7 @@ void ConnectionManager::ProcessWillChangeWindowPredefinedCursor(
     display->OnCursorUpdated(window);
 }
 
-void ConnectionManager::ProcessViewportMetricsChanged(
+void WindowServer::ProcessViewportMetricsChanged(
     Display* display,
     const mojom::ViewportMetrics& old_metrics,
     const mojom::ViewportMetrics& new_metrics) {
@@ -366,7 +362,7 @@ void ConnectionManager::ProcessViewportMetricsChanged(
   }
 }
 
-bool ConnectionManager::GetAndClearInFlightWindowManagerChange(
+bool WindowServer::GetAndClearInFlightWindowManagerChange(
     uint32_t window_manager_change_id,
     InFlightWindowManagerChange* change) {
   // There are valid reasons as to why we wouldn't know about the id. The
@@ -381,47 +377,47 @@ bool ConnectionManager::GetAndClearInFlightWindowManagerChange(
   return true;
 }
 
-void ConnectionManager::PrepareForOperation(Operation* op) {
+void WindowServer::PrepareForOperation(Operation* op) {
   // Should only ever have one change in flight.
   CHECK(!current_operation_);
   current_operation_ = op;
 }
 
-void ConnectionManager::FinishOperation() {
+void WindowServer::FinishOperation() {
   // PrepareForOperation/FinishOperation should be balanced.
   CHECK(current_operation_);
   current_operation_ = nullptr;
 }
 
-void ConnectionManager::MaybeUpdateNativeCursor(ServerWindow* window) {
+void WindowServer::MaybeUpdateNativeCursor(ServerWindow* window) {
   // This can be null in unit tests.
   Display* display = display_manager_->GetDisplayContaining(window);
   if (display)
     display->MaybeChangeCursorOnWindowTreeChange();
 }
 
-mus::SurfacesState* ConnectionManager::GetSurfacesState() {
+mus::SurfacesState* WindowServer::GetSurfacesState() {
   return surfaces_state_.get();
 }
 
-void ConnectionManager::OnScheduleWindowPaint(ServerWindow* window) {
+void WindowServer::OnScheduleWindowPaint(ServerWindow* window) {
   if (!in_destructor_)
     SchedulePaint(window, gfx::Rect(window->bounds().size()));
 }
 
-const ServerWindow* ConnectionManager::GetRootWindow(
+const ServerWindow* WindowServer::GetRootWindow(
     const ServerWindow* window) const {
   const Display* display = display_manager_->GetDisplayContaining(window);
   return display ? display->root_window() : nullptr;
 }
 
-void ConnectionManager::ScheduleSurfaceDestruction(ServerWindow* window) {
+void WindowServer::ScheduleSurfaceDestruction(ServerWindow* window) {
   Display* display = display_manager_->GetDisplayContaining(window);
   if (display)
     display->ScheduleSurfaceDestruction(window);
 }
 
-ServerWindow* ConnectionManager::FindWindowForSurface(
+ServerWindow* WindowServer::FindWindowForSurface(
     const ServerWindow* ancestor,
     mojom::SurfaceType surface_type,
     const ClientWindowId& client_window_id) {
@@ -446,22 +442,22 @@ ServerWindow* ConnectionManager::FindWindowForSurface(
   return window_tree->GetWindowByClientId(client_window_id);
 }
 
-void ConnectionManager::OnWindowDestroyed(ServerWindow* window) {
+void WindowServer::OnWindowDestroyed(ServerWindow* window) {
   ProcessWindowDeleted(window);
 }
 
-void ConnectionManager::OnWillChangeWindowHierarchy(ServerWindow* window,
-                                                    ServerWindow* new_parent,
-                                                    ServerWindow* old_parent) {
+void WindowServer::OnWillChangeWindowHierarchy(ServerWindow* window,
+                                               ServerWindow* new_parent,
+                                               ServerWindow* old_parent) {
   if (in_destructor_)
     return;
 
   ProcessWillChangeWindowHierarchy(window, new_parent, old_parent);
 }
 
-void ConnectionManager::OnWindowHierarchyChanged(ServerWindow* window,
-                                                 ServerWindow* new_parent,
-                                                 ServerWindow* old_parent) {
+void WindowServer::OnWindowHierarchyChanged(ServerWindow* window,
+                                            ServerWindow* new_parent,
+                                            ServerWindow* old_parent) {
   if (in_destructor_)
     return;
 
@@ -481,9 +477,9 @@ void ConnectionManager::OnWindowHierarchyChanged(ServerWindow* window,
   MaybeUpdateNativeCursor(window);
 }
 
-void ConnectionManager::OnWindowBoundsChanged(ServerWindow* window,
-                                              const gfx::Rect& old_bounds,
-                                              const gfx::Rect& new_bounds) {
+void WindowServer::OnWindowBoundsChanged(ServerWindow* window,
+                                         const gfx::Rect& old_bounds,
+                                         const gfx::Rect& new_bounds) {
   if (in_destructor_)
     return;
 
@@ -497,7 +493,7 @@ void ConnectionManager::OnWindowBoundsChanged(ServerWindow* window,
   MaybeUpdateNativeCursor(window);
 }
 
-void ConnectionManager::OnWindowClientAreaChanged(
+void WindowServer::OnWindowClientAreaChanged(
     ServerWindow* window,
     const gfx::Insets& new_client_area,
     const std::vector<gfx::Rect>& new_additional_client_areas) {
@@ -508,16 +504,16 @@ void ConnectionManager::OnWindowClientAreaChanged(
                            new_additional_client_areas);
 }
 
-void ConnectionManager::OnWindowReordered(ServerWindow* window,
-                                          ServerWindow* relative,
-                                          mojom::OrderDirection direction) {
+void WindowServer::OnWindowReordered(ServerWindow* window,
+                                     ServerWindow* relative,
+                                     mojom::OrderDirection direction) {
   ProcessWindowReorder(window, relative, direction);
   if (!in_destructor_)
     SchedulePaint(window, gfx::Rect(window->bounds().size()));
   MaybeUpdateNativeCursor(window);
 }
 
-void ConnectionManager::OnWillChangeWindowVisibility(ServerWindow* window) {
+void WindowServer::OnWillChangeWindowVisibility(ServerWindow* window) {
   if (in_destructor_)
     return;
 
@@ -535,7 +531,7 @@ void ConnectionManager::OnWillChangeWindowVisibility(ServerWindow* window) {
   }
 }
 
-void ConnectionManager::OnWindowVisibilityChanged(ServerWindow* window) {
+void WindowServer::OnWindowVisibilityChanged(ServerWindow* window) {
   if (in_destructor_)
     return;
 
@@ -545,15 +541,15 @@ void ConnectionManager::OnWindowVisibilityChanged(ServerWindow* window) {
     wms->ReleaseCaptureBlockedByModalWindow(window);
 }
 
-void ConnectionManager::OnWindowPredefinedCursorChanged(ServerWindow* window,
-                                                        int32_t cursor_id) {
+void WindowServer::OnWindowPredefinedCursorChanged(ServerWindow* window,
+                                                   int32_t cursor_id) {
   if (in_destructor_)
     return;
 
   ProcessWillChangeWindowPredefinedCursor(window, cursor_id);
 }
 
-void ConnectionManager::OnWindowSharedPropertyChanged(
+void WindowServer::OnWindowSharedPropertyChanged(
     ServerWindow* window,
     const std::string& name,
     const std::vector<uint8_t>* new_data) {
@@ -563,24 +559,23 @@ void ConnectionManager::OnWindowSharedPropertyChanged(
   }
 }
 
-void ConnectionManager::OnWindowTextInputStateChanged(
+void WindowServer::OnWindowTextInputStateChanged(
     ServerWindow* window,
     const ui::TextInputState& state) {
   Display* display = display_manager_->GetDisplayContaining(window);
   display->UpdateTextInputState(window, state);
 }
 
-void ConnectionManager::OnTransientWindowAdded(ServerWindow* window,
-                                               ServerWindow* transient_child) {
+void WindowServer::OnTransientWindowAdded(ServerWindow* window,
+                                          ServerWindow* transient_child) {
   for (auto& pair : tree_map_) {
     pair.second->ProcessTransientWindowAdded(window, transient_child,
                                              IsOperationSource(pair.first));
   }
 }
 
-void ConnectionManager::OnTransientWindowRemoved(
-    ServerWindow* window,
-    ServerWindow* transient_child) {
+void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
+                                            ServerWindow* transient_child) {
   // If we're deleting a window, then this is a superfluous message.
   if (current_operation_type() == OperationType::DELETE_WINDOW)
     return;
@@ -590,11 +585,11 @@ void ConnectionManager::OnTransientWindowRemoved(
   }
 }
 
-void ConnectionManager::OnFirstDisplayReady() {
+void WindowServer::OnFirstDisplayReady() {
   delegate_->OnFirstDisplayReady();
 }
 
-void ConnectionManager::OnNoMoreDisplays() {
+void WindowServer::OnNoMoreDisplays() {
   delegate_->OnNoMoreDisplays();
 }
 

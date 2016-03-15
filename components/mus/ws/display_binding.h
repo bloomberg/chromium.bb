@@ -15,8 +15,8 @@
 namespace mus {
 namespace ws {
 
-class ConnectionManager;
 class ServerWindow;
+class WindowServer;
 class WindowTree;
 
 // DisplayBinding manages the binding between a Display and it's mojo clients.
@@ -38,14 +38,14 @@ class DisplayBindingImpl : public DisplayBinding {
                      Display* display,
                      const UserId& user_id,
                      mojom::WindowTreeClientPtr client,
-                     ConnectionManager* connection_manager);
+                     WindowServer* window_server);
   ~DisplayBindingImpl() override;
 
  private:
   // DisplayBinding:
   WindowTree* CreateWindowTree(ServerWindow* root) override;
 
-  ConnectionManager* connection_manager_;
+  WindowServer* window_server_;
   const UserId user_id_;
   mojo::Binding<mojom::WindowTreeHost> binding_;
   mojom::WindowTreeClientPtr client_;

@@ -14,8 +14,6 @@
 #include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/ids.h"
@@ -27,6 +25,8 @@
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_access_policy.h"
+#include "components/mus/ws/window_server.h"
+#include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -100,21 +100,21 @@ class TestWindowManager : public mojom::WindowManager {
 
 class TestDisplayBinding : public DisplayBinding {
  public:
-  TestDisplayBinding(Display* display, ConnectionManager* manager)
-      : display_(display), connection_manager_(manager) {}
+  TestDisplayBinding(Display* display, WindowServer* window_server)
+      : display_(display), window_server_(window_server) {}
   ~TestDisplayBinding() override {}
 
  private:
   // DisplayBinding:
   WindowTree* CreateWindowTree(ServerWindow* root) override {
-    return connection_manager_->EmbedAtWindow(
+    return window_server_->EmbedAtWindow(
         root, mojo::shell::mojom::kRootUserID,
         mus::mojom::WindowTreeClientPtr(),
         make_scoped_ptr(new WindowManagerAccessPolicy));
   }
 
   Display* display_;
-  ConnectionManager* connection_manager_;
+  WindowServer* window_server_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayBinding);
 };
@@ -177,7 +177,7 @@ class WindowTreeTest : public testing::Test {
   ~WindowTreeTest() override {}
 
   // WindowTree for the window manager.
-  WindowTree* wm_tree() { return connection_manager_->GetTreeWithId(1); }
+  WindowTree* wm_tree() { return window_server_->GetTreeWithId(1); }
 
   TestWindowTreeClient* last_window_tree_client() {
     return delegate_.last_client();
@@ -185,10 +185,10 @@ class WindowTreeTest : public testing::Test {
 
   TestWindowTreeBinding* last_binding() { return delegate_.last_binding(); }
 
-  ConnectionManager* connection_manager() { return connection_manager_.get(); }
+  WindowServer* window_server() { return window_server_.get(); }
 
   ServerWindow* GetWindowById(const WindowId& id) {
-    return connection_manager_->GetWindow(id);
+    return window_server_->GetWindow(id);
   }
 
   TestWindowTreeClient* wm_client() { return wm_client_; }
@@ -226,12 +226,11 @@ class WindowTreeTest : public testing::Test {
   // a WindowTreeFactory does.
   WindowTree* CreateNewTree(const UserId& user_id,
                             TestWindowTreeBinding** binding) {
-    WindowTree* tree =
-        new WindowTree(connection_manager_.get(), user_id, nullptr,
-                       make_scoped_ptr(new DefaultAccessPolicy));
+    WindowTree* tree = new WindowTree(window_server_.get(), user_id, nullptr,
+                                      make_scoped_ptr(new DefaultAccessPolicy));
     *binding = new TestWindowTreeBinding;
-    connection_manager_->AddTree(make_scoped_ptr(tree),
-                                 make_scoped_ptr(*binding), nullptr);
+    window_server_->AddTree(make_scoped_ptr(tree), make_scoped_ptr(*binding),
+                            nullptr);
     return tree;
   }
 
@@ -239,13 +238,11 @@ class WindowTreeTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-    connection_manager_.reset(
-        new ConnectionManager(&delegate_, surfaces_state_));
+    window_server_.reset(new WindowServer(&delegate_, surfaces_state_));
     PlatformDisplayInitParams display_init_params;
     display_init_params.surfaces_state = surfaces_state_;
-    display_ = new Display(connection_manager_.get(), display_init_params);
-    display_binding_ =
-        new TestDisplayBinding(display_, connection_manager_.get());
+    display_ = new Display(window_server_.get(), display_init_params);
+    display_binding_ = new TestDisplayBinding(display_, window_server_.get());
     display_->Init(make_scoped_ptr(display_binding_));
     wm_client_ = delegate_.last_client();
   }
@@ -255,12 +252,12 @@ class WindowTreeTest : public testing::Test {
   TestWindowTreeClient* wm_client_;
   int32_t cursor_id_;
   TestPlatformDisplayFactory platform_display_factory_;
-  TestConnectionManagerDelegate delegate_;
-  // Owned by ConnectionManager.
+  TestWindowServerDelegate delegate_;
+  // Owned by WindowServer.
   TestDisplayBinding* display_binding_;
   Display* display_ = nullptr;
   scoped_refptr<SurfacesState> surfaces_state_;
-  scoped_ptr<ConnectionManager> connection_manager_;
+  scoped_ptr<WindowServer> window_server_;
   base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeTest);
@@ -283,7 +280,7 @@ void WindowTreeTest::SetupEventTargeting(TestWindowTreeClient** out_client,
   wm_client()->Bind(std::move(client_request));
   wm_tree()->Embed(embed_window_id, std::move(client));
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
-  WindowTree* tree1 = connection_manager()->GetTreeWithRoot(embed_window);
+  WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
   ASSERT_TRUE(tree1 != nullptr);
   ASSERT_NE(tree1, wm_tree());
 
@@ -326,7 +323,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client()->Bind(std::move(client_request));
   wm_tree()->Embed(embed_window_id, std::move(client));
-  WindowTree* tree1 = connection_manager()->GetTreeWithRoot(embed_window);
+  WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
   ASSERT_TRUE(tree1 != nullptr);
   ASSERT_NE(tree1, wm_tree());
 

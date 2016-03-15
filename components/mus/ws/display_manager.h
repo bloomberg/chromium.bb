@@ -81,8 +81,7 @@ class DisplayManager {
   DisplayManagerDelegate* delegate_;
 
   // Displays are initially added to |pending_displays_|. When the display is
-  // initialized it is moved to |displays_|. ConnectionManager owns the
-  // Displays.
+  // initialized it is moved to |displays_|. WindowServer owns the Displays.
   std::set<Display*> pending_displays_;
   std::set<Display*> displays_;
 

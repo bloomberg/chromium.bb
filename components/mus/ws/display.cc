@@ -7,8 +7,6 @@
 #include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/common/types.h"
-#include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"
@@ -16,6 +14,8 @@
 #include "components/mus/ws/platform_display_init_params.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_server.h"
+#include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/common/common_type_converters.h"
@@ -25,22 +25,22 @@
 namespace mus {
 namespace ws {
 
-Display::Display(ConnectionManager* connection_manager,
+Display::Display(WindowServer* window_server,
                  const PlatformDisplayInitParams& platform_display_init_params)
-    : id_(connection_manager->display_manager()->GetAndAdvanceNextDisplayId()),
-      connection_manager_(connection_manager),
+    : id_(window_server->display_manager()->GetAndAdvanceNextDisplayId()),
+      window_server_(window_server),
       platform_display_(PlatformDisplay::Create(platform_display_init_params)),
       last_cursor_(0) {
   platform_display_->Init(this);
 
-  connection_manager_->window_manager_factory_registry()->AddObserver(this);
-  connection_manager_->user_id_tracker()->AddObserver(this);
+  window_server_->window_manager_factory_registry()->AddObserver(this);
+  window_server_->user_id_tracker()->AddObserver(this);
 }
 
 Display::~Display() {
-  connection_manager_->user_id_tracker()->RemoveObserver(this);
+  window_server_->user_id_tracker()->RemoveObserver(this);
 
-  connection_manager_->window_manager_factory_registry()->RemoveObserver(this);
+  window_server_->window_manager_factory_registry()->RemoveObserver(this);
 
   DestroyFocusController();
   for (ServerWindow* window : windows_needing_frame_destruction_)
@@ -53,7 +53,7 @@ Display::~Display() {
   for (auto& pair : window_manager_state_map_)
     states.insert(pair.second.get());
   for (WindowManagerState* state : states)
-    connection_manager_->DestroyTree(state->tree());
+    window_server_->DestroyTree(state->tree());
 }
 
 void Display::Init(scoped_ptr<DisplayBinding> binding) {
@@ -64,11 +64,11 @@ void Display::Init(scoped_ptr<DisplayBinding> binding) {
 }
 
 DisplayManager* Display::display_manager() {
-  return connection_manager_->display_manager();
+  return window_server_->display_manager();
 }
 
 const DisplayManager* Display::display_manager() const {
-  return connection_manager_->display_manager();
+  return window_server_->display_manager();
 }
 
 mojom::DisplayPtr Display::ToMojomDisplay() const {
@@ -150,7 +150,7 @@ mojom::Rotation Display::GetRotation() const {
 
 const WindowManagerState* Display::GetActiveWindowManagerState() const {
   return GetWindowManagerStateForUser(
-      connection_manager_->user_id_tracker()->active_id());
+      window_server_->user_id_tracker()->active_id());
 }
 
 void Display::SetFocusedWindow(ServerWindow* new_focused_window) {
@@ -263,7 +263,7 @@ void Display::InitWindowManagersIfNecessary() {
 
 void Display::CreateWindowManagerStatesFromRegistry() {
   std::vector<WindowManagerFactoryService*> services =
-      connection_manager_->window_manager_factory_registry()->GetServices();
+      window_server_->window_manager_factory_registry()->GetServices();
   for (WindowManagerFactoryService* service : services) {
     if (service->window_manager_factory())
       CreateWindowManagerStateFromService(service);
@@ -277,11 +277,11 @@ void Display::CreateWindowManagerStateFromService(
                              top_level_surface_id_, service->user_id()));
   WindowManagerState* wms = wms_ptr.get();
   window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
-  wms->tree_ = connection_manager_->CreateTreeForWindowManager(
+  wms->tree_ = window_server_->CreateTreeForWindowManager(
       this, service->window_manager_factory(), wms->root(), service->user_id());
   if (!binding_) {
-    const bool is_active = service->user_id() ==
-                           connection_manager_->user_id_tracker()->active_id();
+    const bool is_active =
+        service->user_id() == window_server_->user_id_tracker()->active_id();
     wms->root()->SetVisible(is_active);
   }
 }
@@ -310,7 +310,7 @@ void Display::OnViewportMetricsChanged(
     const mojom::ViewportMetrics& old_metrics,
     const mojom::ViewportMetrics& new_metrics) {
   if (!root_) {
-    root_.reset(connection_manager_->CreateServerWindow(
+    root_.reset(window_server_->CreateServerWindow(
         display_manager()->GetAndAdvanceNextRootId(),
         ServerWindow::Properties()));
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
@@ -326,8 +326,7 @@ void Display::OnViewportMetricsChanged(
   }
   // TODO(sky): if bounds changed, then need to update
   // Display/WindowManagerState appropriately (e.g. notify observers).
-  connection_manager_->ProcessViewportMetricsChanged(this, old_metrics,
-                                                     new_metrics);
+  window_server_->ProcessViewportMetricsChanged(this, old_metrics, new_metrics);
 }
 
 void Display::OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) {
@@ -375,14 +374,13 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   WindowTree* embedded_tree_old = nullptr;
 
   if (old_focused_window) {
-    owning_tree_old = connection_manager_->GetTreeWithId(
-        old_focused_window->id().connection_id);
+    owning_tree_old =
+        window_server_->GetTreeWithId(old_focused_window->id().connection_id);
     if (owning_tree_old) {
       owning_tree_old->ProcessFocusChanged(old_focused_window,
                                            new_focused_window);
     }
-    embedded_tree_old =
-        connection_manager_->GetTreeWithRoot(old_focused_window);
+    embedded_tree_old = window_server_->GetTreeWithRoot(old_focused_window);
     if (embedded_tree_old) {
       DCHECK_NE(owning_tree_old, embedded_tree_old);
       embedded_tree_old->ProcessFocusChanged(old_focused_window,
@@ -392,15 +390,14 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   WindowTree* owning_tree_new = nullptr;
   WindowTree* embedded_tree_new = nullptr;
   if (new_focused_window) {
-    owning_tree_new = connection_manager_->GetTreeWithId(
-        new_focused_window->id().connection_id);
+    owning_tree_new =
+        window_server_->GetTreeWithId(new_focused_window->id().connection_id);
     if (owning_tree_new && owning_tree_new != owning_tree_old &&
         owning_tree_new != embedded_tree_old) {
       owning_tree_new->ProcessFocusChanged(old_focused_window,
                                            new_focused_window);
     }
-    embedded_tree_new =
-        connection_manager_->GetTreeWithRoot(new_focused_window);
+    embedded_tree_new = window_server_->GetTreeWithRoot(new_focused_window);
     if (embedded_tree_new && embedded_tree_new != owning_tree_old &&
         embedded_tree_new != embedded_tree_old) {
       DCHECK_NE(owning_tree_new, embedded_tree_new);
@@ -479,7 +476,7 @@ void Display::OnUserIdRemoved(const UserId& id) {
 
   // DestroyTree() calls back to OnWillDestroyTree() and the WindowManagerState
   // is destroyed (and removed).
-  connection_manager_->DestroyTree(state->tree());
+  window_server_->DestroyTree(state->tree());
   DCHECK_EQ(0u, window_manager_state_map_.count(id));
 }
 

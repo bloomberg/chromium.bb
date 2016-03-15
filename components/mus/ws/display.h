@@ -28,12 +28,12 @@
 namespace mus {
 namespace ws {
 
-class ConnectionManager;
 class DisplayBinding;
 class DisplayManager;
 class FocusController;
 struct PlatformDisplayInitParams;
 class WindowManagerState;
+class WindowServer;
 class WindowTree;
 
 namespace test {
@@ -57,7 +57,7 @@ class Display : public PlatformDisplayDelegate,
                 public UserIdTrackerObserver,
                 public WindowManagerFactoryRegistryObserver {
  public:
-  Display(ConnectionManager* connection_manager,
+  Display(WindowServer* window_server,
           const PlatformDisplayInitParams& platform_display_init_params);
   ~Display() override;
 
@@ -87,7 +87,7 @@ class Display : public PlatformDisplayDelegate,
 
   mojom::Rotation GetRotation() const;
 
-  ConnectionManager* connection_manager() { return connection_manager_; }
+  WindowServer* window_server() { return window_server_; }
 
   // Returns the root of the Display. The root's children are the roots
   // of the corresponding WindowManagers.
@@ -196,7 +196,7 @@ class Display : public PlatformDisplayDelegate,
   scoped_ptr<DisplayBinding> binding_;
   // Set once Init() has been called.
   bool init_called_ = false;
-  ConnectionManager* const connection_manager_;
+  WindowServer* const window_server_;
   scoped_ptr<ServerWindow> root_;
   scoped_ptr<PlatformDisplay> platform_display_;
   scoped_ptr<FocusController> focus_controller_;

@@ -13,7 +13,7 @@
 namespace mus {
 namespace ws {
 
-class ConnectionManager;
+class WindowServer;
 class WindowTree;
 
 enum class OperationType {
@@ -40,7 +40,7 @@ enum class OperationType {
 class Operation {
  public:
   Operation(WindowTree* tree,
-            ConnectionManager* connection_manager,
+            WindowServer* window_server,
             OperationType operation_type);
   ~Operation();
 
@@ -60,7 +60,7 @@ class Operation {
   }
 
  private:
-  ConnectionManager* const connection_manager_;
+  WindowServer* const window_server_;
   const ConnectionSpecificId source_tree_id_;
   const OperationType operation_type_;
 

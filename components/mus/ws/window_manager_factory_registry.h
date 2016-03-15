@@ -18,10 +18,10 @@
 namespace mus {
 namespace ws {
 
-class ConnectionManager;
 class UserIdTracker;
 class WindowManagerFactoryRegistryObserver;
 class WindowManagerFactoryService;
+class WindowServer;
 
 namespace test {
 class WindowManagerFactoryRegistryTestApi;
@@ -31,8 +31,8 @@ class WindowManagerFactoryRegistryTestApi;
 // WindowManagerFactoryServices.
 class WindowManagerFactoryRegistry : public UserIdTrackerObserver {
  public:
-  explicit WindowManagerFactoryRegistry(ConnectionManager* connection_manager,
-                                        UserIdTracker* tracker);
+  WindowManagerFactoryRegistry(WindowServer* connection_manager,
+                               UserIdTracker* tracker);
   ~WindowManagerFactoryRegistry() override;
 
   void Register(
@@ -64,7 +64,7 @@ class WindowManagerFactoryRegistry : public UserIdTrackerObserver {
   // Set to true the first time a valid factory has been found.
   bool got_valid_factory_ = false;
   UserIdTracker* id_tracker_;
-  ConnectionManager* connection_manager_;
+  WindowServer* window_server_;
 
   std::vector<scoped_ptr<WindowManagerFactoryService>> services_;
 

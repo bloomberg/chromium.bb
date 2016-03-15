@@ -12,8 +12,6 @@
 #include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/platform_display.h"
@@ -21,6 +19,8 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_server.h"
+#include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,17 +59,16 @@ class DisplayTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-    connection_manager_.reset(new ConnectionManager(
-        &connection_manager_delegate_, scoped_refptr<SurfacesState>()));
-    connection_manager_delegate_.set_connection_manager(
-        connection_manager_.get());
+    window_server_.reset(new WindowServer(&window_server_delegate_,
+                                          scoped_refptr<SurfacesState>()));
+    window_server_delegate_.set_window_server(window_server_.get());
   }
 
  protected:
   int32_t cursor_id_;
   TestPlatformDisplayFactory platform_display_factory_;
-  TestConnectionManagerDelegate connection_manager_delegate_;
-  scoped_ptr<ConnectionManager> connection_manager_;
+  TestWindowServerDelegate window_server_delegate_;
+  scoped_ptr<WindowServer> window_server_;
   base::MessageLoop message_loop_;
   TestWindowManagerFactory test_window_manager_factory_;
 
@@ -78,13 +77,13 @@ class DisplayTest : public testing::Test {
 
 TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
   const int kNumHostsToCreate = 2;
-  connection_manager_delegate_.set_num_displays_to_create(kNumHostsToCreate);
+  window_server_delegate_.set_num_displays_to_create(kNumHostsToCreate);
 
   const UserId kTestId1 = "2";
   const UserId kTestId2 = "21";
-  DisplayManager* display_manager = connection_manager_->display_manager();
+  DisplayManager* display_manager = window_server_->display_manager();
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kTestId1, &test_window_manager_factory_);
   // The first register should trigger creation of the default
   // Displays. There should be kNumHostsToCreate Displays.
@@ -100,7 +99,7 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
 
   // Add another registry, should trigger creation of another wm.
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kTestId2, &test_window_manager_factory_);
   for (Display* display : display_manager->displays()) {
     ASSERT_EQ(2u, display->num_window_manger_states());
@@ -117,58 +116,58 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
 }
 
 TEST_F(DisplayTest, Destruction) {
-  connection_manager_delegate_.set_num_displays_to_create(1);
+  window_server_delegate_.set_num_displays_to_create(1);
 
   const UserId kTestId1 = "2";
   const UserId kTestId2 = "21";
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kTestId1, &test_window_manager_factory_);
 
   // Add another registry, should trigger creation of another wm.
-  DisplayManager* display_manager = connection_manager_->display_manager();
+  DisplayManager* display_manager = window_server_->display_manager();
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kTestId2, &test_window_manager_factory_);
   ASSERT_EQ(1u, display_manager->displays().size());
   Display* display = *display_manager->displays().begin();
   ASSERT_EQ(2u, display->num_window_manger_states());
   // There should be two trees, one for each windowmanager.
-  EXPECT_EQ(2u, connection_manager_->num_trees());
+  EXPECT_EQ(2u, window_server_->num_trees());
 
   {
     WindowManagerState* state = display->GetWindowManagerStateForUser(kTestId1);
     // Destroy the tree associated with |state|. Should result in deleting
     // |state|.
-    connection_manager_->DestroyTree(state->tree());
+    window_server_->DestroyTree(state->tree());
     ASSERT_EQ(1u, display->num_window_manger_states());
     EXPECT_FALSE(display->GetWindowManagerStateForUser(kTestId1));
     EXPECT_EQ(1u, display_manager->displays().size());
-    EXPECT_EQ(1u, connection_manager_->num_trees());
+    EXPECT_EQ(1u, window_server_->num_trees());
   }
 
-  EXPECT_FALSE(connection_manager_delegate_.got_on_no_more_displays());
+  EXPECT_FALSE(window_server_delegate_.got_on_no_more_displays());
   // Destroy the Display, which should shutdown the trees.
-  connection_manager_->display_manager()->DestroyDisplay(display);
-  EXPECT_EQ(0u, connection_manager_->num_trees());
-  EXPECT_TRUE(connection_manager_delegate_.got_on_no_more_displays());
+  window_server_->display_manager()->DestroyDisplay(display);
+  EXPECT_EQ(0u, window_server_->num_trees());
+  EXPECT_TRUE(window_server_delegate_.got_on_no_more_displays());
 }
 
 TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
-  connection_manager_delegate_.set_num_displays_to_create(1);
+  window_server_delegate_.set_num_displays_to_create(1);
 
   const UserId kTestId1 = "20";
   const UserId kTestId2 = "201";
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kTestId1, &test_window_manager_factory_);
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kTestId2, &test_window_manager_factory_);
 
-  connection_manager_->user_id_tracker()->SetActiveUserId(kTestId1);
+  window_server_->user_id_tracker()->SetActiveUserId(kTestId1);
 
-  DisplayManager* display_manager = connection_manager_->display_manager();
+  DisplayManager* display_manager = window_server_->display_manager();
   ASSERT_EQ(1u, display_manager->displays().size());
   Display* display = *display_manager->displays().begin();
   WindowManagerState* active_wms = display->GetActiveWindowManagerState();
@@ -187,7 +186,7 @@ TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
 
   // Switch the user. Should trigger resetting state in old event dispatcher
   // and update state in new event dispatcher.
-  connection_manager_->user_id_tracker()->SetActiveUserId(kTestId2);
+  window_server_->user_id_tracker()->SetActiveUserId(kTestId2);
   EXPECT_NE(active_wms, display->GetActiveWindowManagerState());
   EXPECT_FALSE(EventDispatcherTestApi(active_wms->event_dispatcher())
                    .AreAnyPointersDown());
@@ -201,17 +200,17 @@ TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
 
 // Verifies capture fails when wm is inactive and succeeds when wm is active.
 TEST_F(DisplayTest, SetCaptureFromWindowManager) {
-  connection_manager_delegate_.set_num_displays_to_create(1);
+  window_server_delegate_.set_num_displays_to_create(1);
   const UserId kTestId1 = "20";
   const UserId kTestId2 = "201";
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kTestId1, &test_window_manager_factory_);
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kTestId2, &test_window_manager_factory_);
-  connection_manager_->user_id_tracker()->SetActiveUserId(kTestId1);
-  DisplayManager* display_manager = connection_manager_->display_manager();
+  window_server_->user_id_tracker()->SetActiveUserId(kTestId1);
+  DisplayManager* display_manager = window_server_->display_manager();
   ASSERT_EQ(1u, display_manager->displays().size());
   Display* display = *display_manager->displays().begin();
   WindowManagerState* wms_for_id2 =
@@ -236,7 +235,7 @@ TEST_F(DisplayTest, SetCaptureFromWindowManager) {
   EXPECT_FALSE(tree->SetCapture(child_window_id));
 
   // Make the second user active and verify capture works.
-  connection_manager_->user_id_tracker()->SetActiveUserId(kTestId2);
+  window_server_->user_id_tracker()->SetActiveUserId(kTestId2);
   EXPECT_TRUE(wms_for_id2->IsActive());
   EXPECT_TRUE(tree->SetCapture(child_window_id));
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_CONNECTION_MANAGER_H_
-#define COMPONENTS_MUS_WS_CONNECTION_MANAGER_H_
+#ifndef COMPONENTS_MUS_WS_WINDOW_SERVER_H_
+#define COMPONENTS_MUS_WS_WINDOW_SERVER_H_
 
 #include <stdint.h>
 
@@ -32,24 +32,24 @@ namespace mus {
 namespace ws {
 
 class AccessPolicy;
-class ConnectionManagerDelegate;
 class DisplayManager;
 class ServerWindow;
 class WindowManagerState;
+class WindowServerDelegate;
 class WindowTree;
 class WindowTreeBinding;
 
-// ConnectionManager manages the set of connections to the window server (all
-// the WindowTrees) as well as providing the root of the hierarchy.
-class ConnectionManager : public ServerWindowDelegate,
-                          public ServerWindowObserver,
-                          public DisplayManagerDelegate {
+// WindowServer manages the set of connections to the window server (all the
+//  WindowTrees) as well as providing the root of the hierarchy.
+class WindowServer : public ServerWindowDelegate,
+                     public ServerWindowObserver,
+                     public DisplayManagerDelegate {
  public:
-  ConnectionManager(ConnectionManagerDelegate* delegate,
-                    const scoped_refptr<mus::SurfacesState>& surfaces_state);
-  ~ConnectionManager() override;
+  WindowServer(WindowServerDelegate* delegate,
+               const scoped_refptr<mus::SurfacesState>& surfaces_state);
+  ~WindowServer() override;
 
-  ConnectionManagerDelegate* delegate() { return delegate_; }
+  WindowServerDelegate* delegate() { return delegate_; }
 
   UserIdTracker* user_id_tracker() { return &user_id_tracker_; }
   const UserIdTracker* user_id_tracker() const { return &user_id_tracker_; }
@@ -60,7 +60,7 @@ class ConnectionManager : public ServerWindowDelegate,
   }
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
-  // must be destroyed before ConnectionManager.
+  // must be destroyed before WindowServer.
   ServerWindow* CreateServerWindow(
       const WindowId& id,
       const std::map<std::string, std::vector<uint8_t>>& properties);
@@ -118,7 +118,7 @@ class ConnectionManager : public ServerWindowDelegate,
   // Returns the WindowTree that has |id| as a root.
   WindowTree* GetTreeWithRoot(const ServerWindow* window) {
     return const_cast<WindowTree*>(
-        const_cast<const ConnectionManager*>(this)->GetTreeWithRoot(window));
+        const_cast<const WindowServer*>(this)->GetTreeWithRoot(window));
   }
   const WindowTree* GetTreeWithRoot(const ServerWindow* window) const;
 
@@ -263,7 +263,7 @@ class ConnectionManager : public ServerWindowDelegate,
 
   UserIdTracker user_id_tracker_;
 
-  ConnectionManagerDelegate* delegate_;
+  WindowServerDelegate* delegate_;
 
   // State for rendering into a Surface.
   scoped_refptr<mus::SurfacesState> surfaces_state_;
@@ -291,10 +291,10 @@ class ConnectionManager : public ServerWindowDelegate,
 
   WindowManagerFactoryRegistry window_manager_factory_registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
+  DISALLOW_COPY_AND_ASSIGN(WindowServer);
 };
 
 }  // namespace ws
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_CONNECTION_MANAGER_H_
+#endif  // COMPONENTS_MUS_WS_WINDOW_SERVER_H_

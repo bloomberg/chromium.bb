@@ -10,10 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/interfaces/display.mojom.h"
-#include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/user_id.h"
+#include "components/mus/ws/window_server.h"
 
 namespace cc {
 struct SurfaceId;
@@ -130,7 +130,7 @@ class WindowManagerState : public EventDispatcherDelegate {
                      bool is_user_id_valid,
                      const UserId& user_id);
 
-  ConnectionManager* connection_manager();
+  WindowServer* window_server();
 
   void OnEventAckTimeout();
 

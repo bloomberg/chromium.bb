@@ -18,9 +18,9 @@
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/platform_display_init_params.h"
 #include "components/mus/ws/user_id.h"
+#include "components/mus/ws/window_server_delegate.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -36,13 +36,13 @@ class PlatformEventSource;
 
 namespace mus {
 namespace ws {
-class ConnectionManager;
 class ForwardingWindowManager;
+class WindowServer;
 }
 
 class MandolineUIServicesApp
     : public mojo::ShellClient,
-      public ws::ConnectionManagerDelegate,
+      public ws::WindowServerDelegate,
       public mojo::InterfaceFactory<mojom::DisplayManager>,
       public mojo::InterfaceFactory<mojom::UserAccessManager>,
       public mojo::InterfaceFactory<mojom::WindowManagerFactoryService>,
@@ -77,11 +77,11 @@ class MandolineUIServicesApp
   bool AcceptConnection(mojo::Connection* connection) override;
   void ShellConnectionLost() override;
 
-  // ConnectionManagerDelegate:
+  // WindowServerDelegate:
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
   scoped_ptr<ws::WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
-      ws::ConnectionManager* connection_manager,
+      ws::WindowServer* window_server,
       ws::WindowTree* tree,
       mojom::WindowTreeRequest tree_request,
       mojom::WindowTreeClientPtr client) override;
@@ -111,7 +111,7 @@ class MandolineUIServicesApp
   void Create(mojo::Connection* connection, mojom::GpuRequest request) override;
 
   ws::PlatformDisplayInitParams platform_display_init_params_;
-  scoped_ptr<ws::ConnectionManager> connection_manager_;
+  scoped_ptr<ws::WindowServer> window_server_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
   mojo::TracingImpl tracing_;
   using PendingRequests = std::vector<scoped_ptr<PendingRequest>>;

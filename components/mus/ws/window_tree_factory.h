@@ -13,12 +13,11 @@
 namespace mus {
 namespace ws {
 
-class ConnectionManager;
+class WindowServer;
 
 class WindowTreeFactory : public mus::mojom::WindowTreeFactory {
  public:
-  WindowTreeFactory(ConnectionManager* connection_manager,
-                    const UserId& user_id);
+  WindowTreeFactory(WindowServer* window_server, const UserId& user_id);
   ~WindowTreeFactory() override;
 
   void AddBinding(
@@ -29,7 +28,7 @@ class WindowTreeFactory : public mus::mojom::WindowTreeFactory {
                         mojom::WindowTreeClientPtr client) override;
 
  private:
-  ConnectionManager* connection_manager_;
+  WindowServer* window_server_;
   const UserId user_id_;
 
   mojo::BindingSet<mus::mojom::WindowTreeFactory> binding_;

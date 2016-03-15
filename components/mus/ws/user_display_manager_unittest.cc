@@ -13,8 +13,6 @@
 #include "components/mus/common/util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/ids.h"
@@ -24,6 +22,8 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_server.h"
+#include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,17 +115,16 @@ class UserDisplayManagerTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-    connection_manager_.reset(new ConnectionManager(
-        &connection_manager_delegate_, scoped_refptr<SurfacesState>()));
-    connection_manager_delegate_.set_connection_manager(
-        connection_manager_.get());
+    window_server_.reset(new WindowServer(&window_server_delegate_,
+                                          scoped_refptr<SurfacesState>()));
+    window_server_delegate_.set_window_server(window_server_.get());
   }
 
  protected:
   int32_t cursor_id_;
   TestPlatformDisplayFactory platform_display_factory_;
-  TestConnectionManagerDelegate connection_manager_delegate_;
-  scoped_ptr<ConnectionManager> connection_manager_;
+  TestWindowServerDelegate window_server_delegate_;
+  scoped_ptr<WindowServer> window_server_;
   base::MessageLoop message_loop_;
   TestWindowManagerFactory test_window_manager_factory_;
 
@@ -133,13 +132,13 @@ class UserDisplayManagerTest : public testing::Test {
 };
 
 TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
-  connection_manager_delegate_.set_num_displays_to_create(1);
+  window_server_delegate_.set_num_displays_to_create(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
-  DisplayManager* display_manager = connection_manager_->display_manager();
+  DisplayManager* display_manager = window_server_->display_manager();
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kUserId1, &test_window_manager_factory_);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
@@ -162,13 +161,13 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
-  connection_manager_delegate_.set_num_displays_to_create(1);
+  window_server_delegate_.set_num_displays_to_create(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
-  DisplayManager* display_manager = connection_manager_->display_manager();
+  DisplayManager* display_manager = window_server_->display_manager();
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kUserId1, &test_window_manager_factory_);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
@@ -187,13 +186,13 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
-  connection_manager_delegate_.set_num_displays_to_create(1);
+  window_server_delegate_.set_num_displays_to_create(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
-  DisplayManager* display_manager = connection_manager_->display_manager();
+  DisplayManager* display_manager = window_server_->display_manager();
   WindowManagerFactoryRegistryTestApi(
-      connection_manager_->window_manager_factory_registry())
+      window_server_->window_manager_factory_registry())
       .AddService(kUserId1, &test_window_manager_factory_);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
@@ -209,7 +208,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 
   // Add another display.
   Display* display2 =
-      new Display(connection_manager_.get(), PlatformDisplayInitParams());
+      new Display(window_server_.get(), PlatformDisplayInitParams());
   display2->Init(nullptr);
 
   // Observer should not have been notified yet as frame decorations not set.

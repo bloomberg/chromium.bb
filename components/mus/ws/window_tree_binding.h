@@ -13,7 +13,7 @@
 namespace mus {
 namespace ws {
 
-class ConnectionManager;
+class WindowServer;
 class WindowTree;
 
 // WindowTreeBinding manages the binding between a WindowTree and its mojo
@@ -41,11 +41,11 @@ class WindowTreeBinding {
 class DefaultWindowTreeBinding : public WindowTreeBinding {
  public:
   DefaultWindowTreeBinding(WindowTree* tree,
-                           ConnectionManager* connection_manager,
+                           WindowServer* window_server,
                            mojom::WindowTreeRequest service_request,
                            mojom::WindowTreeClientPtr client);
   DefaultWindowTreeBinding(WindowTree* tree,
-                           ConnectionManager* connection_manager,
+                           WindowServer* window_server,
                            mojom::WindowTreeClientPtr client);
   ~DefaultWindowTreeBinding() override;
 
@@ -58,7 +58,7 @@ class DefaultWindowTreeBinding : public WindowTreeBinding {
   void SetIncomingMethodCallProcessingPaused(bool paused) override;
 
  private:
-  ConnectionManager* connection_manager_;
+  WindowServer* window_server_;
   mojo::Binding<mojom::WindowTree> binding_;
   mojom::WindowTreeClientPtr client_;
   mojom::WindowManagerAssociatedPtr window_manager_internal_;

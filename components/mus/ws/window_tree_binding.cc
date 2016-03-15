@@ -5,7 +5,7 @@
 #include "components/mus/ws/window_tree_binding.h"
 
 #include "base/bind.h"
-#include "components/mus/ws/connection_manager.h"
+#include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
 
 namespace mus {
@@ -18,25 +18,25 @@ WindowTreeBinding::~WindowTreeBinding() {}
 
 DefaultWindowTreeBinding::DefaultWindowTreeBinding(
     WindowTree* tree,
-    ConnectionManager* connection_manager,
+    WindowServer* window_server,
     mojom::WindowTreeRequest service_request,
     mojom::WindowTreeClientPtr client)
     : WindowTreeBinding(client.get()),
-      connection_manager_(connection_manager),
+      window_server_(window_server),
       binding_(tree, std::move(service_request)),
       client_(std::move(client)) {
-  // Both |connection_manager| and |tree| outlive us.
+  // Both |window_server| and |tree| outlive us.
   binding_.set_connection_error_handler(
-      base::Bind(&ConnectionManager::DestroyTree,
-                 base::Unretained(connection_manager), base::Unretained(tree)));
+      base::Bind(&WindowServer::DestroyTree, base::Unretained(window_server),
+                 base::Unretained(tree)));
 }
 
 DefaultWindowTreeBinding::DefaultWindowTreeBinding(
     WindowTree* tree,
-    ConnectionManager* connection_manager,
+    WindowServer* window_server,
     mojom::WindowTreeClientPtr client)
     : WindowTreeBinding(client.get()),
-      connection_manager_(connection_manager),
+      window_server_(window_server),
       binding_(tree),
       client_(std::move(client)) {}
 

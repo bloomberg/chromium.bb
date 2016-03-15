@@ -15,12 +15,12 @@
 namespace mus {
 namespace ws {
 
-class ConnectionManager;
+class WindowServer;
 
 class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
  public:
   WindowTreeHostFactory(
-      ConnectionManager* connection_manager,
+      WindowServer* window_server,
       const UserId& user_id,
       const PlatformDisplayInitParams& platform_display_init_params);
   ~WindowTreeHostFactory() override;
@@ -32,7 +32,7 @@ class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
   void CreateWindowTreeHost(mojom::WindowTreeHostRequest host,
                             mojom::WindowTreeClientPtr tree_client) override;
 
-  ConnectionManager* connection_manager_;
+  WindowServer* window_server_;
   const UserId user_id_;
   const PlatformDisplayInitParams platform_display_init_params_;
   mojo::BindingSet<mojom::WindowTreeHostFactory> bindings_;

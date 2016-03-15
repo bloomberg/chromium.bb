@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_CONNECTION_MANAGER_DELEGATE_H_
-#define COMPONENTS_MUS_WS_CONNECTION_MANAGER_DELEGATE_H_
+#ifndef COMPONENTS_MUS_WS_WINDOW_SERVER_DELEGATE_H_
+#define COMPONENTS_MUS_WS_WINDOW_SERVER_DELEGATE_H_
 
 #include <stdint.h>
 
@@ -24,13 +24,13 @@ class WindowTree;
 
 namespace ws {
 
-class ConnectionManager;
 class Display;
 class ServerWindow;
+class WindowServer;
 class WindowTree;
 class WindowTreeBinding;
 
-class ConnectionManagerDelegate {
+class WindowServerDelegate {
  public:
   // Called once when the AcceleratedWidget of a Display is available.
   virtual void OnFirstDisplayReady();
@@ -38,9 +38,9 @@ class ConnectionManagerDelegate {
   virtual void OnNoMoreDisplays() = 0;
 
   // Creates a WindowTreeBinding in response to Embed() calls on the
-  // ConnectionManager.
+  // WindowServer.
   virtual scoped_ptr<WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
-      ws::ConnectionManager* connection_manager,
+      ws::WindowServer* window_server,
       ws::WindowTree* tree,
       mojom::WindowTreeRequest tree_request,
       mojom::WindowTreeClientPtr client) = 0;
@@ -50,10 +50,10 @@ class ConnectionManagerDelegate {
   virtual void CreateDefaultDisplays() = 0;
 
  protected:
-  virtual ~ConnectionManagerDelegate() {}
+  virtual ~WindowServerDelegate() {}
 };
 
 }  // namespace ws
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_CONNECTION_MANAGER_DELEGATE_H_
+#endif  // COMPONENTS_MUS_WS_WINDOW_SERVER_DELEGATE_H_

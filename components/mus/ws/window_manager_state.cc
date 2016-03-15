@@ -4,12 +4,12 @@
 
 #include "components/mus/ws/window_manager_state.h"
 
-#include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/user_id_tracker.h"
+#include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "ui/events/event.h"
@@ -107,8 +107,8 @@ void WindowManagerState::SetFrameDecorationValues(
 
 bool WindowManagerState::SetCapture(ServerWindow* window,
                                     bool in_nonclient_area) {
-  // TODO(sky): capture should be a singleton. Need to route to
-  // ConnectionManager so that all other EventDispatchers are updated.
+  // TODO(sky): capture should be a singleton. Need to route to WindowServer
+  // so that all other EventDispatchers are updated.
   DCHECK(IsActive());
   if (capture_window() == window)
     return true;
@@ -167,9 +167,8 @@ WindowManagerState::WindowManagerState(Display* display,
   frame_decoration_values_->maximized_client_area_insets = mojo::Insets::New();
   frame_decoration_values_->max_title_bar_button_width = 0u;
 
-  ConnectionManager* connection_manager = display_->connection_manager();
-  root_.reset(connection_manager->CreateServerWindow(
-      connection_manager->display_manager()->GetAndAdvanceNextRootId(),
+  root_.reset(window_server()->CreateServerWindow(
+      window_server()->display_manager()->GetAndAdvanceNextRootId(),
       ServerWindow::Properties()));
   // Our root is always a child of the Display's root. Do this
   // before the WindowTree has been created so that the client doesn't get
@@ -228,8 +227,8 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree) {
   ProcessNextEventFromQueue();
 }
 
-ConnectionManager* WindowManagerState::connection_manager() {
-  return display_->connection_manager();
+WindowServer* WindowManagerState::window_server() {
+  return display_->window_server();
 }
 
 void WindowManagerState::OnEventAckTimeout() {
@@ -285,8 +284,8 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   // embedded window.
   WindowTree* tree =
       in_nonclient_area
-          ? connection_manager()->GetTreeWithId(target->id().connection_id)
-          : connection_manager()->GetTreeWithRoot(target);
+          ? window_server()->GetTreeWithId(target->id().connection_id)
+          : window_server()->GetTreeWithRoot(target);
   if (!tree) {
     if (in_nonclient_area) {
       // Being the root of the tree means we may get events outside the bounds
@@ -295,7 +294,7 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
       DCHECK_EQ(target, root_.get());
       tree = tree_;
     } else {
-      tree = connection_manager()->GetTreeWithId(target->id().connection_id);
+      tree = window_server()->GetTreeWithId(target->id().connection_id);
     }
   }
 
@@ -337,7 +336,7 @@ void WindowManagerState::ReleaseNativeCapture() {
 
 void WindowManagerState::OnServerWindowCaptureLost(ServerWindow* window) {
   DCHECK(window);
-  display_->connection_manager()->ProcessLostCapture(window);
+  window_server()->ProcessLostCapture(window);
 }
 
 void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,

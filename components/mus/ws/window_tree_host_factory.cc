@@ -6,18 +6,18 @@
 
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
+#include "components/mus/ws/window_server.h"
 
 namespace mus {
 namespace ws {
 
 WindowTreeHostFactory::WindowTreeHostFactory(
-    ConnectionManager* connection_manager,
+    WindowServer* window_server,
     const UserId& user_id,
     const PlatformDisplayInitParams& platform_display_init_params)
-    : connection_manager_(connection_manager),
+    : window_server_(window_server),
       user_id_(user_id),
       platform_display_init_params_(platform_display_init_params) {}
 
@@ -31,11 +31,10 @@ void WindowTreeHostFactory::AddBinding(
 void WindowTreeHostFactory::CreateWindowTreeHost(
     mojom::WindowTreeHostRequest host,
     mojom::WindowTreeClientPtr tree_client) {
-  Display* display =
-      new Display(connection_manager_, platform_display_init_params_);
+  Display* display = new Display(window_server_, platform_display_init_params_);
   scoped_ptr<DisplayBindingImpl> display_binding(
       new DisplayBindingImpl(std::move(host), display, user_id_,
-                             std::move(tree_client), connection_manager_));
+                             std::move(tree_client), window_server_));
   display->Init(std::move(display_binding));
 }
 

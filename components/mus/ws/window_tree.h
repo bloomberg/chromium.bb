@@ -37,12 +37,12 @@ namespace mus {
 namespace ws {
 
 class AccessPolicy;
-class ConnectionManager;
 class DisplayManager;
 class Display;
 class ServerWindow;
 class TargetedEvent;
 class WindowManagerState;
+class WindowServer;
 class WindowTreeTest;
 
 namespace test {
@@ -62,7 +62,7 @@ class WindowTree : public mojom::WindowTree,
                    public AccessPolicyDelegate,
                    public mojom::WindowManagerClient {
  public:
-  WindowTree(ConnectionManager* connection_manager,
+  WindowTree(WindowServer* window_server,
              const UserId& user_id,
              ServerWindow* root,
              scoped_ptr<AccessPolicy> access_policy);
@@ -390,11 +390,11 @@ class WindowTree : public mojom::WindowTree,
   bool IsWindowRootOfAnotherTreeForAccessPolicy(
       const ServerWindow* window) const override;
 
-  ConnectionManager* connection_manager_;
+  WindowServer* window_server_;
 
   const UserId user_id_;
 
-  // Id of this tree as assigned by ConnectionManager.
+  // Id of this tree as assigned by WindowServer.
   const ConnectionSpecificId id_;
 
   ConnectionSpecificId next_window_id_;

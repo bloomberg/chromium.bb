@@ -9,7 +9,6 @@
 
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/platform_display.h"
@@ -18,6 +17,7 @@
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
 #include "components/mus/ws/window_manager_state.h"
+#include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 
@@ -246,14 +246,14 @@ class TestWindowTreeBinding : public WindowTreeBinding {
 
 // -----------------------------------------------------------------------------
 
-// ConnectionManagerDelegate that creates TestWindowTreeClients.
-class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
+// WindowServerDelegate that creates TestWindowTreeClients.
+class TestWindowServerDelegate : public WindowServerDelegate {
  public:
-  TestConnectionManagerDelegate();
-  ~TestConnectionManagerDelegate() override;
+  TestWindowServerDelegate();
+  ~TestWindowServerDelegate() override;
 
-  void set_connection_manager(ConnectionManager* connection_manager) {
-    connection_manager_ = connection_manager;
+  void set_window_server(WindowServer* window_server) {
+    window_server_ = window_server;
   }
 
   void set_num_displays_to_create(int count) {
@@ -267,10 +267,10 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
 
   bool got_on_no_more_displays() const { return got_on_no_more_displays_; }
 
-  // ConnectionManagerDelegate:
+  // WindowServerDelegate:
   void OnNoMoreDisplays() override;
   scoped_ptr<WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
-      ws::ConnectionManager* connection_manager,
+      ws::WindowServer* window_server,
       ws::WindowTree* tree,
       mojom::WindowTreeRequest tree_request,
       mojom::WindowTreeClientPtr client) override;
@@ -282,10 +282,10 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   int num_displays_to_create_ = 0;
   TestWindowTreeBinding* last_binding_ = nullptr;
   Display* display_ = nullptr;
-  ConnectionManager* connection_manager_ = nullptr;
+  WindowServer* window_server_ = nullptr;
   bool got_on_no_more_displays_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestConnectionManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowServerDelegate);
 };
 
 }  // namespace test

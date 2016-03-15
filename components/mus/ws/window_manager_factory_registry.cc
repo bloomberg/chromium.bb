@@ -4,18 +4,18 @@
 
 #include "components/mus/ws/window_manager_factory_registry.h"
 
-#include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/user_id_tracker_observer.h"
 #include "components/mus/ws/window_manager_factory_registry_observer.h"
 #include "components/mus/ws/window_manager_factory_service.h"
+#include "components/mus/ws/window_server.h"
 
 namespace mus {
 namespace ws {
 
 WindowManagerFactoryRegistry::WindowManagerFactoryRegistry(
-    ConnectionManager* connection_manager,
+    WindowServer* window_server,
     UserIdTracker* id_tracker)
-    : id_tracker_(id_tracker), connection_manager_(connection_manager) {
+    : id_tracker_(id_tracker), window_server_(window_server) {
   id_tracker_->AddObserver(this);
 }
 
@@ -87,10 +87,10 @@ void WindowManagerFactoryRegistry::OnWindowManagerFactorySet(
   FOR_EACH_OBSERVER(WindowManagerFactoryRegistryObserver, observers_,
                     OnWindowManagerFactorySet(service));
 
-  // Notify after other observers as ConnectionManager triggers other
+  // Notify after other observers as WindowServer triggers other
   // observers being added, which will have already processed the add.
   if (is_first_valid_factory)
-    connection_manager_->OnFirstWindowManagerFactorySet();
+    window_server_->OnFirstWindowManagerFactorySet();
 }
 
 void WindowManagerFactoryRegistry::OnActiveUserIdChanged(

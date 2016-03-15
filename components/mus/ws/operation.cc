@@ -4,27 +4,27 @@
 
 #include "components/mus/ws/operation.h"
 
-#include "components/mus/ws/connection_manager.h"
+#include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
 
 namespace mus {
 namespace ws {
 
 Operation::Operation(WindowTree* tree,
-                     ConnectionManager* connection_manager,
+                     WindowServer* window_server,
                      OperationType operation_type)
-    : connection_manager_(connection_manager),
+    : window_server_(window_server),
       source_tree_id_(tree->id()),
       operation_type_(operation_type) {
   DCHECK(operation_type != OperationType::NONE);
   // Tell the connection manager about the operation currently in flight.
   // The connection manager uses this information to suppress certain calls
   // out to clients.
-  connection_manager_->PrepareForOperation(this);
+  window_server_->PrepareForOperation(this);
 }
 
 Operation::~Operation() {
-  connection_manager_->FinishOperation();
+  window_server_->FinishOperation();
 }
 
 }  // namespace ws

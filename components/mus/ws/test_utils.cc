@@ -249,18 +249,18 @@ void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
   is_paused_ = paused;
 }
 
-// TestConnectionManagerDelegate ----------------------------------------------
+// TestWindowServerDelegate ----------------------------------------------
 
-TestConnectionManagerDelegate::TestConnectionManagerDelegate() {}
-TestConnectionManagerDelegate::~TestConnectionManagerDelegate() {}
+TestWindowServerDelegate::TestWindowServerDelegate() {}
+TestWindowServerDelegate::~TestWindowServerDelegate() {}
 
-void TestConnectionManagerDelegate::OnNoMoreDisplays() {
+void TestWindowServerDelegate::OnNoMoreDisplays() {
   got_on_no_more_displays_ = true;
 }
 
 scoped_ptr<WindowTreeBinding>
-TestConnectionManagerDelegate::CreateWindowTreeBindingForEmbedAtWindow(
-    ws::ConnectionManager* connection_manager,
+TestWindowServerDelegate::CreateWindowTreeBindingForEmbedAtWindow(
+    ws::WindowServer* window_server,
     ws::WindowTree* tree,
     mojom::WindowTreeRequest tree_request,
     mojom::WindowTreeClientPtr client) {
@@ -269,14 +269,13 @@ TestConnectionManagerDelegate::CreateWindowTreeBindingForEmbedAtWindow(
   return std::move(binding);
 }
 
-void TestConnectionManagerDelegate::CreateDefaultDisplays() {
+void TestWindowServerDelegate::CreateDefaultDisplays() {
   DCHECK(num_displays_to_create_);
-  DCHECK(connection_manager_);
+  DCHECK(window_server_);
 
   for (int i = 0; i < num_displays_to_create_; ++i) {
     // Display manages its own lifetime.
-    Display* display =
-        new Display(connection_manager_, PlatformDisplayInitParams());
+    Display* display = new Display(window_server_, PlatformDisplayInitParams());
     display->Init(nullptr);
   }
 }
