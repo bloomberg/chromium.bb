@@ -124,7 +124,8 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void onNativeObjectDestroyed() {
-        if (mContentViewCore.getBrowserAccessibilityManager() == this) {
+        if (mContentViewCore != null
+                && mContentViewCore.getBrowserAccessibilityManager() == this) {
             mContentViewCore.setBrowserAccessibilityManager(null);
         }
         mNativeObj = 0;
