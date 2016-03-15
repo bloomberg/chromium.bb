@@ -23,7 +23,7 @@ base::string16 ObsoleteSystem::LocalizedObsoleteString() {
 
 // static
 bool ObsoleteSystem::IsEndOfTheLine() {
-  return false;
+  return true;
 }
 
 // static
