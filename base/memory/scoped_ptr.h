@@ -124,46 +124,6 @@ struct FreeDeleter {
 template <typename T, typename D = std::default_delete<T>>
 using scoped_ptr = std::unique_ptr<T, D>;
 
-// Versions of libstdc++ 4.8 lack overloads for <, <=, >, and >= when comparing
-// a std::unique_ptr and nullptr_t.
-#if defined(__GLIBCXX__) && __GLIBCXX__ < 20150123
-template <class T, class D>
-bool operator<(const scoped_ptr<T, D>& p, std::nullptr_t) {
-  return p.get() < nullptr;
-}
-template <class T, class D>
-bool operator<(std::nullptr_t, const scoped_ptr<T, D>& p) {
-  return nullptr < p.get();
-}
-
-template <class T, class D>
-bool operator>(const scoped_ptr<T, D>& p, std::nullptr_t) {
-  return nullptr < p;
-}
-template <class T, class D>
-bool operator>(std::nullptr_t, const scoped_ptr<T, D>& p) {
-  return p < nullptr;
-}
-
-template <class T, class D>
-bool operator<=(const scoped_ptr<T, D>& p, std::nullptr_t) {
-  return !(p > nullptr);
-}
-template <class T, class D>
-bool operator<=(std::nullptr_t, const scoped_ptr<T, D>& p) {
-  return !(nullptr > p);
-}
-
-template <class T, class D>
-bool operator>=(const scoped_ptr<T, D>& p, std::nullptr_t) {
-  return !(p < nullptr);
-}
-template <class T, class D>
-bool operator>=(std::nullptr_t, const scoped_ptr<T, D>& p) {
-  return !(nullptr < p);
-}
-#endif  // defined(__GLIBCXX__) && __GLIBCXX__ < 20150123
-
 // A function to convert T* into scoped_ptr<T>
 // Doing e.g. make_scoped_ptr(new FooBarBaz<type>(arg)) is a shorter notation
 // for scoped_ptr<FooBarBaz<type> >(new FooBarBaz<type>(arg))
