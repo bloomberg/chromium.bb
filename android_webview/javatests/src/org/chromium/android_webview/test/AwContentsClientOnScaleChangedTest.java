@@ -37,7 +37,7 @@ public class AwContentsClientOnScaleChangedTest extends AwTestBase {
                                 + " minimum-scale=0.5, maximum-scale=2, user-scalable=yes\" />",
                         "testScaleUp test page body"),
                 "text/html", false);
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mAwContents.canZoomIn();

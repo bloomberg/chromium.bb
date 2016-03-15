@@ -431,9 +431,9 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return getKeepScreenOn(view) == expected
+                    return getKeepScreenOnOnInstrumentationThread(view) == expected
                             && DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID)
-                                != expected;
+                            != expected;
                 } catch (InterruptedException | TimeoutException e) {
                     fail(e.getMessage());
                     return false;
@@ -444,17 +444,31 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     private void assertKeepScreenOnActive(final View view, final boolean expected)
             throws Exception {
-        assertTrue(getKeepScreenOn(view) == expected
+        assertTrue(getKeepScreenOnOnInstrumentationThread(view) == expected
                 && DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID) != expected);
     }
 
-    private boolean getKeepScreenOn(View view) {
+    private boolean getKeepScreenOnOnInstrumentationThread(final View view) {
+        try {
+            return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return getKeepScreenOnOnUiThread(view);
+                }
+            });
+        } catch (Exception e) {
+            fail(e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean getKeepScreenOnOnUiThread(View view) {
         // The power save blocker is added to a child anchor view,
         // so we need to traverse the hierarchy.
         if (view instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup) view;
             for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                if (getKeepScreenOn(viewGroup.getChildAt(i))) {
+                if (getKeepScreenOnOnUiThread(viewGroup.getChildAt(i))) {
                     return true;
                 }
             }
