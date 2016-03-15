@@ -60,7 +60,9 @@ class SharedContextRateLimiter;
 #define CANVAS2D_HIBERNATION_ENABLED 0
 
 // IOSurfaces are a primitive only present on OS X.
-#define USE_IOSURFACE_FOR_2D_CANVAS 1
+// Temporarily disable IOSurfaces while investigating a compositing bug.
+// https://crbug.com/595063
+#define USE_IOSURFACE_FOR_2D_CANVAS 0
 #else
 #define CANVAS2D_HIBERNATION_ENABLED 1
 #define USE_IOSURFACE_FOR_2D_CANVAS 0
