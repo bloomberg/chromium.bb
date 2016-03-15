@@ -1815,12 +1815,13 @@
           }
         ]
     }],
-    ['chromeos==1', {
+    ['chromeos==1 or OS=="mac"', {
       'targets': [
         {
           'target_name': 'video_encode_accelerator_unittest',
           'type': 'executable',
           'dependencies': [
+            'content.gyp:content_common',
             '../base/base.gyp:base',
             '../media/media.gyp:media',
             '../media/media.gyp:media_test_support',

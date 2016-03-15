@@ -55,6 +55,8 @@
 // Status has been defined as int in Xlib.h.
 #undef Status
 #endif  // defined(ARCH_CPU_X86_FAMILY)
+#elif defined(OS_MACOSX)
+#include "content/common/gpu/media/vt_video_encode_accelerator_mac.h"
 #else
 #error The VideoEncodeAcceleratorUnittest is not supported on this platform.
 #endif
@@ -126,7 +128,11 @@ const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
 //                                    of the stream.
 //   Bitrate is only forced for tests that test bitrate.
 const char* g_default_in_filename = "bear_320x192_40frames.yuv";
+#if !defined(OS_MACOSX)
 const char* g_default_in_parameters = ":320:192:1:out.h264:200000";
+#else
+const char* g_default_in_parameters = ":320:192:0:out.h264:200000";
+#endif
 
 // Enabled by including a --fake_encoder flag to the command line invoking the
 // test.
@@ -812,6 +818,7 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   scoped_ptr<media::VideoEncodeAccelerator> CreateFakeVEA();
   scoped_ptr<media::VideoEncodeAccelerator> CreateV4L2VEA();
   scoped_ptr<media::VideoEncodeAccelerator> CreateVaapiVEA();
+  scoped_ptr<media::VideoEncodeAccelerator> CreateVTVEA();
 
   void SetState(ClientState new_state);
 
@@ -1073,6 +1080,14 @@ scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateVaapiVEA() {
   return encoder;
 }
 
+scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateVTVEA() {
+  scoped_ptr<media::VideoEncodeAccelerator> encoder;
+#if defined(OS_MACOSX)
+  encoder.reset(new VTVideoEncodeAccelerator());
+#endif
+  return encoder;
+}
+
 void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(!has_encoder());
@@ -1080,7 +1095,8 @@ void VEAClient::CreateEncoder() {
   scoped_ptr<media::VideoEncodeAccelerator> encoders[] = {
     CreateFakeVEA(),
     CreateV4L2VEA(),
-    CreateVaapiVEA()
+    CreateVaapiVEA(),
+    CreateVTVEA()
   };
 
   DVLOG(1) << "Profile: " << test_stream_->requested_profile
@@ -1651,6 +1667,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   encoder_thread.Stop();
 }
 
+#if !defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
@@ -1695,6 +1712,26 @@ INSTANTIATE_TEST_CASE_P(
         base::MakeTuple(3, false, 0, false, false, false, false, false),
         base::MakeTuple(3, false, 0, true, false, false, true, false),
         base::MakeTuple(3, false, 0, true, false, true, false, false)));
+#else
+INSTANTIATE_TEST_CASE_P(
+    SimpleEncode,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(
+        base::MakeTuple(1, true, 0, false, false, false, false, false),
+        base::MakeTuple(1, true, 0, false, false, false, false, true)));
+
+INSTANTIATE_TEST_CASE_P(
+    EncoderPerf,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(
+        base::MakeTuple(1, false, 0, false, true, false, false, false)));
+
+INSTANTIATE_TEST_CASE_P(
+    MultipleEncoders,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(
+        base::MakeTuple(3, false, 0, false, false, false, false, false)));
+#endif
 
 // TODO(posciak): more tests:
 // - async FeedEncoderWithOutput

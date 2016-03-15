@@ -31,6 +31,8 @@
 #endif
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
 #include "content/common/gpu/media/android_video_encode_accelerator.h"
+#elif defined(OS_MACOSX)
+#include "content/common/gpu/media/vt_video_encode_accelerator_mac.h"
 #endif
 
 namespace content {
@@ -211,6 +213,9 @@ GpuVideoEncodeAccelerator::CreateVEAFps(
   if (!gpu_preferences.disable_web_rtc_hw_encoding)
     create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateAndroidVEA);
 #endif
+#if defined(OS_MACOSX)
+  create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateVTVEA);
+#endif
   return create_vea_fps;
 }
 
@@ -241,6 +246,15 @@ scoped_ptr<media::VideoEncodeAccelerator>
 GpuVideoEncodeAccelerator::CreateAndroidVEA() {
   return make_scoped_ptr<media::VideoEncodeAccelerator>(
       new AndroidVideoEncodeAccelerator());
+}
+#endif
+
+#if defined(OS_MACOSX)
+// static
+scoped_ptr<media::VideoEncodeAccelerator>
+GpuVideoEncodeAccelerator::CreateVTVEA() {
+  return make_scoped_ptr<media::VideoEncodeAccelerator>(
+      new VTVideoEncodeAccelerator());
 }
 #endif
 

@@ -14,6 +14,8 @@ source_set("mac") {
     "video_frame_mac.h",
     "videotoolbox_glue.h",
     "videotoolbox_glue.mm",
+    "videotoolbox_helpers.cc",
+    "videotoolbox_helpers.h",
   ]
   if (is_mac) {
     sources += [
