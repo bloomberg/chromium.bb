@@ -106,14 +106,12 @@ void AddWifiCredentialToProfileChromeOs(
       credential.ToOncProperties();
   CHECK(onc_properties) << "Failed to generate ONC properties for "
                         << credential.ToString();
-  GetManagedNetworkConfigurationHandler()
-      ->CreateConfiguration(
-          ChromeOsUserHashForBrowserContext(*browser_context),
-          *onc_properties,
-          ::chromeos::network_handler::StringResultCallback(),
-          base::Bind(LogCreateConfigurationFailure,
-                     base::StringPrintf("Failed to add credential %s",
-                                        credential.ToString().c_str())));
+  GetManagedNetworkConfigurationHandler()->CreateConfiguration(
+      ChromeOsUserHashForBrowserContext(*browser_context), *onc_properties,
+      ::chromeos::network_handler::ServiceResultCallback(),
+      base::Bind(LogCreateConfigurationFailure,
+                 base::StringPrintf("Failed to add credential %s",
+                                    credential.ToString().c_str())));
   base::MessageLoop::current()->RunUntilIdle();
 }
 

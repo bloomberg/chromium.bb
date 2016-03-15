@@ -50,12 +50,10 @@ void WifiConfigDelegateChromeOs::AddToLocalNetworks(
     return;
   }
 
-  managed_network_configuration_handler_
-      ->CreateConfiguration(
-          user_hash_,
-          *onc_properties,
-          chromeos::network_handler::StringResultCallback(),
-          base::Bind(OnCreateConfigurationFailed, network_credential));
+  managed_network_configuration_handler_->CreateConfiguration(
+      user_hash_, *onc_properties,
+      chromeos::network_handler::ServiceResultCallback(),
+      base::Bind(OnCreateConfigurationFailed, network_credential));
 }
 
 }  // namespace wifi_sync

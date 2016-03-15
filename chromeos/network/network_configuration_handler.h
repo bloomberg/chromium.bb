@@ -103,7 +103,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   void CreateShillConfiguration(
       const base::DictionaryValue& shill_properties,
       NetworkConfigurationObserver::Source source,
-      const network_handler::StringResultCallback& callback,
+      const network_handler::ServiceResultCallback& callback,
       const network_handler::ErrorCallback& error_callback);
 
   // Removes the network |service_path| from any profiles that include it.
@@ -142,7 +142,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const std::string& profile_path,
       NetworkConfigurationObserver::Source source,
       scoped_ptr<base::DictionaryValue> configure_properties,
-      const network_handler::StringResultCallback& callback,
+      const network_handler::ServiceResultCallback& callback,
       const dbus::ObjectPath& service_path);
 
   // Called from ProfileEntryDeleter instances when they complete causing

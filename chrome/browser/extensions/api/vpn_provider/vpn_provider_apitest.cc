@@ -61,8 +61,8 @@ void DoNothingFailureCallback(const std::string& error_name,
   EXPECT_EQ(true, false);
 }
 
-void DoNothingSuccessCallback(const std::string& service_path) {
-}
+void DoNothingSuccessCallback(const std::string& service_path,
+                              const std::string& guid) {}
 
 }  // namespace
 

@@ -24,7 +24,7 @@ const char kUserHash[] = "fake-user-hash";
 
 using chromeos::network_handler::DictionaryResultCallback;
 using chromeos::network_handler::ErrorCallback;
-using chromeos::network_handler::StringResultCallback;
+using chromeos::network_handler::ServiceResultCallback;
 
 class FakeManagedNetworkConfigurationHandler
     : public chromeos::ManagedNetworkConfigurationHandler {
@@ -61,11 +61,10 @@ class FakeManagedNetworkConfigurationHandler
       const ErrorCallback& error_callback) override {
     NOTIMPLEMENTED();
   }
-  void CreateConfiguration(
-      const std::string& userhash,
-      const base::DictionaryValue& properties,
-      const StringResultCallback& callback,
-      const ErrorCallback& error_callback) const override {
+  void CreateConfiguration(const std::string& userhash,
+                           const base::DictionaryValue& properties,
+                           const ServiceResultCallback& callback,
+                           const ErrorCallback& error_callback) const override {
     EXPECT_FALSE(create_configuration_called_);
     create_configuration_called_ = true;
     create_configuration_success_callback_ = callback;
@@ -115,7 +114,7 @@ class FakeManagedNetworkConfigurationHandler
   bool create_configuration_called() const {
     return create_configuration_called_;
   }
-  const StringResultCallback& create_configuration_success_callback() const {
+  const ServiceResultCallback& create_configuration_success_callback() const {
     return create_configuration_success_callback_;
   }
   const ErrorCallback& create_configuration_error_callback() const {
@@ -126,7 +125,7 @@ class FakeManagedNetworkConfigurationHandler
   // Whether or not CreateConfiguration has been called on this fake.
   mutable bool create_configuration_called_;
   // The last |callback| passed to CreateConfiguration.
-  mutable StringResultCallback create_configuration_success_callback_;
+  mutable ServiceResultCallback create_configuration_success_callback_;
   // The last |error_callback| passed to CreateConfiguration.
   mutable ErrorCallback create_configuration_error_callback_;
 };
@@ -164,11 +163,11 @@ class WifiConfigDelegateChromeOsTest : public testing::Test {
   // that |callback| is null.
   void RunCreateConfigurationSuccessCallback() {
     const char new_service_path[] = "/service/0";
-    const StringResultCallback callback =
+    const ServiceResultCallback callback =
         fake_managed_network_configuration_handler_
-        ->create_configuration_success_callback();
+            ->create_configuration_success_callback();
     if (!callback.is_null())
-      callback.Run(new_service_path);
+      callback.Run(new_service_path, nullptr);
   }
 
   // Returns whether or not CreateConfiguration has been called

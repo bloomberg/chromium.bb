@@ -170,7 +170,8 @@ class VpnService : public KeyedService,
   // Callback used to indicate that configuration was successfully created.
   void OnCreateConfigurationSuccess(const SuccessCallback& callback,
                                     VpnConfiguration* configuration,
-                                    const std::string& service_path);
+                                    const std::string& service_path,
+                                    const std::string& guid);
 
   // Callback used to indicate that configuration creation failed.
   void OnCreateConfigurationFailure(

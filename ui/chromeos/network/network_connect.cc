@@ -99,7 +99,8 @@ class NetworkConnectImpl : public NetworkConnect {
   void OnConfigureFailed(const std::string& error_name,
                          scoped_ptr<base::DictionaryValue> error_data);
   void OnConfigureSucceeded(bool connect_on_configure,
-                            const std::string& service_path);
+                            const std::string& service_path,
+                            const std::string& guid);
   void CallCreateConfiguration(base::DictionaryValue* properties,
                                bool shared,
                                bool connect_on_configure);
@@ -284,7 +285,8 @@ void NetworkConnectImpl::OnConfigureFailed(
 }
 
 void NetworkConnectImpl::OnConfigureSucceeded(bool connect_on_configure,
-                                              const std::string& service_path) {
+                                              const std::string& service_path,
+                                              const std::string& guid) {
   NET_LOG_USER("Configure Succeeded", service_path);
   if (!connect_on_configure)
     return;

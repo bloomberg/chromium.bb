@@ -358,7 +358,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetShillProperties(
 void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
     const std::string& userhash,
     const base::DictionaryValue& properties,
-    const network_handler::StringResultCallback& callback,
+    const network_handler::ServiceResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) const {
   const Policies* policies = GetPoliciesForUser(userhash);
   if (!policies) {
@@ -735,7 +735,8 @@ void ManagedNetworkConfigurationHandlerImpl::Init(
 }
 
 void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(
-    const std::string& service_path) {
+    const std::string& service_path,
+    const std::string& guid) {
   if (service_path.empty())
     return;
   FOR_EACH_OBSERVER(

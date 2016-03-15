@@ -279,7 +279,7 @@ void NetworkConfigurationHandler::ClearShillProperties(
 void NetworkConfigurationHandler::CreateShillConfiguration(
     const base::DictionaryValue& shill_properties,
     NetworkConfigurationObserver::Source source,
-    const network_handler::StringResultCallback& callback,
+    const network_handler::ServiceResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
   ShillManagerClient* manager =
       DBusThreadManager::Get()->GetShillManagerClient();
@@ -393,10 +393,15 @@ void NetworkConfigurationHandler::RunCreateNetworkCallback(
     const std::string& profile_path,
     NetworkConfigurationObserver::Source source,
     scoped_ptr<base::DictionaryValue> configure_properties,
-    const network_handler::StringResultCallback& callback,
+    const network_handler::ServiceResultCallback& callback,
     const dbus::ObjectPath& service_path) {
-  if (!callback.is_null())
-    callback.Run(service_path.value());
+  if (!callback.is_null()) {
+    std::string guid;
+    configure_properties->GetStringWithoutPathExpansion(
+        ::onc::network_config::kGUID, &guid);
+    DCHECK(!guid.empty());
+    callback.Run(service_path.value(), guid);
+  }
   FOR_EACH_OBSERVER(NetworkConfigurationObserver, observers_,
                     OnConfigurationCreated(service_path.value(), profile_path,
                                            *configure_properties, source));

@@ -39,6 +39,10 @@ typedef base::Callback<
 typedef base::Callback<
   void(const std::string& service_path)> StringResultCallback;
 
+typedef base::Callback<void(const std::string& service_path,
+                            const std::string& guid)>
+    ServiceResultCallback;
+
 // Create a DictionaryValue for passing to ErrorCallback.
 CHROMEOS_EXPORT base::DictionaryValue* CreateErrorData(
     const std::string& path,

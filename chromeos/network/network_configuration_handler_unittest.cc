@@ -73,9 +73,10 @@ void ErrorCallback(bool error_expected,
                               << PrettyJson(*error_data);
 }
 
-void StringResultCallback(const std::string& expected_result,
-                          const std::string& result) {
-  EXPECT_EQ(expected_result, result);
+void ServiceResultCallback(const std::string& expected_result,
+                           const std::string& service_path,
+                           const std::string& guid) {
+  EXPECT_EQ(expected_result, service_path);
 }
 
 void DBusErrorCallback(const std::string& error_name,
@@ -286,7 +287,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
                            const base::DictionaryValue& properties) {
     network_configuration_handler_->CreateShillConfiguration(
         properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-        base::Bind(&StringResultCallback, service_path),
+        base::Bind(&ServiceResultCallback, service_path),
         base::Bind(&ErrorCallback, false, std::string()));
   }
 
@@ -525,7 +526,8 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
     get_properties_.reset(dictionary.DeepCopy());
   }
 
-  void CreateConfigurationCallback(const std::string& service_path) {
+  void CreateConfigurationCallback(const std::string& service_path,
+                                   const std::string& guid) {
     create_service_path_ = service_path;
   }
 

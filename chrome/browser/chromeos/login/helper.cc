@@ -200,7 +200,8 @@ bool NetworkStateHelper::IsConnecting() const {
 void NetworkStateHelper::OnCreateConfiguration(
     const base::Closure& success_callback,
     const base::Closure& error_callback,
-    const std::string& service_path) const {
+    const std::string& service_path,
+    const std::string& guid) const {
   // Connect to the network.
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       service_path, success_callback,

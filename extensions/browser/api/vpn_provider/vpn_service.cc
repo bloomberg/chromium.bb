@@ -494,7 +494,8 @@ void VpnService::OnExtensionUnloaded(
 void VpnService::OnCreateConfigurationSuccess(
     const VpnService::SuccessCallback& callback,
     VpnConfiguration* configuration,
-    const std::string& service_path) {
+    const std::string& service_path,
+    const std::string& guid) {
   configuration->set_service_path(service_path);
   service_path_to_configuration_map_[service_path] = configuration;
   shill_client_->AddShillThirdPartyVpnObserver(configuration->object_path(),

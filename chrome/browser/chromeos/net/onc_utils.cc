@@ -141,7 +141,7 @@ void ImportNetworksForUser(const user_manager::User* user,
     } else {
       config_handler->CreateShillConfiguration(
           *shill_dict, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-          network_handler::StringResultCallback(),
+          network_handler::ServiceResultCallback(),
           network_handler::ErrorCallback());
     }
   }

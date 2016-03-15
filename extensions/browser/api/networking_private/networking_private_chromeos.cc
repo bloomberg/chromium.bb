@@ -302,6 +302,13 @@ void NetworkingPrivateChromeOS::SetProperties(
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
+void NetworkHandlerCreateCallback(
+    const NetworkingPrivateDelegate::StringCallback& callback,
+    const std::string& service_path,
+    const std::string& guid) {
+  callback.Run(guid);
+}
+
 void NetworkingPrivateChromeOS::CreateNetwork(
     bool shared,
     scoped_ptr<base::DictionaryValue> properties,
@@ -316,7 +323,8 @@ void NetworkingPrivateChromeOS::CreateNetwork(
   }
 
   GetManagedConfigurationHandler()->CreateConfiguration(
-      user_id_hash, *properties, success_callback,
+      user_id_hash, *properties,
+      base::Bind(&NetworkHandlerCreateCallback, success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 

@@ -62,7 +62,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   void CreateConfiguration(
       const std::string& userhash,
       const base::DictionaryValue& properties,
-      const network_handler::StringResultCallback& callback,
+      const network_handler::ServiceResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) const override;
 
   void RemoveConfiguration(
@@ -152,7 +152,8 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   const Policies* GetPoliciesForUser(const std::string& userhash) const;
   const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;
 
-  void OnPolicyAppliedToNetwork(const std::string& service_path);
+  void OnPolicyAppliedToNetwork(const std::string& service_path,
+                                const std::string& guid);
 
   // Helper method to append associated Device properties to |properties|.
   void GetDeviceStateProperties(const std::string& service_path,

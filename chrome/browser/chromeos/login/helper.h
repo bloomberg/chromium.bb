@@ -86,7 +86,8 @@ class NetworkStateHelper {
  private:
   void OnCreateConfiguration(const base::Closure& success_callback,
                              const base::Closure& error_callback,
-                             const std::string& service_path) const;
+                             const std::string& service_path,
+                             const std::string& guid) const;
   void OnCreateOrConnectNetworkFailed(
       const base::Closure& error_callback,
       const std::string& error_name,
