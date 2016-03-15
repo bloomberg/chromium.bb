@@ -325,7 +325,7 @@ are declared in build/common.gypi.
         Notifications
       </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_FULLSCREEN" desc="The label used for fullscreen permission controls in the Website Settings popup.">
-        Fullscreen
+        Full screen
       </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_MOUSELOCK" desc="The label used for mouse lock permission controls in the Website Settings popup.">
         Mouse Lock
@@ -6504,10 +6504,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME" desc="Name of the flag to enable the new simplified fullscreen and mouse lock UI.">
-        Simplified fullscreen / mouse lock UI.
+        Simplified full screen / mouse lock UI.
       </message>
       <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION" desc="Description of the flag to enable the new simplified fullscreen and mouse lock UI.">
-        An experimental new user experience when entering page-triggered fullscreen or mouse pointer lock states.
+        An experimental new user experience when entering page-triggered full screen or mouse pointer lock states.
       </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_NAME" desc="Name of the flag to configure Android page loading progress bar animation.">
@@ -7986,10 +7986,10 @@ I don't think this site should be blocked!
         Enable support for using the native notification toasts and notification center on platforms where these are available.
       </message>
       <message name="IDS_FULLSCREEN_TAB_LABEL" desc="Label for Fullscreen tab on Content Settings dialog">
-        Fullscreen
+        Full screen
       </message>
       <message name="IDS_FULLSCREEN_HEADER" desc="Header for fullscreen exception management page on Content Settings dialog">
-        Fullscreen exceptions
+        Full screen exceptions
       </message>
       <message name="IDS_EXCEPTIONS_PATTERN_HEADER" desc="A column header for the pattern column of the cookie/image/javascript/plugins exceptions dialog">
         Hostname pattern
@@ -12188,10 +12188,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <!-- Fullscreen infobar -->
       <if expr="is_android">
         <message name="IDS_FULLSCREEN_INFOBAR_TEXT" desc="Text to display on the fullscreen infobar when a page enters fullscreen.">
-          <ph name="ORIGIN">$1<ex>https://www.youtube.com</ex></ph> is now fullscreen.
+          <ph name="ORIGIN">$1<ex>https://www.youtube.com</ex></ph> is now full screen.
         </message>
         <message name="IDS_FULLSCREEN_INFOBAR_EXIT_FULLSCREEN_BUTTON" desc="Label for choosing 'Exit fullscreen' on fullscreen infobar.[CHAR-LIMIT=32]">
-          Exit fullscreen
+          Exit full screen
         </message>
         <message name="IDS_FULLSCREEN_INFOBAR_ALLOW_BUTTON" desc="Label for choosing 'Allow' on fullscreen infobar. [CHAR-LIMIT=32]">
           Allow
@@ -12465,7 +12465,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Press <ph name="ACCELERATOR">$1<ex>Esc</ex></ph> to exit.
       </message>
       <message name="IDS_FULLSCREEN_PRESS_ESC_TO_EXIT_FULLSCREEN" desc="Text displayed in the bubble to tell users how to return from fullscreen mode (where the web page occupies the entire screen) to normal mode. Please surround the name of the key (e.g. 'Esc') in pipe characters so it can be rendered as a key.">
-        Press |<ph name="ACCELERATOR">$1<ex>Esc</ex></ph>| to exit fullscreen
+        Press |<ph name="ACCELERATOR">$1<ex>Esc</ex></ph>| to exit full screen
       </message>
       <message name="IDS_FULLSCREEN_PRESS_ESC_TO_EXIT_MOUSELOCK" desc="Text displayed in the bubble to tell users how to return from mouselock mode (where the mouse cursor is hidden) to normal mode. Please surround the name of the key (e.g. 'Esc') in pipe characters so it can be rendered as a key.">
         Press |<ph name="ACCELERATOR">$1<ex>Esc</ex></ph>| to show your cursor
@@ -14485,7 +14485,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Disable auto-hiding the toolbar on large tablets
       </message>
       <message name="IDS_FLAGS_DISABLE_AUTO_HIDING_TOOLBAR_DESCRIPTION" desc="Description of the flag to disable auto-hiding the toolbar.">
-        When enabled, the toolbar will never be hidden due to scrolling on devices with a minimum screen dp >= 800. It will still be hidden if page contents go fullscreen.
+        When enabled, the toolbar will never be hidden due to scrolling on devices with a minimum screen dp >= 800. It will still be hidden if page contents go full screen.
       </message>
 
       <!-- Update Menu Item Flags -->

@@ -734,10 +734,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
 
       <!-- Fullscreen preferences -->
       <message name="IDS_WEBSITE_SETTINGS_FULLSCREEN" desc="Title for Fullscreen settings, which control which websites can enter fullscreen without popup alert.">
-        Fullscreen
+        Full screen
       </message>
       <message name="IDS_FULLSCREEN_PERMISSION_TITLE" desc="Title for the permission of entering fullscreen without popup alert [CHAR-LIMIT=32]">
-        Fullscreen
+        Full screen
       </message>
 
       <!-- Data Saver -->
@@ -1490,11 +1490,11 @@ You are signing in with a managed account and giving its administrator control o
 
       <!-- Fullscreen -->
       <message name="IDS_IMMERSIVE_FULLSCREEN_API_NOTIFICATION" desc="Notification message when a site has entered immersive fullscreen and the directions of how to exit.">
-        Drag from top and touch the back button to exit fullscreen.
+        Drag from top and touch the back button to exit full screen.
       </message>
 
       <message name="IDS_FULLSCREEN_API_NOTIFICATION" desc="Notification message when a site has entered non-immsersive fullscreen and the directions of how to exit.">
-        Touch the back button to exit fullscreen.
+        Touch the back button to exit full screen.
       </message>
 
       <!-- Download UI -->
