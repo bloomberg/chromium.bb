@@ -107,7 +107,6 @@
       'dependencies': [
         '../testing/gtest.gyp:gtest',
         'mojo_public.gyp:mojo_cpp_bindings',
-        'mojo_public.gyp:mojo_public_test_utils',
         'mojo_public.gyp:mojo_public_test_wtf_types',
         'mojo_public.gyp:mojo_public_test_wtf_types_blink',
       ],
