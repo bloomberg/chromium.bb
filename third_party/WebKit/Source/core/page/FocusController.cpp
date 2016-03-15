@@ -82,6 +82,7 @@ public:
     void moveToLast();
     Element* owner() const;
     static ScopedFocusNavigation createScopedFocusNavigation(const Element& root, const Element* current);
+    static ScopedFocusNavigation createScopedFocusNavigationForDocument(Document&);
     static ScopedFocusNavigation ownedByNonFocusableFocusScopeOwner(Element&);
     static ScopedFocusNavigation ownedByShadowHost(const Element&);
     static ScopedFocusNavigation ownedByShadowInsertionPoint(HTMLShadowElement&);
@@ -206,7 +207,12 @@ ScopedFocusNavigation ScopedFocusNavigation::createScopedFocusNavigation(const E
 {
     if (SlotScopedTraversal::isSlotScoped(root))
         return ScopedFocusNavigation(*SlotScopedTraversal::findScopeOwnerSlot(root), current);
-    return ScopedFocusNavigation(*&root.treeScope(), current);
+    return ScopedFocusNavigation(root.treeScope(), current);
+}
+
+ScopedFocusNavigation ScopedFocusNavigation::createScopedFocusNavigationForDocument(Document& document)
+{
+    return ScopedFocusNavigation(document, nullptr);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::ownedByNonFocusableFocusScopeOwner(Element& element)
@@ -850,7 +856,6 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
 {
     ASSERT(frame);
     Document* document = frame->document();
-    ASSERT(document->documentElement());
     document->updateDistribution();
 
     Element* current = start;
@@ -864,7 +869,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
         current = adjustToElement(frame->selection().start().anchorNode(), type);
 
     document->updateLayoutIgnorePendingStylesheets();
-    ScopedFocusNavigation scope = ScopedFocusNavigation::createScopedFocusNavigation(current ? *current : *document->documentElement(), current);
+    ScopedFocusNavigation scope = current ? ScopedFocusNavigation::createScopedFocusNavigation(*current, current) : ScopedFocusNavigation::createScopedFocusNavigationForDocument(*document);
     RefPtrWillBeRawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, scope);
 
     if (!element) {
@@ -887,7 +892,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
         }
 
         // Chrome doesn't want focus, so we should wrap focus.
-        ScopedFocusNavigation scope = ScopedFocusNavigation::createScopedFocusNavigation(*toLocalFrame(m_page->mainFrame())->document()->documentElement(), nullptr);
+        ScopedFocusNavigation scope = ScopedFocusNavigation::createScopedFocusNavigationForDocument(*toLocalFrame(m_page->mainFrame())->document());
         element = findFocusableElementRecursively(type, scope);
         element = findFocusableElementDescendingDownIntoFrameDocument(type, element.get());
 
