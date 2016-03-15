@@ -1081,8 +1081,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE" desc="Option to keep the existing data separate from the newly selected sync account">
         Keep existing data separate
       </message>
-      <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT" desc="Subtext describing what happens if the user elects to keep the existing data separate">
+      <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT_EXISTING_DATA" desc="Subtext describing what happens if the user elects to keep the existing data separate signing into a new account after have previously being signed into a different account then signed out.">
         Replace this device’s data with <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>’s data. You can retrieve your existing data by switching back to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>, but data created since you signed out will be lost.
+      </message>
+      <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT_SWITCHING_ACCOUNTS" desc="Subtext describing what happens if the user elects to keep the existing data separate when switching sync accounts.">
+        Replace this device’s data with <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>’s data. You can retrieve your existing data by switching back to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>.
       </message>
 
       <!-- Bluetooth Picker UI strings -->

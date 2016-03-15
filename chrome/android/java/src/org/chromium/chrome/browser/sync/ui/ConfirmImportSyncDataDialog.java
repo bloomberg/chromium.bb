@@ -135,7 +135,10 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         mConfirmImportOption.setDescriptionText(getActivity().getString(
                 R.string.sync_import_existing_data_subtext, newAccountName));
         mKeepSeparateOption.setDescriptionText(getActivity().getString(
-                R.string.sync_keep_existing_data_separate_subtext, newAccountName, oldAccountName));
+                (importSyncType == ImportSyncType.SWITCHING_SYNC_ACCOUNTS
+                        ? R.string.sync_keep_existing_data_separate_subtext_switching_accounts
+                        : R.string.sync_keep_existing_data_separate_subtext_existing_data),
+                newAccountName, oldAccountName));
 
         List<RadioButtonWithDescription> radioGroup =
                 Arrays.asList(mConfirmImportOption, mKeepSeparateOption);
