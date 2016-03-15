@@ -453,7 +453,7 @@ def print_tryjobs(options, builds):
   def pop(title, f, color=None, **kwargs):
     """Pop matching builds from `builds` dict and print them."""
 
-    if not sys.stdout.isatty() or color is None:
+    if not options.color or color is None:
       colorize = str
     else:
       colorize = lambda x: '%s%s%s' % (color, x, Fore.RESET)
@@ -3552,7 +3552,10 @@ def CMDtry_results(parser, args):
   group.add_option(
       "-p", "--patchset", type=int, help="patchset number if not current.")
   group.add_option(
-      "--print-master", action='store_true', help="print master name as well")
+      "--print-master", action='store_true', help="print master name as well.")
+  group.add_option(
+      "--color", action='store_true', default=sys.stdout.isatty(),
+      help="force color output, useful when piping output.")
   group.add_option(
       "--buildbucket-host", default='cr-buildbucket.appspot.com',
       help="Host of buildbucket. The default host is %default.")
