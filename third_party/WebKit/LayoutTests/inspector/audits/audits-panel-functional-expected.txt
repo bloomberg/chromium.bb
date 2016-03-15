@@ -42,11 +42,4 @@ Page reloaded.
          audits-style1.css
         : 100% is not used by the current page.
          .some-style
-      [severity warning] Use normal CSS property names instead of vendor-prefixed ones (2)
-        audits-panel-functional.html
-         .unused
-         "-webkit-opacity" is used, but "opacity" is supported.
-        audits-panel-functional.html
-         .violation
-         "-webkit-border-radius" is used, but "border-radius" is supported.
 
