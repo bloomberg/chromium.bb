@@ -51,6 +51,8 @@ const base::TimeDelta kMonitorLoopDelay = base::TimeDelta::FromMilliseconds(20);
 // we push buffers with a PTS before the start PTS. In this case the backend
 // should report the PTS as no later than the last pushed buffers.
 const int64_t kStartPts = 1000 * 1000;
+// Amount that PTS is allowed to progress past the time that Pause() was called.
+const int kPausePtsSlackMs = 75;
 
 void IgnoreEos() {}
 
@@ -820,8 +822,9 @@ void AudioVideoPipelineDeviceTest::OnPauseCompleted() {
   base::TimeDelta media_time =
       base::TimeDelta::FromMicroseconds(backend_->GetCurrentPts());
 
-  // Make sure that the PTS did not advance while paused.
-  EXPECT_EQ(pause_time_, media_time);
+  // Make sure that the PTS did not advance too much while paused.
+  EXPECT_LT(media_time,
+            pause_time_ + base::TimeDelta::FromMilliseconds(kPausePtsSlackMs));
 
   pause_time_ = media_time;
   pause_pattern_idx_ = (pause_pattern_idx_ + 1) % pause_pattern_.size();
