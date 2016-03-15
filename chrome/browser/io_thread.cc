@@ -1097,6 +1097,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->parse_alternative_services);
   globals.enable_alternative_service_with_different_host.CopyToIfSet(
       &params->enable_alternative_service_with_different_host);
+  globals.alternative_service_probability_threshold.CopyToIfSet(
+      &params->alternative_service_probability_threshold);
 
   globals.enable_npn.CopyToIfSet(&params->enable_npn);
 
@@ -1323,6 +1325,14 @@ void IOThread::ConfigureQuicGlobals(
     globals->quic_supported_versions.set(supported_versions);
   }
 
+  double threshold = GetAlternativeProtocolProbabilityThreshold(
+      command_line, quic_trial_params);
+  if (threshold >=0 && threshold <= 1) {
+    globals->alternative_service_probability_threshold.set(threshold);
+    globals->http_server_properties->SetAlternativeServiceProbabilityThreshold(
+        threshold);
+  }
+
   if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
     net::HostPortPair quic_origin =
         net::HostPortPair::FromString(
@@ -1398,6 +1408,39 @@ net::QuicTagVector IOThread::GetQuicConnectionOptions(
   }
 
   return net::QuicUtils::ParseQuicConnectionOptions(it->second);
+}
+
+double IOThread::GetAlternativeProtocolProbabilityThreshold(
+    const base::CommandLine& command_line,
+    const VariationParameters& quic_trial_params) {
+  double value;
+  if (command_line.HasSwitch(
+          switches::kAlternativeServiceProbabilityThreshold)) {
+    if (base::StringToDouble(
+            command_line.GetSwitchValueASCII(
+                switches::kAlternativeServiceProbabilityThreshold),
+            &value)) {
+      return value;
+    }
+  }
+  if (command_line.HasSwitch(switches::kEnableQuic)) {
+    return 0;
+  }
+  // TODO(bnc): Remove when new parameter name rolls out and server
+  // configuration is changed.
+  if (base::StringToDouble(
+          GetVariationParam(quic_trial_params,
+                            "alternate_protocol_probability_threshold"),
+          &value)) {
+    return value;
+  }
+  if (base::StringToDouble(
+          GetVariationParam(quic_trial_params,
+                            "alternative_service_probability_threshold"),
+          &value)) {
+    return value;
+  }
+  return -1;
 }
 
 bool IOThread::ShouldQuicAlwaysRequireHandshakeConfirmation(

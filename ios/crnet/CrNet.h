@@ -35,6 +35,29 @@ typedef void(^ClearCacheCallback)(int errorCode);
 + (void)setSDCHEnabled:(BOOL)sdchEnabled
          withPrefStore:(NSString*)filename;
 
+// Set the alternate protocol threshold. Servers announce alternate protocols
+// with a probability value; any alternate protocol whose probability value is
+// greater than this value will be used, so |alternateProtocolThreshold| == 0
+// implies any announced alternate protocol will be used, and
+// |alternateProtocolThreshold| == 1 implies no alternate protocol will ever be
+// used. Note that individual alternate protocols must also be individually
+// enabled to be considered; currently the only alternate protocol is QUIC (SPDY
+// is not controlled by this mechanism).
+//
+// For example, imagine your service has two frontends a.service.com and
+// b.service.com, and you would like to divide your users into three classes:
+//   Users who use QUIC for both a and b
+//   Users who use QUIC for a but not b
+//   Users who use QUIC for neither a nor b
+// You can achieve that effect with:
+//   a.service.com advertises QUIC with p=0.67
+//   b.service.com advertises QUIC with p=0.33
+//   alternateProtocolThreshold set to a uniform random number in [0,1]
+// Now equal proportions of users will fall into the three experimental groups.
+//
+// The default for this value is 1.0, i.e. all alternate protocols disabled.
++ (void)setAlternateProtocolThreshold:(double)alternateProtocolThreshold;
+
 // |userAgent| is expected to be of the form Product/Version.
 // Example: Foo/3.0.0.0
 //

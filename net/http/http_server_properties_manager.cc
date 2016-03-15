@@ -61,6 +61,7 @@ const char kAlternativeServiceKey[] = "alternative_service";
 const char kProtocolKey[] = "protocol_str";
 const char kHostKey[] = "host";
 const char kPortKey[] = "port";
+const char kProbabilityKey[] = "probability";
 const char kExpirationKey[] = "expiration";
 const char kNetworkStatsKey[] = "network_stats";
 const char kSrttKey[] = "srtt";
@@ -194,10 +195,11 @@ AlternativeServiceVector HttpServerPropertiesManager::GetAlternativeServices(
 bool HttpServerPropertiesManager::SetAlternativeService(
     const HostPortPair& origin,
     const AlternativeService& alternative_service,
+    double alternative_probability,
     base::Time expiration) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   const bool changed = http_server_properties_impl_->SetAlternativeService(
-      origin, alternative_service, expiration);
+      origin, alternative_service, alternative_probability, expiration);
   if (changed) {
     ScheduleUpdatePrefsOnNetworkThread(SET_ALTERNATIVE_SERVICES);
   }
@@ -284,6 +286,13 @@ HttpServerPropertiesManager::GetAlternativeServiceInfoAsValue()
     const {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->GetAlternativeServiceInfoAsValue();
+}
+
+void HttpServerPropertiesManager::SetAlternativeServiceProbabilityThreshold(
+    double threshold) {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  http_server_properties_impl_->SetAlternativeServiceProbabilityThreshold(
+      threshold);
 }
 
 const SettingsMap& HttpServerPropertiesManager::GetSpdySettings(
@@ -652,6 +661,16 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
   }
   alternative_service_info->alternative_service.port =
       static_cast<uint32_t>(port);
+
+  // Probability is optional, defaults to 1.0.
+  alternative_service_info->probability = 1.0;
+  if (alternative_service_dict.HasKey(kProbabilityKey) &&
+      !alternative_service_dict.GetDoubleWithoutPathExpansion(
+          kProbabilityKey, &(alternative_service_info->probability))) {
+    DVLOG(1) << "Malformed alternative service probability for server: "
+             << server_str;
+    return false;
+  }
 
   // Expiration is optional, defaults to one day.
   base::Time expiration;
@@ -1177,6 +1196,8 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
     }
     alternative_service_dict->SetString(
         kProtocolKey, AlternateProtocolToString(alternative_service.protocol));
+    alternative_service_dict->SetDouble(kProbabilityKey,
+                                        alternative_service_info.probability);
     // JSON cannot store int64_t, so expiration is converted to a string.
     alternative_service_dict->SetString(
         kExpirationKey,

@@ -45,6 +45,8 @@
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   [CrNet setPartialUserAgent:@"Dummy/1.0"];
   [CrNet setQuicEnabled:YES];
+  // Always use QUIC if able.
+  [CrNet setAlternateProtocolThreshold:0.0];
   [CrNet setSDCHEnabled:YES withPrefStore:[self SDCHPrefStoreFileName]];
   [CrNet install];
   [CrNet startNetLogToFile:[self currentNetLogFileName] logBytes:NO];

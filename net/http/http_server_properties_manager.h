@@ -119,6 +119,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       const HostPortPair& origin) override;
   bool SetAlternativeService(const HostPortPair& origin,
                              const AlternativeService& alternative_service,
+                             double alternative_probability,
                              base::Time expiration) override;
   bool SetAlternativeServices(const HostPortPair& origin,
                               const AlternativeServiceInfoVector&
@@ -136,6 +137,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void ClearAlternativeServices(const HostPortPair& origin) override;
   const AlternativeServiceMap& alternative_service_map() const override;
   scoped_ptr<base::Value> GetAlternativeServiceInfoAsValue() const override;
+  void SetAlternativeServiceProbabilityThreshold(double threshold) override;
   const SettingsMap& GetSpdySettings(
       const HostPortPair& host_port_pair) override;
   bool SetSpdySetting(const HostPortPair& host_port_pair,

@@ -1,6 +1,12 @@
 <div id=quic-view-tab-content class=content-box>
   <ul style='margin-top:0'>
     <li>QUIC Enabled: <span jscontent="!!quic_enabled"></span></li>
+    <!-- "alternative_service_probability_threshold" is used since release 44,
+    see https://crrev.com/1091283007.
+    "alternate_protocol_probability_threshold" is here to support importing
+    netlog json files from earlier browsers.
+    TODO(bnc): Deprecate around 2016 January. --!>
+    <li>Alternative Service Probability Threshold: <span jscontent="$this.alternative_service_probability_threshold || $this.alternate_protocol_probability_threshold"></span></li>
     <li>Origin To Force QUIC On: <span jscontent="origin_to_force_quic_on"></span></li>
     <li>Connection options: <span jscontent="connection_options"></span></li>
     <li>Consistent Port Selection Enabled: <span jscontent="!!enable_quic_port_selection"></span></li>

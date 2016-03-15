@@ -164,7 +164,10 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
         new net::SdchOwner(context_->sdch_manager(), context_.get()));
   }
 
+  // Currently (circa M39) enabling QUIC requires setting probability threshold.
   if (config_->enable_quic) {
+    context_->http_server_properties()
+        ->SetAlternativeServiceProbabilityThreshold(0.0f);
     for (size_t hint = 0; hint < config_->quic_hints.size(); ++hint) {
       const URLRequestContextConfig::QuicHint& quic_hint =
           *config_->quic_hints[hint];
@@ -201,7 +204,8 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
           net::AlternateProtocol::QUIC, "",
           static_cast<uint16_t>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
-          quic_hint_host_port_pair, alternative_service, base::Time::Max());
+          quic_hint_host_port_pair, alternative_service, 1.0f,
+          base::Time::Max());
     }
   }
   load_disable_cache_ = config_->load_disable_cache;
