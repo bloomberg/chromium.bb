@@ -1,4 +1,3 @@
--CrossSiteRedirectorBrowserTest.VerifyCrossSiteRedirectURL
 -CrossSiteTransferTest.NoLeakOnCrossSiteCancel
 -CrossSiteTransferTest.ReplaceEntryCrossProcessThenTransfer
 -CrossSiteTransferTest.ReplaceEntryCrossProcessTwice

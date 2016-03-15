@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -26,10 +27,8 @@ class NavigationObserver: public WebContentsObserver {
     navigation_url_ = url;
   }
 
-  void DidGetRedirectForResourceRequest(
-      RenderFrameHost* render_frame_host,
-      const ResourceRedirectDetails& details) override {
-    redirect_url_ = details.new_url;
+  void DidRedirectNavigation(NavigationHandle* handle) override {
+    redirect_url_ = handle->GetURL();
   }
 
   const GURL& navigation_url() const {
