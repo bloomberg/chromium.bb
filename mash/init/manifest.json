@@ -1,5 +1,11 @@
 {
+  "manifest_version": 1,
   "name": "mojo:mash_init",
   "display_name": "Root Controller",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*": { "interfaces": [ "*" ] },
+      "mojo:shell": { "classes": ["user_id"] }
+    }
+  }
 }
