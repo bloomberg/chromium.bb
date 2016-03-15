@@ -677,7 +677,9 @@ void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
     // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
     if (cmd->editingAction() != EditActionPaste)
         return;
-    if (frame().selection().isInPasswordField() || !spellChecker().isContinuousSpellCheckingEnabled())
+    if (!spellChecker().isContinuousSpellCheckingEnabled())
+        return;
+    if (!SpellChecker::isSpellCheckingEnabledFor(cmd->endingSelection()))
         return;
     ASSERT(cmd->isReplaceSelectionCommand());
     const EphemeralRange& insertedRange = toReplaceSelectionCommand(cmd)->insertedRange();

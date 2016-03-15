@@ -60,6 +60,7 @@ public:
     void ignoreSpelling();
     bool isSpellCheckingEnabledInFocusedNode() const;
     bool isSpellCheckingEnabledFor(Node*) const;
+    static bool isSpellCheckingEnabledFor(const VisibleSelection&);
     void markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection);
     void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);
     bool markMisspellings(const VisibleSelection&);

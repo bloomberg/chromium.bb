@@ -304,6 +304,8 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
 
     if (!frame->spellChecker().isContinuousSpellCheckingEnabled())
         return;
+    if (!SpellChecker::isSpellCheckingEnabledFor(endingSelection()))
+        return;
 
     frame->spellChecker().cancelCheck();
 

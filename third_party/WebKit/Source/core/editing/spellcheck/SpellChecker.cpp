@@ -27,8 +27,10 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
@@ -447,6 +449,23 @@ bool SpellChecker::isSpellCheckingEnabledInFocusedNode() const
     return isSpellCheckingEnabledFor(frame().selection().start().anchorNode());
 }
 
+bool SpellChecker::isSpellCheckingEnabledFor(const VisibleSelection& selection)
+{
+    if (selection.isNone())
+        return false;
+    // TODO(tkent): The following password type check should be done in
+    // HTMLElement::spellcheck(). crbug.com/371567
+    if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(selection.start())) {
+        if (isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->type() == InputTypeNames::password)
+            return false;
+    }
+    if (HTMLElement* element = Traversal<HTMLElement>::firstAncestorOrSelf(*selection.start().anchorNode())) {
+        if (element->spellcheck())
+            return true;
+    }
+    return false;
+}
+
 bool SpellChecker::markMisspellings(const VisibleSelection& selection)
 {
     return markMisspellingsOrBadGrammar(selection, true);
@@ -649,6 +668,8 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellin
 void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionAtWordBoundary)
 {
     TRACE_EVENT0("blink", "SpellChecker::updateMarkersForWordsAffectedByEditing");
+    if (!isSpellCheckingEnabledFor(frame().selection().selection()))
+        return;
 
     // We want to remove the markers from a word if an editing command will change the word. This can happen in one of
     // several scenarios:
@@ -748,6 +769,8 @@ void SpellChecker::replaceMisspelledRange(const String& text)
 void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
 {
     TRACE_EVENT0("blink", "SpellChecker::respondToChangedSelection");
+    if (!isSpellCheckingEnabledFor(oldSelection))
+        return;
 
     bool closeTyping = options & FrameSelection::CloseTyping;
     bool isContinuousSpellCheckingEnabled = this->isContinuousSpellCheckingEnabled();
