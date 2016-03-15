@@ -988,7 +988,7 @@ def GetConfig():
           'x86-generic', 'arm-generic', 'amd64-generic'
       ],
       build_type=constants.CHROOT_BUILDER_TYPE,
-      buildslave_type=constants.GCE_BUILD_SLAVE_TYPE,
+      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
       trybot_list=True,
