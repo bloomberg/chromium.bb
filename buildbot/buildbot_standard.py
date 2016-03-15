@@ -155,7 +155,7 @@ def CommandGclientRunhooks(context):
   Command(context, cmd=[gclient, 'runhooks', '--force'])
 
 
-def DoGNBuild(status, context, force_clang=False):
+def DoGNBuild(status, context, force_clang=False, force_arch=None):
   use_clang = force_clang or context['clang']
 
   # Linux builds (or cross-builds) for every target.  Mac builds for
@@ -169,9 +169,15 @@ def DoGNBuild(status, context, force_clang=False):
     # actual x86-32 hosts.
     return False
 
-  gn_out = '../out'
+  if force_arch is not None:
+    arch = force_arch
+  else:
+    arch = context['arch']
+
+  out_suffix = '_' + arch
   if force_clang:
-    gn_out += '_clang'
+    out_suffix += '_clang'
+  gn_out = '../out' + out_suffix
 
   def BoolFlag(cond):
     return 'true' if cond else 'false'
@@ -183,7 +189,7 @@ def DoGNBuild(status, context, force_clang=False):
       'arm': 'arm',
       '32': 'x86',
       '64': 'x64'
-      }[context['arch']]
+      }[arch]
 
   gn_gen_args = [
       # The Chromium GN definitions might default enable_nacl to false
@@ -204,12 +210,12 @@ def DoGNBuild(status, context, force_clang=False):
 
   # If this is a 32-bit build but the kernel reports as 64-bit,
   # then gn will set host_cpu=x64 when we want host_cpu=x86.
-  if context.Linux() and context['arch'] == '32':
+  if context.Linux() and arch == '32':
     gn_gen_args.append('host_cpu="x86"')
 
   # Mac can build the untrusted code for machines Mac doesn't
   # support, but the GN files will get confused in a couple of ways.
-  if context.Mac() and context['arch'] not in ('32', '64'):
+  if context.Mac() and arch not in ('32', '64'):
     gn_gen_args += [
         # Subtle GN issues mean that $host_toolchain context will
         # wind up seeing current_cpu=="arm" when target_os is left
@@ -246,7 +252,7 @@ def DoGNBuild(status, context, force_clang=False):
     # On non-Linux non-x86, we can only build the untrusted code.
     gn_ninja_cmd.append('untrusted')
 
-  with Step('gn_compile' + ('_clang' if force_clang else ''), status):
+  with Step('gn_compile' + out_suffix, status):
     Command(context, cmd=gn_cmd)
     Command(context, cmd=gn_ninja_cmd)
 
@@ -399,6 +405,15 @@ def BuildScript(status, context):
       context['arch'] in ('32', '64')):
     # On Windows, do a second GN build with is_clang=true.
     using_gn_clang = DoGNBuild(status, context, True)
+
+  if context.Windows() and context['arch'] == '64':
+    # On Windows, do a second pair of GN builds for 32-bit.  The 32-bit
+    # bots can't do GN builds at all, because the toolchains GN uses don't
+    # support 32-bit hosts.  The 32-bit binaries built here cannot be
+    # tested on a 64-bit host, but compile time issues can be caught.
+    DoGNBuild(status, context, False, '32')
+    if not context['clang']:
+      DoGNBuild(status, context, True, '32')
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
