@@ -155,6 +155,137 @@ def CommandGclientRunhooks(context):
   Command(context, cmd=[gclient, 'runhooks', '--force'])
 
 
+def DoGNBuild(status, context, force_clang=False):
+  use_clang = force_clang or context['clang']
+
+  # Linux builds (or cross-builds) for every target.  Mac builds for
+  # x86-32 and x86-64, and can build untrusted code for others.
+  if context.Windows() and context['arch'] != '64':
+    # The GN scripts for MSVC barf for a target_cpu other than x86 or x64
+    # even if we only try to build the untrusted code.  Windows does build
+    # for both x86-32 and x86-64 targets, but the GN Windows MSVC toolchain
+    # scripts only support x86-64 hosts--and the Windows build of Clang
+    # only has x86-64 binaries--while NaCl's x86-32 testing bots have to be
+    # actual x86-32 hosts.
+    return False
+
+  gn_out = '../out'
+  if force_clang:
+    gn_out += '_clang'
+
+  def BoolFlag(cond):
+    return 'true' if cond else 'false'
+
+  gn_newlib = BoolFlag(not context['use_glibc'])
+  gn_glibc = BoolFlag(context['use_glibc'])
+
+  gn_arch_name = {
+      'arm': 'arm',
+      '32': 'x86',
+      '64': 'x64'
+      }[context['arch']]
+
+  gn_gen_args = [
+      # The Chromium GN definitions might default enable_nacl to false
+      # in some circumstances, but various BUILD.gn files involved in
+      # the standalone NaCl build assume enable_nacl==true.
+      'enable_nacl=true',
+      'target_cpu="%s"' % gn_arch_name,
+      'is_debug=' + context['gn_is_debug'],
+      'use_gcc_glibc=' + gn_glibc,
+      'use_clang_newlib=' + gn_newlib,
+  ]
+
+  # is_clang is the GN default for Mac and Linux, so
+  # don't override that on "non-clang" bots, but do set
+  # it explicitly for an explicitly "clang" bot.
+  if use_clang:
+    gn_gen_args.append('is_clang=true')
+
+  # If this is a 32-bit build but the kernel reports as 64-bit,
+  # then gn will set host_cpu=x64 when we want host_cpu=x86.
+  if context.Linux() and context['arch'] == '32':
+    gn_gen_args.append('host_cpu="x86"')
+
+  # Mac can build the untrusted code for machines Mac doesn't
+  # support, but the GN files will get confused in a couple of ways.
+  if context.Mac() and context['arch'] not in ('32', '64'):
+    gn_gen_args += [
+        # Subtle GN issues mean that $host_toolchain context will
+        # wind up seeing current_cpu=="arm" when target_os is left
+        # to default to "mac", because host_toolchain matches
+        # _default_toolchain and toolchain_args() does not apply to
+        # the default toolchain.  Using target_os="ios" ensures that
+        # the default toolchain is something different from
+        # host_toolchain and thus that toolchain's toolchain_args()
+        # block will be applied and set current_cpu correctly.
+        'target_os="ios"',
+        # build/config/ios/ios_sdk.gni will try to find some
+        # XCode magic that won't exist.  This GN flag disables
+        # the problematic code.
+        'ios_enable_code_signing=false',
+        ]
+
+  gn_out_trusted = gn_out
+  gn_out_irt = os.path.join(gn_out, 'irt_' + gn_arch_name)
+
+  gn_cmd = [
+      'gn.bat' if context.Windows() else 'gn',
+      '--dotfile=../native_client/.gn', '--root=..',
+      # Note: quotes are not needed around this space-separated
+      # list of args.  The shell would remove them before passing
+      # them to a program, and Python bypasses the shell.  Adding
+      # quotes will cause an error because GN will see unexpected
+      # double quotes.
+      '--args=%s' % ' '.join(gn_gen_args),
+      'gen', gn_out,
+  ]
+
+  gn_ninja_cmd = ['ninja', '-C', gn_out]
+  if gn_arch_name not in ('x86', 'x64') and not context.Linux():
+    # On non-Linux non-x86, we can only build the untrusted code.
+    gn_ninja_cmd.append('untrusted')
+
+  with Step('gn_compile' + ('_clang' if force_clang else ''), status):
+    Command(context, cmd=gn_cmd)
+    Command(context, cmd=gn_ninja_cmd)
+
+  return (gn_out_trusted, gn_out_irt)
+
+def DoGNTest(status, context, using_gn, gn_perf_prefix, gn_step_suffix):
+  if not using_gn:
+    return
+
+  gn_out_trusted, gn_out_irt = using_gn
+
+  # Non-Linux can build non-x86 untrusted code, but can't build or run
+  # the trusted code and so cannot test.
+  if context['arch'] not in ('32', '64') and not context.Linux():
+    return
+
+  gn_sel_ldr = os.path.join(gn_out_trusted, 'sel_ldr')
+  if context.Windows():
+    gn_sel_ldr += '.exe'
+  gn_extra = [
+      'force_sel_ldr=' + gn_sel_ldr,
+      'force_irt=' + os.path.join(gn_out_irt, 'irt_core.nexe'),
+      'perf_prefix=' + gn_perf_prefix,
+      ]
+  if context.Linux():
+    gn_extra.append('force_bootstrap=' +
+                    os.path.join(gn_out_trusted, 'nacl_helper_bootstrap'))
+  def RunGNTests(step_suffix, extra_scons_modes, suite_suffix):
+    for suite in ['small_tests', 'medium_tests', 'large_tests']:
+      with Step(suite + step_suffix + gn_step_suffix, status,
+                halt_on_fail=False):
+        SCons(context,
+              mode=context['default_scons_mode'] + extra_scons_modes,
+              args=[suite + suite_suffix] + gn_extra)
+  if not context['use_glibc']:
+    RunGNTests('', [], '')
+  RunGNTests(' under IRT', ['nacl_irt_test'], '_irt')
+
+
 def BuildScript(status, context):
   inside_toolchain = context['inside_toolchain']
 
@@ -255,101 +386,19 @@ def BuildScript(status, context):
     with Step('gclient_runhooks', status):
       CommandGclientRunhooks(context)
 
+  # Always update Clang.  On Linux and Mac, it's the default for the GN build.
+  # On Windows, we do a second Clang GN build.
+  with Step('update_clang', status):
+    Command(context, cmd=[sys.executable, '../tools/clang/scripts/update.py'])
+
   # Make sure our GN build is working.
-  if context.Windows() and not context['clang']:
-    # The GN scripts for MSVC barf for a target_cpu other than x86 or
-    # x64 even if we only try to build the untrusted code.  Windows does
-    # build for both x86-32 and x86-64 targets, but the GN Windows MSVC
-    # toolchain scripts only support x86-64 hosts, while NaCl's x86-32
-    # testing bots have to be actual x86-32 hosts.
-    can_use_gn = context['arch'] == '64'
-  else:
-    # Linux builds (or cross-builds) for every target.  Mac builds for
-    # x86-32 and x86-64, and can build untrusted code for others.
-    can_use_gn = True
-  gn_out = '../out'
-
-  if can_use_gn:
-    def BoolFlag(cond):
-      return 'true' if cond else 'false'
-
-    gn_newlib = BoolFlag(not context['use_glibc'])
-    gn_glibc = BoolFlag(context['use_glibc'])
-
-    gn_arch_name = {
-        'arm': 'arm',
-        '32': 'x86',
-        '64': 'x64'
-        }[context['arch']]
-
-    gn_gen_args = [
-      # The Chromium GN definitions might default enable_nacl to false
-      # in some circumstances, but various BUILD.gn files involved in
-      # the standalone NaCl build assume enable_nacl==true.
-      'enable_nacl=true',
-      'target_cpu="%s"' % gn_arch_name,
-      'is_debug=' + context['gn_is_debug'],
-      'use_gcc_glibc=' + gn_glibc,
-      'use_clang_newlib=' + gn_newlib,
-    ]
-
-    # is_clang is the GN default for Mac and Windows, so
-    # don't override that on "non-clang" bots, but do set
-    # it explicitly for an explicitly "clang" bot.
-    if context['clang']:
-      gn_gen_args.append('is_clang=true')
-
-    # If this is a 32-bit build but the kernel reports as 64-bit,
-    # then gn will set host_cpu=x64 when we want host_cpu=x86.
-    if context.Linux() and context['arch'] == '32':
-      gn_gen_args.append('host_cpu="x86"')
-
-    # Mac can build the untrusted code for machines Mac doesn't
-    # support, but the GN files will get confused in a couple of ways.
-    if context.Mac() and context['arch'] not in ('32', '64'):
-      gn_gen_args += [
-          # Subtle GN issues mean that $host_toolchain context will
-          # wind up seeing current_cpu=="arm" when target_os is left
-          # to default to "mac", because host_toolchain matches
-          # _default_toolchain and toolchain_args() does not apply to
-          # the default toolchain.  Using target_os="ios" ensures that
-          # the default toolchain is something different from
-          # host_toolchain and thus that toolchain's toolchain_args()
-          # block will be applied and set current_cpu correctly.
-          'target_os="ios"',
-          # build/config/ios/ios_sdk.gni will try to find some
-          # XCode magic that won't exist.  This GN flag disables
-          # the problematic code.
-          'ios_enable_code_signing=false',
-          ]
-
-    gn_out_trusted = gn_out
-    gn_out_irt = os.path.join(gn_out, 'irt_' + gn_arch_name)
-
-    gn_cmd = [
-      'gn.bat' if context.Windows() else 'gn',
-      '--dotfile=../native_client/.gn', '--root=..',
-      # Note: quotes are not needed around this space-separated
-      # list of args.  The shell would remove them before passing
-      # them to a program, and Python bypasses the shell.  Adding
-      # quotes will cause an error because GN will see unexpected
-      # double quotes.
-      '--args=%s' % ' '.join(gn_gen_args),
-      'gen', gn_out,
-      ]
-
-    gn_ninja_cmd = ['ninja', '-C', gn_out]
-    if gn_arch_name not in ('x86', 'x64') and not context.Linux():
-      # On non-Linux non-x86, we can only build the untrusted code.
-      gn_ninja_cmd.append('untrusted')
-
-    with Step('gn_compile', status):
-      Command(context, cmd=gn_cmd)
-      Command(context, cmd=gn_ninja_cmd)
-
-  if context['clang']:
-    with Step('update_clang', status):
-      Command(context, cmd=[sys.executable, '../tools/clang/scripts/update.py'])
+  using_gn = DoGNBuild(status, context)
+  using_gn_clang = False
+  if (context.Windows() and
+      not context['clang'] and
+      context['arch'] in ('32', '64')):
+    # On Windows, do a second GN build with is_clang=true.
+    using_gn_clang = DoGNBuild(status, context, True)
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
@@ -453,29 +502,8 @@ def BuildScript(status, context):
   ### END tests ###
 
   ### BEGIN GN tests ###
-  # Non-Linux can build non-x86 untrusted code, but can't build or run
-  # the trusted code and so cannot test.
-  if can_use_gn and (context.Linux() or context['arch'] in ('32', '64')):
-    gn_sel_ldr = os.path.join(gn_out_trusted, 'sel_ldr')
-    if context.Windows():
-      gn_sel_ldr += '.exe'
-    gn_extra = [
-        'force_sel_ldr=' + gn_sel_ldr,
-        'force_irt=' + os.path.join(gn_out_irt, 'irt_core.nexe'),
-        'perf_prefix=gn_',
-        ]
-    if context.Linux():
-      gn_extra.append('force_bootstrap=' +
-                      os.path.join(gn_out_trusted, 'nacl_helper_bootstrap'))
-    def RunGNTests(step_suffix, extra_scons_modes, suite_suffix):
-      for suite in ['small_tests', 'medium_tests', 'large_tests']:
-        with Step(suite + step_suffix + ' (GN)', status, halt_on_fail=False):
-          SCons(context,
-                mode=context['default_scons_mode'] + extra_scons_modes,
-                args=[suite + suite_suffix] + gn_extra)
-    if not context['use_glibc']:
-      RunGNTests('', [], '')
-    RunGNTests(' under IRT', ['nacl_irt_test'], '_irt')
+  DoGNTest(status, context, using_gn, 'gn_', ' (GN)')
+  DoGNTest(status, context, using_gn_clang, 'gn_clang_', '(GN, Clang)')
   ### END GN tests ###
 
 
