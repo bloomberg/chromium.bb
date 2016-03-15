@@ -178,7 +178,7 @@ class ServiceWorkerContextClient
       const blink::WebVector<blink::WebSecurityOrigin>& origins) override;
 
   virtual void DispatchSyncEvent(
-      const blink::WebSyncRegistration& registration,
+      const std::string& tag,
       blink::WebServiceWorkerContextProxy::LastChanceOption last_chance,
       const SyncCallback& callback);
 

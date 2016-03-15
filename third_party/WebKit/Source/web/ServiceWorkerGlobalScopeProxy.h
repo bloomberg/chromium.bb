@@ -47,7 +47,6 @@ class ServiceWorkerGlobalScope;
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
 class WebServiceWorkerRequest;
-struct WebSyncRegistration;
 
 // This class is created and destructed on the main thread, but live most
 // of its time as a resident of the worker thread.
@@ -86,7 +85,7 @@ public:
     void dispatchNotificationCloseEvent(int, int64_t notificationID, const WebNotificationData&) override;
     void dispatchPushEvent(int, const WebString& data) override;
     void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) override;
-    void dispatchSyncEvent(int, const WebSyncRegistration&, LastChanceOption) override;
+    void dispatchSyncEvent(int, const WebString& tag, LastChanceOption) override;
 
     // WorkerReportingProxy overrides:
     void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;

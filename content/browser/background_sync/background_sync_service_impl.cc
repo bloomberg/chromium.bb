@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "background_sync_registration_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
@@ -28,10 +27,9 @@ BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
   return out;
 }
 
-SyncRegistrationPtr ToMojoRegistration(
-    const BackgroundSyncRegistrationHandle& in) {
+SyncRegistrationPtr ToMojoRegistration(const BackgroundSyncRegistration& in) {
   SyncRegistrationPtr out(content::SyncRegistration::New());
-  out->handle_id = in.handle_id();
+  out->id = in.id();
   out->tag = in.options()->tag;
   out->network_state = static_cast<content::BackgroundSyncNetworkState>(
       in.options()->network_state);
@@ -123,48 +121,11 @@ void BackgroundSyncServiceImpl::GetRegistrations(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void BackgroundSyncServiceImpl::DuplicateRegistrationHandle(
-    BackgroundSyncRegistrationHandle::HandleId handle_id,
-    const DuplicateRegistrationHandleCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BackgroundSyncManager* background_sync_manager =
-      background_sync_context_->background_sync_manager();
-  DCHECK(background_sync_manager);
-
-  scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle =
-      background_sync_manager->DuplicateRegistrationHandle(handle_id);
-
-  BackgroundSyncRegistrationHandle* handle_ptr = registration_handle.get();
-
-  if (!registration_handle) {
-    callback.Run(BackgroundSyncError::NOT_FOUND,
-                 SyncRegistrationPtr(content::SyncRegistration::New()));
-    return;
-  }
-
-  active_handles_.AddWithID(registration_handle.release(),
-                            handle_ptr->handle_id());
-  SyncRegistrationPtr mojoResult = ToMojoRegistration(*handle_ptr);
-  callback.Run(BackgroundSyncError::NONE, std::move(mojoResult));
-}
-
-void BackgroundSyncServiceImpl::ReleaseRegistration(
-    BackgroundSyncRegistrationHandle::HandleId handle_id) {
-  if (!active_handles_.Lookup(handle_id)) {
-    // TODO(jkarlin): Abort client.
-    LOG(WARNING) << "Client attempted to release non-existing registration";
-    return;
-  }
-
-  active_handles_.Remove(handle_id);
-}
-
 void BackgroundSyncServiceImpl::OnRegisterResult(
     const RegisterCallback& callback,
     BackgroundSyncStatus status,
-    scoped_ptr<BackgroundSyncRegistrationHandle> result) {
+    scoped_ptr<BackgroundSyncRegistration> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BackgroundSyncRegistrationHandle* result_ptr = result.get();
 
   if (status != BACKGROUND_SYNC_STATUS_OK) {
     callback.Run(static_cast<content::BackgroundSyncError>(status),
@@ -173,8 +134,7 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
   }
 
   DCHECK(result);
-  active_handles_.AddWithID(result.release(), result_ptr->handle_id());
-  SyncRegistrationPtr mojoResult = ToMojoRegistration(*result_ptr);
+  SyncRegistrationPtr mojoResult = ToMojoRegistration(*result);
   callback.Run(static_cast<content::BackgroundSyncError>(status),
                std::move(mojoResult));
 }
@@ -182,18 +142,13 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
     const GetRegistrationsCallback& callback,
     BackgroundSyncStatus status,
-    scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>
-        result_registrations) {
+    scoped_ptr<ScopedVector<BackgroundSyncRegistration>> result_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(result_registrations);
 
   mojo::Array<content::SyncRegistrationPtr> mojo_registrations;
-  for (BackgroundSyncRegistrationHandle* registration : *result_registrations) {
-    active_handles_.AddWithID(registration, registration->handle_id());
+  for (const BackgroundSyncRegistration* registration : *result_registrations)
     mojo_registrations.push_back(ToMojoRegistration(*registration));
-  }
-
-  result_registrations->weak_clear();
 
   callback.Run(static_cast<content::BackgroundSyncError>(status),
                std::move(mojo_registrations));

@@ -691,14 +691,18 @@ void ServiceWorkerContextClient::registerForeignFetchScopes(
 }
 
 void ServiceWorkerContextClient::DispatchSyncEvent(
-    const blink::WebSyncRegistration& registration,
+    const std::string& tag,
     blink::WebServiceWorkerContextProxy::LastChanceOption last_chance,
     const SyncCallback& callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchSyncEvent");
   int request_id =
       context_->sync_event_callbacks.Add(new SyncCallback(callback));
-  proxy_->dispatchSyncEvent(request_id, registration, last_chance);
+
+  // TODO(jkarlin): Make this blink::WebString::FromUTF8Lenient once
+  // https://crrev.com/1768063002/ lands.
+  proxy_->dispatchSyncEvent(request_id, blink::WebString::fromUTF8(tag),
+                            last_chance);
 }
 
 void ServiceWorkerContextClient::Send(IPC::Message* message) {

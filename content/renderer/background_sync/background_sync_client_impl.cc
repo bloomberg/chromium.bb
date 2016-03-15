@@ -27,53 +27,13 @@ BackgroundSyncClientImpl::~BackgroundSyncClientImpl() {}
 
 BackgroundSyncClientImpl::BackgroundSyncClientImpl(
     mojo::InterfaceRequest<BackgroundSyncServiceClient> request)
-    : binding_(this, std::move(request)), callback_seq_num_(0) {}
+    : binding_(this, std::move(request)) {}
 
 void BackgroundSyncClientImpl::Sync(
-    int64_t handle_id,
+    const mojo::String& tag,
     content::BackgroundSyncEventLastChance last_chance,
     const SyncCallback& callback) {
   DCHECK(!blink::Platform::current()->mainThread()->isCurrentThread());
-  // Get a registration for the given handle_id from the provider. This way
-  // the provider knows about the handle and can delete it once Blink releases
-  // it.
-  // TODO(jkarlin): Change the WebSyncPlatform to support
-  // DuplicateRegistrationHandle and then this cast can go.
-  BackgroundSyncProvider* provider = static_cast<BackgroundSyncProvider*>(
-      blink::Platform::current()->backgroundSyncProvider());
-
-  if (provider == nullptr) {
-    // This can happen if the renderer is shutting down when sync fires. See
-    // crbug.com/543898. No need to fire the callback as the browser will
-    // automatically fail all pending sync events when the mojo connection
-    // closes.
-    return;
-  }
-
-  // TODO(jkarlin): Find a way to claim the handle safely without requiring a
-  // round-trip IPC.
-  int64_t id = ++callback_seq_num_;
-  sync_callbacks_[id] = callback;
-  provider->DuplicateRegistrationHandle(
-      handle_id, base::Bind(&BackgroundSyncClientImpl::SyncDidGetRegistration,
-                            base::Unretained(this), id, last_chance));
-}
-
-void BackgroundSyncClientImpl::SyncDidGetRegistration(
-    int64_t callback_id,
-    content::BackgroundSyncEventLastChance last_chance,
-    BackgroundSyncError error,
-    SyncRegistrationPtr registration) {
-  SyncCallback callback;
-  auto it = sync_callbacks_.find(callback_id);
-  DCHECK(it != sync_callbacks_.end());
-  callback = it->second;
-  sync_callbacks_.erase(it);
-
-  if (error != BackgroundSyncError::NONE) {
-    callback.Run(ServiceWorkerEventStatus::ABORTED);
-    return;
-  }
 
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
@@ -82,14 +42,11 @@ void BackgroundSyncClientImpl::SyncDidGetRegistration(
     return;
   }
 
-  scoped_ptr<blink::WebSyncRegistration> web_registration =
-      mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(registration);
-
   blink::WebServiceWorkerContextProxy::LastChanceOption web_last_chance =
       mojo::ConvertTo<blink::WebServiceWorkerContextProxy::LastChanceOption>(
           last_chance);
 
-  client->DispatchSyncEvent(*web_registration, web_last_chance, callback);
+  client->DispatchSyncEvent(tag, web_last_chance, callback);
 }
 
 }  // namespace content

@@ -8,7 +8,6 @@
 #include "base/task_runner_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
-#include "content/browser/background_sync/background_sync_registration_handle.h"
 #include "content/public/browser/background_sync_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"

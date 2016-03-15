@@ -124,18 +124,6 @@ void BackgroundSyncProvider::getRegistrations(
                  base::Passed(std::move(callbacksPtr))));
 }
 
-void BackgroundSyncProvider::releaseRegistration(int64_t handle_id) {
-  GetBackgroundSyncServicePtr()->ReleaseRegistration(handle_id);
-}
-
-void BackgroundSyncProvider::DuplicateRegistrationHandle(
-    int64_t handle_id,
-    const BackgroundSyncService::DuplicateRegistrationHandleCallback&
-        callback) {
-  GetBackgroundSyncServicePtr()->DuplicateRegistrationHandle(handle_id,
-                                                             callback);
-}
-
 void BackgroundSyncProvider::WillStopCurrentWorkerThread() {
   delete this;
 }

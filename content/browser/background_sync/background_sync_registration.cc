@@ -18,9 +18,6 @@ const BackgroundSyncRegistration::RegistrationId
 const BackgroundSyncRegistration::RegistrationId
     BackgroundSyncRegistration::kInitialId = 0;
 
-BackgroundSyncRegistration::BackgroundSyncRegistration() = default;
-BackgroundSyncRegistration::~BackgroundSyncRegistration() = default;
-
 bool BackgroundSyncRegistration::Equals(
     const BackgroundSyncRegistration& other) const {
   return options_.Equals(other.options_);

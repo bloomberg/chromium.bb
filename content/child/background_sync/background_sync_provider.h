@@ -53,13 +53,6 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
   void getRegistrations(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetRegistrationsCallbacks* callbacks) override;
-  // TODO(jkarlin): Rename to releaseRegistrationHandle.
-  void releaseRegistration(int64_t handle_id) override;
-
-  void DuplicateRegistrationHandle(
-      int64_t handle_id,
-      const BackgroundSyncService::DuplicateRegistrationHandleCallback&
-          callback);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;

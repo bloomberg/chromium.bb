@@ -15,7 +15,6 @@
 #include "base/task_runner_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
-#include "content/browser/background_sync/background_sync_registration_handle.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -70,13 +69,12 @@ void RegistrationPendingDidGetSyncRegistration(
     const std::string& tag,
     const base::Callback<void(bool)>& callback,
     BackgroundSyncStatus error_type,
-    scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>
-        registration_handles) {
+    scoped_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
   ASSERT_EQ(BACKGROUND_SYNC_STATUS_OK, error_type);
   // Find the right registration in the list and check its status.
-  for (const auto& handle : *registration_handles) {
-    if (handle->options()->tag == tag) {
-      callback.Run(handle->sync_state() == BackgroundSyncState::PENDING);
+  for (const BackgroundSyncRegistration* registration : *registrations) {
+    if (registration->options()->tag == tag) {
+      callback.Run(registration->sync_state() == BackgroundSyncState::PENDING);
       return;
     }
   }

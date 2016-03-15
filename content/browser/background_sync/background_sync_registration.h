@@ -27,8 +27,11 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
 
   static const RegistrationId kInitialId;
 
-  BackgroundSyncRegistration();
-  ~BackgroundSyncRegistration();
+  BackgroundSyncRegistration() = default;
+  BackgroundSyncRegistration(const BackgroundSyncRegistration& other) = default;
+  BackgroundSyncRegistration& operator=(
+      const BackgroundSyncRegistration& other) = default;
+  ~BackgroundSyncRegistration() = default;
 
   bool Equals(const BackgroundSyncRegistration& other) const;
   bool IsValid() const;
@@ -57,9 +60,6 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   BackgroundSyncState sync_state_ = BackgroundSyncState::PENDING;
   int num_attempts_ = 0;
   base::Time delay_until_;
-
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRegistration);
 };
 
 }  // namespace content

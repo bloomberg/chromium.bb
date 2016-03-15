@@ -46,7 +46,6 @@ struct WebCircularGeofencingRegion;
 struct WebCrossOriginServiceWorkerClient;
 struct WebNotificationData;
 struct WebServiceWorkerClientInfo;
-struct WebSyncRegistration;
 
 // A proxy interface to talk to the worker's GlobalScope implementation.
 // All methods of this class must be called on the worker thread.
@@ -83,7 +82,7 @@ public:
 
     // Once the ServiceWorker has finished handling the sync event,
     // didHandleSyncEvent is called on the context client.
-    virtual void dispatchSyncEvent(int syncEventID, const WebSyncRegistration&, LastChanceOption) = 0;
+    virtual void dispatchSyncEvent(int syncEventID, const WebString& tag, LastChanceOption) = 0;
 };
 
 } // namespace blink

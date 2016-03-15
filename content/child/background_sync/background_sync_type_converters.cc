@@ -51,7 +51,7 @@ scoped_ptr<blink::WebSyncRegistration> TypeConverter<
          const content::SyncRegistrationPtr& input) {
   scoped_ptr<blink::WebSyncRegistration> result(
       new blink::WebSyncRegistration());
-  result->id = input->handle_id;
+  result->id = input->id;
   result->tag = blink::WebString::fromUTF8(input->tag);
   result->networkState =
       ConvertTo<blink::WebSyncRegistration::NetworkState>(input->network_state);
@@ -65,7 +65,7 @@ content::SyncRegistrationPtr TypeConverter<
         const blink::WebSyncRegistration& input) {
   content::SyncRegistrationPtr result(
       content::SyncRegistration::New());
-  result->handle_id = input.id;
+  result->id = input.id;
   result->tag = input.tag.utf8();
   result->network_state =
       ConvertTo<content::BackgroundSyncNetworkState>(input.networkState);

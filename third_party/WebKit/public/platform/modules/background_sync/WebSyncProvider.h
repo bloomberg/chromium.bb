@@ -30,8 +30,6 @@ public:
     // Takes ownership of the WebSyncGetRegistrationsCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void getRegistrations(WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;
-
-    virtual void releaseRegistration(int64_t handleId) = 0;
 };
 
 } // namespace blink

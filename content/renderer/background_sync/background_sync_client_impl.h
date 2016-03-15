@@ -31,19 +31,11 @@ class CONTENT_EXPORT BackgroundSyncClientImpl
       mojo::InterfaceRequest<BackgroundSyncServiceClient> request);
 
   // BackgroundSyncServiceClient methods:
-  void Sync(int64_t handle_id,
+  void Sync(const mojo::String& tag,
             content::BackgroundSyncEventLastChance last_chance,
             const SyncCallback& callback) override;
-  void SyncDidGetRegistration(
-      int64_t callback_id,
-      content::BackgroundSyncEventLastChance last_chance,
-      BackgroundSyncError error,
-      SyncRegistrationPtr registration);
 
   mojo::StrongBinding<BackgroundSyncServiceClient> binding_;
-
-  int64_t callback_seq_num_;
-  std::map<int64_t, SyncCallback> sync_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncClientImpl);
 };

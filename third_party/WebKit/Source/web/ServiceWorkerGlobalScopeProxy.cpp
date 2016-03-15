@@ -62,7 +62,6 @@
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebCrossOriginServiceWorkerClient.h"
-#include "public/platform/modules/background_sync/WebSyncRegistration.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -209,14 +208,14 @@ void ServiceWorkerGlobalScopeProxy::dispatchServicePortConnectEvent(WebServicePo
     collection->dispatchConnectEvent(callbacks.release(), targetURL, origin, portID);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebSyncRegistration& registration, LastChanceOption lastChance)
+void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebString& tag, LastChanceOption lastChance)
 {
     if (!RuntimeEnabledFeatures::backgroundSyncEnabled()) {
         ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->didHandleSyncEvent(eventID, WebServiceWorkerEventResultCompleted);
         return;
     }
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Sync, eventID);
-    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, registration.tag, lastChance == IsLastChance, observer));
+    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, tag, lastChance == IsLastChance, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 

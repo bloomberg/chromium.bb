@@ -38,19 +38,14 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
                 const RegisterCallback& callback) override;
   void GetRegistrations(int64_t sw_registration_id,
                         const GetRegistrationsCallback& callback) override;
-  void DuplicateRegistrationHandle(
-      BackgroundSyncRegistrationHandle::HandleId handle_id,
-      const DuplicateRegistrationHandleCallback& callback) override;
-  void ReleaseRegistration(
-      BackgroundSyncRegistrationHandle::HandleId handle_id) override;
 
   void OnRegisterResult(const RegisterCallback& callback,
                         BackgroundSyncStatus status,
-                        scoped_ptr<BackgroundSyncRegistrationHandle> result);
+                        scoped_ptr<BackgroundSyncRegistration> result);
   void OnGetRegistrationsResult(
       const GetRegistrationsCallback& callback,
       BackgroundSyncStatus status,
-      scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>> result);
+      scoped_ptr<ScopedVector<BackgroundSyncRegistration>> result);
 
   // Called when an error is detected on binding_.
   void OnConnectionError();
@@ -59,11 +54,6 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   BackgroundSyncContextImpl* background_sync_context_;
 
   mojo::Binding<BackgroundSyncService> binding_;
-
-  // The registrations that the client might reference.
-  IDMap<BackgroundSyncRegistrationHandle,
-        IDMapOwnPointer,
-        BackgroundSyncRegistrationHandle::HandleId> active_handles_;
 
   base::WeakPtrFactory<BackgroundSyncServiceImpl> weak_ptr_factory_;
 

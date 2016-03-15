@@ -39,7 +39,7 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultBlinkToMojoConversion) {
   content::SyncRegistrationPtr out =
       ConvertTo<content::SyncRegistrationPtr>(in);
 
-  ASSERT_EQ(blink::WebSyncRegistration::UNREGISTERED_SYNC_ID, out->handle_id);
+  ASSERT_EQ(blink::WebSyncRegistration::UNREGISTERED_SYNC_ID, out->id);
   ASSERT_EQ("", out->tag);
   ASSERT_EQ(content::BackgroundSyncNetworkState::ONLINE, out->network_state);
 }
@@ -50,7 +50,7 @@ TEST(BackgroundSyncTypeConverterTest, TestFullBlinkToMojoConversion) {
   content::SyncRegistrationPtr out =
       ConvertTo<content::SyncRegistrationPtr>(in);
 
-  ASSERT_EQ(7, out->handle_id);
+  ASSERT_EQ(7, out->id);
   ASSERT_EQ("BlinkToMojo", out->tag);
   ASSERT_EQ(content::BackgroundSyncNetworkState::AVOID_CELLULAR,
             out->network_state);
@@ -70,7 +70,7 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultMojoToBlinkConversion) {
 TEST(BackgroundSyncTypeConverterTest, TestFullMojoToBlinkConversion) {
   content::SyncRegistrationPtr in(
       content::SyncRegistration::New());
-  in->handle_id = 41;
+  in->id = 41;
   in->tag = mojo::String("MojoToBlink");
   in->network_state = content::BackgroundSyncNetworkState::AVOID_CELLULAR;
   scoped_ptr<blink::WebSyncRegistration> out =
