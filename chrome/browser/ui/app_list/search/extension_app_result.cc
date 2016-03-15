@@ -151,6 +151,11 @@ void ExtensionAppResult::OnExtensionIconImageChanged(
   UpdateIcon();
 }
 
+void ExtensionAppResult::OnExtensionIconImageDestroyed(
+    extensions::IconImage* image) {
+  SetIcon(gfx::ImageSkia());
+}
+
 void ExtensionAppResult::ExecuteLaunchCommand(int event_flags) {
   Open(event_flags);
 }

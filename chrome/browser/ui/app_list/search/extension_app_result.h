@@ -56,6 +56,7 @@ class ExtensionAppResult : public AppResult,
 
   // extensions::IconImage::Observer overrides:
   void OnExtensionIconImageChanged(extensions::IconImage* image) override;
+  void OnExtensionIconImageDestroyed(extensions::IconImage* image) override;
 
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;
