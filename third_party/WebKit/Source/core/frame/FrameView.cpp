@@ -2993,24 +2993,6 @@ void FrameView::removeChild(Widget* child)
     m_children.remove(child);
 }
 
-bool FrameView::isVerticalDocument() const
-{
-    LayoutView* layoutView = this->layoutView();
-    if (!layoutView)
-        return true;
-
-    return layoutView->style()->isHorizontalWritingMode();
-}
-
-bool FrameView::isFlippedDocument() const
-{
-    LayoutView* layoutView = this->layoutView();
-    if (!layoutView)
-        return false;
-
-    return layoutView->hasFlippedBlocksWritingMode();
-}
-
 bool FrameView::visualViewportSuppliesScrollbars() const
 {
     return m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->viewportMetaEnabled();

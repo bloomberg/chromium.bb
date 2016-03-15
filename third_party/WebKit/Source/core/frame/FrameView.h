@@ -560,13 +560,6 @@ public:
 
     LayoutAnalyzer* layoutAnalyzer() { return m_analyzer.get(); }
 
-    // Returns true if the default scrolling direction is vertical. i.e. writing mode
-    // is horiziontal. In a vertical document, a spacebar scrolls down.
-    bool isVerticalDocument() const;
-
-    // Returns true if the document's writing mode is right-to-left or bottom-to-top.
-    bool isFlippedDocument() const;
-
     void setFrameTimingRequestsDirty(bool isDirty) { m_frameTimingRequestsDirty = isDirty; }
     bool frameTimingRequestsDirty() { return m_frameTimingRequestsDirty; }
 
