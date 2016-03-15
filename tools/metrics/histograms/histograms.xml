@@ -14551,6 +14551,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Updates grouped by Extension::HistogramType.</summary>
 </histogram>
 
+<histogram name="Extensions.WebRequestEventFoundFrame" units="boolean">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Whether or not the render frame lookup for a given webRequest event
+    succeeded.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.WebstoreDownload.FileDownload" units="ms">
   <owner>xiaohuic@chromium.org</owner>
   <summary>

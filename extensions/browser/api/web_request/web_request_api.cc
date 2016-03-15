@@ -1349,8 +1349,12 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     ExtensionApiFrameIdMap::FrameData frame_data;
     // TODO(devlin): Figure out when one/both of these can fail, and if we
     // need to address it.
-    if (content::ResourceRequestInfo::GetRenderFrameForRequest(
-            request, &render_process_id, &render_frame_id) &&
+    bool found_render_frame =
+        content::ResourceRequestInfo::GetRenderFrameForRequest(
+            request, &render_process_id, &render_frame_id);
+    UMA_HISTOGRAM_BOOLEAN("Extensions.WebRequestEventFoundFrame",
+                          found_render_frame);
+    if (found_render_frame &&
         ExtensionApiFrameIdMap::Get()->GetCachedFrameDataOnIO(
             render_process_id, render_frame_id, &frame_data)) {
       tab_id = frame_data.tab_id;
