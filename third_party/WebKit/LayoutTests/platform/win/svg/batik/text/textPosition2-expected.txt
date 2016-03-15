@@ -13,8 +13,8 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (50,90) size 103x13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 103x13
           chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 21 width 103.00: "<text x=\"100\" y=\"80\">"
-      LayoutSVGText {text} at (240,59) size 232x26 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 232x26
+      LayoutSVGText {text} at (240,59) size 233x26 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 233x26
           chunk 1 text run 1 at (240.00,80.00) startOffset 0 endOffset 1 width 36.01: "B"
           chunk 1 text run 2 at (296.01,80.00) startOffset 1 endOffset 2 width 30.65: "a"
           chunk 1 text run 3 at (346.66,80.00) startOffset 2 endOffset 3 width 26.67: "t"
@@ -50,9 +50,9 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (50,210) size 111x13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 111x13
           chunk 1 text run 1 at (50.00,220.00) startOffset 0 endOffset 22 width 111.00: "<tspan x=\"50\" y=\"200\">"
-      LayoutSVGText {text} at (240,179) size 232x26 contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 232x26
-          LayoutSVGInlineText {#text} at (0,0) size 232x26
+      LayoutSVGText {text} at (240,179) size 233x26 contains 1 chunk(s)
+        LayoutSVGTSpan {tspan} at (0,0) size 233x26
+          LayoutSVGInlineText {#text} at (0,0) size 233x26
             chunk 1 text run 1 at (240.00,200.00) startOffset 0 endOffset 1 width 36.01: "B"
             chunk 1 text run 2 at (296.01,200.00) startOffset 1 endOffset 2 width 30.65: "a"
             chunk 1 text run 3 at (346.66,200.00) startOffset 2 endOffset 3 width 26.67: "t"
@@ -98,9 +98,9 @@ layer at (0,0) size 450x500
         LayoutSVGTSpan {tspan} at (0,0) size 137x13
           LayoutSVGInlineText {#text} at (33,11) size 137x13
             chunk 1 text run 1 at (83.00,351.00) startOffset 0 endOffset 27 width 137.00: "dx=\"0 10 20 30 40\" y=\"320\">"
-      LayoutSVGText {text} at (240,299) size 182x26 contains 1 chunk(s)
-        LayoutSVGTSpan {tspan} at (0,0) size 182x26
-          LayoutSVGInlineText {#text} at (0,0) size 182x26
+      LayoutSVGText {text} at (240,299) size 183x26 contains 1 chunk(s)
+        LayoutSVGTSpan {tspan} at (0,0) size 183x26
+          LayoutSVGInlineText {#text} at (0,0) size 183x26
             chunk 1 text run 1 at (240.00,320.00) startOffset 0 endOffset 1 width 26.01: "B"
             chunk 1 text run 2 at (286.01,320.00) startOffset 1 endOffset 2 width 20.65: "a"
             chunk 1 text run 3 at (326.66,320.00) startOffset 2 endOffset 3 width 16.67: "t"
