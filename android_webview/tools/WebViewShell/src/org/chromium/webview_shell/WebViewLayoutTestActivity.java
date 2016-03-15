@@ -35,9 +35,6 @@ public class WebViewLayoutTestActivity extends Activity {
     private boolean mFinished = false;
     private boolean mGrantPermission = false;
 
-    private static final String[] AUTOMATICALLY_GRANT =
-            { PermissionRequest.RESOURCE_VIDEO_CAPTURE, PermissionRequest.RESOURCE_AUDIO_CAPTURE };
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,8 +78,8 @@ public class WebViewLayoutTestActivity extends Activity {
                         + TextUtils.join(",", request.getResources()) + "\n");
                 if (mGrantPermission) {
                     mConsoleLog.append("request granted: "
-                            + TextUtils.join(",", AUTOMATICALLY_GRANT) + "\n");
-                    request.grant(AUTOMATICALLY_GRANT);
+                            + TextUtils.join(",", request.getResources()) + "\n");
+                    request.grant(request.getResources());
                 } else {
                     mConsoleLog.append("request denied" + "\n");
                     request.deny();

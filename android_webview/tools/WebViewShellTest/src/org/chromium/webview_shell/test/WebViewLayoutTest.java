@@ -200,6 +200,20 @@ public class WebViewLayoutTest
         assertEquals("Missing webview interfaces found", "", missing.toString());
     }
 
+    @MediumTest
+    public void testRequestMIDIAccess() throws Exception {
+        mTestActivity.setGrantPermission(true);
+        runWebViewLayoutTest("blink-apis/webmidi/requestmidiaccess.html",
+                "blink-apis/webmidi/requestmidiaccess-expected.txt");
+        mTestActivity.setGrantPermission(false);
+    }
+
+    @MediumTest
+    public void testRequestMIDIAccessDenyPermission() throws Exception {
+        runWebViewLayoutTest("blink-apis/webmidi/requestmidiaccess-permission-denied.html",
+                "blink-apis/webmidi/requestmidiaccess-permission-denied-expected.html");
+    }
+
     // Blink platform API tests
 
     @MediumTest
