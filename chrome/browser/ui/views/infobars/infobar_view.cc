@@ -85,10 +85,14 @@ InfoBarView::InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate)
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
   set_background(
       new InfoBarBackground(infobars::InfoBar::delegate()->GetInfoBarType()));
+  SetEventTargeter(make_scoped_ptr(new views::ViewTargeter(this)));
 
   AddChildView(child_container_);
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+
     child_container_->SetPaintToLayer(true);
     child_container_->layer()->SetMasksToBounds(true);
     // Since MD doesn't use a gradient, we can set a solid bg color.
@@ -424,4 +428,13 @@ void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
       Contains(focused_now)) {
     NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   }
+}
+
+bool InfoBarView::DoesIntersectRect(const View* target,
+                                    const gfx::Rect& rect) const {
+  DCHECK_EQ(this, target);
+  // Only events that intersect the portion below the arrow are interesting.
+  gfx::Rect non_arrow_bounds = GetLocalBounds();
+  non_arrow_bounds.Inset(0, arrow_height(), 0, 0);
+  return rect.Intersects(non_arrow_bounds);
 }

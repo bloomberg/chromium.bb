@@ -13,6 +13,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/external_focus_tracker.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace ui {
 class MenuModel;
@@ -32,7 +33,8 @@ class MenuRunner;
 class InfoBarView : public infobars::InfoBar,
                     public views::View,
                     public views::ButtonListener,
-                    public views::ExternalFocusTracker {
+                    public views::ExternalFocusTracker,
+                    public views::ViewTargeterDelegate {
  public:
   explicit InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate);
 
@@ -123,6 +125,10 @@ class InfoBarView : public infobars::InfoBar,
 
   // views::ExternalFocusTracker:
   void OnWillChangeFocus(View* focused_before, View* focused_now) override;
+
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const View* target,
+                         const gfx::Rect& rect) const override;
 
   // This container holds the children and clips their painting during
   // animation.
