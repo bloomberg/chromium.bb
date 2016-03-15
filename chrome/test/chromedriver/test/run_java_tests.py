@@ -304,14 +304,14 @@ def main():
                                       'java_tests')
     if (not os.path.exists(java_tests_src_dir) or
         not os.listdir(java_tests_src_dir)):
-      java_tests_url = ('http://src.chromium.org/svn/trunk/deps/third_party'
+      java_tests_url = ('https://chromium.googlesource.com/chromium/deps'
                         '/webdriver')
       print ('"%s" is empty or it doesn\'t exist. ' % java_tests_src_dir +
-             'Need to map <chrome-svn>/trunk/deps/third_party/webdriver to '
+             'Need to map ' + java_tests_url + ' to '
              'chrome/test/chromedriver/third_party/java_tests in .gclient.\n'
              'Alternatively, do:\n'
              '  $ cd chrome/test/chromedriver/third_party\n'
-             '  $ svn co %s java_tests' % java_tests_url)
+             '  $ git clone %s java_tests' % java_tests_url)
       return 1
 
     results = []
