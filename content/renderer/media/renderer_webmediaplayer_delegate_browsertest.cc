@@ -160,16 +160,20 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   delegate_manager_->SetIdleCleanupParamsForTesting(kIdleTimeout, &tick_clock);
   EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
+  // Just adding an observer should not start the idle timer.
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_1;
   const int delegate_id_1 = delegate_manager_->AddObserver(&observer_1);
-  EXPECT_TRUE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+  EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+
+  // Starting playback should not have an idle timer.
   delegate_manager_->DidPlay(delegate_id_1, true, true, false,
                              base::TimeDelta());
   EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
-  // Never playing should count as idle.
+  // Never calling DidPlay() but calling DidPause() should count as idle.
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_2;
   const int delegate_id_2 = delegate_manager_->AddObserver(&observer_2);
+  delegate_manager_->DidPause(delegate_id_2, false);
   EXPECT_TRUE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
   // Adding the observer should instantly queue the timeout task, once run the
@@ -240,10 +244,13 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesIgnoresSuspendRequest) {
 
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_1;
   const int delegate_id_1 = delegate_manager_->AddObserver(&observer_1);
+  EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+
+  // Calling DidPause() should instantly queue the timeout task.
+  delegate_manager_->DidPause(delegate_id_1, false);
   EXPECT_TRUE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
-  // Adding the observer should instantly queue the timeout task, once run the
-  // second delegate should be expired while the first is kept alive.
+  // Wait for the suspend request, but don't call PlayerGone().
   EXPECT_CALL(observer_1, OnSuspendRequested(false));
   base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());

@@ -53,7 +53,10 @@ class WebMediaPlayerDelegate {
                        bool is_remote,
                        base::TimeDelta duration) = 0;
 
-  // The specified player stopped playing media.
+  // The specified player stopped playing media. This may be called at any time
+  // with or without a DidPlay() having previously occurred. Calling this will
+  // cause the delegate to be registered for idle suspension. I.e., after some
+  // time elapses without a DidPlay(), OnSuspendRequested() will be issued.
   virtual void DidPause(int delegate_id, bool reached_end_of_stream) = 0;
 
   // The specified player was destroyed or suspended and will no longer accept

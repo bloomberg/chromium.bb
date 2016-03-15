@@ -25,9 +25,7 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
 RendererWebMediaPlayerDelegate::~RendererWebMediaPlayerDelegate() {}
 
 int RendererWebMediaPlayerDelegate::AddObserver(Observer* observer) {
-  const int delegate_id = id_map_.Add(observer);
-  AddIdleDelegate(delegate_id);
-  return delegate_id;
+  return id_map_.Add(observer);
 }
 
 void RendererWebMediaPlayerDelegate::RemoveObserver(int delegate_id) {
