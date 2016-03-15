@@ -236,11 +236,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
       frame_timing_tracker_(FrameTimingTracker::Create(this)) {
-  if (settings.accelerated_animation_enabled) {
-    animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
-    animation_host_->SetMutatorHostClient(this);
-    animation_host_->SetSupportsScrollAnimations(SupportsImplScrolling());
-  }
+  animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
+  animation_host_->SetMutatorHostClient(this);
+  animation_host_->SetSupportsScrollAnimations(SupportsImplScrolling());
 
   DCHECK(task_runner_provider_->IsImplThread());
   DidVisibilityChange(this, visible_);
@@ -289,10 +287,8 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   pending_tree_ = nullptr;
   active_tree_ = nullptr;
 
-  if (animation_host_) {
-    animation_host_->ClearTimelines();
-    animation_host_->SetMutatorHostClient(nullptr);
-  }
+  animation_host_->ClearTimelines();
+  animation_host_->SetMutatorHostClient(nullptr);
 
   CleanUpTileManagerAndUIResources();
   renderer_ = nullptr;
@@ -3389,12 +3385,7 @@ bool LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks monotonic_time) {
 }
 
 bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
-  if (!settings_.accelerated_animation_enabled)
-    return false;
-
-  bool animated = false;
-  if (animation_host_->AnimateLayers(monotonic_time))
-    animated = true;
+  const bool animated = animation_host_->AnimateLayers(monotonic_time);
 
   // TODO(crbug.com/551134): Only do this if the animations are on the active
   // tree, or if they are on the pending tree waiting for some future time to
@@ -3411,14 +3402,9 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
-  if (!settings_.accelerated_animation_enabled)
-    return;
+  scoped_ptr<AnimationEvents> events = animation_host_->CreateEvents();
 
-  bool has_active_animations = false;
-  scoped_ptr<AnimationEvents> events;
-
-  events = animation_host_->CreateEvents();
-  has_active_animations = animation_host_->UpdateAnimationState(
+  const bool has_active_animations = animation_host_->UpdateAnimationState(
       start_ready_animations, events.get());
 
   if (!events->events_.empty())
@@ -3429,9 +3415,6 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
 }
 
 void LayerTreeHostImpl::ActivateAnimations() {
-  if (!settings_.accelerated_animation_enabled)
-    return;
-
   const bool activated = animation_host_->ActivateAnimations();
   if (activated) {
     // Activating an animation changes layer draw properties, such as
@@ -3849,9 +3832,7 @@ void LayerTreeHostImpl::TreeLayerTransformIsPotentiallyAnimatingChanged(
 
 bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(
     const LayerImpl* layer) const {
-  return animation_host_
-             ? animation_host_->AnimationsPreserveAxisAlignment(layer->id())
-             : true;
+  return animation_host_->AnimationsPreserveAxisAlignment(layer->id());
 }
 
 void LayerTreeHostImpl::SetLayerFilterMutated(int layer_id,

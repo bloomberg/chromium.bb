@@ -197,10 +197,8 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       next_surface_sequence_(1u) {
   DCHECK(task_graph_runner_);
 
-  if (settings_.accelerated_animation_enabled) {
-    animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
-    animation_host_->SetMutatorHostClient(this);
-  }
+  animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
+  animation_host_->SetMutatorHostClient(this);
 
   rendering_stats_instrumentation_->set_record_rendering_stats(
       debug_state_.RecordRenderingStats());
@@ -285,17 +283,14 @@ void LayerTreeHost::InitializeProxy(
 
   proxy_ = std::move(proxy);
   proxy_->Start(std::move(external_begin_frame_source));
-  if (settings_.accelerated_animation_enabled) {
-    animation_host_->SetSupportsScrollAnimations(
-        proxy_->SupportsImplScrolling());
-  }
+
+  animation_host_->SetSupportsScrollAnimations(proxy_->SupportsImplScrolling());
 }
 
 LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
 
-  if (animation_host_)
-    animation_host_->SetMutatorHostClient(nullptr);
+  animation_host_->SetMutatorHostClient(nullptr);
 
   if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
@@ -473,11 +468,9 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
     TreeSynchronizer::PushProperties(root_layer(), sync_tree->root_layer());
 
-    if (animation_host_) {
-      TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
-      DCHECK(host_impl->animation_host());
-      animation_host_->PushPropertiesTo(host_impl->animation_host());
-    }
+    TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
+    DCHECK(host_impl->animation_host());
+    animation_host_->PushPropertiesTo(host_impl->animation_host());
   }
 
   // This must happen after synchronizing property trees and after push
@@ -1048,11 +1041,8 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
-  if (!settings_.accelerated_animation_enabled)
-    return;
+  scoped_ptr<AnimationEvents> events = animation_host_->CreateEvents();
 
-  scoped_ptr<AnimationEvents> events;
-  events = animation_host_->CreateEvents();
   if (animation_host_->AnimateLayers(monotonic_time))
     animation_host_->UpdateAnimationState(true, events.get());
 
@@ -1236,15 +1226,13 @@ void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
   layer_id_map_[layer->id()] = layer;
-  if (animation_host_)
-    animation_host_->RegisterLayer(layer->id(), LayerTreeType::ACTIVE);
+  animation_host_->RegisterLayer(layer->id(), LayerTreeType::ACTIVE);
 }
 
 void LayerTreeHost::UnregisterLayer(Layer* layer) {
   DCHECK(LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
-  if (animation_host_)
-    animation_host_->UnregisterLayer(layer->id(), LayerTreeType::ACTIVE);
+  animation_host_->UnregisterLayer(layer->id(), LayerTreeType::ACTIVE);
   layer_id_map_.erase(layer->id());
 }
 
@@ -1311,103 +1299,76 @@ gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
 
 bool LayerTreeHost::ScrollOffsetAnimationWasInterrupted(
     const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->ScrollOffsetAnimationWasInterrupted(layer->id())
-             : false;
+  return animation_host_->ScrollOffsetAnimationWasInterrupted(layer->id());
 }
 
 bool LayerTreeHost::IsAnimatingFilterProperty(const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->IsAnimatingFilterProperty(layer->id(),
-                                                          LayerTreeType::ACTIVE)
-             : false;
+  return animation_host_->IsAnimatingFilterProperty(layer->id(),
+                                                    LayerTreeType::ACTIVE);
 }
 
 bool LayerTreeHost::IsAnimatingOpacityProperty(const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->IsAnimatingOpacityProperty(
-                   layer->id(), LayerTreeType::ACTIVE)
-             : false;
+  return animation_host_->IsAnimatingOpacityProperty(layer->id(),
+                                                     LayerTreeType::ACTIVE);
 }
 
 bool LayerTreeHost::IsAnimatingTransformProperty(const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->IsAnimatingTransformProperty(
-                   layer->id(), LayerTreeType::ACTIVE)
-             : false;
+  return animation_host_->IsAnimatingTransformProperty(layer->id(),
+                                                       LayerTreeType::ACTIVE);
 }
 
 bool LayerTreeHost::HasPotentiallyRunningFilterAnimation(
     const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->HasPotentiallyRunningFilterAnimation(
-                   layer->id(), LayerTreeType::ACTIVE)
-             : false;
+  return animation_host_->HasPotentiallyRunningFilterAnimation(
+      layer->id(), LayerTreeType::ACTIVE);
 }
 
 bool LayerTreeHost::HasPotentiallyRunningOpacityAnimation(
     const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->HasPotentiallyRunningOpacityAnimation(
-                   layer->id(), LayerTreeType::ACTIVE)
-             : false;
+  return animation_host_->HasPotentiallyRunningOpacityAnimation(
+      layer->id(), LayerTreeType::ACTIVE);
 }
 
 bool LayerTreeHost::HasPotentiallyRunningTransformAnimation(
     const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->HasPotentiallyRunningTransformAnimation(
-                   layer->id(), LayerTreeType::ACTIVE)
-             : false;
+  return animation_host_->HasPotentiallyRunningTransformAnimation(
+      layer->id(), LayerTreeType::ACTIVE);
 }
 
 bool LayerTreeHost::HasOnlyTranslationTransforms(const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->HasOnlyTranslationTransforms(
-                   layer->id(), LayerTreeType::ACTIVE)
-             : false;
+  return animation_host_->HasOnlyTranslationTransforms(layer->id(),
+                                                       LayerTreeType::ACTIVE);
 }
 
 bool LayerTreeHost::MaximumTargetScale(const Layer* layer,
                                        float* max_scale) const {
-  return animation_host_
-             ? animation_host_->MaximumTargetScale(
-                   layer->id(), LayerTreeType::ACTIVE, max_scale)
-             : false;
+  return animation_host_->MaximumTargetScale(layer->id(), LayerTreeType::ACTIVE,
+                                             max_scale);
 }
 
 bool LayerTreeHost::AnimationStartScale(const Layer* layer,
                                         float* start_scale) const {
-  return animation_host_
-             ? animation_host_->AnimationStartScale(
-                   layer->id(), LayerTreeType::ACTIVE, start_scale)
-             : false;
+  return animation_host_->AnimationStartScale(
+      layer->id(), LayerTreeType::ACTIVE, start_scale);
 }
 
 bool LayerTreeHost::HasAnyAnimationTargetingProperty(
     const Layer* layer,
     TargetProperty::Type property) const {
-  return animation_host_
-             ? animation_host_->HasAnyAnimationTargetingProperty(layer->id(),
-                                                                 property)
-             : false;
+  return animation_host_->HasAnyAnimationTargetingProperty(layer->id(),
+                                                           property);
 }
 
 bool LayerTreeHost::AnimationsPreserveAxisAlignment(const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->AnimationsPreserveAxisAlignment(layer->id())
-             : true;
+  return animation_host_->AnimationsPreserveAxisAlignment(layer->id());
 }
 
 bool LayerTreeHost::HasAnyAnimation(const Layer* layer) const {
-  return animation_host_ ? animation_host_->HasAnyAnimation(layer->id())
-                         : false;
+  return animation_host_->HasAnyAnimation(layer->id());
 }
 
 bool LayerTreeHost::HasActiveAnimationForTesting(const Layer* layer) const {
-  return animation_host_
-             ? animation_host_->HasActiveAnimationForTesting(layer->id())
-             : false;
+  return animation_host_->HasActiveAnimationForTesting(layer->id());
 }
 
 bool LayerTreeHost::IsSingleThreaded() const {

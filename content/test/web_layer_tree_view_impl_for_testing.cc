@@ -40,9 +40,6 @@ void WebLayerTreeViewImplForTesting::Initialize() {
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
-  // Accelerated animations are enabled for unit tests.
-  settings.accelerated_animation_enabled = true;
-
   cc::LayerTreeHost::InitParams params;
   params.client = this;
   params.settings = &settings;

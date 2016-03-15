@@ -28,7 +28,6 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   settings->layer_transforms_should_scale_layer_contents = true;
 
   settings->main_frame_before_activation_enabled = false;
-  settings->accelerated_animation_enabled = true;
   settings->default_tile_size = gfx::Size(256, 256);
   settings->gpu_rasterization_msaa_sample_count = 0;
   settings->gpu_rasterization_forced = false;

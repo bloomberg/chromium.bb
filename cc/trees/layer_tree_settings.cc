@@ -59,7 +59,6 @@ LayerTreeSettings::LayerTreeSettings()
       use_external_begin_frame_source(false),
       main_frame_before_activation_enabled(false),
       using_synchronous_renderer_compositor(false),
-      accelerated_animation_enabled(true),
       can_use_lcd_text(true),
       use_distance_field_text(false),
       gpu_rasterization_enabled(false),
@@ -120,7 +119,6 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
              other.main_frame_before_activation_enabled &&
          using_synchronous_renderer_compositor ==
              other.using_synchronous_renderer_compositor &&
-         accelerated_animation_enabled == other.accelerated_animation_enabled &&
          can_use_lcd_text == other.can_use_lcd_text &&
          use_distance_field_text == other.use_distance_field_text &&
          gpu_rasterization_enabled == other.gpu_rasterization_enabled &&
@@ -184,7 +182,6 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
       main_frame_before_activation_enabled);
   proto->set_using_synchronous_renderer_compositor(
       using_synchronous_renderer_compositor);
-  proto->set_accelerated_animation_enabled(accelerated_animation_enabled);
   proto->set_can_use_lcd_text(can_use_lcd_text);
   proto->set_use_distance_field_text(use_distance_field_text);
   proto->set_gpu_rasterization_enabled(gpu_rasterization_enabled);
@@ -247,7 +244,6 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
       proto.main_frame_before_activation_enabled();
   using_synchronous_renderer_compositor =
       proto.using_synchronous_renderer_compositor();
-  accelerated_animation_enabled = proto.accelerated_animation_enabled();
   can_use_lcd_text = proto.can_use_lcd_text();
   use_distance_field_text = proto.use_distance_field_text();
   gpu_rasterization_enabled = proto.gpu_rasterization_enabled();

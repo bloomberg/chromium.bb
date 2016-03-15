@@ -37,8 +37,6 @@ TEST(LayerTreeSettingsTest, AllMembersChanged) {
       !settings.main_frame_before_activation_enabled;
   settings.using_synchronous_renderer_compositor =
       !settings.using_synchronous_renderer_compositor;
-  settings.accelerated_animation_enabled =
-      !settings.accelerated_animation_enabled;
   settings.can_use_lcd_text = !settings.can_use_lcd_text;
   settings.use_distance_field_text = !settings.use_distance_field_text;
   settings.gpu_rasterization_enabled = !settings.gpu_rasterization_enabled;
@@ -109,7 +107,6 @@ TEST(LayerTreeSettingsTest, ArbitraryValues) {
   settings.use_external_begin_frame_source = true;
   settings.main_frame_before_activation_enabled = true;
   settings.using_synchronous_renderer_compositor = false;
-  settings.accelerated_animation_enabled = true;
   settings.can_use_lcd_text = false;
   settings.use_distance_field_text = false;
   settings.gpu_rasterization_enabled = false;
