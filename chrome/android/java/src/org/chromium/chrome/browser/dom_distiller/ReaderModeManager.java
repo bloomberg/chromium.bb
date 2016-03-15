@@ -187,7 +187,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         }
 
         // Make sure there is a distillability delegate set on the WebContents.
-        setDistillabilityCallback();
+        setDistillabilityCallback(shownTabId);
 
         requestReaderPanelShow(StateChangeReason.UNKNOWN);
     }
@@ -243,7 +243,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 closeReaderPanel(StateChangeReason.CONTENT_CHANGED, true);
             }
             // Make sure there is a distillability delegate set on the WebContents.
-            setDistillabilityCallback();
+            setDistillabilityCallback(tab.getId());
         }
 
         if (tab.getInfoBarContainer() != null) tab.getInfoBarContainer().addObserver(this);
@@ -519,17 +519,21 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         return mReaderModePanel.isPanelOpened();
     }
 
-    // Set the callback for updating reader mode status based on whether or not the page should
-    // be viewed in reader mode.
-    private void setDistillabilityCallback() {
-        Tab currentTab = mTabModelSelector.getCurrentTab();
-        if (currentTab == null || currentTab.getWebContents() == null
-                || currentTab.getContentViewCore() == null) {
+    /**
+     * Set the callback for updating reader mode status based on whether or not the page should
+     * be viewed in reader mode.
+     * @param tabId The ID of the tab having its callback set.
+     */
+    private void setDistillabilityCallback(final int tabId) {
+        if (tabId == Tab.INVALID_TAB_ID || mTabStatusMap.get(tabId).isCallbackSet()) {
             return;
         }
 
-        final int readerTabId = currentTab.getId();
-        if (mTabStatusMap.get(readerTabId).isCallbackSet()) {
+        if (mTabModelSelector == null) return;
+
+        Tab currentTab = mTabModelSelector.getTabById(tabId);
+        if (currentTab == null || currentTab.getWebContents() == null
+                || currentTab.getContentViewCore() == null) {
             return;
         }
 
@@ -539,8 +543,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                     public void onIsPageDistillableResult(boolean isDistillable, boolean isLast) {
                         if (mTabModelSelector == null) return;
 
-                        ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
-                        Tab readerTab = mTabModelSelector.getTabById(readerTabId);
+                        ReaderModeTabInfo tabInfo = mTabStatusMap.get(tabId);
+                        Tab readerTab = mTabModelSelector.getTabById(tabId);
 
                         // It is possible that the tab was destroyed before this callback happens.
                         // TODO(wychen/mdjones): Remove the callback when a Tab/WebContents is
@@ -553,7 +557,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                         if (isDistillable) {
                             tabInfo.setStatus(POSSIBLE);
                             // The user may have changed tabs.
-                            if (readerTabId == mTabModelSelector.getCurrentTabId()) {
+                            if (tabId == mTabModelSelector.getCurrentTabId()) {
                                 // TODO(mdjones): Add reason DISTILLER_STATE_CHANGE.
                                 requestReaderPanelShow(StateChangeReason.UNKNOWN);
                             }
@@ -568,7 +572,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                         }
                     }
                 });
-        mTabStatusMap.get(readerTabId).setIsCallbackSet(true);
+        mTabStatusMap.get(tabId).setIsCallbackSet(true);
     }
 
     /**
