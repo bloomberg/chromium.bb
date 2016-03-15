@@ -124,7 +124,7 @@
       <property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LE, LITERAL_ASSERT, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND" />
       <property name="allowEmptyConstructors" value="true"/>
       <property name="allowEmptyMethods" value="true"/>
-   </module>
+    </module>
     <module name="WhitespaceAfter">
       <property name="severity" value="error"/>
       <property name="tokens" value="COMMA, SEMI, TYPECAST"/>
@@ -196,7 +196,21 @@
       <property name="tokens" value="COMMA"/>
       <property name="option" value="EOL"/>
     </module>
+    <module name="RegexpSinglelineJava">
+      <property name="severity" value="error"/>
+      <property name="format" value="StringBuffer"/>
+      <property name="ignoreComments" value="true"/>
+      <property name="message" value="Avoid StringBuffer; use StringBuilder instead, which is faster (it's not thread-safe, but this is almost never needed)"/>
+    </module>
+    <module name="RegexpSinglelineJava">
+      <property name="severity" value="warning"/>
+      <property name="format" value="android\.app\.AlertDialog"/>
+      <property name="ignoreComments" value="true"/>
+      <property name="message" value="Avoid android.app.AlertDialog; if possible, use android.support.v7.app.AlertDialog instead, which has a Material look on all devices. (Some parts of the codebase can’t depend on the support library, in which case android.app.AlertDialog is the only option)"/>
+    </module>
   </module>
+
+  <!-- Non-TreeWalker modules -->
   <module name="FileTabCharacter">
     <property name="severity" value="error"/>
   </module>
@@ -204,7 +218,7 @@
     <property name="severity" value="error"/>
     <property name="format" value="[ \t]+$"/>
     <property name="message" value="Trailing whitespace"/>
-    </module>
+  </module>
   <module name="RegexpHeader">
     <property name="severity" value="error"/>
     <property name="header" value="^// Copyright 20\d\d The Chromium Authors. All rights reserved.$\n^// Use of this source code is governed by a BSD-style license that can be$\n^// found in the LICENSE file.$"/>

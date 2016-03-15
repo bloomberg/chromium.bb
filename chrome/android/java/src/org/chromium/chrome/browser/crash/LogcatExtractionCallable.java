@@ -357,7 +357,7 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
      */
     @VisibleForTesting
     protected static String elideUrl(String original) {
-        StringBuffer buffer = new StringBuffer(original);
+        StringBuilder buffer = new StringBuilder(original);
         Matcher matcher = WEB_URL.matcher(buffer);
         int start = 0;
         while (matcher.find(start)) {
