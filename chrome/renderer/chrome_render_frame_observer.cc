@@ -387,6 +387,10 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 
 void ChromeRenderFrameObserver::DidMeaningfulLayout(
     blink::WebMeaningfulLayout layout_type) {
+  // Don't do any work for subframes.
+  if (!render_frame()->IsMainFrame())
+    return;
+
   switch (layout_type) {
     case blink::WebMeaningfulLayout::FinishedParsing:
       CapturePageText(PRELIMINARY_CAPTURE);

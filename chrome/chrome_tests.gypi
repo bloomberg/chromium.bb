@@ -548,6 +548,7 @@
       'renderer/autofill/password_generation_test_utils.cc',
       'renderer/autofill/password_generation_test_utils.h',
       'renderer/chrome_content_renderer_client_browsertest.cc',
+      'renderer/chrome_render_frame_observer_browsertest.cc',
       'renderer/content_settings_observer_browsertest.cc',
       'renderer/media/cast_session_browsertest.cc',
       'renderer/translate/translate_helper_browsertest.cc',
