@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChange
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
@@ -346,11 +345,12 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         }
 
         if (mIsShowingPromo && !mDidLogPromoOutcome) {
+            // TODO(pedrosimonetti): add separate metric for the mandatory promo.
             logPromoOutcome();
         }
 
         mIsShowingPromo = false;
-        mSearchPanel.setIsPromoActive(false);
+        mSearchPanel.setIsPromoActive(false, false);
         notifyHideContextualSearch();
     }
 
@@ -461,7 +461,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         if (mPolicy.isPromoAvailable()) {
             mIsShowingPromo = true;
             mDidLogPromoOutcome = false;
-            mSearchPanel.setIsPromoActive(true);
+            mSearchPanel.setIsPromoActive(true, mPolicy.isMandatoryPromoAvailable());
             mSearchPanel.setDidSearchInvolvePromo();
         }
 
@@ -1059,8 +1059,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
     @Override
     public boolean isRunningInCompatibilityMode() {
-        return DeviceClassManager.isAccessibilityModeEnabled(mActivity)
-                || SysUtils.isLowEndDevice();
+        return SysUtils.isLowEndDevice();
     }
 
     @Override

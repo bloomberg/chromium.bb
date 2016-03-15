@@ -190,6 +190,37 @@ public class OverlayPanelContent {
     // ============================================================================================
 
     /**
+     * Load a URL; this will trigger creation of a new ContentViewCore if being loaded immediately,
+     * otherwise one is created when the panel's content becomes visible.
+     * @param url The URL that should be loaded.
+     * @param shouldLoadImmediately If a URL should be loaded immediately or wait until visibility
+     *                        changes.
+     */
+    public void loadUrl(String url, boolean shouldLoadImmediately) {
+        mPendingUrl = null;
+
+        if (!shouldLoadImmediately) {
+            mPendingUrl = url;
+        } else {
+            createNewContentView();
+            mLoadedUrl = url;
+            mDidStartLoadingUrl = true;
+            mIsProcessingPendingNavigation = true;
+            if (!mContentDelegate.handleInterceptLoadUrl(mContentViewCore, url)) {
+                mContentViewCore.getWebContents().getNavigationController().loadUrl(
+                        new LoadUrlParams(url));
+            }
+        }
+    }
+
+    /**
+     * Makes the content visible, causing it to be rendered.
+     */
+    public void showContent() {
+        setVisibility(true);
+    }
+
+    /**
      * Creates a ContentViewCore. This method will be overridden by tests.
      * @param activity The ChromeActivity.
      * @return The newly created ContentViewCore.
@@ -295,38 +326,6 @@ public class OverlayPanelContent {
             // After everything has been disposed, notify the observer.
             mContentDelegate.onContentViewDestroyed();
         }
-    }
-
-    /**
-     * Load a URL; this will trigger creation of a new ContentViewCore if being loaded immediately,
-     * otherwise one is created when the panel's content becomes visible.
-     * @param url The URL that should be loaded.
-     * @param shouldLoadImmediately If a URL should be loaded immediately or wait until visibility
-     *                        changes.
-     */
-    public void loadUrl(String url, boolean shouldLoadImmediately) {
-        mPendingUrl = null;
-
-        if (!shouldLoadImmediately) {
-            mPendingUrl = url;
-        } else {
-            createNewContentView();
-            mLoadedUrl = url;
-            mDidStartLoadingUrl = true;
-            mIsProcessingPendingNavigation = true;
-            if (!mContentDelegate.handleInterceptLoadUrl(mContentViewCore, url)) {
-                mContentViewCore.getWebContents().getNavigationController().loadUrl(
-                        new LoadUrlParams(url));
-            }
-        }
-    }
-
-    /**
-     * Notifies that the panel's bar has been touched. Calling this method will turn the Content
-     * visible, causing it to be rendered.
-     */
-    public void notifyBarTouched() {
-        setVisibility(true);
     }
 
     // ============================================================================================

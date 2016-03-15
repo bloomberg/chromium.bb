@@ -204,8 +204,8 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
-    public boolean supportsExpandedState() {
-        return false;
+    protected boolean isSupportedState(PanelState state) {
+        return state != PanelState.EXPANDED;
     }
 
     @Override

@@ -70,13 +70,13 @@ public class OverlayPanelBaseTest extends InstrumentationTestCase {
         }
 
         @Override
-        public boolean supportsExpandedState() {
-            return false;
+        public float getThresholdToNextState() {
+            return 0.3f;
         }
 
         @Override
-        public float getThresholdToNextState() {
-            return 0.3f;
+        protected boolean isSupportedState(PanelState state) {
+            return state != PanelState.EXPANDED;
         }
     }
 

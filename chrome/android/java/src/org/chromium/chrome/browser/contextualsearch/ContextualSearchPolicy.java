@@ -114,17 +114,15 @@ class ContextualSearchPolicy {
      *         explicitly interacts with the feature.
      */
     boolean shouldPrefetchSearchResult() {
-        boolean isTapTriggered = mSelectionController.getSelectionType() == SelectionType.TAP;
+        if (isMandatoryPromoAvailable()) return false;
 
-        if (!PrefServiceBridge.getInstance().getNetworkPredictionEnabled()) {
-            return false;
-        }
+        if (!PrefServiceBridge.getInstance().getNetworkPredictionEnabled()) return false;
 
         // We may not be prefetching due to the resolve/prefetch limit.
         if (isTapBeyondTheLimit()) return false;
 
         // We never preload on long-press so users can cut & paste without hitting the servers.
-        return isTapTriggered;
+        return mSelectionController.getSelectionType() == SelectionType.TAP;
     }
 
     /**
@@ -132,16 +130,14 @@ class ContextualSearchPolicy {
      * @return Whether the previous tap should resolve.
      */
     boolean shouldPreviousTapResolve() {
-        URL url = mNetworkCommunicator.getBasePageUrl();
+        if (isMandatoryPromoAvailable()) return false;
 
-        if (!ContextualSearchFieldTrial.isSearchTermResolutionEnabled()) {
-            return false;
-        }
+        if (!ContextualSearchFieldTrial.isSearchTermResolutionEnabled()) return false;
 
         // We may not be resolving the tap due to the resolve/prefetch limit.
         if (isTapBeyondTheLimit()) return false;
 
-        if (isPromoAvailable()) return isBasePageHTTP(url);
+        if (isPromoAvailable()) return isBasePageHTTP(mNetworkCommunicator.getBasePageUrl());
 
         return true;
     }
@@ -151,15 +147,22 @@ class ContextualSearchPolicy {
      * @return Whether surroundings are available.
      */
     boolean canSendSurroundings() {
-        URL url = mNetworkCommunicator.getBasePageUrl();
-
         if (isUserUndecided()) return false;
 
-        if (isPromoAvailable()) {
-            return isBasePageHTTP(url);
-        }
+        if (isPromoAvailable()) return isBasePageHTTP(mNetworkCommunicator.getBasePageUrl());
 
         return true;
+    }
+
+    /**
+     * @return Whether the Mandatory Promo is enabled.
+     */
+    boolean isMandatoryPromoAvailable() {
+        if (!isUserUndecided()) return false;
+
+        if (!ContextualSearchFieldTrial.isMandatoryPromoEnabled()) return false;
+
+        return getPromoOpenCount() >= ContextualSearchFieldTrial.getMandatoryPromoLimit();
     }
 
     /**

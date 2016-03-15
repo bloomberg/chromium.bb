@@ -40,6 +40,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * State of the Overlay Panel.
      */
     public static enum PanelState {
+        // TODO(pedrosimonetti): consider removing the UNDEFINED state
         UNDEFINED,
         CLOSED,
         PEEKED,
@@ -79,7 +80,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         CONTENT_CHANGED,
         KEYBOARD_SHOWN,
         KEYBOARD_HIDDEN,
-        TAB_NAVIGATION;
+        TAB_NAVIGATION,
+        PROMO_ACCEPTED;
     }
 
     /** The activity this panel is in. */
@@ -233,7 +235,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      */
     public void notifyBarTouched(float x) {
         if (!isCoordinateInsideCloseButton(x)) {
-            getOverlayPanelContent().notifyBarTouched();
+            getOverlayPanelContent().showContent();
         }
     }
 

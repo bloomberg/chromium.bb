@@ -21,6 +21,10 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLED_PARAM = "disabled";
     private static final String ENABLED_VALUE = "true";
 
+    static final String MANDATORY_PROMO_ENABLED = "mandatory_promo_enabled";
+    static final String MANDATORY_PROMO_LIMIT = "mandatory_promo_limit";
+    static final int MANDATORY_PROMO_DEFAULT_LIMIT = 10;
+
     private static final String PEEK_PROMO_FORCED = "peek_promo_forced";
     @VisibleForTesting
     static final String PEEK_PROMO_ENABLED = "peek_promo_enabled";
@@ -63,6 +67,8 @@ public class ContextualSearchFieldTrial {
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
+    private static Boolean sIsMandatoryPromoEnabled;
+    private static Integer sMandatoryPromoLimit;
     private static Boolean sIsPeekPromoEnabled;
     private static Integer sPeekPromoMaxCount;
     private static Boolean sIsTranslationEnabled;
@@ -137,6 +143,28 @@ public class ContextualSearchFieldTrial {
         }
 
         return true;
+    }
+
+    /**
+     * @return Whether the Mandatory Promo is enabled.
+     */
+    static boolean isMandatoryPromoEnabled() {
+        if (sIsMandatoryPromoEnabled == null) {
+            sIsMandatoryPromoEnabled = getBooleanParam(MANDATORY_PROMO_ENABLED);
+        }
+        return sIsMandatoryPromoEnabled.booleanValue();
+    }
+
+    /**
+     * @return The number of times the Promo should be seen before it becomes mandatory.
+     */
+    static int getMandatoryPromoLimit() {
+        if (sMandatoryPromoLimit == null) {
+            sMandatoryPromoLimit = getIntParamValueOrDefault(
+                    MANDATORY_PROMO_LIMIT,
+                    MANDATORY_PROMO_DEFAULT_LIMIT);
+        }
+        return sMandatoryPromoLimit.intValue();
     }
 
     /**

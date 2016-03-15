@@ -355,24 +355,10 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
-     * @return The maximum height of the Overlay Panel in dps.
-     */
-    public float getMaximumPanelHeight() {
-        return mMaximumHeight;
-    }
-
-    /**
      * @return The maximum width of the Overlay Panel in pixels.
      */
     public int getMaximumWidthPx() {
         return Math.round(mMaximumWidth / mPxToDp);
-    }
-
-    /**
-     * @return The maximum height of the Overlay Panel in pixels.
-     */
-    public int getMaximumHeightPx() {
-        return Math.round(mMaximumHeight / mPxToDp);
     }
 
     /**
@@ -725,6 +711,13 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
+     * Gets the height of the promo content.
+     */
+    protected float getPromoContentHeight() {
+        return mPromoContentHeightPx * mPxToDp;
+    }
+
+    /**
      * @return Y coordinate of the promo in pixels.
      */
     protected float getPromoYPx() {
@@ -743,29 +736,11 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
-     * @return If the the panel supports an EXPANDED state rather than just PEEKING or MAXIMIZED.
-     */
-    public boolean supportsExpandedState() {
-        return true;
-    }
-
-    /**
-     * @return The {@code PanelState} that is before the |state| in the order of states.
-     */
-    public PanelState getPreviousPanelState(PanelState state) {
-        PanelState prevState = PREVIOUS_STATES.get(state);
-        if (prevState == PanelState.EXPANDED && !supportsExpandedState()) {
-            prevState = PREVIOUS_STATES.get(prevState);
-        }
-        return prevState != null ? prevState : PanelState.UNDEFINED;
-    }
-
-    /**
      * Sets the panel's state.
      * @param state The panel state to transition to.
      * @param reason The reason for a change in the panel's state.
      */
-    public void setPanelState(PanelState state, StateChangeReason reason) {
+    protected void setPanelState(PanelState state, StateChangeReason reason) {
         if (state == PanelState.CLOSED) {
             mIsShowing = false;
             onClosed(reason);
@@ -781,20 +756,101 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
-     * Determine if a specific {@code PanelState} is a valid state in the current environment.
-     * @param state The state being evaluated.
-     * @return whether the state is valid.
+     * Determines if a given {@code PanelState} is supported by the Panel. By default,
+     * all states are supported, but subclasses can override this class to inform
+     * custom supported states.
+     * @param state A given state.
+     * @return Whether the panel supports a given state.
      */
-    public boolean isValidState(PanelState state) {
-        // EXPANDED is not a valid state if a panel implementation doesn't support it.
-        if (!supportsExpandedState() && state == PanelState.EXPANDED) return false;
-        // MAXIMIZED is not the previous state of anything, but it's a valid state.
-        return PREVIOUS_STATES.values().contains(state) || state == PanelState.MAXIMIZED;
+    protected boolean isSupportedState(PanelState state) {
+        return true;
+    }
+
+    /**
+     * Determines if a given {@code PanelState} is a valid UI state. The UNDEFINED state
+     * should never be considered a valid UI state.
+     * @param state The given state.
+     * @return Whether the state is valid.
+     */
+    private boolean isValidUiState(PanelState state) {
+        // TODO(pedrosimonetti): consider removing the UNDEFINED state
+        // which would allow removing this method.
+        return isSupportedState(state) && state != PanelState.UNDEFINED;
+    }
+
+    /**
+     * @return The maximum state supported by the panel.
+     */
+    private PanelState getMaximumSupportedState() {
+        if (isSupportedState(PanelState.MAXIMIZED)) {
+            return PanelState.MAXIMIZED;
+        } else if (isSupportedState(PanelState.EXPANDED)) {
+            return PanelState.EXPANDED;
+        } else {
+            return PanelState.PEEKED;
+        }
+    }
+
+    /**
+     * @return The {@code PanelState} that is before the |state| in the order of states.
+     */
+    private PanelState getPreviousPanelState(PanelState state) {
+        PanelState prevState = PREVIOUS_STATES.get(state);
+        if (!isSupportedState(PanelState.EXPANDED)) {
+            prevState = PREVIOUS_STATES.get(prevState);
+        }
+        return prevState != null ? prevState : PanelState.UNDEFINED;
     }
 
     // ============================================================================================
     // Helpers
     // ============================================================================================
+
+    /**
+     * Gets the height of the Overlay Panel in dps for a given |state|.
+     *
+     * @param state The state whose height will be calculated.
+     * @return The height of the Overlay Panel in dps for a given |state|.
+     */
+    public float getPanelHeightFromState(PanelState state) {
+        if (state == PanelState.PEEKED) {
+            return getPeekedHeight();
+        } else if (state == PanelState.EXPANDED) {
+            return getExpandedHeight();
+        } else if (state == PanelState.MAXIMIZED) {
+            return getMaximizedHeight();
+        }
+        return 0;
+    }
+
+    /**
+     * @return The peeked height of the panel in dps.
+     */
+    protected float getPeekedHeight() {
+        return mBarHeightPeeking + getPeekPromoHeightPeekingPx() * mPxToDp;
+    }
+
+    /**
+     * @return The expanded height of the panel in dps.
+     */
+    protected float getExpandedHeight() {
+        if (isFullWidthSizePanel()) {
+            return getTabHeight() * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
+        } else {
+            return (getTabHeight() - mToolbarHeight) * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
+        }
+    }
+
+    /**
+     * @return The maximized height of the panel in dps.
+     */
+    protected float getMaximizedHeight() {
+        if (isFullWidthSizePanel()) {
+            return getTabHeight();
+        } else {
+            return getTabHeight() - mToolbarHeight;
+        }
+    }
 
     /**
      * Initializes the UI state.
@@ -823,40 +879,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
-     * Gets the height of the Overlay Panel in dps for a given |state|.
-     *
-     * @param state The state whose height will be calculated.
-     * @return The height of the Overlay Panel in dps for a given |state|.
-     */
-    public float getPanelHeightFromState(PanelState state) {
-        float tabHeight = getTabHeight();
-        float panelHeight = 0;
-
-        if (state == PanelState.UNDEFINED) {
-            panelHeight = 0;
-        } else if (state == PanelState.CLOSED) {
-            panelHeight = 0;
-        } else if (state == PanelState.PEEKED) {
-            panelHeight = mBarHeightPeeking + getPeekPromoHeightPeekingPx() * mPxToDp;
-        } else if (state == PanelState.EXPANDED) {
-            if (isFullWidthSizePanel()) {
-                panelHeight = tabHeight * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
-            } else {
-                panelHeight = (tabHeight - mToolbarHeight)
-                        * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
-            }
-        } else if (state == PanelState.MAXIMIZED) {
-            if (isFullWidthSizePanel()) {
-                panelHeight = tabHeight;
-            } else {
-                panelHeight = tabHeight - mToolbarHeight;
-            }
-        }
-
-        return panelHeight;
-    }
-
-    /**
      * @return The fraction of the distance the panel has to be to its next state before animating
      *         itself there. Default is the panel must be half of the way to the next state.
      */
@@ -880,7 +902,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         PanelState nextState = PanelState.values()[0];
         PanelState prevState = nextState;
         for (PanelState state : PanelState.values()) {
-            if (!isValidState(state)) {
+            if (!isValidUiState(state)) {
                 continue;
             }
             prevState = nextState;
@@ -913,7 +935,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     protected void setClampedPanelHeight(float height) {
         final float clampedHeight = MathUtils.clamp(height,
-                getPanelHeightFromState(PanelState.MAXIMIZED),
+                getPanelHeightFromState(getMaximumSupportedState()),
                 getPanelHeightFromState(PanelState.PEEKED));
         setPanelHeight(clampedHeight);
     }
@@ -998,7 +1020,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         // Iterate over all states and find the largest one which is being
         // transitioned to/from.
         for (PanelState state : PanelState.values()) {
-            if (!isValidState(state)) {
+            if (!isValidUiState(state)) {
                 continue;
             }
             if (panelHeight <= getPanelHeightFromState(state)) {
@@ -1143,15 +1165,17 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         // Update the opt out promo.
         updatePromoVisibility(1.f - percentage);
 
+        boolean supportsExpandedState = isSupportedState(PanelState.EXPANDED);
+
         // Base page offset.
-        float startTargetY = supportsExpandedState() ? getBasePageTargetY() : 0.0f;
+        float startTargetY = supportsExpandedState ? getBasePageTargetY() : 0.0f;
         mBasePageY = MathUtils.interpolate(
                 startTargetY,
                 getBasePageTargetY(),
                 percentage);
 
         // Base page brightness.
-        float startBrightness = supportsExpandedState()
+        float startBrightness = supportsExpandedState
                 ? BASE_PAGE_BRIGHTNESS_STATE_EXPANDED : BASE_PAGE_BRIGHTNESS_STATE_PEEKED;
         mBasePageBrightness = MathUtils.interpolate(
                 startBrightness,
@@ -1159,7 +1183,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
                 percentage);
 
         // Bar height.
-        float startBarHeight = supportsExpandedState()
+        float startBarHeight = supportsExpandedState
                 ? getBarHeightExpanded() : getBarHeightPeeking();
         mBarHeight = Math.round(MathUtils.interpolate(
                 startBarHeight,
@@ -1221,8 +1245,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     private void updatePromoVisibility(float percentage) {
         if (isPromoVisible()) {
-            createPromoView();
-
             mPromoVisible = true;
 
             mPromoHeightPx = Math.round(MathUtils.clamp(percentage * mPromoContentHeightPx,
@@ -1238,7 +1260,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     /**
      * Updates the UI state for Bar Shadow.
      */
-    public void updateBarShadow() {
+    private void updateBarShadow() {
         float barShadowHeightPx = 9.f / mPxToDp;
         if (mPromoVisible && mPromoHeightPx > 0.f) {
             mBarShadowVisible = true;
@@ -1315,7 +1337,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return The Y coordinate to apply to the Base Page in order to keep the selection
      *         in view when the Overlay Panel is in EXPANDED state.
      */
-    public float getBasePageTargetY() {
+    private float getBasePageTargetY() {
         return mBasePageTargetY;
     }
 
@@ -1412,24 +1434,17 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
             mPromoView = (ContextualSearchOptOutPromo)
                     mContainerView.findViewById(R.id.contextual_search_opt_out_promo);
 
-            final int maximumWidth = getMaximumWidthPx();
-
-            // Adjust size for small Panel.
-            if (!isFullWidthSizePanel()) {
-                mPromoView.getLayoutParams().width = maximumWidth;
-                mPromoView.requestLayout();
-            }
-
             if (mResourceLoader != null) {
                 mResourceLoader.registerResource(R.id.contextual_search_opt_out_promo,
                         mPromoView.getResourceAdapter());
             }
 
             mPromoView.setPromoHost(this);
-            setPromoContentHeightPx(mPromoView.getHeightForGivenWidth(maximumWidth));
-        }
 
-        assert mPromoView != null;
+            updatePromoLayout();
+
+            assert mPromoView != null;
+        }
     }
 
     /**
@@ -1446,11 +1461,26 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
+     * Updates the Promo layout.
+     */
+    protected void updatePromoLayout() {
+        final int maximumWidth = getMaximumWidthPx();
+
+        // Adjust size for small Panel.
+        if (!isFullWidthSizePanel()) {
+            mPromoView.getLayoutParams().width = maximumWidth;
+            mPromoView.requestLayout();
+        }
+
+        setPromoContentHeightPx(mPromoView.getHeightForGivenWidth(maximumWidth));
+    }
+
+    /**
      * Displays the Search Promo View at the given Y position.
      *
      * @param y The Y position.
      */
-    public void showPromoViewAtYPosition(float y) {
+    private void showPromoViewAtYPosition(float y) {
         if (mPromoView == null || !isPromoVisible()) return;
 
         float offsetX = getOffsetX() / mPxToDp;
@@ -1472,7 +1502,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     /**
      * Hides the Search Promo View.
      */
-    public void hidePromoView() {
+    protected void hidePromoView() {
         if (mPromoView == null
                 || !mIsSearchPromoViewVisible
                 || !isPromoVisible()) {

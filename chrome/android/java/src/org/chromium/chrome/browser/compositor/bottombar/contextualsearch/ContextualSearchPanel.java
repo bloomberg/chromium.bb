@@ -159,7 +159,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     // ============================================================================================
-    // Logging of panel state information.
+    // Panel State
     // ============================================================================================
 
     @Override
@@ -194,6 +194,20 @@ public class ContextualSearchPanel extends OverlayPanel {
         }
     }
 
+    @Override
+    protected boolean isSupportedState(PanelState state) {
+        return canDisplayContentInPanel() || state != PanelState.MAXIMIZED;
+    }
+
+    @Override
+    protected float getExpandedHeight() {
+        if (canDisplayContentInPanel()) {
+            return super.getExpandedHeight();
+        } else {
+            return getBarHeightPeeking() + getPromoContentHeight();
+        }
+    }
+
     // ============================================================================================
     // Promo Host
     // ============================================================================================
@@ -216,7 +230,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     public void setPreferenceState(boolean enabled) {
         if (mManagementDelegate != null) {
             PrefServiceBridge.getInstance().setContextualSearchState(enabled);
-            setIsPromoActive(false);
+            setIsPromoActive(false, false);
         }
     }
 
@@ -225,6 +239,9 @@ public class ContextualSearchPanel extends OverlayPanel {
         // Must be called before destroying Content because unseen visits should be removed from
         // history, and if the Content gets destroyed there won't be a ContentViewCore to do that.
         mManagementDelegate.onCloseContextualSearch(reason);
+
+        setProgressBarCompletion(0);
+        setProgressBarVisible(false);
 
         super.onClosed(reason);
     }
@@ -239,7 +256,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (isExpanded() || isMaximized()) {
             if (isCoordinateInsideCloseButton(x)) {
                 closePanel(StateChangeReason.CLOSE_BUTTON, true);
-            } else if (!mActivity.isCustomTab()) {
+            } else if (!mActivity.isCustomTab() && canDisplayContentInPanel()) {
                 mManagementDelegate.promoteToTab();
             }
         }
@@ -305,9 +322,9 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     @Override
     public void notifyBarTouched(float x) {
-        // Directly notify the content that it was touched since the close button is not displayed
-        // when Contextual Search is peeking.
-        getOverlayPanelContent().notifyBarTouched();
+        if (canDisplayContentInPanel()) {
+            getOverlayPanelContent().showContent();
+        }
     }
 
     // ============================================================================================
@@ -346,7 +363,8 @@ public class ContextualSearchPanel extends OverlayPanel {
     /**
      * @param isActive Whether the promo is active.
      */
-    public void setIsPromoActive(boolean isActive) {
+    public void setIsPromoActive(boolean isActive, boolean isMandatory) {
+        mIsPromoMandatory = isMandatory;
         setPromoVisibility(isActive);
         mPanelMetrics.setIsPromoActive(isActive);
     }
@@ -440,15 +458,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     /**
-     * @return {@code true} Whether the close animation should run when the the panel is closed
-     *                      due the panel being promoted to a tab.
-     */
-    public boolean shouldAnimatePanelCloseOnPromoteToTab() {
-        // TODO(pedrosimonetti): This is not currently used.
-        return mActivity.isCustomTab();
-    }
-
-    /**
      * Shows the search term in the SearchBar. This should be called when the search term is set
      * without search term resolution.
      * @param searchTerm The string that represents the search term.
@@ -518,10 +527,9 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     @Override
     protected void updatePanelForOrientationChange() {
-        // TODO(pedrosimonetti): find a better way of resizing the promo upon rotation.
-        // Destroys the Promo view so it can be properly resized. Once the Promo starts
-        // using the ViewResourceInflater, we could probably just call invalidate.
-        destroyPromoView();
+        if (isPromoVisible()) {
+            updatePromoLayout();
+        }
 
         super.updatePanelForOrientationChange();
     }
@@ -626,15 +634,52 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     // ============================================================================================
+    // Search Provider Icon Sprite
+    // ============================================================================================
+
+    private ContextualSearchIconSpriteControl mIconSpriteControl;
+
+    /**
+     * @return The {@link ContextualSearchIconSpriteControl} for the panel.
+     */
+    public ContextualSearchIconSpriteControl getIconSpriteControl() {
+        if (mIconSpriteControl == null) {
+            mIconSpriteControl = new ContextualSearchIconSpriteControl(this, mContext);
+        }
+        return mIconSpriteControl;
+    }
+
+    /**
+     * @param shouldAnimateIconSprite Whether the search provider icon sprite should be animated.
+     * @param isAnimationDisabledByTrial Whether animating the search provider icon is disabled by a
+     *                                   field trial.
+     */
+    public void setShouldAnimateIconSprite(boolean shouldAnimateIconSprite,
+                                           boolean isAnimationDisabledByTrial) {
+        getIconSpriteControl().setShouldAnimateAppearance(shouldAnimateIconSprite,
+                isAnimationDisabledByTrial);
+    }
+
+    // ============================================================================================
     // Peek Promo
     // ============================================================================================
 
     private ContextualSearchPeekPromoControl mPeekPromoControl;
 
+    @Override
+    protected float getPeekPromoHeightPeekingPx() {
+        return getPeekPromoControl().getHeightPeekingPx();
+    }
+
+    @Override
+    protected float getPeekPromoHeight() {
+        return getPeekPromoControl().getHeightPx();
+    }
+
     /**
      * Creates the ContextualSearchPeekPromoControl, if needed.
      */
-    public ContextualSearchPeekPromoControl getPeekPromoControl() {
+    private ContextualSearchPeekPromoControl getPeekPromoControl() {
         assert mContainerView != null;
         assert mResourceLoader != null;
 
@@ -657,43 +702,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         }
     }
 
-    @Override
-    protected float getPeekPromoHeightPeekingPx() {
-        return getPeekPromoControl().getHeightPeekingPx();
-    }
-
-    @Override
-    protected float getPeekPromoHeight() {
-        return getPeekPromoControl().getHeightPx();
-    }
-
-    // ============================================================================================
-    // Search Provider Icon Sprite
-    // ============================================================================================
-
-    private ContextualSearchIconSpriteControl mIconSpriteControl;
-
-    /**
-     * @return The {@link ContextualSearchIconSpriteControl} for the panel.
-     */
-    public ContextualSearchIconSpriteControl getIconSpriteControl() {
-        if (mIconSpriteControl == null) {
-            mIconSpriteControl = new ContextualSearchIconSpriteControl(this, mContext);
-        }
-        return mIconSpriteControl;
-    }
-
-    /**
-     * @param shouldAnimateIconSprite Whether the search provider icon sprite should be animated.
-     * @param isAnimationDisabledByTrial Whether animating the search provider icon is disabled by a
-     *                                   field trial.
-     */
-    public void setShouldAnimateIconSprite(boolean shouldAnimateIconSprite,
-            boolean isAnimationDisabledByTrial) {
-        getIconSpriteControl().setShouldAnimateAppearance(shouldAnimateIconSprite,
-                isAnimationDisabledByTrial);
-    }
-
     // ============================================================================================
     // Promo
     // ============================================================================================
@@ -705,6 +713,15 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     private boolean mIsPromoVisible;
 
+    /**
+     * Whether the Promo is mandatory.
+     */
+    private boolean mIsPromoMandatory;
+
+    /**
+     * Whether Mandatory Promo acceptance is being animated.
+     */
+    private boolean mIsAnimatingMandatoryPromoAcceptance;
 
     @Override
     protected boolean isPromoVisible() {
@@ -712,7 +729,20 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
+    protected void animatePromoAcceptance() {
+        if (mIsPromoMandatory) {
+            mIsAnimatingMandatoryPromoAcceptance = true;
+            getOverlayPanelContent().showContent();
+            expandPanel(StateChangeReason.PROMO_ACCEPTED);
+        }
+
+        super.animatePromoAcceptance();
+    }
+
+    @Override
     protected void onPromoAcceptanceAnimationFinished() {
+        mIsAnimatingMandatoryPromoAcceptance = false;
+
         // NOTE(pedrosimonetti): We should only set the preference to true after the acceptance
         // animation finishes, because setting the preference will make the user leave the
         // undecided state, and that will, in turn, turn the promo off.
@@ -733,6 +763,14 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
     // Panel Content
     // ============================================================================================
+
+    /**
+     * @return Whether the content can be displayed in the panel.
+     */
+    public boolean canDisplayContentInPanel() {
+        // TODO(pedrosimonetti): add svelte support.
+        return !mIsPromoMandatory || mIsAnimatingMandatoryPromoAcceptance;
+    }
 
     @Override
     public void onTouchSearchContentViewAck() {
