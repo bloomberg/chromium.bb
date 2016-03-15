@@ -63,6 +63,8 @@ bool g_called_once = false;
 // To debug http://crbug.com/445616.
 int g_debug_icu_last_error;
 int g_debug_icu_load;
+int g_debug_icu_pf_last_error;
+int g_debug_icu_pf_error_details;
 
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 // Use an unversioned file name to simplify a icu version update down the road.
@@ -145,9 +147,20 @@ void LazyInitIcuDataFile() {
 #endif  // !defined(OS_MACOSX)
   File file(data_path, File::FLAG_OPEN | File::FLAG_READ);
   if (file.IsValid()) {
+    // TODO(scottmg): http://crbug.com/445616.
+    g_debug_icu_pf_last_error = 0;
+    g_debug_icu_pf_error_details = 0;
+
     g_icudtl_pf = file.TakePlatformFile();
     g_icudtl_region = MemoryMappedFile::Region::kWholeFile;
   }
+#if defined(OS_WIN)
+  else {
+    // TODO(scottmg): http://crbug.com/445616.
+    g_debug_icu_pf_last_error = ::GetLastError();
+    g_debug_icu_pf_error_details = file.error_details();
+  }
+#endif  // OS_WIN
 }
 
 bool InitializeICUWithFileDescriptorInternal(
@@ -272,6 +285,10 @@ bool InitializeICU() {
   debug::Alias(&debug_icu_load);
   int debug_icu_last_error = g_debug_icu_last_error;
   debug::Alias(&debug_icu_last_error);
+  int debug_icu_pf_last_error = g_debug_icu_pf_last_error;
+  debug::Alias(&debug_icu_pf_last_error);
+  int debug_icu_pf_error_details = g_debug_icu_pf_error_details;
+  debug::Alias(&debug_icu_pf_error_details);
   CHECK(result);  // TODO(scottmg): http://crbug.com/445616
 #endif
 #endif
