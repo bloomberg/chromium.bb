@@ -23,7 +23,13 @@ function assertRejectsWithNotFoundError(promise) {
 
 function assertRejectsWithNotOpenError(promise) {
   return assertRejectsWithError(
-      promise, 'InvalidStateError', 'The device must be open()ed first.')
+      promise, 'InvalidStateError', 'The device must be opened first.')
+}
+
+function assertRejectsWithNotConfiguredError(promise) {
+  return assertRejectsWithError(
+      promise, 'InvalidStateError',
+      'The device must have a configuration selected.');
 }
 
 usb_test(usb => {
@@ -71,18 +77,16 @@ usb_test(usb => {
   return navigator.usb.getDevices().then(devices => {
     assert_equals(1, devices.length);
     let device = devices[0];
+    const message =
+        'An operation that changes the device state is in progress.';
     return Promise.all([
         device.open(),
-        assertRejectsWithError(device.open(), 'InvalidStateError',
-                               'An open() or close() task is in progress.'),
-        assertRejectsWithError(device.close(), 'InvalidStateError',
-                               'An open() or close() task is in progress.'),
+        assertRejectsWithError(device.open(), 'InvalidStateError', message),
+        assertRejectsWithError(device.close(), 'InvalidStateError', message),
     ]).then(() => Promise.all([
         device.close(),
-        assertRejectsWithError(device.open(), 'InvalidStateError',
-                               'An open() or close() task is in progress.'),
-        assertRejectsWithError(device.close(), 'InvalidStateError',
-                               'An open() or close() task is in progress.'),
+        assertRejectsWithError(device.open(), 'InvalidStateError', message),
+        assertRejectsWithError(device.close(), 'InvalidStateError', message),
     ]));
   });
 }, 'open and close cannot be called again while open or close are in progress');
@@ -107,10 +111,10 @@ usb_test(usb => {
     return device.open()
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
-        return assertRejectsWithNotFoundError(device.setConfiguration(1));
+        return assertRejectsWithNotFoundError(device.selectConfiguration(1));
       });
   });
-}, 'setConfiguration rejects when called on a disconnected device');
+}, 'selectConfiguration rejects when called on a disconnected device');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -118,7 +122,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     var device = devices[0];
     return Promise.all([
-        assertRejectsWithNotOpenError(device.setConfiguration(1)),
+        assertRejectsWithNotOpenError(device.selectConfiguration(1)),
         assertRejectsWithNotOpenError(device.claimInterface(0)),
         assertRejectsWithNotOpenError(device.releaseInterface(0)),
         assertRejectsWithNotOpenError(device.setInterface(0, 1)),
@@ -153,12 +157,15 @@ usb_test(usb => {
   return navigator.usb.getDevices().then(devices => {
     assert_equals(1, devices.length);
     let device = devices[0];
+    assert_equals(device.configuration, null);
     return device.open()
-      .then(() => device.setConfiguration(1))
-      .then(() => device.getConfiguration())
-      .then(config => {
-         usb.assertConfigurationInfoEquals(
-             config, usb.fakeDevices[0].configurations[0]);
+      .then(() => {
+        assert_equals(device.configuration, null);
+        return device.selectConfiguration(1);
+      })
+      .then(() => {
+        usb.assertConfigurationInfoEquals(
+            device.configuration, usb.fakeDevices[0].configurations[0]);
       })
       .then(() => device.close());
   });
@@ -168,30 +175,52 @@ usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return navigator.usb.getDevices().then(devices => {
     assert_equals(1, devices.length);
-    var device = devices[0];
+    let device = devices[0];
+    assert_equals(device.configuration, null);
     return device.open()
-      .then(() => device.setConfiguration(1))
-      .then(() => device.getConfiguration())
-      .then(config => {
-        usb.assertConfigurationInfoEquals(
-            config, usb.fakeDevices[0].configurations[0]);
-        usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
-        return assertRejectsWithNotFoundError(device.getConfiguration());
-      });
+      .then(() => assertRejectsWithError(
+            device.selectConfiguration(3), 'NotFoundError',
+            'The configuration value provided is not supported by the device.'))
+      .then(() => device.close());
   });
-}, 'getConfiguration rejects when called on a disconnected device');
+}, 'selectConfiguration rejects on invalid configurations');
+
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return navigator.usb.getDevices().then(devices => {
-    assert_equals(devices.length, 1);
+    assert_equals(1, devices.length);
     let device = devices[0];
-    return device.open()
-      .then(() =>
-          assertRejectsWithError(device.getConfiguration(), 'NotFoundError'))
-      .then(() => device.close());
+    assert_equals(device.configuration, null);
+    return device.open().then(() => Promise.all([
+        assertRejectsWithNotConfiguredError(device.claimInterface(0)),
+        assertRejectsWithNotConfiguredError(device.releaseInterface(0)),
+        assertRejectsWithNotConfiguredError(device.setInterface(0, 1)),
+        assertRejectsWithNotConfiguredError(device.controlTransferIn({
+            requestType: 'vendor',
+            recipient: 'device',
+            request: 0x42,
+            value: 0x1234,
+            index: 0x5678
+        }, 7)),
+        assertRejectsWithNotConfiguredError(device.controlTransferOut({
+            requestType: 'vendor',
+            recipient: 'device',
+            request: 0x42,
+            value: 0x1234,
+            index: 0x5678
+        }, new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]))),
+        assertRejectsWithNotConfiguredError(device.clearHalt(1)),
+        assertRejectsWithNotConfiguredError(device.transferIn(1, 8)),
+        assertRejectsWithNotConfiguredError(
+            device.transferOut(1, new ArrayBuffer(8))),
+        assertRejectsWithNotConfiguredError(
+            device.isochronousTransferIn(1, [8])),
+        assertRejectsWithNotConfiguredError(
+            device.isochronousTransferOut(1, new ArrayBuffer(8), [8])),
+    ])).then(() => device.close());
   });
-}, 'querying an unset configuration raises NotFoundError');
+}, 'methods requiring it reject when the device is unconfigured');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -199,7 +228,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(0))
       .then(() => device.releaseInterface(0))
       .then(() => device.close());
@@ -210,22 +239,9 @@ usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return navigator.usb.getDevices().then(devices => {
     assert_equals(1, devices.length);
-    let device = devices[0];
-    return device.open()
-      .then(() =>
-          // TODO(reillyg): This should be INVALID_STATE_ERR.
-          assertRejectsWithError(device.claimInterface(0), 'NetworkError'))
-      .then(() => device.close());
-  });
-}, 'claiming an interface fails without an active configuration');
-
-usb_test(usb => {
-  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
-  return navigator.usb.getDevices().then(devices => {
-    assert_equals(1, devices.length);
     var device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
         return assertRejectsWithNotFoundError(device.claimInterface(0));
@@ -239,7 +255,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     var device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(0))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
@@ -254,7 +270,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(2))
+      .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
       .then(() => device.setInterface(0, 1))
       .then(() => device.close());
@@ -267,7 +283,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     var device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(2))
+      .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
@@ -282,6 +298,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     let device = devices[0];
     return device.open()
+      .then(() => device.selectConfiguration(1))
       .then(() => device.controlTransferIn({
         requestType: 'vendor',
         recipient: 'device',
@@ -308,6 +325,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     let device = devices[0];
     return device.open()
+      .then(() => device.selectConfiguration(1))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
         return assertRejectsWithNotFoundError(device.controlTransferIn({
@@ -327,6 +345,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     let device = devices[0];
     return device.open()
+      .then(() => device.selectConfiguration(1))
       .then(() => device.controlTransferOut({
         requestType: 'vendor',
         recipient: 'device',
@@ -349,6 +368,7 @@ usb_test(usb => {
     assert_equals(1, devices.length);
     let device = devices[0];
     return device.open()
+      .then(() => device.selectConfiguration(1))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
         return assertRejectsWithNotFoundError(device.controlTransferOut({
@@ -368,7 +388,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(0))
       .then(() => device.clearHalt(1))
       .then(() => device.close());
@@ -381,7 +401,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(0))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
@@ -396,7 +416,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(0))
       .then(() => device.transferIn(1, 8))
       .then(result => {
@@ -416,7 +436,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(1))
       .then(() => device.transferIn(2, 1024))
       .then(result => {
@@ -437,7 +457,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(1))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
@@ -452,7 +472,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(1))
       .then(() => {
         let data = new DataView(new ArrayBuffer(1024));
@@ -475,7 +495,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(1))
+      .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(1))
       .then(() => {
         let data = new DataView(new ArrayBuffer(1024));
@@ -493,7 +513,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(2))
+      .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
       .then(() => device.setInterface(0, 1))
       .then(() => device.isochronousTransferIn(
@@ -526,7 +546,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(2))
+      .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
       .then(() => device.setInterface(0, 1))
       .then(() => {
@@ -543,7 +563,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(2))
+      .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
       .then(() => device.setInterface(0, 1))
       .then(() => {
@@ -576,7 +596,7 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     let device = devices[0];
     return device.open()
-      .then(() => device.setConfiguration(2))
+      .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
       .then(() => device.setInterface(0, 1))
       .then(() => {

@@ -20,6 +20,7 @@ function fakeUsbDevices() {
       manufacturer_name: 'Google, Inc.',
       product_name: 'The amazing imaginary printer',
       serial_number: '4',
+      active_configuration: 0,
       configurations: [
         {
           configuration_value: 1,

@@ -208,7 +208,7 @@ void UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
   }
 }
 
-const UsbConfigDescriptor* UsbDeviceImpl::GetActiveConfiguration() {
+const UsbConfigDescriptor* UsbDeviceImpl::GetActiveConfiguration() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return active_configuration_;
 }

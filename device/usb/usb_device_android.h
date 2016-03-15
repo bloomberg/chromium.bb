@@ -21,7 +21,7 @@ class UsbDeviceAndroid : public UsbDevice {
 
   // UsbDevice:
   void Open(const OpenCallback& callback) override;
-  const UsbConfigDescriptor* GetActiveConfiguration() override;
+  const UsbConfigDescriptor* GetActiveConfiguration() const override;
 
  private:
   UsbDeviceAndroid(JNIEnv* env,

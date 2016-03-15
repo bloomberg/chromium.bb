@@ -213,6 +213,7 @@ TypeConverter<blink::WebUSBDeviceInfo, device::usb::DeviceInfoPtr>::Convert(
     device.productName = blink::WebString::fromUTF8(info->product_name);
   if (!info->serial_number.is_null())
     device.serialNumber = blink::WebString::fromUTF8(info->serial_number);
+  device.activeConfiguration = info->active_configuration;
   device.configurations =
       blink::WebVector<blink::WebUSBDeviceInfo::Configuration>(
           info->configurations.size());

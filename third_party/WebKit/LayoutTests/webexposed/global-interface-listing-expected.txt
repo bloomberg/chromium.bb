@@ -6138,6 +6138,7 @@ interface USBConnectionEvent : Event
     method constructor
 interface USBDevice
     attribute @@toStringTag
+    getter configuration
     getter configurations
     getter deviceClass
     getter deviceProtocol
@@ -6161,13 +6162,12 @@ interface USBDevice
     method constructor
     method controlTransferIn
     method controlTransferOut
-    method getConfiguration
     method isochronousTransferIn
     method isochronousTransferOut
     method open
     method releaseInterface
     method reset
-    method setConfiguration
+    method selectConfiguration
     method setInterface
     method transferIn
     method transferOut

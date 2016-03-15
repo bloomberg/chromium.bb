@@ -75,7 +75,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
 
   // Gets the UsbConfigDescriptor for the active device configuration or nullptr
   // if the device is unconfigured.
-  virtual const UsbConfigDescriptor* GetActiveConfiguration() = 0;
+  virtual const UsbConfigDescriptor* GetActiveConfiguration() const = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

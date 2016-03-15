@@ -101,6 +101,7 @@ struct WebUSBDeviceInfo {
     WebString manufacturerName;
     WebString productName;
     WebString serialNumber;
+    uint8_t activeConfiguration;
     WebVector<Configuration> configurations;
 };
 

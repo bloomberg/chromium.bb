@@ -47,7 +47,7 @@ class UsbDeviceImpl : public UsbDevice {
   void CheckUsbAccess(const ResultCallback& callback) override;
 #endif  // OS_CHROMEOS
   void Open(const OpenCallback& callback) override;
-  const UsbConfigDescriptor* GetActiveConfiguration() override;
+  const UsbConfigDescriptor* GetActiveConfiguration() const override;
 
   // These functions are used during enumeration only. The values must not
   // change during the object's lifetime.

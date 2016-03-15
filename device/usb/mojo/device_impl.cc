@@ -190,12 +190,9 @@ void DeviceImpl::OnOpen(const OpenCallback& callback,
 }
 
 void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
-  callback.Run(device_info_->Clone());
-}
-
-void DeviceImpl::GetConfiguration(const GetConfigurationCallback& callback) {
   const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
-  callback.Run(config ? config->configuration_value : 0);
+  device_info_->active_configuration = config ? config->configuration_value : 0;
+  callback.Run(device_info_->Clone());
 }
 
 void DeviceImpl::Open(const OpenCallback& callback) {

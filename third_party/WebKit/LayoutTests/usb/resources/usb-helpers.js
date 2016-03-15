@@ -160,9 +160,8 @@ function usbMocks(mojo) {
 
       claimInterface(interfaceNumber) {
         assert_true(this.opened_);
-
-        if (this.currentConfiguration_ === undefined)
-          return Promise.resolve({ success: false });
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
 
         if (this.claimedInterfaces_.has(interfaceNumber))
           return Promise.resolve({ success: false });
@@ -178,9 +177,8 @@ function usbMocks(mojo) {
 
       releaseInterface(interfaceNumber) {
         assert_true(this.opened_);
-
-        if (this.currentConfiguration_ === undefined)
-          return Promise.resolve({ success: false });
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
 
         if (this.claimedInterfaces_.has(interfaceNumber)) {
           this.claimedInterfaces_.delete(interfaceNumber);
@@ -192,9 +190,8 @@ function usbMocks(mojo) {
 
       setInterfaceAlternateSetting(interfaceNumber, alternateSetting) {
         assert_true(this.opened_);
-
-        if (this.currentConfiguration_ === undefined)
-          return Promise.resolve({ success: false });
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
 
         if (!this.claimedInterfaces_.has(interfaceNumber))
           return Promise.resolve({ success: false });
@@ -220,12 +217,16 @@ function usbMocks(mojo) {
 
       clearHalt(endpoint) {
         assert_true(this.opened_);
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
         // TODO(reillyg): Check that endpoint is valid.
         return Promise.resolve({ success: true });
       }
 
       controlTransferIn(params, length, timeout) {
         assert_true(this.opened_);
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
         return Promise.resolve({
           status: device.TransferStatus.OK,
           data: [length >> 8, length & 0xff, params.request, params.value >> 8,
@@ -235,6 +236,8 @@ function usbMocks(mojo) {
 
       controlTransferOut(params, data, timeout) {
         assert_true(this.opened_);
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
         return Promise.resolve({
           status: device.TransferStatus.OK,
           bytesWritten: data.byteLength
@@ -243,6 +246,8 @@ function usbMocks(mojo) {
 
       genericTransferIn(endpointNumber, length, timeout) {
         assert_true(this.opened_);
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
         // TODO(reillyg): Check that endpoint is valid.
         let data = new Array(length);
         for (let i = 0; i < length; ++i)
@@ -255,6 +260,8 @@ function usbMocks(mojo) {
 
       genericTransferOut(endpointNumber, data, timeout) {
         assert_true(this.opened_);
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
         // TODO(reillyg): Check that endpoint is valid.
         return Promise.resolve({
           status: device.TransferStatus.OK,
@@ -264,6 +271,8 @@ function usbMocks(mojo) {
 
       isochronousTransferIn(endpointNumber, packetLengths, timeout) {
         assert_true(this.opened_);
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
         // TODO(reillyg): Check that endpoint is valid.
         let data = new Array(packetLengths.reduce((a, b) => a + b, 0));
         let dataOffset = 0;
@@ -282,6 +291,8 @@ function usbMocks(mojo) {
 
       isochronousTransferOut(endpointNumber, data, packetLengths, timeout) {
         assert_true(this.opened_);
+        assert_true(this.currentConfiguration_ !== undefined,
+                    'device configured');
         // TODO(reillyg): Check that endpoint is valid.
         let packets = new Array(packetLengths.length);
         for (let i = 0; i < packetLengths.length; ++i) {

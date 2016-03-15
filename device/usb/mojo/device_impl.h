@@ -55,7 +55,6 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
 
   // Device implementation:
   void GetDeviceInfo(const GetDeviceInfoCallback& callback) override;
-  void GetConfiguration(const GetConfigurationCallback& callback) override;
   void Open(const OpenCallback& callback) override;
   void Close(const CloseCallback& callback) override;
   void SetConfiguration(uint8_t value,

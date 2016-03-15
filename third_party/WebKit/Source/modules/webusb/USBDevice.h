@@ -37,18 +37,12 @@ public:
 
     static USBDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBDevice>);
 
-    explicit USBDevice(PassOwnPtr<WebUSBDevice> device, ExecutionContext* context)
-        : ContextLifecycleObserver(context)
-        , m_device(device)
-        , m_opened(false)
-        , m_deviceStateChangeInProgress(false)
-    {
-    }
-
+    explicit USBDevice(PassOwnPtr<WebUSBDevice>, ExecutionContext*);
     virtual ~USBDevice() { }
 
     const WebUSBDeviceInfo& info() const { return m_device->info(); }
     void onDeviceOpenedOrClosed(bool);
+    void onConfigurationSelected(bool success, int configurationIndex);
 
     // IDL exposed interface:
     String guid() const { return info().guid; }
@@ -66,13 +60,13 @@ public:
     String manufacturerName() const { return info().manufacturerName; }
     String productName() const { return info().productName; }
     String serialNumber() const { return info().serialNumber; }
+    USBConfiguration* configuration() const;
     HeapVector<Member<USBConfiguration>> configurations() const;
     bool opened() const { return m_opened; }
 
     ScriptPromise open(ScriptState*);
     ScriptPromise close(ScriptState*);
-    ScriptPromise getConfiguration(ScriptState*);
-    ScriptPromise setConfiguration(ScriptState*, uint8_t configurationValue);
+    ScriptPromise selectConfiguration(ScriptState*, uint8_t configurationValue);
     ScriptPromise claimInterface(ScriptState*, uint8_t interfaceNumber);
     ScriptPromise releaseInterface(ScriptState*, uint8_t interfaceNumber);
     ScriptPromise setInterface(ScriptState*, uint8_t interfaceNumber, uint8_t alternateSetting);
@@ -91,9 +85,13 @@ public:
     DECLARE_TRACE();
 
 private:
+    int findConfigurationIndex(uint8_t configurationValue) const;
+    bool ensureDeviceConfigured(ScriptPromiseResolver*) const;
+
     OwnPtr<WebUSBDevice> m_device;
     bool m_opened;
     bool m_deviceStateChangeInProgress;
+    int m_configurationIndex;
 };
 
 } // namespace blink

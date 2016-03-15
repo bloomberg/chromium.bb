@@ -52,7 +52,7 @@ void UsbDeviceAndroid::Open(const OpenCallback& callback) {
                                                 base::Bind(callback, nullptr));
 }
 
-const UsbConfigDescriptor* UsbDeviceAndroid::GetActiveConfiguration() {
+const UsbConfigDescriptor* UsbDeviceAndroid::GetActiveConfiguration() const {
   return nullptr;
 }
 

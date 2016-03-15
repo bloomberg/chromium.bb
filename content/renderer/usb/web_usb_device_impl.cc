@@ -26,7 +26,6 @@ const char kClaimInterfaceFailed[] = "Unable to claim interface.";
 const char kClearHaltFailed[] = "Unable to clear endpoint.";
 const char kDeviceAlreadyOpen[] = "Device has already been opened.";
 const char kDeviceNoAccess[] = "Access denied.";
-const char kDeviceNotConfigured[] = "Device not configured.";
 const char kDeviceUnavailable[] = "Device unavailable.";
 const char kDeviceResetFailed[] = "Unable to reset the device.";
 const char kReleaseInterfaceFailed[] = "Unable to release interface.";
@@ -88,19 +87,6 @@ void OnOpenDevice(
 void OnDeviceClosed(
     ScopedWebCallbacks<blink::WebUSBDeviceCloseCallbacks> callbacks) {
   callbacks.PassCallbacks()->onSuccess();
-}
-
-void OnGetConfiguration(
-    ScopedWebCallbacks<blink::WebUSBDeviceGetConfigurationCallbacks> callbacks,
-    uint8_t configuration_value) {
-  auto scoped_callbacks = callbacks.PassCallbacks();
-  if (configuration_value == 0) {
-    RejectWithError(blink::WebUSBError(blink::WebUSBError::Error::NotFound,
-                                       kDeviceNotConfigured),
-                    std::move(scoped_callbacks));
-  } else {
-    scoped_callbacks->onSuccess(configuration_value);
-  }
 }
 
 void HandlePassFailDeviceOperation(
@@ -256,14 +242,6 @@ void WebUSBDeviceImpl::close(blink::WebUSBDeviceCloseCallbacks* callbacks) {
   if (device_)
     device_->Close(
         base::Bind(&OnDeviceClosed, base::Passed(&scoped_callbacks)));
-}
-
-void WebUSBDeviceImpl::getConfiguration(
-    blink::WebUSBDeviceGetConfigurationCallbacks* callbacks) {
-  auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (device_)
-    device_->GetConfiguration(
-        base::Bind(&OnGetConfiguration, base::Passed(&scoped_callbacks)));
 }
 
 void WebUSBDeviceImpl::setConfiguration(
