@@ -18,7 +18,6 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.UserHandle;
@@ -31,7 +30,6 @@ import android.util.LongSparseArray;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -40,7 +38,6 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.sync.AndroidSyncSettings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,21 +75,6 @@ public class ChromeBrowserProvider extends ContentProvider {
     // making changes to this permission, also update the permission in AndroidManifest.xml.
     private static final String PERMISSION_READ_WRITE_BOOKMARKS = "READ_WRITE_BOOKMARK_FOLDERS";
 
-    // Defines the API methods that the Client can call by name.
-    static final String CLIENT_API_BOOKMARK_NODE_EXISTS = "BOOKMARK_NODE_EXISTS";
-    static final String CLIENT_API_CREATE_BOOKMARKS_FOLDER_ONCE = "CREATE_BOOKMARKS_FOLDER_ONCE";
-    static final String CLIENT_API_GET_EDITABLE_BOOKMARK_FOLDER_HIERARCHY =
-            "GET_EDITABLE_BOOKMARK_FOLDER_HIERARCHY";
-    static final String CLIENT_API_GET_BOOKMARK_NODE = "GET_BOOKMARK_NODE";
-    static final String CLIENT_API_GET_DEFAULT_BOOKMARK_FOLDER = "GET_DEFAULT_BOOKMARK_FOLDER";
-    static final String CLIENT_API_GET_MOBILE_BOOKMARKS_FOLDER_ID =
-            "GET_MOBILE_BOOKMARKS_FOLDER_ID";
-    static final String CLIENT_API_IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH =
-            "IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH";
-    static final String CLIENT_API_DELETE_ALL_USER_BOOKMARKS = "DELETE_ALL_USER_BOOKMARKS";
-    static final String CLIENT_API_RESULT_KEY = "result";
-
-
     // Defines Chrome's API authority, so it can be run and tested
     // independently.
     private static final String API_AUTHORITY_SUFFIX = ".browser";
@@ -124,7 +106,6 @@ public class ChromeBrowserProvider extends ContentProvider {
     private static final String SEARCHES_PATH = "searches";
     private static final String HISTORY_PATH = "history";
     private static final String COMBINED_PATH = "combined";
-    private static final String BOOKMARK_FOLDER_PATH = "hierarchy";
 
     public static final Uri BROWSER_CONTRACTS_BOOKMAKRS_API_URI = buildContentUri(
             BROWSER_CONTRACT_API_AUTHORITY, BOOKMARKS_PATH);
@@ -152,8 +133,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     public static final long INVALID_CONTENT_PROVIDER_ID = 0;
 
     // ID used to indicate an invalid id for bookmark nodes.
-    // Client API queries should use ChromeBrowserProviderClient.INVALID_BOOKMARK_ID.
-    static final long INVALID_BOOKMARK_ID = -1;
+    private static final long INVALID_BOOKMARK_ID = -1;
 
     private static final String LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY = "last_bookmark_folder_id";
 
@@ -624,21 +604,9 @@ public class ChromeBrowserProvider extends ContentProvider {
                 .apply();
     }
 
+    @VisibleForTesting
     public static String getApiAuthority(Context context) {
         return context.getPackageName() + API_AUTHORITY_SUFFIX;
-    }
-
-    @VisibleForTesting
-    public static String getInternalAuthority(Context context) {
-        return context.getPackageName() + AUTHORITY_SUFFIX;
-    }
-
-    public static Uri getBookmarksUri(Context context) {
-        return buildContentUri(getInternalAuthority(context), BOOKMARKS_PATH);
-    }
-
-    public static Uri getBookmarkFolderUri(Context context) {
-        return buildContentUri(getInternalAuthority(context), BOOKMARK_FOLDER_PATH);
     }
 
     @VisibleForTesting
@@ -649,133 +617,6 @@ public class ChromeBrowserProvider extends ContentProvider {
     @VisibleForTesting
     public static Uri getSearchesApiUri(Context context) {
         return buildContentUri(getApiAuthority(context), SEARCHES_PATH);
-    }
-
-    private boolean bookmarkNodeExists(long nodeId) {
-        if (nodeId < 0) return false;
-        return nativeBookmarkNodeExists(mNativeChromeBrowserProvider, nodeId);
-    }
-
-    private long createBookmarksFolderOnce(String title, long parentId) {
-        return nativeCreateBookmarksFolderOnce(mNativeChromeBrowserProvider, title, parentId);
-    }
-
-    private BookmarkNode getEditableBookmarkFolderHierarchy() {
-        return nativeGetEditableBookmarkFolders(mNativeChromeBrowserProvider);
-    }
-
-    private BookmarkNode getBookmarkNode(long nodeId, boolean getParent, boolean getChildren,
-            boolean getFavicons, boolean getThumbnails) {
-        // Don't allow going up the hierarchy if sync is disabled and the requested node
-        // is the Mobile Bookmarks folder.
-        if (getParent && nodeId == getMobileBookmarksFolderId()
-                && !AndroidSyncSettings.isSyncEnabled(getContext())) {
-            getParent = false;
-        }
-
-        BookmarkNode node = nativeGetBookmarkNode(mNativeChromeBrowserProvider, nodeId, getParent,
-                getChildren);
-        if (!getFavicons && !getThumbnails) return node;
-
-        // Favicons and thumbnails need to be populated separately as they are provided
-        // asynchronously by Chromium services other than the bookmark model.
-        if (node.parent() != null) populateNodeImages(node.parent(), getFavicons, getThumbnails);
-        for (BookmarkNode child : node.children()) {
-            populateNodeImages(child, getFavicons, getThumbnails);
-        }
-
-        return node;
-    }
-
-    private BookmarkNode getDefaultBookmarkFolder() {
-        // Try to access the bookmark folder last modified by us. If it doesn't exist anymore
-        // then use the synced node (Mobile Bookmarks).
-        BookmarkNode lastModified = getBookmarkNode(getLastModifiedBookmarkFolderId(), false, false,
-                false, false);
-        if (lastModified == null || lastModified.isUrl()) {
-            lastModified = getMobileBookmarksFolder();
-            mLastModifiedBookmarkFolderId = lastModified != null ? lastModified.id() :
-                    INVALID_BOOKMARK_ID;
-        }
-        return lastModified;
-    }
-
-    private void populateNodeImages(BookmarkNode node, boolean favicon, boolean thumbnail) {
-        if (node == null || node.type() != Type.URL) return;
-
-        if (favicon) {
-            node.setFavicon(nativeGetFaviconOrTouchIcon(mNativeChromeBrowserProvider, node.url()));
-        }
-
-        if (thumbnail) {
-            node.setThumbnail(nativeGetThumbnail(mNativeChromeBrowserProvider, node.url()));
-        }
-    }
-
-    private BookmarkNode getMobileBookmarksFolder() {
-        if (mMobileBookmarksFolder == null) {
-            mMobileBookmarksFolder = nativeGetMobileBookmarksFolder(mNativeChromeBrowserProvider);
-        }
-        return mMobileBookmarksFolder;
-    }
-
-    private long getMobileBookmarksFolderId() {
-        BookmarkNode mobileBookmarks = getMobileBookmarksFolder();
-        return mobileBookmarks != null ? mobileBookmarks.id() : INVALID_BOOKMARK_ID;
-    }
-
-    private boolean isBookmarkInMobileBookmarksBranch(long nodeId) {
-        if (nodeId <= 0) return false;
-        return nativeIsBookmarkInMobileBookmarksBranch(mNativeChromeBrowserProvider, nodeId);
-    }
-
-    static String argKey(int i) {
-        return "arg" + i;
-    }
-
-    @Override
-    public Bundle call(String method, String arg, Bundle extras) {
-        // TODO(shashishekhar): Refactor this code into a separate class.
-        // Caller must have the READ_WRITE_BOOKMARK_FOLDERS permission.
-        getContext().enforcePermission(getReadWritePermissionNameForBookmarkFolders(),
-                                       Binder.getCallingPid(), Binder.getCallingUid(), TAG);
-        if (!canHandleContentProviderApiCall()) return null;
-        if (method == null || extras == null) return null;
-
-        Bundle result = new Bundle();
-        if (CLIENT_API_BOOKMARK_NODE_EXISTS.equals(method)) {
-            result.putBoolean(CLIENT_API_RESULT_KEY,
-                    bookmarkNodeExists(extras.getLong(argKey(0))));
-        } else if (CLIENT_API_CREATE_BOOKMARKS_FOLDER_ONCE.equals(method)) {
-            result.putLong(CLIENT_API_RESULT_KEY,
-                    createBookmarksFolderOnce(extras.getString(argKey(0)),
-                                              extras.getLong(argKey(1))));
-        } else if (CLIENT_API_GET_EDITABLE_BOOKMARK_FOLDER_HIERARCHY.equals(method)) {
-            result.putParcelable(CLIENT_API_RESULT_KEY, getEditableBookmarkFolderHierarchy());
-        } else if (CLIENT_API_GET_BOOKMARK_NODE.equals(method)) {
-            result.putParcelable(CLIENT_API_RESULT_KEY,
-                    getBookmarkNode(extras.getLong(argKey(0)),
-                                    extras.getBoolean(argKey(1)),
-                                    extras.getBoolean(argKey(2)),
-                                    extras.getBoolean(argKey(3)),
-                                    extras.getBoolean(argKey(4))));
-        } else if (CLIENT_API_GET_DEFAULT_BOOKMARK_FOLDER.equals(method)) {
-            result.putParcelable(CLIENT_API_RESULT_KEY, getDefaultBookmarkFolder());
-        } else if (method.equals(CLIENT_API_GET_MOBILE_BOOKMARKS_FOLDER_ID)) {
-            result.putLong(CLIENT_API_RESULT_KEY, getMobileBookmarksFolderId());
-        } else if (CLIENT_API_IS_BOOKMARK_IN_MOBILE_BOOKMARKS_BRANCH.equals(method)) {
-            result.putBoolean(CLIENT_API_RESULT_KEY,
-                    isBookmarkInMobileBookmarksBranch(extras.getLong(argKey(0))));
-        } else if (CLIENT_API_DELETE_ALL_USER_BOOKMARKS.equals(method)) {
-            android.util.Log.i(TAG, "before nativeRemoveAllUserBookmarks");
-            nativeRemoveAllUserBookmarks(mNativeChromeBrowserProvider);
-            android.util.Log.i(TAG, "after nativeRemoveAllUserBookmarks");
-        } else {
-            Log.w(TAG, "Received invalid method " + method);
-            return null;
-        }
-
-        return result;
     }
 
     /**
@@ -915,7 +756,6 @@ public class ChromeBrowserProvider extends ContentProvider {
          * Used solely by the native code.
          */
         @VisibleForTesting
-        @CalledByNativeUnchecked("BookmarkNode")
         public void addChild(BookmarkNode child) {
             mChildren.add(child);
         }
@@ -957,12 +797,6 @@ public class ChromeBrowserProvider extends ContentProvider {
             if (byte1 == null && byte2 != null) return byte2.length == 0;
             if (byte2 == null && byte1 != null) return byte1.length == 0;
             return Arrays.equals(byte1, byte2);
-        }
-
-        @CalledByNative("BookmarkNode")
-        private static BookmarkNode create(
-                long id, int type, String name, String url, BookmarkNode parent) {
-            return new BookmarkNode(id, Type.values()[type], name, url, parent);
         }
 
         @VisibleForTesting
@@ -1413,26 +1247,4 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     private native int nativeRemoveSearchTermFromAPI(long nativeChromeBrowserProvider,
             String selection, String[] selectionArgs);
-
-    // Client API native methods.
-    private native boolean nativeBookmarkNodeExists(long nativeChromeBrowserProvider, long id);
-
-    private native long nativeCreateBookmarksFolderOnce(long nativeChromeBrowserProvider,
-            String title, long parentId);
-
-    private native BookmarkNode nativeGetEditableBookmarkFolders(long nativeChromeBrowserProvider);
-
-    private native void nativeRemoveAllUserBookmarks(long nativeChromeBrowserProvider);
-
-    private native BookmarkNode nativeGetBookmarkNode(long nativeChromeBrowserProvider,
-            long id, boolean getParent, boolean getChildren);
-
-    private native BookmarkNode nativeGetMobileBookmarksFolder(long nativeChromeBrowserProvider);
-
-    private native boolean nativeIsBookmarkInMobileBookmarksBranch(long nativeChromeBrowserProvider,
-            long id);
-
-    private native byte[] nativeGetFaviconOrTouchIcon(long nativeChromeBrowserProvider, String url);
-
-    private native byte[] nativeGetThumbnail(long nativeChromeBrowserProvider, String url);
 }

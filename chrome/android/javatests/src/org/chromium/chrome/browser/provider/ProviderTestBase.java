@@ -50,7 +50,6 @@ public class ProviderTestBase extends ChromeActivityTestCaseBase<ChromeActivity>
 
         MockContentResolver resolver = new MockContentResolver();
         resolver.addProvider(ChromeBrowserProvider.getApiAuthority(activity), provider);
-        resolver.addProvider(ChromeBrowserProvider.getInternalAuthority(activity), provider);
 
         mContext = new IsolatedContext(resolver, activity);
         assertTrue(getContentResolver() instanceof MockContentResolver);

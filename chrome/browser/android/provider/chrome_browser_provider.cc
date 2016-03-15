@@ -87,9 +87,6 @@ using content::BrowserThread;
 //   All derived classes MUST ALWAYS call RequestCompleted when receiving the
 //   request response. These tasks cannot be invoked from the UI thread.
 //
-// - FaviconServiceTask: base class for asynchronous requests that make use of
-//   Chromium's favicon service. See AsyncServiceRequest for more details.
-//
 // - HistoryProviderTask: base class for asynchronous requests that make use of
 //   AndroidHistoryProviderService. See AsyncServiceRequest for mode details.
 //
@@ -103,29 +100,6 @@ const int64_t kInvalidContentProviderId = 0;
 const int64_t kInvalidBookmarkId = -1;
 
 // ------------- Java-related utility methods ------------- //
-
-// Convert a BookmarkNode, |node|, to the java representation of a bookmark node
-// stored in |*jnode|. Parent node information is optional.
-void ConvertBookmarkNode(
-    const BookmarkNode* node,
-    const JavaRef<jobject>& parent_node,
-    ScopedJavaGlobalRef<jobject>* jnode) {
-  DCHECK(jnode);
-  if (!node)
-    return;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> url;
-  if (node->is_url())
-    url.Reset(ConvertUTF8ToJavaString(env, node->url().spec()));
-  ScopedJavaLocalRef<jstring> title(
-      ConvertUTF16ToJavaString(env, node->GetTitle()));
-
-  jnode->Reset(
-      Java_BookmarkNode_create(
-          env, node->id(), (jint) node->type(), title.obj(), url.obj(),
-          parent_node.obj()));
-}
 
 jlong ConvertJLongObjectToPrimitive(JNIEnv* env, jobject long_obj) {
   ScopedJavaLocalRef<jclass> jlong_clazz = GetClass(env, "java/lang/Long");
@@ -182,17 +156,6 @@ GURL ParseAndMaybeAppendScheme(const base::string16& url,
     gurl = GURL(refined_url);
   }
   return gurl;
-}
-
-const BookmarkNode* GetChildFolderByTitle(const BookmarkNode* parent,
-                                          const base::string16& title) {
-  for (int i = 0; i < parent->child_count(); ++i) {
-    if (parent->GetChild(i)->is_folder() &&
-        parent->GetChild(i)->GetTitle() == title) {
-      return parent->GetChild(i);
-    }
-  }
-  return NULL;
 }
 
 // ------------- Synchronous task classes ------------- //
@@ -285,30 +248,6 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
   DISALLOW_COPY_AND_ASSIGN(RemoveBookmarkTask);
 };
 
-// Utility method to remove all bookmarks that the user can edit.
-class RemoveAllUserBookmarksTask : public BookmarkModelObserverTask {
- public:
-  explicit RemoveAllUserBookmarksTask(BookmarkModel* model)
-      : BookmarkModelObserverTask(model) {}
-
-  ~RemoveAllUserBookmarksTask() override {}
-
-  void Run() {
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&RemoveAllUserBookmarksTask::RunOnUIThread, model()));
-  }
-
-  static void RunOnUIThread(BookmarkModel* model) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    LOG(ERROR) << "begin model->RemoveAllUserBookmarks";
-    model->RemoveAllUserBookmarks();
-    LOG(ERROR) << "after model->RemoveAllUserBookmarks";
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RemoveAllUserBookmarksTask);
-};
-
 // Utility method to update a bookmark.
 class UpdateBookmarkTask : public BookmarkModelObserverTask {
  public:
@@ -371,33 +310,6 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
   DISALLOW_COPY_AND_ASSIGN(UpdateBookmarkTask);
 };
 
-// Checks if a node exists in the bookmark model.
-class BookmarkNodeExistsTask : public BookmarkModelTask {
- public:
-  explicit BookmarkNodeExistsTask(BookmarkModel* model)
-      : BookmarkModelTask(model) {
-  }
-
-  bool Run(const int64_t id) {
-    bool result = false;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&BookmarkNodeExistsTask::RunOnUIThread,
-                   model(), id, &result));
-    return result;
-  }
-
-  static void RunOnUIThread(BookmarkModel* model,
-                            const int64_t id,
-                            bool* result) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(result);
-    *result = bookmarks::GetBookmarkNodeByID(model, id) != NULL;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BookmarkNodeExistsTask);
-};
-
 // Checks if a node belongs to the Mobile Bookmarks hierarchy branch.
 class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
  public:
@@ -429,206 +341,6 @@ class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
   DISALLOW_COPY_AND_ASSIGN(IsInMobileBookmarksBranchTask);
 };
 
-// Creates folder or retrieves its id if already exists.
-// An invalid parent id is assumed to represent the Mobile Bookmarks folder.
-// Can only be used to create folders inside the Mobile Bookmarks branch.
-class CreateBookmarksFolderOnceTask : public BookmarkModelTask {
- public:
-  explicit CreateBookmarksFolderOnceTask(BookmarkModel* model)
-      : BookmarkModelTask(model) {}
-
-  int64_t Run(const base::string16& title, const int64_t parent_id) {
-    int64_t result = kInvalidBookmarkId;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&CreateBookmarksFolderOnceTask::RunOnUIThread,
-                   model(), title, parent_id, &result));
-    return result;
-  }
-
-  static void RunOnUIThread(BookmarkModel* model,
-                            const base::string16& title,
-                            const int64_t parent_id,
-                            int64_t* result) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(result);
-
-    // Invalid ids are assumed to refer to the Mobile Bookmarks folder.
-    const BookmarkNode* parent =
-        parent_id >= 0 ? bookmarks::GetBookmarkNodeByID(model, parent_id)
-                       : model->mobile_node();
-    DCHECK(parent);
-
-    bool in_mobile_bookmarks;
-    IsInMobileBookmarksBranchTask::RunOnUIThread(model, parent->id(),
-                                                 &in_mobile_bookmarks);
-    if (!in_mobile_bookmarks) {
-      // The parent folder must be inside the Mobile Bookmarks folder.
-      *result = kInvalidBookmarkId;
-      return;
-    }
-
-    const BookmarkNode* node = GetChildFolderByTitle(parent, title);
-    if (node) {
-      *result = node->id();
-      return;
-    }
-
-    AddBookmarkTask::RunOnUIThread(model, title, base::string16(), true,
-                                   parent->id(), result);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CreateBookmarksFolderOnceTask);
-};
-
-// Creates a Java BookmarkNode object for a node given its id.
-class GetEditableBookmarkFoldersTask : public BookmarkModelTask {
- public:
-  GetEditableBookmarkFoldersTask(
-      ManagedBookmarkService* managed_bookmark_service,
-      BookmarkModel* model)
-      : BookmarkModelTask(model),
-        managed_bookmark_service_(managed_bookmark_service) {}
-
-  void Run(ScopedJavaGlobalRef<jobject>* jroot) {
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&GetEditableBookmarkFoldersTask::RunOnUIThread,
-                   managed_bookmark_service_, model(), jroot));
-  }
-
-  static void RunOnUIThread(ManagedBookmarkService* managed,
-                            BookmarkModel* model,
-                            ScopedJavaGlobalRef<jobject>* jroot) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    const BookmarkNode* root = model->root_node();
-    if (!root || !root->is_folder())
-      return;
-
-    // The iterative approach is not possible because ScopedGlobalJavaRefs
-    // cannot be copy-constructed, and therefore not used in STL containers.
-    ConvertFolderSubtree(managed, AttachCurrentThread(), root,
-                         ScopedJavaLocalRef<jobject>(), jroot);
-  }
-
- private:
-  static void ConvertFolderSubtree(ManagedBookmarkService* managed,
-                                   JNIEnv* env,
-                                   const BookmarkNode* node,
-                                   const JavaRef<jobject>& parent_folder,
-                                   ScopedJavaGlobalRef<jobject>* jfolder) {
-    DCHECK(node);
-    DCHECK(node->is_folder());
-    DCHECK(jfolder);
-
-    // Global refs should be used here for thread-safety reasons as this task
-    // might be invoked from a thread other than UI. All refs are scoped.
-    ConvertBookmarkNode(node, parent_folder, jfolder);
-
-    for (int i = 0; i < node->child_count(); ++i) {
-      const BookmarkNode* child = node->GetChild(i);
-      if (child->is_folder() && managed->CanBeEditedByUser(child)) {
-        ScopedJavaGlobalRef<jobject> jchild;
-        ConvertFolderSubtree(managed, env, child, *jfolder, &jchild);
-
-        Java_BookmarkNode_addChild(env, jfolder->obj(), jchild.obj());
-        if (ClearException(env)) {
-          LOG(WARNING) << "Java exception while adding child node.";
-          return;
-        }
-      }
-    }
-  }
-
-  ManagedBookmarkService* managed_bookmark_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetEditableBookmarkFoldersTask);
-};
-
-// Creates a Java BookmarkNode object for a node given its id.
-class GetBookmarkNodeTask : public BookmarkModelTask {
- public:
-  explicit GetBookmarkNodeTask(BookmarkModel* model)
-      : BookmarkModelTask(model) {
-  }
-
-  void Run(const int64_t id,
-           bool get_parent,
-           bool get_children,
-           ScopedJavaGlobalRef<jobject>* jnode) {
-    return RunOnUIThreadBlocking::Run(
-        base::Bind(&GetBookmarkNodeTask::RunOnUIThread,
-                   model(), id, get_parent, get_children, jnode));
-  }
-
-  static void RunOnUIThread(BookmarkModel* model,
-                            const int64_t id,
-                            bool get_parent,
-                            bool get_children,
-                            ScopedJavaGlobalRef<jobject>* jnode) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
-    if (!node || !jnode)
-      return;
-
-    ScopedJavaGlobalRef<jobject> jparent;
-    if (get_parent) {
-      ConvertBookmarkNode(node->parent(), ScopedJavaLocalRef<jobject>(),
-                          &jparent);
-    }
-
-    ConvertBookmarkNode(node, jparent, jnode);
-
-    JNIEnv* env = AttachCurrentThread();
-    if (!jparent.is_null()) {
-      Java_BookmarkNode_addChild(env, jparent.obj(), jnode->obj());
-      if (ClearException(env)) {
-        LOG(WARNING) << "Java exception while adding child node.";
-        return;
-      }
-    }
-
-    if (get_children) {
-      for (int i = 0; i < node->child_count(); ++i) {
-        ScopedJavaGlobalRef<jobject> jchild;
-        ConvertBookmarkNode(node->GetChild(i), *jnode, &jchild);
-        Java_BookmarkNode_addChild(env, jnode->obj(), jchild.obj());
-        if (ClearException(env)) {
-          LOG(WARNING) << "Java exception while adding child node.";
-          return;
-        }
-      }
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GetBookmarkNodeTask);
-};
-
-// Gets the Mobile Bookmarks node. Using this task ensures the correct
-// initialization of the bookmark model.
-class GetMobileBookmarksNodeTask : public BookmarkModelTask {
- public:
-  explicit GetMobileBookmarksNodeTask(BookmarkModel* model)
-      : BookmarkModelTask(model) {}
-
-  const BookmarkNode* Run() {
-    const BookmarkNode* result = NULL;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&GetMobileBookmarksNodeTask::RunOnUIThread,
-                   model(), &result));
-    return result;
-  }
-
-  static void RunOnUIThread(BookmarkModel* model, const BookmarkNode** result) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(result);
-    *result = model->mobile_node();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GetMobileBookmarksNodeTask);
-};
-
 // ------------- Aynchronous requests classes ------------- //
 
 // Base class for asynchronous blocking requests to Chromium services.
@@ -651,62 +363,6 @@ class AsyncServiceRequest : protected BlockingUIThreadAsyncRequest {
   base::CancelableTaskTracker* cancelable_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncServiceRequest);
-};
-
-// Base class for all asynchronous blocking tasks that use the favicon service.
-class FaviconServiceTask : public AsyncServiceRequest<favicon::FaviconService> {
- public:
-  FaviconServiceTask(base::CancelableTaskTracker* cancelable_tracker,
-                     Profile* profile,
-                     favicon::FaviconService* favicon_service)
-      : AsyncServiceRequest<favicon::FaviconService>(favicon_service,
-                                                     cancelable_tracker),
-        profile_(profile) {}
-
-  Profile* profile() const { return profile_; }
-
- private:
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(FaviconServiceTask);
-};
-
-// Retrieves the favicon or touch icon for a URL from the FaviconService.
-class BookmarkIconFetchTask : public FaviconServiceTask {
- public:
-  BookmarkIconFetchTask(base::CancelableTaskTracker* cancelable_tracker,
-                        Profile* profile,
-                        favicon::FaviconService* favicon_service)
-      : FaviconServiceTask(cancelable_tracker, profile, favicon_service) {}
-
-  favicon_base::FaviconRawBitmapResult Run(const GURL& url) {
-    float max_scale = ui::GetScaleForScaleFactor(
-        ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
-    int desired_size_in_pixel = std::ceil(gfx::kFaviconSize * max_scale);
-
-    if (service() == NULL)
-      return favicon_base::FaviconRawBitmapResult();
-
-    RunAsyncRequestOnUIThreadBlocking(base::Bind(
-        &favicon::FaviconService::GetRawFaviconForPageURL,
-        base::Unretained(service()), url,
-        favicon_base::FAVICON | favicon_base::TOUCH_ICON, desired_size_in_pixel,
-        base::Bind(&BookmarkIconFetchTask::OnFaviconRetrieved,
-                   base::Unretained(this)),
-        cancelable_tracker()));
-    return result_;
-  }
-
- private:
-  void OnFaviconRetrieved(
-      const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-    result_ = bitmap_result;
-    RequestCompleted();
-  }
-
-  favicon_base::FaviconRawBitmapResult result_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkIconFetchTask);
 };
 
 // Base class for all asynchronous blocking tasks that use the Android history
@@ -1495,119 +1151,6 @@ jint ChromeBrowserProvider::RemoveSearchTermFromAPI(
                                     &cancelable_task_tracker_,
                                     profile_);
   return task.Run(where_clause, where_args);
-}
-
-// ------------- Provider custom APIs ------------- //
-
-jboolean ChromeBrowserProvider::BookmarkNodeExists(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jlong id) {
-  BookmarkNodeExistsTask task(bookmark_model_);
-  return task.Run(id);
-}
-
-jlong ChromeBrowserProvider::CreateBookmarksFolderOnce(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& jtitle,
-    jlong parent_id) {
-  base::string16 title = ConvertJavaStringToUTF16(env, jtitle);
-  if (title.empty())
-    return kInvalidBookmarkId;
-
-  CreateBookmarksFolderOnceTask task(bookmark_model_);
-  return task.Run(title, parent_id);
-}
-
-ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetEditableBookmarkFolders(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  ScopedJavaGlobalRef<jobject> jroot;
-  ManagedBookmarkService* managed =
-      ManagedBookmarkServiceFactory::GetForProfile(profile_);
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
-  GetEditableBookmarkFoldersTask task(managed, model);
-  task.Run(&jroot);
-  return ScopedJavaLocalRef<jobject>(jroot);
-}
-
-void ChromeBrowserProvider::RemoveAllUserBookmarks(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  LOG(ERROR) << "begin ChromeBrowserProvider::RemoveAllUserBookmarks";
-  RemoveAllUserBookmarksTask task(bookmark_model_);
-  task.Run();
-  LOG(ERROR) << "end ChromeBrowserProvider::RemoveAllUserBookmarks";
-}
-
-ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetBookmarkNode(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jlong id,
-    jboolean get_parent,
-    jboolean get_children) {
-  ScopedJavaGlobalRef<jobject> jnode;
-  GetBookmarkNodeTask task(bookmark_model_);
-  task.Run(id, get_parent, get_children, &jnode);
-  return ScopedJavaLocalRef<jobject>(jnode);
-}
-
-ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetMobileBookmarksFolder(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  ScopedJavaGlobalRef<jobject> jnode;
-  GetMobileBookmarksNodeTask task(bookmark_model_);
-  ConvertBookmarkNode(task.Run(), ScopedJavaLocalRef<jobject>(), &jnode);
-  return ScopedJavaLocalRef<jobject>(jnode);
-}
-
-jboolean ChromeBrowserProvider::IsBookmarkInMobileBookmarksBranch(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jlong id) {
-  IsInMobileBookmarksBranchTask task(bookmark_model_);
-  return task.Run(id);
-}
-
-ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetFaviconOrTouchIcon(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& jurl) {
-  if (!jurl)
-    return ScopedJavaLocalRef<jbyteArray>();
-
-  GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));
-  BookmarkIconFetchTask favicon_task(&cancelable_task_tracker_, profile_,
-                                     favicon_service_);
-  favicon_base::FaviconRawBitmapResult bitmap_result = favicon_task.Run(url);
-
-  if (!bitmap_result.is_valid() || !bitmap_result.bitmap_data.get())
-    return ScopedJavaLocalRef<jbyteArray>();
-
-  return base::android::ToJavaByteArray(env, bitmap_result.bitmap_data->front(),
-                                        bitmap_result.bitmap_data->size());
-}
-
-ScopedJavaLocalRef<jbyteArray> ChromeBrowserProvider::GetThumbnail(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& jurl) {
-  if (!jurl)
-    return ScopedJavaLocalRef<jbyteArray>();
-  GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));
-
-  // GetPageThumbnail is synchronous and can be called from any thread.
-  scoped_refptr<base::RefCountedMemory> thumbnail;
-  if (top_sites_)
-    top_sites_->GetPageThumbnail(url, false, &thumbnail);
-
-  if (!thumbnail.get() || !thumbnail->front()) {
-    return ScopedJavaLocalRef<jbyteArray>();
-  }
-
-  return base::android::ToJavaByteArray(env, thumbnail->front(),
-      thumbnail->size());
 }
 
 // ------------- Observer-related methods ------------- //
