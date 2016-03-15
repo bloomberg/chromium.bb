@@ -139,12 +139,12 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeNumber(CSSParserTokenRange& ran
     return nullptr;
 }
 
-inline bool shouldAcceptUnitlessValues(double fValue, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+inline bool shouldAcceptUnitlessLength(double value, CSSParserMode cssParserMode, UnitlessQuirk unitless)
 {
-    // Quirks mode for certain properties and presentation attributes accept unit-less values for certain units.
-    return !fValue // 0 can always be unitless.
-        || isUnitLessLengthParsingEnabledForMode(cssParserMode) // HTML and SVG attribute values can always be unitless.
-        || (cssParserMode == HTMLQuirksMode && (unitless == UnitlessQuirk::Allow));
+    // TODO(timloh): Presentational HTML attributes shouldn't use the CSS parser for lengths
+    return value == 0
+        || isUnitLessLengthParsingEnabledForMode(cssParserMode)
+        || (cssParserMode == HTMLQuirksMode && unitless == UnitlessQuirk::Allow);
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless)
@@ -180,7 +180,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRange& ran
         return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), token.unitType());
     }
     if (token.type() == NumberToken) {
-        if (!shouldAcceptUnitlessValues(token.numericValue(), cssParserMode, unitless)
+        if (!shouldAcceptUnitlessLength(token.numericValue(), cssParserMode, unitless)
             || (valueRange == ValueRangeNonNegative && token.numericValue() < 0))
             return nullptr;
         CSSPrimitiveValue::UnitType unitType = CSSPrimitiveValue::UnitType::Pixels;
@@ -227,7 +227,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParserTokenR
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& range)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == DimensionToken) {
@@ -241,10 +241,9 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& rang
             return nullptr;
         }
     }
-    if (token.type() == NumberToken) {
-        if (!shouldAcceptUnitlessValues(token.numericValue(), cssParserMode, UnitlessQuirk::Forbid))
-            return nullptr;
-        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Degrees);
+    if (token.type() == NumberToken && token.numericValue() == 0) {
+        range.consumeIncludingWhitespace();
+        return cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Degrees);
     }
     CalcParser calcParser(range, ValueRangeAll);
     if (const CSSCalcValue* calculation = calcParser.value()) {

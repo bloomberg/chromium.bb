@@ -865,12 +865,12 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineHeight(CSSParserToke
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> consumeRotation(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeRotation(CSSParserTokenRange& range)
 {
     ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
-    RefPtrWillBeRawPtr<CSSValue> rotation = consumeAngle(range, cssParserMode);
+    RefPtrWillBeRawPtr<CSSValue> rotation = consumeAngle(range);
     if (!rotation)
         return nullptr;
     list->append(rotation.release());
@@ -1546,7 +1546,7 @@ static PassRefPtrWillBeRawPtr<CSSFunctionValue> consumeFilterFunction(CSSParserT
             if (!parsedValue)
                 parsedValue = consumeNumber(args, ValueRangeAll);
         } else if (filterType == CSSValueHueRotate) {
-            parsedValue = consumeAngle(args, cssParserMode);
+            parsedValue = consumeAngle(args);
         } else if (filterType == CSSValueBlur) {
             parsedValue = consumeLength(args, HTMLStandardMode, ValueRangeNonNegative);
         } else {
@@ -1665,15 +1665,15 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePathOrNone(CSSParserTokenRange& r
     return consumePath(range);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeMotionRotation(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeMotionRotation(CSSParserTokenRange& range)
 {
-    RefPtrWillBeRawPtr<CSSValue> angle = consumeAngle(range, cssParserMode);
+    RefPtrWillBeRawPtr<CSSValue> angle = consumeAngle(range);
     RefPtrWillBeRawPtr<CSSValue> keyword = consumeIdent<CSSValueAuto, CSSValueReverse>(range);
     if (!angle && !keyword)
         return nullptr;
 
     if (!angle)
-        angle = consumeAngle(range, cssParserMode);
+        angle = consumeAngle(range);
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (keyword)
@@ -1806,12 +1806,12 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransformValue(CSSParserTokenRang
     case CSSValueSkewX:
     case CSSValueSkewY:
     case CSSValueSkew:
-        parsedValue = consumeAngle(args, cssParserMode);
+        parsedValue = consumeAngle(args);
         if (!parsedValue)
             return nullptr;
         if (functionId == CSSValueSkew && consumeCommaIncludingWhitespace(args)) {
             transformValue->append(parsedValue);
-            parsedValue = consumeAngle(args, cssParserMode);
+            parsedValue = consumeAngle(args);
         }
         break;
     case CSSValueScaleX:
@@ -1856,7 +1856,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransformValue(CSSParserTokenRang
     case CSSValueRotate3d:
         if (!consumeNumbers(args, transformValue, 3) || !consumeCommaIncludingWhitespace(args))
             return nullptr;
-        parsedValue = consumeAngle(args, cssParserMode);
+        parsedValue = consumeAngle(args);
         break;
     case CSSValueTranslate3d:
         if (!consumeTranslate3d(args, cssParserMode, transformValue))
@@ -2401,7 +2401,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeLinearGradient(CSSParserTokenRang
     RefPtrWillBeRawPtr<CSSLinearGradientValue> result = CSSLinearGradientValue::create(repeating, gradientType);
 
     bool expectComma = true;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> angle = consumeAngle(args, cssParserMode);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> angle = consumeAngle(args);
     if (angle) {
         result->setAngle(angle.release());
     } else if (gradientType == CSSPrefixedLinearGradient || consumeIdent<CSSValueTo>(args)) {
@@ -3100,12 +3100,12 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontSizeAdjust(CSSParserTokenRang
     return consumeNumber(range, ValueRangeNonNegative);
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeImageOrientation(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeImageOrientation(CSSParserTokenRange& range)
 {
     if (range.peek().id() == CSSValueFromImage)
         return consumeIdent(range);
     if (range.peek().type() != NumberToken) {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> angle = consumeAngle(range, cssParserMode);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> angle = consumeAngle(range);
         if (angle && angle->getDoubleValue() == 0)
             return angle;
     }
@@ -3320,7 +3320,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyLineHeight:
         return consumeLineHeight(m_range, m_context.mode());
     case CSSPropertyRotate:
-        return consumeRotation(m_range, m_context.mode());
+        return consumeRotation(m_range);
     case CSSPropertyScale:
         return consumeScale(m_range, m_context.mode());
     case CSSPropertyTranslate:
@@ -3490,7 +3490,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyMotionOffset:
         return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyMotionRotation:
-        return consumeMotionRotation(m_range, m_context.mode());
+        return consumeMotionRotation(m_range);
     case CSSPropertyWebkitTextEmphasisStyle:
         return consumeTextEmphasisStyle(m_range);
     case CSSPropertyOutlineColor:
@@ -3614,7 +3614,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeFontSizeAdjust(m_range);
     case CSSPropertyImageOrientation:
         ASSERT(RuntimeEnabledFeatures::imageOrientationEnabled());
-        return consumeImageOrientation(m_range, m_context.mode());
+        return consumeImageOrientation(m_range);
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundClip:
