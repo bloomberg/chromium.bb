@@ -49,6 +49,7 @@ const char kJoinRoute[] = "joinRoute";
 const char kCloseDialog[] = "closeDialog";
 const char kReportBlur[] = "reportBlur";
 const char kReportClickedSinkIndex[] = "reportClickedSinkIndex";
+const char kReportFilter[] = "reportFilter";
 const char kReportInitialAction[] = "reportInitialAction";
 const char kReportInitialState[] = "reportInitialState";
 const char kReportNavigateToView[] = "reportNavigateToView";
@@ -335,6 +336,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      kReportFilter,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportFilter,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kReportInitialState,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportInitialState,
                  base::Unretained(this)));
@@ -598,6 +603,11 @@ void MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex(
   }
   UMA_HISTOGRAM_SPARSE_SLOWLY("MediaRouter.Ui.Action.StartLocalPosition",
                               std::min(index, 100));
+}
+
+void MediaRouterWebUIMessageHandler::OnReportFilter(const base::ListValue*) {
+  DVLOG(1) << "OnReportFilter";
+  base::RecordAction(base::UserMetricsAction("MediaRouter_Ui_Action_Filter"));
 }
 
 void MediaRouterWebUIMessageHandler::OnReportInitialAction(

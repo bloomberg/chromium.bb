@@ -41,6 +41,7 @@ cr.define('media_router', function() {
                                onNavigateToDetails);
     container.addEventListener('navigate-to-cast-mode-list',
                                onNavigateToCastMode);
+    container.addEventListener('report-filter', onFilter);
     container.addEventListener('report-initial-action', onInitialAction);
     container.addEventListener('report-initial-action-close',
                                onInitialActionClose);
@@ -113,6 +114,15 @@ cr.define('media_router', function() {
     container.maybeReportUserFirstAction(
         media_router.MediaRouterUserAction.CLOSE);
     media_router.browserApi.closeDialog(detail.pressEscToClose);
+  }
+
+  /**
+   * Reports when the user uses the filter input to filter the sink list. This
+   * is reported at most once each time the user enters the filter view, and
+   * only if text is actually entered in the filter input.
+   */
+  function onFilter() {
+    media_router.browserApi.reportFilter();
   }
 
   /**

@@ -425,6 +425,65 @@ cr.define('media_router_container_filter', function() {
         });
       });
 
+      // Tests that a filter action is reported only if text is entered in the
+      // search input and only once for each time the filter view is entered.
+      test('report filter action', function(done) {
+        var expectReportThen = function(cause, continuation) {
+          var internalExpect = function() {
+            container.removeEventListener('report-filter', internalExpect);
+            continuation();
+          };
+          container.addEventListener('report-filter', internalExpect);
+          cause();
+        };
+        var expectNoReport = function() {
+          assertTrue(false);
+        };
+        var cause;
+        var continuation;
+
+        // Tests that entering filter view and returning to the sink list view
+        // without typing any text doesn't report a filter action.
+        container.addEventListener('report-filter', expectNoReport);
+        MockInteractions.tap(container.$['sink-search-icon']);
+        setTimeout(function() {
+          MockInteractions.tap(
+              container.$['container-header'].$['back-button']);
+          container.removeEventListener('report-filter', expectNoReport);
+
+          // Tests that entering text for the first time in filter view reports
+          // a filter action.
+          cause = function() {
+            container.$['sink-search-input'].value = 'a';
+          };
+          continuation = function() {
+            // Tests that entering more text in filter view doesn't report a
+            // filter action.
+            container.addEventListener('report-filter', expectNoReport);
+            container.$['sink-search-input'].value = 'abc';
+            MockInteractions.tap(
+                container.$['container-header'].$['back-button']);
+            container.removeEventListener('report-filter', expectNoReport);
+
+            // Tests that entering filter view again with text already in the
+            // search input reports a filter action.
+            cause = function() {
+              MockInteractions.tap(container.$['sink-search-icon']);
+            };
+            continuation = function() {
+              // Tests that entering more text when the initial entry to the
+              // filter view reported a filter action doesn't report another
+              // filter action.
+              container.addEventListener('report-filter', expectNoReport);
+              container.$['sink-search-input'].value = 'abcde';
+              done();
+            };
+            expectReportThen(cause, continuation);
+          };
+          expectReportThen(cause, continuation);
+        });
+      });
+
       // Tests that compareSearchMatches_ works correctly for zero and one
       // substring matches from the filter text. Earlier, longer matches should
       // be ordered first, in that priority order.

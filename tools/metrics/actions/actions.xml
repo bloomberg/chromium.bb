@@ -7850,6 +7850,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MediaRouter_Ui_Action_Filter">
+  <owner>btolsch@chromium.org</owner>
+  <description>
+    User typed text into the filter input to filter the sink list. This is
+    triggered at most once each time the user enters the filter view of the
+    Media Router WebUI. As long as the user stays in the filter view, additional
+    actions will not be recorded for typing more text, deleting text, clearing
+    the field and entering new text, etc. Additionally, if the user leaves text
+    in the search input but leaves the filter view, entering the filter view
+    again will trigger the action again.
+  </description>
+</action>
+
 <action name="MediaRouter_Ui_Dialog_Blur">
   <owner>apacible@chromium.org</owner>
   <description>

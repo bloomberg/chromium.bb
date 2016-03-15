@@ -248,6 +248,13 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports that the user used the filter input.
+   */
+  function reportFilter() {
+    chrome.send('reportFilter');
+  }
+
+  /**
    * Reports the initial dialog view.
    *
    * @param {string} view
@@ -359,6 +366,7 @@ cr.define('media_router.browserApi', function() {
     onInitialDataReceived: onInitialDataReceived,
     reportBlur: reportBlur,
     reportClickedSinkIndex: reportClickedSinkIndex,
+    reportFilter: reportFilter,
     reportInitialAction: reportInitialAction,
     reportInitialState: reportInitialState,
     reportNavigateToView: reportNavigateToView,

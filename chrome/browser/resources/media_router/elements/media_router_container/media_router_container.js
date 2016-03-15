@@ -53,7 +53,7 @@ Polymer({
     currentView_: {
       type: String,
       value: null,
-      observer: 'updateElementPositioning_',
+      observer: 'currentViewChanged_',
     },
 
     /**
@@ -275,6 +275,17 @@ Polymer({
     },
 
     /**
+     * Whether the next character input should cause a filter action metric to
+     * be sent.
+     * @type {boolean}
+     * @private
+     */
+    reportFilterOnInput_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The list of current routes.
      * @type {!Array<!media_router.Route>}
      */
@@ -312,7 +323,7 @@ Polymer({
     searchInputText_: {
       type: String,
       value: '',
-      observer: 'filterSinks_',
+      observer: 'searchInputTextChanged_',
     },
 
     /**
@@ -1043,6 +1054,23 @@ Polymer({
   },
 
   /**
+   * Updates element positioning when the view changes and possibly triggers
+   * reporting of a user filter action. If there is no filter text, it defers
+   * the reporting until some text is entered, but otherwise it reports the
+   * filter action here.
+   * @param {?media_router.MediaRouterView} currentView The current view of the
+   *     dialog.
+   * @private
+   */
+  currentViewChanged_: function(currentView) {
+    if (currentView == media_router.MediaRouterView.FILTER) {
+      this.reportFilterOnInput_ = true;
+      this.maybeReportFilter_();
+    }
+    this.updateElementPositioning_();
+  },
+
+  /**
    * Filters all sinks based on fuzzy matching to the currently entered search
    * text.
    * @param {string} searchInputText The currently entered search text.
@@ -1107,6 +1135,19 @@ Polymer({
       this.filterSinks_(this.searchInputText_);
     } else {
       this.currentView_ = media_router.MediaRouterView.SINK_LIST;
+    }
+  },
+
+  /**
+   * Reports a user filter action if |searchInputText_| is not empty and the
+   * filter action hasn't been reported since the view changed to the filter
+   * view.
+   * @private
+   */
+  maybeReportFilter_: function() {
+    if (this.reportFilterOnInput_ && this.searchInputText_.length != 0) {
+      this.reportFilterOnInput_ = false;
+      this.fire('report-filter');
     }
   },
 
@@ -1453,6 +1494,20 @@ Polymer({
         this.isUserSearching_ = true;
       }
     }.bind(this));
+  },
+
+  /**
+   * Filters the  sink list when the input text changes and shows the search
+   * results if |searchInputText| is not empty.
+   * @param {string} searchInputText The currently entered search text.
+   * @private
+   */
+  searchInputTextChanged_: function(searchInputText) {
+    this.filterSinks_(searchInputText);
+    if (searchInputText.length != 0) {
+      this.isUserSearching_ = true;
+      this.maybeReportFilter_();
+    }
   },
 
   /**

@@ -70,6 +70,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnCloseDialog(const base::ListValue* args);
   void OnReportBlur(const base::ListValue* args);
   void OnReportClickedSinkIndex(const base::ListValue* args);
+  void OnReportFilter(const base::ListValue* args);
   void OnReportInitialAction(const base::ListValue* args);
   void OnReportInitialState(const base::ListValue* args);
   void OnReportNavigateToView(const base::ListValue* args);
