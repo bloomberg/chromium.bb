@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/web/public/web_view_type.h"
-
 @protocol CRWSimpleWebViewController;
 @class WKWebView;
 @class WKWebViewConfiguration;
@@ -63,43 +61,10 @@ WKWebView* CreateWKWebView(CGRect frame,
 NSUInteger GetActiveWKWebViewsCount();
 
 // Returns a CRWSimpleWebViewController for managing/showing a web view.
-// The BrowsingDataPartition must be synchronized before this method is called.
 // Note: Callers are responsible for releasing the CRWSimpleWebViewController.
-// DEPRECATED: The usage of |WebViewType| param is deprecated.
-// TODO(crbug.com/579697): By default the controller is backed by a WKWebView.
-// Remove the |WebViewType| param once all clients have stopped using it.
 id<CRWSimpleWebViewController> CreateSimpleWebViewController(
     CGRect frame,
-    BrowserState* browser_state,
-    WebViewType web_view_type = WK_WEB_VIEW_TYPE);
-
-// Returns a new CRWSimpleWebViewController subclass displaying static HTML file
-// content stored in the application bundle.
-// The BrowsingDataPartition must be synchronized before this method is called.
-// Note: Callers are responsible for releasing the returned ViewController.
-// TODO(crbug.com/579697): By default the controller is backed by a WKWebView.
-// Remove the |WebViewType| param once all clients have stopped using it.
-id<CRWSimpleWebViewController> CreateStaticFileSimpleWebViewController(
-    CGRect frame,
-    BrowserState* browser_state,
-    WebViewType web_view_type = WK_WEB_VIEW_TYPE);
-
-// Returns a new UIWebView subclass for displaying static HTML file content
-// stored in the application bundle. if |browser_state| is nullptr, requests
-// from the returned UIWebView will be done with global request context. When
-// requests are made with global request context, requests such as file://
-// will fail.
-// Note: Callers are responsible for releasing the returned UIWebView.
-// DEPRECATED: Please use the |CreateStaticFileSimpleWebViewController|
-// equivalent instead.
-UIWebView* CreateStaticFileWebView(CGRect frame, BrowserState* browser_state);
-
-// A convenience method that returns a static file web view with
-// CGRectZero and |nullptr| browser state.
-// Note: Callers are responsible for releasing the returned UIWebView.
-// DEPRECATED: Please use the |CreateStaticFileSimpleWebViewController|
-// equivalent instead.
-UIWebView* CreateStaticFileWebView();
+    BrowserState* browser_state);
 
 #if !defined(NDEBUG)
 // Returns true if the creation of web views using alloc, init has been allowed

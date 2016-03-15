@@ -19,8 +19,6 @@
 #import "ios/web/public/web_view_creation_util.h"
 #include "ios/web/ui_web_view_util.h"
 #import "ios/web/weak_nsobject_counter.h"
-#import "ios/web/web_state/ui/crw_static_file_web_view.h"
-#import "ios/web/web_state/ui/crw_ui_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/crw_wk_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_view_counter_impl.h"
@@ -195,51 +193,11 @@ NSUInteger GetActiveWKWebViewsCount() {
 
 id<CRWSimpleWebViewController> CreateSimpleWebViewController(
     CGRect frame,
-    BrowserState* browser_state,
-    WebViewType web_view_type) {
+    BrowserState* browser_state) {
   DCHECK(web::BrowsingDataPartition::IsSynchronized());
-
-  // Transparently return the correct subclass.
-  if (web_view_type == WK_WEB_VIEW_TYPE) {
-    base::scoped_nsobject<WKWebView> web_view(
-        web::CreateWKWebView(frame, browser_state));
-    return [[CRWWKSimpleWebViewController alloc] initWithWKWebView:web_view];
-  }
-  base::scoped_nsobject<UIWebView> web_view(web::CreateWebView(frame));
-  return [[CRWUISimpleWebViewController alloc] initWithUIWebView:web_view];
-}
-
-id<CRWSimpleWebViewController> CreateStaticFileSimpleWebViewController(
-    CGRect frame,
-    BrowserState* browser_state,
-    WebViewType web_view_type) {
-  DCHECK(web::BrowsingDataPartition::IsSynchronized());
-
-  // Transparently return the correct subclass.
-  if (web_view_type == WK_WEB_VIEW_TYPE) {
-    // TOOD(shreyasv): Create a new util function vending a WKWebView, wrap that
-    // now return the UIWebView version. crbug.com/403634.
-  }
-  base::scoped_nsobject<UIWebView> staticFileWebView(
-      CreateStaticFileWebView(frame, browser_state));
-  return [[CRWUISimpleWebViewController alloc]
-      initWithUIWebView:staticFileWebView];
-}
-
-UIWebView* CreateStaticFileWebView(CGRect frame, BrowserState* browser_state) {
-  DCHECK(web::GetWebClient());
-  web::GetWebClient()->PreWebViewCreation();
-
-  UIWebView* result =
-      [[CRWStaticFileWebView alloc] initWithFrame:frame
-                                     browserState:browser_state];
-
-  web::GetWebClient()->PostWebViewCreation(result);
-  return result;
-}
-
-UIWebView* CreateStaticFileWebView() {
-  return CreateStaticFileWebView(CGRectZero, nullptr);
+  base::scoped_nsobject<WKWebView> web_view(
+      web::CreateWKWebView(frame, browser_state));
+  return [[CRWWKSimpleWebViewController alloc] initWithWKWebView:web_view];
 }
 
 #if !defined(NDEBUG)

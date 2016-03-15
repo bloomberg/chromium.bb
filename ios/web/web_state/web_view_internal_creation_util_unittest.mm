@@ -182,29 +182,12 @@ TEST_F(WebViewCreationUtilsTest, GetActiveWKWebViewsCount) {
 
 #endif  // defined(NDEBUG)
 
-// Tests web::CreateStaticFileWebView that it correctly returns a
-// CRWStaticFileWebView with the correct frame, user agent, and calls
-// WebClient::PreWebViewCreation/WebClient::PostWebViewCreation methods.
-TEST_F(WebViewCreationUtilsTest, TestNewStaticFileWebViewTrue) {
-  UIWebView* captured_web_view = nil;
-  ExpectWebClientCalls(&captured_web_view);
-
-  base::scoped_nsobject<UIWebView> web_view(
-      CreateStaticFileWebView(kTestFrame, GetBrowserState()));
-  ASSERT_TRUE([web_view isMemberOfClass:[CRWStaticFileWebView class]]);
-  EXPECT_TRUE(CGRectEqualToRect(kTestFrame, [web_view frame]));
-  EXPECT_NSEQ(web_view, captured_web_view);
-
-  NSString* user_agent = GetWebViewUserAgent(web_view);
-  EXPECT_TRUE([CRWStaticFileWebView isStaticFileUserAgent:user_agent]);
-}
-
 // Tests web::CreateSimpleWebViewController returns a CRWSimpleWebViewController
 // instance with a web view.
 TEST_F(WebViewCreationUtilsTest, CreateSimpleWebViewController) {
   base::scoped_nsprotocol<id<CRWSimpleWebViewController>>
       simpleWebViewController(
-          CreateSimpleWebViewController(CGRectZero, nullptr, UI_WEB_VIEW_TYPE));
+          CreateSimpleWebViewController(CGRectZero, GetBrowserState()));
   EXPECT_TRUE([simpleWebViewController view]);
 }
 

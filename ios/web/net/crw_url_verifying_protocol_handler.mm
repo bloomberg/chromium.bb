@@ -249,7 +249,7 @@ const char kCheckRelativeURL[] =
   web::URLVerificationTrustLevel trustLevel;
   web::WebClient* web_client = web::GetWebClient();
   DCHECK(web_client);
-  base::scoped_nsobject<UIWebView> dummyWebView(web::CreateStaticFileWebView());
+  base::scoped_nsobject<UIWebView> dummyWebView(web::CreateWebView(CGRectZero));
   [CRWURLVerifyingProtocolHandler currentURLForWebView:dummyWebView
                                             trustLevel:&trustLevel];
   return [[CRWURLVerifyingProtocolHandlerData sharedInstance] preInitialized];

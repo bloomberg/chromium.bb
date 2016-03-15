@@ -99,8 +99,7 @@ void HtmlWebInterstitialImpl::PrepareForDisplay() {
         [[CRWWebInterstitialImplCRWSimpleWebViewDelegate alloc]
             initWithInterstitial:this]);
     web_view_controller_.reset(web::CreateSimpleWebViewController(
-        CGRectZero, GetWebStateImpl()->GetBrowserState(),
-        GetWebStateImpl()->GetWebViewType()));
+        CGRectZero, GetWebStateImpl()->GetBrowserState()));
     [web_view_controller_ setDelegate:web_view_controller_delegate_];
     [[web_view_controller_ view]
         setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
