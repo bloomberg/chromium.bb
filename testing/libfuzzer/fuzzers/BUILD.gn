@@ -251,6 +251,8 @@ fuzzer_test("icu_uregex_open_fuzzer") {
   deps = [
     "//third_party/icu",
   ]
+  dict = "dicts/icu_regex.dict"
+  libfuzzer_options = "icu_uregex_open_fuzzer.options"
 }
 
 fuzzer_test("v8_script_parser_fuzzer") {
