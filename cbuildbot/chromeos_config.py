@@ -641,6 +641,7 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'lakitu_next-paladin',
         'veyron_rialto-paladin',
+        'veyron_minnie-cheets-paladin',
 
         # Experimental Canaries (Group)
         'glados-release-group',
@@ -1703,7 +1704,6 @@ def GetConfig():
       'strago',
       'stumpy',
       'tricky',
-      'veyron_minnie-cheets',
       'veyron_mighty',
       'veyron_pinky',
       'veyron_speedy',
