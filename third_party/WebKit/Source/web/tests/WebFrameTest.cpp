@@ -310,14 +310,6 @@ void PrintTo(ParameterizedWebFrameTestConfig config, ::std::ostream* os)
     }
 }
 
-// Flakily failing on Mac ASAN.
-// https://crbug.com/592771
-#if OS(MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_TEST_P(fixture, test) TEST_P(fixture, DISABLED_##test)
-#else
-#define MAYBE_TEST_P(fixture, test) TEST_P(fixture, test)
-#endif
-
 INSTANTIATE_TEST_CASE_P(All, ParameterizedWebFrameTest, ::testing::Values(
     ParameterizedWebFrameTestConfig::Default,
     ParameterizedWebFrameTestConfig::RootLayerScrolls));
@@ -1386,7 +1378,7 @@ TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorOverridesPageVi
     EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered)
+TEST_P(ParameterizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered)
 {
     const char* pages[] = {
         // These pages trigger the clobbering condition. There must be a matching item in "pageScaleFactors" array.
@@ -1638,7 +1630,7 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling)
 }
 
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)
+TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)
 {
     registerMockedHttpURLLoad("200-by-300.html");
     registerMockedHttpURLLoad("large-div.html");
@@ -1680,7 +1672,7 @@ TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk)
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, WideViewportAndWideContentWithInitialScale)
+TEST_P(ParameterizedWebFrameTest, WideViewportAndWideContentWithInitialScale)
 {
     registerMockedHttpURLLoad("wide_document_width_viewport.html");
     registerMockedHttpURLLoad("white-1x1.png");
@@ -1706,7 +1698,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, WideViewportAndWideContentWithInitialSca
     EXPECT_EQ(minimumPageScaleFactor, webViewHelper.webViewImpl()->minimumPageScaleFactor());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, WideViewportQuirkClobbersHeight)
+TEST_P(ParameterizedWebFrameTest, WideViewportQuirkClobbersHeight)
 {
     registerMockedHttpURLLoad("viewport-height-1000.html");
 
@@ -1729,7 +1721,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, WideViewportQuirkClobbersHeight)
     EXPECT_EQ(1, webViewHelper.webView()->pageScaleFactor());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, LayoutSize320Quirk)
+TEST_P(ParameterizedWebFrameTest, LayoutSize320Quirk)
 {
     registerMockedHttpURLLoad("viewport/viewport-30.html");
 
@@ -2028,7 +2020,7 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
     EXPECT_EQ(980, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, targetDensityDpiHigh)
+TEST_P(ParameterizedWebFrameTest, targetDensityDpiHigh)
 {
     registerMockedHttpURLLoad("viewport-target-densitydpi-high.html");
 
@@ -2059,7 +2051,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, targetDensityDpiHigh)
     }
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, targetDensityDpiDevice)
+TEST_P(ParameterizedWebFrameTest, targetDensityDpiDevice)
 {
     registerMockedHttpURLLoad("viewport-target-densitydpi-device.html");
 
@@ -2084,7 +2076,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, targetDensityDpiDevice)
     }
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, targetDensityDpiDeviceAndFixedWidth)
+TEST_P(ParameterizedWebFrameTest, targetDensityDpiDeviceAndFixedWidth)
 {
     registerMockedHttpURLLoad("viewport-target-densitydpi-device-and-fixed-width.html");
 
@@ -2890,7 +2882,7 @@ TEST_P(ParameterizedWebFrameTest, BlockBoundTest)
     EXPECT_RECT_EQ(rectRightBottom, blockBound);
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
+TEST_P(ParameterizedWebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
 {
     registerMockedHttpURLLoad("get_multiple_divs_for_auto_zoom_test.html");
 
@@ -3166,7 +3158,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTestZoomToLegibleScaleDisabled)
     EXPECT_FALSE(needAnimation);
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, CharacterIndexAtPointWithPinchZoom)
+TEST_P(ParameterizedWebFrameTest, CharacterIndexAtPointWithPinchZoom)
 {
     registerMockedHttpURLLoad("sometext.html");
 
@@ -4415,7 +4407,7 @@ TEST_P(ParameterizedWebFrameTest, SelectRangeCanMoveSelectionEnd)
     // EXPECT_EQ("Editable 1. Editable 2. ]", selectionAsString(frame));
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtent)
+TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtent)
 {
     WebLocalFrameImpl* frame;
     WebRect startWebRect;
@@ -4449,7 +4441,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtent)
     EXPECT_EQ("", selectionAsString(frame));
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentCannotCollapse)
+TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentCannotCollapse)
 {
     WebLocalFrameImpl* frame;
     WebRect startWebRect;
@@ -4474,7 +4466,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentCannotCollapse)
     EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentScollsInputField)
+TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentScollsInputField)
 {
     WebLocalFrameImpl* frame;
     WebRect startWebRect;
@@ -4836,7 +4828,7 @@ static WebGestureEvent fatTap(int x, int y)
     return event;
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopup)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopup)
 {
     const std::string htmlFile = "disambiguation_popup.html";
     registerMockedHttpURLLoad(htmlFile);
@@ -4890,7 +4882,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopup)
     }
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopupNoContainer)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupNoContainer)
 {
     registerMockedHttpURLLoad("disambiguation_popup_no_container.html");
 
@@ -4907,7 +4899,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopupNoContainer)
     EXPECT_FALSE(client.triggered());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopupMobileSite)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupMobileSite)
 {
     const std::string htmlFile = "disambiguation_popup_mobile_site.html";
     registerMockedHttpURLLoad(htmlFile);
@@ -4941,7 +4933,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopupMobileSite)
     }
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopupViewportSite)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupViewportSite)
 {
     const std::string htmlFile = "disambiguation_popup_viewport_site.html";
     registerMockedHttpURLLoad(htmlFile);
@@ -5025,7 +5017,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport)
     EXPECT_FALSE(client.triggered());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopupBlacklist)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupBlacklist)
 {
     const unsigned viewportWidth = 500;
     const unsigned viewportHeight = 1000;
@@ -5057,7 +5049,7 @@ MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopupBlacklist)
     EXPECT_FALSE(client.triggered());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, DisambiguationPopupPageScale)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupPageScale)
 {
     registerMockedHttpURLLoad("disambiguation_popup_page_scale.html");
 
@@ -6416,7 +6408,7 @@ TEST_P(ParameterizedWebFrameTest, fixedPositionInFixedViewport)
     EXPECT_EQ(500, leftRightFixed->offsetWidth());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, FrameViewMoveWithSetFrameRect)
+TEST_P(ParameterizedWebFrameTest, FrameViewMoveWithSetFrameRect)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank");
@@ -6619,7 +6611,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame)
     ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, FullscreenSubframe)
+TEST_P(ParameterizedWebFrameTest, FullscreenSubframe)
 {
     FakeCompositingWebViewClient client;
     registerMockedHttpURLLoad("fullscreen_iframe.html");
@@ -6740,7 +6732,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport)
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
 }
 
-MAYBE_TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants)
+TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants)
 {
     registerMockedHttpURLLoad("percent-height-descendants.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
