@@ -21,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
@@ -31,6 +32,7 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_process_host.h"
@@ -52,8 +54,10 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_util.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -836,6 +840,32 @@ enum class TestConfig {
   kOptimizeIPCForSmallResourceEnabled,
 };
 
+// A mock CertStore that doesn't do anything, unless a default cert id
+// is specified with set_default_cert_id(). If a default cert id is
+// provided, then StoreCert() always returns that cert id.
+class MockCertStore : public content::CertStore {
+ public:
+  MockCertStore() : default_cert_id_(0) {}
+
+  ~MockCertStore() override {}
+
+  int StoreCert(net::X509Certificate* cert, int process_id) override {
+    return default_cert_id_;
+  }
+
+  bool RetrieveCert(int process_id,
+                    scoped_refptr<net::X509Certificate>* cert) override {
+    return false;
+  }
+
+  void set_default_cert_id(int default_cert_id) {
+    default_cert_id_ = default_cert_id;
+  }
+
+ private:
+  int default_cert_id_;
+};
+
 class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
                                    public IPC::Sender {
  public:
@@ -844,6 +874,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
 
   ResourceDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        use_test_ssl_certificate_(false),
         old_factory_(NULL),
         send_data_received_acks_(false) {
     browser_context_.reset(new TestBrowserContext());
@@ -856,6 +887,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     job_factory_.reset(new TestURLRequestJobFactory(this));
     request_context->set_job_factory(job_factory_.get());
     request_context->set_network_delegate(&network_delegate_);
+    host_.cert_store_for_testing_ = &mock_cert_store_;
   }
 
   // IPC::Sender implementation
@@ -1026,6 +1058,11 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     SetResponse(headers, std::string());
   }
 
+  // If called, requests called from now on will be created as
+  // TestHTTPSURLRequestJobs: that is, a test certificate will be set on
+  // the |ssl_info| field of the response.
+  void SetTestSSLCertificate() { use_test_ssl_certificate_ = true; }
+
   void SendDataReceivedACKs(bool send_acks) {
     send_data_received_acks_ = send_acks;
   }
@@ -1084,12 +1121,14 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
   ResourceIPCAccumulator accum_;
   std::string response_headers_;
   std::string response_data_;
+  bool use_test_ssl_certificate_;
   std::string scheme_;
   net::URLRequest::ProtocolFactory* old_factory_;
   bool send_data_received_acks_;
   std::set<int> child_ids_;
   scoped_ptr<base::RunLoop> wait_for_request_complete_loop_;
   RenderViewHostTestEnabler render_view_host_test_enabler_;
+  MockCertStore mock_cert_store_;
 };
 
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
@@ -2580,7 +2619,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
 
   GlobalRequestID global_request_id(web_contents_filter_->child_id(),
                                     request_id);
-  host_.MarkAsTransferredNavigation(global_request_id);
+  host_.MarkAsTransferredNavigation(global_request_id, nullptr);
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
@@ -2672,6 +2711,100 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
   ASSERT_EQ(2U, msgs.size());
   EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
+}
+
+// Tests that during a navigation transferred from one process to
+// another, the certificate is updated to be associated with the new
+// process.
+TEST_P(ResourceDispatcherHostTest, TransferNavigationCertificateUpdate) {
+  if (IsBrowserSideNavigationEnabled()) {
+    SUCCEED() << "Test is not applicable with browser side navigation enabled";
+    return;
+  }
+  // This test expects the cross site request to be leaked, so it can transfer
+  // the request directly.
+  CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
+
+  EXPECT_EQ(0, host_.pending_requests());
+
+  int render_view_id = 0;
+  int request_id = 1;
+
+  // Configure initial request.
+  SetResponse(
+      "HTTP/1.1 302 Found\n"
+      "Location: https://example.com/blech\n\n");
+
+  HandleScheme("https");
+
+  // Temporarily replace ContentBrowserClient with one that will trigger the
+  // transfer navigation code paths.
+  TransfersAllNavigationsContentBrowserClient new_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+
+  MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
+                                  GURL("https://example2.com/blah"),
+                                  RESOURCE_TYPE_MAIN_FRAME);
+
+  // Now that the resource loader is blocked on the redirect, update the
+  // response and unblock by telling the AsyncResourceHandler to follow
+  // the redirect.
+  const std::string kResponseBody = "hello world";
+  SetResponse(
+      "HTTP/1.1 200 OK\n"
+      "Content-Type: text/html\n\n",
+      kResponseBody);
+  SetTestSSLCertificate();
+  ResourceHostMsg_FollowRedirect redirect_msg(request_id);
+  host_.OnMessageReceived(redirect_msg, filter_.get());
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Flush all the pending requests to get the response through the
+  // MimeTypeResourceHandler.`
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {
+  }
+
+  // Restore, now that we've set up a transfer.
+  SetBrowserClientForTesting(old_client);
+
+  // This second filter is used to emulate a second process.
+  scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
+
+  int new_render_view_id = 1;
+  int new_request_id = 2;
+
+  ResourceHostMsg_Request request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("https://example.com/blech"));
+  request.transferred_request_child_id = filter_->child_id();
+  request.transferred_request_request_id = request_id;
+
+  // Before sending the transfer request, set up the mock cert store so
+  // that the test can assert that the cert id is set during transfer.
+  mock_cert_store_.set_default_cert_id(1);
+
+  ResourceHostMsg_RequestResource transfer_request_msg(new_render_view_id,
+                                                       new_request_id, request);
+  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Check generated messages.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  ASSERT_EQ(2U, msgs.size());
+  EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
+  CheckSuccessfulRequest(msgs[1], kResponseBody);
+
+  // Check that the cert id was as expected in ReceivedResponse.
+  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[1][0].type());
+  base::PickleIterator iter(msgs[1][0]);
+  int sent_request_id;
+  ASSERT_TRUE(IPC::ReadParam(&msgs[1][0], &iter, &sent_request_id));
+  ResourceResponseHead response;
+  ASSERT_TRUE(IPC::ReadParam(&msgs[1][0], &iter, &response));
+  SSLStatus ssl;
+  ASSERT_TRUE(DeserializeSecurityInfo(response.security_info, &ssl));
+  EXPECT_EQ(1, ssl.cert_id);
 }
 
 // Test transferring two navigations with text/html, to ensure the resource
@@ -3602,6 +3735,28 @@ TEST_P(ResourceDispatcherHostTest, TransferRequestRedirectedDownload) {
             web_contents_observer_->resource_request_redirect_count());
 }
 
+// A URLRequestTestJob that sets a test certificate on the |ssl_info|
+// field of the response.
+class TestHTTPSURLRequestJob : public net::URLRequestTestJob {
+ public:
+  TestHTTPSURLRequestJob(net::URLRequest* request,
+                         net::NetworkDelegate* network_delegate,
+                         const std::string& response_headers,
+                         const std::string& response_data,
+                         bool auto_advance)
+      : net::URLRequestTestJob(request,
+                               network_delegate,
+                               response_headers,
+                               response_data,
+                               auto_advance) {}
+
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
+    net::URLRequestTestJob::GetResponseInfo(info);
+    info->ssl_info.cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  }
+};
+
 net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
@@ -3644,6 +3799,10 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
           request, network_delegate,
           test_fixture_->response_headers_, test_fixture_->response_data_,
           false);
+    } else if (test_fixture_->use_test_ssl_certificate_) {
+      return new TestHTTPSURLRequestJob(request, network_delegate,
+                                        test_fixture_->response_headers_,
+                                        test_fixture_->response_data_, false);
     } else {
       return new net::URLRequestTestJob(
           request, network_delegate,

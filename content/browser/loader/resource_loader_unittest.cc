@@ -582,7 +582,7 @@ class ResourceLoaderTest : public testing::Test,
     loader_.reset(new ResourceLoader(
         std::move(request),
         WrapResourceHandler(std::move(resource_handler), raw_ptr_to_request_),
-        this));
+        CertStore::GetInstance(), this));
   }
 
   void SetUp() override {

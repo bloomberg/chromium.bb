@@ -22,6 +22,7 @@ class X509Certificate;
 }
 
 namespace content {
+class CertStore;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceLoaderDelegate;
 class ResourceRequestInfoImpl;
@@ -36,6 +37,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
  public:
   ResourceLoader(scoped_ptr<net::URLRequest> request,
                  scoped_ptr<ResourceHandler> handler,
+                 CertStore* cert_store,
                  ResourceLoaderDelegate* delegate);
   ~ResourceLoader() override;
 
@@ -43,13 +45,22 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void CancelRequest(bool from_renderer);
 
   bool is_transferring() const { return is_transferring_; }
-  void MarkAsTransferring();
+  void MarkAsTransferring(const scoped_refptr<ResourceResponse>& response);
   void CompleteTransfer();
 
   net::URLRequest* request() { return request_.get(); }
   ResourceRequestInfoImpl* GetRequestInfo();
 
   void ClearLoginDelegate();
+
+  // Returns a pointer to the ResourceResponse for a request that is
+  // being transferred to a new consumer. The response is valid between
+  // the time that the request is marked as transferring via
+  // MarkAsTransferring() and the time that the transfer is completed
+  // via CompleteTransfer().
+  ResourceResponse* transferring_response() {
+    return transferring_response_.get();
+  }
 
  private:
   // net::URLRequest::Delegate implementation:
@@ -139,11 +150,21 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // which point we'll receive a new ResourceHandler.
   bool is_transferring_;
 
+  // Holds the ResourceResponse for a request that is being transferred
+  // to a new consumer. This member is populated when the request is
+  // marked as transferring via MarkAsTransferring(), and it is cleared
+  // when the transfer is completed via CompleteTransfer().
+  scoped_refptr<ResourceResponse> transferring_response_;
+
   // Instrumentation add to investigate http://crbug.com/503306.
   // TODO(mmenke): Remove once bug is fixed.
   int times_cancelled_before_request_start_;
   bool started_request_;
   int times_cancelled_after_request_start_;
+
+  // Allows tests to use a mock CertStore. The CertStore must outlive
+  // the ResourceLoader.
+  CertStore* cert_store_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 

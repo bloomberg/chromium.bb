@@ -354,11 +354,9 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
       child_id, path);
 }
 
-int GetCertID(net::URLRequest* request, int child_id) {
-  if (request->ssl_info().cert.get()) {
-    return CertStore::GetInstance()->StoreCert(request->ssl_info().cert.get(),
-                                               child_id);
-  }
+int GetCertID(CertStore* cert_store, net::URLRequest* request, int child_id) {
+  if (request->ssl_info().cert.get())
+    return cert_store->StoreCert(request->ssl_info().cert.get(), child_id);
   return 0;
 }
 
@@ -542,14 +540,14 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
       is_shutdown_(false),
       num_in_flight_requests_(0),
       max_num_in_flight_requests_(base::SharedMemory::GetHandleLimit()),
-      max_num_in_flight_requests_per_process_(
-          static_cast<int>(
-              max_num_in_flight_requests_ * kMaxRequestsPerProcessRatio)),
+      max_num_in_flight_requests_per_process_(static_cast<int>(
+          max_num_in_flight_requests_ * kMaxRequestsPerProcessRatio)),
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
       filter_(NULL),
       delegate_(NULL),
-      allow_cross_origin_auth_prompt_(false) {
+      allow_cross_origin_auth_prompt_(false),
+      cert_store_for_testing_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
@@ -972,7 +970,7 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
   // Notify the observers on the UI thread.
   scoped_ptr<ResourceRedirectDetails> detail(new ResourceRedirectDetails(
       loader->request(),
-      GetCertID(loader->request(), info->GetChildID()),
+      GetCertID(GetCertStore(), loader->request(), info->GetChildID()),
       new_url));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -1011,7 +1009,7 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
 
   // Notify the observers on the UI thread.
   scoped_ptr<ResourceRequestDetails> detail(new ResourceRequestDetails(
-      request, GetCertID(request, info->GetChildID())));
+      request, GetCertID(GetCertStore(), request, info->GetChildID())));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -1302,6 +1300,14 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   info->UpdateForTransfer(child_id, route_id, request_data.render_frame_id,
                           request_data.origin_pid, request_id,
                           filter_->GetWeakPtr());
+
+  // If a certificate is stored with the ResourceResponse, it has to be
+  // updated to be associated with the new process.
+  if (loader->transferring_response()) {
+    UpdateResponseCertificateForTransfer(loader->transferring_response(),
+                                         loader->request()->ssl_info(),
+                                         child_id);
+  }
 
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
   // do not actually use a different ID, so not all maps need to be updated.
@@ -1946,8 +1952,9 @@ void ResourceDispatcherHostImpl::BeginSaveFile(const GURL& url,
 }
 
 void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
-    const GlobalRequestID& id) {
-  GetLoader(id)->MarkAsTransferring();
+    const GlobalRequestID& id,
+    const scoped_refptr<ResourceResponse>& response) {
+  GetLoader(id)->MarkAsTransferring(response);
 }
 
 void ResourceDispatcherHostImpl::CancelTransferringNavigation(
@@ -2393,8 +2400,8 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     return;
   }
 
-  scoped_ptr<ResourceLoader> loader(
-      new ResourceLoader(std::move(request), std::move(handler), this));
+  scoped_ptr<ResourceLoader> loader(new ResourceLoader(
+      std::move(request), std::move(handler), GetCertStore(), this));
 
   GlobalFrameRoutingId id(info->GetChildID(), info->GetRenderFrameID());
   BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.find(id);
@@ -2657,6 +2664,31 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
     load_flags |= net::LOAD_IGNORE_LIMITS;
 
   return load_flags;
+}
+
+void ResourceDispatcherHostImpl::UpdateResponseCertificateForTransfer(
+    ResourceResponse* response,
+    const net::SSLInfo& ssl_info,
+    int child_id) {
+  if (!ssl_info.cert)
+    return;
+  SSLStatus ssl;
+  // DeserializeSecurityInfo() often takes security info sent by a
+  // renderer as input, in which case it's important to check that the
+  // security info deserializes properly and kill the renderer if
+  // not. In this case, however, the security info has been provided by
+  // the ResourceLoader, so it does not need to be treated as untrusted
+  // data.
+  bool deserialized =
+      DeserializeSecurityInfo(response->head.security_info, &ssl);
+  DCHECK(deserialized);
+  ssl.cert_id = GetCertStore()->StoreCert(ssl_info.cert.get(), child_id);
+  response->head.security_info = SerializeSecurityInfo(ssl);
+}
+
+CertStore* ResourceDispatcherHostImpl::GetCertStore() {
+  return cert_store_for_testing_ ? cert_store_for_testing_
+                                 : CertStore::GetInstance();
 }
 
 }  // namespace content

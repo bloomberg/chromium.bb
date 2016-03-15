@@ -64,6 +64,7 @@ class ShareableFileReference;
 namespace content {
 class AppCacheService;
 class AsyncRevalidationManager;
+class CertStore;
 class FrameTree;
 class NavigationURLLoaderImplCore;
 class RenderFrameHostImpl;
@@ -172,9 +173,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Cancels the given request if it still exists.
   void CancelRequest(int child_id, int request_id);
 
-  // Marks the request as "parked". This happens if a request is
-  // redirected cross-site and needs to be resumed by a new render view.
-  void MarkAsTransferredNavigation(const GlobalRequestID& id);
+  // Marks the request, with its current |response|, as "parked". This
+  // happens if a request is redirected cross-site and needs to be
+  // resumed by a new render view.
+  void MarkAsTransferredNavigation(
+      const GlobalRequestID& id,
+      const scoped_refptr<ResourceResponse>& response);
 
   // Cancels a request previously marked as being transferred, for use when a
   // navigation was cancelled.
@@ -325,6 +329,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                            DetachableResourceTimesOut);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestProcessCancelDetachableTimesOut);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessIgnoreCertErrorsBrowserTest,
+                           CrossSiteRedirectCertificateStore);
 
   struct OustandingRequestsStats {
     int memory_cost;
@@ -550,6 +556,16 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                int child_id,
                                bool is_sync_load);
 
+  // The certificate on a ResourceResponse is associated with a
+  // particular renderer process. As a transfer to a new process
+  // completes, the stored certificate has to be updated to reflect the
+  // new renderer process.
+  void UpdateResponseCertificateForTransfer(ResourceResponse* response,
+                                            const net::SSLInfo& ssl_info,
+                                            int child_id);
+
+  CertStore* GetCertStore();
+
   LoaderMap pending_loaders_;
 
   // Collection of temp files downloaded for child processes via
@@ -641,6 +657,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   DelegateMap delegate_map_;
 
   scoped_ptr<ResourceScheduler> scheduler_;
+
+  // Allows tests to use a mock CertStore. If set, the CertStore must
+  // outlive this ResourceDispatcherHostImpl.
+  CertStore* cert_store_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };
