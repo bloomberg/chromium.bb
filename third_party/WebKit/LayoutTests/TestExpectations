@@ -1356,10 +1356,6 @@ crbug.com/594230 [ Linux Debug ] fast/files/workers/worker-read-blob-async-crash
 crbug.com/594230 [ Linux Debug ] http/tests/fetch/serviceworker/fetch.html [ Crash Pass ]
 crbug.com/594230 [ Linux Debug ] http/tests/fetch/serviceworker/fetch-base-https-other-https.html [ Crash Pass ]
 
-crbug.com/593567 [ Linux Win ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/593567 [ Linux Win ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/593567 [ Linux Win ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
-
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/fixed-scroll-in-empty-root-layer.html [ Failure ]
