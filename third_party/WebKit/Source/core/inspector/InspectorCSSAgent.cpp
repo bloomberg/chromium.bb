@@ -1045,7 +1045,7 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
     }
 }
 
-void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layoutObject, HashCountedSet<String>* fontStats)
+void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layoutObject, HashCountedSet<std::pair<int, String>>* fontStats)
 {
     if (!layoutObject->isText())
         return;
@@ -1064,9 +1064,7 @@ void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layout
             String familyName = simpleFontData->platformData().fontFamilyName();
             if (familyName.isNull())
                 familyName = "";
-            String isCustomFont = simpleFontData->isCustomFont() ? "1" : "0";
-            String fontDescription = isCustomFont + familyName;
-            fontStats->add(fontDescription);
+            fontStats->add(std::make_pair(simpleFontData->isCustomFont() ? 1 : 0, familyName));
         }
     }
 }
@@ -1078,7 +1076,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     if (!node)
         return;
 
-    HashCountedSet<String> fontStats;
+    HashCountedSet<std::pair<int, String>> fontStats;
     LayoutObject* root = node->layoutObject();
     if (root) {
         collectPlatformFontsForLayoutObject(root, &fontStats);
@@ -1091,9 +1089,9 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     }
     *platformFonts = protocol::Array<protocol::CSS::PlatformFontUsage>::create();
     for (auto& font : fontStats) {
-        String fontDescription = font.key;
-        bool isCustomFont = fontDescription.startsWith('1');
-        String fontName = fontDescription.substring(1);
+        std::pair<int, String>& fontDescription = font.key;
+        bool isCustomFont = fontDescription.first == 1;
+        String fontName = fontDescription.second;
         (*platformFonts)->addItem(protocol::CSS::PlatformFontUsage::create()
             .setFamilyName(fontName)
             .setIsCustomFont(isCustomFont)

@@ -185,7 +185,7 @@ private:
 
     PassOwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>> animationsForNode(Element*);
 
-    void collectPlatformFontsForLayoutObject(LayoutObject*, HashCountedSet<String>*);
+    void collectPlatformFontsForLayoutObject(LayoutObject*, HashCountedSet<std::pair<int, String>>*);
 
     InspectorStyleSheet* bindStyleSheet(CSSStyleSheet*);
     String unbindStyleSheet(InspectorStyleSheet*);
