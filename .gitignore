@@ -11,7 +11,7 @@ core
 *.user
 *.suo
 *.exe
-*.webm
+/*.webm
 Debug
 Release
 *.sdf
