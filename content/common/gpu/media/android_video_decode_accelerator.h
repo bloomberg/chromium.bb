@@ -105,7 +105,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // associated texture). Callers should set the correct GL context prior to
     // calling.
     virtual void UpdatePictureBufferSize(media::PictureBuffer* picture_buffer,
-                                         const gfx::Size& new_size);
+                                         const gfx::Size& new_size) = 0;
   };
 
   AndroidVideoDecodeAccelerator(
