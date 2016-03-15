@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fitsSystemWindows="true"
-            android:background="?attr/colorPrimary"/>
+            style="@style/ToolbarStyle"/>
         <FrameLayout
             android:id="@+id/resize_detector"
             android:layout_below="@id/toolbar"
