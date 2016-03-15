@@ -43,12 +43,12 @@
 namespace blink {
 
 class Font;
+class ShapeResultSpacing;
 class SimpleFontData;
 class TextRun;
 struct GlyphData;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
-    WTF_MAKE_NONCOPYABLE(ShapeResult);
 public:
     static PassRefPtr<ShapeResult> create(const Font* font,
         unsigned numCharacters, TextDirection direction)
@@ -63,12 +63,16 @@ public:
     const FloatRect& bounds() const { return m_glyphBoundingBox; }
     unsigned numCharacters() const { return m_numCharacters; }
     void fallbackFonts(HashSet<const SimpleFontData*>*) const;
+    bool rtl() const { return m_direction == RTL; }
     bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
 
     // For memory reporting.
     size_t byteSize();
 
     int offsetForPosition(float targetX) const;
+
+    PassRefPtr<ShapeResult> applySpacingToCopy(ShapeResultSpacing&,
+        const TextRun&);
 
 protected:
     struct RunInfo;
@@ -77,6 +81,14 @@ protected:
 #endif
 
     ShapeResult(const Font*, unsigned numCharacters, TextDirection);
+    ShapeResult(const ShapeResult&);
+
+    static PassRefPtr<ShapeResult> create(const ShapeResult& other)
+    {
+        return adoptRef(new ShapeResult(other));
+    }
+
+    void applySpacing(ShapeResultSpacing&, const TextRun&);
 
     float m_width;
     FloatRect m_glyphBoundingBox;

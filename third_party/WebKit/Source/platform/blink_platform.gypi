@@ -480,6 +480,8 @@
       'fonts/shaping/ShapeResultBuffer.cpp',
       'fonts/shaping/ShapeResultBuffer.h',
       'fonts/shaping/ShapeResultInlineHeaders.h',
+      'fonts/shaping/ShapeResultSpacing.cpp',
+      'fonts/shaping/ShapeResultSpacing.h',
       'fonts/shaping/ShapeResultTestInfo.cpp',
       'fonts/shaping/ShapeResultTestInfo.h',
       'fonts/shaping/Shaper.cpp',

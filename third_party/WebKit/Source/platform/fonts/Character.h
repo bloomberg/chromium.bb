@@ -66,6 +66,12 @@ public:
 
     static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
     static unsigned expansionOpportunityCount(const UChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
+    static unsigned expansionOpportunityCount(const TextRun& run, bool& isAfterExpansion)
+    {
+        if (run.is8Bit())
+            return expansionOpportunityCount(run.characters8(), run.length(), run.direction(), isAfterExpansion, run.getTextJustify());
+        return expansionOpportunityCount(run.characters16(), run.length(), run.direction(), isAfterExpansion, run.getTextJustify());
+    }
 
     static bool isUprightInMixedVertical(UChar32 character);
 

@@ -55,13 +55,23 @@ struct HarfBuzzRunGlyphData {
 
 struct ShapeResult::RunInfo {
     USING_FAST_MALLOC(RunInfo);
-    WTF_MAKE_NONCOPYABLE(RunInfo);
 public:
     RunInfo(const SimpleFontData* font, hb_direction_t dir, hb_script_t script,
         unsigned startIndex, unsigned numGlyphs, unsigned numCharacters)
         : m_fontData(const_cast<SimpleFontData*>(font)), m_direction(dir)
         , m_script(script), m_glyphData(numGlyphs), m_startIndex(startIndex)
         , m_numCharacters(numCharacters), m_width(0.0f)
+    {
+    }
+
+    RunInfo(const RunInfo& other)
+        : m_fontData(other.m_fontData)
+        , m_direction(other.m_direction)
+        , m_script(other.m_script)
+        , m_glyphData(other.m_glyphData)
+        , m_startIndex(other.m_startIndex)
+        , m_numCharacters(other.m_numCharacters)
+        , m_width(other.m_width)
     {
     }
 

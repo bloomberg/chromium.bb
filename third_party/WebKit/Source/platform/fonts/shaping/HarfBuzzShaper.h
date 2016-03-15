@@ -153,8 +153,6 @@ public:
     };
 
 private:
-    float nextExpansionPerOpportunity();
-    void setExpansion(float);
     void setFontFeatures();
 
     void appendToHolesQueue(HolesQueueItemAction,
@@ -178,14 +176,9 @@ private:
     bool collectFallbackHintChars(Vector<UChar32>& hint, bool needsList);
 
     void insertRunIntoShapeResult(ShapeResult*, PassOwnPtr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs, hb_buffer_t*);
-    float adjustSpacing(ShapeResult::RunInfo*, size_t glyphIndex, unsigned currentCharacterIndex, float& offsetX, float& totalAdvance);
 
     OwnPtr<UChar[]> m_normalizedBuffer;
     unsigned m_normalizedBufferLength;
-
-    float m_wordSpacingAdjustment; // Delta adjustment (pixels) for each word break.
-    float m_letterSpacing; // Pixels to be added after each glyph.
-    unsigned m_expansionOpportunityCount;
 
     Vector<hb_feature_t, 4> m_features;
     Deque<HolesQueueItem> m_holesQueue;

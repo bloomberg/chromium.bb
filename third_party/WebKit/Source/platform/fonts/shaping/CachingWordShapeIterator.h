@@ -31,6 +31,7 @@
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeCache.h"
+#include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/CharacterNames.h"
 
@@ -43,23 +44,15 @@ public:
     CachingWordShapeIterator(ShapeCache* cache, const TextRun& run,
         const Font* font)
         : m_shapeCache(cache), m_textRun(run), m_font(font)
+        , m_spacing(run, font->getFontDescription())
         , m_widthSoFar(0), m_startIndex(0)
     {
         ASSERT(font);
-        const FontDescription& fontDescription = font->getFontDescription();
-
-        // Word and letter spacing can change the width of a word, as can tabs
-        // as we segment solely based on on space characters.
-        // If expansion is used (for justified text) the spacing between words
-        // change and thus we need to shape the entire run.
-        m_wordResultCachable = !fontDescription.wordSpacing()
-            && !fontDescription.letterSpacing()
-            && m_textRun.expansion() == 0.0f;
 
         // Shaping word by word is faster as each word is cached. If we cannot
         // use the cache or if the font doesn't support word by word shaping
         // fall back on shaping the entire run.
-        m_shapeByWord = m_wordResultCachable && m_font->canShapeWordByWord();
+        m_shapeByWord = m_font->canShapeWordByWord();
     }
 
     bool next(RefPtr<ShapeResult>* wordResult)
@@ -79,11 +72,9 @@ public:
     }
 
 private:
-    PassRefPtr<ShapeResult> shapeWord(const TextRun& wordRun, const Font* font)
+    PassRefPtr<ShapeResult> shapeWordWithoutSpacing(const TextRun& wordRun, const Font* font)
     {
-        ShapeCacheEntry* cacheEntry = m_wordResultCachable
-            ? m_shapeCache->add(wordRun, ShapeCacheEntry())
-            : nullptr;
+        ShapeCacheEntry* cacheEntry = m_shapeCache->add(wordRun, ShapeCacheEntry());
         if (cacheEntry && cacheEntry->m_shapeResult)
             return cacheEntry->m_shapeResult;
 
@@ -96,6 +87,15 @@ private:
             cacheEntry->m_shapeResult = shapeResult;
 
         return shapeResult.release();
+    }
+
+    PassRefPtr<ShapeResult> shapeWord(const TextRun& wordRun, const Font* font)
+    {
+        if (LIKELY(!m_spacing.hasSpacing()))
+            return shapeWordWithoutSpacing(wordRun, font);
+
+        RefPtr<ShapeResult> result = shapeWordWithoutSpacing(wordRun, font);
+        return result->applySpacingToCopy(m_spacing, wordRun);
     }
 
     bool nextWord(RefPtr<ShapeResult>* wordResult)
@@ -217,9 +217,9 @@ private:
     ShapeCache* m_shapeCache;
     const TextRun& m_textRun;
     const Font* m_font;
+    ShapeResultSpacing m_spacing;
     float m_widthSoFar; // Used only when allowTabs()
-    unsigned m_startIndex : 30;
-    unsigned m_wordResultCachable : 1;
+    unsigned m_startIndex : 31;
     unsigned m_shapeByWord : 1;
 };
 

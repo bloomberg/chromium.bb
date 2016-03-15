@@ -33,6 +33,7 @@
 
 #include "platform/fonts/Font.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
+#include "platform/fonts/shaping/ShapeResultSpacing.h"
 
 namespace blink {
 
@@ -124,6 +125,20 @@ ShapeResult::ShapeResult(const Font* font, unsigned numCharacters, TextDirection
 {
 }
 
+ShapeResult::ShapeResult(const ShapeResult& other)
+    : m_width(other.m_width)
+    , m_glyphBoundingBox(other.m_glyphBoundingBox)
+    , m_primaryFont(other.m_primaryFont)
+    , m_numCharacters(other.m_numCharacters)
+    , m_numGlyphs(other.m_numGlyphs)
+    , m_direction(other.m_direction)
+    , m_hasVerticalOffsets(other.m_hasVerticalOffsets)
+{
+    m_runs.reserveCapacity(other.m_runs.size());
+    for (const auto& run : other.m_runs)
+        m_runs.append(adoptPtr(new ShapeResult::RunInfo(*run)));
+}
+
 ShapeResult::~ShapeResult()
 {
 }
@@ -185,6 +200,59 @@ void ShapeResult::fallbackFonts(HashSet<const SimpleFontData*>* fallback) const
             fallback->add(m_runs[i]->m_fontData.get());
         }
     }
+}
+
+void ShapeResult::applySpacing(ShapeResultSpacing& spacing, const TextRun& textRun)
+{
+    float offsetX, offsetY;
+    float& offset = spacing.isVerticalOffset() ? offsetY : offsetX;
+    float totalSpace = 0;
+    for (auto& run : m_runs) {
+        if (!run)
+            continue;
+        float totalSpaceForRun = 0;
+        for (size_t i = 0; i < run->m_glyphData.size(); i++) {
+            HarfBuzzRunGlyphData& glyphData = run->m_glyphData[i];
+
+            // Skip if it's not a grapheme cluster boundary.
+            if (i + 1 < run->m_glyphData.size()
+                && glyphData.characterIndex == run->m_glyphData[i + 1].characterIndex) {
+                // In RTL, marks need the same letter-spacing offset as the base.
+                if (textRun.rtl() && spacing.letterSpacing()) {
+                    offsetX = offsetY = 0;
+                    offset = spacing.letterSpacing();
+                    glyphData.offset.expand(offsetX, offsetY);
+                }
+                continue;
+            }
+
+            offsetX = offsetY = 0;
+            float space = spacing.computeSpacing(textRun,
+                run->m_startIndex + glyphData.characterIndex, offset);
+            glyphData.advance += space;
+            totalSpaceForRun += space;
+            if (textRun.rtl()) {
+                // In RTL, spacing should be added to left side of glyphs.
+                offset += space;
+            }
+            glyphData.offset.expand(offsetX, offsetY);
+        }
+        run->m_width += totalSpaceForRun;
+        totalSpace += totalSpaceForRun;
+    }
+    m_width += totalSpace;
+    if (spacing.isVerticalOffset())
+        m_glyphBoundingBox.setHeight(m_glyphBoundingBox.height() + totalSpace);
+    else
+        m_glyphBoundingBox.setWidth(m_glyphBoundingBox.width() + totalSpace);
+}
+
+PassRefPtr<ShapeResult> ShapeResult::applySpacingToCopy(
+    ShapeResultSpacing& spacing, const TextRun& run)
+{
+    RefPtr<ShapeResult> result = ShapeResult::create(*this);
+    result->applySpacing(spacing, run);
+    return result.release();
 }
 
 } // namespace blink

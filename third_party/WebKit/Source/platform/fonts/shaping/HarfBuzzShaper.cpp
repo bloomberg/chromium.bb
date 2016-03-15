@@ -116,52 +116,10 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
 HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
     : Shaper(font, run)
     , m_normalizedBufferLength(0)
-    , m_wordSpacingAdjustment(font->getFontDescription().wordSpacing())
-    , m_letterSpacing(font->getFontDescription().letterSpacing())
-    , m_expansionOpportunityCount(0)
 {
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_textRun.length() + 1]);
     normalizeCharacters(m_textRun, m_textRun.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
-    setExpansion(m_textRun.expansion());
     setFontFeatures();
-}
-
-float HarfBuzzShaper::nextExpansionPerOpportunity()
-{
-    if (!m_expansionOpportunityCount) {
-        ASSERT_NOT_REACHED(); // failures indicate that the logic in HarfBuzzShaper does not match to the one in expansionOpportunityCount()
-        return 0;
-    }
-    if (!--m_expansionOpportunityCount) {
-        float remaining = m_expansion;
-        m_expansion = 0;
-        return remaining;
-    }
-    m_expansion -= m_expansionPerOpportunity;
-    return m_expansionPerOpportunity;
-}
-
-// setPadding sets a number of pixels to be distributed across the TextRun.
-// WebKit uses this to justify text.
-void HarfBuzzShaper::setExpansion(float padding)
-{
-    m_expansion = padding;
-    if (!m_expansion)
-        return;
-
-    // If we have padding to distribute, then we try to give an equal
-    // amount to each expansion opportunity.
-    bool isAfterExpansion = m_isAfterExpansion;
-    m_expansionOpportunityCount = Character::expansionOpportunityCount(m_normalizedBuffer.get(), m_normalizedBufferLength, m_textRun.direction(), isAfterExpansion, m_textRun.getTextJustify());
-    if (isAfterExpansion && !m_textRun.allowsTrailingExpansion()) {
-        ASSERT(m_expansionOpportunityCount > 0);
-        --m_expansionOpportunityCount;
-    }
-
-    if (m_expansionOpportunityCount)
-        m_expansionPerOpportunity = m_expansion / m_expansionOpportunityCount;
-    else
-        m_expansionPerOpportunity = 0;
 }
 
 static inline hb_feature_t createFeature(uint8_t c1, uint8_t c2, uint8_t c3, uint8_t c4, uint32_t value = 0)
@@ -644,40 +602,23 @@ void HarfBuzzShaper::insertRunIntoShapeResult(ShapeResult* result,
 
     float totalAdvance = 0.0f;
     FloatPoint glyphOrigin;
-    float offsetX, offsetY;
-    float* directionOffset = m_font->getFontDescription().isVerticalAnyUpright() ? &offsetY : &offsetX;
     bool hasVerticalOffsets = !HB_DIRECTION_IS_HORIZONTAL(run->m_direction);
 
     // HarfBuzz returns result in visual order, no need to flip for RTL.
     for (unsigned i = 0; i < numGlyphs; ++i) {
-        bool runEnd = i + 1 == numGlyphs;
         uint16_t glyph = glyphInfos[startGlyph + i].codepoint;
-        offsetX = harfBuzzPositionToFloat(glyphPositions[startGlyph + i].x_offset);
-        offsetY = -harfBuzzPositionToFloat(glyphPositions[startGlyph + i].y_offset);
+        float offsetX = harfBuzzPositionToFloat(glyphPositions[startGlyph + i].x_offset);
+        float offsetY = -harfBuzzPositionToFloat(glyphPositions[startGlyph + i].y_offset);
 
         // One out of x_advance and y_advance is zero, depending on
         // whether the buffer direction is horizontal or vertical.
         float advance = harfBuzzPositionToFloat(glyphPositions[startGlyph + i].x_advance - glyphPositions[startGlyph + i].y_advance);
-        unsigned currentCharacterIndex = glyphInfos[startGlyph + i].cluster;
-        RELEASE_ASSERT(m_normalizedBufferLength > currentCharacterIndex);
-        bool isClusterEnd = runEnd || glyphInfos[startGlyph + i].cluster != glyphInfos[startGlyph + i + 1].cluster;
-        float spacing = 0;
+        RELEASE_ASSERT(m_normalizedBufferLength > glyphInfos[startGlyph + i].cluster);
 
         // The characterIndex of one ShapeResult run is normalized to the run's
         // startIndex and length.  TODO crbug.com/542703: Consider changing that
         // and instead pass the whole run to hb_buffer_t each time.
         run->m_glyphData[i].characterIndex = glyphInfos[startGlyph + i].cluster - startCluster;
-
-        if (isClusterEnd)
-            spacing += adjustSpacing(run.get(), i, currentCharacterIndex, *directionOffset, totalAdvance);
-
-        advance += spacing;
-        if (m_textRun.rtl()) {
-            // In RTL, spacing should be added to left side of glyphs.
-            *directionOffset += spacing;
-            if (!isClusterEnd)
-                *directionOffset += m_letterSpacing;
-        }
 
         run->setGlyphAndPositions(i, glyph, advance, offsetX, offsetY);
         totalAdvance += advance;
@@ -744,62 +685,6 @@ PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(const Font* f
     result->m_hasVerticalOffsets = fontData->platformData().isVerticalAnyUpright();
     result->m_runs.append(run.release());
     return result.release();
-}
-
-float HarfBuzzShaper::adjustSpacing(ShapeResult::RunInfo* run, size_t glyphIndex, unsigned currentCharacterIndex, float& offset, float& totalAdvance)
-{
-    float spacing = 0;
-    UChar32 character = m_normalizedBuffer[currentCharacterIndex];
-    if (m_letterSpacing && !Character::treatAsZeroWidthSpace(character))
-        spacing += m_letterSpacing;
-
-    bool treatAsSpace = Character::treatAsSpace(character);
-    if (treatAsSpace && (currentCharacterIndex || character == noBreakSpaceCharacter) && (character != '\t' || !m_textRun.allowTabs()))
-        spacing += m_wordSpacingAdjustment;
-
-    if (!m_expansionOpportunityCount)
-        return spacing;
-
-    if (treatAsSpace) {
-        spacing += nextExpansionPerOpportunity();
-        m_isAfterExpansion = true;
-        return spacing;
-    }
-
-    if (m_textRun.getTextJustify() != TextJustify::TextJustifyAuto) {
-        m_isAfterExpansion = false;
-        return spacing;
-    }
-
-    // isCJKIdeographOrSymbol() has expansion opportunities both before and after each character.
-    // http://www.w3.org/TR/jlreq/#line_adjustment
-    if (U16_IS_LEAD(character) && currentCharacterIndex + 1 < m_normalizedBufferLength && U16_IS_TRAIL(m_normalizedBuffer[currentCharacterIndex + 1]))
-        character = U16_GET_SUPPLEMENTARY(character, m_normalizedBuffer[currentCharacterIndex + 1]);
-    if (!Character::isCJKIdeographOrSymbol(character)) {
-        m_isAfterExpansion = false;
-        return spacing;
-    }
-
-    if (!m_isAfterExpansion) {
-        // Take the expansion opportunity before this ideograph.
-        float expandBefore = nextExpansionPerOpportunity();
-        if (expandBefore) {
-            if (glyphIndex > 0) {
-                run->addAdvance(glyphIndex - 1, expandBefore);
-                totalAdvance += expandBefore;
-            } else {
-                offset += expandBefore;
-                spacing += expandBefore;
-            }
-        }
-        if (!m_expansionOpportunityCount)
-            return spacing;
-    }
-
-    // Don't need to check m_textRun.allowsTrailingExpansion() since it's covered by !m_expansionOpportunityCount above
-    spacing += nextExpansionPerOpportunity();
-    m_isAfterExpansion = true;
-    return spacing;
 }
 
 

@@ -64,6 +64,7 @@ protected:
     HashSet<const SimpleFontData*>* m_fallbackFonts;
     FloatRect* m_glyphBoundingBox;
 
+    // TODO(kojii): These are no longer used in HarfBuzzShaper.
     float m_expansion; // Pixels to be distributed over the line at word breaks.
     float m_expansionPerOpportunity; // Pixels to be added to each expansion opportunity.
     bool m_isAfterExpansion;
