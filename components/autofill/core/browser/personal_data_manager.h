@@ -232,10 +232,6 @@ class PersonalDataManager : public KeyedService,
   // will only update when Chrome is restarted.
   virtual const std::string& GetDefaultCountryCodeForNewAddress() const;
 
-  // Returns true if the wallet integration feature is enabled. Note that the
-  // feature can still disabled by a user pref.
-  bool IsExperimentalWalletIntegrationEnabled() const;
-
   // De-dupe credit card suggestions. Full server cards are prefered over their
   // local duplicates, and local cards are preferred over their masked server
   // card duplicate.

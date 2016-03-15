@@ -1018,9 +1018,6 @@ void ProfileSyncService::OnExperimentsChanged(
   sync_client_->GetPrefService()->SetBoolean(
       invalidation::prefs::kInvalidationServiceUseGCMChannel,
       experiments.gcm_invalidations_enabled);
-  sync_client_->GetPrefService()->SetBoolean(
-      autofill::prefs::kAutofillWalletSyncExperimentEnabled,
-      experiments.wallet_sync_enabled);
 }
 
 void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {

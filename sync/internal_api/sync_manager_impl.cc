@@ -990,17 +990,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     }
   }
 
-  ReadNode wallet_sync_node(&trans);
-  if (wallet_sync_node.InitByClientTagLookup(
-          syncer::EXPERIMENTS, syncer::kWalletSyncTag) == BaseNode::INIT_OK) {
-    const sync_pb::WalletSyncFlags& wallet_sync =
-        wallet_sync_node.GetExperimentsSpecifics().wallet_sync();
-    if (wallet_sync.has_enabled()) {
-      experiments->wallet_sync_enabled = wallet_sync.enabled();
-      found_experiment = true;
-    }
-  }
-
   return found_experiment;
 }
 

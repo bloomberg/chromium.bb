@@ -48,7 +48,6 @@
       'autofill/core/browser/form_structure_unittest.cc',
       'autofill/core/browser/legal_message_line_unittest.cc',
       'autofill/core/browser/name_field_unittest.cc',
-      'autofill/core/browser/options_util_unittest.cc',
       'autofill/core/browser/password_generator_unittest.cc',
       'autofill/core/browser/personal_data_manager_unittest.cc',
       'autofill/core/browser/phone_field_unittest.cc',

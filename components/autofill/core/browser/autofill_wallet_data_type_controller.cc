@@ -36,12 +36,8 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
          model_type_ == syncer::AUTOFILL_WALLET_METADATA);
   pref_registrar_.Init(sync_client_->GetPrefService());
   pref_registrar_.Add(
-      autofill::prefs::kAutofillWalletSyncExperimentEnabled,
-      base::Bind(&AutofillWalletDataTypeController::OnSyncPrefChanged,
-                 base::Unretained(this)));
-  pref_registrar_.Add(
       autofill::prefs::kAutofillWalletImportEnabled,
-      base::Bind(&AutofillWalletDataTypeController::OnSyncPrefChanged,
+      base::Bind(&AutofillWalletDataTypeController::OnUserPrefChanged,
                  base::Unretained(this)));
 }
 
@@ -110,7 +106,7 @@ bool AutofillWalletDataTypeController::ReadyForStart() const {
   return currently_enabled_;
 }
 
-void AutofillWalletDataTypeController::OnSyncPrefChanged() {
+void AutofillWalletDataTypeController::OnUserPrefChanged() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
 
   bool new_enabled = IsEnabled();
@@ -119,7 +115,7 @@ void AutofillWalletDataTypeController::OnSyncPrefChanged() {
   currently_enabled_ = new_enabled;
 
   if (currently_enabled_) {
-    // The experiment was just enabled. Trigger a reconfiguration. This will do
+    // The preference was just enabled. Trigger a reconfiguration. This will do
     // nothing if the type isn't preferred.
     sync_driver::SyncService* sync_service = sync_client_->GetSyncService();
     sync_service->ReenableDatatype(type());
@@ -140,12 +136,9 @@ void AutofillWalletDataTypeController::OnSyncPrefChanged() {
 bool AutofillWalletDataTypeController::IsEnabled() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
 
-  // Require both the sync experiment and the user-visible pref to be
-  // enabled to sync Wallet data/metadata.
+  // Require the user-visible pref to be enabled to sync Wallet data/metadata.
   PrefService* ps = sync_client_->GetPrefService();
-  return ps->GetBoolean(
-             autofill::prefs::kAutofillWalletSyncExperimentEnabled) &&
-         ps->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled);
+  return ps->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled);
 }
 
 }  // namespace browser_sync

@@ -174,8 +174,6 @@
         'autofill/core/browser/legal_message_line.h',
         'autofill/core/browser/name_field.cc',
         'autofill/core/browser/name_field.h',
-        'autofill/core/browser/options_util.cc',
-        'autofill/core/browser/options_util.h',
         'autofill/core/browser/password_generator.cc',
         'autofill/core/browser/password_generator.h',
         'autofill/core/browser/payments/payments_client.cc',

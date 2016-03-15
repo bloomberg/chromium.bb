@@ -43,8 +43,8 @@ class AutofillWalletDataTypeController
   void StopModels() override;
   bool ReadyForStart() const override;
 
-  // Callback for changes to the autofill prefs.
-  void OnSyncPrefChanged();
+  // Callback for changes to the autofill pref.
+  void OnUserPrefChanged();
 
   // Returns true if the prefs are set such that wallet sync should be enabled.
   bool IsEnabled();

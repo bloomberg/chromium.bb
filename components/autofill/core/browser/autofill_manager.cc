@@ -179,8 +179,6 @@ void AutofillManager::RegisterProfilePrefs(
       prefs::kAutofillEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kAutofillWalletSyncExperimentEnabled,
-                                false);
   // TODO(estade): Should this be syncable?
   registry->RegisterBooleanPref(
       prefs::kAutofillWalletImportEnabled,

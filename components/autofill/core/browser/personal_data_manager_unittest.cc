@@ -167,7 +167,6 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   void EnableWalletCardImport() {
-    prefs_->SetBoolean(prefs::kAutofillWalletSyncExperimentEnabled, true);
     signin_manager_->SetAuthenticatedAccountInfo("12345",
                                                  "syncuser@example.com");
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -606,33 +605,8 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   EXPECT_EQ(credit_card.origin(), cards3[0]->origin());
 }
 
-// Tests that server cards are ignored without the flag.
-TEST_F(PersonalDataManagerTest, ReturnsServerCreditCards) {
-  std::vector<CreditCard> server_cards;
-  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
-  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "9012" /* Visa */, "01", "2010");
-  server_cards.back().SetTypeForMaskedCard(kVisaCard);
-
-  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
-  test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2012");
-  server_cards.back().SetTypeForMaskedCard(kMasterCard);
-
-  test::SetServerCreditCards(autofill_table_, server_cards);
-  personal_data_->Refresh();
-
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-      .WillOnce(QuitMainMessageLoop());
-  base::MessageLoop::current()->Run();
-
-  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
-}
-
 // Makes sure that full cards are re-masked when full PAN storage is off.
 TEST_F(PersonalDataManagerTest, RefuseToStoreFullCard) {
-  prefs_->SetBoolean(prefs::kAutofillWalletSyncExperimentEnabled, true);
-
   // On Linux this should be disabled automatically. Elsewhere, only if the
   // flag is passed.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

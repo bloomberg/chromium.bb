@@ -14,7 +14,6 @@ namespace prefs {
 extern const char kAutofillEnabled[];
 extern const char kAutofillWalletImportEnabled[];
 extern const char kAutofillWalletImportStorageCheckboxState[];
-extern const char kAutofillWalletSyncExperimentEnabled[];
 
 }  // namespace prefs
 }  // namespace autofill

@@ -621,8 +621,7 @@ const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
   credit_cards_.clear();
   credit_cards_.insert(credit_cards_.end(), local_credit_cards_.begin(),
                        local_credit_cards_.end());
-  if (IsExperimentalWalletIntegrationEnabled() &&
-      pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
+  if (pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
     credit_cards_.insert(credit_cards_.end(), server_credit_cards_.begin(),
                          server_credit_cards_.end());
   }
@@ -972,10 +971,6 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
     default_country_code_ = AutofillCountry::CountryCodeForLocale(app_locale());
 
   return default_country_code_;
-}
-
-bool PersonalDataManager::IsExperimentalWalletIntegrationEnabled() const {
-  return pref_service_->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled);
 }
 
 // static
@@ -1409,8 +1404,7 @@ const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles(
   profiles_.clear();
   profiles_.insert(profiles_.end(), web_profiles().begin(),
                    web_profiles().end());
-  if (IsExperimentalWalletIntegrationEnabled() &&
-      pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
+  if (pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
     profiles_.insert(
         profiles_.end(), server_profiles_.begin(), server_profiles_.end());
   }

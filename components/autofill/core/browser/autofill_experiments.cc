@@ -74,11 +74,9 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     return false;
   }
 
-  // Check Payments integration setting.
-  if (!pref_service->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled) ||
-      !pref_service->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
+  // Check Payments integration user setting.
+  if (!pref_service->GetBoolean(prefs::kAutofillWalletImportEnabled))
     return false;
-  }
 
   // Check that the user is logged into a supported domain.
   if (user_email.empty())

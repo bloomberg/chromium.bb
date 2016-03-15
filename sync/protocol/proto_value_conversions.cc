@@ -441,7 +441,6 @@ scoped_ptr<base::DictionaryValue> ExperimentsSpecificsToValue(
   SET(favicon_sync, FaviconSyncFlagsToValue);
   SET_EXPERIMENT_ENABLED_FIELD(gcm_channel);
   SET_EXPERIMENT_ENABLED_FIELD(gcm_invalidations);
-  SET_EXPERIMENT_ENABLED_FIELD(wallet_sync);
   return value;
 }
 

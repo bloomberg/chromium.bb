@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
@@ -371,8 +370,6 @@ void AutofillMetricsTest::TearDown() {
 }
 
 void AutofillMetricsTest::EnableWalletSync() {
-  autofill_client_.GetPrefs()->SetBoolean(
-      prefs::kAutofillWalletSyncExperimentEnabled, true);
   signin_manager_->SetAuthenticatedAccountInfo("12345", "syncuser@example.com");
 }
 
@@ -1653,8 +1650,6 @@ TEST_F(AutofillMetricsTest, CreditCardSelectedFormEvents) {
 
 // Test that we log filled form events for credit cards.
 TEST_F(AutofillMetricsTest, CreditCardFilledFormEvents) {
-  autofill_client_.GetPrefs()->SetBoolean(
-      prefs::kAutofillWalletSyncExperimentEnabled, true);
   // Creating all kinds of cards.
   personal_data_->RecreateCreditCards(
       true /* include_local_credit_card */,
