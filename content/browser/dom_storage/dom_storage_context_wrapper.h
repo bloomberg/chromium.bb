@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "url/origin.h"
 
 namespace base {
 class FilePath;
@@ -63,7 +64,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
 
   // See StoragePartitionService interface.
   void OpenLocalStorage(
-      const mojo::String& origin,
+      const url::Origin& origin,
       mojo::InterfaceRequest<LevelDBWrapper> request);
 
  private:
@@ -74,12 +75,12 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   ~DOMStorageContextWrapper() override;
   DOMStorageContextImpl* context() const { return context_.get(); }
 
-  void LevelDBWrapperImplHasNoBindings(const std::string& origin);
+  void LevelDBWrapperImplHasNoBindings(const url::Origin& origin);
 
   // Used for mojo-based LocalStorage implementation (behind
   // --mojo-local-storage for now). Maps between an origin and its prefixed
   // LevelDB view.
-  std::map<std::string, scoped_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
+  std::map<url::Origin, scoped_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
 
   scoped_refptr<DOMStorageContextImpl> context_;
 

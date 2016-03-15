@@ -258,7 +258,7 @@ template("mojom") {
     }
   }
 
-  if (is_android && !defined(invoker.variant)) {
+  if (is_android && !defined(invoker.variant) && !defined(invoker.typemaps)) {
     import("//build/config/android/rules.gni")
 
     java_srcjar_target_name = target_name + "_java_sources"

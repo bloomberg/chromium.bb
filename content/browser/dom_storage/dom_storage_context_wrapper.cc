@@ -168,14 +168,14 @@ void DOMStorageContextWrapper::Flush() {
 }
 
 void DOMStorageContextWrapper::OpenLocalStorage(
-    const mojo::String& origin,
+    const url::Origin& origin,
     mojo::InterfaceRequest<LevelDBWrapper> request) {
   if (level_db_wrappers_.find(origin) == level_db_wrappers_.end()) {
     level_db_wrappers_[origin] = make_scoped_ptr(new LevelDBWrapperImpl(
-        origin,
+        origin.Serialize(),
         base::Bind(&DOMStorageContextWrapper::LevelDBWrapperImplHasNoBindings,
                    base::Unretained(this),
-                   origin.get())));
+                   origin)));
   }
   // TODO(jam): call LevelDB service (once per this object) to open the database
   // for LocalStorage and keep a pointer to it in this class. Then keep a map
@@ -186,7 +186,7 @@ void DOMStorageContextWrapper::OpenLocalStorage(
 }
 
 void DOMStorageContextWrapper::LevelDBWrapperImplHasNoBindings(
-    const std::string& origin) {
+    const url::Origin& origin) {
   DCHECK(level_db_wrappers_.find(origin) != level_db_wrappers_.end());
   level_db_wrappers_.erase(origin);
 }

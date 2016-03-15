@@ -540,6 +540,9 @@ mojom("mojo_bindings") {
 
   import_dirs = [ "//mojo/services" ]
 
+  typemaps = [ "//url/mojo/origin.typemap" ]
+  typemap_deps = [ "//url/mojo:url_mojom" ]
+
   public_deps = [
     "//components/leveldb/public/interfaces",
     "//components/mus/public/interfaces",

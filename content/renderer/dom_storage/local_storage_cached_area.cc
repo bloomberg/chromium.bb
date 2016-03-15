@@ -16,7 +16,7 @@ LocalStorageCachedArea::LocalStorageCachedArea(
     : loaded_(false), origin_(origin), binding_(this),
       cached_areas_(cached_areas) {
   storage_partition_service->OpenLocalStorage(
-      origin_.Serialize(), mojo::GetProxy(&leveldb_));
+      origin_, mojo::GetProxy(&leveldb_));
 }
 
 LocalStorageCachedArea::~LocalStorageCachedArea() {

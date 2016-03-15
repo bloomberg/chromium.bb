@@ -9,6 +9,9 @@
       'target_name': 'content_common_mojo_bindings_mojom',
       'type': 'none',
       'variables': {
+        'mojom_extra_generator_args': [
+          '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
+        ],
         'mojom_files': [
           # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
           'common/application_setup.mojom',
@@ -40,6 +43,10 @@
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../skia/skia.gyp:skia_mojo',
         '../ui/mojo/geometry/mojo_bindings.gyp:mojo_geometry_bindings',
+        '../url/url.gyp:url_interfaces_mojom',
+      ],
+      'export_dependent_settings': [
+        '../url/url.gyp:url_interfaces_mojom',
       ],
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ], 
     },

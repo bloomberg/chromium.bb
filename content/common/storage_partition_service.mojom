@@ -5,8 +5,9 @@
 module content;
 
 import "content/common/leveldb_wrapper.mojom";
+import "url/mojo/origin.mojom";
 
 // Returns services related to the current storage partition.
 interface StoragePartitionService {
-  OpenLocalStorage(string origin, LevelDBWrapper& database);
+  OpenLocalStorage(url.mojom.Origin origin, LevelDBWrapper& database);
 };
