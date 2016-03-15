@@ -1855,13 +1855,8 @@ WebAutofillClient* WebLocalFrameImpl::autofillClient()
 
 void WebLocalFrameImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
-    if (devToolsClient) {
-        m_devToolsAgent = WebDevToolsAgentImpl::create(this, devToolsClient);
-    } else {
-        m_devToolsAgent->willBeDestroyed();
-        m_devToolsAgent->dispose();
-        m_devToolsAgent.clear();
-    }
+    ASSERT(devToolsClient);
+    m_devToolsAgent = WebDevToolsAgentImpl::create(this, devToolsClient);
 }
 
 WebDevToolsAgent* WebLocalFrameImpl::devToolsAgent()
