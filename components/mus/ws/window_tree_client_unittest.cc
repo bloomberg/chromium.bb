@@ -1620,7 +1620,7 @@ TEST_F(WindowTreeClientTest, SetWindowProperty) {
   }
 }
 
-TEST_F(WindowTreeClientTest, DISABLED_OnEmbeddedAppDisconnected) {
+TEST_F(WindowTreeClientTest, OnEmbeddedAppDisconnected) {
   // Create connection 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
@@ -1641,9 +1641,10 @@ TEST_F(WindowTreeClientTest, DISABLED_OnEmbeddedAppDisconnected) {
   EXPECT_EQ("OnEmbeddedAppDisconnected window=" + IdToString(window_2_1),
             SingleChangeToDescription(*changes2()));
 
-  wt_client1_->WaitForChangeCount(1);
-  EXPECT_EQ("OnEmbeddedAppDisconnected window=" + IdToString(window_2_1),
-            SingleChangeToDescription(*changes1()));
+  // The closing is only interesting to the root that did the embedding. Other
+  // connections should not be notified of this.
+  wt_client1_->WaitForAllMessages();
+  EXPECT_TRUE(changes1()->empty());
 }
 
 // Verifies when the parent of an Embed() is destroyed the embedded app gets
