@@ -617,6 +617,7 @@ int NaClSelLdrMain(int argc, char **argv) {
                 NULL != options->nacl_file ? options->nacl_file
                                   : "(no file, to-be-supplied-via-RPC)",
                 NaClErrorString(errcode));
+      goto error;
     }
   }
 
@@ -652,10 +653,10 @@ int NaClSelLdrMain(int argc, char **argv) {
 
   NaClAppInitialDescriptorHookup(nap);
 
-  if (LOAD_OK == errcode) {
-    NaClLog(2, "Loading nacl file %s (non-RPC)\n", options->nacl_file);
-    errcode = NaClAppLoadFileFromFilename(nap, options->nacl_file);
-    if (LOAD_OK != errcode && !options->quiet) {
+  NaClLog(2, "Loading nacl file %s (non-RPC)\n", options->nacl_file);
+  errcode = NaClAppLoadFileFromFilename(nap, options->nacl_file);
+  if (LOAD_OK != errcode) {
+    if (!options->quiet) {
       NaClLog(LOG_ERROR, "Error while loading \"%s\": %s\n"
               "Using the wrong type of nexe (nacl-x86-32"
               " on an x86-64 or vice versa)\n"
@@ -664,9 +665,10 @@ int NaClSelLdrMain(int argc, char **argv) {
               options->nacl_file,
               NaClErrorString(errcode));
     }
-    NaClPerfCounterMark(&time_all_main, "AppLoadEnd");
-    NaClPerfCounterIntervalLast(&time_all_main);
+    goto error;
   }
+  NaClPerfCounterMark(&time_all_main, "AppLoadEnd");
+  NaClPerfCounterIntervalLast(&time_all_main);
 
   if (options->fuzzing_quit_after_load) {
     exit(0);
@@ -699,16 +701,15 @@ int NaClSelLdrMain(int argc, char **argv) {
   }
 
   if (NULL != options->blob_library_file) {
-    if (LOAD_OK == errcode) {
-      errcode = NaClMainLoadIrt(nap, blob_file, NULL);
-      if (LOAD_OK != errcode) {
-        NaClLog(LOG_ERROR, "Error while loading \"%s\": %s\n",
-                options->blob_library_file,
-                NaClErrorString(errcode));
-      }
-      NaClPerfCounterMark(&time_all_main, "BlobLoaded");
-      NaClPerfCounterIntervalLast(&time_all_main);
+    errcode = NaClMainLoadIrt(nap, blob_file, NULL);
+    if (LOAD_OK != errcode) {
+      NaClLog(LOG_ERROR, "Error while loading \"%s\": %s\n",
+              options->blob_library_file,
+              NaClErrorString(errcode));
+      goto error;
     }
+    NaClPerfCounterMark(&time_all_main, "BlobLoaded");
+    NaClPerfCounterIntervalLast(&time_all_main);
 
     NaClDescUnref(blob_file);
   }
@@ -736,20 +737,9 @@ int NaClSelLdrMain(int argc, char **argv) {
     NaClLog(LOG_FATAL, "Could not change directory to root dir\n");
   }
 
-  /*
-   * error reporting done; can quit now if there was an error earlier.
-   */
-  if (LOAD_OK != errcode) {
-    NaClLog(4,
-            "Not running app code since errcode is %s (%d)\n",
-            NaClErrorString(errcode),
-            errcode);
-    goto done;
-  }
-
   if (options->enable_debug_stub) {
     if (!NaClDebugInit(nap)) {
-      goto done;
+      goto error;
     }
   }
   NACL_TEST_INJECTION(BeforeMainThreadLaunches, ());
@@ -783,7 +773,7 @@ int NaClSelLdrMain(int argc, char **argv) {
    */
   NaClExit(ret_code);
 
- done:
+ error:
   fflush(stdout);
 
   if (options->verbosity > 0) {
