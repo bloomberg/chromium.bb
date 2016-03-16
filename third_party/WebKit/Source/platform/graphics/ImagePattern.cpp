@@ -33,13 +33,13 @@ ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeatMode)
 PassRefPtr<SkShader> ImagePattern::createShader()
 {
     if (!m_tileImage)
-        return adoptRef(SkShader::CreateColorShader(SK_ColorTRANSPARENT));
+        return adoptRef(SkShader::MakeColorShader(SK_ColorTRANSPARENT));
 
     SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
 
     if (isRepeatXY()) {
         // Fast path: for repeatXY we just return a shader from the original image.
-        return adoptRef(m_tileImage->newShader(SkShader::kRepeat_TileMode,
+        return adoptRef(m_tileImage->makeShader(SkShader::kRepeat_TileMode,
             SkShader::kRepeat_TileMode, &localMatrix));
     }
 
@@ -61,7 +61,7 @@ PassRefPtr<SkShader> ImagePattern::createShader()
     RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(
         m_tileImage->width() + expandW, m_tileImage->height() + expandH));
     if (!surface)
-        return adoptRef(SkShader::CreateColorShader(SK_ColorTRANSPARENT));
+        return adoptRef(SkShader::MakeColorShader(SK_ColorTRANSPARENT));
 
     surface->getCanvas()->clear(SK_ColorTRANSPARENT);
     SkPaint paint;
@@ -69,7 +69,7 @@ PassRefPtr<SkShader> ImagePattern::createShader()
     surface->getCanvas()->drawImage(m_tileImage.get(), 0, 0, &paint);
     RefPtr<SkImage> expandedImage = adoptRef(surface->newImageSnapshot());
 
-    return adoptRef(expandedImage->newShader(tileModeX, tileModeY, &localMatrix));
+    return adoptRef(expandedImage->makeShader(tileModeX, tileModeY, &localMatrix));
 }
 
 bool ImagePattern::isTextureBacked() const
