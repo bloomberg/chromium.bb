@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://md-settings/passwords_and_forms_page/passwords_and_forms_page.html">
 <link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
 <link rel="import" href="chrome://md-settings/reset_page/reset_page.html">
+<link rel="import" href="chrome://md-settings/settings_page/main_page_behavior.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_page_visibility.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="chrome://md-settings/site_settings/constants.html">
@@ -24,6 +25,7 @@
 <dom-module id="settings-advanced-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_page.css">
   <template>
+    <style include="main-page-styles"></style>
 <if expr="chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.dateTime)]]" restamp>
       <settings-section page-title="[[i18n('dateTimePageTitle')]]"

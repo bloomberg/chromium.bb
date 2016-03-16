@@ -7,15 +7,9 @@
  * Common styles for Settings pages.
  */
 :host {
-  display: block;
-}
-
-:host(.expanded) {
-  height: 100%;
-}
-
-:host(.expanded) #header {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 #header {
@@ -28,31 +22,28 @@
   font-weight: 500;
 }
 
-paper-material {
+#card {
   background-color: white;
-  box-sizing: border-box;
   overflow: hidden;
 }
 
-paper-material,
-#placeholder {
-  margin-bottom: 16px;
+#card {
+  flex: 1;
 }
 
-:host(.neon-animating) paper-material {
-  position: fixed;
-  z-index: 1;
-}
-
-:host(.expanded) paper-material {
+:host(.expanded) {
   margin-bottom: 0;
-  min-height: 100%;
 }
 
-#placeholder {
-  visibility: hidden;
+:host(.expanded) #header {
+  display: none;
 }
 
-:host(:not(.neon-animating)) #placeholder {
-  position: absolute;
+:host(.frozen) #card {
+  position: fixed;
+  width: 100%;
+}
+
+:host(.expanded.frozen) #card {
+  position: relative;
 }

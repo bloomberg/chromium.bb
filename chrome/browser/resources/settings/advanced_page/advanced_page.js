@@ -18,6 +18,8 @@
 Polymer({
   is: 'settings-advanced-page',
 
+  behaviors: [I18nBehavior, SettingsPageVisibility, RoutableBehavior],
+
   properties: {
     /**
      * Preferences state.
@@ -36,11 +38,26 @@ Polymer({
     },
   },
 
+  /**
+   * @type {string} Selector to get the sections.
+   * TODO(michaelpg): replace duplicate docs with @override once b/24294625
+   * is fixed.
+   */
+  sectionSelector: 'settings-section',
+
 <if expr="not chromeos">
   listeners: {
     'dom-change': 'onDomChange_',
   },
+</if>
 
+  /** @override */
+  attached: function() {
+    /** @override */
+    this.scroller = this.parentElement;
+  },
+
+<if expr="not chromeos">
   /** @private */
   onDomChange_: function() {
     var systemPage = /** @type {?SettingsSystemPageElement} */(
@@ -49,6 +66,4 @@ Polymer({
       systemPage.delegate = new settings.SystemPageDelegateImpl;
   },
 </if>
-
-  behaviors: [I18nBehavior, SettingsPageVisibility],
 });

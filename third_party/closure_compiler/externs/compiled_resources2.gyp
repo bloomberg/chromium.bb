@@ -84,5 +84,9 @@
       'target_name': 'users_private',
       'includes': ['../include_js.gypi'],
     },
+    {
+      'target_name': 'web_animations',
+      'includes': ['../include_js.gypi'],
+    },
   ],
 }

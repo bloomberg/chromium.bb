@@ -7,7 +7,9 @@
       'target_name': 'advanced_page',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '../settings_page/compiled_resources2.gyp:main_page_behavior',
         '../settings_page/compiled_resources2.gyp:settings_page_visibility',
+        '../settings_page/compiled_resources2.gyp:transition_behavior',
         '../system_page/compiled_resources2.gyp:system_page',
         '../system_page/compiled_resources2.gyp:system_page_delegate',
       ],

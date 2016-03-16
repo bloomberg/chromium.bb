@@ -6,10 +6,6 @@
   box-sizing: border-box;
   height: 100%;
   overflow: auto;
-  padding: 24px 16px;
-}
-
-#pageContainer.expanded {
   padding: 0 16px;
 }
 

@@ -4,6 +4,16 @@
 {
   'targets': [
     {
+      'target_name': 'main_page_behavior',
+      'dependencies': [
+        'settings_section',
+        'transition_behavior',
+        '<(EXTERNS_GYP):settings_private',
+        '<(EXTERNS_GYP):web_animations',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'settings_animated_pages',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
@@ -20,6 +30,18 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'settings_section',
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'transition_behavior',
+      'dependencies': [
+        '<(EXTERNS_GYP):settings_private',
+        '<(EXTERNS_GYP):web_animations',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
