@@ -25,6 +25,7 @@ beaglebone-paladin
   tricky-release
   zako-release
 butterfly-paladin
+clapper-release
 cyan-cheets-android-pfq
 daisy-chromium-pfq
 daisy-paladin
@@ -35,6 +36,7 @@ daisy-paladin
 daisy_skate-chrome-pfq
 daisy_skate-paladin
 daisy_spring-paladin
+enguarde-release
 expresso-release
 falco-chrome-pfq
 falco-full-compile-paladin
@@ -119,9 +121,6 @@ peppy-paladin
   x86-zgb-release
   x86-zgb_he-release
 pre-cq-launcher
-[rambi-a-release-group]
-  clapper-release
-  enguarde-release
 [rambi-b-release-group]
   glimmer-release
   gnawty-release

@@ -2321,22 +2321,6 @@ def GetConfig():
       important=True,
   )
 
-  site_config.Add(
-      'rambi-release', _release,
-      _base_configs['rambi'],
-      important=True,
-      vm_tests=[],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-  )
-
-  site_config.Add(
-      'expresso-release', _release,
-      _base_configs['expresso'],
-      important=True,
-      vm_tests=[],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-  )
-
   ### Arm release configs.
 
   site_config.Add(
@@ -2620,6 +2604,73 @@ def GetConfig():
           important=important
       )
 
+  def _AdjustLeaderFollowerReleaseConfigs(
+      leader_board,
+      follower_boards=None,
+      variant_boards=None,
+      **kwargs):
+    """Adjust existing release configs into a leader/follower group.
+
+    _AddReleaseConfigs created a <board>-release config for every board. This
+    method adjusts those existing configs to be important, and to designate one
+    of them to be a 'leader'.
+
+    We do full testing for the leader board, and cheaper testing on the
+    followers since we expect them to be very similar.
+
+    Args:
+      leader_board: Name of the leader board for the group.
+      follower_boards: List of board names for normal followers.
+      variant_boards: List of board names of variants which need even less done.
+      kwargs: Any special build config settings needed for all builds in this
+              group can be passed in as additional named arguments.
+    """
+    def release_name(board):
+      """Convert a board name into the name of it's release config."""
+      return '%s-release' % board
+
+    # Compute all release configuration names.
+    leader_name = release_name(leader_board)
+    followers = [release_name(b) for b in follower_boards or []]
+    variants = [release_name(b) for b in variant_boards or []]
+
+    # Leaders are built on baremetal builders and run all tests needed by the
+    # related boards.
+    leader_config = config_lib.BuildConfig(
+        important=True,
+    )
+
+    # Followers are built on GCE instances, and turn off testing that breaks
+    # on GCE. The missing tests run on the leader board.
+    follower_config = leader_config.derive(
+        buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+        chrome_sdk_build_chrome=False,
+        vm_tests=[],
+    )
+
+    # Variant boards don't build chrome_sdk, since a non-variant board will
+    # already build/upload the same thing.
+    variant_config = follower_config.derive(chrome_sdk=False)
+
+    # Adjust the leader board.
+    site_config[leader_name] = site_config[leader_name].derive(
+        leader_config,
+        **kwargs
+    )
+
+    # Adjust all follower/variant boards based on above options.
+    for config_name in followers:
+      site_config[config_name] = site_config[config_name].derive(
+          follower_config,
+          **kwargs
+      )
+
+    for config_name in variants:
+      site_config[config_name] = site_config[config_name].derive(
+          variant_config,
+          **kwargs
+      )
+
   # pineview chipset boards
   _AddGroupConfig(
       'pineview', 'x86-mario', (
@@ -2683,10 +2734,9 @@ def GetConfig():
   )
 
   # rambi-based boards
-  _AddGroupConfig(
-      'rambi-a', 'clapper', (
-          'enguarde',
-      )
+  _AdjustLeaderFollowerReleaseConfigs(
+      'clapper',
+      ('rambi', 'expresso', 'enguarde'),
   )
 
   _AddGroupConfig(

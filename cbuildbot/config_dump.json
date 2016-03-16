@@ -4807,9 +4807,11 @@
     },
     "clapper-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "clapper"
-        ]
+        ],
+        "important": true
     },
     "clapper-release-afdo": {
         "_template": "release-afdo-generate",
@@ -6556,9 +6558,14 @@
     },
     "enguarde-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "enguarde"
-        ]
+        ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
+        "important": true,
+        "vm_tests": []
     },
     "enguarde-release-afdo": {
         "_template": "release-afdo-generate",
@@ -6750,6 +6757,7 @@
             "expresso"
         ],
         "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
     },
@@ -15916,78 +15924,6 @@
             "-chrome_internal"
         ]
     },
-    "rambi-a-full-group": {
-        "_template": "full",
-        "boards": [
-            "clapper"
-        ],
-        "child_configs": [
-            {
-                "_template": "full",
-                "boards": [
-                    "clapper"
-                ],
-                "grouped": true,
-                "name": "clapper-full",
-                "prebuilts": "public",
-                "useflags": [
-                    "-chrome_internal"
-                ]
-            },
-            {
-                "_template": "full",
-                "boards": [
-                    "enguarde"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "enguarde-full",
-                "prebuilts": "public",
-                "unittests": null,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            }
-        ],
-        "description": "Full Builds; Group config (boards: clapper, enguarde)",
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
-    "rambi-a-release-group": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "clapper"
-        ],
-        "child_configs": [
-            {
-                "_template": "release",
-                "boards": [
-                    "clapper"
-                ],
-                "grouped": true,
-                "name": "clapper-release"
-            },
-            {
-                "_template": "release",
-                "boards": [
-                    "enguarde"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "enguarde-release",
-                "unittests": null,
-                "vm_tests": []
-            }
-        ],
-        "description": "Release Builds (canary) (internal); Group config (boards: clapper, enguarde)",
-        "important": true
-    },
     "rambi-b-full-group": {
         "_template": "full",
         "boards": [
@@ -16556,6 +16492,7 @@
             "rambi"
         ],
         "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
     },
