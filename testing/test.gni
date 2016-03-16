@@ -134,11 +134,22 @@ template("test") {
       ]
     }
   } else if (is_ios) {
-    if (is_ios) {
-      import("//build/config/ios/rules.gni")
+    import("//build/config/ios/rules.gni")
+
+    _test_target = target_name
+    _resources_bundle_data = target_name + "_resources_bundle_data"
+
+    bundle_data(_resources_bundle_data) {
+      visibility = [ ":$_test_target" ]
+      sources = [
+        "//testing/gtest_ios/Default.png",
+      ]
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
     }
 
-    ios_app(target_name) {
+    app(_test_target) {
       # TODO(GYP): Make this configurable and only provide a default
       # that can be overridden.
       info_plist = "//testing/gtest_ios/unittest-Info.plist"
@@ -146,37 +157,14 @@ template("test") {
       entitlements_path = "//testing/gtest_ios"
       code_signing_identity = ""
       testonly = true
+      extra_substitutions = [ "BUNDLE_ID_TEST_NAME=$app_name" ]
 
       # See above call.
       set_sources_assignment_filter([])
 
-      forward_variables_from(invoker,
-                             [
-                               "all_dependent_configs",
-                               "allow_circular_includes_from",
-                               "cflags",
-                               "cflags_c",
-                               "cflags_cc",
-                               "cflags_objc",
-                               "cflags_objcc",
-                               "check_includes",
-                               "configs",
-                               "data",
-                               "data_deps",
-                               "defines",
-                               "include_dirs",
-                               "ldflags",
-                               "libs",
-                               "public",
-                               "public_configs",
-                               "public_deps",
-                               "sources",
-                               "visibility",
-                             ])
+      forward_variables_from(invoker, "*")
 
-      if (defined(invoker.deps)) {
-        deps = invoker.deps
-      } else {
+      if (!defined(deps)) {
         deps = []
       }
       deps += [
@@ -184,6 +172,10 @@ template("test") {
         # asan mode (this target will be empty in other cases).
         "//build/config/sanitizers:deps",
       ]
+      if (!defined(data_deps)) {
+        data_deps = []
+      }
+      data_deps += [ ":$_resources_bundle_data" ]
     }
   } else {
     main_target_name = target_name

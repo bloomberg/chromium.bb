@@ -6,6 +6,12 @@ declare_args() {
   # SDK path to use. When empty this will use the default SDK based on the
   # value of use_ios_simulator.
   ios_sdk_path = ""
+  ios_sdk_name = ""
+  ios_sdk_version = ""
+  ios_sdk_platform = ""
+  xcode_version = ""
+  xcode_build = ""
+  machine_os_build = ""
 
   use_ios_simulator = target_cpu == "x86" || target_cpu == "x64"
 
@@ -22,13 +28,26 @@ declare_args() {
 if (ios_sdk_path == "") {
   # Compute default target.
   if (use_ios_simulator) {
-    _ios_sdk_to_query = "iphonesimulator"
+    ios_sdk_name = "iphonesimulator"
+    ios_sdk_platform = "iPhoneSimulator"
   } else {
-    _ios_sdk_to_query = "iphoneos"
+    ios_sdk_name = "iphoneos"
+    ios_sdk_platform = "iPhoneOS"
   }
-  _ios_sdk_result =
-      exec_script("ios_sdk.py", [ _ios_sdk_to_query ], "list lines")
-  ios_sdk_path = _ios_sdk_result[0]
+  _ios_sdk_result = exec_script("ios_sdk.py", [ ios_sdk_name ], "scope")
+  ios_sdk_path = _ios_sdk_result.ios_sdk_path
+  ios_sdk_version = _ios_sdk_result.ios_sdk_version
+  ios_sdk_build = _ios_sdk_result.ios_sdk_build
+  xcode_version = _ios_sdk_result.xcode_version
+  xcode_build = _ios_sdk_result.xcode_build
+  machine_os_build = _ios_sdk_result.machine_os_build
+  if (use_ios_simulator) {
+    # This is weird, but Xcode sets DTPlatformBuild to an empty field for
+    # simulator builds.
+    ios_platform_build = ""
+  } else {
+    ios_platform_build = ios_sdk_build
+  }
 }
 
 if (use_ios_simulator) {

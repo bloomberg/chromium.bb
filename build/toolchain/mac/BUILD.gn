@@ -8,6 +8,7 @@
 
 import("../goma.gni")
 import("//build/config/ios/ios_sdk.gni")
+import("//build/config/mac/mac_sdk.gni")
 
 assert(host_os == "mac")
 
@@ -230,6 +231,34 @@ template("mac_toolchain") {
     tool("copy") {
       command = copy_command
       description = copy_description
+    }
+
+    tool("copy_bundle_data") {
+      command = "rm -rf {{output}} && " +
+                "./gyp-mac-tool copy-bundle-resource {{source}} {{output}} True"
+      description = "COPY_BUNDLE_DATA {{source}} {{output}}"
+    }
+    tool("compile_xcassets") {
+      if (is_ios) {
+        _configuration = "Release"
+        if (is_debug) {
+          _configuration = "Debug"
+        }
+
+        _compile_xcassets_env =
+            "IPHONEOS_DEPLOYMENT_TARGET=$ios_deployment_target " +
+            "CONFIGURATION=$ios_sdk_name-$_configuration " +
+            "CONTENTS_FOLDER_PATH=\$(dirname {{output}})"
+      } else {
+        _compile_xcassets_env =
+            "MACOSX_DEPLOYMENT_TARGET=$mac_deployment_target " +
+            "UNLOCALIZED_RESOURCES_FOLDER_PATH=\$(dirname {{output}})"
+      }
+
+      command = "rm -f {{output}} && " +
+                "env $_compile_xcassets_env ./gyp-mac-tool compile-xcassets " +
+                "{} {{inputs}}"
+      description = "COMPILE_XCASSETS {{output}}"
     }
 
     toolchain_args() {

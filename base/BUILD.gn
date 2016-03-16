@@ -1620,6 +1620,16 @@ if (is_win) {
   }
 }
 
+bundle_data("base_unittests_bundle_data") {
+  sources = [
+    "test/data",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 test("base_unittests") {
   sources = [
     "allocator/tcmalloc_unittest.cc",
@@ -1880,6 +1890,10 @@ test("base_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
+  ]
+
+  public_deps = [
+    ":base_unittests_bundle_data",
   ]
 
   # Some unittests depend on the ALLOCATOR_SHIM macro.

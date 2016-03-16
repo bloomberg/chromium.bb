@@ -4,7 +4,7 @@
 
 import("//build/config/ios/rules.gni")
 
-ios_app("ios_web_shell") {
+app("ios_web_shell") {
   info_plist = "Info.plist"
   app_name = "ios_web_shell"
   entitlements_path = ""
