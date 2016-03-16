@@ -403,8 +403,8 @@ void MultiplexRouter::ProcessTasks(bool force_async) {
     tasks_.pop_front();
 
     bool processed = task->IsNotifyErrorTask()
-                         ? ProcessNotifyErrorTask(task.get(), &force_async)
-                         : ProcessIncomingMessageTask(task.get(), &force_async);
+                         ? ProcessNotifyErrorTask(task.get(), force_async)
+                         : ProcessIncomingMessageTask(task.get(), force_async);
 
     if (!processed) {
       tasks_.push_front(std::move(task));
@@ -413,19 +413,18 @@ void MultiplexRouter::ProcessTasks(bool force_async) {
   }
 }
 
-bool MultiplexRouter::ProcessNotifyErrorTask(Task* task, bool* force_async) {
+bool MultiplexRouter::ProcessNotifyErrorTask(Task* task, bool force_async) {
   lock_.AssertAcquired();
   InterfaceEndpoint* endpoint = task->endpoint_to_notify.get();
   if (!endpoint->client())
     return true;
 
-  if (!endpoint->task_runner()->BelongsToCurrentThread() || *force_async) {
+  if (!endpoint->task_runner()->BelongsToCurrentThread() || force_async) {
     endpoint->task_runner()->PostTask(
         FROM_HERE, base::Bind(&MultiplexRouter::LockAndCallProcessTasks, this));
     return false;
   }
 
-  *force_async = true;
   InterfaceEndpointClient* client = endpoint->client();
   {
     // We must unlock before calling into |client| because it may call this
@@ -439,8 +438,7 @@ bool MultiplexRouter::ProcessNotifyErrorTask(Task* task, bool* force_async) {
   return true;
 }
 
-bool MultiplexRouter::ProcessIncomingMessageTask(Task* task,
-                                                 bool* force_async) {
+bool MultiplexRouter::ProcessIncomingMessageTask(Task* task, bool force_async) {
   lock_.AssertAcquired();
   Message* message = task->message.get();
 
@@ -479,13 +477,12 @@ bool MultiplexRouter::ProcessIncomingMessageTask(Task* task,
     return false;
   }
 
-  if (!endpoint->task_runner()->BelongsToCurrentThread() || *force_async) {
+  if (!endpoint->task_runner()->BelongsToCurrentThread() || force_async) {
     endpoint->task_runner()->PostTask(
         FROM_HERE, base::Bind(&MultiplexRouter::LockAndCallProcessTasks, this));
     return false;
   }
 
-  *force_async = true;
   InterfaceEndpointClient* client = endpoint->client();
   scoped_ptr<Message> owned_message = std::move(task->message);
   bool result = false;

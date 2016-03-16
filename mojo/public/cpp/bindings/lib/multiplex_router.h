@@ -174,10 +174,8 @@ class MultiplexRouter
 
   // Returns true to indicate that |task| has been processed. Otherwise the task
   // will be added back to the front of the queue.
-  // |*force_async| may be set to true to force subsequent tasks being processed
-  // in an asynchronous manner.
-  bool ProcessNotifyErrorTask(Task* task, bool* force_async);
-  bool ProcessIncomingMessageTask(Task* task, bool* force_async);
+  bool ProcessNotifyErrorTask(Task* task, bool force_async);
+  bool ProcessIncomingMessageTask(Task* task, bool force_async);
 
   void LockAndCallProcessTasks();
 
