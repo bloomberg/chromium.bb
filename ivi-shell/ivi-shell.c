@@ -81,10 +81,16 @@ ivi_shell_surface_configure(struct weston_surface *, int32_t, int32_t);
 static struct ivi_shell_surface *
 get_ivi_shell_surface(struct weston_surface *surface)
 {
-	if (surface->configure == ivi_shell_surface_configure)
-		return surface->configure_private;
+	struct ivi_shell_surface *shsurf;
 
-	return NULL;
+	if (surface->configure != ivi_shell_surface_configure)
+		return NULL;
+
+	shsurf = surface->configure_private;
+	assert(shsurf);
+	assert(shsurf->surface == surface);
+
+	return shsurf;
 }
 
 void
