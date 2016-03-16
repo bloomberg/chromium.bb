@@ -97,20 +97,6 @@ public:
         NumberOfArenas,
     };
 
-#if defined(ADDRESS_SANITIZER)
-    // Heaps can have their object payloads be poisoned, or cleared
-    // of their poisoning.
-    enum Poisoning {
-        SetPoison,
-        ClearPoison,
-    };
-
-    enum ObjectsToPoison {
-        UnmarkedOnly,
-        MarkedAndUnmarked,
-    };
-#endif
-
     enum V8GCType {
         V8MinorGC,
         V8MajorGC,

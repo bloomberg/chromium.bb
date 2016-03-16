@@ -580,7 +580,7 @@ private:
     void eagerSweep();
 
 #if defined(ADDRESS_SANITIZER)
-    void poisonEagerArena(BlinkGC::Poisoning);
+    void poisonEagerArena();
     void poisonAllHeaps();
 #endif
 

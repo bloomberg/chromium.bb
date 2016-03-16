@@ -378,7 +378,7 @@ public:
     virtual void invalidateObjectStartBitmap() = 0;
 
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonObjects(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning) = 0;
+    virtual void poisonUnmarkedObjects() = 0;
 #endif
     // Check if the given address points to an object in this
     // heap page. If so, find the start of that object and mark it
@@ -469,7 +469,7 @@ public:
     void makeConsistentForMutator() override;
     void invalidateObjectStartBitmap() override { m_objectStartBitMapComputed = false; }
 #if defined(ADDRESS_SANITIZER)
-    void poisonObjects(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning) override;
+    void poisonUnmarkedObjects() override;
 #endif
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
@@ -526,7 +526,7 @@ public:
     void makeConsistentForMutator() override;
     void invalidateObjectStartBitmap() override { }
 #if defined(ADDRESS_SANITIZER)
-    void poisonObjects(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning) override;
+    void poisonUnmarkedObjects() override;
 #endif
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
@@ -678,7 +678,7 @@ public:
     void prepareHeapForTermination();
     void prepareForSweep();
 #if defined(ADDRESS_SANITIZER)
-    void poisonArena(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning);
+    void poisonArena();
 #endif
     Address lazySweep(size_t, size_t gcInfoIndex);
     void sweepUnsweptPage();

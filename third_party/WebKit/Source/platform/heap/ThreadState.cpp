@@ -1033,14 +1033,11 @@ void ThreadState::preSweep()
 
     m_accumulatedSweepingTime = 0;
 
-#if defined(ADDRESS_SANITIZER)
-    poisonEagerArena(BlinkGC::SetPoison);
-#endif
     eagerSweep();
+
 #if defined(ADDRESS_SANITIZER)
     poisonAllHeaps();
 #endif
-
     if (previousGCState == EagerSweepScheduled) {
         // Eager sweeping should happen only in testing.
         completeSweep();
@@ -1055,25 +1052,26 @@ void ThreadState::poisonAllHeaps()
 {
     // TODO(Oilpan): enable the poisoning always.
 #if ENABLE(OILPAN)
-    // Unpoison the live objects remaining in the eager arenas..
-    poisonEagerArena(BlinkGC::ClearPoison);
     // ..along with poisoning all unmarked objects in the other arenas.
     for (int i = 1; i < BlinkGC::NumberOfArenas; i++)
-        m_arenas[i]->poisonArena(BlinkGC::UnmarkedOnly, BlinkGC::SetPoison);
+        m_arenas[i]->poisonArena();
 #endif
 }
 
-void ThreadState::poisonEagerArena(BlinkGC::Poisoning poisoning)
+void ThreadState::poisonEagerArena()
 {
     // TODO(Oilpan): enable the poisoning always.
 #if ENABLE(OILPAN)
-    m_arenas[BlinkGC::EagerSweepArenaIndex]->poisonArena(BlinkGC::MarkedAndUnmarked, poisoning);
+    m_arenas[BlinkGC::EagerSweepArenaIndex]->poisonArena();
 #endif
 }
 #endif
 
 void ThreadState::eagerSweep()
 {
+#if defined(ADDRESS_SANITIZER)
+    poisonEagerArena();
+#endif
     ASSERT(checkThread());
     // Some objects need to be finalized promptly and cannot be handled
     // by lazy sweeping. Keep those in a designated heap and sweep it

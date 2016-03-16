@@ -254,28 +254,10 @@ void BaseArena::prepareForSweep()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void BaseArena::poisonArena(BlinkGC::ObjectsToPoison objectsToPoison, BlinkGC::Poisoning poisoning)
+void BaseArena::poisonArena()
 {
-    // TODO(sof): support complete poisoning of all arenas.
-    ASSERT(objectsToPoison != BlinkGC::MarkedAndUnmarked || arenaIndex() == BlinkGC::EagerSweepArenaIndex);
-
-    // This method may either be called to poison (SetPoison) heap
-    // object payloads prior to sweeping, or it may be called at
-    // the completion of a sweep to unpoison (ClearPoison) the
-    // objects remaining in the heap. Those will all be live and unmarked.
-    //
-    // Poisoning may be limited to unmarked objects only, or apply to all.
-    if (poisoning == BlinkGC::SetPoison) {
-        for (BasePage* page = m_firstUnsweptPage; page; page = page->next())
-            page->poisonObjects(objectsToPoison, poisoning);
-        return;
-    }
-    // Support clearing of poisoning after sweeping has completed,
-    // in which case the pages of the live objects are reachable
-    // via m_firstPage.
-    ASSERT(!m_firstUnsweptPage);
-    for (BasePage* page = m_firstPage; page; page = page->next())
-        page->poisonObjects(objectsToPoison, poisoning);
+    for (BasePage* page = m_firstUnsweptPage; page; page = page->next())
+        page->poisonUnmarkedObjects();
 }
 #endif
 
@@ -1239,7 +1221,7 @@ void NormalPage::makeConsistentForMutator()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void NormalPage::poisonObjects(BlinkGC::ObjectsToPoison objectsToPoison, BlinkGC::Poisoning poisoning)
+void NormalPage::poisonUnmarkedObjects()
 {
     for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
@@ -1251,12 +1233,8 @@ void NormalPage::poisonObjects(BlinkGC::ObjectsToPoison objectsToPoison, BlinkGC
             continue;
         }
         ASSERT(header->checkHeader());
-        if (objectsToPoison == BlinkGC::MarkedAndUnmarked || !header->isMarked()) {
-            if (poisoning == BlinkGC::SetPoison)
-                ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
-            else
-                ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
-        }
+        if (!header->isMarked())
+            ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
         headerAddress += header->size();
     }
 }
@@ -1488,15 +1466,11 @@ void LargeObjectPage::makeConsistentForMutator()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void LargeObjectPage::poisonObjects(BlinkGC::ObjectsToPoison objectsToPoison, BlinkGC::Poisoning poisoning)
+void LargeObjectPage::poisonUnmarkedObjects()
 {
     HeapObjectHeader* header = heapObjectHeader();
-    if (objectsToPoison == BlinkGC::MarkedAndUnmarked || !header->isMarked()) {
-        if (poisoning == BlinkGC::SetPoison)
-            ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
-        else
-            ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
-    }
+    if (!header->isMarked())
+        ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
 }
 #endif
 
