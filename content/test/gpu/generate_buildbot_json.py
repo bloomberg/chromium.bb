@@ -416,6 +416,27 @@ FYI_WATERFALL = {
 }
 
 COMMON_GTESTS = {
+  'angle_deqp_egl_tests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        # Run this on the optional tryservers.
+        'run_on_optional': True,
+        # Run only on the Win7 Release NVIDIA 32- and 64-bit bots
+        # (and trybots) for the time being, at least until more capacity is
+        # added.
+        # TODO(jmadill): Run on the Linux Release NVIDIA bots.
+        'build_configs': ['Release', 'Release_x64'],
+        'swarming_dimension_sets': [
+          {
+            'gpu': '10de:104a',
+            'os': 'Windows-2008ServerR2-SP1'
+          }
+        ],
+      },
+    ],
+  },
+
   'angle_deqp_gles2_tests': {
     'tester_configs': [
       {

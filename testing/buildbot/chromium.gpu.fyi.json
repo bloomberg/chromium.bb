@@ -476,9 +476,6 @@
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "browser_tests",
         "use_xvfb": false
       },
@@ -899,9 +896,6 @@
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "browser_tests",
         "use_xvfb": false
       },
@@ -2550,9 +2544,6 @@
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "browser_tests",
         "use_xvfb": false
       },
@@ -5236,6 +5227,19 @@
               "gpu": "10de:104a",
               "os": "Windows-2008ServerR2-SP1"
             }
+          ]
+        },
+        "test": "angle_deqp_egl_tests",
+        "use_xvfb": false
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
           ],
           "shards": 4
         },
@@ -7180,6 +7184,19 @@
               "gpu": "10de:104a",
               "os": "Windows-2008ServerR2-SP1"
             }
+          ]
+        },
+        "test": "angle_deqp_egl_tests",
+        "use_xvfb": false
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
           ],
           "shards": 4
         },
@@ -8156,6 +8173,19 @@
   },
   "Win7 x64 Release (NVIDIA)": {
     "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_deqp_egl_tests",
+        "use_xvfb": false
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
