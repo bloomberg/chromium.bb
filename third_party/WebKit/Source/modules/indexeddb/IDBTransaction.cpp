@@ -115,6 +115,7 @@ DEFINE_TRACE(IDBTransaction)
     visitor->trace(m_error);
     visitor->trace(m_requestList);
     visitor->trace(m_objectStoreMap);
+    visitor->trace(m_createdObjectStores);
     visitor->trace(m_deletedObjectStores);
     visitor->trace(m_objectStoreCleanupMap);
     RefCountedGarbageCollectedEventTargetWithInlineData<IDBTransaction>::trace(visitor);
@@ -159,16 +160,18 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name, ExceptionState& 
     const IDBDatabaseMetadata& metadata = m_database->metadata();
 
     IDBObjectStore* objectStore = IDBObjectStore::create(metadata.objectStores.get(objectStoreId), this);
-    objectStoreCreated(name, objectStore);
+    m_objectStoreMap.set(name, objectStore);
+    m_objectStoreCleanupMap.set(objectStore, objectStore->metadata());
     return objectStore;
 }
 
 void IDBTransaction::objectStoreCreated(const String& name, IDBObjectStore* objectStore)
 {
     ASSERT(m_state != Finished);
+    ASSERT(isVersionChange());
     m_objectStoreMap.set(name, objectStore);
-    if (isVersionChange())
-        m_objectStoreCleanupMap.set(objectStore, objectStore->metadata());
+    m_objectStoreCleanupMap.set(objectStore, objectStore->metadata());
+    m_createdObjectStores.add(objectStore);
 }
 
 void IDBTransaction::objectStoreDeleted(const String& name)
@@ -213,6 +216,11 @@ void IDBTransaction::abort(ExceptionState& exceptionState)
         request->abort();
     m_requestList.clear();
 
+    for (IDBObjectStore* store : m_createdObjectStores) {
+        store->abort();
+        store->markDeleted();
+    }
+
     if (backendDB())
         backendDB()->abort(m_id);
 }
@@ -241,14 +249,22 @@ void IDBTransaction::onAbort(DOMException* error)
 
     ASSERT(m_state != Finished);
     if (m_state != Finishing) {
+        // Abort was not triggered by front-end.
         ASSERT(error);
         setError(error);
 
-        // Abort was not triggered by front-end, so outstanding requests must
-        // be aborted now.
+        // Outstanding requests must be aborted.
         for (IDBRequest* request : m_requestList)
             request->abort();
         m_requestList.clear();
+
+        // Newly created stores must be marked as deleted.
+        for (IDBObjectStore* store : m_createdObjectStores)
+            store->markDeleted();
+
+        // Used stores may need to mark indexes as deleted.
+        for (auto& it : m_objectStoreCleanupMap)
+            it.key->abort();
 
         m_state = Finishing;
     }
@@ -358,11 +374,13 @@ DispatchEventResult IDBTransaction::dispatchEventInternal(PassRefPtrWillBeRawPtr
     m_state = Finished;
 
     // Break reference cycles.
+    // TODO(jsbell): This can be removed c/o Oilpan.
     for (auto& it : m_objectStoreMap)
         it.value->transactionFinished();
     m_objectStoreMap.clear();
     for (auto& it : m_deletedObjectStores)
         it->transactionFinished();
+    m_createdObjectStores.clear();
     m_deletedObjectStores.clear();
 
     WillBeHeapVector<RefPtrWillBeMember<EventTarget>> targets;

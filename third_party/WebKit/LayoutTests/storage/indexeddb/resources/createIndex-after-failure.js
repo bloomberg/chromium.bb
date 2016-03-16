@@ -38,8 +38,8 @@ function createIndex() {
 function deleteIndexAfterGetError() {
     debug("deleteIndexAfterGetError()");
     // the index should still be gone, and this should not crash.
-    evalAndExpectException("objectStore.deleteIndex('index')", "0", "'TransactionInactiveError'");
-    evalAndExpectException("objectStore.deleteIndex('index')", "0", "'TransactionInactiveError'");
+    evalAndExpectException("objectStore.deleteIndex('index')", "11", "'InvalidStateError'");
+    evalAndExpectException("objectStore.deleteIndex('index')", "11", "'InvalidStateError'");
 
     finishJSTest();
 }

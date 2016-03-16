@@ -129,21 +129,20 @@ void IDBCursor::advance(unsigned count, ExceptionState& exceptionState)
         exceptionState.throwTypeError("A count argument with value 0 (zero) was supplied, must be greater than 0.");
         return;
     }
-    if (!m_gotValue) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
-        return;
-    }
-    if (isDeleted()) {
-        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::sourceDeletedErrorMessage);
-        return;
-    }
-
     if (m_transaction->isFinished() || m_transaction->isFinishing()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        return;
+    }
+    if (!m_gotValue) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
+        return;
+    }
+    if (isDeleted()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::sourceDeletedErrorMessage);
         return;
     }
 

@@ -97,6 +97,7 @@ public:
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const { return m_deleted; }
+    void abort();
     void transactionFinished();
 
     const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
@@ -124,6 +125,10 @@ private:
 
     typedef HeapHashMap<String, Member<IDBIndex>> IDBIndexMap;
     IDBIndexMap m_indexMap;
+
+    // Used to mark indexes created in an aborted upgrade transaction as
+    // deleted.
+    HeapHashSet<Member<IDBIndex>> m_createdIndexes;
 };
 
 } // namespace blink

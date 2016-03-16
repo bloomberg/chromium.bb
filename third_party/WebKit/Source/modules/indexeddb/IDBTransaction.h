@@ -133,7 +133,16 @@ private:
     typedef HeapHashMap<String, Member<IDBObjectStore>> IDBObjectStoreMap;
     IDBObjectStoreMap m_objectStoreMap;
 
+    // Used to mark stores created in an aborted upgrade transaction as
+    // deleted.
+    HeapHashSet<Member<IDBObjectStore>> m_createdObjectStores;
+
+    // Used to notify object stores (which are no longer in m_objectStoreMap)
+    // when the transaction is finished.
     HeapHashSet<Member<IDBObjectStore>> m_deletedObjectStores;
+
+    // Holds stores created, deleted, or used during upgrade transactions to
+    // reset metadata in case of abort.
     HeapHashMap<Member<IDBObjectStore>, IDBObjectStoreMetadata> m_objectStoreCleanupMap;
     IDBDatabaseMetadata m_previousMetadata;
 };

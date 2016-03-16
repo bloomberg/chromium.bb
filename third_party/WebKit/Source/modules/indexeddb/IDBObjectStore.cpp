@@ -67,6 +67,7 @@ DEFINE_TRACE(IDBObjectStore)
 {
     visitor->trace(m_transaction);
     visitor->trace(m_indexMap);
+    visitor->trace(m_createdIndexes);
 }
 
 ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
@@ -534,6 +535,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
     IDBIndexMetadata metadata(name, indexId, keyPath, options.unique(), options.multiEntry());
     IDBIndex* index = IDBIndex::create(metadata, this, m_transaction.get());
     m_indexMap.set(name, index);
+    m_createdIndexes.add(index);
     m_metadata.indexes.set(indexId, metadata);
     m_transaction->db()->indexCreated(id(), metadata);
 
@@ -728,12 +730,20 @@ IDBRequest* IDBObjectStore::count(ScriptState* scriptState, const ScriptValue& r
     return request;
 }
 
+void IDBObjectStore::abort()
+{
+    for (auto& index : m_createdIndexes)
+        index->markDeleted();
+}
+
 void IDBObjectStore::transactionFinished()
 {
     ASSERT(m_transaction->isFinished());
 
     // Break reference cycles.
+    // TODO(jsbell): This can be removed c/o Oilpan.
     m_indexMap.clear();
+    m_createdIndexes.clear();
 }
 
 int64_t IDBObjectStore::findIndexId(const String& name) const

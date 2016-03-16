@@ -18,14 +18,14 @@ now we wait.
 deleteIndexAfterGetError()
 Expecting exception from objectStore.deleteIndex('index')
 PASS Exception was thrown.
-PASS code is 0
-PASS ename is 'TransactionInactiveError'
-Exception message: Failed to execute 'deleteIndex' on 'IDBObjectStore': The transaction has finished.
+PASS code is 11
+PASS ename is 'InvalidStateError'
+Exception message: Failed to execute 'deleteIndex' on 'IDBObjectStore': The object store has been deleted.
 Expecting exception from objectStore.deleteIndex('index')
 PASS Exception was thrown.
-PASS code is 0
-PASS ename is 'TransactionInactiveError'
-Exception message: Failed to execute 'deleteIndex' on 'IDBObjectStore': The transaction has finished.
+PASS code is 11
+PASS ename is 'InvalidStateError'
+Exception message: Failed to execute 'deleteIndex' on 'IDBObjectStore': The object store has been deleted.
 PASS successfullyParsed is true
 
 TEST COMPLETE
