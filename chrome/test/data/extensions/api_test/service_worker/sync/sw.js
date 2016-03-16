@@ -21,4 +21,9 @@ this.onsync = function(e) {
 
 this.onmessage = function(e) {
   port = e.ports[0];
+  if (e.data != 'connect') {
+    port.postMessage('SW received unexpected message');
+    return;
+  }
+  port.postMessage('connected');
 };

@@ -22,6 +22,10 @@ window.runServiceWorker = function() {
     var mc = new MessageChannel();
     // Called when ServiceWorker.onsync fires.
     mc.port1.onmessage = function(e) {
+      if (e.data == 'connected') {
+        window.domAutomationController.send('SERVICE_WORKER_READY');
+        return;
+      }
       if (e.data != 'SYNC: send-chats') {
         console.log('SW returned incorrect data: ' + e.data);
         chrome.test.sendMessage('FAIL');  // Fails the test fast.
@@ -30,7 +34,6 @@ window.runServiceWorker = function() {
       chrome.test.sendMessage(e.data);
     };
     serviceWorker.postMessage('connect', [mc.port2]);
-    window.domAutomationController.send('SERVICE_WORKER_READY');
   }).catch(function(err) {
     window.domAutomationController.send(err);
   });
