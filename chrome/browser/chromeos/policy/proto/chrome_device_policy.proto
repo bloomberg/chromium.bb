@@ -682,6 +682,11 @@ message UsbDetachableWhitelistProto {
   repeated UsbDeviceIdProto id = 1;
 }
 
+message AllowBluetoothProto {
+  // Policy which controls whether Bluetooth is available.
+  optional bool allow_bluetooth = 1 [default = true];
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -730,4 +735,5 @@ message ChromeDeviceSettingsProto {
       allow_kiosk_app_control_chrome_version = 40;
   optional LoginAuthenticationBehaviorProto login_authentication_behavior = 41;
   optional UsbDetachableWhitelistProto usb_detachable_whitelist = 42;
+  optional AllowBluetoothProto allow_bluetooth = 43;
 }

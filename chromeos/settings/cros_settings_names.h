@@ -96,6 +96,8 @@ CHROMEOS_EXPORT extern const char kDisplayRotationDefault[];
 
 CHROMEOS_EXPORT extern const char kLoginAuthenticationBehavior[];
 
+CHROMEOS_EXPORT extern const char kAllowBluetooth[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

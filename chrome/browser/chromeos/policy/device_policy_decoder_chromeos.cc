@@ -315,6 +315,16 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_allow_bluetooth()) {
+    const em::AllowBluetoothProto& container(policy.allow_bluetooth());
+    if (container.has_allow_bluetooth()) {
+      policies->Set(key::kDeviceAllowBluetooth, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    new base::FundamentalValue(container.allow_bluetooth()),
+                    nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,

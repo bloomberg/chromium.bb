@@ -63,6 +63,7 @@ const char* const kKnownSettings[] = {
     kDeviceDisabled,
     kDeviceDisabledMessage,
     kDeviceOwner,
+    kAllowBluetooth,
     kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
@@ -453,6 +454,11 @@ void DecodeGenericPolicies(
         kDisplayRotationDefault,
         policy.display_rotation_default().display_rotation_default());
   }
+
+  new_values_cache->SetBoolean(
+      kAllowBluetooth, policy.has_allow_bluetooth() &&
+                           policy.allow_bluetooth().has_allow_bluetooth() &&
+                           policy.allow_bluetooth().allow_bluetooth());
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,

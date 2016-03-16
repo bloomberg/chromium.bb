@@ -2678,6 +2678,9 @@
   "UsbDetachableWhitelist": {
   },
 
+  "DeviceAllowBluetooth": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

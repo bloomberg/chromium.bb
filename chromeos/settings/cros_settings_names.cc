@@ -191,4 +191,8 @@ const char kDisplayRotationDefault[] = "cros.display_rotation_default";
 const char kLoginAuthenticationBehavior[] =
     "cros.device.login_authentication_behavior";
 
+// A boolean pref that indicates whether bluetooth should be allowed on the
+// device.
+const char kAllowBluetooth[] = "cros.device.allow_bluetooth";
+
 }  // namespace chromeos
