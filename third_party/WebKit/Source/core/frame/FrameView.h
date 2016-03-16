@@ -375,6 +375,7 @@ public:
     bool userInputScrollable(ScrollbarOrientation) const override;
     bool shouldPlaceVerticalScrollbarOnLeft() const override;
     Widget* getWidget() override;
+    CompositorAnimationTimeline* compositorAnimationTimeline() const override;
 
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,

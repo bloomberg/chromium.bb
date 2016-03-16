@@ -239,4 +239,28 @@ FloatPoint ScrollAnimatorCompositorCoordinator::blinkOffsetFromCompositorOffset(
     return offset;
 }
 
+String ScrollAnimatorCompositorCoordinator::runStateAsText() const
+{
+    switch (m_runState) {
+    case RunState::Idle:
+        return String("Idle");
+    case RunState::WaitingToSendToCompositor:
+        return String("WaitingToSendToCompositor");
+    case RunState::RunningOnCompositor:
+        return String("RunningOnCompositor");
+    case RunState::RunningOnMainThread:
+        return String("RunningOnMainThread");
+    case RunState::RunningOnCompositorButNeedsUpdate:
+        return String("RunningOnCompositorButNeedsUpdate");
+    case RunState::WaitingToCancelOnCompositor:
+        return String("WaitingToCancelOnCompositor");
+    case RunState::PostAnimationCleanup:
+        return String("PostAnimationCleanup");
+    case RunState::RunningOnCompositorButNeedsTakeover:
+        return String("RunningOnCompositorButNeedsTakeover");
+    }
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
 } // namespace blink

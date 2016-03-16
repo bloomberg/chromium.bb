@@ -721,6 +721,12 @@ bool VisualViewport::shouldDisableDesktopWorkarounds() const
         || (constraints.minimumScale == constraints.maximumScale && constraints.minimumScale != -1);
 }
 
+CompositorAnimationTimeline* VisualViewport::compositorAnimationTimeline() const
+{
+    ScrollingCoordinator* c = frameHost().page().scrollingCoordinator();
+    return c ? c->compositorAnimationTimeline() : nullptr;
+}
+
 String VisualViewport::debugName(const GraphicsLayer* graphicsLayer) const
 {
     String name;

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<script src="../../../../resources/js-test.js"></script>
+<style>
+body {
+    width: 2000px;
+    height: 2000px;
+}
+</style>
+
+<script>
+var jsTestIsAsync = true;
+
+description("This test verifies that the first programmatic smooth scroll " +
+            "doesn't always run on the main thread (see crbug.com/592799).");
+
+// From ScrollAnimatorCompositorCoordinator::RunState
+var RUNNING_ON_COMPOSITOR = "RunningOnCompositor";
+
+function runTest() {
+    if (document.scrollingElement.scrollTop == 0) {
+        requestAnimationFrame(runTest);
+    } else {
+        // Check that initiated by main thread and running on the compositor.
+        shouldBe("internals.getProgrammaticScrollAnimationState(document)",
+            "RUNNING_ON_COMPOSITOR")
+        shouldBecomeEqual("document.scrollingElement.scrollTop == 500",
+          "true", finishJSTest);
+    }
+}
+
+onload = function() {
+    if (!window.internals) {
+        debug("This test requires window.internals.");
+        finishJSTest();
+        return;
+    }
+
+    document.scrollingElement.scrollTop = 0;
+
+    window.scrollBy({top: 500, behavior: "smooth"});
+
+    runTest();
+};
+
+</script>

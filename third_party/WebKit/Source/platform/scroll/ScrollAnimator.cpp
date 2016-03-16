@@ -279,6 +279,9 @@ void ScrollAnimator::updateCompositorAnimations()
 
     if (m_runState == RunState::WaitingToSendToCompositor
         || m_runState == RunState::RunningOnCompositorButNeedsUpdate) {
+        if (!m_compositorAnimationAttachedToLayerId)
+            reattachCompositorPlayerIfNeeded(getScrollableArea()->compositorAnimationTimeline());
+
         if (m_runState == RunState::RunningOnCompositorButNeedsUpdate) {
             // Abort the running animation before a new one with an updated
             // target is added.

@@ -360,4 +360,6 @@
     void triggerAutoplayViewportCheck(HTMLMediaElement mediaElement);
 
     int getScrollAnimationState(Node node);
+
+    DOMString getProgrammaticScrollAnimationState(Node node);
 };

@@ -1464,6 +1464,15 @@ void PaintLayerScrollableArea::resetRebuildScrollbarLayerFlags()
     m_rebuildVerticalScrollbarLayer = false;
 }
 
+CompositorAnimationTimeline* PaintLayerScrollableArea::compositorAnimationTimeline() const
+{
+    if (LocalFrame* frame = box().frame()) {
+        if (Page* page = frame->page())
+            return page->scrollingCoordinator() ? page->scrollingCoordinator()->compositorAnimationTimeline() : nullptr;
+    }
+    return nullptr;
+}
+
 PaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(PaintLayerScrollableArea& scrollableArea)
     : m_scrollableArea(&scrollableArea)
     , m_canDetachScrollbars(0)

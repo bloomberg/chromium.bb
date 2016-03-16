@@ -402,6 +402,10 @@ public:
     // or -1 if the node does not have a scrollable area.
     int getScrollAnimationState(Node*) const;
 
+    // Returns the run state of the node's programmatic scroll animator (see ScrollAnimatorCompositorCoordinater::RunState),
+    // or -1 if the node does not have a scrollable area.
+    String getProgrammaticScrollAnimationState(Node*) const;
+
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;

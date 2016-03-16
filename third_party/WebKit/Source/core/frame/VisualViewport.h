@@ -194,6 +194,7 @@ public:
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
     Widget* getWidget() override;
+    CompositorAnimationTimeline* compositorAnimationTimeline() const override;
 
     // Used for gathering data on user pinch-zoom statistics.
     void userDidChangeScale();

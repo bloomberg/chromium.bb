@@ -131,6 +131,8 @@ public:
     ProgrammaticScrollAnimator& programmaticScrollAnimator() const;
     ProgrammaticScrollAnimator* existingProgrammaticScrollAnimator() const { return m_programmaticScrollAnimator.get(); }
 
+    virtual CompositorAnimationTimeline* compositorAnimationTimeline() const { return nullptr; }
+
     const IntPoint& scrollOrigin() const { return m_scrollOrigin; }
     bool scrollOriginChanged() const { return m_scrollOriginChanged; }
 

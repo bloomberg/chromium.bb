@@ -434,6 +434,12 @@ ScrollingCoordinator* FrameView::scrollingCoordinator() const
     return p ? p->scrollingCoordinator() : 0;
 }
 
+CompositorAnimationTimeline* FrameView::compositorAnimationTimeline() const
+{
+    ScrollingCoordinator* c = scrollingCoordinator();
+    return c ? c->compositorAnimationTimeline() : nullptr;
+}
+
 void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
 {
     m_canHaveScrollbars = canHaveScrollbars;

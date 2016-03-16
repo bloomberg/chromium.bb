@@ -116,6 +116,8 @@ public:
 
     void updateTouchEventTargetRectsIfNeeded();
 
+    CompositorAnimationTimeline* compositorAnimationTimeline() { return m_programmaticScrollAnimatorTimeline.get(); }
+
     // For testing purposes only. This ScrollingCoordinator is reused between layout test, and must be reset
     // for the results to be valid.
     void reset();

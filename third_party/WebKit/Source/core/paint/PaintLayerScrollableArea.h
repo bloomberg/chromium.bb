@@ -220,6 +220,7 @@ public:
     bool shouldPlaceVerticalScrollbarOnLeft() const override;
     int pageStep(ScrollbarOrientation) const override;
     ScrollBehavior scrollBehaviorStyle() const override;
+    CompositorAnimationTimeline* compositorAnimationTimeline() const override;
 
     double scrollXOffset() const { return m_scrollOffset.width() + scrollOrigin().x(); }
     double scrollYOffset() const { return m_scrollOffset.height() + scrollOrigin().y(); }

@@ -136,6 +136,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/Handle.h"
 #include "platform/inspector_protocol/FrontendChannel.h"
+#include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
@@ -2573,9 +2574,17 @@ void Internals::triggerAutoplayViewportCheck(HTMLMediaElement* element)
 
 int Internals::getScrollAnimationState(Node* node) const
 {
+    // TODO(ymalik): Use runStateAsText instead of returning an integer.
     if (ScrollableArea* scrollableArea = scrollableAreaForNode(node))
         return static_cast<int>(scrollableArea->scrollAnimator().m_runState);
     return -1;
+}
+
+String Internals::getProgrammaticScrollAnimationState(Node* node) const
+{
+    if (ScrollableArea* scrollableArea = scrollableAreaForNode(node))
+        return scrollableArea->programmaticScrollAnimator().runStateAsText();
+    return String();
 }
 
 } // namespace blink

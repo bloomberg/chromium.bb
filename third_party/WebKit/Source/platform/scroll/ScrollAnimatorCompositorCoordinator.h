@@ -32,6 +32,7 @@ public:
 
     bool hasAnimationThatRequiresService() const;
     void dispose();
+    String runStateAsText() const;
 
     virtual bool hasRunningAnimation() const { return false; }
 
