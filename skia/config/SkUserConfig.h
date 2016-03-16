@@ -247,6 +247,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_CREATESHADER_PTR
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_SETSHADER_PTR
+#   define SK_SUPPORT_LEGACY_SETSHADER_PTR
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
