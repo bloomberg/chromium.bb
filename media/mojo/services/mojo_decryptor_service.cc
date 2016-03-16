@@ -18,7 +18,6 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
-#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 
 namespace media {
@@ -113,12 +112,6 @@ void MojoDecryptorService::DeinitializeDecoder(
       static_cast<media::Decryptor::StreamType>(stream_type));
 }
 
-void MojoDecryptorService::ReleaseSharedBuffer(
-    mojo::ScopedSharedBufferHandle buffer,
-    uint64_t buffer_size) {
-  in_use_video_frames_.erase(buffer.get().value());
-}
-
 void MojoDecryptorService::OnDecryptDone(
     const DecryptCallback& callback,
     media::Decryptor::Status status,
@@ -179,15 +172,6 @@ void MojoDecryptorService::OnVideoDecoded(
     DCHECK_NE(status, media::Decryptor::kSuccess);
     callback.Run(static_cast<Decryptor::Status>(status), nullptr);
     return;
-  }
-
-  // If |frame| has shared memory that will be passed back, keep a reference
-  // to it until the other side is done with the memory.
-  if (frame->storage_type() == VideoFrame::STORAGE_MOJO_SHARED_BUFFER) {
-    MojoSharedBufferVideoFrame* mojo_frame =
-        static_cast<MojoSharedBufferVideoFrame*>(frame.get());
-    in_use_video_frames_.insert(
-        std::make_pair(mojo_frame->Handle().value(), frame));
   }
 
   callback.Run(static_cast<Decryptor::Status>(status),

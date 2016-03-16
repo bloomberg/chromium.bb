@@ -82,7 +82,6 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   // can be transferred across a mojo connection.
   friend struct mojo::TypeConverter<mojo::StructPtr<interfaces::VideoFrame>,
                                     scoped_refptr<VideoFrame>>;
-  friend class MojoDecryptorService;
 
   MojoSharedBufferVideoFrame(VideoPixelFormat format,
                              const gfx::Size& coded_size,

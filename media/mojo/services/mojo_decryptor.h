@@ -57,10 +57,6 @@ class MojoDecryptor : public Decryptor {
                       interfaces::Decryptor::Status status,
                       interfaces::VideoFramePtr video_frame);
 
-  // Called when done with a VideoFrame in order to reuse the shared memory.
-  void ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,
-                           size_t buffer_size);
-
   // To pass DecoderBuffers to and from the MojoDecryptorService, 2 data pipes
   // are required (one each way). At initialization both pipes are created,
   // and then the handles are passed to the MojoDecryptorService.
