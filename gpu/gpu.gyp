@@ -353,6 +353,7 @@
         'command_buffer/tests/gl_clear_framebuffer_unittest.cc',
         'command_buffer/tests/gl_compressed_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
+        'command_buffer/tests/gl_copy_tex_image_2d_workaround_unittest.cc',
         'command_buffer/tests/gl_cube_map_texture_unittest.cc',
         'command_buffer/tests/gl_depth_texture_unittest.cc',
         'command_buffer/tests/gl_dynamic_config_unittest.cc',

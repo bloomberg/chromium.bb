@@ -10,6 +10,10 @@
 #include <GLES2/gl2.h>
 #include <stdint.h>
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 class GLTestHelper {
  public:
   static const uint8_t kCheckClearValue = 123u;
@@ -58,6 +62,8 @@ class GLTestHelper {
 
   // Uses ReadPixels to save an area of the current FBO/Backbuffer.
   static bool SaveBackbufferAsBMP(const char* filename, int width, int height);
+
+  static void DrawTextureQuad(GLenum target, const gfx::Size& size);
 };
 
 #endif  // GPU_COMMAND_BUFFER_TESTS_GL_TEST_UTILS_H_

@@ -15,6 +15,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
@@ -41,6 +42,11 @@
 #include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+
+#if defined(OS_MACOSX)
+#include "ui/gfx/mac/io_surface.h"
+#include "ui/gl/gl_image_io_surface.h"
+#endif
 
 namespace gpu {
 namespace {
@@ -101,6 +107,65 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   gfx::BufferFormat format_;
 };
 
+#if defined(OS_MACOSX)
+class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
+ public:
+  IOSurfaceGpuMemoryBuffer(const gfx::Size& size, gfx::BufferFormat format)
+      : mapped_(false), size_(size), format_(format) {
+    iosurface_ = gfx::CreateIOSurface(size, gfx::BufferFormat::BGRA_8888);
+  }
+
+  ~IOSurfaceGpuMemoryBuffer() override {
+    CFRelease(iosurface_);
+  }
+
+  static IOSurfaceGpuMemoryBuffer* FromClientBuffer(ClientBuffer buffer) {
+    return reinterpret_cast<IOSurfaceGpuMemoryBuffer*>(buffer);
+  }
+
+  // Overridden from gfx::GpuMemoryBuffer:
+  bool Map() override {
+    DCHECK(!mapped_);
+    mapped_ = true;
+    return true;
+  }
+  void* memory(size_t plane) override {
+    DCHECK(mapped_);
+    DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+    return IOSurfaceGetBaseAddressOfPlane(iosurface_, plane);
+  }
+  void Unmap() override {
+    DCHECK(mapped_);
+    mapped_ = false;
+  }
+  gfx::Size GetSize() const override { return size_; }
+  gfx::BufferFormat GetFormat() const override { return format_; }
+  int stride(size_t plane) const override {
+    DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+    return IOSurfaceGetWidthOfPlane(iosurface_, plane);
+  }
+  gfx::GpuMemoryBufferId GetId() const override {
+    NOTREACHED();
+    return gfx::GpuMemoryBufferId(0);
+  }
+  gfx::GpuMemoryBufferHandle GetHandle() const override {
+    NOTREACHED();
+    return gfx::GpuMemoryBufferHandle();
+  }
+  ClientBuffer AsClientBuffer() override {
+    return reinterpret_cast<ClientBuffer>(this);
+  }
+
+  IOSurfaceRef iosurface() { return iosurface_; }
+
+ private:
+  bool mapped_;
+  IOSurfaceRef iosurface_;
+  const gfx::Size size_;
+  gfx::BufferFormat format_;
+};
+#endif  // defined(OS_MACOSX)
+
 }  // namespace
 
 int GLManager::use_count_;
@@ -149,10 +214,15 @@ GLManager::~GLManager() {
   }
 }
 
-// static
 scoped_ptr<gfx::GpuMemoryBuffer> GLManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format) {
+#if defined(OS_MACOSX)
+  if (use_iosurface_memory_buffers_) {
+    return make_scoped_ptr<gfx::GpuMemoryBuffer>(
+        new IOSurfaceGpuMemoryBuffer(size, format));
+  }
+#endif  // defined(OS_MACOSX)
   std::vector<uint8_t> data(gfx::BufferSizeForBufferFormat(size, format), 0);
   scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(data));
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
@@ -449,23 +519,41 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
                                size_t width,
                                size_t height,
                                unsigned internalformat) {
-  GpuMemoryBufferImpl* gpu_memory_buffer =
-      GpuMemoryBufferImpl::FromClientBuffer(buffer);
+  gfx::Size size(width, height);
+  scoped_refptr<gl::GLImage> gl_image;
 
-  scoped_refptr<gl::GLImageRefCountedMemory> image(
-      new gl::GLImageRefCountedMemory(gfx::Size(width, height),
-                                      internalformat));
-  if (!image->Initialize(gpu_memory_buffer->bytes(),
-                         gpu_memory_buffer->GetFormat())) {
-    return -1;
+#if defined(OS_MACOSX)
+  if (use_iosurface_memory_buffers_) {
+    IOSurfaceGpuMemoryBuffer* gpu_memory_buffer =
+        IOSurfaceGpuMemoryBuffer::FromClientBuffer(buffer);
+    scoped_refptr<gl::GLImageIOSurface> image(
+        new gl::GLImageIOSurface(size, internalformat));
+    if (!image->Initialize(gpu_memory_buffer->iosurface(),
+                           gfx::GenericSharedMemoryId(1),
+                           gfx::BufferFormat::BGRA_8888)) {
+      return -1;
+    }
+    gl_image = image;
+  }
+#endif  // defined(OS_MACOSX)
+  if (!gl_image) {
+    GpuMemoryBufferImpl* gpu_memory_buffer =
+        GpuMemoryBufferImpl::FromClientBuffer(buffer);
+
+    scoped_refptr<gl::GLImageRefCountedMemory> image(
+        new gl::GLImageRefCountedMemory(size, internalformat));
+    if (!image->Initialize(gpu_memory_buffer->bytes(),
+                           gpu_memory_buffer->GetFormat())) {
+      return -1;
+    }
+    gl_image = image;
   }
 
   static int32_t next_id = 1;
   int32_t new_id = next_id++;
-
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   DCHECK(image_manager);
-  image_manager->AddImage(image.get(), new_id);
+  image_manager->AddImage(gl_image.get(), new_id);
   return new_id;
 }
 
@@ -474,7 +562,7 @@ int32_t GLManager::CreateGpuMemoryBufferImage(size_t width,
                                               unsigned internalformat,
                                               unsigned usage) {
   DCHECK_EQ(usage, static_cast<unsigned>(GL_READ_WRITE_CHROMIUM));
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer = GLManager::CreateGpuMemoryBuffer(
+  scoped_ptr<gfx::GpuMemoryBuffer> buffer = CreateGpuMemoryBuffer(
       gfx::Size(width, height), gfx::BufferFormat::RGBA_8888);
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }

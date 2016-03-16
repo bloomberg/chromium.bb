@@ -1905,6 +1905,15 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   const SamplerState& GetSamplerStateForTextureUnit(GLenum target, GLuint unit);
 
+  // copyTexImage2D doesn't work on OSX under very specific conditions.
+  // Returns whether those conditions have been met. If this method returns
+  // true, |source_texture_service_id| and |source_texture_target| are also
+  // populated, since they are needed to implement the workaround.
+  bool NeedsCopyTextureImageWorkaround(GLenum internal_format,
+                                       int32_t channels_exist,
+                                       GLuint* source_texture_service_id,
+                                       GLenum* source_texture_target);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -11655,9 +11664,59 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
                           copyWidth, copyHeight);
     }
   } else {
-    glCopyTexImage2D(target, level, texture_manager()->AdjustTexInternalFormat(
-                                        internal_format),
-                     copyX, copyY, copyWidth, copyHeight, border);
+    GLenum final_internal_format =
+        texture_manager()->AdjustTexInternalFormat(internal_format);
+
+    // The service id and target of the texture attached to READ_FRAMEBUFFER.
+    GLuint source_texture_service_id = 0;
+    GLenum source_texture_target = 0;
+    bool use_workaround = NeedsCopyTextureImageWorkaround(
+        final_internal_format, channels_exist, &source_texture_service_id,
+        &source_texture_target);
+    if (use_workaround) {
+      GLenum dest_texture_target = target;
+      GLenum framebuffer_target = features().chromium_framebuffer_multisample
+                                      ? GL_READ_FRAMEBUFFER_EXT
+                                      : GL_FRAMEBUFFER;
+
+      GLenum temp_internal_format = 0;
+      if (channels_exist == GLES2Util::kRGBA) {
+        temp_internal_format = GL_RGBA;
+      } else if (channels_exist == GLES2Util::kRGB) {
+        temp_internal_format = GL_RGB;
+      } else {
+        NOTREACHED();
+      }
+
+      GLuint temp_texture;
+      {
+        // Copy from the read framebuffer into |temp_texture|.
+        glGenTextures(1, &temp_texture);
+        ScopedTextureBinder binder(&state_, temp_texture,
+                                   source_texture_target);
+        glCopyTexImage2D(source_texture_target, 0, temp_internal_format, copyX,
+                         copyY, copyWidth, copyHeight, border);
+
+        // Attach the temp texture to the read framebuffer.
+        glFramebufferTexture2DEXT(framebuffer_target, GL_COLOR_ATTACHMENT0,
+                                  source_texture_target, temp_texture, 0);
+      }
+
+      // Copy to the final texture.
+      DCHECK_EQ(static_cast<GLuint>(GL_TEXTURE_2D), dest_texture_target);
+      glCopyTexImage2D(dest_texture_target, level, final_internal_format, 0, 0,
+                       copyWidth, copyHeight, 0);
+
+      // Rebind source texture.
+      glFramebufferTexture2DEXT(framebuffer_target, GL_COLOR_ATTACHMENT0,
+                                source_texture_target,
+                                source_texture_service_id, 0);
+
+      glDeleteTextures(1, &temp_texture);
+    } else {
+      glCopyTexImage2D(target, level, final_internal_format, copyX, copyY,
+                       copyWidth, copyHeight, border);
+    }
   }
   GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTexImage2D");
   if (error == GL_NO_ERROR) {
@@ -15987,6 +16046,53 @@ const SamplerState& GLES2DecoderImpl::GetSamplerStateForTextureUnit(
     return texture_ref->texture()->sampler_state();
 
   return default_sampler_state_;
+}
+
+bool GLES2DecoderImpl::NeedsCopyTextureImageWorkaround(
+    GLenum internal_format,
+    int32_t channels_exist,
+    GLuint* source_texture_service_id,
+    GLenum* source_texture_target) {
+  // On some OSX devices, copyTexImage2D will fail if all of these conditions
+  // are met:
+  //   1. The internal format of the new texture is not GL_RGB or GL_RGBA.
+  //   2. The image of the read FBO is backed by an IOSurface.
+  // See https://crbug.com/581777#c4 for more details.
+  if (!workarounds().use_intermediary_for_copy_texture_image)
+    return false;
+
+  if (internal_format == GL_RGB || internal_format == GL_RGBA)
+    return false;
+
+  GLenum framebuffer_target = features().chromium_framebuffer_multisample
+                                  ? GL_READ_FRAMEBUFFER_EXT
+                                  : GL_FRAMEBUFFER;
+  Framebuffer* framebuffer =
+      GetFramebufferInfoForTarget(framebuffer_target);
+  if (!framebuffer)
+    return false;
+
+  const Framebuffer::Attachment* attachment =
+      framebuffer->GetReadBufferAttachment();
+  if (!attachment)
+    return false;
+
+  if (!attachment->IsTextureAttachment())
+    return false;
+
+  TextureRef* texture =
+      texture_manager()->GetTexture(attachment->object_name());
+  if (!texture->texture()->HasImages())
+    return false;
+
+  // The workaround only works if the source texture consists of the channels
+  // kRGB or kRGBA.
+  if (channels_exist != GLES2Util::kRGBA && channels_exist != GLES2Util::kRGB)
+    return false;
+
+  *source_texture_target = texture->texture()->target();
+  *source_texture_service_id = texture->service_id();
+  return true;
 }
 
 error::Error GLES2DecoderImpl::HandleBindFragmentInputLocationCHROMIUMBucket(

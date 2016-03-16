@@ -78,7 +78,7 @@ class GLManager : private GpuControl {
   GLManager();
   ~GLManager() override;
 
-  static scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
+  scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format);
 
@@ -92,6 +92,10 @@ class GLManager : private GpuControl {
   void MakeCurrent();
 
   void SetSurface(gfx::GLSurface* surface);
+
+  void set_use_iosurface_memory_buffers(bool use_iosurface_memory_buffers) {
+    use_iosurface_memory_buffers_ = use_iosurface_memory_buffers;
+  }
 
   void SetCommandsPaused(bool paused) { pause_commands_ = paused; }
 
@@ -174,6 +178,8 @@ class GLManager : private GpuControl {
 
   const CommandBufferId command_buffer_id_;
   uint64_t next_fence_sync_release_;
+
+  bool use_iosurface_memory_buffers_ = false;
 
   // Used on Android to virtualize GL for all contexts.
   static int use_count_;
