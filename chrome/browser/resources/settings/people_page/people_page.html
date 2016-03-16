@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
@@ -58,13 +59,11 @@
           </template>
 </if>
         </div>
-        <div class="settings-box first two-line"
-            hidden="[[syncStatus.signedIn]]">
+        <div class="settings-box two-line" hidden="[[syncStatus.signedIn]]">
           [[i18n('syncOverview')]]
         </div>
 
-        <div class="settings-box"
-            hidden="[[!isStatusTextSet_(syncStatus)]]">
+        <div class="settings-box" hidden="[[!isStatusTextSet_(syncStatus)]]">
           <span id="syncStatusText"></span>
           <paper-button on-tap="onActionLinkTap_">
             [[syncStatus.actionLinkText]]
@@ -86,6 +85,38 @@
               i18n-values="label:enableScreenlock">
           </settings-checkbox>
         </div>
+
+        <template is="dom-if" if=[[easyUnlockAllowed_]]>
+          <div class="settings-box">
+            <div class="middle">
+              <div>[[i18n('easyUnlockSectionTitle')]]</div>
+              <div class="secondary">
+                <template is="dom-if" if=[[!easyUnlockEnabled_]]>
+                  [[i18n('easyUnlockSetupIntro')]]
+                </template>
+                <template is="dom-if" if=[[easyUnlockEnabled_]]>
+                  [[i18n('easyUnlockDescription')]]
+                </template>
+                <a target="_blank" href$="[[i18n('easyUnlockLearnMoreURL')]]">
+                  [[i18n('learnMore')]]
+                </a>
+              </div>
+            </div>
+            <div class="secondary-action">
+              <!-- TODO(tommycli): Hook up these buttons to actions. -->
+              <template is="dom-if" if=[[!easyUnlockEnabled_]]>
+                <paper-button class="secondary-button">
+                  [[i18n('easyUnlockSetupButton')]]
+                </paper-button>
+              </template>
+              <template is="dom-if" if=[[easyUnlockEnabled_]]>
+                <paper-button class="secondary-button">
+                  [[i18n('easyUnlockTurnOffButton')]]
+                </paper-button>
+              </template>
+            </div>
+          </div>
+        </template>
 </if>
 
         <div class="settings-box">

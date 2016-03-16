@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace content {
 class WebUIDataSource;
@@ -30,6 +31,7 @@ class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
 
   // SettingsPageUIHandler:
   void RegisterMessages() override;
+  void RenderViewReused() override;
 
   // EasyUnlockServiceObserver:
   void OnTurnOffOperationStatusChanged() override;
@@ -38,16 +40,23 @@ class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
   explicit EasyUnlockSettingsHandler(Profile* profile);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EasyUnlockSettingsHandlerTest, EnabledStatus);
   FRIEND_TEST_ALL_PREFIXES(EasyUnlockSettingsHandlerTest, TurnOffStatus);
 
+  void SendEnabledStatus();
   void SendTurnOffOperationStatus();
 
   // JS callbacks.
+  void HandleGetEnabledStatus(const base::ListValue* args);
   void HandleGetTurnOffFlowStatus(const base::ListValue* args);
   void HandleRequestTurnOff(const base::ListValue* args);
   void HandlePageDismissed(const base::ListValue* args);
 
   Profile* const profile_;
+
+  PrefChangeRegistrar profile_pref_registrar_;
+
+  bool observers_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockSettingsHandler);
 };

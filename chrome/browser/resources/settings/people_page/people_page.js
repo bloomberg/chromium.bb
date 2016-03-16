@@ -18,6 +18,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -54,13 +55,46 @@ Polymer({
      * @private {string}
      */
     profileName_: String,
+
+<if expr="chromeos">
+    /**
+     * True if Easy Unlock is allowed on this machine.
+     * @private {boolean}
+     */
+    easyUnlockAllowed_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('easyUnlockAllowed');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * True if Easy Unlock is enabled.
+     * @private {boolean}
+     */
+    easyUnlockEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('easyUnlockEnabled');
+      },
+    },
+</if>
   },
 
   /** @override */
-  created: function() {
+  attached: function() {
     settings.SyncPrivateApi.getProfileInfo(this.handleProfileInfo_.bind(this));
     settings.SyncPrivateApi.getSyncStatus(
         this.handleSyncStatusFetched_.bind(this));
+
+<if expr="chromeos">
+    if (this.easyUnlockAllowed_) {
+      this.addWebUIListener(
+          'easy-unlock-enabled-status',
+          this.handleEasyUnlockEnabledStatusChanged_.bind(this));
+    }
+</if>
   },
 
   /**
@@ -85,6 +119,16 @@ Polymer({
     // code to not include HTML in the status messages.
     this.$.syncStatusText.innerHTML = syncStatus.statusText;
   },
+
+<if expr="chromeos">
+  /**
+   * Handler for when the Easy Unlock enabled status has changed.
+   * @private
+   */
+  handleEasyUnlockEnabledStatusChanged_: function(easyUnlockEnabled) {
+    this.easyUnlockEnabled_ = easyUnlockEnabled;
+  },
+</if>
 
   /** @private */
   onActionLinkTap_: function() {

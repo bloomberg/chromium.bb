@@ -21,15 +21,20 @@ namespace {
 class FakeEasyUnlockService : public EasyUnlockService {
  public:
   explicit FakeEasyUnlockService(Profile* profile)
-      : EasyUnlockService(profile), turn_off_status_(IDLE), is_allowed_(true) {}
+      : EasyUnlockService(profile),
+        turn_off_status_(IDLE),
+        is_allowed_(true),
+        is_enabled_(false) {}
 
   TurnOffFlowStatus GetTurnOffFlowStatus() const override {
     return turn_off_status_;
   }
 
   bool IsAllowed() const override { return is_allowed_; }
-
   void set_is_allowed(bool is_allowed) { is_allowed_ = is_allowed; }
+
+  bool IsEnabled() const override { return is_enabled_; }
+  void set_is_enabled(bool is_enabled) { is_enabled_ = is_enabled; }
 
   void RunTurnOffFlow() override {
     turn_off_status_ = PENDING;
@@ -76,6 +81,7 @@ class FakeEasyUnlockService : public EasyUnlockService {
 
   TurnOffFlowStatus turn_off_status_;
   bool is_allowed_;
+  bool is_enabled_;
 };
 
 class TestEasyUnlockSettingsHandler : public EasyUnlockSettingsHandler {
@@ -110,6 +116,22 @@ class EasyUnlockSettingsHandlerTest : public testing::Test {
   FakeEasyUnlockService* fake_easy_unlock_service() {
     return static_cast<FakeEasyUnlockService*>(
         EasyUnlockService::Get(profile_.get()));
+  }
+
+  void VerifyEnabledStatusCallback(size_t expected_total_calls,
+                                   bool expected_status) {
+    std::string event;
+    bool status;
+
+    EXPECT_EQ(expected_total_calls, web_ui_.call_data().size());
+
+    const content::TestWebUI::CallData& data = *web_ui_.call_data().back();
+    EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+    ASSERT_TRUE(data.arg1()->GetAsString(&event));
+    EXPECT_EQ("easy-unlock-enabled-status", event);
+    ASSERT_TRUE(data.arg2()->GetAsBoolean(&status));
+
+    EXPECT_EQ(expected_status, status);
   }
 
   void VerifyTurnOffStatusCallback(size_t expected_total_calls,
@@ -148,28 +170,67 @@ TEST_F(EasyUnlockSettingsHandlerTest, OnlyCreatedWhenEasyUnlockAllowed) {
   EXPECT_FALSE(handler.get());
 }
 
+TEST_F(EasyUnlockSettingsHandlerTest, EnabledStatus) {
+  scoped_ptr<EasyUnlockSettingsHandler> handler;
+  handler.reset(new TestEasyUnlockSettingsHandler(profile()));
+  handler->set_web_ui(web_ui());
+
+  // Test the C++ -> JS push path.
+  handler->SendEnabledStatus();
+  VerifyEnabledStatusCallback(1U, false);
+
+  fake_easy_unlock_service()->set_is_enabled(true);
+  handler->SendEnabledStatus();
+  VerifyEnabledStatusCallback(2U, true);
+
+  // Test the JS -> C++ -> JS callback path.
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue("test-callback-id"));
+  handler->HandleGetEnabledStatus(&list_args);
+
+  std::string callback_id;
+  bool enabled_status;
+
+  EXPECT_EQ(3U, web_ui()->call_data().size());
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data.function_name());
+
+  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+  EXPECT_EQ("test-callback-id", callback_id);
+
+  ASSERT_TRUE(data.arg2()->GetAsBoolean(&enabled_status));
+  EXPECT_TRUE(enabled_status);
+}
+
 TEST_F(EasyUnlockSettingsHandlerTest, TurnOffStatus) {
   scoped_ptr<EasyUnlockSettingsHandler> handler;
   handler.reset(new TestEasyUnlockSettingsHandler(profile()));
   handler->set_web_ui(web_ui());
 
+  // Send an initial status query to turn on service observer.
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue("test-callback-id"));
+  handler->HandleGetEnabledStatus(&list_args);
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
   handler->HandleGetTurnOffFlowStatus(nullptr);
-  VerifyTurnOffStatusCallback(1U, "idle");
+  VerifyTurnOffStatusCallback(2U, "idle");
 
   handler->HandleRequestTurnOff(nullptr);
-  VerifyTurnOffStatusCallback(2U, "pending");
-
-  handler->HandleGetTurnOffFlowStatus(nullptr);
   VerifyTurnOffStatusCallback(3U, "pending");
 
+  handler->HandleGetTurnOffFlowStatus(nullptr);
+  VerifyTurnOffStatusCallback(4U, "pending");
+
   handler->HandlePageDismissed(nullptr);
-  VerifyTurnOffStatusCallback(4U, "idle");
+  VerifyTurnOffStatusCallback(5U, "idle");
 
   fake_easy_unlock_service()->SetTurnOffFailForTest();
-  VerifyTurnOffStatusCallback(5U, "server-error");
+  VerifyTurnOffStatusCallback(6U, "server-error");
 
   handler->HandleGetTurnOffFlowStatus(nullptr);
-  VerifyTurnOffStatusCallback(6U, "server-error");
+  VerifyTurnOffStatusCallback(7U, "server-error");
 }
 
 }  // namespace settings

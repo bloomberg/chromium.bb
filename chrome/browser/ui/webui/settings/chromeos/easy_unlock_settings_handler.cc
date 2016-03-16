@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/switches.h"
 #include "content/public/browser/web_ui.h"
@@ -22,24 +22,26 @@ namespace chromeos {
 namespace settings {
 
 EasyUnlockSettingsHandler::EasyUnlockSettingsHandler(Profile* profile)
-    : profile_(profile) {
-  EasyUnlockService::Get(profile)->AddObserver(this);
+    : profile_(profile), observers_registered_(false) {
+  profile_pref_registrar_.Init(profile->GetPrefs());
 }
 
 EasyUnlockSettingsHandler::~EasyUnlockSettingsHandler() {
-  EasyUnlockService::Get(profile_)->RemoveObserver(this);
+  if (observers_registered_)
+    EasyUnlockService::Get(profile_)->RemoveObserver(this);
 }
 
 EasyUnlockSettingsHandler* EasyUnlockSettingsHandler::Create(
     content::WebUIDataSource* html_source,
     Profile* profile) {
-  bool allowed = EasyUnlockService::Get(profile)->IsAllowed();
+  EasyUnlockService* easy_unlock_service = EasyUnlockService::Get(profile);
+  bool allowed = easy_unlock_service->IsAllowed();
   html_source->AddBoolean("easyUnlockAllowed", allowed);
+  html_source->AddBoolean("easyUnlockEnabled",
+                          allowed ? easy_unlock_service->IsEnabled() : false);
   if (!allowed)
     return nullptr;
 
-  html_source->AddString("easyUnlockLearnMoreURL",
-                         chrome::kEasyUnlockLearnMoreUrl);
   html_source->AddBoolean(
       "easyUnlockProximityDetectionAllowed",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -49,6 +51,10 @@ EasyUnlockSettingsHandler* EasyUnlockSettingsHandler::Create(
 }
 
 void EasyUnlockSettingsHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "easyUnlockGetEnabledStatus",
+      base::Bind(&EasyUnlockSettingsHandler::HandleGetEnabledStatus,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "easyUnlockGetTurnOffFlowStatus",
       base::Bind(&EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus,
@@ -63,8 +69,27 @@ void EasyUnlockSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void EasyUnlockSettingsHandler::RenderViewReused() {
+  // When the page is reloaded, we clear our observers and re-register when
+  // the new page's DOM is ready.
+  if (!observers_registered_)
+    return;
+
+  EasyUnlockService::Get(profile_)->RemoveObserver(this);
+  profile_pref_registrar_.RemoveAll();
+
+  observers_registered_ = false;
+}
+
 void EasyUnlockSettingsHandler::OnTurnOffOperationStatusChanged() {
   SendTurnOffOperationStatus();
+}
+
+void EasyUnlockSettingsHandler::SendEnabledStatus() {
+  web_ui()->CallJavascriptFunction(
+      "cr.webUIListenerCallback",
+      base::StringValue("easy-unlock-enabled-status"),
+      base::FundamentalValue(EasyUnlockService::Get(profile_)->IsEnabled()));
 }
 
 void EasyUnlockSettingsHandler::SendTurnOffOperationStatus() {
@@ -94,6 +119,29 @@ void EasyUnlockSettingsHandler::SendTurnOffOperationStatus() {
       "cr.webUIListenerCallback",
       base::StringValue("easy-unlock-turn-off-flow-status"),
       base::StringValue(status_string));
+}
+
+void EasyUnlockSettingsHandler::HandleGetEnabledStatus(
+    const base::ListValue* args) {
+  // This method is called when the DOM is first ready. Therefore we initialize
+  // our observers here.
+  if (!observers_registered_) {
+    EasyUnlockService::Get(profile_)->AddObserver(this);
+
+    profile_pref_registrar_.Add(
+        prefs::kEasyUnlockPairing,
+        base::Bind(&EasyUnlockSettingsHandler::SendEnabledStatus,
+                   base::Unretained(this)));
+
+    observers_registered_ = true;
+  }
+
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  ResolveJavascriptCallback(
+      *callback_id,
+      base::FundamentalValue(EasyUnlockService::Get(profile_)->IsEnabled()));
 }
 
 void EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus(

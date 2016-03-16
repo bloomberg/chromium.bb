@@ -26,6 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
@@ -399,16 +400,9 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
 void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"easyUnlockSectionTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
-      {"easyUnlockDescription", IDS_SETTINGS_EASY_UNLOCK_DESCRIPTION},
-      {"easyUnlockRequireProximityLabel",
-       IDS_SETTINGS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL},
       {"easyUnlockSetupButton", IDS_SETTINGS_EASY_UNLOCK_SETUP_BUTTON},
-      {"easyUnlockSetupIntro", IDS_SETTINGS_EASY_UNLOCK_SETUP_INTRO},
       // Easy Unlock turn-off dialog.
       {"easyUnlockTurnOffButton", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_BUTTON},
-      {"easyUnlockTurnOffTitle", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_TITLE},
-      {"easyUnlockTurnOffDescription",
-       IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_DESCRIPTION},
       {"easyUnlockTurnOffOfflineTitle",
        IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE},
       {"easyUnlockTurnOffOfflineMessage",
@@ -422,6 +416,32 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  base::string16 device_name =
+      l10n_util::GetStringUTF16(ash::GetChromeOSDeviceTypeResourceId());
+  html_source->AddString(
+      "easyUnlockSetupIntro",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_SETUP_INTRO,
+                                 device_name));
+  html_source->AddString(
+      "easyUnlockDescription",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_DESCRIPTION,
+                                 device_name));
+  html_source->AddString(
+      "easyUnlockTurnOffTitle",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_TITLE,
+                                 device_name));
+  html_source->AddString(
+      "easyUnlockTurnOffDescription",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_DESCRIPTION,
+                                 device_name));
+  html_source->AddString(
+      "easyUnlockRequireProximityLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL, device_name));
+
+  html_source->AddString("easyUnlockLearnMoreURL",
+                         chrome::kEasyUnlockLearnMoreUrl);
 }
 
 void AddInternetStrings(content::WebUIDataSource* html_source) {

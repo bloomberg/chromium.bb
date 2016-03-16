@@ -394,13 +394,13 @@
       Smart Lock (beta)
     </message>
     <message name="IDS_SETTINGS_EASY_UNLOCK_SETUP_INTRO" desc="The text to show in Easy Unlock section to introduce the feature.">
-      Keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> unlocked when your Android phone is unlocked and nearby—no need to type your password.
+      Unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your Android phone.
     </message>
     <message name="IDS_SETTINGS_EASY_UNLOCK_SETUP_BUTTON" desc="The label of the button to set up Easy Unlock section on the settings page.">
       Set up
     </message>
     <message name="IDS_SETTINGS_EASY_UNLOCK_DESCRIPTION" desc="The text that describes what Easy Unlock does.">
-      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be unlocked when your Android phone is unlocked and nearby.
+      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can be unlocked with your Android phone.
     </message>
     <message name="IDS_SETTINGS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL" desc="The text label that describes the checkbox that controls whether the user's Android phone must be in close proximity to the Chromebook in order to unlock it..">
       Only unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when your phone is within arm’s reach.

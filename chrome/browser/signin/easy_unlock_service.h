@@ -157,8 +157,9 @@ class EasyUnlockService : public KeyedService {
   // permitted if the flag is enabled. Virtual to allow override for testing.
   virtual bool IsAllowed() const;
 
-  // Whether Easy Unlock is currently enabled for this user.
-  bool IsEnabled() const;
+  // Whether Easy Unlock is currently enabled for this user. Virtual to allow
+  // override for testing.
+  virtual bool IsEnabled() const;
 
   // Sets the hardlock state for the associated user.
   void SetHardlockState(EasyUnlockScreenlockStateHandler::HardlockState state);
