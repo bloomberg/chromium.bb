@@ -34,6 +34,7 @@
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoader.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/heap/Handle.h"
@@ -235,6 +236,48 @@ TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl)
     RefPtrWillBeRawPtr<Resource> resource2 = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Media));
     EXPECT_NE(resource1.get(), resource2.get());
     memoryCache()->remove(resource2.get());
+}
+
+class ServeRequestsOnCompleteClient : public RawResourceClient {
+public:
+    void notifyFinished(Resource*) override
+    {
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    }
+
+    // No callbacks should be received except for the notifyFinished()
+    // triggered by ResourceLoader::cancel().
+    void dataSent(Resource*, unsigned long long, unsigned long long) override { ASSERT_TRUE(false); }
+    void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override { ASSERT_TRUE(false); }
+    void setSerializedCachedMetadata(Resource*, const char*, size_t) override { ASSERT_TRUE(false); }
+    void dataReceived(Resource*, const char*, size_t) override { ASSERT_TRUE(false); }
+    void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override { ASSERT_TRUE(false); }
+    void dataDownloaded(Resource*, int) override { ASSERT_TRUE(false); }
+    void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override { ASSERT_TRUE(false); }
+
+    String debugName() const override { return "ServeRequestsOnCompleteClient"; }
+};
+
+// Regression test for http://crbug.com/594072.
+// This emulates a modal dialog triggering a nested run loop inside
+// ResourceLoader::cancel(). If the ResourceLoader doesn't promptly cancel its
+// WebURLLoader before notifying its clients, a nested run loop  may send a
+// network response, leading to an invalid state transition in ResourceLoader.
+TEST_F(ResourceFetcherTest, ResponseOnCancel)
+{
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, "white-1x1.png", WebString::fromUTF8(""), WrappedResourceResponse(response));
+
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    RefPtrWillBeRawPtr<Resource> resource = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Raw));
+    ServeRequestsOnCompleteClient client;
+    resource->addClient(&client);
+    resource->loader()->cancel();
+    Platform::current()->unitTestSupport()->unregisterMockedURL(url);
 }
 
 } // namespace blink
