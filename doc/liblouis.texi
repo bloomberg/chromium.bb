@@ -856,10 +856,10 @@ phrase contexts then liblouis will signal an error for opcodes that
 define emphasis with no context. In other words contrary to previous
 versions of liblouis there is no fallback behavior.
 
-As a consequence of this is that there will only be emphasis for a
-context when the table defines it. So for example when defining a
-braille dot pattern for phrases and not for words liblouis will not
-indicate emphasis on words that aren't part of a phrase.
+As a consequence, there will only be emphasis for a context when the
+table defines it. So for example when defining a braille dot pattern
+for phrases and not for words liblouis will not indicate emphasis on
+words that aren't part of a phrase.
 
 @node Computer braille
 @subsection Computer braille
