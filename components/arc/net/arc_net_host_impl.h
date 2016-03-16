@@ -46,6 +46,11 @@ class ArcNetHostImpl : public ArcService,
   void GetWifiEnabledState(
       const GetWifiEnabledStateCallback& callback) override;
 
+  // Called when a SetWifiEnabledState call is sent from ARC.
+  void SetWifiEnabledState(
+      bool is_enabled,
+      const SetWifiEnabledStateCallback& callback) override;
+
   // Called when a StartScan call is sent from ARC.
   void StartScan() override;
 

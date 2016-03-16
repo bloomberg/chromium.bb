@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_bridge_service.h"
@@ -145,8 +146,28 @@ void ArcNetHostImpl::GetWifiEnabledState(
     const GetWifiEnabledStateCallback& callback) {
   bool is_enabled = GetStateHandler()->IsTechnologyEnabled(
       chromeos::NetworkTypePattern::WiFi());
-
   callback.Run(is_enabled);
+}
+
+void ArcNetHostImpl::SetWifiEnabledState(
+    bool is_enabled,
+    const SetWifiEnabledStateCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  chromeos::NetworkStateHandler::TechnologyState state =
+      GetStateHandler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::WiFi());
+  // WiFi can't be enabled or disabled in these states.
+  if ((state == chromeos::NetworkStateHandler::TECHNOLOGY_PROHIBITED) ||
+      (state == chromeos::NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) ||
+      (state == chromeos::NetworkStateHandler::TECHNOLOGY_UNAVAILABLE)) {
+    VLOG(1) << "SetWifiEnabledState failed due to WiFi state: " << state;
+    callback.Run(false);
+  } else {
+    GetStateHandler()->SetTechnologyEnabled(
+        chromeos::NetworkTypePattern::WiFi(), is_enabled,
+        chromeos::network_handler::ErrorCallback());
+    callback.Run(true);
+  }
 }
 
 void ArcNetHostImpl::StartScan() {
