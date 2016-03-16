@@ -124,6 +124,23 @@ source_set("cdm_service") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
+source_set("audio_decoder_service") {
+  sources = [
+    "mojo_audio_decoder_service.cc",
+    "mojo_audio_decoder_service.h",
+  ]
+
+  deps = [
+    ":cdm_service",
+    "//base",
+    "//media",
+    "//media:shared_memory_support",
+    "//media/mojo/common",
+    "//media/mojo/interfaces",
+    "//mojo/common",
+  ]
+}
+
 source_set("renderer_service") {
   sources = [
     "demuxer_stream_provider_shim.cc",
@@ -158,6 +175,7 @@ source_set("application") {
   public_configs = [ ":mojo_media_config" ]
 
   deps = [
+    ":audio_decoder_service",
     ":cdm_service",
     ":renderer_service",
     "//base",
