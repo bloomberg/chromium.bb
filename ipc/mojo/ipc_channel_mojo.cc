@@ -199,13 +199,6 @@ MojoResult UnwrapAttachment(mojom::SerializedHandlePtr handle,
 //------------------------------------------------------------------------------
 
 // static
-bool ChannelMojo::ShouldBeUsed() {
-  // TODO(rockot): Investigate performance bottlenecks and hopefully reenable
-  // this at some point. http://crbug.com/500019
-  return false;
-}
-
-// static
 scoped_ptr<ChannelMojo> ChannelMojo::Create(
     mojo::ScopedMessagePipeHandle handle,
     Mode mode,

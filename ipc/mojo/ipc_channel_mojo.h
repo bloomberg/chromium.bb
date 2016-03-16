@@ -38,9 +38,6 @@ class IPC_MOJO_EXPORT ChannelMojo
       public MojoBootstrap::Delegate,
       public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {
  public:
-  // True if ChannelMojo should be used regardless of the flag.
-  static bool ShouldBeUsed();
-
   // Creates a ChannelMojo.
   static scoped_ptr<ChannelMojo> Create(mojo::ScopedMessagePipeHandle handle,
                                         Mode mode,
