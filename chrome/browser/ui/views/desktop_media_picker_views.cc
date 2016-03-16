@@ -18,6 +18,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/components_strings.h"
 #include "ui/aura/window_tree_host.h"
@@ -514,14 +515,20 @@ bool DesktopMediaPickerDialogView::Accept() {
 
   // Ok button should only be enabled when a source is selected.
   DCHECK(selection);
-
-  DesktopMediaID source;
-  if (selection)
-    source = selection->source_id();
-
+  DesktopMediaID source = selection->source_id();
   source.audio_share = audio_share_checkbox_ &&
                        audio_share_checkbox_->enabled() &&
                        audio_share_checkbox_->checked();
+
+  // If the media source is an tab, activate it.
+  if (source.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
+    content::WebContents* tab = content::WebContents::FromRenderFrameHost(
+        content::RenderFrameHost::FromID(
+            source.web_contents_id.render_process_id,
+            source.web_contents_id.main_render_frame_id));
+    if (tab)
+      tab->GetDelegate()->ActivateContents(tab);
+  }
 
   if (parent_)
     parent_->NotifyDialogResult(source);
