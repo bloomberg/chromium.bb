@@ -26,6 +26,7 @@
 
 namespace blink {
 class WebFrame;
+class WebRTCAnswerOptions;
 class WebRTCDataChannelHandler;
 class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
@@ -118,6 +119,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   void createAnswer(const blink::WebRTCSessionDescriptionRequest& request,
                     const blink::WebMediaConstraints& options) override;
+  void createAnswer(const blink::WebRTCSessionDescriptionRequest& request,
+                    const blink::WebRTCAnswerOptions& options) override;
 
   void setLocalDescription(
       const blink::WebRTCVoidRequest& request,
@@ -219,15 +222,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,
                                               const char* trace_event_name);
-
-  // Not sure why these statics are class members at all.
-  static void ConvertOfferOptionsToWebrtcOfferOptions(
-      const blink::WebRTCOfferOptions& options,
-      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output);
-
-  static void ConvertConstraintsToWebrtcOfferOptions(
-      const blink::WebMediaConstraints& options,
-      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output);
 
   base::ThreadChecker thread_checker_;
 

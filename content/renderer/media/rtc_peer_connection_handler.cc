@@ -37,6 +37,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/WebKit/public/platform/WebRTCAnswerOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCConfiguration.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
@@ -697,6 +698,53 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
   }
 };
 
+void ConvertOfferOptionsToWebrtcOfferOptions(
+    const blink::WebRTCOfferOptions& options,
+    webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output) {
+  output->offer_to_receive_audio = options.offerToReceiveAudio();
+  output->offer_to_receive_video = options.offerToReceiveVideo();
+  output->voice_activity_detection = options.voiceActivityDetection();
+  output->ice_restart = options.iceRestart();
+}
+
+void ConvertAnswerOptionsToWebrtcAnswerOptions(
+    const blink::WebRTCAnswerOptions& options,
+    webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output) {
+  output->voice_activity_detection = options.voiceActivityDetection();
+}
+
+void ConvertConstraintsToWebrtcOfferOptions(
+    const blink::WebMediaConstraints& constraints,
+    webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output) {
+  if (constraints.isEmpty()) {
+    return;
+  }
+  std::string failing_name;
+  if (constraints.basic().hasMandatoryOutsideSet(
+          {constraints.basic().offerToReceiveAudio.name(),
+           constraints.basic().offerToReceiveVideo.name(),
+           constraints.basic().voiceActivityDetection.name(),
+           constraints.basic().iceRestart.name()},
+          failing_name)) {
+    // TODO(hta): Reject the calling operation with "constraint error"
+    // https://crbug.com/594894
+    DLOG(ERROR) << "Invalid mandatory constraint to CreateOffer/Answer: "
+                << failing_name;
+  }
+  GetConstraintValueAsInteger(
+      constraints, &blink::WebMediaTrackConstraintSet::offerToReceiveAudio,
+      &output->offer_to_receive_audio);
+  GetConstraintValueAsInteger(
+      constraints, &blink::WebMediaTrackConstraintSet::offerToReceiveVideo,
+      &output->offer_to_receive_video);
+  GetConstraintValueAsBoolean(
+      constraints, &blink::WebMediaTrackConstraintSet::voiceActivityDetection,
+      &output->voice_activity_detection);
+  GetConstraintValueAsBoolean(constraints,
+                              &blink::WebMediaTrackConstraintSet::iceRestart,
+                              &output->ice_restart);
+}
+
 base::LazyInstance<std::set<RTCPeerConnectionHandler*> >::Leaky
     g_peer_connection_handlers = LAZY_INSTANCE_INITIALIZER;
 
@@ -913,48 +961,6 @@ void RTCPeerConnectionHandler::DestructAllHandlers() {
     handler->client_->releasePeerConnectionHandler();
 }
 
-// static
-void RTCPeerConnectionHandler::ConvertOfferOptionsToWebrtcOfferOptions(
-    const blink::WebRTCOfferOptions& options,
-    webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output) {
-  output->offer_to_receive_audio = options.offerToReceiveAudio();
-  output->offer_to_receive_video = options.offerToReceiveVideo();
-  output->voice_activity_detection = options.voiceActivityDetection();
-  output->ice_restart = options.iceRestart();
-}
-
-void RTCPeerConnectionHandler::ConvertConstraintsToWebrtcOfferOptions(
-    const blink::WebMediaConstraints& constraints,
-    webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output) {
-  if (constraints.isEmpty()) {
-    return;
-  }
-  std::string failing_name;
-  if (constraints.basic().hasMandatoryOutsideSet(
-          {constraints.basic().offerToReceiveAudio.name(),
-           constraints.basic().offerToReceiveVideo.name(),
-           constraints.basic().voiceActivityDetection.name(),
-           constraints.basic().iceRestart.name()},
-          failing_name)) {
-    // TODO(hta): Reject the calling operation with "constraint error"
-    // https://crbug.com/594894
-    DLOG(ERROR) << "Invalid mandatory constraint to CreateOffer/Answer: "
-                << failing_name;
-  }
-  GetConstraintValueAsInteger(
-      constraints, &blink::WebMediaTrackConstraintSet::offerToReceiveAudio,
-      &output->offer_to_receive_audio);
-  GetConstraintValueAsInteger(
-      constraints, &blink::WebMediaTrackConstraintSet::offerToReceiveVideo,
-      &output->offer_to_receive_video);
-  GetConstraintValueAsBoolean(
-      constraints, &blink::WebMediaTrackConstraintSet::voiceActivityDetection,
-      &output->voice_activity_detection);
-  GetConstraintValueAsBoolean(constraints,
-                              &blink::WebMediaTrackConstraintSet::iceRestart,
-                              &output->ice_restart);
-}
-
 void RTCPeerConnectionHandler::associateWithFrame(blink::WebFrame* frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(frame);
@@ -1076,6 +1082,26 @@ void RTCPeerConnectionHandler::createAnswer(
   webrtc::PeerConnectionInterface::RTCOfferAnswerOptions webrtc_options;
   ConvertConstraintsToWebrtcOfferOptions(options, &webrtc_options);
   // TODO(tommi): Do this asynchronously via e.g. PostTaskAndReply.
+  native_peer_connection_->CreateAnswer(description_request.get(),
+                                        webrtc_options);
+
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackCreateAnswer(this, options);
+}
+
+void RTCPeerConnectionHandler::createAnswer(
+    const blink::WebRTCSessionDescriptionRequest& request,
+    const blink::WebRTCAnswerOptions& options) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createAnswer");
+  scoped_refptr<CreateSessionDescriptionRequest> description_request(
+      new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
+          base::ThreadTaskRunnerHandle::Get(), request,
+          weak_factory_.GetWeakPtr(), peer_connection_tracker_,
+          PeerConnectionTracker::ACTION_CREATE_ANSWER));
+  // TODO(tommi): Do this asynchronously via e.g. PostTaskAndReply.
+  webrtc::PeerConnectionInterface::RTCOfferAnswerOptions webrtc_options;
+  ConvertAnswerOptionsToWebrtcAnswerOptions(options, &webrtc_options);
   native_peer_connection_->CreateAnswer(description_request.get(),
                                         webrtc_options);
 

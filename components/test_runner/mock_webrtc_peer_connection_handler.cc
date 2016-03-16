@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebRTCAnswerOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
@@ -182,7 +183,6 @@ void MockWebRTCPeerConnectionHandler::createOffer(
 void MockWebRTCPeerConnectionHandler::createOffer(
     const WebRTCSessionDescriptionRequest& request,
     const blink::WebRTCOfferOptions& options) {
-  WebString should_succeed;
   if (options.iceRestart() && options.voiceActivityDetection()) {
     WebRTCSessionDescription session_description;
     session_description.initialize("offer", "local");
@@ -207,6 +207,21 @@ void MockWebRTCPeerConnectionHandler::createAnswer(
   } else
     interfaces_->GetDelegate()->PostTask(
         new RTCSessionDescriptionRequestFailedTask(this, request));
+}
+
+void MockWebRTCPeerConnectionHandler::createAnswer(
+    const WebRTCSessionDescriptionRequest& request,
+    const blink::WebRTCAnswerOptions& options) {
+  if (options.voiceActivityDetection()) {
+    WebRTCSessionDescription session_description;
+    session_description.initialize("answer", "local");
+    interfaces_->GetDelegate()->PostTask(
+        new RTCSessionDescriptionRequestSuccededTask(this, request,
+                                                     session_description));
+  } else {
+    interfaces_->GetDelegate()->PostTask(
+        new RTCSessionDescriptionRequestFailedTask(this, request));
+  }
 }
 
 void MockWebRTCPeerConnectionHandler::setLocalDescription(

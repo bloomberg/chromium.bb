@@ -70,8 +70,8 @@ enum RTCIceConnectionState {
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface RTCPeerConnection : EventTarget {
-    // Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
-    // Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);
+    [CallWith=ScriptState] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
+    [CallWith=ScriptState] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);
     [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescriptionInit description);
     readonly attribute RTCSessionDescription? localDescription;
     // readonly attribute RTCSessionDescription? currentLocalDescription;
@@ -96,11 +96,10 @@ enum RTCIceConnectionState {
     // attribute EventHandler onicegatheringstatechange;
 
     // https://w3c.github.io/webrtc-pc/#legacy-interface-extensions
-    // These methods return or will be changed to return Promise<void> because
-    // having Promise-based versions requires that all overloads return Promises.
-    [CallWith=ExecutionContext] void createOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
+    // These methods return Promise<void> because having Promise-based versions requires that all overloads return Promises.
+    [CallWith=ScriptState] Promise<void> createOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
     // TODO(guidou): There should be no mediaConstraints argument.
-    [CallWith=ExecutionContext] void createAnswer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary mediaConstraints);
+    [CallWith=ScriptState] Promise<void> createAnswer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary mediaConstraints);
     [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescription description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
     // TODO(guidou): The failureCallback argument should be non-optional.
     [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescription description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);

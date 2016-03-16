@@ -4,11 +4,11 @@
 
 #include "public/platform/WebRTCOfferOptions.h"
 
-#include "platform/mediastream/RTCOfferOptions.h"
+#include "platform/mediastream/RTCOfferOptionsPlatform.h"
 
 namespace blink {
 
-WebRTCOfferOptions::WebRTCOfferOptions(RTCOfferOptions* options)
+WebRTCOfferOptions::WebRTCOfferOptions(RTCOfferOptionsPlatform* options)
     : m_private(options)
 {
 }
@@ -16,10 +16,7 @@ WebRTCOfferOptions::WebRTCOfferOptions(RTCOfferOptions* options)
 WebRTCOfferOptions::WebRTCOfferOptions(int32_t offerToReceiveAudio,
     int32_t offerToReceiveVideo, bool voiceActivityDetection,
     bool iceRestart)
-    : m_private(RTCOfferOptions::create(offerToReceiveAudio,
-        offerToReceiveVideo,
-        voiceActivityDetection,
-        iceRestart))
+    : m_private(RTCOfferOptionsPlatform::create(offerToReceiveAudio, offerToReceiveVideo, voiceActivityDetection, iceRestart))
 {
 }
 

@@ -20,6 +20,7 @@
 namespace blink {
 class WebFrame;
 class WebMediaConstraints;
+class WebRTCAnswerOptions;
 class WebRTCICECandidate;
 class WebRTCOfferOptions;
 class WebString;
@@ -91,6 +92,8 @@ class CONTENT_EXPORT PeerConnectionTracker
   // TODO(hta): Get rid of the version below.
   virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
                                 const blink::WebMediaConstraints& options);
+  virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
+                                 const blink::WebRTCAnswerOptions& options);
   virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
                                  const blink::WebMediaConstraints& constraints);
 

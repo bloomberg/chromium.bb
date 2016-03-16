@@ -16,6 +16,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebRTCAnswerOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
 #include "third_party/WebKit/public/platform/WebRTCOfferOptions.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
@@ -64,6 +65,17 @@ static std::string SerializeOfferOptions(
          << ", voiceActivityDetection: "
          << SerializeBoolean(options.voiceActivityDetection())
          << ", iceRestart: " << SerializeBoolean(options.iceRestart());
+  return result.str();
+}
+
+static std::string SerializeAnswerOptions(
+    const blink::WebRTCAnswerOptions& options) {
+  if (options.isNull())
+    return "null";
+
+  std::ostringstream result;
+  result << ", voiceActivityDetection: "
+         << SerializeBoolean(options.voiceActivityDetection());
   return result.str();
 }
 
@@ -422,9 +434,8 @@ void PeerConnectionTracker::TrackCreateOffer(
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  SendPeerConnectionUpdate(
-      id, "createOffer",
-      "constraints: {" + SerializeOfferOptions(options) + "}");
+  SendPeerConnectionUpdate(id, "createOffer",
+                           "options: {" + SerializeOfferOptions(options) + "}");
 }
 
 void PeerConnectionTracker::TrackCreateOffer(
@@ -437,6 +448,17 @@ void PeerConnectionTracker::TrackCreateOffer(
   SendPeerConnectionUpdate(
       id, "createOffer",
       "constraints: {" + SerializeMediaConstraints(constraints) + "}");
+}
+
+void PeerConnectionTracker::TrackCreateAnswer(
+    RTCPeerConnectionHandler* pc_handler,
+    const blink::WebRTCAnswerOptions& options) {
+  DCHECK(main_thread_.CalledOnValidThread());
+  int id = GetLocalIDForHandler(pc_handler);
+  if (id == -1)
+    return;
+  SendPeerConnectionUpdate(
+      id, "createAnswer", "options: {" + SerializeAnswerOptions(options) + "}");
 }
 
 void PeerConnectionTracker::TrackCreateAnswer(

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RTCOfferOptions_h
-#define RTCOfferOptions_h
+#ifndef RTCOfferOptionsPlatform_h
+#define RTCOfferOptionsPlatform_h
 
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class RTCOfferOptions final : public GarbageCollected<RTCOfferOptions> {
+class RTCOfferOptionsPlatform final : public GarbageCollected<RTCOfferOptionsPlatform> {
 public:
-    static RTCOfferOptions* create(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)
+    static RTCOfferOptionsPlatform* create(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)
     {
-        return new RTCOfferOptions(offerToReceiveVideo, offerToReceiveAudio, voiceActivityDetection, iceRestart);
+        return new RTCOfferOptionsPlatform(offerToReceiveVideo, offerToReceiveAudio, voiceActivityDetection, iceRestart);
     }
 
     int32_t offerToReceiveVideo() const { return m_offerToReceiveVideo; }
@@ -21,10 +21,10 @@ public:
     bool voiceActivityDetection() const { return m_voiceActivityDetection; }
     bool iceRestart() const { return m_iceRestart; }
 
-    DEFINE_INLINE_TRACE() { }
+    DEFINE_INLINE_TRACE() {}
 
 private:
-    RTCOfferOptions(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)
+    RTCOfferOptionsPlatform(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)
         : m_offerToReceiveVideo(offerToReceiveVideo)
         , m_offerToReceiveAudio(offerToReceiveAudio)
         , m_voiceActivityDetection(voiceActivityDetection)
@@ -40,4 +40,4 @@ private:
 
 } // namespace blink
 
-#endif // RTCOfferOptions_h
+#endif // RTCOfferOptionsPlatform_h

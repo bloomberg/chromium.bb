@@ -69,12 +69,11 @@ TEST(PeerConnectionTrackerTest, TrackCreateOffer) {
   EXPECT_CALL(target_thread, OnAddPeerConnection(_));
   tracker.RegisterPeerConnection(&pc_handler, config, constraints, nullptr);
   // Back to the test.
-  EXPECT_CALL(
-      target_thread,
-      OnUpdatePeerConnection(
-          _, "createOffer",
-          "constraints: {offerToReceiveVideo: 0, offerToReceiveAudio: 0, "
-          "voiceActivityDetection: false, iceRestart: false}"));
+  EXPECT_CALL(target_thread,
+              OnUpdatePeerConnection(
+                  _, "createOffer",
+                  "options: {offerToReceiveVideo: 0, offerToReceiveAudio: 0, "
+                  "voiceActivityDetection: false, iceRestart: false}"));
   tracker.TrackCreateOffer(&pc_handler, options);
 }
 

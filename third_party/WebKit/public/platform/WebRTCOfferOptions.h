@@ -6,12 +6,11 @@
 #define WebRTCOfferOptions_h
 
 #include "WebCommon.h"
-#include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 
 namespace blink {
 
-class RTCOfferOptions;
+class RTCOfferOptionsPlatform;
 
 class BLINK_PLATFORM_EXPORT WebRTCOfferOptions {
 public:
@@ -38,11 +37,11 @@ public:
     bool iceRestart() const;
 
 #if INSIDE_BLINK
-    WebRTCOfferOptions(RTCOfferOptions*);
+    WebRTCOfferOptions(RTCOfferOptionsPlatform*);
 #endif
 
 private:
-    WebPrivatePtr<RTCOfferOptions> m_private;
+    WebPrivatePtr<RTCOfferOptionsPlatform> m_private;
 };
 
 } // namespace blink

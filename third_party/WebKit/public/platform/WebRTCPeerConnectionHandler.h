@@ -36,6 +36,7 @@ namespace blink {
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
+class WebRTCAnswerOptions;
 class WebRTCConfiguration;
 class WebRTCDTMFSenderHandler;
 class WebRTCDataChannelHandler;
@@ -55,8 +56,9 @@ public:
     virtual bool initialize(const WebRTCConfiguration&, const WebMediaConstraints&) = 0;
 
     virtual void createOffer(const WebRTCSessionDescriptionRequest&, const WebMediaConstraints&) = 0;
-    virtual void createOffer(const WebRTCSessionDescriptionRequest&, const WebRTCOfferOptions&) { }
+    virtual void createOffer(const WebRTCSessionDescriptionRequest&, const WebRTCOfferOptions&) = 0;
     virtual void createAnswer(const WebRTCSessionDescriptionRequest&, const WebMediaConstraints&) = 0;
+    virtual void createAnswer(const WebRTCSessionDescriptionRequest&, const WebRTCAnswerOptions&) = 0;
     virtual void setLocalDescription(const WebRTCVoidRequest&, const WebRTCSessionDescription&) = 0;
     virtual void setRemoteDescription(const WebRTCVoidRequest&, const WebRTCSessionDescription&) = 0;
     virtual WebRTCSessionDescription localDescription() = 0;

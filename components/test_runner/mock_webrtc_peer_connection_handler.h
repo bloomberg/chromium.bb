@@ -40,6 +40,8 @@ class MockWebRTCPeerConnectionHandler
                    const blink::WebRTCOfferOptions& options) override;
   void createAnswer(const blink::WebRTCSessionDescriptionRequest& request,
                     const blink::WebMediaConstraints& constraints) override;
+  void createAnswer(const blink::WebRTCSessionDescriptionRequest& request,
+                    const blink::WebRTCAnswerOptions& options) override;
   void setLocalDescription(
       const blink::WebRTCVoidRequest& request,
       const blink::WebRTCSessionDescription& local_description) override;

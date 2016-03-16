@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediastream/RTCVoidRequestPromiseImpl.h"
+#include "modules/mediastream/RTCSessionDescriptionRequestPromiseImpl.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/mediastream/RTCPeerConnection.h"
+#include "modules/mediastream/RTCSessionDescription.h"
+#include "public/platform/WebRTCSessionDescription.h"
 
 namespace blink {
 
-RTCVoidRequestPromiseImpl* RTCVoidRequestPromiseImpl::create(RTCPeerConnection* requester, ScriptPromiseResolver* resolver)
+RTCSessionDescriptionRequestPromiseImpl* RTCSessionDescriptionRequestPromiseImpl::create(RTCPeerConnection* requester, ScriptPromiseResolver* resolver)
 {
-    return new RTCVoidRequestPromiseImpl(requester, resolver);
+    return new RTCSessionDescriptionRequestPromiseImpl(requester, resolver);
 }
 
-RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(RTCPeerConnection* requester, ScriptPromiseResolver* resolver)
+RTCSessionDescriptionRequestPromiseImpl::RTCSessionDescriptionRequestPromiseImpl(RTCPeerConnection* requester, ScriptPromiseResolver* resolver)
     : m_requester(requester)
     , m_resolver(resolver)
 {
@@ -24,15 +26,15 @@ RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(RTCPeerConnection* requeste
     ASSERT(m_resolver);
 }
 
-RTCVoidRequestPromiseImpl::~RTCVoidRequestPromiseImpl()
+RTCSessionDescriptionRequestPromiseImpl::~RTCSessionDescriptionRequestPromiseImpl()
 {
     ASSERT(!m_requester);
 }
 
-void RTCVoidRequestPromiseImpl::requestSucceeded()
+void RTCSessionDescriptionRequestPromiseImpl::requestSucceeded(const WebRTCSessionDescription& webSessionDescription)
 {
     if (m_requester && m_requester->shouldFireDefaultCallbacks()) {
-        m_resolver->resolve();
+        m_resolver->resolve(RTCSessionDescription::create(webSessionDescription));
     } else {
         // This is needed to have the resolver release its internal resources
         // while leaving the associated promise pending as specified.
@@ -42,7 +44,7 @@ void RTCVoidRequestPromiseImpl::requestSucceeded()
     clear();
 }
 
-void RTCVoidRequestPromiseImpl::requestFailed(const String& error)
+void RTCSessionDescriptionRequestPromiseImpl::requestFailed(const String& error)
 {
     if (m_requester && m_requester->shouldFireDefaultCallbacks()) {
         // TODO(guidou): The error code should come from the content layer. See crbug.com/589455
@@ -56,16 +58,16 @@ void RTCVoidRequestPromiseImpl::requestFailed(const String& error)
     clear();
 }
 
-void RTCVoidRequestPromiseImpl::clear()
+void RTCSessionDescriptionRequestPromiseImpl::clear()
 {
     m_requester.clear();
 }
 
-DEFINE_TRACE(RTCVoidRequestPromiseImpl)
+DEFINE_TRACE(RTCSessionDescriptionRequestPromiseImpl)
 {
     visitor->trace(m_resolver);
     visitor->trace(m_requester);
-    RTCVoidRequest::trace(visitor);
+    RTCSessionDescriptionRequest::trace(visitor);
 }
 
 } // namespace blink
