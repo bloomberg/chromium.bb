@@ -106,21 +106,23 @@ source_set("test_support") {
 }
 
 # A standalone MCS (mobile connection server) client.
-executable("mcs_probe") {
-  testonly = true
-  sources = [
-    "tools/mcs_probe.cc",
-  ]
+if (!is_ios) {
+  executable("mcs_probe") {
+    testonly = true
+    sources = [
+      "tools/mcs_probe.cc",
+    ]
 
-  deps = [
-    ":gcm",
-    ":test_support",
-    "//base",
-    "//build/config/sanitizers:deps",
-    "//net",
-    "//net:test_support",
-    "//third_party/protobuf:protobuf_lite",
-  ]
+    deps = [
+      ":gcm",
+      ":test_support",
+      "//base",
+      "//build/config/sanitizers:deps",
+      "//net",
+      "//net:test_support",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
 }
 
 test("gcm_unit_tests") {
