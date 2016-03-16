@@ -242,7 +242,7 @@ class HWTestList(object):
     suite_list = HWTestList.DefaultListNonCanary(**default_dict)
     suite_list.extend(
         [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                 num=1, timeout=120*60)])
+                                 num=1, **default_dict)])
     return suite_list
 
   @classmethod
@@ -1798,10 +1798,10 @@ def GetConfig():
         customizations.update(
             hw_tests=[
                 config_lib.HWTestConfig(
-                    constants.HWTEST_COMMIT_SUITE, timeout=120*60,
+                    constants.HWTEST_COMMIT_SUITE,
                     pool=constants.HWTEST_PALADIN_POOL),
                 config_lib.HWTestConfig(
-                    constants.HWTEST_ARC_COMMIT_SUITE, timeout=120*60,
+                    constants.HWTEST_ARC_COMMIT_SUITE,
                     pool=constants.HWTEST_PALADIN_POOL)
             ])
       if board in _paladin_jetstream_hwtest_boards:
@@ -2470,10 +2470,8 @@ def GetConfig():
       _release,
       description='Cheets release builders',
       hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                  num=1, timeout=120*60),
-          config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                  num=1, timeout=120*60),
+          config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE, num=1),
+          config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE, num=1),
           config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                   warn_only=True, num=1)],
   )
