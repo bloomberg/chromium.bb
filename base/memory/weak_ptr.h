@@ -161,10 +161,9 @@ class SupportsWeakPtrBase {
   // function that makes calling this easier.
   template<typename Derived>
   static WeakPtr<Derived> StaticAsWeakPtr(Derived* t) {
-    using convertible =
-        std::is_convertible<Derived*, internal::SupportsWeakPtrBase*>;
-    static_assert(convertible::value,
-                  "AsWeakPtr argument must inherit from SupportsWeakPtr");
+    static_assert(
+        std::is_base_of<internal::SupportsWeakPtrBase, Derived>::value,
+        "AsWeakPtr argument must inherit from SupportsWeakPtr");
     return AsWeakPtrImpl<Derived>(t, *t);
   }
 

@@ -129,7 +129,7 @@ void WontCompile() {
   WeakPtr<Unrelated> ptr = AsWeakPtr(&f);
 }
 
-#elif defined(NCTEST_AMBIGUOUS_ANCESTORS)  // [r"fatal error: ambiguous conversion from derived class 'base::MultiplyDerivedProducer' to base class 'base::internal::SupportsWeakPtrBase':"]
+#elif defined(NCTEST_AMBIGUOUS_ANCESTORS)  // [r"fatal error: member 'AsWeakPtr' found in multiple base classes of different types"]
 
 void WontCompile() {
   MultiplyDerivedProducer f;
