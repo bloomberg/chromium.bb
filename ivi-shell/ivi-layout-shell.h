@@ -54,10 +54,6 @@ void
 ivi_layout_init_with_compositor(struct weston_compositor *ec);
 
 void
-ivi_layout_surface_add_configured_listener(struct ivi_layout_surface *ivisurf,
-					   struct wl_listener *listener);
-
-void
 ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf);
 
 int
