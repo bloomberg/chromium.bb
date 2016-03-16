@@ -197,6 +197,7 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       buffer_size_was_changed_(false),
       audio_unit_render_has_worked_(false),
       device_listener_is_active_(false),
+      started_(false),
       last_sample_time_(0.0),
       last_number_of_frames_(0),
       total_lost_frames_(0),
@@ -459,10 +460,10 @@ bool AUAudioInputStream::Open() {
 
 void AUAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Start";
   DCHECK(callback);
   DCHECK(!sink_);
   DLOG_IF(ERROR, !audio_unit_) << "Open() has not been called successfully";
-  DVLOG(1) << "Start";
   if (IsRunning())
     return;
 
@@ -486,7 +487,9 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   audio_unit_render_has_worked_ = false;
   StartAgc();
   OSStatus result = AudioOutputUnitStart(audio_unit_);
-  if (result == noErr) {
+  started_ = true;
+  if (started_) {
+    DCHECK(IsRunning()) << "Audio unit is started but not yet running";
     // For UMA stat purposes, start a one-shot timer which detects when input
     // callbacks starts indicating if input audio recording works as intended.
     // CheckInputStartupSuccess() will check if |input_callback_is_active_| is
@@ -498,39 +501,39 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
         base::TimeDelta::FromSeconds(kInputCallbackStartTimeoutInSeconds), this,
         &AUAudioInputStream::CheckInputStartupSuccess);
   }
-  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+  OSSTATUS_DLOG_IF(ERROR, !started_, result)
       << "Failed to start acquiring data";
 }
 
 void AUAudioInputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Stop";
-  if (!IsRunning())
-    return;
-
   StopAgc();
   input_callback_timer_.reset();
 
-  // Stop the I/O audio unit.
-  OSStatus result = AudioOutputUnitStop(audio_unit_);
-  DCHECK_EQ(result, noErr);
-  // Add a DCHECK here just in case. AFAIK, the call to AudioOutputUnitStop()
-  // seems to set this state synchronously, hence it should always report false
-  // after a successful call.
-  DCHECK(!IsRunning()) << "Audio unit is stopped but still running";
+  if (audio_unit_ != nullptr) {
+    // Stop the I/O audio unit.
+    OSStatus result = AudioOutputUnitStop(audio_unit_);
+    DCHECK_EQ(result, noErr);
+    // Add a DCHECK here just in case. AFAIK, the call to AudioOutputUnitStop()
+    // seems to set this state synchronously, hence it should always report
+    // false after a successful call.
+    DCHECK(!IsRunning()) << "Audio unit is stopped but still running";
 
-  // Reset the audio unit’s render state. This function clears memory.
-  // It does not allocate or free memory resources.
-  result = AudioUnitReset(audio_unit_, kAudioUnitScope_Global, 0);
-  DCHECK_EQ(result, noErr);
+    // Reset the audio unit’s render state. This function clears memory.
+    // It does not allocate or free memory resources.
+    result = AudioUnitReset(audio_unit_, kAudioUnitScope_Global, 0);
+    DCHECK_EQ(result, noErr);
+    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+        << "Failed to stop acquiring data";
+  }
 
   SetInputCallbackIsActive(false);
   ReportAndResetStats();
+  started_ = false;
   sink_ = nullptr;
   fifo_.Clear();
   io_buffer_frame_size_ = 0;
-  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
-      << "Failed to stop acquiring data";
 }
 
 void AUAudioInputStream::Close() {
@@ -538,9 +541,7 @@ void AUAudioInputStream::Close() {
   DVLOG(1) << "Close";
   // It is valid to call Close() before calling open or Start().
   // It is also valid to call Close() after Start() has been called.
-  if (IsRunning()) {
-    Stop();
-  }
+  Stop();
   // Uninitialize and dispose the audio unit.
   CloseAudioUnit();
   // Disable the listener for device property changes.
@@ -1061,6 +1062,7 @@ bool AUAudioInputStream::IsRunning() {
                            kAudioUnitScope_Global, 0, &is_running, &size);
   OSSTATUS_DLOG_IF(ERROR, error != noErr, error)
       << "AudioUnitGetProperty(kAudioOutputUnitProperty_IsRunning) failed";
+  DVLOG(1) << "IsRunning: " << is_running;
   return (error == noErr && is_running);
 }
 
@@ -1096,9 +1098,10 @@ bool AUAudioInputStream::GetInputCallbackIsActive() {
 
 void AUAudioInputStream::CheckInputStartupSuccess() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsRunning());
   // Only add UMA stat related to failing input audio for streams where
   // the AGC has been enabled, e.g. WebRTC audio input streams.
-  if (IsRunning() && GetAutomaticGainControl()) {
+  if (GetAutomaticGainControl()) {
     // Check if we have called Start() and input callbacks have actually
     // started in time as they should. If that is not the case, we have a
     // problem and the stream is considered dead.
