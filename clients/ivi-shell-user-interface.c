@@ -164,14 +164,6 @@ hmi_homescreen_setting {
 	int32_t		screen_num;
 };
 
-static void *
-mem_alloc(size_t size, char *file, int32_t line)
-{
-	return fail_on_null(zalloc(size), size, file, line);
-}
-
-#define MEM_ALLOC(s) mem_alloc((s),__FILE__,__LINE__)
-
 /*****************************************************************************
  *  Event Handler
  ****************************************************************************/
@@ -758,7 +750,7 @@ create_cursors(struct wlContextCommon *cmm)
 						 cmm->wlShm);
 
 	cmm->cursors =
-		MEM_ALLOC(ARRAY_LENGTH(cursors) * sizeof(cmm->cursors[0]));
+		xzalloc(ARRAY_LENGTH(cursors) * sizeof(cmm->cursors[0]));
 
 	for (i = 0; i < ARRAY_LENGTH(cursors); i++) {
 		cursor = NULL;
@@ -1034,7 +1026,7 @@ create_launchers(struct wlContextCommon *cmm, struct wl_list *launcher_list)
 	if (0 == launcher_count)
 		return;
 
-	launchers = MEM_ALLOC(launcher_count * sizeof(*launchers));
+	launchers = xzalloc(launcher_count * sizeof(*launchers));
 
 	wl_list_for_each(launcher, launcher_list, link) {
 		launchers[ii] = launcher;
@@ -1052,7 +1044,7 @@ create_launchers(struct wlContextCommon *cmm, struct wl_list *launcher_list)
 		for (jj = start; jj <= ii; jj++) {
 			struct wlContextStruct *p_wlCtx;
 
-			p_wlCtx = MEM_ALLOC(sizeof(*p_wlCtx));
+			p_wlCtx = xzalloc(sizeof(*p_wlCtx));
 			p_wlCtx->cmm = cmm;
 			create_ivisurfaceFromFile(p_wlCtx,
 						  launchers[jj]->icon_surface_id,
@@ -1074,7 +1066,7 @@ hmi_homescreen_setting_create(void)
 	const char *config_file;
 	struct weston_config *config = NULL;
 	struct weston_config_section *shellSection = NULL;
-	struct hmi_homescreen_setting *setting = MEM_ALLOC(sizeof(*setting));
+	struct hmi_homescreen_setting *setting = xzalloc(sizeof(*setting));
 	struct weston_config_section *section = NULL;
 	const char *name = NULL;
 	uint32_t workspace_layer_id;
@@ -1166,7 +1158,7 @@ hmi_homescreen_setting_create(void)
 		if (strcmp(name, "ivi-launcher") != 0)
 			continue;
 
-		launcher = MEM_ALLOC(sizeof(*launcher));
+		launcher = xzalloc(sizeof(*launcher));
 		wl_list_init(&launcher->link);
 
 		weston_config_section_get_string(section, "icon",
@@ -1252,8 +1244,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	wlCtx_BackGround = MEM_ALLOC(hmi_setting->screen_num * sizeof(struct wlContextStruct));
-	wlCtx_Panel= MEM_ALLOC(hmi_setting->screen_num * sizeof(struct wlContextStruct));
+	wlCtx_BackGround = xzalloc(hmi_setting->screen_num * sizeof(struct wlContextStruct));
+	wlCtx_Panel= xzalloc(hmi_setting->screen_num * sizeof(struct wlContextStruct));
 
 	if (wlCtxCommon.hmi_setting->cursor_theme) {
 		create_cursors(&wlCtxCommon);
