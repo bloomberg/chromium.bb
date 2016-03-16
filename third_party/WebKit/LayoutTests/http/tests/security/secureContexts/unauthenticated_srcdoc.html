@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Unauthenticated origin is insecure</title>
+    <title>Unauthenticated origin with srcdoc iframe is insecure</title>
     <script src="/resources/testharness.js"></script>
     <script src="/resources/testharness-helpers.js"></script>
     <script src="/resources/testharnessreport.js"></script>
@@ -28,13 +28,13 @@
                 }), false);
 
                 var i1 = document.createElement("iframe");
-                i1.src = get_host_info().HTTP_REMOTE_ORIGIN + "/security/secureContexts/resources/post-securecontext-status.html";
+                i1.srcdoc = "<iframe src='" + get_host_info().HTTP_REMOTE_ORIGIN + "/security/secureContexts/resources/post-securecontext-status.html" + "'></iframe>";
                 document.body.appendChild(i1);
 
                 var i2 = document.createElement("iframe");
-                i2.src = get_host_info().HTTPS_REMOTE_ORIGIN + "/security/secureContexts/resources/post-securecontext-status.html";
+                i2.srcdoc = "<iframe src='" + get_host_info().AUTHENTICATED_ORIGIN + "/security/secureContexts/resources/post-securecontext-status.html" + "'></iframe>";
                 document.body.appendChild(i2);
-            }, "Frames are insecure");
+            }, "Frames inside srcdoc frames are insecure");
         }
     </script>
 </body>

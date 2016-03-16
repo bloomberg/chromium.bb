@@ -914,6 +914,14 @@ void FrameLoaderClientImpl::didEnforceStrictMixedContentChecking()
     m_webFrame->client()->didEnforceStrictMixedContentChecking();
 }
 
+void FrameLoaderClientImpl::didUpdateToUniqueOrigin()
+{
+    if (!m_webFrame->client())
+        return;
+    ASSERT(m_webFrame->getSecurityOrigin().isUnique());
+    m_webFrame->client()->didUpdateToUniqueOrigin(m_webFrame->getSecurityOrigin().isPotentiallyTrustworthy());
+}
+
 void FrameLoaderClientImpl::didChangeSandboxFlags(Frame* childFrame, SandboxFlags flags)
 {
     if (!m_webFrame->client())

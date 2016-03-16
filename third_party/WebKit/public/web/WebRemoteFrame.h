@@ -42,6 +42,10 @@ public:
     // Set frame enforcement of strict mixed content checking replicated from another process.
     virtual void setReplicatedShouldEnforceStrictMixedContentChecking(bool) const = 0;
 
+    // Set the frame to a unique origin that is potentially trustworthy,
+    // replicated from another process.
+    virtual void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) const = 0;
+
     virtual void DispatchLoadEventForFrameOwner() const = 0;
 
     virtual void didStartLoading() = 0;

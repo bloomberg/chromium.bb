@@ -95,7 +95,7 @@ public:
     // machine or over the network from a
     // cryptographically-authenticated origin, as described in
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
-    BLINK_PLATFORM_EXPORT bool isPotentiallyTrustworthy(WebString& errorMessage) const;
+    BLINK_PLATFORM_EXPORT bool isPotentiallyTrustworthy() const;
 
     // Returns a string representation of the WebSecurityOrigin.  The empty
     // WebSecurityOrigin is represented by "null".  The representation of a

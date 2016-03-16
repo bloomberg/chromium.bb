@@ -132,8 +132,7 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
 
     // For MSE, also report usage by secure/insecure origin.
     if (load_type == blink::WebMediaPlayer::LoadTypeMediaSource) {
-      blink::WebString error_message;
-      if (security_origin.isPotentiallyTrustworthy(error_message)) {
+      if (security_origin.isPotentiallyTrustworthy()) {
         GetMediaClient()->RecordRapporURL("Media.OriginUrl.MSE.Secure",
                                           security_origin_url);
       } else {

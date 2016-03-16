@@ -37,6 +37,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -351,6 +352,42 @@ TEST_F(DocumentTest, StyleVersion)
     previousStyleVersion = document().styleVersion();
     element->setAttribute(blink::HTMLNames::classAttr, "a b");
     EXPECT_NE(previousStyleVersion, document().styleVersion());
+}
+
+TEST_F(DocumentTest, EnforceSandboxFlags)
+{
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString("http://example.test");
+    document().setSecurityOrigin(origin);
+    SandboxFlags mask = SandboxNavigation;
+    document().enforceSandboxFlags(mask);
+    EXPECT_EQ(origin, document().getSecurityOrigin());
+    EXPECT_FALSE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+
+    mask |= SandboxOrigin;
+    document().enforceSandboxFlags(mask);
+    EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
+    EXPECT_FALSE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+
+    // A unique origin does not bypass secure context checks unless it
+    // is also potentially trustworthy.
+    SchemeRegistry::registerURLSchemeBypassingSecureContextCheck("very-special-scheme");
+    origin = SecurityOrigin::createFromString("very-special-scheme://example.test");
+    document().setSecurityOrigin(origin);
+    document().enforceSandboxFlags(mask);
+    EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
+    EXPECT_FALSE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+
+    SchemeRegistry::registerURLSchemeAsSecure("very-special-scheme");
+    document().setSecurityOrigin(origin);
+    document().enforceSandboxFlags(mask);
+    EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
+    EXPECT_TRUE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+
+    origin = SecurityOrigin::createFromString("https://example.test");
+    document().setSecurityOrigin(origin);
+    document().enforceSandboxFlags(mask);
+    EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
+    EXPECT_TRUE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
 }
 
 } // namespace blink

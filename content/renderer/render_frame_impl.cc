@@ -2732,6 +2732,12 @@ void RenderFrameImpl::didEnforceStrictMixedContentChecking() {
   Send(new FrameHostMsg_EnforceStrictMixedContentChecking(routing_id_));
 }
 
+void RenderFrameImpl::didUpdateToUniqueOrigin(
+    bool is_potentially_trustworthy_unique_origin) {
+  Send(new FrameHostMsg_UpdateToUniqueOrigin(
+      routing_id_, is_potentially_trustworthy_unique_origin));
+}
+
 void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
                                             blink::WebSandboxFlags flags) {
   Send(new FrameHostMsg_DidChangeSandboxFlags(
@@ -4416,6 +4422,10 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   params.should_enforce_strict_mixed_content_checking =
       frame->shouldEnforceStrictMixedContentChecking();
+
+  params.has_potentially_trustworthy_unique_origin =
+      frame->document().getSecurityOrigin().isUnique() &&
+      frame->document().getSecurityOrigin().isPotentiallyTrustworthy();
 
   // Set the URL to be displayed in the browser UI to the user.
   params.url = GetLoadingUrl();

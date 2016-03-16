@@ -23,7 +23,8 @@ struct CONTENT_EXPORT FrameReplicationState {
                         const std::string& name,
                         const std::string& unique_name,
                         blink::WebSandboxFlags sandbox_flags,
-                        bool should_enforce_strict_mixed_content_checking);
+                        bool should_enforce_strict_mixed_content_checking,
+                        bool has_potentially_trustworthy_unique_origin);
   ~FrameReplicationState();
 
   // Current origin of the frame. This field is updated whenever a frame
@@ -89,6 +90,10 @@ struct CONTENT_EXPORT FrameReplicationState {
   // content. Updates are immediately sent to all frame proxies when
   // frames live in different processes.
   bool should_enforce_strict_mixed_content_checking;
+
+  // True if a frame's origin is unique and should be considered potentially
+  // trustworthy.
+  bool has_potentially_trustworthy_unique_origin;
 
   // TODO(alexmos): Eventually, this structure can also hold other state that
   // needs to be replicated, such as frame sizing info.

@@ -98,7 +98,8 @@ FrameTreeNode::FrameTreeNode(
           name,
           unique_name,
           blink::WebSandboxFlags::None,
-          false /* should enforce strict mixed content checking */),
+          false /* should enforce strict mixed content checking */,
+          false /* is a potentially trustworthy unique origin */),
       pending_sandbox_flags_(blink::WebSandboxFlags::None),
       frame_owner_properties_(frame_owner_properties),
       loading_progress_(kLoadingProgressNotStarted) {
@@ -212,10 +213,18 @@ void FrameTreeNode::SetCurrentURL(const GURL& url) {
   TraceSnapshot();
 }
 
-void FrameTreeNode::SetCurrentOrigin(const url::Origin& origin) {
-  if (!origin.IsSameOriginWith(replication_state_.origin))
-    render_manager_.OnDidUpdateOrigin(origin);
+void FrameTreeNode::SetCurrentOrigin(
+    const url::Origin& origin,
+    bool is_potentially_trustworthy_unique_origin) {
+  if (!origin.IsSameOriginWith(replication_state_.origin) ||
+      replication_state_.has_potentially_trustworthy_unique_origin !=
+          is_potentially_trustworthy_unique_origin) {
+    render_manager_.OnDidUpdateOrigin(origin,
+                                      is_potentially_trustworthy_unique_origin);
+  }
   replication_state_.origin = origin;
+  replication_state_.has_potentially_trustworthy_unique_origin =
+      is_potentially_trustworthy_unique_origin;
 }
 
 void FrameTreeNode::SetFrameName(const std::string& name,

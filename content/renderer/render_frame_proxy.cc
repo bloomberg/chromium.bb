@@ -222,6 +222,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
                                 blink::WebString::fromUTF8(state.unique_name));
   web_frame_->setReplicatedShouldEnforceStrictMixedContentChecking(
       state.should_enforce_strict_mixed_content_checking);
+  web_frame_->setReplicatedPotentiallyTrustworthyUniqueOrigin(
+      state.has_potentially_trustworthy_unique_origin);
 }
 
 // Update the proxy's SecurityContext and FrameOwner with new sandbox flags
@@ -341,8 +343,12 @@ void RenderFrameProxy::OnEnforceStrictMixedContentChecking(
       should_enforce);
 }
 
-void RenderFrameProxy::OnDidUpdateOrigin(const url::Origin& origin) {
+void RenderFrameProxy::OnDidUpdateOrigin(
+    const url::Origin& origin,
+    bool is_potentially_trustworthy_unique_origin) {
   web_frame_->setReplicatedOrigin(origin);
+  web_frame_->setReplicatedPotentiallyTrustworthyUniqueOrigin(
+      is_potentially_trustworthy_unique_origin);
 }
 
 void RenderFrameProxy::OnSetPageFocus(bool is_focused) {

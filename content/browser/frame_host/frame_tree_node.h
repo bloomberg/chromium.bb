@@ -138,7 +138,8 @@ class CONTENT_EXPORT FrameTreeNode {
   }
 
   // Set the current origin and notify proxies about the update.
-  void SetCurrentOrigin(const url::Origin& origin);
+  void SetCurrentOrigin(const url::Origin& origin,
+                        bool is_potentially_trustworthy_unique_origin);
 
   // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name, const std::string& unique_name);

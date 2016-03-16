@@ -450,6 +450,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void didChangeName(const blink::WebString& name,
                      const blink::WebString& unique_name) override;
   void didEnforceStrictMixedContentChecking() override;
+  void didUpdateToUniqueOrigin(
+      bool is_potentially_trustworthy_unique_origin) override;
   void didChangeSandboxFlags(blink::WebFrame* child_frame,
                              blink::WebSandboxFlags flags) override;
   void didChangeFrameOwnerProperties(

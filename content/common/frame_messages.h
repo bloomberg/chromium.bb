@@ -291,6 +291,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // checking.
   IPC_STRUCT_MEMBER(bool, should_enforce_strict_mixed_content_checking)
 
+  // True if the document for the load is a unique origin that should be
+  // considered potentially trustworthy.
+  IPC_STRUCT_MEMBER(bool, has_potentially_trustworthy_unique_origin)
+
   // True if the navigation originated as an srcdoc attribute.
   IPC_STRUCT_MEMBER(bool, is_srcdoc)
 IPC_STRUCT_END()
@@ -384,6 +388,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(unique_name)
   IPC_STRUCT_TRAITS_MEMBER(scope)
   IPC_STRUCT_TRAITS_MEMBER(should_enforce_strict_mixed_content_checking)
+  IPC_STRUCT_TRAITS_MEMBER(has_potentially_trustworthy_unique_origin)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_NewFrame_WidgetParams)
@@ -769,7 +774,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_EnforceStrictMixedContentChecking,
 
 // Update a proxy's replicated origin.  Used when the frame is navigated to a
 // new origin.
-IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateOrigin, url::Origin /* origin */)
+IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateOrigin,
+                    url::Origin /* origin */,
+                    bool /* is potentially trustworthy unique origin */)
 
 // Notifies this frame or proxy that it is now focused.  This is used to
 // support cross-process focused frame changes.
@@ -951,6 +958,13 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeName,
 // can dynamically insert a <meta> tag that causes strict mixed content
 // checking to be enforced.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_EnforceStrictMixedContentChecking)
+
+// Sent when the frame is set to a unique origin. TODO(estark): this IPC
+// only exists to support dynamic sandboxing via a CSP delivered in a
+// <meta> tag. This is not supposed to be allowed per the CSP spec and
+// should be ripped out. https://crbug.com/594645
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateToUniqueOrigin,
+                    bool /* is potentially trustworthy unique origin */)
 
 // Sent when the renderer changed the progress of a load.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,

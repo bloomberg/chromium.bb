@@ -163,6 +163,11 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy)
     // Unique origins are not considered secure.
     RefPtr<SecurityOrigin> uniqueOrigin = SecurityOrigin::createUnique();
     EXPECT_FALSE(uniqueOrigin->isPotentiallyTrustworthy());
+    // ... unless they are specially marked as such.
+    uniqueOrigin->setUniqueOriginIsPotentiallyTrustworthy(true);
+    EXPECT_TRUE(uniqueOrigin->isPotentiallyTrustworthy());
+    uniqueOrigin->setUniqueOriginIsPotentiallyTrustworthy(false);
+    EXPECT_FALSE(uniqueOrigin->isPotentiallyTrustworthy());
 }
 
 TEST_F(SecurityOriginTest, IsSecure)

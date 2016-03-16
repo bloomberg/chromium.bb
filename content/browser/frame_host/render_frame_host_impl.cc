@@ -541,6 +541,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeName, OnDidChangeName)
     IPC_MESSAGE_HANDLER(FrameHostMsg_EnforceStrictMixedContentChecking,
                         OnEnforceStrictMixedContentChecking)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateToUniqueOrigin,
+                        OnUpdateToUniqueOrigin)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAssignPageId, OnDidAssignPageId)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeSandboxFlags,
                         OnDidChangeSandboxFlags)
@@ -1477,6 +1479,14 @@ void RenderFrameHostImpl::OnDidChangeName(const std::string& name,
 
 void RenderFrameHostImpl::OnEnforceStrictMixedContentChecking() {
   frame_tree_node()->SetEnforceStrictMixedContentChecking(true);
+}
+
+void RenderFrameHostImpl::OnUpdateToUniqueOrigin(
+    bool is_potentially_trustworthy_unique_origin) {
+  url::Origin origin;
+  DCHECK(origin.unique());
+  frame_tree_node()->SetCurrentOrigin(origin,
+                                      is_potentially_trustworthy_unique_origin);
 }
 
 void RenderFrameHostImpl::OnDidAssignPageId(int32_t page_id) {

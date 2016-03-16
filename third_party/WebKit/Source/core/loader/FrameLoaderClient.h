@@ -206,6 +206,8 @@ public:
 
     virtual void didEnforceStrictMixedContentChecking() {}
 
+    virtual void didUpdateToUniqueOrigin() {}
+
     virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) { }
 
     virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) { }

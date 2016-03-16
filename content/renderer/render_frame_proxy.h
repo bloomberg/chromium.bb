@@ -167,7 +167,8 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnDispatchLoad();
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceStrictMixedContentChecking(bool should_enforce);
-  void OnDidUpdateOrigin(const url::Origin& origin);
+  void OnDidUpdateOrigin(const url::Origin& origin,
+                         bool is_potentially_trustworthy_unique_origin);
   void OnSetPageFocus(bool is_focused);
   void OnSetFocusedFrame();
 

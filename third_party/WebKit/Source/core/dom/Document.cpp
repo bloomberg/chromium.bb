@@ -3425,35 +3425,20 @@ bool Document::isSecureContextImpl(String* errorMessage, const SecureContextChec
     //
     // In all cases, a frame must be potentially trustworthy in addition to
     // having an exception listed in order for the exception to be granted.
-    if (SecurityContext::isSandboxed(SandboxOrigin)) {
-        RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url());
-        if (!isOriginPotentiallyTrustworthy(origin.get(), errorMessage))
-            return false;
-        if (SchemeRegistry::schemeShouldBypassSecureContextCheck(origin->protocol()))
-            return true;
-    } else {
-        if (!isOriginPotentiallyTrustworthy(getSecurityOrigin(), errorMessage))
-            return false;
-        if (SchemeRegistry::schemeShouldBypassSecureContextCheck(getSecurityOrigin()->protocol()))
-            return true;
-    }
+    if (!isOriginPotentiallyTrustworthy(getSecurityOrigin(), errorMessage))
+        return false;
+
+    if (SchemeRegistry::schemeShouldBypassSecureContextCheck(getSecurityOrigin()->protocol()))
+        return true;
 
     if (privilegeContextCheck == StandardSecureContextCheck) {
-        Document* context = parentDocument();
-        while (context) {
-            // Skip to the next ancestor if it's a srcdoc.
-            if (!context->isSrcdocDocument()) {
-                if (context->securityContext().isSandboxed(SandboxOrigin)) {
-                    // For a sandboxed origin, use the document's URL.
-                    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(context->url());
-                    if (!isOriginPotentiallyTrustworthy(origin.get(), errorMessage))
-                        return false;
-                } else {
-                    if (!isOriginPotentiallyTrustworthy(context->getSecurityOrigin(), errorMessage))
-                        return false;
-                }
-            }
-            context = context->parentDocument();
+        if (!m_frame)
+            return true;
+        Frame* parent = m_frame->tree().parent();
+        while (parent) {
+            if (!isOriginPotentiallyTrustworthy(parent->securityContext()->getSecurityOrigin(), errorMessage))
+                return false;
+            parent = parent->tree().parent();
         }
     }
     return true;
@@ -4980,10 +4965,14 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     if (isSandboxed(SandboxOrigin)) {
         m_cookieURL = m_url;
         setSecurityOrigin(SecurityOrigin::createUnique());
-        // If we're supposed to inherit our security origin from our owner,
-        // but we're also sandboxed, the only thing we inherit is the ability
-        // to load local resources. This lets about:blank iframes in file://
-        // URL documents load images and other resources from the file system.
+        // If we're supposed to inherit our security origin from our
+        // owner, but we're also sandboxed, the only things we inherit are
+        // the origin's potential trustworthiness and the ability to
+        // load local resources. The latter lets about:blank iframes in
+        // file:// URL documents load images and other resources from
+        // the file system.
+        if (initializer.owner() && initializer.owner()->getSecurityOrigin()->isPotentiallyTrustworthy())
+            getSecurityOrigin()->setUniqueOriginIsPotentiallyTrustworthy(true);
         if (initializer.owner() && initializer.owner()->getSecurityOrigin()->canLoadLocalResources())
             getSecurityOrigin()->grantLoadLocalResources();
     } else if (initializer.owner()) {
@@ -5039,8 +5028,8 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         setBaseURLOverride(initializer.parentBaseURL());
     }
 
-    if (getSecurityOrigin()->hasSuborigin())
-        enforceSuborigin(getSecurityOrigin()->suboriginName());
+    if (getSecurityOrigin()->isUnique() && SecurityOrigin::create(m_url)->isPotentiallyTrustworthy())
+        getSecurityOrigin()->setUniqueOriginIsPotentiallyTrustworthy(true);
 }
 
 void Document::initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> csp)
@@ -5099,6 +5088,18 @@ bool Document::allowExecutingScripts(Node* node)
     if (!frame->script().canExecuteScripts(AboutToExecuteScript))
         return false;
     return true;
+}
+
+void Document::enforceSandboxFlags(SandboxFlags mask)
+{
+    RefPtr<SecurityOrigin> standInOrigin = getSecurityOrigin();
+    applySandboxFlags(mask);
+    // Send a notification if the origin has been updated.
+    if (standInOrigin && !standInOrigin->isUnique() && getSecurityOrigin()->isUnique()) {
+        getSecurityOrigin()->setUniqueOriginIsPotentiallyTrustworthy(standInOrigin->isPotentiallyTrustworthy());
+        if (frame())
+            frame()->loader().client()->didUpdateToUniqueOrigin();
+    }
 }
 
 void Document::updateSecurityOrigin(PassRefPtr<SecurityOrigin> origin)

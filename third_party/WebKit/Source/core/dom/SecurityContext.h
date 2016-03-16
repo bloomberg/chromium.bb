@@ -68,7 +68,7 @@ public:
 
     SandboxFlags getSandboxFlags() const { return m_sandboxFlags; }
     bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
-    void enforceSandboxFlags(SandboxFlags mask);
+    virtual void enforceSandboxFlags(SandboxFlags mask);
 
     void setAddressSpace(WebAddressSpace space) { m_addressSpace = space; }
     WebAddressSpace addressSpace() const { return m_addressSpace; }
@@ -92,6 +92,8 @@ protected:
     virtual ~SecurityContext();
 
     void setContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy>);
+
+    void applySandboxFlags(SandboxFlags mask);
 
 private:
     RefPtr<SecurityOrigin> m_securityOrigin;

@@ -150,6 +150,7 @@ public:
     void frameFocused() const override;
     void didChangeName(const String& name, const String& uniqueName) override;
     void didEnforceStrictMixedContentChecking() override;
+    void didUpdateToUniqueOrigin() override;
     void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
     void didChangeFrameOwnerProperties(HTMLFrameElementBase*) override;
 

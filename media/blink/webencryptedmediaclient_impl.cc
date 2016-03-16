@@ -106,8 +106,7 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
 
     GetMediaClient()->RecordRapporURL("Media.OriginUrl.EME", security_origin);
 
-    blink::WebString error_message;
-    if (!request.getSecurityOrigin().isPotentiallyTrustworthy(error_message)) {
+    if (!request.getSecurityOrigin().isPotentiallyTrustworthy()) {
       GetMediaClient()->RecordRapporURL("Media.OriginUrl.EME.Insecure",
                                         security_origin);
     }

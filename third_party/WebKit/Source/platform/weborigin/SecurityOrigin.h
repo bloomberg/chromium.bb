@@ -250,6 +250,8 @@ public:
     PassOwnPtr<PrivilegeData> createPrivilegeData() const;
     void transferPrivilegesFrom(PassOwnPtr<PrivilegeData>);
 
+    void setUniqueOriginIsPotentiallyTrustworthy(bool isUniqueOriginPotentiallyTrustworthy);
+
 private:
     friend class SecurityOriginTest;
     FRIEND_TEST_ALL_PREFIXES(SecurityOriginTest, Suborigins);
@@ -277,6 +279,7 @@ private:
     bool m_domainWasSetInDOM;
     bool m_canLoadLocalResources;
     bool m_blockLocalAccessFromLocalOrigin;
+    bool m_isUniqueOriginPotentiallyTrustworthy;
 };
 
 } // namespace blink

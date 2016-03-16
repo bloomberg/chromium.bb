@@ -696,6 +696,14 @@ void WebRemoteFrameImpl::setReplicatedShouldEnforceStrictMixedContentChecking(bo
     frame()->securityContext()->setShouldEnforceStrictMixedContentChecking(shouldEnforce);
 }
 
+void WebRemoteFrameImpl::setReplicatedPotentiallyTrustworthyUniqueOrigin(bool isUniqueOriginPotentiallyTrustworthy) const
+{
+    ASSERT(frame());
+    // If |isUniqueOriginPotentiallyTrustworthy| is true, then the origin must be unique.
+    ASSERT(!isUniqueOriginPotentiallyTrustworthy || frame()->securityContext()->getSecurityOrigin()->isUnique());
+    frame()->securityContext()->getSecurityOrigin()->setUniqueOriginIsPotentiallyTrustworthy(isUniqueOriginPotentiallyTrustworthy);
+}
+
 void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() const
 {
     ASSERT(frame()->owner()->isLocal());

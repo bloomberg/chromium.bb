@@ -182,6 +182,14 @@ public:
     // This frame has been set to enforce strict mixed content checking.
     virtual void didEnforceStrictMixedContentChecking() {}
 
+    // This frame has been updated to a unique origin, which should be
+    // considered potentially trustworthy if
+    // |isPotentiallyTrustworthyUniqueOrigin| is true. TODO(estark):
+    // this method only exists to support dynamic sandboxing via a CSP
+    // delivered in a <meta> tag. This is not supposed to be allowed per
+    // the CSP spec and should be ripped out. https://crbug.com/594645
+    virtual void didUpdateToUniqueOrigin(bool isPotentiallyTrustworthyUniqueOrigin) {}
+
     // The sandbox flags have changed for a child frame of this frame.
     virtual void didChangeSandboxFlags(WebFrame* childFrame, WebSandboxFlags flags) { }
 

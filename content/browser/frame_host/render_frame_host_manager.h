@@ -442,7 +442,8 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Send updated origin to all frame proxies when the frame navigates to a new
   // origin.
-  void OnDidUpdateOrigin(const url::Origin& origin);
+  void OnDidUpdateOrigin(const url::Origin& origin,
+                         bool is_potentially_trustworthy_unique_origin);
 
   void EnsureRenderViewInitialized(RenderViewHostImpl* render_view_host,
                                    SiteInstance* instance);

@@ -630,6 +630,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnDidChangeName(const std::string& name, const std::string& unique_name);
   void OnEnforceStrictMixedContentChecking();
+  void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);
   void OnDidAssignPageId(int32_t page_id);
   void OnDidChangeSandboxFlags(int32_t frame_routing_id,
                                blink::WebSandboxFlags flags);

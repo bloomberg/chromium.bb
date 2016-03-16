@@ -482,7 +482,8 @@ void NavigatorImpl::DidNavigate(
   // origin because it creates a RenderFrameProxy that needs this to initialize
   // its security context. This origin will also be sent to RenderFrameProxies
   // created via ViewMsg_New and FrameMsg_NewFrameProxy.
-  render_frame_host->frame_tree_node()->SetCurrentOrigin(params.origin);
+  render_frame_host->frame_tree_node()->SetCurrentOrigin(
+      params.origin, params.has_potentially_trustworthy_unique_origin);
 
   render_frame_host->frame_tree_node()->SetEnforceStrictMixedContentChecking(
       params.should_enforce_strict_mixed_content_checking);
