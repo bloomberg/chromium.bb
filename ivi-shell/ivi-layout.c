@@ -2014,10 +2014,6 @@ static int32_t
 ivi_layout_screen_add_layer(struct ivi_layout_screen *iviscrn,
 			    struct ivi_layout_layer *addlayer)
 {
-	struct ivi_layout *layout = get_instance();
-	struct ivi_layout_layer *ivilayer = NULL;
-	struct ivi_layout_layer *next = NULL;
-
 	if (iviscrn == NULL || addlayer == NULL) {
 		weston_log("ivi_layout_screen_add_layer: invalid argument\n");
 		return IVI_FAILED;
@@ -2028,14 +2024,8 @@ ivi_layout_screen_add_layer(struct ivi_layout_screen *iviscrn,
 		return IVI_SUCCEEDED;
 	}
 
-	wl_list_for_each_safe(ivilayer, next, &layout->layer_list, link) {
-		if (ivilayer->id_layer == addlayer->id_layer) {
-			wl_list_remove(&ivilayer->pending.link);
-			wl_list_insert(&iviscrn->pending.layer_list,
-				       &ivilayer->pending.link);
-			break;
-		}
-	}
+	wl_list_remove(&addlayer->pending.link);
+	wl_list_insert(&iviscrn->pending.layer_list, &addlayer->pending.link);
 
 	iviscrn->order.dirty = 1;
 
