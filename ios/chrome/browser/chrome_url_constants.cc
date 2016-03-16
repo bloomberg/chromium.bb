@@ -69,3 +69,8 @@ const char kDoNotTrackLearnMoreURL[] =
 
 const char kSyncEncryptionHelpURL[] =
     "https://support.google.com/chrome/answer/1181035?p=settings_encryption";
+
+const char kClearBrowsingDataLearnMoreURL[] =
+    "https://support.google.com/chrome/answer/2392709";
+
+const char kGoogleHistoryURL[] = "https://history.google.com";

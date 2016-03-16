@@ -75,4 +75,10 @@ extern const char kDoNotTrackLearnMoreURL[];
 // The URL for the "Learn more" page on sync encryption.
 extern const char kSyncEncryptionHelpURL[];
 
+// "Learn more" URL for the Clear Browsing Data under Privacy Options.
+extern const char kClearBrowsingDataLearnMoreURL[];
+
+// Google history URL for the Clear Browsing Data under Privacy Options.
+extern const char kGoogleHistoryURL[];
+
 #endif  // IOS_CHROME_BROWSER_CHROME_URL_CONSTANTS_H_
