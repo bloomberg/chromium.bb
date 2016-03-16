@@ -19,8 +19,7 @@ std::int64_t NanosecondsTo90KhzTicks(std::int64_t nanoseconds) {
 }
 
 bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
-                             std::size_t frame_length,
-                             Ranges* frame_ranges) {
+                             std::size_t frame_length, Ranges* frame_ranges) {
   if (frame == nullptr || frame_length == 0 || frame_ranges == nullptr)
     return false;
 

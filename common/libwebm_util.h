@@ -46,8 +46,7 @@ std::int64_t NanosecondsTo90KhzTicks(std::int64_t nanoseconds);
 // Returns true and stores frame offsets and lengths in |frame_ranges| when
 // |frame| has a valid VP9 super frame index.
 bool ParseVP9SuperFrameIndex(const std::uint8_t* frame,
-                             std::size_t frame_length,
-                             Ranges* frame_ranges);
+                             std::size_t frame_length, Ranges* frame_ranges);
 
 // Writes |val| to |fileptr| and returns true upon success.
 bool WriteUint8(std::uint8_t val, std::FILE* fileptr);

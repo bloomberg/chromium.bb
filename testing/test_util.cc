@@ -9,7 +9,7 @@
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable:4996)
+#pragma warning(disable : 4996)
 #endif
 
 #include <cstdint>
@@ -58,8 +58,6 @@ bool CompareFiles(const std::string& file1, const std::string& file2) {
 
   return std::feof(f1.get()) && std::feof(f2.get());
 }
-
-
 
 }  // namespace test
 }  // namespace libwebm

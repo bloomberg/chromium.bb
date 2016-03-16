@@ -161,15 +161,15 @@ class ParserTest : public testing::Test {
         cue_point = cues->GetNext(cue_point);
       }
       const mkvparser::CuePoint::TrackPosition* const track_position =
-      cue_point->Find(cues_track);
+          cue_point->Find(cues_track);
       const long long cluster_pos = track_position->m_pos +  // NOLINT
-      segment_->m_start;
+                                    segment_->m_start;
 
       // If a cluster does not begin at |cluster_pos|, then the file is
       // incorrect.
       long length;  // NOLINT
       const long long id =  // NOLINT
-      mkvparser::ReadUInt(&reader_, cluster_pos, length);
+          mkvparser::ReadUInt(&reader_, cluster_pos, length);
       if (id != 0xF43B675) {  // ID of Cluster as stored in Cluster class.
         fprintf(stderr, "Error: One or more Cues are invalid.\n");
         return false;

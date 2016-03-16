@@ -25,10 +25,8 @@ namespace libwebm {
 // Maximum size is 64 bits. Users may call the Check() method to perform minimal
 // validation (size > 0 and <= 64).
 struct PesHeaderField {
-  PesHeaderField(std::uint64_t value,
-                 std::uint32_t size_in_bits,
-                 std::uint8_t byte_index,
-                 std::uint8_t bits_to_shift)
+  PesHeaderField(std::uint64_t value, std::uint32_t size_in_bits,
+                 std::uint8_t byte_index, std::uint8_t bits_to_shift)
       : bits(value),
         num_bits(size_in_bits),
         index(byte_index),
@@ -145,7 +143,7 @@ struct BCMVHeader {
 struct PesHeader {
   const std::uint8_t start_code[4] = {
       0x00, 0x00,
-      0x01,   // 0x000001 is the PES packet start code prefix.
+      0x01,  // 0x000001 is the PES packet start code prefix.
       0xE0};  // 0xE0 is the minimum video stream ID.
   std::uint16_t packet_length = 0;  // Number of bytes _after_ this field.
   PesOptionalHeader optional_header;

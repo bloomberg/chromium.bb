@@ -28,7 +28,7 @@
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable:4996)
+#pragma warning(disable : 4996)
 #endif
 
 using ::mkvmuxer::AudioTrack;
@@ -46,9 +46,7 @@ namespace test {
 // Base class containing boiler plate stuff.
 class MuxerTest : public testing::Test {
  public:
-  MuxerTest() {
-    Init();
-  }
+  MuxerTest() { Init(); }
 
   ~MuxerTest() { CloseWriter(); }
 
