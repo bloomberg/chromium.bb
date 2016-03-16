@@ -12,7 +12,6 @@ chrome.test.runTests([
         return;
       }
       focused = true;
-      chrome.test.sendMessage('get_focus_event');
       if (activated)
         chrome.test.succeed();
     });
@@ -54,17 +53,7 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   },
-  function testBlur() {
-     chrome.input.ime.onBlur.addListener(function(context) {
-      if (context.type == 'none') {
-        chrome.test.fail();
-        return;
-      }
-      chrome.test.sendMessage('get_blur_event');
-      chrome.test.succeed();
-     });
-     chrome.test.succeed();
-  },
+
   function testSendKeyEvents() {
     chrome.input.ime.sendKeyEvents({
       'contextID': 1,
@@ -81,55 +70,5 @@ chrome.test.runTests([
      }]
     });
     chrome.test.succeed();
-  },
-  function testCommitText() {
-    chrome.input.ime.commitText({
-      contextID: 1,
-      text: 'test_commit_text'
-    }, function () {
-      if (chrome.runtime.lastError) {
-        chrome.test.fail();
-        return;
-      }
-      chrome.test.succeed();
-    });
-  },
-  function testComposition() {
-    chrome.input.ime.onCompositionBoundsChanged.addListener(
-    function(boundsList) {
-      if (boundsList.length > 0 && boundsList[0].width > 1 ){
-        for (var i = 0; i < boundsList.length; i++ ) {
-          if (i==0) {
-            composition_left = boundsList[i].left;
-            composition_top = boundsList[i].top;
-            composition_width = boundsList[i].width;
-            composition_height = boundsList[i].height;
-          }
-          else {
-            chrome.test.assertEq(boundsList[i].top, composition_top);
-            chrome.test.assertEq(boundsList[i].height, composition_height);
-             chrome.test.assertEq(boundsList[i].left,
-              composition_left + composition_width);
-            composition_left = boundsList[i].left;
-            composition_width = boundsList[i].width;
-          }
-        }
-      }
-      if (boundsList.length > 20) {
-        chrome.test.sendMessage('finish_composition_test');
-      }
-      chrome.test.succeed();
-    });
-    chrome.input.ime.setComposition({
-      contextID: 1,
-      text: 'test_composition_text',
-      cursor: 2
-    }, function() {
-      if(chrome.runtime.lastError) {
-        chrome.test.fail();
-        return;
-      }
-      chrome.test.succeed();
-    });
-   }
+  }
 ]);
