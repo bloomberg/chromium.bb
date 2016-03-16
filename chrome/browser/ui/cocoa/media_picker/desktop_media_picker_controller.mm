@@ -15,6 +15,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "grit/components_strings.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/flipped_view.h"
@@ -224,6 +227,16 @@ const int kExcessButtonPadding = 6;
 
   sourceID.audio_share = [audioShareCheckbox_ isEnabled] &&
                          [audioShareCheckbox_ state] == NSOnState;
+
+  // If the media source is an tab, activate it.
+  if (sourceID.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
+    content::WebContents* tab = content::WebContents::FromRenderFrameHost(
+        content::RenderFrameHost::FromID(
+            sourceID.web_contents_id.render_process_id,
+            sourceID.web_contents_id.main_render_frame_id));
+    if (tab)
+      tab->GetDelegate()->ActivateContents(tab);
+  }
 
   // Notify the |callback_| asynchronously because it may release the
   // controller.
