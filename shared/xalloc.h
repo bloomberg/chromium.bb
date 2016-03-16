@@ -38,30 +38,10 @@ extern "C" {
 void *
 fail_on_null(void *p, size_t size, char *file, int32_t line);
 
-static inline void *
-xmalloc(size_t s)
-{
-	return fail_on_null(malloc(s), s, NULL, 0);
-}
-
-static inline void *
-xzalloc(size_t s)
-{
-	return fail_on_null(zalloc(s), s, NULL, 0);
-}
-
-static inline char *
-xstrdup(const char *s)
-{
-	return fail_on_null(strdup(s), 0, NULL, 0);
-}
-
-static inline void *
-xrealloc(char *p, size_t s)
-{
-	return fail_on_null(realloc(p, s), s, NULL, 0);
-}
-
+#define xmalloc(s) (fail_on_null(malloc(s), (s), __FILE__, __LINE__))
+#define xzalloc(s) (fail_on_null(zalloc(s), (s), __FILE__, __LINE__))
+#define xstrdup(s) (fail_on_null(strdup(s), 0, __FILE__, __LINE__))
+#define xrealloc(p, s) (fail_on_null(realloc(p, s), (s), __FILE__, __LINE__))
 
 #ifdef  __cplusplus
 }
