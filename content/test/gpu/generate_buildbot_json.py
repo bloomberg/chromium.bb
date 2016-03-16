@@ -212,6 +212,17 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
+    'Win7 Release (NVIDIA GeForce 730)': {
+      'swarming_dimensions': {
+        'gpu': '10de:0f02',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'win',
+    },
     'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': {
         'gpu': '10de:104a',
@@ -333,6 +344,17 @@ FYI_WATERFALL = {
     'Linux Release (ATI)': {
       'swarming_dimensions': {
         'gpu': '1002:6779',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'linux',
+    },
+    'Linux Release (NVIDIA GeForce 730)': {
+      'swarming_dimensions': {
+        'gpu': '10de:0f02',
         'os': 'Linux'
       },
       'build_config': 'Release',
