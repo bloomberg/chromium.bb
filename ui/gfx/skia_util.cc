@@ -130,7 +130,7 @@ skia::RefPtr<SkShader> CreateGradientShader(int start_point,
   grad_points[1].iset(0, end_point);
 
   return skia::AdoptRef(SkGradientShader::CreateLinear(
-      grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode));
+      grad_points, grad_colors, NULL, 2, SkShader::kClamp_TileMode));
 }
 
 static SkScalar RadiusToSigma(double radius) {

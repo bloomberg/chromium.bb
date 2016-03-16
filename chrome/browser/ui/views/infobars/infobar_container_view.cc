@@ -4,20 +4,74 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 
+#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/view_targeter.h"
+
+namespace {
+
+// The content shadow is drawn in two stages. A darker, shorter shadow is
+// blended with a taller, lighter shadow. The heights are in dp.
+const int kSmallShadowHeight = 1;
+const int kLargeShadowHeight = 3;
+const SkAlpha kSmallShadowAlpha = 0x33;
+const SkAlpha kLargeShadowAlpha = 0x1A;
+
+class ContentShadow : public views::View {
+ public:
+  ContentShadow() {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+  ~ContentShadow() override {}
+
+ protected:
+  // views::View:
+  void OnPaint(gfx::Canvas* canvas) override {
+    // The first shader (small shadow) blurs from 0 to kSmallShadowHeight.
+    SkPaint paint;
+    skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
+        0, kSmallShadowHeight, SkColorSetA(SK_ColorBLACK, kSmallShadowAlpha),
+        SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT));
+    paint.setShader(shader.get());
+    gfx::Rect small_shadow_bounds = GetLocalBounds();
+    small_shadow_bounds.set_height(kSmallShadowHeight);
+    canvas->DrawRect(small_shadow_bounds, paint);
+
+    // The second shader (large shadow) is solid from 0 to kSmallShadowHeight
+    // (blending with the first shader) and then blurs from kSmallShadowHeight
+    // to kLargeShadowHeight.
+    shader = gfx::CreateGradientShader(
+        kSmallShadowHeight, height(),
+        SkColorSetA(SK_ColorBLACK, kLargeShadowAlpha),
+        SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT));
+    paint.setShader(shader.get());
+    canvas->DrawRect(GetLocalBounds(), paint);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentShadow);
+};
+
+}  // namespace
 
 // static
 const char InfoBarContainerView::kViewClassName[] = "InfoBarContainerView";
 
 InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
-    : infobars::InfoBarContainer(delegate) {
+    : infobars::InfoBarContainer(delegate), content_shadow_(nullptr) {
   set_id(VIEW_ID_INFO_BAR_CONTAINER);
-  SetEventTargeter(make_scoped_ptr(new views::ViewTargeter(this)));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    content_shadow_ = new ContentShadow();
+    AddChildView(content_shadow_);
+  }
 }
 
 InfoBarContainerView::~InfoBarContainerView() {
@@ -26,7 +80,14 @@ InfoBarContainerView::~InfoBarContainerView() {
 
 gfx::Size InfoBarContainerView::GetPreferredSize() const {
   int total_height;
-  GetVerticalOverlap(&total_height);
+  int overlap = GetVerticalOverlap(&total_height);
+  total_height -= overlap;
+
+  // No need to reserve space for the bottom bar's separator; the shadow is good
+  // enough.
+  if (ui::MaterialDesignController::IsModeMaterial())
+    total_height -= InfoBarContainerDelegate::kSeparatorLineHeight;
+
   gfx::Size size(0, total_height);
   for (int i = 0; i < child_count(); ++i)
     size.SetToMax(gfx::Size(child_at(i)->GetPreferredSize().width(), 0));
@@ -38,15 +99,29 @@ const char* InfoBarContainerView::GetClassName() const {
 }
 
 void InfoBarContainerView::Layout() {
-  int top = GetVerticalOverlap(NULL);
+  int top = 0;
 
   for (int i = 0; i < child_count(); ++i) {
+    if (child_at(i) == content_shadow_)
+      continue;
+
     InfoBarView* child = static_cast<InfoBarView*>(child_at(i));
     top -= child->arrow_height();
     int child_height = child->total_height();
+
+    // Trim off the bottom bar's separator; the shadow is good enough.
+    // The last infobar is the second to last child overall (followed by
+    // |content_shadow_|).
+    if (ui::MaterialDesignController::IsModeMaterial() &&
+        i == child_count() - 2) {
+      child_height -= InfoBarContainerDelegate::kSeparatorLineHeight;
+    }
     child->SetBounds(0, top, width(), child_height);
     top += child_height;
   }
+
+  if (ui::MaterialDesignController::IsModeMaterial())
+    content_shadow_->SetBounds(0, top, width(), kLargeShadowHeight);
 }
 
 void InfoBarContainerView::GetAccessibleState(ui::AXViewState* state) {
@@ -64,13 +139,4 @@ void InfoBarContainerView::PlatformSpecificAddInfoBar(
 void InfoBarContainerView::PlatformSpecificRemoveInfoBar(
     infobars::InfoBar* infobar) {
   RemoveChildView(static_cast<InfoBarView*>(infobar));
-}
-
-bool InfoBarContainerView::DoesIntersectRect(const View* target,
-                                             const gfx::Rect& rect) const {
-  DCHECK_EQ(this, target);
-  // Only events that intersect the portion below the arrow are interesting.
-  gfx::Rect non_arrow_bounds = GetLocalBounds();
-  non_arrow_bounds.Inset(0, GetVerticalOverlap(nullptr), 0, 0);
-  return rect.Intersects(non_arrow_bounds);
 }

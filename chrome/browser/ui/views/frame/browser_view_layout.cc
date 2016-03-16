@@ -467,13 +467,10 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   }
   // Raise the |infobar_container_| by its vertical overlap.
   infobar_container_->SetVisible(InfobarVisible());
-  int height;
-  int overlapped_top = top - infobar_container_->GetVerticalOverlap(&height);
-  infobar_container_->SetBounds(vertical_layout_rect_.x(),
-                                overlapped_top,
-                                vertical_layout_rect_.width(),
-                                height);
-  return overlapped_top + height;
+  infobar_container_->SetBounds(
+      vertical_layout_rect_.x(), top, vertical_layout_rect_.width(),
+      infobar_container_->GetPreferredSize().height());
+  return top + infobar_container_->height();
 }
 
 void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {

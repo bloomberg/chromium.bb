@@ -233,9 +233,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // 0, 0).
   gfx::Rect GetLocalBounds() const;
 
-  // Returns the bounds of the layer in its own pixel coordinates.
-  gfx::Rect GetLayerBoundsInPixel() const;
-
   // Returns the insets of the current border. If there is no border an empty
   // insets is returned.
   virtual gfx::Insets GetInsets() const;

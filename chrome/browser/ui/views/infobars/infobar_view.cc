@@ -89,10 +89,10 @@ InfoBarView::InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate)
 
   AddChildView(child_container_);
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetPaintToLayer(true);
-    layer()->SetFillsBoundsOpaquely(false);
+  SetPaintToLayer(true);
+  layer()->SetFillsBoundsOpaquely(false);
 
+  if (ui::MaterialDesignController::IsModeMaterial()) {
     child_container_->SetPaintToLayer(true);
     child_container_->layer()->SetMasksToBounds(true);
     // Since MD doesn't use a gradient, we can set a solid bg color.

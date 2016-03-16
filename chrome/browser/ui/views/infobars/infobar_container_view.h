@@ -14,15 +14,13 @@
 
 // The views-specific implementation of InfoBarContainer.
 class InfoBarContainerView : public views::AccessiblePaneView,
-                             public infobars::InfoBarContainer,
-                             public views::ViewTargeterDelegate {
+                             public infobars::InfoBarContainer {
  public:
   static const char kViewClassName[];
 
   explicit InfoBarContainerView(Delegate* delegate);
   ~InfoBarContainerView() override;
 
- private:
   // AccessiblePaneView:
   gfx::Size GetPreferredSize() const override;
   const char* GetClassName() const override;
@@ -34,9 +32,11 @@ class InfoBarContainerView : public views::AccessiblePaneView,
                                   size_t position) override;
   void PlatformSpecificRemoveInfoBar(infobars::InfoBar* infobar) override;
 
-  // ViewTargeterDelegate:
-  bool DoesIntersectRect(const View* target,
-                         const gfx::Rect& rect) const override;
+ private:
+  // This view draws the shadow over the web contents below the
+  // lowest infobar. A separate view with a layer is used so it can
+  // draw outside the bounds of |this|.
+  views::View* content_shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerView);
 };

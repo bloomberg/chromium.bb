@@ -2643,7 +2643,7 @@ int BrowserView::GetMaxTopInfoBarArrowHeight() {
     gfx::Point icon_bottom(
         toolbar_->location_bar()->GetLocationBarAnchorPoint());
     ConvertPointToTarget(toolbar_->location_bar(), this, &icon_bottom);
-    gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(nullptr));
+    gfx::Point infobar_top;
     ConvertPointToTarget(infobar_container_, this, &infobar_top);
     top_arrow_height = infobar_top.y() - icon_bottom.y();
   }
