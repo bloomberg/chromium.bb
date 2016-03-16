@@ -184,6 +184,7 @@ TEST_F(FrameReceiverTest, ReceivesOneFrame) {
       .WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, AddCastFeedback(_, _))
       .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddPli(_)).WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, AddRtcpEvents(_))
       .WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver())
@@ -234,6 +235,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
       .WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, AddCastFeedback(_, _))
       .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddPli(_)).WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, AddRtcpEvents(_))
       .WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver())
@@ -346,6 +348,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
       .WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, AddCastFeedback(_, _))
       .WillRepeatedly(testing::Return());
+  EXPECT_CALL(mock_transport_, AddPli(_)).WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, AddRtcpEvents(_))
       .WillRepeatedly(testing::Return());
   EXPECT_CALL(mock_transport_, SendRtcpFromRtpReceiver())

@@ -95,10 +95,12 @@ class CastTransportSender : public base::NonThreadSafe {
   // is called.
   virtual void InitializeAudio(const CastTransportRtpConfig& config,
                                const RtcpCastMessageCallback& cast_message_cb,
-                               const RtcpRttCallback& rtt_cb) = 0;
+                               const RtcpRttCallback& rtt_cb,
+                               const RtcpPliCallback& pli_cb) = 0;
   virtual void InitializeVideo(const CastTransportRtpConfig& config,
                                const RtcpCastMessageCallback& cast_message_cb,
-                               const RtcpRttCallback& rtt_cb) = 0;
+                               const RtcpRttCallback& rtt_cb,
+                               const RtcpPliCallback& pli_cb) = 0;
 
   // Encrypt, packetize and transmit |frame|. |ssrc| must refer to a
   // a channel already established with InitializeAudio / InitializeVideo.
@@ -145,6 +147,7 @@ class CastTransportSender : public base::NonThreadSafe {
 
   virtual void AddCastFeedback(const RtcpCastMessage& cast_message,
                                base::TimeDelta target_delay) = 0;
+  virtual void AddPli(const RtcpPliMessage& pli_message) = 0;
   virtual void AddRtcpEvents(
       const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) = 0;
   virtual void AddRtpReceiverReport(

@@ -53,7 +53,7 @@ namespace cast {
 
 class UdpTransport;
 
-class CastTransportSenderImpl : public CastTransportSender {
+class CastTransportSenderImpl final : public CastTransportSender {
  public:
   CastTransportSenderImpl(
       base::TickClock* clock,  // Owned by the caller.
@@ -67,10 +67,12 @@ class CastTransportSenderImpl : public CastTransportSender {
   // CastTransportSender implementation.
   void InitializeAudio(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb) final;
+                       const RtcpRttCallback& rtt_cb,
+                       const RtcpPliCallback& pli_cb) final;
   void InitializeVideo(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb) final;
+                       const RtcpRttCallback& rtt_cb,
+                       const RtcpPliCallback& pli_cb) final;
   void InsertFrame(uint32_t ssrc, const EncodedFrame& frame) final;
 
   void SendSenderReport(uint32_t ssrc,
@@ -107,6 +109,7 @@ class CastTransportSenderImpl : public CastTransportSender {
                                         const RtcpTimeData& time_data) final;
   void AddCastFeedback(const RtcpCastMessage& cast_message,
                        base::TimeDelta target_delay) final;
+  void AddPli(const RtcpPliMessage& pli_message) final;
   void AddRtcpEvents(
       const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) final;
   void AddRtpReceiverReport(

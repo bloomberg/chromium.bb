@@ -34,10 +34,13 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // Status callback to create UdpTransport.
   void OnStatusChanged(int32_t channel_id,
                        media::cast::CastTransportStatus status);
-  void SendRtt(int32_t channel_id, uint32_t ssrc, base::TimeDelta rtt);
+  void SendRtt(int32_t channel_id,
+               uint32_t rtp_sender_ssrc,
+               base::TimeDelta rtt);
   void SendCastMessage(int32_t channel_id,
-                       uint32_t ssrc,
+                       uint32_t rtp_sender_ssrc,
                        const media::cast::RtcpCastMessage& cast_message);
+  void SendReceivedPli(int32_t channel_id, uint32_t rtp_sender_ssrc);
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -71,6 +74,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void OnAddCastFeedback(int32_t channel_id,
                          const media::cast::RtcpCastMessage& cast_message,
                          base::TimeDelta target_delay);
+  void OnAddPli(int32_t channel_id,
+                const media::cast::RtcpPliMessage& pli_message);
   void OnAddRtcpEvents(
       int32_t channel_id,
       const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events);

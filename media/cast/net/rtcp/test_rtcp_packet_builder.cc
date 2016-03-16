@@ -15,10 +15,10 @@ TestRtcpPacketBuilder::TestRtcpPacketBuilder()
       big_endian_writer_(reinterpret_cast<char*>(buffer_), kMaxIpPacketSize),
       big_endian_reader_(NULL, 0) {}
 
-void TestRtcpPacketBuilder::AddSr(uint32_t sender_ssrc,
+void TestRtcpPacketBuilder::AddSr(uint32_t remote_ssrc,
                                   int number_of_report_blocks) {
   AddRtcpHeader(200, number_of_report_blocks);
-  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
   big_endian_writer_.WriteU32(kNtpHigh);  // NTP timestamp.
   big_endian_writer_.WriteU32(kNtpLow);
   big_endian_writer_.WriteU32(kRtpTimestamp);
@@ -26,12 +26,12 @@ void TestRtcpPacketBuilder::AddSr(uint32_t sender_ssrc,
   big_endian_writer_.WriteU32(kSendOctetCount);
 }
 
-void TestRtcpPacketBuilder::AddSrWithNtp(uint32_t sender_ssrc,
+void TestRtcpPacketBuilder::AddSrWithNtp(uint32_t remote_ssrc,
                                          uint32_t ntp_high,
                                          uint32_t ntp_low,
                                          uint32_t rtp_timestamp) {
   AddRtcpHeader(200, 0);
-  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
   big_endian_writer_.WriteU32(ntp_high);
   big_endian_writer_.WriteU32(ntp_low);
   big_endian_writer_.WriteU32(rtp_timestamp);
@@ -39,14 +39,14 @@ void TestRtcpPacketBuilder::AddSrWithNtp(uint32_t sender_ssrc,
   big_endian_writer_.WriteU32(kSendOctetCount);
 }
 
-void TestRtcpPacketBuilder::AddRr(uint32_t sender_ssrc,
+void TestRtcpPacketBuilder::AddRr(uint32_t remote_ssrc,
                                   int number_of_report_blocks) {
   AddRtcpHeader(201, number_of_report_blocks);
-  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
 }
 
-void TestRtcpPacketBuilder::AddRb(uint32_t rtp_ssrc) {
-  big_endian_writer_.WriteU32(rtp_ssrc);
+void TestRtcpPacketBuilder::AddRb(uint32_t local_ssrc) {
+  big_endian_writer_.WriteU32(local_ssrc);
   big_endian_writer_.WriteU32(kLoss);
   big_endian_writer_.WriteU32(kExtendedMax);
   big_endian_writer_.WriteU32(kTestJitter);
@@ -54,9 +54,9 @@ void TestRtcpPacketBuilder::AddRb(uint32_t rtp_ssrc) {
   big_endian_writer_.WriteU32(kDelayLastSr);
 }
 
-void TestRtcpPacketBuilder::AddXrHeader(uint32_t sender_ssrc) {
+void TestRtcpPacketBuilder::AddXrHeader(uint32_t remote_ssrc) {
   AddRtcpHeader(207, 0);
-  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
 }
 
 void TestRtcpPacketBuilder::AddXrUnknownBlock() {
@@ -77,18 +77,18 @@ void TestRtcpPacketBuilder::AddUnknownBlock() {
   big_endian_writer_.WriteU32(42);
 }
 
-void TestRtcpPacketBuilder::AddXrDlrrBlock(uint32_t sender_ssrc) {
+void TestRtcpPacketBuilder::AddXrDlrrBlock(uint32_t remote_ssrc) {
   big_endian_writer_.WriteU8(5);   // Block type.
   big_endian_writer_.WriteU8(0);   // Reserved.
   big_endian_writer_.WriteU16(3);  // Block length.
 
   // First receiver same as sender of this report.
-  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
   big_endian_writer_.WriteU32(kLastRr);
   big_endian_writer_.WriteU32(kDelayLastRr);
 }
 
-void TestRtcpPacketBuilder::AddXrExtendedDlrrBlock(uint32_t sender_ssrc) {
+void TestRtcpPacketBuilder::AddXrExtendedDlrrBlock(uint32_t remote_ssrc) {
   big_endian_writer_.WriteU8(5);   // Block type.
   big_endian_writer_.WriteU8(0);   // Reserved.
   big_endian_writer_.WriteU16(9);  // Block length.
@@ -97,7 +97,7 @@ void TestRtcpPacketBuilder::AddXrExtendedDlrrBlock(uint32_t sender_ssrc) {
   big_endian_writer_.WriteU32(0xaaaaaaaa);
 
   // First receiver same as sender of this report.
-  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
   big_endian_writer_.WriteU32(kLastRr);
   big_endian_writer_.WriteU32(kDelayLastRr);
   big_endian_writer_.WriteU32(0xbbbbbbbb);
@@ -113,27 +113,27 @@ void TestRtcpPacketBuilder::AddXrRrtrBlock() {
   big_endian_writer_.WriteU32(kNtpLow);
 }
 
-void TestRtcpPacketBuilder::AddNack(uint32_t sender_ssrc, uint32_t media_ssrc) {
+void TestRtcpPacketBuilder::AddNack(uint32_t remote_ssrc, uint32_t local_ssrc) {
   AddRtcpHeader(205, 1);
-  big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU32(media_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
+  big_endian_writer_.WriteU32(local_ssrc);
   big_endian_writer_.WriteU16(kMissingPacket);
   big_endian_writer_.WriteU16(0);
 }
 
-void TestRtcpPacketBuilder::AddSendReportRequest(uint32_t sender_ssrc,
-                                                 uint32_t media_ssrc) {
+void TestRtcpPacketBuilder::AddSendReportRequest(uint32_t remote_ssrc,
+                                                 uint32_t local_ssrc) {
   AddRtcpHeader(205, 5);
-  big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU32(media_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
+  big_endian_writer_.WriteU32(local_ssrc);
 }
 
-void TestRtcpPacketBuilder::AddCast(uint32_t sender_ssrc,
-                                    uint32_t media_ssrc,
+void TestRtcpPacketBuilder::AddCast(uint32_t remote_ssrc,
+                                    uint32_t local_ssrc,
                                     base::TimeDelta target_delay) {
   AddRtcpHeader(206, 15);
-  big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU32(media_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
+  big_endian_writer_.WriteU32(local_ssrc);
   big_endian_writer_.WriteU8('C');
   big_endian_writer_.WriteU8('A');
   big_endian_writer_.WriteU8('S');
@@ -194,9 +194,15 @@ void TestRtcpPacketBuilder::AddErrorCst2() {
   big_endian_writer_.WriteU8(0);
 }
 
-void TestRtcpPacketBuilder::AddReceiverLog(uint32_t sender_ssrc) {
+void TestRtcpPacketBuilder::AddPli(uint32_t remote_ssrc, uint32_t local_ssrc) {
+  AddRtcpHeader(206, 1);
+  big_endian_writer_.WriteU32(remote_ssrc);
+  big_endian_writer_.WriteU32(local_ssrc);
+}
+
+void TestRtcpPacketBuilder::AddReceiverLog(uint32_t remote_ssrc) {
   AddRtcpHeader(204, 2);
-  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU32(remote_ssrc);
   big_endian_writer_.WriteU8('C');
   big_endian_writer_.WriteU8('A');
   big_endian_writer_.WriteU8('S');

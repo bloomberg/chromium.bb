@@ -71,14 +71,17 @@ class RtcpParser {
     return receiver_reference_time_report_;
   }
 
+  bool has_picture_loss_indicator() const {
+    return has_picture_loss_indicator_;
+  }
+
  private:
   bool ParseCommonHeader(base::BigEndianReader* reader,
                          RtcpCommonHeader* parsed_header);
-  bool ParseSR(base::BigEndianReader* reader,
-               const RtcpCommonHeader& header);
-  bool ParseRR(base::BigEndianReader* reader,
-               const RtcpCommonHeader& header);
+  bool ParseSR(base::BigEndianReader* reader, const RtcpCommonHeader& header);
+  bool ParseRR(base::BigEndianReader* reader, const RtcpCommonHeader& header);
   bool ParseReportBlock(base::BigEndianReader* reader);
+  bool ParsePli(base::BigEndianReader* reader, const RtcpCommonHeader& header);
   bool ParseApplicationDefined(base::BigEndianReader* reader,
                                const RtcpCommonHeader& header);
   bool ParseCastReceiverLogFrameItem(base::BigEndianReader* reader);
@@ -116,6 +119,9 @@ class RtcpParser {
   // re-expanded into full-form.
   RtpTimeTicks last_parsed_sr_rtp_timestamp_;
   RtpTimeTicks last_parsed_frame_log_rtp_timestamp_;
+
+  // Indicates if sender received the Pli message from the receiver.
+  bool has_picture_loss_indicator_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpParser);
 };

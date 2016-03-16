@@ -207,12 +207,18 @@ void RtcpBuilder::AddRrtr(const RtcpReceiverReferenceTimeReport& rrtr) {
   writer_.WriteU32(rrtr.ntp_fraction);
 }
 
+void RtcpBuilder::AddPli(const RtcpPliMessage& pli_message) {
+  AddRtcpHeader(kPacketTypePayloadSpecific, 1);
+  writer_.WriteU32(local_ssrc_);
+  writer_.WriteU32(pli_message.remote_ssrc);
+}
+
 void RtcpBuilder::AddCast(const RtcpCastMessage& cast,
                           base::TimeDelta target_delay) {
   // See RTC 4585 Section 6.4 for application specific feedback messages.
   AddRtcpHeader(kPacketTypePayloadSpecific, 15);
   writer_.WriteU32(local_ssrc_);      // Add our own SSRC.
-  writer_.WriteU32(cast.media_ssrc);  // Remote SSRC.
+  writer_.WriteU32(cast.remote_ssrc);  // Remote SSRC.
   writer_.WriteU32(kCast);
   writer_.WriteU8(static_cast<uint8_t>(cast.ack_frame_id));
   uint8_t* cast_loss_field_pos = reinterpret_cast<uint8_t*>(writer_.ptr());
@@ -268,7 +274,7 @@ void RtcpBuilder::AddCast(const RtcpCastMessage& cast,
     }
   }
   VLOG_IF(1, !nack_string_builder.Empty())
-      << "SSRC: " << cast.media_ssrc << ", ACK: " << cast.ack_frame_id
+      << "SSRC: " << cast.remote_ssrc << ", ACK: " << cast.ack_frame_id
       << ", NACK: " << nack_string_builder.GetString();
   DCHECK_LE(number_of_loss_fields, kRtcpMaxCastLossFields);
   *cast_loss_field_pos = static_cast<uint8_t>(number_of_loss_fields);

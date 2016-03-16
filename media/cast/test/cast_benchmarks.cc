@@ -96,16 +96,18 @@ class CastTransportSenderWrapper : public CastTransportSender {
 
   void InitializeAudio(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb) final {
+                       const RtcpRttCallback& rtt_cb,
+                       const RtcpPliCallback& key_frame_cb) final {
     audio_ssrc_ = config.ssrc;
-    transport_->InitializeAudio(config, cast_message_cb, rtt_cb);
+    transport_->InitializeAudio(config, cast_message_cb, rtt_cb, key_frame_cb);
   }
 
   void InitializeVideo(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb) final {
+                       const RtcpRttCallback& rtt_cb,
+                       const RtcpPliCallback& key_frame_cb) final {
     video_ssrc_ = config.ssrc;
-    transport_->InitializeVideo(config, cast_message_cb, rtt_cb);
+    transport_->InitializeVideo(config, cast_message_cb, rtt_cb, key_frame_cb);
   }
 
   void InsertFrame(uint32_t ssrc, const EncodedFrame& frame) final {
@@ -160,6 +162,10 @@ class CastTransportSenderWrapper : public CastTransportSender {
 
   void AddRtpReceiverReport(const RtcpReportBlock& rtp_report_block) final {
     transport_->AddRtpReceiverReport(rtp_report_block);
+  }
+
+  void AddPli(const RtcpPliMessage& pli_message) final {
+    transport_->AddPli(pli_message);
   }
 
   void SendRtcpFromRtpReceiver() final {

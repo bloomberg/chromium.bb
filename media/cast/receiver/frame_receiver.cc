@@ -195,8 +195,8 @@ void FrameReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   ReceiverRtcpEventSubscriber::RtcpEvents rtcp_events;
   event_subscriber_.GetRtcpEventsWithRedundancy(&rtcp_events);
   SendRtcpReport(rtcp_.local_ssrc(), rtcp_.remote_ssrc(),
-                 CreateRtcpTimeData(now), &cast_message, target_playout_delay_,
-                 &rtcp_events, NULL);
+                 CreateRtcpTimeData(now), &cast_message, nullptr,
+                 target_playout_delay_, &rtcp_events, nullptr);
 }
 
 void FrameReceiver::EmitAvailableEncodedFrames() {
@@ -349,8 +349,8 @@ void FrameReceiver::SendNextRtcpReport() {
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   RtpReceiverStatistics stats = stats_.GetStatistics();
   SendRtcpReport(rtcp_.local_ssrc(), rtcp_.remote_ssrc(),
-                 CreateRtcpTimeData(now), NULL, base::TimeDelta(), NULL,
-                 &stats);
+                 CreateRtcpTimeData(now), nullptr, nullptr, base::TimeDelta(),
+                 nullptr, &stats);
   ScheduleNextRtcpReport();
 }
 
@@ -359,6 +359,7 @@ void FrameReceiver::SendRtcpReport(
     uint32_t rtp_sender_ssrc,
     const RtcpTimeData& time_data,
     const RtcpCastMessage* cast_message,
+    const RtcpPliMessage* pli_message,
     base::TimeDelta target_delay,
     const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
     const RtpReceiverStatistics* rtp_receiver_statistics) {
@@ -391,6 +392,8 @@ void FrameReceiver::SendRtcpReport(
   }
   if (cast_message)
     transport_->AddCastFeedback(*cast_message, target_delay);
+  if (pli_message)
+    transport_->AddPli(*pli_message);
   if (rtcp_events)
     transport_->AddRtcpEvents(*rtcp_events);
   transport_->SendRtcpFromRtpReceiver();

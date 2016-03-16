@@ -37,11 +37,13 @@ class CastTransportSenderIPC
   void InitializeAudio(
       const media::cast::CastTransportRtpConfig& config,
       const media::cast::RtcpCastMessageCallback& cast_message_cb,
-      const media::cast::RtcpRttCallback& rtt_cb) override;
+      const media::cast::RtcpRttCallback& rtt_cb,
+      const media::cast::RtcpPliCallback& pli_cb) override;
   void InitializeVideo(
       const media::cast::CastTransportRtpConfig& config,
       const media::cast::RtcpCastMessageCallback& cast_message_cb,
-      const media::cast::RtcpRttCallback& rtt_cb) override;
+      const media::cast::RtcpRttCallback& rtt_cb,
+      const media::cast::RtcpPliCallback& pli_cb) override;
   void InsertFrame(uint32_t ssrc,
                    const media::cast::EncodedFrame& frame) override;
   void SendSenderReport(
@@ -58,21 +60,21 @@ class CastTransportSenderIPC
       const media::cast::RtcpTimeData& time_data) override;
   void AddCastFeedback(const media::cast::RtcpCastMessage& cast_message,
                        base::TimeDelta target_delay) override;
+  void AddPli(const media::cast::RtcpPliMessage& pli_message) override;
   void AddRtcpEvents(const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents&
                          rtcp_events) override;
   void AddRtpReceiverReport(
       const media::cast::RtcpReportBlock& rtp_receiver_report_block) override;
   void SendRtcpFromRtpReceiver() override;
-
   void SetOptions(const base::DictionaryValue& options) final {}
-
   void OnNotifyStatusChange(
       media::cast::CastTransportStatus status);
   void OnRawEvents(const std::vector<media::cast::PacketEvent>& packet_events,
                    const std::vector<media::cast::FrameEvent>& frame_events);
-  void OnRtt(uint32_t ssrc, base::TimeDelta rtt);
-  void OnRtcpCastMessage(uint32_t ssrc,
+  void OnRtt(uint32_t rtp_sender_ssrc, base::TimeDelta rtt);
+  void OnRtcpCastMessage(uint32_t rtp_sender_ssrc,
                          const media::cast::RtcpCastMessage& cast_message);
+  void OnReceivedPli(uint32_t rtp_sender_ssrc);
   void OnReceivedPacket(const media::cast::Packet& packet);
 
  private:
@@ -83,6 +85,7 @@ class CastTransportSenderIPC
 
     media::cast::RtcpCastMessageCallback cast_message_cb;
     media::cast::RtcpRttCallback rtt_cb;
+    media::cast::RtcpPliCallback pli_cb;
   };
 
   void Send(IPC::Message* message);

@@ -18,14 +18,16 @@ class MockCastTransportSender : public CastTransportSender {
   MockCastTransportSender();
   virtual ~MockCastTransportSender();
 
-  MOCK_METHOD3(InitializeAudio, void(
-      const CastTransportRtpConfig& config,
-      const RtcpCastMessageCallback& cast_message_cb,
-      const RtcpRttCallback& rtt_cb));
-  MOCK_METHOD3(InitializeVideo, void(
-      const CastTransportRtpConfig& config,
-      const RtcpCastMessageCallback& cast_message_cb,
-      const RtcpRttCallback& rtt_cb));
+  MOCK_METHOD4(InitializeAudio,
+               void(const CastTransportRtpConfig& config,
+                    const RtcpCastMessageCallback& cast_message_cb,
+                    const RtcpRttCallback& rtt_cb,
+                    const RtcpPliCallback& pli_cb));
+  MOCK_METHOD4(InitializeVideo,
+               void(const CastTransportRtpConfig& config,
+                    const RtcpCastMessageCallback& cast_message_cb,
+                    const RtcpRttCallback& rtt_cb,
+                    const RtcpPliCallback& pli_cb));
   MOCK_METHOD2(InsertFrame, void(uint32_t ssrc, const EncodedFrame& frame));
   MOCK_METHOD3(SendSenderReport,
                void(uint32_t ssrc,
@@ -43,6 +45,7 @@ class MockCastTransportSender : public CastTransportSender {
   MOCK_METHOD2(AddCastFeedback,
                void(const RtcpCastMessage& cast_message,
                     base::TimeDelta target_delay));
+  MOCK_METHOD1(AddPli, void(const RtcpPliMessage& pli_message));
   MOCK_METHOD1(
       AddRtcpEvents,
       void(const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events));

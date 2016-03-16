@@ -72,6 +72,7 @@ SenderRtcpSession::SenderRtcpSession(
     const RtcpCastMessageCallback& cast_callback,
     const RtcpRttCallback& rtt_callback,
     const RtcpLogMessageCallback& log_callback,
+    const RtcpPliCallback pli_callback,
     base::TickClock* clock,
     PacedPacketSender* packet_sender,
     uint32_t local_ssrc,
@@ -83,6 +84,7 @@ SenderRtcpSession::SenderRtcpSession(
       cast_callback_(cast_callback),
       rtt_callback_(rtt_callback),
       log_callback_(log_callback),
+      pli_callback_(pli_callback),
       largest_seen_timestamp_(base::TimeTicks::FromInternalValue(
           std::numeric_limits<int64_t>::min())),
       parser_(local_ssrc, remote_ssrc),
@@ -107,6 +109,10 @@ bool SenderRtcpSession::IncomingRtcpPacket(const uint8_t* data, size_t length) {
   // Parse this packet.
   base::BigEndianReader reader(reinterpret_cast<const char*>(data), length);
   if (parser_.Parse(&reader)) {
+    if (parser_.has_picture_loss_indicator()) {
+      if (!pli_callback_.is_null())
+        pli_callback_.Run();
+    }
     if (parser_.has_receiver_reference_time_report()) {
       base::TimeTicks t = ConvertNtpToTimeTicks(
           parser_.receiver_reference_time_report().ntp_seconds,

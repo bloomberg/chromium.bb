@@ -48,7 +48,7 @@ struct RtcpCastMessage {
   RtcpCastMessage();
   ~RtcpCastMessage();
 
-  uint32_t media_ssrc;
+  uint32_t remote_ssrc;
   uint32_t ack_frame_id;
   uint16_t target_delay_ms;
   MissingFramesAndPacketsMap missing_frames_and_packets;
@@ -58,6 +58,13 @@ struct RtcpCastMessage {
   // The set of received frames that have frame IDs strictly equal to or larger
   // than |ack_frame_id + 2|.
   std::vector<uint32_t> received_later_frames;
+};
+
+struct RtcpPliMessage {
+  explicit RtcpPliMessage(uint32_t ssrc);
+  RtcpPliMessage();
+
+  uint32_t remote_ssrc;
 };
 
 // Log messages from receiver to sender.
@@ -123,6 +130,7 @@ typedef base::Callback<void(const RtcpCastMessage&)> RtcpCastMessageCallback;
 typedef base::Callback<void(base::TimeDelta)> RtcpRttCallback;
 typedef
 base::Callback<void(const RtcpReceiverLogMessage&)> RtcpLogMessageCallback;
+typedef base::Callback<void()> RtcpPliCallback;
 
 // TODO(hubbe): Document members of this struct.
 struct RtpReceiverStatistics {
@@ -149,6 +157,7 @@ struct SendRtcpFromRtpReceiver_Params {
   uint32_t sender_ssrc;
   RtcpTimeData time_data;
   scoped_ptr<RtcpCastMessage> cast_message;
+  scoped_ptr<RtcpPliMessage> pli_message;
   base::TimeDelta target_delay;
   scoped_ptr<std::vector<std::pair<RtpTimeTicks, RtcpEvent>>> rtcp_events;
   scoped_ptr<RtpReceiverStatistics> rtp_receiver_statistics;

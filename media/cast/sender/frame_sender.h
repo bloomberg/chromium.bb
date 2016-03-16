@@ -92,6 +92,9 @@ class FrameSender {
   // Protected for testability.
   void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
 
+  // Called when a Pli message is received.
+  void OnReceivedPli();
+
   // Returns true if too many frames would be in-flight by encoding and sending
   // the next frame having the given |frame_duration|.
   bool ShouldDropNextFrame(base::TimeDelta frame_duration) const;
@@ -165,6 +168,10 @@ class FrameSender {
 
   // The most recently measured round trip time.
   base::TimeDelta current_round_trip_time_;
+
+  // This flag is set true when a Pli message is received. It is cleared once
+  // the FrameSender scheduled an encoded key frame to be sent.
+  bool picture_lost_at_receiver_;
 
  private:
   // Returns the maximum media duration currently allowed in-flight.  This

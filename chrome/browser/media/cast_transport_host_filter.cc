@@ -89,6 +89,7 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(CastHostMsg_InitializeRtpReceiverRtcpBuilder,
                         OnInitializeRtpReceiverRtcpBuilder)
     IPC_MESSAGE_HANDLER(CastHostMsg_AddCastFeedback, OnAddCastFeedback)
+    IPC_MESSAGE_HANDLER(CastHostMsg_AddPli, OnAddPli)
     IPC_MESSAGE_HANDLER(CastHostMsg_AddRtcpEvents, OnAddRtcpEvents)
     IPC_MESSAGE_HANDLER(CastHostMsg_AddRtpReceiverReport,
                         OnAddRtpReceiverReport)
@@ -100,16 +101,21 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void CastTransportHostFilter::SendRtt(int32_t channel_id,
-                                      uint32_t ssrc,
+                                      uint32_t rtp_sender_ssrc,
                                       base::TimeDelta rtt) {
-  Send(new CastMsg_Rtt(channel_id, ssrc, rtt));
+  Send(new CastMsg_Rtt(channel_id, rtp_sender_ssrc, rtt));
 }
 
 void CastTransportHostFilter::SendCastMessage(
     int32_t channel_id,
-    uint32_t ssrc,
+    uint32_t rtp_sender_ssrc,
     const media::cast::RtcpCastMessage& cast_message) {
-  Send(new CastMsg_RtcpCastMessage(channel_id, ssrc, cast_message));
+  Send(new CastMsg_RtcpCastMessage(channel_id, rtp_sender_ssrc, cast_message));
+}
+
+void CastTransportHostFilter::SendReceivedPli(int32_t channel_id,
+                                              uint32_t rtp_sender_ssrc) {
+  Send(new CastMsg_Pli(channel_id, rtp_sender_ssrc));
 }
 
 void CastTransportHostFilter::OnNew(int32_t channel_id,
@@ -168,13 +174,12 @@ void CastTransportHostFilter::OnInitializeAudio(
   media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->InitializeAudio(
-        config,
-        base::Bind(&CastTransportHostFilter::SendCastMessage,
-                   weak_factory_.GetWeakPtr(),
-                   channel_id, config.ssrc),
+        config, base::Bind(&CastTransportHostFilter::SendCastMessage,
+                           weak_factory_.GetWeakPtr(), channel_id, config.ssrc),
         base::Bind(&CastTransportHostFilter::SendRtt,
-                   weak_factory_.GetWeakPtr(),
-                   channel_id, config.ssrc));
+                   weak_factory_.GetWeakPtr(), channel_id, config.ssrc),
+        base::Bind(&CastTransportHostFilter::SendReceivedPli,
+                   weak_factory_.GetWeakPtr(), channel_id, config.ssrc));
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnInitializeAudio on non-existing channel";
@@ -187,13 +192,12 @@ void CastTransportHostFilter::OnInitializeVideo(
   media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->InitializeVideo(
-        config,
-        base::Bind(&CastTransportHostFilter::SendCastMessage,
-                   weak_factory_.GetWeakPtr(),
-                   channel_id, config.ssrc),
+        config, base::Bind(&CastTransportHostFilter::SendCastMessage,
+                           weak_factory_.GetWeakPtr(), channel_id, config.ssrc),
         base::Bind(&CastTransportHostFilter::SendRtt,
-                   weak_factory_.GetWeakPtr(),
-                   channel_id, config.ssrc));
+                   weak_factory_.GetWeakPtr(), channel_id, config.ssrc),
+        base::Bind(&CastTransportHostFilter::SendReceivedPli,
+                   weak_factory_.GetWeakPtr(), channel_id, config.ssrc));
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnInitializeVideo on non-existing channel";
@@ -293,6 +297,17 @@ void CastTransportHostFilter::OnAddCastFeedback(
   } else {
     DVLOG(1) << "CastTransportHostFilter::OnAddCastFeedback "
              << "on non-existing channel";
+  }
+}
+
+void CastTransportHostFilter::OnAddPli(
+    int32_t channel_id,
+    const media::cast::RtcpPliMessage& pli_message) {
+  media::cast::CastTransportSender* sender = id_map_.Lookup(channel_id);
+  if (sender) {
+    sender->AddPli(pli_message);
+  } else {
+    DVLOG(1) << "CastTransportHostFilter::OnAddPli on non-existing channel";
   }
 }
 

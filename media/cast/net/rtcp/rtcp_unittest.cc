@@ -88,13 +88,15 @@ class RtcpTest : public ::testing::Test {
             base::Bind(&RtcpTest::OnMeasuredRoundTripTime,
                        base::Unretained(this)),
             base::Bind(&RtcpTest::OnReceivedLogs, base::Unretained(this)),
+            base::Bind(&RtcpTest::OnReceivedPli, base::Unretained(this)),
             sender_clock_.get(),
             &rtp_sender_pacer_,
             kSenderSsrc,
             kReceiverSsrc),
         rtcp_at_rtp_receiver_(receiver_clock_.get(),
                               kReceiverSsrc,
-                              kSenderSsrc) {
+                              kSenderSsrc),
+        received_pli_(false) {
     sender_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     receiver_clock_->SetSkew(
         1.0,  // No skew.
@@ -136,6 +138,7 @@ class RtcpTest : public ::testing::Test {
   PacketRef BuildRtcpPacketFromRtpReceiver(
       const RtcpTimeData& time_data,
       const RtcpCastMessage* cast_message,
+      const RtcpPliMessage* pli_message,
       base::TimeDelta target_delay,
       const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
       const RtpReceiverStatistics* rtp_receiver_statistics) {
@@ -172,10 +175,14 @@ class RtcpTest : public ::testing::Test {
     }
     if (cast_message)
       builder.AddCast(*cast_message, target_delay);
+    if (pli_message)
+      builder.AddPli(*pli_message);
     if (rtcp_events)
       builder.AddReceiverLog(*rtcp_events);
     return builder.Finish();
   }
+
+  void OnReceivedPli() { received_pli_ = true; }
 
   scoped_ptr<base::SimpleTestTickClock> sender_clock_;
   scoped_ptr<test::SkewedTickClock> receiver_clock_;
@@ -187,6 +194,7 @@ class RtcpTest : public ::testing::Test {
   base::TimeDelta current_round_trip_time_;
   RtcpCastMessage last_cast_message_;
   RtcpReceiverLogMessage last_logs_;
+  bool received_pli_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RtcpTest);
@@ -254,7 +262,7 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
     rtp_receiver_pacer_.SendRtcpPacket(
         rtcp_at_rtp_receiver_.local_ssrc(),
         BuildRtcpPacketFromRtpReceiver(
-            CreateRtcpTimeData(receiver_clock_->NowTicks()), nullptr,
+            CreateRtcpTimeData(receiver_clock_->NowTicks()), nullptr, nullptr,
             base::TimeDelta(), nullptr, &stats));
     expected_rtt_according_to_sender = one_way_trip_time * 2;
     EXPECT_EQ(expected_rtt_according_to_sender,
@@ -273,7 +281,7 @@ TEST_F(RtcpTest, ReportCastFeedback) {
   rtp_receiver_pacer_.SendRtcpPacket(
       rtcp_at_rtp_receiver_.local_ssrc(),
       BuildRtcpPacketFromRtpReceiver(
-          CreateRtcpTimeData(base::TimeTicks()), &cast_message,
+          CreateRtcpTimeData(base::TimeTicks()), &cast_message, nullptr,
           base::TimeDelta::FromMilliseconds(kTargetDelayMs), nullptr, nullptr));
 
   EXPECT_EQ(last_cast_message_.ack_frame_id, cast_message.ack_frame_id);
@@ -286,6 +294,16 @@ TEST_F(RtcpTest, ReportCastFeedback) {
                  last_cast_message_.missing_frames_and_packets.begin()));
 }
 
+TEST_F(RtcpTest, ReportPli) {
+  RtcpPliMessage pli_message(kSenderSsrc);
+  rtp_receiver_pacer_.SendRtcpPacket(
+      rtcp_at_rtp_receiver_.local_ssrc(),
+      BuildRtcpPacketFromRtpReceiver(CreateRtcpTimeData(base::TimeTicks()),
+                                     nullptr, &pli_message, base::TimeDelta(),
+                                     nullptr, nullptr));
+  EXPECT_TRUE(received_pli_);
+}
+
 TEST_F(RtcpTest, DropLateRtcpPacket) {
   RtcpCastMessage cast_message(kSenderSsrc);
   cast_message.ack_frame_id = 1;
@@ -293,7 +311,8 @@ TEST_F(RtcpTest, DropLateRtcpPacket) {
       rtcp_at_rtp_receiver_.local_ssrc(),
       BuildRtcpPacketFromRtpReceiver(
           CreateRtcpTimeData(receiver_clock_->NowTicks()), &cast_message,
-          base::TimeDelta::FromMilliseconds(kTargetDelayMs), nullptr, nullptr));
+          nullptr, base::TimeDelta::FromMilliseconds(kTargetDelayMs), nullptr,
+          nullptr));
 
   // Send a packet with old timestamp
   RtcpCastMessage late_cast_message(kSenderSsrc);
@@ -303,7 +322,7 @@ TEST_F(RtcpTest, DropLateRtcpPacket) {
       BuildRtcpPacketFromRtpReceiver(
           CreateRtcpTimeData(receiver_clock_->NowTicks() -
                              base::TimeDelta::FromSeconds(10)),
-          &late_cast_message, base::TimeDelta(), nullptr, nullptr));
+          &late_cast_message, nullptr, base::TimeDelta(), nullptr, nullptr));
 
   // Validate data from second packet is dropped.
   EXPECT_EQ(last_cast_message_.ack_frame_id, cast_message.ack_frame_id);
@@ -315,7 +334,7 @@ TEST_F(RtcpTest, DropLateRtcpPacket) {
       rtcp_at_rtp_receiver_.local_ssrc(),
       BuildRtcpPacketFromRtpReceiver(
           CreateRtcpTimeData(receiver_clock_->NowTicks()), &late_cast_message,
-          base::TimeDelta(), nullptr, nullptr));
+          nullptr, base::TimeDelta(), nullptr, nullptr));
   EXPECT_EQ(last_cast_message_.ack_frame_id, late_cast_message.ack_frame_id);
   EXPECT_EQ(last_cast_message_.target_delay_ms, 0);
 }
@@ -336,7 +355,7 @@ TEST_F(RtcpTest, ReportReceiverEvents) {
   rtp_receiver_pacer_.SendRtcpPacket(
       rtcp_at_rtp_receiver_.local_ssrc(),
       BuildRtcpPacketFromRtpReceiver(
-          CreateRtcpTimeData(receiver_clock_->NowTicks()), nullptr,
+          CreateRtcpTimeData(receiver_clock_->NowTicks()), nullptr, nullptr,
           base::TimeDelta(), &rtcp_events, nullptr));
 
   ASSERT_EQ(1UL, last_logs_.size());

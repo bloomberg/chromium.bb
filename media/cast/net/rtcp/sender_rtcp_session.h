@@ -39,9 +39,11 @@ typedef std::queue<RtcpSendTimePair> RtcpSendTimeQueue;
 //   received which helps it compute round trip time and invoke a callback.
 class SenderRtcpSession : public RtcpSession {
  public:
+  // TODO(xjz): Simplify the interface. http://crbug.com/588275.
   SenderRtcpSession(const RtcpCastMessageCallback& cast_callback,
                     const RtcpRttCallback& rtt_callback,
                     const RtcpLogMessageCallback& log_callback,
+                    const RtcpPliCallback pli_callback,
                     base::TickClock* clock,            // Not owned.
                     PacedPacketSender* packet_sender,  // Not owned.
                     uint32_t local_ssrc,
@@ -100,6 +102,7 @@ class SenderRtcpSession : public RtcpSession {
   const RtcpCastMessageCallback cast_callback_;
   const RtcpRttCallback rtt_callback_;
   const RtcpLogMessageCallback log_callback_;
+  const RtcpPliCallback pli_callback_;
 
   // Computed from RTCP RRTR report.
   base::TimeTicks largest_seen_timestamp_;

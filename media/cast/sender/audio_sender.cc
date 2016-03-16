@@ -68,11 +68,11 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   transport_config.aes_iv_mask = audio_config.aes_iv_mask;
 
   transport_sender->InitializeAudio(
-      transport_config,
-      base::Bind(&AudioSender::OnReceivedCastFeedback,
-                 weak_factory_.GetWeakPtr()),
+      transport_config, base::Bind(&AudioSender::OnReceivedCastFeedback,
+                                   weak_factory_.GetWeakPtr()),
       base::Bind(&AudioSender::OnMeasuredRoundTripTime,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&AudioSender::OnReceivedPli, weak_factory_.GetWeakPtr()));
 }
 
 AudioSender::~AudioSender() {}

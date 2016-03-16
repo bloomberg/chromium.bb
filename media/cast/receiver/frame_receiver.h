@@ -126,6 +126,7 @@ class FrameReceiver : public RtpPayloadFeedback,
       uint32_t rtp_sender_ssrc,
       const RtcpTimeData& time_data,
       const RtcpCastMessage* cast_message,
+      const RtcpPliMessage* pli_message,
       base::TimeDelta target_delay,
       const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
       const RtpReceiverStatistics* rtp_receiver_statistics);

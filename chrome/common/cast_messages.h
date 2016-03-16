@@ -97,10 +97,14 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::FrameEvent)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpCastMessage)
-  IPC_STRUCT_TRAITS_MEMBER(media_ssrc)
+  IPC_STRUCT_TRAITS_MEMBER(remote_ssrc)
   IPC_STRUCT_TRAITS_MEMBER(ack_frame_id)
   IPC_STRUCT_TRAITS_MEMBER(target_delay_ms)
   IPC_STRUCT_TRAITS_MEMBER(missing_frames_and_packets)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpPliMessage)
+  IPC_STRUCT_TRAITS_MEMBER(remote_ssrc)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpEvent)
@@ -135,13 +139,18 @@ IPC_MESSAGE_CONTROL2(CastMsg_ReceivedPacket,
 
 IPC_MESSAGE_CONTROL3(CastMsg_Rtt,
                      int32_t /* channel_id */,
-                     uint32_t /* ssrc */,
+                     uint32_t /* rtp sender ssrc */,
                      base::TimeDelta /* rtt */)
 
 IPC_MESSAGE_CONTROL3(CastMsg_RtcpCastMessage,
                      int32_t /* channel_id */,
-                     uint32_t /* ssrc */,
+                     uint32_t /* rtp sender ssrc */,
                      media::cast::RtcpCastMessage /* cast_message */)
+
+// This message indicates receiving picture loss indicator from rtp receiver.
+IPC_MESSAGE_CONTROL2(CastMsg_Pli,
+                     int32_t /* channel_id */,
+                     uint32_t /* rtp sender ssrc */)
 
 IPC_MESSAGE_CONTROL2(CastMsg_NotifyStatusChange,
                      int32_t /* channel_id */,
@@ -211,6 +220,10 @@ IPC_MESSAGE_CONTROL3(CastHostMsg_AddCastFeedback,
                      int32_t /* channel id */,
                      media::cast::RtcpCastMessage /* cast message */,
                      base::TimeDelta /* target delay */)
+
+IPC_MESSAGE_CONTROL2(CastHostMsg_AddPli,
+                     int32_t /* channel id */,
+                     media::cast::RtcpPliMessage /* pli message */)
 
 IPC_MESSAGE_CONTROL2(
     CastHostMsg_AddRtcpEvents,

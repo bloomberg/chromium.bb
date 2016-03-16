@@ -55,6 +55,7 @@ class CastIPCDispatcher : public IPC::MessageFilter {
   void OnRtcpCastMessage(int32_t channel_id,
                          uint32_t ssrc,
                          const media::cast::RtcpCastMessage& cast_message);
+  void OnReceivedPli(int32_t channel_id, int32_t ssrc);
   void OnReceivedPacket(int32_t channel_id, const media::cast::Packet& packet);
 
   static CastIPCDispatcher* global_instance_;

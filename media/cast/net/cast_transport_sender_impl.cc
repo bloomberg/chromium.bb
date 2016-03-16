@@ -97,7 +97,8 @@ CastTransportSenderImpl::~CastTransportSenderImpl() {
 void CastTransportSenderImpl::InitializeAudio(
     const CastTransportRtpConfig& config,
     const RtcpCastMessageCallback& cast_message_cb,
-    const RtcpRttCallback& rtt_cb) {
+    const RtcpRttCallback& rtt_cb,
+    const RtcpPliCallback& pli_cb) {
   LOG_IF(WARNING, config.aes_key.empty() || config.aes_iv_mask.empty())
       << "Unsafe to send audio with encryption DISABLED.";
   if (!audio_encryptor_.Initialize(config.aes_key, config.aes_iv_mask)) {
@@ -122,7 +123,7 @@ void CastTransportSenderImpl::InitializeAudio(
                  weak_factory_.GetWeakPtr(), config.ssrc, cast_message_cb),
       rtt_cb, base::Bind(&CastTransportSenderImpl::OnReceivedLogMessage,
                          weak_factory_.GetWeakPtr(), AUDIO_EVENT),
-      clock_, &pacer_, config.ssrc, config.feedback_ssrc));
+      pli_cb, clock_, &pacer_, config.ssrc, config.feedback_ssrc));
   pacer_.RegisterAudioSsrc(config.ssrc);
   valid_sender_ssrcs_.insert(config.feedback_ssrc);
   transport_client_->OnStatusChanged(TRANSPORT_AUDIO_INITIALIZED);
@@ -131,7 +132,8 @@ void CastTransportSenderImpl::InitializeAudio(
 void CastTransportSenderImpl::InitializeVideo(
     const CastTransportRtpConfig& config,
     const RtcpCastMessageCallback& cast_message_cb,
-    const RtcpRttCallback& rtt_cb) {
+    const RtcpRttCallback& rtt_cb,
+    const RtcpPliCallback& pli_cb) {
   LOG_IF(WARNING, config.aes_key.empty() || config.aes_iv_mask.empty())
       << "Unsafe to send video with encryption DISABLED.";
   if (!video_encryptor_.Initialize(config.aes_key, config.aes_iv_mask)) {
@@ -151,7 +153,7 @@ void CastTransportSenderImpl::InitializeVideo(
                  weak_factory_.GetWeakPtr(), config.ssrc, cast_message_cb),
       rtt_cb, base::Bind(&CastTransportSenderImpl::OnReceivedLogMessage,
                          weak_factory_.GetWeakPtr(), VIDEO_EVENT),
-      clock_, &pacer_, config.ssrc, config.feedback_ssrc));
+      pli_cb, clock_, &pacer_, config.ssrc, config.feedback_ssrc));
   pacer_.RegisterVideoSsrc(config.ssrc);
   valid_sender_ssrcs_.insert(config.feedback_ssrc);
   transport_client_->OnStatusChanged(TRANSPORT_VIDEO_INITIALIZED);
@@ -447,6 +449,15 @@ void CastTransportSenderImpl::AddCastFeedback(
     return;
   }
   rtcp_builder_at_rtp_receiver_->AddCast(cast_message, target_delay);
+}
+
+void CastTransportSenderImpl::AddPli(const RtcpPliMessage& pli_message) {
+  if (!rtcp_builder_at_rtp_receiver_) {
+    VLOG(1) << "rtcp_builder_at_rtp_receiver_ is not initialized before "
+               "calling CastTransportSenderImpl::AddPli.";
+    return;
+  }
+  rtcp_builder_at_rtp_receiver_->AddPli(pli_message);
 }
 
 void CastTransportSenderImpl::AddRtcpEvents(

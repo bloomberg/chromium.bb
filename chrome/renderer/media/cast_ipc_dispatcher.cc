@@ -53,6 +53,7 @@ bool CastIPCDispatcher::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(CastMsg_RawEvents, OnRawEvents)
     IPC_MESSAGE_HANDLER(CastMsg_Rtt, OnRtt)
     IPC_MESSAGE_HANDLER(CastMsg_RtcpCastMessage, OnRtcpCastMessage)
+    IPC_MESSAGE_HANDLER(CastMsg_Pli, OnReceivedPli);
     IPC_MESSAGE_HANDLER(CastMsg_ReceivedPacket, OnReceivedPacket)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -122,6 +123,16 @@ void CastIPCDispatcher::OnRtcpCastMessage(
     sender->OnRtcpCastMessage(ssrc, cast_message);
   } else {
     DVLOG(1) << "CastIPCDispatcher::OnRtt on non-existing channel.";
+  }
+}
+
+void CastIPCDispatcher::OnReceivedPli(int32_t channel_id, int32_t ssrc) {
+  CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
+  if (sender) {
+    sender->OnReceivedPli(ssrc);
+  } else {
+    DVLOG(1) << "CastIPCDispatcher::OnReceivedPli on non-existing "
+                "channel.";
   }
 }
 

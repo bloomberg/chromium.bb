@@ -96,7 +96,7 @@ class CastTransportSenderImplTest : public ::testing::Test {
     rtp_config.feedback_ssrc = 2;
     rtp_config.rtp_payload_type = 3;
     transport_sender_->InitializeVideo(rtp_config, RtcpCastMessageCallback(),
-                                       RtcpRttCallback());
+                                       RtcpRttCallback(), RtcpPliCallback());
   }
 
   void InitializeAudio() {
@@ -105,7 +105,7 @@ class CastTransportSenderImplTest : public ::testing::Test {
     rtp_config.feedback_ssrc = 3;
     rtp_config.rtp_payload_type = 4;
     transport_sender_->InitializeAudio(rtp_config, RtcpCastMessageCallback(),
-                                       RtcpRttCallback());
+                                       RtcpRttCallback(), RtcpPliCallback());
   }
 
   base::SimpleTestTickClock testing_clock_;
@@ -219,7 +219,7 @@ TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
   EXPECT_EQ(2, num_times_logging_callback_called_);
 
   RtcpCastMessage cast_message;
-  cast_message.media_ssrc = kVideoSsrc;
+  cast_message.remote_ssrc = kVideoSsrc;
   cast_message.ack_frame_id = 1;
   cast_message.missing_frames_and_packets[1].insert(3);
   transport_sender_->OnReceivedCastMessage(kVideoSsrc,
@@ -341,7 +341,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
 
   // Ack the first audio frame.
   RtcpCastMessage cast_message;
-  cast_message.media_ssrc = kAudioSsrc;
+  cast_message.remote_ssrc = kAudioSsrc;
   cast_message.ack_frame_id = 1;
   transport_sender_->OnReceivedCastMessage(kAudioSsrc,
                                            RtcpCastMessageCallback(),
@@ -361,7 +361,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
   EXPECT_EQ(0, num_times_logging_callback_called_);  // Only 4 ms since last.
 
   // Retransmission is reject because audio is not acked yet.
-  cast_message.media_ssrc = kVideoSsrc;
+  cast_message.remote_ssrc = kVideoSsrc;
   cast_message.ack_frame_id = 0;
   cast_message.missing_frames_and_packets[1].insert(3);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
@@ -373,7 +373,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
   EXPECT_EQ(1, num_times_logging_callback_called_);
 
   // Ack the second audio frame.
-  cast_message.media_ssrc = kAudioSsrc;
+  cast_message.remote_ssrc = kAudioSsrc;
   cast_message.ack_frame_id = 2;
   cast_message.missing_frames_and_packets.clear();
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
@@ -385,7 +385,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
   EXPECT_EQ(1, num_times_logging_callback_called_);  // Only 6 ms since last.
 
   // Retransmission of video packet now accepted.
-  cast_message.media_ssrc = kVideoSsrc;
+  cast_message.remote_ssrc = kVideoSsrc;
   cast_message.ack_frame_id = 1;
   cast_message.missing_frames_and_packets[1].insert(3);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));

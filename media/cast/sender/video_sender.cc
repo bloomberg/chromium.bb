@@ -41,6 +41,12 @@ const int kConstantTimeMs = 75;
 // available to handle the occasional more-complex frames).
 const int kTargetUtilizationPercentage = 75;
 
+// This is the minimum duration in milliseconds that the sender sends key frame
+// request to the encoder on receiving Pli messages. This is used to prevent
+// sending multiple requests while the sender is waiting for an encoded key
+// frame or receiving multiple Pli messages in a short period.
+const int64_t kMinKeyFrameRequestOnPliIntervalMs = 500;
+
 // Extract capture begin/end timestamps from |video_frame|'s metadata and log
 // it.
 void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
@@ -134,11 +140,11 @@ VideoSender::VideoSender(
   transport_config.aes_iv_mask = video_config.aes_iv_mask;
 
   transport_sender->InitializeVideo(
-      transport_config,
-      base::Bind(&VideoSender::OnReceivedCastFeedback,
-                 weak_factory_.GetWeakPtr()),
+      transport_config, base::Bind(&VideoSender::OnReceivedCastFeedback,
+                                   weak_factory_.GetWeakPtr()),
       base::Bind(&VideoSender::OnMeasuredRoundTripTime,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&VideoSender::OnReceivedPli, weak_factory_.GetWeakPtr()));
 }
 
 VideoSender::~VideoSender() {
@@ -190,6 +196,21 @@ void VideoSender::InsertRawVideoFrame(
                          "rtp_timestamp", rtp_timestamp.lower_32_bits(),
                          "reason", "time did not increase");
     return;
+  }
+
+  // Request a key frame when a Pli message was received, and it has been passed
+  // long enough from the last time sending key frame request on receiving a Pli
+  // message.
+  if (picture_lost_at_receiver_) {
+    const int64_t min_attemp_interval_ms =
+        std::max(kMinKeyFrameRequestOnPliIntervalMs,
+                 6 * target_playout_delay_.InMilliseconds());
+    if (last_time_attempted_to_resolve_pli_.is_null() ||
+        ((reference_time - last_time_attempted_to_resolve_pli_)
+             .InMilliseconds() > min_attemp_interval_ms)) {
+      video_encoder_->GenerateKeyFrame();
+      last_time_attempted_to_resolve_pli_ = reference_time;
+    }
   }
 
   // Two video frames are needed to compute the exact media duration added by

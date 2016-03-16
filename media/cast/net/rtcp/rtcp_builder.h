@@ -34,6 +34,7 @@ class RtcpBuilder {
   void AddRrtr(const RtcpReceiverReferenceTimeReport& rrtr);
   void AddCast(const RtcpCastMessage& cast_message,
                base::TimeDelta target_delay);
+  void AddPli(const RtcpPliMessage& pli_message);
   void AddReceiverLog(
       const ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events);
   void Start();

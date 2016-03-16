@@ -104,6 +104,11 @@ class VideoSender : public FrameSender,
   double last_reported_deadline_utilization_;
   double last_reported_lossy_utilization_;
 
+  // This tracks the time when the request was sent to encoder to encode a key
+  // frame on receiving a Pli message. It is used to limit the sender not
+  // to duplicately respond to multiple Pli messages in a short period.
+  base::TimeTicks last_time_attempted_to_resolve_pli_;
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoSender> weak_factory_;
 
