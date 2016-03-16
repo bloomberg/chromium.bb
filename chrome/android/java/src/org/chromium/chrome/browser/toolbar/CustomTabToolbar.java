@@ -73,7 +73,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private boolean mBackgroundColorSet;
     private long mInitializeTimeStamp;
     private int mState = STATE_DOMAIN_ONLY;
-    private boolean mIsFirstLoad = true;
+    private String mFirstDomain;
 
     private Runnable mTitleAnimationStarter = new Runnable() {
         @Override
@@ -275,10 +275,15 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     protected void onNavigatedToDifferentPage() {
         super.onNavigatedToDifferentPage();
         setTitleToPageTitle();
-        if (mIsFirstLoad) {
-            mIsFirstLoad = false;
-        } else if (mState == STATE_TITLE_ONLY) {
-            setUrlBarHidden(false);
+        if (mState == STATE_TITLE_ONLY) {
+            String domain = LocationBarLayout.splitPathFromUrlDisplayText(
+                    getToolbarDataProvider().getText()).first;
+            if (TextUtils.isEmpty(mFirstDomain)) {
+                mFirstDomain = domain;
+            } else {
+                if (mFirstDomain.equals(domain)) return;
+                setUrlBarHidden(false);
+            }
         }
     }
 
