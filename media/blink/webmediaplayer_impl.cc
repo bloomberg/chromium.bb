@@ -17,7 +17,9 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
@@ -926,6 +928,16 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 
   if (suppress_destruction_errors_)
     return;
+
+#if defined(OS_ANDROID)
+  // For 10% of pipeline decode failures log the playback URL. The URL is set
+  // as the crash-key 'subresource_url' during DoLoad().
+  //
+  // TODO(dalecurtis): This is temporary to track down higher than average
+  // decode failure rates for video-only content. See http://crbug.com/595076.
+  if (base::RandDouble() <= 0.1 && error == PIPELINE_ERROR_DECODE)
+    base::debug::DumpWithoutCrashing();
+#endif
 
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(error));
 
