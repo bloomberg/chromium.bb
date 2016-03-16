@@ -39,20 +39,19 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
       VideoFrameProviderClientImpl::Create(
           provider, tree_impl->GetVideoFrameControllerClient());
 
-  return make_scoped_ptr(
-      new VideoLayerImpl(tree_impl, id, provider_client_impl, video_rotation));
+  return make_scoped_ptr(new VideoLayerImpl(
+      tree_impl, id, std::move(provider_client_impl), video_rotation));
 }
 
 VideoLayerImpl::VideoLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
-    const scoped_refptr<VideoFrameProviderClientImpl>& provider_client_impl,
+    scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl,
     media::VideoRotation video_rotation)
     : LayerImpl(tree_impl, id),
-      provider_client_impl_(provider_client_impl),
+      provider_client_impl_(std::move(provider_client_impl)),
       frame_(nullptr),
-      video_rotation_(video_rotation) {
-}
+      video_rotation_(video_rotation) {}
 
 VideoLayerImpl::~VideoLayerImpl() {
   if (!provider_client_impl_->Stopped()) {

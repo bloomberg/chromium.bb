@@ -18,8 +18,7 @@ namespace {
 
 class TestOutputSurface : public OutputSurface {
  public:
-  explicit TestOutputSurface(
-      const scoped_refptr<ContextProvider>& context_provider);
+  explicit TestOutputSurface(scoped_refptr<ContextProvider> context_provider);
   ~TestOutputSurface() override;
 
   // OutputSurface implementation
@@ -27,9 +26,8 @@ class TestOutputSurface : public OutputSurface {
 };
 
 TestOutputSurface::TestOutputSurface(
-    const scoped_refptr<ContextProvider>& context_provider)
-    : OutputSurface(context_provider) {
-}
+    scoped_refptr<ContextProvider> context_provider)
+    : OutputSurface(std::move(context_provider)) {}
 
 TestOutputSurface::~TestOutputSurface() {
 }

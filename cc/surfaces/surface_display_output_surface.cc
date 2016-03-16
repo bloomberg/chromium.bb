@@ -17,9 +17,10 @@ namespace cc {
 SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     SurfaceManager* surface_manager,
     SurfaceIdAllocator* allocator,
-    const scoped_refptr<ContextProvider>& context_provider,
-    const scoped_refptr<ContextProvider>& worker_context_provider)
-    : OutputSurface(context_provider, worker_context_provider),
+    scoped_refptr<ContextProvider> context_provider,
+    scoped_refptr<ContextProvider> worker_context_provider)
+    : OutputSurface(std::move(context_provider),
+                    std::move(worker_context_provider)),
       display_client_(NULL),
       factory_(surface_manager, this),
       allocator_(allocator) {

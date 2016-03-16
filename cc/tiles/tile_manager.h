@@ -196,7 +196,7 @@ class CC_EXPORT TileManager {
 
  protected:
   TileManager(TileManagerClient* client,
-              const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+              scoped_refptr<base::SequencedTaskRunner> task_runner,
               size_t scheduled_raster_task_limit,
               bool use_partial_raster);
 

@@ -40,8 +40,8 @@ static void PostTaskFromMainToImplThread(
 }
 
 TextureMailboxDeleter::TextureMailboxDeleter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : impl_task_runner_(task_runner), weak_ptr_factory_(this) {}
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : impl_task_runner_(std::move(task_runner)), weak_ptr_factory_(this) {}
 
 TextureMailboxDeleter::~TextureMailboxDeleter() {
   for (size_t i = 0; i < impl_callbacks_.size(); ++i)
@@ -49,15 +49,14 @@ TextureMailboxDeleter::~TextureMailboxDeleter() {
 }
 
 scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
-    const scoped_refptr<ContextProvider>& context_provider,
+    scoped_refptr<ContextProvider> context_provider,
     unsigned texture_id) {
-  // This callback owns a reference on the |context_provider|. It must be
-  // destroyed on the impl thread. Upon destruction of this class, the
-  // callback must immediately be destroyed.
+  // This callback owns the |context_provider|. It must be destroyed on the impl
+  // thread. Upon destruction of this class, the callback must immediately be
+  // destroyed.
   scoped_ptr<SingleReleaseCallback> impl_callback =
-      SingleReleaseCallback::Create(base::Bind(&DeleteTextureOnImplThread,
-                                               context_provider,
-                                               texture_id));
+      SingleReleaseCallback::Create(base::Bind(
+          &DeleteTextureOnImplThread, std::move(context_provider), texture_id));
 
   impl_callbacks_.push_back(std::move(impl_callback));
 

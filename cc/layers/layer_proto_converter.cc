@@ -32,7 +32,7 @@ scoped_refptr<Layer> LayerProtoConverter::DeserializeLayerHierarchy(
     const proto::LayerNode& root_node) {
   LayerIdMap layer_id_map;
   if (existing_root)
-    RecursivelyFindAllLayers(existing_root, &layer_id_map);
+    RecursivelyFindAllLayers(existing_root.get(), &layer_id_map);
 
   scoped_refptr<Layer> new_root = existing_root;
   if (!existing_root ||
@@ -89,11 +89,10 @@ void LayerProtoConverter::RecursivelySerializeLayerProperties(
 }
 
 // static
-void LayerProtoConverter::RecursivelyFindAllLayers(
-    const scoped_refptr<Layer>& layer,
-    LayerIdMap* layer_id_map) {
+void LayerProtoConverter::RecursivelyFindAllLayers(Layer* root_layer,
+                                                   LayerIdMap* layer_id_map) {
   LayerTreeHostCommon::CallFunctionForSubtree(
-      layer.get(),
+      root_layer,
       [layer_id_map](Layer* layer) { (*layer_id_map)[layer->id()] = layer; });
 }
 

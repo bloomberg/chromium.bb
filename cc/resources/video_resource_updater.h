@@ -83,7 +83,7 @@ class CC_EXPORT VideoResourceUpdater
   ~VideoResourceUpdater();
 
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
-      const scoped_refptr<media::VideoFrame>& video_frame);
+      scoped_refptr<media::VideoFrame> video_frame);
 
  private:
   struct PlaneResource {
@@ -125,14 +125,13 @@ class CC_EXPORT VideoResourceUpdater
                                           bool has_mailbox,
                                           bool immutable_hint);
   void DeleteResource(ResourceList::iterator resource_it);
-  bool VerifyFrame(const scoped_refptr<media::VideoFrame>& video_frame);
-  void CopyPlaneTexture(const scoped_refptr<media::VideoFrame>& video_frame,
+  void CopyPlaneTexture(media::VideoFrame* video_frame,
                         const gpu::MailboxHolder& mailbox_holder,
                         VideoFrameExternalResources* external_resources);
   VideoFrameExternalResources CreateForHardwarePlanes(
-      const scoped_refptr<media::VideoFrame>& video_frame);
+      scoped_refptr<media::VideoFrame> video_frame);
   VideoFrameExternalResources CreateForSoftwarePlanes(
-      const scoped_refptr<media::VideoFrame>& video_frame);
+      scoped_refptr<media::VideoFrame> video_frame);
 
   static void RecycleResource(base::WeakPtr<VideoResourceUpdater> updater,
                               unsigned resource_id,

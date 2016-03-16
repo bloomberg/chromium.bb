@@ -272,7 +272,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
 
 // Upshift video frame to 10 bit.
 scoped_refptr<media::VideoFrame> CreateHighbitVideoFrame(
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    media::VideoFrame* video_frame) {
   media::VideoPixelFormat format;
   switch (video_frame->format()) {
     case media::PIXEL_FORMAT_I420:
@@ -358,7 +358,7 @@ void CreateTestYUVVideoDrawQuad_Striped(
   uint8_t alpha_value = is_transparent ? 0 : 128;
 
   if (highbit)
-    video_frame = CreateHighbitVideoFrame(video_frame);
+    video_frame = CreateHighbitVideoFrame(video_frame.get());
 
   CreateTestYUVVideoDrawQuad_FromVideoFrame(
       shared_state, video_frame, alpha_value, tex_coord_rect, render_pass,

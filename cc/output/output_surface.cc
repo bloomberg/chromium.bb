@@ -119,12 +119,12 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
 }  // namespace
 
 OutputSurface::OutputSurface(
-    const scoped_refptr<ContextProvider>& context_provider,
-    const scoped_refptr<ContextProvider>& worker_context_provider,
+    scoped_refptr<ContextProvider> context_provider,
+    scoped_refptr<ContextProvider> worker_context_provider,
     scoped_ptr<SoftwareOutputDevice> software_device)
     : client_(NULL),
-      context_provider_(context_provider),
-      worker_context_provider_(worker_context_provider),
+      context_provider_(std::move(context_provider)),
+      worker_context_provider_(std::move(worker_context_provider)),
       software_device_(std::move(software_device)),
       device_scale_factor_(-1),
       has_alpha_(true),
@@ -133,24 +133,24 @@ OutputSurface::OutputSurface(
   client_thread_checker_.DetachFromThread();
 }
 
-OutputSurface::OutputSurface(
-    const scoped_refptr<ContextProvider>& context_provider)
-    : OutputSurface(context_provider, nullptr, nullptr) {
-}
+OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
+    : OutputSurface(std::move(context_provider), nullptr, nullptr) {}
 
 OutputSurface::OutputSurface(
-    const scoped_refptr<ContextProvider>& context_provider,
-    const scoped_refptr<ContextProvider>& worker_context_provider)
-    : OutputSurface(context_provider, worker_context_provider, nullptr) {
-}
+    scoped_refptr<ContextProvider> context_provider,
+    scoped_refptr<ContextProvider> worker_context_provider)
+    : OutputSurface(std::move(context_provider),
+                    std::move(worker_context_provider),
+                    nullptr) {}
 
 OutputSurface::OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
     : OutputSurface(nullptr, nullptr, std::move(software_device)) {}
 
-OutputSurface::OutputSurface(
-    const scoped_refptr<ContextProvider>& context_provider,
-    scoped_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(context_provider, nullptr, std::move(software_device)) {}
+OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider,
+                             scoped_ptr<SoftwareOutputDevice> software_device)
+    : OutputSurface(std::move(context_provider),
+                    nullptr,
+                    std::move(software_device)) {}
 
 void OutputSurface::CommitVSyncParameters(base::TimeTicks timebase,
                                           base::TimeDelta interval) {

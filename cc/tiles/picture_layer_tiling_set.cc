@@ -63,7 +63,7 @@ PictureLayerTilingSet::~PictureLayerTilingSet() {
 
 void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
     const PictureLayerTilingSet* pending_twin_set,
-    const scoped_refptr<DisplayListRasterSource>& raster_source,
+    scoped_refptr<DisplayListRasterSource> raster_source,
     const Region& layer_invalidation) {
   if (pending_twin_set->tilings_.empty()) {
     // If the twin (pending) tiling set is empty, it was not updated for the
@@ -162,7 +162,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
 }
 
 void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
-    const scoped_refptr<DisplayListRasterSource>& raster_source,
+    scoped_refptr<DisplayListRasterSource> raster_source,
     const Region& layer_invalidation) {
   for (const auto& tiling : tilings_) {
     tiling->SetRasterSourceAndResize(raster_source);

@@ -25,8 +25,8 @@ class FakeVideoFrameProvider : public VideoFrameProvider {
 
   Client* client() { return client_; }
 
-  void set_frame(const scoped_refptr<media::VideoFrame>& frame) {
-    frame_ = frame;
+  void set_frame(scoped_refptr<media::VideoFrame> frame) {
+    frame_ = std::move(frame);
   }
 
   int put_current_frame_count() const { return put_current_frame_count_; }

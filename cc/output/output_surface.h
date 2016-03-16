@@ -45,17 +45,16 @@ class OutputSurfaceClient;
 //      surface (on the compositor thread) and go back to step 1.
 class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
  public:
-  OutputSurface(const scoped_refptr<ContextProvider>& context_provider,
-                const scoped_refptr<ContextProvider>& worker_context_provider,
+  OutputSurface(scoped_refptr<ContextProvider> context_provider,
+                scoped_refptr<ContextProvider> worker_context_provider,
                 scoped_ptr<SoftwareOutputDevice> software_device);
-  OutputSurface(const scoped_refptr<ContextProvider>& context_provider,
-                const scoped_refptr<ContextProvider>& worker_context_provider);
-  explicit OutputSurface(
-      const scoped_refptr<ContextProvider>& context_provider);
+  OutputSurface(scoped_refptr<ContextProvider> context_provider,
+                scoped_refptr<ContextProvider> worker_context_provider);
+  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
 
   explicit OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device);
 
-  OutputSurface(const scoped_refptr<ContextProvider>& context_provider,
+  OutputSurface(scoped_refptr<ContextProvider> context_provider,
                 scoped_ptr<SoftwareOutputDevice> software_device);
 
   ~OutputSurface() override;

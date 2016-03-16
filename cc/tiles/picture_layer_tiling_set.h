@@ -73,7 +73,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
   // This function is called on the sync tree right after commit.
   void UpdateRasterSourceDueToLCDChange(
-      const scoped_refptr<DisplayListRasterSource>& raster_source,
+      scoped_refptr<DisplayListRasterSource> raster_source,
       const Region& layer_invalidation);
 
   PictureLayerTiling* AddTiling(
@@ -183,7 +183,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
   void CopyTilingsAndPropertiesFromPendingTwin(
       const PictureLayerTilingSet* pending_twin_set,
-      const scoped_refptr<DisplayListRasterSource>& raster_source,
+      scoped_refptr<DisplayListRasterSource> raster_source,
       const Region& layer_invalidation);
 
   // Remove one tiling.

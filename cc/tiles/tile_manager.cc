@@ -268,17 +268,19 @@ scoped_ptr<TileManager> TileManager::Create(
     base::SequencedTaskRunner* task_runner,
     size_t scheduled_raster_task_limit,
     bool use_partial_raster) {
+  // TODO(vmpstr): |task_runner| is a raw pointer that is implicitly converted
+  // into a scoped_refptr. Figure out whether to plumb a ref pointer or whether
+  // tile manager can have a non-owning pointer and fix.
   return make_scoped_ptr(new TileManager(
       client, task_runner, scheduled_raster_task_limit, use_partial_raster));
 }
 
-TileManager::TileManager(
-    TileManagerClient* client,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    size_t scheduled_raster_task_limit,
-    bool use_partial_raster)
+TileManager::TileManager(TileManagerClient* client,
+                         scoped_refptr<base::SequencedTaskRunner> task_runner,
+                         size_t scheduled_raster_task_limit,
+                         bool use_partial_raster)
     : client_(client),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       resource_pool_(nullptr),
       tile_task_runner_(nullptr),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),

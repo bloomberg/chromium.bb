@@ -67,9 +67,11 @@ class CC_EXPORT LayerProtoConverter {
       proto::LayerUpdate* layer_update);
 
   using LayerIdMap = std::unordered_map<int, scoped_refptr<Layer>>;
-  // Start at |layer| and recursively add |layer| and all its children and
-  // special layers to |layer_id_map|.
-  static void RecursivelyFindAllLayers(const scoped_refptr<Layer>& layer,
+  // Start at |root_layer| and recursively add the layer and all its children
+  // and special layers to |layer_id_map|.
+  // TODO(vmpstr): LayerIdMap ref counts layers, so this function needs to deal
+  // with ref counted objects instead of iterating over raw pointers.
+  static void RecursivelyFindAllLayers(Layer* root_layer,
                                        LayerIdMap* layer_id_map);
 };
 

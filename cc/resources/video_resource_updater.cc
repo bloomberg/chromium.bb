@@ -209,9 +209,9 @@ void VideoResourceUpdater::DeleteResource(ResourceList::iterator resource_it) {
   all_resources_.erase(resource_it);
 }
 
-VideoFrameExternalResources VideoResourceUpdater::
-    CreateExternalResourcesFromVideoFrame(
-        const scoped_refptr<media::VideoFrame>& video_frame) {
+VideoFrameExternalResources
+VideoResourceUpdater::CreateExternalResourcesFromVideoFrame(
+    scoped_refptr<media::VideoFrame> video_frame) {
 #if defined(VIDEO_HOLE)
   if (video_frame->storage_type() == media::VideoFrame::STORAGE_HOLE) {
     VideoFrameExternalResources external_resources;
@@ -223,17 +223,16 @@ VideoFrameExternalResources VideoResourceUpdater::
     return VideoFrameExternalResources();
   DCHECK(video_frame->HasTextures() || video_frame->IsMappable());
   if (video_frame->HasTextures())
-    return CreateForHardwarePlanes(video_frame);
+    return CreateForHardwarePlanes(std::move(video_frame));
   else
-    return CreateForSoftwarePlanes(video_frame);
+    return CreateForSoftwarePlanes(std::move(video_frame));
 }
 
 // For frames that we receive in software format, determine the dimensions of
 // each plane in the frame.
-static gfx::Size SoftwarePlaneDimension(
-    const scoped_refptr<media::VideoFrame>& input_frame,
-    bool software_compositor,
-    size_t plane_index) {
+static gfx::Size SoftwarePlaneDimension(media::VideoFrame* input_frame,
+                                        bool software_compositor,
+                                        size_t plane_index) {
   gfx::Size coded_size = input_frame->coded_size();
   if (software_compositor)
     return coded_size;
@@ -246,7 +245,7 @@ static gfx::Size SoftwarePlaneDimension(
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    scoped_refptr<media::VideoFrame> video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForSoftwarePlanes");
   const media::VideoPixelFormat input_frame_format = video_frame->format();
 
@@ -319,7 +318,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   std::vector<ResourceList::iterator> plane_resources;
   for (size_t i = 0; i < output_plane_count; ++i) {
     gfx::Size output_plane_resource_size =
-        SoftwarePlaneDimension(video_frame, software_compositor, i);
+        SoftwarePlaneDimension(video_frame.get(), software_compositor, i);
     if (output_plane_resource_size.IsEmpty() ||
         output_plane_resource_size.width() > max_resource_size ||
         output_plane_resource_size.height() > max_resource_size) {
@@ -548,7 +547,7 @@ void VideoResourceUpdater::ReturnTexture(
 // Create a copy of a texture-backed source video frame in a new GL_TEXTURE_2D
 // texture.
 void VideoResourceUpdater::CopyPlaneTexture(
-    const scoped_refptr<media::VideoFrame>& video_frame,
+    media::VideoFrame* video_frame,
     const gpu::MailboxHolder& mailbox_holder,
     VideoFrameExternalResources* external_resources) {
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
@@ -618,7 +617,7 @@ void VideoResourceUpdater::CopyPlaneTexture(
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    scoped_refptr<media::VideoFrame> video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForHardwarePlanes");
   DCHECK(video_frame->HasTextures());
   if (!context_provider_)
@@ -645,7 +644,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 
     if (video_frame->metadata()->IsTrue(
             media::VideoFrameMetadata::COPY_REQUIRED)) {
-      CopyPlaneTexture(video_frame, mailbox_holder, &external_resources);
+      CopyPlaneTexture(video_frame.get(), mailbox_holder, &external_resources);
     } else {
       external_resources.mailboxes.push_back(TextureMailbox(
           mailbox_holder.mailbox, mailbox_holder.sync_token,
