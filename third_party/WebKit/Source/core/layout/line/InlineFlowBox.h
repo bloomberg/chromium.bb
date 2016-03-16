@@ -202,9 +202,11 @@ public:
     void checkConsistency() const;
     void setHasBadChildList();
 
-    // Line visual and layout overflow are in the coordinate space of the block.  This means that they aren't purely physical directions.
-    // For horizontal-tb and vertical-lr they will match physical directions, but for horizontal-bt and vertical-rl, the top/bottom and left/right
-    // respectively are flipped when compared to their physical counterparts.  For example minX is on the left in vertical-lr, but it is on the right in vertical-rl.
+    // Line visual and layout overflow are in the coordinate space of the block.  This means that
+    // they aren't purely physical directions. For horizontal-tb and vertical-lr they will match
+    // physical directions, but for vertical-rl, the left/right respectively are flipped when
+    // compared to their physical counterparts.  For example minX is on the left in vertical-lr, but
+    // it is on the right in vertical-rl.
     LayoutRect layoutOverflowRect(LayoutUnit lineTop, LayoutUnit lineBottom) const
     {
         return m_overflow ? m_overflow->layoutOverflowRect() : frameRectIncludingLineHeight(lineTop, lineBottom);

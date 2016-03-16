@@ -3498,7 +3498,7 @@ void LayoutBox::computeLogicalTopPositionedOffset(LayoutUnit& logicalTopPos, con
         || (child->style()->isFlippedBlocksWritingMode() != containerBlock->style()->isFlippedBlocksWritingMode() && child->isHorizontalWritingMode() == containerBlock->isHorizontalWritingMode()))
         logicalTopPos = containerLogicalHeight - logicalHeightValue - logicalTopPos;
 
-    // Our offset is from the logical bottom edge in a flipped environment, e.g., right for vertical-rl and bottom for horizontal-bt.
+    // Our offset is from the logical bottom edge in a flipped environment, e.g., right for vertical-rl.
     if (containerBlock->style()->isFlippedBlocksWritingMode() && child->isHorizontalWritingMode() == containerBlock->isHorizontalWritingMode()) {
         if (child->isHorizontalWritingMode())
             logicalTopPos += containerBlock->borderBottom();
@@ -4074,9 +4074,9 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
     // For overflow clip objects, we don't want to propagate overflow into unreachable areas.
     LayoutRect overflowRect(rect);
     if (hasOverflowClip() || isLayoutView()) {
-        // Overflow is in the block's coordinate space and thus is flipped for horizontal-bt and vertical-rl
-        // writing modes.  At this stage that is actually a simplification, since we can treat horizontal-tb/bt as the same
-        // and vertical-lr/rl as the same.
+        // Overflow is in the block's coordinate space and thus is flipped for vertical-rl writing
+        // mode.  At this stage that is actually a simplification, since we can treat vertical-lr/rl
+        // as the same.
         bool hasTopOverflow = !style()->isLeftToRightDirection() && !isHorizontalWritingMode();
         bool hasLeftOverflow = !style()->isLeftToRightDirection() && isHorizontalWritingMode();
         if (isFlexibleBox() && style()->isReverseFlexDirection()) {
@@ -4340,10 +4340,10 @@ LayoutRect LayoutBox::noOverflowRect() const
 {
     // Because of the special coordinate system used for overflow rectangles and many other
     // rectangles (not quite logical, not quite physical), we need to flip the block progression
-    // coordinate in vertical-rl and horizontal-bt writing modes. In other words, the rectangle
-    // returned is physical, except for the block direction progression coordinate (y in horizontal
-    // writing modes, x in vertical writing modes), which is always "logical top". Apart from the
-    // flipping, this method does the same as clientBoxRect().
+    // coordinate in vertical-rl writing mode. In other words, the rectangle returned is physical,
+    // except for the block direction progression coordinate (x in vertical writing mode), which is
+    // always "logical top". Apart from the flipping, this method does the same thing as
+    // clientBoxRect().
 
     const int scrollBarWidth = verticalScrollbarWidth();
     const int scrollBarHeight = horizontalScrollbarHeight();
@@ -4354,10 +4354,10 @@ LayoutRect LayoutBox::noOverflowRect() const
     LayoutRect rect(left, top, size().width() - left - right, size().height() - top - bottom);
     flipForWritingMode(rect);
     // Subtract space occupied by scrollbars. Order is important here: first flip, then subtract
-    // scrollbars. This may seem backwards and weird, since one would think that a horizontal
-    // scrollbar at the physical bottom in horizontal-bt ought to be at the logical top (physical
-    // bottom), between the logical top (physical bottom) border and the logical top (physical
-    // bottom) padding. But this is how the rest of the code expects us to behave. This is highly
+    // scrollbars. This may seem backwards and weird, since one would think that a vertical
+    // scrollbar at the physical right in vertical-rl ought to be at the logical left (physical
+    // right), between the logical left (physical right) border and the logical left (physical
+    // right) padding. But this is how the rest of the code expects us to behave. This is highly
     // related to https://bugs.webkit.org/show_bug.cgi?id=76129
     // FIXME: when the above mentioned bug is fixed, it should hopefully be possible to call
     // clientBoxRect() or paddingBoxRect() in this method, rather than fiddling with the edges on
