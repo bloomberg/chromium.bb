@@ -7,7 +7,7 @@ a[href='/']: cm-css-tag, *, cm-css-tag, *, cm-css-string, *
 @import "/css/fireball_unicode.css"; html {}: cm-css-def, *, cm-css-string, *, cm-css-tag, *
 @media screen { body { color: red; } }: cm-css-def, *, cm-css-attribute, *, cm-css-tag, *, cm-css-property, *, cm-css-keyword, *
 @font-face { font-family: "MyHelvetica"; }: cm-css-def, *, cm-css-property, *, cm-css-string, *
-p { color: color; red: red; color: #000; color: #FFF; color: #123AbC; color: #faebfe; color:papayawhip; }: cm-css-tag, *, cm-css-property, *, cm-css-variable, *, cm-css-property, *, cm-css-variable-3, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-keyword, *
+p { color: color; red: red; color: #000; color: #FFF; color: #123AbC; color: #faebfe; color:papayawhip; }: cm-css-tag, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-variable-3, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-atom, *, cm-css-property, *, cm-css-keyword, *
 p { margin: -10px !important; }: cm-css-tag, *, cm-css-property, *, cm-css-number, *, cm-css-keyword, *
 $margin-left: $offsetBefore + 12px + $offsetAfter;: cm-css-variable-2, *, cm-css-variable-2, *, cm-css-number, *, cm-css-variable-2, *
 $type: monster;
@@ -45,5 +45,5 @@ background-color: lighten($navbar-color, 20%);
 background-color: lighten($navbar-color, 10%);
 }
 }
-}: cm-css-builtin, *, *, cm-css-variable-2, *, cm-css-number, *, *, cm-css-variable-2, *, cm-css-number, *, *, cm-css-variable-2, *, cm-css-atom, *, *, cm-css-property, *, cm-css-variable-2, *, *, cm-css-property, *, cm-css-number, *, cm-css-atom, *, cm-css-variable-2, *, *, cm-css-tag, *, *, cm-css-def, *, cm-css-qualifier, *, cm-css-keyword, *, *, cm-css-property, *, cm-css-atom, *, *, cm-css-property, *, cm-css-variable-2, cm-css-operator, cm-css-variable-2, *, cm-css-number, *, *, cm-css-property, *, cm-css-variable, *, cm-css-variable-2, *, cm-css-number, *, *, *, cm-css-variable-3, *, *, cm-css-property, *, cm-css-variable, *, cm-css-variable-2, *, cm-css-number, *, *, *, *, *, *, *
+}: cm-css-builtin, *, *, cm-css-variable-2, *, cm-css-number, *, *, cm-css-variable-2, *, cm-css-number, *, *, cm-css-variable-2, *, cm-css-atom, *, *, cm-css-property, *, cm-css-variable-2, *, *, cm-css-property, *, cm-css-number, *, cm-css-atom, *, cm-css-variable-2, *, *, cm-css-tag, *, *, cm-css-def, *, cm-css-qualifier, *, cm-css-keyword, *, *, cm-css-property, *, cm-css-atom, *, *, cm-css-property, *, cm-css-variable-2, cm-css-operator, cm-css-variable-2, *, cm-css-number, *, *, cm-css-property, *, cm-css-atom, *, cm-css-variable-2, *, cm-css-number, *, *, *, cm-css-variable-3, *, *, cm-css-property, *, cm-css-atom, *, cm-css-variable-2, *, cm-css-number, *, *, *, *, *, *, *
 
