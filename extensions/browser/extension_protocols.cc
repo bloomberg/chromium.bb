@@ -329,9 +329,17 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
 
   // We have seen crashes where info is NULL: crbug.com/52374.
   if (!info) {
-    LOG(ERROR) << "Allowing load of " << request->url().spec()
-               << "from unknown origin. Could not find user data for "
-               << "request.";
+    // SeviceWorker net requests created through ServiceWorkerWriteToCacheJob
+    // do not have ResourceRequestInfo associated with them. So skip logging
+    // spurious errors below.
+    // TODO(falken): Either consider attaching ResourceRequestInfo to these or
+    // finish refactoring ServiceWorkerWriteToCacheJob so that it doesn't spawn
+    // a new URLRequest.
+    if (!ResourceRequestInfo::OriginatedFromServiceWorker(request)) {
+      LOG(ERROR) << "Allowing load of " << request->url().spec()
+                 << "from unknown origin. Could not find user data for "
+                 << "request.";
+    }
     return true;
   }
 
