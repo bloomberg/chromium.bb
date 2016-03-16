@@ -183,21 +183,13 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  ContentSettingsPattern primary_pattern =
-      ContentSettingsPattern::FromURL(url);
   ContentSetting setting = CONTENT_SETTING_BLOCK;
-  host_content_settings_map->SetContentSetting(
-        primary_pattern,
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-        std::string(),
-        setting);
-  host_content_settings_map->SetContentSetting(
-        primary_pattern,
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-        std::string(),
-        setting);
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url, GURL(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(),
+      setting);
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url, GURL(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(),
+      setting);
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
@@ -272,15 +264,10 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  ContentSettingsPattern primary_pattern =
-      ContentSettingsPattern::FromURL(url);
   ContentSetting setting = CONTENT_SETTING_BLOCK;
-  host_content_settings_map->SetContentSetting(
-        primary_pattern,
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-        std::string(),
-        setting);
+  host_content_settings_map->SetContentSettingDefaultScope(
+      url, GURL(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(),
+      setting);
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
@@ -809,11 +796,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   // Add it to the content map, should now have a clear link.
   HostContentSettingsMap* setting_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  setting_map->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(frame1_url),
-      ContentSettingsPattern::FromURLNoWildcard(page_url),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
+  setting_map->SetContentSettingDefaultScope(
+      frame1_url, page_url, CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
   CheckGeolocationBubble(1, true, false);
 

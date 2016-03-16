@@ -726,23 +726,18 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
         HostContentSettingsMapFactory::GetForProfile(profile());
     TabSpecificContentSettings* tab_content_settings =
         TabSpecificContentSettings::FromWebContents(web_contents());
-    // The same patterns must be used as in other places (e.g. the infobar) in
+    // The same urls must be used as in other places (e.g. the infobar) in
     // order to override the existing rule. Otherwise a new rule is created.
     // TODO(markusheintz): Extract to a helper so that there is only a single
     // place to touch.
-    ContentSettingsPattern primary_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(
-            tab_content_settings->media_stream_access_origin());
-    ContentSettingsPattern secondary_pattern =
-        ContentSettingsPattern::Wildcard();
     if (MicrophoneAccessed()) {
-      content_settings->SetContentSetting(
-          primary_pattern, secondary_pattern,
+      content_settings->SetContentSettingDefaultScope(
+          tab_content_settings->media_stream_access_origin(), GURL(),
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), setting);
     }
     if (CameraAccessed()) {
-      content_settings->SetContentSetting(
-          primary_pattern, secondary_pattern,
+      content_settings->SetContentSettingDefaultScope(
+          tab_content_settings->media_stream_access_origin(), GURL(),
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), setting);
     }
   }
@@ -949,11 +944,9 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
       HostContentSettingsMapFactory::GetForProfile(profile());
 
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
-    settings_map->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(map_entry.first),
-        ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-        CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
-        CONTENT_SETTING_DEFAULT);
+    settings_map->SetContentSettingDefaultScope(
+        map_entry.first, embedder_url, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+        std::string(), CONTENT_SETTING_DEFAULT);
   }
 }
 
@@ -1210,11 +1203,9 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
       HostContentSettingsMapFactory::GetForProfile(profile());
 
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
-    settings_map->SetContentSetting(
-        ContentSettingsPattern::FromURLNoWildcard(map_entry.first),
-        ContentSettingsPattern::FromURLNoWildcard(embedder_url),
-        CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string(),
-        CONTENT_SETTING_DEFAULT);
+    settings_map->SetContentSettingDefaultScope(
+        map_entry.first, embedder_url, CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+        std::string(), CONTENT_SETTING_DEFAULT);
   }
 }
 
