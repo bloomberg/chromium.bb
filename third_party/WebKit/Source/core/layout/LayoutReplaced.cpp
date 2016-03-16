@@ -146,7 +146,7 @@ static inline bool layoutObjectHasAspectRatio(const LayoutObject* layoutObject)
     return layoutObject->isImage() || layoutObject->isCanvas() || layoutObject->isVideo();
 }
 
-void LayoutReplaced::computeIntrinsicSizingInfoForLayoutBox(LayoutBox* contentLayoutObject, IntrinsicSizingInfo& intrinsicSizingInfo) const
+void LayoutReplaced::computeIntrinsicSizingInfoForReplacedContent(LayoutReplaced* contentLayoutObject, IntrinsicSizingInfo& intrinsicSizingInfo) const
 {
     if (contentLayoutObject) {
         contentLayoutObject->computeIntrinsicSizingInfo(intrinsicSizingInfo);
@@ -560,7 +560,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
 
     // 10.3.2 Inline, replaced elements: http://www.w3.org/TR/CSS21/visudet.html#inline-replaced-width
     IntrinsicSizingInfo intrinsicSizingInfo;
-    computeIntrinsicSizingInfoForLayoutBox(contentLayoutObject, intrinsicSizingInfo);
+    computeIntrinsicSizingInfoForReplacedContent(contentLayoutObject, intrinsicSizingInfo);
     FloatSize constrainedSize = constrainIntrinsicSizeToMinMax(intrinsicSizingInfo);
 
     if (style()->logicalWidth().isAuto()) {
@@ -621,7 +621,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
 
     // 10.6.2 Inline, replaced elements: http://www.w3.org/TR/CSS21/visudet.html#inline-replaced-height
     IntrinsicSizingInfo intrinsicSizingInfo;
-    computeIntrinsicSizingInfoForLayoutBox(contentLayoutObject, intrinsicSizingInfo);
+    computeIntrinsicSizingInfoForReplacedContent(contentLayoutObject, intrinsicSizingInfo);
     FloatSize constrainedSize = constrainIntrinsicSizeToMinMax(intrinsicSizingInfo);
 
     bool widthIsAuto = style()->logicalWidth().isAuto();
@@ -756,6 +756,13 @@ void LayoutReplaced::setSelectionState(SelectionState state)
 
     if (canUpdateSelectionOnRootLineBoxes())
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
+}
+
+void LayoutReplaced::IntrinsicSizingInfo::transpose()
+{
+    size = size.transposedSize();
+    aspectRatio = aspectRatio.transposedSize();
+    std::swap(hasWidth, hasHeight);
 }
 
 } // namespace blink

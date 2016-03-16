@@ -4719,11 +4719,4 @@ void LayoutBox::clearPercentHeightDescendants()
     }
 }
 
-void LayoutBox::IntrinsicSizingInfo::transpose()
-{
-    size = size.transposedSize();
-    aspectRatio = aspectRatio.transposedSize();
-    std::swap(hasWidth, hasHeight);
-}
-
 } // namespace blink

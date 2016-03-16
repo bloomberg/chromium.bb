@@ -178,7 +178,7 @@ FloatSize SVGImage::concreteObjectSize(const FloatSize& defaultObjectSize) const
     if (!layoutObject)
         return FloatSize();
 
-    LayoutBox::IntrinsicSizingInfo intrinsicSizingInfo;
+    LayoutReplaced::IntrinsicSizingInfo intrinsicSizingInfo;
     layoutObject->computeIntrinsicSizingInfo(intrinsicSizingInfo);
 
     // https://www.w3.org/TR/css3-images/#default-sizing

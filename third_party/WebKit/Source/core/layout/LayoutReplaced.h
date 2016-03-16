@@ -72,13 +72,25 @@ public:
 
     void paint(const PaintInfo&, const LayoutPoint&) const override;
 
+    struct IntrinsicSizingInfo {
+        STACK_ALLOCATED();
+        IntrinsicSizingInfo() : hasWidth(true), hasHeight(true) {}
+
+        FloatSize size;
+        FloatSize aspectRatio;
+        bool hasWidth;
+        bool hasHeight;
+
+        void transpose();
+    };
+
 protected:
     void willBeDestroyed() override;
 
     void layout() override;
 
     LayoutSize intrinsicSize() const final { return m_intrinsicSize; }
-    void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
+    virtual void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
 
     void computePositionedLogicalWidth(LogicalExtentComputedValues&) const override;
     void computePositionedLogicalHeight(LogicalExtentComputedValues&) const override;
@@ -112,7 +124,7 @@ private:
     bool canBeSelectionLeaf() const override { return true; }
 
     LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const final;
-    void computeIntrinsicSizingInfoForLayoutBox(LayoutBox*, IntrinsicSizingInfo&) const;
+    void computeIntrinsicSizingInfoForReplacedContent(LayoutReplaced*, IntrinsicSizingInfo&) const;
     FloatSize constrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo&) const;
 
     mutable LayoutSize m_intrinsicSize;
