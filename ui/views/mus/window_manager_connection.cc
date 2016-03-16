@@ -44,6 +44,11 @@ WindowManagerConnection* WindowManagerConnection::Get() {
 }
 
 // static
+bool WindowManagerConnection::Exists() {
+  return !!lazy_tls_ptr.Pointer()->Get();
+}
+
+// static
 void WindowManagerConnection::Reset() {
   delete Get();
   lazy_tls_ptr.Pointer()->Set(nullptr);

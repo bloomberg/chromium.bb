@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/guid.h"
+#include "mash/login/public/interfaces/login.mojom.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
 
@@ -20,72 +21,38 @@ void Init::Initialize(mojo::Connector* connector,
                       const mojo::Identity& identity,
                       uint32_t id) {
   connector_ = connector;
-  mus_connection_ = connector_->Connect("mojo:mus");
-  mus_connection_->GetInterface(&user_access_manager_);
-  user_access_manager_->SetActiveUser(login_user_id_);
-  StartWindowManager();
+  connector_->Connect("mojo:mus");
   StartLogin();
 }
 
-bool Init::AcceptConnection(mojo::Connection* connection) {
-  connection->AddInterface<mojom::Login>(this);
-  return true;
+void Init::StartService(const mojo::String& name,
+                        const mojo::String& user_id) {
+  DCHECK(user_services_.find(user_id) == user_services_.end());
+  mojo::Connector::ConnectParams params(mojo::Identity(name, user_id));
+  user_services_[user_id] = connector_->Connect(&params);
 }
 
-void Init::LoginAs(const mojo::String& user_id) {
-  user_access_manager_->SetActiveUser(user_id);
-  connections_["mojo:mash_login"].reset();
-  connections_["mojo:desktop_wm"].reset();
-  mojo::Connector::ConnectParams params(
-      mojo::Identity("mojo:mash_shell", user_id));
-  connector_->Connect(&params);
+void Init::StopServicesForUser(const mojo::String& user_id) {
+  // TODO(beng): Make shell cascade shutdown of services.
+  auto it = user_services_.find(user_id);
+  if (it != user_services_.end())
+    user_services_.erase(it);
 }
 
-void Init::Logout() {
-  // TODO(beng): need to kill the user session.
-  user_access_manager_->SetActiveUser(login_user_id_);
-  StartWindowManager();
-  StartLogin();
-}
-
-void Init::SwitchUser() {
-  // This doesn't kill the user session, merely starts the login UI.
-  user_access_manager_->SetActiveUser(login_user_id_);
-  StartWindowManager();
-  StartLogin();
-}
-
-void Init::Create(mojo::Connection* connection, mojom::LoginRequest request) {
-  login_bindings_.AddBinding(this, std::move(request));
-}
-
-void Init::StartWindowManager() {
-  mojo::Connector::ConnectParams params(
-      mojo::Identity("mojo:desktop_wm", login_user_id_));
-  StartRestartableService(
-      &params,
-      base::Bind(&Init::StartWindowManager, base::Unretained(this)));
+void Init::Create(mojo::Connection* connection, mojom::InitRequest request) {
+  init_bindings_.AddBinding(this, std::move(request));
 }
 
 void Init::StartLogin() {
   mojo::Connector::ConnectParams params(
-      mojo::Identity("mojo:mash_login", login_user_id_));
-  StartRestartableService(
-      &params,
+      mojo::Identity("mojo:login", login_user_id_));
+  login_connection_ = connector_->Connect(&params);
+  login_connection_->AddInterface<mojom::Init>(this);
+  login_connection_->SetConnectionLostClosure(
       base::Bind(&Init::StartLogin, base::Unretained(this)));
-}
-
-void Init::StartRestartableService(mojo::Connector::ConnectParams* params,
-                                   const base::Closure& restart_callback) {
-  // TODO(beng): This would be the place to insert logic that counted restarts
-  //             to avoid infinite crash-restart loops.
-  scoped_ptr<mojo::Connection> connection = connector_->Connect(params);
-  // Note: |connection| may be null if we've lost our connection to the shell.
-  if (connection) {
-    connection->SetConnectionLostClosure(restart_callback);
-    connection->AddInterface<mojom::Login>(this);
-    connections_[params->target().name()] = std::move(connection);
-  }
+  mash::login::mojom::LoginPtr login;
+  login_connection_->GetInterface(&login);
+  login->ShowLoginUI();
 }
 
 }  // namespace init

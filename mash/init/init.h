@@ -10,8 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/mus/public/interfaces/user_access_manager.mojom.h"
-#include "mash/init/public/interfaces/login.mojom.h"
+#include "mash/init/public/interfaces/init.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -21,11 +20,11 @@ class Connection;
 }
 
 namespace mash {
-namespace init{
+namespace init {
 
 class Init : public mojo::ShellClient,
-             public mojom::Login,
-             public mojo::InterfaceFactory<mojom::Login> {
+             public mojo::InterfaceFactory<mojom::Init>,
+             public mojom::Init {
  public:
   Init();
   ~Init() override;
@@ -34,30 +33,22 @@ class Init : public mojo::ShellClient,
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
-
-  // mojom::Login:
-  void LoginAs(const mojo::String& user_id) override;
-  void Logout() override;
-  void SwitchUser() override;
 
   // mojo::InterfaceFactory<mojom::Login>:
   void Create(mojo::Connection* connection,
-              mojom::LoginRequest request) override;
+              mojom::InitRequest request) override;
 
-  void StartWindowManager();
+  // mojom::Init:
+  void StartService(const mojo::String& name,
+                    const mojo::String& user_id) override;
+  void StopServicesForUser(const mojo::String& user_id) override;
+
   void StartLogin();
 
-  // Starts the application at |url|, running |restart_callback| if the
-  // connection to the application is closed.
-  void StartRestartableService(mojo::Connector::ConnectParams* params,
-                               const base::Closure& restart_callback);
-
   mojo::Connector* connector_;
-  std::map<std::string, scoped_ptr<mojo::Connection>> connections_;
-  mojo::BindingSet<mojom::Login> login_bindings_;
-  scoped_ptr<mojo::Connection> mus_connection_;
-  mus::mojom::UserAccessManagerPtr user_access_manager_;
+  scoped_ptr<mojo::Connection> login_connection_;
+  mojo::BindingSet<mojom::Init> init_bindings_;
+  std::map<std::string, scoped_ptr<mojo::Connection>> user_services_;
   const std::string login_user_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Init);

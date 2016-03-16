@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mash/init/public/interfaces/login.mojom.h"
+#include "mash/login/public/interfaces/login.mojom.h"
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/connection.h"
@@ -283,12 +283,12 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       connector_->ConnectToInterface("mojo:mash_shell", &shell);
       shell->LockScreen();
     } else if (sender == logout_button_) {
-      mash::init::mojom::LoginPtr login;
-      connector_->ConnectToInterface("mojo:mash_init", &login);
+      mash::login::mojom::LoginPtr login;
+      connector_->ConnectToInterface("mojo:login", &login);
       login->Logout();
     } else if (sender == switch_user_button_) {
-      mash::init::mojom::LoginPtr login;
-      connector_->ConnectToInterface("mojo:mash_init", &login);
+      mash::login::mojom::LoginPtr login;
+      connector_->ConnectToInterface("mojo:login", &login);
       login->SwitchUser();
     } else if (sender == widgets_button_) {
       NOTIMPLEMENTED();

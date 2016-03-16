@@ -179,6 +179,10 @@ class Shell : public ShellClient {
 
   IdentityToInstanceMap identity_to_instance_;
 
+  // Tracks the names of instances that are allowed to field connection requests
+  // from all users.
+  std::set<std::string> singletons_;
+
   IdentityToShellClientFactoryMap shell_client_factories_;
   // Counter used to assign ids to client factories.
   uint32_t shell_client_factory_id_counter_;

@@ -39,6 +39,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
  public:
   static void Create(mojo::Connector* connector);
   static WindowManagerConnection* Get();
+  static bool Exists();
 
   // Destroys the singleton instance.
   static void Reset();

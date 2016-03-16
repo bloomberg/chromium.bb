@@ -39,6 +39,7 @@ const char kShellName[] = "mojo:shell";
 const char kCapabilityClass_UserID[] = "user_id";
 const char kCapabilityClass_ClientProcess[] = "client_process";
 const char kCapabilityClass_InstanceName[] = "instance_name";
+const char kCapabilityClass_AllUsers[] = "all_users";
 
 void EmptyResolverCallback(const String& resolved_name,
                            const String& resolved_instance,
@@ -94,6 +95,13 @@ CapabilityRequest GenerateCapabilityRequestForConnection(
     }
   }
   return request;
+}
+
+bool HasClass(const CapabilitySpec& spec, const std::string& class_name) {
+  auto it = spec.required.find(kShellName);
+  if (it == spec.required.end())
+    return false;
+  return it->second.classes.find(class_name) != it->second.classes.end();
 }
 
 // Encapsulates a connection to an instance of an application, tracked by the
@@ -206,6 +214,9 @@ class Shell::Instance : public mojom::Connector,
     return info;
   }
 
+  const CapabilitySpec& capability_spec() const {
+    return capability_spec_;
+  }
   const Identity& identity() const { return identity_; }
   uint32_t id() const { return id_; }
 
@@ -289,7 +300,7 @@ class Shell::Instance : public mojom::Connector,
       const Identity& target,
       const ConnectCallback& callback) {
     if (!client_process_connection->is_null()) {
-      if (!HasClass(kCapabilityClass_ClientProcess)) {
+      if (!HasClass(capability_spec_, kCapabilityClass_ClientProcess)) {
         LOG(ERROR) << "Error: Instance: " << identity_.name() << " attempting "
                    << "to register an instance for a process it created for "
                    << "target: " << target.name() << " without the "
@@ -327,7 +338,7 @@ class Shell::Instance : public mojom::Connector,
     // - a non-null client_process_connection.
     if (target.user_id() != identity_.user_id() &&
         target.user_id() != mojom::kRootUserID &&
-        !HasClass(kCapabilityClass_UserID)) {
+        !HasClass(capability_spec_, kCapabilityClass_UserID)) {
       LOG(ERROR) << "Instance: " << identity_.name() << " running as: "
                   << identity_.user_id() << " attempting to connect to: "
                   << target.name() << " as: " << target.user_id() << " without "
@@ -338,7 +349,7 @@ class Shell::Instance : public mojom::Connector,
     }
     if (!target.instance().empty() &&
         target.instance() != GetNamePath(target.name()) &&
-        !HasClass(kCapabilityClass_InstanceName)) {
+        !HasClass(capability_spec_, kCapabilityClass_InstanceName)) {
       LOG(ERROR) << "Instance: " << identity_.name() << " attempting to "
                   << "connect to " << target.name() << " using Instance name: "
                   << target.instance() << " without the "
@@ -359,13 +370,6 @@ class Shell::Instance : public mojom::Connector,
     callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                  mojom::kInheritUserID, mojom::kInvalidInstanceID);
     return false;
-  }
-
-  bool HasClass(const std::string& class_name) const {
-    auto it = capability_spec_.required.find(kShellName);
-    if (it == capability_spec_.required.end())
-      return false;
-    return it->second.classes.find(class_name) != it->second.classes.end();
   }
 
   uint32_t GenerateUniqueID() const {
@@ -563,6 +567,15 @@ Shell::Instance* Shell::GetExistingOrRootInstance(
     const Identity& identity) const {
   Instance* instance = GetExistingInstance(identity);
   if (!instance) {
+    if (singletons_.find(identity.name()) != singletons_.end()) {
+      for (auto entry : identity_to_instance_) {
+        if (entry.first.name() == identity.name() &&
+            entry.first.instance() == identity.instance()) {
+          return entry.second;
+        }
+      }
+    }
+
     Identity root_identity = identity;
     root_identity.set_user_id(mojom::kRootUserID);
     instance = GetExistingInstance(root_identity);
@@ -671,6 +684,11 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
   CapabilitySpec capabilities = GetPermissiveCapabilities();
   if (!capabilities_ptr.is_null())
     capabilities = capabilities_ptr.To<CapabilitySpec>();
+
+  // Clients that request "all_users" class from the shell are allowed to
+  // field connection requests from any user.
+  if (HasClass(capabilities, kCapabilityClass_AllUsers))
+    singletons_.insert(target.name());
 
   mojom::ClientProcessConnectionPtr client_process_connection =
       params->TakeClientProcessConnection();

@@ -1,5 +1,11 @@
 {
-  "name": "mojo:mash_login",
+  "manifest_version": 1,
+  "name": "mojo:login",
   "display_name": "Login",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*": { "interfaces": [ "*" ] },
+      "mojo:shell":  { "classes":  ["all_users"] }
+    }
+  }
 }

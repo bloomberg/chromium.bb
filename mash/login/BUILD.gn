@@ -9,17 +9,19 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
 mojo_native_application("login") {
-  output_name = "mash_login"
   sources = [
     "login.cc",
     "login.h",
     "main.cc",
+    "ui.cc",
+    "ui.h",
   ]
 
   deps = [
     "//base",
     "//components/mus/public/cpp",
     "//mash/init/public/interfaces",
+    "//mash/login/public/interfaces",
     "//mash/wm/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",
@@ -37,6 +39,6 @@ mojo_native_application("login") {
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "mash_login"
+  application_name = "login"
   source = "manifest.json"
 }

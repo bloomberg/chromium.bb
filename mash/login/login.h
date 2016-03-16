@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mash/init/public/interfaces/login.mojom.h"
+#include "mash/init/public/interfaces/init.mojom.h"
+#include "mash/login/public/interfaces/login.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
@@ -20,12 +21,14 @@ class AuraInit;
 namespace mash {
 namespace login {
 
-class Login : public mojo::ShellClient {
+class LoginController : public mojo::ShellClient,
+                        public mojo::InterfaceFactory<mojom::Login> {
  public:
-  Login();
-  ~Login() override;
+  LoginController();
+  ~LoginController() override;
 
-  init::mojom::Login* login() { return login_.get(); }
+  init::mojom::Init* init() { return init_.get(); }
+  const std::string& login_user_id() const { return login_user_id_; }
 
  private:
   // mojo::ShellClient:
@@ -33,11 +36,17 @@ class Login : public mojo::ShellClient {
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
+  // mojo::InterfaceFactory<mojom::Login>:
+  void Create(mojo::Connection* connection,
+              mojom::LoginRequest request) override;
+
+  mojo::Connector* connector_;
+  std::string login_user_id_;
   mojo::TracingImpl tracing_;
   scoped_ptr<views::AuraInit> aura_init_;
-  init::mojom::LoginPtr login_;
+  init::mojom::InitPtr init_;
 
-  DISALLOW_COPY_AND_ASSIGN(Login);
+  DISALLOW_COPY_AND_ASSIGN(LoginController);
 };
 
 }  // namespace login

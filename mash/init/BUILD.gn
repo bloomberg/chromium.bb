@@ -21,6 +21,7 @@ mojo_native_application("init") {
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//mash/init/public/interfaces",
+    "//mash/login/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
