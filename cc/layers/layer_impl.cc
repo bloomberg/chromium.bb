@@ -1217,16 +1217,6 @@ void LayerImpl::GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids) {
     request_ids->push_back(request.id());
 }
 
-const SyncedScrollOffset* LayerImpl::synced_scroll_offset() const {
-  return layer_tree_impl()->property_trees()->scroll_tree.synced_scroll_offset(
-      id());
-}
-
-SyncedScrollOffset* LayerImpl::synced_scroll_offset() {
-  return layer_tree_impl()->property_trees()->scroll_tree.synced_scroll_offset(
-      id());
-}
-
 void LayerImpl::SetTransform(const gfx::Transform& transform) {
   if (transform_ == transform)
     return;
@@ -1312,12 +1302,14 @@ void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
 
 void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsActive());
-  if (synced_scroll_offset()->SetCurrent(scroll_offset))
-    DidUpdateScrollOffset();
+  if (layer_tree_impl()->property_trees()->scroll_tree.SetScrollOffset(
+          id(), scroll_offset))
+    layer_tree_impl()->DidUpdateScrollOffset(id(), transform_tree_index());
 }
 
 gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
-  return synced_scroll_offset()->Current(IsActive());
+  return layer_tree_impl()->property_trees()->scroll_tree.current_scroll_offset(
+      id());
 }
 
 void LayerImpl::UpdatePropertyTreeScrollOffset() {
@@ -1327,35 +1319,12 @@ void LayerImpl::UpdatePropertyTreeScrollOffset() {
     TransformTree& transform_tree =
         layer_tree_impl()->property_trees()->transform_tree;
     TransformNode* node = transform_tree.Node(transform_tree_index_);
-    gfx::ScrollOffset current_offset =
-        synced_scroll_offset()->Current(IsActive());
+    gfx::ScrollOffset current_offset = CurrentScrollOffset();
     if (node->data.scroll_offset != current_offset) {
       node->data.scroll_offset = current_offset;
       node->data.needs_local_transform_update = true;
       transform_tree.set_needs_update(true);
     }
-  }
-}
-
-void LayerImpl::DidUpdateScrollOffset() {
-  layer_tree_impl()->DidUpdateScrollState(id());
-
-  if (transform_tree_index_ != -1) {
-    UpdatePropertyTreeScrollOffset();
-    TransformTree& transform_tree =
-        layer_tree_impl()->property_trees()->transform_tree;
-    TransformNode* node = transform_tree.Node(transform_tree_index_);
-    node->data.transform_changed = true;
-    layer_tree_impl()->property_trees()->changed = true;
-    layer_tree_impl()->set_needs_update_draw_properties();
-    SetNeedsPushProperties();
-  }
-
-  // Inform the pending twin that a property changed.
-  if (layer_tree_impl()->IsActiveTree()) {
-    LayerImpl* pending_twin = layer_tree_impl()->FindPendingTreeLayerById(id());
-    if (pending_twin)
-      pending_twin->DidUpdateScrollOffset();
   }
 }
 
@@ -1432,11 +1401,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     state->SetInteger("mutable_properties", mutable_properties_);
   }
 
-  MathUtil::AddToTracedValue("scroll_offset",
-                             synced_scroll_offset()
-                                 ? synced_scroll_offset()->Current(IsActive())
-                                 : gfx::ScrollOffset(),
-                             state);
+  MathUtil::AddToTracedValue("scroll_offset", CurrentScrollOffset(), state);
 
   MathUtil::AddToTracedValue("transform_origin", transform_origin_, state);
 

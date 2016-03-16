@@ -1269,8 +1269,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   if (ScrollOffsetAnimationWasInterrupted())
     layer_tree_host()
         ->property_trees()
-        ->scroll_tree.synced_scroll_offset(layer->id())
-        ->set_clobber_active_value();
+        ->scroll_tree.SetScrollOffsetClobberActiveValue(layer->id());
 
   {
     TRACE_EVENT0("cc", "Layer::PushPropertiesTo::CopyOutputRequests");

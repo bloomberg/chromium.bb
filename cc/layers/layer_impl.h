@@ -615,7 +615,6 @@ class CC_EXPORT LayerImpl {
   }
 
   void NoteLayerPropertyChanged();
-  void DidUpdateScrollOffset();
 
   void PushLayerPropertyChangedForSubtree();
 

@@ -787,8 +787,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
       host_impl->active_tree()->LayerById(scroll_layer->id());
   ScrollTree& scroll_tree =
       host_impl->active_tree()->property_trees()->scroll_tree;
-  scroll_tree.synced_scroll_offset(scroll_layer_impl->id())
-      ->SetCurrent(gfx::ScrollOffset(20, 30));
+  scroll_tree.SetScrollOffset(scroll_layer_impl->id(),
+                              gfx::ScrollOffset(20, 30));
 
   // Pull ScrollOffset delta for main thread, and change offset on main thread
   scoped_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
@@ -799,8 +799,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   scroll_layer->SetScrollOffset(gfx::ScrollOffset(100, 100));
 
   // More update to ScrollOffset active delta: gfx::ScrollOffset(20, 20)
-  scroll_tree.synced_scroll_offset(scroll_layer_impl->id())
-      ->SetCurrent(gfx::ScrollOffset(40, 50));
+  scroll_tree.SetScrollOffset(scroll_layer_impl->id(),
+                              gfx::ScrollOffset(40, 50));
   host_impl->active_tree()->SetCurrentlyScrollingLayer(scroll_layer_impl);
 
   // Make one layer unscrollable so that scroll tree topology changes

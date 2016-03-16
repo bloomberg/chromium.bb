@@ -716,8 +716,8 @@ void AddScrollNodeIfNeeded(
         scroll_node_uninheritable_criteria;
 
     if (node.data.scrollable) {
-      data_for_children->scroll_tree->synced_scroll_offset(layer->id())
-          ->PushFromMainThread(layer->CurrentScrollOffset());
+      data_for_children->scroll_tree->SetBaseScrollOffset(
+          layer->id(), layer->CurrentScrollOffset());
     }
   }
 

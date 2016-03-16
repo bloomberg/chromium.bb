@@ -575,23 +575,33 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void set_currently_scrolling_node(int scroll_node_id);
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
-  SyncedScrollOffset* synced_scroll_offset(int layer_id);
-  const SyncedScrollOffset* synced_scroll_offset(int layer_id) const;
+  const gfx::ScrollOffset current_scroll_offset(int layer_id) const;
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
   void UpdateScrollOffsetMap(ScrollOffsetMap* new_scroll_offset_map,
                              LayerTreeImpl* layer_tree_impl);
   ScrollOffsetMap& scroll_offset_map();
   const ScrollOffsetMap& scroll_offset_map() const;
   void ApplySentScrollDeltasFromAbortedCommit();
+  bool SetBaseScrollOffset(int layer_id,
+                           const gfx::ScrollOffset& scroll_offset);
   bool SetScrollOffset(int layer_id, const gfx::ScrollOffset& scroll_offset);
+  void SetScrollOffsetClobberActiveValue(int layer_id) {
+    synced_scroll_offset(layer_id)->set_clobber_active_value();
+  }
   bool UpdateScrollOffsetBaseForTesting(int layer_id,
                                         const gfx::ScrollOffset& offset);
+  bool SetScrollOffsetDeltaForTesting(int layer_id,
+                                      const gfx::Vector2dF& delta);
   const gfx::ScrollOffset GetScrollOffsetBaseForTesting(int layer_id) const;
+  const gfx::ScrollOffset GetScrollOffsetDeltaForTesting(int layer_id) const;
+  void CollectScrollDeltasForTesting();
 
  private:
   int currently_scrolling_node_id_;
   ScrollOffsetMap layer_id_to_scroll_offset_map_;
 
+  SyncedScrollOffset* synced_scroll_offset(int layer_id);
+  const SyncedScrollOffset* synced_scroll_offset(int layer_id) const;
   gfx::ScrollOffset PullDeltaForMainThread(SyncedScrollOffset* scroll_offset);
   void UpdateScrollOffsetMapEntry(int key,
                                   ScrollOffsetMap* new_scroll_offset_map,

@@ -225,13 +225,11 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   static gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl) {
-    if (layer_impl->IsActive())
-      return gfx::Vector2dF(layer_impl->synced_scroll_offset()->Delta().x(),
-                            layer_impl->synced_scroll_offset()->Delta().y());
-    else
-      return gfx::Vector2dF(
-          layer_impl->synced_scroll_offset()->PendingDelta().get().x(),
-          layer_impl->synced_scroll_offset()->PendingDelta().get().y());
+    gfx::ScrollOffset delta =
+        layer_impl->layer_tree_impl()
+            ->property_trees()
+            ->scroll_tree.GetScrollOffsetDeltaForTesting(layer_impl->id());
+    return gfx::Vector2dF(delta.x(), delta.y());
   }
 
   static void ExpectClearedScrollDeltasRecursive(LayerImpl* layer) {
@@ -474,9 +472,12 @@ class LayerTreeHostImplTest : public testing::Test,
 
   static void SetScrollOffsetDelta(LayerImpl* layer_impl,
                                    const gfx::Vector2dF& delta) {
-    layer_impl->SetCurrentScrollOffset(
-        layer_impl->synced_scroll_offset()->ActiveBase() +
-        gfx::ScrollOffset(delta));
+    if (layer_impl->layer_tree_impl()
+            ->property_trees()
+            ->scroll_tree.SetScrollOffsetDeltaForTesting(layer_impl->id(),
+                                                         delta))
+      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
+          layer_impl->id(), layer_impl->transform_tree_index());
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
@@ -2037,7 +2038,9 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
-    scroll_layer->synced_scroll_offset()->PullDeltaForMainThread();
+    scroll_layer->layer_tree_impl()
+        ->property_trees()
+        ->scroll_tree.CollectScrollDeltasForTesting();
     scroll_layer->layer_tree_impl()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
@@ -2063,7 +2066,9 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
-    scroll_layer->synced_scroll_offset()->PullDeltaForMainThread();
+    scroll_layer->layer_tree_impl()
+        ->property_trees()
+        ->scroll_tree.CollectScrollDeltasForTesting();
     scroll_layer->layer_tree_impl()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
@@ -2089,7 +2094,9 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
-    scroll_layer->synced_scroll_offset()->PullDeltaForMainThread();
+    scroll_layer->layer_tree_impl()
+        ->property_trees()
+        ->scroll_tree.CollectScrollDeltasForTesting();
     scroll_layer->layer_tree_impl()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
@@ -2117,7 +2124,9 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
   {
     host_impl_->active_tree()->PushPageScaleFromMainThread(0.5f, 0.5f, 4.f);
     SetScrollOffsetDelta(scroll_layer, gfx::Vector2d());
-    scroll_layer->synced_scroll_offset()->PullDeltaForMainThread();
+    scroll_layer->layer_tree_impl()
+        ->property_trees()
+        ->scroll_tree.CollectScrollDeltasForTesting();
     scroll_layer->layer_tree_impl()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->id(),
@@ -2697,7 +2706,9 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
             ->scroll_tree.UpdateScrollOffsetBaseForTesting(
                 host_impl_->InnerViewportScrollLayer()->id(),
                 gfx::ScrollOffset(5, 5)))
-      host_impl_->InnerViewportScrollLayer()->DidUpdateScrollOffset();
+      host_impl_->active_tree()->DidUpdateScrollOffset(
+          host_impl_->InnerViewportScrollLayer()->id(),
+          host_impl_->InnerViewportScrollLayer()->transform_tree_index());
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
@@ -10323,11 +10334,14 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
     // delta is not zero, the delta would be counted twice.
     // This hacking here is to restore the damaged scroll offset.
     gfx::ScrollOffset pending_base =
-        last_scrolled_layer->synced_scroll_offset()->PendingBase();
+        pending_tree->property_trees()
+            ->scroll_tree.GetScrollOffsetBaseForTesting(
+                last_scrolled_layer->id());
     pending_tree->property_trees()->needs_rebuild = true;
     pending_tree->BuildPropertyTreesForTesting();
-    last_scrolled_layer->synced_scroll_offset()->PushFromMainThread(
-        pending_base);
+    pending_tree->property_trees()
+        ->scroll_tree.UpdateScrollOffsetBaseForTesting(
+            last_scrolled_layer->id(), pending_base);
 
     pending_tree->set_needs_update_draw_properties();
     pending_tree->UpdateDrawProperties(false);

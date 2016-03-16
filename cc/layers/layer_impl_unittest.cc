@@ -105,13 +105,11 @@ namespace {
   EXPECT_FALSE(host_impl.active_tree()->needs_update_draw_properties());
 
 static gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl) {
-  if (layer_impl->IsActive())
-    return gfx::Vector2dF(layer_impl->synced_scroll_offset()->Delta().x(),
-                          layer_impl->synced_scroll_offset()->Delta().y());
-  else
-    return gfx::Vector2dF(
-        layer_impl->synced_scroll_offset()->PendingDelta().get().x(),
-        layer_impl->synced_scroll_offset()->PendingDelta().get().y());
+  gfx::ScrollOffset delta =
+      layer_impl->layer_tree_impl()
+          ->property_trees()
+          ->scroll_tree.GetScrollOffsetDeltaForTesting(layer_impl->id());
+  return gfx::Vector2dF(delta.x(), delta.y());
 }
 
 TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
@@ -195,10 +193,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnFilterAnimated(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->OnFilterAnimated(FilterOperations()));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnOpacityAnimated(arbitrary_number));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->OnTransformAnimated(arbitrary_transform));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d);
+                                     root->SetNeedsPushProperties());
   // SetBoundsDelta changes subtree only when masks_to_bounds is true and it
   // doesn't set needs_push_properties as it is always called on active tree.
   root->SetMasksToBounds(true);
@@ -348,9 +347,13 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(large_size));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(arbitrary_vector2d));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(gfx::Vector2d()));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->DidUpdateScrollOffset());
-  layer->SetCurrentScrollOffset(layer->synced_scroll_offset()->ActiveBase() +
-                                gfx::ScrollOffset());
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->layer_tree_impl()->DidUpdateScrollOffset(
+          layer->id(), layer->transform_tree_index()));
+  layer->layer_tree_impl()
+      ->property_trees()
+      ->scroll_tree.SetScrollOffsetDeltaForTesting(layer->id(),
+                                                   gfx::Vector2dF());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetCurrentScrollOffset(
       gfx::ScrollOffset(arbitrary_vector2d.x(), arbitrary_vector2d.y())));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetCurrentScrollOffset(
@@ -604,7 +607,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsNoListener) {
   scroll_tree(layer())->UpdateScrollOffsetBaseForTesting(layer()->id(),
                                                          scroll_offset);
   layer()->ScrollBy(sent_scroll_delta);
-  layer()->synced_scroll_offset()->PullDeltaForMainThread();
+  scroll_tree(layer())->CollectScrollDeltasForTesting();
   layer()->SetCurrentScrollOffset(scroll_offset +
                                   gfx::ScrollOffset(scroll_delta));
 
@@ -615,7 +618,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsNoListener) {
       scroll_offset,
       scroll_tree(layer())->GetScrollOffsetBaseForTesting(layer()->id()));
 
-  layer()->synced_scroll_offset()->AbortCommit();
+  scroll_tree(layer())->ApplySentScrollDeltasFromAbortedCommit();
 
   EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, scroll_delta),
                    layer()->CurrentScrollOffset());
@@ -651,7 +654,7 @@ TEST_F(LayerImplScrollTest, PushPropertiesToMirrorsCurrentScrollOffset) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), unscrolled);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(22, 23), layer()->CurrentScrollOffset());
 
-  layer()->synced_scroll_offset()->PullDeltaForMainThread();
+  scroll_tree(layer())->CollectScrollDeltasForTesting();
 
   scoped_ptr<LayerImpl> pending_layer =
       LayerImpl::Create(host_impl().sync_tree(), layer()->id());

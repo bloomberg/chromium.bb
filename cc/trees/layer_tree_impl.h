@@ -421,6 +421,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids);
 
+  void DidUpdateScrollOffset(int layer_id, int transform_id);
   void DidUpdateScrollState(int layer_id);
 
   bool IsAnimatingFilterProperty(const LayerImpl* layer) const;

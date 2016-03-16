@@ -159,9 +159,12 @@ class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
  protected:
   static void SetScrollOffsetDelta(LayerImpl* layer_impl,
                                    const gfx::Vector2dF& delta) {
-    layer_impl->SetCurrentScrollOffset(
-        layer_impl->synced_scroll_offset()->ActiveBase() +
-        gfx::ScrollOffset(delta));
+    if (layer_impl->layer_tree_impl()
+            ->property_trees()
+            ->scroll_tree.SetScrollOffsetDeltaForTesting(layer_impl->id(),
+                                                         delta))
+      layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
+          layer_impl->id(), layer_impl->transform_tree_index());
   }
 };
 

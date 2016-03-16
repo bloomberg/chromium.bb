@@ -142,6 +142,42 @@ bool LayerTreeImpl::IsViewportLayerId(int id) const {
   return false;
 }
 
+// TODO(sunxd): when we have a layer_id to property_tree index map in property
+// trees, use the transform_id parameter instead of looking for indices from
+// LayerImpls.
+void LayerTreeImpl::DidUpdateScrollOffset(int layer_id, int transform_id) {
+  DidUpdateScrollState(layer_id);
+  TransformTree& transform_tree = property_trees()->transform_tree;
+  ScrollTree& scroll_tree = property_trees()->scroll_tree;
+
+  // If pending tree topology changed and we still want to notify the pending
+  // tree about scroll offset in the active tree, we may not find the
+  // corresponding pending layer.
+  if (LayerById(layer_id)) {
+    transform_id = LayerById(layer_id)->transform_tree_index();
+  } else {
+    DCHECK(!IsActiveTree());
+    return;
+  }
+
+  if (transform_id != -1) {
+    TransformNode* node = transform_tree.Node(transform_id);
+    if (node->data.scroll_offset !=
+        scroll_tree.current_scroll_offset(layer_id)) {
+      node->data.scroll_offset = scroll_tree.current_scroll_offset(layer_id);
+      node->data.needs_local_transform_update = true;
+      transform_tree.set_needs_update(true);
+    }
+    node->data.transform_changed = true;
+    property_trees()->changed = true;
+    set_needs_update_draw_properties();
+  }
+
+  if (IsActiveTree() && layer_tree_host_impl_->pending_tree())
+    layer_tree_host_impl_->pending_tree()->DidUpdateScrollOffset(layer_id,
+                                                                 transform_id);
+}
+
 void LayerTreeImpl::DidUpdateScrollState(int layer_id) {
   if (!IsActiveTree())
     return;

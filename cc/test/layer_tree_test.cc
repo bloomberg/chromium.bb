@@ -540,6 +540,14 @@ bool LayerTreeTest::IsRemoteTest() const {
   return mode_ == CompositorMode::REMOTE;
 }
 
+gfx::Vector2dF LayerTreeTest::ScrollDelta(LayerImpl* layer_impl) {
+  gfx::ScrollOffset delta =
+      layer_impl->layer_tree_impl()
+          ->property_trees()
+          ->scroll_tree.GetScrollOffsetDeltaForTesting(layer_impl->id());
+  return gfx::Vector2dF(delta.x(), delta.y());
+}
+
 void LayerTreeTest::EndTest() {
   if (ended_)
     return;

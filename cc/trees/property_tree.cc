@@ -1477,8 +1477,6 @@ gfx::Transform ScrollTree::ScreenSpaceTransform(int scroll_node_id) const {
   return screen_space_transform;
 }
 
-// TODO(sunxd): Make this function private once scroll offset access is fully
-// directed to scroll tree.
 SyncedScrollOffset* ScrollTree::synced_scroll_offset(int layer_id) {
   if (layer_id_to_scroll_offset_map_.find(layer_id) ==
       layer_id_to_scroll_offset_map_.end()) {
@@ -1493,6 +1491,13 @@ const SyncedScrollOffset* ScrollTree::synced_scroll_offset(int layer_id) const {
     return nullptr;
   }
   return layer_id_to_scroll_offset_map_.at(layer_id).get();
+}
+
+const gfx::ScrollOffset ScrollTree::current_scroll_offset(int layer_id) const {
+  return synced_scroll_offset(layer_id)
+             ? synced_scroll_offset(layer_id)->Current(
+                   property_trees()->is_active)
+             : gfx::ScrollOffset();
 }
 
 gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
@@ -1528,6 +1533,12 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info) {
   }
 }
 
+void ScrollTree::CollectScrollDeltasForTesting() {
+  for (auto map_entry : layer_id_to_scroll_offset_map_) {
+    PullDeltaForMainThread(map_entry.second.get());
+  }
+}
+
 void ScrollTree::UpdateScrollOffsetMapEntry(
     int key,
     ScrollTree::ScrollOffsetMap* new_scroll_offset_map,
@@ -1543,13 +1554,15 @@ void ScrollTree::UpdateScrollOffsetMapEntry(
     if (new_scroll_offset_map->at(key)->clobber_active_value()) {
       synced_scroll_offset(key)->set_clobber_active_value();
     }
-    if (changed)
-      layer_tree_impl->LayerById(key)->DidUpdateScrollOffset();
+    if (changed) {
+      layer_tree_impl->DidUpdateScrollOffset(key, -1);
+    }
   } else {
     layer_id_to_scroll_offset_map_[key] = new_scroll_offset_map->at(key);
     changed |= synced_scroll_offset(key)->PushPendingToActive();
-    if (changed)
-      layer_tree_impl->LayerById(key)->DidUpdateScrollOffset();
+    if (changed) {
+      layer_tree_impl->DidUpdateScrollOffset(key, -1);
+    }
   }
 }
 
@@ -1592,6 +1605,11 @@ void ScrollTree::ApplySentScrollDeltasFromAbortedCommit() {
     map_entry.second->AbortCommit();
 }
 
+bool ScrollTree::SetBaseScrollOffset(int layer_id,
+                                     const gfx::ScrollOffset& scroll_offset) {
+  return synced_scroll_offset(layer_id)->PushFromMainThread(scroll_offset);
+}
+
 bool ScrollTree::SetScrollOffset(int layer_id,
                                  const gfx::ScrollOffset& scroll_offset) {
   if (property_trees()->is_main_thread)
@@ -1611,6 +1629,12 @@ bool ScrollTree::UpdateScrollOffsetBaseForTesting(
   return changed;
 }
 
+bool ScrollTree::SetScrollOffsetDeltaForTesting(int layer_id,
+                                                const gfx::Vector2dF& delta) {
+  return synced_scroll_offset(layer_id)->SetCurrent(
+      synced_scroll_offset(layer_id)->ActiveBase() + gfx::ScrollOffset(delta));
+}
+
 const gfx::ScrollOffset ScrollTree::GetScrollOffsetBaseForTesting(
     int layer_id) const {
   DCHECK(!property_trees()->is_main_thread);
@@ -1618,6 +1642,17 @@ const gfx::ScrollOffset ScrollTree::GetScrollOffsetBaseForTesting(
     return property_trees()->is_active
                ? synced_scroll_offset(layer_id)->ActiveBase()
                : synced_scroll_offset(layer_id)->PendingBase();
+  else
+    return gfx::ScrollOffset();
+}
+
+const gfx::ScrollOffset ScrollTree::GetScrollOffsetDeltaForTesting(
+    int layer_id) const {
+  DCHECK(!property_trees()->is_main_thread);
+  if (synced_scroll_offset(layer_id))
+    return property_trees()->is_active
+               ? synced_scroll_offset(layer_id)->Delta()
+               : synced_scroll_offset(layer_id)->PendingDelta().get();
   else
     return gfx::ScrollOffset();
 }

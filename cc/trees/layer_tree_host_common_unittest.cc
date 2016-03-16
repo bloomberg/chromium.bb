@@ -9807,6 +9807,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // Property tree root
   ScrollTree scroll_tree = host()->property_trees()->scroll_tree;
   PropertyTrees property_trees;
+  property_trees.is_main_thread = true;
+  property_trees.is_active = false;
   ScrollTree expected_scroll_tree = property_trees.scroll_tree;
   ScrollNode* property_tree_root = expected_scroll_tree.Node(0);
   property_tree_root->id = kRootPropertyTreeNodeId;
@@ -9890,12 +9892,10 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent5.data.transform_id = parent5->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent5, 1);
 
-  expected_scroll_tree.synced_scroll_offset(parent2->id())
-      ->PushFromMainThread(gfx::ScrollOffset(0, 0));
-  expected_scroll_tree.synced_scroll_offset(child7->id())
-      ->PushFromMainThread(gfx::ScrollOffset(0, 0));
-  expected_scroll_tree.synced_scroll_offset(grand_child11->id())
-      ->PushFromMainThread(gfx::ScrollOffset(0, 0));
+  expected_scroll_tree.SetScrollOffset(parent2->id(), gfx::ScrollOffset(0, 0));
+  expected_scroll_tree.SetScrollOffset(child7->id(), gfx::ScrollOffset(0, 0));
+  expected_scroll_tree.SetScrollOffset(grand_child11->id(),
+                                       gfx::ScrollOffset(0, 0));
   expected_scroll_tree.set_needs_update(false);
 
   EXPECT_EQ(expected_scroll_tree, scroll_tree);

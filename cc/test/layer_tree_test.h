@@ -180,15 +180,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   bool IsRemoteTest() const;
 
-  static gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl) {
-    if (layer_impl->IsActive())
-      return gfx::Vector2dF(layer_impl->synced_scroll_offset()->Delta().x(),
-                            layer_impl->synced_scroll_offset()->Delta().y());
-    else
-      return gfx::Vector2dF(
-          layer_impl->synced_scroll_offset()->PendingDelta().get().x(),
-          layer_impl->synced_scroll_offset()->PendingDelta().get().y());
-  }
+  gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl);
 
  private:
   LayerTreeSettings settings_;
