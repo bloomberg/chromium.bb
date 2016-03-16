@@ -356,7 +356,7 @@ base::string16 AccessibilityTreeFormatterWin::ToString(
         break;
       }
       case base::Value::TYPE_INTEGER: {
-        int int_value;
+        int int_value = 0;
         value->GetAsInteger(&int_value);
         WriteAttribute(false,
                        base::StringPrintf(L"%ls=%d",
@@ -367,7 +367,7 @@ base::string16 AccessibilityTreeFormatterWin::ToString(
         break;
       }
       case base::Value::TYPE_DOUBLE: {
-        double double_value;
+        double double_value = 0.0;
         value->GetAsDouble(&double_value);
         WriteAttribute(false,
                        base::StringPrintf(L"%ls=%.2f",

@@ -1987,32 +1987,6 @@ base.dll!base::Thread::ThreadMain
 base.dll!base::`anonymous namespace'::ThreadFunc
 KERNEL32.dll!BaseThreadInitThunk
 
-UNINITIALIZED READ
-name=bug_508794a
-...
-ucrtbase.dll!ismbblead
-ucrtbase.dll!free_base
-ucrtbase.dll!_stdio_common_vsnwprintf_s
-ucrtbase.dll!_stdio_common_vsnwprintf_s
-*!base::vswprintf
-*!base::`anonymous namespace'::StringAppendVT<>
-*!base::StringPrintf
-*!content::AccessibilityTreeFormatterWin::ToString
-*!content::AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree
-
-UNADDRESSABLE ACCESS
-name=bug_508794b
-ucrtbase.dll!wcsnlen
-ucrtbase.dll!ismbblead
-ucrtbase.dll!free_base
-ucrtbase.dll!_stdio_common_vsnwprintf_s
-ucrtbase.dll!_stdio_common_vsnwprintf_s
-*!base::vswprintf
-*!base::`anonymous namespace'::StringAppendVT<>
-*!base::StringPrintf
-*!content::AccessibilityTreeFormatterWin::ToString
-*!content::AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree
-
 UNADDRESSABLE ACCESS
 name=bug_534881
 ...
