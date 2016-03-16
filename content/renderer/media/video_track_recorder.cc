@@ -296,14 +296,6 @@ void VideoTrackRecorder::VpxEncoder::ConfigureEncoding(const gfx::Size& size) {
 
     // DCHECK that the profile selected by default is I420 (magic number 0).
     DCHECK_EQ(0u, codec_config_.g_profile);
-
-    // Values of VP8E_SET_CPUUSED greater than 0 will increase encoder speed at
-    // the expense of quality up to a maximum value of 16 for VP9, by tuning the
-    // target time spent encoding the frame. Go from 12 to 6 depending on the
-    // amount of cores available in the system.
-    const int kCpuUsed = std::max(6, 13 - base::SysInfo::NumberOfProcessors());
-    result = vpx_codec_control(encoder_.get(), VP8E_SET_CPUUSED, kCpuUsed);
-    DLOG_IF(WARNING, VPX_CODEC_OK != result) << "VP8E_SET_CPUUSED failed";
   } else {
     // VP8 always produces frames instantaneously.
     DCHECK_EQ(0u, codec_config_.g_lag_in_frames);
@@ -346,6 +338,17 @@ void VideoTrackRecorder::VpxEncoder::ConfigureEncoding(const gfx::Size& size) {
   const vpx_codec_err_t ret = vpx_codec_enc_init(encoder_.get(), interface,
                                                  &codec_config_, kNoFlags);
   DCHECK_EQ(VPX_CODEC_OK, ret);
+
+  if (use_vp9_) {
+    // Values of VP8E_SET_CPUUSED greater than 0 will increase encoder speed at
+    // the expense of quality up to a maximum value of 8 for VP9, by tuning the
+    // target time spent encoding the frame. Go from 8 to 5 (values for real
+    // time encoding) depending on the amount of cores available in the system.
+    const int kCpuUsed =
+        std::max(5, 8 - base::SysInfo::NumberOfProcessors() / 2);
+    result = vpx_codec_control(encoder_.get(), VP8E_SET_CPUUSED, kCpuUsed);
+    DLOG_IF(WARNING, VPX_CODEC_OK != result) << "VP8E_SET_CPUUSED failed";
+  }
 }
 
 bool VideoTrackRecorder::VpxEncoder::IsInitialized() const {
