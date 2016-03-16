@@ -81,7 +81,8 @@ class BASE_EXPORT RefCountedBytes : public RefCountedMemory {
   // Constructs a RefCountedBytes object by performing a swap. (To non
   // destructively build a RefCountedBytes, use the constructor that takes a
   // vector.)
-  static RefCountedBytes* TakeVector(std::vector<unsigned char>* to_destroy);
+  static scoped_refptr<RefCountedBytes> TakeVector(
+      std::vector<unsigned char>* to_destroy);
 
   // Overridden from RefCountedMemory:
   const unsigned char* front() const override;

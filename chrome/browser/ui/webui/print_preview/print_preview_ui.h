@@ -51,7 +51,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview
   // document.
   void SetPrintPreviewDataForIndex(int index,
-                                   const base::RefCountedBytes* data);
+                                   scoped_refptr<base::RefCountedBytes> data);
 
   // Clear the existing print preview data.
   void ClearAllPreviewData();

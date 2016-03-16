@@ -442,8 +442,8 @@ void PrintPreviewUI::GetPrintPreviewDataForIndex(
 
 void PrintPreviewUI::SetPrintPreviewDataForIndex(
     int index,
-    const base::RefCountedBytes* data) {
-  print_preview_data_service()->SetDataEntry(id_, index, data);
+    scoped_refptr<base::RefCountedBytes> data) {
+  print_preview_data_service()->SetDataEntry(id_, index, std::move(data));
 }
 
 void PrintPreviewUI::ClearAllPreviewData() {

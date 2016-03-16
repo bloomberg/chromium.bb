@@ -389,7 +389,7 @@ bool HasFrameBorder() {
 }
 
 // Returns a piece of memory with the contents of the file |path|.
-base::RefCountedMemory* ReadFileData(const base::FilePath& path) {
+scoped_refptr<base::RefCountedMemory> ReadFileData(const base::FilePath& path) {
   if (!path.empty()) {
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     if (file.IsValid()) {
@@ -405,7 +405,7 @@ base::RefCountedMemory* ReadFileData(const base::FilePath& path) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 // Shifts an image's HSL values. The caller is responsible for deleting

@@ -54,8 +54,7 @@ scoped_refptr<base::RefCountedMemory> CombineRefCountedMemory(
                          data[i]->front(),
                          data[i]->front() + data[i]->size());
   }
-  return scoped_refptr<base::RefCountedMemory>(
-      base::RefCountedBytes::TakeVector(&combined_data));
+  return base::RefCountedBytes::TakeVector(&combined_data);
 }
 
 }  // namespace

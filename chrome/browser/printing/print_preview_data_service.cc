@@ -41,11 +41,12 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   }
 
   // Set/Update the preview data entry for the specified |index|.
-  void SetPreviewDataForIndex(int index, const base::RefCountedBytes* data) {
+  void SetPreviewDataForIndex(int index,
+                              scoped_refptr<base::RefCountedBytes> data) {
     if (IsInvalidIndex(index))
       return;
 
-    page_data_map_[index] = const_cast<base::RefCountedBytes*>(data);
+    page_data_map_[index] = std::move(data);
   }
 
   // Returns the available draft page count.
@@ -103,11 +104,14 @@ void PrintPreviewDataService::GetDataEntry(
 void PrintPreviewDataService::SetDataEntry(
     int32_t preview_ui_id,
     int index,
-    const base::RefCountedBytes* data_bytes) {
-  if (!ContainsKey(data_store_map_, preview_ui_id))
-    data_store_map_[preview_ui_id] = new PrintPreviewDataStore();
+    scoped_refptr<base::RefCountedBytes> data_bytes) {
+  if (!ContainsKey(data_store_map_, preview_ui_id)) {
+    data_store_map_[preview_ui_id] =
+        make_scoped_refptr(new PrintPreviewDataStore());
+  }
 
-  data_store_map_[preview_ui_id]->SetPreviewDataForIndex(index, data_bytes);
+  data_store_map_[preview_ui_id]->SetPreviewDataForIndex(index,
+                                                         std::move(data_bytes));
 }
 
 void PrintPreviewDataService::RemoveEntry(int32_t preview_ui_id) {

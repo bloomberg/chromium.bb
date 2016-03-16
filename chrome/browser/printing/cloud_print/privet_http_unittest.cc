@@ -771,8 +771,7 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
       std::string str) {
     std::vector<unsigned char> str_vec;
     str_vec.insert(str_vec.begin(), str.begin(), str.end());
-    return scoped_refptr<base::RefCountedBytes>(
-        base::RefCountedBytes::TakeVector(&str_vec));
+    return base::RefCountedBytes::TakeVector(&str_vec);
   }
 
  protected:

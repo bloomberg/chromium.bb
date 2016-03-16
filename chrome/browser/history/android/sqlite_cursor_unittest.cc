@@ -151,7 +151,7 @@ TEST_F(SQLiteCursorTest, Run) {
   row.set_url(GURL("http://www.google.com/"));
   std::vector<unsigned char> favicon_data;
   favicon_data.push_back(1);
-  base::RefCountedBytes *data_bytes =
+  scoped_refptr<base::RefCountedBytes> data_bytes =
       base::RefCountedBytes::TakeVector(&favicon_data);
   row.set_favicon(data_bytes);
   row.set_last_visit_time(Time::Now());
