@@ -14,3 +14,6 @@ PipelineIntegrationTest.BasicPlaybackLive
 AudioInputTest.Record
 MacAudioInputTest.AUAudioInputStreamVerifyStereoRecording
 AUHALStreamTest.CreateOpenStartStopClose
+
+# Too slow, takes over 10 minutes to run.
+PipelineIntegrationTest.HD_VP9_WebM
