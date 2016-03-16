@@ -11,7 +11,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -104,7 +103,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"Preferences"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/571513")
     public void testSetAllowLocationEnabled() throws Exception {
         setAllowLocation(true);
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
@@ -122,7 +120,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"Preferences"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/571513")
     public void testSetAllowLocationNotEnabled() throws Exception {
         setAllowLocation(false);
 
@@ -447,7 +444,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/571513")
     public void testCameraBlocked() throws Exception {
         setEnableCamera(false);
 
@@ -466,7 +462,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/571513")
     public void testMicBlocked() throws Exception {
         setEnableMic(false);
 
@@ -485,7 +480,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/571513")
     public void testCameraNotBlocked() throws Exception {
         setEnableCamera(true);
 
@@ -506,7 +500,6 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/571513")
     public void testMicNotBlocked() throws Exception {
         setEnableCamera(true);
 

@@ -16,7 +16,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
@@ -32,7 +31,6 @@ public class GeolocationHeaderTest extends InstrumentationTestCase {
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content";
 
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/575277")
     @SmallTest
     @Feature({"Location"})
     @UiThreadTest
