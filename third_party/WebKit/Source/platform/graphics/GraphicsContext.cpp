@@ -303,12 +303,12 @@ void GraphicsContext::beginRecording(const FloatRect& bounds)
         skia::GetMetaData(*m_canvas) = m_metaData;
 }
 
-PassRefPtr<SkPicture> GraphicsContext::endRecording()
+PassRefPtr<const SkPicture> GraphicsContext::endRecording()
 {
     if (contextDisabled())
         return nullptr;
 
-    RefPtr<SkPicture> picture = adoptRef(m_pictureRecorder.endRecordingAsPicture());
+    RefPtr<const SkPicture> picture = adoptRef(m_pictureRecorder.endRecordingAsPicture());
     m_canvas = nullptr;
     ASSERT(picture);
     return picture.release();
@@ -635,10 +635,11 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
 
     SkMatrix localMatrix;
     localMatrix.setTranslate(originX, originY);
+    RefPtr<SkShader> shader = adoptRef(SkShader::CreateBitmapShader(
+        *misspellBitmap[index], SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
 
     SkPaint paint;
-    paint.setShader(SkShader::MakeBitmapShader(
-        *misspellBitmap[index], SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
+    paint.setShader(shader.get());
 
     SkRect rect;
     rect.set(originX, originY, originX + WebCoreFloatToSkScalar(width) * deviceScaleFactor, originY + SkIntToScalar(misspellBitmap[index]->height()));

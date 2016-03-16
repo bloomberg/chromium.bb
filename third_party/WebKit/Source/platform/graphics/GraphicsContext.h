@@ -211,7 +211,7 @@ public:
     // are stored in a display list that can be replayed at a later time. Pass in the bounding
     // rectangle for the content in the list.
     void beginRecording(const FloatRect&);
-    PassRefPtr<SkPicture> endRecording();
+    PassRefPtr<const SkPicture> endRecording();
 
     void setShadow(const FloatSize& offset, float blur, const Color&,
         DrawLooperBuilder::ShadowTransformMode = DrawLooperBuilder::ShadowRespectsTransforms,

@@ -126,7 +126,7 @@ private:
     Gradient(const FloatPoint& p0, const FloatPoint& p1);
     Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1, float aspectRatio);
 
-    PassRefPtr<SkShader> refShader();
+    SkShader* shader();
     void destroyShader();
 
     void sortStopsIfNecessary();

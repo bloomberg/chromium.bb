@@ -179,7 +179,7 @@ const LayoutSVGResourceContainer* LayoutSVGResourcePattern::resolveContentElemen
     return this;
 }
 
-PassRefPtr<SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect& tileBounds,
+PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect& tileBounds,
     const AffineTransform& tileTransform) const
 {
     ASSERT(!m_shouldCollectPatternAttributes);

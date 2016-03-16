@@ -54,7 +54,7 @@ public:
 
 private:
     PassOwnPtr<PatternData> buildPatternData(const LayoutObject&);
-    PassRefPtr<SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
+    PassRefPtr<const SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
     PatternData* patternForLayoutObject(const LayoutObject&);
 
     const LayoutSVGResourceContainer* resolveContentElement() const;

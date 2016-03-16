@@ -185,11 +185,11 @@ void Image::drawTiled(GraphicsContext& ctxt, const FloatRect& dstRect, const Flo
 
 namespace {
 
-sk_sp<SkShader> createPatternShader(const SkImage* image, const SkMatrix& shaderMatrix,
+PassRefPtr<SkShader> createPatternShader(const SkImage* image, const SkMatrix& shaderMatrix,
     const SkPaint& paint, const FloatSize& spacing)
 {
     if (spacing.isZero())
-        return image->makeShader(SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix);
+        return adoptRef(image->newShader(SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix));
 
     // Arbitrary tiling is currently only supported for SkPictureShader - so we use it instead
     // of a plain bitmap shader to implement spacing.
@@ -200,10 +200,10 @@ sk_sp<SkShader> createPatternShader(const SkImage* image, const SkMatrix& shader
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(tileRect);
     canvas->drawImage(image, 0, 0, &paint);
-    sk_sp<SkPicture> picture(recorder.endRecordingAsPicture());
+    RefPtr<const SkPicture> picture = adoptRef(recorder.endRecordingAsPicture());
 
-    return SkShader::MakePictureShader(
-        std::move(picture), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix, nullptr);
+    return adoptRef(SkShader::CreatePictureShader(
+        picture.get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix, nullptr));
 }
 
 } // anonymous namespace
@@ -249,8 +249,9 @@ void Image::drawPattern(GraphicsContext& context, const FloatRect& floatSrcRect,
         paint.setXfermodeMode(compositeOp);
         paint.setFilterQuality(context.computeFilterQuality(this, destRect, normSrcRect));
         paint.setAntiAlias(context.shouldAntialias());
-        paint.setShader(createPatternShader(image.get(), localMatrix, paint,
-            FloatSize(repeatSpacing.width() / scale.width(), repeatSpacing.height() / scale.height())));
+        RefPtr<SkShader> shader = createPatternShader(image.get(), localMatrix, paint,
+            FloatSize(repeatSpacing.width() / scale.width(), repeatSpacing.height() / scale.height()));
+        paint.setShader(shader.get());
         context.drawRect(destRect, paint);
     }
 

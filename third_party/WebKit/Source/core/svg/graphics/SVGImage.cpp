@@ -286,14 +286,16 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize
         SkPaint paint;
         drawForContainer(patternPicture.context().canvas(), paint, containerSize, zoom, tile, srcRect, url);
     }
-    RefPtr<SkPicture> tilePicture = patternPicture.endRecording();
+    RefPtr<const SkPicture> tilePicture = patternPicture.endRecording();
 
     SkMatrix patternTransform;
     patternTransform.setTranslate(phase.x() + spacedTile.x(), phase.y() + spacedTile.y());
+    RefPtr<SkShader> patternShader = adoptRef(SkShader::CreatePictureShader(
+        tilePicture.get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
+        &patternTransform, nullptr));
 
     SkPaint paint;
-    paint.setShader(SkShader::MakePictureShader(adoptSkSp(tilePicture.release()),
-        SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &patternTransform, nullptr));
+    paint.setShader(patternShader.get());
     paint.setXfermodeMode(compositeOp);
     paint.setColorFilter(context.colorFilter());
     context.drawRect(dstRect, paint);
