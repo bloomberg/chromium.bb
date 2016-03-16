@@ -115,7 +115,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
     // Invoked when an offline copy related to |offline_id| was deleted.
     // In can be invoked as a result of |CheckForExternalFileDeletion|, if a
     // deleted page is detected.
-    virtual void OfflinePageDeleted(int64_t offline_id) = 0;
+    virtual void OfflinePageDeleted(int64_t offline_id,
+                                    const ClientId& client_id) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -286,9 +287,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
 
   // Callbacks for checking if offline pages are missing archive files.
   void OnFindPagesMissingArchiveFile(
-      const std::vector<int64_t>* pages_missing_archive_file);
+      const std::vector<int64_t>* ids_of_pages_missing_archive_file);
   void OnRemoveOfflinePagesMissingArchiveFileDone(
-      const std::vector<int64_t>& offline_ids,
+      const std::vector<std::pair<int64_t, ClientId>>& offline_client_id_pairs,
       OfflinePageModel::DeletePageResult result);
 
   // Steps for clearing all.

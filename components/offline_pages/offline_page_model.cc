@@ -520,7 +520,8 @@ void OfflinePageModel::OnMarkPageForDeletionDone(
       kFinalDeletionDelay);
 
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OfflinePageDeleted(offline_page_item.offline_id));
+                    OfflinePageDeleted(offline_page_item.offline_id,
+                                       offline_page_item.client_id));
 }
 
 void OfflinePageModel::OnUndoOfflinePageDone(
@@ -662,8 +663,9 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
     // If the page is not marked for deletion at this point, the model has not
     // yet informed the observer that the offline page is deleted.
     if (!iter->second.IsMarkedForDeletion()) {
-      FOR_EACH_OBSERVER(Observer, observers_,
-                        OfflinePageDeleted(iter->second.offline_id));
+      FOR_EACH_OBSERVER(
+          Observer, observers_,
+          OfflinePageDeleted(iter->second.offline_id, iter->second.client_id));
     }
     offline_pages_.erase(iter);
   }
@@ -694,10 +696,20 @@ void OfflinePageModel::OnFindPagesMissingArchiveFile(
   if (ids_of_pages_missing_archive_file->empty())
     return;
 
+  std::vector<std::pair<int64_t, ClientId>> offline_client_id_pairs;
+  for (auto offline_id : *ids_of_pages_missing_archive_file) {
+    // Since we might have deleted pages in between so we have to purge
+    // the list to make sure we still care about them.
+    auto iter = offline_pages_.find(offline_id);
+    if (iter != offline_pages_.end()) {
+      offline_client_id_pairs.push_back(
+          std::make_pair(offline_id, iter->second.client_id));
+    }
+  }
+
   DeletePageCallback done_callback(
       base::Bind(&OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 *ids_of_pages_missing_archive_file));
+                 weak_ptr_factory_.GetWeakPtr(), offline_client_id_pairs));
 
   store_->RemoveOfflinePages(
       *ids_of_pages_missing_archive_file,
@@ -708,10 +720,11 @@ void OfflinePageModel::OnFindPagesMissingArchiveFile(
 }
 
 void OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone(
-    const std::vector<int64_t>& offline_ids,
+    const std::vector<std::pair<int64_t, ClientId>>& offline_client_id_pairs,
     OfflinePageModel::DeletePageResult /* result */) {
-  for (int64_t offline_id : offline_ids) {
-    FOR_EACH_OBSERVER(Observer, observers_, OfflinePageDeleted(offline_id));
+  for (const auto& id_pair : offline_client_id_pairs) {
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OfflinePageDeleted(id_pair.first, id_pair.second));
   }
 }
 

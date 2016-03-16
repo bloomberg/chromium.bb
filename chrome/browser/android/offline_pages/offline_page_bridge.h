@@ -11,6 +11,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 
 namespace content {
@@ -35,7 +36,8 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageModelChanged(OfflinePageModel* model) override;
-  void OfflinePageDeleted(int64_t offline_id) override;
+  void OfflinePageDeleted(int64_t offline_id,
+                          const ClientId& client_id) override;
 
   void GetAllPages(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
@@ -112,6 +114,10 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   base::android::ScopedJavaLocalRef<jobject> CreateOfflinePageItem(
       JNIEnv* env,
       const OfflinePageItem& offline_page) const;
+
+  base::android::ScopedJavaLocalRef<jobject> CreateClientId(
+      JNIEnv* env,
+      const ClientId& clientId) const;
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   // Not owned.

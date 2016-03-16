@@ -473,8 +473,12 @@ public class OfflinePageBridge {
         };
     }
 
-    private ClientId getClientIdForOfflineId(long offlineId) {
-        return nativeGetPageByOfflineId(mNativeOfflinePageBridge, offlineId).getClientId();
+    protected ClientId getClientIdForOfflineId(long offlineId) {
+        OfflinePageItem item = nativeGetPageByOfflineId(mNativeOfflinePageBridge, offlineId);
+        if (item != null) {
+            return item.getClientId();
+        }
+        return null;
     }
 
     @CalledByNative
@@ -505,8 +509,7 @@ public class OfflinePageBridge {
     }
 
     @CalledByNative
-    private void offlinePageDeleted(long offlineId) {
-        ClientId clientId = getClientIdForOfflineId(offlineId);
+    protected void offlinePageDeleted(long offlineId, ClientId clientId) {
         for (OfflinePageModelObserver observer : mObservers) {
             observer.offlinePageDeleted(offlineId, clientId);
         }
@@ -528,6 +531,11 @@ public class OfflinePageBridge {
                 creationTime, accessCount, lastAccessTimeMs);
     }
 
+    @CalledByNative
+    private static ClientId createClientId(String clientNamespace, String id) {
+        return new ClientId(clientNamespace, id);
+    }
+
     private static native int nativeGetFeatureMode();
     private static native boolean nativeCanSavePage(String url);
     private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);
@@ -536,7 +544,7 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
     protected native long[] nativeGetOfflineIdsForClientId(
             long nativeOfflinePageBridge, String clientNamespace, String clientId);
-    private native OfflinePageItem nativeGetPageByOfflineId(
+    protected native OfflinePageItem nativeGetPageByOfflineId(
             long nativeOfflinePageBridge, long offlineId);
     private native OfflinePageItem nativeGetPageByOnlineURL(
             long nativeOfflinePageBridge, String onlineURL);
