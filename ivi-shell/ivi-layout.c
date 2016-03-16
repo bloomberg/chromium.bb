@@ -2214,22 +2214,13 @@ static void
 ivi_layout_layer_remove_surface(struct ivi_layout_layer *ivilayer,
 				struct ivi_layout_surface *remsurf)
 {
-	struct ivi_layout_surface *ivisurf = NULL;
-	struct ivi_layout_surface *next = NULL;
-
 	if (ivilayer == NULL || remsurf == NULL) {
 		weston_log("ivi_layout_layer_remove_surface: invalid argument\n");
 		return;
 	}
 
-	wl_list_for_each_safe(ivisurf, next,
-			      &ivilayer->pending.surface_list, pending.link) {
-		if (ivisurf->id_surface == remsurf->id_surface) {
-			wl_list_remove(&ivisurf->pending.link);
-			wl_list_init(&ivisurf->pending.link);
-			break;
-		}
-	}
+	wl_list_remove(&remsurf->pending.link);
+	wl_list_init(&remsurf->pending.link);
 
 	ivilayer->order.dirty = 1;
 }
