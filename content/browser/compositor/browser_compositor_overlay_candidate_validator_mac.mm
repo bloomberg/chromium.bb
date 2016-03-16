@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 
+#include "base/command_line.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace content {
 
@@ -30,7 +32,11 @@ void BrowserCompositorOverlayCandidateValidatorMac::GetStrategies(
 }
 
 bool BrowserCompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {
-  if (software_mirror_active_ || ca_layers_disabled_)
+  static bool overlays_disabled_at_command_line =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMacOverlays);
+  if (software_mirror_active_ || ca_layers_disabled_ ||
+      overlays_disabled_at_command_line)
     return false;
   return true;
 }
