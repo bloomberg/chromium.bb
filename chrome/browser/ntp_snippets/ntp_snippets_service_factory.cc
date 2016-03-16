@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 
-#include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -25,6 +25,8 @@
 #endif  // OS_ANDROID
 
 using content::BrowserThread;
+using suggestions::SuggestionsService;
+using suggestions::SuggestionsServiceFactory;
 
 // static
 NTPSnippetsServiceFactory* NTPSnippetsServiceFactory::GetInstance() {
@@ -42,7 +44,11 @@ ntp_snippets::NTPSnippetsService* NTPSnippetsServiceFactory::GetForProfile(
 NTPSnippetsServiceFactory::NTPSnippetsServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "NTPSnippetsService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(SuggestionsServiceFactory::GetInstance());
+}
 
 NTPSnippetsServiceFactory::~NTPSnippetsServiceFactory() {}
 
@@ -55,6 +61,8 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       context->GetRequestContext();
+  SuggestionsService* suggestions_service =
+      SuggestionsServiceFactory::GetForProfile(profile);
 
   ntp_snippets::NTPSnippetsScheduler* scheduler = nullptr;
 #if defined(OS_ANDROID)
@@ -68,7 +76,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
   return new ntp_snippets::NTPSnippetsService(
-      profile->GetPrefs(), task_runner,
+      profile->GetPrefs(), suggestions_service, task_runner,
       g_browser_process->GetApplicationLocale(), scheduler,
       make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
           task_runner, signin_manager, token_service, request_context,

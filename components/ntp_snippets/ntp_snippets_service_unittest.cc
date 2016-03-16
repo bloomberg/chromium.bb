@@ -63,7 +63,7 @@ class NTPSnippetsServiceTest : public testing::Test {
         signin_client_.get(), account_tracker_.get());
 
     scoped_ptr<NTPSnippetsService> service(new NTPSnippetsService(
-        nullptr, task_runner.get(), std::string("fr"), nullptr,
+        nullptr, nullptr, task_runner.get(), std::string("fr"), nullptr,
         make_scoped_ptr(new NTPSnippetsFetcher(
             task_runner.get(), signin_manager, token_service,
             request_context_getter, base::FilePath()))));

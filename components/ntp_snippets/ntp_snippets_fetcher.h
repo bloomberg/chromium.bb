@@ -6,6 +6,7 @@
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
@@ -46,8 +47,10 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   scoped_ptr<SnippetsAvailableCallbackList::Subscription> AddCallback(
       const SnippetsAvailableCallback& callback) WARN_UNUSED_RESULT;
 
-  // Fetches snippets from the server.
-  void FetchSnippets();
+  // Fetches snippets from the server. |hosts| can be used to restrict the
+  // results to a set of hosts, e.g. "www.google.com". If it is empty, no
+  // restrictions are applied.
+  void FetchSnippets(const std::vector<std::string>& hosts);
 
  private:
   void StartTokenRequest();
@@ -72,6 +75,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
 
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  std::vector<std::string> hosts_;
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
   scoped_ptr<SigninManagerBase> signin_manager_;

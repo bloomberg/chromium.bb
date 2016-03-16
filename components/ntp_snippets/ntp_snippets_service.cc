@@ -14,6 +14,11 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/suggestions/proto/suggestions.pb.h"
+
+using suggestions::ChromeSuggestion;
+using suggestions::SuggestionsProfile;
+using suggestions::SuggestionsService;
 
 namespace {
 
@@ -28,6 +33,18 @@ bool ReadFileToString(const base::FilePath& path, std::string* data) {
   return success;
 }
 
+std::vector<std::string> GetSuggestionsHosts(
+    const SuggestionsProfile& suggestions) {
+  std::vector<std::string> hosts;
+  for (int i = 0; i < suggestions.suggestions_size(); ++i) {
+    const ChromeSuggestion& suggestion = suggestions.suggestions(i);
+    GURL url(suggestion.url());
+    if (url.is_valid())
+      hosts.push_back(url.host());
+  }
+  return hosts;
+}
+
 const char kContentInfo[] = "contentInfo";
 
 }  // namespace
@@ -36,20 +53,21 @@ namespace ntp_snippets {
 
 NTPSnippetsService::NTPSnippetsService(
     PrefService* pref_service,
+    SuggestionsService* suggestions_service,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
     scoped_ptr<NTPSnippetsFetcher> snippets_fetcher)
     : pref_service_(pref_service),
+      suggestions_service_(suggestions_service),
       loaded_(false),
       file_task_runner_(file_task_runner),
       application_language_code_(application_language_code),
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
       weak_ptr_factory_(this) {
-  snippets_fetcher_callback_ = snippets_fetcher_->AddCallback(
-      base::Bind(&NTPSnippetsService::OnSnippetsDownloaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+  snippets_fetcher_callback_ = snippets_fetcher_->AddCallback(base::Bind(
+      &NTPSnippetsService::OnSnippetsDownloaded, base::Unretained(this)));
 }
 
 NTPSnippetsService::~NTPSnippetsService() {}
@@ -61,8 +79,15 @@ void NTPSnippetsService::RegisterProfilePrefs(
 }
 
 void NTPSnippetsService::Init(bool enabled) {
-  // If enabled, get any existing snippets immediately from prefs.
   if (enabled) {
+    // |suggestions_service_| can be null in tests.
+    if (suggestions_service_) {
+      suggestions_service_subscription_ = suggestions_service_->AddCallback(
+          base::Bind(&NTPSnippetsService::OnSuggestionsChanged,
+                     base::Unretained(this)));
+    }
+
+    // Get any existing snippets immediately from prefs.
     LoadFromPrefs();
 
     // If we don't have any snippets yet, start a fetch.
@@ -87,7 +112,13 @@ void NTPSnippetsService::Shutdown() {
 }
 
 void NTPSnippetsService::FetchSnippets() {
-  snippets_fetcher_->FetchSnippets();
+  std::vector<std::string> hosts;
+  // |suggestions_service_| can be null in tests.
+  if (suggestions_service_) {
+    hosts = GetSuggestionsHosts(
+        suggestions_service_->GetSuggestionsDataFromCache());
+  }
+  snippets_fetcher_->FetchSnippets(hosts);
 }
 
 void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
@@ -98,6 +129,27 @@ void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
 
 void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void NTPSnippetsService::OnSuggestionsChanged(
+    const SuggestionsProfile& suggestions) {
+  std::vector<std::string> hosts = GetSuggestionsHosts(suggestions);
+
+  // Remove existing snippets that aren't in the suggestions anymore.
+  snippets_.erase(
+      std::remove_if(snippets_.begin(), snippets_.end(),
+                     [&hosts](const scoped_ptr<NTPSnippet>& snippet) {
+                       return std::find(hosts.begin(), hosts.end(),
+                                        snippet->url().host()) == hosts.end();
+                     }),
+      snippets_.end());
+
+  StoreToPrefs();
+
+  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                    NTPSnippetsServiceLoaded(this));
+
+  snippets_fetcher_->FetchSnippets(hosts);
 }
 
 void NTPSnippetsService::OnSnippetsDownloaded(
@@ -116,7 +168,6 @@ void NTPSnippetsService::OnFileReadDone(const std::string* json, bool success) {
 
   DCHECK(json);
   LoadFromJSONString(*json);
-  StoreToPrefs();
 }
 
 bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
@@ -207,6 +258,8 @@ void NTPSnippetsService::RemoveExpiredSnippets() {
                        return snippet->expiry_date() <= expiry;
                      }),
       snippets_.end());
+
+  StoreToPrefs();
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded(this));

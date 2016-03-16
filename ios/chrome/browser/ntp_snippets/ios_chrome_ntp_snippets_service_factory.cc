@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_ntp_snippets_service_factory.h"
 
-#include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
@@ -15,9 +14,13 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
+
+using suggestions::SuggestionsService;
+using suggestions::SuggestionsServiceFactory;
 
 // static
 IOSChromeNTPSnippetsServiceFactory*
@@ -37,7 +40,11 @@ IOSChromeNTPSnippetsServiceFactory::GetForBrowserState(
 IOSChromeNTPSnippetsServiceFactory::IOSChromeNTPSnippetsServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "NTPSnippetsService",
-          BrowserStateDependencyManager::GetInstance()) {}
+          BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(OAuth2TokenServiceFactory::GetInstance());
+  DependsOn(ios::SigninManagerFactory::GetInstance());
+  DependsOn(SuggestionsServiceFactory::GetInstance());
+}
 
 IOSChromeNTPSnippetsServiceFactory::~IOSChromeNTPSnippetsServiceFactory() {}
 
@@ -53,6 +60,8 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       browser_state->GetRequestContext();
+  SuggestionsService* suggestions_service =
+      SuggestionsServiceFactory::GetForBrowserState(chrome_browser_state);
 
   ntp_snippets::NTPSnippetsScheduler* scheduler = nullptr;
 
@@ -62,7 +71,7 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::GetSequenceToken(),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   return make_scoped_ptr(new ntp_snippets::NTPSnippetsService(
-      chrome_browser_state->GetPrefs(), task_runner,
+      chrome_browser_state->GetPrefs(), suggestions_service, task_runner,
       GetApplicationContext()->GetApplicationLocale(), scheduler,
       make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
           task_runner, (SigninManagerBase*)signin_manager, token_service,

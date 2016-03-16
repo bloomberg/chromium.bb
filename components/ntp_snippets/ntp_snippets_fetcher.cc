@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -31,11 +32,27 @@ const char kContentSnippetsServer[] =
     "https://chromereader-pa.googleapis.com/v1/fetch";
 const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
-const char kUnpersonalizedRequestParameters[] =
-    "{ \"response_detail_level\": \"FULL_DEBUG\", \"advanced_options\": { "
-    "\"local_scoring_params\": {\"content_params\" : { "
-    "\"only_return_personalized_results\": false } }, "
-    "\"global_scoring_params\": { \"num_to_return\": 10 } } }";
+const char kRequestParameterFormat[] =
+    "{"
+    "  \"response_detail_level\": \"FULL_DEBUG\","
+    "  \"advanced_options\": {"
+    "    \"local_scoring_params\": {"
+    "      \"content_params\": {"
+    "        \"only_return_personalized_results\": false"
+    "      }"
+    "%s"
+    "    },"
+    "    \"global_scoring_params\": {"
+    "      \"num_to_return\": 10"
+    "    }"
+    "  }"
+    "}";
+
+const char kHostRestrictFormat[] =
+    "      ,\"content_restricts\": {"
+    "        \"type\": \"HOST_RESTRICT\","
+    "        \"value\": \"%s\""
+    "      }";
 
 base::FilePath GetSnippetsSuggestionsPath(const base::FilePath& base_dir) {
   return base_dir.AppendASCII(kSnippetSuggestionsFilename);
@@ -66,7 +83,9 @@ NTPSnippetsFetcher::AddCallback(const SnippetsAvailableCallback& callback) {
   return callback_list_.Add(callback);
 }
 
-void NTPSnippetsFetcher::FetchSnippets() {
+void NTPSnippetsFetcher::FetchSnippets(const std::vector<std::string>& hosts) {
+  // TODO(treib): What to do if there's already a pending request?
+  hosts_ = hosts;
   if (signin_manager_->IsAuthenticated()) {
     StartTokenRequest();
   } else {
@@ -117,8 +136,12 @@ void NTPSnippetsFetcher::OnGetTokenSuccess(
                                        access_token.c_str()));
   headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
   url_fetcher_->SetExtraRequestHeaders(headers.ToString());
+  std::string host_restricts;
+  for (const std::string& host : hosts_)
+    host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
   url_fetcher_->SetUploadData("application/json",
-                              kUnpersonalizedRequestParameters);
+                              base::StringPrintf(kRequestParameterFormat,
+                                                 host_restricts.c_str()));
   url_fetcher_->SaveResponseToTemporaryFile(file_task_runner_.get());
   url_fetcher_->Start();
 }

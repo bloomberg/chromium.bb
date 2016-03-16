@@ -13,8 +13,14 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
+        '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'keyed_service_core',
+        'pref_registry',
+        'prefs/prefs.gyp:prefs',
+        'signin_core_browser',
+        'suggestions',
       ],
       'sources': [
         'ntp_snippets/inner_iterator.h',

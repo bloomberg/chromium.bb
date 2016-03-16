@@ -20,12 +20,17 @@
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
+#include "components/suggestions/suggestions_service.h"
 
 class PrefService;
 
 namespace base {
 class FilePath;
 class ListValue;
+}
+
+namespace suggestions {
+class SuggestionsProfile;
 }
 
 namespace user_prefs {
@@ -48,6 +53,7 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   // the locale, so 'en_US' (english language with US locale) and 'en-GB_US'
   // (British english person in the US) are not language code.
   NTPSnippetsService(PrefService* pref_service,
+                     suggestions::SuggestionsService* suggestions_service,
                      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
@@ -58,7 +64,7 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
 
   void Init(bool enabled);
 
-  // Fetches snippets from the server.
+  // Fetches snippets from the server and adds them to the current ones.
   void FetchSnippets();
 
   // Inherited from KeyedService.
@@ -78,7 +84,7 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   }
 
   // The snippets can be iterated upon only via a const_iterator. Recommended
-  // way to iterate is as follow:
+  // way to iterate is as follows:
   //
   // NTPSnippetsService service; // Assume is set.
   //  for (auto& snippet : *service) {
@@ -94,6 +100,7 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   }
 
  private:
+  void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
   void OnSnippetsDownloaded(const base::FilePath& download_path);
   void OnFileReadDone(const std::string* json, bool success);
 
@@ -114,6 +121,8 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
 
   PrefService* pref_service_;
 
+  suggestions::SuggestionsService* suggestions_service_;
+
   // True if the suggestions are loaded.
   bool loaded_;
 
@@ -131,6 +140,13 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
 
   // Scheduler for fetching snippets. Not owned.
   NTPSnippetsScheduler* scheduler_;
+
+  // The subscription to the SuggestionsService. When the suggestions change,
+  // SuggestionsService will call |OnSuggestionsChanged|, which triggers an
+  // update to the set of snippets.
+  using SuggestionsSubscription =
+      suggestions::SuggestionsService::ResponseCallbackList::Subscription;
+  scoped_ptr<SuggestionsSubscription> suggestions_service_subscription_;
 
   // The snippets fetcher.
   scoped_ptr<NTPSnippetsFetcher> snippets_fetcher_;
