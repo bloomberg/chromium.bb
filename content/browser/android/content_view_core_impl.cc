@@ -770,6 +770,22 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContext() const {
   return Java_ContentViewCore_getContext(env, obj.obj());
 }
 
+gfx::Size ContentViewCoreImpl::GetViewSizeWithOSKHidden() const {
+  gfx::Size size_pix;
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return size_pix = gfx::Size();
+  size_pix = gfx::Size(
+      Java_ContentViewCore_getViewportWidthPix(env, j_obj.obj()),
+      Java_ContentViewCore_getViewportHeightWithOSKHiddenPix(env, j_obj.obj()));
+
+  gfx::Size size_dip = gfx::ScaleToCeiledSize(size_pix, 1.0f / dpi_scale());
+  if (DoTopControlsShrinkBlinkSize())
+    size_dip.Enlarge(0, -GetTopControlsHeightDip());
+  return size_dip;
+}
+
 gfx::Size ContentViewCoreImpl::GetViewSize() const {
   gfx::Size size = GetViewportSizeDip();
   if (DoTopControlsShrinkBlinkSize())

@@ -204,6 +204,13 @@ public abstract class ChromeSwitches {
             "enable-autofill-keyboard-accessory-view";
 
     /**
+     * Enables overscroll of the on screen keyboard. With this flag on, the OSK will only resize the
+     * visual viewport.
+     * Native switch - switches::kEnableOSKOverscroll
+     */
+    public static final String ENABLE_OSK_OVERSCROLL = "enable-osk-overscroll";
+
+    /**
      * Enables hung renderer InfoBar activation for unresponsive web content.
      * Native switch - switches::kEnableHungRendererInfoBar
      */

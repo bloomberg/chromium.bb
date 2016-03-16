@@ -1045,6 +1045,14 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     /**
+     * @return Viewport height when the OSK is hidden in physical pixels as set from onSizeChanged.
+     */
+    @CalledByNative
+    public int getViewportHeightWithOSKHiddenPix() {
+        return mViewportHeightPix + getContentViewClient().getSystemWindowInsetBottom();
+    }
+
+    /**
      * @return Width of underlying physical surface.
      */
     @CalledByNative
@@ -1071,6 +1079,22 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     @CalledByNative
     public int getTopControlsHeightPix() {
         return mTopControlsHeightPix;
+    }
+
+    /**
+     * @return Current device scale factor (maps DIP pixels to physical pixels).
+     */
+    @VisibleForTesting
+    public float getDeviceScaleFactor() {
+        return mRenderCoordinates.getDeviceScaleFactor();
+    }
+
+    /**
+     * @return Current page scale factor (maps CSS pixels to DIP pixels).
+     */
+    @VisibleForTesting
+    public float getPageScaleFactor() {
+        return mRenderCoordinates.getPageScaleFactor();
     }
 
     /**

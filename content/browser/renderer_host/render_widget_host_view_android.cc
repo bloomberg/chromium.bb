@@ -619,7 +619,18 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (!content_view_core_)
     return gfx::Rect(default_size_);
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableOSKOverscroll))
+    return gfx::Rect(content_view_core_->GetViewSizeWithOSKHidden());
+
   return gfx::Rect(content_view_core_->GetViewSize());
+}
+
+gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() const {
+  if (!content_view_core_)
+    return gfx::Rect(default_size_).size();
+
+  return gfx::Rect(content_view_core_->GetViewSize()).size();
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {

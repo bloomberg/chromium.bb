@@ -613,6 +613,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_WEBRTC_STUN_ORIGIN_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcStunOrigin)},
 #endif
+#if defined(OS_ANDROID)
+    {"enable-osk-overscroll",
+     IDS_FLAGS_ENABLE_OSK_OVERSCROLL_NAME,
+     IDS_FLAGS_ENABLE_OSK_OVERSCROLL_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kEnableOSKOverscroll)},
+#endif
   // Native client is compiled out when DISABLE_NACL is defined.
 #if !defined(DISABLE_NACL)
     {"enable-nacl",  // FLAGS:RECORD_UMA

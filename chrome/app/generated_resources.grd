@@ -5542,6 +5542,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBVR_DESCRIPTION" desc="Description for the flag to enable WebVR APIs.">
         Enabling this option allows web applications to access experimental Virtual Reality APIs.
       </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_ENABLE_OSK_OVERSCROLL_NAME" desc="Name of about:flags option to turn on the overscrolling for the OSK.">
+          Enable OSK Overscroll
+        </message>
+        <message name="IDS_FLAGS_ENABLE_OSK_OVERSCROLL_DESCRIPTION" desc="Description of about:flags option to turn on overscrolling for the OSK.">
+          Enable OSK overscroll support. With this flag on, the OSK will only resize the visual viewport.
+        </message>
+      </if>
       <message name="IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_NAME" desc="Name of the 'Compositing for fixed position elements' lab.">
         Compositing for fixed position elements.
       </message>

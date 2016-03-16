@@ -431,6 +431,42 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
+        public int getSystemWindowInsetLeft() {
+            ChromeActivity activity = getActivity();
+            if (activity != null) {
+                return activity.getInsetObserverView().getSystemWindowInsetsLeft();
+            }
+            return 0;
+        }
+
+        @Override
+        public int getSystemWindowInsetTop() {
+            ChromeActivity activity = getActivity();
+            if (activity != null) {
+                return activity.getInsetObserverView().getSystemWindowInsetsTop();
+            }
+            return 0;
+        }
+
+        @Override
+        public int getSystemWindowInsetRight() {
+            ChromeActivity activity = getActivity();
+            if (activity != null) {
+                return activity.getInsetObserverView().getSystemWindowInsetsRight();
+            }
+            return 0;
+        }
+
+        @Override
+        public int getSystemWindowInsetBottom() {
+            ChromeActivity activity = getActivity();
+            if (activity != null) {
+                return activity.getInsetObserverView().getSystemWindowInsetsBottom();
+            }
+            return 0;
+        }
+
+        @Override
         public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
             return new ActivityContentVideoViewEmbedder(getActivity()) {
                 @Override

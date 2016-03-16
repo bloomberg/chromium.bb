@@ -205,6 +205,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ActivityWindowAndroid mWindowAndroid;
     private ChromeFullscreenManager mFullscreenManager;
     private CompositorViewHolder mCompositorViewHolder;
+    private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
     private ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
@@ -352,8 +353,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // black status bar
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.BLACK);
 
+        ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
-        mCompositorViewHolder.setRootView(getWindow().getDecorView().getRootView());
+        mCompositorViewHolder.setRootView(rootView);
+
+        // Setting fitsSystemWindows to false ensures that the root view doesn't consume the insets.
+        rootView.setFitsSystemWindows(false);
+
+        // Add a custom view right after the root view that stores the insets to access later.
+        // ContentViewCore needs the insets to determine the portion of the screen obscured by
+        // non-content displaying things such as the OSK.
+        mInsetObserverView = InsetObserverView.create(this);
+        rootView.addView(mInsetObserverView, 0);
     }
 
     /**
@@ -1057,6 +1068,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public TabModelSelector getTabModelSelector() {
         return mTabModelSelector;
+    }
+
+    /**
+     * Returns the {@link InsetObserverView} that has the current system window
+     * insets information.
+     * @return The {@link InsetObserverView}, possibly null.
+     */
+    public InsetObserverView getInsetObserverView() {
+        return mInsetObserverView;
     }
 
     @Override

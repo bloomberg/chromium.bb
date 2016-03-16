@@ -956,6 +956,9 @@ const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
 // Maintaining this code path in case there are compatibility bugs with the
 // standard async input path. Remove tracked as part of crbug.com/545628.
 const char kSyncInputForSyncCompositor[]    = "sync-input-for-sync-compositor";
+
+// Enables overscrolling for the OSK on Android.
+const char kEnableOSKOverscroll[]               = "enable-osk-overscroll";
 #endif
 
 // Enable the aggressive flushing of DOM Storage to minimize data loss.
