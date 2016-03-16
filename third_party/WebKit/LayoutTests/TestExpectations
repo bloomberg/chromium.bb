@@ -1338,6 +1338,9 @@ crbug.com/587779 [ Linux Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-s
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
+crbug.com/589525 [ Android ] svg/batik/text/textAnchor3.svg [ NeedsRebaseline ]
+crbug.com/589525 [ Android ] svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg [ NeedsRebaseline ]
+
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]
