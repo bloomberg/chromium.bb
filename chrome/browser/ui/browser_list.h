@@ -71,8 +71,6 @@ class BrowserList {
 
   // Called by Browser objects when their window is activated (focused).  This
   // allows us to determine what the last active Browser was on each desktop.
-  // Note: This only takes effect on the appropriate browser list as determined
-  // by |browser->host_desktop_type()|.
   static void SetLastActive(Browser* browser);
 
   // Closes all browsers for |profile| across all desktops.

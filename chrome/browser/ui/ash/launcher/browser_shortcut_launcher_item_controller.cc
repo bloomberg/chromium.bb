@@ -124,9 +124,7 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
     content::WebContents* web_contents) {
   // We need to call SetShelfIDForWindow for V1 applications since they are
   // content which might change and as such change the application type.
-  if (!browser ||
-      !launcher_controller()->IsBrowserFromActiveUser(browser) ||
-      browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH ||
+  if (!browser || !launcher_controller()->IsBrowserFromActiveUser(browser) ||
       IsSettingsBrowser(browser))
     return;
 
@@ -346,9 +344,7 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
 bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     Browser* browser) {
   // Only Ash desktop browser windows for the active user are represented.
-  if (!browser ||
-      !launcher_controller()->IsBrowserFromActiveUser(browser) ||
-      browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
+  if (!browser || !launcher_controller()->IsBrowserFromActiveUser(browser))
     return false;
 
   // v1 App popup windows with a valid app id have their own icon.

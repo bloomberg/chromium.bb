@@ -125,8 +125,6 @@ class BrowserActivationObserver : public chrome::BrowserListObserver {
   void OnBrowserSetLastActive(Browser* browser) override {
     if (browser == browser_)
       return;
-    if (browser->host_desktop_type() != browser_->host_desktop_type())
-      return;
     observed_ = true;
     if (message_loop_runner_.get() && message_loop_runner_->loop_running())
       message_loop_runner_->Quit();

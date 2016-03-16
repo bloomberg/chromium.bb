@@ -250,11 +250,8 @@ ToolsMenuModel::~ToolsMenuModel() {}
 // - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
   bool show_create_shortcuts = true;
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(USE_ASH)
   show_create_shortcuts = false;
-#elif defined(USE_ASH)
-  if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-    show_create_shortcuts = false;
 #endif
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
@@ -263,8 +260,7 @@ void ToolsMenuModel::Build(Browser* browser) {
     string_id = IDS_ADD_TO_APPLICATIONS;
 #endif
 #if defined(USE_ASH)
-    if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-      string_id = IDS_ADD_TO_SHELF;
+    string_id = IDS_ADD_TO_SHELF;
 #endif  // defined(USE_ASH)
     AddItemWithStringId(IDC_CREATE_HOSTED_APP, string_id);
   } else if (show_create_shortcuts) {

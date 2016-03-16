@@ -109,7 +109,6 @@ void OpenExternal(Profile* profile, const GURL& url) {
   // As such we should keep this code here.
   chrome::NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
-  params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
 
   if (url.SchemeIs("mailto")) {
     std::string string_url = kGmailComposeUrl;

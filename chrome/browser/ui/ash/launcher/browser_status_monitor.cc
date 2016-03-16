@@ -211,7 +211,7 @@ void BrowserStatusMonitor::OnWindowDestroyed(aura::Window* window) {
 }
 
 bool BrowserStatusMonitor::ShouldTrackBrowser(Browser* browser) {
-  return browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH;
+  return true;
 }
 
 void BrowserStatusMonitor::OnBrowserAdded(Browser* browser) {
@@ -265,9 +265,6 @@ void BrowserStatusMonitor::ActiveTabChanged(content::WebContents* old_contents,
   DCHECK(new_contents);
   browser = chrome::FindBrowserWithWebContents(new_contents);
 
-  if (browser && browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
-    return;
-
   ChromeLauncherController::AppState state =
       ChromeLauncherController::APP_STATE_INACTIVE;
 
@@ -293,9 +290,6 @@ void BrowserStatusMonitor::TabReplacedAt(TabStripModel* tab_strip_model,
                                          int index) {
   DCHECK(old_contents && new_contents);
   Browser* browser = chrome::FindBrowserWithWebContents(new_contents);
-
-  if (browser && browser->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
-    return;
 
   UpdateAppItemState(old_contents,
                      ChromeLauncherController::APP_STATE_REMOVED);

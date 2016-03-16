@@ -202,8 +202,7 @@ void ShowConflicts(Browser* browser) {
 }
 
 void ShowHelp(Browser* browser, HelpSource source) {
-  ShowHelpImpl(
-      browser, browser->profile(), browser->host_desktop_type(), source);
+  ShowHelpImpl(browser, browser->profile(), HOST_DESKTOP_TYPE_NATIVE, source);
 }
 
 void ShowHelpForProfile(Profile* profile,
