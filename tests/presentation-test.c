@@ -32,6 +32,7 @@
 #include <time.h>
 
 #include "shared/helpers.h"
+#include "shared/xalloc.h"
 #include "weston-test-client-helper.h"
 #include "presentation-time-client-protocol.h"
 

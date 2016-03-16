@@ -45,6 +45,7 @@
 
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
+#include "shared/xalloc.h"
 #include "window.h"
 
 static int option_fullscreen;

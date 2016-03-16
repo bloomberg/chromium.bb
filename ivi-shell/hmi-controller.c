@@ -61,6 +61,7 @@
 #include "ivi-layout-export.h"
 #include "ivi-hmi-controller-server-protocol.h"
 #include "shared/helpers.h"
+#include "shared/xalloc.h"
 
 /*****************************************************************************
  *  structure, globals
@@ -150,17 +151,6 @@ controller_module_init(struct weston_compositor *ec,
 /*****************************************************************************
  *  local functions
  ****************************************************************************/
-static void *
-fail_on_null(void *p, size_t size, char *file, int32_t line)
-{
-	if (size && !p) {
-		weston_log("%s(%d) %zd: out of memory\n", file, line, size);
-		exit(EXIT_FAILURE);
-	}
-
-	return p;
-}
-
 static void *
 mem_alloc(size_t size, char *file, int32_t line)
 {

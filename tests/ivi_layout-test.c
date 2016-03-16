@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "shared/helpers.h"
+#include "shared/xalloc.h"
 #include "weston-test-client-helper.h"
 #include "ivi-application-client-protocol.h"
 #include "ivi-test.h"

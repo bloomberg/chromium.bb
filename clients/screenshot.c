@@ -38,6 +38,7 @@
 #include <wayland-client.h>
 #include "weston-screenshooter-client-protocol.h"
 #include "shared/os-compatibility.h"
+#include "shared/xalloc.h"
 
 /* The screenshooter is a good example of a custom object exposed by
  * the compositor and serves as a test bed for implementing client
@@ -77,21 +78,6 @@ display_handle_geometry(void *data,
 		output->offset_x = x;
 		output->offset_y = y;
 	}
-}
-
-static void *
-xmalloc(size_t size)
-{
-	void *p;
-
-	p = malloc(size);
-	if (p == NULL) {
-		fprintf(stderr, "%s: out of memory\n",
-			program_invocation_short_name);
-		exit(EXIT_FAILURE);
-	}
-
-	return p;
 }
 
 static void

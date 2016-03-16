@@ -46,6 +46,7 @@
 #include "shared/cairo-util.h"
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
+#include "shared/xalloc.h"
 #include "shared/zalloc.h"
 
 #include "weston-desktop-shell-client-protocol.h"

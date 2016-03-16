@@ -33,24 +33,14 @@
 #include <sys/mman.h>
 #include <cairo.h>
 
-#include "zalloc.h"
 #include "shared/os-compatibility.h"
+#include "shared/xalloc.h"
+#include "shared/zalloc.h"
 #include "weston-test-client-helper.h"
 
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) > (b)) ? (b) : (a))
 #define clip(x, a, b)  min(max(x, a), b)
-
-void *
-fail_on_null(void *p)
-{
-	if (p == NULL) {
-		fprintf(stderr, "out of memory\n");
-		exit(EXIT_FAILURE);
-	}
-	return p;
-}
-
 
 int
 surface_contains(struct surface *surface, int x, int y)

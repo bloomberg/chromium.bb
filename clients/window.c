@@ -68,6 +68,7 @@ typedef void *EGLContext;
 #include <wayland-client.h>
 #include "shared/cairo-util.h"
 #include "shared/helpers.h"
+#include "shared/xalloc.h"
 #include "shared/zalloc.h"
 #include "xdg-shell-unstable-v5-client-protocol.h"
 #include "text-cursor-position-client-protocol.h"
@@ -4746,7 +4747,7 @@ window_create(struct display *display)
 		window->xdg_surface =
 			xdg_shell_get_xdg_surface(window->display->xdg_shell,
 						  window->main_surface->surface);
-		fail_on_null(window->xdg_surface);
+		fail_on_null(window->xdg_surface, 0, __FILE__, __LINE__);
 
 		xdg_surface_set_user_data(window->xdg_surface, window);
 		xdg_surface_add_listener(window->xdg_surface,
@@ -4757,7 +4758,7 @@ window_create(struct display *display)
 		window->ivi_surface =
 			ivi_application_surface_create(display->ivi_application,
 						       id_ivisurf, window->main_surface->surface);
-		fail_on_null(window->ivi_surface);
+		fail_on_null(window->ivi_surface, 0, __FILE__, __LINE__);
 
 		ivi_surface_add_listener(window->ivi_surface,
 					 &ivi_surface_listener, window);
@@ -4947,7 +4948,7 @@ create_menu(struct display *display,
 	menu->widget = window_add_widget(menu->window, menu);
 	menu->frame = frame_create(window->display->theme, 0, 0,
 				   FRAME_BUTTON_NONE, NULL);
-	fail_on_null(menu->frame);
+	fail_on_null(menu->frame, 0, __FILE__, __LINE__);
 	menu->entries = entries;
 	menu->count = count;
 	menu->release_count = 0;
@@ -5024,7 +5025,7 @@ window_show_menu(struct display *display,
 						    display_get_serial(window->display),
 						    window->x - ix,
 						    window->y - iy);
-	fail_on_null(window->xdg_popup);
+	fail_on_null(window->xdg_popup, 0, __FILE__, __LINE__);
 
 	xdg_popup_set_user_data(window->xdg_popup, window);
 	xdg_popup_add_listener(window->xdg_popup,
@@ -6026,39 +6027,4 @@ keysym_modifiers_get_mask(struct wl_array *modifiers_map,
 		return XKB_MOD_INVALID;
 
 	return 1 << index;
-}
-
-void *
-fail_on_null(void *p)
-{
-	if (p == NULL) {
-		fprintf(stderr, "%s: out of memory\n", program_invocation_short_name);
-		exit(EXIT_FAILURE);
-	}
-
-	return p;
-}
-
-void *
-xmalloc(size_t s)
-{
-	return fail_on_null(malloc(s));
-}
-
-void *
-xzalloc(size_t s)
-{
-	return fail_on_null(zalloc(s));
-}
-
-char *
-xstrdup(const char *s)
-{
-	return fail_on_null(strdup(s));
-}
-
-void *
-xrealloc(char *p, size_t s)
-{
-	return fail_on_null(realloc(p, s));
 }

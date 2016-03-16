@@ -35,6 +35,7 @@
 #include <wayland-client.h>
 
 #include "window.h"
+#include "shared/xalloc.h"
 
 struct spring {
 	double current;

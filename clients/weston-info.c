@@ -34,6 +34,7 @@
 
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
+#include "shared/xalloc.h"
 #include "shared/zalloc.h"
 #include "presentation-time-client-protocol.h"
 
@@ -118,35 +119,6 @@ struct weston_info {
 	struct wl_list infos;
 	bool roundtrip_needed;
 };
-
-static void *
-fail_on_null(void *p)
-{
-	if (p == NULL) {
-		fprintf(stderr, "%s: out of memory\n", program_invocation_short_name);
-		exit(EXIT_FAILURE);
-	}
-
-	return p;
-}
-
-static void *
-xmalloc(size_t s)
-{
-	return fail_on_null(malloc(s));
-}
-
-static void *
-xzalloc(size_t s)
-{
-	return fail_on_null(zalloc(s));
-}
-
-static char *
-xstrdup(const char *s)
-{
-	return fail_on_null(strdup(s));
-}
 
 static void
 print_global_info(void *data)

@@ -40,6 +40,7 @@
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
+#include "shared/xalloc.h"
 #include "shared/zalloc.h"
 #include "ivi-application-client-protocol.h"
 #include "ivi-hmi-controller-client-protocol.h"
@@ -162,18 +163,6 @@ hmi_homescreen_setting {
 	uint32_t	surface_id_offset;
 	int32_t		screen_num;
 };
-
-static void *
-fail_on_null(void *p, size_t size, char *file, int32_t line)
-{
-	if (size && !p) {
-		fprintf(stderr, "%s(%d) %zd: out of memory\n",
-			file, line, size);
-		exit(EXIT_FAILURE);
-	}
-
-	return p;
-}
 
 static void *
 mem_alloc(size_t size, char *file, int32_t line)

@@ -999,7 +999,9 @@ libshared_la_SOURCES =				\
 	shared/file-util.h			\
 	shared/helpers.h			\
 	shared/os-compatibility.c		\
-	shared/os-compatibility.h
+	shared/os-compatibility.h		\
+	shared/xalloc.c			\
+	shared/xalloc.h
 
 libshared_cairo_la_CFLAGS =			\
 	-DDATADIR='"$(datadir)"'		\

@@ -34,6 +34,7 @@
 #include "window.h"
 #include "input-method-unstable-v1-client-protocol.h"
 #include "text-input-unstable-v1-client-protocol.h"
+#include "shared/xalloc.h"
 
 struct keyboard;
 

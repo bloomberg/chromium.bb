@@ -41,6 +41,7 @@
 
 #include "window.h"
 #include "shared/helpers.h"
+#include "shared/xalloc.h"
 
 struct clickdot {
 	struct display *display;

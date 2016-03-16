@@ -145,21 +145,6 @@ struct rectangle {
 	int height;
 };
 
-void *
-fail_on_null(void *p);
-
-static inline void *
-xzalloc(size_t s)
-{
-	return fail_on_null(calloc(1, s));
-}
-
-static inline void *
-xmalloc(size_t s)
-{
-	return fail_on_null(malloc(s));
-}
-
 struct client *
 create_client(void);
 
