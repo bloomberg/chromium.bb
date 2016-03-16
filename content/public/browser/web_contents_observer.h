@@ -163,7 +163,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Called when a navigation finished in the WebContents. This happens when a
   // navigation is committed, aborted or replaced by a new one. To know if the
-  // navigation has committed, use NavigationHandle::HasCommited; use
+  // navigation has committed, use NavigationHandle::HasCommitted; use
   // NavigationHandle::IsErrorPage to know if the navigation resulted in an
   // error page.
   //
