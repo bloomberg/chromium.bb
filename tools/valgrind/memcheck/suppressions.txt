@@ -3442,3 +3442,13 @@
    ...
    fun:_ZN4base4BindIMN7content21ChromeAppCacheServiceEFvRKNS_8FilePathEPNS1_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN7storage20SpecialStoragePolicyEEEJPS2_S3_S7_SB_IS9_ESE_EEENS_8CallbackINS_8internal22MakeUnboundRunTypeImplIT_JDpT0_EE4TypeEEESM_DpOSN_
 }
+{
+   bug_595408
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base12_GLOBAL__N_120CreateRangesFromDataEPijm
+   fun:_ZN4base28PersistentHistogramAllocator15CreateHistogramEPNS0_23PersistentHistogramDataE
+   fun:_ZN4base28PersistentHistogramAllocator12GetHistogramEj
+   fun:_ZN4base28PersistentHistogramAllocator26GetNextHistogramWithIgnoreEPNS0_8IteratorEj
+   fun:_ZN4base28PersistentHistogramAllocator16GetNextHistogramEPNS0_8IteratorE
+}
