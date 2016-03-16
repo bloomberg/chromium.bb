@@ -30,14 +30,21 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include <type_traits>
 
 namespace WTF {
 
 namespace {
 
 template <typename Set>
-void removeFirstHelper()
+class ListOrLinkedHashSetTest : public ::testing::Test { };
+
+using SetTypes = ::testing::Types<ListHashSet<int>, ListHashSet<int, 1>, LinkedHashSet<int>>;
+TYPED_TEST_CASE(ListOrLinkedHashSetTest, SetTypes);
+
+TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst)
 {
+    using Set = TypeParam;
     Set list;
     list.add(-1);
     list.add(0);
@@ -64,20 +71,9 @@ void removeFirstHelper()
     EXPECT_TRUE(list.isEmpty());
 }
 
-TEST(ListHashSetTest, RemoveFirst)
+TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastNewItems)
 {
-    removeFirstHelper<ListHashSet<int>>();
-    removeFirstHelper<ListHashSet<int, 1>>();
-}
-
-TEST(LinkedHashSetTest, RemoveFirst)
-{
-    removeFirstHelper<LinkedHashSet<int>>();
-}
-
-template <typename Set>
-void appendOrMoveToLastNewItems()
-{
+    using Set = TypeParam;
     Set list;
     typename Set::AddResult result = list.appendOrMoveToLast(1);
     EXPECT_TRUE(result.isNewEntry);
@@ -98,20 +94,9 @@ void appendOrMoveToLastNewItems()
     ++iterator;
 }
 
-TEST(ListHashSetTest, AppendOrMoveToLastNewItems)
+TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastWithDuplicates)
 {
-    appendOrMoveToLastNewItems<ListHashSet<int>>();
-    appendOrMoveToLastNewItems<ListHashSet<int, 1>>();
-}
-
-TEST(LinkedHashSetTest, AppendOrMoveToLastNewItems)
-{
-    appendOrMoveToLastNewItems<LinkedHashSet<int>>();
-}
-
-template <typename Set>
-void appendOrMoveToLastWithDuplicates()
-{
+    using Set = TypeParam;
     Set list;
 
     // Add a single element twice.
@@ -149,20 +134,9 @@ void appendOrMoveToLastWithDuplicates()
     ++iterator;
 }
 
-TEST(ListHashSetTest, AppendOrMoveToLastWithDuplicates)
+TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToFirstNewItems)
 {
-    appendOrMoveToLastWithDuplicates<ListHashSet<int>>();
-    appendOrMoveToLastWithDuplicates<ListHashSet<int, 1>>();
-}
-
-TEST(LinkedHashSetTest, AppendOrMoveToLastWithDuplicates)
-{
-    appendOrMoveToLastWithDuplicates<LinkedHashSet<int>>();
-}
-
-template <typename Set>
-void prependOrMoveToFirstNewItems()
-{
+    using Set = TypeParam;
     Set list;
     typename Set::AddResult result = list.prependOrMoveToFirst(1);
     EXPECT_TRUE(result.isNewEntry);
@@ -183,20 +157,9 @@ void prependOrMoveToFirstNewItems()
     ++iterator;
 }
 
-TEST(ListHashSetTest, PrependOrMoveToFirstNewItems)
+TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToLastWithDuplicates)
 {
-    prependOrMoveToFirstNewItems<ListHashSet<int>>();
-    prependOrMoveToFirstNewItems<ListHashSet<int, 1>>();
-}
-
-TEST(LinkedHashSetTest, PrependOrMoveToFirstNewItems)
-{
-    prependOrMoveToFirstNewItems<LinkedHashSet<int>>();
-}
-
-template <typename Set>
-void prependOrMoveToLastWithDuplicates()
-{
+    using Set = TypeParam;
     Set list;
 
     // Add a single element twice.
@@ -234,80 +197,9 @@ void prependOrMoveToLastWithDuplicates()
     ++iterator;
 }
 
-TEST(ListHashSetTest, PrependOrMoveToLastWithDuplicates)
+TYPED_TEST(ListOrLinkedHashSetTest, Find)
 {
-    prependOrMoveToLastWithDuplicates<ListHashSet<int>>();
-    prependOrMoveToLastWithDuplicates<ListHashSet<int, 1>>();
-}
-
-TEST(LinkedHashSetTest, PrependOrMoveToLastWithDuplicates)
-{
-    prependOrMoveToLastWithDuplicates<LinkedHashSet<int>>();
-}
-
-class DummyRefCounted : public RefCounted<DummyRefCounted> {
-public:
-    DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
-    ~DummyRefCounted() { m_isDeleted = true; }
-    void ref()
-    {
-        WTF::RefCounted<DummyRefCounted>::ref();
-        ++m_refInvokesCount;
-    }
-
-    static int m_refInvokesCount;
-
-private:
-    bool& m_isDeleted;
-};
-
-int DummyRefCounted::m_refInvokesCount = 0;
-
-template <typename Set>
-void withRefPtr()
-{
-    bool isDeleted = false;
-    DummyRefCounted::m_refInvokesCount = 0;
-    RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
-    EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);
-
-    Set set;
-    set.add(ptr);
-    // Referenced only once (to store a copy in the container).
-    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
-    EXPECT_EQ(ptr, set.first());
-    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
-
-    DummyRefCounted* rawPtr = ptr.get();
-
-    EXPECT_TRUE(set.contains(ptr));
-    EXPECT_TRUE(set.contains(rawPtr));
-    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
-
-    ptr.clear();
-    EXPECT_FALSE(isDeleted);
-    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
-
-    set.remove(rawPtr);
-    EXPECT_TRUE(isDeleted);
-
-    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
-}
-
-TEST(ListHashSetTest, WithRefPtr)
-{
-    withRefPtr<ListHashSet<RefPtr<DummyRefCounted>>>();
-    withRefPtr<ListHashSet<RefPtr<DummyRefCounted>, 1>>();
-}
-
-TEST(LinkedHashSetTest, WithRefPtr)
-{
-    withRefPtr<LinkedHashSet<RefPtr<DummyRefCounted>>>();
-}
-
-template <typename Set, typename SetRef, typename Iterator>
-void findHelper()
-{
+    using Set = TypeParam;
     Set set;
     set.add(-1);
     set.add(0);
@@ -315,33 +207,32 @@ void findHelper()
     set.add(2);
     set.add(3);
 
-    SetRef ref = set;
-    Iterator it = ref.find(2);
-    EXPECT_EQ(2, *it);
-    ++it;
-    EXPECT_EQ(3, *it);
-    --it;
-    --it;
-    EXPECT_EQ(1, *it);
+    {
+        const Set& ref = set;
+        typename Set::const_iterator it = ref.find(2);
+        EXPECT_EQ(2, *it);
+        ++it;
+        EXPECT_EQ(3, *it);
+        --it;
+        --it;
+        EXPECT_EQ(1, *it);
+    }
+    {
+        Set& ref = set;
+        typename Set::iterator it = ref.find(2);
+        EXPECT_EQ(2, *it);
+        ++it;
+        EXPECT_EQ(3, *it);
+        --it;
+        --it;
+        EXPECT_EQ(1, *it);
+    }
 }
 
-TEST(ListHashSetTest, Find)
+TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore)
 {
-    findHelper<ListHashSet<int>, const ListHashSet<int>&, ListHashSet<int>::const_iterator>();
-    findHelper<ListHashSet<int>, ListHashSet<int>&, ListHashSet<int>::iterator>();
-    findHelper<ListHashSet<int, 1>, const ListHashSet<int, 1>&, ListHashSet<int, 1>::const_iterator>();
-    findHelper<ListHashSet<int, 1>, ListHashSet<int, 1>&, ListHashSet<int, 1>::iterator>();
-}
-
-TEST(LinkedHashSetTest, Find)
-{
-    findHelper<LinkedHashSet<int>, const LinkedHashSet<int>&, LinkedHashSet<int>::const_iterator>();
-    findHelper<LinkedHashSet<int>, LinkedHashSet<int>&, LinkedHashSet<int>::iterator>();
-}
-
-template <typename Set>
-void insertBeforeHelper(bool canModifyWhileIterating)
-{
+    using Set = TypeParam;
+    bool canModifyWhileIterating = !std::is_same<Set, LinkedHashSet<int>>::value;
     Set set;
     set.add(-1);
     set.add(0);
@@ -385,20 +276,10 @@ void insertBeforeHelper(bool canModifyWhileIterating)
     EXPECT_EQ(7u, set.size());
 }
 
-TEST(ListHashSetTest, InsertBefore)
+TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator)
 {
-    insertBeforeHelper<ListHashSet<int>>(true);
-    insertBeforeHelper<ListHashSet<int, 1>>(true);
-}
-
-TEST(LinkedHashSetTest, InsertBefore)
-{
-    insertBeforeHelper<LinkedHashSet<int>>(false);
-}
-
-template <typename Set>
-void addReturnIterator(bool canModifyWhileIterating)
-{
+    using Set = TypeParam;
+    bool canModifyWhileIterating = !std::is_same<Set, LinkedHashSet<int>>::value;
     Set set;
     set.add(-1);
     set.add(0);
@@ -443,20 +324,116 @@ void addReturnIterator(bool canModifyWhileIterating)
     EXPECT_EQ(4, set.last());
 }
 
-TEST(ListHashSetTest, AddReturnIterator)
+TYPED_TEST(ListOrLinkedHashSetTest, Swap)
 {
-    addReturnIterator<ListHashSet<int>>(true);
-    addReturnIterator<ListHashSet<int, 1>>(true);
+    using Set = TypeParam;
+    int num = 10;
+    Set set0;
+    Set set1;
+    Set set2;
+    for (int i = 0; i < num; ++i) {
+        set1.add(i + 1);
+        set2.add(num - i);
+    }
+
+    typename Set::iterator it1 = set1.begin();
+    typename Set::iterator it2 = set2.begin();
+    for (int i = 0; i < num; ++i, ++it1, ++it2) {
+        EXPECT_EQ(*it1, i + 1);
+        EXPECT_EQ(*it2, num - i);
+    }
+    EXPECT_EQ(set0.begin(), set0.end());
+    EXPECT_EQ(it1, set1.end());
+    EXPECT_EQ(it2, set2.end());
+
+    // Shift sets: 2->1, 1->0, 0->2
+    set1.swap(set2); // Swap with non-empty sets.
+    set0.swap(set2); // Swap with an empty set.
+
+    it1 = set0.begin();
+    it2 = set1.begin();
+    for (int i = 0; i < num; ++i, ++it1, ++it2) {
+        EXPECT_EQ(*it1, i + 1);
+        EXPECT_EQ(*it2, num - i);
+    }
+    EXPECT_EQ(it1, set0.end());
+    EXPECT_EQ(it2, set1.end());
+    EXPECT_EQ(set2.begin(), set2.end());
+
+    int removedIndex = num >> 1;
+    set0.remove(removedIndex + 1);
+    set1.remove(num - removedIndex);
+
+    it1 = set0.begin();
+    it2 = set1.begin();
+    for (int i = 0; i < num; ++i, ++it1, ++it2) {
+        if (i == removedIndex)
+            ++i;
+        EXPECT_EQ(*it1, i + 1);
+        EXPECT_EQ(*it2, num - i);
+    }
+    EXPECT_EQ(it1, set0.end());
+    EXPECT_EQ(it2, set1.end());
 }
 
-TEST(LinkedHashSetTest, AddReturnIterator)
-{
-    addReturnIterator<LinkedHashSet<int>>(false);
-}
+class DummyRefCounted : public RefCounted<DummyRefCounted> {
+public:
+    DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
+    ~DummyRefCounted() { m_isDeleted = true; }
+    void ref()
+    {
+        WTF::RefCounted<DummyRefCounted>::ref();
+        ++m_refInvokesCount;
+    }
+
+    static int m_refInvokesCount;
+
+private:
+    bool& m_isDeleted;
+};
+
+int DummyRefCounted::m_refInvokesCount = 0;
 
 template <typename Set>
-void excerciseValuePeekInType()
+class ListOrLinkedHashSetRefPtrTest : public ::testing::Test { };
+
+using RefPtrSetTypes = ::testing::Types<ListHashSet<RefPtr<DummyRefCounted>>, ListHashSet<RefPtr<DummyRefCounted>, 1>, LinkedHashSet<RefPtr<DummyRefCounted>>>;
+TYPED_TEST_CASE(ListOrLinkedHashSetRefPtrTest, RefPtrSetTypes);
+
+TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr)
 {
+    using Set = TypeParam;
+    bool isDeleted = false;
+    DummyRefCounted::m_refInvokesCount = 0;
+    RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
+    EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);
+
+    Set set;
+    set.add(ptr);
+    // Referenced only once (to store a copy in the container).
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+    EXPECT_EQ(ptr, set.first());
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+
+    DummyRefCounted* rawPtr = ptr.get();
+
+    EXPECT_TRUE(set.contains(ptr));
+    EXPECT_TRUE(set.contains(rawPtr));
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+
+    ptr.clear();
+    EXPECT_FALSE(isDeleted);
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+
+    set.remove(rawPtr);
+    EXPECT_TRUE(isDeleted);
+
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+}
+
+TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType)
+{
+    using Set = TypeParam;
     Set set;
     bool isDeleted = false;
     bool isDeleted2 = false;
@@ -489,17 +466,6 @@ void excerciseValuePeekInType()
     EXPECT_TRUE(isDeleted2);
 
     EXPECT_EQ(0u, set.size());
-}
-
-TEST(ListHashSetTest, ExcerciseValuePeekInType)
-{
-    excerciseValuePeekInType<ListHashSet<RefPtr<DummyRefCounted>>>();
-    excerciseValuePeekInType<ListHashSet<RefPtr<DummyRefCounted>, 1>>();
-}
-
-TEST(LinkedHashSetTest, ExcerciseValuePeekInType)
-{
-    excerciseValuePeekInType<LinkedHashSet<RefPtr<DummyRefCounted>>>();
 }
 
 struct Simple {
@@ -537,8 +503,17 @@ struct ComplexityTranslator {
 };
 
 template <typename Set>
-void translatorTest()
+class ListOrLinkedHashSetTranslatorTest : public ::testing::Test { };
+
+using TranslatorSetTypes = ::testing::Types<
+    ListHashSet<Complicated, 256, ComplicatedHashFunctions>,
+    ListHashSet<Complicated, 1, ComplicatedHashFunctions>,
+    LinkedHashSet<Complicated, ComplicatedHashFunctions>>;
+TYPED_TEST_CASE(ListOrLinkedHashSetTranslatorTest, TranslatorSetTypes);
+
+TYPED_TEST(ListOrLinkedHashSetTranslatorTest, ComplexityTranslator)
 {
+    using Set = TypeParam;
     Set set;
     set.add(Complicated(42));
     int baseLine = Complicated::s_objectsConstructed;
@@ -560,17 +535,6 @@ void translatorTest()
     constIterator = constSet.template find<ComplexityTranslator>(Simple(103));
     EXPECT_EQ(constIterator, constSet.end());
     EXPECT_EQ(baseLine, Complicated::s_objectsConstructed);
-}
-
-TEST(ListHashSetTest, ComplexityTranslator)
-{
-    translatorTest<ListHashSet<Complicated, 256, ComplicatedHashFunctions>>();
-    translatorTest<ListHashSet<Complicated, 1, ComplicatedHashFunctions>>();
-}
-
-TEST(LinkedHashSetTest, ComplexityTranslator)
-{
-    translatorTest<LinkedHashSet<Complicated, ComplicatedHashFunctions>>();
 }
 
 struct Dummy {
@@ -657,68 +621,6 @@ TEST(ListHashSetTest, WithOwnPtr)
     EXPECT_EQ(ptr2, ownPtr2);
 }
 
-template <typename Set>
-void swapTestHelper()
-{
-    int num = 10;
-    Set set0;
-    Set set1;
-    Set set2;
-    for (int i = 0; i < num; ++i) {
-        set1.add(i + 1);
-        set2.add(num - i);
-    }
-
-    typename Set::iterator it1 = set1.begin();
-    typename Set::iterator it2 = set2.begin();
-    for (int i = 0; i < num; ++i, ++it1, ++it2) {
-        EXPECT_EQ(*it1, i + 1);
-        EXPECT_EQ(*it2, num - i);
-    }
-    EXPECT_EQ(set0.begin(), set0.end());
-    EXPECT_EQ(it1, set1.end());
-    EXPECT_EQ(it2, set2.end());
-
-    // Shift sets: 2->1, 1->0, 0->2
-    set1.swap(set2); // Swap with non-empty sets.
-    set0.swap(set2); // Swap with an empty set.
-
-    it1 = set0.begin();
-    it2 = set1.begin();
-    for (int i = 0; i < num; ++i, ++it1, ++it2) {
-        EXPECT_EQ(*it1, i + 1);
-        EXPECT_EQ(*it2, num - i);
-    }
-    EXPECT_EQ(it1, set0.end());
-    EXPECT_EQ(it2, set1.end());
-    EXPECT_EQ(set2.begin(), set2.end());
-
-    int removedIndex = num >> 1;
-    set0.remove(removedIndex + 1);
-    set1.remove(num - removedIndex);
-
-    it1 = set0.begin();
-    it2 = set1.begin();
-    for (int i = 0; i < num; ++i, ++it1, ++it2) {
-        if (i == removedIndex)
-            ++i;
-        EXPECT_EQ(*it1, i + 1);
-        EXPECT_EQ(*it2, num - i);
-    }
-    EXPECT_EQ(it1, set0.end());
-    EXPECT_EQ(it2, set1.end());
-}
-
-TEST(ListHashSetTest, Swap)
-{
-    swapTestHelper<ListHashSet<int>>();
-}
-
-TEST(LinkedHashSetTest, Swap)
-{
-    swapTestHelper<LinkedHashSet<int>>();
-}
-
 class CountCopy final {
 public:
     static int* const kDeletedValue;
@@ -764,20 +666,26 @@ struct DefaultHash<CountCopy> {
 namespace {
 
 template <typename Set>
-int moveConstructorCopyCount()
+class ListOrLinkedHashSetCountCopyTest : public ::testing::Test { };
+
+using CountCopySetTypes = ::testing::Types<ListHashSet<CountCopy>, ListHashSet<CountCopy, 1>, LinkedHashSet<CountCopy>>;
+TYPED_TEST_CASE(ListOrLinkedHashSetCountCopyTest, CountCopySetTypes);
+
+TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveConstructionShouldNotMakeCopy)
 {
+    using Set = TypeParam;
     Set set;
     int counter = 0;
     set.add(CountCopy(&counter));
 
     counter = 0;
     Set other(std::move(set));
-    return counter;
+    EXPECT_EQ(0, counter);
 }
 
-template <typename Set>
-int moveAssignmentCopyCount()
+TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveAssignmentShouldNotMakeACopy)
 {
+    using Set = TypeParam;
     Set set;
     int counter = 0;
     set.add(CountCopy(&counter));
@@ -785,19 +693,7 @@ int moveAssignmentCopyCount()
     Set other(set);
     counter = 0;
     set = std::move(other);
-    return counter;
-}
-
-TEST(ListHashSetTest, MoveShouldNotMakeCopy)
-{
-    EXPECT_EQ(0, moveConstructorCopyCount<ListHashSet<CountCopy>>());
-    EXPECT_EQ(0, moveAssignmentCopyCount<ListHashSet<CountCopy>>());
-}
-
-TEST(LinkedHashSetTest, MoveAssignmentShouldNotMakeACopy)
-{
-    EXPECT_EQ(0, moveConstructorCopyCount<LinkedHashSet<CountCopy>>());
-    EXPECT_EQ(0, moveAssignmentCopyCount<LinkedHashSet<CountCopy>>());
+    EXPECT_EQ(0, counter);
 }
 
 } // anonymous namespace
