@@ -208,6 +208,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       field.name = field_type;
       field.value = value;
       field.form_control_type = "text";
+      field.is_focusable = true;
       form.fields.push_back(field);
     }
 
@@ -225,6 +226,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
             StringToFieldType(base::UTF16ToUTF8(field->name));
         field->set_heuristic_type(type);
       }
+      form_structure.IdentifySections(false);
 
       // Import the profile.
       scoped_ptr<CreditCard> imported_credit_card;

@@ -361,10 +361,16 @@ class PersonalDataManager : public KeyedService,
   // Called when the value of prefs::kAutofillEnabled changes.
   void EnabledPrefChanged();
 
-  // Go through the |form| fields and attempt to extract and import an address
-  // profile. Returns true on extraction success. There are many reasons that
-  // extraction may fail (see implementation).
-  bool ImportAddressProfile(const FormStructure& form);
+  // Go through the |form| fields and attempt to extract and import valid
+  // address profiles. Returns true on extraction success of at least one
+  // profile. There are many reasons that extraction may fail (see
+  // implementation).
+  bool ImportAddressProfiles(const FormStructure& form);
+
+  // Helper method for ImportAddressProfiles which only considers the fields for
+  // a specified |section|.
+  bool ImportAddressProfileForSection(const FormStructure& form,
+                                      const std::string& section);
 
   // Go through the |form| fields and attempt to extract a new credit card in
   // |imported_credit_card|, or update an existing card.

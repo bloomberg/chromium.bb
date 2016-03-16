@@ -652,6 +652,7 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
                          cached_field->second->html_mode());
       field->set_previously_autofilled(
           cached_field->second->previously_autofilled());
+      field->set_section(cached_field->second->section());
     }
   }
 

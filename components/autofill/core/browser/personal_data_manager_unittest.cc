@@ -262,8 +262,8 @@ class PersonalDataManagerTest : public testing::Test {
   // Helper methods that simply forward the call to the private member (to avoid
   // having to friend every test that needs to access the private
   // PersonalDataManager::ImportAddressProfile or ImportCreditCard).
-  bool ImportAddressProfile(const FormStructure& form) {
-    return personal_data_->ImportAddressProfile(form);
+  bool ImportAddressProfiles(const FormStructure& form) {
+    return personal_data_->ImportAddressProfiles(form);
   }
   bool ImportCreditCard(const FormStructure& form,
                         bool should_return_local_card,
@@ -959,9 +959,9 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   EXPECT_EQ(profile0, *results[0]);
 }
 
-// ImportAddressProfile tests.
+// ImportAddressProfiles tests.
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles) {
   FormData form;
   FormFieldData field;
   test::CreateTestFormField(
@@ -984,7 +984,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1000,7 +1000,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile) {
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_BadEmail) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_BadEmail) {
   FormData form;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1022,14 +1022,14 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_BadEmail) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfile(form_structure));
+  EXPECT_FALSE(ImportAddressProfiles(form_structure));
 
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(0U, results.size());
 }
 
 // Tests that a 'confirm email' field does not block profile import.
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_TwoEmails) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_TwoEmails) {
   FormData form;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1052,13 +1052,13 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_TwoEmails) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
 }
 
 // Tests two email fields containing different values blocks profile import.
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_TwoDifferentEmails) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_TwoDifferentEmails) {
   FormData form;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1081,13 +1081,13 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_TwoDifferentEmails) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfile(form_structure));
+  EXPECT_FALSE(ImportAddressProfiles(form_structure));
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(0U, results.size());
 }
 
 // Tests that not enough filled fields will result in not importing an address.
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_NotEnoughFilledFields) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_NotEnoughFilledFields) {
   FormData form;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1101,7 +1101,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_NotEnoughFilledFields) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfile(form_structure));
+  EXPECT_FALSE(ImportAddressProfiles(form_structure));
 
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(0U, profiles.size());
@@ -1109,7 +1109,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_NotEnoughFilledFields) {
   ASSERT_EQ(0U, cards.size());
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_MinimumAddressUSA) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MinimumAddressUSA) {
   // United States addresses must specifiy one address line, a city, state and
   // zip code.
   FormData form;
@@ -1129,12 +1129,12 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MinimumAddressUSA) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_MinimumAddressGB) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MinimumAddressGB) {
   // British addresses do not require a state/province as the county is usually
   // not requested on forms.
   FormData form;
@@ -1154,12 +1154,12 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MinimumAddressGB) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_MinimumAddressGI) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MinimumAddressGI) {
   // Gibraltar has the most minimal set of requirements for a valid address.
   // There are no cities or provinces and no postal/zip code system.
   FormData form;
@@ -1174,13 +1174,13 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MinimumAddressGI) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
 }
 
 TEST_F(PersonalDataManagerTest,
-       ImportAddressProfile_PhoneNumberSplitAcrossMultipleFields) {
+       ImportAddressProfiles_PhoneNumberSplitAcrossMultipleFields) {
   FormData form;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1212,7 +1212,7 @@ TEST_F(PersonalDataManagerTest,
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1228,7 +1228,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_MultilineAddress) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MultilineAddress) {
   FormData form;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1256,7 +1256,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MultilineAddress) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1272,7 +1272,8 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MultilineAddress) {
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_TwoValidProfiles) {
+TEST_F(PersonalDataManagerTest,
+       ImportAddressProfiles_TwoValidProfilesDifferentForms) {
   FormData form1;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1296,7 +1297,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_TwoValidProfiles) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure1));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure1));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1334,7 +1335,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_TwoValidProfiles) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure2));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1351,7 +1352,239 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_TwoValidProfiles) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_SameProfileWithConflict) {
+TEST_F(PersonalDataManagerTest,
+       ImportAddressProfiles_TwoValidProfilesSameForm) {
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  // Different address.
+  test::CreateTestFormField("First name:", "first_name", "John", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Adams", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "second@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "22 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&expected, "George", NULL, "Washington",
+                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
+                       "San Francisco", "California", "94102", NULL, NULL);
+  AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&expected2, "John", NULL, "Adams", "second@gmail.com",
+                       NULL, "22 Laussat St", NULL, "San Francisco",
+                       "California", "94102", NULL, NULL);
+
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(2U, results.size());
+
+  std::vector<AutofillProfile*> profiles;
+  profiles.push_back(&expected);
+  profiles.push_back(&expected2);
+  ExpectSameElements(profiles, personal_data_->GetProfiles());
+}
+
+TEST_F(PersonalDataManagerTest,
+       ImportAddressProfiles_OneValidProfileSameForm_PartsHidden) {
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  // There is an empty but hidden form section (this has been observed on sites
+  // where users can choose which form section they choose by unhiding it).
+  test::CreateTestFormField("First name:", "first_name", "", "text",
+                            &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "", "text", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "", "text",
+                            &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "", "text",
+                            &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "", "text", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "", "text", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "", "text", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+
+  // Still able to do the import.
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&expected, "George", NULL, "Washington",
+                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
+                       "San Francisco", "California", "94102", NULL, NULL);
+
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results.size());
+
+  std::vector<AutofillProfile*> profiles;
+  profiles.push_back(&expected);
+  ExpectSameElements(profiles, personal_data_->GetProfiles());
+}
+
+// A maximum of two address profiles are imported per form.
+TEST_F(PersonalDataManagerTest,
+       ImportAddressProfiles_ThreeValidProfilesSameForm) {
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  // Different address within the same form.
+  test::CreateTestFormField("First name:", "first_name", "John", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Adams", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "second@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "22 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+
+  // Yet another different address.
+  test::CreateTestFormField("First name:", "first_name", "David", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Cameron", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address", "10 Downing Street", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "London", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Postcode:", "postcode", "SW1A 2AA", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Country:", "country", "United Kingdom", "text",
+                            &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Only two are saved.
+  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&expected, "George", NULL, "Washington",
+                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
+                       "San Francisco", "California", "94102", NULL, NULL);
+  AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&expected2, "John", NULL, "Adams", "second@gmail.com",
+                       NULL, "22 Laussat St", NULL, "San Francisco",
+                       "California", "94102", NULL, NULL);
+
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(2U, results.size());
+
+  std::vector<AutofillProfile*> profiles;
+  profiles.push_back(&expected);
+  profiles.push_back(&expected2);
+  ExpectSameElements(profiles, personal_data_->GetProfiles());
+}
+
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_SameProfileWithConflict) {
   FormData form1;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1380,7 +1613,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_SameProfileWithConflict) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure1));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure1));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1428,7 +1661,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_SameProfileWithConflict) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure2));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1444,7 +1677,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_SameProfileWithConflict) {
   EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_MissingInfoInOld) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
   FormData form1;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1465,7 +1698,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MissingInfoInOld) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure1));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure1));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1503,7 +1736,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MissingInfoInOld) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure2));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1520,7 +1753,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MissingInfoInOld) {
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_MissingInfoInNew) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInNew) {
   FormData form1;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1547,7 +1780,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MissingInfoInNew) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure1));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure1));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1586,7 +1819,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MissingInfoInNew) {
 
   FormStructure form_structure2(form2);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure2));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1600,7 +1833,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_MissingInfoInNew) {
   EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
 
-TEST_F(PersonalDataManagerTest, ImportAddressProfile_InsufficientAddress) {
+TEST_F(PersonalDataManagerTest, ImportAddressProfiles_InsufficientAddress) {
   FormData form1;
   FormFieldData field;
   test::CreateTestFormField(
@@ -1623,7 +1856,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_InsufficientAddress) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes();
-  EXPECT_FALSE(ImportAddressProfile(form_structure1));
+  EXPECT_FALSE(ImportAddressProfiles(form_structure1));
 
   // Since no refresh is expected, reload the data from the database to make
   // sure no changes were written out.
@@ -1640,7 +1873,7 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfile_InsufficientAddress) {
 // works: if either the full name OR all the non-empty name pieces match, the
 // profile is a match.
 TEST_F(PersonalDataManagerTest,
-       ImportAddressProfile_ExistingVerifiedProfileWithConflict) {
+       ImportAddressProfiles_ExistingVerifiedProfileWithConflict) {
   // Start with a verified profile.
   AutofillProfile profile(base::GenerateGUID(), "Chrome settings");
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
@@ -1680,7 +1913,7 @@ TEST_F(PersonalDataManagerTest,
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure));
 
   // Wait for the refresh, which in this case is a no-op.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1701,7 +1934,7 @@ TEST_F(PersonalDataManagerTest,
 
   FormStructure form_structure2(form);
   form_structure2.DetermineHeuristicTypes();
-  EXPECT_TRUE(ImportAddressProfile(form_structure2));
+  EXPECT_TRUE(ImportAddressProfiles(form_structure2));
 
   // Wait for the refresh, which in this case is a no-op.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -2387,8 +2620,8 @@ TEST_F(PersonalDataManagerTest, ImportFormData_TwoAddressesOneCreditCard) {
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
 
-  // Test that the address has NOT been saved.
-  EXPECT_TRUE(personal_data_->GetProfiles().empty());
+  // Test that both addresses have been saved.
+  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
 
   // Test that the credit card has been saved.
   CreditCard expected_card(base::GenerateGUID(), "https://www.example.com");

@@ -343,8 +343,9 @@ bool PersonalDataManager::ImportFormData(
   //   |should_return_local_card|.
   bool cc_import =
       ImportCreditCard(form, should_return_local_card, imported_credit_card);
-  // - ImportAddressProfile may eventually save or update an address profile.
-  bool address_import = ImportAddressProfile(form);
+  // - ImportAddressProfiles may eventually save or update one or more address
+  //   profiles.
+  bool address_import = ImportAddressProfiles(form);
   if (cc_import || address_import)
     return true;
 
@@ -1228,7 +1229,35 @@ void PersonalDataManager::EnabledPrefChanged() {
   NotifyPersonalDataChanged();
 }
 
-bool PersonalDataManager::ImportAddressProfile(const FormStructure& form) {
+bool PersonalDataManager::ImportAddressProfiles(const FormStructure& form) {
+  if (!form.field_count())
+    return false;
+
+  // Relevant sections for address fields.
+  std::set<std::string> sections;
+  for (const AutofillField* field : form) {
+    if (field->Type().group() != CREDIT_CARD)
+      sections.insert(field->section());
+  }
+
+  // We save a maximum of 2 profiles per submitted form (e.g. for shipping and
+  // billing).
+  static const size_t kMaxNumAddressProfilesSaved = 2;
+  size_t num_saved_profiles = 0;
+  for (const std::string& section : sections) {
+    if (num_saved_profiles == kMaxNumAddressProfilesSaved)
+      break;
+
+    if (ImportAddressProfileForSection(form, section))
+      num_saved_profiles++;
+  }
+
+  return num_saved_profiles > 0;
+}
+
+bool PersonalDataManager::ImportAddressProfileForSection(
+    const FormStructure& form,
+    const std::string& section) {
   // The candidate for profile import. There are many ways for the candidate to
   // be rejected (see everywhere this function returns false).
   AutofillProfile candidate_profile;
@@ -1244,12 +1273,17 @@ bool PersonalDataManager::ImportAddressProfile(const FormStructure& form) {
 
   // Go through each |form| field and attempt to constitute a valid profile.
   for (const AutofillField* field : form) {
+    // Reject fields that are not within the specified |section|.
+    if (field->section() != section)
+      continue;
+
     base::string16 value;
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     // If we don't know the type of the field, or the user hasn't entered any
-    // information into the field, then skip it.
-    if (!field->IsFieldFillable() || value.empty())
+    // information into the field, or the field is non-focusable (hidden), then
+    // skip it.
+    if (!field->IsFieldFillable() || !field->is_focusable || value.empty())
       continue;
 
     AutofillType field_type = field->Type();
@@ -1323,8 +1357,9 @@ bool PersonalDataManager::ImportCreditCard(
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     // If we don't know the type of the field, or the user hasn't entered any
-    // information into the field, then skip it.
-    if (!field->IsFieldFillable() || value.empty())
+    // information into the field, or the field is non-focusable (hidden), then
+    // skip it.
+    if (!field->IsFieldFillable() || !field->is_focusable || value.empty())
       continue;
 
     AutofillType field_type = field->Type();

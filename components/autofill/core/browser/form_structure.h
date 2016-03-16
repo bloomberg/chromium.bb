@@ -216,6 +216,7 @@ class FormStructure {
   bool operator!=(const FormData& form) const;
 
  private:
+  friend class AutofillMergeTest;
   friend class FormStructureTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
   FRIEND_TEST_ALL_PREFIXES(FormStructureTest, FindLongestCommonPrefix);
