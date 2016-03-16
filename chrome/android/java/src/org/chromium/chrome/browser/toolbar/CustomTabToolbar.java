@@ -74,6 +74,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private long mInitializeTimeStamp;
     private int mState = STATE_DOMAIN_ONLY;
     private String mFirstUrl;
+    private boolean mShowsOfflinePage = false;
 
     private Runnable mTitleAnimationStarter = new Runnable() {
         @Override
@@ -283,6 +284,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                 setUrlBarHidden(false);
             }
         }
+        showOfflineBoltIfNecessary();
     }
 
     @Override
@@ -380,6 +382,10 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             ((TintedDrawable) mCustomActionButton.getDrawable()).setTint(
                     mUseDarkColors ? mDarkModeTint : mLightModeTint);
         }
+        if (mSecurityButton.getDrawable() instanceof TintedDrawable) {
+            ((TintedDrawable) mSecurityButton.getDrawable()).setTint(
+                    mUseDarkColors ? mDarkModeTint : mLightModeTint);
+        }
     }
 
     @Override
@@ -432,6 +438,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public void updateSecurityIcon(int securityLevel) {
         if (mSecurityIconType == securityLevel || mState == STATE_TITLE_ONLY) return;
+
         mSecurityIconType = securityLevel;
 
         if (securityLevel == ConnectionSecurityLevel.NONE) {
@@ -449,6 +456,25 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         }
         mUrlBar.emphasizeUrl();
         mUrlBar.invalidate();
+    }
+
+    private void showOfflineBoltIfNecessary() {
+        boolean isOfflinePage = getCurrentTab() != null && getCurrentTab().isOfflinePage();
+        if (isOfflinePage == mShowsOfflinePage) return;
+
+        mShowsOfflinePage = isOfflinePage;
+        if (mShowsOfflinePage) {
+            // If we are showing an offline page, immediately update icon to offline bolt.
+            TintedDrawable bolt = TintedDrawable.constructTintedDrawable(
+                    getResources(), R.drawable.offline_bolt);
+            bolt.setTint(mUseDarkColors ? mDarkModeTint : mLightModeTint);
+            mSecurityButton.setImageDrawable(bolt);
+            mAnimDelegate.showSecurityButton();
+        } else {
+            // We are hiding the offline page so connection security information will change.
+            mSecurityIconType = ConnectionSecurityLevel.NONE;
+            mAnimDelegate.hideSecurityButton();
+        }
     }
 
     /**
