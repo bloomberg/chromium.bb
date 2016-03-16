@@ -157,6 +157,31 @@ TEST(LayerOwnerTest, InvertPropertyRemainSameWithRecreateLayer) {
   EXPECT_EQ(old_layer2->layer_inverted(), owner.layer()->layer_inverted());
 }
 
+TEST(LayerOwnerTest, RecreateLayerWithTransform) {
+  LayerOwner owner;
+  Layer* layer = new Layer;
+  owner.SetLayer(layer);
+
+  gfx::Transform transform;
+  transform.Scale(2, 1);
+  transform.Translate(10, 5);
+
+  layer->SetTransform(transform);
+
+  scoped_ptr<Layer> old_layer1 = owner.RecreateLayer();
+  // Both new layer and original layer have the same transform.
+  EXPECT_EQ(transform, old_layer1->GetTargetTransform());
+  EXPECT_EQ(transform, owner.layer()->GetTargetTransform());
+
+  // But they're now separated, so changing the old layer's transform
+  // should not affect the owner's.
+  owner.layer()->SetTransform(gfx::Transform());
+  EXPECT_EQ(transform, old_layer1->GetTargetTransform());
+  scoped_ptr<Layer> old_layer2 = owner.RecreateLayer();
+  EXPECT_TRUE(old_layer2->GetTargetTransform().IsIdentity());
+  EXPECT_TRUE(owner.layer()->GetTargetTransform().IsIdentity());
+}
+
 TEST_F(LayerOwnerTestWithCompositor, RecreateRootLayerWithCompositor) {
   LayerOwner owner;
   Layer* layer = new Layer;
