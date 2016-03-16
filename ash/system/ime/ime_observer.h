@@ -14,6 +14,12 @@ class IMEObserver {
   // Notify the observer that the IME state has changed, and should be
   // refreshed.
   virtual void OnIMERefresh() = 0;
+
+  // Notify the observer that the IME menu activation state has changed, and
+  // should be refreshed. |is_active| represents whether the new IME menu is
+  // active, and IME related items in system tray should be removed if
+  // |is_active| is true.
+  virtual void OnIMEMenuActivationChanged(bool is_active) = 0;
 };
 
 }  // namespace ash

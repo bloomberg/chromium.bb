@@ -265,6 +265,10 @@ cr.define('options', function() {
         if (loadTimeData.getBoolean('enableLanguageOptionsImeMenu'))
           $('language-options-ime-menu-template').hidden = false;
 
+        // Updates the initial checked state of the check box.
+        Preferences.getInstance().addEventListener(
+            ACTIVATE_IME_MENU_PREF, this.updateImeMenuCheckbox_.bind(this));
+
         // Listen to check on 'activate-ime-menu' checkbox.
         var checkboxImeMenu = $('activate-ime-menu');
         checkboxImeMenu.addEventListener('click',
@@ -1394,6 +1398,15 @@ cr.define('options', function() {
         Preferences.setBooleanPref(ACTIVATE_IME_MENU_PREF,
                                    checkbox.checked, true);
       }
+    },
+
+    /**
+     * Updates the activate-ime-menu check box's checked state.
+     * @param {Event} e Change event.
+     * @private
+     */
+    updateImeMenuCheckbox_: function(e) {
+      $('activate-ime-menu').checked = e.value.value;
     },
   };
 

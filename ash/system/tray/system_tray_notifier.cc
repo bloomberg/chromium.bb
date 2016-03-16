@@ -275,6 +275,12 @@ void SystemTrayNotifier::NotifyRefreshIME() {
                     OnIMERefresh());
 }
 
+void SystemTrayNotifier::NotifyRefreshIMEMenu(bool is_active) {
+  FOR_EACH_OBSERVER(IMEObserver,
+                    ime_observers_,
+                    OnIMEMenuActivationChanged(is_active));
+}
+
 void SystemTrayNotifier::NotifyLocaleChanged(
     LocaleObserver::Delegate* delegate,
     const std::string& cur_locale,

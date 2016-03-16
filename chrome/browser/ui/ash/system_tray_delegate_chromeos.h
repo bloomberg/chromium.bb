@@ -68,7 +68,8 @@ class SystemTrayDelegateChromeOS
       public user_manager::UserManager::UserSessionStateObserver,
       public SupervisedUserServiceObserver,
       public ShutdownPolicyHandler::Delegate,
-      public system::SystemClockObserver {
+      public system::SystemClockObserver,
+      public input_method::InputMethodManager::ImeMenuObserver {
  public:
   SystemTrayDelegateChromeOS();
 
@@ -268,6 +269,14 @@ class SystemTrayDelegateChromeOS
 
   // Overridden from ShutdownPolicyObserver::Delegate.
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
+
+  // input_method::InputMethodManager::ImeMenuObserver:
+  void ImeMenuActivationChanged(bool is_active) override;
+  void ImeMenuListChanged() override;
+  void ImeMenuItemsChanged(
+      const std::string& engine_id,
+      const std::vector<input_method::InputMethodManager::MenuItem>& items)
+      override;
 
   // helper methods used by GetSupervisedUserMessage.
   const base::string16 GetLegacySupervisedUserMessage() const;

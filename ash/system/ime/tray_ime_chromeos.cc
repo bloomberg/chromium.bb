@@ -236,7 +236,8 @@ TrayIME::TrayIME(SystemTray* system_tray)
       tray_label_(NULL),
       default_(NULL),
       detailed_(NULL),
-      keyboard_suppressed_(false) {
+      keyboard_suppressed_(false),
+      is_visible_(true) {
   Shell::GetInstance()->system_tray_notifier()->AddIMEObserver(this);
   Shell::GetInstance()->system_tray_notifier()->AddVirtualKeyboardObserver(
       this);
@@ -273,7 +274,7 @@ void TrayIME::Update() {
 
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
   if (tray_label_) {
-    bool visible = count > 1;
+    bool visible = count > 1 && is_visible_;
     tray_label_->SetVisible(visible);
     // Do not change label before hiding because this change is noticeable.
     if (!visible)
@@ -368,9 +369,17 @@ void TrayIME::OnIMERefresh() {
   Update();
 }
 
+void TrayIME::OnIMEMenuActivationChanged(bool is_active) {
+  is_visible_ = !is_active;
+  if (is_visible_)
+    OnIMERefresh();
+  else
+    Update();
+}
+
 bool TrayIME::ShouldDefaultViewBeVisible() {
-  return ime_list_.size() > 1 || property_list_.size() > 1 ||
-         ShouldShowKeyboardToggle();
+  return is_visible_ && (ime_list_.size() > 1 || property_list_.size() > 1 ||
+                         ShouldShowKeyboardToggle());
 }
 
 }  // namespace ash

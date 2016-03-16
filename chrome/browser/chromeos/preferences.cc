@@ -334,6 +334,9 @@ void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {
   previous_input_method_.Init(prefs::kLanguagePreviousInputMethod,
                               prefs, callback);
   ime_menu_activated_.Init(prefs::kLanguageImeMenuActivated, prefs, callback);
+  // Notifies the system tray to remove the IME items.
+  if (switches::IsImeMenuEnabled() && ime_menu_activated_.GetValue())
+    input_method::InputMethodManager::Get()->ImeMenuActivationChanged(true);
 
   xkb_auto_repeat_enabled_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, prefs, callback);
@@ -600,7 +603,8 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   }
 
   if (pref_name == prefs::kLanguageImeMenuActivated &&
-      (reason == REASON_PREF_CHANGED || reason == REASON_ACTIVE_USER_CHANGED)) {
+      (reason == REASON_PREF_CHANGED || reason == REASON_ACTIVE_USER_CHANGED) &&
+      switches::IsImeMenuEnabled()) {
     const bool activated = ime_menu_activated_.GetValue();
     input_method::InputMethodManager::Get()->ImeMenuActivationChanged(
         activated);

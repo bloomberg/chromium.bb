@@ -126,6 +126,7 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifySystemClockTimeUpdated();
   void NotifySystemClockCanSetTimeChanged(bool can_set_time);
   void NotifyRefreshIME();
+  void NotifyRefreshIMEMenu(bool is_active);
   void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
                            const std::string& cur_locale,
                            const std::string& from_locale,

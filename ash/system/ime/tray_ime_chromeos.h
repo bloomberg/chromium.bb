@@ -69,6 +69,7 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
 
   // Overridden from IMEObserver.
   void OnIMERefresh() override;
+  void OnIMEMenuActivationChanged(bool is_active) override;
 
   // Whether the default view should be shown.
   bool ShouldDefaultViewBeVisible();
@@ -82,6 +83,8 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   IMEInfoList ime_list_;
   IMEInfo current_ime_;
   IMEPropertyInfoList property_list_;
+  // Whether the IME label and tray items should be visible.
+  bool is_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayIME);
 };

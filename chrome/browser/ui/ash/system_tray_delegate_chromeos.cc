@@ -238,6 +238,7 @@ void SystemTrayDelegateChromeOS::Initialize() {
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
   input_method::InputMethodManager::Get()->AddObserver(this);
+  input_method::InputMethodManager::Get()->AddImeMenuObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
 
   g_browser_process->platform_part()->GetSystemClock()->AddObserver(this);
@@ -1293,6 +1294,16 @@ void SystemTrayDelegateChromeOS::OnShutdownPolicyChanged(
   FOR_EACH_OBSERVER(ash::ShutdownPolicyObserver, shutdown_policy_observers_,
                     OnShutdownPolicyChanged(reboot_on_shutdown));
 }
+
+void SystemTrayDelegateChromeOS::ImeMenuActivationChanged(bool is_active) {
+  GetSystemTrayNotifier()->NotifyRefreshIMEMenu(is_active);
+}
+
+void SystemTrayDelegateChromeOS::ImeMenuListChanged() {}
+
+void SystemTrayDelegateChromeOS::ImeMenuItemsChanged(
+    const std::string& engine_id,
+    const std::vector<input_method::InputMethodManager::MenuItem>& items) {}
 
 const base::string16
 SystemTrayDelegateChromeOS::GetLegacySupervisedUserMessage() const {
