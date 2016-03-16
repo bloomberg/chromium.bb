@@ -2037,10 +2037,8 @@ ivi_layout_screen_set_render_order(struct ivi_layout_screen *iviscrn,
 				   struct ivi_layout_layer **pLayer,
 				   const int32_t number)
 {
-	struct ivi_layout *layout = get_instance();
 	struct ivi_layout_layer *ivilayer = NULL;
 	struct ivi_layout_layer *next = NULL;
-	uint32_t *id_layer = NULL;
 	int32_t i = 0;
 
 	if (iviscrn == NULL) {
@@ -2057,17 +2055,9 @@ ivi_layout_screen_set_render_order(struct ivi_layout_screen *iviscrn,
 	assert(wl_list_empty(&iviscrn->pending.layer_list));
 
 	for (i = 0; i < number; i++) {
-		id_layer = &pLayer[i]->id_layer;
-		wl_list_for_each(ivilayer, &layout->layer_list, link) {
-			if (*id_layer != ivilayer->id_layer) {
-				continue;
-			}
-
-			wl_list_remove(&ivilayer->pending.link);
-			wl_list_insert(&iviscrn->pending.layer_list,
-				       &ivilayer->pending.link);
-			break;
-		}
+		wl_list_remove(&pLayer[i]->pending.link);
+		wl_list_insert(&iviscrn->pending.layer_list,
+				&pLayer[i]->pending.link);
 	}
 
 	iviscrn->order.dirty = 1;
