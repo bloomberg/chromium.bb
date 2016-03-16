@@ -41,7 +41,7 @@ enum DirectWriteLoadFamilyResult {
 const char kFontKeyName[] = "font_key_name";
 
 void LogLoadFamilyResult(DirectWriteLoadFamilyResult result) {
-  UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.LoadFamily", result,
+  UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.LoadFamilyResult", result,
                             LOAD_FAMILY_MAX_VALUE);
 }
 
