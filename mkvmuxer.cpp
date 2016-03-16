@@ -183,6 +183,8 @@ bool Frame::CopyFrom(const Frame& frame) {
   track_number_ = frame.track_number();
   timestamp_ = frame.timestamp();
   discard_padding_ = frame.discard_padding();
+  reference_block_timestamp_ = frame.reference_block_timestamp();
+  reference_block_timestamp_set_ = frame.reference_block_timestamp_set();
   return true;
 }
 
