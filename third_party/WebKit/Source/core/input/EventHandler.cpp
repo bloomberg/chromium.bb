@@ -1798,6 +1798,10 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
     if (node && node->isTextNode())
         node = FlatTreeTraversal::parent(*node);
 
+    // If we're over the frame scrollbar, scroll the document.
+    if (!node && result.scrollbar())
+        node = doc->documentElement();
+
     bool sendDOMEvent = true;
     LocalFrame* subframe = subframeForTargetNode(node);
     if (subframe) {
