@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -361,7 +362,18 @@ const CGFloat kAnimationDuration = 0.2;
     [nc removeObserver:self
                   name:NSWindowDidResizeNotification
                 object:[self window]];
+    [nc removeObserver:self
+                  name:NSWindowDidChangeScreenNotification
+                object:[self window]];
   }
+}
+
+- (void)windowDidChangeScreen {
+  // Inform the AutocompleteTextFieldCell's of the coordinate system line
+  // width needed to draw a single-pixel line. This value changes as we move
+  // between Retina and non-Retina displays.
+  [[self cell] setSinglePixelLineWidth:[self cr_lineWidth]];
+  [self setNeedsDisplay];
 }
 
 - (void)viewDidMoveToWindow {
@@ -387,6 +399,14 @@ const CGFloat kAnimationDuration = 0.2;
          selector:@selector(windowDidResize:)
              name:NSWindowDidResizeNotification
            object:[self window]];
+  [nc addObserver:self
+         selector:@selector(windowDidChangeScreen)
+             name:NSWindowDidChangeScreenNotification
+           object:[self window]];
+
+  // Make sure the cell has the current line width.
+  [[self cell] setSinglePixelLineWidth:[self cr_lineWidth]];
+
   // Only register for drops if not in a popup window. Lazily create the
   // drop handler when the type of window is known.
   BrowserWindowController* windowController =

@@ -33,9 +33,13 @@ class LocationBarDecoration;
 
   // Retains the NSEvent that caused the controlView to become firstResponder.
   base::scoped_nsobject<NSEvent> focusEvent_;
+
+  // The coordinate system line width that draws a single pixel line.
+  CGFloat singlePixelLineWidth_;
 }
 
 @property(assign, nonatomic) BOOL isPopupMode;
+@property(assign, nonatomic) CGFloat singlePixelLineWidth;
 
 // Line height used for text in this cell.
 - (CGFloat)lineHeight;

@@ -162,6 +162,7 @@ size_t CalculatePositionsInFrame(
 @implementation AutocompleteTextFieldCell
 
 @synthesize isPopupMode = isPopupMode_;
+@synthesize singlePixelLineWidth = singlePixelLineWidth_;
 
 - (CGFloat)topTextFrameOffset {
   return 3.0;
@@ -243,6 +244,15 @@ size_t CalculatePositionsInFrame(
   CalculatePositionsInFrame(textFrame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &textFrame);
 
+  // The text needs to be slightly higher than its default position to match the
+  // Material Design spec. It turns out this adjustment is equal to the single
+  // pixel line width (so 1 on non-Retina, 0.5 on Retina). Make this adjustment
+  // after computing decoration positions because the decorations are already
+  // correctly positioned.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    textFrame.origin.y -= singlePixelLineWidth_;
+  }
+
   // NOTE: This function must closely match the logic in
   // |-drawInteriorWithFrame:inView:|.
 
@@ -290,32 +300,31 @@ size_t CalculatePositionsInFrame(
 }
 
 - (void)drawWithFrame:(NSRect)frame inView:(NSView*)controlView {
-  // Background color.
-  const CGFloat lineWidth = [controlView cr_lineWidth];
   BOOL isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
   BOOL inDarkMode = [[controlView window] inIncognitoModeWithSystemTheme];
   BOOL showingFirstResponder = [self showsFirstResponder];
   // Adjust the inset by 1/2 the line width to get a crisp line (screen pixels
   // lay between cooridnate space lines).
-  CGFloat insetSize = 1 - lineWidth / 2.;
+  CGFloat insetSize = 1 - singlePixelLineWidth_ / 2.;
   if (isModeMaterial && showingFirstResponder && !inDarkMode) {
     insetSize++;
   } else if (!isModeMaterial) {
-    insetSize = lineWidth == 0.5 ? 1.5 : 2.0;
+    insetSize = singlePixelLineWidth_ == 0.5 ? 1.5 : 2.0;
   }
 
   // Compute the border's bezier path.
   NSRect pathRect = NSInsetRect(frame, insetSize, insetSize);
   // In dark mode, make room for a shadow beneath the bottom edge.
   if (inDarkMode && isModeMaterial) {
-    pathRect.size.height -= lineWidth;
+    pathRect.size.height -= singlePixelLineWidth_;
   }
   NSBezierPath* path =
       [NSBezierPath bezierPathWithRoundedRect:pathRect
                                       xRadius:kCornerRadius
                                       yRadius:kCornerRadius];
   if (isModeMaterial) {
-    [path setLineWidth:showingFirstResponder ? lineWidth * 2 : lineWidth];
+    [path setLineWidth:showingFirstResponder ? singlePixelLineWidth_ * 2
+                                             : singlePixelLineWidth_];
   }
 
   // Fill the background.
@@ -360,17 +369,18 @@ size_t CalculatePositionsInFrame(
       // edge.
       {
         gfx::ScopedNSGraphicsContextSaveGState saveState;
-        [NSBezierPath setDefaultLineWidth:lineWidth];
+        [NSBezierPath setDefaultLineWidth:singlePixelLineWidth_];
 
         [[NSColor colorWithCalibratedWhite:120 / 255. alpha:1] set];
         NSPoint origin = NSMakePoint(NSMinX(pathRect) + 3,
-                                     NSMinY(pathRect) + lineWidth);
-        NSPoint destination = NSMakePoint(NSMaxX(pathRect) - 3,
-                                          NSMinY(pathRect) + lineWidth);
+                                     NSMinY(pathRect) + singlePixelLineWidth_);
+        NSPoint destination =
+            NSMakePoint(NSMaxX(pathRect) - 3,
+                        NSMinY(pathRect) + singlePixelLineWidth_);
         [NSBezierPath strokeLineFromPoint:origin
                                   toPoint:destination];
 
-        origin.y = destination.y = NSMaxY(pathRect) + lineWidth;
+        origin.y = destination.y = NSMaxY(pathRect) + singlePixelLineWidth_;
         [[NSColor colorWithCalibratedWhite:69 / 255. alpha:1] set];
         [NSBezierPath strokeLineFromPoint:origin
                                   toPoint:destination];
@@ -392,14 +402,15 @@ size_t CalculatePositionsInFrame(
   // Draw the focus ring.
   if (showingFirstResponder) {
     if (!isModeMaterial) {
-      NSRect focusRingRect = NSInsetRect(frame, lineWidth, lineWidth);
+      NSRect focusRingRect =
+          NSInsetRect(frame, singlePixelLineWidth_, singlePixelLineWidth_);
       path = [NSBezierPath bezierPathWithRoundedRect:focusRingRect
                                              xRadius:kCornerRadius
                                              yRadius:kCornerRadius];
-      [path setLineWidth:lineWidth * 2.0];
+      [path setLineWidth:singlePixelLineWidth_ * 2.0];
     }
 
-    CGFloat alphaComponent = 0.5 / lineWidth;
+    CGFloat alphaComponent = 0.5 / singlePixelLineWidth_;
     if (isModeMaterial && inDarkMode) {
       alphaComponent = 1;
     }
