@@ -1140,7 +1140,7 @@ function runTest(enableWatchDogWhileDebugging)
     testRunner.evaluateInWebInspector(initializeCallId, toEvaluate);
 
     if (window.debugTest)
-        test = "function() { " + test.toString() + "; window.test = test; InspectorTest.addResult = window._originalConsoleLog; InspectorTest.completeTest = function() {}; InspectorTest.debugTest = true; }";
+        test = "function() { window.test = " + test.toString() + "; InspectorTest.addResult = window._originalConsoleLog; InspectorTest.completeTest = function() {}; }";
     toEvaluate = "(" + runTestInFrontend + ")(" + test + ");";
     testRunner.evaluateInWebInspector(runTestCallId, toEvaluate);
 
