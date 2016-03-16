@@ -27,18 +27,6 @@ EmbeddedSharedWorkerContentSettingsClientProxy::
     ~EmbeddedSharedWorkerContentSettingsClientProxy() {
 }
 
-bool EmbeddedSharedWorkerContentSettingsClientProxy::allowDatabase(
-    const blink::WebString& name,
-    const blink::WebString& display_name,
-    unsigned long estimated_size) {
-  if (is_unique_origin_)
-    return false;
-  bool result = false;
-  thread_safe_sender_->Send(new WorkerProcessHostMsg_AllowDatabase(
-      routing_id_, origin_url_, name, display_name, &result));
-  return result;
-}
-
 bool
 EmbeddedSharedWorkerContentSettingsClientProxy::requestFileSystemAccessSync() {
   if (is_unique_origin_)

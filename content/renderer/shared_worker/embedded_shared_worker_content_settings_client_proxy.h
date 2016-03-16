@@ -27,9 +27,6 @@ class EmbeddedSharedWorkerContentSettingsClientProxy
   ~EmbeddedSharedWorkerContentSettingsClientProxy() override;
 
   // WebWorkerContentSettingsClientProxy overrides.
-  bool allowDatabase(const blink::WebString& name,
-                     const blink::WebString& display_name,
-                     unsigned long estimated_size) override;
   bool requestFileSystemAccessSync() override;
   bool allowIndexedDB(const blink::WebString& name) override;
 

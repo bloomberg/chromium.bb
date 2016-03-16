@@ -31,20 +31,6 @@ WorkerContentSettingsClientProxy::WorkerContentSettingsClientProxy(
 
 WorkerContentSettingsClientProxy::~WorkerContentSettingsClientProxy() {}
 
-bool WorkerContentSettingsClientProxy::allowDatabase(
-    const blink::WebString& name,
-    const blink::WebString& display_name,
-    unsigned long estimated_size) {
-  if (is_unique_origin_)
-    return false;
-
-  bool result = false;
-  sync_message_filter_->Send(new ChromeViewHostMsg_AllowDatabase(
-      routing_id_, document_origin_url_, top_frame_origin_url_,
-      name, display_name, &result));
-  return result;
-}
-
 bool WorkerContentSettingsClientProxy::requestFileSystemAccessSync() {
   if (is_unique_origin_)
     return false;
