@@ -35,7 +35,7 @@
 
 namespace blink {
 
-ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
+ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode, CharacterMode charMode)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
@@ -48,6 +48,8 @@ ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensit
         flags |= v8::RegExp::kIgnoreCase;
     if (multilineMode == MultilineEnabled)
         flags |= v8::RegExp::kMultiline;
+    if (charMode == UTF16)
+        flags |= v8::RegExp::kUnicode;
 
     v8::Local<v8::RegExp> regex;
     if (v8::RegExp::New(context, v8String(isolate, pattern), static_cast<v8::RegExp::Flags>(flags)).ToLocal(&regex))

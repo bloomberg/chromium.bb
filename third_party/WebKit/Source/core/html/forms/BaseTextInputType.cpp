@@ -75,13 +75,26 @@ bool BaseTextInputType::patternMismatch(const String& value) const
 {
     const AtomicString& rawPattern = element().fastGetAttribute(patternAttr);
     // Empty values can't be mismatched
-    if (rawPattern.isNull() || value.isEmpty() || !ScriptRegexp(rawPattern, TextCaseSensitive).isValid())
+    if (rawPattern.isNull() || value.isEmpty())
         return false;
+    bool rawPatternIsValid = ScriptRegexp(rawPattern, TextCaseSensitive).isValid();
+    bool rawUnicodePatternIsValid = ScriptRegexp(rawPattern, TextCaseSensitive, MultilineDisabled, ScriptRegexp::UTF16).isValid();
+    if (rawPatternIsValid != rawUnicodePatternIsValid)
+        UseCounter::count(element().document(), UseCounter::PatternAttributeUnicodeFlagIsIncompatible);
+    if (!rawPatternIsValid)
+        return false;
+
     String pattern = "^(?:" + rawPattern + ")$";
     int matchLength = 0;
     int valueLength = value.length();
     int matchOffset = ScriptRegexp(pattern, TextCaseSensitive).match(value, 0, &matchLength);
-    return matchOffset || matchLength != valueLength;
+    bool bmpMismatched = matchOffset != 0 || matchLength != valueLength;
+    matchLength = 0;
+    matchOffset = ScriptRegexp(pattern, TextCaseSensitive, MultilineDisabled, ScriptRegexp::UTF16).match(value, 0, &matchLength);
+    bool utf16Mismatched = matchOffset != 0 || matchLength != valueLength;
+    if (bmpMismatched != utf16Mismatched)
+        UseCounter::count(element().document(), UseCounter::PatternAttributeUnicodeFlagIsIncompatible);
+    return bmpMismatched;
 }
 
 bool BaseTextInputType::supportsPlaceholder() const

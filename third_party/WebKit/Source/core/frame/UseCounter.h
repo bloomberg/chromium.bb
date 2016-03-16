@@ -1089,6 +1089,7 @@ public:
         HTMLLabelElementFormIsDifferentFromControlForm = 1261,
         HTMLLabelElementHasNoControlAndFormIsAncestor = 1262,
         HTMLLabelElementControlForNonFormAssociatedElement = 1263,
+        PatternAttributeUnicodeFlagIsIncompatible = 1264,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
