@@ -181,7 +181,7 @@ scoped_refptr<cc::Layer> createClipLayer(const ClipPaintPropertyNode* node)
         FloatPoint offsetDueToParentClipOffset = node->parent()->clipRect().rect().location();
         gfx::Transform undoClipOffset;
         undoClipOffset.Translate(-offsetDueToParentClipOffset.x(), -offsetDueToParentClipOffset.y());
-        transform.PreconcatTransform(undoClipOffset);
+        transform.ConcatTransform(undoClipOffset);
     }
 
     scoped_refptr<cc::Layer> layer = cc::Layer::Create();
@@ -302,7 +302,7 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
         FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
         gfx::Transform undoClipOffset;
         undoClipOffset.Translate(-offsetDueToClipOffset.x(), -offsetDueToClipOffset.y());
-        transform.PreconcatTransform(undoClipOffset);
+        transform.ConcatTransform(undoClipOffset);
     }
 
     scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(contentLayerClient.get());

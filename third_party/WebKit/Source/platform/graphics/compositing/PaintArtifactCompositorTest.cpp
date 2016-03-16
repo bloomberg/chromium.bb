@@ -144,6 +144,34 @@ TEST_F(PaintArtifactCompositorTest, TransformCombining)
     }
 }
 
+TEST_F(PaintArtifactCompositorTest, LayerOriginCancellation)
+{
+    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
+        nullptr, FloatRoundedRect(100, 100, 100, 100));
+    RefPtr<TransformPaintPropertyNode> transform = TransformPaintPropertyNode::create(
+        TransformationMatrix().scale(2), FloatPoint3D());
+
+    TestPaintArtifact artifact;
+    artifact.chunk(transform, clip, nullptr)
+        .rectDrawing(FloatRect(12, 34, 56, 78), Color::white);
+    update(artifact.build());
+
+    ASSERT_EQ(1u, rootLayer()->children().size());
+    cc::Layer* clipLayer = rootLayer()->child_at(0);
+    EXPECT_EQ(gfx::Size(100, 100), clipLayer->bounds());
+    EXPECT_EQ(translation(100, 100), clipLayer->transform());
+    EXPECT_TRUE(clipLayer->masks_to_bounds());
+
+    ASSERT_EQ(1u, clipLayer->children().size());
+    cc::Layer* layer = clipLayer->child_at(0);
+    EXPECT_EQ(gfx::Size(56, 78), layer->bounds());
+    gfx::Transform expectedTransform;
+    expectedTransform.Translate(-100, -100);
+    expectedTransform.Scale(2, 2);
+    expectedTransform.Translate(12, 34);
+    EXPECT_EQ(expectedTransform, layer->transform());
+}
+
 TEST_F(PaintArtifactCompositorTest, OneClip)
 {
     RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
