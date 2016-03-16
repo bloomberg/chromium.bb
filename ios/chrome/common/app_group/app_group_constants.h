@@ -20,9 +20,11 @@ enum AppGroupApplications {
   APP_GROUP_TODAY_EXTENSION,
 };
 
+// The different types of item that can be created by the share extension.
 enum ShareExtensionItemType {
   READING_LIST_ITEM = 0,
   BOOKMARK_ITEM,
+  SHARE_EXTENSION_ITEM_TYPE_COUNT,
 };
 
 // The x-callback-url indicating that an application in the group requires a
