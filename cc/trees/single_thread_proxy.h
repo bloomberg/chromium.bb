@@ -145,7 +145,12 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   // Accessed from both threads.
   scoped_ptr<BeginFrameSource> external_begin_frame_source_;
+  scoped_ptr<BeginFrameSource> unthrottled_begin_frame_source_;
+  scoped_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
+
+  base::TimeDelta authoritative_vsync_interval_;
+  base::TimeTicks last_vsync_timebase_;
 
   scoped_ptr<BlockingTaskRunner::CapturePostTasks> commit_blocking_task_runner_;
   bool next_frame_is_newly_committed_frame_;

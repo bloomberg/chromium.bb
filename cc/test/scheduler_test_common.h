@@ -213,14 +213,13 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
 
 class TestScheduler : public Scheduler {
  public:
-  static scoped_ptr<TestScheduler> Create(
-      base::SimpleTestTickClock* now_src,
-      SchedulerClient* client,
-      const SchedulerSettings& scheduler_settings,
-      int layer_tree_host_id,
-      OrderedSimpleTaskRunner* task_runner,
-      BeginFrameSource* external_frame_source,
-      scoped_ptr<CompositorTimingHistory> compositor_timing_history);
+  TestScheduler(base::SimpleTestTickClock* now_src,
+                SchedulerClient* client,
+                const SchedulerSettings& scheduler_settings,
+                int layer_tree_host_id,
+                OrderedSimpleTaskRunner* task_runner,
+                BeginFrameSource* begin_frame_source,
+                scoped_ptr<CompositorTimingHistory> compositor_timing_history);
 
   // Extra test helper functionality
   bool IsBeginRetroFrameArgsEmpty() const {
@@ -233,7 +232,7 @@ class TestScheduler : public Scheduler {
     return state_machine_.needs_begin_main_frame();
   }
 
-  BeginFrameSource& frame_source() { return *frame_source_; }
+  BeginFrameSource& frame_source() { return *begin_frame_source_; }
   bool FrameProductionThrottled() {
     return settings_.throttle_frame_production;
   }
@@ -242,7 +241,7 @@ class TestScheduler : public Scheduler {
     return state_machine_.main_thread_missed_last_deadline();
   }
 
-  bool begin_frames_expected() const { return observing_frame_source_; }
+  bool begin_frames_expected() const { return observing_begin_frame_source_; }
 
   ~TestScheduler() override;
 
@@ -263,17 +262,6 @@ class TestScheduler : public Scheduler {
   base::TimeTicks Now() const override;
 
  private:
-  TestScheduler(
-      base::SimpleTestTickClock* now_src,
-      SchedulerClient* client,
-      const SchedulerSettings& scheduler_settings,
-      int layer_tree_host_id,
-      OrderedSimpleTaskRunner* task_runner,
-      BeginFrameSource* external_frame_source,
-      scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source,
-      scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source,
-      scoped_ptr<CompositorTimingHistory> compositor_timing_history);
-
   base::SimpleTestTickClock* now_src_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScheduler);

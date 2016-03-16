@@ -152,6 +152,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   DelayedUniqueNotifier smoothness_priority_expiration_notifier_;
 
   scoped_ptr<BeginFrameSource> external_begin_frame_source_;
+  scoped_ptr<BeginFrameSource> unthrottled_begin_frame_source_;
+  scoped_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 

@@ -60,7 +60,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       base::SingleThreadTaskRunner* task_runner,
-      BeginFrameSource* external_frame_source,
+      BeginFrameSource* begin_frame_source,
       scoped_ptr<CompositorTimingHistory> compositor_timing_history);
 
   ~Scheduler() override;
@@ -73,8 +73,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   const SchedulerSettings& settings() const { return settings_; }
 
-  void CommitVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval);
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time);
 
   void SetVisible(bool visible);
@@ -142,34 +140,26 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
 
-  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
-
  protected:
   Scheduler(SchedulerClient* client,
             const SchedulerSettings& scheduler_settings,
             int layer_tree_host_id,
             base::SingleThreadTaskRunner* task_runner,
-            BeginFrameSource* external_frame_source,
-            scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source,
-            scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source,
+            BeginFrameSource* begin_frame_source,
             scoped_ptr<CompositorTimingHistory> compositor_timing_history);
 
   // Virtual for testing.
   virtual base::TimeTicks Now() const;
 
   const SchedulerSettings settings_;
+  // Not owned.
   SchedulerClient* client_;
   int layer_tree_host_id_;
   base::SingleThreadTaskRunner* task_runner_;
-  BeginFrameSource* external_frame_source_;
-  scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source_;
-  scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source_;
 
-  scoped_ptr<BeginFrameSourceMultiplexer> frame_source_;
-  bool observing_frame_source_;
-
-  base::TimeDelta authoritative_vsync_interval_;
-  base::TimeTicks last_vsync_timebase_;
+  // Not owned.
+  BeginFrameSource* begin_frame_source_;
+  bool observing_begin_frame_source_;
 
   scoped_ptr<CompositorTimingHistory> compositor_timing_history_;
   base::TimeDelta estimated_parent_draw_time_;
@@ -222,14 +212,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;
-  }
-
-  BeginFrameSource* primary_frame_source() {
-    if (settings_.use_external_begin_frame_source) {
-      DCHECK(external_frame_source_);
-      return external_frame_source_;
-    }
-    return synthetic_frame_source_.get();
   }
 
   base::WeakPtrFactory<Scheduler> weak_factory_;

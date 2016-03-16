@@ -249,57 +249,6 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
   DISALLOW_COPY_AND_ASSIGN(SyntheticBeginFrameSource);
 };
 
-// A "virtual" frame source which lets you switch between multiple other frame
-// sources while making sure the BeginFrameArgs stays increasing (possibly
-// enforcing minimum boundry between BeginFrameArgs messages).
-class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceBase,
-                                              public BeginFrameObserver {
- public:
-  static scoped_ptr<BeginFrameSourceMultiplexer> Create();
-  ~BeginFrameSourceMultiplexer() override;
-
-  void SetMinimumInterval(base::TimeDelta new_minimum_interval);
-
-  void AddSource(BeginFrameSource* new_source);
-  void RemoveSource(BeginFrameSource* existing_source);
-  void SetActiveSource(BeginFrameSource* new_source);
-  const BeginFrameSource* ActiveSource();
-
-  // BeginFrameObserver
-  // The mux is an BeginFrameObserver as it needs to proxy the OnBeginFrame
-  // calls to preserve the monotonicity of the BeginFrameArgs when switching
-  // sources.
-  void OnBeginFrame(const BeginFrameArgs& args) override;
-  const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
-
-  // BeginFrameSourceBase
-  void DidFinishFrame(size_t remaining_frames) override;
-  void AddObserver(BeginFrameObserver* obs) override;
-  void OnNeedsBeginFramesChanged(bool needs_begin_frames) override;
-
-  // Tracing
-  void AsValueInto(base::trace_event::TracedValue* dict) const override;
-
- protected:
-  BeginFrameSourceMultiplexer();
-  explicit BeginFrameSourceMultiplexer(base::TimeDelta minimum_interval);
-
-  bool HasSource(BeginFrameSource* source);
-  bool IsIncreasing(const BeginFrameArgs& args);
-
-  base::TimeDelta minimum_interval_;
-
-  BeginFrameSource* active_source_;
-  std::set<BeginFrameSource*> source_list_;
-
-  BeginFrameArgs last_begin_frame_args_;
-  bool inside_add_observer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BeginFrameSourceMultiplexer);
-};
-
 }  // namespace cc
 
 #endif  // CC_SCHEDULER_BEGIN_FRAME_SOURCE_H_

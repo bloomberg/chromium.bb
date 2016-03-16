@@ -181,45 +181,19 @@ base::TimeDelta FakeCompositorTimingHistory::DrawDurationEstimate() const {
   return draw_duration_;
 }
 
-scoped_ptr<TestScheduler> TestScheduler::Create(
-    base::SimpleTestTickClock* now_src,
-    SchedulerClient* client,
-    const SchedulerSettings& settings,
-    int layer_tree_host_id,
-    OrderedSimpleTaskRunner* task_runner,
-    BeginFrameSource* external_frame_source,
-    scoped_ptr<CompositorTimingHistory> compositor_timing_history) {
-  scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source;
-  if (!settings.use_external_begin_frame_source) {
-    synthetic_frame_source = TestSyntheticBeginFrameSource::Create(
-        now_src, task_runner, BeginFrameArgs::DefaultInterval());
-  }
-  scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source =
-      TestBackToBackBeginFrameSource::Create(now_src, task_runner);
-  return make_scoped_ptr(new TestScheduler(
-      now_src, client, settings, layer_tree_host_id, task_runner,
-      external_frame_source, std::move(synthetic_frame_source),
-      std::move(unthrottled_frame_source),
-      std::move(compositor_timing_history)));
-}
-
 TestScheduler::TestScheduler(
     base::SimpleTestTickClock* now_src,
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
     OrderedSimpleTaskRunner* task_runner,
-    BeginFrameSource* external_frame_source,
-    scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source,
-    scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source,
+    BeginFrameSource* begin_frame_source,
     scoped_ptr<CompositorTimingHistory> compositor_timing_history)
     : Scheduler(client,
                 scheduler_settings,
                 layer_tree_host_id,
                 task_runner,
-                external_frame_source,
-                std::move(synthetic_frame_source),
-                std::move(unthrottled_frame_source),
+                begin_frame_source,
                 std::move(compositor_timing_history)),
       now_src_(now_src) {}
 

@@ -256,9 +256,20 @@ class SchedulerTest : public testing::Test {
 
  protected:
   TestScheduler* CreateScheduler() {
-    if (scheduler_settings_.use_external_begin_frame_source) {
+    BeginFrameSource* frame_source;
+    if (!scheduler_settings_.throttle_frame_production) {
+      unthrottled_frame_source_ = TestBackToBackBeginFrameSource::Create(
+          now_src_.get(), task_runner_.get());
+      frame_source = unthrottled_frame_source_.get();
+    } else if (scheduler_settings_.use_external_begin_frame_source) {
       fake_external_begin_frame_source_.reset(
           new FakeExternalBeginFrameSource(client_.get()));
+      frame_source = fake_external_begin_frame_source_.get();
+    } else {
+      synthetic_frame_source_ = TestSyntheticBeginFrameSource::Create(
+          now_src_.get(), task_runner_.get(),
+          BeginFrameArgs::DefaultInterval());
+      frame_source = synthetic_frame_source_.get();
     }
 
     scoped_ptr<FakeCompositorTimingHistory> fake_compositor_timing_history =
@@ -266,10 +277,10 @@ class SchedulerTest : public testing::Test {
             scheduler_settings_.using_synchronous_renderer_compositor);
     fake_compositor_timing_history_ = fake_compositor_timing_history.get();
 
-    scheduler_ = TestScheduler::Create(
-        now_src_.get(), client_.get(), scheduler_settings_, 0,
-        task_runner_.get(), fake_external_begin_frame_source_.get(),
-        std::move(fake_compositor_timing_history));
+    scheduler_.reset(
+        new TestScheduler(now_src_.get(), client_.get(), scheduler_settings_, 0,
+                          task_runner_.get(), frame_source,
+                          std::move(fake_compositor_timing_history)));
     DCHECK(scheduler_);
     client_->set_scheduler(scheduler_.get());
 
@@ -429,6 +440,8 @@ class SchedulerTest : public testing::Test {
   scoped_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   scoped_ptr<FakeExternalBeginFrameSource> fake_external_begin_frame_source_;
+  scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source_;
+  scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source_;
   SchedulerSettings scheduler_settings_;
   scoped_ptr<FakeSchedulerClient> client_;
   scoped_ptr<TestScheduler> scheduler_;
@@ -3446,7 +3459,9 @@ TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
   scheduler_->NotifyReadyToActivate();
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
 
-  scheduler_->SetAuthoritativeVSyncInterval(authoritative_interval);
+  // Test changing the interval on the frame source external to the scheduler.
+  synthetic_frame_source_->OnUpdateVSyncParameters(now_src_->NowTicks(),
+                                                   authoritative_interval);
 
   EXPECT_SCOPED(AdvanceFrame());
 

@@ -71,11 +71,24 @@ void SingleThreadProxy::Start(
             CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host_->rendering_stats_instrumentation()));
 
+    BeginFrameSource* frame_source = external_begin_frame_source_.get();
+    if (!scheduler_settings.throttle_frame_production) {
+      // Unthrottled source takes precedence over external sources.
+      unthrottled_begin_frame_source_ = BackToBackBeginFrameSource::Create(
+          task_runner_provider_->MainThreadTaskRunner());
+      frame_source = unthrottled_begin_frame_source_.get();
+    }
+    if (!frame_source) {
+      synthetic_begin_frame_source_ = SyntheticBeginFrameSource::Create(
+          task_runner_provider_->MainThreadTaskRunner(),
+          BeginFrameArgs::DefaultInterval());
+      frame_source = synthetic_begin_frame_source_.get();
+    }
+
     scheduler_on_impl_thread_ =
         Scheduler::Create(this, scheduler_settings, layer_tree_host_->id(),
                           task_runner_provider_->MainThreadTaskRunner(),
-                          external_begin_frame_source_.get(),
-                          std::move(compositor_timing_history));
+                          frame_source, std::move(compositor_timing_history));
   }
 
   layer_tree_host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
@@ -463,8 +476,17 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
 
 void SingleThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
                                               base::TimeDelta interval) {
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->CommitVSyncParameters(timebase, interval);
+  if (authoritative_vsync_interval_ != base::TimeDelta()) {
+    interval = authoritative_vsync_interval_;
+  } else if (interval == base::TimeDelta()) {
+    // TODO(brianderson): We should not be receiving 0 intervals.
+    interval = BeginFrameArgs::DefaultInterval();
+  }
+
+  last_vsync_timebase_ = timebase;
+
+  if (synthetic_begin_frame_source_)
+    synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 void SingleThreadProxy::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
@@ -699,7 +721,11 @@ void SingleThreadProxy::SetChildrenNeedBeginFrames(
 
 void SingleThreadProxy::SetAuthoritativeVSyncInterval(
     const base::TimeDelta& interval) {
-  scheduler_on_impl_thread_->SetAuthoritativeVSyncInterval(interval);
+  authoritative_vsync_interval_ = interval;
+  if (synthetic_begin_frame_source_) {
+    synthetic_begin_frame_source_->OnUpdateVSyncParameters(last_vsync_timebase_,
+                                                           interval);
+  }
 }
 
 void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {

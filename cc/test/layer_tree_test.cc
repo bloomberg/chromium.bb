@@ -911,7 +911,8 @@ scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
             output_surface->capabilities().delegated_rendering);
   output_surface_ = output_surface.get();
 
-  if (settings_.use_external_begin_frame_source) {
+  if (settings_.use_external_begin_frame_source &&
+      settings_.wait_for_beginframe_interval) {
     DCHECK(external_begin_frame_source_);
     DCHECK(external_begin_frame_source_->is_ready());
   }
