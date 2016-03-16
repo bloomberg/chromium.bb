@@ -8,7 +8,12 @@
 
 namespace gfx {
 
-InsetsF::InsetsF() : InsetsF(0.f, 0.f, 0.f, 0.f) {}
+InsetsF::InsetsF() : InsetsF(0.f) {}
+
+InsetsF::InsetsF(float all) : InsetsF(all, all, all, all) {}
+
+InsetsF::InsetsF(float vertical, float horizontal)
+    : InsetsF(vertical, horizontal, vertical, horizontal) {}
 
 InsetsF::InsetsF(float top, float left, float bottom, float right)
     : top_(top), left_(left), bottom_(bottom), right_(right) {}

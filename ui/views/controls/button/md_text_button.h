@@ -20,14 +20,25 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
                                            const base::string16& text);
 
   // LabelButton:
+  void Layout() override;
   SkColor GetInkDropBaseColor() const override;
   void SetText(const base::string16& text) override;
+
+ protected:
+  // LabelButton:
+  void OnFocus() override;
+  void OnBlur() override;
 
  private:
   MdTextButton(ButtonListener* listener);
   ~MdTextButton() override;
 
   ButtonInkDropDelegate ink_drop_delegate_;
+
+  // A child view to draw the focus ring. This is not done via a FocusPainter
+  // because it needs to paint to a layer so it can extend beyond the bounds of
+  // |this|.
+  views::View* focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
 };

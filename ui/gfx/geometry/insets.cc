@@ -8,7 +8,7 @@
 
 namespace gfx {
 
-Insets::Insets() : Insets(0, 0, 0, 0) {}
+Insets::Insets() : Insets(0) {}
 
 Insets::Insets(int all) : Insets(all, all, all, all) {}
 
