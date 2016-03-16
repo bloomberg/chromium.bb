@@ -51,6 +51,8 @@ class DummyTextInputClient : public TextInputClient {
 
   int insert_char_count() const { return insert_char_count_; }
   base::char16 last_insert_char() const { return last_insert_char_; }
+  int insert_text_count() const { return insert_text_count_; }
+  base::string16 last_insert_text() const { return last_insert_text_; }
 
   TextInputType text_input_type_;
 
@@ -58,7 +60,9 @@ class DummyTextInputClient : public TextInputClient {
 
  private:
   int insert_char_count_;
+  int insert_text_count_;
   base::char16 last_insert_char_;
+  base::string16 last_insert_text_;
 };
 
 }  // namespace ui
