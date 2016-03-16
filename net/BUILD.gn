@@ -574,23 +574,25 @@ static_library("http_server") {
   ]
 }
 
-executable("dump_cache") {
-  testonly = true
-  sources = [
-    "tools/dump_cache/dump_cache.cc",
-    "tools/dump_cache/dump_files.cc",
-    "tools/dump_cache/dump_files.h",
-  ]
+if (!is_ios) {
+  executable("dump_cache") {
+    testonly = true
+    sources = [
+      "tools/dump_cache/dump_cache.cc",
+      "tools/dump_cache/dump_files.cc",
+      "tools/dump_cache/dump_files.h",
+    ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  deps = [
-    ":net",
-    ":test_support",
-    "//base",
-    "//build/config/sanitizers:deps",
-  ]
+    deps = [
+      ":net",
+      ":test_support",
+      "//base",
+      "//build/config/sanitizers:deps",
+    ]
+  }
 }
 
 source_set("test_support") {
@@ -1707,40 +1709,43 @@ test("net_unittests") {
 }
 
 # !is_android && !is_win && !is_mac
+if (!is_ios) {
+  # TODO(crbug.com/594965): this should be converted to "app" template and
+  # enabled on iOS too.
+  executable("net_perftests") {
+    testonly = true
+    sources = [
+      "base/mime_sniffer_perftest.cc",
+      "cookies/cookie_monster_perftest.cc",
+      "disk_cache/blockfile/disk_cache_perftest.cc",
+      "extras/sqlite/sqlite_persistent_cookie_store_perftest.cc",
+      "proxy/proxy_resolver_perftest.cc",
+      "udp/udp_socket_perftest.cc",
+    ]
 
-executable("net_perftests") {
-  testonly = true
-  sources = [
-    "base/mime_sniffer_perftest.cc",
-    "cookies/cookie_monster_perftest.cc",
-    "disk_cache/blockfile/disk_cache_perftest.cc",
-    "extras/sqlite/sqlite_persistent_cookie_store_perftest.cc",
-    "proxy/proxy_resolver_perftest.cc",
-    "udp/udp_socket_perftest.cc",
-  ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+    deps = [
+      ":extras",
+      ":net",
+      ":test_support",
+      "//base",
+      "//base:i18n",
+      "//base/test:test_support_perf",
+      "//build/config/sanitizers:deps",
+      "//testing/gtest",
+      "//url",
+    ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-  deps = [
-    ":extras",
-    ":net",
-    ":test_support",
-    "//base",
-    "//base:i18n",
-    "//base/test:test_support_perf",
-    "//build/config/sanitizers:deps",
-    "//testing/gtest",
-    "//url",
-  ]
+    if (enable_websockets) {
+      sources += [ "websockets/websocket_frame_perftest.cc" ]
+    }
 
-  if (enable_websockets) {
-    sources += [ "websockets/websocket_frame_perftest.cc" ]
-  }
-
-  if (use_v8_in_net) {
-    deps += [ ":net_with_v8" ]
-  } else {
-    sources -= [ "proxy/proxy_resolver_perftest.cc" ]
+    if (use_v8_in_net) {
+      deps += [ ":net_with_v8" ]
+    } else {
+      sources -= [ "proxy/proxy_resolver_perftest.cc" ]
+    }
   }
 }
 
