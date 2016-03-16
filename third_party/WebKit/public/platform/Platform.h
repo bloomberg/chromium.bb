@@ -70,7 +70,6 @@ class WebCompositorSupport;
 class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
-class WebDiscardableMemory;
 class WebPlatformEventListener;
 class WebFallbackThemeEngine;
 class WebFileSystem;
@@ -274,13 +273,6 @@ public:
 
     // Return the number of of processors of the current machine.
     virtual size_t numberOfProcessors() { return 0; }
-
-    // Allocates discardable memory. May return nullptr, even if the platform supports
-    // discardable memory. If nonzero, however, then the WebDiscardableMmeory is
-    // returned in an locked state. You may use its underlying data() member
-    // directly, taking care to unlock it when you are ready to let it become
-    // discardable.
-    virtual WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) { return nullptr; }
 
     static const size_t noDecodedImageByteLimit = static_cast<size_t>(-1);
 

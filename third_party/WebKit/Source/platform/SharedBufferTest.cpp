@@ -30,9 +30,9 @@
 
 #include "platform/SharedBuffer.h"
 
-#include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/WebDiscardableMemory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include <algorithm>
@@ -132,10 +132,6 @@ TEST(SharedBufferTest, createPurgeable)
 {
     Vector<char> testData(30000);
     std::generate(testData.begin(), testData.end(), &std::rand);
-
-    TestingPlatformSupport::Config config;
-    config.hasDiscardableMemorySupport = true;
-    TestingPlatformSupport platformWithDiscardableMemorySupport(config);
 
     size_t length = testData.size();
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::createPurgeable(testData.data(), length);

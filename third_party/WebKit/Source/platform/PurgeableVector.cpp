@@ -30,19 +30,21 @@
 
 #include "platform/PurgeableVector.h"
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebDiscardableMemory.h"
+#include "base/memory/discardable_memory.h"
+#include "base/memory/discardable_memory_allocator.h"
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
 
 #include <cstring>
+#include <utility>
 
 namespace blink {
 
-// WebDiscardableMemory allocations are expensive and page-grained. We only use
+// DiscardableMemory allocations are expensive and page-grained. We only use
 // them when there's a reasonable amount of memory to be saved by the OS
 // discarding the memory.
 static const size_t minimumDiscardableAllocationSize = 4 * 4096;
@@ -84,7 +86,8 @@ void PurgeableVector::onMemoryDump(const String& dumpName, WebProcessMemoryDump*
 {
     ASSERT(!(m_discardable && m_vector.size()));
     if (m_discardable) {
-        WebMemoryAllocatorDump* dump = m_discardable->createMemoryAllocatorDump(dumpName, memoryDump);
+        WebMemoryAllocatorDump* dump = memoryDump->createDiscardableMemoryAllocatorDump(
+            StringUTF8Adaptor(dumpName).asStringPiece().as_string(), m_discardable.get());
         dump->addScalar("discardable_size", "bytes", m_discardableSize);
     } else if (m_vector.size()) {
         WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
@@ -103,7 +106,7 @@ void PurgeableVector::moveDataFromDiscardableToVector()
 
 void PurgeableVector::clearDiscardable()
 {
-    m_discardable.clear();
+    m_discardable = nullptr;
     m_discardableCapacity = 0;
     m_discardableSize = 0;
 }
@@ -190,7 +193,7 @@ bool PurgeableVector::lock()
     if (!m_discardable)
         return true;
 
-    return m_discardable->lock();
+    return m_discardable->Lock();
 }
 
 void PurgeableVector::unlock()
@@ -208,7 +211,7 @@ void PurgeableVector::unlock()
     }
 
     if (m_discardable)
-        m_discardable->unlock();
+        m_discardable->Unlock();
 }
 
 bool PurgeableVector::isLocked() const
@@ -232,13 +235,9 @@ bool PurgeableVector::reservePurgeableCapacity(size_t capacity, PurgeableAllocat
     if (allocationStrategy == UseExponentialGrowth)
         capacity = adjustPurgeableCapacity(capacity);
 
-    OwnPtr<WebDiscardableMemory> discardable = adoptPtr(
-        Platform::current()->allocateAndLockDiscardableMemory(capacity));
-    if (!discardable) {
-        // Discardable memory is not supported.
-        m_isPurgeable = false;
-        return false;
-    }
+    scoped_ptr<base::DiscardableMemory> discardable =
+        base::DiscardableMemoryAllocator::GetInstance()->AllocateLockedDiscardableMemory(capacity);
+    ASSERT(discardable);
 
     m_discardableCapacity = capacity;
     // Copy the data that was either in the previous purgeable buffer or in the vector to the new
@@ -251,7 +250,7 @@ bool PurgeableVector::reservePurgeableCapacity(size_t capacity, PurgeableAllocat
         m_vector.clear();
     }
 
-    m_discardable.swap(discardable);
+    m_discardable = std::move(discardable);
     ASSERT(!m_vector.capacity());
     return true;
 }

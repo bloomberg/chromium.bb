@@ -257,8 +257,6 @@
       'child/web_data_consumer_handle_impl.h',
       'child/web_database_observer_impl.cc',
       'child/web_database_observer_impl.h',
-      'child/web_discardable_memory_impl.cc',
-      'child/web_discardable_memory_impl.h',
       'child/web_url_loader_impl.cc',
       'child/web_url_loader_impl.h',
       'child/web_url_request_util.cc',

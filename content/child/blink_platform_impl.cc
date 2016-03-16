@@ -50,7 +50,6 @@
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/websocket_bridge.h"
@@ -974,11 +973,6 @@ size_t BlinkPlatformImpl::actualMemoryUsageMB() {
 
 size_t BlinkPlatformImpl::numberOfProcessors() {
   return static_cast<size_t>(base::SysInfo::NumberOfProcessors());
-}
-
-blink::WebDiscardableMemory*
-BlinkPlatformImpl::allocateAndLockDiscardableMemory(size_t bytes) {
-  return content::WebDiscardableMemoryImpl::CreateLockedMemory(bytes).release();
 }
 
 size_t BlinkPlatformImpl::maxDecodedImageBytes() {

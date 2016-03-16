@@ -34,7 +34,6 @@
 #include "platform/PlatformExport.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebDiscardableMemory.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Vector.h"
@@ -45,22 +44,6 @@ class TestingPlatformMockWebTaskRunner;
 class TestingPlatformMockWebThread;
 class WebCompositorSupport;
 class WebThread;
-
-class TestingDiscardableMemory : public WebDiscardableMemory {
-public:
-    explicit TestingDiscardableMemory(size_t);
-    ~TestingDiscardableMemory() override;
-
-    // WebDiscardableMemory:
-    bool lock() override;
-    void* data() override;
-    void unlock() override;
-    WebMemoryAllocatorDump* createMemoryAllocatorDump(const WebString& name, WebProcessMemoryDump*) const override;
-
-private:
-    Vector<char> m_data;
-    bool m_isLocked;
-};
 
 class TestingCompositorSupport : public WebCompositorSupport {
 };
@@ -99,12 +82,7 @@ class TestingPlatformSupport : public Platform {
     WTF_MAKE_NONCOPYABLE(TestingPlatformSupport);
 public:
     struct Config {
-        Config()
-            : hasDiscardableMemorySupport(false)
-            , compositorSupport(nullptr) { }
-
-        bool hasDiscardableMemorySupport;
-        WebCompositorSupport* compositorSupport;
+        WebCompositorSupport* compositorSupport = nullptr;
     };
 
     TestingPlatformSupport();
@@ -113,7 +91,6 @@ public:
     ~TestingPlatformSupport() override;
 
     // Platform:
-    WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) override;
     WebString defaultLocale() override;
     WebCompositorSupport* compositorSupport() override;
     WebThread* currentThread() override;

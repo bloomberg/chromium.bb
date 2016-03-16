@@ -34,44 +34,7 @@
 #include "device/battery/battery_monitor_impl.h"
 #endif
 
-#include <cstring>
-
 namespace blink {
-
-TestingDiscardableMemory::TestingDiscardableMemory(size_t size) : m_data(size), m_isLocked(true)
-{
-}
-
-TestingDiscardableMemory::~TestingDiscardableMemory()
-{
-}
-
-bool TestingDiscardableMemory::lock()
-{
-    ASSERT(!m_isLocked);
-    m_isLocked = true;
-    return false;
-}
-
-void* TestingDiscardableMemory::data()
-{
-    ASSERT(m_isLocked);
-    return m_data.data();
-}
-
-void TestingDiscardableMemory::unlock()
-{
-    ASSERT(m_isLocked);
-    m_isLocked = false;
-    // Force eviction to catch clients not correctly checking the return value of lock().
-    memset(m_data.data(), 0, m_data.size());
-}
-
-WebMemoryAllocatorDump* TestingDiscardableMemory::createMemoryAllocatorDump(const WebString& name, WebProcessMemoryDump* dump) const
-{
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
 
 TestingPlatformSupport::TestingPlatformSupport()
     : TestingPlatformSupport(TestingPlatformSupport::Config())
@@ -89,11 +52,6 @@ TestingPlatformSupport::TestingPlatformSupport(const Config& config)
 TestingPlatformSupport::~TestingPlatformSupport()
 {
     Platform::setCurrentPlatformForTesting(m_oldPlatform);
-}
-
-WebDiscardableMemory* TestingPlatformSupport::allocateAndLockDiscardableMemory(size_t bytes)
-{
-    return !m_config.hasDiscardableMemorySupport ? 0 : new TestingDiscardableMemory(bytes);
 }
 
 WebString TestingPlatformSupport::defaultLocale()

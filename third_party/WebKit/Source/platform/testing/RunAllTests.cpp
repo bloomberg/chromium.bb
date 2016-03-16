@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "base/memory/discardable_memory_allocator.h"
+#include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_io_thread.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
@@ -73,6 +75,9 @@ public:
 int main(int argc, char** argv)
 {
     base::CommandLine::Init(argc, argv);
+
+    base::TestDiscardableMemoryAllocator discardableMemoryAllocator;
+    base::DiscardableMemoryAllocator::SetInstance(&discardableMemoryAllocator);
 
     OwnPtr<DummyPlatform> platform = adoptPtr(new DummyPlatform);
     blink::Platform::setCurrentPlatformForTesting(platform.get());

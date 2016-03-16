@@ -83,8 +83,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   size_t actualMemoryUsageMB() override;
   size_t numberOfProcessors() override;
 
-  blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
-      size_t bytes) override;
   size_t maxDecodedImageBytes() override;
   uint32_t getUniqueIdForProcess() override;
   blink::WebURLLoader* createURLLoader() override;

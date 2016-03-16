@@ -57,7 +57,6 @@
       "platform/WebDataConsumerHandle.h",
       "platform/WebDatabaseObserver.h",
       "platform/WebDeviceLightListener.h",
-      "platform/WebDiscardableMemory.h",
       "platform/WebDisplayItemList.h",
       "platform/WebDisplayMode.h",
       "platform/WebDoublePoint.h",
