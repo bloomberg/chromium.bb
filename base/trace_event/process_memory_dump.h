@@ -23,10 +23,7 @@
 
 // Define COUNT_RESIDENT_BYTES_SUPPORTED if platform supports counting of the
 // resident memory.
-// TODO(crbug.com/542671): COUNT_RESIDENT_BYTES_SUPPORTED is disabled on iOS
-// as it cause memory corruption on iOS 9.0+ devices.
-#if (defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_IOS)) || \
-    defined(OS_WIN)
+#if (defined(OS_POSIX) && !defined(OS_NACL)) || defined(OS_WIN)
 #define COUNT_RESIDENT_BYTES_SUPPORTED
 #endif
 
@@ -56,6 +53,12 @@ class BASE_EXPORT ProcessMemoryDump {
   using HeapDumpsMap = std::unordered_map<std::string, scoped_ptr<TracedValue>>;
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
+  // Returns the number of bytes in a kernel memory page. Some platforms may
+  // have a different value for kernel page sizes from user page sizes. It is
+  // important to use kernel memory page sizes for resident bytes calculation.
+  // In most cases, the two are the same.
+  static size_t GetSystemPageSize();
+
   // Returns the total bytes resident for a virtual address range, with given
   // |start_address| and |mapped_size|. |mapped_size| is specified in bytes. The
   // value returned is valid only if the given range is currently mmapped by the

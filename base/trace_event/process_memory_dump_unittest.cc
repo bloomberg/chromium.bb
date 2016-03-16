@@ -223,7 +223,7 @@ TEST(ProcessMemoryDumpTest, GlobalAllocatorDumpTest) {
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 TEST(ProcessMemoryDumpTest, CountResidentBytes) {
-  const size_t page_size = base::GetPageSize();
+  const size_t page_size = ProcessMemoryDump::GetSystemPageSize();
 
   // Allocate few page of dirty memory and check if it is resident.
   const size_t size1 = 5 * page_size;

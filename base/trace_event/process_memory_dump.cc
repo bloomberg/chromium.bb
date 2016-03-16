@@ -12,6 +12,10 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
 
+#if defined(OS_IOS)
+#include <sys/sysctl.h>
+#endif
+
 #if defined(OS_POSIX)
 #include <sys/mman.h>
 #endif
@@ -42,9 +46,28 @@ size_t GetSystemPageCount(size_t mapped_size, size_t page_size) {
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 // static
+size_t ProcessMemoryDump::GetSystemPageSize() {
+#if defined(OS_IOS)
+  // On iOS, getpagesize() returns the user page sizes, but for allocating
+  // arrays for mincore(), kernel page sizes is needed. sysctlbyname() should
+  // be used for this. Refer to crbug.com/542671 and Apple rdar://23651782
+  int pagesize;
+  size_t pagesize_len;
+  int status = sysctlbyname("vm.pagesize", NULL, &pagesize_len, nullptr, 0);
+  if (!status && pagesize_len == sizeof(pagesize)) {
+    if (!sysctlbyname("vm.pagesize", &pagesize, &pagesize_len, nullptr, 0))
+      return pagesize;
+  }
+  LOG(ERROR) << "sysctlbyname(\"vm.pagesize\") failed.";
+  // Falls back to getpagesize() although it may be wrong in certain cases.
+#endif  // defined(OS_IOS)
+  return base::GetPageSize();
+}
+
+// static
 size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
                                              size_t mapped_size) {
-  const size_t page_size = GetPageSize();
+  const size_t page_size = GetSystemPageSize();
   const uintptr_t start_pointer = reinterpret_cast<uintptr_t>(start_address);
   DCHECK_EQ(0u, start_pointer % page_size);
 
