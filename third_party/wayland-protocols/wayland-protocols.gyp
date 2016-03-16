@@ -64,5 +64,25 @@
         ],
       },
     },
+    {
+      'target_name': 'secure_output_protocol',
+      'type': 'static_library',
+      'dependencies' : [
+        '../wayland/wayland.gyp:wayland_util',
+      ],
+      'sources': [
+        'include/protocol/secure-output-unstable-v1-client-protocol.h',
+        'include/protocol/secure-output-unstable-v1-server-protocol.h',
+        'protocol/secure-output-protocol.c',
+      ],
+      'include_dirs': [
+        'include/protocol',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'include/protocol',
+        ],
+      },
+    },
   ],
 }

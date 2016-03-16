@@ -64,3 +64,24 @@ source_set("scaler_protocol") {
 
   public_configs = [ ":scaler_protocol_config" ]
 }
+
+config("secure_output_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("secure_output_protocol") {
+  sources = [
+    "include/protocol/secure-output-unstable-v1-client-protocol.h",
+    "include/protocol/secure-output-unstable-v1-server-protocol.h",
+    "protocol/secure-output-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":secure_output_protocol_config" ]
+}
