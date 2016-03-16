@@ -121,22 +121,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>
       hittest_data_;
 
-  // Debugging data for https://crbug.com/592319.
-  // Data types declared here to simplify later removal, and understanding of
-  // the code while it's in this intermediate state.
-  static const unsigned kNumLastEventTypes = 5;
-  struct GestureQueueDebugData {
-    unsigned long number_of_gesture_targets_enqueued;
-    unsigned long number_of_gesture_targets_dequeued;
-    int last_gesture_event_types[kNumLastEventTypes];
-    int last_touch_event_types[kNumLastEventTypes];
-    unsigned next_gesture_event_index;
-    unsigned next_touch_event_index;
-
-    GestureQueueDebugData();
-  };
-  GestureQueueDebugData debug_data_;
-
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            InputEventRouterGestureTargetQueueTest);
