@@ -66,20 +66,29 @@ base::string16 GetWhitelistTitle(const base::DictionaryValue& manifest) {
   return title;
 }
 
+base::FilePath GetSafeFilePath(const base::DictionaryValue& dictionary,
+                               const std::string& key,
+                               const base::FilePath& install_dir) {
+  const base::Value* path_value = nullptr;
+  if (!dictionary.Get(key, &path_value))
+    return base::FilePath();
+  base::FilePath path;
+  if (!base::GetValueAsFilePath(*path_value, &path))
+    return base::FilePath();
+  // Path components ("..") are not allowed.
+  if (path.ReferencesParent())
+    return base::FilePath();
+
+  return install_dir.Append(path);
+}
+
 base::FilePath GetLargeIconPath(const base::DictionaryValue& manifest,
                                 const base::FilePath& install_dir) {
   const base::DictionaryValue* icons = nullptr;
   if (!manifest.GetDictionary(kExtensionIcons, &icons))
     return base::FilePath();
 
-  base::FilePath path;
-  const base::Value* path_value = nullptr;
-  if (!icons->Get(kExtensionLargeIcon, &path_value))
-    return base::FilePath();
-  if (!base::GetValueAsFilePath(*path_value, &path))
-    return base::FilePath();
-
-  return install_dir.Append(path);
+  return GetSafeFilePath(*icons, kExtensionLargeIcon, install_dir);
 }
 
 base::FilePath GetRawWhitelistPath(const base::DictionaryValue& manifest,
@@ -88,14 +97,7 @@ base::FilePath GetRawWhitelistPath(const base::DictionaryValue& manifest,
   if (!manifest.GetDictionary(kWhitelistedContent, &whitelist_dict))
     return base::FilePath();
 
-  base::FilePath whitelist_file;
-  const base::Value* whitelist_file_value = nullptr;
-  if (!whitelist_dict->Get(kSites, &whitelist_file_value))
-    return base::FilePath();
-  if (!base::GetValueAsFilePath(*whitelist_file_value, &whitelist_file))
-    return base::FilePath();
-
-  return install_dir.Append(whitelist_file);
+  return GetSafeFilePath(*whitelist_dict, kSites, install_dir);
 }
 
 base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
