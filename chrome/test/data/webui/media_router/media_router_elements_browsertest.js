@@ -73,16 +73,6 @@ MediaRouterElementsBrowserTest.prototype = {
     // AX_ARIA_08: http://crbug.com/591552
     this.accessibilityAuditConfig.ignoreSelectors(
         'requiredOwnedAriaRoleMissing', requiredOwnedAriaRoleMissingSelectors);
-
-    // Enable when warning is resolved.
-    // AX_FOCUS_01: http://crbug.com/591553
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'focusableElementNotVisibleAndNotAriaHidden', '#device-missing > A');
-
-    // Enable when warning is resolved.
-    // AX_TEXT_04: http://crbug.com/591554
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'linkWithUnclearPurpose', '#device-missing > A');
   },
 };
 
