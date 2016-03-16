@@ -21,20 +21,29 @@ class ServiceUrls {
   static ServiceUrls* GetInstance();
 
   // Remoting directory REST API URLs.
-  const std::string& directory_base_url() const;
-  const std::string& directory_hosts_url() const;
-  const std::string& gcd_base_url() const;
+  const std::string& directory_base_url() const { return directory_base_url_; }
+  const std::string& directory_hosts_url() const {
+    return directory_hosts_url_;
+  }
+  const std::string& gcd_base_url() const { return gcd_base_url_; }
 
   // XMPP Server configuration.
-  const std::string& xmpp_server_address() const;
-  const std::string& xmpp_server_address_for_me2me_host() const;
-  bool xmpp_server_use_tls() const;
+  const std::string& xmpp_server_address() const {
+    return xmpp_server_address_;
+  }
+  const std::string& xmpp_server_address_for_me2me_host() const {
+    return xmpp_server_address_for_me2me_host_;
+  }
+  bool xmpp_server_use_tls() const { return xmpp_server_use_tls_; }
 
   // Remoting directory bot JID (for registering hosts, logging, heartbeats).
-  const std::string& directory_bot_jid() const;
+  const std::string& directory_bot_jid() const { return directory_bot_jid_; }
 
   // JID for communicating with GCD.
-  const std::string& gcd_jid() const;
+  const std::string& gcd_jid() const { return gcd_jid_; }
+
+  // ICE config URL.
+  const std::string& ice_config_url() const { return ice_config_url_; }
 
  private:
   friend struct base::DefaultSingletonTraits<ServiceUrls>;
@@ -50,6 +59,7 @@ class ServiceUrls {
   bool xmpp_server_use_tls_;
   std::string directory_bot_jid_;
   std::string gcd_jid_;
+  std::string ice_config_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceUrls);
 };

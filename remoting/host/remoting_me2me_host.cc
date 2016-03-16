@@ -1517,6 +1517,8 @@ void HostProcess::StartHost() {
           make_scoped_ptr(new ChromiumUrlRequestFactory(
               context_->url_request_context_getter())),
           network_settings, protocol::TransportRole::SERVER);
+  transport_context->set_ice_config_url(
+      ServiceUrls::GetInstance()->ice_config_url());
 
   scoped_ptr<protocol::SessionManager> session_manager(
       new protocol::JingleSessionManager(signal_strategy_.get()));

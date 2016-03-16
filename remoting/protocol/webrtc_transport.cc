@@ -119,7 +119,9 @@ WebrtcTransport::WebrtcTransport(
       incoming_data_stream_adapter_(
           false,
           base::Bind(&WebrtcTransport::Close, base::Unretained(this))),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  transport_context_->set_relay_mode(TransportContext::RelayMode::TURN);
+}
 
 WebrtcTransport::~WebrtcTransport() {}
 

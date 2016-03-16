@@ -29,6 +29,7 @@ IceTransport::IceTransport(scoped_refptr<TransportContext> transport_context,
     : transport_context_(transport_context),
       event_handler_(event_handler),
       weak_factory_(this) {
+  transport_context_->set_relay_mode(TransportContext::RelayMode::GTURN);
   transport_context->Prepare();
 }
 

@@ -26,6 +26,7 @@ source_set("base") {
   if (is_nacl) {
     sources -= [
       "chromium_url_request.cc",
+      "service_urls.cc",
       "url_request_context_getter.cc",
     ]
   }

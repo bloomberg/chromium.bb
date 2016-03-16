@@ -14,6 +14,7 @@
 #include "net/base/request_priority.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
+#include "remoting/base/service_urls.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/chromoting_client.h"
@@ -125,6 +126,8 @@ void TestChromotingClient::StartConnection(
           make_scoped_ptr(
               new ChromiumUrlRequestFactory(request_context_getter)),
           network_settings, protocol::TransportRole::CLIENT));
+  transport_context->set_ice_config_url(
+      ServiceUrls::GetInstance()->ice_config_url());
 
   protocol::ClientAuthenticationConfig client_auth_config;
   client_auth_config.host_id = connection_setup_info.host_id;

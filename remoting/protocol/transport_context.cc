@@ -52,24 +52,24 @@ TransportContext::TransportContext(
 TransportContext::~TransportContext() {}
 
 void TransportContext::Prepare() {
-  EnsureFreshJingleInfo();
+  EnsureFreshIceConfig();
 }
 
 void TransportContext::GetIceConfig(const GetIceConfigCallback& callback) {
-  EnsureFreshJingleInfo();
+  EnsureFreshIceConfig();
 
-  // If there is a pending |ice_config_request_| delay the callback until the
-  // request is finished.
-  if (ice_config_request_) {
-    pending_ice_config_callbacks_.push_back(callback);
+  // If there is a pending |ice_config_request_| for the current |relay_mode_|
+  // then delay the callback until the request is finished.
+  if (ice_config_request_[relay_mode_]) {
+    pending_ice_config_callbacks_[relay_mode_].push_back(callback);
   } else {
-    callback.Run(ice_config_);
+    callback.Run(ice_config_[relay_mode_]);
   }
 }
 
-void TransportContext::EnsureFreshJingleInfo() {
+void TransportContext::EnsureFreshIceConfig() {
   // Check if request is already pending.
-  if (ice_config_request_)
+  if (ice_config_request_[relay_mode_])
     return;
 
   // Don't need to make jingleinfo request if both STUN and Relay are disabled.
@@ -78,26 +78,37 @@ void TransportContext::EnsureFreshJingleInfo() {
     return;
   }
 
-  if (ice_config_.is_null() ||
-      base::Time::Now() > ice_config_.expiration_time) {
-    if (!ice_config_url_.empty()) {
-      ice_config_request_.reset(new HttpIceConfigRequest(
-          url_request_factory_.get(), ice_config_url_));
-    } else {
-      ice_config_request_.reset(new JingleInfoRequest(signal_strategy_));
+  if (ice_config_[relay_mode_].is_null() ||
+      base::Time::Now() > ice_config_[relay_mode_].expiration_time) {
+    scoped_ptr<IceConfigRequest> request;
+    switch (relay_mode_) {
+      case RelayMode::TURN:
+        if (ice_config_url_.empty()) {
+          LOG(WARNING) << "ice_config_url isn't set.";
+          return;
+        }
+        request.reset(new HttpIceConfigRequest(url_request_factory_.get(),
+                                               ice_config_url_));
+        break;
+      case RelayMode::GTURN:
+        request.reset(new JingleInfoRequest(signal_strategy_));
+        break;
     }
-    ice_config_request_->Send(base::Bind(
-        &TransportContext::OnIceConfig, base::Unretained(this)));
+    ice_config_request_[relay_mode_] = std::move(request);
+    ice_config_request_[relay_mode_]->Send(base::Bind(
+        &TransportContext::OnIceConfig, base::Unretained(this), relay_mode_));
   }
 }
 
-void TransportContext::OnIceConfig(const IceConfig& ice_config) {
-  ice_config_ = ice_config;
-  ice_config_request_.reset();
+void TransportContext::OnIceConfig(RelayMode relay_mode,
+                                   const IceConfig& ice_config) {
+  ice_config_[relay_mode] = ice_config;
+  ice_config_request_[relay_mode].reset();
 
-  while (!pending_ice_config_callbacks_.empty()) {
-    pending_ice_config_callbacks_.begin()->Run(ice_config_);
-    pending_ice_config_callbacks_.pop_front();
+  auto& callback_list = pending_ice_config_callbacks_[relay_mode];
+  while (!callback_list.empty()) {
+    callback_list.begin()->Run(ice_config);
+    callback_list.pop_front();
   }
 }
 

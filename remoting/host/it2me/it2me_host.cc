@@ -19,6 +19,7 @@
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_event_logger.h"
@@ -243,6 +244,8 @@ void It2MeHost::FinishConnect() {
           make_scoped_ptr(new ChromiumUrlRequestFactory(
               host_context_->url_request_context_getter())),
           network_settings, protocol::TransportRole::SERVER);
+  transport_context->set_ice_config_url(
+      ServiceUrls::GetInstance()->ice_config_url());
 
   scoped_ptr<protocol::SessionManager> session_manager(
       new protocol::JingleSessionManager(signal_strategy_.get()));
