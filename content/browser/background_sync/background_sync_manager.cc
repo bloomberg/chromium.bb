@@ -710,6 +710,7 @@ void BackgroundSyncManager::DispatchSyncEvent(
 
   if (active_version->running_status() != ServiceWorkerVersion::RUNNING) {
     active_version->RunAfterStartWorker(
+        ServiceWorkerMetrics::EventType::SYNC,
         base::Bind(&BackgroundSyncManager::DispatchSyncEvent,
                    weak_ptr_factory_.GetWeakPtr(), tag, active_version,
                    last_chance, callback),

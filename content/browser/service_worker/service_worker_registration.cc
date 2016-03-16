@@ -287,6 +287,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
 
   // "10. Queue a task to fire an event named activate..."
   activating_version->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::ACTIVATE,
       base::Bind(&ServiceWorkerRegistration::DispatchActivateEvent, this,
                  activating_version),
       base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished, this,

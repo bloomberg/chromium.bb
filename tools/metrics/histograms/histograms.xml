@@ -45951,6 +45951,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.StartWorker.Purpose"
+    enum="ServiceWorkerMetrics.EventType">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The purpose for starting up a service worker. Recorded only for installed
+    workers.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.StartWorker.Status"
     enum="ServiceWorkerStatusCode">
   <owner>falken@chromium.org</owner>
@@ -45968,6 +45977,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     script execution). The metric is not recorded if DevTools was ever attached
     to the Service Worker during startup. See also
     ServiceWorker.StartNewWorker.Time for new workers.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.StartWorker.Timeout.StartPurpose"
+    enum="ServiceWorkerMetrics.EventType">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Records the start purpose for a service worker that timed out while starting
+    up. Recorded only for installed workers.
   </summary>
 </histogram>
 
@@ -80171,13 +80189,19 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="ServiceWorkerMetrics.EventType" type="int">
   <int value="0" label="ACTIVATE"/>
   <int value="1" label="INSTALL"/>
-  <int value="2" label="FETCH"/>
+  <int value="2" label="FETCH (deprecated)"/>
   <int value="3" label="SYNC"/>
   <int value="4" label="NOTIFICATION_CLICK"/>
   <int value="5" label="PUSH"/>
   <int value="6" label="GEOFENCING"/>
   <int value="7" label="SERVICE_PORT_CONNECT"/>
   <int value="8" label="MESSAGE"/>
+  <int value="9" label="NOTIFICATION_CLOSE"/>
+  <int value="10" label="FETCH_MAIN_FRAME"/>
+  <int value="11" label="FETCH_SUB_FRAME"/>
+  <int value="12" label="FETCH_SHARED_WORKER"/>
+  <int value="13" label="FETCH_SUB_RESOURCE"/>
+  <int value="14" label="UNKOWN"/>
 </enum>
 
 <enum name="ServiceWorkerReadResponseResult" type="int">

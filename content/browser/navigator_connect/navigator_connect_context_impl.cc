@@ -5,6 +5,7 @@
 #include "content/browser/navigator_connect/navigator_connect_context_impl.h"
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/stl_util.h"
 #include "content/browser/message_port_service.h"
@@ -154,6 +155,7 @@ void NavigatorConnectContextImpl::GotServiceWorkerRegistration(
       registration->pattern().GetOrigin();
 
   active_version->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::SERVICE_PORT_CONNECT,
       base::Bind(&NavigatorConnectContextImpl::DispatchConnectEvent, this,
                  callback, client_port_id, service_port_id, registration,
                  make_scoped_refptr(active_version)),

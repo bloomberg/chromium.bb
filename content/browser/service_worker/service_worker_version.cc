@@ -303,7 +303,11 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
           kDestructedStartingWorkerTimeoutThresholdSeconds)) {
     DCHECK(timeout_timer_.IsRunning());
     DCHECK(!embedded_worker_->devtools_attached());
-    RecordStartWorkerResult(SERVICE_WORKER_ERROR_TIMEOUT);
+
+    // RecordStartWorkerResult must be in start_callbacks_.
+    DCHECK(!start_callbacks_.empty());
+    RecordStartWorkerResult(ServiceWorkerMetrics::EventType::UNKNOWN,
+                            SERVICE_WORKER_ERROR_TIMEOUT);
   }
 
   if (context_)
@@ -361,20 +365,21 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   return info;
 }
 
-void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
+void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
+                                       const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_) {
-    RecordStartWorkerResult(SERVICE_WORKER_ERROR_ABORT);
+    RecordStartWorkerResult(purpose, SERVICE_WORKER_ERROR_ABORT);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
   if (is_redundant()) {
-    RecordStartWorkerResult(SERVICE_WORKER_ERROR_REDUNDANT);
+    RecordStartWorkerResult(purpose, SERVICE_WORKER_ERROR_REDUNDANT);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
   }
   if (IsDisabled()) {
-    RecordStartWorkerResult(SERVICE_WORKER_ERROR_DISABLED_WORKER);
+    RecordStartWorkerResult(purpose, SERVICE_WORKER_ERROR_DISABLED_WORKER);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_DISABLED_WORKER));
 
     // Show a message in DevTools for developers.
@@ -390,7 +395,7 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
   if (context_->wrapper()->resource_context() &&
       !GetContentClient()->browser()->AllowServiceWorker(
           scope_, scope_, context_->wrapper()->resource_context(), -1, -1)) {
-    RecordStartWorkerResult(SERVICE_WORKER_ERROR_DISALLOWED);
+    RecordStartWorkerResult(purpose, SERVICE_WORKER_ERROR_DISALLOWED);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_DISALLOWED));
     return;
   }
@@ -400,11 +405,9 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
   // Ensure the live registration during starting worker so that the worker can
   // get associated with it in SWDispatcherHost::OnSetHostedVersionId().
   context_->storage()->FindRegistrationForId(
-      registration_id_,
-      scope_.GetOrigin(),
+      registration_id_, scope_.GetOrigin(),
       base::Bind(&ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+                 weak_factory_.GetWeakPtr(), purpose, callback));
 }
 
 void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
@@ -514,6 +517,7 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
 }
 
 void ServiceWorkerVersion::RunAfterStartWorker(
+    ServiceWorkerMetrics::EventType purpose,
     const base::Closure& task,
     const StatusCallback& error_callback) {
   if (running_status() == RUNNING) {
@@ -521,7 +525,8 @@ void ServiceWorkerVersion::RunAfterStartWorker(
     task.Run();
     return;
   }
-  StartWorker(base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
+  StartWorker(purpose,
+              base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
                          error_callback, task));
 }
 
@@ -543,12 +548,13 @@ void ServiceWorkerVersion::DispatchMessageEventInternal(
   OnBeginEvent();
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(
-        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
-        base::Bind(&RunErrorMessageCallback, sent_message_ports, callback),
-        base::Bind(&self::DispatchMessageEventInternal,
-                   weak_factory_.GetWeakPtr(), message, sent_message_ports,
-                   callback)));
+    StartWorker(ServiceWorkerMetrics::EventType::MESSAGE,
+                base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
+                           base::Bind(&RunErrorMessageCallback,
+                                      sent_message_ports, callback),
+                           base::Bind(&self::DispatchMessageEventInternal,
+                                      weak_factory_.GetWeakPtr(), message,
+                                      sent_message_ports, callback)));
     return;
   }
 
@@ -578,12 +584,13 @@ void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
 
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(
-        &RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
-        base::Bind(&RunErrorMessageCallback, sent_message_ports, callback),
-        base::Bind(&self::DispatchCrossOriginMessageEvent,
-                   weak_factory_.GetWeakPtr(), client, message,
-                   sent_message_ports, callback)));
+    StartWorker(ServiceWorkerMetrics::EventType::MESSAGE,
+                base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
+                           base::Bind(&RunErrorMessageCallback,
+                                      sent_message_ports, callback),
+                           base::Bind(&self::DispatchCrossOriginMessageEvent,
+                                      weak_factory_.GetWeakPtr(), client,
+                                      message, sent_message_ports, callback)));
     return;
   }
 
@@ -1276,6 +1283,7 @@ void ServiceWorkerVersion::OnRegisterForeignFetchScopes(
 }
 
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
+    ServiceWorkerMetrics::EventType purpose,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
@@ -1292,12 +1300,12 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     }
   }
   if (status != SERVICE_WORKER_OK) {
-    RecordStartWorkerResult(status);
+    RecordStartWorkerResult(purpose, status);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
     return;
   }
   if (is_redundant()) {
-    RecordStartWorkerResult(SERVICE_WORKER_ERROR_REDUNDANT);
+    RecordStartWorkerResult(purpose, SERVICE_WORKER_ERROR_REDUNDANT);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
   }
@@ -1316,7 +1324,7 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
       if (start_callbacks_.empty()) {
         start_callbacks_.push_back(
             base::Bind(&ServiceWorkerVersion::RecordStartWorkerResult,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr(), purpose));
       }
       break;
   }
@@ -1508,6 +1516,7 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
 }
 
 void ServiceWorkerVersion::RecordStartWorkerResult(
+    ServiceWorkerMetrics::EventType purpose,
     ServiceWorkerStatusCode status) {
   base::TimeTicks start_time = start_time_;
   ClearTick(&start_time_);
@@ -1515,7 +1524,7 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
   if (context_)
     context_->UpdateVersionFailureCount(version_id_, status);
 
-  ServiceWorkerMetrics::RecordStartWorkerStatus(status,
+  ServiceWorkerMetrics::RecordStartWorkerStatus(status, purpose,
                                                 IsInstalled(prestart_status_));
 
   if (status == SERVICE_WORKER_OK && !start_time.is_null() &&

@@ -13,15 +13,37 @@
 
 namespace content {
 
+namespace {
+using EventType = ServiceWorkerMetrics::EventType;
+EventType ResourceTypeToEventType(ResourceType resource_type) {
+  switch (resource_type) {
+    case RESOURCE_TYPE_MAIN_FRAME:
+      return EventType::FETCH_MAIN_FRAME;
+    case RESOURCE_TYPE_SUB_FRAME:
+      return EventType::FETCH_SUB_FRAME;
+    case RESOURCE_TYPE_SHARED_WORKER:
+      return EventType::FETCH_SHARED_WORKER;
+    case RESOURCE_TYPE_SERVICE_WORKER:
+    case RESOURCE_TYPE_LAST_TYPE:
+      NOTREACHED() << resource_type;
+      return EventType::FETCH_SUB_RESOURCE;
+    default:
+      return EventType::FETCH_SUB_RESOURCE;
+  }
+}
+}  // namespace
+
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     ServiceWorkerVersion* version,
+    ResourceType resource_type,
     const base::Closure& prepare_callback,
     const FetchCallback& fetch_callback)
     : version_(version),
       prepare_callback_(prepare_callback),
       fetch_callback_(fetch_callback),
       request_(std::move(request)),
+      resource_type_(resource_type),
       weak_factory_(this) {}
 
 ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() {}
@@ -47,6 +69,7 @@ void ServiceWorkerFetchDispatcher::DidWaitActivation() {
     return;
   }
   version_->RunAfterStartWorker(
+      ResourceTypeToEventType(resource_type_),
       base::Bind(&ServiceWorkerFetchDispatcher::DispatchFetchEvent,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerFetchDispatcher::DidFail,

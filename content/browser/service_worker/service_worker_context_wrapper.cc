@@ -62,6 +62,7 @@ void StartActiveWorkerOnIO(
     // it from being deleted while starting the worker. If the refcount of
     // |registration| is 1, it will be deleted after WorkerStarted is called.
     registration->active_version()->StartWorker(
+        ServiceWorkerMetrics::EventType::UNKNOWN,
         base::Bind(WorkerStarted, callback));
     return;
   }

@@ -643,7 +643,8 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration.get(), script_url, 1L, helper_->context()->AsWeakPtr());
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version->StartWorker(CreateReceiverOnCurrentThread(&status));
+  version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                       CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(SERVICE_WORKER_OK, status);
 
@@ -1420,7 +1421,8 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   void set_activate_event_result(blink::WebServiceWorkerEventResult result) {
     activate_event_result_ = result;
   }
-private:
+
+ private:
   base::Closure install_callback_;
   blink::WebServiceWorkerEventResult install_event_result_;
   blink::WebServiceWorkerEventResult activate_event_result_;

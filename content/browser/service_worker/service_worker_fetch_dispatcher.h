@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/resource_type.h"
 
 namespace content {
 
@@ -27,6 +28,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
 
   ServiceWorkerFetchDispatcher(scoped_ptr<ServiceWorkerFetchRequest> request,
                                ServiceWorkerVersion* version,
+                               ResourceType resource_type,
                                const base::Closure& prepare_callback,
                                const FetchCallback& fetch_callback);
   ~ServiceWorkerFetchDispatcher();
@@ -49,6 +51,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   base::Closure prepare_callback_;
   FetchCallback fetch_callback_;
   scoped_ptr<ServiceWorkerFetchRequest> request_;
+  ResourceType resource_type_;
   base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerFetchDispatcher);

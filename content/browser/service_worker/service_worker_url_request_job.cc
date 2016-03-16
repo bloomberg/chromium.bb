@@ -28,6 +28,7 @@
 #include "content/browser/streams/stream_registry.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/service_worker_context.h"
@@ -115,7 +116,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
-    bool is_main_resource_load,
+    ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body,
@@ -133,7 +134,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
-      is_main_resource_load_(is_main_resource_load),
+      resource_type_(resource_type),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       fall_back_required_(false),
@@ -432,7 +433,7 @@ void ServiceWorkerURLRequestJob::StartRequest() {
       // Send a fetch event to the ServiceWorker associated to the
       // provider_host.
       fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
-          CreateFetchRequest(), active_worker,
+          CreateFetchRequest(), active_worker, resource_type_,
           base::Bind(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
@@ -455,7 +456,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   scoped_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest());
   request->mode = request_mode_;
-  request->is_main_resource_load = is_main_resource_load_;
+  request->is_main_resource_load = IsMainResourceLoad();
   request->request_context_type = request_context_type_;
   request->frame_type = frame_type_;
   request->url = request_->url();
@@ -570,7 +571,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     const ServiceWorkerResponse& response,
     const scoped_refptr<ServiceWorkerVersion>& version) {
   fetch_dispatcher_.reset();
-  ServiceWorkerMetrics::RecordFetchEventStatus(is_main_resource_load_, status);
+  ServiceWorkerMetrics::RecordFetchEventStatus(IsMainResourceLoad(), status);
 
   // Check if we're not orphaned.
   if (!request()) {
@@ -588,7 +589,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 
   if (status != SERVICE_WORKER_OK) {
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_FETCH_EVENT_DISPATCH);
-    if (is_main_resource_load_) {
+    if (IsMainResourceLoad()) {
       // Using the service worker failed, so fallback to network.
       delegate_->MainResourceLoadFailed();
       response_type_ = FALLBACK_TO_NETWORK;
@@ -770,8 +771,7 @@ void ServiceWorkerURLRequestJob::RecordResult(
     return;
   }
   did_record_result_ = true;
-  ServiceWorkerMetrics::RecordURLRequestJobResult(is_main_resource_load_,
-                                                  result);
+  ServiceWorkerMetrics::RecordURLRequestJobResult(IsMainResourceLoad(), result);
   if (request())
     request()->net_log().AddEvent(RequestJobResultToNetEventType(result));
 }
@@ -785,7 +785,7 @@ void ServiceWorkerURLRequestJob::RecordStatusZeroResponseError(
     return;
   }
   RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO);
-  ServiceWorkerMetrics::RecordStatusZeroResponseError(is_main_resource_load_,
+  ServiceWorkerMetrics::RecordStatusZeroResponseError(IsMainResourceLoad(),
                                                       error);
 }
 
@@ -838,6 +838,10 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
                               fall_back_required_, response_url_,
                               service_worker_response_type_, worker_start_time_,
                               worker_ready_time_);
+}
+
+bool ServiceWorkerURLRequestJob::IsMainResourceLoad() const {
+  return ServiceWorkerUtils::IsMainResourceType(resource_type_);
 }
 
 }  // namespace content

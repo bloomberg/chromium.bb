@@ -351,6 +351,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
     new_version()->set_pause_after_download(false);
   }
   new_version()->StartWorker(
+      ServiceWorkerMetrics::EventType::INSTALL,
       base::Bind(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
                  weak_factory_.GetWeakPtr()));
 }
@@ -414,6 +415,7 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
 
   // "Fire an event named install..."
   new_version()->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::INSTALL,
       base::Bind(&ServiceWorkerRegisterJob::DispatchInstallEvent,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,

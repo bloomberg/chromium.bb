@@ -91,6 +91,7 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
   // released when this method returns - before the event is delivered to the
   // service worker.
   version->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::PUSH,
       base::Bind(&PushMessagingRouter::DeliverMessageToWorker,
                  make_scoped_refptr(version), service_worker_registration,
                  payload, deliver_message_callback),

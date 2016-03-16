@@ -164,7 +164,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Starts an embedded worker for this version.
   // This returns OK (success) if the worker is already running.
-  void StartWorker(const StatusCallback& callback);
+  // |purpose| is recorded in UMA.
+  void StartWorker(ServiceWorkerMetrics::EventType purpose,
+                   const StatusCallback& callback);
 
   // Stops an embedded worker for this version.
   // This returns OK (success) if the worker is already stopped.
@@ -184,7 +186,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // worker is running, or |error_callback| if starting the worker failed.
   // If the worker is already running, |task| is executed synchronously (before
   // this method returns).
-  void RunAfterStartWorker(const base::Closure& task,
+  // |purpose| is used for UMA.
+  void RunAfterStartWorker(ServiceWorkerMetrics::EventType purpose,
+                           const base::Closure& task,
                            const StatusCallback& error_callback);
 
   // Call this while the worker is running before dispatching an event to the
@@ -555,6 +559,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                     const std::vector<url::Origin>& origins);
 
   void DidEnsureLiveRegistrationForStartWorker(
+      ServiceWorkerMetrics::EventType purpose,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
@@ -585,7 +590,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // RecordStartWorkerResult is added as a start callback by StartTimeoutTimer
   // and records metrics about startup.
-  void RecordStartWorkerResult(ServiceWorkerStatusCode status);
+  void RecordStartWorkerResult(ServiceWorkerMetrics::EventType purpose,
+                               ServiceWorkerStatusCode status);
 
   bool MaybeTimeOutRequest(const RequestInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);

@@ -565,7 +565,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
 
   // Start up the worker.
   status = SERVICE_WORKER_ERROR_ABORT;
-  version->StartWorker(base::Bind(&SaveStatusCallback, &called, &status));
+  version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                       base::Bind(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(called);

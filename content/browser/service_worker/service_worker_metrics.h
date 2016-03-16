@@ -76,7 +76,7 @@ class ServiceWorkerMetrics {
   enum class EventType {
     ACTIVATE,
     INSTALL,
-    FETCH,
+    FETCH,  // Deprecated, use a more specific FETCH_ type.
     SYNC,
     NOTIFICATION_CLICK,
     PUSH,
@@ -84,8 +84,12 @@ class ServiceWorkerMetrics {
     SERVICE_PORT_CONNECT,
     MESSAGE,
     NOTIFICATION_CLOSE,
+    FETCH_MAIN_FRAME,
+    FETCH_SUB_FRAME,
+    FETCH_SHARED_WORKER,
+    FETCH_SUB_RESOURCE,
+    UNKNOWN,  // Used when event type is not known.
     // Add new events to record here.
-
     NUM_TYPES
   };
 
@@ -122,6 +126,7 @@ class ServiceWorkerMetrics {
   // Records the result of trying to start a worker. |is_installed| indicates
   // whether the version has been installed.
   static void RecordStartWorkerStatus(ServiceWorkerStatusCode status,
+                                      EventType purpose,
                                       bool is_installed);
 
   // Records the time taken to successfully start a worker. |is_installed|

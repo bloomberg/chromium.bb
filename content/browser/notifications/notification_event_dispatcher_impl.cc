@@ -228,6 +228,7 @@ void DoDispatchNotificationClickEvent(
   ServiceWorkerVersion::StatusCallback status_callback = base::Bind(
       &ServiceWorkerNotificationEventFinished, dispatch_complete_callback);
   service_worker_registration->active_version()->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK,
       base::Bind(
           &DispatchNotificationClickEventOnWorker,
           make_scoped_refptr(service_worker_registration->active_version()),
@@ -299,6 +300,7 @@ void DoDispatchNotificationCloseEvent(
                  dispatch_complete_callback);
   if (by_user) {
     service_worker_registration->active_version()->RunAfterStartWorker(
+        ServiceWorkerMetrics::EventType::NOTIFICATION_CLOSE,
         base::Bind(
             &DispatchNotificationCloseEventOnWorker,
             make_scoped_refptr(service_worker_registration->active_version()),

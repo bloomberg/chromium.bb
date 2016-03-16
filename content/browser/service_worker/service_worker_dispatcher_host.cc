@@ -878,6 +878,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
     return;
   }
   worker->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::MESSAGE,
       base::Bind(&ServiceWorkerDispatcherHost::
                      DispatchExtendableMessageEventAfterStartWorker,
                  this, worker, message, source_origin, sent_message_ports,

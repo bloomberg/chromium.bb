@@ -41,6 +41,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/web_preferences.h"
@@ -226,7 +227,7 @@ scoped_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderNotInRequest(
 // an experiration far in the future.
 class LongLivedResourceInterceptor : public net::URLRequestInterceptor {
  public:
-  LongLivedResourceInterceptor(const std::string& body)
+  explicit LongLivedResourceInterceptor(const std::string& body)
       : body_(body) {}
   ~LongLivedResourceInterceptor() override {}
 
@@ -592,7 +593,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void StartOnIOThread(const base::Closure& done,
                        ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    version_->StartWorker(CreateReceiver(BrowserThread::UI, done, result));
+    version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                          CreateReceiver(BrowserThread::UI, done, result));
   }
 
   void InstallOnIOThread(const base::Closure& done,
@@ -600,6 +602,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
     version_->RunAfterStartWorker(
+        ServiceWorkerMetrics::EventType::INSTALL,
         base::Bind(&self::DispatchInstallEventOnIOThread, this, done, result),
         CreateReceiver(BrowserThread::UI, done, result));
   }
@@ -631,6 +634,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
     registration_->SetActiveVersion(version_.get());
     version_->RunAfterStartWorker(
+        ServiceWorkerMetrics::EventType::ACTIVATE,
         base::Bind(&self::DispatchActivateEventOnIOThread, this, done, result),
         CreateReceiver(BrowserThread::UI, done, result));
   }
@@ -654,7 +658,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         ServiceWorkerHeaderMap(), Referrer(), false));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
-        std::move(request), version_.get(),
+        std::move(request), version_.get(), RESOURCE_TYPE_MAIN_FRAME,
         CreatePrepareReceiver(prepare_result),
         CreateResponseReceiver(done, blob_context_.get(), result)));
     fetch_dispatcher_->Run();
@@ -877,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 
 class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
  public:
-  WaitForLoaded(const base::Closure& quit) : quit_(quit) {}
+  explicit WaitForLoaded(const base::Closure& quit) : quit_(quit) {}
 
   void OnThreadStarted() override {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);

@@ -68,11 +68,21 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Service Port Connect";
     case EventType::MESSAGE:
       return "Message";
+    case EventType::FETCH_MAIN_FRAME:
+      return "Fetch Main Frame";
+    case EventType::FETCH_SUB_FRAME:
+      return "Fetch Sub Frame";
+    case EventType::FETCH_SHARED_WORKER:
+      return "Fetch Shared Worker";
+    case EventType::FETCH_SUB_RESOURCE:
+      return "Fetch Subresource";
+    case EventType::UNKNOWN:
+      return "Unknown";
     case EventType::NUM_TYPES:
       break;
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
-  return "Unknown";
+  return "error";
 }
 
 bool ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(Site site) {
@@ -147,10 +157,19 @@ void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url) {
 
 void ServiceWorkerMetrics::RecordStartWorkerStatus(
     ServiceWorkerStatusCode status,
+    EventType purpose,
     bool is_installed) {
   if (is_installed) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
                               SERVICE_WORKER_ERROR_MAX_VALUE);
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose",
+                              static_cast<int>(purpose),
+                              static_cast<int>(EventType::NUM_TYPES));
+    if (status == SERVICE_WORKER_ERROR_TIMEOUT) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.Timeout.StartPurpose",
+          static_cast<int>(purpose), static_cast<int>(EventType::NUM_TYPES));
+    }
   } else {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartNewWorker.Status", status,
                               SERVICE_WORKER_ERROR_MAX_VALUE);
@@ -222,6 +241,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.InstallEvent.Time", time);
       break;
     case EventType::FETCH:
+    case EventType::FETCH_MAIN_FRAME:
+    case EventType::FETCH_SUB_FRAME:
+    case EventType::FETCH_SHARED_WORKER:
+    case EventType::FETCH_SUB_RESOURCE:
       if (was_handled) {
         UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.FetchEvent.HasResponse.Time",
                                    time);
@@ -255,6 +278,7 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::SERVICE_PORT_CONNECT:
       break;
 
+    case EventType::UNKNOWN:
     case EventType::NUM_TYPES:
       NOTREACHED() << "Invalid event type";
       break;

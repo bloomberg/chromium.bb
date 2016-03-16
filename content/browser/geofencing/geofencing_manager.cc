@@ -395,6 +395,7 @@ void GeofencingManager::DeliverGeofencingEvent(
   // until the callback dies. Otherwise the registration could be released when
   // this method returns - before the event is delivered to the service worker.
   active_version->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::GEOFENCING,
       base::Bind(&GeofencingManager::DeliverEventToRunningWorker, this,
                  service_worker_registration, event_type,
                  registration->region_id, registration->region,

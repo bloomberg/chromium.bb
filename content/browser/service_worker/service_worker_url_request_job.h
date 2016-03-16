@@ -103,7 +103,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
       FetchRedirectMode redirect_mode,
-      bool is_main_resource_load,
+      ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body,
@@ -227,6 +227,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // calls it.
   void OnStartCompleted() const;
 
+  bool IsMainResourceLoad() const;
+
   // Not owned.
   Delegate* delegate_;
 
@@ -261,7 +263,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
   FetchRedirectMode redirect_mode_;
-  const bool is_main_resource_load_;
+  const ResourceType resource_type_;
   RequestContextType request_context_type_;
   RequestContextFrameType frame_type_;
   bool fall_back_required_;
