@@ -69,7 +69,6 @@ test("components_unittests") {
     "//components/variations:unit_tests",
     "//components/variations/service:unit_tests",
     "//components/web_resource:unit_tests",
-    "//mojo/edk/system",
     "//net",
     "//testing/gtest",
     "//ui/base",
@@ -163,6 +162,7 @@ test("components_unittests") {
       "//components/web_cache/browser:unit_tests",
       "//components/webcrypto:unit_tests",
       "//components/webdata/common:unit_tests",
+      "//mojo/edk/system",
 
       # These are the deps required by the code in this target.
       "//components/policy:policy_component",
@@ -318,23 +318,10 @@ if (is_android) {
   }
 }
 
-test("components_browsertests") {
-  sources = []
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-  data = []
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//components/strings",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
+if (!is_ios) {
+  test("components_browsertests") {
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-  if (is_mac) {
-    data += [ "$root_out_dir/Content Shell.app/" ]
-  }
-
-  if (!is_ios) {
     sources = [
       "autofill/content/browser/risk/fingerprint_browsertest.cc",
       "autofill/content/renderer/password_form_conversion_utils_browsertest.cc",
@@ -345,7 +332,7 @@ test("components_browsertests") {
       "tracing/child_trace_message_filter_browsertest.cc",
     ]
 
-    data += [
+    data = [
       "$root_out_dir/components_tests_resources.pak",
       "$root_out_dir/content_shell.pak",
       "test/data/",
@@ -353,7 +340,9 @@ test("components_browsertests") {
       "//third_party/dom_distiller_js/dist/test/data/",
     ]
 
-    deps += [
+    deps = [
+      "//base",
+      "//base/test:test_support",
       "//components/autofill/content/browser",
       "//components/autofill/content/renderer",
       "//components/autofill/core/browser",
@@ -364,6 +353,7 @@ test("components_browsertests") {
       "//components/password_manager/content/browser",
       "//components/password_manager/content/common",
       "//components/password_manager/content/renderer",
+      "//components/strings",
       "//components/tracing",
       "//content/shell:content_shell_lib",
       "//content/test:browsertest_base",
@@ -372,6 +362,8 @@ test("components_browsertests") {
       "//device/bluetooth",
       "//ipc:test_support",
       "//net:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
       "//ui/base",
     ]
 
@@ -379,66 +371,66 @@ test("components_browsertests") {
       ":components_tests_pak",
       "//third_party/mesa:osmesa",
     ]
+
+    if (is_mac) {
+      data += [ "$root_out_dir/Content Shell.app/" ]
+    }
+
+    if (is_android) {
+      sources += [ "test/android/browsertests_apk/components_browser_tests_jni_onload.cc" ]
+      sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
+      deps += [
+        "//content/test:layouttest_support",
+        "//testing/android/native_test:native_test_support",
+      ]
+      use_default_launcher = false
+      isolate_file = "components_browsertests.isolate"
+      android_manifest = "${target_gen_dir}/components_browsertests_manifest/AndroidManifest.xml"
+      deps += [
+        ":components_browsertests_assets",
+        ":components_browsertests_java",
+        ":components_browsertests_manifest",
+      ]
+    }
+
+    if (is_linux) {
+      # content_extractor_browsertest is a standalone content extraction tool built as
+      # a MANUAL component_browsertest.
+      sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
+      deps += [
+        "//components/leveldb_proto",
+        "//components/pref_registry:test_support",
+        "//components/prefs:test_support",
+      ]
+    }
+
+    if (enable_basic_printing || enable_print_preview) {
+      sources += [ "printing/test/print_web_view_helper_browsertest.cc" ]
+      deps += [ "//components/printing/test:test_support" ]
+    }
   }
-  if (is_android) {
-    sources += [ "test/android/browsertests_apk/components_browser_tests_jni_onload.cc" ]
-    sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
-    deps += [
-      "//content/test:layouttest_support",
-      "//testing/android/native_test:native_test_support",
+
+  test("components_perftests") {
+    sources = [
+      "scheduler/base/task_queue_manager_delegate_for_test.cc",
+      "scheduler/base/task_queue_manager_delegate_for_test.h",
+      "scheduler/base/task_queue_manager_perftest.cc",
+      "visitedlink/test/visitedlink_perftest.cc",
     ]
-    use_default_launcher = false
-    isolate_file = "components_browsertests.isolate"
-    android_manifest =
-        "${target_gen_dir}/components_browsertests_manifest/AndroidManifest.xml"
-    deps += [
-      ":components_browsertests_assets",
-      ":components_browsertests_java",
-      ":components_browsertests_manifest",
-    ]
-  }
 
-  if (is_linux) {
-    # content_extractor_browsertest is a standalone content extraction tool built as
-    # a MANUAL component_browsertest.
-    sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
-    deps += [
-      "//components/leveldb_proto",
-      "//components/pref_registry:test_support",
-      "//components/prefs:test_support",
-    ]
-  }
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  if (enable_basic_printing || enable_print_preview) {
-    sources += [ "printing/test/print_web_view_helper_browsertest.cc" ]
-    deps += [ "//components/printing/test:test_support" ]
-  }
-}
-
-test("components_perftests") {
-  sources = [
-    "scheduler/base/task_queue_manager_delegate_for_test.cc",
-    "scheduler/base/task_queue_manager_delegate_for_test.h",
-    "scheduler/base/task_queue_manager_perftest.cc",
-    "visitedlink/test/visitedlink_perftest.cc",
-  ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  deps = [
-    "//base/test:test_support",
-    "//testing/gtest",
-    "//testing/perf",
-    "//url",
-  ]
-  if (!is_ios) {
-    deps += [
+    deps = [
       "//base",
+      "//base/test:test_support",
       "//base/test:test_support_perf",
       "//components/scheduler",
       "//components/visitedlink/browser",
       "//content/test:test_support",
+      "//testing/gtest",
+      "//testing/perf",
+      "//url",
     ]
   }
 }
