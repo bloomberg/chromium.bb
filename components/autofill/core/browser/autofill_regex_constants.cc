@@ -148,6 +148,7 @@ const char kCardNumberRe[] =
     "|카드";  // ko-KR
 const char kCardCvcRe[] =
     "verification|card.?identification|security.?code|card.?code"
+    "|security.?number|card.?pin|c-v-v"
     "|(cvn|cvv|cvc|csc|cvd|cid|ccv)(field)?"
     "|\\bcid\\b";
 
