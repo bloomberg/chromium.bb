@@ -22,23 +22,20 @@ files.
 
 ## What's the status?
 
-_as of 7 Oct 2015:_
+_as of March 2016:_
 
-GN is now the default system for Linux, though GYP still works. It
-is mostly complete on Android, ChromeOS, and Windows (apart from NaCl
-support on Windows).
-
-Mac and iOS are making progress, though we still need better support
-for bundles before the major targets like Chrome can link and they get
-to parity w/ the other platforms.
+  * Linux and Android: Complete but not quite all bots have been flipped.
+    Developers should be using GN on these platforms for most work.
+  * Windows and ChromeOS: Should be usable for almost all development. Some
+    bots need to be flipped. cros_sdk builds don't work on ChromeOS yet.
+  * Mac and iOS: Work is in progress, generally not usable for normal
+    development.
 
 ## When are you going to be done?
 
-_as of 7 Oct 2015:_
+_as of March 2016:_
 
-We're currently shooting for having Android, ChromeOS, and Windows
-converted over by the end of 2015, with Mac and iOS following in Q1
-of 2016.
+We expect most work to be finishing up between now and the end of Q2.
 
 ## What does "done" mean?
 
@@ -66,14 +63,9 @@ We will be "mostly" done when the following are true:
 The difference between "mostly done" and "done" exists to cover any
 issues we haven't yet identified :)
 
-We do not currently plan to support full native XCode or Visual Studio
-generation from GN. It is theoretically possible to support such things,
-so we would at least look at patches adding the functionality.
-
 ## How can I help?
 
-Check to see if your targets build under GN yet. If they don't,
-volunteer to help convert them!
+We could espeially use infrastructure/bot, Mac, and iOS help.
 
 Or, look at [the list of open bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label:Proj-GN-Migration%20-type:Project&sort=pri&colspec=ID%20Pri%20Summary%20Type%20OS%20Owner%20Status%20Modified%20Blocking) related to the migration and see if there's anything that catches your fancy.
 
