@@ -182,8 +182,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        "webrtcDesktopCapturePrivate", APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWebrtcLoggingPrivate, "webrtcLoggingPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kPrincipalsPrivate, "principalsPrivate",
-       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kFirstRunPrivate, "firstRunPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kInlineInstallPrivate, "inlineInstallPrivate"},

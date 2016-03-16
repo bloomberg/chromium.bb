@@ -670,10 +670,6 @@
     "dependencies": ["permission:preferencesPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "principalsPrivate": {
-    "dependencies": ["permission:principalsPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "privacy": {
     "dependencies": ["permission:privacy"],
     "contexts": ["blessed_extension"]

@@ -97,7 +97,6 @@
       'extension.json',
       'idltest.idl',
       'music_manager_private.idl',
-      'principals_private.idl',
       'top_sites.json',
     ],
 

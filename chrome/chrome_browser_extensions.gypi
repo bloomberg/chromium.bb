@@ -429,8 +429,6 @@
       'browser/extensions/api/preference/preference_api_constants.h',
       'browser/extensions/api/preference/preference_helpers.cc',
       'browser/extensions/api/preference/preference_helpers.h',
-      'browser/extensions/api/principals_private/principals_private_api.cc',
-      'browser/extensions/api/principals_private/principals_private_api.h',
       'browser/extensions/api/proxy/proxy_api.cc',
       'browser/extensions/api/proxy/proxy_api.h',
       'browser/extensions/api/proxy/proxy_api_constants.cc',

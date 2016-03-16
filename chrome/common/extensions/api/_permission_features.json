@@ -807,13 +807,6 @@
       "location": "component"
     }
   ],
-  "principalsPrivate": {
-    "channel": "stable",
-    "extension_types": ["extension"],
-    "whitelist": [
-      "2779FA8B45841D61A37207CCFAC9CB393964FE5B"  // Login Proxy (prototype)
-    ]
-  },
   "privacy": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
