@@ -53,6 +53,7 @@ struct VideoToolboxGlue::Library {
   CFStringRef* kVTCompressionPropertyKey_AllowFrameReordering;
   CFStringRef* kVTCompressionPropertyKey_AverageBitRate;
   CFStringRef* kVTCompressionPropertyKey_ColorPrimaries;
+  CFStringRef* kVTCompressionPropertyKey_DataRateLimits;
   CFStringRef* kVTCompressionPropertyKey_ExpectedFrameRate;
   CFStringRef* kVTCompressionPropertyKey_MaxFrameDelayCount;
   CFStringRef* kVTCompressionPropertyKey_MaxKeyFrameInterval;
@@ -68,6 +69,8 @@ struct VideoToolboxGlue::Library {
   CFStringRef* kVTProfileLevel_H264_High_AutoLevel;
   CFStringRef*
       kVTVideoEncoderSpecification_EnableHardwareAcceleratedVideoEncoder;
+  CFStringRef*
+      kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder;
 };
 
 // Lazy-instance responsible for loading VideoToolbox.
@@ -98,6 +101,7 @@ class VideoToolboxGlue::Loader {
     LOAD_SYMBOL(kVTCompressionPropertyKey_AllowFrameReordering)
     LOAD_SYMBOL(kVTCompressionPropertyKey_AverageBitRate)
     LOAD_SYMBOL(kVTCompressionPropertyKey_ColorPrimaries)
+    LOAD_SYMBOL(kVTCompressionPropertyKey_DataRateLimits)
     LOAD_SYMBOL(kVTCompressionPropertyKey_ExpectedFrameRate)
     LOAD_SYMBOL(kVTCompressionPropertyKey_MaxFrameDelayCount)
     LOAD_SYMBOL(kVTCompressionPropertyKey_MaxKeyFrameInterval)
@@ -113,6 +117,8 @@ class VideoToolboxGlue::Loader {
     LOAD_SYMBOL(kVTProfileLevel_H264_High_AutoLevel)
     LOAD_SYMBOL(
         kVTVideoEncoderSpecification_EnableHardwareAcceleratedVideoEncoder)
+    LOAD_SYMBOL(
+        kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder)
 
 #undef LOAD_SYMBOL
 
@@ -216,6 +222,7 @@ OSStatus VideoToolboxGlue::VTSessionSetProperty(VTSessionRef session,
 KEY_ACCESSOR(kVTCompressionPropertyKey_AllowFrameReordering)
 KEY_ACCESSOR(kVTCompressionPropertyKey_AverageBitRate)
 KEY_ACCESSOR(kVTCompressionPropertyKey_ColorPrimaries)
+KEY_ACCESSOR(kVTCompressionPropertyKey_DataRateLimits)
 KEY_ACCESSOR(kVTCompressionPropertyKey_ExpectedFrameRate)
 KEY_ACCESSOR(kVTCompressionPropertyKey_MaxFrameDelayCount)
 KEY_ACCESSOR(kVTCompressionPropertyKey_MaxKeyFrameInterval)
@@ -230,5 +237,7 @@ KEY_ACCESSOR(kVTProfileLevel_H264_Main_AutoLevel)
 KEY_ACCESSOR(kVTProfileLevel_H264_Extended_AutoLevel)
 KEY_ACCESSOR(kVTProfileLevel_H264_High_AutoLevel)
 KEY_ACCESSOR(kVTVideoEncoderSpecification_EnableHardwareAcceleratedVideoEncoder)
+KEY_ACCESSOR(
+    kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder)
 
 #undef KEY_ACCESSOR

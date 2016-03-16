@@ -11,11 +11,13 @@
 #include "media/base/mac/coremedia_glue.h"
 #include "media/base/media_export.h"
 
-// VideoToolbox API is available in OS X 10.9 and iOS 8 (10.8 has support for
-// software encoding, but this class exposes the 10.9 API level). Chromium
-// requires OS X 10.6 or iOS 6. Linking with VideoToolbox therefore has to
-// happen at runtime. This class is defined to try and load the VideoToolbox
-// library. If it succeeds, clients can use VideoToolbox via this class.
+// VideoToolbox API is available in and after OS X 10.9 and iOS 8 (10.8 has
+// support for software encoding, but this class exposes the 10.9 API level).
+// Chromium requires OS X 10.9 or iOS 9. This class is defined to try and load
+// the VideoToolbox library at runtime. If it succeeds, clients can use
+// VideoToolbox via this class.
+// Note that this file is necessary because Chromium still targets OS X 10.6 for
+// deployment. It should be deprecated soon, see crbug.com/579648.
 class MEDIA_EXPORT VideoToolboxGlue {
  public:
   class Loader;
@@ -49,6 +51,7 @@ class MEDIA_EXPORT VideoToolboxGlue {
   CFStringRef kVTCompressionPropertyKey_AllowFrameReordering() const;
   CFStringRef kVTCompressionPropertyKey_AverageBitRate() const;
   CFStringRef kVTCompressionPropertyKey_ColorPrimaries() const;
+  CFStringRef kVTCompressionPropertyKey_DataRateLimits() const;
   CFStringRef kVTCompressionPropertyKey_ExpectedFrameRate() const;
   CFStringRef kVTCompressionPropertyKey_MaxFrameDelayCount() const;
   CFStringRef kVTCompressionPropertyKey_MaxKeyFrameInterval() const;
@@ -68,6 +71,8 @@ class MEDIA_EXPORT VideoToolboxGlue {
   CFStringRef
       kVTVideoEncoderSpecification_EnableHardwareAcceleratedVideoEncoder()
       const;
+  CFStringRef
+  kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder() const;
 
   // Originally from VTCompressionSession.h
   OSStatus VTCompressionSessionCreate(
