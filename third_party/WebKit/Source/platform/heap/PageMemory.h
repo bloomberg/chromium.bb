@@ -17,6 +17,9 @@
 
 namespace blink {
 
+class RegionTree;
+class RegionTreeNode;
+
 class MemoryRegion {
     USING_FAST_MALLOC(MemoryRegion);
 public:
@@ -72,14 +75,14 @@ public:
         m_inUse[index(page)] = false;
     }
 
-    static PageMemoryRegion* allocateLargePage(size_t size)
+    static PageMemoryRegion* allocateLargePage(size_t size, RegionTree* regionTree)
     {
-        return allocate(size, 1);
+        return allocate(size, 1, regionTree);
     }
 
-    static PageMemoryRegion* allocateNormalPages()
+    static PageMemoryRegion* allocateNormalPages(RegionTree* regionTree)
     {
-        return allocate(blinkPageSize * blinkPagesPerRegion, blinkPagesPerRegion);
+        return allocate(blinkPageSize * blinkPagesPerRegion, blinkPagesPerRegion, regionTree);
     }
 
     BasePage* pageFromAddress(Address address)
@@ -93,7 +96,7 @@ public:
     }
 
 private:
-    PageMemoryRegion(Address base, size_t, unsigned numPages);
+    PageMemoryRegion(Address base, size_t, unsigned numPages, RegionTree*);
 
     unsigned index(Address address) const
     {
@@ -105,13 +108,14 @@ private:
         return offset / blinkPageSize;
     }
 
-    static PageMemoryRegion* allocate(size_t, unsigned numPages);
+    static PageMemoryRegion* allocate(size_t, unsigned numPages, RegionTree*);
 
     const bool m_isLargePage;
     // A thread owns a page, but not a region. Represent the in-use
     // bitmap such that thread non-interference comes for free.
     bool m_inUse[blinkPagesPerRegion];
     int m_numPages;
+    RegionTree* m_regionTree;
 };
 
 // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
@@ -119,29 +123,41 @@ private:
 class RegionTree {
     USING_FAST_MALLOC(RegionTree);
 public:
-    explicit RegionTree(PageMemoryRegion* region)
+    RegionTree() : m_root(nullptr) { }
+
+    void add(PageMemoryRegion*);
+    void remove(PageMemoryRegion*);
+    PageMemoryRegion* lookup(Address);
+
+private:
+    Mutex m_mutex;
+    RegionTreeNode* m_root;
+};
+
+class RegionTreeNode {
+    USING_FAST_MALLOC(RegionTreeNode);
+public:
+    explicit RegionTreeNode(PageMemoryRegion* region)
         : m_region(region)
         , m_left(nullptr)
         , m_right(nullptr)
     {
     }
 
-    ~RegionTree()
+    ~RegionTreeNode()
     {
         delete m_left;
         delete m_right;
     }
 
-    PageMemoryRegion* lookup(Address);
-    static void add(RegionTree*, RegionTree**);
-    static void remove(PageMemoryRegion*, RegionTree**);
+    void addTo(RegionTreeNode** context);
 
 private:
     PageMemoryRegion* m_region;
-    RegionTree* m_left;
-    RegionTree* m_right;
+    RegionTreeNode* m_left;
+    RegionTreeNode* m_right;
 
-    static RegionTree* s_regionTree;
+    friend RegionTree;
 };
 
 // Representation of the memory used for a Blink heap page.
@@ -196,7 +212,7 @@ public:
     //
     // The returned page memory region will be zeroed.
     //
-    static PageMemory* allocate(size_t payloadSize);
+    static PageMemory* allocate(size_t payloadSize, RegionTree*);
 
 private:
     PageMemory(PageMemoryRegion* reserved, const MemoryRegion& writable);

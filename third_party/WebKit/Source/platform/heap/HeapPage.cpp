@@ -425,7 +425,7 @@ void NormalPageArena::allocatePage()
         //
         //    [ guard os page | ... payload ... | guard os page ]
         //    ^---{ aligned to blink page size }
-        PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages();
+        PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages(Heap::getRegionTree());
 
         // Setup the PageMemory object for each of the pages in the region.
         for (size_t i = 0; i < blinkPagesPerRegion; ++i) {
@@ -815,7 +815,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize, size_
 #endif
 
     getThreadState()->shouldFlushHeapDoesNotContainCache();
-    PageMemory* pageMemory = PageMemory::allocate(largeObjectSize);
+    PageMemory* pageMemory = PageMemory::allocate(largeObjectSize, Heap::getRegionTree());
     Address largeObjectAddress = pageMemory->writableStart();
     Address headerAddress = largeObjectAddress + LargeObjectPage::pageHeaderSize();
 #if ENABLE(ASSERT)

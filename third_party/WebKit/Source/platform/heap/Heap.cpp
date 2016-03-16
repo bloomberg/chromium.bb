@@ -161,8 +161,6 @@ void Heap::shutdown()
     s_markingStack = nullptr;
     delete s_ephemeronStack;
     s_ephemeronStack = nullptr;
-    delete s_regionTree;
-    s_regionTree = nullptr;
     GCInfoTable::shutdown();
     ThreadState::shutdown();
     ASSERT(Heap::allocatedSpace() == 0);
@@ -618,38 +616,20 @@ size_t Heap::objectPayloadSizeForTesting()
     return objectPayloadSize;
 }
 
+RegionTree* Heap::getRegionTree()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(RegionTree, tree, new RegionTree);
+    return &tree;
+}
+
 BasePage* Heap::lookup(Address address)
 {
     ASSERT(ThreadState::current()->isInGC());
-    if (!s_regionTree)
-        return nullptr;
-    if (PageMemoryRegion* region = s_regionTree->lookup(address)) {
+    if (PageMemoryRegion* region = Heap::getRegionTree()->lookup(address)) {
         BasePage* page = region->pageFromAddress(address);
         return page && !page->orphaned() ? page : nullptr;
     }
     return nullptr;
-}
-
-static Mutex& regionTreeMutex()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
-    return mutex;
-}
-
-void Heap::removePageMemoryRegion(PageMemoryRegion* region)
-{
-    // Deletion of large objects (and thus their regions) can happen
-    // concurrently on sweeper threads.  Removal can also happen during thread
-    // shutdown, but that case is safe.  Regardless, we make all removals
-    // mutually exclusive.
-    MutexLocker locker(regionTreeMutex());
-    RegionTree::remove(region, &s_regionTree);
-}
-
-void Heap::addPageMemoryRegion(PageMemoryRegion* region)
-{
-    MutexLocker locker(regionTreeMutex());
-    RegionTree::add(new RegionTree(region), &s_regionTree);
 }
 
 void Heap::resetHeapCounters()
@@ -675,7 +655,6 @@ CallbackStack* Heap::s_ephemeronStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
-RegionTree* Heap::s_regionTree = nullptr;
 size_t Heap::s_allocatedSpace = 0;
 size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_objectSizeAtLastGC = 0;

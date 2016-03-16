@@ -259,8 +259,7 @@ public:
     // provide an efficient mapping from arbitrary addresses to the containing
     // heap-page if one exists.
     static BasePage* lookup(Address);
-    static void addPageMemoryRegion(PageMemoryRegion*);
-    static void removePageMemoryRegion(PageMemoryRegion*);
+    static RegionTree* getRegionTree();
 
     static const GCInfo* gcInfo(size_t gcInfoIndex)
     {
@@ -317,7 +316,6 @@ private:
     static HeapDoesNotContainCache* s_heapDoesNotContainCache;
     static FreePagePool* s_freePagePool;
     static OrphanedPagePool* s_orphanedPagePool;
-    static RegionTree* s_regionTree;
     static size_t s_allocatedSpace;
     static size_t s_allocatedObjectSize;
     static size_t s_objectSizeAtLastGC;

@@ -29,19 +29,21 @@ void MemoryRegion::decommit()
 }
 
 
-PageMemoryRegion::PageMemoryRegion(Address base, size_t size, unsigned numPages)
+PageMemoryRegion::PageMemoryRegion(Address base, size_t size, unsigned numPages, RegionTree* regionTree)
     : MemoryRegion(base, size)
     , m_isLargePage(numPages == 1)
     , m_numPages(numPages)
+    , m_regionTree(regionTree)
 {
-    Heap::addPageMemoryRegion(this);
+    m_regionTree->add(this);
     for (size_t i = 0; i < blinkPagesPerRegion; ++i)
         m_inUse[i] = false;
 }
 
 PageMemoryRegion::~PageMemoryRegion()
 {
-    Heap::removePageMemoryRegion(this);
+    if (m_regionTree)
+        m_regionTree->remove(this);
     release();
 }
 
@@ -60,19 +62,20 @@ static NEVER_INLINE void blinkGCOutOfMemory()
     IMMEDIATE_CRASH();
 }
 
-PageMemoryRegion* PageMemoryRegion::allocate(size_t size, unsigned numPages)
+PageMemoryRegion* PageMemoryRegion::allocate(size_t size, unsigned numPages, RegionTree* regionTree)
 {
     // Round size up to the allocation granularity.
     size = (size + WTF::kPageAllocationGranularityOffsetMask) & WTF::kPageAllocationGranularityBaseMask;
     Address base = static_cast<Address>(WTF::allocPages(nullptr, size, blinkPageSize, WTF::PageInaccessible));
     if (!base)
         blinkGCOutOfMemory();
-    return new PageMemoryRegion(base, size, numPages);
+    return new PageMemoryRegion(base, size, numPages, regionTree);
 }
 
 PageMemoryRegion* RegionTree::lookup(Address address)
 {
-    RegionTree* current = this;
+    MutexLocker locker(m_mutex);
+    RegionTreeNode* current = m_root;
     while (current) {
         Address base = current->m_region->base();
         if (address < base) {
@@ -89,23 +92,36 @@ PageMemoryRegion* RegionTree::lookup(Address address)
     return nullptr;
 }
 
-void RegionTree::add(RegionTree* newTree, RegionTree** context)
+void RegionTree::add(PageMemoryRegion* region)
 {
-    ASSERT(newTree);
-    Address base = newTree->m_region->base();
-    for (RegionTree* current = *context; current; current = *context) {
+    ASSERT(region);
+    RegionTreeNode* newTree = new RegionTreeNode(region);
+    MutexLocker locker(m_mutex);
+    newTree->addTo(&m_root);
+}
+
+void RegionTreeNode::addTo(RegionTreeNode** context)
+{
+    Address base = m_region->base();
+    for (RegionTreeNode* current = *context; current; current = *context) {
         ASSERT(!current->m_region->contains(base));
         context = (base < current->m_region->base()) ? &current->m_left : &current->m_right;
     }
-    *context = newTree;
+    *context = this;
 }
 
-void RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
+void RegionTree::remove(PageMemoryRegion* region)
 {
+    // Deletion of large objects (and thus their regions) can happen
+    // concurrently on sweeper threads.  Removal can also happen during thread
+    // shutdown, but that case is safe.  Regardless, we make all removals
+    // mutually exclusive.
+    MutexLocker locker(m_mutex);
     ASSERT(region);
-    ASSERT(context);
+    ASSERT(m_root);
     Address base = region->base();
-    RegionTree* current = *context;
+    RegionTreeNode** context = &m_root;
+    RegionTreeNode* current = m_root;
     for (; current; current = *context) {
         if (region == current->m_region)
             break;
@@ -118,11 +134,11 @@ void RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
 
     *context = nullptr;
     if (current->m_left) {
-        add(current->m_left, context);
+        current->m_left->addTo(context);
         current->m_left = nullptr;
     }
     if (current->m_right) {
-        add(current->m_right, context);
+        current->m_right->addTo(context);
         current->m_right = nullptr;
     }
     delete current;
@@ -153,7 +169,7 @@ static size_t roundToOsPageSize(size_t size)
     return (size + WTF::kSystemPageSize - 1) & ~(WTF::kSystemPageSize - 1);
 }
 
-PageMemory* PageMemory::allocate(size_t payloadSize)
+PageMemory* PageMemory::allocate(size_t payloadSize, RegionTree* regionTree)
 {
     ASSERT(payloadSize > 0);
 
@@ -164,7 +180,7 @@ PageMemory* PageMemory::allocate(size_t payloadSize)
     // Overallocate by 2 times OS page size to have space for a
     // guard page at the beginning and end of blink heap page.
     size_t allocationSize = payloadSize + 2 * blinkGuardPageSize;
-    PageMemoryRegion* pageMemoryRegion = PageMemoryRegion::allocateLargePage(allocationSize);
+    PageMemoryRegion* pageMemoryRegion = PageMemoryRegion::allocateLargePage(allocationSize, regionTree);
     PageMemory* storage = setupPageMemoryInRegion(pageMemoryRegion, 0, payloadSize);
     RELEASE_ASSERT(storage->commit());
     return storage;
