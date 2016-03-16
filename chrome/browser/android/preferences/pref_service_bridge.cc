@@ -803,34 +803,6 @@ static jboolean GetMicManagedByCustodian(JNIEnv* env,
              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
 }
 
-static void SetJavaScriptAllowed(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj,
-                                 const JavaParamRef<jstring>& pattern,
-                                 int setting) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetContentSetting(
-      ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-      "",
-      static_cast<ContentSetting>(setting));
-}
-
-static void SetPopupException(JNIEnv* env,
-                              const JavaParamRef<jobject>& obj,
-                              const JavaParamRef<jstring>& pattern,
-                              int setting) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetContentSetting(
-      ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_POPUPS,
-      "",
-      static_cast<ContentSetting>(setting));
-}
-
 static void SetSearchSuggestEnabled(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     jboolean enabled) {

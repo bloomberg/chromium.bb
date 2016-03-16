@@ -848,30 +848,6 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * Sets whether JavaScript is allowed to run on the given website/domain.
-     *
-     * @param pattern A pattern that matches one or multiple domains. For
-     *        details see examples in content_settings_pattern.h.
-     * @param allow Whether to allow JavaScript on the given site/domain.
-     */
-    public void setJavaScriptAllowed(String pattern, boolean allow) {
-        nativeSetJavaScriptAllowed(
-                pattern, allow ? ContentSetting.ALLOW.toInt() : ContentSetting.BLOCK.toInt());
-    }
-
-    /**
-     * Adds/Edit a popup exception
-     *
-     * @param pattern attribute for the popup exception pattern
-     * @param allow attribute to specify whether to allow or block pattern
-     */
-    public void setPopupException(String pattern, boolean allow) {
-        nativeSetPopupException(pattern, allow
-                ? ContentSetting.ALLOW.toInt()
-                : ContentSetting.BLOCK.toInt());
-    }
-
-    /**
      * Get all the version strings from native.
      * @return AboutVersionStrings about version strings.
      */
@@ -1015,7 +991,6 @@ public final class PrefServiceBridge {
     private native void nativeSetAutoDetectEncodingEnabled(boolean enabled);
     private native void nativeResetTranslateDefaults();
     private native void nativeMigrateJavascriptPreference();
-    private native void nativeSetJavaScriptAllowed(String pattern, int setting);
     private native boolean nativeGetBrowsingDataDeletionPreference(int dataType);
     private native void nativeSetBrowsingDataDeletionPreference(int dataType, boolean value);
     private native int nativeGetBrowsingDataDeletionTimePeriod();
@@ -1034,7 +1009,6 @@ public final class PrefServiceBridge {
     private native void nativeSetAllowLocationEnabled(boolean allow);
     private native void nativeSetNotificationsEnabled(boolean allow);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
-    private native void nativeSetPopupException(String pattern, int setting);
     private native void nativeSetCrashReporting(boolean reporting);
     private native boolean nativeCanPrefetchAndPrerender();
     private native AboutVersionStrings nativeGetAboutVersionStrings();
