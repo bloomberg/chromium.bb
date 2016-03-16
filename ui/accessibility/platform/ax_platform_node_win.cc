@@ -1026,15 +1026,9 @@ int AXPlatformNodeWin::MSAAState() {
     msaa_state |= STATE_SYSTEM_FOCUSED;
 
   // On Windows, the "focus" bit should be set on certain containers, like
-  // menu bars, when visible.
-  //
-  // TODO(dmazzoni): this should probably check if focus is actually inside
-  // the menu bar, but we don't currently track focus inside menu pop-ups,
-  // and Chrome only has one menu visible at a time so this works for now.
-  if (GetData().role == ui::AX_ROLE_MENU_BAR &&
-      !(state & (1 << ui::AX_STATE_INVISIBLE))) {
+  // menu bars, when one of their children has focus.
+  if (GetData().role == ui::AX_ROLE_MENU_BAR && focus)
     msaa_state |= STATE_SYSTEM_FOCUSED;
-  }
 
   return msaa_state;
 }
