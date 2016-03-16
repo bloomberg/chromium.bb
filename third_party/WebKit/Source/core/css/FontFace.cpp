@@ -555,12 +555,12 @@ static FontDisplay CSSValueToFontDisplay(CSSValue* value)
 
 static PassOwnPtrWillBeRawPtr<CSSFontFace> createCSSFontFace(FontFace* fontFace, CSSValue* unicodeRange)
 {
-    Vector<CSSFontFace::UnicodeRange> ranges;
+    Vector<UnicodeRange> ranges;
     if (CSSValueList* rangeList = toCSSValueList(unicodeRange)) {
         unsigned numRanges = rangeList->length();
         for (unsigned i = 0; i < numRanges; i++) {
             CSSUnicodeRangeValue* range = toCSSUnicodeRangeValue(rangeList->item(i));
-            ranges.append(CSSFontFace::UnicodeRange(range->from(), range->to()));
+            ranges.append(UnicodeRange(range->from(), range->to()));
         }
     }
 

@@ -31,6 +31,7 @@
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFace.h"
 #include "platform/fonts/SegmentedFontData.h"
+#include "platform/fonts/UnicodeRangeSet.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -46,9 +47,6 @@ class CORE_EXPORT CSSFontFace final : public NoBaseWillBeGarbageCollectedFinaliz
     USING_FAST_MALLOC_WILL_BE_REMOVED(CSSFontFace);
     WTF_MAKE_NONCOPYABLE(CSSFontFace);
 public:
-    struct UnicodeRange;
-    class UnicodeRangeSet;
-
     CSSFontFace(FontFace* fontFace, Vector<UnicodeRange>& ranges)
         : m_ranges(ranges)
         , m_segmentedFontFace(nullptr)
@@ -73,40 +71,6 @@ public:
     void didBecomeVisibleFallback(RemoteFontFaceSource*);
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
-
-    struct UnicodeRange {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-        UnicodeRange(UChar32 from, UChar32 to)
-            : m_from(from)
-            , m_to(to)
-        {
-        }
-
-        UChar32 from() const { return m_from; }
-        UChar32 to() const { return m_to; }
-        bool contains(UChar32 c) const { return m_from <= c && c <= m_to; }
-        bool operator<(const UnicodeRange& other) const { return m_from < other.m_from; }
-        bool operator<(UChar32 c) const { return m_to < c; }
-        bool operator==(const FontDataRange& fontDataRange) const { return fontDataRange.from() == m_from && fontDataRange.to() == m_to; };
-
-    private:
-        UChar32 m_from;
-        UChar32 m_to;
-    };
-
-    class CORE_EXPORT UnicodeRangeSet {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
-        bool contains(UChar32) const;
-        bool contains(const FontDataRange&) const;
-        bool intersectsWith(const String&) const;
-        bool isEntireRange() const { return m_ranges.isEmpty(); }
-        size_t size() const { return m_ranges.size(); }
-        const UnicodeRange& rangeAt(size_t i) const { return m_ranges[i]; }
-    private:
-        Vector<UnicodeRange> m_ranges; // If empty, represents the whole code space.
-    };
 
     FontFace::LoadStatusType loadStatus() const { return m_fontFace->loadStatus(); }
     bool maybeScheduleFontLoad(const FontDescription&, UChar32);

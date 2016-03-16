@@ -106,7 +106,7 @@ void CSSSegmentedFontFace::removeFontFace(PassRefPtrWillBeRawPtr<FontFace> prpFo
     fontFace->cssFontFace()->clearSegmentedFontFace();
 }
 
-static void appendFontData(SegmentedFontData* newFontData, PassRefPtr<SimpleFontData> prpFaceFontData, const CSSFontFace::UnicodeRangeSet& ranges)
+static void appendFontData(SegmentedFontData* newFontData, PassRefPtr<SimpleFontData> prpFaceFontData, const UnicodeRangeSet& ranges)
 {
     RefPtr<SimpleFontData> faceFontData = prpFaceFontData;
     unsigned numRanges = ranges.size();

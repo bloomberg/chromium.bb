@@ -195,67 +195,6 @@ void CSSFontFace::setLoadStatus(FontFace::LoadStatusType newStatus)
     }
 }
 
-CSSFontFace::UnicodeRangeSet::UnicodeRangeSet(const Vector<UnicodeRange>& ranges)
-    : m_ranges(ranges)
-{
-    if (m_ranges.isEmpty())
-        return;
-
-    std::sort(m_ranges.begin(), m_ranges.end());
-
-    // Unify overlapping ranges.
-    UChar32 from = m_ranges[0].from();
-    UChar32 to = m_ranges[0].to();
-    size_t targetIndex = 0;
-    for (size_t i = 1; i < m_ranges.size(); i++) {
-        if (to + 1 >= m_ranges[i].from()) {
-            to = std::max(to, m_ranges[i].to());
-        } else {
-            m_ranges[targetIndex++] = UnicodeRange(from, to);
-            from = m_ranges[i].from();
-            to = m_ranges[i].to();
-        }
-    }
-    m_ranges[targetIndex++] = UnicodeRange(from, to);
-    m_ranges.shrink(targetIndex);
-}
-
-bool CSSFontFace::UnicodeRangeSet::contains(UChar32 c) const
-{
-    if (isEntireRange())
-        return true;
-    Vector<UnicodeRange>::const_iterator it = std::lower_bound(m_ranges.begin(), m_ranges.end(), c);
-    return it != m_ranges.end() && it->contains(c);
-}
-
-bool CSSFontFace::UnicodeRangeSet::contains(const FontDataRange& range) const
-{
-    for (auto it = m_ranges.begin(); it != m_ranges.end(); ++it) {
-        if (*it == range)
-            return true;
-    }
-    return false;
-}
-
-bool CSSFontFace::UnicodeRangeSet::intersectsWith(const String& text) const
-{
-    if (text.isEmpty())
-        return false;
-    if (isEntireRange())
-        return true;
-    if (text.is8Bit() && m_ranges[0].from() >= 0x100)
-        return false;
-
-    unsigned index = 0;
-    while (index < text.length()) {
-        UChar32 c = text.characterStartingAt(index);
-        index += U16_LENGTH(c);
-        if (contains(c))
-            return true;
-    }
-    return false;
-}
-
 DEFINE_TRACE(CSSFontFace)
 {
     visitor->trace(m_segmentedFontFace);

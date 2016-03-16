@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSFontFace.h"
+#include "platform/fonts/UnicodeRangeSet.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -10,10 +10,10 @@ namespace blink {
 
 static const UChar hiraganaA[2] = { 0x3042, 0 };
 
-TEST(CSSFontFace, UnicodeRangeSetEmpty)
+TEST(UnicodeRangeSet, Empty)
 {
-    Vector<CSSFontFace::UnicodeRange> ranges;
-    CSSFontFace::UnicodeRangeSet set(ranges);
+    Vector<UnicodeRange> ranges;
+    UnicodeRangeSet set(ranges);
     EXPECT_TRUE(set.isEntireRange());
     EXPECT_EQ(0u, set.size());
     EXPECT_FALSE(set.intersectsWith(String()));
@@ -21,11 +21,11 @@ TEST(CSSFontFace, UnicodeRangeSetEmpty)
     EXPECT_TRUE(set.intersectsWith(String(hiraganaA)));
 }
 
-TEST(CSSFontFace, UnicodeRangeSetSingleCharacter)
+TEST(UnicodeRangeSet, SingleCharacter)
 {
-    Vector<CSSFontFace::UnicodeRange> ranges;
-    ranges.append(CSSFontFace::UnicodeRange('b', 'b'));
-    CSSFontFace::UnicodeRangeSet set(ranges);
+    Vector<UnicodeRange> ranges;
+    ranges.append(UnicodeRange('b', 'b'));
+    UnicodeRangeSet set(ranges);
     EXPECT_FALSE(set.isEntireRange());
     EXPECT_FALSE(set.intersectsWith(String()));
     EXPECT_FALSE(set.intersectsWith(String("a")));
@@ -38,12 +38,12 @@ TEST(CSSFontFace, UnicodeRangeSetSingleCharacter)
     EXPECT_EQ('b', set.rangeAt(0).to());
 }
 
-TEST(CSSFontFace, UnicodeRangeSetTwoRanges)
+TEST(UnicodeRangeSet, TwoRanges)
 {
-    Vector<CSSFontFace::UnicodeRange> ranges;
-    ranges.append(CSSFontFace::UnicodeRange('6', '7'));
-    ranges.append(CSSFontFace::UnicodeRange('2', '4'));
-    CSSFontFace::UnicodeRangeSet set(ranges);
+    Vector<UnicodeRange> ranges;
+    ranges.append(UnicodeRange('6', '7'));
+    ranges.append(UnicodeRange('2', '4'));
+    UnicodeRangeSet set(ranges);
     EXPECT_FALSE(set.isEntireRange());
     EXPECT_FALSE(set.intersectsWith(String()));
     EXPECT_FALSE(set.intersectsWith(String("1")));
@@ -61,24 +61,24 @@ TEST(CSSFontFace, UnicodeRangeSetTwoRanges)
     EXPECT_EQ('7', set.rangeAt(1).to());
 }
 
-TEST(CSSFontFace, UnicodeRangeSetOverlap)
+TEST(UnicodeRangeSet, Overlap)
 {
-    Vector<CSSFontFace::UnicodeRange> ranges;
-    ranges.append(CSSFontFace::UnicodeRange('0', '2'));
-    ranges.append(CSSFontFace::UnicodeRange('1', '1'));
-    ranges.append(CSSFontFace::UnicodeRange('3', '5'));
-    ranges.append(CSSFontFace::UnicodeRange('4', '6'));
-    CSSFontFace::UnicodeRangeSet set(ranges);
+    Vector<UnicodeRange> ranges;
+    ranges.append(UnicodeRange('0', '2'));
+    ranges.append(UnicodeRange('1', '1'));
+    ranges.append(UnicodeRange('3', '5'));
+    ranges.append(UnicodeRange('4', '6'));
+    UnicodeRangeSet set(ranges);
     ASSERT_EQ(1u, set.size());
     EXPECT_EQ('0', set.rangeAt(0).from());
     EXPECT_EQ('6', set.rangeAt(0).to());
 }
 
-TEST(CSSFontFace, UnicodeRangeSetNon8Bit)
+TEST(UnicodeRangeSet, Non8Bit)
 {
-    Vector<CSSFontFace::UnicodeRange> ranges;
-    ranges.append(CSSFontFace::UnicodeRange(0x3042, 0x3042));
-    CSSFontFace::UnicodeRangeSet set(ranges);
+    Vector<UnicodeRange> ranges;
+    ranges.append(UnicodeRange(0x3042, 0x3042));
+    UnicodeRangeSet set(ranges);
     ASSERT_EQ(1u, set.size());
     EXPECT_EQ(0x3042, set.rangeAt(0).from());
     EXPECT_EQ(0x3042, set.rangeAt(0).to());
