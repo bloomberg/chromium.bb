@@ -118,7 +118,7 @@ def attribute_context(interface, attribute):
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
         'has_custom_getter': has_custom_getter(attribute),
         'has_custom_setter': has_custom_setter(attribute),
-        'has_setter': has_setter(attribute),
+        'has_setter': has_setter(interface, attribute),
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_origin_trial_enabled': v8_utilities.origin_trial_enabled_function(attribute) or v8_utilities.origin_trial_enabled_function(interface),  # [OriginTrialEnabled]
         'is_call_with_execution_context': has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
@@ -127,7 +127,7 @@ def attribute_context(interface, attribute):
         'is_check_security_for_return_value': is_check_security_for_return_value,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         # TODO(yukishiino): Make all DOM attributes accessor-type properties.
-        'is_data_type_property': constructor_type or interface.name == 'Window' or interface.name == 'Location',
+        'is_data_type_property': is_data_type_property(interface, attribute),
         'is_getter_raises_exception':  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in (None, 'Getter'),
@@ -174,7 +174,7 @@ def attribute_context(interface, attribute):
         update_constructor_attribute_context(interface, attribute, context)
     if not has_custom_getter(attribute):
         getter_context(interface, attribute, context)
-    if not has_custom_setter(attribute) and has_setter(attribute):
+    if not has_custom_setter(attribute) and has_setter(interface, attribute):
         setter_context(interface, attribute, context)
 
     return context
@@ -449,11 +449,27 @@ def scoped_content_attribute_name(interface, attribute):
 # Attribute configuration
 ################################################################################
 
-# [PutForwards], [Replaceable]
-def has_setter(attribute):
+# Property descriptor's {writable: boolean}
+def is_writable(attribute):
     return (not attribute.is_read_only or
             'PutForwards' in attribute.extended_attributes or
             'Replaceable' in attribute.extended_attributes)
+
+
+def is_data_type_property(interface, attribute):
+    return (is_constructor_attribute(attribute) or
+            interface.name == 'Window' or
+            interface.name == 'Location')
+
+
+# [PutForwards], [Replaceable]
+def has_setter(interface, attribute):
+    if (is_data_type_property(interface, attribute) and
+        (is_constructor_attribute(attribute) or
+         'Replaceable' in attribute.extended_attributes)):
+        return False
+
+    return is_writable(attribute)
 
 
 # [DoNotCheckSecurity], [Unforgeable]
@@ -466,7 +482,7 @@ def access_control_list(interface, attribute):
             access_control.append('v8::ALL_CAN_WRITE')
         else:
             access_control.append('v8::ALL_CAN_READ')
-            if has_setter(attribute):
+            if has_setter(interface, attribute):
                 access_control.append('v8::ALL_CAN_WRITE')
     if is_unforgeable(interface, attribute):
         access_control.append('v8::PROHIBITS_OVERWRITING')
@@ -478,10 +494,12 @@ def property_attributes(interface, attribute):
     extended_attributes = attribute.extended_attributes
     property_attributes_list = []
     if ('NotEnumerable' in extended_attributes or
-        is_constructor_attribute(attribute)):
+            is_constructor_attribute(attribute)):
         property_attributes_list.append('v8::DontEnum')
     if is_unforgeable(interface, attribute):
         property_attributes_list.append('v8::DontDelete')
+    if not is_writable(attribute):
+        property_attributes_list.append('v8::ReadOnly')
     return property_attributes_list or ['v8::None']
 
 
@@ -516,8 +534,3 @@ def is_constructor_attribute(attribute):
 
 def update_constructor_attribute_context(interface, attribute, context):
     context['needs_constructor_getter_callback'] = context['measure_as'] or context['deprecate_as'] or context['origin_trial_name']
-    # When the attribute name is the same as the interface name, do not generate
-    # callback functions for each attribute and use
-    # {{cpp_class}}ConstructorAttributeSetterCallback.  Otherwise, generate
-    # a callback function in order to hard-code the attribute name.
-    context['needs_constructor_setter_callback'] = context['name'] != context['constructor_type']

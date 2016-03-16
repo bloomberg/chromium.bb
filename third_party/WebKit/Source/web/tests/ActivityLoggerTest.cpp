@@ -51,7 +51,14 @@ public:
     }
 
     void clear() { m_loggedActivities.clear(); }
-    bool verifyActivities(const Vector<String>& activities) const { return m_loggedActivities == activities; }
+    bool verifyActivities(const Vector<String>& expected) const
+    {
+        EXPECT_EQ(expected.size(), m_loggedActivities.size());
+        for (size_t i = 0; i < std::min(expected.size(), m_loggedActivities.size()); ++i) {
+            EXPECT_STREQ(expected[i].utf8().data(), m_loggedActivities[i].utf8().data());
+        }
+        return m_loggedActivities == expected;
+    }
 
 private:
     Vector<String> m_loggedActivities;

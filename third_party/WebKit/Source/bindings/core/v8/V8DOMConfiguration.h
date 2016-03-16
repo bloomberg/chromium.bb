@@ -62,7 +62,7 @@ public:
         DoNotCheckHolder,
     };
 
-    // AttributeConfiguration translates into calls to SetAccessor() on either
+    // AttributeConfiguration translates into calls to SetNativeDataProperty() on either
     // the instance or the prototype ObjectTemplate, based on |instanceOrPrototypeConfiguration|.
     struct AttributeConfiguration {
         AttributeConfiguration& operator=(const AttributeConfiguration&) = delete;

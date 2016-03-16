@@ -50,43 +50,18 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {{constant_getter_callback(constant)}}
 {% endfor %}
 {# Attributes #}
-{% block replaceable_attribute_setter_and_callback %}
-{% if has_replaceable_attributes or has_constructor_attributes %}
+{% if has_replaceable_attributes %}
 template<class CallbackInfo>
 static bool {{cpp_class}}CreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
     {% if is_check_security %}
-    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    v8::String::Utf8Value attributeName(name);
-    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-        exceptionState.throwIfNeeded();
-        return false;
-    }
+#error TODO(yukishiino): Supports [Replaceable] accessor-type properties with security check (if we really need it).
     {% endif %}
     ASSERT(info.This()->IsObject());
     return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
 }
 
-{% if needs_constructor_setter_callback %}
-static void {{cpp_class}}ConstructorAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    do {
-        v8::Local<v8::Value> data = info.Data();
-        ASSERT(data->IsExternal());
-        V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-        if (!perContextData)
-            break;
-        const WrapperTypeInfo* wrapperTypeInfo = WrapperTypeInfo::unwrap(data);
-        if (!wrapperTypeInfo)
-            break;
-        {{cpp_class}}CreateDataProperty(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
-    } while (false); // do ... while (false) just for use of break
-}
-
 {% endif %}
-{% endif %}
-{% endblock %}
 {##############################################################################}
 {% from 'attributes.cpp' import constructor_getter_callback,
        attribute_getter, attribute_getter_callback,
@@ -96,27 +71,20 @@ static void {{cpp_class}}ConstructorAttributeSetterCallback(v8::Local<v8::Name>,
        with context %}
 {% for attribute in attributes if attribute.should_be_exposed_to_script %}
 {% for world_suffix in attribute.world_suffixes %}
-{% if not attribute.constructor_type %}
-{% if not attribute.has_custom_getter %}
+{% if not attribute.has_custom_getter and not attribute.constructor_type %}
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
+{% if not attribute.constructor_type %}
 {{attribute_getter_callback(attribute, world_suffix)}}
+{% elif attribute.needs_constructor_getter_callback %}
+{{constructor_getter_callback(attribute, world_suffix)}}
 {% endif %}
 {% if attribute.has_setter %}
-{% if not attribute.has_custom_setter and
-       (not attribute.constructor_type or attribute.needs_constructor_setter_callback) %}
+{% if not attribute.has_custom_setter %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
-{% if not attribute.constructor_type or attribute.needs_constructor_setter_callback %}
 {{attribute_setter_callback(attribute, world_suffix)}}
 {% endif %}
-{% endif %}
-{% endfor %}
-{% endfor %}
-{##############################################################################}
-{% for attribute in attributes if attribute.needs_constructor_getter_callback %}
-{% for world_suffix in attribute.world_suffixes %}
-{{constructor_getter_callback(attribute, world_suffix)}}
 {% endfor %}
 {% endfor %}
 {##############################################################################}

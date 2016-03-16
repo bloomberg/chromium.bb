@@ -54,9 +54,9 @@ void installAttributeInternal(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate
 
     ASSERT(attribute.propertyLocationConfiguration);
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
-        instanceTemplate->SetAccessor(name, getter, setter, data, static_cast<v8::AccessControl>(attribute.settings), static_cast<v8::PropertyAttribute>(attribute.attribute));
+        instanceTemplate->SetNativeDataProperty(name, getter, setter, data, static_cast<v8::PropertyAttribute>(attribute.attribute), v8::Local<v8::AccessorSignature>(), static_cast<v8::AccessControl>(attribute.settings));
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnPrototype)
-        prototypeTemplate->SetAccessor(name, getter, setter, data, static_cast<v8::AccessControl>(attribute.settings), static_cast<v8::PropertyAttribute>(attribute.attribute));
+        prototypeTemplate->SetNativeDataProperty(name, getter, setter, data, static_cast<v8::PropertyAttribute>(attribute.attribute), v8::Local<v8::AccessorSignature>(), static_cast<v8::AccessControl>(attribute.settings));
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInterface)
         ASSERT_NOT_REACHED();
 }
