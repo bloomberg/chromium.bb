@@ -190,7 +190,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
 
         // We need to poll since there is no callback for mark page as accessed.
         try {
-            CriteriaHelper.pollForUIThreadCriteria(
+            CriteriaHelper.pollUiThread(
                     new Criteria("Failed while waiting for access count to change.") {
                         @Override
                         public boolean isSatisfied() {

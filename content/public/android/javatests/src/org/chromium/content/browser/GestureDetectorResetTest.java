@@ -72,7 +72,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
             ContentViewCore contentViewCore)
                     throws InterruptedException, Exception, Throwable {
         // Initially the text on the page should say "not clicked".
-        CriteriaHelper.pollForCriteria(new NodeContentsIsEqualToCriteria(
+        CriteriaHelper.pollInstrumentationThread(new NodeContentsIsEqualToCriteria(
                 "The page contents is invalid " + disambiguation, contentViewCore,
                 "test", "not clicked"));
 
@@ -80,7 +80,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
         DOMUtils.clickNode(this, contentViewCore, "button");
 
         // After the click, the text on the page should say "clicked".
-        CriteriaHelper.pollForCriteria(new NodeContentsIsEqualToCriteria(
+        CriteriaHelper.pollInstrumentationThread(new NodeContentsIsEqualToCriteria(
                 "The page contents didn't change after a click " + disambiguation,
                 contentViewCore, "test", "clicked"));
     }

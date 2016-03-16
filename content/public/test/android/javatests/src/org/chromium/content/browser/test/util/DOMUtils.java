@@ -102,7 +102,7 @@ public class DOMUtils {
      */
     public static void waitForMediaPlay(final WebContents webContents, final String id)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -127,7 +127,7 @@ public class DOMUtils {
      */
     public static void waitForMediaPauseBeforeEnd(final WebContents webContents, final String id)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -346,7 +346,7 @@ public class DOMUtils {
     public static void waitForNonZeroNodeBounds(final WebContents webContents,
             final String nodeId)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {

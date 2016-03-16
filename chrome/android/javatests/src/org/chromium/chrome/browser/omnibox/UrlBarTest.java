@@ -364,7 +364,7 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals("testy", new Callable<String>() {
+        CriteriaHelper.pollUiThread(Criteria.equals("testy", new Callable<String>() {
             @Override
             public String call() {
                 return requestedAutocompleteText.get();

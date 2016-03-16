@@ -120,7 +120,7 @@ public class BookmarksTest extends SyncTestBase {
         Bookmark bookmark = getClientBookmarks().get(0);
         modifyServerBookmark(bookmark.id, MODIFIED_TITLE, URL);
         SyncTestUtil.triggerSync();
-        pollForCriteria(new ClientBookmarksCriteria() {
+        pollInstrumentationThread(new ClientBookmarksCriteria() {
             @Override
             public boolean isSatisfied(List<Bookmark> bookmarks) {
                 Bookmark modifiedBookmark = bookmarks.get(0);
@@ -168,7 +168,7 @@ public class BookmarksTest extends SyncTestBase {
         // Move on server, sync, and verify the move locally.
         mFakeServerHelper.modifyBookmarkEntity(bookmark.id, TITLE, URL, folder.id);
         SyncTestUtil.triggerSync();
-        pollForCriteria(new ClientBookmarksCriteria() {
+        pollInstrumentationThread(new ClientBookmarksCriteria() {
             @Override
             public boolean isSatisfied(List<Bookmark> bookmarks) {
                 // The "s" is prepended because the server adds one to the parentId.
@@ -208,7 +208,7 @@ public class BookmarksTest extends SyncTestBase {
         modifyServerBookmarkFolder(folder.id, MODIFIED_TITLE);
         SyncTestUtil.triggerSync();
 
-        pollForCriteria(new ClientBookmarksCriteria() {
+        pollInstrumentationThread(new ClientBookmarksCriteria() {
             @Override
             public boolean isSatisfied(List<Bookmark> bookmarks) {
                 Bookmark modifiedFolder = bookmarks.get(0);
@@ -296,7 +296,7 @@ public class BookmarksTest extends SyncTestBase {
         // Move on client, sync, and verify the move on the server.
         moveClientBookmark(bookmarkId, folderId);
         SyncTestUtil.triggerSync();
-        pollForCriteria(new ServerBookmarksCriteria() {
+        pollInstrumentationThread(new ServerBookmarksCriteria() {
             @Override
             public boolean isSatisfied(List<Bookmark> bookmarks) {
                 Bookmark modifiedBookmark = bookmarks.get(bookmarks.get(0).isFolder() ? 1 : 0);
@@ -471,7 +471,7 @@ public class BookmarksTest extends SyncTestBase {
     }
 
     private void waitForClientBookmarkCount(int n) throws InterruptedException {
-        pollForCriteria(Criteria.equals(n, new Callable<Integer>() {
+        pollInstrumentationThread(Criteria.equals(n, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return SyncTestUtil.getLocalData(mContext, BOOKMARKS_TYPE_STRING).size();
@@ -481,7 +481,7 @@ public class BookmarksTest extends SyncTestBase {
 
     private void waitForServerBookmarkCountWithName(final int count, final String name)
             throws InterruptedException {
-        pollForCriteria(new Criteria(
+        pollInstrumentationThread(new Criteria(
                 "Expected " + count + " remote bookmarks with name " + name + ".") {
             @Override
             public boolean isSatisfied() {

@@ -100,7 +100,7 @@ public class SyncTest extends SyncTestBase {
             }
         });
 
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return newAccount.equals(ChromeSigninController.get(mContext).getSignedInUser());

@@ -195,7 +195,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         // For sub frames, the |loadFailCallback| run through different threads
         // from the ExternalNavigationHandler. As a result, there is no guarantee
         // when url override result would come.
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -324,7 +324,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         targetContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return mActivityMonitor.getHits();

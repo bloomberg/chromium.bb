@@ -197,7 +197,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
             }
         });
         if (createNewTab) {
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria("Failed to select different tab") {
+            CriteriaHelper.pollUiThread(new Criteria("Failed to select different tab") {
                 @Override
                 public boolean isSatisfied() {
                     return getActivity().getActivityTab() != originalTab;
@@ -224,7 +224,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(ANDROID_APP_REFERRER));
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new ReferrerCriteria(getActivity().getActivityTab(), ANDROID_APP_REFERRER), 2000,
                 200);
     }
@@ -242,7 +242,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(referrer));
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new ReferrerCriteria(getActivity().getActivityTab(), ""), 2000, 200);
     }
 
@@ -512,14 +512,14 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         DOMUtils.focusNode(tab.getContentViewCore().getWebContents(), "textField");
 
         // Some processing needs to happen before the test-field has the focus.
-        CriteriaHelper.pollForCriteria(new ElementFocusedCriteria(
+        CriteriaHelper.pollInstrumentationThread(new ElementFocusedCriteria(
                 getActivity().getActivityTab(), "textField"), 2000, 200);
 
         // Now type something.
         getInstrumentation().sendStringSync("banana");
 
         // We also have to wait for the text to happen in the page.
-        CriteriaHelper.pollForCriteria(new ElementTextIsCriteria(
+        CriteriaHelper.pollInstrumentationThread(new ElementTextIsCriteria(
                 getActivity().getActivityTab(), "textField", "banana"), 2000, 200);
 
         // Launch a second URL from the same app, it should open in a new tab.
@@ -557,7 +557,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 TabModelUtils.closeTabByIndex(getActivity().getCurrentTabModel(), 0);
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getActivity().getTabModelSelector().getTotalTabCount();
@@ -573,7 +573,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getInstrumentation().getTargetContext().startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getActivity().getTabModelSelector().getTotalTabCount();
@@ -592,7 +592,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
             }
         });
         TouchCommon.longPressView(view);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return observer.mContextMenu != null;
@@ -610,7 +610,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         });
 
         // The second tab should open in the background.
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(2, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getActivity().getTabModelSelector().getTotalTabCount();
@@ -625,7 +625,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 getActivity().onBackPressed();
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getActivity().getTabModelSelector().getTotalTabCount();

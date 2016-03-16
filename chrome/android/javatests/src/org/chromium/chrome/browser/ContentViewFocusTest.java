@@ -105,7 +105,7 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Layout still requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {
@@ -126,7 +126,7 @@ public class ContentViewFocusTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Layout not requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {

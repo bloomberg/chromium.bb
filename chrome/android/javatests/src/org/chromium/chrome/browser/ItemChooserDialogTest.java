@@ -85,7 +85,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return items.getChildAt(0) != null;
@@ -95,7 +95,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         // Verify first item selected gets selected.
         TouchCommon.singleClickView(items.getChildAt(position - 1));
 
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 Criteria.equals(expectedEnabledState, new Callable<Boolean>() {
                     @Override
                     public Boolean call() {
@@ -107,7 +107,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
         TouchCommon.singleClickView(button);
 
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 Criteria.equals(expectedItemId, new Callable<String>() {
                     @Override
                     public String call() {

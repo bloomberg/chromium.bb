@@ -74,7 +74,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Feature({"Popup"})
     public void testPopupInfobarAppears() throws Exception {
         loadUrl(mPopupHtmlUrl);
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getNumInfobarsShowing();
@@ -92,7 +92,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 : getActivity().getTabModelSelector();
 
         loadUrl(mPopupHtmlUrl);
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getNumInfobarsShowing();
@@ -105,7 +105,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Wait until the animations are done, then click the "open popups" button.
         final InfoBar infobar = infobars.get(0);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !container.isAnimating();
@@ -115,7 +115,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Document mode popups appear slowly and sequentially to prevent Android from throwing them
         // away, so use a long timeout.  http://crbug.com/498920.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (getNumInfobarsShowing() != 0) return false;
@@ -128,7 +128,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Test that revisiting the original page makes popup windows immediately.
         loadUrl(mPopupHtmlUrl);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (getNumInfobarsShowing() != 0) return false;

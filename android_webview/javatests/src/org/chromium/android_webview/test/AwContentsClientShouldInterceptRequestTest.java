@@ -480,7 +480,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
             }
         });
         destroyAwContentsOnMainSync(mAwContents);
-        pollOnUiThread(new Callable<Boolean>() {
+        pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return AwContents.getNativeInstanceCount() == 0;

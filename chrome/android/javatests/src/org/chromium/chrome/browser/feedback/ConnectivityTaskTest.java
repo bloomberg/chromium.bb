@@ -45,7 +45,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
                     }
                 });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Should be finished by now.") {
+        CriteriaHelper.pollUiThread(new Criteria("Should be finished by now.") {
             @Override
             public boolean isSatisfied() {
                 return task.isDone();
@@ -160,7 +160,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
                     }
                 });
         try {
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollUiThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return task.isDone();

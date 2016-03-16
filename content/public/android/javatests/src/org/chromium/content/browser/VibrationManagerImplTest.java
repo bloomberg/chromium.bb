@@ -80,7 +80,7 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
         loadNewShell(URL_VIBRATOR_VIBRATE);
 
         // Waits until VibrationManagerImpl.Vibrate() got called.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mFakeWrapper.mMilliSeconds != -1;
@@ -102,7 +102,7 @@ public class VibrationManagerImplTest extends ContentShellTestBase {
         loadNewShell(URL_VIBRATOR_CANCEL);
 
         // Waits until VibrationManagerImpl.Cancel() got called.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mFakeWrapper.mCancelled;

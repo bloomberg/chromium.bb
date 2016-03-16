@@ -108,7 +108,7 @@ public class ContentShellTestBase
         final ContentShellActivity activity = getActivity();
 
         // Wait for the Content Shell to be initialized.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Shell shell = activity.getActiveShell();
@@ -200,12 +200,13 @@ public class ContentShellTestBase
      */
     protected void assertWaitForPageScaleFactorMatch(float expectedScale)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(Criteria.equals(expectedScale, new Callable<Float>() {
-            @Override
-            public Float call() {
-                return getContentViewCore().getScale();
-            }
-        }));
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(expectedScale, new Callable<Float>() {
+                    @Override
+                    public Float call() {
+                        return getContentViewCore().getScale();
+                    }
+                }));
     }
 
     /**

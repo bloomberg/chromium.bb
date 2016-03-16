@@ -51,7 +51,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         ApplicationTestUtils.launchChrome(mContext);
 
         // Wait for tab model to become initialized.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return ChromeApplication.isDocumentTabModelSelectorInitializedForTests();
@@ -86,7 +86,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         IntentHandler.addTrustedIntentExtras(intent, mContext);
         mContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(URL_1, new Callable<String>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(URL_1, new Callable<String>() {
             @Override
             public String call() {
                 return mUrl;
@@ -103,7 +103,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         ApplicationTestUtils.launchChrome(mContext);
 
         // Wait for tab model to become initialized.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return ChromeApplication.isDocumentTabModelSelectorInitializedForTests();
@@ -138,7 +138,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(androidAppReferrer));
         mContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(URL_1, new Callable<String>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(URL_1, new Callable<String>() {
             @Override
             public String call() {
                 return mUrl;
@@ -155,7 +155,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         ApplicationTestUtils.launchChrome(mContext);
 
         // Wait for tab model to become initialized.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return ChromeApplication.isDocumentTabModelSelectorInitializedForTests();
@@ -190,7 +190,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(nonAppExtra));
         mContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(URL_1, new Callable<String>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(URL_1, new Callable<String>() {
             @Override
             public String call() {
                 return mUrl;
@@ -208,7 +208,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         ApplicationTestUtils.launchChrome(mContext);
 
         // Wait for tab model to become initialized.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return ChromeApplication.isDocumentTabModelSelectorInitializedForTests();
@@ -244,7 +244,7 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         IntentHandler.setPendingReferrer(intent, "http://www.google.com");
         mContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(URL_1, new Callable<String>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(URL_1, new Callable<String>() {
             @Override
             public String call() {
                 return mUrl;

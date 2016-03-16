@@ -107,7 +107,7 @@ public class GeolocationTest extends AwTestBase {
     }
 
     private void ensureGeolocationRunning(final boolean running) throws Exception {
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mMockLocationProvider.isRunning() == running;
@@ -128,7 +128,7 @@ public class GeolocationTest extends AwTestBase {
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() == 1;
@@ -136,7 +136,7 @@ public class GeolocationTest extends AwTestBase {
         });
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() == 2;
@@ -156,7 +156,7 @@ public class GeolocationTest extends AwTestBase {
 
         mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
@@ -174,7 +174,7 @@ public class GeolocationTest extends AwTestBase {
 
         mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
@@ -208,7 +208,7 @@ public class GeolocationTest extends AwTestBase {
 
         ensureGeolocationRunning(true);
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
@@ -246,7 +246,7 @@ public class GeolocationTest extends AwTestBase {
 
         ensureGeolocationRunning(true);
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
@@ -287,7 +287,7 @@ public class GeolocationTest extends AwTestBase {
 
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @SuppressFBWarnings("DM_GC")
             @Override
             public Boolean call() throws Exception {

@@ -150,7 +150,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         try {
             JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, UNSET_RESULT_SCRIPT);
             JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, script);
-            CriteriaHelper.pollForCriteria(new Criteria() {
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         try {

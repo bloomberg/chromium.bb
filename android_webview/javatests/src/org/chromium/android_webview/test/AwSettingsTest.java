@@ -941,7 +941,7 @@ public class AwSettingsTest extends AwTestBase {
                 executeJavaScriptAndWaitForResult("setTitleToActualFontSize()");
             } else {
                 final float oldFontSize = mOldFontSize;
-                poll(new Callable<Boolean>() {
+                pollInstrumentationThread(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
                         executeJavaScriptAndWaitForResult("setTitleToActualFontSize()");
@@ -1164,7 +1164,7 @@ public class AwSettingsTest extends AwTestBase {
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
             loadDataSync(getData());
             final boolean expectPopupEnabled = value;
-            poll(new Callable<Boolean>() {
+            pollInstrumentationThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     String title = getTitleOnUiThread();
@@ -1582,7 +1582,7 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
                 getTitleOnUiThread(awContents));
         settings.setLoadsImagesAutomatically(true);
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return !ImagePageGenerator.IMAGE_NOT_LOADED_STRING.equals(
@@ -1969,7 +1969,7 @@ public class AwSettingsTest extends AwTestBase {
                     getTitleOnUiThread(awContents));
 
             settings.setImagesEnabled(true);
-            poll(new Callable<Boolean>() {
+            pollInstrumentationThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     return ImagePageGenerator.IMAGE_LOADED_STRING.equals(
@@ -2386,7 +2386,7 @@ public class AwSettingsTest extends AwTestBase {
 
         private int waitUntilResourceIsRequested(
                 final String path, final int initialRequestCount) throws Exception {
-            poll(new Callable<Boolean>() {
+            pollInstrumentationThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     return mWebServer.getRequestCount(path) > initialRequestCount;

@@ -109,7 +109,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return items.getChildAt(0) != null;
@@ -122,7 +122,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         // Verify first item selected gets selected.
         TouchCommon.singleClickView(items.getChildAt(position - 1));
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return button.isEnabled();
@@ -131,7 +131,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
 
         TouchCommon.singleClickView(button);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return chooserDialog.mFinishedEventType != -1;
@@ -168,7 +168,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
 
         dialog.dismiss();
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mChooserDialog.mFinishedEventType != -1;

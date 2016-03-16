@@ -157,7 +157,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(2, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getActivity().getTabModelSelector().getModel(false).getCount();
@@ -186,7 +186,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         final AtomicReference<JavascriptAppModalDialog> dialog =
                 new AtomicReference<JavascriptAppModalDialog>();
 
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 dialog.set(JavascriptAppModalDialog.getCurrentDialogForTest());
@@ -204,7 +204,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
         dialog.set(null);
 
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return JavascriptAppModalDialog.getCurrentDialogForTest() == null;
@@ -258,7 +258,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Tab tab = getActivity().getCurrentTabModel().getTabAt(1);
@@ -938,7 +938,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Did not finish animation") {
+        CriteriaHelper.pollUiThread(new Criteria("Did not finish animation") {
             @Override
             public boolean isSatisfied() {
                 Layout layout = getActivity().getLayoutManager().getActiveLayout();
@@ -1234,7 +1234,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 R.id.close_all_tabs_menu_id);
         UiUtils.settleDownUI(getInstrumentation());
 
-        CriteriaHelper.pollForCriteria(new Criteria("Should be in overview mode") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Should be in overview mode") {
             @Override
             public boolean isSatisfied() {
                 return getActivity().isInOverviewMode();
@@ -1420,7 +1420,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitForStaticLayout() throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Static Layout never selected after side swipe") {
                     @Override
                     public boolean isSatisfied() {
@@ -1478,7 +1478,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Layout still requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {
@@ -1496,7 +1496,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Layout not requesting Tab Android view be attached") {
                     @Override
                     public boolean isSatisfied() {

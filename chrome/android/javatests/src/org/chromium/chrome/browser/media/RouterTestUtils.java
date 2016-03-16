@@ -58,7 +58,7 @@ public class RouterTestUtils {
     public static View waitForView(
             final Callable<View> getViewCallable, int maxTimeoutMs, int intervalMs) {
         try {
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollUiThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         try {

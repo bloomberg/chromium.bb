@@ -55,7 +55,7 @@ public class ClearBrowsingDataPreferencesTest
                 mCallbackCalled = true;
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mCallbackCalled;
@@ -78,7 +78,7 @@ public class ClearBrowsingDataPreferencesTest
                 clearButton.getOnPreferenceClickListener().onPreferenceClick(clearButton);
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ClearBrowsingDataPreferences fragment =
@@ -94,7 +94,7 @@ public class ClearBrowsingDataPreferencesTest
                 mCallbackCalled = true;
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mCallbackCalled;
@@ -136,7 +136,7 @@ public class ClearBrowsingDataPreferencesTest
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ClearBrowsingDataPreferences fragment =

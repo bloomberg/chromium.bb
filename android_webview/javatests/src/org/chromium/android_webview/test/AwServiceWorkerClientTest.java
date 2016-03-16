@@ -78,7 +78,7 @@ public class AwServiceWorkerClientTest extends AwTestBase {
         assertEquals(fullIndexUrl, onPageFinishedHelper.getUrl());
 
         // Check that the service worker has been registered successfully.
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getSuccessFromJS() == 1;

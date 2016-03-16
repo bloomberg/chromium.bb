@@ -204,7 +204,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     protected void clearServerData() throws InterruptedException {
         mFakeServerHelper.clearServerData();
         SyncTestUtil.triggerSync();
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Timed out waiting for sync to stop.") {
+        CriteriaHelper.pollUiThread(new Criteria("Timed out waiting for sync to stop.") {
             @Override
             public boolean isSatisfied() {
                 return !ProfileSyncService.get().isSyncRequested();
@@ -224,7 +224,8 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
     }
 
-    protected void pollForCriteria(Criteria criteria) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(criteria, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+    protected void pollInstrumentationThread(Criteria criteria) throws InterruptedException {
+        CriteriaHelper.pollInstrumentationThread(
+                criteria, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 }

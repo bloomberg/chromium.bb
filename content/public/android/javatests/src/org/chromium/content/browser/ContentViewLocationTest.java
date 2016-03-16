@@ -52,7 +52,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
         mJavascriptHelper.waitUntilHasValue();
         assertEquals(0, Integer.parseInt(mJavascriptHelper.getJsonResultAndClear()));
 
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     mJavascriptHelper.evaluateJavaScriptForTests(getWebContents(), "positionCount");
@@ -73,7 +73,7 @@ public class ContentViewLocationTest extends ContentShellTestBase {
     }
 
     private void ensureGeolocationRunning(final boolean running) throws Exception {
-        CriteriaHelper.pollForCriteria(Criteria.equals(running, new Callable<Boolean>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(running, new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mMockLocationProvider.isRunning();

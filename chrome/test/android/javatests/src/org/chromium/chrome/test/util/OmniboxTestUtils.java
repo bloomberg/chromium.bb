@@ -276,7 +276,7 @@ public class OmniboxTestUtils {
         if (gainFocus) {
             // During early startup (before completion of its first onDraw), the UrlBar
             // is not focusable. Tests have to wait for that to happen before trying to focus it.
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria("UrlBar was not focusable") {
+            CriteriaHelper.pollUiThread(new Criteria("UrlBar was not focusable") {
                 @Override
                 public boolean isSatisfied() {
                     return urlBar.isFocusable();
@@ -302,7 +302,7 @@ public class OmniboxTestUtils {
      */
     public static void waitForFocusAndKeyboardActive(final UrlBar urlBar, final boolean active)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return (doesUrlBarHaveFocus(urlBar) == active)
@@ -318,7 +318,7 @@ public class OmniboxTestUtils {
      */
     public static void waitForOmniboxSuggestions(final LocationBarLayout locationBar)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 LocationBarLayout.OmniboxSuggestionsList suggestionsList =
@@ -338,7 +338,7 @@ public class OmniboxTestUtils {
     public static void waitForOmniboxSuggestions(
             final LocationBarLayout locationBar, final int expectedCount)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 LocationBarLayout.OmniboxSuggestionsList suggestionsList =

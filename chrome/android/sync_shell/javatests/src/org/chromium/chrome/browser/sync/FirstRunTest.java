@@ -84,7 +84,7 @@ public class FirstRunTest extends SyncTestBase {
                 FirstRunSignInProcessor.start(getActivity());
             }
         });
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return FirstRunSignInProcessor.getFirstRunFlowSignInComplete(mContext);

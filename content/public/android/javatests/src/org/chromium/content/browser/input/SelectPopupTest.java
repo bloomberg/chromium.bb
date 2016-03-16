@@ -80,7 +80,7 @@ public class SelectPopupTest extends ContentShellTestBase {
     @RerunWithUpdatedContainerView
     public void testReloadWhilePopupShowing() throws InterruptedException, Exception, Throwable {
         // The popup should be hidden before the click.
-        CriteriaHelper.pollForCriteria(new PopupHiddenCriteria());
+        CriteriaHelper.pollInstrumentationThread(new PopupHiddenCriteria());
 
         final ContentViewCore viewCore = getContentViewCore();
         final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(viewCore);
@@ -88,7 +88,7 @@ public class SelectPopupTest extends ContentShellTestBase {
 
         // Once clicked, the popup should show up.
         DOMUtils.clickNode(this, viewCore, "select");
-        CriteriaHelper.pollForCriteria(new PopupShowingCriteria());
+        CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
 
         // Reload the test page.
         int currentCallCount = onPageFinishedHelper.getCallCount();
@@ -103,10 +103,10 @@ public class SelectPopupTest extends ContentShellTestBase {
                 WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
         // The popup should be hidden after the page reload.
-        CriteriaHelper.pollForCriteria(new PopupHiddenCriteria());
+        CriteriaHelper.pollInstrumentationThread(new PopupHiddenCriteria());
 
         // Click the select and wait for the popup to show.
         DOMUtils.clickNode(this, viewCore, "select");
-        CriteriaHelper.pollForCriteria(new PopupShowingCriteria());
+        CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria());
     }
 }

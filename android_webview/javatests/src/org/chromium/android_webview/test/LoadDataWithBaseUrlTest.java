@@ -280,7 +280,7 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
 
         loadDataWithBaseUrlSync(data, "text/html", false, baseUrl, null);
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 String title = getTitleOnUiThread(mAwContents);

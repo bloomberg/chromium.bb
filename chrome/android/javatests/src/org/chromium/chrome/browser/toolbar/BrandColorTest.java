@@ -67,7 +67,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void checkForBrandColor(final int brandColor) {
         try {
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+            CriteriaHelper.pollUiThread(new Criteria(
                     "The toolbar background doesn't contain the right color") {
                 @Override
                 public boolean isSatisfied() {
@@ -76,7 +76,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                             == mToolbar.getBackgroundDrawable().getColor();
                 }
             });
-            CriteriaHelper.pollForUIThreadCriteria(
+            CriteriaHelper.pollUiThread(
                     Criteria.equals(brandColor, new Callable<Integer>() {
                         @Override
                         public Integer call() {
@@ -88,7 +88,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 final int expectedStatusBarColor = brandColor == mDefaultColor
                         ? Color.BLACK
                         : ColorUtils.getDarkenedColorForStatusBar(brandColor);
-                CriteriaHelper.pollForUIThreadCriteria(
+                CriteriaHelper.pollUiThread(
                         Criteria.equals(expectedStatusBarColor, new Callable<Integer>() {
                             @Override
                             public Integer call() {
@@ -217,7 +217,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                         brandColorUrl, delegate.getNative());
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getActivityTab().isShowingInterstitialPage();

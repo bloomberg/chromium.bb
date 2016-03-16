@@ -60,7 +60,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         super.setUp();
 
         // Register for animation notifications
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (getActivity().getActivityTab() == null) return false;
@@ -150,7 +150,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                         getActivity().getActivityTab().goBack();
                     }
                 });
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -242,7 +242,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         // The renderer should have been killed and the InfoBar removed.
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
         assertTrue("Wrong infobar count", getInfoBars().isEmpty());
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getActivityTab().isShowingSadTab();

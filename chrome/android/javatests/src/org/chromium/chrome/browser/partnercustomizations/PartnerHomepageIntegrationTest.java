@@ -151,7 +151,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
 
     private void waitForCheckedState(final Preferences preferenceActivity, boolean isChecked)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(isChecked, new Callable<Boolean>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(isChecked, new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 // The underlying switch view in the preference can change, so we need to fetch
@@ -184,7 +184,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
                 (Button) editHomepagePreferenceActivity.findViewById(R.id.homepage_save);
         TouchCommon.singleClickView(saveButton);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return editHomepagePreferenceActivity.isDestroyed();

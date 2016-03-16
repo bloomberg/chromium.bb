@@ -62,7 +62,7 @@ public abstract class Criteria {
      * Sample Usage:
      * <code>
      * public void waitForTabTitle(final Tab tab, String title) {
-     *     CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(title, new Callable<String>() {
+     *     CriteriaHelper.pollUiThread(Criteria.equals(title, new Callable<String>() {
      *         {@literal @}Override
      *         public String call() {
      *             return tab.getTitle();

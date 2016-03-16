@@ -145,7 +145,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Form resubmission dialog not dismissed correctly") {
                     @Override
                     public boolean isSatisfied() {
@@ -155,7 +155,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     private AlertDialog waitForRepostFormWarningDialog() throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Form resubmission warning not shown") {
                     @Override
                     public boolean isSatisfied() {

@@ -126,7 +126,7 @@ public class TabStripUtils {
      */
     public static void settleDownCompositor(final StripLayoutHelper tabStrip) throws
             InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !tabStrip.isAnimating();

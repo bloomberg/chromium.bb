@@ -199,7 +199,7 @@ public class CookieManagerTest extends AwTestBase {
 
         mCookieManager.setCookie(url, cookie, null);
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mCookieManager.hasCookies();
@@ -237,7 +237,7 @@ public class CookieManagerTest extends AwTestBase {
         mCookieManager.removeAllCookies(null);
 
         // Eventually the cookies are removed.
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return !mCookieManager.hasCookies();
@@ -290,7 +290,7 @@ public class CookieManagerTest extends AwTestBase {
         mCookieManager.removeSessionCookies(null);
 
         // Eventually the session cookie is removed.
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 String c = mCookieManager.getCookie(url);
@@ -321,7 +321,7 @@ public class CookieManagerTest extends AwTestBase {
         assertTrue(mCookieManager.hasCookies());
 
         // But eventually expires:
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return !mCookieManager.hasCookies();
@@ -664,7 +664,7 @@ public class CookieManagerTest extends AwTestBase {
     }
 
     private void waitForCookie(final String url) throws Exception {
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mCookieManager.getCookie(url) != null;

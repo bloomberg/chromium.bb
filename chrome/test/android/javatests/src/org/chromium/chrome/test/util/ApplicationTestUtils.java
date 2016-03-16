@@ -96,7 +96,7 @@ public class ApplicationTestUtils {
 
     /** Waits until Chrome is in the background. */
     public static void waitUntilChromeInBackground() throws Exception {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 int state = ApplicationStatus.getStateForApplication();
@@ -108,7 +108,7 @@ public class ApplicationTestUtils {
 
     /** Waits until Chrome is in the foreground. */
     public static void waitUntilChromeInForeground() throws Exception {
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(ApplicationState.HAS_RUNNING_ACTIVITIES, new Callable<Integer>() {
                     @Override
                     public Integer call() {
@@ -127,7 +127,7 @@ public class ApplicationTestUtils {
             task.finishAndRemoveTask();
         }
 
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getNumChromeTasks(context);
@@ -161,7 +161,7 @@ public class ApplicationTestUtils {
     public static void assertWaitForPageScaleFactorMatch(final ChromeActivity activity,
             final float expectedScale, boolean waitLongerForLoad) throws InterruptedException {
         long waitTimeInMs = waitLongerForLoad ? 10000 : CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (activity.getCurrentContentViewCore() == null) return false;

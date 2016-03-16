@@ -54,7 +54,7 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
         // level via the viewport tag and waiting for the zoom level to reach that value before we
         // proceed with the rest of the test.
         final ContentViewCore contentViewCore = getActivity().getActivityTab().getContentViewCore();
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return contentViewCore.getScale() - INITIAL_SCALE < FLOAT_DELTA;
@@ -64,7 +64,7 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
 
     private void waitForZoomIn(final ContentViewCore contentViewCore, final float initialZoomLevel)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return contentViewCore.getScale() > initialZoomLevel;
@@ -110,7 +110,7 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
         KeyUtils.singleKeyEventView(getInstrumentation(), tab.getView(), KeyEvent.KEYCODE_BACK);
 
         // We should zoom out to the previous zoom level.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return (contentViewCore.getScale() - initialZoomLevel) < FLOAT_DELTA;

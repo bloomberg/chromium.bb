@@ -93,7 +93,7 @@ public class InstallerDelegateTest extends InstrumentationTestCase
     }
 
     private void checkResults(boolean expectedResult) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !mTestDelegate.isRunning() && mResultFinished;

@@ -42,7 +42,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
 
         void assertIsInForeground(final int pid) {
             try {
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollInstrumentationThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return mProcessInForegroundMap.get(pid);
@@ -55,7 +55,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
 
         void assertIsInBackground(final int pid) {
             try {
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollInstrumentationThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return !mProcessInForegroundMap.get(pid);
@@ -68,7 +68,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
 
         void assertSetInForegroundWasCalled(String message, final int pid) {
             try {
-                CriteriaHelper.pollForCriteria(new Criteria(message) {
+                CriteriaHelper.pollInstrumentationThread(new Criteria(message) {
                     @Override
                     public boolean isSatisfied() {
                         return mProcessInForegroundMap.indexOfKey(pid) >= 0;
@@ -81,7 +81,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
 
         void assertIsReleaseAllModerateBindingsCalled() {
             try {
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollInstrumentationThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return mIsReleaseAllModerateBindingsCalled;
@@ -217,7 +217,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tab.getContentViewCore().getCurrentRenderProcessId()));
 
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
@@ -234,7 +234,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
         });
 
         // Wait until the process is spawned and its visibility is determined.
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {

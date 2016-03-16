@@ -128,7 +128,7 @@ public class AwZoomTest extends AwTestBase {
     }
 
     private void waitForScaleChange(final float previousScale) throws Throwable {
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return previousScale != getPixelScaleOnUiThread(mAwContents);
@@ -137,7 +137,7 @@ public class AwZoomTest extends AwTestBase {
     }
 
     private void waitForScaleToBecome(final float expectedScale) throws Throwable {
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return expectedScale == getScaleOnUiThread(mAwContents);
@@ -146,7 +146,7 @@ public class AwZoomTest extends AwTestBase {
     }
 
     private void waitUntilCanNotZoom() throws Throwable {
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return !canZoomInOnUiThread(mAwContents)

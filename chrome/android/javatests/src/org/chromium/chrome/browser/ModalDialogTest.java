@@ -280,7 +280,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
         });
 
         // Closing the tab should have dismissed the dialog.
-        CriteriaHelper.pollForCriteria(new JavascriptAppModalDialogShownCriteria(
+        CriteriaHelper.pollInstrumentationThread(new JavascriptAppModalDialogShownCriteria(
                 "The dialog should have been dismissed when its tab was closed.", false));
     }
 
@@ -303,7 +303,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
         helper.evaluateJavaScriptForTests(
                 getActivity().getCurrentContentViewCore().getWebContents(),
                 script);
-        CriteriaHelper.pollForCriteria(new JavascriptAppModalDialogShownCriteria(
+        CriteriaHelper.pollInstrumentationThread(new JavascriptAppModalDialogShownCriteria(
                 "Could not spawn or locate a modal dialog.", true));
         return helper;
     }

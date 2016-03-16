@@ -142,7 +142,7 @@ public class TypedUrlsTest extends SyncTestBase {
     }
 
     private void waitForClientTypedUrlCount(int count) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(Criteria.equals(count, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(count, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return SyncTestUtil.getLocalData(mContext, TYPED_URLS_TYPE).size();
@@ -152,7 +152,7 @@ public class TypedUrlsTest extends SyncTestBase {
 
     private void waitForServerTypedUrlCountWithName(final int count, final String name)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria(
+        CriteriaHelper.pollInstrumentationThread(new Criteria(
                 "Expected " + count + " server typed URLs with name " + name + ".") {
             @Override
             public boolean isSatisfied() {

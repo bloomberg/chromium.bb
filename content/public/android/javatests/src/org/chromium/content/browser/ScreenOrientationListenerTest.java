@@ -128,7 +128,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
         getInstrumentation().waitForIdleSync();
 
         try {
-            CriteriaHelper.pollForCriteria(criteria);
+            CriteriaHelper.pollInstrumentationThread(criteria);
         } catch (AssertionError e) {
             // This should not be here but the Criteria does not support cases where the orientation
             // is not being changed (i.e. where the Natural orientation matches the one you are

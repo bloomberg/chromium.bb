@@ -42,7 +42,7 @@ public class PrerenderTestHelper {
     public static boolean waitForPrerenderUrl(final Tab tab, final String url,
             boolean shortTimeout) throws InterruptedException {
         try {
-            CriteriaHelper.pollForCriteria(new Criteria() {
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return hasTabPrerenderedUrl(tab, url);

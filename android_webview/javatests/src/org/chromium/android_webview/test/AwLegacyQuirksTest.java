@@ -204,7 +204,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         // ContentView must update itself according to the viewport setup.
         // As we specify 'user-scalable=0', the page must become non-zoomable.
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return !canZoomInOnUiThread(awContents) && !canZoomOutOnUiThread(awContents);
@@ -346,7 +346,7 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
     private void ensureScaleBecomes(final float targetScale, final AwContents awContents)
             throws Throwable {
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return targetScale == getScaleOnUiThread(awContents);

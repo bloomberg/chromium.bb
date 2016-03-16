@@ -78,7 +78,7 @@ public class KeySystemTest extends AwTestBase {
         executeJavaScriptAndWaitForResult(
                 mAwContents, mContentsClient, "isKeySystemSupported('" + keySystem + "')");
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return !getResultFromJS().equals("null");

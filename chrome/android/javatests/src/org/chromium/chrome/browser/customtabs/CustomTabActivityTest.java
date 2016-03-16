@@ -216,7 +216,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("App menu was not shown") {
+        CriteriaHelper.pollUiThread(new Criteria("App menu was not shown") {
             @Override
             public boolean isSatisfied() {
                 return mActivity.getAppMenuHandler().isAppMenuShowing();
@@ -393,7 +393,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForCriteria(new Criteria("Pending Intent was not sent.") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Pending Intent was not sent.") {
             @Override
             public boolean isSatisfied() {
                 return onFinished.isSent();
@@ -422,7 +422,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 mActivity.onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
             }
         });
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getInstrumentation().checkMonitorHit(monitor, 1);
@@ -485,7 +485,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForCriteria(new Criteria("Pending Intent was not sent.") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Pending Intent was not sent.") {
             @Override
             public boolean isSatisfied() {
                 return onFinished.isSent();
@@ -569,7 +569,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                                         (new CustomTabsTestUtils.DummyCallback()).asBinder()));
                     }
                 }));
-        CriteriaHelper.pollForCriteria(Criteria.equals(mTestPage, new Callable<String>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(mTestPage, new Callable<String>() {
             @Override
             public String call() {
                 return mActivity.getActivityTab().getUrl();
@@ -597,12 +597,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (TimeoutException e) {
             fail();
         }
-        CriteriaHelper.pollForCriteria(Criteria.equals(mTestPage2, new Callable<String>() {
-            @Override
-            public String call() {
-                return mActivity.getActivityTab().getUrl();
-            }
-        }));
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(mTestPage2, new Callable<String>() {
+                    @Override
+                    public String call() {
+                        return mActivity.getActivityTab().getUrl();
+                    }
+                }));
     }
 
     @SmallTest
@@ -841,7 +842,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
         if (wait) {
             // Check that there is a prerender.
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria("No Prerender") {
+            CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
                 @Override
                 public boolean isSatisfied() {
                     return connection.mPrerender != null
@@ -869,12 +870,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
         if (wait) {
             // The tab hasn't been reloaded.
-            CriteriaHelper.pollForCriteria(initialVisibilityCriteria, 2000, 200);
+            CriteriaHelper.pollInstrumentationThread(initialVisibilityCriteria, 2000, 200);
             // No reload (initial fragment is correct).
-            CriteriaHelper.pollForCriteria(initialFragmentCriteria, 2000, 200);
-            if (ignoreFragments) CriteriaHelper.pollForCriteria(fragmentCriteria, 2000, 200);
+            CriteriaHelper.pollInstrumentationThread(initialFragmentCriteria, 2000, 200);
+            if (ignoreFragments) {
+                CriteriaHelper.pollInstrumentationThread(fragmentCriteria, 2000, 200);
+            }
         } else {
-            CriteriaHelper.pollForCriteria(new ElementContentCriteria(
+            CriteriaHelper.pollInstrumentationThread(new ElementContentCriteria(
                     tab, "initial-fragment", fragment), 2000, 200);
         }
         assertFalse(tab.canGoForward());
@@ -895,7 +898,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         connection.newSession(cb);
         assertTrue(connection.mayLaunchUrl(cb, Uri.parse(mTestPage), null, null));
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("No prerender") {
+        CriteriaHelper.pollUiThread(new Criteria("No prerender") {
             @Override
             public boolean isSatisfied() {
                 return connection.mPrerender.mWebContents != null

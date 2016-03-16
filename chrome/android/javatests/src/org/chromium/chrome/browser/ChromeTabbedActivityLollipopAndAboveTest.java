@@ -41,7 +41,7 @@ public class ChromeTabbedActivityLollipopAndAboveTest extends ChromeTabbedActivi
         // Make sure that ChromeTabbedActivity started up.
         Context context = getInstrumentation().getTargetContext();
         assertFalse(FeatureUtilities.isDocumentMode(context));
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -67,7 +67,7 @@ public class ChromeTabbedActivityLollipopAndAboveTest extends ChromeTabbedActivi
                 getInstrumentation(), DocumentActivity.class, runnable);
 
         // ApplicationStatus should note that the DocumentActivity isn't running anymore.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();

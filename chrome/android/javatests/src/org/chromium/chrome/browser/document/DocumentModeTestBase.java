@@ -188,7 +188,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         ApplicationTestUtils.waitUntilChromeInForeground();
 
         // Wait until the selector is ready and the Tabs have been added to the DocumentTabModel.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (!ChromeApplication.isDocumentTabModelSelectorInitializedForTests()) {
@@ -229,7 +229,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
 
         openLinkInNewTabViaContextMenu(false, false);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (expectedTabCount != tabModel.getCount()) return false;
@@ -273,7 +273,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
             }
         });
         TouchCommon.longPressView(view);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return observer.mContextMenu != null;
@@ -310,7 +310,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
     protected void switchToTab(final Tab tab) throws Exception {
         final TabModel tabModel =
                 ChromeApplication.getDocumentTabModelSelector().getCurrentModel();
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 // http://crbug.com/509866: TabModelUtils#setIndex() sometimes fails.

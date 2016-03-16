@@ -39,7 +39,7 @@ public final class ApplicationData {
      */
     public static void clearAppData(Context targetContext) throws InterruptedException {
         final String appDir = getAppDirFromTargetContext(targetContext);
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria() {
                     private boolean mDataRemoved = false;
 

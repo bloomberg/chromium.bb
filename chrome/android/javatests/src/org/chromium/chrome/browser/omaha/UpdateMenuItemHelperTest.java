@@ -124,7 +124,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
     }
 
     private void versionNumbersQueried() throws Exception {
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -212,7 +212,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
                 getActivity().getAppMenuHandler().showAppMenu(null, false);
             }
         });
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return  getActivity().getAppMenuHandler().isAppMenuShowing();
@@ -227,7 +227,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
                 getActivity().getAppMenuHandler().hideAppMenu();
             }
         });
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return  !getActivity().getAppMenuHandler().isAppMenuShowing();

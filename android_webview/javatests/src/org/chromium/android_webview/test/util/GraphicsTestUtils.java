@@ -80,7 +80,7 @@ public class GraphicsTestUtils {
 
     public static void pollForBackgroundColor(final AwContents awContents, final int c)
             throws Throwable {
-        AwTestBase.poll(new Callable<Boolean>() {
+        AwTestBase.pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return sampleBackgroundColorOnUiThread(awContents) == c;

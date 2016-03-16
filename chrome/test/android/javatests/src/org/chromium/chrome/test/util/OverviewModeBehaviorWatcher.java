@@ -75,7 +75,7 @@ public class OverviewModeBehaviorWatcher implements OverviewModeObserver {
      */
     public void waitForBehavior() throws InterruptedException {
         try {
-            CriteriaHelper.pollForUIThreadCriteria(mCriteria);
+            CriteriaHelper.pollUiThread(mCriteria);
         } finally {
             mOverviewModeBehavior.removeOverviewModeObserver(this);
         }

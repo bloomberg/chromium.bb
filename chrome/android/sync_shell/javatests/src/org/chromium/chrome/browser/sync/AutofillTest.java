@@ -104,7 +104,7 @@ public class AutofillTest extends SyncTestBase {
         specifics.autofillProfile.addressHomeCity = MODIFIED_CITY;
         mFakeServerHelper.modifyEntitySpecifics(autofill.id, specifics);
         SyncTestUtil.triggerSync();
-        pollForCriteria(new ClientAutofillCriteria() {
+        pollInstrumentationThread(new ClientAutofillCriteria() {
             @Override
             public boolean isSatisfied(List<Autofill> autofills) {
                 Autofill modifiedAutofill = autofills.get(0);
@@ -183,7 +183,7 @@ public class AutofillTest extends SyncTestBase {
     }
 
     private void waitForClientAutofillProfileCount(int count) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(Criteria.equals(count, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(count, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return SyncTestUtil.getLocalData(mContext, AUTOFILL_TYPE).size();
@@ -193,7 +193,7 @@ public class AutofillTest extends SyncTestBase {
 
     private void waitForServerAutofillProfileCountWithName(final int count, final String name)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria(
+        CriteriaHelper.pollInstrumentationThread(new Criteria(
                 "Expected " + count + " server autofill profiles with name " + name + ".") {
             @Override
             public boolean isSatisfied() {

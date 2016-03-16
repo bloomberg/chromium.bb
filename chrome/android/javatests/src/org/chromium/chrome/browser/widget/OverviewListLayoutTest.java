@@ -113,7 +113,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         TestTouchUtils.performClickOnMainSync(
                 getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
 
-        CriteriaHelper.pollForCriteria(new ChildCountCriteria(4));
+        CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
     }
 
     private AccessibilityTabModelListItem getListItemAndDisableAnimations(int index) {
@@ -138,7 +138,7 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
     private void toggleTabSwitcher(final boolean expectVisible) throws Exception {
         TestTouchUtils.performClickOnMainSync(
                 getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 boolean isVisible = (getContainer() != null && getContainer().getParent() != null);
@@ -303,8 +303,8 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         MenuUtils.invokeCustomMenuActionSync(
                 getInstrumentation(), getActivity(), R.id.close_all_tabs_menu_id);
 
-        CriteriaHelper.pollForCriteria(new ChildCountCriteria(0));
-        CriteriaHelper.pollForCriteria(new TabModelCountCountCriteria(false, 0));
+        CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(0));
+        CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(false, 0));
         assertFalse(getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
     }
 
@@ -316,20 +316,20 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
         newIncognitoTabsFromMenu(2);
         TestTouchUtils.performClickOnMainSync(
                 getInstrumentation(), getActivity().findViewById(R.id.tab_switcher_button));
-        CriteriaHelper.pollForCriteria(new ChildCountCriteria(2));
+        CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(2));
 
         MenuUtils.invokeCustomMenuActionSync(
                 getInstrumentation(), getActivity(), R.id.close_all_incognito_tabs_menu_id);
-        CriteriaHelper.pollForCriteria(new TabModelCountCountCriteria(true, 0));
+        CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(true, 0));
 
-        CriteriaHelper.pollForCriteria(new ChildCountCriteria(4));
+        CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
         assertTrue(getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
 
         MenuUtils.invokeCustomMenuActionSync(
                 getInstrumentation(), getActivity(), R.id.close_all_tabs_menu_id);
 
-        CriteriaHelper.pollForCriteria(new ChildCountCriteria(0));
-        CriteriaHelper.pollForCriteria(new TabModelCountCountCriteria(false, 0));
+        CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(0));
+        CriteriaHelper.pollInstrumentationThread(new TabModelCountCountCriteria(false, 0));
         assertFalse(getActivity().findViewById(R.id.tab_switcher_button).isEnabled());
     }
 
@@ -375,12 +375,12 @@ public class OverviewListLayoutTest extends ChromeTabbedActivityTestBase {
 
         TestTouchUtils.performClickOnMainSync(getInstrumentation(), incognitoButton);
 
-        CriteriaHelper.pollForCriteria(new ChildCountCriteria(2));
+        CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(2));
 
         TestTouchUtils.performClickOnMainSync(
                 getInstrumentation(), switcherButtons.findViewById(R.id.standard_tabs_button));
 
-        CriteriaHelper.pollForCriteria(new ChildCountCriteria(4));
+        CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
     }
 
     /**

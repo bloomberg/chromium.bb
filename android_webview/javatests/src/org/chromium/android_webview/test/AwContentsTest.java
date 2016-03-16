@@ -303,7 +303,7 @@ public class AwContentsTest extends AwTestBase {
             getAwSettingsOnUiThread(awContents).setImagesEnabled(true);
             loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
-            pollOnUiThread(new Callable<Boolean>() {
+            pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return awContents.getFavicon() != null

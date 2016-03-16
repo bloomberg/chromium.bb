@@ -292,7 +292,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
         final InfoBar infoBar = getInfoBars().get(0);
 
         // A layout must occur to recalculate the transparent region.
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -330,7 +330,7 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
         dismissInfoBar(infoBar, infobarListener);
 
         // A layout must occur to recalculate the transparent region.
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {

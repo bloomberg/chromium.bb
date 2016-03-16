@@ -98,7 +98,7 @@ public class AwContentsClientFaviconTest extends AwTestBase {
                 CommonResources.getTextHtmlHeaders(true));
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mWebServer.getRequestCount(FAVICON1_URL) == 1;

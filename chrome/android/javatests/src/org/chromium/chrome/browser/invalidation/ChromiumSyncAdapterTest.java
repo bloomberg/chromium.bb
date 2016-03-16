@@ -95,7 +95,7 @@ public class ChromiumSyncAdapterTest extends ChromeActivityTestCaseBase<ChromeAc
         intent.addCategory(Intent.CATEGORY_HOME);
         activity.startActivity(intent);
 
-        CriteriaHelper.pollForCriteria(new Criteria("Activity should have been resumed") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Activity should have been resumed") {
             @Override
             public boolean isSatisfied() {
                 return !isActivityResumed();

@@ -65,7 +65,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         final TextView findResults = (TextView) getActivity().findViewById(R.id.find_status);
         assertNotNull(expectedResult);
         assertNotNull(findResults);
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 Criteria.equals(expectedResult, new Callable<CharSequence>() {
                         @Override
                         public CharSequence call() {
@@ -88,7 +88,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitForFindInPageVisibility(final boolean visible) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 FindToolbar findToolbar = (FindToolbar) getActivity().findViewById(

@@ -28,7 +28,7 @@ public class JSUtils {
             final OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper,
             final String linkId) throws Exception {
 
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {

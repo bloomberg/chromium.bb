@@ -71,7 +71,7 @@ public final class SyncTestUtil {
     public static void triggerSyncAndWaitForCompletion() throws InterruptedException {
         final long oldSyncTime = getCurrentSyncTime();
         triggerSync();
-        CriteriaHelper.pollForCriteria(new Criteria(
+        CriteriaHelper.pollInstrumentationThread(new Criteria(
                 "Timed out waiting for sync cycle to complete.") {
             @Override
             public boolean isSatisfied() {
@@ -93,7 +93,7 @@ public final class SyncTestUtil {
      * Waits for sync to become active.
      */
     public static void waitForSyncActive() throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+        CriteriaHelper.pollUiThread(new Criteria(
                 "Timed out waiting for sync to become active.") {
             @Override
             public boolean isSatisfied() {

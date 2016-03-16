@@ -82,7 +82,7 @@ public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivi
     }
 
     void waitForVideoToEnterFullscreen() throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mIsTabFullscreen;
@@ -91,7 +91,7 @@ public class FullscreenVideoTest extends ChromeActivityTestCaseBase<ChromeActivi
     }
 
     void waitForTabToExitFullscreen() throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !mIsTabFullscreen;

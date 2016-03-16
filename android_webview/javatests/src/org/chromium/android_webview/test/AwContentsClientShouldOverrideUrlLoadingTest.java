@@ -542,7 +542,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         clickOnLinkUsingJs();
 
         // Wait for the target URL to be fetched from the server.
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
@@ -575,7 +575,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         mShouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
 
         // Wait for the target URL to be fetched from the server.
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
@@ -608,7 +608,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
 
         // Wait for the redirect target URL to be fetched from the server.
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
@@ -703,7 +703,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         assertTrue(mShouldOverrideUrlLoadingHelper.isMainFrame());
 
         // Make sure the redirect target page has finished loading.
-        pollOnUiThread(new Callable<Boolean>() {
+        pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return !mAwContents.getTitle().equals(pageTitle);
@@ -711,7 +711,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         });
         indirectLoadCallCount = mShouldOverrideUrlLoadingHelper.getCallCount();
         loadUrlAsync(mAwContents, pageWithLinkToRedirectUrl);
-        pollOnUiThread(new Callable<Boolean>() {
+        pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mAwContents.getTitle().equals(pageTitle);
@@ -845,7 +845,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         clickOnLinkUsingJs();
         mShouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
 
-        pollOnUiThread(new Callable<Boolean>() {
+        pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return AwContents.getNativeInstanceCount() == 0;
@@ -870,7 +870,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                 }
             });
             loadUrlAsync(mAwContents, testUrl);
-            pollOnUiThread(new Callable<Boolean>() {
+            pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return mAwContents.getTitle().equals(CommonResources.ABOUT_TITLE);
@@ -888,7 +888,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                     path2, CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
             loadUrlAsync(mAwContents, fromUrl);
 
-            pollOnUiThread(new Callable<Boolean>() {
+            pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return getActivity().getLastSentIntent() != null;
@@ -924,7 +924,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                     "/html_with_link.html", htmlWithLink, CommonResources.getTextHtmlHeaders(true));
 
             loadUrlAsync(mAwContents, urlWithLink);
-            pollOnUiThread(new Callable<Boolean>() {
+            pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return mAwContents.getTitle().equals(pageTitle);
@@ -938,7 +938,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
             // Clicking on a link should create an intent.
             DOMUtils.clickNode(this, mAwContents.getContentViewCore(), "link");
-            pollOnUiThread(new Callable<Boolean>() {
+            pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return getActivity().getLastSentIntent() != null;
@@ -970,7 +970,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         enableJavaScriptOnUiThread(mAwContents);
         loadUrlAsync(mAwContents, testUrl);
-        pollOnUiThread(new Callable<Boolean>() {
+        pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mAwContents.getTitle().equals(content);
@@ -996,7 +996,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             final String findContentJs = setupForContentClickTest(pageContent, true);
             // Clicking on the content should create an intent.
             DOMUtils.clickNodeByJs(this, mAwContents.getContentViewCore(), findContentJs);
-            pollOnUiThread(new Callable<Boolean>() {
+            pollUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return getActivity().getLastSentIntent() != null;

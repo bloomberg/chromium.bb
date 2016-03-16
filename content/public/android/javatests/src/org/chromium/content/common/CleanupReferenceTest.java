@@ -67,7 +67,7 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         // Ensure compiler / instrumentation does not strip out the assignment.
         assertTrue(instance == null);
         collectGarbage();
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return sObjectCount.get();
@@ -96,7 +96,7 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         // to be GC'ed only when building using GN.
         assertTrue(sObjectCount.get() != -1);
         collectGarbage();
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return sObjectCount.get();

@@ -324,17 +324,18 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         service.onHandleIntent(uploadIntent);
 
         // Verify asynchronously.
-        CriteriaHelper.pollForCriteria(new Criteria("All callables should have a call-count of 1") {
-            @Override
-            public boolean isSatisfied() {
-                for (CountedMinidumpUploadCallable callable : callables) {
-                    if (callable.mCalledCount != 1) {
-                        return false;
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("All callables should have a call-count of 1") {
+                    @Override
+                    public boolean isSatisfied() {
+                        for (CountedMinidumpUploadCallable callable : callables) {
+                            if (callable.mCalledCount != 1) {
+                                return false;
+                            }
+                        }
+                        return true;
                     }
-                }
-                return true;
-            }
-        }, MAX_TIMEOUT_MS, CHECK_INTERVAL_MS);
+                }, MAX_TIMEOUT_MS, CHECK_INTERVAL_MS);
     }
 
     /**

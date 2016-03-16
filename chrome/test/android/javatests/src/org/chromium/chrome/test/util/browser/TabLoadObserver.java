@@ -79,7 +79,7 @@ public class TabLoadObserver extends EmptyTabObserver {
         mTabLoadStartedCallback.waitForCallback(0, 1);
         mTabLoadFinishedCallback.waitForCallback(0, 1);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (!mTab.isLoadingAndRenderingDone()) {

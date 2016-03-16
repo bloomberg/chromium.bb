@@ -85,7 +85,7 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         }
 
         public void waitForCallback() throws InterruptedException {
-            CriteriaHelper.pollForCriteria(new Criteria() {
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return mGotPopupSelection.get();
@@ -127,7 +127,7 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mAutofillPopup.filterAndShow(suggestions, false);
             }
         });
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mAutofillPopup.getListView().getChildCount() > 0;

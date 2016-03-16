@@ -157,7 +157,7 @@ public class PostMessageTest extends AwTestBase {
 
     // Call on non-UI thread.
     private void expectTitle(String title) throws Throwable {
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(title, new Callable<String>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(title, new Callable<String>() {
             @Override
             public String call() {
                 return mAwContents.getTitle();
@@ -624,7 +624,7 @@ public class PostMessageTest extends AwTestBase {
 
     // Call on non-UI thread.
     private void waitUntilPortReady(final AwMessagePort port) throws Throwable {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return port.isReady();

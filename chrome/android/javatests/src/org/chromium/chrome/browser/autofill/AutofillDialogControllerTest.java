@@ -713,21 +713,22 @@ public class AutofillDialogControllerTest extends ChromeActivityTestCaseBase<Chr
     }
 
     private void waitForInputFieldFill(final WebContents webContents) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria("requestAutocomplete() never completed.") {
-            @Override
-            public boolean isSatisfied() {
-                String wasAutocompleted;
-                try {
-                    wasAutocompleted = DOMUtils.getNodeContents(
-                            webContents, "was-autocompleted");
-                } catch (InterruptedException e) {
-                    return false;
-                } catch (TimeoutException e) {
-                    return false;
-                }
-                return TextUtils.equals("succeeded", wasAutocompleted)
-                        || TextUtils.equals("failed", wasAutocompleted);
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("requestAutocomplete() never completed.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        String wasAutocompleted;
+                        try {
+                            wasAutocompleted = DOMUtils.getNodeContents(
+                                    webContents, "was-autocompleted");
+                        } catch (InterruptedException e) {
+                            return false;
+                        } catch (TimeoutException e) {
+                            return false;
+                        }
+                        return TextUtils.equals("succeeded", wasAutocompleted)
+                                || TextUtils.equals("failed", wasAutocompleted);
+                    }
+                });
     }
 }

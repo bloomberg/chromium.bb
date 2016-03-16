@@ -106,7 +106,7 @@ public class AwSecondBrowserProcessTest extends AwTestBase {
         // Context.stopService would result in the opposite outcome.
         Process.killProcess(mSecondBrowserServicePid);
         if (sync) {
-            poll(new Callable<Boolean>() {
+            pollInstrumentationThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     return !isSecondBrowserServiceRunning();

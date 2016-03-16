@@ -34,7 +34,7 @@ public class FirstRunIntegrationTest extends ChromeTabbedActivityTestBase {
 
         sendKeys(KeyEvent.KEYCODE_BACK);
 
-        CriteriaHelper.pollForCriteria(new Criteria("Expected no tabs to be present") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Expected no tabs to be present") {
             @Override
             public boolean isSatisfied() {
                 return 0 == getActivity().getCurrentTabModel().getCount();
@@ -43,7 +43,7 @@ public class FirstRunIntegrationTest extends ChromeTabbedActivityTestBase {
         TabList fullModel = getActivity().getCurrentTabModel().getComprehensiveModel();
         assertEquals("Expected no tabs to be present in the comprehensive model",
                 0, fullModel.getCount());
-        CriteriaHelper.pollForCriteria(new Criteria("Activity was not closed.") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Activity was not closed.") {
             @Override
             public boolean isSatisfied() {
                 return getActivity().isFinishing() || getActivity().isDestroyed();

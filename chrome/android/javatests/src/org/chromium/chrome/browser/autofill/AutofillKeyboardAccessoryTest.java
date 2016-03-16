@@ -121,7 +121,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
              InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(this, mViewCoreRef.get(), "fn");
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Keyboard should be showing.") {
+        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
                 return UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
@@ -149,7 +149,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
              InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(this, mViewCoreRef.get(), "fn");
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Keyboard should be showing.") {
+        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
                 return UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
@@ -161,7 +161,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
                 ((HorizontalScrollView) mKeyboardAccessoryRef.get()).scrollTo(2000, 0);
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("First suggestion should be off the screen after manual scroll.") {
                     @Override
                     public boolean isSatisfied() {
@@ -176,7 +176,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
                     }
                 });
         DOMUtils.clickNode(this, mViewCoreRef.get(), "ln");
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("First suggestion should be on the screen after switching fields.") {
                     @Override
                     public boolean isSatisfied() {
@@ -196,7 +196,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
              InterruptedException, TimeoutException {
         loadTestPage(true);
         DOMUtils.clickNode(this, mViewCoreRef.get(), "fn");
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Keyboard should be showing.") {
+        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
                 return UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
@@ -208,7 +208,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
                 ((HorizontalScrollView) mKeyboardAccessoryRef.get()).scrollTo(0, 0);
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Last suggestion should be on the screen after manual scroll.") {
                     @Override
                     public boolean isSatisfied() {
@@ -223,7 +223,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
                     }
                 });
         DOMUtils.clickNode(this, mViewCoreRef.get(), "ln");
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Last suggestion should be off the screen after switching fields.") {
                     @Override
                     public boolean isSatisfied() {
@@ -249,7 +249,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
              InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(this, mViewCoreRef.get(), "fn");
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Keyboard should be showing.") {
+        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
             @Override
             public boolean isSatisfied() {
                 return UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());
@@ -264,7 +264,7 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
                 }
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Keyboard should be hidden.") {
+        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be hidden.") {
             @Override
             public boolean isSatisfied() {
                 return !UiUtils.isKeyboardShowing(getActivity(), mContainerRef.get());

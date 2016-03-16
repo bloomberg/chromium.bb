@@ -427,7 +427,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
             throws InterruptedException {
         // We need to poll because it takes time to synchronize the state between the android
         // views and Javascript.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -478,7 +478,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     private void assertWaitForIsFullscreen() throws InterruptedException {
         // We need to poll because the Javascript state is updated asynchronously
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
@@ -493,7 +493,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     private void assertWaitForIsEmbedded() throws InterruptedException {
         // We need to poll because the Javascript state is updated asynchronously
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {

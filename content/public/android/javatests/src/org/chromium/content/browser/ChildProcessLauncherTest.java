@@ -45,7 +45,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         ChildProcessLauncher.allocateBoundConnectionForTesting(context);
 
         // Verify that the connection is not considered as allocated.
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.allocatedConnectionsCountForTesting(
@@ -53,7 +53,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
             }
         }));
 
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.connectedServicesCountForTesting();
@@ -83,7 +83,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         assertTrue(connection.crashServiceForTesting());
 
         // Verify that the connection gets cleaned-up.
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.allocatedConnectionsCountForTesting(
@@ -91,7 +91,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
             }
         }));
 
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.connectedServicesCountForTesting();
@@ -116,14 +116,14 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         triggerConnectionSetup(connection);
 
         // Verify that the connection completes the setup.
-        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.connectedServicesCountForTesting();
             }
         }));
 
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("The connection failed to get a pid in setup.") {
                     @Override
                     public boolean isSatisfied() {
@@ -135,7 +135,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         assertTrue(connection.crashServiceForTesting());
 
         // Verify that the connection gets cleaned-up.
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.allocatedConnectionsCountForTesting(
@@ -143,7 +143,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
             }
         }));
 
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.connectedServicesCountForTesting();
@@ -176,7 +176,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         triggerConnectionSetup(connection);
 
         // Verify that the connection completes the setup.
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(1, new Callable<Integer>() {
                     @Override
                     public Integer call() {
@@ -184,7 +184,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                     }
                 }));
 
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("The connection failed to get a pid in setup.") {
                     @Override
                     public boolean isSatisfied() {
@@ -196,14 +196,14 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         assertTrue(connection.crashServiceForTesting());
 
         // Verify that a new service is started for the pending spawn.
-        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.pendingSpawnsCountForTesting();
             }
         }));
 
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(1, new Callable<Integer>() {
                     @Override
                     public Integer call() {
@@ -213,7 +213,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 }));
 
         // Verify that the connection completes the setup for the pending spawn.
-        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return ChildProcessLauncher.connectedServicesCountForTesting();
@@ -228,12 +228,13 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 ChildProcessLauncher.allocateBoundConnectionForTesting(context);
 
         // Wait for the service to connect.
-        CriteriaHelper.pollForCriteria(new Criteria("The connection wasn't established.") {
-            @Override
-            public boolean isSatisfied() {
-                return connection.isConnected();
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("The connection wasn't established.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return connection.isConnected();
+                    }
+                });
         return connection;
     }
 

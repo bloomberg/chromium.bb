@@ -126,7 +126,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     protected void waitUntilIdle() {
         getInstrumentation().waitForIdleSync();
         try {
-            CriteriaHelper.pollForCriteria(new Criteria() {
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return getActivity().getActivityTab() != null
@@ -185,7 +185,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
      * Waits for the splash screen to be hidden.
      */
     protected void waitUntilSplashscreenHides() throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !getActivity().isSplashScreenVisibleForTests();
@@ -195,7 +195,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
 
     protected ViewGroup waitUntilSplashScreenAppears() {
         try {
-            CriteriaHelper.pollForCriteria(new Criteria() {
+            CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return getActivity().getSplashScreenForTests() != null;

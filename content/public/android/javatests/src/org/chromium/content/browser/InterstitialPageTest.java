@@ -64,7 +64,7 @@ public class InterstitialPageTest extends ContentShellTestBase {
     }
 
     private void waitForInterstitial(final boolean shouldBeShown) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 Criteria.equals(shouldBeShown, new Callable<Boolean>() {
                     @Override
                     public Boolean call() {

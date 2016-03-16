@@ -204,7 +204,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         // When the top-controls are removed, we need a layout to trigger the
         // transparent region for the app to be updated.
         scrollTopControls(false);
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -383,7 +383,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
     private void waitForTopControlsPosition(float position) throws InterruptedException {
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(position, new Callable<Float>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Float>() {
             @Override
             public Float call() {
                 return fullscreenManager.getControlOffset();
@@ -393,7 +393,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
     private void waitForNoBrowserTopControlsOffset() throws InterruptedException {
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !fullscreenManager.hasBrowserControlOffsetOverride();
@@ -402,7 +402,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitForPageToBeScrollable(final Tab tab) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ContentViewCore contentViewCore = tab.getContentViewCore();
@@ -471,7 +471,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitForEditableNodeToLoseFocus(final Tab tab) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ContentViewCore contentViewCore = tab.getContentViewCore();

@@ -130,7 +130,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     private void waitForResultCount(final ContentViewCore cvc, final int expected)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria() {
                     @Override
                     public boolean isSatisfied() {
@@ -265,7 +265,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
                     }
                 });
         assertNotNull("Main never resumed", mainActivity);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Main tab never restored") {
+        CriteriaHelper.pollUiThread(new Criteria("Main tab never restored") {
             @Override
             public boolean isSatisfied() {
                 return !clearBrowsingFragment.isVisible()

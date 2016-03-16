@@ -160,7 +160,7 @@ public class PrerenderServiceTest extends
                             }
                         });
         // TODO(yusufo): We should be using the NotificationCenter for checking the page loading.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return chromeActivity.getActivityTab() != null
@@ -177,7 +177,7 @@ public class PrerenderServiceTest extends
     }
 
     private void assertServiceHasPrerenderedUrl(final String url) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return WarmupManager.getInstance().hasPrerenderedUrl(url);

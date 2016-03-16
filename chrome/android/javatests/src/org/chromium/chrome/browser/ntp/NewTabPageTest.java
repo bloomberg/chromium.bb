@@ -301,7 +301,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
 
     private void waitForUrlFocusAnimationsDisabledState(boolean disabled)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(Criteria.equals(disabled, new Callable<Boolean>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(disabled, new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return getUrlFocusAnimatonsDisabled();
@@ -310,7 +310,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitForTabLoading() throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mTab.isLoading();
@@ -324,7 +324,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
 
     private void waitForUrlFocusPercent(final NewTabPage ntp, float percent)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(percent, new Callable<Float>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(percent, new Callable<Float>() {
             @Override
             public Float call() {
                 return ntp.getNewTabPageView().getUrlFocusChangeAnimationPercent();
@@ -357,7 +357,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
      */
     private void waitForFakeboxTopPosition(final NewTabPage ntp, int position)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(position, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return getFakeboxTop(ntp);

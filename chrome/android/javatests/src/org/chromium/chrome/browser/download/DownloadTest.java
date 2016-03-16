@@ -124,7 +124,7 @@ public class DownloadTest extends DownloadTestBase {
         assertEquals(mTestServer.getURL("/chrome/test/data/android/download/test.gzip"),
                 callbackHelper.getDownloadInfo().getUrl());
 
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 Criteria.equals(initialTabCount, new Callable<Integer>() {
                     @Override
                     public Integer call() {
@@ -281,7 +281,7 @@ public class DownloadTest extends DownloadTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getActivityTab() == model.getTabAt(count - 1)
@@ -295,7 +295,7 @@ public class DownloadTest extends DownloadTestBase {
         // Wait until we have a new tab first. This should be called before checking the active
         // layout because the active layout changes StaticLayout --> SimpleAnimationLayout
         // --> (tab added) --> StaticLayout.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 updateFailureReason(
@@ -306,7 +306,7 @@ public class DownloadTest extends DownloadTestBase {
 
         // Now wait until the new tab animation finishes. Something wonky happens
         // if we try to go to the new tab before this.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 CompositorViewHolder compositorViewHolder =
@@ -389,7 +389,7 @@ public class DownloadTest extends DownloadTestBase {
      */
     private void assertPollForInfoBarSize(final int size) throws InterruptedException {
         final InfoBarContainer container = getActivity().getActivityTab().getInfoBarContainer();
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 updateFailureReason("There should be " + size + " infobar but there are "

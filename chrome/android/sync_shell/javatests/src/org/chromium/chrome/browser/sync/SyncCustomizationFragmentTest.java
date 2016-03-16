@@ -637,7 +637,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     }
 
     private void waitForBackendInitialized() throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+        CriteriaHelper.pollUiThread(new Criteria(
                 "Timed out waiting for sync's backend to be initialized.") {
             @Override
             public boolean isSatisfied() {

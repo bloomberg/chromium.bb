@@ -258,7 +258,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
     private void assertScrollInJs(final AwContents awContents,
             final TestAwContentsClient contentsClient,
             final int xCss, final int yCss) throws Exception {
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 String x = executeJavaScriptAndWaitForResult(awContents, contentsClient,
@@ -275,7 +275,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
             final TestAwContentsClient contentsClient) throws Exception {
         final String isBottomScript = "window.scrollY == "
                 + "(window.document.documentElement.scrollHeight - window.innerHeight)";
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 String r = executeJavaScriptAndWaitForResult(awContents, contentsClient,

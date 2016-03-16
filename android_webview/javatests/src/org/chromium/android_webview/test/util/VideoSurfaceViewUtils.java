@@ -91,7 +91,7 @@ public class VideoSurfaceViewUtils {
      */
     public static void pollAndAssertContainsOneVideoHoleSurfaceView(final AwTestBase test,
             final View view) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {

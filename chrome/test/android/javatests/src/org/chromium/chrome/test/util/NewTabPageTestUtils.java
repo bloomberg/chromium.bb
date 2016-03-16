@@ -26,7 +26,7 @@ public class NewTabPageTestUtils {
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void waitForNtpLoaded(final Tab tab) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("NTP never fully loaded") {
+        CriteriaHelper.pollUiThread(new Criteria("NTP never fully loaded") {
             @Override
             public boolean isSatisfied() {
                 if (!tab.isIncognito()) {

@@ -104,7 +104,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
         // DocumentTabModel update.
         activityDelegate.mExtraRegularTask = null;
         ApplicationTestUtils.launchChrome(mContext);
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -113,7 +113,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
         });
 
         // Wait until the DocumentTabModel updates and shows a single tab.
-        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return selector.getTotalTabCount();
@@ -163,7 +163,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
                     selector.getModel(false).closeTabAt(0);
                 }
         });
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(2, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(2, new Callable<Integer>() {
                 @Override
                 public Integer call() {
                     return selector.getTotalTabCount();
@@ -237,7 +237,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
         ActivityDelegate delegate =
                 new ActivityDelegateImpl(DocumentActivity.class, IncognitoDocumentActivity.class);
         delegate.finishAndRemoveTask(false, tabIds[0]);
-        CriteriaHelper.pollForCriteria(Criteria.equals(2, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return selector.getTotalTabCount();

@@ -119,7 +119,7 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
      * called into Android to notify or cancel a notification.
      */
     protected void waitForNotificationManagerMutation() throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mMockNotificationManager.getMutationCountAndDecrement() > 0;

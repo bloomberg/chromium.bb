@@ -45,7 +45,7 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
         intent.addCategory(Intent.CATEGORY_HOME);
         context.startActivity(intent);
 
-        CriteriaHelper.pollForCriteria(new Criteria(
+        CriteriaHelper.pollInstrumentationThread(new Criteria(
                 "Activity should have been sent to background") {
             @Override
             public boolean isSatisfied() {

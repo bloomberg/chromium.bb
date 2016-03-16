@@ -73,7 +73,7 @@ public class UndoIntegrationTest extends ChromeTabbedActivityTestBase {
         });
 
         // Give the model a chance to process the undo and close the tab.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !model.isClosurePending(tab.getId()) && model.getCount() == 0;

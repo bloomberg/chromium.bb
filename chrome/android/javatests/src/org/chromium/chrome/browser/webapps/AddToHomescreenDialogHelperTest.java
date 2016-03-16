@@ -203,7 +203,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
             addShortcutToURL(testServer.getURL(MANIFEST_PATH), MANIFEST_TITLE, "");
 
             // Make sure that the splash screen image was downloaded.
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollUiThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return dataStorageFactory.mSplashImage != null;
@@ -249,7 +249,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
                 ThreadUtils.runOnUiThreadBlockingNoException(callable);
 
         // Make sure that the shortcut was added.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mShortcutHelperDelegate.mBroadcastedIntent != null;

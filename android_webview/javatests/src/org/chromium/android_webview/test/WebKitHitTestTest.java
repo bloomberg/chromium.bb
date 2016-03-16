@@ -92,7 +92,7 @@ public class WebKitHitTestTest extends AwTestBase {
 
     private void pollForHitTestDataOnUiThread(
             final int expectedType, final String expectedExtra) throws Throwable {
-        pollOnUiThread(new Callable<Boolean>() {
+        pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 AwContents.HitTestData data = mAwContents.getLastHitTestResult();
@@ -106,7 +106,7 @@ public class WebKitHitTestTest extends AwTestBase {
             final String expectedHref,
             final String expectedAnchorText,
             final String expectedImageSrc) throws Throwable {
-        pollOnUiThread(new Callable<Boolean>() {
+        pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 AwContents.HitTestData data = mAwContents.getLastHitTestResult();
@@ -382,7 +382,7 @@ public class WebKitHitTestTest extends AwTestBase {
         setServerResponseAndLoad(page);
 
         // Wait for the new page to be loaded before trying hit test.
-        pollOnUiThread(new Callable<Boolean>() {
+        pollUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mAwContents.getTitle().equals(title);

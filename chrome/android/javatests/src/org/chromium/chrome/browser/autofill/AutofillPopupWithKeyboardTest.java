@@ -90,7 +90,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
         DOMUtils.clickNode(this, viewCoreRef.get(), "fn");
 
         // Wait until the keyboard is showing.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Keyboard was never shown.") {
+        CriteriaHelper.pollUiThread(new Criteria("Keyboard was never shown.") {
             @Override
             public boolean isSatisfied() {
                 return UiUtils.isKeyboardShowing(
@@ -100,7 +100,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
         });
 
         // Verify that the autofill popup is showing.
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Autofill Popup anchor view was never added.") {
                     @Override
                     public boolean isSatisfied() {
@@ -115,7 +115,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
         });
         assertTrue(popupObject instanceof AutofillPopup);
         final AutofillPopup popup = (AutofillPopup) popupObject;
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Autofill Popup was never shown.") {
+        CriteriaHelper.pollUiThread(new Criteria("Autofill Popup was never shown.") {
             @Override
             public boolean isSatisfied() {
                 return popup.isShowing();

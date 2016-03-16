@@ -103,7 +103,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-        CriteriaHelper.pollForCriteria(Criteria.equals(
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, new Callable<Integer>() {
                     @Override
                     public Integer call() {
@@ -112,7 +112,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 }));
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
-        CriteriaHelper.pollForCriteria(Criteria.equals(
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, new Callable<Integer>() {
                     @Override
                     public Integer call() {
@@ -145,7 +145,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
 
-        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return controller.numZeroSuggestRequests();
@@ -186,12 +186,13 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
 
-        CriteriaHelper.pollForCriteria(new Criteria("Should have drawn the delete button") {
-            @Override
-            public boolean isSatisfied() {
-                return deleteButton.getWidth() > 0;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Should have drawn the delete button") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return deleteButton.getWidth() > 0;
+                    }
+                });
 
         // The click view below ends up clicking on the menu button underneath the delete button
         // for some time after the delete button appears. Wait for UI to settle down before
@@ -200,7 +201,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         singleClickView(deleteButton);
 
-        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return controller.numZeroSuggestRequests();
@@ -240,7 +241,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         assertEquals("No calls to zero suggest yet", 0, controller.numZeroSuggestRequests());
         KeyUtils.singleKeyEventView(getInstrumentation(), urlBar, KeyEvent.KEYCODE_DEL);
-        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(1, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return controller.numZeroSuggestRequests();

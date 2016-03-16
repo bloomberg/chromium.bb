@@ -68,12 +68,13 @@ public class MediaSessionTest extends ContentShellTestBase {
         }
 
         public void waitForFocusStateChange(int focusType) throws InterruptedException {
-            CriteriaHelper.pollForCriteria(Criteria.equals(focusType, new Callable<Integer>() {
-                @Override
-                public Integer call() {
-                    return getAudioFocusState();
-                }
-            }));
+            CriteriaHelper.pollInstrumentationThread(
+                    Criteria.equals(focusType, new Callable<Integer>() {
+                        @Override
+                        public Integer call() {
+                            return getAudioFocusState();
+                        }
+                    }));
         }
     }
 

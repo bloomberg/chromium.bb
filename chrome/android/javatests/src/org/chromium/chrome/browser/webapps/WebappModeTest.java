@@ -111,7 +111,7 @@ public class WebappModeTest extends MultiActivityTestBase {
 
         // Firing a different Intent should start a new WebappActivity instance.
         fireWebappIntent(WEBAPP_2_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -125,7 +125,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         // Firing the first Intent should bring back the first WebappActivity instance, or at least
         // a WebappActivity with the same tab if the other one was killed by Android mid-test.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -179,7 +179,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         // it should have the same Tab ID.
         getInstrumentation().waitForIdleSync();
         ApplicationTestUtils.waitUntilChromeInForeground();
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -198,7 +198,7 @@ public class WebappModeTest extends MultiActivityTestBase {
     public void testWebappRequiresValidMac() throws Exception {
         // Try to start a WebappActivity.  Fail because the Intent is insecure.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, false);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -212,7 +212,7 @@ public class WebappModeTest extends MultiActivityTestBase {
 
         // Firing a correct Intent should start a WebappActivity instance instead of the browser.
         fireWebappIntent(WEBAPP_2_ID, WEBAPP_2_URL, WEBAPP_2_TITLE, WEBAPP_ICON, true);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return isWebappActivityReady(ApplicationStatus.getLastTrackedFocusedActivity());
@@ -313,7 +313,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         // Close the child window to kick the user back to the WebappActivity.
         JavaScriptUtils.executeJavaScript(
                 secondActivity.getActivityTab().getWebContents(), "window.close()");
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -334,7 +334,7 @@ public class WebappModeTest extends MultiActivityTestBase {
     private WebappActivity startWebappActivity(String id, String url, String title, String icon)
             throws Exception {
         fireWebappIntent(id, url, title, icon, true);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();

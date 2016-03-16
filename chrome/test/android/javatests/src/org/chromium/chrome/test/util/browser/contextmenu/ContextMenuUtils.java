@@ -162,7 +162,7 @@ public class ContextMenuUtils {
             }
         });
 
-        CriteriaHelper.pollForCriteria(new Criteria("Activity did not regain focus.") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Activity did not regain focus.") {
             @Override
             public boolean isSatisfied() {
                 return testCase.getActivity().hasWindowFocus();

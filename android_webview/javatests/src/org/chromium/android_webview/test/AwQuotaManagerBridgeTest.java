@@ -164,7 +164,7 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         final long initialUsage = getUsageForOrigin(mOrigin);
 
         useAppCache();
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getUsageForOrigin(mOrigin) > initialUsage;
@@ -172,7 +172,7 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         });
 
         deleteAllData();
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getUsageForOrigin(mOrigin) == 0;
@@ -186,7 +186,7 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         final long initialUsage = getUsageForOrigin(mOrigin);
 
         useAppCache();
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getUsageForOrigin(mOrigin) > initialUsage;
@@ -194,7 +194,7 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         });
 
         deleteOrigin(mOrigin);
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return getUsageForOrigin(mOrigin) == 0;
@@ -207,7 +207,7 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
     public void testGetResultsMatch() throws Exception {
         useAppCache();
 
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return AwQuotaManagerBridgeTestUtil.getOrigins(

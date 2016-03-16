@@ -72,7 +72,7 @@ public class ImeLollipopTest extends ImeTest {
 
     private void waitForUpdateCursorAnchorInfoCallCount(final int expected)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 int actual =  mInputMethodManagerWrapper.getUpdateCursorAnchorInfoCounter();
@@ -84,7 +84,7 @@ public class ImeLollipopTest extends ImeTest {
 
     private void waitForUpdateCursorAnchorInfoComposingText(final String expected)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 CursorAnchorInfo info = mInputMethodManagerWrapper.getLastCursorAnchorInfo();

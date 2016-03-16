@@ -89,13 +89,13 @@ public class ContentViewPopupZoomerTest extends ContentShellTestBase {
         final ViewGroup view = viewCore.getContainerView();
 
         // The popup should be hidden before the click.
-        CriteriaHelper.pollForCriteria(new PopupShowingCriteria(view, false));
+        CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, false));
 
         // Once clicked, the popup should show up.
         DOMUtils.clickNode(this, viewCore, "clickme");
-        CriteriaHelper.pollForCriteria(new PopupShowingCriteria(view, true));
+        CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, true));
 
         // The shown popup should have valid dimensions eventually.
-        CriteriaHelper.pollForCriteria(new PopupHasNonZeroDimensionsCriteria(view));
+        CriteriaHelper.pollInstrumentationThread(new PopupHasNonZeroDimensionsCriteria(view));
     }
 }

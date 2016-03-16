@@ -84,7 +84,7 @@ public class AwPermissionManagerTest extends AwTestBase {
 
     private void pollTitleAs(final String title, final AwContents awContents)
             throws Exception {
-        poll(new Callable<Boolean>() {
+        pollInstrumentationThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return title.equals(getTitleOnUiThread(awContents));

@@ -158,7 +158,7 @@ public class WebappDirectoryManagerTest extends InstrumentationTestCase {
     private void runCleanup() throws Exception {
         final AsyncTask task =
                 mWebappDirectoryManager.cleanUpDirectories(mMockContext, WEBAPP_ID_1);
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(AsyncTask.Status.FINISHED, new Callable<AsyncTask.Status>() {
                     @Override
                     public AsyncTask.Status call() {

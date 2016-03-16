@@ -172,7 +172,7 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
         final Tab tab = activity.getActivityTab();
         assert tab != null;
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 if (!tab.isLoadingAndRenderingDone()) return false;

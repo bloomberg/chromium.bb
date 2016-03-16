@@ -53,7 +53,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         void assertIsInForeground(final int pid) {
             try {
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollInstrumentationThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return mProcessInForegroundMap.get(pid);
@@ -66,7 +66,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         void assertIsInBackground(final int pid) {
             try {
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollInstrumentationThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return !mProcessInForegroundMap.get(pid);
@@ -79,7 +79,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         void assertSetInForegroundWasCalled(String message, final int pid) {
             try {
-                CriteriaHelper.pollForCriteria(new Criteria(message) {
+                CriteriaHelper.pollInstrumentationThread(new Criteria(message) {
                     @Override
                     public boolean isSatisfied() {
                         return mProcessInForegroundMap.indexOfKey(pid) >= 0;
@@ -92,7 +92,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         void assertIsReleaseAllModerateBindingsCalled() {
             try {
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollInstrumentationThread(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         return mIsReleaseAllModerateBindingsCalled;
@@ -211,7 +211,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         // Wait for the new tab animations on phones to finish.
         if (!DeviceFormFactor.isTablet(getActivity())) {
             final ChromeActivity activity = getActivity();
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria("Did not finish animation") {
+            CriteriaHelper.pollUiThread(new Criteria("Did not finish animation") {
                 @Override
                 public boolean isSatisfied() {
                     Layout layout = activity.getCompositorViewHolder()
@@ -282,7 +282,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         // Wait for the new tab animations on phones to finish.
         if (!DeviceFormFactor.isTablet(getActivity())) {
             final ChromeActivity activity = getActivity();
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria("Did not finish animation") {
+            CriteriaHelper.pollUiThread(new Criteria("Did not finish animation") {
                 @Override
                 public boolean isSatisfied() {
                     Layout layout = activity.getCompositorViewHolder()
@@ -314,7 +314,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tabs[1].getContentViewCore().getCurrentRenderProcessId()));
 
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
@@ -331,7 +331,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         });
 
         // Wait until the process is spawned and its visibility is determined.
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {
@@ -380,7 +380,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tab.getContentViewCore().getCurrentRenderProcessId()));
 
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
@@ -397,7 +397,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         });
 
         // Wait until the process is spawned and its visibility is determined.
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {
@@ -563,7 +563,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         tabs[0] = getActivity().getActivityTab();
         singleClickView(tabs[0].getView());
 
-        CriteriaHelper.pollForCriteria(new Criteria("Child tab isn't opened.") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Child tab isn't opened.") {
             @Override
             public boolean isSatisfied() {
                 return getActivity().getCurrentTabModel().getCount() == 2
@@ -591,7 +591,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         assertTrue(ChildProcessLauncher.crashProcessForTesting(
                 tabs[1].getContentViewCore().getCurrentRenderProcessId()));
 
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
@@ -607,7 +607,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         });
 
         // Wait until the process is spawned and its visibility is determined.
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {

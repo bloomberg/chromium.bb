@@ -108,7 +108,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
     }
 
     private void waitForCryptographer() throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria(
+        CriteriaHelper.pollUiThread(new Criteria(
                 "Timed out waiting for cryptographer to be ready.") {
             @Override
             public boolean isSatisfied() {
@@ -120,7 +120,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
     }
 
     private void waitForCallCount(int count) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(count, new Callable<Integer>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(count, new Callable<Integer>() {
             @Override
             public Integer call() {
                 return mListener.callCount();

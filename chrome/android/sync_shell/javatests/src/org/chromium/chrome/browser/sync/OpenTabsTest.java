@@ -242,7 +242,7 @@ public class OpenTabsTest extends SyncTestBase {
             throws InterruptedException {
         final List<String> urlList = new ArrayList<String>(urls.length);
         for (String url : urls) urlList.add(url);
-        pollForCriteria(Criteria.equals(urlList, new Callable<List<String>>() {
+        pollInstrumentationThread(Criteria.equals(urlList, new Callable<List<String>>() {
             @Override
             public List<String> call() throws Exception {
                 return getLocalTabsForClient(clientName).urls;
@@ -252,20 +252,21 @@ public class OpenTabsTest extends SyncTestBase {
 
     private void waitForServerTabs(final String... urls)
             throws InterruptedException {
-        pollForCriteria(new Criteria("Expected server open tabs: " + Arrays.toString(urls)) {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return mFakeServerHelper.verifySessions(urls);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+        pollInstrumentationThread(
+                new Criteria("Expected server open tabs: " + Arrays.toString(urls)) {
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            return mFakeServerHelper.verifySessions(urls);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
     }
 
     private String getClientName() throws Exception {
-        pollForCriteria(Criteria.equals(2, new Callable<Integer>() {
+        pollInstrumentationThread(Criteria.equals(2, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return SyncTestUtil.getLocalData(mContext, OPEN_TABS_TYPE).size();

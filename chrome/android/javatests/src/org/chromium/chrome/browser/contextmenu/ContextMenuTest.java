@@ -157,7 +157,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
         // Only check for the URL matching as the tab will not be fully created in svelte mode.
         final String expectedUrl = mTestServer.getURL(expectedPath);
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(expectedUrl, new Callable<String>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
             @Override
             public String call() {
                 return newTab.get().getUrl();
@@ -174,7 +174,7 @@ public class ContextMenuTest extends DownloadTestBase {
         assertFalse("Context menu did not have window focus", getActivity().hasWindowFocus());
 
         getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
-        CriteriaHelper.pollForCriteria(new Criteria("Activity did not regain focus.") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Activity did not regain focus.") {
             @Override
             public boolean isSatisfied() {
                 return getActivity().hasWindowFocus();
@@ -192,7 +192,7 @@ public class ContextMenuTest extends DownloadTestBase {
 
         TestTouchUtils.singleClickView(getInstrumentation(), tab.getView(), 0, 0);
 
-        CriteriaHelper.pollForCriteria(new Criteria("Activity did not regain focus.") {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Activity did not regain focus.") {
             @Override
             public boolean isSatisfied() {
                 return getActivity().hasWindowFocus();
@@ -262,7 +262,7 @@ public class ContextMenuTest extends DownloadTestBase {
         // Wait for any new tab animation to finish if we're being driven by the compositor.
         final LayoutManager layoutDriver = getActivity()
                 .getCompositorViewHolder().getLayoutManager();
-        CriteriaHelper.pollForUIThreadCriteria(
+        CriteriaHelper.pollUiThread(
                 new Criteria("Background tab animation not finished.") {
                     @Override
                     public boolean isSatisfied() {

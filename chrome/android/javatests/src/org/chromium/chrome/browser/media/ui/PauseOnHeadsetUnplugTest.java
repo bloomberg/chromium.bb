@@ -70,7 +70,7 @@ public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeA
     }
 
     private void waitForNotificationReady() throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return MediaNotificationManager.hasManagerForTesting(

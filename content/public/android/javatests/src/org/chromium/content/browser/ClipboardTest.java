@@ -60,7 +60,7 @@ public class ClipboardTest extends ContentShellTestBase {
         copy(webContents);
 
         // Waits until data has been made available on the Android clipboard.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return hasPrimaryClip(clipboardManager);

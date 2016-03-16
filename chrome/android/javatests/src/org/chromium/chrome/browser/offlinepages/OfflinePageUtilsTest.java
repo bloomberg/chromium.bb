@@ -105,7 +105,7 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
 
         public void waitForSnackbarControllerToFinish() {
             try {
-                CriteriaHelper.pollForUIThreadCriteria(
+                CriteriaHelper.pollUiThread(
                         new Criteria("Failed while waiting for snackbar calls to complete.") {
                             @Override
                             public boolean isSatisfied() {

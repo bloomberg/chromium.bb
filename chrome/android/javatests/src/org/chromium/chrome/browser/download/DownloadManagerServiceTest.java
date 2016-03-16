@@ -76,7 +76,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
         public void waitTillExpectedCallsComplete() {
             try {
-                CriteriaHelper.pollForCriteria(
+                CriteriaHelper.pollInstrumentationThread(
                         new Criteria("Failed while waiting for all calls to complete.") {
                             @Override
                             public boolean isSatisfied() {
@@ -147,7 +147,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
         public void waitForSnackbarControllerToFinish(final boolean success) {
             try {
-                CriteriaHelper.pollForCriteria(
+                CriteriaHelper.pollInstrumentationThread(
                         new Criteria("Failed while waiting for all calls to complete.") {
                             @Override
                             public boolean isSatisfied() {
@@ -448,7 +448,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         dService.setOMADownloadHandler(handler);
         dService.addOMADownloadToSharedPrefs(String.valueOf(downloadId) + "," + INSTALL_NOTIFY_URI);
         dService.clearPendingOMADownloads();
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return handler.mSuccess;
@@ -484,7 +484,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
             dService.setOMADownloadHandler(handler);
             handler.setDownloadId(0);
             dService.enqueueDownloadManagerRequest(info, true);
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollUiThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return handler.mDownloadId != 0;

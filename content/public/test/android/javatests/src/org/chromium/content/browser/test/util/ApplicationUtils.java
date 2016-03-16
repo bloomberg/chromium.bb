@@ -22,7 +22,7 @@ public class ApplicationUtils {
      */
     public static void waitForLibraryDependencies(final Instrumentation instrumentation)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 Context context = instrumentation.getTargetContext();

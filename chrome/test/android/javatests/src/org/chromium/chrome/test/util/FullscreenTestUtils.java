@@ -65,7 +65,7 @@ public class FullscreenTestUtils {
      */
     public static void waitForFullscreenFlag(final Tab tab, final boolean state,
             final Activity activity) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return isFullscreenFlagSet(tab, state, activity);
@@ -82,7 +82,7 @@ public class FullscreenTestUtils {
      */
     public static void waitForPersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
             boolean state) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(state, new Callable<Boolean>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(state, new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return delegate.isFullscreenForTabOrPending();

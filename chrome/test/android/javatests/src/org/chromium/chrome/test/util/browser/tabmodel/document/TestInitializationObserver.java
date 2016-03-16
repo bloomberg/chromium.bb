@@ -50,7 +50,7 @@ public class TestInitializationObserver extends DocumentTabModel.InitializationO
             }
         });
 
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return observer.mIsReady;

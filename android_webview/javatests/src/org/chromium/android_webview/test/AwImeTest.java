@@ -86,7 +86,7 @@ public class AwImeTest extends AwTestBase {
     }
 
     private void waitForNonNullInputConnection() throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 InputConnection inputConnection = mTestContainerView.getContentViewCore()

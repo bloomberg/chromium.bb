@@ -211,7 +211,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitUntilNoInfoBarsExist() throws Exception {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getInfoBars().isEmpty();
@@ -220,7 +220,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitUntilAppDetailsRetrieved(final int numExpected) throws Exception {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
@@ -232,7 +232,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitUntilAppBannerInfoBarAppears(final String title) throws Exception {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 List<InfoBar> infobars = getInfoBars();
@@ -262,7 +262,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(url);
         waitUntilAppDetailsRetrieved(2);
         waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return listener.mDoneAnimating;
@@ -285,7 +285,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Wait for the infobar to register that the app is installing.
         final String installingText =
                 getInstrumentation().getTargetContext().getString(R.string.app_banner_installing);
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return getInstrumentation().checkMonitorHit(activityMonitor, 1)
@@ -297,7 +297,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         mPackageManager.isInstalled = true;
         final String openText =
                 getInstrumentation().getTargetContext().getString(R.string.app_banner_open);
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return TextUtils.equals(button.getText(), openText);
@@ -310,7 +310,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         loadUrlInNewTab("about:blank");
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(url);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
@@ -323,7 +323,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Indicate a day has passed, then revisit the page to show the banner.
         AppBannerManager.setTimeDeltaForTesting(1);
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(url);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
@@ -408,7 +408,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
 
         // Explicitly dismiss the banner.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return listener.mDoneAnimating;
@@ -450,7 +450,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
 
             final Integer iteration = Integer.valueOf(i);
-            CriteriaHelper.pollForUIThreadCriteria(
+            CriteriaHelper.pollUiThread(
                     Criteria.equals(iteration, new Callable<Integer>() {
                         @Override
                         public Integer call() {
@@ -483,7 +483,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         loadUrlInNewTab("about:blank");
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mWebAppUrl);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
@@ -501,7 +501,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Indicate a day has passed, then revisit the page to show the banner.
         AppBannerManager.setTimeDeltaForTesting(1);
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mWebAppUrl);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 AppBannerManager manager =
@@ -510,7 +510,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             }
         });
         waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return listener.mDoneAnimating;
@@ -524,7 +524,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         TouchCommon.singleClickView(button);
 
         // Make sure that the splash screen icon was downloaded.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return dataStorageFactory.mSplashImage != null;

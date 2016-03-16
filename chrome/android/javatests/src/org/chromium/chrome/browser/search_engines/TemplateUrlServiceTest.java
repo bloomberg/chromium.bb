@@ -163,7 +163,7 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
                     }
                 });
 
-        CriteriaHelper.pollForCriteria(new Criteria(
+        CriteriaHelper.pollInstrumentationThread(new Criteria(
                 "Observer wasn't notified of TemplateUrlService load.") {
             @Override
             public boolean isSatisfied() {

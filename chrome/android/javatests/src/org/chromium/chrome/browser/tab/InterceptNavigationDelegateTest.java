@@ -69,12 +69,13 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
 
     private void waitTillExpectedCallsComplete(int count, long timeout) {
         try {
-            CriteriaHelper.pollForCriteria(Criteria.equals(count, new Callable<Integer>() {
-                @Override
-                public Integer call() {
-                    return mHistory.size();
-                }
-            }), timeout, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollInstrumentationThread(
+                    Criteria.equals(count, new Callable<Integer>() {
+                        @Override
+                        public Integer call() {
+                            return mHistory.size();
+                        }
+                    }), timeout, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         } catch (InterruptedException e) {
             fail("Failed while waiting for all calls to complete." + e);
         }

@@ -71,7 +71,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
             throws Exception {
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(startUrl);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
@@ -251,12 +251,13 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
                 mTestServer.getURL("/chrome/test/data/android/redirect/one.html");
         typeInOmniboxAndNavigate(initialUrl, null);
 
-        CriteriaHelper.pollForCriteria(Criteria.equals(redirectedUrl, new Callable<String>() {
-            @Override
-            public String call() {
-                return getActivity().getActivityTab().getUrl();
-            }
-        }));
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(redirectedUrl, new Callable<String>() {
+                    @Override
+                    public String call() {
+                        return getActivity().getActivityTab().getUrl();
+                    }
+                }));
     }
 
     /**
@@ -283,7 +284,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         typeInOmniboxAndNavigate(initialUrl, null);
 
         // Now intent fallback should be triggered assuming 'non_existent' scheme cannot be handled.
-        CriteriaHelper.pollForCriteria(Criteria.equals(targetUrl, new Callable<String>() {
+        CriteriaHelper.pollInstrumentationThread(Criteria.equals(targetUrl, new Callable<String>() {
             @Override
             public String call() {
                 return getActivity().getActivityTab().getUrl();
@@ -411,12 +412,13 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
             // Wait for the url to change.
             final Tab tab = TabModelUtils.getCurrentTab(model);
             assertWaitForPageScaleFactorMatch(0.75f);
-            CriteriaHelper.pollForCriteria(Criteria.equals(mockedUrl, new Callable<String>() {
-                @Override
-                public String call() {
-                    return getTabUrlOnUIThread(tab);
-                }
-            }), 5000, 50);
+            CriteriaHelper.pollInstrumentationThread(
+                    Criteria.equals(mockedUrl, new Callable<String>() {
+                        @Override
+                        public String call() {
+                            return getTabUrlOnUIThread(tab);
+                        }
+                    }), 5000, 50);
 
             // Make sure that we're showing new content now.
             assertEquals("Still showing spoofed data", "\"Real\"", getTabBodyText(tab));

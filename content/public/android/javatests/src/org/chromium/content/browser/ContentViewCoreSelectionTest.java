@@ -468,7 +468,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertEquals(mContentViewCore.getSelectedText(), "SampleTextArea");
         hideSelectActionMode();
         waitForSelectActionBarVisible(false);
-        CriteriaHelper.pollForCriteria(
+        CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals("SampleTextArea", new Callable<CharSequence>() {
                     @Override
                     public CharSequence call() {
@@ -646,7 +646,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     private void waitForClipboardContents(final Context context, final String expectedContents)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ClipboardManager clipboardManager =
@@ -660,7 +660,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     private void waitForSelectActionBarVisible(
             final boolean visible) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(visible, new Callable<Boolean>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(visible, new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mContentViewCore.isSelectActionBarShowing();
@@ -715,7 +715,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     }
 
     private void waitForPastePopupStatus(final boolean show) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(show, new Callable<Boolean>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mContentViewCore.isPastePopupShowing();

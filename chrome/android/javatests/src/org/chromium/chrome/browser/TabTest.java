@@ -108,7 +108,7 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mTab.isHidden();
@@ -120,7 +120,7 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         ApplicationTestUtils.launchChrome(getInstrumentation().getTargetContext());
 
         // The tab should be restored and visible.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return !mTab.isHidden();
