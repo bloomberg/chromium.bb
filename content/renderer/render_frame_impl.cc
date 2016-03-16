@@ -2897,7 +2897,7 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
 
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
-  UpdateNavigationState(document_state);
+  UpdateNavigationState(document_state, false /* was_within_same_page */);
 
   // DocumentState::referred_by_prefetcher_ is true if we are
   // navigating from a page that used prefetching using a link on that
@@ -3482,7 +3482,7 @@ void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
   // UpdateNavigationState conveniently takes care of this for us.
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
-  UpdateNavigationState(document_state);
+  UpdateNavigationState(document_state, true /* was_within_same_page */);
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_page(true);
 
@@ -5889,7 +5889,8 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
   return NavigationStateImpl::CreateContentInitiated();
 }
 
-void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state) {
+void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state,
+                                            bool was_within_same_page) {
   if (pending_navigation_params_) {
     // If this is a browser-initiated load that doesn't override
     // navigation_start, set it here.
@@ -5901,12 +5902,17 @@ void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state) {
 
     const CommonNavigationParams& common_params =
         pending_navigation_params_->common_params;
-    bool load_data = !common_params.base_url_for_data_url.is_empty() &&
-                     !common_params.history_url_for_data_url.is_empty() &&
-                     common_params.url.SchemeIs(url::kDataScheme);
-    document_state->set_was_load_data_with_base_url_request(load_data);
-    if (load_data)
-      document_state->set_data_url(common_params.url);
+    // The |set_was_load_data_with_base_url_request| state should not change for
+    // an in-page navigation, so skip updating it from the in-page navigation
+    // params in this case.
+    if (!was_within_same_page) {
+      bool load_data = !common_params.base_url_for_data_url.is_empty() &&
+                       !common_params.history_url_for_data_url.is_empty() &&
+                       common_params.url.SchemeIs(url::kDataScheme);
+      document_state->set_was_load_data_with_base_url_request(load_data);
+      if (load_data)
+        document_state->set_data_url(common_params.url);
+    }
 
     pending_navigation_params_.reset();
   } else {

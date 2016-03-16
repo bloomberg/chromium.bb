@@ -203,6 +203,46 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FragmentNavigateFromLoadDataWithBaseURL) {
+  const GURL base_url("http://baseurl");
+  const GURL history_url("http://historyurl");
+  const std::string data =
+      "<html><body>"
+      "  <p id=\"frag\"><a id=\"fraglink\" href=\"#frag\">in-page nav</a></p>"
+      "</body></html>";
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Load data and commit.
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+#if defined(OS_ANDROID)
+  shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
+#else
+  shell()->LoadDataWithBaseURL(history_url, data, base_url);
+#endif
+  same_tab_observer.Wait();
+  EXPECT_EQ(1, controller.GetEntryCount());
+  const GURL data_url = controller.GetLastCommittedEntry()->GetURL();
+
+  // Perform a fragment navigation using a javascript: URL.
+  GURL js_url("javascript:document.location = '#frag';");
+  NavigateToURL(shell(), js_url);
+  EXPECT_EQ(2, controller.GetEntryCount());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  // TODO(boliu): These expectations maybe incorrect due to crbug.com/561034.
+  EXPECT_TRUE(entry->GetBaseURLForDataURL().is_empty());
+  EXPECT_TRUE(entry->GetHistoryURLForDataURL().is_empty());
+  EXPECT_EQ(data_url, entry->GetVirtualURL());
+  EXPECT_EQ(data_url, entry->GetURL());
+
+  // Passes if renderer is still alive.
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(), "console.log('Success');"));
+}
+
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDs) {
   const NavigationControllerImpl& controller =
       static_cast<const NavigationControllerImpl&>(
