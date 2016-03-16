@@ -1,17 +1,17 @@
-/* 
+/*
  * Copyright © 2013-2014 Collabora, Ltd.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the next
  * paragraph) shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
@@ -36,6 +36,7 @@ struct wl_client;
 struct wl_resource;
 
 struct wl_scaler;
+struct wl_surface;
 struct wl_viewport;
 
 extern const struct wl_interface wl_scaler_interface;
@@ -51,6 +52,9 @@ enum wl_scaler_error {
 #define WL_SCALER_DESTROY	0
 #define WL_SCALER_GET_VIEWPORT	1
 
+#define WL_SCALER_DESTROY_SINCE_VERSION	1
+#define WL_SCALER_GET_VIEWPORT_SINCE_VERSION	1
+
 static inline void
 wl_scaler_set_user_data(struct wl_scaler *wl_scaler, void *user_data)
 {
@@ -61,6 +65,12 @@ static inline void *
 wl_scaler_get_user_data(struct wl_scaler *wl_scaler)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_scaler);
+}
+
+static inline uint32_t
+wl_scaler_get_version(struct wl_scaler *wl_scaler)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_scaler);
 }
 
 static inline void
@@ -95,6 +105,11 @@ enum wl_viewport_error {
 #define WL_VIEWPORT_SET_SOURCE	2
 #define WL_VIEWPORT_SET_DESTINATION	3
 
+#define WL_VIEWPORT_DESTROY_SINCE_VERSION	1
+#define WL_VIEWPORT_SET_SINCE_VERSION	1
+#define WL_VIEWPORT_SET_SOURCE_SINCE_VERSION	2
+#define WL_VIEWPORT_SET_DESTINATION_SINCE_VERSION	2
+
 static inline void
 wl_viewport_set_user_data(struct wl_viewport *wl_viewport, void *user_data)
 {
@@ -105,6 +120,12 @@ static inline void *
 wl_viewport_get_user_data(struct wl_viewport *wl_viewport)
 {
 	return wl_proxy_get_user_data((struct wl_proxy *) wl_viewport);
+}
+
+static inline uint32_t
+wl_viewport_get_version(struct wl_viewport *wl_viewport)
+{
+	return wl_proxy_get_version((struct wl_proxy *) wl_viewport);
 }
 
 static inline void

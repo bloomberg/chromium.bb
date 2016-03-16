@@ -25,7 +25,7 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < src/*/linux-dmabuf/linux-dmabuf*.xml > protocol/linux-dmabuf-protocol.c
     wayland-scanner server-header < src/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml > include/protocol/linux-dmabuf-unstable-v1-server-protocol.h
     wayland-scanner client-header < src/unstable/linux-dmabuf/linux-dmabuf-unstable-v1.xml > include/protocol/linux-dmabuf-unstable-v1-client-protocol.h
-    wayland-scanner code < src/*/scaler/scaler.xml > protocol/scaler-protocol.c
-    wayland-scanner server-header < src/unstable/scaler/scaler.xml > include/protocol/scaler-server-protocol.h
-    wayland-scanner client-header < src/unstable/scaler/scaler.xml > include/protocol/scaler-client-protocol.h
+    wayland-scanner code < */scaler/scaler.xml > protocol/scaler-protocol.c
+    wayland-scanner server-header < unstable/scaler/scaler.xml > include/protocol/scaler-server-protocol.h
+    wayland-scanner client-header < unstable/scaler/scaler.xml > include/protocol/scaler-client-protocol.h
 - Update this README to reflect the new version number.
