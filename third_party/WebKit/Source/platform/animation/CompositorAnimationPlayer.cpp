@@ -5,6 +5,7 @@
 #include "platform/animation/CompositorAnimationPlayer.h"
 
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_timeline.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "public/platform/WebLayer.h"
@@ -19,6 +20,11 @@ CompositorAnimationPlayer::CompositorAnimationPlayer()
 
 CompositorAnimationPlayer::~CompositorAnimationPlayer()
 {
+    setAnimationDelegate(nullptr);
+    // Detach player from timeline, otherwise it stays there (leaks) until
+    // compositor shutdown.
+    if (m_animationPlayer->animation_timeline())
+        m_animationPlayer->animation_timeline()->DetachPlayer(m_animationPlayer);
 }
 
 cc::AnimationPlayer* CompositorAnimationPlayer::animationPlayer() const
