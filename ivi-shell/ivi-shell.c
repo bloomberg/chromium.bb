@@ -108,7 +108,11 @@ ivi_shell_surface_configure(struct weston_surface *surface,
 {
 	struct ivi_shell_surface *ivisurf = get_ivi_shell_surface(surface);
 
-	if (surface->width == 0 || surface->height == 0 || ivisurf == NULL)
+	assert(ivisurf);
+	if (!ivisurf)
+		return;
+
+	if (surface->width == 0 || surface->height == 0)
 		return;
 
 	if (ivisurf->width != surface->width ||
