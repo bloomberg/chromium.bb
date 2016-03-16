@@ -615,8 +615,11 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
   if (!field_trial->enable_field_trial_)
     return;
 
-  CheckTrialGroup(field_trial->trial_name(), field_trial->group_name_internal(),
-                  &global_->seen_states_);
+  {
+    AutoLock auto_lock(global_->lock_);
+    CheckTrialGroup(field_trial->trial_name(),
+                    field_trial->group_name_internal(), &global_->seen_states_);
+  }
   global_->observer_list_->Notify(
       FROM_HERE, &FieldTrialList::Observer::OnFieldTrialGroupFinalized,
       field_trial->trial_name(), field_trial->group_name_internal());
