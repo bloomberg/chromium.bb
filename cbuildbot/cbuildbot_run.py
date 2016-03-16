@@ -285,11 +285,7 @@ class RunAttributes(object):
       target: Build config name.
     """
     unique_attr = self._GetBoardAttrName(attr, board, target)
-    try:
-      self.SetParallel(unique_attr, value)
-    except ParallelAttributeError:
-      # Clarify the AttributeError.
-      raise ParallelAttributeError(attr, board=board, target=target)
+    self.SetParallel(unique_attr, value)
 
   def HasBoardParallel(self, attr, board, target):
     """Return True if board-specific parallel run attribute is known and set.
@@ -327,11 +323,7 @@ class RunAttributes(object):
       The value found.
     """
     unique_attr = self._GetBoardAttrName(attr, board, target)
-    try:
-      return self.GetParallel(unique_attr, timeout=timeout)
-    except ParallelAttributeError:
-      # Clarify the AttributeError.
-      raise ParallelAttributeError(attr, board=board, target=target)
+    return self.GetParallel(unique_attr, timeout=timeout)
 
   def _GetQueue(self, attr, strict=False):
     """Return the queue for the given attribute, if it exists.
