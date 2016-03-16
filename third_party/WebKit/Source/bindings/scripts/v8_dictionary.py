@@ -53,13 +53,21 @@ def unwrap_nullable_if_needed(idl_type):
 def dictionary_context(dictionary, interfaces_info):
     includes.clear()
     includes.update(DICTIONARY_CPP_INCLUDES)
+
+    members = [member_context(dictionary, member)
+               for member in sorted(dictionary.members,
+                                    key=operator.attrgetter('name'))]
+
+    for member in members:
+        if member['runtime_enabled_function']:
+            includes.add('platform/RuntimeEnabledFeatures.h')
+            break
+
     cpp_class = v8_utilities.cpp_name(dictionary)
     context = {
         'cpp_class': cpp_class,
         'header_includes': set(DICTIONARY_H_INCLUDES),
-        'members': [member_context(dictionary, member)
-                    for member in sorted(dictionary.members,
-                                         key=operator.attrgetter('name'))],
+        'members': members,
         'required_member_names': sorted([member.name
                                          for member in dictionary.members
                                          if member.is_required]),

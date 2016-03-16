@@ -21,6 +21,7 @@
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/dom/FlexibleArrayBufferView.h"
 #include "core/frame/Deprecation.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
