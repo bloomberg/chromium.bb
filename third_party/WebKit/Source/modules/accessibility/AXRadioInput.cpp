@@ -6,21 +6,11 @@
 #include "modules/accessibility/AXRadioInput.h"
 
 #include "core/InputTypeNames.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/forms/RadioInputType.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {
-
-namespace {
-
-HTMLElement* nextElement(const HTMLElement& element, HTMLFormElement* stayWithin, bool forward)
-{
-    return forward ? Traversal<HTMLElement>::next(element, static_cast<Node*>(stayWithin)) : Traversal<HTMLElement>::previous(element, static_cast<Node*>(stayWithin));
-}
-
-} // namespace
 
 using namespace HTMLNames;
 
@@ -48,7 +38,7 @@ void AXRadioInput::updatePosAndSetSize(int position)
 
 void AXRadioInput::requestUpdateToNextNode(bool forward)
 {
-    HTMLInputElement* nextElement = findNextRadioButtonInGroup(element(), forward);
+    HTMLInputElement* nextElement = RadioInputType::nextRadioButtonInGroup(element(), forward);
     AXObject* nextAXobject = axObjectCache().get(nextElement);
     if (!nextAXobject || !nextAXobject->isAXRadioInput())
         return;
@@ -66,7 +56,7 @@ void AXRadioInput::requestUpdateToNextNode(bool forward)
 
 HTMLInputElement* AXRadioInput::findFirstRadioButtonInGroup(HTMLInputElement* current) const
 {
-    while (HTMLInputElement* prevElement = findNextRadioButtonInGroup(current, false))
+    while (HTMLInputElement* prevElement = RadioInputType::nextRadioButtonInGroup(current, false))
         current = prevElement;
     return current;
 }
@@ -91,7 +81,7 @@ bool AXRadioInput::calculatePosInSet()
     // as a new AXRadioInput Object is added or one of objects from RadioGroup is removed.
     bool needToUpdatePrev = false;
     int position = 1;
-    HTMLInputElement* prevElement = findNextRadioButtonInGroup(element(), false);
+    HTMLInputElement* prevElement = RadioInputType::nextRadioButtonInGroup(element(), false);
     if (prevElement) {
         AXObject* object = axObjectCache().get(prevElement);
         // If the previous element doesn't have AXObject yet, caculate position from the first element.
@@ -116,23 +106,11 @@ bool AXRadioInput::calculatePosInSet()
     return needToUpdatePrev;
 }
 
-HTMLInputElement* AXRadioInput::findNextRadioButtonInGroup(HTMLInputElement* current, bool forward) const
-{
-    for (HTMLElement* htmlElement = nextElement(*current, current->form(), forward); htmlElement; htmlElement = nextElement(*htmlElement, current->form(), forward)) {
-        if (!isHTMLInputElement(*htmlElement))
-            continue;
-        HTMLInputElement* inputElement = toHTMLInputElement(htmlElement);
-        if (current->form() == inputElement->form() && inputElement->type() == InputTypeNames::radio && inputElement->name() == current->name())
-            return inputElement;
-    }
-    return nullptr;
-}
-
 int AXRadioInput::countFromFirstElement() const
 {
     int count = 1;
     HTMLInputElement* current = element();
-    while (HTMLInputElement* prevElement = findNextRadioButtonInGroup(current, false)) {
+    while (HTMLInputElement* prevElement = RadioInputType::nextRadioButtonInGroup(current, false)) {
         current = prevElement;
         count++;
     }

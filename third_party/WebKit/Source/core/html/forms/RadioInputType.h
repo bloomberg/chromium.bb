@@ -31,6 +31,7 @@
 #ifndef RadioInputType_h
 #define RadioInputType_h
 
+#include "core/CoreExport.h"
 #include "core/html/forms/BaseCheckableInputType.h"
 
 namespace blink {
@@ -38,6 +39,7 @@ namespace blink {
 class RadioInputType final : public BaseCheckableInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    CORE_EXPORT static HTMLInputElement* nextRadioButtonInGroup(HTMLInputElement* , bool forward);
 
 private:
     RadioInputType(HTMLInputElement& element) : BaseCheckableInputType(element) { }

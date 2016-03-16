@@ -211,4 +211,16 @@ bool RadioInputType::shouldAppearIndeterminate() const
     return !element().checkedRadioButtonForGroup();
 }
 
+HTMLInputElement* RadioInputType::nextRadioButtonInGroup(HTMLInputElement* current, bool forward)
+{
+    for (HTMLElement* htmlElement = nextElement(*current, current->form(), forward); htmlElement; htmlElement = nextElement(*htmlElement, current->form(), forward)) {
+        if (!isHTMLInputElement(*htmlElement))
+            continue;
+        HTMLInputElement* inputElement = toHTMLInputElement(htmlElement);
+        if (current->form() == inputElement->form() && inputElement->type() == InputTypeNames::radio && inputElement->name() == current->name())
+            return inputElement;
+    }
+    return nullptr;
+}
+
 } // namespace blink

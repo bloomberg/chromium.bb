@@ -30,7 +30,6 @@ public:
 private:
     AXRadioInput(LayoutObject*, AXObjectCacheImpl&);
     bool calculatePosInSet();
-    HTMLInputElement* findNextRadioButtonInGroup(HTMLInputElement* current, bool forward) const;
     int countFromFirstElement() const;
     HTMLInputElement* element() const;
     int sizeOfRadioGroup() const;

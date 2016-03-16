@@ -50,7 +50,7 @@ public:
     // This can be used to restrict traversal to a particular sub-tree.
     static Node* next(const Node& current) { return traverseNextTemplate(current); }
     static Node* next(const ContainerNode& current) { return traverseNextTemplate(current); }
-    CORE_EXPORT static Node* next(const Node& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
+    static Node* next(const Node& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
     static Node* next(const ContainerNode& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
 
     // Like next, but skips children and starts with the next sibling.
@@ -63,7 +63,7 @@ public:
     static Node& lastWithinOrSelf(Node&);
 
     // Does a reverse pre-order traversal to find the node that comes before the current one in document order
-    CORE_EXPORT static Node* previous(const Node&, const Node* stayWithin = 0);
+    static Node* previous(const Node&, const Node* stayWithin = 0);
 
     // Like previous, but skips children and starts with the next sibling.
     static Node* previousSkippingChildren(const Node&, const Node* stayWithin = 0);
