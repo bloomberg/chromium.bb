@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
+    "audio_decoder.mojom",
     "content_decryption_module.mojom",
     "decryptor.mojom",
     "demuxer_stream.mojom",
