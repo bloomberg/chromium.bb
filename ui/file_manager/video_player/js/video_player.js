@@ -376,8 +376,11 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       this.videoElement_ = document.createElement('video');
       getRequiredElement('video-container').appendChild(this.videoElement_);
 
+      var videoUrl = video.toURL();
       this.controls.attachMedia(this.videoElement_);
-      this.videoElement_.src = video.toURL();
+      var source = document.createElement('source');
+      source.src = videoUrl;
+      this.videoElement_.appendChild(source);
 
       media.isAvailableForCast().then(function(result) {
         if (result)
@@ -388,9 +391,17 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
         videoPlayerElement.setAttribute('castable', true);
       });
 
-      videoElementInitializePromise = Promise.resolve();
+      videoElementInitializePromise = this.searchSubtitle_(videoUrl)
+          .then(function(subltitleUrl) {
+            if (subltitleUrl) {
+              var track = document.createElement('track');
+              track.src = subltitleUrl;
+              track.kind = 'subtitles';
+              track.default = true;
+              this.videoElement_.appendChild(track);
+            }
+          }.bind(this));
     }
-
     videoElementInitializePromise
         .then(function() {
           var handler = function(currentPos) {
@@ -413,8 +424,16 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
             chrome.power.releaseKeepAwake();
             this.updateInactivityWatcherState_();
           }.wrap(this));
-
-          this.videoElement_.load();
+          // TODO(ryoh):
+          // If you modify the video element that is already inserted,
+          // you have to call load() method.
+          // https://dev.w3.org/html5/spec-author-view/video.html
+          // But we always create new video element (see above),
+          // we don't have to call load().
+          // If you call load() method here,
+          // you can't see subtitles.
+          // (It might be a bug: https://crbug.com/594537)
+          //this.videoElement_.load();
           callback();
         }.bind(this))
         // In case of error.
@@ -430,6 +449,24 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
           callback();
         }.bind(this));
   }.wrap(this));
+};
+
+/**
+ * Search subtile file corresponding to a video.
+ * @param {string} url a url of a video.
+ * @return {string} a url of subtitle file, or an empty string.
+ */
+VideoPlayer.prototype.searchSubtitle_ = function(url) {
+  var baseUrl = util.splitExtension(url)[0];
+  var resolveLocalFileSystemWithExtension = function(extension) {
+    return new Promise(
+        window.webkitResolveLocalFileSystemURL.bind(null, baseUrl + extension));
+  };
+  return resolveLocalFileSystemWithExtension('.vtt').then(function(subtitle) {
+    return subtitle.toURL();
+  }).catch(function() {
+    return '';
+  });
 };
 
 /**
