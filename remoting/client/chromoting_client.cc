@@ -21,6 +21,7 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/webrtc_connection_to_host.h"
+#include "remoting/signaling/jid_util.h"
 
 namespace remoting {
 
@@ -61,7 +62,7 @@ void ChromotingClient::Start(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!session_manager_);  // Start must be called more than once.
 
-  host_jid_ = host_jid;
+  host_jid_ = NormalizeJid(host_jid);
   local_capabilities_ = capabilities;
 
   if (!protocol_config_)
@@ -216,7 +217,7 @@ void ChromotingClient::StartConnection() {
       session_manager_->Connect(
           host_jid_,
           make_scoped_ptr(new protocol::NegotiatingClientAuthenticator(
-              signal_strategy_->GetLocalJid(), host_jid_,
+              NormalizeJid(signal_strategy_->GetLocalJid()), host_jid_,
               client_auth_config_))),
       transport_context_, this);
 }

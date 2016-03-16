@@ -116,15 +116,18 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
   }
 
   if (!local_cert_.empty() && key_pair_.get()) {
+    std::string normalized_local_jid = NormalizeJid(local_jid);
+    std::string normalized_remote_jid = NormalizeJid(remote_jid);
+
     if (token_validator_factory_) {
       return NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
-          local_jid, remote_jid, local_cert_, key_pair_,
+          normalized_local_jid, normalized_remote_jid, local_cert_, key_pair_,
           token_validator_factory_);
     }
 
     return NegotiatingHostAuthenticator::CreateWithPin(
-        local_jid, remote_jid, local_cert_, key_pair_, pin_hash_,
-        pairing_registry_);
+        normalized_local_jid, normalized_remote_jid, local_cert_, key_pair_,
+        pin_hash_, pairing_registry_);
   }
 
   return make_scoped_ptr(
