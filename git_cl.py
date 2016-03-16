@@ -1083,10 +1083,19 @@ or verify this branch is set up to track another (via the --track argument to
         self.rietveld_server = settings.GetDefaultServerUrl()
     return self.rietveld_server
 
+  def GetGerritServer(self):
+    # We don't support multiple Gerrit servers, and assume it to be same as
+    # origin, except with a '-review' suffix for first subdomain.
+    parts = urlparse.urlparse(self.GetRemoteUrl()).netloc.split('.')
+    parts[0] = parts[0] + '-review'
+    return 'https://%s' % '.'.join(parts)
+
   def GetIssueURL(self):
     """Get the URL for a particular issue."""
     if not self.GetIssue():
       return None
+    if settings.GetIsGerrit():
+      return '%s/%s' % (self.GetGerritServer(), self.GetIssue())
     return '%s/%s' % (self.GetRietveldServer(), self.GetIssue())
 
   def GetDescription(self, pretty=False):
@@ -1163,12 +1172,12 @@ or verify this branch is set up to track another (via the --track argument to
   def AddComment(self, message):
     return self.RpcServer().add_comment(self.GetIssue(), message)
 
-  def SetIssue(self, issue):
-    """Set this branch's issue.  If issue=0, clears the issue."""
+  def SetIssue(self, issue=None):
+    """Set this branch's issue.  If issue isn't given, clears the issue."""
     if issue:
       self.issue = issue
       RunGit(['config', self._IssueSetting(), str(issue)])
-      if self.rietveld_server:
+      if not settings.GetIsGerrit() and self.rietveld_server:
         RunGit(['config', self._RietveldServer(), self.rietveld_server])
     else:
       current_issue = self.GetIssue()
@@ -1319,6 +1328,8 @@ or verify this branch is set up to track another (via the --track argument to
 
   def _IssueSetting(self):
     """Return the git setting that stores this change's issue."""
+    if settings.GetIsGerrit():
+      return 'branch.%s.gerritissue' % self.GetBranch()
     return 'branch.%s.rietveldissue' % self.GetBranch()
 
   def _PatchsetSetting(self):
@@ -2157,6 +2168,7 @@ def AddChangeIdToCommitMessage(options, args):
   new_log_desc = CreateDescriptionFromLog(args)
   if git_footers.get_footer_change_id(new_log_desc):
     print 'git-cl: Added Change-Id to commit message.'
+    return new_log_desc
   else:
     print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
 
@@ -2229,6 +2241,10 @@ def GerritUpload(options, args, cl, change):
         message = git_footers.add_footer_change_id(
             message, GenerateGerritChangeId(message))
         change_desc.set_description(message)
+        change_ids = git_footers.get_footer_change_id(message)
+        assert len(change_ids) == 1
+
+      change_id = change_ids[0]
 
     remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
     if remote is '.':
@@ -2252,9 +2268,10 @@ def GerritUpload(options, args, cl, change):
   else:
     if not git_footers.get_footer_change_id(change_desc.description):
       DownloadGerritHook(False)
-      AddChangeIdToCommitMessage(options, args)
+      change_desc.set_description(AddChangeIdToCommitMessage(options, args))
     ref_to_push = 'HEAD'
     parent = '%s/%s' % (gerrit_remote, branch)
+    change_id = git_footers.get_footer_change_id(change_desc.description)[0]
 
   commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
                                                   ref_to_push)]).splitlines()
@@ -2285,13 +2302,25 @@ def GerritUpload(options, args, cl, change):
     git_command.append('--receive-pack=git receive-pack %s' %
                        ' '.join(receive_options))
   git_command += [gerrit_remote, ref_to_push + ':refs/for/' + branch]
-  RunGit(git_command)
+  push_stdout = gclient_utils.CheckCallAndFilter(
+      ['git'] + git_command,
+      print_stdout=True,
+      # Flush after every line: useful for seeing progress when running as
+      # recipe.
+      filter_fn=lambda _: sys.stdout.flush())
 
   if options.squash:
+    regex = re.compile(r'remote:\s+https?://[\w\-\.\/]*/(\d+)\s.*')
+    change_numbers = [m.group(1)
+                      for m in map(regex.match, push_stdout.splitlines())
+                      if m]
+    if len(change_numbers) != 1:
+      DieWithError(
+        ('Created|Updated %d issues on Gerrit, but only 1 expected.\n'
+         'Change-Id: %s') % (len(change_numbers), change_id))
+    cl.SetIssue(change_numbers[0])
     head = RunGit(['rev-parse', 'HEAD']).strip()
     RunGit(['update-ref', '-m', 'Uploaded ' + head, shadow_branch, ref_to_push])
-
-  # TODO(ukai): parse Change-Id: and set issue number?
   return 0
 
 

@@ -82,6 +82,7 @@ class TestGitCl(TestCase):
     self.mock(subprocess2, 'check_call', self._mocked_call)
     self.mock(subprocess2, 'check_output', self._mocked_call)
     self.mock(subprocess2, 'communicate', self._mocked_call)
+    self.mock(git_cl.gclient_utils, 'CheckCallAndFilter', self._mocked_call)
     self.mock(git_common, 'is_dirty_git_tree', lambda x: False)
     self.mock(git_common, 'get_or_create_merge_base',
               lambda *a: (
@@ -320,6 +321,7 @@ class TestGitCl(TestCase):
          'diff', '--name-status', '--no-renames', '-r', 'fake_ancestor_sha...',
          '.'],),
         'M\tPRESUBMIT.py'),
+      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git',
          'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git',
@@ -333,6 +335,7 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_bypassed(cls):
     return [
+      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git',
          'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
@@ -567,7 +570,7 @@ class TestGitCl(TestCase):
            'diff', '--name-status', '--no-renames', '-r',
            'fake_ancestor_sha...', '.'],),
          'M\t.gitignore\n'),
-        ((['git', 'config', 'branch.master.rietveldissue'],), ''),
+        ((['git', 'config', 'branch.master.gerritissue'],), ''),
         ((['git',
            'config', 'branch.master.rietveldpatchset'],), ''),
         ((['git',
@@ -593,7 +596,6 @@ class TestGitCl(TestCase):
          description)
         ]
     if not git_footers.get_footer_change_id(description) and not squash:
-      # TODOOOOO
       calls += [
           # DownloadGerritHook(False)
           ((False, ),
@@ -645,10 +647,23 @@ class TestGitCl(TestCase):
         ((['git',
            'push', receive_pack, 'origin',
            ref_to_push + ':refs/for/refs/heads/master'],),
-         '')
+         ('remote:\n'
+         'remote: Processing changes: (\)\n'
+         'remote: Processing changes: (|)\n'
+         'remote: Processing changes: (/)\n'
+         'remote: Processing changes: (-)\n'
+         'remote: Processing changes: new: 1 (/)\n'
+         'remote: Processing changes: new: 1, done\n'
+         'remote:\n'
+         'remote: New Changes:\n'
+         'remote:   https://chromium-review.googlesource.com/123456 XXX.\n'
+         'remote:\n'
+         'To https://chromium.googlesource.com/yyy/zzz\n'
+         ' * [new branch]      hhhh -> refs/for/refs/heads/master\n')),
         ]
     if squash:
       calls += [
+          ((['git', 'config', 'branch.master.gerritissue', '123456'],), ''),
           ((['git', 'rev-parse', 'HEAD'],), 'abcdef0123456789'),
           ((['git', 'update-ref', '-m', 'Uploaded abcdef0123456789',
             'refs/heads/git_cl_uploads/master', 'abcdef0123456789'],),
