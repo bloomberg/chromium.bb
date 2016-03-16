@@ -330,6 +330,7 @@
 
     'swarming_gpu_fyi_tests_gn_release_trybot': [
       'swarming', 'gpu_tests', 'gn', 'release_trybot',
+      'angle_deqp_tests',
     ],
 
     'swarming_gpu_tests_gn_debug_bot': [
