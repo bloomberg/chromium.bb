@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
  * <p/>
  * When the load images button is clicked, it will reload the page without Lo-Fi.
  */
-public class LoFiBarPopupController implements SnackbarManager.SnackbarController {
+public class LofiBarController implements SnackbarManager.SnackbarController {
     /** Snackbar types */
     private static final int LOFI_SNACKBAR = 0;
     private static final int PREVIEW_SNACKBAR = 1;
@@ -35,11 +35,11 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
     private boolean mLoFiPopupShownForPageLoad = false;
 
     /**
-     * Creates an instance of a {@link LoFiBarPopupController}.
+     * Creates an instance of a {@link LofiBarController}.
      * @param context The {@link Context} in which snackbar is shown.
      * @param snackbarManager The manager that helps to show up snackbar.
      */
-    public LoFiBarPopupController(Context context, SnackbarManager snackbarManager) {
+    public LofiBarController(Context context, SnackbarManager snackbarManager) {
         mSnackbarManager = snackbarManager;
         mContext = context;
         mDisabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_LOFI_SNACKBAR);

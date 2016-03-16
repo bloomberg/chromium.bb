@@ -76,7 +76,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
-import org.chromium.chrome.browser.snackbar.undo.UndoBarPopupController;
+import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -172,7 +172,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private FindToolbarManager mFindToolbarManager;
 
-    private UndoBarPopupController mUndoBarPopupController;
+    private UndoBarController mUndoBarPopupController;
 
     private LayoutManagerChrome mLayoutManager;
 
@@ -909,7 +909,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mContentContainer = (ViewGroup) findViewById(android.R.id.content);
         mControlContainer = (ToolbarControlContainer) findViewById(R.id.control_container);
 
-        mUndoBarPopupController = new UndoBarPopupController(this, mTabModelSelectorImpl,
+        mUndoBarPopupController = new UndoBarController(this, mTabModelSelectorImpl,
                 getSnackbarManager());
     }
 

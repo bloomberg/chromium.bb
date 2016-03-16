@@ -36,7 +36,7 @@ import java.util.Locale;
  * {@link TabModelObserver#tabClosureCommitted(Tab)} to properly keep it's internal state
  * in sync with the model.
  */
-public class UndoBarPopupController implements SnackbarManager.SnackbarController {
+public class UndoBarController implements SnackbarManager.SnackbarController {
     // AndroidTabCloseUndoToastEvent defined in tools/metrics/histograms/histograms.xml.
     private static final int TAB_CLOSE_UNDO_TOAST_SHOWN_COLD = 0;
     private static final int TAB_CLOSE_UNDO_TOAST_SHOWN_WARM = 1;
@@ -49,13 +49,13 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
     private final Context mContext;
 
     /**
-     * Creates an instance of a {@link UndoBarPopupController}.
+     * Creates an instance of a {@link UndoBarController}.
      * @param context The {@link Context} in which snackbar is shown.
      * @param selector The {@link TabModelSelector} that will be used to commit and undo tab
      *                 closures.
      * @param snackbarManager The manager that helps to show up snackbar.
      */
-    public UndoBarPopupController(Context context, TabModelSelector selector,
+    public UndoBarController(Context context, TabModelSelector selector,
             SnackbarManager snackbarManager) {
         mSnackbarManager = snackbarManager;
         mTabModelSelector = selector;
@@ -75,13 +75,13 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
             @Override
             public void tabClosureUndone(Tab tab) {
                 if (disableUndo()) return;
-                mSnackbarManager.dismissSnackbars(UndoBarPopupController.this, tab.getId());
+                mSnackbarManager.dismissSnackbars(UndoBarController.this, tab.getId());
             }
 
             @Override
             public void tabClosureCommitted(Tab tab) {
                 if (disableUndo()) return;
-                mSnackbarManager.dismissSnackbars(UndoBarPopupController.this, tab.getId());
+                mSnackbarManager.dismissSnackbars(UndoBarController.this, tab.getId());
             }
 
             @Override
@@ -93,7 +93,7 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
             @Override
             public void allTabsClosureCommitted() {
                 if (disableUndo()) return;
-                mSnackbarManager.dismissSnackbars(UndoBarPopupController.this);
+                mSnackbarManager.dismissSnackbars(UndoBarController.this);
             }
         };
     }

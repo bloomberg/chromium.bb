@@ -136,6 +136,8 @@ public class DownloadTest extends DownloadTestBase {
     @MediumTest
     @Feature({"Downloads"})
     public void testDuplicateHttpPostDownload_Overwrite() throws Exception {
+        // Snackbar overlaps the infobar which is clicked in this test.
+        getActivity().getSnackbarManager().disableForTesting();
         // Download a file.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
         waitForFocus();

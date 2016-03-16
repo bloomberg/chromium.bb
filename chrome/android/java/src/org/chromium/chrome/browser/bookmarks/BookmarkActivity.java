@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.bookmarks;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import org.chromium.chrome.R;
@@ -32,7 +33,7 @@ public class BookmarkActivity extends BookmarkActivityBase implements SnackbarMa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        mSnackbarManager = new SnackbarManager(getWindow());
+        mSnackbarManager = new SnackbarManager((ViewGroup) findViewById(android.R.id.content));
         mBookmarkManager = new BookmarkManager(this, true);
         String url = getIntent().getDataString();
         if (TextUtils.isEmpty(url)) url = UrlConstants.BOOKMARKS_URL;

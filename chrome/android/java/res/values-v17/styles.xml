@@ -434,14 +434,6 @@
     </style>
 
     <!-- Misc styles -->
-    <style name="SnackbarAnimation">
-        <item name="android:windowEnterAnimation">@anim/snackbar_in</item>
-        <item name="android:windowExitAnimation">@anim/snackbar_out</item>
-    </style>
-    <style name="SnackbarAnimationWithKeyboard">
-        <item name="android:windowEnterAnimation">@anim/snackbar_in_with_keyboard</item>
-        <item name="android:windowExitAnimation">@anim/snackbar_out</item>
-    </style>
     <style name="LocationBarButton">
         <item name="android:background">@null</item>
     </style>

@@ -533,7 +533,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
 
     /**
      * Close all Tabs in the regular TabModel, then undo the operation to restore the Tabs.
-     * This simulates how {@link StripLayoutHelper} and {@link UndoBarPopupController} would close
+     * This simulates how {@link StripLayoutHelper} and {@link UndoBarController} would close
      * all of a {@link TabModel}'s tabs on tablets, which is different from how the
      * {@link OverviewListLayout} would do it on phones.
      */

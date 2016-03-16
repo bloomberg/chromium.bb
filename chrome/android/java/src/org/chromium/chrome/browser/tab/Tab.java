@@ -64,7 +64,7 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
+import org.chromium.chrome.browser.snackbar.LofiBarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -360,7 +360,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     protected Handler mHandler;
 
-    private LoFiBarPopupController mLoFiBarPopupController;
+    private LofiBarController mLoFiBarController;
 
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
@@ -567,7 +567,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mLaunchType = type;
         if (mThemedApplicationContext != null) {
             if (getSnackbarManager() != null) {
-                mLoFiBarPopupController = new LoFiBarPopupController(
+                mLoFiBarController = new LofiBarController(
                         mThemedApplicationContext, getSnackbarManager());
             }
             Resources resources = mThemedApplicationContext.getResources();
@@ -1505,8 +1505,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(validatedUrl);
 
-        if (mLoFiBarPopupController != null) {
-            mLoFiBarPopupController.resetLoFiPopupShownForPageLoad();
+        if (mLoFiBarController != null) {
+            mLoFiBarController.resetLoFiPopupShownForPageLoad();
         }
 
         updateTitle();
@@ -2698,8 +2698,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     @CalledByNative
     public void onLoFiResponseReceived(boolean isPreview) {
-        if (mLoFiBarPopupController != null) {
-            mLoFiBarPopupController.maybeCreateLoFiBar(this, isPreview);
+        if (mLoFiBarController != null) {
+            mLoFiBarController.maybeCreateLoFiBar(this, isPreview);
         }
     }
 
