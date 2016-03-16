@@ -40,11 +40,10 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     return tbm_options
 
   @classmethod
-  def HasBenchmarkTraceRerunDebugOption(cls):
+  def HasTraceRerunDebugOption(cls):
     return True
 
   def SetupBenchmarkDefaultTraceRerunOptions(self, tbm_options):
-    # TODO(perezju): Call this function for TBM benchmarks: crbug.com/593678
     tbm_options.SetLegacyTimelineBasedMetrics((
         memory_timeline.MemoryTimelineMetric(),
     ))
@@ -138,10 +137,13 @@ class MemoryLongRunningIdleGmailTBM(_MemoryInfra):
     for category in v8_categories:
       category_filter.AddIncludedCategory(category)
     options = timeline_based_measurement.Options(category_filter)
-    options.SetLegacyTimelineBasedMetrics([
-        v8_gc_latency.V8GCLatency(),
-        memory_timeline.MemoryTimelineMetric()])
     return options
+
+  def SetupBenchmarkDefaultTraceRerunOptions(self, tbm_options):
+    tbm_options.SetLegacyTimelineBasedMetrics((
+        v8_gc_latency.V8GCLatency(),
+        memory_timeline.MemoryTimelineMetric(),
+    ))
 
   @classmethod
   def Name(cls):
