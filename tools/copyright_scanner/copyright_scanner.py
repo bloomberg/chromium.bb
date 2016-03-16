@@ -49,8 +49,6 @@ def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
     # Quickoffice js files from internal src used on buildbots.
     # crbug.com/350472.
     path_join('chrome', 'browser', 'resources', 'chromeos', 'quickoffice'),
-    # This is a test output directory
-    path_join('chrome', 'tools', 'test', 'reference_build'),
     # blink style copy right headers.
     path_join('content', 'shell', 'renderer', 'test_runner'),
     # blink style copy right headers.

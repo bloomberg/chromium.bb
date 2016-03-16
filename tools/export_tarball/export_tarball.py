@@ -27,7 +27,6 @@ NONESSENTIAL_DIRS = (
     'breakpad/src/processor/testdata',
     'chrome/browser/resources/tracing/tests',
     'chrome/common/extensions/docs',
-    'chrome/tools/test/reference_build',
     'courgette/testdata',
     'data',
     'native_client/src/trusted/service_runtime/testdata',

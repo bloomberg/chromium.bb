@@ -279,9 +279,6 @@ deps = {
 
 deps_os = {
   'win': {
-    'src/chrome/tools/test/reference_build/chrome_win':
-     Var('chromium_git') + '/chromium/reference_builds/chrome_win.git' + '@' + 'f8a3a845dfc845df6b14280f04f86a61959357ef',
-
     'src/third_party/cygwin':
      Var('chromium_git') + '/chromium/deps/cygwin.git' + '@' + 'c89e446b273697fadf3a10ff1007a97c0b7de6df',
 
@@ -359,9 +356,6 @@ deps_os = {
     'src/third_party/webgl': None,
   },
   'mac': {
-    'src/chrome/tools/test/reference_build/chrome_mac':
-     Var('chromium_git') + '/chromium/reference_builds/chrome_mac.git' + '@' + '8dc181329e7c5255f83b4b85dc2f71498a237955',
-
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
 
@@ -381,9 +375,6 @@ deps_os = {
   },
   'unix': {
     # Linux, really.
-    'src/chrome/tools/test/reference_build/chrome_linux':
-     Var('chromium_git') + '/chromium/reference_builds/chrome_linux64.git' + '@' + '033d053a528e820e1de3e2db766678d862a86b36',
-
     'src/third_party/xdg-utils':
      Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
 
