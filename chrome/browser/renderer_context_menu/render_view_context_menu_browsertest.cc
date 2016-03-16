@@ -483,10 +483,14 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   const int num_profiles = 8;
   // The following are the profile numbers that are omitted and need signin.
   // These profiles are not added to the menu. Omitted profiles refers to
-  // supervised profiles in the process of creation. Adding more than one
-  // omitted profile may result in DCHECK errors.
-  int profile_omit = 4;
-  const std::vector<int> profiles_signin_required{1, 3, 6};
+  // supervised profiles in the process of creation.
+  std::vector<int> profiles_omit;
+  profiles_omit.push_back(4);
+
+  std::vector<int> profiles_signin_required;
+  profiles_signin_required.push_back(1);
+  profiles_signin_required.push_back(3);
+  profiles_signin_required.push_back(6);
 
   // Create the profiles.
   ProfileAttributesStorage& storage =
@@ -499,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
                                                      &entry));
     // Open a browser window for the profile if and only if the profile is not
     // omitted nor needing signin.
-    if (i == profile_omit) {
+    if (std::binary_search(profiles_omit.begin(), profiles_omit.end(), i)) {
       entry->SetIsOmitted(true);
     } else if (std::binary_search(profiles_signin_required.begin(),
                                   profiles_signin_required.end(), i)) {
