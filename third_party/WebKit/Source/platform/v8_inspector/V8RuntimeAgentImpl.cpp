@@ -80,6 +80,7 @@ void V8RuntimeAgentImpl::evaluate(
     const Maybe<int>& executionContextId,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
+    const Maybe<bool>& userGesture,
     OwnPtr<RemoteObject>* result,
     Maybe<bool>* wasThrown,
     Maybe<ExceptionDetails>* exceptionDetails)
@@ -104,6 +105,7 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
+    const Maybe<bool>& userGesture,
     OwnPtr<RemoteObject>* result,
     Maybe<bool>* wasThrown)
 {

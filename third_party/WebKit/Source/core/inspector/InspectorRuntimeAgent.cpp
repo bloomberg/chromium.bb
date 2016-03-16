@@ -33,9 +33,11 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MuteConsoleScope.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -96,10 +98,14 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
     const Maybe<int>& optExecutionContextId,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
+    const Maybe<bool>& userGesture,
     OwnPtr<protocol::Runtime::RemoteObject>* result,
     Maybe<bool>* wasThrown,
     Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
+    Optional<UserGestureIndicator> userGestureIndicator;
+    if (userGesture.fromMaybe(false))
+        userGestureIndicator.emplace(DefinitelyProcessingNewUserGesture);
     int executionContextId;
     if (optExecutionContextId.isJust()) {
         executionContextId = optExecutionContextId.fromJust();
@@ -110,7 +116,7 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         muteScope.enter(this);
-    m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, executionContextId, returnByValue, generatePreview, result, wasThrown, exceptionDetails);
+    m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, executionContextId, returnByValue, generatePreview, userGesture, result, wasThrown, exceptionDetails);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
 
@@ -121,13 +127,17 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
+    const Maybe<bool>& userGesture,
     OwnPtr<protocol::Runtime::RemoteObject>* result,
     Maybe<bool>* wasThrown)
 {
+    Optional<UserGestureIndicator> userGestureIndicator;
+    if (userGesture.fromMaybe(false))
+        userGestureIndicator.emplace(DefinitelyProcessingNewUserGesture);
     MuteConsoleScope<InspectorRuntimeAgent> muteScope;
     if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         muteScope.enter(this);
-    m_v8RuntimeAgent->callFunctionOn(errorString, objectId, expression, optionalArguments, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, result, wasThrown);
+    m_v8RuntimeAgent->callFunctionOn(errorString, objectId, expression, optionalArguments, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, userGesture, result, wasThrown);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
 

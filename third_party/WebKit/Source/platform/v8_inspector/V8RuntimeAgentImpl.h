@@ -69,6 +69,7 @@ public:
         const Maybe<int>& executionContextId,
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
+        const Maybe<bool>& userGesture,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
@@ -79,6 +80,7 @@ public:
         const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
+        const Maybe<bool>& userGesture,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown) override;
     void releaseObject(ErrorString*, const String16& objectId) override;

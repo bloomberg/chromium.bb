@@ -18,7 +18,7 @@ function test()
         function testRevealFunctionDefinition(next)
         {
             InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
-            WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, didGetFunction);
+            WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, false, didGetFunction);
 
             function didGetFunction(funcObject, wasThrown)
             {
