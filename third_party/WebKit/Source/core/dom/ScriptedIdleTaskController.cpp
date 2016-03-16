@@ -34,12 +34,21 @@ public:
     static void idleTaskFired(PassRefPtr<IdleRequestCallbackWrapper> callbackWrapper, double deadlineSeconds)
     {
         // TODO(rmcilroy): Implement clamping of deadline in some form.
-        callbackWrapper->controller()->callbackFired(callbackWrapper->id(), deadlineSeconds, IdleDeadline::CallbackType::CalledWhenIdle);
+        if (ScriptedIdleTaskController* controller = callbackWrapper->controller())
+            controller->callbackFired(callbackWrapper->id(), deadlineSeconds, IdleDeadline::CallbackType::CalledWhenIdle);
+        callbackWrapper->cancel();
     }
 
     static void timeoutFired(PassRefPtr<IdleRequestCallbackWrapper> callbackWrapper)
     {
-        callbackWrapper->controller()->callbackFired(callbackWrapper->id(), monotonicallyIncreasingTime(), IdleDeadline::CallbackType::CalledByTimeout);
+        if (ScriptedIdleTaskController* controller = callbackWrapper->controller())
+            controller->callbackFired(callbackWrapper->id(), monotonicallyIncreasingTime(), IdleDeadline::CallbackType::CalledByTimeout);
+        callbackWrapper->cancel();
+    }
+
+    void cancel()
+    {
+        m_controller = nullptr;
     }
 
     ScriptedIdleTaskController::CallbackId id() const { return m_id; }
