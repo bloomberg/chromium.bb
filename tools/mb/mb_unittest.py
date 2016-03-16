@@ -198,17 +198,11 @@ class UnitTest(unittest.TestCase):
         mbw.files[path] = contents
     return mbw
 
-  def check(self, args, mbw=None, files=None, out=None, err=None, ret=None,
-            exception=None):
+  def check(self, args, mbw=None, files=None, out=None, err=None, ret=None):
     if not mbw:
       mbw = self.fake_mbw(files)
-    mbw.ParseArgs(args)
 
-    actual_ret = None
-    if exception is not None:
-      self.assertRaisesRegexp(Exception, exception, mbw.args.func)
-    else:
-      actual_ret = mbw.args.func()
+    actual_ret = mbw.Main(args)
 
     self.assertEqual(actual_ret, ret)
     if out is not None:
@@ -446,12 +440,14 @@ class UnitTest(unittest.TestCase):
       sys.stdout = orig_stdout
 
   def test_validate(self):
-    self.check(['validate'], ret=0)
+    mbw = self.fake_mbw()
+    mbw.files[mbw.default_config] = TEST_CONFIG
+    self.check(['validate'], mbw=mbw, ret=0)
 
   def test_bad_validate(self):
     mbw = self.fake_mbw()
     mbw.files[mbw.default_config] = TEST_BAD_CONFIG
-    self.check(['validate'], mbw=mbw, exception=TEST_BAD_CONFIG_ERR)
+    self.check(['validate'], mbw=mbw, ret=1)
 
 
 if __name__ == '__main__':

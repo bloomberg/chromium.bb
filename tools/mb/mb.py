@@ -29,16 +29,7 @@ from collections import OrderedDict
 
 def main(args):
   mbw = MetaBuildWrapper()
-  mbw.ParseArgs(args)
-
-  try:
-    ret = mbw.args.func()
-    if ret:
-      mbw.DumpInputFiles()
-    return ret
-  except Exception:
-    mbw.DumpInputFiles()
-    raise
+  return mbw.Main(args)
 
 
 class MetaBuildWrapper(object):
@@ -58,6 +49,21 @@ class MetaBuildWrapper(object):
     self.private_configs = []
     self.common_dev_configs = []
     self.unsupported_configs = []
+
+  def Main(self, args):
+    self.ParseArgs(args)
+    try:
+      ret = self.args.func()
+      if ret:
+        self.DumpInputFiles()
+      return ret
+    except KeyboardInterrupt:
+      self.Print('interrupted, exiting', stream=sys.stderr)
+      return 130
+    except Exception as e:
+      self.DumpInputFiles()
+      self.Print(str(e))
+      return 1
 
   def ParseArgs(self, argv):
     def AddCommonOptions(subp):
@@ -326,27 +332,28 @@ class MetaBuildWrapper(object):
       if not mixin in referenced_mixins:
         errs.append('Unreferenced mixin "%s".' % mixin)
 
-    # Check that 'chromium' bots which build public artifacts do not include
-    # the chrome_with_codecs 'mixin'.
-    if not 'chromium' in self.masters:
-      errs.append('Missing "chromium" master. Please update this proprietary '
-                  'codecs check with the name of the master responsible for '
-                  'public build artifacts.')
-    else:
-      for builder in self.masters['chromium']:
-        config = self.masters['chromium'][builder]
-        def RecurseMixins(current_mixin):
-          if current_mixin == 'chrome_with_codecs':
-            errs.append('Public artifact builder "%s" can not contain the '
-                        '"chrome_with_codecs" mixin.' % builder)
-            return
-          if not 'mixins' in self.mixins[current_mixin]:
-            return
-          for mixin in self.mixins[current_mixin]['mixins']:
-            RecurseMixins(mixin)
+    # If we're checking the Chromium config, check that the 'chromium' bots
+    # which build public artifacts do not include the chrome_with_codecs mixin.
+    if self.args.config_file == self.default_config:
+      if 'chromium' in self.masters:
+        for builder in self.masters['chromium']:
+          config = self.masters['chromium'][builder]
+          def RecurseMixins(current_mixin):
+            if current_mixin == 'chrome_with_codecs':
+              errs.append('Public artifact builder "%s" can not contain the '
+                          '"chrome_with_codecs" mixin.' % builder)
+              return
+            if not 'mixins' in self.mixins[current_mixin]:
+              return
+            for mixin in self.mixins[current_mixin]['mixins']:
+              RecurseMixins(mixin)
 
-        for mixin in self.configs[config]:
-          RecurseMixins(mixin)
+          for mixin in self.configs[config]:
+            RecurseMixins(mixin)
+      else:
+        errs.append('Missing "chromium" master. Please update this '
+                    'proprietary codecs check with the name of the master '
+                    'responsible for public build artifacts.')
 
     if errs:
       raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
@@ -1304,11 +1311,4 @@ def QuoteForCmd(arg):
 
 
 if __name__ == '__main__':
-  try:
-    sys.exit(main(sys.argv[1:]))
-  except MBErr as e:
-    print(e)
-    sys.exit(1)
-  except KeyboardInterrupt:
-    print("interrupted, exiting", stream=sys.stderr)
-    sys.exit(130)
+  sys.exit(main(sys.argv[1:]))
