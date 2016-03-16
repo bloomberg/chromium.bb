@@ -886,7 +886,8 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   // enough data so that it may release the connection.
   if (buffering_strategy_ !=
       BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE) {
-    data_source_->OnBufferingHaveEnough(true);
+    if (data_source_)
+      data_source_->OnBufferingHaveEnough(true);
   }
 
   if (pending_suspend_resume_cycle_) {
