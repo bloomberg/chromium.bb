@@ -1095,18 +1095,36 @@ LayoutUnit LayoutFlexibleBox::crossSizeForPercentageResolution(const LayoutBox& 
     return childCrossSize;
 }
 
+LayoutUnit LayoutFlexibleBox::mainSizeForPercentageResolution(const LayoutBox& child)
+{
+    // This function implements section 9.8. Definite and Indefinite Sizes, case
+    // 2) of the flexbox spec.
+    // We need to check for the flexbox to have a definite main size, and for the
+    // flex item to have a definite flex basis.
+    const Length& flexBasis = flexBasisForChild(child);
+    if (!mainAxisLengthIsDefinite(child, flexBasis))
+        return LayoutUnit(-1);
+    LayoutUnit mainSize = isColumnFlow() ? computeDefiniteLogicalHeight() : computeDefiniteLogicalWidth();
+    if (mainSize == LayoutUnit(-1))
+        return mainSize;
+
+    if (hasOrthogonalFlow(child))
+        return child.hasOverrideLogicalContentHeight() ? child.overrideLogicalContentHeight() : LayoutUnit(-1);
+    return child.hasOverrideLogicalContentWidth() ? child.overrideLogicalContentWidth() : LayoutUnit(-1);
+}
+
 LayoutUnit LayoutFlexibleBox::childLogicalHeightForPercentageResolution(const LayoutBox& child)
 {
     if (!hasOrthogonalFlow(child))
         return crossSizeForPercentageResolution(child);
-    return LayoutUnit(-1);
+    return mainSizeForPercentageResolution(child);
 }
 
 LayoutUnit LayoutFlexibleBox::childLogicalWidthForPercentageResolution(const LayoutBox& child)
 {
     if (hasOrthogonalFlow(child))
         return crossSizeForPercentageResolution(child);
-    return LayoutUnit(-1);
+    return mainSizeForPercentageResolution(child);
 }
 
 LayoutUnit LayoutFlexibleBox::adjustChildSizeForAspectRatioCrossAxisMinAndMax(const LayoutBox& child, LayoutUnit childSize)
@@ -1430,6 +1448,11 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         LayoutUnit childPreferredSize = childSizes[i] + mainAxisBorderAndPaddingExtentForChild(*child);
         setOverrideMainAxisSizeForChild(*child, childPreferredSize);
         if (childPreferredSize != mainAxisExtentForChild(*child)) {
+            // We will correctly handle percentage sizing even without re-laying out here, because
+            // if our size was already correct, then percentage resolution was also correct due
+            // to the way percentage sizing is defined by flexbox (ie. it requires a definite flex basis)
+            // TODO(cbiesinger): When flex-basis is used instead of width/height, this is not the case. That
+            // problem is not limited to percentages. See http://crbug.com/531656#c11
             child->setChildNeedsLayout(MarkOnlyThis);
         } else {
             // To avoid double applying margin changes in updateAutoMarginsInCrossAxis, we reset the margins here.

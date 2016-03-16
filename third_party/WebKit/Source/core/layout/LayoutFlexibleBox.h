@@ -65,6 +65,7 @@ public:
     LayoutUnit computeDefiniteLogicalHeight();
 
     LayoutUnit crossSizeForPercentageResolution(const LayoutBox& child);
+    LayoutUnit mainSizeForPercentageResolution(const LayoutBox& child);
     LayoutUnit childLogicalHeightForPercentageResolution(const LayoutBox& child);
     LayoutUnit childLogicalWidthForPercentageResolution(const LayoutBox& child);
 
