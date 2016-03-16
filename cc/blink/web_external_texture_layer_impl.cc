@@ -87,8 +87,10 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
       memcpy(&sync_token, client_mailbox.syncToken, sizeof(sync_token));
 
     gfx::Size size;
-    if (client_mailbox.allowOverlay)
-      size = gfx::Size(layer_->bounds().width, layer_->bounds().height);
+    if (client_mailbox.allowOverlay) {
+      size = gfx::Size(client_mailbox.textureSize.width,
+                       client_mailbox.textureSize.height);
+    }
 
     *mailbox =
         cc::TextureMailbox(name, sync_token, client_mailbox.textureTarget, size,

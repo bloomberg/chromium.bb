@@ -71,6 +71,14 @@ class PixelTestsStorySet(story_set_module.StorySet):
         story_set=self,
         shared_page_state_class=IOSurface2DCanvasSharedPageState,
         expectations=expectations))
+      self.AddStory(PixelTestsPage(
+        url='file://../../data/gpu/pixel_canvas2d_webgl.html',
+        name=base_name + '.IOSurface2DCanvasWebGL',
+        test_rect=[0, 0, 400, 400],
+        revision=1,
+        story_set=self,
+        shared_page_state_class=IOSurface2DCanvasSharedPageState,
+        expectations=expectations))
 
   def _AddAllPages(self, expectations, base_name, use_es3):
     if use_es3:
@@ -116,6 +124,15 @@ class PixelTestsStorySet(story_set_module.StorySet):
       shared_page_state_class=shared_page_state_class,
       expectations=expectations,
       expected_colors='../../data/gpu/pixel_scissor_expectations.json'))
+
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_canvas2d_webgl.html',
+      name=base_name + '.2DCanvasWebGL',
+      test_rect=[0, 0, 400, 400],
+      revision=1,
+      story_set=self,
+      shared_page_state_class=shared_page_state_class,
+      expectations=expectations))
 
   @property
   def allow_mixed_story_states(self):

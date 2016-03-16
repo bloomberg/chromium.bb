@@ -26,3 +26,9 @@ class PixelExpectations(GpuTestExpectations):
 
     # TODO(erikchen): Remove suppression after generating reference images.
     self.Fail('Pixel.IOSurface2DCanvas', ['mac'], bug=579664)
+
+    # TODO(erikchen): Remove suppression after generating reference images.
+    self.Fail('Pixel.IOSurface2DCanvasWebGL', ['mac'], bug=595063)
+
+    # TODO(erikchen): Remove suppression after generating reference images.
+    self.Fail('Pixel.2DCanvasWebGL', bug=595063)

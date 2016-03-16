@@ -207,6 +207,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
         return false;
 
     OwnPtr<WebExternalTextureMailbox> mailbox = adoptPtr(new WebExternalTextureMailbox);
+    mailbox->textureSize = WebSize(textureImage->width(), textureImage->height());
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
     sharedContext->genMailboxCHROMIUM(mailbox->name);

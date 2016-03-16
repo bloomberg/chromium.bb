@@ -274,11 +274,11 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
 
 void Canvas2DLayerBridge::deleteCHROMIUMImage(ImageInfo info)
 {
-    WebGraphicsContext3D* webContext = context();
-    if (webContext->isContextLost())
+    if (m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
         return;
 
     GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
+    WebGraphicsContext3D* webContext = context();
     webContext->bindTexture(target, info.m_textureId);
     webContext->releaseTexImage2DCHROMIUM(target, info.m_imageId);
     webContext->destroyImageCHROMIUM(info.m_imageId);
@@ -309,6 +309,7 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
     createMailboxInfo();
     MailboxInfo& mailboxInfo = m_mailboxes.first();
     mailboxInfo.m_mailbox.nearestNeighbor = getGLFilter() == GL_NEAREST;
+    mailboxInfo.m_mailbox.textureSize = WebSize(m_size.width(), m_size.height());
 
     GrContext* grContext = m_contextProvider->grContext();
     if (!grContext) {

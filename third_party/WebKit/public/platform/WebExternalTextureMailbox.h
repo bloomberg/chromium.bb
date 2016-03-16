@@ -31,21 +31,20 @@
 #ifndef WebExternalTextureMailbox_h
 #define WebExternalTextureMailbox_h
 
+#include "WebSize.h"
+
 namespace blink {
 
 struct WebExternalTextureMailbox {
     signed char name[64];
     signed char syncToken[24];
-    bool validSyncToken;
-    bool allowOverlay;
-    bool nearestNeighbor;
-    unsigned textureTarget;
+    bool validSyncToken = false;
+    bool allowOverlay = false;
+    bool nearestNeighbor = false;
+    unsigned textureTarget = 0;
+    WebSize textureSize;
 
     WebExternalTextureMailbox()
-        : validSyncToken(false)
-        , allowOverlay(false)
-        , nearestNeighbor(false)
-        , textureTarget(0)
     {
         memset(name, 0, sizeof(name));
         memset(syncToken, 0, sizeof(syncToken));
