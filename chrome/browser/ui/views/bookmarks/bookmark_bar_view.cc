@@ -616,6 +616,13 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
   set_id(VIEW_ID_BOOKMARK_BAR);
   Init();
 
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // Don't let the bookmarks show on top of the location bar while animating.
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetMasksToBounds(true);
+  }
+
   size_animation_.Reset(1);
 }
 
