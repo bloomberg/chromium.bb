@@ -8,10 +8,9 @@
   'variables': {
     'command': [
       '<(PRODUCT_DIR)/bin/run_android_webview_test_apk',
-       '--enable-platform-mode',
-       '-e', 'local',
-       '--apk-under-test', '<(PRODUCT_DIR)/apks/AndroidWebView.apk',
-       '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
+      '--enable-platform-mode',
+      '-e', 'local',
+      '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
     ],
     'files': [
       '../third_party/proguard/lib/proguard.jar',
