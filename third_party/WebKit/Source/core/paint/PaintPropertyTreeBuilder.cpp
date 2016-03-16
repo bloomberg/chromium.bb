@@ -107,7 +107,6 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
 
     const LayoutBoxModelObject& boxModelObject = toLayoutBoxModelObject(object);
 
-    // TODO(trchen): There is some insanity going on with tables. Double check results.
     switch (object.styleRef().position()) {
     case StaticPosition:
         break;
@@ -130,8 +129,17 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
     default:
         ASSERT_NOT_REACHED();
     }
-    if (boxModelObject.isBox())
+    if (boxModelObject.isBox()) {
         context.paintOffset += toLayoutBox(boxModelObject).locationOffset();
+        // This is a weird quirk that table cells paint as children of table rows,
+        // but their location have the row's location baked-in.
+        // Similar adjustment is done in LayoutTableCell::offsetFromContainer().
+        if (boxModelObject.isTableCell()) {
+            LayoutObject* parentRow = boxModelObject.parent();
+            ASSERT(parentRow && parentRow->isTableRow());
+            context.paintOffset -= toLayoutBox(parentRow)->locationOffset();
+        }
+    }
 }
 
 static PassRefPtr<TransformPaintPropertyNode> createPaintOffsetTranslationIfNeeded(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)

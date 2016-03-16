@@ -679,4 +679,44 @@ TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
     EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->effect);
 }
 
+TEST_F(PaintPropertyTreeBuilderTest, TableCellLayoutLocation)
+{
+    // This test verifies that the border box space of a table cell is being correctly computed.
+    // Table cells have weird location adjustment in our layout/paint implementation.
+    setBodyInnerHTML(
+        "<style>"
+        "  body {"
+        "    margin: 0;"
+        "  }"
+        "  table {"
+        "    border-spacing: 0;"
+        "    margin: 20px;"
+        "    padding: 40px;"
+        "    border: 10px solid black;"
+        "  }"
+        "  td {"
+        "    width: 100px;"
+        "    height: 100px;"
+        "    padding: 0;"
+        "  }"
+        "  #target {"
+        "    position: relative;"
+        "    width: 100px;"
+        "    height: 100px;"
+        "  }"
+        "</style>"
+        "<table>"
+        "  <tr><td></td><td></td></tr>"
+        "  <tr><td></td><td><div id='target'></div></td></tr>"
+        "</table>"
+    );
+
+    FrameView* frameView = document().view();
+    LayoutObject& target = *document().getElementById("target")->layoutObject();
+    ObjectPaintProperties* targetProperties = target.objectPaintProperties();
+
+    EXPECT_EQ(LayoutPoint(170, 170), targetProperties->localBorderBoxProperties()->paintOffset);
+    EXPECT_EQ(frameView->scrollTranslation(), targetProperties->localBorderBoxProperties()->transform);
+}
+
 } // namespace blink
