@@ -553,10 +553,8 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
                 if (ownerElement && ownerElement->layoutObject()) {
                     if (frameView->safeToPropagateScrollToParent()) {
                         parentBox = ownerElement->layoutObject()->enclosingBox();
-                        // FIXME: This doesn't correctly convert the rect to
-                        // absolute coordinates in the parent.
-                        newRect.setX(rect.x() - frameView->scrollX() + frameView->x());
-                        newRect.setY(rect.y() - frameView->scrollY() + frameView->y());
+                        LayoutView* parentView = ownerElement->layoutObject()->view();
+                        newRect = enclosingLayoutRect(view()->localToAncestorQuad(FloatRect(rect), parentView, UseTransforms | TraverseDocumentBoundaries).boundingBox());
                     } else {
                         parentBox = nullptr;
                     }
