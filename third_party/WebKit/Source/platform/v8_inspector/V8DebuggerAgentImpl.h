@@ -136,8 +136,7 @@ public:
         int scopeNumber,
         const String16& variableName,
         PassOwnPtr<protocol::Runtime::CallArgument> newValue,
-        const Maybe<String16>& callFrame,
-        const Maybe<String16>& functionObjectId) override;
+        const String16& callFrame) override;
     void setAsyncCallStackDepth(ErrorString*, int depth) override;
     void enablePromiseTracker(ErrorString*,
         const Maybe<bool>& captureStacks) override;

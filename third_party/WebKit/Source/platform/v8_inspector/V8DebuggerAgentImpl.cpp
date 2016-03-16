@@ -643,9 +643,24 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
         return;
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
-    injectedScript->restartFrame(errorString, callStack, callFrameId);
+    v8::Local<v8::Context> localContext = injectedScript->context();
+
+    v8::TryCatch tryCatch(m_isolate);
+
+    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrameNoScopes(remoteId->frameOrdinal());
+    if (!javaScriptCallFrame) {
+        *errorString = "Could not find call frame with given id";
+        return;
+    }
+    v8::Local<v8::Value> resultValue;
+    v8::Local<v8::Boolean> result;
+    if (!javaScriptCallFrame->restart().ToLocal(&resultValue) || tryCatch.HasCaught() || !resultValue->ToBoolean(localContext).ToLocal(&result) || !result->Value()) {
+        *errorString = "Internal error";
+        return;
+    }
+
     m_currentCallStack.Reset(m_isolate, debugger().currentCallFrames());
+
     *newCallFrames = currentCallFrames();
     *asyncStackTrace = currentAsyncStackTrace();
 }
@@ -921,39 +936,39 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
 void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
     int scopeNumber,
     const String16& variableName,
-    PassOwnPtr<protocol::Runtime::CallArgument> newValue,
-    const Maybe<String16>& callFrameId,
-    const Maybe<String16>& functionObjectId)
+    PassOwnPtr<protocol::Runtime::CallArgument> newValueArgument,
+    const String16& callFrameId)
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript* injectedScript = nullptr;
-    if (callFrameId.isJust()) {
-        if (!isPaused() || m_currentCallStack.IsEmpty()) {
-            *errorString = "Attempt to access callframe when debugger is not on pause";
-            return;
-        }
-        OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId.fromJust());
-        if (!remoteId)
-            return;
-        injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
-        if (!injectedScript)
-            return;
-    } else if (functionObjectId.isJust()) {
-        OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, functionObjectId.fromJust());
-        if (!remoteId)
-            return;
-        injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
-        if (!injectedScript)
-            return;
-    } else {
-        *errorString = "Either call frame or function object must be specified";
+    if (!isPaused() || m_currentCallStack.IsEmpty()) {
+        *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
-    String16 newValueString = protocol::toValue(newValue.get())->toJSONString();
+    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
+    if (!remoteId)
+        return;
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
+        return;
+
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> currentCallStack = m_currentCallStack.Get(m_isolate);
-    injectedScript->setVariableValue(errorString, currentCallStack, callFrameId, functionObjectId, scopeNumber, variableName, newValueString);
+    v8::TryCatch tryCatch(m_isolate);
+
+    v8::Local<v8::Value> newValue;
+    if (!injectedScript->resolveCallArgument(errorString, newValueArgument.get()).ToLocal(&newValue))
+        return;
+
+    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrameNoScopes(remoteId->frameOrdinal());
+    if (!javaScriptCallFrame) {
+        *errorString = "Could not find call frame with given id";
+        return;
+    }
+    v8::MaybeLocal<v8::Value> result = javaScriptCallFrame->setVariableValue(scopeNumber, toV8String(m_isolate, variableName), newValue);
+    if (tryCatch.HasCaught() || result.IsEmpty()) {
+        *errorString = "Internal error";
+        return;
+    }
 }
 
 void V8DebuggerAgentImpl::setAsyncCallStackDepth(ErrorString* errorString, int depth)

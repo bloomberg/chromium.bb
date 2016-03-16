@@ -99,29 +99,6 @@ void evaluateWithExceptionDetailsMethodCallback(const v8::FunctionCallbackInfo<v
     info.GetReturnValue().Set(impl->evaluateWithExceptionDetails(info[0], info[1]));
 }
 
-void restartMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    v8::MaybeLocal<v8::Value> result = impl->restart();
-    v8::Local<v8::Value> value;
-    if (result.ToLocal(&value))
-        info.GetReturnValue().Set(value);
-}
-
-void setVariableValueMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    v8::Maybe<int32_t> maybeScopeIndex = info[0]->Int32Value(info.GetIsolate()->GetCurrentContext());
-    if (maybeScopeIndex.IsNothing())
-        return;
-    int scopeIndex = maybeScopeIndex.FromJust();
-    v8::MaybeLocal<v8::Value> result = impl->setVariableValue(scopeIndex, info[1], info[2]);
-    v8::Local<v8::Value> value;
-    if (result.ToLocal(&value))
-        info.GetReturnValue().Set(value);
-
-}
-
 void scopeTypeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
@@ -184,8 +161,6 @@ const JavaScriptCallFrameWrapper::V8AttributeConfiguration V8JavaScriptCallFrame
 
 const JavaScriptCallFrameWrapper::V8MethodConfiguration V8JavaScriptCallFrameMethods[] = {
     {"evaluateWithExceptionDetails", evaluateWithExceptionDetailsMethodCallback},
-    {"restart", restartMethodCallback},
-    {"setVariableValue", setVariableValueMethodCallback},
     {"scopeType", scopeTypeMethodCallback},
     {"scopeName", scopeNameMethodCallback},
     {"scopeStartLocation", scopeStartLocationMethodCallback},

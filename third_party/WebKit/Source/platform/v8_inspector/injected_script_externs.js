@@ -128,15 +128,6 @@ InjectedScriptHostClass.prototype.suppressWarningsAndCallFunction = function(fn,
 InjectedScriptHostClass.prototype.setNonEnumProperty = function(obj, key, value) {}
 
 /**
- * @param {!Function} functionObject
- * @param {number} scopeIndex
- * @param {string} variableName
- * @param {*} newValue
- * @return {*}
- */
-InjectedScriptHostClass.prototype.setFunctionVariableValue = function(functionObject, scopeIndex, variableName, newValue) {}
-
-/**
  * @param {*} value
  * @param {string} groupName
  * @return {number}
@@ -193,19 +184,6 @@ function JavaScriptCallFrame()
  * @return {*}
  */
 JavaScriptCallFrame.prototype.evaluateWithExceptionDetails = function(script, scopeExtension) {}
-
-/**
- * @return {*}
- */
-JavaScriptCallFrame.prototype.restart = function() {}
-
-/**
- * @param {number=} scopeIndex
- * @param {?string=} variableName
- * @param {*=} newValue
- * @return {*}
- */
-JavaScriptCallFrame.prototype.setVariableValue = function(scopeIndex, variableName, newValue) {}
 
 /**
  * @param {number} scopeIndex

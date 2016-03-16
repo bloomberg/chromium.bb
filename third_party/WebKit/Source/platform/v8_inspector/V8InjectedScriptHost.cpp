@@ -346,22 +346,6 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsCallback(const v8::Functi
     v8SetReturnValue(info, wrappedResult);
 }
 
-void V8InjectedScriptHost::setFunctionVariableValueCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 4 || !info[0]->IsFunction() || !info[1]->IsInt32() || !info[2]->IsString())
-        return;
-
-    v8::Local<v8::Value> functionValue = info[0];
-    int scopeIndex = info[1].As<v8::Int32>()->Value();
-    String16 variableName = toProtocolStringWithTypeCheck(info[2]);
-    v8::Local<v8::Value> newValue = info[3];
-
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    if (!host->debugger())
-        return;
-    v8SetReturnValue(info, host->debugger()->setFunctionVariableValue(functionValue, scopeIndex, variableName, newValue));
-}
-
 static bool getFunctionLocation(const v8::FunctionCallbackInfo<v8::Value>& info, String16* scriptId, int* lineNumber, int* columnNumber)
 {
     if (info.Length() < 1 || !info[0]->IsFunction())
@@ -580,7 +564,6 @@ const InjectedScriptHostWrapper::V8MethodConfiguration V8InjectedScriptHostMetho
     {"callFunction", V8InjectedScriptHost::callFunctionCallback},
     {"suppressWarningsAndCallFunction", V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback},
     {"setNonEnumProperty", V8InjectedScriptHost::setNonEnumPropertyCallback},
-    {"setFunctionVariableValue", V8InjectedScriptHost::setFunctionVariableValueCallback},
     {"bind", V8InjectedScriptHost::bindCallback},
     {"objectForId", V8InjectedScriptHost::objectForIdCallback},
     {"idToObjectGroupName", V8InjectedScriptHost::idToObjectGroupNameCallback},

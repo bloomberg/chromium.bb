@@ -169,61 +169,6 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8:
     *result = makeEvalCall(errorString, function, wasThrown, exceptionDetails);
 }
 
-void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String16& callFrameId)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "restartFrame");
-    function.appendArgument(callFrames);
-    function.appendArgument(callFrameId);
-    OwnPtr<protocol::Value> resultValue = makeCall(function);
-    if (resultValue) {
-        if (resultValue->type() == protocol::Value::TypeString) {
-            resultValue->asString(errorString);
-        } else {
-            bool value;
-            ASSERT_UNUSED(value, resultValue->asBoolean(&value) && value);
-        }
-        return;
-    }
-    *errorString = "Internal error";
-}
-
-void InjectedScript::setVariableValue(ErrorString* errorString,
-    v8::Local<v8::Object> callFrames,
-    const protocol::Maybe<String16>& callFrameIdOpt,
-    const protocol::Maybe<String16>&  functionObjectIdOpt,
-    int scopeNumber,
-    const String16& variableName,
-    const String16& newValueStr)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "setVariableValue");
-    if (callFrameIdOpt.isJust()) {
-        function.appendArgument(callFrames);
-        function.appendArgument(callFrameIdOpt.fromJust());
-    } else {
-        function.appendArgument(false);
-        function.appendArgument(false);
-    }
-    if (functionObjectIdOpt.isJust())
-        function.appendArgument(functionObjectIdOpt.fromJust());
-    else
-        function.appendArgument(false);
-    function.appendArgument(scopeNumber);
-    function.appendArgument(variableName);
-    function.appendArgument(newValueStr);
-    OwnPtr<protocol::Value> resultValue = makeCall(function);
-    if (!resultValue) {
-        *errorString = "Internal error";
-        return;
-    }
-    if (resultValue->type() == protocol::Value::TypeString) {
-        resultValue->asString(errorString);
-        return;
-    }
-    // Normal return.
-}
-
 void InjectedScript::getFunctionDetails(ErrorString* errorString, const String16& functionId, OwnPtr<FunctionDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
@@ -529,6 +474,37 @@ PassOwnPtr<protocol::Value> InjectedScript::makeCallWithExceptionDetails(V8Funct
 void InjectedScript::dispose()
 {
     m_manager->discardInjectedScript(m_contextId);
+}
+
+v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* errorString, protocol::Runtime::CallArgument* callArgument)
+{
+    if (callArgument->hasObjectId()) {
+        OwnPtr<RemoteObjectId> remoteObjectId = RemoteObjectId::parse(errorString, callArgument->getObjectId(""));
+        if (!remoteObjectId)
+            return v8::MaybeLocal<v8::Value>();
+        if (remoteObjectId->contextId() != m_contextId) {
+            *errorString = "Argument should belong to the same JavaScript world as target object";
+            return v8::MaybeLocal<v8::Value>();
+        }
+        v8::Local<v8::Value> object = findObject(*remoteObjectId);
+        if (object.IsEmpty()) {
+            *errorString = "Could not find object with given id";
+            return v8::MaybeLocal<v8::Value>();
+        }
+        return object;
+    }
+    if (callArgument->hasValue()) {
+        String16 value = callArgument->getValue(nullptr)->toJSONString();
+        if (callArgument->getType(String16()) == "number")
+            value = "Number(" + value + ")";
+        v8::Local<v8::Value> object;
+        if (!m_client->compileAndRunInternalScript(toV8String(m_isolate, value)).ToLocal(&object)) {
+            *errorString = "Couldn't parse value object in call argument";
+            return v8::MaybeLocal<v8::Value>();
+        }
+        return object;
+    }
+    return v8::Undefined(m_isolate);
 }
 
 } // namespace blink

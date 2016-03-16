@@ -241,10 +241,9 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString,
 void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int inScopeNumber,
     const String16& inVariableName,
     PassOwnPtr<protocol::Runtime::CallArgument> inNewValue,
-    const Maybe<String16>& inCallFrameId,
-    const Maybe<String16>& inFunctionObjectId)
+    const String16& inCallFrameId)
 {
-    m_v8DebuggerAgent->setVariableValue(errorString, inScopeNumber, inVariableName, inNewValue, inCallFrameId, inFunctionObjectId);
+    m_v8DebuggerAgent->setVariableValue(errorString, inScopeNumber, inVariableName, inNewValue, inCallFrameId);
 }
 
 void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString,

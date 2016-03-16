@@ -85,8 +85,6 @@ public:
         OwnPtr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*);
-    void restartFrame(ErrorString*, v8::Local<v8::Object> callFrames, const String16& callFrameId);
-    void setVariableValue(ErrorString*, v8::Local<v8::Object> callFrames, const Maybe<String16>& callFrameIdOpt, const Maybe<String16>& functionObjectIdOpt, int scopeNumber, const String16& variableName, const String16& newValueStr);
     void getFunctionDetails(ErrorString*, const String16& functionId, OwnPtr<protocol::Debugger::FunctionDetails>* result);
     void getCollectionEntries(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::Debugger::CollectionEntry>>* result);
     void getProperties(ErrorString*, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
@@ -111,6 +109,8 @@ public:
     v8::Isolate* isolate() { return m_isolate; }
     v8::Local<v8::Context> context() const;
     void dispose();
+
+    v8::MaybeLocal<v8::Value> resolveCallArgument(ErrorString*, protocol::Runtime::CallArgument*);
 
 private:
     friend InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context>);
