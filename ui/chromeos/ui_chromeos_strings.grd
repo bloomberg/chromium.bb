@@ -138,6 +138,9 @@
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and network list when connecting to a network.">
         Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_RECONNECTING" desc="Message for the network tray tooltip and network list when reconnecting to a network.">
+        Reconnecting to <ph name="NAME">$1<ex>Company VPN</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE" desc="Message for the network list to activate the network.">
         Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>
       </message>
@@ -146,6 +149,9 @@
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING" desc="Message for the network list when connecting to a network.">
         <ph name="NAME">$1<ex>GoogleGuest</ex></ph>: Connecting...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_RECONNECTING" desc="Message for the network list when reconnecting to a network.">
+        <ph name="NAME">$1<ex>Company VPN</ex></ph>: Reconnecting...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network list when no network is connected.">
         No network

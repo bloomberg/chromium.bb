@@ -40,6 +40,19 @@ namespace vpnProvider {
     DOMString[]? domainSearch;
     // A list of IPs for the DNS servers.
     DOMString[] dnsServers;
+    // Whether or not the VPN extension implements auto-reconnection.
+    //
+    // If true, the <code>linkDown</code>, <code>linkUp</code>,
+    // <code>linkChanged</code>, <code>suspend</code>, and <code>resume</code>
+    // platform messages will be used to signal the respective events.
+    // If false, the system will forcibly disconnect the VPN if the network
+    // topology changes, and the user will need to reconnect manually.
+    // (default: false)
+    //
+    // This property is new in Chrome 51; it will generate an exception in
+    // earlier versions. try/catch can be used to conditionally enable the
+    // feature based on browser support.
+    DOMString? reconnect;
   };
 
   // The enum is used by the platform to notify the client of the VPN session
@@ -52,7 +65,20 @@ namespace vpnProvider {
     // An error occurred in VPN connection, for example a timeout. A description
     // of the error is give as the <ahref="#property-onPlatformMessage-error">
     // error argument to onPlatformMessage</a>.
-    error
+    error,
+    // The default physical network connection is down.
+    linkDown,
+    // The default physical network connection is back up.
+    linkUp,
+    // The default physical network connection changed, e.g. wifi-&gt;mobile.
+    linkChanged,
+    // The OS is preparing to suspend, so the VPN should drop its connection.
+    // The extension is not guaranteed to receive this event prior to
+    // suspending.
+    suspend,
+    // The OS has resumed and the user has logged back in, so the VPN should
+    // try to reconnect.
+    resume
   };
 
   // The enum is used by the VPN client to inform the platform

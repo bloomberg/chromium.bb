@@ -27,7 +27,8 @@ const char* kSetParametersKeyList[] = {
     shill::kSubnetPrefixParameterThirdPartyVpn,
     shill::kMtuParameterThirdPartyVpn,
     shill::kDomainSearchParameterThirdPartyVpn,
-    shill::kDnsServersParameterThirdPartyVpn};
+    shill::kDnsServersParameterThirdPartyVpn,
+    shill::kReconnectParameterThirdPartyVpn};
 
 // The ShillThirdPartyVpnDriverClient implementation.
 class ShillThirdPartyVpnDriverClientImpl

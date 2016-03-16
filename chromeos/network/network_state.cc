@@ -90,7 +90,14 @@ bool NetworkState::PropertyChanged(const std::string& key,
   if (key == shill::kSignalStrengthProperty) {
     return GetIntegerValue(key, value, &signal_strength_);
   } else if (key == shill::kStateProperty) {
-    return GetStringValue(key, value, &connection_state_);
+    std::string saved_state = connection_state_;
+    if (GetStringValue(key, value, &connection_state_)) {
+      if (connection_state_ != saved_state)
+        last_connection_state_ = saved_state;
+      return true;
+    } else {
+      return false;
+    }
   } else if (key == shill::kVisibleProperty) {
     return GetBooleanValue(key, value, &visible_);
   } else if (key == shill::kConnectableProperty) {
@@ -348,6 +355,11 @@ bool NetworkState::IsConnectedState() const {
 
 bool NetworkState::IsConnectingState() const {
   return visible() && StateIsConnecting(connection_state_);
+}
+
+bool NetworkState::IsReconnecting() const {
+  return visible() && StateIsConnecting(connection_state_) &&
+         StateIsConnected(last_connection_state_);
 }
 
 bool NetworkState::IsInProfile() const {

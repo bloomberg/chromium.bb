@@ -143,6 +143,11 @@ void ConvertParameters(const api_vpn::Parameters& parameters,
       shill::kDnsServersParameterThirdPartyVpn,
       base::JoinString(parameters.dns_servers, ip_delimiter));
 
+  if (parameters.reconnect) {
+    parameter_value->SetStringWithoutPathExpansion(
+        shill::kReconnectParameterThirdPartyVpn, *parameters.reconnect);
+  }
+
   return;
 }
 

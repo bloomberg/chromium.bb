@@ -210,7 +210,7 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
                   ui::network_icon::GetLabelForNetwork(
                       network, ui::network_icon::ICON_TYPE_LIST),
                   IsConnectedOrConnecting(network));
-  if (network->IsConnectedState()) {
+  if (IsConnectedOrConnecting(network)) {
     disconnect_button_ = new DisconnectButton(this);
     AddChildView(disconnect_button_);
     SetBorder(

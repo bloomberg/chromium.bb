@@ -114,8 +114,13 @@ void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
 
   api_vpn::PlatformMessage platform_message =
       static_cast<api_vpn::PlatformMessage>(message);
-  vpn_service_->SetActiveConfiguration(
-      platform_message == api_vpn::PLATFORM_MESSAGE_CONNECTED ? this : nullptr);
+
+  if (platform_message == api_vpn::PLATFORM_MESSAGE_CONNECTED) {
+    vpn_service_->SetActiveConfiguration(this);
+  } else if (platform_message == api_vpn::PLATFORM_MESSAGE_DISCONNECTED ||
+             platform_message == api_vpn::PLATFORM_MESSAGE_ERROR) {
+    vpn_service_->SetActiveConfiguration(nullptr);
+  }
 
   // TODO(kaliamoorthi): Update the lower layers to get the error message and
   // pass in the error instead of std::string().

@@ -212,7 +212,8 @@ var testRoutines = {
           mtu: "1600",
           broadcastAddress: "10.10.10.255",
           domainSearch: ["foo", "bar"],
-          dnsServers: ["8.8.8.8"]
+          dnsServers: ["8.8.8.8"],
+          reconnect: "false"
         };
         chrome.vpnProvider.setParameters(params, onSetParameterComplete);
       }

@@ -741,7 +741,12 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
   DCHECK(network);
   std::string activation_state = network->activation_state();
   if (icon_type == ICON_TYPE_LIST) {
-    // Show "<network>: [Connecting|Activating]..."
+    // Show "<network>: [Connecting|Activating|Reconnecting]..."
+    if (network->IsReconnecting()) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_LIST_RECONNECTING,
+          base::UTF8ToUTF16(network->name()));
+    }
     if (network->IsConnectingState()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING,
@@ -760,7 +765,13 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
           base::UTF8ToUTF16(network->name()));
     }
   } else {
-    // Show "[Connected to|Connecting to|Activating] <network>" (non-list view).
+    // Show "[Connected to|Connecting to|Activating|Reconnecting to] <network>"
+    // (non-list view).
+    if (network->IsReconnecting()) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_RECONNECTING,
+          base::UTF8ToUTF16(network->name()));
+    }
     if (network->IsConnectedState()) {
       return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
                                         base::UTF8ToUTF16(network->name()));
@@ -827,10 +838,10 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
 
   const NetworkState* network;
   // If we are connecting to a network, and there is either no connected
-  // network, or the connection was user requested, use the connecting
-  // network.
+  // network, or the connection was user requested, or shill triggered a
+  // reconnection, use the connecting network.
   if (connecting_network &&
-      (!connected_network ||
+      (!connected_network || connecting_network->IsReconnecting() ||
        connect_handler->HasConnectingNetwork(connecting_network->path()))) {
     network = connecting_network;
   } else {
