@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_persistence.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -33,12 +33,12 @@ void InstantiatePersistentHistograms() {
     // Create persistent/shared memory and allow histograms to be stored in it.
     // Memory that is not actualy used won't be physically mapped by the system.
     // BrowserMetrics usage peaked around 95% of 2MiB as of 2016-02-20.
-    base::SetPersistentHistogramMemoryAllocator(
-        new base::LocalPersistentMemoryAllocator(3 << 20,     // 3 MiB
-                                                 0x935DDD43,  // SHA1(B...M...)
-                                                 kAllocatorName));
-    base::GetPersistentHistogramMemoryAllocator()->CreateTrackingHistograms(
+    base::PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+        3 << 20,     // 3 MiB
+        0x935DDD43,  // SHA1(BrowserMetrics)
         kAllocatorName);
+    base::PersistentHistogramAllocator::GetGlobalAllocator()
+        ->CreateTrackingHistograms(kAllocatorName);
   }
 }
 

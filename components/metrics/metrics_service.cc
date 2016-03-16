@@ -133,8 +133,8 @@
 #include "base/location.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/histogram_persistence.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
@@ -746,8 +746,8 @@ void MetricsService::CloseCurrentLog() {
 
   // If a persistent allocator is in use, update its internal histograms (such
   // as how much memory is being used) before reporting.
-  base::PersistentMemoryAllocator* allocator =
-      base::GetPersistentHistogramMemoryAllocator();
+  base::PersistentHistogramAllocator* allocator =
+      base::PersistentHistogramAllocator::GetGlobalAllocator();
   if (allocator)
     allocator->UpdateTrackingHistograms();
 

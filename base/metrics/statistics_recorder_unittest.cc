@@ -10,7 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/histogram_persistence.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
@@ -23,7 +23,7 @@ class StatisticsRecorderTest : public testing::Test {
   void SetUp() override {
     // Get this first so it never gets created in persistent storage and will
     // not appear in the StatisticsRecorder after it is re-initialized.
-    GetCreateHistogramResultHistogram();
+    PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
     // Each test will have a clean state (no Histogram / BucketRanges
     // registered).
     InitializeStatisticsRecorder();
@@ -31,7 +31,7 @@ class StatisticsRecorderTest : public testing::Test {
 
   void TearDown() override {
     UninitializeStatisticsRecorder();
-    delete ReleasePersistentHistogramMemoryAllocatorForTesting();
+    PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
   }
 
   void InitializeStatisticsRecorder() {
@@ -325,8 +325,8 @@ TEST_F(StatisticsRecorderTest, ToJSON) {
 TEST_F(StatisticsRecorderTest, IterationTest) {
   StatisticsRecorder::Histograms registered_histograms;
   LOCAL_HISTOGRAM_COUNTS("TestHistogram.IterationTest1", 30);
-  SetPersistentHistogramMemoryAllocator(
-      new LocalPersistentMemoryAllocator(64 << 10, 0, std::string()));
+  PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+      64 << 10 /* 64 KiB */, 0, "");
   LOCAL_HISTOGRAM_COUNTS("TestHistogram.IterationTest2", 30);
 
   StatisticsRecorder::HistogramIterator i1 = StatisticsRecorder::begin(true);

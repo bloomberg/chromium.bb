@@ -8,29 +8,29 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_persistence.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace installer {
 
 void BeginPersistentHistogramStorage() {
-  base::SetPersistentHistogramMemoryAllocator(
-      new base::LocalPersistentMemoryAllocator(
-          1 << 20, 0,  // 1 MiB
-          installer::kSetupHistogramAllocatorName));
-  base::GetPersistentHistogramMemoryAllocator()->CreateTrackingHistograms(
+  base::PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+      1 << 20,  // 1 MiB
+      0,        // No identifier.
       installer::kSetupHistogramAllocatorName);
+  base::PersistentHistogramAllocator::GetGlobalAllocator()
+      ->CreateTrackingHistograms(installer::kSetupHistogramAllocatorName);
 }
 
 void EndPersistentHistogramStorage(const base::FilePath& target_path) {
+  base::PersistentHistogramAllocator* allocator =
+      base::PersistentHistogramAllocator::GetGlobalAllocator();
+  allocator->UpdateTrackingHistograms();
+
   // For atomicity, first write to a temporary file and then rename it.
   // The ImportantFileWriter would be good for this except it supports only
   // std::string for its data.
-  base::PersistentMemoryAllocator* allocator =
-      base::GetPersistentHistogramMemoryAllocator();
-  allocator->UpdateTrackingHistograms();
-
   base::FilePath file_path = target_path
       .AppendASCII(allocator->Name())
       .AddExtension(L".pma");

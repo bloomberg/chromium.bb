@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/histogram_persistence.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
@@ -47,7 +47,7 @@ struct FileMetricsProvider::FileInfo {
   // "active", it remains mapped and nothing is copied to local memory.
   std::vector<uint8_t> data;
   scoped_ptr<base::MemoryMappedFile> mapped;
-  scoped_ptr<base::PersistentMemoryAllocator> allocator;
+  scoped_ptr<base::PersistentHistogramAllocator> allocator;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileInfo);
@@ -174,13 +174,13 @@ void FileMetricsProvider::RecordHistogramSnapshotsFromFile(
     base::HistogramSnapshotManager* snapshot_manager,
     FileInfo* file) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::PersistentMemoryAllocator::Iterator hist_iter;
-  file->allocator->CreateIterator(&hist_iter);
+  base::PersistentHistogramAllocator::Iterator histogram_iter;
+  file->allocator->CreateIterator(&histogram_iter);
 
   int histogram_count = 0;
   while (true) {
-    scoped_ptr<base::HistogramBase> histogram(
-        base::GetNextPersistentHistogram(file->allocator.get(), &hist_iter));
+    scoped_ptr<base::HistogramBase> histogram =
+        file->allocator->GetNextHistogram(&histogram_iter);
     if (!histogram)
       break;
     if (file->type == FILE_HISTOGRAMS_ATOMIC)
@@ -204,12 +204,14 @@ void FileMetricsProvider::CreateAllocatorForFile(FileInfo* file) {
   if (file->mapped) {
     DCHECK(file->data.empty());
     // TODO(bcwhite): Make this do read/write when supported for "active".
-    file->allocator.reset(new base::FilePersistentMemoryAllocator(
-        std::move(file->mapped), 0, std::string()));
+    file->allocator.reset(new base::PersistentHistogramAllocator(
+        make_scoped_ptr(new base::FilePersistentMemoryAllocator(
+            std::move(file->mapped), 0, ""))));
   } else {
     DCHECK(!file->mapped);
-    file->allocator.reset(new base::PersistentMemoryAllocator(
-        &file->data[0], file->data.size(), 0, 0, "", true));
+    file->allocator.reset(new base::PersistentHistogramAllocator(
+        make_scoped_ptr(new base::PersistentMemoryAllocator(
+            &file->data[0], file->data.size(), 0, 0, "", true))));
   }
 }
 

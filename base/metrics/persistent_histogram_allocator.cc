@@ -1,8 +1,8 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/metrics/histogram_persistence.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -13,45 +13,13 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/synchronization/lock.h"
 
+// TODO(bcwhite): Order these methods to match the header file. The current
+// order is only temporary in order to aid review of the transition from
+// a non-class implementation.
+
 namespace base {
 
 namespace {
-
-// Enumerate possible creation results for reporting.
-enum CreateHistogramResultType {
-  // Everything was fine.
-  CREATE_HISTOGRAM_SUCCESS = 0,
-
-  // Pointer to metadata was not valid.
-  CREATE_HISTOGRAM_INVALID_METADATA_POINTER,
-
-  // Histogram metadata was not valid.
-  CREATE_HISTOGRAM_INVALID_METADATA,
-
-  // Ranges information was not valid.
-  CREATE_HISTOGRAM_INVALID_RANGES_ARRAY,
-
-  // Counts information was not valid.
-  CREATE_HISTOGRAM_INVALID_COUNTS_ARRAY,
-
-  // Could not allocate histogram memory due to corruption.
-  CREATE_HISTOGRAM_ALLOCATOR_CORRUPT,
-
-  // Could not allocate histogram memory due to lack of space.
-  CREATE_HISTOGRAM_ALLOCATOR_FULL,
-
-  // Could not allocate histogram memory due to unknown error.
-  CREATE_HISTOGRAM_ALLOCATOR_ERROR,
-
-  // Histogram was of unknown type.
-  CREATE_HISTOGRAM_UNKNOWN_TYPE,
-
-  // Instance has detected a corrupt allocator (recorded only once).
-  CREATE_HISTOGRAM_ALLOCATOR_NEWLY_CORRUPT,
-
-  // Always keep this at the end.
-  CREATE_HISTOGRAM_MAX
-};
 
 // Name of histogram for storing results of local operations.
 const char kResultHistogram[] = "UMA.CreatePersistentHistogram.Result";
@@ -62,45 +30,27 @@ const char kResultHistogram[] = "UMA.CreatePersistentHistogram.Result";
 // so that, if the structure of that object changes, stored older versions
 // will be safely ignored.
 enum : uint32_t {
-  kTypeIdHistogram   = 0xF1645910 + 2,  // SHA1(Histogram) v2
+  kTypeIdHistogram   = 0xF1645910 + 2,  // SHA1(Histogram)   v2
   kTypeIdRangesArray = 0xBCEA225A + 1,  // SHA1(RangesArray) v1
   kTypeIdCountsArray = 0x53215530 + 1,  // SHA1(CountsArray) v1
 };
 
-// This data must be held in persistent memory in order for processes to
-// locate and use histograms created elsewhere. All elements must be of a
-// fixed width to ensure 32/64-bit interoperability.
-struct PersistentHistogramData {
-  int32_t histogram_type;
-  int32_t flags;
-  int32_t minimum;
-  int32_t maximum;
-  uint32_t bucket_count;
-  PersistentMemoryAllocator::Reference ranges_ref;
-  uint32_t ranges_checksum;
-  PersistentMemoryAllocator::Reference counts_ref;
-  HistogramSamples::Metadata samples_metadata;
-  HistogramSamples::Metadata logged_metadata;
-
-  // Space for the histogram name will be added during the actual allocation
-  // request. This must be the last field of the structure. A zero-size array
-  // or a "flexible" array would be preferred but is not (yet) valid C++.
-  char name[1];
-};
-
+// The current globally-active persistent allocator for all new histograms.
 // The object held here will obviously not be destructed at process exit
-// but that's okay since PersistentMemoryAllocator objects are explicitly
-// forbidden from doing anything essential at exit anyway due to the fact
-// that they depend on data managed elsewhere and which could be destructed
-// first.
-PersistentMemoryAllocator* g_allocator = nullptr;
+// but that's best since PersistentMemoryAllocator objects (that underlie
+// PersistentHistogramAllocator objects) are explicitly forbidden from doing
+// anything essential at exit anyway due to the fact that they depend on data
+// managed elsewhere and which could be destructed first.
+PersistentHistogramAllocator* g_allocator;
 
 // Take an array of range boundaries and create a proper BucketRanges object
 // which is returned to the caller. A return of nullptr indicates that the
 // passed boundaries are invalid.
-BucketRanges* CreateRangesFromData(HistogramBase::Sample* ranges_data,
-                                   uint32_t ranges_checksum,
-                                   size_t count) {
+scoped_ptr<BucketRanges> CreateRangesFromData(
+    HistogramBase::Sample* ranges_data,
+    uint32_t ranges_checksum,
+    size_t count) {
+  // To avoid racy destruction at shutdown, the following may be leaked.
   scoped_ptr<BucketRanges> ranges(new BucketRanges(count));
   DCHECK_EQ(count, ranges->size());
   for (size_t i = 0; i < count; ++i) {
@@ -113,7 +63,7 @@ BucketRanges* CreateRangesFromData(HistogramBase::Sample* ranges_data,
   if (ranges->checksum() != ranges_checksum)
     return nullptr;
 
-  return ranges.release();
+  return ranges;
 }
 
 // Calculate the number of bytes required to store all of a histogram's
@@ -138,15 +88,55 @@ const Feature kPersistentHistogramsFeature{
   "PersistentHistograms", FEATURE_DISABLED_BY_DEFAULT
 };
 
-// Get the histogram in which create results are stored. This is copied almost
-// exactly from the STATIC_HISTOGRAM_POINTER_BLOCK macro but with added code
-// to prevent recursion (a likely occurance because the creation of a new
-// histogram can end up calling this.)
-HistogramBase* GetCreateHistogramResultHistogram() {
+// This data will be held in persistent memory in order for processes to
+// locate and use histograms created elsewhere.
+struct PersistentHistogramAllocator::PersistentHistogramData {
+  int32_t histogram_type;
+  int32_t flags;
+  int32_t minimum;
+  int32_t maximum;
+  uint32_t bucket_count;
+  PersistentMemoryAllocator::Reference ranges_ref;
+  uint32_t ranges_checksum;
+  PersistentMemoryAllocator::Reference counts_ref;
+  HistogramSamples::Metadata samples_metadata;
+  HistogramSamples::Metadata logged_metadata;
+
+  // Space for the histogram name will be added during the actual allocation
+  // request. This must be the last field of the structure. A zero-size array
+  // or a "flexible" array would be preferred but is not (yet) valid C++.
+  char name[1];
+};
+
+PersistentHistogramAllocator::PersistentHistogramAllocator(
+    scoped_ptr<PersistentMemoryAllocator> memory)
+    : memory_allocator_(std::move(memory)) {}
+
+PersistentHistogramAllocator::~PersistentHistogramAllocator() {}
+
+void PersistentHistogramAllocator::CreateIterator(Iterator* iter) {
+  memory_allocator_->CreateIterator(&iter->memory_iter);
+}
+
+void PersistentHistogramAllocator::CreateTrackingHistograms(StringPiece name) {
+  memory_allocator_->CreateTrackingHistograms(name);
+}
+
+void PersistentHistogramAllocator::UpdateTrackingHistograms() {
+  memory_allocator_->UpdateTrackingHistograms();
+}
+
+// static
+HistogramBase*
+PersistentHistogramAllocator::GetCreateHistogramResultHistogram() {
+  // Get the histogram in which create-results are stored. This is copied
+  // almost exactly from the STATIC_HISTOGRAM_POINTER_BLOCK macro but with
+  // added code to prevent recursion (a likely occurance because the creation
+  // of a new a histogram can end up calling this.)
   static base::subtle::AtomicWord atomic_histogram_pointer = 0;
-  HistogramBase* histogram_pointer(
+  HistogramBase* histogram_pointer =
       reinterpret_cast<HistogramBase*>(
-          base::subtle::Acquire_Load(&atomic_histogram_pointer)));
+          base::subtle::Acquire_Load(&atomic_histogram_pointer));
   if (!histogram_pointer) {
     // It's possible for multiple threads to make it here in parallel but
     // they'll always return the same result as there is a mutex in the Get.
@@ -173,31 +163,38 @@ HistogramBase* GetCreateHistogramResultHistogram() {
   return histogram_pointer;
 }
 
-// Record the result of a histogram creation.
-void RecordCreateHistogramResult(CreateHistogramResultType result) {
+// static
+void PersistentHistogramAllocator::RecordCreateHistogramResult(
+    CreateHistogramResultType result) {
   HistogramBase* result_histogram = GetCreateHistogramResultHistogram();
   if (result_histogram)
     result_histogram->Add(result);
 }
 
-void SetPersistentHistogramMemoryAllocator(
-    PersistentMemoryAllocator* allocator) {
+// static
+void PersistentHistogramAllocator::SetGlobalAllocator(
+    scoped_ptr<PersistentHistogramAllocator> allocator) {
   // Releasing or changing an allocator is extremely dangerous because it
   // likely has histograms stored within it. If the backing memory is also
   // also released, future accesses to those histograms will seg-fault.
   CHECK(!g_allocator);
-  g_allocator = allocator;
+  g_allocator = allocator.release();
 }
 
-PersistentMemoryAllocator* GetPersistentHistogramMemoryAllocator() {
+// static
+PersistentHistogramAllocator*
+PersistentHistogramAllocator::GetGlobalAllocator() {
   return g_allocator;
 }
 
-PersistentMemoryAllocator*
-ReleasePersistentHistogramMemoryAllocatorForTesting() {
-  PersistentMemoryAllocator* allocator = g_allocator;
-  if (!allocator)
+// static
+scoped_ptr<PersistentHistogramAllocator>
+PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting() {
+  PersistentHistogramAllocator* histogram_allocator = g_allocator;
+  if (!histogram_allocator)
     return nullptr;
+  PersistentMemoryAllocator* memory_allocator =
+      histogram_allocator->memory_allocator();
 
   // Before releasing the memory, it's necessary to have the Statistics-
   // Recorder forget about the histograms contained therein; otherwise,
@@ -205,11 +202,11 @@ ReleasePersistentHistogramMemoryAllocatorForTesting() {
   PersistentMemoryAllocator::Iterator iter;
   PersistentMemoryAllocator::Reference ref;
   uint32_t type_id;
-  allocator->CreateIterator(&iter);
-  while ((ref = allocator->GetNextIterable(&iter, &type_id)) != 0) {
+  memory_allocator->CreateIterator(&iter);
+  while ((ref = memory_allocator->GetNextIterable(&iter, &type_id)) != 0) {
     if (type_id == kTypeIdHistogram) {
       PersistentHistogramData* histogram_data =
-          allocator->GetAsObject<PersistentHistogramData>(
+          memory_allocator->GetAsObject<PersistentHistogramData>(
               ref, kTypeIdHistogram);
       DCHECK(histogram_data);
       StatisticsRecorder::ForgetHistogramForTesting(histogram_data->name);
@@ -218,19 +215,55 @@ ReleasePersistentHistogramMemoryAllocatorForTesting() {
       // actively used by this code is being released back to the test.
       // If that memory segment were to be deleted, future calls to create
       // persistent histograms would crash. To avoid this, have the test call
-      // the method GetCreateHistogramResultHistogram() *before* setting the
-      // (temporary) memory allocator via SetPersistentMemoryAllocator() so
-      // that the histogram is instead allocated from the process heap.
+      // the method GetCreateHistogramResultHistogram() *before* setting
+      // the (temporary) memory allocator via SetGlobalAllocator() so that
+      // histogram is instead allocated from the process heap.
       DCHECK_NE(kResultHistogram, histogram_data->name);
     }
   }
 
   g_allocator = nullptr;
-  return allocator;
+  return make_scoped_ptr(histogram_allocator);
 };
 
-HistogramBase* CreatePersistentHistogram(
-    PersistentMemoryAllocator* allocator,
+// static
+void PersistentHistogramAllocator::CreateGlobalAllocatorOnPersistentMemory(
+    void* base,
+    size_t size,
+    size_t page_size,
+    uint64_t id,
+    StringPiece name) {
+  SetGlobalAllocator(make_scoped_ptr(new PersistentHistogramAllocator(
+      make_scoped_ptr(new PersistentMemoryAllocator(
+          base, size, page_size, id, name, false)))));
+}
+
+// static
+void PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+    size_t size,
+    uint64_t id,
+    StringPiece name) {
+  SetGlobalAllocator(make_scoped_ptr(new PersistentHistogramAllocator(
+      make_scoped_ptr(new LocalPersistentMemoryAllocator(size, id, name)))));
+}
+
+// static
+void PersistentHistogramAllocator::CreateGlobalAllocatorOnSharedMemory(
+    size_t size,
+    const SharedMemoryHandle& handle) {
+  scoped_ptr<SharedMemory> shm(new SharedMemory(handle, /*readonly=*/false));
+  if (!shm->Map(size)) {
+    NOTREACHED();
+    return;
+  }
+
+  SetGlobalAllocator(make_scoped_ptr(new PersistentHistogramAllocator(
+      make_scoped_ptr(new SharedPersistentMemoryAllocator(
+          std::move(shm), 0, StringPiece(), /*readonly=*/false)))));
+}
+
+// static
+scoped_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
     PersistentHistogramData* histogram_data_ptr) {
   if (!histogram_data_ptr) {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_METADATA_POINTER);
@@ -246,37 +279,43 @@ HistogramBase* CreatePersistentHistogram(
   PersistentHistogramData histogram_data = *histogram_data_ptr;
 
   HistogramBase::Sample* ranges_data =
-      allocator->GetAsObject<HistogramBase::Sample>(histogram_data.ranges_ref,
-                                                    kTypeIdRangesArray);
+      memory_allocator_->GetAsObject<HistogramBase::Sample>(
+          histogram_data.ranges_ref, kTypeIdRangesArray);
+
+  const uint32_t max_buckets =
+      std::numeric_limits<uint32_t>::max() / sizeof(HistogramBase::Sample);
+  size_t required_bytes =
+      (histogram_data.bucket_count + 1) * sizeof(HistogramBase::Sample);
+  size_t allocated_bytes =
+      memory_allocator_->GetAllocSize(histogram_data.ranges_ref);
   if (!ranges_data || histogram_data.bucket_count < 2 ||
-      histogram_data.bucket_count + 1 >
-          std::numeric_limits<uint32_t>::max() /
-              sizeof(HistogramBase::Sample) ||
-      allocator->GetAllocSize(histogram_data.ranges_ref) <
-          (histogram_data.bucket_count + 1) * sizeof(HistogramBase::Sample)) {
+      histogram_data.bucket_count >= max_buckets ||
+      allocated_bytes < required_bytes) {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_RANGES_ARRAY);
     NOTREACHED();
     return nullptr;
   }
-  // To avoid racy destruction at shutdown, the following will be leaked.
-  const BucketRanges* ranges = CreateRangesFromData(
-      ranges_data,
-      histogram_data.ranges_checksum,
-      histogram_data.bucket_count + 1);
-  if (!ranges) {
+
+  scoped_ptr<const BucketRanges> created_ranges =
+      CreateRangesFromData(ranges_data, histogram_data.ranges_checksum,
+                           histogram_data.bucket_count + 1);
+  if (!created_ranges) {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_RANGES_ARRAY);
     NOTREACHED();
     return nullptr;
   }
-  ranges = StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges);
+  const BucketRanges* ranges =
+      StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
+          created_ranges.release());
 
   HistogramBase::AtomicCount* counts_data =
-      allocator->GetAsObject<HistogramBase::AtomicCount>(
+      memory_allocator_->GetAsObject<HistogramBase::AtomicCount>(
           histogram_data.counts_ref, kTypeIdCountsArray);
   size_t counts_bytes =
       CalculateRequiredCountsBytes(histogram_data.bucket_count);
   if (!counts_data || !counts_bytes ||
-      allocator->GetAllocSize(histogram_data.counts_ref) < counts_bytes) {
+      memory_allocator_->GetAllocSize(histogram_data.counts_ref) <
+          counts_bytes) {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_COUNTS_ARRAY);
     NOTREACHED();
     return nullptr;
@@ -289,51 +328,34 @@ HistogramBase* CreatePersistentHistogram(
       counts_data + histogram_data.bucket_count;
 
   std::string name(histogram_data_ptr->name);
-  HistogramBase* histogram = nullptr;
+  scoped_ptr<HistogramBase> histogram;
   switch (histogram_data.histogram_type) {
     case HISTOGRAM:
-      histogram = Histogram::PersistentGet(
-          name,
-          histogram_data.minimum,
-          histogram_data.maximum,
-          ranges,
-          counts_data,
-          logged_data,
-          histogram_data.bucket_count,
+      histogram = Histogram::PersistentCreate(
+          name, histogram_data.minimum, histogram_data.maximum, ranges,
+          counts_data, logged_data, histogram_data.bucket_count,
           &histogram_data_ptr->samples_metadata,
           &histogram_data_ptr->logged_metadata);
       DCHECK(histogram);
       break;
     case LINEAR_HISTOGRAM:
-      histogram = LinearHistogram::PersistentGet(
-          name,
-          histogram_data.minimum,
-          histogram_data.maximum,
-          ranges,
-          counts_data,
-          logged_data,
-          histogram_data.bucket_count,
+      histogram = LinearHistogram::PersistentCreate(
+          name, histogram_data.minimum, histogram_data.maximum, ranges,
+          counts_data, logged_data, histogram_data.bucket_count,
           &histogram_data_ptr->samples_metadata,
           &histogram_data_ptr->logged_metadata);
       DCHECK(histogram);
       break;
     case BOOLEAN_HISTOGRAM:
-      histogram = BooleanHistogram::PersistentGet(
-          name,
-          ranges,
-          counts_data,
-          logged_data,
+      histogram = BooleanHistogram::PersistentCreate(
+          name, ranges, counts_data, logged_data,
           &histogram_data_ptr->samples_metadata,
           &histogram_data_ptr->logged_metadata);
       DCHECK(histogram);
       break;
     case CUSTOM_HISTOGRAM:
-      histogram = CustomHistogram::PersistentGet(
-          name,
-          ranges,
-          counts_data,
-          logged_data,
-          histogram_data.bucket_count,
+      histogram = CustomHistogram::PersistentCreate(
+          name, ranges, counts_data, logged_data, histogram_data.bucket_count,
           &histogram_data_ptr->samples_metadata,
           &histogram_data_ptr->logged_metadata);
       DCHECK(histogram);
@@ -353,68 +375,67 @@ HistogramBase* CreatePersistentHistogram(
   return histogram;
 }
 
-HistogramBase* GetPersistentHistogram(
-    PersistentMemoryAllocator* allocator,
-    int32_t ref) {
-  // Unfortunately, the above "pickle" methods cannot be used as part of the
-  // persistance because the deserialization methods always create local
-  // count data (these must referenced the persistent counts) and always add
-  // it to the local list of known histograms (these may be simple references
-  // to histograms in other processes).
+scoped_ptr<HistogramBase> PersistentHistogramAllocator::GetHistogram(
+    Reference ref) {
+  // Unfortunately, the histogram "pickle" methods cannot be used as part of
+  // the persistance because the deserialization methods always create local
+  // count data (while these must reference the persistent counts) and always
+  // add it to the local list of known histograms (while these may be simple
+  // references to histograms in other processes).
   PersistentHistogramData* histogram_data =
-      allocator->GetAsObject<PersistentHistogramData>(ref, kTypeIdHistogram);
-  size_t length = allocator->GetAllocSize(ref);
+      memory_allocator_->GetAsObject<PersistentHistogramData>(
+          ref, kTypeIdHistogram);
+  size_t length = memory_allocator_->GetAllocSize(ref);
   if (!histogram_data ||
       reinterpret_cast<char*>(histogram_data)[length - 1] != '\0') {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_METADATA);
     NOTREACHED();
     return nullptr;
   }
-  return CreatePersistentHistogram(allocator, histogram_data);
+  return CreateHistogram(histogram_data);
 }
 
-HistogramBase* GetNextPersistentHistogram(
-    PersistentMemoryAllocator* allocator,
-    PersistentMemoryAllocator::Iterator* iter) {
+scoped_ptr<HistogramBase>
+PersistentHistogramAllocator::GetNextHistogramWithIgnore(Iterator* iter,
+                                                         Reference ignore) {
   PersistentMemoryAllocator::Reference ref;
   uint32_t type_id;
-  while ((ref = allocator->GetNextIterable(iter, &type_id)) != 0) {
+  while ((ref = memory_allocator_->GetNextIterable(&iter->memory_iter,
+                                                   &type_id)) != 0) {
+    if (ref == ignore)
+      continue;
     if (type_id == kTypeIdHistogram)
-      return GetPersistentHistogram(allocator, ref);
+      return GetHistogram(ref);
   }
   return nullptr;
 }
 
-void FinalizePersistentHistogram(PersistentMemoryAllocator::Reference ref,
-                                 bool registered) {
+void PersistentHistogramAllocator::FinalizeHistogram(Reference ref,
+                                                     bool registered) {
   // If the created persistent histogram was registered then it needs to
   // be marked as "iterable" in order to be found by other processes.
   if (registered)
-    GetPersistentHistogramMemoryAllocator()->MakeIterable(ref);
+    memory_allocator_->MakeIterable(ref);
   // If it wasn't registered then a race condition must have caused
   // two to be created. The allocator does not support releasing the
   // acquired memory so just change the type to be empty.
   else
-    GetPersistentHistogramMemoryAllocator()->SetType(ref, 0);
+    memory_allocator_->SetType(ref, 0);
 }
 
-HistogramBase* AllocatePersistentHistogram(
-    PersistentMemoryAllocator* allocator,
+scoped_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
     HistogramType histogram_type,
     const std::string& name,
     int minimum,
     int maximum,
     const BucketRanges* bucket_ranges,
     int32_t flags,
-    PersistentMemoryAllocator::Reference* ref_ptr) {
-  if (!allocator)
-    return nullptr;
-
+    Reference* ref_ptr) {
   // If the allocator is corrupt, don't waste time trying anything else.
   // This also allows differentiating on the dashboard between allocations
   // failed due to a corrupt allocator and the number of process instances
   // with one, the latter being idicated by "newly corrupt", below.
-  if (allocator->IsCorrupt()) {
+  if (memory_allocator_->IsCorrupt()) {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_ALLOCATOR_CORRUPT);
     return nullptr;
   }
@@ -430,23 +451,24 @@ HistogramBase* AllocatePersistentHistogram(
 
   size_t ranges_bytes = (bucket_count + 1) * sizeof(HistogramBase::Sample);
   PersistentMemoryAllocator::Reference ranges_ref =
-      allocator->Allocate(ranges_bytes, kTypeIdRangesArray);
+      memory_allocator_->Allocate(ranges_bytes, kTypeIdRangesArray);
   PersistentMemoryAllocator::Reference counts_ref =
-      allocator->Allocate(counts_bytes, kTypeIdCountsArray);
+      memory_allocator_->Allocate(counts_bytes, kTypeIdCountsArray);
   PersistentMemoryAllocator::Reference histogram_ref =
-      allocator->Allocate(offsetof(PersistentHistogramData, name) +
-                          name.length() + 1, kTypeIdHistogram);
+      memory_allocator_->Allocate(
+          offsetof(PersistentHistogramData, name) + name.length() + 1,
+          kTypeIdHistogram);
   HistogramBase::Sample* ranges_data =
-      allocator->GetAsObject<HistogramBase::Sample>(ranges_ref,
-                                                    kTypeIdRangesArray);
+      memory_allocator_->GetAsObject<HistogramBase::Sample>(ranges_ref,
+                                                            kTypeIdRangesArray);
   PersistentHistogramData* histogram_data =
-      allocator->GetAsObject<PersistentHistogramData>(histogram_ref,
-                                                      kTypeIdHistogram);
+      memory_allocator_->GetAsObject<PersistentHistogramData>(histogram_ref,
+                                                              kTypeIdHistogram);
 
-  // Only continue here if all allocations were successful. If they weren't
+  // Only continue here if all allocations were successful. If they weren't,
   // there is no way to free the space but that's not really a problem since
-  // the allocations only fail because the space is full and so any future
-  // attempts will also fail.
+  // the allocations only fail because the space is full or corrupt and so
+  // any future attempts will also fail.
   if (counts_ref && ranges_data && histogram_data) {
     strcpy(histogram_data->name, name.c_str());
     for (size_t i = 0; i < bucket_ranges->size(); ++i)
@@ -466,19 +488,23 @@ HistogramBase* AllocatePersistentHistogram(
     // using what is already known above but avoids duplicating the switch
     // statement here and serves as a double-check that everything is
     // correct before commiting the new histogram to persistent space.
-    HistogramBase* histogram =
-        CreatePersistentHistogram(allocator, histogram_data);
+    scoped_ptr<HistogramBase> histogram = CreateHistogram(histogram_data);
     DCHECK(histogram);
     if (ref_ptr != nullptr)
       *ref_ptr = histogram_ref;
+
+    // By storing the reference within the allocator to this histogram, the
+    // next import (which will happen before the next histogram creation)
+    // will know to skip it. See also the comment in ImportGlobalHistograms().
+    subtle::NoBarrier_Store(&last_created_, histogram_ref);
     return histogram;
   }
 
   CreateHistogramResultType result;
-  if (allocator->IsCorrupt()) {
+  if (memory_allocator_->IsCorrupt()) {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_ALLOCATOR_NEWLY_CORRUPT);
     result = CREATE_HISTOGRAM_ALLOCATOR_CORRUPT;
-  } else if (allocator->IsFull()) {
+  } else if (memory_allocator_->IsFull()) {
     result = CREATE_HISTOGRAM_ALLOCATOR_FULL;
   } else {
     result = CREATE_HISTOGRAM_ALLOCATOR_ERROR;
@@ -489,26 +515,38 @@ HistogramBase* AllocatePersistentHistogram(
   return nullptr;
 }
 
-void ImportPersistentHistograms() {
+// static
+void PersistentHistogramAllocator::ImportGlobalHistograms() {
   // The lock protects against concurrent access to the iterator and is created
   // in a thread-safe manner when needed.
   static base::LazyInstance<base::Lock>::Leaky lock = LAZY_INSTANCE_INITIALIZER;
 
   if (g_allocator) {
+    // TODO(bcwhite): Investigate a lock-free, thread-safe iterator.
     base::AutoLock auto_lock(lock.Get());
 
-    // Each call resumes from where it last left off so need persistant
-    // iterator. This class has a constructor so even the definition has
-    // to be protected by the lock in order to be thread-safe.
-    static PersistentMemoryAllocator::Iterator iter;
+    // Each call resumes from where it last left off so a persistant iterator
+    // is needed. This class has a constructor so even the definition has to
+    // be protected by the lock in order to be thread-safe.
+    static Iterator iter;
     if (iter.is_clear())
       g_allocator->CreateIterator(&iter);
 
+    // Skip the import if it's the histogram that was last created. Should a
+    // race condition cause the "last created" to be overwritten before it
+    // is recognized here then the histogram will be created and be ignored
+    // when it is detected as a duplicate by the statistics-recorder. This
+    // simple check reduces the time of creating persistent histograms by
+    // about 40%.
+    Reference last_created =
+        subtle::NoBarrier_Load(&g_allocator->last_created_);
+
     while (true) {
-      HistogramBase* histogram = GetNextPersistentHistogram(g_allocator, &iter);
+      scoped_ptr<HistogramBase> histogram =
+          g_allocator->GetNextHistogramWithIgnore(&iter, last_created);
       if (!histogram)
         break;
-      StatisticsRecorder::RegisterOrDeleteDuplicate(histogram);
+      StatisticsRecorder::RegisterOrDeleteDuplicate(histogram.release());
     }
   }
 }

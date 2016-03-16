@@ -104,6 +104,8 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   typedef std::vector<Count> Counts;
 
+  ~Histogram() override;
+
   //----------------------------------------------------------------------------
   // For a valid histogram, input should follow these restrictions:
   // minimum > 0 (if a minimum below 1 is specified, it will implicitly be
@@ -139,16 +141,17 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                        uint32_t bucket_count,
                                        int32_t flags);
 
-  // Get a histogram using data in persistent storage.
-  static HistogramBase* PersistentGet(const std::string& name,
-                                      Sample minimum,
-                                      Sample maximum,
-                                      const BucketRanges* ranges,
-                                      HistogramBase::AtomicCount* counts,
-                                      HistogramBase::AtomicCount* logged_counts,
-                                      uint32_t counts_size,
-                                      HistogramSamples::Metadata* meta,
-                                      HistogramSamples::Metadata* logged_meta);
+  // Create a histogram using data in persistent storage.
+  static scoped_ptr<HistogramBase> PersistentCreate(
+      const std::string& name,
+      Sample minimum,
+      Sample maximum,
+      const BucketRanges* ranges,
+      HistogramBase::AtomicCount* counts,
+      HistogramBase::AtomicCount* logged_counts,
+      uint32_t counts_size,
+      HistogramSamples::Metadata* meta,
+      HistogramSamples::Metadata* logged_meta);
 
   static void InitializeBucketRanges(Sample minimum,
                                      Sample maximum,
@@ -236,8 +239,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
             uint32_t counts_size,
             HistogramSamples::Metadata* meta,
             HistogramSamples::Metadata* logged_meta);
-
-  ~Histogram() override;
 
   // HistogramBase implementation:
   bool SerializeInfoImpl(base::Pickle* pickle) const override;
@@ -350,16 +351,17 @@ class BASE_EXPORT LinearHistogram : public Histogram {
                                        uint32_t bucket_count,
                                        int32_t flags);
 
-  // Get a histogram using data in persistent storage.
-  static HistogramBase* PersistentGet(const std::string& name,
-                                      Sample minimum,
-                                      Sample maximum,
-                                      const BucketRanges* ranges,
-                                      HistogramBase::AtomicCount* counts,
-                                      HistogramBase::AtomicCount* logged_counts,
-                                      uint32_t counts_size,
-                                      HistogramSamples::Metadata* meta,
-                                      HistogramSamples::Metadata* logged_meta);
+  // Create a histogram using data in persistent storage.
+  static scoped_ptr<HistogramBase> PersistentCreate(
+      const std::string& name,
+      Sample minimum,
+      Sample maximum,
+      const BucketRanges* ranges,
+      HistogramBase::AtomicCount* counts,
+      HistogramBase::AtomicCount* logged_counts,
+      uint32_t counts_size,
+      HistogramSamples::Metadata* meta,
+      HistogramSamples::Metadata* logged_meta);
 
   struct DescriptionPair {
     Sample sample;
@@ -440,13 +442,14 @@ class BASE_EXPORT BooleanHistogram : public LinearHistogram {
   // call sites.
   static HistogramBase* FactoryGet(const char* name, int32_t flags);
 
-  // Get a histogram using data in persistent storage.
-  static HistogramBase* PersistentGet(const std::string& name,
-                                      const BucketRanges* ranges,
-                                      HistogramBase::AtomicCount* counts,
-                                      HistogramBase::AtomicCount* logged_counts,
-                                      HistogramSamples::Metadata* meta,
-                                      HistogramSamples::Metadata* logged_meta);
+  // Create a histogram using data in persistent storage.
+  static scoped_ptr<HistogramBase> PersistentCreate(
+      const std::string& name,
+      const BucketRanges* ranges,
+      HistogramBase::AtomicCount* counts,
+      HistogramBase::AtomicCount* logged_counts,
+      HistogramSamples::Metadata* meta,
+      HistogramSamples::Metadata* logged_meta);
 
   HistogramType GetHistogramType() const override;
 
@@ -489,14 +492,15 @@ class BASE_EXPORT CustomHistogram : public Histogram {
                                    const std::vector<Sample>& custom_ranges,
                                    int32_t flags);
 
-  // Get a histogram using data in persistent storage.
-  static HistogramBase* PersistentGet(const std::string& name,
-                                      const BucketRanges* ranges,
-                                      HistogramBase::AtomicCount* counts,
-                                      HistogramBase::AtomicCount* logged_counts,
-                                      uint32_t counts_size,
-                                      HistogramSamples::Metadata* meta,
-                                      HistogramSamples::Metadata* logged_meta);
+  // Create a histogram using data in persistent storage.
+  static scoped_ptr<HistogramBase> PersistentCreate(
+      const std::string& name,
+      const BucketRanges* ranges,
+      HistogramBase::AtomicCount* counts,
+      HistogramBase::AtomicCount* logged_counts,
+      uint32_t counts_size,
+      HistogramSamples::Metadata* meta,
+      HistogramSamples::Metadata* logged_meta);
 
   // Overridden from Histogram:
   HistogramType GetHistogramType() const override;

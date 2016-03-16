@@ -9,8 +9,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_flattener.h"
-#include "base/metrics/histogram_persistence.h"
 #include "base/metrics/histogram_snapshot_manager.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/test_simple_task_runner.h"
@@ -103,10 +103,10 @@ TEST_F(FileMetricsProviderTest, AccessMetrics) {
 
   {
     // Get this first so it isn't created inside the persistent allocator.
-    base::GetCreateHistogramResultHistogram();
+    base::PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
 
-    base::SetPersistentHistogramMemoryAllocator(
-        new base::LocalPersistentMemoryAllocator(64 << 10, 0, kMetricsName));
+    base::PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+        64 << 10, 0, kMetricsName);
     base::HistogramBase* foo =
         base::Histogram::FactoryGet("foo", 1, 100, 10, 0);
     base::HistogramBase* bar =
@@ -114,8 +114,10 @@ TEST_F(FileMetricsProviderTest, AccessMetrics) {
     foo->Add(42);
     bar->Add(84);
 
-    scoped_ptr<base::PersistentMemoryAllocator> allocator(
-        base::ReleasePersistentHistogramMemoryAllocatorForTesting());
+    scoped_ptr<base::PersistentHistogramAllocator> histogram_allocator =
+        base::PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
+    base::PersistentMemoryAllocator* allocator =
+        histogram_allocator->memory_allocator();
     base::File writer(metrics_file(),
                       base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     ASSERT_TRUE(writer.IsValid());
