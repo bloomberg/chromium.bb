@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -325,11 +324,10 @@ void AppListViewDelegate::SetUpProfileSwitcher() {
   if (!profile_)
     return;
 
+#if defined(USE_ASH)
   // Don't populate the app list users if we are on the ash desktop.
-  chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
-      controller_->GetAppListWindow());
-  if (desktop == chrome::HOST_DESKTOP_TYPE_ASH)
-    return;
+  return;
+#endif  // USE_ASH
 
   // Populate the app list users.
   PopulateUsers(profile_->GetPath(), &users_);
