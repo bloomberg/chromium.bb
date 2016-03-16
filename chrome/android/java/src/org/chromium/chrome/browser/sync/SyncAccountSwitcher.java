@@ -65,7 +65,16 @@ public class SyncAccountSwitcher
     @Override
     public void onConfirm() {
         assert mNewAccountName != null;
-        SigninManager.get(mActivity).signIn(mNewAccountName, mActivity, this);
+
+        final SigninManager.SignInCallback callback = this;
+
+        // Sign out first to get sync working correctly.
+        SigninManager.get(mActivity).signOut(new Runnable() {
+            @Override
+            public void run() {
+                SigninManager.get(mActivity).signIn(mNewAccountName, mActivity, callback);
+            }
+        });
     }
 
     @Override
