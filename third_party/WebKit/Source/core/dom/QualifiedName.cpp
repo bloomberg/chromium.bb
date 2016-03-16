@@ -70,14 +70,14 @@ struct QNameComponentsTranslator {
 QualifiedName::QualifiedName(const AtomicString& p, const AtomicString& l, const AtomicString& n)
 {
     QualifiedNameData data = { { p.impl(), l.impl(), n.isEmpty() ? nullAtom.impl() : n.impl() }, false };
-    QualifiedNameCache::AddResult addResult = qualifiedNameCache().add<QNameComponentsTranslator>(data);
+    QualifiedNameCache::AddResult addResult = qualifiedNameCache().addWithTranslator<QNameComponentsTranslator>(data);
     m_impl = addResult.isNewEntry ? adoptRef(*addResult.storedValue) : *addResult.storedValue;
 }
 
 QualifiedName::QualifiedName(const AtomicString& p, const AtomicString& l, const AtomicString& n, bool isStatic)
 {
     QualifiedNameData data = { { p.impl(), l.impl(), n.impl() }, isStatic };
-    QualifiedNameCache::AddResult addResult = qualifiedNameCache().add<QNameComponentsTranslator>(data);
+    QualifiedNameCache::AddResult addResult = qualifiedNameCache().addWithTranslator<QNameComponentsTranslator>(data);
     m_impl = addResult.isNewEntry ? adoptRef(*addResult.storedValue) : *addResult.storedValue;
 }
 

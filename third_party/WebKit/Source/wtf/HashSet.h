@@ -93,7 +93,8 @@ public:
 
     // The return value is a pair of an iterator to the new value's location,
     // and a bool that is true if an new entry was added.
-    AddResult add(ValuePassInType);
+    template <typename IncomingValueType>
+    AddResult add(IncomingValueType&&);
 
     // An alternate version of add() that finds the object by hashing and
     // comparing with some other type, to avoid the cost of type conversion if
@@ -101,8 +102,8 @@ public:
     // following function members:
     //   static unsigned hash(const T&);
     //   static bool equal(const ValueType&, const T&);
-    //   static translate(ValueType&, const T&, unsigned hashCode);
-    template <typename HashTranslator, typename T> AddResult add(const T&);
+    //   static translate(ValueType&, T&&, unsigned hashCode);
+    template <typename HashTranslator, typename T> AddResult addWithTranslator(T&&);
 
     void remove(ValuePeekInType);
     void remove(iterator);
@@ -132,9 +133,9 @@ struct HashSetTranslatorAdapter {
     STATIC_ONLY(HashSetTranslatorAdapter);
     template <typename T> static unsigned hash(const T& key) { return Translator::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return Translator::equal(a, b); }
-    template <typename T, typename U> static void translate(T& location, const U& key, const U&, unsigned hashCode)
+    template <typename T, typename U, typename V> static void translate(T& location, U&& key, const V&, unsigned hashCode)
     {
-        Translator::translate(location, key, hashCode);
+        Translator::translate(location, std::forward<U>(key), hashCode);
     }
 };
 
@@ -196,17 +197,19 @@ inline bool HashSet<Value, HashFunctions, Traits, Allocator>::contains(const T& 
 }
 
 template <typename T, typename U, typename V, typename W>
-inline typename HashSet<T, U, V, W>::AddResult HashSet<T, U, V, W>::add(ValuePassInType value)
+template <typename IncomingValueType>
+inline typename HashSet<T, U, V, W>::AddResult HashSet<T, U, V, W>::add(IncomingValueType&& value)
 {
-    return m_impl.add(value);
+    return m_impl.add(std::forward<IncomingValueType>(value));
 }
 
 template <typename Value, typename HashFunctions, typename Traits, typename Allocator>
 template <typename HashTranslator, typename T>
 inline typename HashSet<Value, HashFunctions, Traits, Allocator>::AddResult
-HashSet<Value, HashFunctions, Traits, Allocator>::add(const T& value)
+HashSet<Value, HashFunctions, Traits, Allocator>::addWithTranslator(T&& value)
 {
-    return m_impl.template addPassingHashCode<HashSetTranslatorAdapter<HashTranslator>>(value, value);
+    // Forward only the first argument, because the second argument isn't actually used in HashSetTranslatorAdapter.
+    return m_impl.template addPassingHashCode<HashSetTranslatorAdapter<HashTranslator>>(std::forward<T>(value), value);
 }
 
 template <typename T, typename U, typename V, typename W>

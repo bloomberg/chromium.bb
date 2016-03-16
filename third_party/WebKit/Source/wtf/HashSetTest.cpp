@@ -266,6 +266,129 @@ TEST(HashSetTest, MoveShouldNotMakeCopy)
     EXPECT_EQ(0, counter);
 }
 
+class MoveOnly {
+public:
+    // kEmpty and kDeleted have special meanings when MoveOnly is used as the key of a hash table.
+    enum {
+        kEmpty = 0,
+        kDeleted = -1,
+        kMovedOut = -2
+    };
+
+    explicit MoveOnly(int value = kEmpty, int id = 0) : m_value(value), m_id(id) { }
+    MoveOnly(MoveOnly&& other)
+        : m_value(other.m_value)
+        , m_id(other.m_id)
+    {
+        other.m_value = kMovedOut;
+        other.m_id = 0;
+    }
+    MoveOnly& operator=(MoveOnly&& other)
+    {
+        m_value = other.m_value;
+        m_id = other.m_id;
+        other.m_value = kMovedOut;
+        other.m_id = 0;
+        return *this;
+    }
+
+    int value() const { return m_value; }
+    // id() is used for distinguishing MoveOnlys with the same value().
+    int id() const { return m_id; }
+
+private:
+    MoveOnly(const MoveOnly&) = delete;
+    MoveOnly& operator=(const MoveOnly&) = delete;
+
+    int m_value;
+    int m_id;
+};
+
+struct MoveOnlyHashTraits : public GenericHashTraits<MoveOnly> {
+    // This is actually true, but we pretend that it's false to disable the optimization.
+    static const bool emptyValueIsZero = false;
+
+    static const bool hasIsEmptyValueFunction = true;
+    static bool isEmptyValue(const MoveOnly& value) { return value.value() == MoveOnly::kEmpty; }
+    static void constructDeletedValue(MoveOnly& slot, bool) { slot = MoveOnly(MoveOnly::kDeleted); }
+    static bool isDeletedValue(const MoveOnly& value) { return value.value() == MoveOnly::kDeleted; }
+};
+
+struct MoveOnlyHash {
+    static unsigned hash(const MoveOnly& value) { return DefaultHash<int>::Hash::hash(value.value()); }
+    static bool equal(const MoveOnly& left, const MoveOnly& right)
+    {
+        return DefaultHash<int>::Hash::equal(left.value(), right.value());
+    }
+    static const bool safeToCompareToEmptyOrDeleted = true;
+};
+
+} // anonymous namespace
+
+template <>
+struct HashTraits<MoveOnly> : public MoveOnlyHashTraits { };
+
+template <>
+struct DefaultHash<MoveOnly> {
+    using Hash = MoveOnlyHash;
+};
+
+namespace {
+
+TEST(HashSetTest, MoveOnlyValue)
+{
+    using TheSet = HashSet<MoveOnly>;
+    TheSet set;
+    {
+        TheSet::AddResult addResult = set.add(MoveOnly(1, 1));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(1, addResult.storedValue->value());
+        EXPECT_EQ(1, addResult.storedValue->id());
+    }
+    auto iter = set.find(MoveOnly(1));
+    ASSERT_TRUE(iter != set.end());
+    EXPECT_EQ(1, iter->value());
+
+    iter = set.find(MoveOnly(2));
+    EXPECT_TRUE(iter == set.end());
+
+    for (int i = 2; i < 32; ++i) {
+        TheSet::AddResult addResult = set.add(MoveOnly(i, i));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(i, addResult.storedValue->value());
+        EXPECT_EQ(i, addResult.storedValue->id());
+    }
+
+    iter = set.find(MoveOnly(1));
+    ASSERT_TRUE(iter != set.end());
+    EXPECT_EQ(1, iter->value());
+    EXPECT_EQ(1, iter->id());
+
+    iter = set.find(MoveOnly(7));
+    ASSERT_TRUE(iter != set.end());
+    EXPECT_EQ(7, iter->value());
+    EXPECT_EQ(7, iter->id());
+
+    {
+        TheSet::AddResult addResult = set.add(MoveOnly(7, 777)); // With different ID for identification.
+        EXPECT_FALSE(addResult.isNewEntry);
+        EXPECT_EQ(7, addResult.storedValue->value());
+        EXPECT_EQ(7, addResult.storedValue->id());
+    }
+
+    set.remove(MoveOnly(11));
+    iter = set.find(MoveOnly(11));
+    EXPECT_TRUE(iter == set.end());
+
+    MoveOnly thirteen(set.take(MoveOnly(13)));
+    EXPECT_EQ(13, thirteen.value());
+    EXPECT_EQ(13, thirteen.id());
+    iter = set.find(MoveOnly(13));
+    EXPECT_TRUE(iter == set.end());
+
+    set.clear();
+}
+
 } // anonymous namespace
 
 } // namespace WTF

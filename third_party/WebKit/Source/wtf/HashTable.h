@@ -456,16 +456,17 @@ public:
 
     void reserveCapacityForSize(unsigned size);
 
-    AddResult add(ValuePassInType value)
+    template <typename IncomingValueType>
+    AddResult add(IncomingValueType&& value)
     {
-        return add<IdentityTranslatorType>(Extractor::extract(value), value);
+        return add<IdentityTranslatorType>(Extractor::extract(value), std::forward<IncomingValueType>(value));
     }
 
     // A special version of add() that finds the object by hashing and comparing
     // with some other type, to avoid the cost of type conversion if the object
     // is already in the table.
     template <typename HashTranslator, typename T, typename Extra> AddResult add(T&& key, Extra&&);
-    template <typename HashTranslator, typename T, typename Extra> AddResult addPassingHashCode(const T& key, const Extra&);
+    template <typename HashTranslator, typename T, typename Extra> AddResult addPassingHashCode(T&& key, Extra&&);
 
     iterator find(KeyPeekInType key) { return find<IdentityTranslatorType>(key); }
     const_iterator find(KeyPeekInType key) const { return find<IdentityTranslatorType>(key); }
@@ -863,7 +864,7 @@ typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allo
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 template <typename HashTranslator, typename T, typename Extra>
-typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::addPassingHashCode(const T& key, const Extra& extra)
+typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::addPassingHashCode(T&& key, Extra&& extra)
 {
     ASSERT(!m_accessForbidden);
     ASSERT(Allocator::isAllocationAllowed());
@@ -886,7 +887,7 @@ typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allo
         --m_deletedCount;
     }
 
-    HashTranslator::translate(*entry, key, extra, h);
+    HashTranslator::translate(*entry, std::forward<T>(key), std::forward<Extra>(extra), h);
     ASSERT(!isEmptyOrDeletedBucket(*entry));
 
     ++m_keyCount;

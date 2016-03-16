@@ -118,7 +118,7 @@ void AtomicString::reserveTableCapacity(size_t size)
 template<typename T, typename HashTranslator>
 static inline PassRefPtr<StringImpl> addToStringTable(const T& value)
 {
-    HashSet<StringImpl*>::AddResult addResult = atomicStrings().add<HashTranslator>(value);
+    HashSet<StringImpl*>::AddResult addResult = atomicStrings().addWithTranslator<HashTranslator>(value);
 
     // If the string is newly-translated, then we need to adopt it.
     // The boolean in the pair tells us if that is so.

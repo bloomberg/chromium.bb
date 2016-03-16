@@ -93,7 +93,7 @@ void HTTPResponseHeaderValidator::visitHeader(const WebString& name, const WebSt
         if (equalIgnoringCase(headerName, "access-control-expose-headers"))
             parseAccessControlExposeHeadersAllowList(value, m_exposedHeaders);
         else if (!isOnAccessControlResponseHeaderWhitelist(headerName))
-            m_blockedHeaders.add(name);
+            m_blockedHeaders.add(static_cast<String>(name));
     }
 }
 

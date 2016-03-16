@@ -91,6 +91,11 @@ public:
         return CaseFoldingHash::hash(reinterpret_cast<const LChar*>(data), length);
     }
 
+    static inline unsigned hash(const char* data)
+    {
+        return CaseFoldingHash::hash(reinterpret_cast<const LChar*>(data), strlen(data));
+    }
+
     static inline bool equal(const StringImpl* a, const StringImpl* b)
     {
         return equalIgnoringCaseNonNull(a, b);
