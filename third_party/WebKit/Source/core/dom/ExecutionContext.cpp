@@ -28,7 +28,6 @@
 #include "core/dom/ExecutionContext.h"
 
 #include "bindings/core/v8/ScriptCallStack.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"

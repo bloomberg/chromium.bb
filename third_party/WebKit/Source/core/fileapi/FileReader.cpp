@@ -196,11 +196,13 @@ private:
 
 FileReader* FileReader::create(ExecutionContext* context)
 {
-    return new FileReader(context);
+    FileReader* fileReader = new FileReader(context);
+    fileReader->suspendIfNeeded();
+    return fileReader;
 }
 
 FileReader::FileReader(ExecutionContext* context)
-    : ContextLifecycleObserver(context)
+    : ActiveDOMObject(context)
     , m_state(EMPTY)
     , m_loadingState(LoadingStateNone)
     , m_readType(FileReaderLoader::ReadAsBinaryString)
@@ -219,7 +221,7 @@ const AtomicString& FileReader::interfaceName() const
     return EventTargetNames::FileReader;
 }
 
-void FileReader::contextDestroyed()
+void FileReader::stop()
 {
     // The delayed abort task tidies up and advances to the DONE state.
     if (m_loadingState == LoadingStateAborted)
@@ -469,7 +471,7 @@ DEFINE_TRACE(FileReader)
 {
     visitor->trace(m_error);
     RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>::trace(visitor);
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

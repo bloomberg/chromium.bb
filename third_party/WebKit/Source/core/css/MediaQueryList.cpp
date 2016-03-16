@@ -29,11 +29,13 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<MediaQueryList> MediaQueryList::create(ExecutionContext* context, PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
 {
-    return adoptRefWillBeNoop(new MediaQueryList(context, matcher, media));
+    RefPtrWillBeRawPtr<MediaQueryList> list = adoptRefWillBeNoop(new MediaQueryList(context, matcher, media));
+    list->suspendIfNeeded();
+    return list.release();
 }
 
 MediaQueryList::MediaQueryList(ExecutionContext* context, PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
-    : ContextLifecycleObserver(context)
+    : ActiveDOMObject(context)
     , m_matcher(matcher)
     , m_media(media)
     , m_matchesDirty(true)
@@ -93,7 +95,7 @@ bool MediaQueryList::hasPendingActivity() const
     return m_listeners.size() || hasEventListeners(EventTypeNames::change);
 }
 
-void MediaQueryList::contextDestroyed()
+void MediaQueryList::stop()
 {
     // m_listeners.clear() can drop the last ref to this MediaQueryList.
     RefPtrWillBeRawPtr<MediaQueryList> protect(this);
@@ -136,7 +138,7 @@ DEFINE_TRACE(MediaQueryList)
     visitor->trace(m_listeners);
 #endif
     EventTargetWithInlineData::trace(visitor);
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 const AtomicString& MediaQueryList::interfaceName() const
@@ -146,7 +148,7 @@ const AtomicString& MediaQueryList::interfaceName() const
 
 ExecutionContext* MediaQueryList::getExecutionContext() const
 {
-    return ContextLifecycleObserver::getExecutionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 } // namespace blink

@@ -55,7 +55,7 @@ bool UnderlyingSourceBase::hasPendingActivity() const
     return m_controller && m_controller->isActive();
 }
 
-void UnderlyingSourceBase::contextDestroyed()
+void UnderlyingSourceBase::stop()
 {
     m_controller->noteHasBeenCanceled();
     m_controller.clear();
@@ -63,8 +63,8 @@ void UnderlyingSourceBase::contextDestroyed()
 
 DEFINE_TRACE(UnderlyingSourceBase)
 {
+    ActiveDOMObject::trace(visitor);
     visitor->trace(m_controller);
-    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

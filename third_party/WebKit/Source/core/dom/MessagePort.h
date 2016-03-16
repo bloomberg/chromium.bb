@@ -28,7 +28,7 @@
 #define MessagePort_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "public/platform/WebMessagePortChannel.h"
@@ -57,7 +57,7 @@ typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MessagePort>
-    , public ContextLifecycleObserver
+    , public ActiveDOMObject
     , public WebMessagePortChannelClient {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MessagePort);
@@ -86,11 +86,12 @@ public:
     bool started() const { return m_started; }
 
     const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
     MessagePort* toMessagePort() override { return this; }
 
+    // ActiveDOMObject implementation.
     bool hasPendingActivity() const override;
-    void contextDestroyed() override { close(); }
+    void stop() override { close(); }
 
     void setOnmessage(PassRefPtrWillBeRawPtr<EventListener> listener)
     {

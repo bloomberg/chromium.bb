@@ -66,15 +66,18 @@ Animation* Animation::create(AnimationEffect* effect, AnimationTimeline* timelin
     }
 
     Animation* animation = new Animation(timeline->document()->contextDocument().get(), *timeline, effect);
+    animation->suspendIfNeeded();
+
     if (timeline) {
         timeline->animationAttached(*animation);
         animation->attachCompositorTimeline();
     }
+
     return animation;
 }
 
 Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationEffect* content)
-    : ContextLifecycleObserver(executionContext)
+    : ActiveDOMObject(executionContext)
     , m_playState(Idle)
     , m_playbackRate(1)
     , m_startTime(nullValue())
@@ -637,7 +640,7 @@ const AtomicString& Animation::interfaceName() const
 
 ExecutionContext* Animation::getExecutionContext() const
 {
-    return ContextLifecycleObserver::getExecutionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 bool Animation::hasPendingActivity() const
@@ -645,7 +648,7 @@ bool Animation::hasPendingActivity() const
     return m_pendingFinishedEvent || (!m_finished && hasEventListeners(EventTypeNames::finish));
 }
 
-void Animation::contextDestroyed()
+void Animation::stop()
 {
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
@@ -1081,7 +1084,7 @@ DEFINE_TRACE(Animation)
     visitor->trace(m_finishedPromise);
     visitor->trace(m_readyPromise);
     RefCountedGarbageCollectedEventTargetWithInlineData<Animation>::trace(visitor);
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

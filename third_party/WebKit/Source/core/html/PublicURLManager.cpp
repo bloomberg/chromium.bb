@@ -36,17 +36,20 @@ namespace blink {
 
 PassOwnPtrWillBeRawPtr<PublicURLManager> PublicURLManager::create(ExecutionContext* context)
 {
-    return adoptPtrWillBeNoop(new PublicURLManager(context));
+    OwnPtrWillBeRawPtr<PublicURLManager> publicURLManager = adoptPtrWillBeNoop(new PublicURLManager(context));
+    publicURLManager->suspendIfNeeded();
+    return publicURLManager.release();
 }
 
 PublicURLManager::PublicURLManager(ExecutionContext* context)
-    : ContextLifecycleObserver(context)
+    : ActiveDOMObject(context)
+    , m_isStopped(false)
 {
 }
 
 void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLRegistrable* registrable, const String& uuid)
 {
-    if (!getExecutionContext())
+    if (m_isStopped)
         return;
 
     RegistryURLMap::ValueType* found = m_registryToURL.add(&registrable->registry(), URLMap()).storedValue;
@@ -86,11 +89,12 @@ void PublicURLManager::revoke(const String& uuid)
     }
 }
 
-void PublicURLManager::contextDestroyed()
+void PublicURLManager::stop()
 {
-    if (!getExecutionContext())
+    if (m_isStopped)
         return;
 
+    m_isStopped = true;
     for (auto& registryUrl : m_registryToURL) {
         for (auto& url : registryUrl.value)
             registryUrl.key->unregisterURL(KURL(ParsedURLString, url.key));
@@ -101,7 +105,7 @@ void PublicURLManager::contextDestroyed()
 
 DEFINE_TRACE(PublicURLManager)
 {
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

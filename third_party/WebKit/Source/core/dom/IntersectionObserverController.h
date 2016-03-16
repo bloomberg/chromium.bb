@@ -5,7 +5,6 @@
 #ifndef IntersectionObserverController_h
 #define IntersectionObserverController_h
 
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/Element.h"
 #include "core/dom/IntersectionObserver.h"
 #include "platform/Timer.h"

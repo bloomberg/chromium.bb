@@ -10,7 +10,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 
@@ -18,7 +18,7 @@ namespace blink {
 
 class ReadableStreamController;
 
-class CORE_EXPORT UnderlyingSourceBase : public GarbageCollectedFinalized<UnderlyingSourceBase>, public ScriptWrappable, public ContextLifecycleObserver {
+class CORE_EXPORT UnderlyingSourceBase : public GarbageCollectedFinalized<UnderlyingSourceBase>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
@@ -34,13 +34,15 @@ public:
     ScriptPromise cancelWrapper(ScriptState*, ScriptValue reason);
     virtual ScriptPromise cancel(ScriptState*, ScriptValue reason);
 
+    // ActiveDOMObject
     bool hasPendingActivity() const override;
-    void contextDestroyed() override;
+    void stop() override;
 
 protected:
     explicit UnderlyingSourceBase(ScriptState* scriptState)
-        : ContextLifecycleObserver(scriptState->getExecutionContext())
+        : ActiveDOMObject(scriptState->getExecutionContext())
     {
+        this->suspendIfNeeded();
     }
 
     ReadableStreamController* controller() const { return m_controller; }
