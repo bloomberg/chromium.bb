@@ -301,13 +301,9 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
     instanceTemplate->SetAccessCheckCallback({{cpp_class}}V8Internal::securityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
 
-    {%- if has_array_iterator %}{{newline}}
+    {%- if has_array_iterator and not is_global %}{{newline}}
     // Array iterator
-    {% if is_global %}
-    instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
-    {% else %}
     prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
-    {% endif %}
     {% endif %}
 
     {%- set runtime_enabled_features = dict() %}
