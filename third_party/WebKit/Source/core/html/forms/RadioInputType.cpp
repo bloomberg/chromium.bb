@@ -27,6 +27,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/SpatialNavigation.h"
 #include "platform/text/PlatformLocale.h"
@@ -36,9 +37,9 @@ namespace blink {
 
 namespace {
 
-HTMLElement* nextElement(const HTMLElement& element, HTMLFormElement* stayWithin, bool forward)
+HTMLInputElement* nextInputElement(const HTMLInputElement& element, const HTMLFormElement* stayWithin, bool forward)
 {
-    return forward ? Traversal<HTMLElement>::next(element, (Node* )stayWithin) : Traversal<HTMLElement>::previous(element, (Node* )stayWithin);
+    return forward ? Traversal<HTMLInputElement>::next(element, stayWithin) : Traversal<HTMLInputElement>::previous(element, stayWithin);
 }
 
 } // namespace
@@ -72,12 +73,8 @@ void RadioInputType::handleClickEvent(MouseEvent* event)
 
 HTMLInputElement* RadioInputType::findNextFocusableRadioButtonInGroup(HTMLInputElement* currentElement, bool forward)
 {
-    HTMLElement* htmlElement;
-    for (htmlElement = nextElement(*currentElement, element().form(), forward); htmlElement; htmlElement = nextElement(*htmlElement, element().form(), forward)) {
-        if (!isHTMLInputElement(*htmlElement))
-            continue;
-        HTMLInputElement* inputElement = toHTMLInputElement(htmlElement);
-        if (element().form() == inputElement->form() && inputElement->type() == InputTypeNames::radio && inputElement->name() == element().name() && inputElement->isFocusable())
+    for (HTMLInputElement* inputElement = nextRadioButtonInGroup(currentElement, forward); inputElement; inputElement = nextRadioButtonInGroup(inputElement, forward)) {
+        if (inputElement->isFocusable())
             return inputElement;
     }
     return nullptr;
@@ -213,10 +210,11 @@ bool RadioInputType::shouldAppearIndeterminate() const
 
 HTMLInputElement* RadioInputType::nextRadioButtonInGroup(HTMLInputElement* current, bool forward)
 {
-    for (HTMLElement* htmlElement = nextElement(*current, current->form(), forward); htmlElement; htmlElement = nextElement(*htmlElement, current->form(), forward)) {
-        if (!isHTMLInputElement(*htmlElement))
-            continue;
-        HTMLInputElement* inputElement = toHTMLInputElement(htmlElement);
+    // TODO(tkent): Staying within form() is incorrect.  This code ignore input
+    // elements associated by |form| content attribute.
+    // TODO(tkent): Comparing name() with == is incorrect.  It should be
+    // case-insensitive.
+    for (HTMLInputElement* inputElement = nextInputElement(*current, current->form(), forward); inputElement; inputElement = nextInputElement(*inputElement, current->form(), forward)) {
         if (current->form() == inputElement->form() && inputElement->type() == InputTypeNames::radio && inputElement->name() == current->name())
             return inputElement;
     }
