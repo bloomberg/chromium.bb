@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
+
+div { font-size: 10px; }
+
+</style>
+<div id='element'></div>
+<script>
+
+var element = document.getElementById('element');
+
+test(function() {
+    element.animate({'font-size': '20px'}, {fill: 'forwards'});
+    assert_equals(getComputedStyle(element).fontSize, '10px');
+
+    element.animate({'fontSize': '30px'}, {fill: 'forwards'});
+    assert_equals(getComputedStyle(element).fontSize, '30px');
+}, 'Hyphenated propery names are ignored.');
+
+</script>

@@ -51,7 +51,7 @@ function assertCSSResponsive(options) {
     options,
     bindings: {
       prefixProperty(property) {
-        return property;
+        return toCamelCase(property);
       },
       createTargetContainer(container) {
         if (options.targetTag) {
@@ -161,6 +161,15 @@ function isNeutralKeyframe(keyframe) {
 
 function keyframeText(keyframe) {
   return isNeutralKeyframe(keyframe) ? 'neutral' : `[${keyframe}]`;
+}
+
+function toCamelCase(property) {
+  for (var i = property.length - 2; i > 0; --i) {
+    if (property[i] === '-') {
+      property = property.substring(0, i) + property[i + 1].toUpperCase() + property.substring(i + 2);
+    }
+  }
+  return property;
 }
 
 function createKeyframes(prefixedProperty, from, to) {

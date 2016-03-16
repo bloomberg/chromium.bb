@@ -184,6 +184,14 @@
     });
   }
 
+  function toCamelCase(property) {
+    var i = property.length;
+    while ((i = property.lastIndexOf('-', i - 1)) !== -1) {
+      property = property.substring(0, i) + property[i + 1].toUpperCase() + property.substring(i + 2);
+    }
+    return property;
+  }
+
   function createTargetContainer(parent, className) {
     var targetContainer = createElement(parent);
     targetContainer.classList.add('container');
@@ -339,11 +347,11 @@ assertComposition({
         webAnimationsInterpolation.interpolateKeyframes([{
           offset: 0,
           composite: fromComposite,
-          [property]: from,
+          [toCamelCase(property)]: from,
         }, {
           offset: 1,
           composite: toComposite,
-          [property]: to,
+          [toCamelCase(property)]: to,
         }], expectation.at, target);
       };
       target.measure = function() {

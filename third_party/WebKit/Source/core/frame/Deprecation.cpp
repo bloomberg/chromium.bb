@@ -351,7 +351,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return "Elements using the 'border-image' CSS property with no 'border-style' set should have no border, but currently do. Setting 'border-style' will be required in M51, around May 2016. See https://www.chromestatus.com/features/5542503914668032 for more details.";
 
     case UseCounter::WebAnimationHyphenatedProperty:
-        return replacedWillBeRemoved("Hyphenated naming in Web Animations keyframes", "camelCase", 51, "5650817352728576");
+        return "Hyphenated property names in Web Animations keyframes are invalid and therefore ignored. Please use camelCase instead.";
 
     case UseCounter::PresentationConnectionStateChangeEventListener:
         return replacedWillBeRemoved("'PresentationConnection.onstateachange'", "'PresentationConnection.on{connect,close,terminate}'", 51, "5662456714100736");

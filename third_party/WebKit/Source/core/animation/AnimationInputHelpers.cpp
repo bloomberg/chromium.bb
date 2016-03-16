@@ -36,10 +36,15 @@ CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(const String
         return CSSPropertyInvalid;
     if (property == "cssFloat")
         return CSSPropertyFloat;
+
     StringBuilder builder;
     for (size_t i = 0; i < property.length(); ++i) {
-        if (property[i] == '-')
-            Deprecation::countDeprecation(document, UseCounter::WebAnimationHyphenatedProperty);
+        // Disallow hyphenated properties.
+        if (property[i] == '-') {
+            if (cssPropertyID(property) != CSSPropertyInvalid)
+                Deprecation::countDeprecation(document, UseCounter::WebAnimationHyphenatedProperty);
+            return CSSPropertyInvalid;
+        }
         if (isASCIIUpper(property[i]))
             builder.append('-');
         builder.append(property[i]);

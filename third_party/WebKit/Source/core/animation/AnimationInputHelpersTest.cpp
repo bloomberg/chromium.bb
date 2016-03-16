@@ -39,14 +39,14 @@ protected:
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)
 {
-    EXPECT_EQ(CSSPropertyLineHeight, keyframeAttributeToCSSProperty("line-height"));
     EXPECT_EQ(CSSPropertyLineHeight, keyframeAttributeToCSSProperty("lineHeight"));
     EXPECT_EQ(CSSPropertyBorderTopWidth, keyframeAttributeToCSSProperty("borderTopWidth"));
-    EXPECT_EQ(CSSPropertyBorderTopWidth, keyframeAttributeToCSSProperty("border-topWidth"));
     EXPECT_EQ(CSSPropertyWidth, keyframeAttributeToCSSProperty("width"));
     EXPECT_EQ(CSSPropertyFloat, keyframeAttributeToCSSProperty("float"));
     EXPECT_EQ(CSSPropertyFloat, keyframeAttributeToCSSProperty("cssFloat"));
 
+    EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("line-height"));
+    EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("border-topWidth"));
     EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("Width"));
     EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("-epub-text-transform"));
     EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("EpubTextTransform"));
