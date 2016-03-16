@@ -2184,10 +2184,6 @@ static int32_t
 ivi_layout_layer_add_surface(struct ivi_layout_layer *ivilayer,
 			     struct ivi_layout_surface *addsurf)
 {
-	struct ivi_layout *layout = get_instance();
-	struct ivi_layout_surface *ivisurf = NULL;
-	struct ivi_layout_surface *next = NULL;
-
 	if (ivilayer == NULL || addsurf == NULL) {
 		weston_log("ivi_layout_layer_add_surface: invalid argument\n");
 		return IVI_FAILED;
@@ -2196,14 +2192,8 @@ ivi_layout_layer_add_surface(struct ivi_layout_layer *ivilayer,
 	if (addsurf->on_layer == ivilayer)
 		return IVI_SUCCEEDED;
 
-	wl_list_for_each_safe(ivisurf, next, &layout->surface_list, link) {
-		if (ivisurf->id_surface == addsurf->id_surface) {
-			wl_list_remove(&ivisurf->pending.link);
-			wl_list_insert(&ivilayer->pending.surface_list,
-				       &ivisurf->pending.link);
-			break;
-		}
-	}
+	wl_list_remove(&addsurf->pending.link);
+	wl_list_insert(&ivilayer->pending.surface_list, &addsurf->pending.link);
 
 	ivilayer->order.dirty = 1;
 
