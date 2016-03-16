@@ -16,10 +16,7 @@
 
 bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
                                       ui::WindowShowState* show_state) const {
-  if (!chrome::ShouldOpenAshOnStartup())
-    return false;
-  if (!browser_ ||
-      browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH)
+  if (!chrome::ShouldOpenAshOnStartup() || !browser_)
     return false;
 
   bool determined = false;
