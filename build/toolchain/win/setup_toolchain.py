@@ -11,6 +11,7 @@
 # and the files will be written to the current directory.
 
 import errno
+import json
 import os
 import re
 import subprocess
@@ -67,35 +68,57 @@ def _DetectVisualStudioPath():
   return vs_toolchain.DetectVisualStudioPath()
 
 
-def _SetupScript(target_cpu, sdk_dir):
-  """Returns a command (with arguments) to be used to set up the
-  environment."""
-  # Check if we are running in the SDK command line environment and use
-  # the setup script from the SDK if so. |target_cpu| should be either
-  # 'x86' or 'x64'.
-  assert target_cpu in ('x86', 'x64')
-  if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', 1))) and sdk_dir:
-    return [os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.Cmd')),
-            '/' + target_cpu]
-  else:
-    if 'GYP_MSVS_OVERRIDE_PATH' not in os.environ:
-      os.environ['GYP_MSVS_OVERRIDE_PATH'] = _DetectVisualStudioPath()
-    # We only support x64-hosted tools.
-    return [os.path.normpath(os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
-                                          'VC/vcvarsall.bat')),
-            'amd64_x86' if target_cpu == 'x86' else 'amd64']
-
-
-def _LoadToolchainEnv(cpu, win_sdk_path):
-  """Returns a dictionary with environment variables that must be set while
-  running binaries from the toolchain (e.g. INCLUDE and PATH for cl.exe)."""
-  args = _SetupScript(cpu, win_sdk_path)
+def _LoadEnvFromBat(args):
+  """Given a bat command, runs it and returns env vars set by it."""
+  args = args[:]
   args.extend(('&&', 'set'))
   popen = subprocess.Popen(
       args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   variables, _ = popen.communicate()
   if popen.returncode != 0:
     raise Exception('"%s" failed with error %d' % (args, popen.returncode))
+  return variables
+
+
+def _LoadToolchainEnv(cpu, sdk_dir):
+  """Returns a dictionary with environment variables that must be set while
+  running binaries from the toolchain (e.g. INCLUDE and PATH for cl.exe)."""
+  # Check if we are running in the SDK command line environment and use
+  # the setup script from the SDK if so. |cpu| should be either
+  # 'x86' or 'x64'.
+  assert cpu in ('x86', 'x64')
+  if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', 1))) and sdk_dir:
+    # Load environment from json file.
+    env = os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.%s.json' % cpu))
+    env = json.load(open(env))['env']
+    for k in env:
+      entries = [os.path.join(*([os.path.join(sdk_dir, 'bin')] + e))
+                 for e in env[k]]
+      env[k] = os.pathsep.join(entries)
+    # PATH is a bit of a special case, it's in addition to the current PATH.
+    env['PATH'] = env['PATH'] + os.pathsep + os.environ['PATH']
+    # Augment with the current env to pick up TEMP and friends.
+    for k in os.environ:
+      if k not in env:
+        env[k] = os.environ[k]
+
+    varlines = []
+    for k in sorted(env.keys()):
+      varlines.append('%s=%s' % (str(k), str(env[k])))
+    variables = '\n'.join(varlines)
+
+    # Check that the json file contained the same environment as the .cmd file.
+    script = os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.cmd'))
+    assert _ExtractImportantEnvironment(variables) == \
+           _ExtractImportantEnvironment(_LoadEnvFromBat([script, '/' + cpu]))
+  else:
+    if 'GYP_MSVS_OVERRIDE_PATH' not in os.environ:
+      os.environ['GYP_MSVS_OVERRIDE_PATH'] = _DetectVisualStudioPath()
+    # We only support x64-hosted tools.
+    args = [os.path.normpath(os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
+                                          'VC/vcvarsall.bat')),
+            'amd64_x86' if cpu == 'x86' else 'amd64']
+    variables = _LoadEnvFromBat(args)
   return _ExtractImportantEnvironment(variables)
 
 
