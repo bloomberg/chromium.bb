@@ -30,6 +30,7 @@
 
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -97,7 +98,8 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
         return nullptr;
     }
 
-    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
+    gpu::gles2::GLES2Interface* gl = context->getGLES2Interface();
+    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get(), gl);
     if (!extensionsUtil->isValid()) {
         // This might be the first time we notice that the WebGraphicsContext3D is lost.
         return nullptr;
@@ -118,7 +120,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
     if (discardFramebufferSupported)
         extensionsUtil->ensureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(context), extensionsUtil.release(), multisampleSupported, discardFramebufferSupported, preserve, requestedAttributes));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(context), gl, extensionsUtil.release(), multisampleSupported, discardFramebufferSupported, preserve, requestedAttributes));
     if (!drawingBuffer->initialize(size)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
@@ -131,12 +133,7 @@ void DrawingBuffer::forceNextDrawingBufferCreationToFail()
     shouldFailDrawingBufferCreationForTesting = true;
 }
 
-DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
-    PassOwnPtr<Extensions3DUtil> extensionsUtil,
-    bool multisampleExtensionSupported,
-    bool discardFramebufferSupported,
-    PreserveDrawingBuffer preserve,
-    WebGraphicsContext3D::Attributes requestedAttributes)
+DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context, gpu::gles2::GLES2Interface* gl, PassOwnPtr<Extensions3DUtil> extensionsUtil, bool multisampleExtensionSupported, bool discardFramebufferSupported, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
     , m_texture2DBinding(0)
@@ -144,6 +141,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_readFramebufferBinding(0)
     , m_activeTextureUnit(GL_TEXTURE0)
     , m_context(std::move(context))
+    , m_gl(gl)
     , m_extensionsUtil(std::move(extensionsUtil))
     , m_size(-1, -1)
     , m_requestedAttributes(requestedAttributes)
@@ -320,7 +318,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
 
 void DrawingBuffer::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
 {
-    if (m_destructionInProgress || m_context->isContextLost() || lostResource || m_isHidden) {
+    if (m_destructionInProgress || m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR || lostResource || m_isHidden) {
         mailboxReleasedWithoutRecycling(mailbox);
         return;
     }
@@ -444,7 +442,7 @@ void DrawingBuffer::deleteMailbox(const WebExternalTextureMailbox& mailbox)
 
 bool DrawingBuffer::initialize(const IntSize& size)
 {
-    if (m_context->isContextLost()) {
+    if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
         // Need to try to restore the context again later.
         return false;
     }
@@ -490,7 +488,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
     }
     m_actualAttributes.antialias = multisample();
 
-    if (m_context->isContextLost()) {
+    if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
         // It's possible that the drawing buffer allocation provokes a context loss, so check again just in case. http://crbug.com/512302
         return false;
     }

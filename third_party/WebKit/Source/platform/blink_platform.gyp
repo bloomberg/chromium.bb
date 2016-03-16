@@ -133,6 +133,7 @@
       '<(DEPTH)/cc/cc.gyp:cc',
       '<(DEPTH)/device/battery/battery.gyp:device_battery_mojo_bindings',
       '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
+      '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       '<(DEPTH)/skia/skia.gyp:skia',

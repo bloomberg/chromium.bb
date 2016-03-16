@@ -26,11 +26,13 @@
 
 #include "SkSurface.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/test/MockGLES2Interface.h"
 #include "platform/graphics/test/MockWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalBitmap.h"
@@ -68,8 +70,9 @@ public:
 
 class MockWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 public:
-    MockWebGraphicsContext3DProvider(WebGraphicsContext3D* context3d)
+    MockWebGraphicsContext3DProvider(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
         : m_context3d(context3d)
+        , m_gl(gl)
     {
         scoped_ptr<SkGLContext> glContext(SkNullGLContext::Create());
         glContext->makeCurrent();
@@ -86,8 +89,14 @@ public:
         return m_grContext.get();
     }
 
+    gpu::gles2::GLES2Interface* contextGL() override
+    {
+        return m_gl;
+    }
+
 private:
     WebGraphicsContext3D* m_context3d;
+    gpu::gles2::GLES2Interface* m_gl;
     RefPtr<GrContext> m_grContext;
 };
 
@@ -153,7 +162,8 @@ protected:
     void fullLifecycleTest()
     {
         MockCanvasContext mainMock;
-        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+        MockGLES2Interface mockGL;
+        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
@@ -174,12 +184,13 @@ protected:
     void fallbackToSoftwareIfContextLost()
     {
         MockCanvasContext mainMock;
-        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+        MockGLES2Interface mockGL;
+        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
         {
-            mainMock.fakeContextLost();
+            mockGL.setIsContextLost(true);
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             EXPECT_TRUE(bridge->checkSurfaceValid());
@@ -198,7 +209,8 @@ protected:
 
         {
             // No fallback case
-            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+            MockGLES2Interface mockGL;
+            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             EXPECT_TRUE(bridge->checkSurfaceValid());
@@ -211,7 +223,8 @@ protected:
 
         {
             // Fallback case
-            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+            MockGLES2Interface mockGL;
+            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
             GrContext* gr = mainMockProvider->grContext();
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
@@ -230,7 +243,8 @@ protected:
     void noDrawOnContextLostTest()
     {
         MockCanvasContext mainMock;
-        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+        MockGLES2Interface mockGL;
+        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
@@ -242,7 +256,7 @@ protected:
             uint32_t genID = bridge->getOrCreateSurface()->generationID();
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
             EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
-            mainMock.fakeContextLost();
+            mockGL.setIsContextLost(true);
             EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
             EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
@@ -260,7 +274,8 @@ protected:
     void prepareMailboxWithBitmapTest()
     {
         MockCanvasContext mainMock;
-        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+        MockGLES2Interface mockGL;
+        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
         Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
         bridge->m_lastImageId = 1;
 
@@ -272,13 +287,14 @@ protected:
     void prepareMailboxAndLoseResourceTest()
     {
         MockCanvasContext mainMock;
+        MockGLES2Interface mockGL;
         bool lostResource = true;
 
         // Prepare a mailbox, then report the resource as lost.
         // This test passes by not crashing and not triggering assertions.
         {
             WebExternalTextureMailbox mailbox;
-            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
             bridge->prepareMailbox(&mailbox, 0);
             bridge->mailboxReleased(mailbox, lostResource);
@@ -286,7 +302,7 @@ protected:
 
         // Retry with mailbox released while bridge destruction is in progress
         {
-            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
             WebExternalTextureMailbox mailbox;
             Canvas2DLayerBridge* rawBridge;
             {
@@ -303,9 +319,10 @@ protected:
     void accelerationHintTest()
     {
         MockCanvasContext mainMock;
+        MockGLES2Interface mockGL;
         {
 
-            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), IntSize(300, 300), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
@@ -319,7 +336,7 @@ protected:
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
         {
-            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+            OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock, &mockGL));
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), IntSize(300, 300), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
@@ -376,10 +393,9 @@ public:
     virtual ~MockLogger() { }
 };
 
-
-void runCreateBridgeTask(Canvas2DLayerBridgePtr* bridgePtr, MockCanvasContext* mockCanvasContext, Canvas2DLayerBridgeTest* testHost, WaitableEvent* doneEvent)
+void runCreateBridgeTask(Canvas2DLayerBridgePtr* bridgePtr, MockCanvasContext* mockCanvasContext, gpu::gles2::GLES2Interface* gl, Canvas2DLayerBridgeTest* testHost, WaitableEvent* doneEvent)
 {
-    OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(mockCanvasContext));
+    OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(mockCanvasContext, gl));
     *bridgePtr = testHost->makeBridge(mainMockProvider.release(), IntSize(300, 300), Canvas2DLayerBridge::EnableAcceleration);
     // draw+flush to trigger the creation of a GPU surface
     (*bridgePtr)->didDraw(FloatRect(0, 0, 1, 1));
@@ -388,7 +404,7 @@ void runCreateBridgeTask(Canvas2DLayerBridgePtr* bridgePtr, MockCanvasContext* m
     doneEvent->signal();
 }
 
-void postAndWaitCreateBridgeTask(const WebTraceLocation& location, WebThread* testThread, Canvas2DLayerBridgePtr* bridgePtr, MockCanvasContext* mockCanvasContext, Canvas2DLayerBridgeTest* testHost)
+void postAndWaitCreateBridgeTask(const WebTraceLocation& location, WebThread* testThread, Canvas2DLayerBridgePtr* bridgePtr, MockCanvasContext* mockCanvasContext, gpu::gles2::GLES2Interface* gl, Canvas2DLayerBridgeTest* testHost)
 {
     OwnPtr<WaitableEvent> bridgeCreatedEvent = adoptPtr(new WaitableEvent());
     testThread->getWebTaskRunner()->postTask(
@@ -396,6 +412,7 @@ void postAndWaitCreateBridgeTask(const WebTraceLocation& location, WebThread* te
         threadSafeBind(&runCreateBridgeTask,
             AllowCrossThreadAccess(bridgePtr),
             AllowCrossThreadAccess(mockCanvasContext),
+            AllowCrossThreadAccess(gl),
             AllowCrossThreadAccess(testHost),
             AllowCrossThreadAccess(bridgeCreatedEvent.get())));
     bridgeCreatedEvent->wait();
@@ -469,12 +486,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -515,12 +533,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -567,12 +586,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycleWithDeferredRenderi
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
     bridge->disableDeferral(DisableDeferralReasonUnknown);
     MockImageBuffer mockImageBuffer;
     EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AnyNumber());
@@ -639,12 +659,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -692,12 +713,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernatingWith
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
     MockImageBuffer mockImageBuffer;
     EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AnyNumber());
     bridge->setImageBuffer(&mockImageBuffer);
@@ -753,12 +775,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DisableDeferredRenderingWhileHibernatin
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
     MockImageBuffer mockImageBuffer;
     EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AnyNumber());
     bridge->setImageBuffer(&mockImageBuffer);
@@ -813,12 +836,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -868,12 +892,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -910,12 +935,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -946,12 +972,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToVisibilityChange
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -985,19 +1012,20 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
     bridge->setLoggerForTesting(mockLogger.release());
 
-    mainMock.fakeContextLost();
+    mockGL.setIsContextLost(true);
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationAbortedEvent = adoptPtr(new WaitableEvent());
     EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationScheduled));
@@ -1022,12 +1050,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -1061,12 +1090,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 #endif
 {
     MockCanvasContext mainMock;
+    MockGLES2Interface mockGL;
     OwnPtr<WebThread> testThread = adoptPtr(Platform::current()->createThread("TestThread"));
 
     // The Canvas2DLayerBridge has to be created on the thread that will use it
     // to avoid WeakPtr thread check issues.
     Canvas2DLayerBridgePtr bridge;
-    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, this);
+    postAndWaitCreateBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge, &mainMock, &mockGL, this);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);

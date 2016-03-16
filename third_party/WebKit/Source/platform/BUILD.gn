@@ -324,6 +324,7 @@ component("platform") {
     "//base",
     "//cc",
     "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_interface",
     "//skia",
     "//third_party:jpeg",
     "//third_party/WebKit/Source/wtf",

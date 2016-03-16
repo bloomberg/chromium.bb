@@ -4,4 +4,5 @@ include_rules = [
     "+base/message_loop",
     "+cc",
     "-cc/blink",
+    "+gpu/command_buffer/client/gles2_interface.h",
 ]

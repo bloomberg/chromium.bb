@@ -47,8 +47,6 @@ public:
 
     virtual void synthesizeGLError(WGC3Denum) { }
 
-    virtual bool isContextLost() { return m_contextLost; }
-
     virtual void* mapBufferSubDataCHROMIUM(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr size, WGC3Denum access) { return 0; }
     virtual void unmapBufferSubDataCHROMIUM(const void*) { }
     virtual void* mapTexSubImage2DCHROMIUM(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, WGC3Denum access) { return 0; }
@@ -284,6 +282,9 @@ public:
     virtual void getQueryObjectuivEXT(WebGLId, GLenum, GLuint*) { }
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId) { return WebString(); }
+
+    // Don't use this, make a MockGLES2Interface instead.
+    virtual gpu::gles2::GLES2Interface* getGLES2Interface() { return nullptr; }
 
     void fakeContextLost() { m_contextLost = true; }
 protected:

@@ -25,6 +25,7 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
@@ -178,7 +179,7 @@ bool Canvas2DLayerBridge::shouldAccelerate(AccelerationHint hint) const
     else
         accelerate = hint == PreferAcceleration || hint == PreferAccelerationAfterVisibilityChange;
 
-    if (accelerate && (!m_contextProvider || m_contextProvider->context3d()->isContextLost()))
+    if (accelerate && (!m_contextProvider || m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR))
         accelerate = false;
     return accelerate;
 }
@@ -727,7 +728,7 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
         return true;
     if (!m_surface)
         return false;
-    if (m_contextProvider->context3d()->isContextLost()) {
+    if (m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
         m_surface.clear();
         for (auto mailboxInfo = m_mailboxes.begin(); mailboxInfo != m_mailboxes.end(); ++mailboxInfo) {
             if (mailboxInfo->m_image)
@@ -747,13 +748,13 @@ bool Canvas2DLayerBridge::restoreSurface()
         return false;
     ASSERT(isAccelerated() && !m_surface);
 
-    WebGraphicsContext3D* sharedContext = 0;
+    gpu::gles2::GLES2Interface* sharedGL = nullptr;
     m_layer->clearTexture();
     m_contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (m_contextProvider)
-        sharedContext = m_contextProvider->context3d();
+        sharedGL = m_contextProvider->contextGL();
 
-    if (sharedContext && !sharedContext->isContextLost()) {
+    if (sharedGL && sharedGL->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
         GrContext* grCtx = m_contextProvider->grContext();
         bool surfaceIsAccelerated;
         RefPtr<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated));
@@ -819,7 +820,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
 void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
 {
     ASSERT(isAccelerated() || isHibernating());
-    bool contextLost = !isHibernating() && (!m_surface || m_contextProvider->context3d()->isContextLost());
+    bool contextLost = !isHibernating() && (!m_surface || m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
     ASSERT(m_mailboxes.last().m_parentLayerBridge.get() == this);
 
     // Mailboxes are typically released in FIFO order, so we iterate

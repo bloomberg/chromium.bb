@@ -128,7 +128,11 @@ class GLHelperHolder
   void onContextLost() override;
 
   GLHelper* GetGLHelper() { return gl_helper_.get(); }
-  bool IsLost() { return !context_.get() || context_->isContextLost(); }
+  bool IsLost() {
+    return !context_ ||
+           context_->GetGLInterface()->GetGraphicsResetStatusKHR() !=
+               GL_NO_ERROR;
+  }
 
  private:
   GLHelperHolder();

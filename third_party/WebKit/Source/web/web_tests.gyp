@@ -56,6 +56,7 @@
                 '<(DEPTH)/base/base.gyp:base',
                 '<(DEPTH)/base/base.gyp:base_i18n',
                 '<(DEPTH)/base/base.gyp:test_support_base',
+                '<(DEPTH)/gpu/gpu.gyp:gpu_unittest_utils',
                 '<(DEPTH)/testing/gmock.gyp:gmock',
                 '<(DEPTH)/testing/gtest.gyp:gtest',
                 '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',

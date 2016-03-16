@@ -1216,12 +1216,12 @@ void WebGraphicsContext3DImpl::waitSync(WGC3Dsync sync,
   gl_->WaitSync(reinterpret_cast<GLsync>(sync), flags, timeout);
 }
 
-bool WebGraphicsContext3DImpl::isContextLost() {
-  return getGraphicsResetStatusARB() != GL_NO_ERROR;
-}
-
 blink::WGC3Denum WebGraphicsContext3DImpl::getGraphicsResetStatusARB() {
   return gl_->GetGraphicsResetStatusKHR();
+}
+
+::gpu::gles2::GLES2Interface* WebGraphicsContext3DImpl::getGLES2Interface() {
+  return gl_;
 }
 
 ::gpu::gles2::GLES2ImplementationErrorMessageCallback*

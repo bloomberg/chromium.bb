@@ -937,8 +937,10 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                 blink::WGC3Dbitfield flags,
                 blink::WGC3Duint64 timeout) override;
 
-  bool isContextLost() override;
   blink::WGC3Denum getGraphicsResetStatusARB() override;
+
+  // WebGraphicsContext3D implementation.
+  ::gpu::gles2::GLES2Interface* getGLES2Interface() override;
 
   ::gpu::gles2::GLES2Interface* GetGLInterface() {
     return gl_;
@@ -959,9 +961,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
       getErrorMessageCallback();
   virtual void OnErrorMessage(const std::string& message, int id);
 
-  void setGLInterface(::gpu::gles2::GLES2Interface* gl) {
-    gl_ = gl;
-  }
+  void SetGLInterface(::gpu::gles2::GLES2Interface* gl) { gl_ = gl; }
 
   bool initialized_;
   bool initialize_failed_;

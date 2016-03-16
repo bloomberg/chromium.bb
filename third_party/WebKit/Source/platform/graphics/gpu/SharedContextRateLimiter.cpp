@@ -4,6 +4,7 @@
 
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
@@ -28,9 +29,9 @@ SharedContextRateLimiter::SharedContextRateLimiter(unsigned maxPendingTicks)
     if (!m_contextProvider)
         return;
 
-    WebGraphicsContext3D* context = m_contextProvider->context3d();
-    if (context && !context->isContextLost()) {
-        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context);
+    gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
+    if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(m_contextProvider->context3d(), gl);
         // TODO(junov): when the GLES 3.0 command buffer is ready, we could use fenceSync instead
         m_canUseSyncQueries = extensionsUtil->supportsExtension("GL_CHROMIUM_sync_query");
     }
@@ -41,11 +42,12 @@ void SharedContextRateLimiter::tick()
     if (!m_contextProvider)
         return;
 
-    WebGraphicsContext3D* context = m_contextProvider->context3d();
+    gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
 
-    if (!context || context->isContextLost())
+    if (!gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
         return;
 
+    WebGraphicsContext3D* context = m_contextProvider->context3d();
     m_queries.append(m_canUseSyncQueries ? context->createQueryEXT() : 0);
     if (m_canUseSyncQueries) {
         context->beginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, m_queries.last());
@@ -69,8 +71,9 @@ void SharedContextRateLimiter::reset()
     if (!m_contextProvider)
         return;
 
-    WebGraphicsContext3D* context = m_contextProvider->context3d();
-    if (context && !context->isContextLost()) {
+    gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
+    if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+        WebGraphicsContext3D* context = m_contextProvider->context3d();
         while (m_queries.size() > 0) {
             context->deleteQueryEXT(m_queries.first());
             m_queries.removeFirst();

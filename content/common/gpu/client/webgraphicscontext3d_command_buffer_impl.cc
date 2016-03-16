@@ -249,7 +249,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
       gles2_helper_.get(), gles2_share_group.get(), transfer_buffer_.get(),
       bind_generates_resources, lose_context_when_out_of_memory_,
       support_client_side_arrays, command_buffer_.get()));
-  setGLInterface(real_gl_.get());
+  SetGLInterface(real_gl_.get());
 
   if (!real_gl_->Initialize(
       mem_limits_.start_transfer_buffer_size,
@@ -266,7 +266,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuClientTracing)) {
     trace_gl_.reset(new gpu::gles2::GLES2TraceImplementation(GetGLInterface()));
-    setGLInterface(trace_gl_.get());
+    SetGLInterface(trace_gl_.get());
   }
   return true;
 }
@@ -296,7 +296,7 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
     // issued on this context might not be visible to other contexts in the
     // share group.
     gl->Flush();
-    setGLInterface(NULL);
+    SetGLInterface(nullptr);
   }
 
   trace_gl_.reset();
@@ -306,7 +306,7 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
   real_gl_.reset();
   command_buffer_.reset();
 
-  host_ = NULL;
+  host_ = nullptr;
 }
 
 gpu::ContextSupport*

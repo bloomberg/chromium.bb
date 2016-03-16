@@ -1,0 +1,4 @@
+include_rules = [
+    # For tests only!
+    "+gpu/command_buffer/client/gles2_interface_stub.h",
+]

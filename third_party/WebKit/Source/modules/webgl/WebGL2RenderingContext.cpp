@@ -40,7 +40,7 @@ PassOwnPtrWillBeRawPtr<CanvasRenderingContext> WebGL2RenderingContext::Factory::
     OwnPtr<WebGraphicsContext3D> context(createWebGraphicsContext3D(canvas, attributes, 2));
     if (!context)
         return nullptr;
-    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
+    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get(), context->getGLES2Interface());
     if (!extensionsUtil)
         return nullptr;
     if (extensionsUtil->supportsExtension("GL_EXT_debug_marker")) {

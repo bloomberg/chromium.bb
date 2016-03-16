@@ -45,6 +45,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/ANGLEInstancedArrays.h"
 #include "modules/webgl/CHROMIUMSubscribeUniform.h"
 #include "modules/webgl/CHROMIUMValuebuffer.h"
@@ -5072,9 +5073,11 @@ void WebGLRenderingContextBase::setFilterQuality(SkFilterQuality filterQuality)
 Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil()
 {
     if (!m_extensionsUtil) {
-        m_extensionsUtil = Extensions3DUtil::create(webContext());
+        WebGraphicsContext3D* context = webContext();
+        gpu::gles2::GLES2Interface* gl = context->getGLES2Interface();
+        m_extensionsUtil = Extensions3DUtil::create(context, gl);
         // The only reason the ExtensionsUtil should be invalid is if the webContext is lost.
-        ASSERT(m_extensionsUtil->isValid() || webContext()->isContextLost());
+        ASSERT(m_extensionsUtil->isValid() || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
     }
     return m_extensionsUtil.get();
 }

@@ -16,7 +16,13 @@ WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
 WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {}
 
 blink::WebGraphicsContext3D* WebGraphicsContext3DProviderImpl::context3d() {
+  DCHECK_EQ(!!provider_->WebContext3D(), !!provider_->ContextGL());
   return provider_->WebContext3D();
+}
+
+gpu::gles2::GLES2Interface* WebGraphicsContext3DProviderImpl::contextGL() {
+  DCHECK_EQ(!!provider_->WebContext3D(), !!provider_->ContextGL());
+  return provider_->ContextGL();
 }
 
 GrContext* WebGraphicsContext3DProviderImpl::grContext() {

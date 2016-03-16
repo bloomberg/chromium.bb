@@ -35,6 +35,12 @@
 #include "WebNonCopyable.h"
 #include "WebString.h"
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 struct GrGLInterface;
 
 namespace blink {
@@ -168,8 +174,6 @@ public:
     // instance of any given error, and returns them from calls to
     // getError in the order they were added.
     virtual void synthesizeGLError(WGC3Denum) = 0;
-
-    virtual bool isContextLost() = 0;
 
     // GL_CHROMIUM_map_sub
     virtual void* mapBufferSubDataCHROMIUM(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr size, WGC3Denum access) = 0;
@@ -550,6 +554,9 @@ public:
     virtual void vertexAttribI4uiv(WGC3Duint index, const WGC3Duint *v) { }
     virtual void vertexAttribIPointer(WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dsizei stride, WGC3Dintptr pointer) { }
     virtual void waitSync(WGC3Dsync sync, WGC3Dbitfield flags, WGC3Duint64 timeout) { }
+
+    // Prefer getting a GLES2Interface off WebGraphicsContext3DProvider if possible, and avoid using WebGraphicsContext3D at all.
+    virtual gpu::gles2::GLES2Interface* getGLES2Interface() = 0;
 };
 
 } // namespace blink

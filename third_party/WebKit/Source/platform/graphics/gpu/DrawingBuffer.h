@@ -46,11 +46,15 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace WTF {
-
 class ArrayBufferContents;
-
-} // namespace WTF
+}
 
 namespace blink {
 
@@ -175,6 +179,7 @@ public:
 protected: // For unittests
     DrawingBuffer(
         PassOwnPtr<WebGraphicsContext3D>,
+        gpu::gles2::GLES2Interface*,
         PassOwnPtr<Extensions3DUtil>,
         bool multisampleExtensionSupported,
         bool discardFramebufferSupported,
@@ -299,6 +304,7 @@ private:
     GLenum m_activeTextureUnit;
 
     OwnPtr<WebGraphicsContext3D> m_context;
+    gpu::gles2::GLES2Interface* m_gl; // Lifetime is tied to the m_context.
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
     IntSize m_size;
     WebGraphicsContext3D::Attributes m_requestedAttributes;

@@ -4,6 +4,7 @@
 
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
@@ -22,15 +23,16 @@ void splitStringHelper(const String& str, HashSet<String>& set)
 
 } // anonymous namespace
 
-PassOwnPtr<Extensions3DUtil> Extensions3DUtil::create(WebGraphicsContext3D* context)
+PassOwnPtr<Extensions3DUtil> Extensions3DUtil::create(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl)
 {
-    OwnPtr<Extensions3DUtil> out = adoptPtr(new Extensions3DUtil(context));
+    OwnPtr<Extensions3DUtil> out = adoptPtr(new Extensions3DUtil(context, gl));
     out->initializeExtensions();
     return out.release();
 }
 
-Extensions3DUtil::Extensions3DUtil(WebGraphicsContext3D* context)
+Extensions3DUtil::Extensions3DUtil(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl)
     : m_context(context)
+    , m_gl(gl)
     , m_isValid(true)
 {
 }
@@ -41,7 +43,7 @@ Extensions3DUtil::~Extensions3DUtil()
 
 void Extensions3DUtil::initializeExtensions()
 {
-    if (m_context->isContextLost()) {
+    if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
         // If the context is lost don't initialize the extension strings.
         // This will cause supportsExtension, ensureExtensionEnabled, and isExtensionEnabled to always return false.
         m_isValid = false;

@@ -136,7 +136,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   }
 
   real_gl_ = context_->GetImplementation();
-  setGLInterface(real_gl_);
+  SetGLInterface(real_gl_);
 
   real_gl_->TraceBeginCHROMIUM("WebGraphicsContext3D",
                                "InProcessContext");
@@ -149,7 +149,9 @@ bool
 WebGraphicsContext3DInProcessCommandBufferImpl::InitializeOnCurrentThread() {
   if (!MaybeInitializeGL())
     return false;
-  return context_ && !isContextLost();
+  return context_ &&
+         context_->GetImplementation()->GetGraphicsResetStatusKHR() ==
+             GL_NO_ERROR;
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::SetLock(base::Lock* lock) {
