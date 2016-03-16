@@ -75,11 +75,22 @@ class MuxerTest : public testing::Test {
   void AddVideoTrack() {
     const int vid_track =
         segment_.AddVideoTrack(kWidth, kHeight, kVideoTrackNumber);
-    EXPECT_EQ(kVideoTrackNumber, vid_track);
+    ASSERT_EQ(kVideoTrackNumber, vid_track);
     VideoTrack* const video =
         dynamic_cast<VideoTrack*>(segment_.GetTrackByNumber(vid_track));
     ASSERT_TRUE(video != NULL);
     video->set_uid(kVideoTrackNumber);
+  }
+
+  void AddAudioTrack() {
+    const int aud_track =
+        segment_.AddAudioTrack(kSampleRate, kChannels, kAudioTrackNumber);
+    ASSERT_EQ(kAudioTrackNumber, aud_track);
+    AudioTrack* const audio =
+        dynamic_cast<AudioTrack*>(segment_.GetTrackByNumber(aud_track));
+    ASSERT_TRUE(audio != NULL);
+    audio->set_uid(kAudioTrackNumber);
+    audio->set_codec_id(kOpusCodecId);
   }
 
   void CloseWriter() {
@@ -135,11 +146,11 @@ TEST_F(MuxerTest, AddTracks) {
   ASSERT_TRUE(video != NULL);
   EXPECT_EQ(static_cast<mkvmuxer::uint64>(kWidth), video->width());
   EXPECT_EQ(static_cast<mkvmuxer::uint64>(kHeight), video->height());
-  video->set_name("unit_test");
+  video->set_name(kTrackName);
   video->set_display_width(kWidth - 10);
   video->set_display_height(kHeight - 10);
   video->set_frame_rate(0.5);
-  EXPECT_STREQ("unit_test", video->name());
+  EXPECT_STREQ(kTrackName, video->name());
   const mkvmuxer::uint64 kDisplayWidth = kWidth - 10;
   EXPECT_EQ(kDisplayWidth, video->display_width());
   const mkvmuxer::uint64 kDisplayHeight = kHeight - 10;
@@ -156,14 +167,12 @@ TEST_F(MuxerTest, AddTracks) {
   EXPECT_EQ(kSampleRate, audio->sample_rate());
   EXPECT_EQ(static_cast<mkvmuxer::uint64>(kChannels), audio->channels());
   ASSERT_TRUE(audio != NULL);
-  audio->set_name("unit_test");
-  audio->set_bit_depth(2);
-  audio->set_uid(2);
-  EXPECT_STREQ("unit_test", audio->name());
-  const mkvmuxer::uint64 kAudioBitDepth = 2;
-  const mkvmuxer::uint64 kAudioUid = 2;
-  EXPECT_EQ(kAudioBitDepth, audio->bit_depth());
-  EXPECT_EQ(kAudioUid, audio->uid());
+  audio->set_name(kTrackName);
+  audio->set_bit_depth(kBitDepth);
+  audio->set_uid(kAudioTrackNumber);
+  EXPECT_STREQ(kTrackName, audio->name());
+  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kBitDepth), audio->bit_depth());
+  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kAudioTrackNumber), audio->uid());
 
   AddDummyFrameAndFinalize(kVideoTrackNumber);
   CloseWriter();
@@ -562,26 +571,7 @@ TEST_F(MuxerTest, SetCuesTrackNumber) {
 
 TEST_F(MuxerTest, BlockWithDiscardPadding) {
   EXPECT_TRUE(SegmentInit(false));
-
-  // Add an Audio Track
-  const int aud_track =
-      segment_.AddAudioTrack(kSampleRate, kChannels, kAudioTrackNumber);
-  EXPECT_EQ(kAudioTrackNumber, aud_track);
-  AudioTrack* const audio =
-      dynamic_cast<AudioTrack*>(segment_.GetTrackByNumber(aud_track));
-  EXPECT_EQ(kSampleRate, audio->sample_rate());
-  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kChannels), audio->channels());
-  ASSERT_TRUE(audio != NULL);
-  audio->set_name("unit_test");
-  audio->set_bit_depth(2);
-  audio->set_uid(2);
-  audio->set_codec_id(kOpusCodecId);
-  EXPECT_STREQ("unit_test", audio->name());
-  const mkvmuxer::uint64 kAudioBitDepth = 2;
-  const mkvmuxer::uint64 kAudioUid = 2;
-  EXPECT_EQ(kAudioBitDepth, audio->bit_depth());
-  EXPECT_EQ(kAudioUid, audio->uid());
-  EXPECT_STREQ(kOpusCodecId, audio->codec_id());
+  AddAudioTrack();
 
   int timecode = 1000;
   // 12810000 == 0xc37710, should be 0-extended to avoid changing the sign.

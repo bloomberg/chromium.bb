@@ -572,7 +572,7 @@ TEST_F(ParserTest, DiscardPadding) {
   const Track* const track = tracks->GetTrackByIndex(0);
   ASSERT_TRUE(track != NULL);
 
-  EXPECT_STREQ("unit_test", track->GetNameAsUTF8());
+  EXPECT_STREQ(NULL, track->GetNameAsUTF8());
   EXPECT_EQ(NULL, track->GetLanguage());
   EXPECT_EQ(kAudioTrackNumber, track->GetNumber());
   EXPECT_TRUE(track->GetLacing());
@@ -581,7 +581,6 @@ TEST_F(ParserTest, DiscardPadding) {
   const AudioTrack* const audio_track = dynamic_cast<const AudioTrack*>(track);
   EXPECT_EQ(30, audio_track->GetSamplingRate());
   EXPECT_EQ(2, audio_track->GetChannels());
-  EXPECT_EQ(2, audio_track->GetBitDepth());
   EXPECT_STREQ(kOpusCodecId, audio_track->GetCodecId());
   EXPECT_EQ(kAudioTrackNumber, static_cast<int>(audio_track->GetUid()));
   const unsigned int kDefaultDuration = 0;
