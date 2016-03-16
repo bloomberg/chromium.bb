@@ -18,7 +18,6 @@ class BlockFlowPainter {
 public:
     BlockFlowPainter(const LayoutBlockFlow& layoutBlockFlow) : m_layoutBlockFlow(layoutBlockFlow) { }
     void paintFloats(const PaintInfo&, const LayoutPoint&);
-    void paintSelection(const PaintInfo&, const LayoutPoint&);
 private:
     const LayoutBlockFlow& m_layoutBlockFlow;
 };

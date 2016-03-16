@@ -184,8 +184,6 @@ private:
 
 DEFINE_INLINE_BOX_TYPE_CASTS(InlineTextBox);
 
-void alignSelectionRectToDevicePixels(LayoutRect&);
-
 } // namespace blink
 
 #endif // InlineTextBox_h

@@ -2678,14 +2678,6 @@ void LayoutBlockFlow::setAncestorShouldPaintFloatingObject(const LayoutBox& floa
     ASSERT_NOT_REACHED();
 }
 
-IntRect alignSelectionRectToDevicePixels(LayoutRect& rect)
-{
-    LayoutUnit roundedX = LayoutUnit(rect.x().round());
-    return IntRect(roundedX, rect.y().round(),
-        (rect.maxX() - roundedX).round(),
-        snapSizeToPixel(rect.height(), rect.y()));
-}
-
 bool LayoutBlockFlow::allowsPaginationStrut() const
 {
     // The block needs to be contained by a LayoutBlockFlow (and not by e.g. a flexbox, grid, or a

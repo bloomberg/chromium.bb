@@ -183,9 +183,6 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
         paintContents(contentsPaintInfo, paintOffset);
 
-        if (paintPhase == PaintPhaseForeground && !paintInfo.isPrinting())
-            m_layoutBlock.paintSelection(contentsPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
-
         if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip)
             m_layoutBlock.paintFloats(contentsPaintInfo, paintOffset);
     }
