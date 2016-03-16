@@ -26,6 +26,13 @@
 
 namespace blink {
 
+TreeScope& treeScopeForIdResolution(const SVGElement& element)
+{
+    if (SVGElement* correspondingElement = element.correspondingElement())
+        return correspondingElement->treeScope();
+    return element.treeScope();
+}
+
 PathPositionMapper::PathPositionMapper(const Path& path)
     : m_positionCalculator(path)
     , m_pathLength(path.length())
@@ -61,7 +68,8 @@ PassOwnPtr<PathPositionMapper> LayoutSVGTextPath::layoutPath() const
 {
     const SVGTextPathElement& textPathElement = toSVGTextPathElement(*node());
     Element* targetElement = SVGURIReference::targetElementFromIRIString(
-        textPathElement.hrefString(), textPathElement.treeScope());
+        textPathElement.hrefString(), treeScopeForIdResolution(textPathElement));
+
     if (!isSVGPathElement(targetElement))
         return nullptr;
 
