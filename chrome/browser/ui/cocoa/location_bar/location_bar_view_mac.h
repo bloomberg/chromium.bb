@@ -159,6 +159,14 @@ class LocationBarViewMac : public LocationBar,
   // Clears any location bar state stored for |contents|.
   void ResetTabState(content::WebContents* contents);
 
+  // Set the location bar's icon to the correct image for the current URL.
+  void UpdateLocationIcon();
+
+  // Notify the location bar that it was added to the browser window. Provides
+  // an update point for interface objects that need to set their appearance
+  // based on the window's theme.
+  void OnAddedToWindow();
+
   // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override;
   void OnChanged() override;
@@ -168,6 +176,7 @@ class LocationBarViewMac : public LocationBar,
   const ToolbarModel* GetToolbarModel() const override;
   content::WebContents* GetWebContents() override;
 
+  bool ShouldShowEVBubble() const;
   NSImage* GetKeywordImage(const base::string16& keyword);
 
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }

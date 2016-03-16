@@ -30,6 +30,8 @@ class Clipboard;
 class OmniboxViewMac : public OmniboxView,
                        public AutocompleteTextFieldObserver {
  public:
+  static NSColor* BaseTextColor(bool inDarkMode);
+
   OmniboxViewMac(OmniboxEditController* controller,
                  Profile* profile,
                  CommandUpdater* command_updater,

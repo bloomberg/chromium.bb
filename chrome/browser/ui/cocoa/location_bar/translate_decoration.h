@@ -22,7 +22,7 @@ class TranslateDecoration : public ImageDecoration {
   ~TranslateDecoration() override;
 
   // Toggles the icon on or off.
-  void SetLit(bool on);
+  void SetLit(bool on, bool locationBarIsDark);
 
   // Implement |LocationBarDecoration|
   bool AcceptsMousePress() override;

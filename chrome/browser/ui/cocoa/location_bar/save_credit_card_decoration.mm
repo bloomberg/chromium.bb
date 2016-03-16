@@ -8,6 +8,8 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -15,11 +17,21 @@
 SaveCreditCardDecoration::SaveCreditCardDecoration(
     CommandUpdater* command_updater)
     : command_updater_(command_updater) {
-  SetImage(NSImageFromImageSkia(gfx::CreateVectorIcon(
-      gfx::VectorIconId::CREDIT_CARD, 16, SkColorSetRGB(0x96, 0x96, 0x96))));
 }
 
 SaveCreditCardDecoration::~SaveCreditCardDecoration() {}
+
+void SaveCreditCardDecoration::SetIcon(bool locationBarIsDark) {
+  SkColor theColor = gfx::kPlaceholderColor;
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    theColor = locationBarIsDark ? SK_ColorWHITE : gfx::kChromeIconGrey;
+  } else {
+    theColor = SkColorSetRGB(0x96, 0x96, 0x96);
+  }
+
+  SetImage(NSImageFromImageSkia(gfx::CreateVectorIcon(
+        gfx::VectorIconId::CREDIT_CARD, 16, theColor)));
+}
 
 NSPoint SaveCreditCardDecoration::GetBubblePointInFrame(NSRect frame) {
   const NSRect draw_frame = GetDrawRectInFrame(frame);

@@ -381,6 +381,14 @@ const CGFloat kAnimationDuration = 0.2;
     return;
   }
 
+  // Allow the ToolbarController to take action upon the
+  // AutocompleteTextField being added to the window.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    BrowserWindowController* browserWindowController =
+        [BrowserWindowController browserWindowControllerForView:self];
+    [[browserWindowController toolbarController] locationBarWasAddedToWindow];
+  }
+
   // Invert the textfield's colors when Material Design and Incognito and not
   // a custom theme.
   if (ui::MaterialDesignController::IsModeMaterial() &&

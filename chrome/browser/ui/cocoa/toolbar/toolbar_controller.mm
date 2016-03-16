@@ -609,6 +609,12 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   return locationBarView_.get();
 }
 
+- (void)locationBarWasAddedToWindow {
+  // Allow the |locationBarView_| to update itself to match the browser window
+  // theme.
+  locationBarView_->OnAddedToWindow();
+}
+
 - (void)focusLocationBar:(BOOL)selectAll {
   if (locationBarView_.get()) {
     locationBarView_->FocusLocation(selectAll ? true : false);

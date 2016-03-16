@@ -26,6 +26,9 @@ class EVBubbleDecoration : public BubbleDecoration {
   explicit EVBubbleDecoration(LocationIconDecoration* location_icon);
   ~EVBubbleDecoration() override;
 
+  // Return the color used to draw the EvBubbleDecoration background in MD.
+  NSColor* GetBackgroundBorderColor() override;
+
   // |GetWidthForSpace()| will set |full_label| as the label, if it
   // fits, else it will set an elided version.
   void SetFullLabel(NSString* full_label);

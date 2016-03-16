@@ -9,7 +9,14 @@
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 // ManagePasswordsIconCocoa
 
@@ -81,7 +88,22 @@ void ManagePasswordsDecoration::UpdateUIState() {
     return;
   }
   SetVisible(true);
-  SetImage(OmniboxViewMac::ImageForResource(icon_->icon_id()));
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    SetImage(OmniboxViewMac::ImageForResource(icon_->icon_id()));
+  } else {
+    int resource_id = icon_->icon_id();
+    bool locationBarIsDark =
+        [[location_bar_->GetAutocompleteTextField() window]
+            inIncognitoModeWithSystemTheme];
+    SkColor vectorIconColor = gfx::kGoogleBlue700;
+    if (resource_id != IDR_SAVE_PASSWORD_ACTIVE) {
+      vectorIconColor = locationBarIsDark ? SK_ColorWHITE
+                                          : gfx::kChromeIconGrey;
+    }
+    NSImage* theImage = NSImageFromImageSkia(gfx::CreateVectorIcon(
+        gfx::VectorIconId::AUTOLOGIN, 16, vectorIconColor));
+    SetImage(theImage);
+  }
 }
 
 void ManagePasswordsDecoration::UpdateVisibleUI() {

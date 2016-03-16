@@ -16,14 +16,19 @@
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -334,10 +339,37 @@ CGFloat ContentSettingDecoration::GetWidthForSpace(CGFloat width) {
 void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   if ([animation_ animationState] != kNoAnimation) {
     NSRect background_rect = NSInsetRect(frame, 0.0, kBorderPadding);
-    const ui::NinePartImageIds image_ids =
-        IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
-    ui::DrawNinePartImage(
-        background_rect, image_ids, NSCompositeSourceOver, 1.0, true);
+    // This code is almost identical to code that appears in BubbleDecoration.
+    // Unfortunately ContentSettingDecoration does not descend from
+    // BubbleDecoration. Even if we move the code to LocationBarDecoration (the
+    // common ancestor) the semantics here are slightly different: there's a
+    // general DrawBackgroundInFrame() method for LocationBarDecorations that
+    // draws the background and then calls DrawInFrame(), but for some reason
+    // this ContentSettingDecoration's DrawInFrame() also draws the background.
+    // In short, moving this code upstream to a common parent requires a non-
+    // trivial bit of refactoring.
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      CGFloat lineWidth = [control_view cr_lineWidth];
+      NSRect rect =
+          NSInsetRect(background_rect, lineWidth / 2., lineWidth / 2.);
+      NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:rect
+                                                           xRadius:3
+                                                           yRadius:3];
+      [path setLineWidth:lineWidth];
+      bool inDarkMode = [[control_view window] inIncognitoModeWithSystemTheme];
+      if (inDarkMode) {
+        [[NSColor whiteColor] set];
+        [path fill];
+      } else {
+        [skia::SkColorToCalibratedNSColor(gfx::kGoogleYellow700) set];
+        [path stroke];
+      }
+    } else {
+      const ui::NinePartImageIds image_ids =
+          IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
+      ui::DrawNinePartImage(
+          background_rect, image_ids, NSCompositeSourceOver, 1.0, true);
+    }
 
     // Draw the icon.
     NSImage* icon = GetImage();

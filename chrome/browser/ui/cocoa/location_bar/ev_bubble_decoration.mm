@@ -8,6 +8,9 @@
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 
@@ -49,11 +52,19 @@ NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
 
 EVBubbleDecoration::EVBubbleDecoration(LocationIconDecoration* location_icon)
     : location_icon_(location_icon) {
-  // Color tuples stolen from location_bar_view_gtk.cc.
-  SetTextColor(ColorWithRGBBytes(0x07, 0x95, 0x00));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SetTextColor(GetBackgroundBorderColor());
+  } else {
+    // Color tuples stolen from location_bar_view_gtk.cc.
+    SetTextColor(ColorWithRGBBytes(0x07, 0x95, 0x00));
+  }
 }
 
 EVBubbleDecoration::~EVBubbleDecoration() {}
+
+NSColor* EVBubbleDecoration::GetBackgroundBorderColor() {
+  return skia::SkColorToCalibratedNSColor(gfx::kGoogleGreen700);
+}
 
 void EVBubbleDecoration::SetFullLabel(NSString* label) {
   full_label_.reset([label retain]);

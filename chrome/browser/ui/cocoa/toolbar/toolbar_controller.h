@@ -111,6 +111,9 @@ class NotificationBridge;
 // returns nil if we don't want to override the custom field editor for |obj|.
 - (id)customFieldEditorForObject:(id)obj;
 
+// Called by the |locationBar_| when it has been added to its window.
+- (void)locationBarWasAddedToWindow;
+
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar:(BOOL)selectAll;
 

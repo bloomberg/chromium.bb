@@ -87,7 +87,7 @@ int OmniboxView::GetIcon() const {
 }
 
 gfx::VectorIconId OmniboxView::GetVectorIcon(bool invert) const {
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (!IsEditingOrEmpty()) {
     gfx::VectorIconId id = controller_->GetToolbarModel()->GetVectorIcon();
     if (invert) {

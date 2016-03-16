@@ -226,7 +226,7 @@ int AutocompleteMatch::TypeToIcon(Type type) {
 
 // static
 gfx::VectorIconId AutocompleteMatch::TypeToVectorIcon(Type type) {
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   static const gfx::VectorIconId kIcons[] = {
       gfx::VectorIconId::OMNIBOX_HTTP,           // URL_WHAT_YOU_TYPE
       gfx::VectorIconId::OMNIBOX_HTTP,           // HISTORY_URL

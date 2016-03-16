@@ -30,7 +30,8 @@ class ZoomDecoration : public ImageDecoration,
   // Called when this decoration should show or hide itself in its most current
   // state. Returns whether any updates were made.
   bool UpdateIfNecessary(ui_zoom::ZoomController* zoom_controller,
-                         bool default_zoom_changed);
+                         bool default_zoom_changed,
+                         bool location_bar_is_dark);
 
   // Shows the zoom bubble for this decoration. If |auto_close| is YES, then
   // the bubble will automatically close after a fixed period of time.
@@ -48,7 +49,8 @@ class ZoomDecoration : public ImageDecoration,
   // Show and update UI associated with the zoom decoration.
   // Virtual and protected for testing.
   virtual void ShowAndUpdateUI(ui_zoom::ZoomController* zoom_controller,
-                               NSString* tooltip_string);
+                               NSString* tooltip_string,
+                               bool location_bar_is_dark);
 
  private:
   friend ZoomDecorationTest;

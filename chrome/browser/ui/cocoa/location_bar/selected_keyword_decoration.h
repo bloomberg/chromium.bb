@@ -19,6 +19,9 @@ class SelectedKeywordDecoration : public BubbleDecoration {
   SelectedKeywordDecoration();
   ~SelectedKeywordDecoration() override;
 
+  // Return the color used to draw the SelectedKeywordDecoration in MD.
+  NSColor* GetBackgroundBorderColor() override;
+
   // Calculates appropriate full and partial label strings based on
   // inputs.
   void SetKeyword(const base::string16& keyword, bool is_extension_keyword);

@@ -31,11 +31,13 @@
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
+#import "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
@@ -88,30 +90,23 @@ NSColor* HostTextColor(bool inDarkMode) {
   }
   return inDarkMode ? [NSColor whiteColor] : [NSColor blackColor];
 }
-NSColor* BaseTextColor(bool inDarkMode) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [NSColor darkGrayColor];
-  }
-  return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5] :
-                      [NSColor colorWithCalibratedWhite:0 alpha:0.5];
-}
 NSColor* SecureSchemeColor(bool inDarkMode) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return ColorWithRGBBytes(0x07, 0x95, 0x00);
   }
   return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5] :
-                      ColorWithRGBBytes(0x0B, 0x80, 0x43);
+                      skia::SkColorToCalibratedNSColor(gfx::kGoogleGreen700);
 }
 NSColor* SecurityWarningSchemeColor(bool inDarkMode) {
   return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5] :
-                      ColorWithRGBBytes(0xF0, 0x93, 0x00);
+                      skia::SkColorToCalibratedNSColor(gfx::kGoogleYellow700);
 }
 NSColor* SecurityErrorSchemeColor(bool inDarkMode) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return ColorWithRGBBytes(0xa2, 0x00, 0x00);
   }
   return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5] :
-                      ColorWithRGBBytes(0xC5, 0x39, 0x29);
+                      skia::SkColorToCalibratedNSColor(gfx::kGoogleRed700);
 }
 
 const char kOmniboxViewMacStateKey[] = "OmniboxViewMacState";
@@ -160,6 +155,15 @@ NSImage* OmniboxViewMac::ImageForResource(int resource_id) {
 // static
 NSColor* OmniboxViewMac::SuggestTextColor() {
   return [NSColor colorWithCalibratedWhite:0.0 alpha:0.5];
+}
+
+// static
+NSColor* OmniboxViewMac::BaseTextColor(bool inDarkMode) {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return [NSColor darkGrayColor];
+  }
+  return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5]
+                    : [NSColor colorWithCalibratedWhite:0 alpha:0.5];
 }
 
 OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,

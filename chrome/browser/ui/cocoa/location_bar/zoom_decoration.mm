@@ -16,6 +16,11 @@
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 ZoomDecoration::ZoomDecoration(LocationBarViewMac* owner)
     : owner_(owner),
@@ -28,7 +33,9 @@ ZoomDecoration::~ZoomDecoration() {
 }
 
 bool ZoomDecoration::UpdateIfNecessary(
-    ui_zoom::ZoomController* zoom_controller, bool default_zoom_changed) {
+    ui_zoom::ZoomController* zoom_controller,
+    bool default_zoom_changed,
+    bool location_bar_is_dark) {
   if (!ShouldShowDecoration()) {
     if (!IsVisible() && !bubble_)
       return false;
@@ -47,7 +54,7 @@ bool ZoomDecoration::UpdateIfNecessary(
     return false;
   }
 
-  ShowAndUpdateUI(zoom_controller, zoom_string);
+  ShowAndUpdateUI(zoom_controller, zoom_string, location_bar_is_dark);
   return true;
 }
 
@@ -88,16 +95,35 @@ void ZoomDecoration::HideUI() {
 }
 
 void ZoomDecoration::ShowAndUpdateUI(ui_zoom::ZoomController* zoom_controller,
-                                     NSString* tooltip_string) {
-  int image_id = IDR_ZOOM_NORMAL;
-  ui_zoom::ZoomController::RelativeZoom relative_zoom =
-      zoom_controller->GetZoomRelativeToDefault();
-  if (relative_zoom == ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM)
-    image_id = IDR_ZOOM_MINUS;
-  else if (relative_zoom == ui_zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM)
-    image_id = IDR_ZOOM_PLUS;
+                                     NSString* tooltip_string,
+                                     bool location_bar_is_dark) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    ui_zoom::ZoomController::RelativeZoom relative_zoom =
+        zoom_controller->GetZoomRelativeToDefault();
+    // There is no ZOOM_NORMAL under Material Design.
+    gfx::VectorIconId iconId =
+        relative_zoom == ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
+            ? gfx::VectorIconId::ZOOM_MINUS
+            : gfx::VectorIconId::ZOOM_PLUS;
 
-  SetImage(OmniboxViewMac::ImageForResource(image_id));
+    SkColor vectorIconColor = location_bar_is_dark ? SK_ColorWHITE
+                                                   : gfx::kChromeIconGrey;
+    NSImage* theImage =
+        NSImageFromImageSkia(gfx::CreateVectorIcon(iconId,
+                                                   16,
+                                                   vectorIconColor));
+    SetImage(theImage);
+  } else {
+    int image_id = IDR_ZOOM_NORMAL;
+    ui_zoom::ZoomController::RelativeZoom relative_zoom =
+        zoom_controller->GetZoomRelativeToDefault();
+    if (relative_zoom == ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM)
+      image_id = IDR_ZOOM_MINUS;
+    else if (relative_zoom == ui_zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM)
+      image_id = IDR_ZOOM_PLUS;
+
+    SetImage(OmniboxViewMac::ImageForResource(image_id));
+  }
 
   tooltip_.reset([tooltip_string retain]);
 

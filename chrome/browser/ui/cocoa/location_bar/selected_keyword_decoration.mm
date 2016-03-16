@@ -9,15 +9,29 @@
 #include "chrome/browser/ui/location_bar/location_bar_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 SelectedKeywordDecoration::SelectedKeywordDecoration() {
-  search_image_.reset([OmniboxViewMac::ImageForResource(
-      IDR_KEYWORD_SEARCH_MAGNIFIER) retain]);
-  SetTextColor([NSColor blackColor]);
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    search_image_.reset([OmniboxViewMac::ImageForResource(
+        IDR_KEYWORD_SEARCH_MAGNIFIER) retain]);
+    SetTextColor([NSColor blackColor]);
+  } else {
+    SetTextColor(GetBackgroundBorderColor());
+  }
 }
 
 SelectedKeywordDecoration::~SelectedKeywordDecoration() {}
+
+NSColor* SelectedKeywordDecoration::GetBackgroundBorderColor() {
+  return skia::SkColorToCalibratedNSColor(gfx::kGoogleBlue700);
+}
 
 CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width) {
   const CGFloat full_width =

@@ -128,7 +128,7 @@ int ToolbarModelImpl::GetIcon() const {
 }
 
 gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   switch (GetSecurityLevel(false)) {
     case SecurityStateModel::NONE:
       return gfx::VectorIconId::LOCATION_BAR_HTTP;

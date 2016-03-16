@@ -7,6 +7,10 @@
 #import "chrome/browser/ui/cocoa/location_bar/bubble_decoration.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
+#import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 namespace {
 
@@ -14,7 +18,10 @@ namespace {
 const CGFloat kRightSideMargin = 1.0;
 
 // Padding between the icon/label and bubble edges.
-const CGFloat kBubblePadding = 3.0;
+CGFloat BubblePadding() {
+  return ui::MaterialDesignController::IsModeMaterial() ? 7 : 3;
+}
+
 
 // Padding between the icon and label.
 const CGFloat kIconLabelPadding = 4.0;
@@ -39,14 +46,14 @@ CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
 
   const CGFloat image_width = image ? [image size].width : 0.0;
   if (!label)
-    return kBubblePadding + image_width;
+    return BubblePadding() + image_width;
 
   // The bubble needs to take up an integral number of pixels.
   // Generally -sizeWithAttributes: seems to overestimate rather than
   // underestimate, so floor() seems to work better.
   const CGFloat label_width =
       std::floor([label sizeWithAttributes:attributes_].width);
-  return kBubblePadding + image_width + kIconLabelPadding + label_width;
+  return BubblePadding() + image_width + kIconLabelPadding + label_width;
 }
 
 NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
@@ -105,8 +112,25 @@ void BubbleDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
                                                  NSView* control_view) {
   NSRect rect = NSInsetRect(background_frame, 0, 1);
   rect.size.width -= kRightSideMargin;
-  ui::DrawNinePartImage(
-      rect, GetBubbleImageIds(), NSCompositeSourceOver, 1.0, true);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    CGFloat lineWidth = [control_view cr_lineWidth];
+    rect = NSInsetRect(rect, lineWidth / 2., lineWidth / 2.);
+    NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:rect
+                                                         xRadius:3
+                                                         yRadius:3];
+    [path setLineWidth:lineWidth];
+    bool inDarkMode = [[control_view window] inIncognitoModeWithSystemTheme];
+    if (inDarkMode) {
+      [[NSColor whiteColor] set];
+      [path fill];
+    } else {
+      [GetBackgroundBorderColor() set];
+      [path stroke];
+    }
+  } else {
+    ui::DrawNinePartImage(
+        rect, GetBubbleImageIds(), NSCompositeSourceOver, 1.0, true);
+  }
 
   DrawInFrame(frame, control_view);
 }

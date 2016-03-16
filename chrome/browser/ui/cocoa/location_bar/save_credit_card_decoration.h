@@ -20,6 +20,11 @@ class SaveCreditCardDecoration : public ImageDecoration {
   explicit SaveCreditCardDecoration(CommandUpdater* command_updater);
   ~SaveCreditCardDecoration() override;
 
+  // Set up the SaveCreditCardDecoration's icon to match the darkness of the
+  // location bar. This happens once the location bar has been added to the
+  // window so that we know the theme.
+  void SetIcon(bool locationBarIsDark);
+
   // LocationBarDecoration implementation:
   bool AcceptsMousePress() override;
   bool OnMousePressed(NSRect frame, NSPoint location) override;

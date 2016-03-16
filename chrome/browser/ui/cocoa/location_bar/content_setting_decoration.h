@@ -11,7 +11,8 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 
 // ContentSettingDecoration is used to display the content settings
-// images on the current page.
+// images on the current page. For example, the decoration animates into and out
+// of view when a page attempts to show a popup and the popup blocker is on.
 
 @class ContentSettingAnimationState;
 class ContentSettingImageModel;
