@@ -123,6 +123,43 @@ class TracingTrack(devtools_monitor.Track):
         tracing_track._base_msec = e.start_msec
     return tracing_track
 
+  def OverlappingEvents(self, start_msec, end_msec):
+    self._IndexEvents()
+    return self._interval_tree.OverlappingEvents(start_msec, end_msec)
+
+  def EventsEndingBetween(self, start_msec, end_msec):
+    """Gets the list of events ending within an interval.
+
+    Args:
+      start_msec: the start of the range to query, in milliseconds, inclusive.
+      end_msec: the end of the range to query, in milliseconds, inclusive.
+
+    Returns:
+      See OverlappingEvents() above.
+    """
+    overlapping_events = self.OverlappingEvents(start_msec, end_msec)
+    return [e for e in overlapping_events
+            if start_msec <= e.end_msec <= end_msec]
+
+  def EventFromStep(self, step_event):
+    """Returns the Event associated with a step event, or None.
+
+    Args:
+      step_event: (Event) Step event.
+
+    Returns:
+      an Event that matches the step event, or None.
+    """
+    self._IndexEvents()
+    assert 'step' in step_event.args and step_event.tracing_event['ph'] == 'T'
+    candidates = self._interval_tree.EventsAt(step_event.start_msec)
+    for event in candidates:
+      # IDs are only unique within a process (often they are pointers).
+      if (event.pid == step_event.pid and event.tracing_event['ph'] != 'T'
+          and event.name == step_event.name and event.id == step_event.id):
+        return event
+    return None
+
   def _IndexEvents(self, strict=False):
     if self._interval_tree:
       return
@@ -143,24 +180,6 @@ class TracingTrack(devtools_monitor.Track):
       raise devtools_monitor.DevToolsConnectionException(
           'Pending spanning events: %s' %
           '\n'.join([str(e) for e in spanning_events.PendingEvents()]))
-
-  def OverlappingEvents(self, start_msec, end_msec):
-    self._IndexEvents()
-    return self._interval_tree.OverlappingEvents(start_msec, end_msec)
-
-  def EventsEndingBetween(self, start_msec, end_msec):
-    """Gets the list of events ending within an interval.
-
-    Args:
-      start_msec: the start of the range to query, in milliseconds, inclusive.
-      end_msec: the end of the range to query, in milliseconds, inclusive.
-
-    Returns:
-      See OverlappingEvents() above.
-    """
-    overlapping_events = self.OverlappingEvents(start_msec, end_msec)
-    return [e for e in overlapping_events
-            if start_msec <= e.end_msec <= end_msec]
 
   def _GetEvents(self):
     self._IndexEvents()
