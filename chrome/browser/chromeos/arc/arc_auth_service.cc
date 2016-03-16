@@ -116,9 +116,10 @@ void ArcAuthService::GetAuthCodeDeprecated(
 void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::string auth_code = GetAndResetAuthCode();
-  if (!auth_code.empty()) {
-    callback.Run(mojo::String(auth_code), !IsOptInVerificationDisabled());
+  const std::string auth_code = GetAndResetAuthCode();
+  const bool verification_disabled = IsOptInVerificationDisabled();
+  if (!auth_code.empty() || verification_disabled) {
+    callback.Run(mojo::String(auth_code), !verification_disabled);
     return;
   }
 
