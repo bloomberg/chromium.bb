@@ -65,7 +65,7 @@ issues we haven't yet identified :)
 
 ## How can I help?
 
-We could espeially use infrastructure/bot, Mac, and iOS help.
+We could especially use infrastructure/bot, Mac, and iOS help.
 
 Or, look at [the list of open bugs](https://code.google.com/p/chromium/issues/list?can=2&q=label:Proj-GN-Migration%20-type:Project&sort=pri&colspec=ID%20Pri%20Summary%20Type%20OS%20Owner%20Status%20Modified%20Blocking) related to the migration and see if there's anything that catches your fancy.
 
