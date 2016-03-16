@@ -48,9 +48,26 @@ def jsonish_to_python(spec, is_top=False):
 
 class BotUpdateApi(recipe_api.RecipeApi):
 
-  def __init__(self, *args, **kwargs):
-      self._properties = {}
-      super(BotUpdateApi, self).__init__(*args, **kwargs)
+  def __init__(self, mastername, buildername, slavename, issue, patchset,
+               patch_url, repository, gerrit_ref, rietveld, revision,
+               parent_got_revision, deps_revision_overrides, fail_patch,
+               *args, **kwargs):
+    self._mastername = mastername
+    self._buildername = buildername
+    self._slavename = slavename
+    self._issue = issue
+    self._patchset = patchset
+    self._patch_url = patch_url
+    self._repository = repository
+    self._gerrit_ref = gerrit_ref
+    self._rietveld = rietveld
+    self._revision = revision
+    self._parent_got_revision = parent_got_revision
+    self._deps_revision_overrides = deps_revision_overrides
+    self._fail_patch = fail_patch
+
+    self._last_returned_properties = {}
+    super(BotUpdateApi, self).__init__(*args, **kwargs)
 
   def __call__(self, name, cmd, **kwargs):
     """Wrapper for easy calling of bot_update."""
@@ -64,8 +81,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
     return self.m.python(name, bot_update_path, cmd, **kwargs)
 
   @property
-  def properties(self):
-      return self._properties
+  def last_returned_properties(self):
+      return self._last_returned_properties
 
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
@@ -81,9 +98,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
     spec_string = jsonish_to_python(cfg.as_jsonish(), True)
 
     # Used by bot_update to determine if we want to run or not.
-    master = self.m.properties['mastername']
-    builder = self.m.properties['buildername']
-    slave = self.m.properties['slavename']
+    master = self._mastername
+    builder = self._buildername
+    slave = self._slavename
 
     # Construct our bot_update command.  This basically be inclusive of
     # everything required for bot_update to know:
@@ -95,11 +112,11 @@ class BotUpdateApi(recipe_api.RecipeApi):
         root = self.m.path.join(root, additional)
 
     if patch:
-      issue = self.m.properties.get('issue')
-      patchset = self.m.properties.get('patchset')
-      patch_url = self.m.properties.get('patch_url')
-      gerrit_repo = self.m.properties.get('repository')
-      gerrit_ref = self.m.properties.get('event.patchSet.ref')
+      issue = self._issue
+      patchset = self._patchset
+      patch_url = self._patch_url
+      gerrit_repo = self._repository
+      gerrit_ref = self._gerrit_ref
     else:
       # The trybot recipe sometimes wants to de-apply the patch. In which case
       # we pretend the issue/patchset/patch_url never existed.
@@ -149,7 +166,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--issue', issue],
         ['--patchset', patchset],
         ['--patch_url', patch_url],
-        ['--rietveld_server', self.m.properties.get('rietveld')],
+        ['--rietveld_server', self._rietveld],
         ['--gerrit_repo', gerrit_repo],
         ['--gerrit_ref', gerrit_ref],
         ['--apply_issue_email_file', email_file],
@@ -170,15 +187,15 @@ class BotUpdateApi(recipe_api.RecipeApi):
         revisions[solution.name] = solution.revision
       elif solution == cfg.solutions[0]:
         revisions[solution.name] = (
-            self.m.properties.get('parent_got_revision') or
-            self.m.properties.get('revision') or
+            self._parent_got_revision or
+            self._revision or
             'HEAD')
     if self.m.gclient.c and self.m.gclient.c.revisions:
       revisions.update(self.m.gclient.c.revisions)
     if cfg.solutions and root_solution_revision:
       revisions[cfg.solutions[0].name] = root_solution_revision
     # Allow for overrides required to bisect into rolls.
-    revisions.update(self.m.properties.get('deps_revision_overrides', {}))
+    revisions.update(self._deps_revision_overrides)
     for name, revision in sorted(revisions.items()):
       fixed_revision = self.m.gclient.resolve_revision(revision)
       if fixed_revision:
@@ -205,11 +222,11 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--with_branch_heads')
 
     # Inject Json output for testing.
-    git_mode = self.m.properties.get('mastername') not in SVN_MASTERS
+    git_mode = self._mastername not in SVN_MASTERS
     first_sln = cfg.solutions[0].name
     step_test_data = lambda: self.test_api.output_json(
         master, builder, slave, root, first_sln, rev_map, git_mode, force,
-        self.m.properties.get('fail_patch', False),
+        self._fail_patch,
         output_manifest=output_manifest, fixed_revisions=fixed_revisions)
 
     # Add suffixes to the step name, if specified.
@@ -228,11 +245,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
            ok_ret=(0, 87, 88), **kwargs)
     finally:
       step_result = self.m.step.active_result
-      self._properties = step_result.json.output.get('properties', {})
+      self._last_returned_properties = step_result.json.output.get(
+          'properties', {})
 
       if update_presentation:
         # Set properties such as got_revision.
-        for prop_name, prop_value in self.properties.iteritems():
+        for prop_name, prop_value in self.last_returned_properties.iteritems():
           step_result.presentation.properties[prop_name] = prop_value
       # Add helpful step description in the step UI.
       if 'step_text' in step_result.json.output:
