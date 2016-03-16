@@ -71,6 +71,7 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
 
   if (!sender_.Run()->Send(
           new DWriteFontProxyMsg_FindFamily(name, &family_index))) {
+    CHECK(false);
     return E_FAIL;
   }
 
@@ -115,8 +116,10 @@ UINT32 DWriteFontCollectionProxy::GetFontFamilyCount() {
   uint32_t family_count = 0;
   if (!sender_.Run()->Send(
           new DWriteFontProxyMsg_GetFamilyCount(&family_count))) {
+    CHECK(false);
     return 0;
   }
+  CHECK(family_count != 0);
   family_count_ = family_count;
   return family_count;
 }
@@ -128,9 +131,13 @@ HRESULT DWriteFontCollectionProxy::GetFontFromFontFace(
   DCHECK(font);
 
   for (const auto& family : families_) {
-    if (family && family->GetFontFromFontFace(font_face, font))
+    if (family && family->GetFontFromFontFace(font_face, font)) {
       return S_OK;
+    }
   }
+  // If the font came from our collection, at least one family should match
+  CHECK(false);
+
   return E_FAIL;
 }
 
@@ -139,16 +146,19 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
     const void* collection_key,
     UINT32 collection_key_size,
     IDWriteFontFileEnumerator** font_file_enumerator) {
-  if (!collection_key || collection_key_size != sizeof(uint32_t))
+  if (!collection_key || collection_key_size != sizeof(uint32_t)) {
+    CHECK(false);
     return E_INVALIDARG;
+  }
 
   TRACE_EVENT0("dwrite", "FontProxy::LoadingFontFiles");
 
   const uint32_t* family_index =
       reinterpret_cast<const uint32_t*>(collection_key);
 
-  if (*family_index >= GetFontFamilyCount())
+  if (*family_index >= GetFontFamilyCount()) {
     return E_INVALIDARG;
+  }
 
   // If we already loaded the family we should reuse the existing collection.
   DCHECK(!families_[*family_index]->IsLoaded());
@@ -156,14 +166,17 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
   std::vector<base::string16> file_names;
   if (!sender_.Run()->Send(
           new DWriteFontProxyMsg_GetFontFiles(*family_index, &file_names))) {
+    CHECK(false);
     return E_FAIL;
   }
 
   HRESULT hr = mswr::MakeAndInitialize<FontFileEnumerator>(
       font_file_enumerator, factory, this, &file_names);
 
-  if (!SUCCEEDED(hr))
+  if (!SUCCEEDED(hr)) {
+    CHECK(false);
     return E_FAIL;
+  }
 
   return S_OK;
 }
@@ -172,8 +185,10 @@ HRESULT DWriteFontCollectionProxy::CreateStreamFromKey(
     const void* font_file_reference_key,
     UINT32 font_file_reference_key_size,
     IDWriteFontFileStream** font_file_stream) {
-  if (!font_file_reference_key)
+  if (!font_file_reference_key) {
+    CHECK(false);
     return E_FAIL;
+  }
 
   const base::char16* file_name =
       reinterpret_cast<const base::char16*>(font_file_reference_key);
@@ -181,14 +196,18 @@ HRESULT DWriteFontCollectionProxy::CreateStreamFromKey(
   size_t file_name_size =
       static_cast<size_t>(font_file_reference_key_size) / sizeof(base::char16);
 
-  if (file_name_size == 0 || file_name[file_name_size - 1] != L'\0')
+  if (file_name_size == 0 || file_name[file_name_size - 1] != L'\0') {
+    CHECK(false);
     return E_FAIL;
+  }
 
   TRACE_EVENT0("dwrite", "FontFileEnumerator::CreateStreamFromKey");
 
   mswr::ComPtr<IDWriteFontFileStream> stream;
-  if (!SUCCEEDED(mswr::MakeAndInitialize<FontFileStream>(&stream, file_name)))
+  if (!SUCCEEDED(mswr::MakeAndInitialize<FontFileStream>(&stream, file_name))) {
+    CHECK(false);
     return E_FAIL;
+  }
   *font_file_stream = stream.Detach();
   return S_OK;
 }
@@ -196,15 +215,15 @@ HRESULT DWriteFontCollectionProxy::CreateStreamFromKey(
 HRESULT DWriteFontCollectionProxy::RuntimeClassInitialize(
     IDWriteFactory* factory,
     const base::Callback<IPC::Sender*(void)>& sender) {
-  DCHECK(factory);
+  CHECK(factory);
 
   factory_ = factory;
   sender_ = sender;
 
   HRESULT hr = factory->RegisterFontCollectionLoader(this);
-  DCHECK(SUCCEEDED(hr));
+  CHECK(SUCCEEDED(hr));
   hr = factory_->RegisterFontFileLoader(this);
-  DCHECK(SUCCEEDED(hr));
+  CHECK(SUCCEEDED(hr));
   return S_OK;
 }
 
@@ -224,6 +243,7 @@ bool DWriteFontCollectionProxy::LoadFamily(
   HRESULT hr = factory_->CreateCustomFontCollection(
       this /*collectionLoader*/, reinterpret_cast<const void*>(&index),
       sizeof(index), containing_collection);
+  CHECK(SUCCEEDED(hr));
 
   return SUCCEEDED(hr);
 }
@@ -236,12 +256,14 @@ bool DWriteFontCollectionProxy::LoadFamilyNames(
   std::vector<std::pair<base::string16, base::string16>> strings;
   if (!sender_.Run()->Send(
           new DWriteFontProxyMsg_GetFamilyNames(family_index, &strings))) {
+    CHECK(false);
     return false;
   }
 
   HRESULT hr = mswr::MakeAndInitialize<DWriteLocalizedStrings>(
       localized_strings, &strings);
 
+  CHECK(SUCCEEDED(hr));
   return SUCCEEDED(hr);
 }
 
@@ -250,8 +272,9 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
     return true;
 
   UINT32 family_count = GetFontFamilyCount();
-  if (family_index >= family_count)
+  if (family_index >= family_count) {
     return false;
+  }
 
   if (families_.size() < family_count)
     families_.resize(family_count);
@@ -259,8 +282,8 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
   mswr::ComPtr<DWriteFontFamilyProxy> family;
   HRESULT hr = mswr::MakeAndInitialize<DWriteFontFamilyProxy>(&family, this,
                                                               family_index);
-  DCHECK(SUCCEEDED(hr));
-  DCHECK_LT(family_index, families_.size());
+  CHECK(SUCCEEDED(hr));
+  CHECK_LT(family_index, families_.size());
 
   families_[family_index] = family;
   return true;
@@ -292,8 +315,10 @@ UINT32 DWriteFontFamilyProxy::GetFontCount() {
 HRESULT DWriteFontFamilyProxy::GetFont(UINT32 index, IDWriteFont** font) {
   DCHECK(font);
 
-  if (index >= GetFontCount())
+  if (index >= GetFontCount()) {
+    CHECK(false);
     return E_INVALIDARG;
+  }
   if (!LoadFamily())
     return E_FAIL;
 
@@ -371,7 +396,7 @@ bool DWriteFontFamilyProxy::GetFontFromFontFace(IDWriteFontFace* font_face,
 
   mswr::ComPtr<IDWriteFontCollection> collection;
   HRESULT hr = family_->GetFontCollection(&collection);
-  DCHECK(SUCCEEDED(hr));
+  CHECK(SUCCEEDED(hr));
   hr = collection->GetFontFromFontFace(font_face, font);
 
   return SUCCEEDED(hr);
@@ -414,6 +439,7 @@ bool DWriteFontFamilyProxy::LoadFamily() {
     if (SUCCEEDED(hr) && found) {
       hr = collection->GetFontFamily(family_index, &family_);
       LogLoadFamilyResult(LOAD_FAMILY_SUCCESS_MATCHED_FAMILY);
+      CHECK(SUCCEEDED(hr));
       return SUCCEEDED(hr);
     }
   }
@@ -423,6 +449,7 @@ bool DWriteFontFamilyProxy::LoadFamily() {
   if (family_count == 0) {
     // This is really strange, we successfully loaded no fonts?!
     LogLoadFamilyResult(LOAD_FAMILY_ERROR_NO_FAMILIES);
+    CHECK(false);
     return false;
   }
 
@@ -430,6 +457,8 @@ bool DWriteFontFamilyProxy::LoadFamily() {
                                         : LOAD_FAMILY_ERROR_MULTIPLE_FAMILIES);
 
   hr = collection->GetFontFamily(0, &family_);
+
+  CHECK(SUCCEEDED(hr));
 
   return SUCCEEDED(hr);
 }
@@ -440,16 +469,20 @@ FontFileEnumerator::~FontFileEnumerator() = default;
 
 HRESULT FontFileEnumerator::GetCurrentFontFile(IDWriteFontFile** file) {
   DCHECK(file);
-  if (current_file_ >= file_names_.size())
+  if (current_file_ >= file_names_.size()) {
+    CHECK(false);
     return E_FAIL;
+  }
 
   TRACE_EVENT0("dwrite", "FontFileEnumerator::GetCurrentFontFile (memmap)");
   // CreateCustomFontFileReference ends up calling
   // DWriteFontCollectionProxy::CreateStreamFromKey.
-  return factory_->CreateCustomFontFileReference(
+  HRESULT hr = factory_->CreateCustomFontFileReference(
       reinterpret_cast<const void*>(file_names_[current_file_].c_str()),
       (file_names_[current_file_].length() + 1) * sizeof(base::char16),
       loader_.Get() /*IDWriteFontFileLoader*/, file);
+  CHECK(SUCCEEDED(hr));
+  return hr;
 }
 
 HRESULT FontFileEnumerator::MoveNext(BOOL* has_current_file) {
@@ -497,10 +530,14 @@ HRESULT FontFileStream::ReadFileFragment(const void** fragment_start,
                                          UINT64 fragment_offset,
                                          UINT64 fragment_size,
                                          void** fragment_context) {
-  if (fragment_offset + fragment_size < fragment_offset)
+  if (fragment_offset + fragment_size < fragment_offset) {
+    CHECK(false);
     return E_FAIL;
-  if (fragment_offset + fragment_size > data_.length())
+  }
+  if (fragment_offset + fragment_size > data_.length()) {
+    CHECK(false);
     return E_FAIL;
+  }
   *fragment_start = data_.data() + fragment_offset;
   *fragment_context = nullptr;
   return S_OK;
@@ -509,8 +546,10 @@ HRESULT FontFileStream::ReadFileFragment(const void** fragment_start,
 HRESULT FontFileStream::RuntimeClassInitialize(
     const base::string16& file_name) {
   data_.Initialize(base::FilePath(file_name));
-  if (!data_.IsValid())
+  if (!data_.IsValid()) {
+    CHECK(false);
     return E_FAIL;
+  }
   return S_OK;
 }
 
