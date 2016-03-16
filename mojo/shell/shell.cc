@@ -319,7 +319,7 @@ class Shell::Instance : public mojom::Connector,
                      mojom::kInheritUserID, mojom::kInvalidInstanceID);
         return false;
       }
-      if (shell_->GetExistingOrRootInstance(target)) {
+      if (shell_->GetExistingInstance(target)) {
         LOG(ERROR) << "Error: Cannot client process matching existing identity:"
                    << "Name: " << target.name() << " User: " << target.user_id()
                    << " Instance: " << target.instance();
@@ -560,27 +560,19 @@ void Shell::Connect(scoped_ptr<ConnectParams> params,
 
 Shell::Instance* Shell::GetExistingInstance(const Identity& identity) const {
   const auto& it = identity_to_instance_.find(identity);
-  return it != identity_to_instance_.end() ? it->second : nullptr;
-}
+  Instance* instance = it != identity_to_instance_.end() ? it->second : nullptr;
+  if (instance)
+    return instance;
 
-Shell::Instance* Shell::GetExistingOrRootInstance(
-    const Identity& identity) const {
-  Instance* instance = GetExistingInstance(identity);
-  if (!instance) {
-    if (singletons_.find(identity.name()) != singletons_.end()) {
-      for (auto entry : identity_to_instance_) {
-        if (entry.first.name() == identity.name() &&
-            entry.first.instance() == identity.instance()) {
-          return entry.second;
-        }
+  if (singletons_.find(identity.name()) != singletons_.end()) {
+    for (auto entry : identity_to_instance_) {
+      if (entry.first.name() == identity.name() &&
+          entry.first.instance() == identity.instance()) {
+        return entry.second;
       }
     }
-
-    Identity root_identity = identity;
-    root_identity.set_user_id(mojom::kRootUserID);
-    instance = GetExistingInstance(root_identity);
   }
-  return instance;
+  return nullptr;
 }
 
 void Shell::NotifyPIDAvailable(uint32_t id, base::ProcessId pid) {
@@ -590,7 +582,7 @@ void Shell::NotifyPIDAvailable(uint32_t id, base::ProcessId pid) {
 }
 
 bool Shell::ConnectToExistingInstance(scoped_ptr<ConnectParams>* params) {
-  Instance* instance = GetExistingOrRootInstance((*params)->target());
+  Instance* instance = GetExistingInstance((*params)->target());
   if (instance)
     instance->ConnectToClient(std::move(*params));
   return !!instance;

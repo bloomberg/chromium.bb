@@ -114,11 +114,9 @@ class Shell : public ShellClient {
   // |client| to control it.
   void Connect(scoped_ptr<ConnectParams> params, mojom::ShellClientPtr client);
 
-  // Returns a running instance matching |identity|.
+  // Returns a running instance matching |identity|. This might be an instance
+  // running as a different user if one is available that services all users.
   Instance* GetExistingInstance(const Identity& identity) const;
-  // Like GetExistingInstance, but if no instance for |identity.user_id()| is
-  // found, looks for kRootUserID too.
-  Instance* GetExistingOrRootInstance(const Identity& identity) const;
 
   void NotifyPIDAvailable(uint32_t id, base::ProcessId pid);
 

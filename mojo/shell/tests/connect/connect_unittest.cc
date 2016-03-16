@@ -352,6 +352,32 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
   EXPECT_EQ(shell::mojom::ConnectResult::ACCESS_DENIED, result);
 }
 
+// Verifies that a client with the "all_users" capability class can receive
+// connections from clients run as other users.
+TEST_F(ConnectTest, AllUsersSingleton) {
+  // Connect to an instance with an explicitly different user_id.
+  const std::string singleton_userid = base::GenerateGUID();
+  Connector::ConnectParams params(Identity(kTestAppName, singleton_userid));
+  scoped_ptr<Connection> connection = connector()->Connect(&params);
+  {
+    base::RunLoop loop;
+    connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
+    loop.Run();
+    EXPECT_EQ(connection->GetRemoteIdentity().user_id(), singleton_userid);
+  }
+  // This connects using the current client's user_id, but should be bound to
+  // the instance run as |singleton_userid|.
+  scoped_ptr<Connection> inherit_connection =
+      connector()->Connect(kTestAppName);
+  {
+    base::RunLoop loop;
+    inherit_connection->AddConnectionCompletedClosure(
+        base::Bind(&QuitLoop, &loop));
+    loop.Run();
+    EXPECT_EQ(connection->GetRemoteIdentity().user_id(), singleton_userid);
+  }
+}
+
 // Tests that we can expose an interface to targets on outbound connections.
 TEST_F(ConnectTest, LocalInterface) {
   // Connect to a standalone application.
