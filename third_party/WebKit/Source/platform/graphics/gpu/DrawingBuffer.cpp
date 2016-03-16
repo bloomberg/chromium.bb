@@ -205,6 +205,11 @@ WebGraphicsContext3D* DrawingBuffer::context()
     return m_context.get();
 }
 
+gpu::gles2::GLES2Interface* DrawingBuffer::contextGL()
+{
+    return m_gl;
+}
+
 void DrawingBuffer::setIsHidden(bool hidden)
 {
     if (m_isHidden == hidden)

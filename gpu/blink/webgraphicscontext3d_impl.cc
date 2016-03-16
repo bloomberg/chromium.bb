@@ -227,25 +227,6 @@ bool WebGraphicsContext3DImpl::genSyncTokenCHROMIUM(WGC3Duint64 fenceSync,
 
 DELEGATE_TO_GL_1(waitSyncTokenCHROMIUM, WaitSyncTokenCHROMIUM, const WGC3Dbyte*)
 
-void WebGraphicsContext3DImpl::reshapeWithScaleFactor(int width,
-                                                      int height,
-                                                      float scale) {
-  gl_->ResizeCHROMIUM(width, height, scale, true);
-}
-
-DELEGATE_TO_GL_4R(mapBufferSubDataCHROMIUM, MapBufferSubDataCHROMIUM, WGC3Denum,
-                  WGC3Dintptr, WGC3Dsizeiptr, WGC3Denum, void*)
-
-DELEGATE_TO_GL_1(unmapBufferSubDataCHROMIUM, UnmapBufferSubDataCHROMIUM,
-                 const void*)
-
-DELEGATE_TO_GL_9R(mapTexSubImage2DCHROMIUM, MapTexSubImage2DCHROMIUM, WGC3Denum,
-                  WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei,
-                  WGC3Denum, WGC3Denum, WGC3Denum, void*)
-
-DELEGATE_TO_GL_1(unmapTexSubImage2DCHROMIUM, UnmapTexSubImage2DCHROMIUM,
-                 const void*)
-
 DELEGATE_TO_GL_3(discardFramebufferEXT, DiscardFramebufferEXT, WGC3Denum,
                  WGC3Dsizei, const WGC3Denum*)
 
@@ -835,9 +816,6 @@ void WebGraphicsContext3DImpl::setContextLostCallback(
   context_lost_callback_ = cb;
 }
 
-DELEGATE_TO_GL_5(texImageIOSurface2DCHROMIUM, TexImageIOSurface2DCHROMIUM,
-                 WGC3Denum, WGC3Dint, WGC3Dint, WGC3Duint, WGC3Duint)
-
 DELEGATE_TO_GL_5(texStorage2DEXT, TexStorage2DEXT,
                  WGC3Denum, WGC3Dint, WGC3Duint, WGC3Dint, WGC3Dint)
 
@@ -890,32 +868,11 @@ DELEGATE_TO_GL_11(copySubTextureCHROMIUM,
                   WGC3Dboolean,
                   WGC3Dboolean);
 
-DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
-                 WebGLId, WGC3Dint, const WGC3Dchar*)
-
-void WebGraphicsContext3DImpl::shallowFlushCHROMIUM() {
-  flush_id_ = GenFlushID();
-  gl_->ShallowFlushCHROMIUM();
-}
-
-void WebGraphicsContext3DImpl::shallowFinishCHROMIUM() {
-  flush_id_ = GenFlushID();
-  gl_->ShallowFinishCHROMIUM();
-}
-
-void WebGraphicsContext3DImpl::loseContextCHROMIUM(
-    WGC3Denum current, WGC3Denum other) {
-  gl_->LoseContextCHROMIUM(current, other);
-  gl_->Flush();
-}
-
 DELEGATE_TO_GL_1(genMailboxCHROMIUM, GenMailboxCHROMIUM, WGC3Dbyte*)
 DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,
                  WGC3Denum, const WGC3Dbyte*)
 DELEGATE_TO_GL_3(produceTextureDirectCHROMIUM, ProduceTextureDirectCHROMIUM,
                  WebGLId, WGC3Denum, const WGC3Dbyte*)
-DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
-                 WGC3Denum, const WGC3Dbyte*)
 DELEGATE_TO_GL_2R(createAndConsumeTextureCHROMIUM,
                   CreateAndConsumeTextureCHROMIUM,
                   WGC3Denum, const WGC3Dbyte*, WebGLId)
@@ -960,23 +917,11 @@ DELEGATE_TO_GL_3(uniformValuebufferCHROMIUM,
                  WGC3Dint,
                  WGC3Denum,
                  WGC3Denum);
-DELEGATE_TO_GL_2(traceBeginCHROMIUM,
-                 TraceBeginCHROMIUM,
-                 const WGC3Dchar*,
-                 const WGC3Dchar*);
-DELEGATE_TO_GL(traceEndCHROMIUM, TraceEndCHROMIUM);
-
-void WebGraphicsContext3DImpl::insertEventMarkerEXT(
-    const WGC3Dchar* marker) {
-  gl_->InsertEventMarkerEXT(0, marker);
-}
 
 void WebGraphicsContext3DImpl::pushGroupMarkerEXT(
     const WGC3Dchar* marker) {
   gl_->PushGroupMarkerEXT(0, marker);
 }
-
-DELEGATE_TO_GL(popGroupMarkerEXT, PopGroupMarkerEXT);
 
 WebGLId WebGraphicsContext3DImpl::createVertexArrayOES() {
   GLuint array;
@@ -996,11 +941,6 @@ DELEGATE_TO_GL_2(bindTexImage2DCHROMIUM, BindTexImage2DCHROMIUM,
                  WGC3Denum, WGC3Dint)
 DELEGATE_TO_GL_2(releaseTexImage2DCHROMIUM, ReleaseTexImage2DCHROMIUM,
                  WGC3Denum, WGC3Dint)
-
-DELEGATE_TO_GL_2R(mapBufferCHROMIUM, MapBufferCHROMIUM, WGC3Denum, WGC3Denum,
-                  void*)
-DELEGATE_TO_GL_1R(unmapBufferCHROMIUM, UnmapBufferCHROMIUM, WGC3Denum,
-                  WGC3Dboolean)
 
 DELEGATE_TO_GL_2(drawBuffersEXT, DrawBuffersEXT, WGC3Dsizei, const WGC3Denum*)
 
@@ -1216,10 +1156,6 @@ void WebGraphicsContext3DImpl::waitSync(WGC3Dsync sync,
   gl_->WaitSync(reinterpret_cast<GLsync>(sync), flags, timeout);
 }
 
-blink::WGC3Denum WebGraphicsContext3DImpl::getGraphicsResetStatusARB() {
-  return gl_->GetGraphicsResetStatusKHR();
-}
-
 ::gpu::gles2::GLES2Interface* WebGraphicsContext3DImpl::getGLES2Interface() {
   return gl_;
 }
@@ -1239,29 +1175,6 @@ void WebGraphicsContext3DImpl::OnErrorMessage(
     blink::WebString str = blink::WebString::fromUTF8(message.c_str());
     error_message_callback_->onErrorMessage(str, id);
   }
-}
-
-// TODO(bajones): Look into removing these functions from the blink interface
-void WebGraphicsContext3DImpl::prepareTexture() {
-  NOTREACHED();
-}
-
-void WebGraphicsContext3DImpl::postSubBufferCHROMIUM(
-    int x, int y, int width, int height) {
-  NOTREACHED();
-}
-
-void WebGraphicsContext3DImpl::setVisibilityCHROMIUM(
-    bool visible) {
-  NOTREACHED();
-}
-
-void WebGraphicsContext3DImpl::copyTextureToParentTextureCHROMIUM(
-    WebGLId texture, WebGLId parentTexture) {
-  NOTIMPLEMENTED();
-}
-
-void WebGraphicsContext3DImpl::releaseShaderCompiler() {
 }
 
 // static

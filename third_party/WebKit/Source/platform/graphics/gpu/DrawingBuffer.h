@@ -150,6 +150,7 @@ public:
     WebLayer* platformLayer();
 
     WebGraphicsContext3D* context();
+    gpu::gles2::GLES2Interface* contextGL();
 
     // Returns the actual context attributes for this drawing buffer which may differ from the
     // requested context attributes due to implementation limits.

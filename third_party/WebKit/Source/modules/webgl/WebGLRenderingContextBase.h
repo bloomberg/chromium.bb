@@ -56,6 +56,12 @@ namespace blink {
 class WebLayer;
 }
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace blink {
 
 class ANGLEInstancedArrays;
@@ -378,6 +384,7 @@ public:
     void loseContextImpl(LostContextMode, AutoRecoveryMethod);
 
     WebGraphicsContext3D* webContext() const { return drawingBuffer()->context(); }
+    gpu::gles2::GLES2Interface* contextGL() const { return drawingBuffer()->contextGL(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
     Extensions3DUtil* extensionsUtil();
 

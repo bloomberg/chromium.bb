@@ -126,6 +126,7 @@
 #include "core/testing/TypeConversions.h"
 #include "core/testing/UnionTypesTest.h"
 #include "core/workers/WorkerThread.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/Cursor.h"
 #include "platform/Language.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -2233,12 +2234,12 @@ bool Internals::loseSharedGraphicsContext3D()
     OwnPtr<WebGraphicsContext3DProvider> sharedProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!sharedProvider)
         return false;
-    WebGraphicsContext3D* sharedContext = sharedProvider->context3d();
-    sharedContext->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_EXT, GL_INNOCENT_CONTEXT_RESET_EXT);
+    gpu::gles2::GLES2Interface* sharedGL = sharedProvider->contextGL();
+    sharedGL->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_EXT, GL_INNOCENT_CONTEXT_RESET_EXT);
     // To prevent tests that call loseSharedGraphicsContext3D from being
     // flaky, we call finish so that the context is guaranteed to be lost
     // synchronously (i.e. before returning).
-    sharedContext->finish();
+    sharedGL->Finish();
     return true;
 }
 

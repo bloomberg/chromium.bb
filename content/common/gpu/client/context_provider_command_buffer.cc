@@ -107,8 +107,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
 
   std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), WebContext3DNoChecks());
-  WebContext3DNoChecks()->traceBeginCHROMIUM("gpu_toplevel",
-                                             unique_context_name.c_str());
+  WebContext3DNoChecks()->GetImplementation()->TraceBeginCHROMIUM(
+      "gpu_toplevel", unique_context_name.c_str());
 
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
   return true;

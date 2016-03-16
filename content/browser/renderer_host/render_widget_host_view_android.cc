@@ -211,10 +211,10 @@ GLHelperHolder::CreateContext3D() {
           limits, nullptr));
   context->SetContextType(BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (context->InitializeOnCurrentThread()) {
-    context->traceBeginCHROMIUM(
+    context->GetImplementation()->TraceBeginCHROMIUM(
         "gpu_toplevel",
-        base::StringPrintf("CmdBufferImageTransportFactory-%p",
-                           context.get()).c_str());
+        base::StringPrintf("CmdBufferImageTransportFactory-%p", context.get())
+            .c_str());
   } else {
     context.reset();
   }

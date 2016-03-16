@@ -1363,7 +1363,7 @@ class GLHelperTest : public testing::Test {
     EXPECT_FALSE(mailbox.IsZero());
     context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     const blink::WGC3Duint64 fence_sync = context_->insertFenceSyncCHROMIUM();
-    context_->shallowFlushCHROMIUM();
+    context_->GetGLInterface()->ShallowFlushCHROMIUM();
 
     gpu::SyncToken sync_token;
     ASSERT_TRUE(context_->genSyncTokenCHROMIUM(fence_sync,

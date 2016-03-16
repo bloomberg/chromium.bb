@@ -99,8 +99,7 @@ bool ContextProviderInProcess::BindToCurrentThread() {
 
   const std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), WebContext3DImpl());
-  WebContext3DImpl()->traceBeginCHROMIUM("gpu_toplevel",
-                                 unique_context_name.c_str());
+  ContextGL()->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
 
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
   return true;

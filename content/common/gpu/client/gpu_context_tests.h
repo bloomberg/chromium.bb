@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace {
@@ -45,7 +46,7 @@ CONTEXT_TEST_F(SignalTest, BasicSignalSyncTokenTest) {
     return;
 
   const blink::WGC3Duint64 fence_sync = context_->insertFenceSyncCHROMIUM();
-  context_->shallowFlushCHROMIUM();
+  context_->GetGLInterface()->ShallowFlushCHROMIUM();
 
   gpu::SyncToken sync_token;
   ASSERT_TRUE(context_->genSyncTokenCHROMIUM(fence_sync, sync_token.GetData()));

@@ -145,25 +145,19 @@ bool AllocateSkBitmapTexture(GrContext* gr,
 
 class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
  public:
-  explicit SyncTokenClientImpl(
-      blink::WebGraphicsContext3D* web_graphics_context)
-      : web_graphics_context_(web_graphics_context) {}
+  explicit SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
   ~SyncTokenClientImpl() override {}
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
-    const blink::WGC3Duint64 fence_sync =
-        web_graphics_context_->insertFenceSyncCHROMIUM();
-    web_graphics_context_->shallowFlushCHROMIUM();
-    if (!web_graphics_context_->genSyncTokenCHROMIUM(fence_sync,
-                                                     sync_token->GetData())) {
-      sync_token->Clear();
-    }
+    const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
+    gl_->ShallowFlushCHROMIUM();
+    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
   }
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
-    web_graphics_context_->waitSyncTokenCHROMIUM(sync_token.GetConstData());
+    gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 
  private:
-  blink::WebGraphicsContext3D* web_graphics_context_;
+  gpu::gles2::GLES2Interface* gl_;
 };
 
 }  // namespace
@@ -709,6 +703,8 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
+  // TODO(danakj): Pass a GLES2Interface to this method instead.
+  gpu::gles2::GLES2Interface* gl = web_graphics_context->getGLES2Interface();
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Don't allow clients to copy an encrypted video frame.
   if (needs_external_surface_)
@@ -728,26 +724,24 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
           mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES) ||
          (is_remote_ && mailbox_holder.texture_target == GL_TEXTURE_2D));
 
-  web_graphics_context->waitSyncTokenCHROMIUM(
-      mailbox_holder.sync_token.GetConstData());
+  gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
-  uint32_t src_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
+  uint32_t src_texture = gl->CreateAndConsumeTextureCHROMIUM(
       mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
   // Application itself needs to take care of setting the right flip_y
   // value down to get the expected result.
   // flip_y==true means to reverse the video orientation while
   // flip_y==false means to keep the intrinsic orientation.
-  web_graphics_context->copyTextureCHROMIUM(src_texture, texture,
-                                            internal_format, type, flip_y,
-                                            premultiply_alpha, false);
+  gl->CopyTextureCHROMIUM(src_texture, texture, internal_format, type, flip_y,
+                          premultiply_alpha, false);
 
-  web_graphics_context->deleteTexture(src_texture);
+  gl->DeleteTextures(1, &src_texture);
   web_graphics_context->flush();
 
-  SyncTokenClientImpl client(web_graphics_context);
+  SyncTokenClientImpl client(gl);
   video_frame->UpdateReleaseSyncToken(&client);
   return true;
 }

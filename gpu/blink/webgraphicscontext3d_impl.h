@@ -44,15 +44,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                             blink::WGC3Dbyte* syncToken) override;
   void waitSyncTokenCHROMIUM(const blink::WGC3Dbyte* syncToken) override;
 
-  void loseContextCHROMIUM(blink::WGC3Denum current,
-                           blink::WGC3Denum other) override;
-
-  void reshapeWithScaleFactor(
-      int width, int height, float scale_factor) override;
-
-  void prepareTexture() override;
-  void postSubBufferCHROMIUM(int x, int y, int width, int height) override;
-
   void activeTexture(blink::WGC3Denum texture) override;
   void applyScreenSpaceAntialiasingCHROMIUM() override;
   void attachShader(blink::WebGLId program, blink::WebGLId shader) override;
@@ -286,7 +277,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                   blink::WGC3Denum type,
                   void* pixels) override;
 
-  void releaseShaderCompiler() override;
   void renderbufferStorage(blink::WGC3Denum target,
                            blink::WGC3Denum internalformat,
                            blink::WGC3Dsizei width,
@@ -461,29 +451,9 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   void synthesizeGLError(blink::WGC3Denum) override;
 
-  void* mapBufferSubDataCHROMIUM(blink::WGC3Denum target,
-                                 blink::WGC3Dintptr offset,
-                                 blink::WGC3Dsizeiptr size,
-                                 blink::WGC3Denum access) override;
-  void unmapBufferSubDataCHROMIUM(const void*) override;
-  void* mapTexSubImage2DCHROMIUM(blink::WGC3Denum target,
-                                 blink::WGC3Dint level,
-                                 blink::WGC3Dint xoffset,
-                                 blink::WGC3Dint yoffset,
-                                 blink::WGC3Dsizei width,
-                                 blink::WGC3Dsizei height,
-                                 blink::WGC3Denum format,
-                                 blink::WGC3Denum type,
-                                 blink::WGC3Denum access) override;
-  void unmapTexSubImage2DCHROMIUM(const void*) override;
-
-  void setVisibilityCHROMIUM(bool visible) override;
-
   void discardFramebufferEXT(blink::WGC3Denum target,
                              blink::WGC3Dsizei numAttachments,
                              const blink::WGC3Denum* attachments) override;
-  virtual void copyTextureToParentTextureCHROMIUM(blink::WebGLId texture,
-                                                  blink::WebGLId parentTexture);
 
   blink::WebString getRequestableExtensionsCHROMIUM() override;
   void requestExtensionCHROMIUM(const char*) override;
@@ -513,12 +483,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   void setErrorMessageCallback(
       WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback) override;
-
-  void texImageIOSurface2DCHROMIUM(blink::WGC3Denum target,
-                                   blink::WGC3Dint width,
-                                   blink::WGC3Dint height,
-                                   blink::WGC3Duint ioSurfaceId,
-                                   blink::WGC3Duint plane) override;
 
   void texStorage2DEXT(blink::WGC3Denum target,
                        blink::WGC3Dint levels,
@@ -565,21 +529,12 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
       blink::WGC3Dboolean unpack_premultiply_alpha,
       blink::WGC3Dboolean unpack_unmultiply_alpha) override;
 
-  void bindUniformLocationCHROMIUM(blink::WebGLId program,
-                                   blink::WGC3Dint location,
-                                   const blink::WGC3Dchar* uniform) override;
-
-  void shallowFlushCHROMIUM() override;
-  void shallowFinishCHROMIUM() override;
-
   void genMailboxCHROMIUM(blink::WGC3Dbyte* mailbox) override;
   void produceTextureCHROMIUM(blink::WGC3Denum target,
                               const blink::WGC3Dbyte* mailbox) override;
   void produceTextureDirectCHROMIUM(blink::WebGLId texture,
                                     blink::WGC3Denum target,
                                     const blink::WGC3Dbyte* mailbox) override;
-  void consumeTextureCHROMIUM(blink::WGC3Denum target,
-                              const blink::WGC3Dbyte* mailbox) override;
   blink::WebGLId createAndConsumeTextureCHROMIUM(
       blink::WGC3Denum target,
       const blink::WGC3Dbyte* mailbox) override;
@@ -600,13 +555,8 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void uniformValuebufferCHROMIUM(blink::WGC3Dint location,
                                   blink::WGC3Denum target,
                                   blink::WGC3Denum subscription) override;
-  void traceBeginCHROMIUM(const blink::WGC3Dchar* category_name,
-                          const blink::WGC3Dchar* trace_name) override;
-  void traceEndCHROMIUM() override;
 
-  void insertEventMarkerEXT(const blink::WGC3Dchar* marker) override;
   void pushGroupMarkerEXT(const blink::WGC3Dchar* marker) override;
-  void popGroupMarkerEXT() override;
 
   // GL_OES_vertex_array_object
   blink::WebGLId createVertexArrayOES() override;
@@ -618,10 +568,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                               blink::WGC3Dint image_id) override;
   void releaseTexImage2DCHROMIUM(blink::WGC3Denum target,
                                  blink::WGC3Dint image_id) override;
-
-  void* mapBufferCHROMIUM(blink::WGC3Denum target,
-                          blink::WGC3Denum access) override;
-  blink::WGC3Dboolean unmapBufferCHROMIUM(blink::WGC3Denum target) override;
 
   // GL_EXT_draw_buffers
   void drawBuffersEXT(blink::WGC3Dsizei n,
@@ -936,8 +882,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void waitSync(blink::WGC3Dsync sync,
                 blink::WGC3Dbitfield flags,
                 blink::WGC3Duint64 timeout) override;
-
-  blink::WGC3Denum getGraphicsResetStatusARB() override;
 
   // WebGraphicsContext3D implementation.
   ::gpu::gles2::GLES2Interface* getGLES2Interface() override;

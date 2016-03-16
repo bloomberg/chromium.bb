@@ -41,18 +41,7 @@ public:
     {
     }
 
-    virtual void prepareTexture() { }
-
-    virtual void postSubBufferCHROMIUM(int x, int y, int width, int height) { }
-
     virtual void synthesizeGLError(WGC3Denum) { }
-
-    virtual void* mapBufferSubDataCHROMIUM(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr size, WGC3Denum access) { return 0; }
-    virtual void unmapBufferSubDataCHROMIUM(const void*) { }
-    virtual void* mapTexSubImage2DCHROMIUM(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, WGC3Denum access) { return 0; }
-    virtual void unmapTexSubImage2DCHROMIUM(const void*) { }
-
-    virtual void setVisibilityCHROMIUM(bool visible) { }
 
     virtual void discardFramebufferEXT(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) { }
     virtual void ensureFramebufferCHROMIUM() { }
@@ -173,8 +162,6 @@ public:
     virtual void polygonOffset(WGC3Dfloat factor, WGC3Dfloat units) { }
 
     virtual void readPixels(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, void* pixels) { }
-
-    virtual void releaseShaderCompiler() { }
 
     virtual void renderbufferStorage(WGC3Denum target, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height) { }
     virtual void sampleCoverage(WGC3Dclampf value, WGC3Dboolean invert) { }

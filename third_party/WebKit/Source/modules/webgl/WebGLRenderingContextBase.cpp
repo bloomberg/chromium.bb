@@ -5003,7 +5003,7 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
         // Inform the embedder that a lost context was received. In response, the embedder might
         // decide to take action such as asking the user for permission to use WebGL again.
         if (LocalFrame* frame = canvas()->document().frame())
-            frame->loader().client()->didLoseWebGLContext(webContext()->getGraphicsResetStatusARB());
+            frame->loader().client()->didLoseWebGLContext(contextGL()->GetGraphicsResetStatusKHR());
     }
 
     // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
@@ -5074,7 +5074,7 @@ Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil()
 {
     if (!m_extensionsUtil) {
         WebGraphicsContext3D* context = webContext();
-        gpu::gles2::GLES2Interface* gl = context->getGLES2Interface();
+        gpu::gles2::GLES2Interface* gl = contextGL();
         m_extensionsUtil = Extensions3DUtil::create(context, gl);
         // The only reason the ExtensionsUtil should be invalid is if the webContext is lost.
         ASSERT(m_extensionsUtil->isValid() || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
