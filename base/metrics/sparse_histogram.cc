@@ -29,6 +29,9 @@ HistogramBase* SparseHistogram::FactoryGet(const std::string& name,
     tentative_histogram->SetFlags(flags);
     histogram =
         StatisticsRecorder::RegisterOrDeleteDuplicate(tentative_histogram);
+    ReportHistogramActivity(*histogram, HISTOGRAM_CREATED);
+  } else {
+    ReportHistogramActivity(*histogram, HISTOGRAM_LOOKUP);
   }
   DCHECK_EQ(SPARSE_HISTOGRAM, histogram->GetHistogramType());
   return histogram;

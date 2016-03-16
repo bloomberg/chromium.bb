@@ -216,9 +216,15 @@ HistogramBase* Histogram::Factory::Build() {
       allocator->FinalizeHistogram(histogram_ref,
                                    histogram == tentative_histogram_ptr);
     }
+
+    // Update report on created histograms.
+    ReportHistogramActivity(*histogram, HISTOGRAM_CREATED);
+  } else {
+    // Update report on lookup histograms.
+    ReportHistogramActivity(*histogram, HISTOGRAM_LOOKUP);
   }
 
-  DCHECK_EQ(histogram_type_, histogram->GetHistogramType());
+  DCHECK_EQ(histogram_type_, histogram->GetHistogramType()) << name_;
   if (bucket_count_ != 0 &&
       !histogram->HasConstructionArguments(minimum_, maximum_, bucket_count_)) {
     // The construction arguments do not match the existing histogram.  This can

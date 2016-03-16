@@ -21,6 +21,10 @@ void BeginPersistentHistogramStorage() {
       installer::kSetupHistogramAllocatorName);
   base::PersistentHistogramAllocator::GetGlobalAllocator()
       ->CreateTrackingHistograms(installer::kSetupHistogramAllocatorName);
+
+  // This can't be enabled until after the allocator is configured because
+  // there is no other reporting out of setup other than persistent memory.
+  base::HistogramBase::EnableActivityReportHistogram("setup");
 }
 
 void EndPersistentHistogramStorage(const base::FilePath& target_path) {

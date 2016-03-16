@@ -67,6 +67,15 @@ StatisticsRecorder::HistogramIterator::operator++() {
   return *this;
 }
 
+StatisticsRecorder::~StatisticsRecorder() {
+  DCHECK(lock_);
+  DCHECK(histograms_);
+  DCHECK(ranges_);
+
+  // Global clean up.
+  Reset();
+}
+
 // static
 void StatisticsRecorder::Initialize() {
   // Ensure that an instance of the StatisticsRecorder object is created.
@@ -369,6 +378,17 @@ StatisticsRecorder::OnSampleCallback StatisticsRecorder::FindCallback(
 }
 
 // static
+size_t StatisticsRecorder::GetHistogramCount() {
+  if (!lock_)
+    return 0;
+
+  base::AutoLock auto_lock(*lock_);
+  if (!histograms_)
+    return 0;
+  return histograms_->size();
+}
+
+// static
 void StatisticsRecorder::ResetForTesting() {
   // Just call the private version that is used also by the destructor.
   Reset();
@@ -401,13 +421,6 @@ StatisticsRecorder::StatisticsRecorder() {
 
   if (VLOG_IS_ON(1))
     AtExitManager::RegisterCallback(&DumpHistogramsToVlog, this);
-}
-
-StatisticsRecorder::~StatisticsRecorder() {
-  DCHECK(histograms_ && ranges_ && lock_);
-
-  // Global clean up.
-  Reset();
 }
 
 // static

@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -756,6 +757,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
         *base::CommandLine::ForCurrentProcess();
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
+
+    base::HistogramBase::EnableActivityReportHistogram(process_type);
 
     MainFunctionParams main_params(command_line);
     main_params.ui_task = ui_task_;
