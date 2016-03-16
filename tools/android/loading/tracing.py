@@ -183,6 +183,8 @@ class TracingTrack(devtools_monitor.Track):
           'M': self._Ignore,
           'X': self._Ignore,
           'R': self._Ignore,
+          '(': self._Ignore, # Context events.
+          ')': self._Ignore, # Ditto.
           None: self._Ignore,
           }
 
