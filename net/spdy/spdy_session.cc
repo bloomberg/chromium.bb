@@ -338,7 +338,7 @@ template <typename T, size_t N> size_t GetTotalSize(const T (&arr)[N]) {
 // SpdyStreamRequest weak pointers.
 class RequestEquals {
  public:
-  RequestEquals(const base::WeakPtr<SpdyStreamRequest>& request)
+  explicit RequestEquals(const base::WeakPtr<SpdyStreamRequest>& request)
       : request_(request) {}
 
   bool operator()(const base::WeakPtr<SpdyStreamRequest>& request) const {
@@ -357,7 +357,7 @@ const size_t kMaxConcurrentStreamLimit = 256;
 
 SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
     SpdyFramer::SpdyError err) {
-  switch(err) {
+  switch (err) {
     case SpdyFramer::SPDY_NO_ERROR:
       return SPDY_ERROR_NO_ERROR;
     case SpdyFramer::SPDY_INVALID_CONTROL_FRAME:
@@ -422,7 +422,7 @@ Error MapFramerErrorToNetError(SpdyFramer::SpdyError err) {
 
 SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
     SpdyRstStreamStatus status) {
-  switch(status) {
+  switch (status) {
     case RST_STREAM_PROTOCOL_ERROR:
       return STATUS_CODE_PROTOCOL_ERROR;
     case RST_STREAM_INVALID_STREAM:

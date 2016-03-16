@@ -12,6 +12,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -1015,8 +1016,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // requests.
   std::set<SpdySessionKey> pooled_aliases_;
 
-  // |pool_| owns us, therefore its lifetime must exceed ours.  We set
-  // this to NULL after we are removed from the pool.
+  // |pool_| owns us, therefore its lifetime must exceed ours.
   SpdySessionPool* pool_;
   const base::WeakPtr<HttpServerProperties> http_server_properties_;
 
