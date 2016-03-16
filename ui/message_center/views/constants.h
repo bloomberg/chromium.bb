@@ -20,8 +20,6 @@ const SkColor kRegularTextBackgroundColor = SK_ColorWHITE;
 const SkColor kDimTextBackgroundColor = SK_ColorWHITE;
 const SkColor kContextTextBackgroundColor = SK_ColorWHITE;
 
-const int kIconSize = message_center::kNotificationIconSize;
-const int kLegacyIconSize = 40;
 const int kTextBottomPadding = 12;
 const int kItemTitleToMessagePadding = 3;
 const int kButtonVecticalPadding = 0;

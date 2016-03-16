@@ -94,32 +94,6 @@ scoped_ptr<views::Border> MakeSeparatorBorder(int top,
   return views::Border::CreateSolidSidedBorder(top, left, 0, 0, color);
 }
 
-// static
-// Return true if and only if the image is null or has alpha.
-bool HasAlpha(gfx::ImageSkia& image, views::Widget* widget) {
-  // Determine which bitmap to use.
-  float factor = 1.0f;
-  if (widget)
-    factor = ui::GetScaleFactorForNativeView(widget->GetNativeView());
-
-  // Extract that bitmap's alpha and look for a non-opaque pixel there.
-  SkBitmap bitmap = image.GetRepresentation(factor).sk_bitmap();
-  if (!bitmap.isNull()) {
-    SkBitmap alpha;
-    bitmap.extractAlpha(&alpha);
-    for (int y = 0; y < bitmap.height(); ++y) {
-      for (int x = 0; x < bitmap.width(); ++x) {
-        if (alpha.getColor(x, y) != SK_ColorBLACK) {
-          return true;
-        }
-      }
-    }
-  }
-
-  // If no opaque pixel was found, return false unless the bitmap is empty.
-  return bitmap.isNull();
-}
-
 // ItemView ////////////////////////////////////////////////////////////////////
 
 // ItemViews are responsible for drawing each list notification item's title and
@@ -353,13 +327,16 @@ int NotificationView::GetHeightForWidth(int width) const {
     }
   }
 
-  int content_height = std::max(top_height, kIconSize) + bottom_height;
+  int content_height =
+      std::max(top_height, kNotificationIconSize) + bottom_height;
 
   // Adjust the height to make sure there is at least 16px of space below the
   // icon if there is any space there (<http://crbug.com/232966>).
-  if (content_height > kIconSize)
-    content_height = std::max(content_height,
-                              kIconSize + message_center::kIconBottomPadding);
+  if (content_height > kNotificationIconSize) {
+    content_height =
+        std::max(content_height,
+                 kNotificationIconSize + message_center::kIconBottomPadding);
+  }
 
   return content_height + GetInsets().height();
 }
@@ -393,10 +370,11 @@ void NotificationView::Layout() {
   }
 
   // Icon.
-  icon_view_->SetBounds(insets.left(), insets.top(), kIconSize, kIconSize);
+  icon_view_->SetBounds(insets.left(), insets.top(), kNotificationIconSize,
+                        kNotificationIconSize);
 
   // Settings & Bottom views.
-  int bottom_y = insets.top() + std::max(top_height, kIconSize);
+  int bottom_y = insets.top() + std::max(top_height, kNotificationIconSize);
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
 
   if (settings_button_view_) {
@@ -681,24 +659,20 @@ void NotificationView::CreateOrUpdateListItemViews(
 
 void NotificationView::CreateOrUpdateIconView(
     const Notification& notification) {
+  gfx::Size image_view_size(kNotificationIconSize, kNotificationIconSize);
+
   if (!icon_view_) {
-    icon_view_ = new ProportionalImageView(gfx::Size(kIconSize, kIconSize));
+    icon_view_ = new ProportionalImageView(image_view_size);
     AddChildView(icon_view_);
   }
 
   gfx::ImageSkia icon = notification.icon().AsImageSkia();
-  if (notification.adjust_icon()) {
+  icon_view_->SetImage(icon, icon.size());
+
+  if (notification.draw_icon_background()) {
     icon_view_->set_background(
         views::Background::CreateSolidBackground(kIconBackgroundColor));
-    gfx::Size max_image_size =
-        notification.type() == NOTIFICATION_TYPE_SIMPLE &&
-                (icon.width() < kIconSize || icon.height() < kIconSize ||
-                 HasAlpha(icon, GetWidget()))
-            ? gfx::Size(kLegacyIconSize, kLegacyIconSize)
-            : gfx::Size(kIconSize, kIconSize);
-    icon_view_->SetImage(icon, max_image_size);
   } else {
-    icon_view_->SetImage(icon, icon.size());
     icon_view_->set_background(nullptr);
   }
 }

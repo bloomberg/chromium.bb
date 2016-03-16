@@ -355,42 +355,33 @@ TEST_F(NotificationViewTest, TestIconSizing) {
   notification()->set_type(NOTIFICATION_TYPE_SIMPLE);
   ProportionalImageView* view = notification_view()->icon_view_;
 
-  // Icons smaller than the legacy size should be scaled up to it.
-  notification()->set_icon(CreateTestImage(kLegacyIconSize / 2,
-                                           kLegacyIconSize / 2));
+  // Icons smaller than the maximum size should remain unscaled.
+  notification()->set_icon(CreateTestImage(kNotificationIconSize / 2,
+                                           kNotificationIconSize / 4));
   UpdateNotificationViews();
-  EXPECT_EQ(gfx::Size(kLegacyIconSize, kLegacyIconSize).ToString(),
+  EXPECT_EQ(gfx::Size(kNotificationIconSize / 2,
+                      kNotificationIconSize / 4).ToString(),
             GetImagePaintSize(view).ToString());
 
-  // Icons at the legacy size should be unscaled.
-  notification()->set_icon(CreateTestImage(kLegacyIconSize, kLegacyIconSize));
+  // Icons of exactly the intended icon size should remain unscaled.
+  notification()->set_icon(CreateTestImage(kNotificationIconSize,
+                                           kNotificationIconSize));
   UpdateNotificationViews();
-  EXPECT_EQ(gfx::Size(kLegacyIconSize, kLegacyIconSize).ToString(),
+  EXPECT_EQ(gfx::Size(kNotificationIconSize, kNotificationIconSize).ToString(),
             GetImagePaintSize(view).ToString());
 
-  // Icons slightly smaller than the preferred size should be scaled down to the
-  // legacy size to avoid having tiny borders (http://crbug.com/232966).
-  notification()->set_icon(CreateTestImage(kIconSize - 1, kIconSize - 1));
+  // Icons over the maximum size should be scaled down, maintaining proportions.
+  notification()->set_icon(CreateTestImage(2 * kNotificationIconSize,
+                                           2 * kNotificationIconSize));
   UpdateNotificationViews();
-  EXPECT_EQ(gfx::Size(kLegacyIconSize, kLegacyIconSize).ToString(),
+  EXPECT_EQ(gfx::Size(kNotificationIconSize, kNotificationIconSize).ToString(),
             GetImagePaintSize(view).ToString());
 
-  // Icons at the preferred size or above should be scaled down to the preferred
-  // size.
-  notification()->set_icon(CreateTestImage(kIconSize, kIconSize));
+  notification()->set_icon(CreateTestImage(4 * kNotificationIconSize,
+                                           2 * kNotificationIconSize));
   UpdateNotificationViews();
-  EXPECT_EQ(gfx::Size(kIconSize, kIconSize).ToString(),
-            GetImagePaintSize(view).ToString());
-
-  notification()->set_icon(CreateTestImage(2 * kIconSize, 2 * kIconSize));
-  UpdateNotificationViews();
-  EXPECT_EQ(gfx::Size(kIconSize, kIconSize).ToString(),
-            GetImagePaintSize(view).ToString());
-
-  // Large, non-square images' aspect ratios should be preserved.
-  notification()->set_icon(CreateTestImage(4 * kIconSize, 2 * kIconSize));
-  UpdateNotificationViews();
-  EXPECT_EQ(gfx::Size(kIconSize, kIconSize / 2).ToString(),
+  EXPECT_EQ(gfx::Size(kNotificationIconSize,
+                      kNotificationIconSize / 2).ToString(),
             GetImagePaintSize(view).ToString());
 }
 
