@@ -3,26 +3,28 @@
 // found in the LICENSE file.
 
 cr.define('md_history.history_item_test', function() {
-  var TEST_HISTORY_RESULTS = [
-    {"time": "1000000000"},
-    {"time": "100000000"},
-    {"time": "9000020"},
-    {"time": "9000000"},
-    {"time": "1"}
-  ];
-
-  var SEARCH_HISTORY_RESULTS = [
-    {"dateShort": "Feb 22, 2016", "title": "Search result"},
-    {"dateShort": "Feb 21, 2016", "title": "Search result 2"},
-    {"dateShort": "Feb 21, 2016", "title": "Search result 3"},
-  ];
-
   function registerTests() {
     suite('history-item', function() {
       var element;
+      var TEST_HISTORY_RESULTS;
+      var SEARCH_HISTORY_RESULTS;
 
       suiteSetup(function() {
         element = $('history-list');
+        TEST_HISTORY_RESULTS = [
+          createHistoryEntry('2016-03-16 10:00', 'http://www.google.com'),
+          createHistoryEntry('2016-03-16 9:00', 'http://www.example.com'),
+          createHistoryEntry('2016-03-16 7:01', 'http://www.badssl.com'),
+          createHistoryEntry('2016-03-16 7:00', 'http://www.website.com'),
+          createHistoryEntry('2016-03-16 4:00', 'http://www.website.com'),
+          createHistoryEntry('2016-03-15 11:00', 'http://www.example.com'),
+        ];
+
+        SEARCH_HISTORY_RESULTS = [
+          createSearchEntry('2016-03-16', "http://www.google.com"),
+          createSearchEntry('2016-03-14', "http://calendar.google.com"),
+          createSearchEntry('2016-03-14', "http://mail.google.com")
+        ];
       });
 
       setup(function() {
@@ -40,6 +42,7 @@ cr.define('md_history.history_item_test', function() {
           assertFalse(items[2].item.needsTimeGap);
           assertTrue(items[3].item.needsTimeGap);
           assertFalse(items[4].item.needsTimeGap);
+          assertFalse(items[5].item.needsTimeGap);
 
           done();
         });
@@ -68,7 +71,7 @@ cr.define('md_history.history_item_test', function() {
           items[3].onCheckboxSelected_();
 
           element.removeDeletedHistory(1);
-          assertEquals(element.historyData.length, 4);
+          assertEquals(element.historyData.length, 5);
 
           // Checks that a new time gap separator has been inserted.
           assertTrue(items[2].item.needsTimeGap);

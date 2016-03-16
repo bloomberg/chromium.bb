@@ -3,23 +3,17 @@
 // found in the LICENSE file.
 
 cr.define('md_history.history_toolbar_test', function() {
-  // Array of test history data.
-  var TEST_HISTORY_RESULTS = [
-    {
-      "dateRelativeDay": "Today - Wednesday, December 9, 2015",
-      "title": "Google",
-      "url": "https://www.google.com"
-    }
-  ];
-
   function registerTests() {
     suite('history-toolbar', function() {
       var element;
       var toolbar;
+      var TEST_HISTORY_RESULTS;
 
       suiteSetup(function() {
         element = $('history-list');
         toolbar = $('toolbar');
+        TEST_HISTORY_RESULTS =
+            [createHistoryEntry('2016-03-15', 'https://google.com')];
       });
 
       test('selecting checkbox causes toolbar to change', function(done) {
@@ -59,6 +53,7 @@ cr.define('md_history.history_toolbar_test', function() {
 
       teardown(function() {
         element.historyData = [];
+        registerMessageCallback('queryHistory', this, undefined);
         toolbar.count = 0;
       });
     });

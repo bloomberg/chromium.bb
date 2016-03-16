@@ -3,20 +3,15 @@
 // found in the LICENSE file.
 
 cr.define('md_history.history_supervised_user_test', function() {
-  // Array of test history data.
-  var TEST_HISTORY_RESULTS = [
-    {
-      "dateRelativeDay": "Today - Wednesday, December 9, 2015",
-      "url": "https://www.google.com"
-    }
-  ];
-
   function registerTests() {
     suite('history-list supervised-user', function() {
       var element;
+      var TEST_HISTORY_RESULTS;
 
       suiteSetup(function() {
         element = $('history-list');
+        TEST_HISTORY_RESULTS =
+            [createHistoryEntry('2016-03-15', 'https://www.google.com')];
       });
 
       setup(function() {
