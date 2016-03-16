@@ -825,6 +825,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ArcRuntime.LowMemoryKiller.FreedSize" units="KB">
+  <owner>elijahtaylor@google.com</owner>
+  <summary>The memory size freed by each low memory kill event.</summary>
+</histogram>
+
+<histogram name="ArcRuntime.LowMemoryKiller.TimeDelta" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <summary>The elapsed time to last low memory kill event.</summary>
+</histogram>
+
 <histogram name="Ash.Accelerators.Deprecated.LockScreen"
     enum="DeprecatedAcceleratorUsage">
   <owner>afakhry@chromium.org</owner>

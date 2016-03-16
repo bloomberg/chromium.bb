@@ -65,6 +65,8 @@
         'browser/chromeos/arc/arc_process_service.h',
         'browser/chromeos/arc/settings_bridge.cc',
         'browser/chromeos/arc/settings_bridge.h',
+        'browser/chromeos/arc/arc_low_memory_killer_monitor.h',
+        'browser/chromeos/arc/arc_low_memory_killer_monitor.cc',
         'browser/chromeos/attestation/attestation_ca_client.cc',
         'browser/chromeos/attestation/attestation_ca_client.h',
         'browser/chromeos/attestation/attestation_policy_observer.cc',
