@@ -1890,10 +1890,6 @@ ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 				  struct ivi_layout_surface **pSurface,
 				  int32_t number)
 {
-	struct ivi_layout *layout = get_instance();
-	struct ivi_layout_surface *ivisurf = NULL;
-	struct ivi_layout_surface *next = NULL;
-	uint32_t *id_surface = NULL;
 	int32_t i = 0;
 
 	if (ivilayer == NULL) {
@@ -1904,18 +1900,9 @@ ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 	clear_surface_pending_list(ivilayer);
 
 	for (i = 0; i < number; i++) {
-		id_surface = &pSurface[i]->id_surface;
-
-		wl_list_for_each_safe(ivisurf, next, &layout->surface_list, link) {
-			if (*id_surface != ivisurf->id_surface) {
-				continue;
-			}
-
-			wl_list_remove(&ivisurf->pending.link);
-			wl_list_insert(&ivilayer->pending.surface_list,
-				       &ivisurf->pending.link);
-			break;
-		}
+		wl_list_remove(&pSurface[i]->pending.link);
+		wl_list_insert(&ivilayer->pending.surface_list,
+				&pSurface[i]->pending.link);
 	}
 
 	ivilayer->order.dirty = 1;
