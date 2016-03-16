@@ -55,14 +55,24 @@ OSStatus AppleKeychain::SearchCreateFromAttributes(
     const SecKeychainAttributeList* attrList,
     SecKeychainSearchRef* searchRef) const {
   base::AutoLock lock(GetMacSecurityServicesLock());
+// Eventually, this deprecated method should be removed entirely.
+// https://crbug.com/595468
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   return SecKeychainSearchCreateFromAttributes(keychainOrArray, itemClass,
                                                attrList, searchRef);
+#pragma clang diagnostic pop
 }
 
 OSStatus AppleKeychain::SearchCopyNext(SecKeychainSearchRef searchRef,
                                        SecKeychainItemRef* itemRef) const {
   base::AutoLock lock(GetMacSecurityServicesLock());
+// Eventually, this deprecated method should be removed entirely.
+// https://crbug.com/595468
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   return SecKeychainSearchCopyNext(searchRef, itemRef);
+#pragma clang diagnostic pop
 }
 
 OSStatus AppleKeychain::AddInternetPassword(
