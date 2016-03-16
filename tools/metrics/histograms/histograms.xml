@@ -52372,6 +52372,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.Discarding.DiscardedEngagementScore">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Site engagement score of a discarded tab. Recorded for each discard if the
+    score is available.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler"
     enum="Boolean">
   <owner>georgesak@chromium.org</owner>
@@ -52404,6 +52412,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     recorded once per tab discard event. For example, a user who had 3 tabs
     reloaded records a count in the 1 bin, 2 bin and 3 bin. Thus each bin N is
     the number of sessions where users experienced N or more tab reload events.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.Discarding.ReloadedEngagementScore">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Site engagement score of a reloaded tab. Recorded for each reload if the
+    score is available. Note that this will be the same score the tab had when
+    discarded (which could have changed by the time it gets reloaded).
   </summary>
 </histogram>
 

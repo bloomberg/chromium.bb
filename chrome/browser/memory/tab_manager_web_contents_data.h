@@ -81,6 +81,7 @@ class TabManager::WebContentsData
     bool operator==(const Data& right) const;
     bool operator!=(const Data& right) const;
 
+    // TODO(georgesak): fix naming (no underscore).
     // Is the tab currently discarded?
     bool is_discarded_;
     // Number of times the tab has been discarded.
@@ -96,6 +97,8 @@ class TabManager::WebContentsData
     base::TimeTicks last_reload_time_;
     // The last time the tab switched from being active to inactive.
     base::TimeTicks last_inactive_time_;
+    // Site Engagement score (set to -1 if not available).
+    double engagement_score_;
   };
 
   // Returns either the system's clock or the test clock. See |test_tick_clock_|

@@ -7,6 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -61,6 +63,11 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
                                delta, base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromDays(1), 100);
 
+    // Record the site engagement score if available.
+    if (tab_data_.engagement_score_ >= 0.0) {
+      UMA_HISTOGRAM_COUNTS_100("TabManager.Discarding.ReloadedEngagementScore",
+                               tab_data_.engagement_score_);
+    }
     if (tab_data_.last_inactive_time_ != base::TimeTicks::UnixEpoch()) {
       delta = tab_data_.last_reload_time_ - tab_data_.last_inactive_time_;
       UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.InactiveToReloadTime",
@@ -73,6 +80,18 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",
                                 ++discard_count, 1, 1000, 50);
     tab_data_.last_discard_time_ = NowTicks();
+    // Record the site engagement score if available.
+    if (SiteEngagementService::IsEnabled()) {
+      SiteEngagementService* service = SiteEngagementService::Get(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+      if (service) {
+        tab_data_.engagement_score_ =
+            service->GetScore(web_contents()->GetLastCommittedURL());
+        UMA_HISTOGRAM_COUNTS_100(
+            "TabManager.Discarding.DiscardedEngagementScore",
+            tab_data_.engagement_score_);
+      }
+    }
   }
 
   tab_data_.is_discarded_ = state;
@@ -143,7 +162,8 @@ TabManager::WebContentsData::Data::Data()
       last_audio_change_time_(TimeTicks::UnixEpoch()),
       last_discard_time_(TimeTicks::UnixEpoch()),
       last_reload_time_(TimeTicks::UnixEpoch()),
-      last_inactive_time_(TimeTicks::UnixEpoch()) {}
+      last_inactive_time_(TimeTicks::UnixEpoch()),
+      engagement_score_(-1.0) {}
 
 bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
   return is_discarded_ == right.is_discarded_ &&
@@ -151,7 +171,8 @@ bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
          last_audio_change_time_ == right.last_audio_change_time_ &&
          last_discard_time_ == right.last_discard_time_ &&
          last_reload_time_ == right.last_reload_time_ &&
-         last_inactive_time_ == right.last_inactive_time_;
+         last_inactive_time_ == right.last_inactive_time_ &&
+         engagement_score_ == right.engagement_score_;
 }
 
 bool TabManager::WebContentsData::Data::operator!=(const Data& right) const {
