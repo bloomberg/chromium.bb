@@ -90,7 +90,19 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       with_branch_heads=False, refs=None,
                       patch_project_roots=None, patch_oauth2=False,
                       output_manifest=True, clobber=False,
-                      root_solution_revision=None, **kwargs):
+                      root_solution_revision=None, rietveld=None, issue=None,
+                      patchset=None, **kwargs):
+    """
+    Args:
+      gclient_config: The gclient configuration to use when running bot_update.
+        If omitted, the current gclient configuration is used.
+      rietveld: The rietveld server to use. If omitted, will infer from
+        the 'rietveld' property.
+      issue: The rietveld issue number to use. If omitted, will infer from
+        the 'issue' property.
+      patchset: The rietveld issue patchset to use. If omitted, will infer from
+        the 'patchset' property.
+    """
     refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
     # data bot_update needs is already configured into the gclient spec.
@@ -112,8 +124,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
         root = self.m.path.join(root, additional)
 
     if patch:
-      issue = self._issue
-      patchset = self._patchset
+      issue = issue or self._issue
+      patchset = patchset or self._patchset
       patch_url = self._patch_url
       gerrit_repo = self._repository
       gerrit_ref = self._gerrit_ref
@@ -166,7 +178,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--issue', issue],
         ['--patchset', patchset],
         ['--patch_url', patch_url],
-        ['--rietveld_server', self._rietveld],
+        ['--rietveld_server', rietveld or self._rietveld],
         ['--gerrit_repo', gerrit_repo],
         ['--gerrit_ref', gerrit_ref],
         ['--apply_issue_email_file', email_file],
