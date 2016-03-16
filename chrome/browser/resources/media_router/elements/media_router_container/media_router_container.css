@@ -152,8 +152,14 @@ paper-menu {
 #share-screen-text {
   -webkit-padding-start: var(--dialog-padding-start);
   color: var(--subtext-color);
+  font-weight: normal;
   padding-bottom: 4px;
   padding-top: 12px;
+}
+
+#share-screen-text::after {
+  background-color: white;
+  font-weight: normal;
 }
 
 .sink-content {
