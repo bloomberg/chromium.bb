@@ -37,6 +37,8 @@
 
 #header-and-arrow-container {
   display: flex;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 #header-text {
@@ -44,6 +46,8 @@
   color: white;
   font-size: 1.175em;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 paper-icon-button {
