@@ -59,7 +59,8 @@
     [CustomElementCallbacks] void normalize();
 
     [NewObject, CustomElementCallbacks] Node cloneNode(optional boolean deep = false);
-    boolean isEqualNode(Node? node);
+    boolean isEqualNode(Node? otherNode);
+    boolean isSameNode(Node? otherNode); // historical alias of ===
 
     const unsigned short DOCUMENT_POSITION_DISCONNECTED = 0x01;
     const unsigned short DOCUMENT_POSITION_PRECEDING = 0x02;
@@ -78,8 +79,4 @@
     [CustomElementCallbacks, PerWorldBindings, RaisesException] Node appendChild(Node node);
     [CustomElementCallbacks, PerWorldBindings, RaisesException] Node replaceChild(Node node, Node child);
     [CustomElementCallbacks, RaisesException] Node removeChild(Node child);
-
-    // FIXME: isSameNode has been removed from the spec:
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27424
-    [MeasureAs=NodeIsSameNode, ImplementedAs=isSameNodeDeprecated] boolean isSameNode(Node? other);
 };
