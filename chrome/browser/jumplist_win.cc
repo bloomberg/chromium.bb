@@ -256,6 +256,10 @@ void RunUpdateOnFileThread(
 
 }  // namespace
 
+JumpList::JumpListData::JumpListData() {}
+
+JumpList::JumpListData::~JumpListData() {}
+
 JumpList::JumpList(Profile* profile)
     : profile_(profile),
       jumplist_data_(new base::RefCountedData<JumpListData>),

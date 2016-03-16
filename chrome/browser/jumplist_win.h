@@ -59,6 +59,9 @@ class JumpList : public sessions::TabRestoreServiceObserver,
                  public base::RefCounted<JumpList> {
  public:
   struct JumpListData {
+    JumpListData();
+    ~JumpListData();
+
     // Lock for most_visited_pages_, recently_closed_pages_, icon_urls_
     // as they may be used by up to 2 threads.
     base::Lock list_lock_;
