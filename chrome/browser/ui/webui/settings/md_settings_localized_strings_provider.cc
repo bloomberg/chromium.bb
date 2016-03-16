@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
@@ -91,6 +93,16 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"delayBeforeClickVeryLong", IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG},
     {"onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL},
     {"a11yExplanation", IDS_SETTINGS_ACCESSIBILITY_EXPLANATION},
+    {"caretHighlightLabel",
+     IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CARET_HIGHLIGHT_DESCRIPTION},
+    {"cursorHighlightLabel",
+     IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CURSOR_HIGHLIGHT_DESCRIPTION},
+    {"focusHighlightLabel",
+     IDS_OPTIONS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION},
+    {"selectToSpeakLabel",
+     IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DESCRIPTION},
+    {"switchAccessLabel",
+     IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_DESCRIPTION},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
@@ -99,6 +111,10 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
+
+  html_source->AddBoolean("showExperimentalA11yFeatures",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableExperimentalAccessibilityFeatures));
 #endif
 }
 

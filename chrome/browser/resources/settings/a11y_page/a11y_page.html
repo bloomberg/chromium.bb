@@ -58,6 +58,23 @@
       <settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
           i18n-values="label:onScreenKeyboardLabel">
       </settings-checkbox>
+      <template is="dom-if" if="[[showExperimentalFeatures_]]">
+        <settings-checkbox pref="{{prefs.settings.a11y.caret_highlight}}"
+            i18n-values="label:caretHighlightLabel">
+        </settings-checkbox>
+        <settings-checkbox pref="{{prefs.settings.a11y.cursor_highlight}}"
+            i18n-values="label:cursorHighlightLabel">
+        </settings-checkbox>
+        <settings-checkbox pref="{{prefs.settings.a11y.focus_highlight}}"
+            i18n-values="label:focusHighlightLabel">
+        </settings-checkbox>
+        <settings-checkbox pref="{{prefs.settings.a11y.select_to_speak}}"
+            i18n-values="label:selectToSpeakLabel">
+        </settings-checkbox>
+        <settings-checkbox pref="{{prefs.settings.a11y.switch_access}}"
+            i18n-values="label:switchAccessLabel">
+        </settings-checkbox>
+      </template>
     </div>
 
     <div class="settings-box">

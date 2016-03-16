@@ -199,7 +199,13 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.a11y.autoclick_delay_ms"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.a11y.caret_highlight"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.a11y.cursor_highlight"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.a11y.enable_menu"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.a11y.focus_highlight"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.a11y.high_contrast_enabled"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
@@ -207,7 +213,11 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.a11y.screen_magnifier"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.a11y.select_to_speak"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.a11y.sticky_keys_enabled"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.a11y.switch_access"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.a11y.virtual_keyboard"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
