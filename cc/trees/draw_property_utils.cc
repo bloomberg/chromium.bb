@@ -146,6 +146,8 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
 
       if (!clip_rect_in_target_space.IsEmpty()) {
         layer->set_clip_rect(clip_rect_in_target_space);
+      } else {
+        layer->set_clip_rect(gfx::Rect());
       }
 
       // The clip rect should be intersected with layer rect in target space.
