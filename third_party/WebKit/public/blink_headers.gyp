@@ -10,7 +10,10 @@
             'target_name': 'blink_headers',
             'type': 'none',
             'direct_dependent_settings': {
-              'include_dirs': [ '..' ],
+              'include_dirs': [
+                '..',
+                '<(SHARED_INTERMEDIATE_DIR)/third_party/WebKit',
+              ],
             },
             'includes': [ 'blink_headers.gypi' ],
             'sources': ['<@(blink_public_sources)'],

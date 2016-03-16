@@ -551,6 +551,7 @@ mojom("mojo_bindings") {
     "//content/public/common:mojo_bindings",
     "//mojo/shell/public/interfaces",
     "//skia/public/interfaces",
+    "//third_party/WebKit/public:mojo_bindings",
     "//ui/mojo/geometry:interfaces",
   ]
 }

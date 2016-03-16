@@ -42,13 +42,14 @@
         '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../skia/skia.gyp:skia_mojo',
+        '../third_party/WebKit/public/blink.gyp:mojo_bindings',
         '../ui/mojo/geometry/mojo_bindings.gyp:mojo_geometry_bindings',
         '../url/url.gyp:url_interfaces_mojom',
       ],
       'export_dependent_settings': [
         '../url/url.gyp:url_interfaces_mojom',
       ],
-      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ], 
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
     },
     {
       'target_name': 'content_common_mojo_bindings',

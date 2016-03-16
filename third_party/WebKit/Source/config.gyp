@@ -56,6 +56,7 @@
       'include_dirs': [
         '.',
         '..',
+        '<(SHARED_INTERMEDIATE_DIR)/third_party/WebKit',
       ],
       'msvs_disabled_warnings': [
         4305, 4324, 4714, 4800, 4996,

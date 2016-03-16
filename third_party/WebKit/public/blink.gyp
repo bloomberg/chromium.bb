@@ -37,6 +37,7 @@
             'target_name': 'blink',
             'type': 'none',
             'dependencies': [
+                'mojo_bindings',
                 '../Source/platform/blink_platform.gyp:blink_platform',
                 '../Source/web/web.gyp:blink_web',
                 '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
@@ -78,6 +79,26 @@
             ],
             'export_dependent_settings': [
                 '../Source/web/web.gyp:blink_web_test_support',
+            ],
+        },
+        {
+            'target_name': 'mojo_bindings_mojom',
+            'type': 'none',
+            'variables': {
+              'mojom_files': [
+                'platform/modules/bluetooth/web_bluetooth.mojom',
+              ],
+            },
+            'includes': [
+              '../../../mojo/mojom_bindings_generator_explicit.gypi',
+            ],
+        },
+        {
+            'target_name': 'mojo_bindings',
+            'type': 'static_library',
+            'dependencies': [
+              'mojo_bindings_mojom',
+              '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
             ],
         },
     ],

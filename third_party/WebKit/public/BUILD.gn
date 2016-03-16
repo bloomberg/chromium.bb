@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -83,7 +84,10 @@ group("all_blink") {
 }
 
 config("blink_headers_config") {
-  include_dirs = [ ".." ]
+  include_dirs = [
+    "..",
+    "$root_gen_dir/third_party/WebKit",
+  ]
 
   # Allow :blink_headers to include v8.h without linking to it.
   configs = [ "//v8:external_config" ]
@@ -167,5 +171,11 @@ grit("image_resources") {
     "grit/blink_image_resources.h",
     "blink_image_resources_100_percent.pak",
     "blink_image_resources_200_percent.pak",
+  ]
+}
+
+mojom("mojo_bindings") {
+  sources = [
+    "platform/modules/bluetooth/web_bluetooth.mojom",
   ]
 }

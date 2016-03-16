@@ -31,6 +31,7 @@ config("config") {
     ".",
     "..",
     "$root_gen_dir/blink",
+    "$root_gen_dir/third_party/WebKit",
   ]
 
   cflags = []
