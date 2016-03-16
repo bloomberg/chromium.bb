@@ -441,7 +441,6 @@
       "web/WebRemoteFrameClient.h",
       "web/WebRuntimeFeatures.h",
       "web/WebSandboxFlags.h",
-      "web/WebScopedMicrotaskSuppression.h",
       "web/WebScopedUserGesture.h",
       "web/WebScopedWindowFocusAllowedIndicator.h",
       "web/WebScriptController.h",

@@ -29,7 +29,6 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -185,7 +184,8 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
   v8::EscapableHandleScope handle_scope(isolate());
   v8::Context::Scope scope(v8_context());
 
-  blink::WebScopedMicrotaskSuppression suppression;
+  v8::MicrotasksScope microtasks(
+      isolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
   if (!is_valid_) {
     return handle_scope.Escape(
         v8::Local<v8::Primitive>(v8::Undefined(isolate())));
@@ -434,7 +434,8 @@ v8::Local<v8::Value> ScriptContext::RunScript(
     return v8::Undefined(isolate());
   }
 
-  blink::WebScopedMicrotaskSuppression suppression;
+  v8::MicrotasksScope microtasks(
+      isolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::TryCatch try_catch(isolate());
   try_catch.SetCaptureMessage(true);
   v8::ScriptOrigin origin(

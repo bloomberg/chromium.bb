@@ -308,6 +308,7 @@ static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const Atomic
             }
             if (isGetter && value->IsFunction()) {
                 v8::Local<v8::Function> getterFunction = v8::Local<v8::Function>::Cast(value);
+                v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
                 if (getterFunction->Call(context, commandLineAPI, 0, nullptr).ToLocal(&value)) {
                     v8SetReturnValue(info, value);
                     return true;

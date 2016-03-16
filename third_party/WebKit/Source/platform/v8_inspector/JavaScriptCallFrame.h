@@ -38,13 +38,11 @@
 
 namespace blink {
 
-class V8DebuggerClient;
-
 class JavaScriptCallFrame {
 public:
-    static PassOwnPtr<JavaScriptCallFrame> create(V8DebuggerClient* client, v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
+    static PassOwnPtr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
     {
-        return adoptPtr(new JavaScriptCallFrame(client, debuggerContext, callFrame));
+        return adoptPtr(new JavaScriptCallFrame(debuggerContext, callFrame));
     }
     ~JavaScriptCallFrame();
 
@@ -78,16 +76,13 @@ public:
     void setWrapperTemplate(v8::Local<v8::FunctionTemplate> wrapperTemplate, v8::Isolate* isolate) { m_wrapperTemplate.Reset(isolate, wrapperTemplate); }
     v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }
 
-    V8DebuggerClient* client() { return m_client; }
-
 private:
-    JavaScriptCallFrame(V8DebuggerClient*, v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame);
+    JavaScriptCallFrame(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame);
 
     int callV8FunctionReturnInt(const char* name) const;
     String16 callV8FunctionReturnString(const char* name) const;
     v8::Local<v8::Value> callScopeLocationFunction(const char* name, int scopeIndex) const;
 
-    V8DebuggerClient* m_client;
     v8::Isolate* m_isolate;
     OwnPtr<JavaScriptCallFrame> m_caller;
     v8::Global<v8::Context> m_debuggerContext;

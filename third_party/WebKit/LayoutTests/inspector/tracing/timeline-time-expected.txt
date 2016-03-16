@@ -2,17 +2,13 @@ Test nesting of time/timeEnd records on Timeline
 
 
 Running: testSimpleConsoleTime
-----> Function Call
 
 Running: testNestedConsoleTime
-----> Function Call
 
 Running: testUnbalancedConsoleTime
-----> Function Call
 
 Running: testConsoleTimeWithoutConsoleTimeEnd
-----> Function Call
---------> Timestamp: Foo
---------> Timestamp: Bar
---------> Timestamp: Baz
+----> Timestamp: Foo
+----> Timestamp: Bar
+----> Timestamp: Baz
 

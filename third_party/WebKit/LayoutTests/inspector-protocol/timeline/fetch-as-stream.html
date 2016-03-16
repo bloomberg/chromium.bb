@@ -93,7 +93,6 @@ function test()
                 ++knownEvents[event.name];
         }
         assertGreaterOrEqual(events.length, 10, "Too few trace events recorded");
-        assertGreaterOrEqual(knownEvents["FunctionCall"], 1, "Too few FunctionCall events");
         assertGreaterOrEqual(knownEvents["UpdateLayoutTree"], 1, "Too few UpdateLayoutTree events");
         assertGreaterOrEqual(knownEvents["Layout"], 1, "Too few Layout events");
         InspectorTest.log("Event sanity test done");

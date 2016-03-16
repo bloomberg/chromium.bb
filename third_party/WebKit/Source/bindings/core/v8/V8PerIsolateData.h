@@ -98,7 +98,7 @@ public:
     v8::Local<v8::Context> ensureScriptRegexpContext();
     void clearScriptRegexpContext();
 
-    // EndOfScopeTasks are run by V8RecursionScope when control is returning
+    // EndOfScopeTasks are run when control is returning
     // to C++ from script, after executing a script task (e.g. callback,
     // event) or microtasks (e.g. promise). This is explicitly needed for
     // Indexed DB transactions per spec, but should in general be avoided.

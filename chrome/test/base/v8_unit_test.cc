@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 
 namespace {
 
@@ -96,7 +95,8 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
+  v8::MicrotasksScope microtasks(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
   v8::Local<v8::Value> function_property =
       context->Global()->Get(v8::String::NewFromUtf8(isolate, "runTest"));
@@ -211,7 +211,8 @@ void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
+  v8::MicrotasksScope microtasks(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::Local<v8::String> source =
       v8::String::NewFromUtf8(isolate,
                               script_source.data(),
@@ -260,7 +261,8 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
+  v8::MicrotasksScope microtasks(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
   v8::Local<v8::Value> function_property = context->Global()->Get(
       v8::String::NewFromUtf8(isolate, function_name.c_str()));

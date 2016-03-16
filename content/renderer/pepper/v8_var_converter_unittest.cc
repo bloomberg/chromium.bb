@@ -29,7 +29,6 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
 
 using ppapi::ArrayBufferVar;
@@ -404,7 +403,8 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
     v8::Local<v8::Context> context =
         v8::Local<v8::Context>::New(isolate_, context_);
     v8::Context::Scope context_scope(context);
-    blink::WebScopedMicrotaskSuppression microtasks_scope;
+    v8::MicrotasksScope microtasks(
+        isolate_, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
     const char* source =
         "(function() {"

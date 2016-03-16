@@ -26,14 +26,10 @@ public:
     void muteWarningsAndDeprecations() override { };
     void unmuteWarningsAndDeprecations() override { };
     void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) override;
-    v8::MaybeLocal<v8::Object> instantiateObject(v8::Local<v8::Function>) override;
-    v8::MaybeLocal<v8::Value> runCompiledScript(v8::Local<v8::Context>, v8::Local<v8::Script>) override;
-    v8::MaybeLocal<v8::Value> compileAndRunInternalScript(v8::Local<v8::String>) override;
-    v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>, v8::Local<v8::Context>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]) override;
-    v8::MaybeLocal<v8::Value> callInternalFunction(v8::Local<v8::Function>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]) override;
     String16 valueSubtype(v8::Local<v8::Value>) override;
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
     bool hasRecursionLevel() override;
+    bool isExecutionAllowed() override;
     double currentTimeMS() override;
 
     V8Debugger* debugger() const { return m_debugger.get(); }
