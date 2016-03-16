@@ -355,6 +355,20 @@ bool AndroidDeferredRenderingBackingStrategy::DoesSurfaceTextureDetachWork()
     }
   }
 
+  // As a special case, the MicroMax A114 doesn't get the workaround, even
+  // though it should.  Hardcode it here until we get a device and figure out
+  // why.  crbug.com/591600
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <= 18) {  // JB
+    const std::string brand(
+        base::ToLowerASCII(base::android::BuildInfo::GetInstance()->brand()));
+    if (brand == "micromax") {
+      const std::string model(
+          base::ToLowerASCII(base::android::BuildInfo::GetInstance()->model()));
+      if (model.find("a114") != std::string::npos)
+        surface_texture_detach_works = false;
+    }
+  }
+
   return surface_texture_detach_works;
 }
 
