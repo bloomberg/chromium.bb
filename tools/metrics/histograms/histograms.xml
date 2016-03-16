@@ -77587,6 +77587,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="51" label="NAVIGATION_INTERCEPTED"/>
   <int value="52" label="PRERENDERING_DISABLED"/>
   <int value="53" label="CELLULAR_NETWORK"/>
+  <int value="54" label="BLOCK_THIRD_PARTY_COOKIES"/>
 </enum>
 
 <enum name="PrerenderHoverEvent" type="int">

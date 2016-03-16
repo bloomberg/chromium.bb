@@ -28,6 +28,7 @@
 #include "chrome/common/prerender_types.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_browser_thread.h"
@@ -329,6 +330,8 @@ class PrerenderTest : public testing::Test {
     return prerender_link_manager_.get();
   }
 
+  Profile* profile() { return &profile_; }
+
   void SetConcurrency(size_t concurrency) {
     prerender_manager()->mutable_config().max_link_concurrency_per_launcher =
         concurrency;
@@ -399,6 +402,15 @@ TEST_F(PrerenderTest, PrerenderRespectsDisableFlag) {
     switches::kPrerenderModeSwitchValueDisabled);
   prerender::ConfigurePrerender(*command_line);
   ASSERT_FALSE(PrerenderManager::IsPrerenderingPossible());
+}
+
+TEST_F(PrerenderTest, PrerenderRespectsThirdPartyCookiesPref) {
+  GURL url("http://www.google.com/");
+  RestorePrerenderMode restore_prerender_mode;
+  ASSERT_TRUE(PrerenderManager::IsPrerenderingPossible());
+
+  profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  EXPECT_FALSE(AddSimplePrerender(url));
 }
 
 TEST_F(PrerenderTest, FoundTest) {

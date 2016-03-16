@@ -42,6 +42,8 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/prerender_types.h"
+#include "components/content_settings/core/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -933,6 +935,12 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   // From here on, we will record a FinalStatus so we need to register with the
   // histogram tracking.
   histograms_->RecordPrerender(origin, url_arg);
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies)) {
+    RecordFinalStatusWithoutCreatingPrerenderContents(
+        url, origin, FINAL_STATUS_BLOCK_THIRD_PARTY_COOKIES);
+    return nullptr;
+  }
 
   NetworkPredictionStatus prerendering_status = GetPredictionStatus();
   if (prerendering_status != NetworkPredictionStatus::ENABLED) {
