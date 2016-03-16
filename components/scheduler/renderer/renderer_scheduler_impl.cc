@@ -112,6 +112,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       current_use_case(UseCase::NONE),
       timer_queue_suspend_count(0),
       navigation_task_expected_count(0),
+      expensive_task_policy(ExpensiveTaskPolicy::RUN),
       renderer_hidden(false),
       renderer_backgrounded(false),
       timer_queue_suspension_when_backgrounded_enabled(false),
@@ -657,7 +658,6 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   Policy new_policy;
-  enum class ExpensiveTaskPolicy { RUN, BLOCK, THROTTLE };
   ExpensiveTaskPolicy expensive_task_policy = ExpensiveTaskPolicy::RUN;
   switch (use_case) {
     case UseCase::COMPOSITOR_GESTURE:
@@ -746,6 +746,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       }
       break;
   }
+
+  MainThreadOnly().expensive_task_policy = expensive_task_policy;
 
   if (MainThreadOnly().timer_queue_suspend_count != 0 ||
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
@@ -966,6 +968,22 @@ RendererSchedulerImpl::AsValue(base::TimeTicks optional_now) const {
   return AsValueLocked(optional_now);
 }
 
+// static
+const char* RendererSchedulerImpl::ExpensiveTaskPolicyToString(
+    ExpensiveTaskPolicy expensive_task_policy) {
+  switch (expensive_task_policy) {
+    case ExpensiveTaskPolicy::RUN:
+      return "RUN";
+    case ExpensiveTaskPolicy::BLOCK:
+      return "BLOCK";
+    case ExpensiveTaskPolicy::THROTTLE:
+      return "THROTTLE";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 scoped_ptr<base::trace_event::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   helper_.CheckOnValidThread();
@@ -980,6 +998,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       MainThreadOnly().has_visible_render_widget_with_touch_handler);
   state->SetString("current_use_case",
                    UseCaseToString(MainThreadOnly().current_use_case));
+  state->SetBoolean("expensive_task_blocking_allowed",
+                    MainThreadOnly().expensive_task_blocking_allowed);
   state->SetBoolean("loading_tasks_seem_expensive",
                     MainThreadOnly().loading_tasks_seem_expensive);
   state->SetBoolean("timer_tasks_seem_expensive",
@@ -1046,6 +1066,11 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       (MainThreadOnly().estimated_next_frame_begin - base::TimeTicks())
           .InMillisecondsF());
   state->SetBoolean("in_idle_period", AnyThread().in_idle_period);
+
+  state->SetString(
+      "expensive_task_policy",
+      ExpensiveTaskPolicyToString(MainThreadOnly().expensive_task_policy));
+
   AnyThread().user_model.AsValueInto(state.get());
   render_widget_scheduler_signals_.AsValueInto(state.get());
 

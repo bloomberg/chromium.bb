@@ -118,6 +118,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   friend class RendererSchedulerImplForTest;
   friend class RenderWidgetSchedulingState;
 
+  enum class ExpensiveTaskPolicy { RUN, BLOCK, THROTTLE };
+
   enum class TimeDomainType {
     REAL,
     THROTTLED,
@@ -285,6 +287,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
                             const TaskQueuePolicy& old_task_queue_policy,
                             const TaskQueuePolicy& new_task_queue_policy) const;
 
+  static const char* ExpensiveTaskPolicyToString(
+      ExpensiveTaskPolicy expensive_task_policy);
+
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
   scoped_ptr<ThrottlingHelper> throttling_helper_;
@@ -321,6 +326,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     base::TimeDelta longest_jank_free_task_duration;
     int timer_queue_suspend_count;  // TIMER_TASK_QUEUE suspended if non-zero.
     int navigation_task_expected_count;
+    ExpensiveTaskPolicy expensive_task_policy;
     bool renderer_hidden;
     bool renderer_backgrounded;
     bool timer_queue_suspension_when_backgrounded_enabled;
