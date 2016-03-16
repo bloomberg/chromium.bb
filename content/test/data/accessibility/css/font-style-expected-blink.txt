@@ -1,0 +1,15 @@
+rootWebArea
+++paragraph
+++++staticText name='Normal '
+++++++inlineTextBox name='Normal '
+++++staticText name='bold' textStyle=1
+++++++inlineTextBox name='bold'
+++++staticText name='italic' textStyle=2
+++++++inlineTextBox name='italic'
+++div
+++++staticText name='Normal'
+++++++inlineTextBox name='Normal'
+++++staticText name='bold' textStyle=1
+++++++inlineTextBox name='bold'
+++++staticText name='italic' textStyle=2
+++++++inlineTextBox name='italic'

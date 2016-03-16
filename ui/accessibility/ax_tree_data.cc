@@ -46,19 +46,18 @@ std::string AXTreeData::ToString() const {
   if (focused_tree_id != -1)
     result += " focused_tree_id=" + IntToString(focused_tree_id);
 
-  if (!url.empty())
-    result += " url=" + url;
-  if (!title.empty())
-    result += " title=" + title;
-  if (!mimetype.empty())
-    result += " mimetype=" + mimetype;
   if (!doctype.empty())
     result += " doctype=" + doctype;
-
   if (loaded)
     result += " loaded=true";
   if (loading_progress != 0.0)
     result += " loading_progress=" + DoubleToString(loading_progress);
+  if (!mimetype.empty())
+    result += " mimetype=" + mimetype;
+  if (!url.empty())
+    result += " url=" + url;
+  if (!title.empty())
+    result += " title=" + title;
 
   if (focus_id != -1)
     result += " focus_id=" + IntToString(focus_id);
@@ -79,13 +78,10 @@ bool operator==(const AXTreeData& lhs, const AXTreeData& rhs) {
   return (lhs.tree_id == rhs.tree_id &&
           lhs.parent_tree_id == rhs.parent_tree_id &&
           lhs.focused_tree_id == rhs.focused_tree_id &&
-          lhs.url == rhs.url &&
-          lhs.title == rhs.title &&
-          lhs.mimetype == rhs.mimetype &&
-          lhs.doctype == rhs.doctype &&
-          lhs.loaded == rhs.loaded &&
+          lhs.doctype == rhs.doctype && lhs.loaded == rhs.loaded &&
           lhs.loading_progress == rhs.loading_progress &&
-          lhs.focus_id == rhs.focus_id &&
+          lhs.mimetype == rhs.mimetype && lhs.title == rhs.title &&
+          lhs.url == rhs.url && lhs.focus_id == rhs.focus_id &&
           lhs.sel_anchor_object_id == rhs.sel_anchor_object_id &&
           lhs.sel_anchor_offset == rhs.sel_anchor_offset &&
           lhs.sel_focus_object_id == rhs.sel_focus_object_id &&

@@ -1793,6 +1793,121 @@ TEST_F(BrowserAccessibilityTest, TestDeepestFirstLastChild) {
   EXPECT_EQ(nullptr, child2_child2_accessible->InternalDeepestLastChild());
 }
 
+TEST_F(BrowserAccessibilityTest, TestInheritedStringAttributes) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.AddStringAttribute(ui::AX_ATTR_LANGUAGE, "en-US");
+  root.AddStringAttribute(ui::AX_ATTR_FONT_FAMILY, "Helvetica");
+
+  ui::AXNodeData child1;
+  child1.id = 2;
+  child1.role = ui::AX_ROLE_STATIC_TEXT;
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData child2;
+  child2.id = 3;
+  child2.role = ui::AX_ROLE_STATIC_TEXT;
+  child2.AddStringAttribute(ui::AX_ATTR_LANGUAGE, "fr");
+  child2.AddStringAttribute(ui::AX_ATTR_FONT_FAMILY, "Arial");
+  root.child_ids.push_back(3);
+
+  ui::AXNodeData child2_child1;
+  child2_child1.id = 4;
+  child2_child1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  child2.child_ids.push_back(4);
+
+  ui::AXNodeData child2_child2;
+  child2_child2.id = 5;
+  child2_child2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  child2.child_ids.push_back(5);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, child1, child2, child2_child1, child2_child2),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  BrowserAccessibility* child1_accessible =
+      root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, child1_accessible);
+  BrowserAccessibility* child2_accessible =
+      root_accessible->PlatformGetChild(1);
+  ASSERT_NE(nullptr, child2_accessible);
+  BrowserAccessibility* child2_child1_accessible =
+      child2_accessible->InternalGetChild(0);
+  ASSERT_NE(nullptr, child2_child1_accessible);
+  BrowserAccessibility* child2_child2_accessible =
+      child2_accessible->InternalGetChild(1);
+  ASSERT_NE(nullptr, child2_child2_accessible);
+
+  // Test GetInheritedString16Attribute(attribute).
+  EXPECT_EQ(
+      base::UTF8ToUTF16("en-US"),
+      root_accessible->GetInheritedString16Attribute(ui::AX_ATTR_LANGUAGE));
+  EXPECT_EQ(
+      base::UTF8ToUTF16("en-US"),
+      child1_accessible->GetInheritedString16Attribute(ui::AX_ATTR_LANGUAGE));
+  EXPECT_EQ(
+      base::UTF8ToUTF16("fr"),
+      child2_accessible->GetInheritedString16Attribute(ui::AX_ATTR_LANGUAGE));
+  EXPECT_EQ(base::UTF8ToUTF16("fr"),
+            child2_child1_accessible->GetInheritedString16Attribute(
+                ui::AX_ATTR_LANGUAGE));
+  EXPECT_EQ(base::UTF8ToUTF16("fr"),
+            child2_child2_accessible->GetInheritedString16Attribute(
+                ui::AX_ATTR_LANGUAGE));
+
+  // Test GetInheritedString16Attribute(attribute, out_value).
+  base::string16 value16;
+  EXPECT_TRUE(root_accessible->GetInheritedString16Attribute(
+      ui::AX_ATTR_LANGUAGE, &value16));
+  EXPECT_EQ(base::UTF8ToUTF16("en-US"), value16);
+  EXPECT_TRUE(child1_accessible->GetInheritedString16Attribute(
+      ui::AX_ATTR_LANGUAGE, &value16));
+  EXPECT_EQ(base::UTF8ToUTF16("en-US"), value16);
+  EXPECT_TRUE(child2_accessible->GetInheritedString16Attribute(
+      ui::AX_ATTR_LANGUAGE, &value16));
+  EXPECT_EQ(base::UTF8ToUTF16("fr"), value16);
+  EXPECT_TRUE(child2_child1_accessible->GetInheritedString16Attribute(
+      ui::AX_ATTR_LANGUAGE, &value16));
+  EXPECT_EQ(base::UTF8ToUTF16("fr"), value16);
+  EXPECT_TRUE(child2_child2_accessible->GetInheritedString16Attribute(
+      ui::AX_ATTR_LANGUAGE, &value16));
+  EXPECT_EQ(base::UTF8ToUTF16("fr"), value16);
+
+  // Test GetInheritedStringAttribute(attribute).
+  EXPECT_EQ("Helvetica", root_accessible->GetInheritedStringAttribute(
+                             ui::AX_ATTR_FONT_FAMILY));
+  EXPECT_EQ("Helvetica", child1_accessible->GetInheritedStringAttribute(
+                             ui::AX_ATTR_FONT_FAMILY));
+  EXPECT_EQ("Arial", child2_accessible->GetInheritedStringAttribute(
+                         ui::AX_ATTR_FONT_FAMILY));
+  EXPECT_EQ("Arial", child2_child1_accessible->GetInheritedStringAttribute(
+                         ui::AX_ATTR_FONT_FAMILY));
+  EXPECT_EQ("Arial", child2_child2_accessible->GetInheritedStringAttribute(
+                         ui::AX_ATTR_FONT_FAMILY));
+
+  // Test GetInheritedStringAttribute(attribute, out_value).
+  std::string value;
+  EXPECT_TRUE(root_accessible->GetInheritedStringAttribute(
+      ui::AX_ATTR_FONT_FAMILY, &value));
+  EXPECT_EQ("Helvetica", value);
+  EXPECT_TRUE(child1_accessible->GetInheritedStringAttribute(
+      ui::AX_ATTR_FONT_FAMILY, &value));
+  EXPECT_EQ("Helvetica", value);
+  EXPECT_TRUE(child2_accessible->GetInheritedStringAttribute(
+      ui::AX_ATTR_FONT_FAMILY, &value));
+  EXPECT_EQ("Arial", value);
+  EXPECT_TRUE(child2_child1_accessible->GetInheritedStringAttribute(
+      ui::AX_ATTR_FONT_FAMILY, &value));
+  EXPECT_EQ("Arial", value);
+  EXPECT_TRUE(child2_child2_accessible->GetInheritedStringAttribute(
+      ui::AX_ATTR_FONT_FAMILY, &value));
+  EXPECT_EQ("Arial", value);
+}
+
 TEST_F(BrowserAccessibilityTest, TestSanitizeStringAttributeForIA2) {
   base::string16 input(L"\\:=,;");
   base::string16 output;

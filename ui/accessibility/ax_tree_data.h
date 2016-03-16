@@ -43,12 +43,12 @@ struct AX_EXPORT AXTreeData {
   int32_t focused_tree_id;
 
   // Attributes specific to trees that are web frames.
-  std::string url;
-  std::string title;
-  std::string mimetype;
   std::string doctype;
   bool loaded;
   float loading_progress;
+  std::string mimetype;
+  std::string title;
+  std::string url;
 
   // The node with keyboard focus within this tree, if any, or -1 if no node
   // in this tree has focus.

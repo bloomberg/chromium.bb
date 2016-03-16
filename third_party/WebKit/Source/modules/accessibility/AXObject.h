@@ -699,6 +699,7 @@ public:
     // Used by objects of role ColorWellRole.
     virtual RGBA32 colorValue() const { return Color::transparent; }
     virtual bool canvasHasFallbackContent() const { return false; }
+    virtual String fontFamily() const { return nullAtom; }
     // Font size is in pixels.
     virtual float fontSize() const { return 0.0f; }
     virtual int headingLevel() const { return 0; }

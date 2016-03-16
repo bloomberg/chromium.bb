@@ -111,6 +111,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   unsigned int Color();
   // For input elements of type color.
   unsigned int ColorValue();
+  std::string FontFamily();
   float FontSize();
   std::string Orientation();
   int PosInSet();

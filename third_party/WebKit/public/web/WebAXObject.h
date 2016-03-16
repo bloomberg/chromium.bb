@@ -142,6 +142,7 @@ public:
     BLINK_EXPORT bool isRichlyEditable() const;
     BLINK_EXPORT bool ariaOwns(WebVector<WebAXObject>& ownsElements) const;
     BLINK_EXPORT WebRect boundingBoxRect() const;
+    BLINK_EXPORT WebString fontFamily() const;
     BLINK_EXPORT float fontSize() const;
     BLINK_EXPORT bool canvasHasFallbackContent() const;
     BLINK_EXPORT WebPoint clickPoint() const;

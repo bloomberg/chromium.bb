@@ -636,6 +636,14 @@ WebRect WebAXObject::boundingBoxRect() const
     return pixelSnappedIntRect(m_private->elementRect());
 }
 
+WebString WebAXObject::fontFamily() const
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->fontFamily();
+}
+
 float WebAXObject::fontSize() const
 {
     if (isDetached())

@@ -513,6 +513,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ACTION:
         result += " action=" + value;
         break;
+      case AX_ATTR_ARIA_INVALID_VALUE:
+        result += " aria_invalid_value=" + value;
+        break;
       case AX_ATTR_AUTO_COMPLETE:
         result += " autocomplete=" + value;
         break;
@@ -522,11 +525,14 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_DISPLAY:
         result += " display=" + value;
         break;
+      case AX_ATTR_FONT_FAMILY:
+        result += " font-family=" + value;
+        break;
       case AX_ATTR_HTML_TAG:
         result += " html_tag=" + value;
         break;
-      case AX_ATTR_ARIA_INVALID_VALUE:
-        result += " aria_invalid_value=" + value;
+      case AX_ATTR_LANGUAGE:
+        result += " language=" + value;
         break;
       case AX_ATTR_LIVE_RELEVANT:
         result += " relevant=" + value;

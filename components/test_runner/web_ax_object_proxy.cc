@@ -517,6 +517,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("backgroundColor", &WebAXObjectProxy::BackgroundColor)
       .SetProperty("color", &WebAXObjectProxy::Color)
       .SetProperty("colorValue", &WebAXObjectProxy::ColorValue)
+      .SetProperty("fontFamily", &WebAXObjectProxy::FontFamily)
       .SetProperty("fontSize", &WebAXObjectProxy::FontSize)
       .SetProperty("orientation", &WebAXObjectProxy::Orientation)
       .SetProperty("posInSet", &WebAXObjectProxy::PosInSet)
@@ -550,8 +551,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("cellForColumnAndRow", &WebAXObjectProxy::CellForColumnAndRow)
       .SetMethod("setSelectedTextRange",
                  &WebAXObjectProxy::SetSelectedTextRange)
-      .SetMethod("setSelection",
-                 &WebAXObjectProxy::SetSelection)
+      .SetMethod("setSelection", &WebAXObjectProxy::SetSelection)
       .SetMethod("isAttributeSettable", &WebAXObjectProxy::IsAttributeSettable)
       .SetMethod("isPressActionSupported",
                  &WebAXObjectProxy::IsPressActionSupported)
@@ -597,7 +597,6 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
                  &WebAXObjectProxy::DescriptionElementCount)
       .SetMethod("descriptionElementAtIndex",
                  &WebAXObjectProxy::DescriptionElementAtIndex);
-
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::GetChildAtIndex(unsigned index) {
@@ -894,6 +893,12 @@ unsigned int WebAXObjectProxy::Color() {
 unsigned int WebAXObjectProxy::ColorValue() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return accessibility_object_.colorValue();
+}
+
+std::string WebAXObjectProxy::FontFamily() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  std::string font_family(accessibility_object_.fontFamily().utf8());
+  return font_family.insert(0, "AXFontFamily: ");
 }
 
 float WebAXObjectProxy::FontSize() {

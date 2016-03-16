@@ -1,0 +1,7 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE background-color:rgb(0\,0\,255) color:rgb(255\,0\,0) background-color:transparent color:rgb(0\,0\,0) ia2_hypertext='<obj0><obj1>'
+++IA2_ROLE_PARAGRAPH background-color:rgb(0\,0\,255) color:rgb(255\,0\,0) ia2_hypertext='Red on blue.'
+++++ROLE_SYSTEM_STATICTEXT name='Red on blue.' background-color:rgb(0\,0\,255) color:rgb(255\,0\,0) ia2_hypertext='Red on blue.'
+++IA2_ROLE_SECTION FOCUSABLE background-color:transparent color:rgb(0\,0\,0) background-color:rgb(0\,0\,255) color:rgb(0\,0\,0) background-color:transparent color:rgb(0\,255\,0) ia2_hypertext='Default.Blue background.Green text.'
+++++ROLE_SYSTEM_STATICTEXT name='Default.' background-color:transparent color:rgb(0\,0\,0) ia2_hypertext='Default.'
+++++ROLE_SYSTEM_STATICTEXT name='Blue background.' background-color:rgb(0\,0\,255) color:rgb(0\,0\,0) ia2_hypertext='Blue background.'
+++++ROLE_SYSTEM_STATICTEXT name='Green text.' background-color:transparent color:rgb(0\,255\,0) ia2_hypertext='Green text.'

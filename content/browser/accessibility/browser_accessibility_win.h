@@ -709,6 +709,10 @@ BrowserAccessibilityWin
                          REFIID iid,
                          void** object);
 
+  // Computes and caches the IA2 text style attributes for the text and other
+  // embedded child objects.
+  CONTENT_EXPORT void ComputeStylesIfNeeded();
+
   CONTENT_EXPORT base::string16 GetText() const override;
 
   // Accessors.
@@ -723,6 +727,10 @@ BrowserAccessibilityWin
   base::string16 name() const { return win_attributes_->name; }
   base::string16 description() const { return win_attributes_->description; }
   base::string16 value() const { return win_attributes_->value; }
+  const std::map<int, std::vector<base::string16>>& offset_to_text_attributes()
+      const {
+    return win_attributes_->offset_to_text_attributes;
+  }
   std::map<int32_t, int32_t>& hyperlink_offset_to_index() const {
     return win_attributes_->hyperlink_offset_to_index;
   }
@@ -731,6 +739,9 @@ BrowserAccessibilityWin
   }
 
  private:
+  // Returns the IA2 text attributes for this object.
+  std::vector<base::string16> ComputeTextAttributes() const;
+
   // Add one to the reference count and return the same object. Always
   // use this method when returning a BrowserAccessibilityWin object as
   // an output parameter to a COM interface, never use it otherwise.
@@ -786,6 +797,9 @@ BrowserAccessibilityWin
 
   // Returns true if the current object is an IA2 hyperlink.
   bool IsHyperlink() const;
+  // Returns the hyperlink at the given text position, or nullptr if no
+  // hyperlink can be found.
+  BrowserAccessibilityWin* GetHyperlinkFromHypertextOffset(int offset) const;
 
   // Functions for retrieving offsets for hyperlinks and hypertext.
   // Return -1 in case of failure.
@@ -847,21 +861,31 @@ BrowserAccessibilityWin
                     LONG start_offset,
                     ui::TextBoundaryDirection direction);
 
-  // Return a pointer to the object corresponding to the given id,
-  // does not make a new reference.
-  BrowserAccessibilityWin* GetFromID(int32_t id);
+  // Searches forward from the given offset until the start of the next style
+  // is found, or searches backward from the given offset until the start of the
+  // current style is found.
+  LONG FindStartOfStyle(LONG start_offset,
+                        ui::TextBoundaryDirection direction) const;
+
+  // ID refers to the node ID in the current tree, not the globally unique ID.
+  // TODO(nektar): Could we use globally unique IDs everywhere?
+  // TODO(nektar): Rename this function to GetFromNodeID.
+  BrowserAccessibilityWin* GetFromID(int32_t id) const;
 
   // Returns true if this is a list box option with a parent of type list box,
   // or a menu list option with a parent of type menu list popup.
   bool IsListBoxOptionOrMenuListOption();
 
-  // Updates object attributes of IA2 with html attributes.
-  void UpdateRequiredAttributes();
-
   // Given an int list attribute containing the ids of related elements,
   // add a new IAccessibleRelation for this object with the given type name.
   void AddRelations(ui::AXIntListAttribute src_attr,
                     const base::string16& iaccessiblerelation_type);
+
+  // Updates object attributes of IA2 with html attributes.
+  void UpdateRequiredAttributes();
+
+  // Updates the IA2 text style attributes.
+  void UpdateTextAttributes();
 
   struct WinAttributes {
     WinAttributes();
@@ -886,6 +910,9 @@ BrowserAccessibilityWin
 
     // Hypertext.
     base::string16 hypertext;
+
+    // Maps each style span to its start offset in hypertext.
+    std::map<int, std::vector<base::string16>> offset_to_text_attributes;
 
     // Maps the |hypertext_| embedded character offset to an index in
     // |hyperlinks_|.

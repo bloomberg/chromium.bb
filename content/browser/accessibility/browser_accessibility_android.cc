@@ -13,6 +13,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace {
 
@@ -362,10 +363,11 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   // For color wells, the color is stored in separate attributes.
   // Perhaps we could return color names in the future?
   if (GetRole() == ui::AX_ROLE_COLOR_WELL) {
-    int color = GetIntAttribute(ui::AX_ATTR_COLOR_VALUE);
-    int red = (color >> 16) & 0xFF;
-    int green = (color >> 8) & 0xFF;
-    int blue = color & 0xFF;
+    unsigned int color =
+        static_cast<unsigned int>(GetIntAttribute(ui::AX_ATTR_COLOR_VALUE));
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
     return base::UTF8ToUTF16(
         base::StringPrintf("#%02X%02X%02X", red, green, blue));
   }

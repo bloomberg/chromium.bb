@@ -827,10 +827,10 @@ const AtomicString& AXLayoutObject::accessKey() const
 
 RGBA32 AXLayoutObject::backgroundColor() const
 {
-    if (!m_layoutObject)
+    if (!getLayoutObject())
         return AXNodeObject::backgroundColor();
 
-    const ComputedStyle* style = m_layoutObject->style();
+    const ComputedStyle* style = getLayoutObject()->style();
     if (!style || !style->hasBackground())
         return AXNodeObject::backgroundColor();
 
@@ -840,10 +840,10 @@ RGBA32 AXLayoutObject::backgroundColor() const
 
 RGBA32 AXLayoutObject::color() const
 {
-    if (!m_layoutObject || isColorWell())
+    if (!getLayoutObject() || isColorWell())
         return AXNodeObject::color();
 
-    const ComputedStyle* style = m_layoutObject->style();
+    const ComputedStyle* style = getLayoutObject()->style();
     if (!style)
         return AXNodeObject::color();
 
@@ -851,13 +851,26 @@ RGBA32 AXLayoutObject::color() const
     return color.rgb();
 }
 
+String AXLayoutObject::fontFamily() const
+{
+    if (!getLayoutObject())
+        return AXNodeObject::fontFamily();
+
+    const ComputedStyle* style = getLayoutObject()->style();
+    if (!style)
+        return AXNodeObject::fontFamily();
+
+    FontDescription& fontDescription = const_cast<FontDescription&>(style->getFontDescription());
+    return fontDescription.firstFamily().family();
+}
+
 // Font size is in pixels.
 float AXLayoutObject::fontSize() const
 {
-    if (!m_layoutObject)
+    if (!getLayoutObject())
         return AXNodeObject::fontSize();
 
-    const ComputedStyle* style = m_layoutObject->style();
+    const ComputedStyle* style = getLayoutObject()->style();
     if (!style)
         return AXNodeObject::fontSize();
 
@@ -867,10 +880,10 @@ float AXLayoutObject::fontSize() const
 String AXLayoutObject::text() const
 {
     if (isPasswordFieldAndShouldHideValue()) {
-        if (!m_layoutObject)
+        if (!getLayoutObject())
             return String();
 
-        const ComputedStyle* style = m_layoutObject->style();
+        const ComputedStyle* style = getLayoutObject()->style();
         if (!style)
             return String();
 
@@ -906,10 +919,10 @@ String AXLayoutObject::text() const
 
 AccessibilityTextDirection AXLayoutObject::textDirection() const
 {
-    if (!m_layoutObject)
+    if (!getLayoutObject())
         return AXNodeObject::textDirection();
 
-    const ComputedStyle* style = m_layoutObject->style();
+    const ComputedStyle* style = getLayoutObject()->style();
     if (!style)
         return AXNodeObject::textDirection();
 
@@ -942,10 +955,10 @@ int AXLayoutObject::textLength() const
 
 TextStyle AXLayoutObject::getTextStyle() const
 {
-    if (!m_layoutObject)
+    if (!getLayoutObject())
         return AXNodeObject::getTextStyle();
 
-    const ComputedStyle* style = m_layoutObject->style();
+    const ComputedStyle* style = getLayoutObject()->style();
     if (!style)
         return AXNodeObject::getTextStyle();
 

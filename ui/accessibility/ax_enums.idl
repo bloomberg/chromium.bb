@@ -236,14 +236,18 @@
   [cpp_enum_prefix_override="ax_attr"] enum AXStringAttribute {
     access_key,
     action,
+    // Only used when invalid_state == invalid_state_other.
+    aria_invalid_value,
     auto_complete,
     container_live_relevant,
     container_live_status,
     description,
     display,
+    // Only present when different from parent.
+    font_family,
     html_tag,
-    // Only used when invalid_state == invalid_state_other.
-    aria_invalid_value,
+    // Only present when different from parent.
+    language,
     name,
     live_relevant,
     live_status,

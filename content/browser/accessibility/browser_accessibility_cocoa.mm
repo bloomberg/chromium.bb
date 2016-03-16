@@ -21,6 +21,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/public/common/content_client.h"
+#include "third_party/skia/include/core/SkColor.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 
 using content::AXTreeIDRegistry;
@@ -1719,11 +1720,11 @@ bool InitializeAccessibilityTreeSearch(
       return [NSNumber numberWithFloat:floatValue];
     }
   } else if ([role isEqualToString:NSAccessibilityColorWellRole]) {
-    int color = browserAccessibility_->GetIntAttribute(
-        ui::AX_ATTR_COLOR_VALUE);
-    int red = (color >> 16) & 0xFF;
-    int green = (color >> 8) & 0xFF;
-    int blue = color & 0xFF;
+    unsigned int color = static_cast<unsigned int>(
+        browserAccessibility_->GetIntAttribute(ui::AX_ATTR_COLOR_VALUE));
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
     // This string matches the one returned by a native Mac color well.
     return [NSString stringWithFormat:@"rgb %7.5f %7.5f %7.5f 1",
                 red / 255., green / 255., blue / 255.];

@@ -194,7 +194,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   //
 
   BrowserAccessibilityManager* manager() const { return manager_; }
-  bool instance_active() const { return node_ != NULL; }
+  bool instance_active() const { return node_ && manager_; }
   ui::AXNode* node() const { return node_; }
   int32_t unique_id() const { return unique_id_; }
 
@@ -246,6 +246,17 @@ class CONTENT_EXPORT BrowserAccessibility {
   float GetFloatAttribute(ui::AXFloatAttribute attr) const;
   bool GetFloatAttribute(ui::AXFloatAttribute attr, float* value) const;
 
+  bool HasInheritedStringAttribute(ui::AXStringAttribute attribute) const;
+  const std::string& GetInheritedStringAttribute(
+      ui::AXStringAttribute attribute) const;
+  bool GetInheritedStringAttribute(ui::AXStringAttribute attribute,
+                                   std::string* value) const;
+
+  base::string16 GetInheritedString16Attribute(
+      ui::AXStringAttribute attribute) const;
+  bool GetInheritedString16Attribute(ui::AXStringAttribute attribute,
+                                     base::string16* value) const;
+
   bool HasIntAttribute(ui::AXIntAttribute attribute) const;
   int GetIntAttribute(ui::AXIntAttribute attribute) const;
   bool GetIntAttribute(ui::AXIntAttribute attribute, int* value) const;
@@ -256,10 +267,10 @@ class CONTENT_EXPORT BrowserAccessibility {
   bool GetStringAttribute(ui::AXStringAttribute attribute,
                           std::string* value) const;
 
-  bool GetString16Attribute(ui::AXStringAttribute attribute,
-                            base::string16* value) const;
   base::string16 GetString16Attribute(
       ui::AXStringAttribute attribute) const;
+  bool GetString16Attribute(ui::AXStringAttribute attribute,
+                            base::string16* value) const;
 
   bool HasIntListAttribute(ui::AXIntListAttribute attribute) const;
   const std::vector<int32_t>& GetIntListAttribute(
@@ -288,6 +299,8 @@ class CONTENT_EXPORT BrowserAccessibility {
                        bool* is_defined,
                        bool* is_mixed) const;
 
+  base::string16 GetFontFamily() const;
+  base::string16 GetLanguage() const;
   virtual base::string16 GetText() const;
 
   // Returns true if the bit corresponding to the given state enum is 1.

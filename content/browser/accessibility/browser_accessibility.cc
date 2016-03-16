@@ -252,8 +252,9 @@ BrowserAccessibility* BrowserAccessibility::InternalGetChild(
 }
 
 BrowserAccessibility* BrowserAccessibility::GetParent() const {
-  if (!node_ || !manager_)
-    return NULL;
+  if (!instance_active())
+    return nullptr;
+
   ui::AXNode* parent = node_->parent();
   if (parent)
     return manager_->GetFromAXNode(parent);
@@ -384,8 +385,8 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
     int local_end = overlap_end - child_start;
 
     gfx::Rect child_rect = child->GetLocation();
-    int text_direction = child->GetIntAttribute(
-        ui::AX_ATTR_TEXT_DIRECTION);
+    auto text_direction = static_cast<ui::AXTextDirection>(
+        child->GetIntAttribute(ui::AX_ATTR_TEXT_DIRECTION));
     const std::vector<int32_t>& character_offsets =
         child->GetIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS);
     int start_pixel_offset =
@@ -657,6 +658,72 @@ bool BrowserAccessibility::GetFloatAttribute(
   return GetData().GetFloatAttribute(attribute, value);
 }
 
+bool BrowserAccessibility::HasInheritedStringAttribute(
+    ui::AXStringAttribute attribute) const {
+  if (!instance_active())
+    return false;
+
+  if (GetData().HasStringAttribute(attribute))
+    return true;
+  return GetParent() && GetParent()->HasInheritedStringAttribute(attribute);
+}
+
+const std::string& BrowserAccessibility::GetInheritedStringAttribute(
+    ui::AXStringAttribute attribute) const {
+  if (!instance_active())
+    return base::EmptyString();
+
+  const BrowserAccessibility* current_object = this;
+  do {
+    if (current_object->GetData().HasStringAttribute(attribute))
+      return current_object->GetData().GetStringAttribute(attribute);
+    current_object = current_object->GetParent();
+  } while (current_object);
+  return base::EmptyString();
+}
+
+bool BrowserAccessibility::GetInheritedStringAttribute(
+    ui::AXStringAttribute attribute,
+    std::string* value) const {
+  if (!instance_active()) {
+    *value = std::string();
+    return false;
+  }
+
+  if (GetData().GetStringAttribute(attribute, value))
+    return true;
+  return GetParent() &&
+         GetParent()->GetData().GetStringAttribute(attribute, value);
+}
+
+base::string16 BrowserAccessibility::GetInheritedString16Attribute(
+    ui::AXStringAttribute attribute) const {
+  if (!instance_active())
+    return base::string16();
+
+  const BrowserAccessibility* current_object = this;
+  do {
+    if (current_object->GetData().HasStringAttribute(attribute))
+      return current_object->GetData().GetString16Attribute(attribute);
+    current_object = current_object->GetParent();
+  } while (current_object);
+  return base::string16();
+}
+
+bool BrowserAccessibility::GetInheritedString16Attribute(
+    ui::AXStringAttribute attribute,
+    base::string16* value) const {
+  if (!instance_active()) {
+    *value = base::string16();
+    return false;
+  }
+
+  if (GetData().GetString16Attribute(attribute, value))
+    return true;
+  return GetParent() &&
+         GetParent()->GetData().GetString16Attribute(attribute, value);
+}
+
 bool BrowserAccessibility::HasIntAttribute(
     ui::AXIntAttribute attribute) const {
   return GetData().HasIntAttribute(attribute);
@@ -691,9 +758,8 @@ base::string16 BrowserAccessibility::GetString16Attribute(
   return GetData().GetString16Attribute(attribute);
 }
 
-bool BrowserAccessibility::GetString16Attribute(
-    ui::AXStringAttribute attribute,
-    base::string16* value) const {
+bool BrowserAccessibility::GetString16Attribute(ui::AXStringAttribute attribute,
+                                                base::string16* value) const {
   return GetData().GetString16Attribute(attribute, value);
 }
 

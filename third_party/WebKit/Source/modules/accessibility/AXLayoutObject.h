@@ -101,6 +101,7 @@ protected:
     const AtomicString& accessKey() const override;
     RGBA32 backgroundColor() const final;
     RGBA32 color() const final;
+    String fontFamily() const final;
     // Font size is in pixels.
     float fontSize() const final;
     String text() const override;

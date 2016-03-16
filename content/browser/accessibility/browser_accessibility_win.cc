@@ -20,6 +20,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
@@ -115,9 +116,8 @@ STDMETHODIMP BrowserAccessibilityRelation::get_nTargets(long* n_targets) {
 
   *n_targets = static_cast<long>(target_ids_.size());
 
-  BrowserAccessibilityManager* manager = owner_->manager();
   for (long i = *n_targets - 1; i >= 0; --i) {
-    BrowserAccessibility* result = manager->GetFromID(target_ids_[i]);
+    BrowserAccessibilityWin* result = owner_->GetFromID(target_ids_[i]);
     if (!result || !result->instance_active()) {
       *n_targets = 0;
       break;
@@ -139,9 +139,7 @@ STDMETHODIMP BrowserAccessibilityRelation::get_target(long target_index,
     return E_INVALIDARG;
   }
 
-  BrowserAccessibilityManager* manager = owner_->manager();
-  BrowserAccessibility* result =
-      manager->GetFromID(target_ids_[target_index]);
+  BrowserAccessibility* result = owner_->GetFromID(target_ids_[target_index]);
   if (!result || !result->instance_active())
     return E_FAIL;
 
@@ -576,14 +574,15 @@ STDMETHODIMP BrowserAccessibilityWin::get_accValue(VARIANT var_id,
 
   // Expose color well value.
   if (target->ia2_role() == IA2_ROLE_COLOR_CHOOSER) {
-    int color = target->GetIntAttribute(ui::AX_ATTR_COLOR_VALUE);
-    int red = (color >> 16) & 0xFF;
-    int green = (color >> 8) & 0xFF;
-    int blue = color & 0xFF;
+    unsigned int color = static_cast<unsigned int>(
+        target->GetIntAttribute(ui::AX_ATTR_COLOR_VALUE));
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
     base::string16 value_text;
-    value_text = base::IntToString16((red * 100) / 255) + L"% red " +
-                 base::IntToString16((green * 100) / 255) + L"% green " +
-                 base::IntToString16((blue * 100) / 255) + L"% blue";
+    value_text = base::UintToString16(red * 100 / 255) + L"% red " +
+                 base::UintToString16(green * 100 / 255) + L"% green " +
+                 base::UintToString16(blue * 100 / 255) + L"% blue";
     *value = SysAllocString(value_text.c_str());
     DCHECK(*value);
     return S_OK;
@@ -687,19 +686,16 @@ STDMETHODIMP BrowserAccessibilityWin::role(LONG* role) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_attributes(BSTR* attributes) {
+  if (!attributes)
+    return E_INVALIDARG;
+  *attributes = nullptr;
+
   if (!instance_active())
     return E_FAIL;
 
-  if (!attributes)
-    return E_INVALIDARG;
-
-  // The iaccessible2 attributes are a set of key-value pairs
-  // separated by semicolons, with a colon between the key and the value.
   base::string16 str;
-  const std::vector<base::string16>& attributes_list = ia2_attributes();
-  for (unsigned int i = 0; i < attributes_list.size(); ++i) {
-    str += attributes_list[i] + L';';
-  }
+  for (const base::string16& attribute : ia2_attributes())
+    str += attribute + L';';
 
   if (str.empty())
     return S_FALSE;
@@ -847,7 +843,6 @@ STDMETHODIMP BrowserAccessibilityWin::scrollTo(IA2ScrollType scroll_type) {
   }
 
   manager()->ToBrowserAccessibilityManagerWin()->TrackScrollingObject(this);
-
   return S_OK;
 }
 
@@ -1181,8 +1176,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(long column,
       GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
-    BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
-        manager()->GetFromID(cell_id));
+    BrowserAccessibilityWin* cell = GetFromID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER) {
       base::string16 cell_name = cell->GetString16Attribute(
           ui::AX_ATTR_NAME);
@@ -1227,8 +1221,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
   const std::vector<int32_t>& cell_ids =
       GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   int cell_id = cell_ids[row * columns + column];
-  BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
-      manager()->GetFromID(cell_id));
+  BrowserAccessibilityWin* cell = GetFromID(cell_id);
   int colspan;
   if (cell &&
       cell->GetIntAttribute(
@@ -1265,8 +1258,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long cell_index,
     return S_FALSE;
 
   int cell_id = unique_cell_ids[cell_index];
-  BrowserAccessibilityWin* cell =
-      ToBrowserAccessibilityWin(manager()->GetFromID(cell_id));
+  BrowserAccessibilityWin* cell = GetFromID(cell_id);
   int col_index;
   if (cell &&
       cell->GetIntAttribute(
@@ -1370,8 +1362,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
       GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
-    BrowserAccessibilityWin* cell =
-        ToBrowserAccessibilityWin(manager()->GetFromID(cell_id));
+    BrowserAccessibilityWin* cell = GetFromID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER) {
       base::string16 cell_name = cell->GetString16Attribute(
           ui::AX_ATTR_NAME);
@@ -1415,8 +1406,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(long row,
   const std::vector<int32_t>& cell_ids =
       GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   int cell_id = cell_ids[row * columns + column];
-  BrowserAccessibilityWin* cell =
-      ToBrowserAccessibilityWin(manager()->GetFromID(cell_id));
+  BrowserAccessibilityWin* cell = GetFromID(cell_id);
   int rowspan;
   if (cell &&
       cell->GetIntAttribute(
@@ -1453,8 +1443,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long cell_index,
     return S_FALSE;
 
   int cell_id = unique_cell_ids[cell_index];
-  BrowserAccessibilityWin* cell =
-      ToBrowserAccessibilityWin(manager()->GetFromID(cell_id));
+  BrowserAccessibilityWin* cell = GetFromID(cell_id);
   int cell_row_index;
   if (cell &&
       cell->GetIntAttribute(
@@ -1582,8 +1571,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
     return S_FALSE;
 
   int cell_id = unique_cell_ids[index];
-  BrowserAccessibilityWin* cell =
-      ToBrowserAccessibilityWin(manager()->GetFromID(cell_id));
+  BrowserAccessibilityWin* cell = GetFromID(cell_id);
   int rowspan;
   int colspan;
   if (cell &&
@@ -1741,8 +1729,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
 
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
-    BrowserAccessibilityWin* cell =
-        ToBrowserAccessibilityWin(manager()->GetFromID(cell_id));
+    BrowserAccessibilityWin* cell = GetFromID(cell_id);
     if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER)
       (*n_column_header_cells)++;
   }
@@ -2349,15 +2336,40 @@ STDMETHODIMP BrowserAccessibilityWin::setSelection(LONG selection_index,
   return S_OK;
 }
 
-//
-// IAccessibleText methods not implemented.
-//
-
 STDMETHODIMP BrowserAccessibilityWin::get_attributes(LONG offset,
                                                      LONG* start_offset,
                                                      LONG* end_offset,
                                                      BSTR* text_attributes) {
-  return E_NOTIMPL;
+  if (!start_offset || !end_offset || !text_attributes)
+    return E_INVALIDARG;
+
+  *start_offset = *end_offset = 0;
+  *text_attributes = nullptr;
+  if (!instance_active())
+    return E_FAIL;
+
+  const base::string16& text = GetText();
+  HandleSpecialTextOffset(text, &offset);
+  if (offset < 0 || offset > static_cast<LONG>(text.size()))
+    return E_INVALIDARG;
+
+  ComputeStylesIfNeeded();
+  *start_offset = FindStartOfStyle(offset, ui::BACKWARDS_DIRECTION);
+  *end_offset = FindStartOfStyle(offset, ui::FORWARDS_DIRECTION);
+
+  base::string16 attributes_str;
+  const std::vector<base::string16>& attributes =
+      offset_to_text_attributes().find(*start_offset)->second;
+  for (const base::string16& attribute : attributes) {
+    attributes_str += attribute + L';';
+  }
+
+  if (attributes.empty())
+    return S_FALSE;
+
+  *text_attributes = SysAllocString(attributes_str.c_str());
+  DCHECK(*text_attributes);
+  return S_OK;
 }
 
 //
@@ -2388,14 +2400,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlink(
   }
 
   int32_t id = hyperlinks()[index];
-  BrowserAccessibilityWin* child =
-      ToBrowserAccessibilityWin(manager()->GetFromID(id));
-  if (child) {
-    *hyperlink = static_cast<IAccessibleHyperlink*>(child->NewReference());
-    return S_OK;
-  }
+  BrowserAccessibilityWin* link = GetFromID(id);
+  if (!link)
+    return E_FAIL;
 
-  return E_FAIL;
+  *hyperlink = static_cast<IAccessibleHyperlink*>(link->NewReference());
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
@@ -2973,7 +2983,20 @@ BrowserAccessibilityWin::get_localInterface(void** local_interface) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_language(BSTR* language) {
-  return E_NOTIMPL;
+  if (!language)
+    return E_INVALIDARG;
+  *language = nullptr;
+
+  if (!instance_active())
+    return E_FAIL;
+
+  base::string16 lang = GetInheritedString16Attribute(ui::AX_ATTR_LANGUAGE);
+  if (lang.empty())
+    lang = L"en-US";
+
+  *language = SysAllocString(lang.c_str());
+  DCHECK(*language);
+  return S_OK;
 }
 
 //
@@ -3052,7 +3075,21 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_fontFamily(BSTR* font_family) {
-  return E_NOTIMPL;
+  if (!font_family)
+    return E_INVALIDARG;
+  *font_family = nullptr;
+
+  if (!instance_active())
+    return E_FAIL;
+
+  base::string16 family =
+      GetInheritedString16Attribute(ui::AX_ATTR_FONT_FAMILY);
+  if (family.empty())
+    return S_FALSE;
+
+  *font_family = SysAllocString(family.c_str());
+  DCHECK(*font_family);
+  return S_OK;
 }
 
 //
@@ -3233,6 +3270,45 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
       this_ptr, entries, iid, object);
 }
 
+void BrowserAccessibilityWin::ComputeStylesIfNeeded() {
+  if (!offset_to_text_attributes().empty())
+    return;
+
+  std::map<int, std::vector<base::string16>> attributes_map;
+  if (PlatformIsLeaf()) {
+    attributes_map[0] = ComputeTextAttributes();
+    win_attributes_->offset_to_text_attributes.swap(attributes_map);
+    return;
+  }
+
+  int start_offset = 0;
+  for (size_t i = 0; i < PlatformChildCount(); ++i) {
+    const auto child = ToBrowserAccessibilityWin(PlatformGetChild(i));
+    DCHECK(child);
+    std::vector<base::string16> attributes(child->ComputeTextAttributes());
+
+    if (attributes_map.empty()) {
+      attributes_map[start_offset] = attributes;
+    } else {
+      // Only add the attributes for this child if we are at the start of a new
+      // style span.
+      std::vector<base::string16> previous_attributes =
+          attributes_map.rbegin()->second;
+      if (!std::equal(attributes.begin(), attributes.end(),
+                      previous_attributes.begin())) {
+        attributes_map[start_offset] = attributes;
+      }
+    }
+
+    if (child->IsTextOnlyObject())
+      start_offset += child->GetText().length();
+    else
+      start_offset += 1;
+  }
+
+  win_attributes_->offset_to_text_attributes.swap(attributes_map);
+}
+
 base::string16 BrowserAccessibilityWin::GetText() const {
   if (PlatformIsChildOfLeaf())
     return BrowserAccessibility::GetText();
@@ -3317,44 +3393,6 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
     }
   }
 
-  // Expose invalid state for form controls and elements with aria-invalid.
-  int invalid_state;
-  if (GetIntAttribute(ui::AX_ATTR_INVALID_STATE, &invalid_state)) {
-    // TODO(nektar): Handle the possibility of having multiple aria-invalid
-    // attributes defined, e.g., "invalid:spelling,grammar".
-    switch (invalid_state) {
-      case ui::AX_INVALID_STATE_FALSE:
-        win_attributes_->ia2_attributes.push_back(L"invalid:false");
-        break;
-      case ui::AX_INVALID_STATE_TRUE:
-        win_attributes_->ia2_attributes.push_back(L"invalid:true");
-        break;
-      case ui::AX_INVALID_STATE_SPELLING:
-        win_attributes_->ia2_attributes.push_back(L"invalid:spelling");
-        break;
-      case ui::AX_INVALID_STATE_GRAMMAR:
-        win_attributes_->ia2_attributes.push_back(L"invalid:grammar");
-        break;
-      case ui::AX_INVALID_STATE_OTHER:
-        {
-          base::string16 aria_invalid_value;
-          if (GetString16Attribute(ui::AX_ATTR_ARIA_INVALID_VALUE,
-                                   &aria_invalid_value)) {
-            SanitizeStringAttributeForIA2(aria_invalid_value,
-                                          &aria_invalid_value);
-            win_attributes_->ia2_attributes.push_back(
-                L"invalid:" + aria_invalid_value);
-          } else {
-            // Set the attribute to L"true", since we cannot be more specific.
-            win_attributes_->ia2_attributes.push_back(L"invalid:true");
-          }
-        }
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
   // Expose row or column header sort direction.
   int32_t sort_direction;
   if ((ia_role() == ROLE_SYSTEM_COLUMNHEADER ||
@@ -3434,8 +3472,7 @@ void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
   // the character index of each embedded object character to the id of the
   // child object it points to.
   for (unsigned int i = 0; i < PlatformChildCount(); ++i) {
-    BrowserAccessibilityWin* child =
-        ToBrowserAccessibilityWin(PlatformGetChild(i));
+    const auto child = ToBrowserAccessibilityWin(PlatformGetChild(i));
     DCHECK(child);
     // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
     if (child->IsTextOnlyObject()) {
@@ -3573,6 +3610,182 @@ void BrowserAccessibilityWin::OnLocationChanged() {
       EVENT_OBJECT_LOCATIONCHANGE, this);
 }
 
+std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
+    const {
+  std::vector<base::string16> attributes;
+
+  // We include list markers for now, but there might be other objects that are
+  // auto generated.
+  // TODO(nektar): Compute what objects are auto-generated in Blink.
+  if (GetRole() == ui::AX_ROLE_LIST_MARKER)
+    attributes.push_back(L"auto-generated:true");
+  else
+    attributes.push_back(L"auto-generated:false");
+
+  int color;
+  base::string16 color_value(L"transparent");
+  if (GetIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR, &color)) {
+    unsigned int alpha = SkColorGetA(color);
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    if (alpha) {
+      color_value = L"rgb(" + base::UintToString16(red) + L',' +
+                    base::UintToString16(green) + L',' +
+                    base::UintToString16(blue) + L')';
+    }
+  }
+  SanitizeStringAttributeForIA2(color_value, &color_value);
+  attributes.push_back(L"background-color:" + color_value);
+
+  if (GetIntAttribute(ui::AX_ATTR_COLOR, &color)) {
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    color_value = L"rgb(" + base::UintToString16(red) + L',' +
+                  base::UintToString16(green) + L',' +
+                  base::UintToString16(blue) + L')';
+  } else {
+    color_value = L"rgb(0,0,0)";
+  }
+  SanitizeStringAttributeForIA2(color_value, &color_value);
+  attributes.push_back(L"color:" + color_value);
+
+  base::string16 font_family(
+      GetInheritedString16Attribute(ui::AX_ATTR_FONT_FAMILY));
+  // Attribute has no default value.
+  if (!font_family.empty()) {
+    SanitizeStringAttributeForIA2(font_family, &font_family);
+    attributes.push_back(L"font-family:" + font_family);
+  }
+
+  float font_size;
+  // Attribute has no default value.
+  if (GetFloatAttribute(ui::AX_ATTR_FONT_SIZE, &font_size)) {
+    // The IA2 Spec requires the value to be in pt, not in pixels.
+    // There are 72 points per inch.
+    // We assume that there are 96 pixels per inch on a standard display.
+    // TODO(nektar): Figure out the current value of pixels per inch.
+    float points = font_size * 72.0 / 96.0;
+    attributes.push_back(L"font-size:" +
+                         base::UTF8ToUTF16(base::DoubleToString(points)) +
+                         L"pt");
+  }
+
+  auto text_style =
+      static_cast<ui::AXTextStyle>(GetIntAttribute(ui::AX_ATTR_TEXT_STYLE));
+  if (text_style == ui::AX_TEXT_STYLE_NONE) {
+    attributes.push_back(L"font-style:normal");
+    attributes.push_back(L"font-weight:normal");
+  } else {
+    if (text_style & ui::AX_TEXT_STYLE_BOLD)
+      attributes.push_back(L"font-weight:bold");
+
+    base::string16 font_style;
+    if (text_style & ui::AX_TEXT_STYLE_ITALIC)
+      font_style += L",italic";
+    if (text_style & ui::AX_TEXT_STYLE_UNDERLINE)
+      font_style += L",underline";
+    if (text_style & ui::AX_TEXT_STYLE_LINE_THROUGH)
+      font_style += L",line-through";
+    // TODO(nektar): Support more font style attributes in Blink.
+
+    if (font_style.empty()) {
+      font_style = L"normal";
+    } else {
+      // Remove the leading comma.
+      font_style.erase(0, 1);
+    }
+    attributes.push_back(L"font-style:" + font_style);
+  }
+
+  auto invalid_state = static_cast<ui::AXInvalidState>(
+      GetIntAttribute(ui::AX_ATTR_INVALID_STATE));
+  switch (invalid_state) {
+    case ui::AX_INVALID_STATE_NONE:
+    case ui::AX_INVALID_STATE_FALSE:
+      attributes.push_back(L"invalid:false");
+      break;
+    case ui::AX_INVALID_STATE_TRUE:
+      attributes.push_back(L"invalid:true");
+      break;
+    case ui::AX_INVALID_STATE_SPELLING:
+    case ui::AX_INVALID_STATE_GRAMMAR: {
+      base::string16 spelling_grammar_value;
+      if (invalid_state & ui::AX_INVALID_STATE_SPELLING)
+        spelling_grammar_value = L"spelling";
+      else if (invalid_state & ui::AX_INVALID_STATE_GRAMMAR)
+        spelling_grammar_value = L"grammar";
+      else
+        spelling_grammar_value = L"spelling,grammar";
+      attributes.push_back(L"invalid:" + spelling_grammar_value);
+      break;
+    }
+    case ui::AX_INVALID_STATE_OTHER: {
+      base::string16 aria_invalid_value;
+      if (GetString16Attribute(ui::AX_ATTR_ARIA_INVALID_VALUE,
+                               &aria_invalid_value)) {
+        SanitizeStringAttributeForIA2(aria_invalid_value, &aria_invalid_value);
+        attributes.push_back(L"invalid:" + aria_invalid_value);
+      } else {
+        // Set the attribute to L"true", since we cannot be more specific.
+        attributes.push_back(L"invalid:true");
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+
+  base::string16 language(GetInheritedString16Attribute(ui::AX_ATTR_LANGUAGE));
+  // Default value should be L"en-US".
+  if (language.empty()) {
+    attributes.push_back(L"language:en-US");
+  } else {
+    SanitizeStringAttributeForIA2(language, &language);
+    attributes.push_back(L"language:" + language);
+  }
+
+  // TODO(nektar): Add Blink support for the following attributes.
+  // Currently set to their default values as dictated by the IA2 Spec.
+  attributes.push_back(L"text-line-through-mode:continuous");
+  attributes.push_back(L"text-line-through-style:none");
+  // Default value must be the empty string.
+  attributes.push_back(L"text-line-through-text:");
+  attributes.push_back(L"text-line-through-type:none");
+  attributes.push_back(L"text-line-through-width:auto");
+  attributes.push_back(L"text-outline:false");
+  attributes.push_back(L"text-position:baseline");
+  attributes.push_back(L"text-shadow:none");
+  attributes.push_back(L"text-underline-mode:continuous");
+  attributes.push_back(L"text-underline-style:none");
+  attributes.push_back(L"text-underline-type:none");
+  attributes.push_back(L"text-underline-width:auto");
+
+  auto text_direction = static_cast<ui::AXTextDirection>(
+      GetIntAttribute(ui::AX_ATTR_TEXT_DIRECTION));
+  switch (text_direction) {
+    case ui::AX_TEXT_DIRECTION_NONE:
+    case ui::AX_TEXT_DIRECTION_LTR:
+      attributes.push_back(L"writing-mode:lr");
+      break;
+    case ui::AX_TEXT_DIRECTION_RTL:
+      attributes.push_back(L"writing-mode:rl");
+      break;
+    case ui::AX_TEXT_DIRECTION_TTB:
+      attributes.push_back(L"writing-mode:tb");
+      break;
+    case ui::AX_TEXT_DIRECTION_BTT:
+      // Not listed in the IA2 Spec.
+      attributes.push_back(L"writing-mode:bt");
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return attributes;
+}
+
 BrowserAccessibilityWin* BrowserAccessibilityWin::NewReference() {
   AddRef();
   return this;
@@ -3670,6 +3883,23 @@ bool BrowserAccessibilityWin::IsHyperlink() const {
   if (hyperlink_index >= 0)
     return true;
   return false;
+}
+
+BrowserAccessibilityWin*
+BrowserAccessibilityWin::GetHyperlinkFromHypertextOffset(int offset) const {
+  std::map<int32_t, int32_t>::iterator iterator =
+      hyperlink_offset_to_index().find(offset);
+  if (iterator == hyperlink_offset_to_index().end())
+    return nullptr;
+
+  int32_t index = iterator->second;
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, static_cast<int32_t>(hyperlinks().size()));
+  int32_t id = hyperlinks()[index];
+  BrowserAccessibilityWin* hyperlink = GetFromID(id);
+  if (!hyperlink)
+    return nullptr;
+  return hyperlink;
 }
 
 int32_t BrowserAccessibilityWin::GetHyperlinkIndexFromChild(
@@ -3815,8 +4045,7 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
 
 int BrowserAccessibilityWin::GetSelectionAnchor() const {
   int32_t anchor_id = manager()->GetTreeData().sel_anchor_object_id;
-  const auto anchor_object =
-      ToBrowserAccessibilityWin(manager()->GetFromID(anchor_id));
+  const BrowserAccessibilityWin* anchor_object = GetFromID(anchor_id);
   if (!anchor_object)
     return -1;
 
@@ -3826,8 +4055,7 @@ int BrowserAccessibilityWin::GetSelectionAnchor() const {
 
 int BrowserAccessibilityWin::GetSelectionFocus() const {
   int32_t focus_id = manager()->GetTreeData().sel_focus_object_id;
-  const auto focus_object =
-      ToBrowserAccessibilityWin(manager()->GetFromID(focus_id));
+  const BrowserAccessibilityWin* focus_object = GetFromID(focus_id);
   if (!focus_object)
     return -1;
 
@@ -3877,22 +4105,13 @@ void BrowserAccessibilityWin::GetSelectionOffsets(
   // the selection.
   int* largest_offset =
       (*selection_start <= *selection_end) ? selection_end : selection_start;
-  auto current_object = const_cast<BrowserAccessibilityWin*>(this);
-  LONG hyperlink_index;
-  HRESULT hr =
-      current_object->get_hyperlinkIndex(*largest_offset, &hyperlink_index);
-  if (hr != S_OK)
+  BrowserAccessibilityWin* hyperlink =
+      GetHyperlinkFromHypertextOffset(*largest_offset);
+  if (!hyperlink)
     return;
 
-  DCHECK_GE(hyperlink_index, 0);
-  base::win::ScopedComPtr<IAccessibleHyperlink> hyperlink;
-  hr = current_object->get_hyperlink(hyperlink_index, hyperlink.Receive());
-  DCHECK(SUCCEEDED(hr));
-  base::win::ScopedComPtr<IAccessibleText> hyperlink_text;
-  hr = hyperlink.QueryInterface(hyperlink_text.Receive());
-  DCHECK(SUCCEEDED(hr));
   LONG n_selections = 0;
-  hr = hyperlink_text->get_nSelections(&n_selections);
+  HRESULT hr = hyperlink->get_nSelections(&n_selections);
   DCHECK(SUCCEEDED(hr));
   if (n_selections > 0)
     ++(*largest_offset);
@@ -4024,7 +4243,39 @@ LONG BrowserAccessibilityWin::FindBoundary(
       text, line_breaks, boundary, start_offset, direction);
 }
 
-BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromID(int32_t id) {
+LONG BrowserAccessibilityWin::FindStartOfStyle(
+    LONG start_offset,
+    ui::TextBoundaryDirection direction) const {
+  LONG text_length = static_cast<LONG>(GetText().length());
+  DCHECK_GE(start_offset, 0);
+  DCHECK_LE(start_offset, text_length);
+
+  switch (direction) {
+    case ui::BACKWARDS_DIRECTION: {
+      if (offset_to_text_attributes().empty())
+        return 0;
+
+      auto iterator = offset_to_text_attributes().upper_bound(start_offset);
+      --iterator;
+      return static_cast<LONG>(iterator->first);
+    }
+    case ui::FORWARDS_DIRECTION: {
+      const auto iterator =
+          offset_to_text_attributes().upper_bound(start_offset);
+      if (iterator == offset_to_text_attributes().end())
+        return text_length;
+      return static_cast<LONG>(iterator->first);
+    }
+    default:
+      NOTREACHED();
+  }
+
+  return start_offset;
+}
+
+BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromID(int32_t id) const {
+  if (!instance_active())
+    return nullptr;
   return ToBrowserAccessibilityWin(manager()->GetFromID(id));
 }
 
@@ -4046,6 +4297,25 @@ bool BrowserAccessibilityWin::IsListBoxOptionOrMenuListOption() {
   }
 
   return false;
+}
+
+void BrowserAccessibilityWin::AddRelations(
+    ui::AXIntListAttribute src_attr,
+    const base::string16& iaccessiblerelation_type) {
+  if (!HasIntListAttribute(src_attr))
+    return;
+
+  const std::vector<int32_t>& ids = GetIntListAttribute(src_attr);
+  for (size_t i = 0; i < ids.size(); ++i) {
+    CComObject<BrowserAccessibilityRelation>* relation;
+    HRESULT hr =
+        CComObject<BrowserAccessibilityRelation>::CreateInstance(&relation);
+    DCHECK(SUCCEEDED(hr));
+    relation->AddRef();
+    relation->Initialize(this, iaccessiblerelation_type);
+    relation->AddTarget(ids[i]);
+    relations_.push_back(relation);
+  }
 }
 
 void BrowserAccessibilityWin::UpdateRequiredAttributes() {
@@ -4108,25 +4378,6 @@ void BrowserAccessibilityWin::UpdateRequiredAttributes() {
       GetHtmlAttribute("type", &type)) {
     SanitizeStringAttributeForIA2(type, &type);
     win_attributes_->ia2_attributes.push_back(L"text-input-type:" + type);
-  }
-}
-
-void BrowserAccessibilityWin::AddRelations(
-    ui::AXIntListAttribute src_attr,
-    const base::string16& iaccessiblerelation_type) {
-  if (!HasIntListAttribute(src_attr))
-    return;
-
-  const std::vector<int32_t>& ids = GetIntListAttribute(src_attr);
-  for (size_t i = 0; i < ids.size(); ++i) {
-    CComObject<BrowserAccessibilityRelation>* relation;
-    HRESULT hr = CComObject<BrowserAccessibilityRelation>::CreateInstance(
-        &relation);
-    DCHECK(SUCCEEDED(hr));
-    relation->AddRef();
-    relation->Initialize(this, iaccessiblerelation_type);
-    relation->AddTarget(ids[i]);
-    relations_.push_back(relation);
   }
 }
 

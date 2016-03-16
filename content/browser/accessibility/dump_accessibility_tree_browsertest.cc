@@ -79,6 +79,17 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     RunTest(aria_file, "accessibility/aria");
   }
 
+  void RunCSSTest(const base::FilePath::CharType* file_path) {
+    base::FilePath dir_test_data;
+    ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
+    base::FilePath test_path(
+        dir_test_data.AppendASCII("accessibility").AppendASCII("css"));
+    ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+
+    base::FilePath css_file = test_path.Append(base::FilePath(file_path));
+    RunTest(css_file, "accessibility/css");
+  }
+
   void RunHtmlTest(const base::FilePath::CharType* file_path) {
     base::FilePath dir_test_data;
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
@@ -106,6 +117,18 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
         base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
 };
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSColor) {
+  RunCSSTest(FILE_PATH_LITERAL("color.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSFontStyle) {
+  RunCSSTest(FILE_PATH_LITERAL("font-style.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSLanguage) {
+  RunCSSTest(FILE_PATH_LITERAL("language.html"));
+}
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityA) {
   RunHtmlTest(FILE_PATH_LITERAL("a.html"));
