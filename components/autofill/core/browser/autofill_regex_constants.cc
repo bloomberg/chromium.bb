@@ -267,14 +267,14 @@ const char kLastNameRe[] =
 // phone_field.cc
 /////////////////////////////////////////////////////////////////////////////
 const char kPhoneRe[] =
-    "phone|mobile"
-    "|telefonnummer"  // de-DE
-    "|telefono|teléfono"  // es
-    "|telfixe"  // fr-FR
-    "|電話"  // ja-JP
-    "|telefone|telemovel"  // pt-BR, pt-PT
-    "|телефон"  // ru
-    "|电话"  // zh-CN
+    "phone|mobile|contact.?number"
+    "|telefonnummer"                                // de-DE
+    "|telefono|teléfono"                            // es
+    "|telfixe"                                      // fr-FR
+    "|電話"                                         // ja-JP
+    "|telefone|telemovel"                           // pt-BR, pt-PT
+    "|телефон"                                      // ru
+    "|电话"                                         // zh-CN
     "|(?:전화|핸드폰|휴대폰|휴대전화)(?:.?번호)?";  // ko-KR
 const char kCountryCodeRe[] =
     "country.*code|ccode|_cc";
