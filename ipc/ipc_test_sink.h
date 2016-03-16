@@ -59,17 +59,22 @@ class Message;
 //
 //   class MyListener : public IPC::Listener {
 //    public:
+//     MyListener(const base::Closure& closure)
+//       : message_received_closure_(closure) {}
 //     virtual bool OnMessageReceived(const IPC::Message& msg) {
 //       <do something with the message>
-//       MessageLoop::current()->QuitWhenIdle();
+//       message_received_closure_.Run();
 //       return false;  // to store the message in the sink, or true to drop it
 //     }
+//    private:
+//     base::Closure message_received_closure_;
 //   };
 //
-//   MyListener listener;
+//   base::RunLoop run_loop;
+//   MyListener listener(run_loop.QuitClosure());
 //   test_sink.AddFilter(&listener);
 //   StartSomeAsynchronousProcess(&test_sink);
-//   MessageLoop::current()->Run();
+//   run_loop.Run();
 //   <inspect the results>
 //   ...
 //
