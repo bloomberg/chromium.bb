@@ -26,6 +26,7 @@ from chromite.lib import stats
 from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
+from gn_helpers import gn_helpers
 
 
 COMMAND_NAME = 'chrome-sdk'
@@ -424,6 +425,7 @@ class ChromeSDKCommand(command.CliCommand):
       'LDFLAGS',
 
       # Misc settings.
+      'GN_ARGS',
       'GOLD_SET',
       'GYP_DEFINES',
   )
@@ -619,7 +621,8 @@ class ChromeSDKCommand(command.CliCommand):
     env['CXX_host'] = os.path.join(clang_path, 'clang++')
 
     if not options.fastbuild:
-      # Enable debug fission.
+      # Enable debug fission for GYP. linux_use_debug_fission cannot be used
+      # because it doesn't have effect on Release builds.
       env['CFLAGS'] = env.get('CFLAGS', '') +  ' -gsplit-dwarf'
       env['CXXFLAGS'] = env.get('CXXFLAGS', '') + ' -gsplit-dwarf'
 
@@ -664,35 +667,52 @@ class ChromeSDKCommand(command.CliCommand):
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
     gyp_dict = chrome_util.ProcessGypDefines(env['GYP_DEFINES'])
+    gn_args = gn_helpers.FromGNArgs(env['GN_ARGS'])
     gyp_dict['sysroot'] = sysroot
-    gyp_dict.pop('order_text_section', None)
+    gn_args['target_sysroot'] = sysroot
     gyp_dict.pop('pkg-config', None)
-    gyp_dict['host_clang'] = 1
+    gn_args.pop('pkg_config', None)
+    gyp_dict['host_clang'] = 1  # GN doesn't support this. crbug.com/588080
     if options.clang:
       gyp_dict['clang'] = 1
+      gn_args['is_clang'] = True
     if options.internal:
       gyp_dict['branding'] = 'Chrome'
+      gn_args['is_chrome_branded'] = True
       gyp_dict['buildtype'] = 'Official'
+      gn_args['is_official_build'] = True
     else:
       gyp_dict.pop('branding', None)
+      gn_args.pop('is_chrome_branded', None)
       gyp_dict.pop('buildtype', None)
+      gn_args.pop('is_official_build', None)
       gyp_dict.pop('internal_gles2_conform_tests', None)
+      gn_args.pop('internal_gles2_conform_tests', None)
     if options.component:
       gyp_dict['component'] = 'shared_library'
+      gn_args['is_component_build'] = True
     if options.fastbuild:
       gyp_dict['fastbuild'] = 1
       gyp_dict.pop('release_extra_cflags', None)
+      # symbol_level corresponds to GYP's fastbuild (https://goo.gl/ZC4fUO).
+      gn_args['symbol_level'] = 1
+    else:
+      # Enable debug fission for GN.
+      gn_args['use_debug_fission'] = True
 
     # Enable goma if requested.
     if goma_dir:
       gyp_dict['use_goma'] = 1
+      gn_args['use_goma'] = True
       gyp_dict['gomadir'] = goma_dir
+      gn_args['goma_dir'] = goma_dir
 
-    if options.clang:
-      # TODO(thakis): Remove once https://b/issue?id=16876457 is fixed.
-      gyp_dict['use_goma'] = 0
+    gn_args['cros_target_cc'] = env['CC']
+    gn_args['cros_target_cxx'] = env['CXX']
+    gn_args.pop('internal_khronos_glcts_tests', None)  # crbug.com/588080
 
     env['GYP_DEFINES'] = chrome_util.DictToGypDefines(gyp_dict)
+    env['GN_ARGS'] = gn_helpers.ToGNString(gn_args)
 
     # PS1 sets the command line prompt and xterm window caption.
     full_version = sdk_ctx.version

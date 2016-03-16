@@ -172,6 +172,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
   FAKE_ENV = {
       'GYP_DEFINES': "sysroot='/path/to/sysroot'",
+      'GN_ARGS': 'target_sysroot="/path/to/sysroot"',
       'CXX': 'x86_64-cros-linux-gnu-g++ -B /path/to/gold',
       'CC': 'x86_64-cros-linux-gnu-gcc -B /path/to/gold',
       'LD': 'x86_64-cros-linux-gnu-g++ -B /path/to/gold',
