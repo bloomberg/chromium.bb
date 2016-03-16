@@ -1,4 +1,4 @@
-SUBDIRS = tables tablesWithMetadata doctests harness harnessSources
+SUBDIRS = tables tablesWithMetadata doctests
 
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/liblouis		\
@@ -184,9 +184,8 @@ TESTS =				\
 	$(dist_check_SCRIPTS)   \
 	$(dist_yaml_TESTS)
 
-TESTS_ENVIRONMENT =																      \
-	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables,$(top_srcdir)/tests/tablesWithMetadata, \
-	PYTHONPATH=$(HARNESS_DIR):$(top_builddir)/python:$$PYTHONPATH										      \
-	HARNESS_DIR=$(HARNESS_DIR)														      \
-	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH									      \
+TESTS_ENVIRONMENT =																	\
+	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables,$(top_srcdir)/tests/tablesWithMetadata,	\
+	PYTHONPATH=$(top_builddir)/python:$$PYTHONPATH													\
+	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH										\
 	PATH=$(top_builddir)/tools:$$PATH
