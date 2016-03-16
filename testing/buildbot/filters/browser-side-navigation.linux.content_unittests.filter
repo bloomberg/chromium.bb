@@ -22,4 +22,5 @@
 -WebContentsImplTest.CrossSiteNotPreemptedDuringBeforeUnload
 -WebContentsImplTest.FindOpenerRVHWhenPending
 -WebContentsImplTest.NoEarlyStop
+-WebContentsImplTest.UpdateTitle
 -WebContentsImplTestWithSiteIsolation.StartStopEventsBalance

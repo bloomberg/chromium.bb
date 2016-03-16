@@ -6,6 +6,7 @@
 -BrowserViewTest.BrowserViewLayout
 -ExtensionContextMenuModelTest.TestPageAccessSubmenu
 -InstantSearchPrerendererTest.PrerenderingAllowed
+-InstantNTPURLRewriteTest.UberURLHandler_InstantExtendedNewTabPage
 -PopupToolbarModelTest.ShouldDisplayURL
 -SearchIPCRouterPolicyTest.ProcessChromeIdentityCheck
 -SearchIPCRouterPolicyTest.ProcessDeleteMostVisitedItem
