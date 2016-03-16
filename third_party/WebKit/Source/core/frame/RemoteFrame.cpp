@@ -104,6 +104,8 @@ void RemoteFrame::detach(FrameDetachType type)
     client()->willBeDetached();
     m_windowProxyManager->clearForClose();
     setView(nullptr);
+    if (m_remotePlatformLayer)
+        setRemotePlatformLayer(nullptr);
     Frame::detach(type);
 }
 
@@ -116,16 +118,6 @@ bool RemoteFrame::prepareForCommit()
 RemoteSecurityContext* RemoteFrame::securityContext() const
 {
     return m_securityContext.get();
-}
-
-void RemoteFrame::disconnectOwnerElement()
-{
-    // The RemotePlatformLayer needs to be cleared in disconnectOwnerElement()
-    // because it must happen on WebFrame::swap() and Frame::detach().
-    if (m_remotePlatformLayer)
-        setRemotePlatformLayer(nullptr);
-
-    Frame::disconnectOwnerElement();
 }
 
 bool RemoteFrame::shouldClose()

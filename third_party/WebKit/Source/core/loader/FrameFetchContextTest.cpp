@@ -72,25 +72,6 @@ private:
     RawPtrWillBeMember<Frame> m_parent;
 };
 
-class StubFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<StubFrameOwner>, public FrameOwner {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StubFrameOwner);
-public:
-    static PassOwnPtrWillBeRawPtr<StubFrameOwner> create()
-    {
-        return adoptPtrWillBeNoop(new StubFrameOwner);
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { FrameOwner::trace(visitor); }
-
-    bool isLocal() const override { return false; }
-    SandboxFlags getSandboxFlags() const override { return SandboxNone; }
-    void dispatchLoad() override { }
-    void renderFallbackContent() override { }
-    ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
-    int marginWidth() const override { return -1; }
-    int marginHeight() const override { return -1; }
-};
-
 class MockFrameLoaderClient : public EmptyFrameLoaderClient {
 public:
     MockFrameLoaderClient()
@@ -109,7 +90,7 @@ protected:
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
         document = toHTMLDocument(&dummyPageHolder->document());
         fetchContext = static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
-        owner = StubFrameOwner::create();
+        owner = DummyFrameOwner::create();
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 
@@ -149,7 +130,7 @@ protected:
     RefPtrWillBePersistent<LocalFrame> childFrame;
     RefPtrWillBePersistent<DocumentLoader> childDocumentLoader;
     RefPtrWillBePersistent<Document> childDocument;
-    OwnPtrWillBePersistent<StubFrameOwner> owner;
+    OwnPtrWillBePersistent<DummyFrameOwner> owner;
 };
 
 // This test class sets up a mock frame loader client that expects a
@@ -169,7 +150,7 @@ protected:
         document = toHTMLDocument(&dummyPageHolder->document());
         document->setURL(mainResourceUrl);
         fetchContext = static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
-        owner = StubFrameOwner::create();
+        owner = DummyFrameOwner::create();
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 

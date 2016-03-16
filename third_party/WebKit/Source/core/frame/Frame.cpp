@@ -114,10 +114,9 @@ void Frame::detachChildren()
 void Frame::disconnectOwnerElement()
 {
     if (m_owner) {
-        if (m_owner->isLocal())
-            toHTMLFrameOwnerElement(m_owner)->clearContentFrame();
+        m_owner->clearContentFrame();
+        m_owner = nullptr;
     }
-    m_owner = nullptr;
 }
 
 Page* Frame::page() const
@@ -309,12 +308,10 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     frameCounter().increment();
 #endif
 
-    if (m_owner) {
-        if (m_owner->isLocal())
-            toHTMLFrameOwnerElement(m_owner)->setContentFrame(*this);
-    } else {
+    if (m_owner)
+        m_owner->setContentFrame(*this);
+    else
         page()->setMainFrame(this);
-    }
 }
 
 } // namespace blink

@@ -4,13 +4,14 @@
 
 #include "web/RemoteBridgeFrameOwner.h"
 
+#include "core/frame/LocalFrame.h"
 #include "public/web/WebFrameClient.h"
+#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
-RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
-    : m_frame(frame)
-    , m_sandboxFlags(flags)
+RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+    : m_sandboxFlags(flags)
     , m_scrolling(static_cast<ScrollbarMode>(frameOwnerProperties.scrollingMode))
     , m_marginWidth(frameOwnerProperties.marginWidth)
     , m_marginHeight(frameOwnerProperties.marginHeight)
@@ -28,10 +29,21 @@ void RemoteBridgeFrameOwner::setScrollingMode(WebFrameOwnerProperties::Scrolling
     m_scrolling = static_cast<ScrollbarMode>(mode);
 }
 
+void RemoteBridgeFrameOwner::setContentFrame(Frame& frame)
+{
+    m_frame = &frame;
+}
+
+void RemoteBridgeFrameOwner::clearContentFrame()
+{
+    ASSERT(m_frame->owner() == this);
+    m_frame = nullptr;
+}
+
 void RemoteBridgeFrameOwner::dispatchLoad()
 {
-    if (m_frame->client())
-        m_frame->client()->dispatchLoad();
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(toLocalFrame(*m_frame));
+    webFrame->client()->dispatchLoad();
 }
 
 } // namespace blink

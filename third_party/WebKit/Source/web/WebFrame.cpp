@@ -72,7 +72,6 @@ bool WebFrame::swap(WebFrame* frame)
     AtomicString name = oldFrame->tree().name();
     AtomicString uniqueName = oldFrame->tree().uniqueName();
     FrameOwner* owner = oldFrame->owner();
-    oldFrame->disconnectOwnerElement();
 
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     HashMap<DOMWrapperWorld*, v8::Local<v8::Object>> globals;
@@ -83,21 +82,22 @@ bool WebFrame::swap(WebFrame* frame)
     // associated with the frame itself have not yet been freed yet.
     oldFrame->detach(FrameDetachType::Swap);
 
-    // Finally, clone the state of the current Frame into one matching
-    // the type of the passed in WebFrame.
+    // Clone the state of the current Frame into the one being swapped in.
     // FIXME: This is a bit clunky; this results in pointless decrements and
     // increments of connected subframes.
     if (frame->isWebLocalFrame()) {
+        // TODO(dcheng): in an ideal world, both branches would just use
+        // WebFrameImplBase's initializeCoreFrame() helper. However, Blink
+        // currently requires a 'provisional' local frame to serve as a
+        // placeholder for loading state when swapping to a local frame.
+        // In this case, the core LocalFrame is already initialized, so just
+        // update a bit of state.
         LocalFrame& localFrame = *toWebLocalFrameImpl(frame)->frame();
         ASSERT(owner == localFrame.owner());
         if (owner) {
-            if (owner->isLocal()) {
-                HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(owner);
-                ownerElement->setContentFrame(localFrame);
-                ownerElement->setWidget(localFrame.view());
-            } else {
-                toRemoteBridgeFrameOwner(owner)->setContentFrame(toWebLocalFrameImpl(frame));
-            }
+            owner->setContentFrame(localFrame);
+            if (owner->isLocal())
+                toHTMLFrameOwnerElement(owner)->setWidget(localFrame.view());
         } else {
             localFrame.page()->setMainFrame(&localFrame);
         }

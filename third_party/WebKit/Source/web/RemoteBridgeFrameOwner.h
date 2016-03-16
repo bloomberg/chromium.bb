@@ -8,7 +8,6 @@
 #include "core/frame/FrameOwner.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/web/WebFrameOwnerProperties.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -20,52 +19,34 @@ namespace blink {
 class RemoteBridgeFrameOwner final : public NoBaseWillBeGarbageCollectedFinalized<RemoteBridgeFrameOwner>, public FrameOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteBridgeFrameOwner);
 public:
-    static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+    static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
-        return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(frame, flags, frameOwnerProperties));
+        return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(flags, frameOwnerProperties));
     }
 
-    bool isLocal() const override
-    {
-        return false;
-    }
-
-    SandboxFlags getSandboxFlags() const override
-    {
-        return m_sandboxFlags;
-    }
-
-    void setSandboxFlags(SandboxFlags flags)
-    {
-        m_sandboxFlags = flags;
-    }
-
-    void setContentFrame(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame)
-    {
-        m_frame = frame;
-    }
-
+    // FrameOwner overrides:
+    bool isLocal() const override { return false; }
+    void setContentFrame(Frame&) override;
+    void clearContentFrame() override;
+    SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
+    void setSandboxFlags(SandboxFlags flags) { m_sandboxFlags = flags; }
     void dispatchLoad() override;
-
-    void renderFallbackContent() override
-    {
-        // TODO(dcheng): Implement.
-    }
+    // TODO(dcheng): Implement.
+    void renderFallbackContent() override { }
+    ScrollbarMode scrollingMode() const override { return m_scrolling; }
+    int marginWidth() const override { return m_marginWidth; }
+    int marginHeight() const override { return m_marginHeight; }
 
     void setScrollingMode(WebFrameOwnerProperties::ScrollingMode);
     void setMarginWidth(int marginWidth) { m_marginWidth = marginWidth; }
     void setMarginHeight(int marginHeight) { m_marginHeight = marginHeight; }
 
-    ScrollbarMode scrollingMode() const override { return m_scrolling; }
-    int marginWidth() const override { return m_marginWidth; }
-    int marginHeight() const override { return m_marginHeight; }
-
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFrameImpl>, SandboxFlags, const WebFrameOwnerProperties&);
+    RemoteBridgeFrameOwner(SandboxFlags, const WebFrameOwnerProperties&);
 
-    RefPtrWillBeMember<WebLocalFrameImpl> m_frame;
+    RawPtrWillBeMember<Frame> m_frame;
     SandboxFlags m_sandboxFlags;
     ScrollbarMode m_scrolling;
     int m_marginWidth;

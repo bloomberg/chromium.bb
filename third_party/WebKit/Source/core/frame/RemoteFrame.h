@@ -39,7 +39,6 @@ public:
     void detach(FrameDetachType) override;
     RemoteSecurityContext* securityContext() const override;
     void printNavigationErrorMessage(const Frame&, const char* reason) override { }
-    void disconnectOwnerElement() override;
     bool prepareForCommit() override;
     bool shouldClose() override;
 

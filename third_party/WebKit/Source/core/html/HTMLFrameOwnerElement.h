@@ -47,9 +47,6 @@ public:
     DOMWindow* contentWindow() const;
     Document* contentDocument() const;
 
-    void setContentFrame(Frame&);
-    void clearContentFrame();
-
     void disconnectContentFrame();
 
     // Most subclasses use LayoutPart (either LayoutEmbeddedObject or LayoutIFrame)
@@ -78,6 +75,8 @@ public:
 
     // FrameOwner overrides:
     bool isLocal() const override { return true; }
+    void setContentFrame(Frame&) override;
+    void clearContentFrame() override;
     void dispatchLoad() override;
     SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
     void renderFallbackContent() override { }
