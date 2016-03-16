@@ -16,6 +16,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
@@ -29,7 +33,7 @@ import org.chromium.ui.resources.ResourceManager;
  * Controls the Overlay Panel.
  */
 public class OverlayPanel extends OverlayPanelAnimation implements ActivityStateListener,
-        OverlayPanelContentFactory {
+        EdgeSwipeHandler, GestureHandler, OverlayPanelContentFactory {
 
     /**
      * The extra dp added around the close button touch target.
@@ -90,8 +94,14 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /** The initial height of the Overlay Panel. */
     private float mInitialPanelHeight;
 
+    /** The initial location of a touch on the panel */
+    private float mInitialPanelTouchY;
+
     /** Whether a touch gesture has been detected. */
     private boolean mHasDetectedTouchGesture;
+
+    /** The EventFilter that this panel uses. */
+    protected EventFilter mEventFilter;
 
     /** That factory that creates OverlayPanelContents. */
     private OverlayPanelContentFactory mContentFactory;
@@ -715,5 +725,69 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     @VisibleForTesting
     public void setOverlayPanelContentFactory(OverlayPanelContentFactory factory) {
         mContentFactory = factory;
+    }
+
+    // ============================================================================================
+    // GestureHandler and EdgeSwipeHandler implementation.
+    // ============================================================================================
+
+    @Override
+    public void onDown(float x, float y, boolean fromMouse, int buttons) {
+        mInitialPanelTouchY = y;
+        handleSwipeStart();
+    }
+
+    @Override
+    public void drag(float x, float y, float deltaX, float deltaY, float tx, float ty) {
+        handleSwipeMove(y - mInitialPanelTouchY);
+    }
+
+    @Override
+    public void onUpOrCancel() {
+        handleSwipeEnd();
+    }
+
+    @Override
+    public void fling(float x, float y, float velocityX, float velocityY) {
+        handleFling(velocityY);
+    }
+
+    @Override
+    public void click(float x, float y, boolean fromMouse, int buttons) {
+        // TODO(mdjones): The time param for handleClick is not used anywhere, remove it.
+        handleClick(0, x, y);
+    }
+
+    @Override
+    public void onLongPress(float x, float y) {}
+
+    @Override
+    public void onPinch(float x0, float y0, float x1, float y1, boolean firstEvent) {}
+
+    // EdgeSwipeHandler implementation.
+
+    @Override
+    public void swipeStarted(ScrollDirection direction, float x, float y) {
+        handleSwipeStart();
+    }
+
+    @Override
+    public void swipeUpdated(float x, float y, float dx, float dy, float tx, float ty) {
+        handleSwipeMove(ty);
+    }
+
+    @Override
+    public void swipeFinished() {
+        handleSwipeEnd();
+    }
+
+    @Override
+    public void swipeFlingOccurred(float x, float y, float tx, float ty, float vx, float vy) {
+        handleFling(vy);
+    }
+
+    @Override
+    public boolean isSwipeEnabled(ScrollDirection direction) {
+        return direction == ScrollDirection.UP && isShowing();
     }
 }
