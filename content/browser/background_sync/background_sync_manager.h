@@ -128,25 +128,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   friend class TestBackgroundSyncManager;
   friend class BackgroundSyncManagerTest;
 
-  class RegistrationKey {
-   public:
-    explicit RegistrationKey(const BackgroundSyncRegistration& registration);
-    explicit RegistrationKey(const BackgroundSyncRegistrationOptions& options);
-    RegistrationKey(const std::string& tag);
-    RegistrationKey(const RegistrationKey& other) = default;
-    RegistrationKey& operator=(const RegistrationKey& other) = default;
-
-    bool operator<(const RegistrationKey& rhs) const {
-      return value_ < rhs.value_;
-    }
-
-   private:
-    std::string value_;
-  };
-
   struct BackgroundSyncRegistrations {
-    using RegistrationMap =
-        std::map<RegistrationKey, BackgroundSyncRegistration>;
+    using RegistrationMap = std::map<std::string, BackgroundSyncRegistration>;
 
     BackgroundSyncRegistrations();
     BackgroundSyncRegistrations(const BackgroundSyncRegistrations& other);
@@ -178,7 +161,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Returns the existing registration or nullptr if it cannot be found.
   BackgroundSyncRegistration* LookupActiveRegistration(
       int64_t sw_registration_id,
-      const RegistrationKey& registration_key);
+      const std::string& tag);
 
   // Write all registrations for a given |sw_registration_id| to persistent
   // storage.
@@ -187,7 +170,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // Removes the active registration if it is in the map.
   void RemoveActiveRegistration(int64_t sw_registration_id,
-                                const RegistrationKey& registration_key);
+                                const std::string& tag);
 
   void AddActiveRegistration(
       int64_t sw_registration_id,
@@ -243,7 +226,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void FireReadyEvents();
   void FireReadyEventsImpl(const base::Closure& callback);
   void FireReadyEventsDidFindRegistration(
-      const RegistrationKey& registration_key,
+      const std::string& tag,
       BackgroundSyncRegistration::RegistrationId registration_id,
       const base::Closure& event_fired_callback,
       const base::Closure& event_completed_callback,
@@ -256,11 +239,11 @@ class CONTENT_EXPORT BackgroundSyncManager
   void EventComplete(const scoped_refptr<ServiceWorkerRegistration>&
                          service_worker_registration,
                      int64_t service_worker_id,
-                     const RegistrationKey& registration_key,
+                     const std::string& tag,
                      const base::Closure& callback,
                      ServiceWorkerStatusCode status_code);
   void EventCompleteImpl(int64_t service_worker_id,
-                         const RegistrationKey& registration_key,
+                         const std::string& tag,
                          ServiceWorkerStatusCode status_code,
                          const base::Closure& callback);
   void EventCompleteDidStore(int64_t service_worker_id,
