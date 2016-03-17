@@ -11,6 +11,7 @@ include_rules = [
   "+components/url_formatter",
 
   "+content/app/strings/grit",  # For generated headers
+  "+content/gpu",
   "+content/public/browser",
   "+device/battery",  # For battery status service.
   "+device/vibration",  # For Vibration API

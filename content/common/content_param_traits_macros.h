@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

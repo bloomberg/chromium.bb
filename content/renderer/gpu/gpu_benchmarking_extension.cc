@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/layer.h"
-#include "content/common/gpu/gpu_host_messages.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
@@ -910,7 +910,7 @@ bool GpuBenchmarking::HasGpuChannel() {
 bool GpuBenchmarking::HasGpuProcess() {
   bool has_gpu_process = false;
   if (!RenderThreadImpl::current()->Send(
-          new GpuHostMsg_HasGpuProcess(&has_gpu_process)))
+          new ChildProcessHostMsg_HasGpuProcess(&has_gpu_process)))
     return false;
 
   return has_gpu_process;

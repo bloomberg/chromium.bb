@@ -92,7 +92,6 @@
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 #include "content/browser/renderer_host/gamepad_browser_message_filter.h"
-#include "content/browser/renderer_host/gpu_message_filter.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
@@ -121,7 +120,6 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
-#include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
@@ -130,6 +128,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
+#include "content/gpu/gpu_host_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigator_connect_context.h"
@@ -942,8 +941,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetIndexedDBContext(),
       blob_storage_context.get()));
 
-  gpu_message_filter_ = new GpuMessageFilter(GetID());
-  AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
   AddFilter(new WebRTCIdentityServiceHost(
       GetID(), storage_partition_impl_->GetWebRTCIdentityStore(),
@@ -1963,7 +1960,6 @@ void RenderProcessHostImpl::Cleanup() {
     channel_.reset();
 
     // The following members should be cleared in ProcessDied() as well!
-    gpu_message_filter_ = NULL;
     message_port_message_filter_ = NULL;
 
     RemoveUserData(kSessionStorageHolderKey);
@@ -2450,7 +2446,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
                     RenderProcessExited(this, status, exit_code));
   within_process_died_observer_ = false;
 
-  gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
   RemoveUserData(kSessionStorageHolderKey);
 

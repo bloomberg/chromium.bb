@@ -13,10 +13,9 @@
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/content_param_traits.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
+#include "content/common/gpu/gpu_param_traits.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/gpu/gpu_stream_constants.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -29,13 +28,13 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
-#include "ui/gl/gpu_preference.h"
 #include "url/ipc/url_param_traits.h"
 
 #if defined(OS_ANDROID)
@@ -50,21 +49,10 @@
 
 #define IPC_MESSAGE_START GpuChannelMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuPreference,
-                          gfx::GpuPreferenceLast)
-IPC_ENUM_TRAITS_MAX_VALUE(content::GpuStreamPriority,
-                          content::GpuStreamPriority::LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::SwapResult, gfx::SwapResult::SWAP_RESULT_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
-                          gpu::MemoryAllocation::CUTOFF_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,
-                          gpu::error::kContextLostReasonLast)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(gpu::CollectInfoResult,
-                              gpu::kCollectInfoNone,
-                              gpu::kCollectInfoFatalFailure)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(gpu::VideoCodecProfile,
-                              gpu::VIDEO_CODEC_PROFILE_MIN,
-                              gpu::VIDEO_CODEC_PROFILE_MAX)
+IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
+  IPC_STRUCT_MEMBER(int32_t, id)
+  IPC_STRUCT_MEMBER(std::string, message)
+IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(int32_t, share_group_id)
@@ -75,9 +63,13 @@ IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(gfx::GpuPreference, gpu_preference)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
+IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
   IPC_STRUCT_MEMBER(int32_t, id)
-  IPC_STRUCT_MEMBER(std::string, message)
+  IPC_STRUCT_MEMBER(gfx::GpuMemoryBufferHandle, gpu_memory_buffer)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
+  IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
+  IPC_STRUCT_MEMBER(uint32_t, internal_format)
+  IPC_STRUCT_MEMBER(uint64_t, image_release_count)
 IPC_STRUCT_END()
 
 #if defined(OS_ANDROID)
@@ -100,74 +92,6 @@ IPC_STRUCT_BEGIN(GpuStreamTextureMsg_MatrixChanged_Params)
   IPC_STRUCT_MEMBER(float, m33)
 IPC_STRUCT_END()
 #endif
-
-IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
-  IPC_STRUCT_MEMBER(int32_t, id)
-  IPC_STRUCT_MEMBER(gfx::GpuMemoryBufferHandle, gpu_memory_buffer)
-  IPC_STRUCT_MEMBER(gfx::Size, size)
-  IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
-  IPC_STRUCT_MEMBER(uint32_t, internal_format)
-  IPC_STRUCT_MEMBER(uint64_t, image_release_count)
-IPC_STRUCT_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gpu::DxDiagNode)
-  IPC_STRUCT_TRAITS_MEMBER(values)
-  IPC_STRUCT_TRAITS_MEMBER(children)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo::GPUDevice)
-  IPC_STRUCT_TRAITS_MEMBER(vendor_id)
-  IPC_STRUCT_TRAITS_MEMBER(device_id)
-  IPC_STRUCT_TRAITS_MEMBER(active)
-  IPC_STRUCT_TRAITS_MEMBER(vendor_string)
-  IPC_STRUCT_TRAITS_MEMBER(device_string)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
-  IPC_STRUCT_TRAITS_MEMBER(initialization_time)
-  IPC_STRUCT_TRAITS_MEMBER(optimus)
-  IPC_STRUCT_TRAITS_MEMBER(amd_switchable)
-  IPC_STRUCT_TRAITS_MEMBER(lenovo_dcute)
-  IPC_STRUCT_TRAITS_MEMBER(gpu)
-  IPC_STRUCT_TRAITS_MEMBER(secondary_gpus)
-  IPC_STRUCT_TRAITS_MEMBER(adapter_luid)
-  IPC_STRUCT_TRAITS_MEMBER(driver_vendor)
-  IPC_STRUCT_TRAITS_MEMBER(driver_version)
-  IPC_STRUCT_TRAITS_MEMBER(driver_date)
-  IPC_STRUCT_TRAITS_MEMBER(pixel_shader_version)
-  IPC_STRUCT_TRAITS_MEMBER(vertex_shader_version)
-  IPC_STRUCT_TRAITS_MEMBER(max_msaa_samples)
-  IPC_STRUCT_TRAITS_MEMBER(machine_model_name)
-  IPC_STRUCT_TRAITS_MEMBER(machine_model_version)
-  IPC_STRUCT_TRAITS_MEMBER(gl_version)
-  IPC_STRUCT_TRAITS_MEMBER(gl_vendor)
-  IPC_STRUCT_TRAITS_MEMBER(gl_renderer)
-  IPC_STRUCT_TRAITS_MEMBER(gl_extensions)
-  IPC_STRUCT_TRAITS_MEMBER(gl_ws_vendor)
-  IPC_STRUCT_TRAITS_MEMBER(gl_ws_version)
-  IPC_STRUCT_TRAITS_MEMBER(gl_ws_extensions)
-  IPC_STRUCT_TRAITS_MEMBER(gl_reset_notification_strategy)
-  IPC_STRUCT_TRAITS_MEMBER(can_lose_context)
-  IPC_STRUCT_TRAITS_MEMBER(software_rendering)
-  IPC_STRUCT_TRAITS_MEMBER(direct_rendering)
-  IPC_STRUCT_TRAITS_MEMBER(sandboxed)
-  IPC_STRUCT_TRAITS_MEMBER(process_crash_count)
-  IPC_STRUCT_TRAITS_MEMBER(in_process_gpu)
-  IPC_STRUCT_TRAITS_MEMBER(basic_info_state)
-  IPC_STRUCT_TRAITS_MEMBER(context_info_state)
-#if defined(OS_WIN)
-  IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics_info_state)
-  IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics)
-#endif
-  IPC_STRUCT_TRAITS_MEMBER(video_decode_accelerator_capabilities)
-  IPC_STRUCT_TRAITS_MEMBER(video_encode_accelerator_supported_profiles)
-  IPC_STRUCT_TRAITS_MEMBER(jpeg_decode_accelerator_supported)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gpu::MemoryAllocation)
-  IPC_STRUCT_TRAITS_MEMBER(bytes_limit_when_visible)
-  IPC_STRUCT_TRAITS_MEMBER(priority_cutoff_when_visible)
-IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
 // GPU Channel Messages

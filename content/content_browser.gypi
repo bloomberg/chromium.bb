@@ -1200,8 +1200,6 @@
       'browser/renderer_host/frame_metadata_util.h',
       'browser/renderer_host/gamepad_browser_message_filter.cc',
       'browser/renderer_host/gamepad_browser_message_filter.h',
-      'browser/renderer_host/gpu_message_filter.cc',
-      'browser/renderer_host/gpu_message_filter.h',
       'browser/renderer_host/input/gesture_event_queue.cc',
       'browser/renderer_host/input/gesture_event_queue.h',
       'browser/renderer_host/input/input_ack_handler.h',

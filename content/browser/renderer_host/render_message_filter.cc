@@ -25,6 +25,8 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
@@ -134,9 +136,11 @@ RenderMessageFilter::RenderMessageFilter(
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       dom_storage_context_(dom_storage_context),
+      gpu_process_id_(0),
       render_process_id_(render_process_id),
       audio_manager_(audio_manager),
-      media_internals_(media_internals) {
+      media_internals_(media_internals),
+      weak_ptr_factory_(this) {
   DCHECK(request_context_.get());
 
   if (render_widget_helper)
@@ -185,6 +189,10 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
         OnAllocateGpuMemoryBuffer)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_EstablishGpuChannel,
+                                    OnEstablishGpuChannel)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_HasGpuProcess,
+                                    OnHasGpuProcess)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
                         OnDeletedGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_AllocatedSharedBitmap,
@@ -650,6 +658,74 @@ void RenderMessageFilter::GpuMemoryBufferAllocated(
   ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer::WriteReplyParams(reply,
                                                                     handle);
   Send(reply);
+}
+
+void RenderMessageFilter::OnEstablishGpuChannel(
+    CauseForGpuLaunch cause_for_gpu_launch,
+    IPC::Message* reply_ptr) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  scoped_ptr<IPC::Message> reply(reply_ptr);
+
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+  // TODO(jbauman): Remove this when we know why renderer processes are
+  // hanging on x86-64. https://crbug.com/577127
+  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+    reply->set_reply_error();
+    Send(reply.release());
+    return;
+  }
+#endif
+
+  GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
+  if (!host) {
+    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                               cause_for_gpu_launch);
+    if (!host) {
+      reply->set_reply_error();
+      Send(reply.release());
+      return;
+    }
+
+    gpu_process_id_ = host->host_id();
+  }
+
+  bool preempts = false;
+  bool allow_view_command_buffers = false;
+  bool allow_real_time_streams = false;
+  host->EstablishGpuChannel(
+      render_process_id_,
+      ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
+          render_process_id_),
+      preempts, allow_view_command_buffers, allow_real_time_streams,
+      base::Bind(&RenderMessageFilter::EstablishChannelCallback,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
+}
+
+void RenderMessageFilter::OnHasGpuProcess(IPC::Message* reply_ptr) {
+  scoped_ptr<IPC::Message> reply(reply_ptr);
+  GpuProcessHost::GetProcessHandles(
+      base::Bind(&RenderMessageFilter::GetGpuProcessHandlesCallback,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
+}
+
+void RenderMessageFilter::EstablishChannelCallback(
+    scoped_ptr<IPC::Message> reply,
+    const IPC::ChannelHandle& channel,
+    const gpu::GPUInfo& gpu_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ChildProcessHostMsg_EstablishGpuChannel::WriteReplyParams(
+      reply.get(), render_process_id_, channel, gpu_info);
+  Send(reply.release());
+}
+
+void RenderMessageFilter::GetGpuProcessHandlesCallback(
+    scoped_ptr<IPC::Message> reply,
+    const std::list<base::ProcessHandle>& handles) {
+  bool has_gpu_process = handles.size() > 0;
+  ChildProcessHostMsg_HasGpuProcess::WriteReplyParams(reply.get(),
+                                                      has_gpu_process);
+  Send(reply.release());
 }
 
 void RenderMessageFilter::OnDeletedGpuMemoryBuffer(

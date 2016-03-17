@@ -7,19 +7,20 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/content_param_traits.h"
 #include "content/common/gpu/establish_channel_params.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu/gpu_param_traits.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/common/gpu_command_buffer_traits.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
+#include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
@@ -36,9 +37,6 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START GpuMsgStart
-
-IPC_ENUM_TRAITS_MAX_VALUE(content::CauseForGpuLaunch,
-                          content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM - 1)
 
 IPC_STRUCT_TRAITS_BEGIN(content::GPUMemoryUmaStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_current)
@@ -163,8 +161,7 @@ IPC_MESSAGE_CONTROL1(GpuMsg_EstablishChannel,
 
 // Tells the GPU process to close the channel identified by |client_id|.
 // If no channel can be identified, do nothing.
-IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel,
-                     int32_t /* client_id */)
+IPC_MESSAGE_CONTROL1(GpuMsg_CloseChannel, int32_t /* client_id */)
 
 // Tells the GPU process to create a new gpu memory buffer.
 IPC_MESSAGE_CONTROL1(GpuMsg_CreateGpuMemoryBuffer,
@@ -224,18 +221,6 @@ IPC_MESSAGE_CONTROL3(GpuMsg_UpdateValueState,
 //------------------------------------------------------------------------------
 // GPU Host Messages
 // These are messages to the browser.
-
-// A renderer sends this when it wants to create a connection to the GPU
-// process. The browser will create the GPU process if necessary, and will
-// return a handle to the channel via a GpuChannelEstablished message.
-IPC_SYNC_MESSAGE_CONTROL1_3(GpuHostMsg_EstablishGpuChannel,
-                            content::CauseForGpuLaunch,
-                            int /* client id */,
-                            IPC::ChannelHandle /* handle to channel */,
-                            gpu::GPUInfo /* stats about GPU process*/)
-
-// A renderer sends this when it wants to know whether a gpu process exists.
-IPC_SYNC_MESSAGE_CONTROL0_1(GpuHostMsg_HasGpuProcess, bool /* result */)
 
 // Response from GPU to a GputMsg_Initialize message.
 IPC_MESSAGE_CONTROL2(GpuHostMsg_Initialized,

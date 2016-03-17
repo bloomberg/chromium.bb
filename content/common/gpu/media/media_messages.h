@@ -44,10 +44,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::JpegDecodeAccelerator::Error,
                           media::JpegDecodeAccelerator::LARGEST_ERROR_ENUM)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoEncodeAccelerator::Error,
                           media::VideoEncodeAccelerator::kErrorMax)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
-                              media::VIDEO_CODEC_PROFILE_MIN,
-                              media::VIDEO_CODEC_PROFILE_MAX)
-
 IPC_STRUCT_BEGIN(AcceleratedJpegDecoderMsg_Decode_Params)
   IPC_STRUCT_MEMBER(media::BitstreamBuffer, input_buffer)
   IPC_STRUCT_MEMBER(gfx::Size, coded_size)
@@ -77,24 +73,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::VideoDecodeAccelerator::Config)
   IPC_STRUCT_TRAITS_MEMBER(profile)
   IPC_STRUCT_TRAITS_MEMBER(is_encrypted)
   IPC_STRUCT_TRAITS_MEMBER(surface_id)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gpu::VideoDecodeAcceleratorSupportedProfile)
-  IPC_STRUCT_TRAITS_MEMBER(profile)
-  IPC_STRUCT_TRAITS_MEMBER(max_resolution)
-  IPC_STRUCT_TRAITS_MEMBER(min_resolution)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gpu::VideoDecodeAcceleratorCapabilities)
-  IPC_STRUCT_TRAITS_MEMBER(supported_profiles)
-  IPC_STRUCT_TRAITS_MEMBER(flags)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gpu::VideoEncodeAcceleratorSupportedProfile)
-  IPC_STRUCT_TRAITS_MEMBER(profile)
-  IPC_STRUCT_TRAITS_MEMBER(max_resolution)
-  IPC_STRUCT_TRAITS_MEMBER(max_framerate_numerator)
-  IPC_STRUCT_TRAITS_MEMBER(max_framerate_denominator)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)

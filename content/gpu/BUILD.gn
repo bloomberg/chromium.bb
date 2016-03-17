@@ -25,8 +25,11 @@ source_set("gpu_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
+    "content_gpu_message_generator.cc",
+    "content_gpu_message_generator.h",
     "gpu_child_thread.cc",
     "gpu_child_thread.h",
+    "gpu_host_messages.h",
     "gpu_main.cc",
     "gpu_process.cc",
     "gpu_process.h",
@@ -44,7 +47,10 @@ source_set("gpu_sources") {
     "//base",
     "//content:export",
     "//content/public/child:child_sources",
+    "//content/public/common:common_sources",
     "//gpu:gpu",
+    "//gpu/ipc/common",
+    "//ipc",
     "//mojo/shell/public/interfaces",
     "//skia",
     "//ui/gl",

@@ -34,6 +34,7 @@ source_set("renderer") {
     "//components/url_formatter",
     "//content:resources",
     "//content/common:mojo_bindings",
+    "//content/gpu:gpu_sources",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//content/public/common:feature_h264_with_openh264_ffmpeg",

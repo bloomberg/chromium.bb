@@ -54,7 +54,6 @@ class AudioRendererHost;
 class BluetoothDispatcherHost;
 class BrowserCdmManager;
 class BrowserDemuxerAndroid;
-class GpuMessageFilter;
 class InProcessChildThreadParams;
 class MessagePortMessageFilter;
 class MojoApplicationHost;
@@ -379,14 +378,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.
   scoped_refptr<RenderWidgetHelper> widget_helper_;
-
-  // The filter for GPU-related messages coming from the renderer.
-  // Thread safety note: this field is to be accessed from the UI thread.
-  // We don't keep a reference to it, to avoid it being destroyed on the UI
-  // thread, but we clear this field when we clear channel_. When channel_ goes
-  // away, it posts a task to the IO thread to destroy it there, so we know that
-  // it's valid if non-NULL.
-  GpuMessageFilter* gpu_message_filter_;
 
   // The filter for MessagePort messages coming from the renderer.
   scoped_refptr<MessagePortMessageFilter> message_port_message_filter_;

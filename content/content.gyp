@@ -213,6 +213,7 @@
             'chrome_manifest',
             'chrome_renderer_manifest',
             'content_common',
+            'content_gpu',
             'content_resources',
           ],
           'export_dependent_settings': [
@@ -226,7 +227,6 @@
             }],
             ['OS=="android"', {
               'dependencies': [
-                'content_gpu',
                 'content_utility',
               ],
             }],
@@ -310,6 +310,7 @@
             'common_features',
             'content_child',
             'content_common',
+            'content_gpu',
             'content_resources',
           ],
           'export_dependent_settings': [

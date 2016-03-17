@@ -74,7 +74,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/render_frame_setup.mojom.h"
 #include "content/common/render_process_messages.h"
@@ -1864,8 +1863,8 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   int client_id = 0;
   IPC::ChannelHandle channel_handle;
   gpu::GPUInfo gpu_info;
-  if (!Send(new GpuHostMsg_EstablishGpuChannel(cause_for_gpu_launch, &client_id,
-                                               &channel_handle, &gpu_info)) ||
+  if (!Send(new ChildProcessHostMsg_EstablishGpuChannel(
+          cause_for_gpu_launch, &client_id, &channel_handle, &gpu_info)) ||
 #if defined(OS_POSIX)
       channel_handle.socket.fd == -1 ||
 #endif

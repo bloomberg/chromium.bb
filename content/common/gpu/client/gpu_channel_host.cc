@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/gpu_param_traits_macros.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "url/gurl.h"
 

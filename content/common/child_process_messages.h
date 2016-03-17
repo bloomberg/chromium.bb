@@ -16,12 +16,19 @@
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "content/common/content_export.h"
+#include "content/common/content_param_traits_macros.h"
+#include "content/common/gpu/gpu_param_traits_macros.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+
+IPC_ENUM_TRAITS_MAX_VALUE(content::CauseForGpuLaunch,
+                          content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM - 1)
 
 IPC_ENUM_TRAITS_MAX_VALUE(tracked_objects::ThreadData::Status,
                           tracked_objects::ThreadData::STATUS_LAST)
@@ -60,26 +67,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ProcessDataSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(phased_snapshots)
   IPC_STRUCT_TRAITS_MEMBER(process_id)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuMemoryBufferType,
-                          gfx::GPU_MEMORY_BUFFER_TYPE_LAST)
-
-IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(handle)
-  IPC_STRUCT_TRAITS_MEMBER(offset)
-  IPC_STRUCT_TRAITS_MEMBER(stride)
-#if defined(USE_OZONE)
-  IPC_STRUCT_TRAITS_MEMBER(native_pixmap_handle)
-#elif defined(OS_MACOSX)
-  IPC_STRUCT_TRAITS_MEMBER(mach_port)
-#endif
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferId)
-  IPC_STRUCT_TRAITS_MEMBER(id)
 IPC_STRUCT_TRAITS_END()
 
 #undef IPC_MESSAGE_EXPORT
@@ -134,6 +121,19 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_InitializeClientNativePixmapFactory,
 #endif
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
+
+// A renderer sends this when it wants to create a connection to the GPU
+// process. The browser will create the GPU process if necessary, and will
+// return a handle to the channel via a GpuChannelEstablished message.
+IPC_SYNC_MESSAGE_CONTROL1_3(ChildProcessHostMsg_EstablishGpuChannel,
+                            content::CauseForGpuLaunch,
+                            int /* client id */,
+                            IPC::ChannelHandle /* handle to channel */,
+                            gpu::GPUInfo /* stats about GPU process*/)
+
+// A renderer sends this when it wants to know whether a gpu process exists.
+IPC_SYNC_MESSAGE_CONTROL0_1(ChildProcessHostMsg_HasGpuProcess,
+                            bool /* result */)
 
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
 
