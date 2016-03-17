@@ -25,18 +25,6 @@ using content::DesktopMediaID;
 
 namespace {
 
-// Returns a hash of a favicon to detect when the favicon of media source has
-// changed.
-uint32_t GetImageHash(const gfx::Image& favicon) {
-  SkBitmap bitmap = favicon.AsBitmap();
-  bitmap.lockPixels();
-  uint32_t value =
-      base::Hash(reinterpret_cast<char*>(bitmap.getPixels()), bitmap.getSize());
-  bitmap.unlockPixels();
-
-  return value;
-}
-
 gfx::ImageSkia CreateEnlargedFaviconImage(gfx::Size size,
                                           const gfx::ImageSkia& favicon) {
   DCHECK_GE(size.width(), 20);

@@ -8,6 +8,10 @@
 #include "chrome/browser/media/desktop_media_list.h"
 #include "content/public/browser/desktop_media_id.h"
 
+namespace gfx {
+class Image;
+}
+
 // Thumbnail size is 100*100 pixels
 static const int kDefaultThumbnailSize = 100;
 
@@ -26,6 +30,8 @@ class DesktopMediaListBase : public DesktopMediaList {
   void StartUpdating(DesktopMediaListObserver* observer) override;
   int GetSourceCount() const override;
   const Source& GetSource(int index) const override;
+
+  static uint32_t GetImageHash(const gfx::Image& image);
 
  protected:
   struct SourceDescription {

@@ -8,8 +8,10 @@
 
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/gfx/image/image.h"
 
 using content::BrowserThread;
+using content::DesktopMediaID;
 
 DesktopMediaListBase::DesktopMediaListBase(base::TimeDelta update_period)
     : update_period_(update_period), weak_factory_(this) {}
@@ -25,8 +27,7 @@ void DesktopMediaListBase::SetThumbnailSize(const gfx::Size& thumbnail_size) {
   thumbnail_size_ = thumbnail_size;
 }
 
-void DesktopMediaListBase::SetViewDialogWindowId(
-    content::DesktopMediaID dialog_id) {
+void DesktopMediaListBase::SetViewDialogWindowId(DesktopMediaID dialog_id) {
   view_dialog_id_ = dialog_id;
 }
 
@@ -49,13 +50,13 @@ const DesktopMediaList::Source& DesktopMediaListBase::GetSource(
 }
 
 DesktopMediaListBase::SourceDescription::SourceDescription(
-    content::DesktopMediaID id,
+    DesktopMediaID id,
     const base::string16& name)
     : id(id), name(name) {}
 
 void DesktopMediaListBase::UpdateSourcesList(
     const std::vector<SourceDescription>& new_sources) {
-  typedef std::set<content::DesktopMediaID> SourceSet;
+  typedef std::set<DesktopMediaID> SourceSet;
   SourceSet new_source_set;
   for (size_t i = 0; i < new_sources.size(); ++i) {
     new_source_set.insert(new_sources[i].id);
@@ -115,7 +116,7 @@ void DesktopMediaListBase::UpdateSourcesList(
   }
 }
 
-void DesktopMediaListBase::UpdateSourceThumbnail(content::DesktopMediaID id,
+void DesktopMediaListBase::UpdateSourceThumbnail(DesktopMediaID id,
                                                  const gfx::ImageSkia& image) {
   for (size_t i = 0; i < sources_.size(); ++i) {
     if (sources_[i].id == id) {
@@ -131,4 +132,15 @@ void DesktopMediaListBase::ScheduleNextRefresh() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DesktopMediaListBase::Refresh, weak_factory_.GetWeakPtr()),
       update_period_);
+}
+
+// static
+uint32_t DesktopMediaListBase::GetImageHash(const gfx::Image& image) {
+  SkBitmap bitmap = image.AsBitmap();
+  bitmap.lockPixels();
+  uint32_t value =
+      base::Hash(reinterpret_cast<char*>(bitmap.getPixels()), bitmap.getSize());
+  bitmap.unlockPixels();
+
+  return value;
 }

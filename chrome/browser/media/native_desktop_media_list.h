@@ -10,6 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/media/desktop_media_list_base.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "ui/gfx/image/image.h"
 
 namespace webrtc {
 class ScreenCapturer;
@@ -20,6 +21,9 @@ class WindowCapturer;
 // native windows.
 class NativeDesktopMediaList : public DesktopMediaListBase {
  public:
+  typedef std::map<content::DesktopMediaID::Id, content::DesktopMediaID::Id>
+      NativeAuraIdMap;
+
   // Caller may pass NULL for either of the arguments in case when only some
   // types of sources the model should be populated with (e.g. it will only
   // contain windows, if |screen_capturer| is NULL).
@@ -29,6 +33,8 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   ~NativeDesktopMediaList() override;
 
  private:
+  typedef std::map<content::DesktopMediaID, uint32_t> ImageHashesMap;
+
   class Worker;
   friend class Worker;
 
@@ -38,7 +44,16 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   // OnSourceThumbnail() for each changed thumbnail and then calls
   // DelayLaunchNextRefersh() at the end.
   void Refresh() override;
-  void OnSourceThumbnail(int index, const gfx::ImageSkia& image);
+
+  void OnSourceThumbnailCaptured(int index, const gfx::ImageSkia& image);
+  void FinishRefreshOnUiThreadAndScheduleNext(
+      const std::vector<content::DesktopMediaID>& aura_ids);
+
+#if defined(USE_AURA)
+  void CaptureAuraWindowThumbnail(const content::DesktopMediaID& id);
+  void OnAuraThumbnailCaptured(const content::DesktopMediaID& id,
+                               const gfx::Image& image);
+#endif
 
   // Task runner used for the |worker_|.
   scoped_refptr<base::SequencedTaskRunner> capture_task_runner_;
@@ -47,6 +62,17 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   // thread (see |capture_task_runner_|). Destroyed on |capture_task_runner_|
   // after the model is destroyed.
   scoped_ptr<Worker> worker_;
+
+#if defined(USE_AURA)
+  // previous_aura_thumbnail_hashes_ holds thumbanil hash values of aura windows
+  // in the previous refresh. While new_aura_thumbnail_hashes_ has hash values
+  // of the ongoing refresh. Those two maps are used to detect new thumbnails
+  // and changed thumbnails from the previous refresh.
+  ImageHashesMap previous_aura_thumbnail_hashes_;
+  ImageHashesMap new_aura_thumbnail_hashes_;
+
+  int pending_aura_capture_requests_;
+#endif
 
   base::WeakPtrFactory<NativeDesktopMediaList> weak_factory_;
 

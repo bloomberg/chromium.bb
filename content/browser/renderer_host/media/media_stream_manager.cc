@@ -38,6 +38,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/browser/render_process_host.h"
@@ -2052,15 +2053,24 @@ void MediaStreamManager::OnMediaStreamUIWindowId(MediaStreamType video_type,
   if (video_type != MEDIA_DESKTOP_VIDEO_CAPTURE)
     return;
 
-  // Pass along for desktop screen and window capturing.
+  // Pass along for desktop screen and window capturing when
+  // DesktopCaptureDevice is used.
   for (const StreamDeviceInfo& device_info : devices) {
-    if (device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE &&
-        !WebContentsMediaCaptureId::IsWebContentsDeviceId(
-            device_info.device.id)) {
-      video_capture_manager_->SetDesktopCaptureWindowId(device_info.session_id,
-                                                        window_id);
-      break;
-    }
+    if (device_info.device.type != MEDIA_DESKTOP_VIDEO_CAPTURE)
+      continue;
+
+    DesktopMediaID media_id = DesktopMediaID::Parse(device_info.device.id);
+    // WebContentsVideoCaptureDevice is used for tab/webcontents.
+    if (media_id.type == DesktopMediaID::TYPE_WEB_CONTENTS)
+      continue;
+#if defined(USE_AURA)
+    // DesktopCaptureDevicAura is used when aura_id is valid.
+    if (media_id.aura_id > DesktopMediaID::kNullId)
+      continue;
+#endif
+    video_capture_manager_->SetDesktopCaptureWindowId(device_info.session_id,
+                                                      window_id);
+    break;
   }
 }
 
