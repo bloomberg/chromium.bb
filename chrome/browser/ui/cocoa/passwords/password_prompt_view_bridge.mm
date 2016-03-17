@@ -69,8 +69,8 @@ void PasswordPromptViewBridge::ShowWindow() {
   [window setContentView:[view_controller_ view]];
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
-  constrained_window_.reset(
-      new ConstrainedWindowMac(this, web_contents_, sheet));
+  constrained_window_ =
+      CreateAndShowWebModalDialogMac(this, web_contents_, sheet);
 }
 
 AccountChooserPrompt* CreateAccountChooserPromptView(
