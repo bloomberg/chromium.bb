@@ -278,6 +278,7 @@ fuzzer_test("v8_regexp_parser_fuzzer") {
     "//v8:regexp_fuzzer",
   ]
   dict = "dicts/regexp.dict"
+  libfuzzer_options = "v8_regexp_parser_fuzzer.options"
 }
 
 fuzzer_test("v8_wasm_fuzzer") {
