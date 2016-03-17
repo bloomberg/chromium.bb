@@ -99,6 +99,11 @@ My commit message is my best friend. It is my life. I must master it.
         git_footers.add_footer_change_id('header\n\nBUG: yy\n\nPos: 1', 'Ixxx'),
         'header\n\nBUG: yy\n\nChange-Id: Ixxx\nPos: 1')
 
+    # Special case: first line is never a footer, even if it looks line one.
+    self.assertEqual(
+        git_footers.add_footer_change_id('header: like footer', 'Ixxx'),
+        'header: like footer\n\nChange-Id: Ixxx')
+
 
 if __name__ == '__main__':
   unittest.main()

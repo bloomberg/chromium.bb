@@ -83,9 +83,13 @@ def add_footer_change_id(message, change_id):
     if line == '' or line.isspace():
       break
     footer_lines.append(line)
+  else:
+    # The whole description was consisting of footers,
+    # which means those aren't footers.
+    footer_lines = []
   # footers order is from end to start of the message.
   footers = map(parse_footer, footer_lines)
-  if not all(footers):
+  if not footers or not all(footers):
     lines.append('')
     lines.append(change_id_line)
   else:
