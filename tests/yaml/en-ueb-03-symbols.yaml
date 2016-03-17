@@ -79,7 +79,6 @@ tests:
   - ~c#bjji
 - - QuickTax™ from Intuit® Canada Limited
   - ',quick,tax~t f ,9tuit~r ,canada ,limit$'
-  - xfail: true
 
 # 3.9.1 page 25
 

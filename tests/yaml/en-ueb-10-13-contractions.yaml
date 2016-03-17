@@ -235,10 +235,8 @@ tests:
   - s*like
 - - Our boyfriends mustn't miss tomorrow's afterdinner speaker!
   - ',|r boyfrs m/n''t miss tm''s afd9n} sp1k}6'
-  - xfail: true
 - - Mr Letterman could've quickly rebrailled the Aftercare Newsletter.
   - ',mr ,lrman cd''ve qkly rebrld ! ,afc>e ,newslr4'
-  - xfail: true
 - - I am brailling the newsletters' headlines.
   - ',i am braill+ ! newslrs'' h1dl9es4'
 - - friend(s)
@@ -293,6 +291,7 @@ tests:
   - ',himalayas'
 - - Suchet
   - ',su*et'
+  - xfail: true
 - - Yourcenar
   - ',y|rc5>'
 
@@ -302,7 +301,6 @@ tests:
   - ',brltte bo>d'
 - - Marcillat-en-Combraille, France
   - ',m>cillat-en-,combrl1 ,fr.e'
-  - xfail: true
 - - Greatford Hall
   - ',grt=d ,hall'
 - - greatgreatgreatgrandchildren
@@ -311,10 +309,8 @@ tests:
   - ',grtorex'
 - - Blindcraft
   - ',blcraft'
-  - xfail: true
 - - Blindheim
   - ',blheim'
-  - xfail: true
 - - Firstbank
   - ',f/bank'
 - - Firstchoice
@@ -331,27 +327,20 @@ tests:
   - ',bl9doc'
 - - www.braillex.com
   - www4braillex4com
-  - xfail: true
 - - Firstamerica
   - ',fir/am}ica'
-  - xfail: true
 - - Goodacre
   - ',goodacre'
-  - xfail: true
 - - Littlearm
   - ',little>m'
-  - xfail: true
 - - Letterewe Estate
   - ',lett}ewe ,e/ate'
-  - xfail: true
 - - Mr Linkletter of Portlittle
   - ',mr ,l9klett} ( ,portlittle'
 - - Bisquick Pancake Mix
   - ',bisquick ,pancake ,mix'
-  - xfail: true
 - - Ted Makegood of Goodena
   - ',t$ ,makegood ( ,good5a'
-  - xfail: true
 
 #  10.9.4 page 140
 

@@ -269,7 +269,6 @@ word whose 45-156
 #   10.7.2
 
 word hereupon 5-125-45-136
-word thereabouts 5-2346-1-12-234
 word thereafter 5-2346-1-124
 word thereby 5-2346-12-13456
 word therefore 5-2346-123456-15
@@ -282,10 +281,6 @@ word therewith 5-2346-23456
 word whereupon 5-156-45-136
 word wherever 156-12456-5-15
 word whosesoever 45-156-234-135-5-15
-
-#   10.7.5
-
-sufword hereabout 5-125-1-12
 
 #   10.7.8
 
@@ -325,24 +320,17 @@ word citizeness 14-24-2345-24-1356-26-15-234-234
 word heatheness 125-2-2346-1345-15-234-234
 
 
-#   10.9   Shortforms
+#   10.9   Shortforms   not including 10.9.3
+#TODO:  2.6.4
 
-attribute 2 BCDFGHJKLMNPQRSTVWXZbcdfghjklmnpqrstvwxz  no vowels (except w)
+attribute 2 BCDFGHJKLMNPQRSTVWXZbcdfghjklmnpqrstvwxz'  no vowels (except w) and 2.6.4
 
-word about 1-12
+sufword about 1-12
 sufword above 1-12-1236
-word according 1-14
-word across 1-14-1235
+sufword according 1-14
+sufword across 1-14-1235
 
-#sufword after 1-124
-#match ^%<* after %a>*^ 1-124
-#match ^%<* after %a>*%[_~] 1-124
-#match %[_~]%<* after %a>*^ 1-124
-#match %[_~]%<* after %a>*%[_~] 1-124
-
-match %[_~^]%<* after (%2%a*)?%>*%[_~^] 1-124
-
-always afternoon 1-124-1345
+sufword afternoon 1-124-1345
 sufword afterward 1-124-2456
 word again 1-1245
 word against 1-1245-34
@@ -355,12 +343,9 @@ word always 1-123-2456
 word because 23-14
 sufword before 23-124
 word behind 23-125
-word below 23-123
+sufword below 23-123
 word beneath 23-1345
 word beyond 23-13456
-word blind 12-123
-sufword braille 12-1235-123
-prfword children 16-1345
 sufword conceive 25-14-1236
 sufword conceiving 25-14-1236-1245
 sufword could 14-145
@@ -369,18 +354,12 @@ always deceiving 145-14-1236-1245
 always declare 145-14-123
 word declaring 145-14-123-1245
 word either 15-24
-always first 124-34
-word friend 124-1235
-sufword good 1245-145
-always great 1245-1235-2345
 word herself 125-12456-124
 word him 125-134
 word himself 125-134-124
 word immediate 24-134-134
 word its 1346-234
 word itself 1346-124
-sufword letter 123-1235
-sufword little 123-123
 always much 134-16
 word must 134-34
 word myself 134-13456-124
@@ -392,14 +371,13 @@ prfword paid 1234-145
 always perceive 1234-12456-14-1236
 always perceiving 1234-12456-14-1236-1245
 always perhaps 1234-12456-125
-always quick 12345-13
 always receive 1235-14-1236
 always receiving 1235-14-1236-1245
 always rejoice 1235-245-14
 always rejoicing 1235-245-14-1245
 word said 234-145
 sufword should 146-145
-word such 234-16
+sufword such 234-16
 word themselves 2346-134-1236-234
 word thyself 1456-13456-124
 word today 2345-145
@@ -411,10 +389,572 @@ word your 13456-1235
 word yourself 13456-1235-124
 word yourselves 13456-1235-1236-234
 
-#   10.9.2
+#   10.9.3
 
-sufword belowdeck 23-123-145-15-14-13
-sufword suchlike 234-16-123-24-13-15
+# appendix 1.4  match %[_~^]%<* blind (%2%a*)?%>*%[_~^] 12-123
+match %[_~^]%<*%a* braille %a*%>*%[_~^] 12-1235-123
+match %[_~^]%<*%a* children (%2%a*)?%>*%[_~^] 16-1345
+match %[_~^]%<* first (%2%a*)?%>*%[_~^] 124-34
+# appendix 1.4  match %[_~^]%<* friend (%2%a*)?%>*%[_~^] 124-1235
+match %[_~^]%<* good (%2%a*)?%>*%[_~^] 1245-145
+match %[_~^]%<*%a* great %a*%>*%[_~^] 1245-1235-2345
+match %[_~^]%<* letter (%2%a*)?%>*%[_~^] 123-1235
+match %[_~^]%<* little (%2%a*)?%>*%[_~^] 123-123
+match %[_~^]%<* quick (%2%a*)?%>*%[_~^] 12345-13
+
+#   Appendex 1
+
+word abouts 1-12-1256-2345-234
+word almosts 1-123-134-135-34-234
+word hims 125-24-134-234
+
+#sufword 'twould 3-2345-2456-145
+#sufword 'twould've 3-2345-2456-145-3-1236-15
+#sufword 'twoulda 3-2345-2456-145-1
+#sufword 'twouldn't 3-2345-2456-145-1345-3-2345
+#sufword 'twouldn't've 3-2345-2456-145-1345-3-2345-3-1236-15
+#sufword aboutface 1-12-124-1-14-15
+#sufword aboutfaced 1-12-124-1-14-1246
+#sufword aboutfacer 1-12-124-1-14-12456
+#sufword aboutfacing 1-12-124-1-14-346
+#sufword aboutturn 1-12-2345-136-1235-1345
+#sufword aboutturned 1-12-2345-136-1235-1345-1246
+#sufword aboveboard 1-12-1236-12-135-345-145
+#sufword aboveground 1-12-1236-1245-1235-46-145
+#sufword abovementioned 1-12-1236-134-26-56-1345-1246
+sufword accordingly 1-14-123-13456
+#sufword aforesaid 1-123456-15-234-145
+#sufword afterbattle 1-124-12-1-2345-2345-123-15
+#sufword afterbirth 1-124-12-24-1235-1456
+#sufword afterbreakfast 1-124-12-1235-2-13-124-1-34
+#sufword afterburn 1-124-12-136-1235-1345
+#sufword afterburned 1-124-12-136-1235-1345-1246
+#sufword afterburner 1-124-12-136-1235-1345-12456
+#sufword afterburning 1-124-12-136-1235-1345-346
+#sufword aftercare 1-124-14-345-15
+#sufword afterclap 1-124-14-123-1-1234
+#sufword aftercoffee 1-124-14-12356-124-15-15
+#sufword afterdamp 1-124-145-1-134-1234
+#sufword afterdark 1-124-145-345-13
+#sufword afterdeck 1-124-145-15-14-13
+#sufword afterdinner 1-124-145-35-1345-12456
+#sufword afterflow 1-124-124-123-246
+#sufword aftergame 1-124-1245-1-134-15
+#sufword afterglow 1-124-1245-123-246
+#sufword afterguard 1-124-1245-136-345-145
+#sufword afterhatch 1-124-125-1-2345-16
+#sufword afterhatches 1-124-125-1-2345-16-15-234
+#sufword afterhour 1-124-125-1256-1235
+#sufword afterlife 1-124-123-24-124-15
+#sufword afterlight 1-124-123-24-126-2345
+#sufword afterlives 1-124-123-24-1236-15-234
+#sufword afterlunch 1-124-123-136-1345-16
+#sufword afterlunches 1-124-123-136-1345-16-15-234
+#sufword aftermarket 1-124-134-345-13-15-2345
+#sufword aftermatch 1-124-134-1-2345-16
+#sufword aftermatches 1-124-134-1-2345-16-15-234
+#sufword aftermath 1-124-134-1-1456
+#sufword aftermeeting 1-124-134-15-15-2345-346
+#sufword aftermidday 1-124-134-24-145-5-145
+#sufword aftermidnight 1-124-134-24-145-1345-24-126-2345
+#sufword aftermost 1-124-134-135-34
+#sufword afternoontea 1-124-1345-2345-15-1
+#sufword afterpain 1-124-1234-1-35
+#sufword afterparties 1-124-5-1234-24-15-234
+#sufword afterparty 1-124-5-1234-13456
+#sufword afterpiece 1-124-1234-24-15-14-15
+#sufword afterplay 1-124-1234-123-1-13456
+#sufword aftersale 1-124-234-1-123-15
+#sufword afterschool 1-124-234-16-135-135-123
+#sufword aftersensation 1-124-234-26-234-1-56-1345
+#sufword aftershave 1-124-146-1-1236-15
+#sufword aftershock 1-124-146-135-14-13
+#sufword aftershow 1-124-146-246
+#sufword aftershower 1-124-146-246-12456
+#sufword aftersupper 1-124-234-136-1234-1234-12456
+#sufword aftertaste 1-124-2345-1-34-15
+#sufword aftertax 1-124-2345-1-1346
+#sufword aftertaxes 1-124-2345-1-1346-15-234
+#sufword aftertea 1-124-2345-15-1
+#sufword aftertheatre 1-124-2346-1-2345-1235-15
+#sufword afterthought 1-124-1456-5-1256
+#sufword aftertime 1-124-5-2345
+#sufword aftertreatment 1-124-2345-1235-2-2345-56-2345
+#sufword afterword 1-124-45-2456
+#sufword afterwork 1-124-5-2456
+#sufword afterworld 1-124-456-2456
+#sufword apperceive 1-1234-1234-12456-14-1236
+#sufword apperceived 1-1234-1234-12456-14-1236-145
+#sufword apperceiver 1-1234-1234-12456-14-1236-1235
+#sufword apperceiving 1-1234-1234-12456-14-1236-1245
+#sufword archdeceiver 345-16-145-14-1236-1235
+#sufword beforehand 23-124-125-12346
+#sufword befriend 23-124-1235
+#sufword behindhand 23-125-125-12346
+sufword belittle 23-123-123
+sufword belittled 23-123-123-145
+sufword belittlement 23-123-123-56-2345
+sufword belittler 23-123-123-1235
+#sufword belowdeck 23-123-145-15-14-13
+#sufword belowground 23-123-1245-1235-46-145
+#sufword belowmentioned 23-123-134-26-56-1345-1246
+#sufword beneathdeck 23-1345-145-15-14-13
+#sufword beneathground 23-1345-1245-1235-46-145
+#sufword betweendeck 23-2345-145-15-14-13
+#sufword betweentime 23-2345-5-2345
+#sufword betweenwhile 23-2345-156-24-123-15
+#sufword blindfish 12-123-124-24-146
+#sufword blindfishes 12-123-124-24-146-15-234
+#sufword blindfold 12-123-124-135-123-145
+#sufword blindfolded 12-123-124-135-123-145-1246
+#sufword blindfolder 12-123-124-135-123-145-12456
+#sufword blindfolding 12-123-124-135-123-145-346
+#sufword blindly 12-123-123-13456
+#sufword blindman 12-123-134-1-1345
+#sufword blindmen 12-123-134-26
+#sufword blindness 12-123-56-234
+#sufword blindnesses 12-123-56-234-15-234
+#sufword blindside 12-123-234-24-145-15
+#sufword blindsided 12-123-234-24-145-1246
+#sufword blindsider 12-123-234-24-145-12456
+#sufword blindsiding 12-123-234-24-145-346
+#sufword blindsight 12-123-234-24-126-2345
+#sufword blindstories 12-123-34-135-1235-24-15-234
+#sufword blindstory 12-123-34-135-1235-13456
+#sufword blindworm 12-123-2456-135-1235-134
+sufword bloodletter 12-123-135-135-145-123-1235
+#sufword boyfriend 12-135-13456-124-1235
+#sufword brailled 12-1235-123-145
+#sufword brailler 12-1235-123-1235
+#sufword braillewriter 12-1235-123-2456-1235-24-2345-12456
+#sufword braillewriting 12-1235-123-2456-1235-24-2345-346
+#sufword brailley 12-1235-123-13456
+#sufword brainchildren 12-1235-1-35-16-1345
+sufword chainletter 16-1-35-123-1235
+#sufword children'swear 16-1345-3-234-2456-15-345
+#sufword colorblind 14-135-123-135-1235-12-123
+#sufword colorblindness 14-135-123-135-1235-12-123-56-234
+#sufword colorblindnesses 14-135-123-135-1235-12-123-56-234-15-234
+#sufword colourblind 14-135-123-1256-1235-12-123
+#sufword colourblindness 14-135-123-1256-1235-12-123-56-234
+#sufword colourblindnesses 14-135-123-1256-1235-12-123-56-234-15-234
+#sufword conceived 25-14-1236-145
+#sufword conceiver 25-14-1236-1235
+#sufword could've 14-145-3-1236-15
+#sufword coulda 14-145-1
+#sufword couldest 14-145-15-34
+#sufword couldn't 14-145-1345-3-2345
+#sufword couldn't've 14-145-1345-3-2345-3-1236-15
+#sufword couldst 14-145-34
+#sufword deafblind 145-2-124-12-123
+#sufword deafblindness 145-2-124-12-123-56-234
+#sufword deafblindnesses 145-2-124-12-123-56-234-15-234
+#sufword deceived 145-14-1236-145
+#sufword deceiver 145-14-1236-1235
+#sufword declared 145-14-123-145
+#sufword declarer 145-14-123-1235
+#sufword defriend 145-15-124-1235
+#sufword do-it-yourselfer 145-36-1346-36-13456-1235-124-12456
+sufword doublequick 145-1256-12-123-15-12345-13
+sufword eastabout 15-1-34-1-12
+sufword feelgood 124-15-15-123-1245-145
+sufword feetfirst 124-15-15-2345-124-34
+sufword firstaid 124-34-1-24-145
+sufword firstaider 124-34-1-24-145-12456
+#sufword firstborn 124-34-12-135-1235-1345
+#sufword firstclass 124-34-14-123-1-234-234
+#sufword firstclasses 124-34-14-123-1-234-234-15-234
+#sufword firstday 124-34-5-145
+#sufword firstdayer 124-34-5-145-12456
+#sufword firstfruit 124-34-124-1235-136-24-2345
+#sufword firstfruiting 124-34-124-1235-136-24-2345-346
+#sufword firstgeneration 124-34-1245-26-12456-1-56-1345
+#sufword firsthand 124-34-125-12346
+#sufword firsthanded 124-34-125-12346-1246
+#sufword firstling 124-34-123-346
+#sufword firstly 124-34-123-13456
+#sufword firstness 124-34-56-234
+#sufword firstnight 124-34-1345-24-126-2345
+#sufword firstnighter 124-34-1345-24-126-2345-12456
+#sufword firstrate 124-34-1235-1-2345-15
+#sufword firstrated 124-34-1235-1-2345-1246
+#sufword firstrating 124-34-1235-1-2345-346
+#sufword firststring 124-34-34-1235-346
+#sufword forasmuch 123456-1-234-134-16
+#sufword foresaid 123456-15-234-145
+#sufword fosterchildren 124-135-34-12456-16-1345
+#sufword friendless 124-1235-46-234
+#sufword friendlessness 124-1235-46-234-56-234
+#sufword friendlessnesses 124-1235-46-234-56-234-15-234
+#sufword friendlier 124-1235-123-24-12456
+#sufword friendlies 124-1235-123-24-15-234
+#sufword friendliest 124-1235-123-24-15-34
+#sufword friendliness 124-1235-123-24-56-234
+#sufword friendlinesses 124-1235-123-24-56-234-15-234
+#sufword friendly 124-1235-123-13456
+#sufword friendship 124-1235-146-24-1234
+sufword gadabout 1245-1-145-1-12
+#sufword gainsaid 1245-1-35-234-145
+#sufword galfriend 1245-1-123-124-1235
+#sufword gentlemanfriend 1245-26-2345-123-15-134-1-1345-124-1235
+#sufword gentlemenfriends 1245-26-2345-123-15-134-26-124-1235-234
+#sufword girlfriend 1245-24-1235-123-124-1235
+#sufword godchildren 1245-135-145-16-1345
+sufword goodafternoon 1245-145-1-124-1345
+#sufword goodby 1245-145-12-13456
+#sufword goodbye 1245-145-12-13456-15
+#sufword goodbyeing 1245-145-12-13456-15-346
+#sufword goodbying 1245-145-12-13456-346
+#sufword goodday 1245-145-5-145
+sufword gooder 1245-145-12456
+sufword goodest 1245-145-15-34
+sufword goodevening 1245-145-15-1236-26-346
+#sufword goodfellow 1245-145-124-15-123-123-246
+#sufword goodfellowship 1245-145-124-15-123-123-246-146-24-1234
+#sufword goodhearted 1245-145-125-15-345-2345-1246
+#sufword goodheartedly 1245-145-125-15-345-2345-1246-123-13456
+#sufword goodheartedness 1245-145-125-15-345-2345-1246-56-234
+#sufword goodhumor 1245-145-125-136-134-135-1235
+#sufword goodhumored 1245-145-125-136-134-135-1235-1246
+#sufword goodhumoredly 1245-145-125-136-134-135-1235-1246-123-13456
+#sufword goodhumoredness 1245-145-125-136-134-135-1235-1246-56-234
+#sufword goodhumorednesses 1245-145-125-136-134-135-1235-1246-56-234-15-234
+#sufword goodhumour 1245-145-125-136-134-1256-1235
+#sufword goodhumoured 1245-145-125-136-134-1256-1235-1246
+#sufword goodhumouredly 1245-145-125-136-134-1256-1235-1246-123-13456
+#sufword goodhumouredness 1245-145-125-136-134-1256-1235-1246-56-234
+#sufword goodhumourednesses 1245-145-125-136-134-1256-1235-1246-56-234-15-234
+sufword goodie 1245-145-24-15
+sufword goodish 1245-145-24-146
+#sufword goodlier 1245-145-123-24-12456
+#sufword goodliest 1245-145-123-24-15-34
+#sufword goodliness 1245-145-123-24-56-234
+#sufword goodlook 1245-145-123-135-135-13
+#sufword goodlooker 1245-145-123-135-135-13-12456
+#sufword goodlooking 1245-145-123-135-135-13-346
+#sufword goodly 1245-145-123-13456
+#sufword goodman 1245-145-134-1-1345
+#sufword goodmen 1245-145-134-26
+#sufword goodmorning 1245-145-134-135-1235-1345-346
+#sufword goodnature 1245-145-1345-1-2345-136-1235-15
+#sufword goodnatured 1245-145-1345-1-2345-136-1235-1246
+#sufword goodnaturedly 1245-145-1345-1-2345-136-1235-1246-123-13456
+#sufword goodnaturedness 1245-145-1345-1-2345-136-1235-1246-56-234
+#sufword goodness 1245-145-56-234
+#sufword goodnesses 1245-145-56-234-15-234
+#sufword goodnight 1245-145-1345-24-126-2345
+#sufword goodsize 1245-145-234-24-1356-15
+#sufword goodsized 1245-145-234-24-1356-1246
+#sufword goodtempered 1245-145-2345-15-134-1234-12456-1246
+#sufword goodtemperedly 1245-145-2345-15-134-1234-12456-1246-123-13456
+#sufword goodtime 1245-145-5-2345
+sufword goodun 1245-145-136-1345
+#sufword goodwife 1245-145-2456-24-124-15
+#sufword goodwill 1245-145-2456-24-123-123
+#sufword goodwilled 1245-145-2456-24-123-123-1246
+#sufword goodwives 1245-145-2456-24-1236-15-234
+sufword goody 1245-145-13456
+sufword goodyear 1245-145-13456-15-345
+#sufword grandchildren 1245-1235-12346-16-1345
+#sufword greataunt 1245-1235-2345-1-136-1345-2345
+#sufword greatbatch 1245-1235-2345-12-1-2345-16
+#sufword greatcircle 1245-1235-2345-14-24-1235-14-123-15
+#sufword greatcoat 1245-1235-2345-14-135-1-2345
+#sufword greaten 1245-1235-2345-26
+#sufword greatened 1245-1235-2345-26-1246
+#sufword greatener 1245-1235-2345-26-12456
+#sufword greatening 1245-1235-2345-26-346
+#sufword greater 1245-1235-2345-12456
+#sufword greatest 1245-1235-2345-15-34
+#sufword greatgrandaunt 1245-1235-2345-1245-1235-12346-1-136-1345-2345
+#sufword greatgrandchild 1245-1235-2345-1245-1235-12346-16-24-123-145
+#sufword greatgrandchildren 1245-1235-2345-1245-1235-12346-16-1345
+#sufword greatgranddad 1245-1235-2345-1245-1235-12346-145-1-145
+#sufword greatgranddaughter 1245-1235-2345-1245-1235-12346-145-1-136-126-2345-12456
+#sufword greatgrandfather 1245-1235-2345-1245-1235-12346-5-124
+#sufword greatgrandfatherhood 1245-1235-2345-1245-1235-12346-5-124-125-135-135-145
+#sufword greatgrandma 1245-1235-2345-1245-1235-12346-134-1
+#sufword greatgrandmother 1245-1235-2345-1245-1235-12346-5-134
+#sufword greatgrandmotherhood 1245-1235-2345-1245-1235-12346-5-134-125-135-135-145
+#sufword greatgrandnephew 1245-1235-2345-1245-1235-12346-1345-15-1234-125-15-2456
+#sufword greatgrandniece 1245-1235-2345-1245-1235-12346-1345-24-15-14-15
+#sufword greatgrandpa 1245-1235-2345-1245-1235-12346-1234-1
+#sufword greatgrandparent 1245-1235-2345-1245-1235-12346-1234-345-26-2345
+#sufword greatgrandparenthood 1245-1235-2345-1245-1235-12346-1234-345-26-2345-125-135-135-145
+#sufword greatgrandson 1245-1235-2345-1245-1235-12346-234-135-1345
+#sufword greatgranduncle 1245-1235-2345-1245-1235-12346-136-1345-14-123-15
+#sufword greathearted 1245-1235-2345-125-15-345-2345-1246
+#sufword greatheartedly 1245-1235-2345-125-15-345-2345-1246-123-13456
+#sufword greatheartedness 1245-1235-2345-125-15-345-2345-1246-56-234
+#sufword greatheartednesses 1245-1235-2345-125-15-345-2345-1246-56-234-15-234
+#sufword greatly 1245-1235-2345-123-13456
+#sufword greatnephew 1245-1235-2345-1345-15-1234-125-15-2456
+#sufword greatness 1245-1235-2345-56-234
+#sufword greatnesses 1245-1235-2345-56-234-15-234
+#sufword greatniece 1245-1235-2345-1345-24-15-14-15
+#sufword greatsword 1245-1235-2345-234-45-2456
+#sufword greatuncle 1245-1235-2345-136-1345-14-123-15
+#sufword guyfriend 1245-136-13456-124-1235
+sufword hateletter 125-1-2345-15-123-1235
+sufword headfirst 125-2-145-124-34
+sufword hereabout 5-125-1-12
+sufword hereafter 5-125-1-124
+#sufword hereagain 5-125-1-1245
+#sufword hereagainst 5-125-1-1245-34
+sufword hereinabove 5-125-35-1-12-1236
+sufword hereinafter 5-125-35-1-124
+#sufword hereinagain 5-125-35-1-1245
+#sufword highlypaid 125-24-126-123-13456-1234-145
+#sufword himbo 125-134-12-135
+#sufword himboes 125-134-12-135-15-234
+#sufword illpaid 24-123-123-1234-145
+#sufword immediately 24-134-134-123-13456
+#sufword immediateness 24-134-134-56-234
+#sufword inasmuch 35-1-234-134-16
+#sufword insomuch 35-234-135-134-16
+sufword knockabout 13-1345-135-14-13-1-12
+#sufword ladyfriend 123-1-145-13456-124-1235
+sufword layabout 123-1-13456-1-12
+#sufword letterbodies 123-1235-12-135-145-24-15-234
+#sufword letterbody 123-1235-12-135-145-13456
+#sufword letterbomb 123-1235-12-135-134-12
+#sufword letterbombed 123-1235-12-135-134-12-1246
+#sufword letterbomber 123-1235-12-135-134-12-12456
+#sufword letterbombing 123-1235-12-135-134-12-346
+#sufword letterbox 123-1235-12-135-1346
+#sufword letterboxed 123-1235-12-135-1346-1246
+#sufword letterboxer 123-1235-12-135-1346-12456
+#sufword letterboxes 123-1235-12-135-1346-15-234
+#sufword letterboxing 123-1235-12-135-1346-346
+sufword lettered 123-1235-1246
+sufword letterer 123-1235-12456
+#sufword letterform 123-1235-123456-134
+#sufword letterhead 123-1235-125-2-145
+#sufword letterheading 123-1235-125-2-145-346
+sufword lettering 123-1235-346
+#sufword letterman 123-1235-134-1-1345
+#sufword lettermen 123-1235-134-26
+sufword letteropener 123-1235-135-1234-26-12456
+#sufword letterperfect 123-1235-1234-12456-124-15-14-2345
+#sufword letterpress 123-1235-1234-1235-15-234-234
+#sufword letterpressed 123-1235-1234-1235-15-234-234-1246
+#sufword letterpresses 123-1235-1234-1235-15-234-234-15-234
+#sufword letterpressing 123-1235-1234-1235-15-234-234-346
+#sufword letterquality 123-1235-12345-136-1-123-56-13456
+#sufword letterspace 123-1235-234-1234-1-14-15
+#sufword letterspaced 123-1235-234-1234-1-14-1246
+#sufword letterspacing 123-1235-234-1234-1-14-346
+#sufword lettertext 123-1235-2345-15-1346-2345
+#sufword littled 123-123-145
+#sufword littleneck 123-123-1345-15-14-13
+#sufword littleness 123-123-56-234
+#sufword littlenesses 123-123-56-234-15-234
+#sufword littler 123-123-1235
+#sufword littlest 123-123-34
+#sufword lovechildren 123-135-1236-15-16-1345
+sufword loveletter 123-135-1236-15-123-1235
+#sufword lowlypaid 123-246-123-13456-1234-145
+#sufword manfriend 134-1-1345-124-1235
+#sufword menfriends 134-26-124-1235-234
+sufword midafternoon 134-24-145-1-124-1345
+#sufword misbraille 134-24-234-12-1235-123
+#sufword misbrailled 134-24-234-12-1235-123-145
+#sufword misperceive 134-24-234-1234-12456-14-1236
+#sufword misperceived 134-24-234-1234-12456-14-1236-145
+#sufword misperceiver 134-24-234-1234-12456-14-1236-1235
+#sufword misperceiving 134-24-234-1234-12456-14-1236-1245
+#sufword missaid 134-24-234-234-145
+sufword morningafter 134-135-1235-1345-346-1-124
+#sufword muchly 134-16-123-13456
+#sufword muchness 134-16-56-234
+#sufword must've 134-34-3-1236-15
+#sufword musta 134-34-1
+#sufword mustard 134-34-345-145
+#sufword mustier 134-34-24-12456
+#sufword mustiest 134-34-24-15-34
+#sufword mustily 134-34-24-123-13456
+#sufword mustiness 134-34-24-56-234
+#sufword mustn't 134-34-1345-3-2345
+#sufword mustn't've 134-34-1345-3-2345-3-1236-15
+#sufword musty 134-34-13456
+sufword newsletter 1345-15-2456-234-123-1235
+sufword nonesuch 1345-5-135-234-16
+sufword nonsuch 1345-135-1345-234-16
+sufword northabout 1345-135-1235-1456-1-12
+#sufword overmuch 135-1236-12456-134-16
+#sufword overpaid 135-1236-12456-1234-145
+#sufword penfriend 1234-26-124-1235
+#sufword perceived 1234-12456-14-1236-145
+#sufword perceiver 1234-12456-14-1236-1235
+#sufword perhapses 1234-12456-125-15-234
+#sufword poorlypaid 1234-135-135-1235-123-13456-1234-145
+#sufword postpaid 1234-135-34-1234-145
+#sufword preceive 1234-1235-14-1236
+#sufword preceiver 1234-1235-14-1236-1235
+#sufword preceiving 1234-1235-14-1236-1245
+#sufword prepaid 1234-1235-15-1234-145
+#sufword purblind 1234-136-1235-12-123
+#sufword purblindly 1234-136-1235-12-123-123-13456
+#sufword purblindness 1234-136-1235-12-123-56-234
+#sufword purblindnesses 1234-136-1235-12-123-56-234-15-234
+#sufword quickdraw 12345-13-145-1235-1-2456
+sufword quicken 12345-13-26
+sufword quickened 12345-13-26-1246
+sufword quickener 12345-13-26-12456
+sufword quickening 12345-13-26-346
+sufword quicker 12345-13-12456
+sufword quickest 12345-13-15-34
+#sufword quickfire 12345-13-124-24-1235-15
+#sufword quickfiring 12345-13-124-24-1235-346
+#sufword quickfreeze 12345-13-124-1235-15-15-1356-15
+#sufword quickfreezing 12345-13-124-1235-15-15-1356-346
+#sufword quickfroze 12345-13-124-1235-135-1356-15
+#sufword quickfrozen 12345-13-124-1235-135-1356-26
+sufword quickie 12345-13-24-15
+sufword quickish 12345-13-24-146
+sufword quickishly 12345-13-24-146-123-13456
+#sufword quicklime 12345-13-123-24-134-15
+#sufword quickly 12345-13-123-13456
+#sufword quickness 12345-13-56-234
+#sufword quicknesses 12345-13-56-234-15-234
+#sufword quicksand 12345-13-234-12346
+#sufword quickset 12345-13-234-15-2345
+#sufword quicksilver 12345-13-234-24-123-1236-12456
+#sufword quicksilvered 12345-13-234-24-123-1236-12456-1246
+#sufword quicksilvering 12345-13-234-24-123-1236-12456-346
+#sufword quicksnap 12345-13-234-1345-1-1234
+#sufword quickstep 12345-13-34-15-1234
+#sufword quickstepped 12345-13-34-15-1234-1234-1246
+#sufword quickstepper 12345-13-34-15-1234-1234-12456
+#sufword quickstepping 12345-13-34-15-1234-1234-346
+#sufword quicktempered 12345-13-2345-15-134-1234-12456-1246
+#sufword quicktime 12345-13-5-2345
+#sufword quickwitted 12345-13-2456-24-2345-2345-1246
+#sufword quickwittedly 12345-13-2456-24-2345-2345-1246-123-13456
+#sufword quickwittedness 12345-13-2456-24-2345-2345-1246-56-234
+sufword quicky 12345-13-13456
+sufword readacross 1235-2-145-1-14-1235
+#sufword rebraille 1235-15-12-1235-123
+#sufword rebrailled 1235-15-12-1235-123-145
+#sufword rebrailler 1235-15-12-1235-123-1235
+#sufword received 1235-14-1236-145
+#sufword receiver 1235-14-1236-1235
+#sufword receivership 1235-14-1236-1235-146-24-1234
+#sufword rejoiced 1235-245-14-145
+#sufword rejoiceful 1235-245-14-56-123
+#sufword rejoicefully 1235-245-14-56-123-123-13456
+#sufword rejoicefulness 1235-245-14-56-123-56-234
+#sufword rejoicer 1235-245-14-1235
+#sufword rejoicingly 1235-245-14-1245-123-13456
+sufword reletter 1235-15-123-1235
+sufword relettered 1235-15-123-1235-1246
+sufword relettering 1235-15-123-1235-346
+#sufword repaid 1235-15-1234-145
+sufword rightabout 5-1235-1-12
+sufword roundabout 1235-46-145-1-12
+sufword roustabout 1235-1256-34-1-12
+sufword runabout 1235-136-1345-1-12
+#sufword saidest 234-145-15-34
+#sufword saidst 234-145-34
+sufword scattergood 234-14-1-2345-2345-12456-1245-145
+#sufword schoolchildren 234-16-135-135-123-16-1345
+#sufword schoolfriend 234-16-135-135-123-124-1235
+#sufword should've 146-145-3-1236-15
+#sufword shoulda 146-145-1
+#sufword shouldest 146-145-15-34
+#sufword shouldn't 146-145-1345-3-2345
+#sufword shouldn't've 146-145-1345-3-2345-3-1236-15
+#sufword shouldst 146-145-34
+#sufword snowblind 234-1345-246-12-123
+#sufword snowblindness 234-1345-246-12-123-56-234
+#sufword snowblindnesses 234-1345-246-12-123-56-234-15-234
+sufword somesuch 5-234-234-16
+sufword southabout 234-1256-1456-1-12
+#sufword stepchildren 34-15-1234-16-1345
+sufword stirabout 34-24-1235-1-12
+#sufword suchlike 234-16-123-24-13-15
+sufword supergood 234-136-1234-12456-1245-145
+sufword superquick 234-136-1234-12456-12345-13
+sufword tailfirst 2345-1-24-123-124-34
+sufword thereabout 5-2346-1-12
+sufword thereafter 5-2346-1-124
+#sufword thereagain 5-2346-1-1245
+#sufword thereagainst 5-2346-1-1245-34
+sufword thereinafter 5-2346-35-1-124
+#sufword thereinagain 5-2346-35-1-1245
+#sufword togetherness 2345-1245-1235-56-234
+sufword turnabout 2345-136-1235-1345-1-12
+sufword unaccording 136-1345-1-14
+sufword unaccordingly 136-1345-1-14-123-13456
+#sufword unblindfold 136-1345-12-123-124-135-123-145
+#sufword unblindfolded 136-1345-12-123-124-135-123-145-1246
+#sufword unblindfolding 136-1345-12-123-124-135-123-145-346
+#sufword unbraille 136-1345-12-1235-123
+#sufword unbrailled 136-1345-12-1235-123-145
+#sufword undeceive 136-1345-145-14-1236
+#sufword undeceived 136-1345-145-14-1236-145
+#sufword undeceiver 136-1345-145-14-1236-1235
+#sufword undeceiving 136-1345-145-14-1236-1245
+#sufword undeclare 136-1345-145-14-123
+#sufword undeclared 136-1345-145-14-123-145
+#sufword underpaid 5-136-1234-145
+#sufword unfriend 136-1345-124-1235
+#sufword unfriendlier 136-1345-124-1235-123-24-12456
+#sufword unfriendliest 136-1345-124-1235-123-24-15-34
+#sufword unfriendliness 136-1345-124-1235-123-24-56-234
+#sufword unfriendlinesses 136-1345-124-1235-123-24-56-234-15-234
+#sufword unfriendly 136-1345-124-1235-123-13456
+sufword unlettered 136-1345-123-1235-1246
+#sufword unnecessary 136-1345-1345-15-14
+#sufword unpaid 136-1345-1234-145
+#sufword unperceive 136-1345-1234-12456-14-1236
+#sufword unperceived 136-1345-1234-12456-14-1236-145
+#sufword unperceiving 136-1345-1234-12456-14-1236-1245
+sufword unquick 136-1345-12345-13
+#sufword unreceived 136-1345-1235-14-1236-145
+#sufword unrejoice 136-1345-1235-245-14
+#sufword unrejoiced 136-1345-1235-245-14-145
+#sufword unrejoiceful 136-1345-1235-245-14-56-123
+#sufword unrejoicefully 136-1345-1235-245-14-56-123-123-13456
+#sufword unrejoicefulness 136-1345-1235-245-14-56-123-56-234
+#sufword unrejoicer 136-1345-1235-245-14-1235
+#sufword unrejoicing 136-1345-1235-245-14-1245
+#sufword unrejoicingly 136-1345-1235-245-14-1245-123-13456
+sufword walkabout 2456-1-123-13-1-12
+#sufword wellpaid 2456-15-123-123-1234-145
+sufword westabout 2456-15-34-1-12
+sufword whereabout 5-156-1-12
+sufword whereafter 5-156-1-124
+#sufword whereagain 5-156-1-1245
+#sufword whereagainst 5-156-1-1245-34
+sufword whereinafter 5-156-35-1-124
+#sufword whereinagain 5-156-35-1-1245
+#sufword womanfriend 2456-135-134-1-1345-124-1235
+#sufword womenfriends 2456-135-134-26-124-1235-234
+#sufword would've 2456-145-3-1236-15
+#sufword woulda 2456-145-1
+#sufword wouldest 2456-145-15-34
+#sufword wouldn't 2456-145-1345-3-2345
+#sufword wouldn't've 2456-145-1345-3-2345-3-1236-15
+#sufword wouldst 2456-145-34
+
+#   Appendix 1.2
+
+sufword acrosses 1-14-1235-135-234-234-15-234
+sufword dafter 145-1-124-2345-12456
+sufword drafter 145-1235-1-124-2345-12456
+sufword grafter 1245-1235-1-124-2345-12456
+sufword rafter 1235-1-124-2345-12456
+
+#   Appendix 1.4
+
+match %[_~^]%<*%a* after (%2%a*)?%>*%[_~^] 1-124
+match %[_~^]%<*%a* blind (%2%a*)?%>*%[_~^] 12-123
+match %[_~^]%<*%a* friend (%2%a*)?%>*%[_~^] 124-1235
+
+
+#   Used in 9.2 page 138
+word newsletters 1345-15-2456-234-123-1235-234
 
 
 #   10.11
@@ -428,13 +968,6 @@ sufword storeroom 34-135-1235-15-1235-135-135-134
 sufword tearoom 2345-2-1235-135-135-134
 
 
-#   Appendex 1
-
-word abouts 1-12-1256-2345-234
-word almosts 1-123-134-135-34-234
-word hims 125-24-134-234
-
-
 ################################################################################
 
 # the letter a
@@ -444,7 +977,6 @@ contraction ab
 word abalone =
 contraction abv
 contraction ac
-word accordingly 1-14-123-13456
 contraction acly
 contraction acr
 contraction af
@@ -452,8 +984,6 @@ contraction afn
 begword aforem 1-123456-15-134 aforementioned 
 word aforesaid 1-123456-15-234-145
 always afr 1-124-1235
-#begword aftere 1-124-2345-12456-15 aftereffect
-#begword afteri 1-124-2345-12456-24 afterimage
 contraction afw
 contraction ag
 sufword airedale =
@@ -513,7 +1043,6 @@ sufword belch 12-15-123-16
 begword beld = Beldon
 begword belf = belfry, belfast
 begword belg = Belgium
-sufword belittle 23-123-123
 begword belk = Belkin
 always bell =
 begword belm = Belmont
@@ -555,10 +1084,6 @@ midendword bious 12-24-1256-234 dubious
 contraction bl
 always blenz 12-123-26-1356
 always bless 12-46-234 joblessness
-begword blindf 12-123-124 blindfold
-word blindly 12-123-123-13456
-word blindness 12-123-56-234
-sufword blinds 12-123-234 blindsided
 always boat = boathook
 always bottlen = bottlenosed
 contraction brl
@@ -657,7 +1182,6 @@ begword extra =
 
 # the letter f
 sufword falconet =
-always feelgood 124-15-15-123-1245-145
 always fein 124-15-35 Feingold
 begword femto 124-15-134-2345-135 10^-15
 sufword feringhee 124-12456-35-126-15-15
@@ -671,10 +1195,6 @@ always fore 123456-15
 begword forens 123456-26-234 forensic
 always forever 123456-5-15 forevermore
 contraction fr
-sufword friendl 124-1235-123
-word friendless 124-1235-46-234
-word friends 124-1235-234
-sufword friendship 124-1235-146-24-1234
 contraction frs
 
 # the letter g
@@ -692,10 +1212,6 @@ always ghz = (gigahertz)
 begword giga 1245-24-1245-1 10^9
 begword givea = giveaway
 sufword gnome = gnomedb
-always good-by 1245-145-36-12-13456
-word Goodwill = with a cap
-word Goodyear 1245-135-135-145-13456-15-345
-word Goody = with a cap
 syllable grad = leningrad
 contraction grt
 
@@ -714,8 +1230,6 @@ begword hecto 125-15-14-2345-135 10^2
 always hedgerow 125-1246-1245-15-1235-246
 syllable herd 125-12456-145 goatherd
 syllable herd = goatherd
-word hereabout 5-125-1-12
-always hereafter 5-125-1-124
 always hered 125-12456-1246
 always hereford 125-12456-15-123456-145
 always heren 125-12456-26
@@ -780,13 +1294,10 @@ word konev =
 word krone 13-1235-135-1345-15
 
 # the letter l
-always letterman = surname
 word limeade =
 always lineag 123-35-2-1245
 always lineage 123-35-2-1245-15
 midendword lingian 123-346-24-1-1345
-always littlejohn = surname
-always littleton = proper noun
 contraction ll
 endword 'll 3-123-123
 contraction llr
@@ -844,12 +1355,10 @@ contraction nec
 syllable neck = bottleneck
 contraction nei
 always nevertheless 1345-5-15-2346-46-234
-sufword newsletter 1345-15-2456-234-123-1235
 syllable nomad = seminomadic
 begword nonen 1345-135-1345-26 nonentity
 always noneq =
 begword noness = nonessential
-word nonesuch 1345-5-135-234-16
 word nonetheless 1345-5-135-2346-46-234
 always nonex =
 begword nong = nongraphical
@@ -937,7 +1446,6 @@ begword psycho 1234-234-13456-16-135
 contraction qk
 
 # the letter r
-sufword rafter 1235-1-124-2345-12456
 sufword raw = rawhide
 contraction rcv
 contraction rcvd
@@ -982,15 +1490,12 @@ contraction rjcs
 #syllable room = storeroom
 syllable root = pokeroot snakeroot
 begword roped = ropedance
-always roustabout 1235-1256-34-1-12
 syllable rubber 1235-136-23-12456 indiarubber
-word runabout 1235-136-1345-1-12
 
 # the letter s
 endword 's 3-234
 word sadowa =
 begword saw = sawhorse
-always scattergood 234-14-1-2345-2345-12456-1245-145
 word sch =
 syllable screw = screwhole
 contraction sd
@@ -1016,7 +1521,6 @@ word singapore 234-346-1-1234-135-1235-15
 always smitheren 234-134-24-2346-1235-26 proper name
 midendword somed 234-135-134-1246 ransomed
 begword somer 234-135-134-12456 somersault 
-word somesuch 5-234-234-16
 always sparerib 234-1234-345-15-1235-14-12
 word sphere 234-1234-5-125
 begword spiken = spikenard
@@ -1070,7 +1574,6 @@ word toenail =
 begword trans =
 always tranship 2345-1235-1-1345-146-24-1234
 begword trans = transtype
-always turnabout 2345-136-1235-1345-1-12
 always turtledove =
 always twould 2345-2456-145
 
@@ -1080,7 +1583,6 @@ begword underiv =
 word underived 136-1345-145-12456-24-1236-1246
 begword underog =
 word underogatory 136-1345-145-12456-135-1245-1-2345-135-1235-13456
-word unlettered 136-1345-123-1235-1246
 begword unmen 136-1345-134-26 unmentioned
 word unsaid 136-1345-234-145
 begword un = unameliorated
@@ -1097,7 +1599,6 @@ sufword violone =
 sufword wakerif =
 contraction wd
 midendword whart 2456-125-345-2345 Newhart
-word whereabouts 5-156-1-12-234
 word where'er 156-12456-15-3-12456
 begword wired = wiredance
 always wiseacr =
