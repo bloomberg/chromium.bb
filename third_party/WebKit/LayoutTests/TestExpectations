@@ -438,8 +438,6 @@ crbug.com/580355 virtual/spv2/fast/block/positioning/height-change.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/positioning/relayout-on-position-change.html [ Pass ]
 
 crbug.com/563667 virtual/spv2/fast/overflow/007.html [ Failure ]
-crbug.com/595491 editing/pasteboard/8145-1.html [ NeedsRebaseline ]
-crbug.com/595491 fast/forms/textarea/basic-textareas.html [ NeedsRebaseline ]
 crbug.com/537409 virtual/spv2/fast/overflow [ Pass ]
 # Sub-pixel differences in layout tests for SPv2
 crbug.com/589265 virtual/spv2/fast/block/float/002.html [ Failure ]
