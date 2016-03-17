@@ -2125,6 +2125,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
     params.page_state = PageState::CreateFromURL(subframe_url);
 
     // Navigating should do nothing.
+    subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
     EXPECT_EQ(0U, notifications.size());
@@ -2144,6 +2145,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   params.page_state = PageState::CreateFromURL(url2);
 
   LoadCommittedDetailsObserver observer(contents());
+  subframe->SendRendererInitiatedNavigationRequest(url2, true);
   subframe->PrepareForCommit();
   subframe->SendNavigateWithParams(&params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2207,6 +2209,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     params.page_state = PageState::CreateFromURL(url2);
 
     // Navigating should do nothing.
+    subframe->SendRendererInitiatedNavigationRequest(url2, false);
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
     EXPECT_EQ(0U, notifications.size());
@@ -2253,6 +2256,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     params.page_state = PageState::CreateFromURL(url3);
 
     // Navigating should do nothing.
+    subframe2->SendRendererInitiatedNavigationRequest(url3, false);
     subframe2->PrepareForCommit();
     subframe2->SendNavigateWithParams(&params);
     EXPECT_EQ(0U, notifications.size());
@@ -2304,6 +2308,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     params.page_state = PageState::CreateFromURL(url4);
 
     // Navigating should do nothing.
+    subframe3->SendRendererInitiatedNavigationRequest(url4, false);
     subframe3->PrepareForCommit();
     subframe3->SendNavigateWithParams(&params);
     EXPECT_EQ(0U, notifications.size());
@@ -2365,6 +2370,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
     params.page_state = PageState::CreateFromURL(subframe_url);
 
     // Navigating should do nothing.
+    subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
     EXPECT_EQ(0U, notifications.size());
@@ -2384,6 +2390,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.page_state = PageState::CreateFromURL(url2);
 
   // This should generate a new entry.
+  subframe->SendRendererInitiatedNavigationRequest(url2, false);
   subframe->PrepareForCommit();
   subframe->SendNavigateWithParams(&params);
   NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
@@ -2409,6 +2416,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.url = url3;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
   params.page_state = PageState::CreateFromURL(url3);
+  subframe->SendRendererInitiatedNavigationRequest(url3, false);
   subframe->PrepareForCommit();
   subframe->SendNavigateWithParams(&params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2516,6 +2524,7 @@ TEST_F(NavigationControllerTest, InPage) {
   self_params.was_within_same_page = true;
 
   LoadCommittedDetailsObserver observer(contents());
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url1, false);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&self_params);
   NavigationEntry* entry1 = controller.GetLastCommittedEntry();
@@ -2540,6 +2549,7 @@ TEST_F(NavigationControllerTest, InPage) {
   params.was_within_same_page = true;
 
   // This should generate a new entry.
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&params);
   NavigationEntry* entry2 = controller.GetLastCommittedEntry();
@@ -2602,6 +2612,7 @@ TEST_F(NavigationControllerTest, InPage) {
   params.did_create_new_entry = true;
   params.url = url3;
   navigation_entry_committed_counter_ = 0;
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url3, false);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2638,6 +2649,7 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
 
   // This should NOT generate a new entry, nor prune the list.
   LoadCommittedDetailsObserver observer(contents());
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2692,6 +2704,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
 
     // This should NOT generate a new entry, nor prune the list.
     LoadCommittedDetailsObserver observer(contents());
+    main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
     main_test_rfh()->PrepareForCommit();
     main_test_rfh()->SendNavigateWithParams(&params);
     EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2719,6 +2732,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
 
     // This SHOULD generate a new entry.
     LoadCommittedDetailsObserver observer(contents());
+    main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
     main_test_rfh()->PrepareForCommit();
     main_test_rfh()->SendNavigateWithParams(&params);
     EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -3806,6 +3820,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(subframe_url);
+  subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
   subframe->PrepareForCommit();
   subframe->SendNavigateWithParams(&params);
 
@@ -3975,6 +3990,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   params.page_state = PageState::CreateFromURL(url1_sub);
 
   // This should return false meaning that nothing was actually updated.
+  subframe->SendRendererInitiatedNavigationRequest(url1_sub, false);
   subframe->PrepareForCommit();
   subframe->SendNavigateWithParams(&params);
 
@@ -5053,6 +5069,7 @@ TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
   // Navigate to new page.
   {
     LoadCommittedDetailsObserver observer(contents());
+    main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
     main_test_rfh()->PrepareForCommit();
     main_test_rfh()->SendNavigateWithParams(&params);
     EXPECT_EQ(PAGE_TYPE_ERROR,
@@ -5064,6 +5081,7 @@ TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
   {
     params.did_create_new_entry = false;
     LoadCommittedDetailsObserver observer(contents());
+    main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
     main_test_rfh()->PrepareForCommit();
     main_test_rfh()->SendNavigateWithParams(&params);
     EXPECT_EQ(PAGE_TYPE_ERROR,
@@ -5093,6 +5111,7 @@ TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
   params.was_within_same_page = true;
   {
     LoadCommittedDetailsObserver observer(contents());
+    main_test_rfh()->SendRendererInitiatedNavigationRequest(params.url, false);
     main_test_rfh()->PrepareForCommit();
     main_test_rfh()->SendNavigateWithParams(&params);
     EXPECT_EQ(PAGE_TYPE_ERROR,
