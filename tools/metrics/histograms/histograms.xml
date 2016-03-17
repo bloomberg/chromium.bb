@@ -79491,6 +79491,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="35" label="FAILURE_RESOURCE_BLACKLIST_UPDATE_BEGIN"/>
   <int value="36" label="FAILURE_RESOURCE_BLACKLIST_UPDATE_FINISH"/>
   <int value="37" label="FAILURE_RESOURCE_BLACKLIST_DELETE"/>
+  <int value="38" label="FAILURE_MODULE_WHITELIST_DELETE"/>
 </enum>
 
 <enum name="SB2DownloadChecks" type="int">

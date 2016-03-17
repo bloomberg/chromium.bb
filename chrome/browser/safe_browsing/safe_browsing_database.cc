@@ -841,6 +841,7 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
   txn->clear_ip_blacklist();
   txn->WhitelistEverything(SBWhitelistId::CSD);
   txn->WhitelistEverything(SBWhitelistId::DOWNLOAD);
+  txn->WhitelistEverything(SBWhitelistId::MODULE);
   return true;
 }
 
@@ -1730,7 +1731,13 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r11)
     RecordFailure(FAILURE_RESOURCE_BLACKLIST_DELETE);
 
-  return r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8 && r9 && r10 && r11;
+  const bool r12 =
+      module_whitelist_store_.get() ? module_whitelist_store_->Delete() : true;
+  if (!r12)
+    RecordFailure(FAILURE_MODULE_WHITELIST_DELETE);
+
+  return r1 && r2 && r3 && r4 && r5 && r6 && r7 && r8 && r9 && r10 && r11 &&
+         r12;
 }
 
 void SafeBrowsingDatabaseNew::WritePrefixSet(const base::FilePath& db_filename,
