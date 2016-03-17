@@ -3834,9 +3834,9 @@ doOpcode:
 				ok = 0;
 
 			if(ptn_before.chars[0] == '-' && ptn_before.length == 1)
-				len = pattern_compile(&ptn_before.chars[0], 0, &patterns[1], 256, table);
+				len = pattern_compile(&ptn_before.chars[0], 0, &patterns[1], 13841, table);
 			else
-				len = pattern_compile(&ptn_before.chars[0], ptn_before.length, &patterns[1], 256, table);
+				len = pattern_compile(&ptn_before.chars[0], ptn_before.length, &patterns[1], 13841, table);
 			if(!len)
 			{
 				ok = 0;
@@ -3847,9 +3847,9 @@ doOpcode:
 
 
 			if(ptn_after.chars[0] == '-' && ptn_after.length == 1)
-				len = pattern_compile(&ptn_after.chars[0], 0, &patterns[mrk], 256, table);
+				len = pattern_compile(&ptn_after.chars[0], 0, &patterns[mrk], 13841, table);
 			else
-				len = pattern_compile(&ptn_after.chars[0], ptn_after.length, &patterns[mrk], 256, table);
+				len = pattern_compile(&ptn_after.chars[0], ptn_after.length, &patterns[mrk], 13841, table);
 			if(!len)
 			{
 				ok = 0;

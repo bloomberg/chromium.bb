@@ -141,7 +141,7 @@ enum pattern_type
 #define SHOW   3
 
 #define CHECK_OUTPUT(type, ret, line, msg) \
-	{ do_output(type, ret, line, input[*input_crs], *input_crs, input_minmax, input_dir, expr_data, expr_crs, not, loop_crs, loop_cnts, msg); }
+	{ do_output(type, ret, line, input[*input_crs], input_minmax, *input_crs, input_dir, expr_data, expr_crs, not, loop_crs, loop_cnts, msg); }
 
 #else
 
@@ -315,7 +315,10 @@ static void pattern_output_expression(const widechar *expr_data, int expr_crs)
 			printf("^    \t%d\t%d\n", EXPR_PRV(expr_crs), EXPR_NXT(expr_crs));
 			break;
 
-		//default:  printf("%d?\n", EXPR_TYPE(expr_crs));  break;
+		default:
+
+			printf("%d?    \t%d\t%d\n", EXPR_TYPE(expr_crs), EXPR_PRV(expr_crs), EXPR_NXT(expr_crs));
+			break;
 		}
 
 		expr_crs = EXPR_NXT(expr_crs);
@@ -329,6 +332,7 @@ static void pattern_output_expression(const widechar *expr_data, int expr_crs)
 	for(i = 0; i < 13 - (30 - space); i++)
 		printf(" ");
 	printf("END\t%d\t%d\n", EXPR_PRV(expr_crs), EXPR_NXT(expr_crs));
+	fflush(stdout);
 	return;
 }
 
@@ -336,7 +340,8 @@ void pattern_output(const widechar *expr_data)
 {
 	printf("%d    \tlength\n", expr_data[0]);
 	printf("%d    \tloops\n", expr_data[1]);
-	pattern_output_expression(expr_data, 2);
+	if(expr_data[0] > 0 && expr_data[0] != PTN_END)
+		pattern_output_expression(expr_data, 2);
 }
 
 static void pattern_print_expression(const widechar *expr_data, int expr_crs)
@@ -457,7 +462,8 @@ static void pattern_print_expression(const widechar *expr_data, int expr_crs)
 
 void pattern_print(const widechar *expr_data)
 {
-	pattern_print_expression(expr_data, 2);
+	if(expr_data[0] > 0 && expr_data[0] != PTN_END)
+		pattern_print_expression(expr_data, 2);
 	puts("");
 }
 
@@ -640,7 +646,7 @@ static int pattern_compile_expression(const widechar *input,
 				continue;
 			}
 
-			if(input[input_end] == '(')
+			if(input[input_end] == '(' && !esc)
 				nest++;
 			else if(input[input_end] == ')' && !esc)
 			{
@@ -1140,7 +1146,8 @@ static int pattern_compile_3(widechar *expr_data, int expr_at, const int expr_ma
 			if(*expr_crs + 12 >= expr_max)
 				return 0;
 
-			/*   get previous PTN_START or PTN_ALTERNATE expression   */
+			/*   get previous start expression,
+			     can include alternate expressions   */
 			expr_mrk = EXPR_PRV(expr_at);
 			if(EXPR_TYPE(expr_mrk) == PTN_START)
 				return 0;
@@ -1203,6 +1210,11 @@ static int pattern_compile_3(widechar *expr_data, int expr_at, const int expr_ma
 			/*   relink sub expression to start and end   */
 			EXPR_PRV(expr_sub_start) = expr_start;
 			EXPR_NXT(expr_sub_end) = expr_end;
+
+			/*   check expressions were after alternate and got moved into
+			     a sub expression, previous expressions already checked   */
+			if(!pattern_compile_3(expr_data, EXPR_DATA_1(expr_at), expr_max, expr_crs))
+				return 0;
 		}
 
 		expr_at = EXPR_NXT(expr_at);
