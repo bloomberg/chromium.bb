@@ -550,7 +550,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowAlert) {
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressConfirm) {
   [[web_delegate_mock() expect] webControllerDidSuppressDialog:webController_];
   [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_SUPPRESS];
-  EXPECT_NSEQ(@"", EvaluateJavaScriptAsString(@"confirm('test')"));
+  EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"confirm('test')"));
 };
 
 // Tests that window.confirm dialog is shown for DIALOG_POLICY_ALLOW and

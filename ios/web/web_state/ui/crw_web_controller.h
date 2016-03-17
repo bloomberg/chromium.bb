@@ -121,6 +121,11 @@ class WebStateImpl;
 // Whether or not content can programmatically display the keyboard.
 @property(nonatomic, assign) BOOL keyboardDisplayRequiresUserAction;
 
+// YES if JavaScript dialogs, HTTP authentication dialogs and window.open
+// calls should be suppressed. Default is NO. When dialog is suppressed
+// |CRWWebDelegate webControllerDidSuppressDialog:| will be called.
+@property(nonatomic, assign) BOOL suppressDialogs;
+
 // Return an image to use as replacement of a missing snapshot.
 + (UIImage*)defaultSnapshotImage;
 
@@ -240,6 +245,8 @@ class WebStateImpl;
 
 // Sets policy for web page dialog handling. Controls dialog suppression and
 // notifying the WebDelegate.
+// TODO(crbug.com/595463): remove this method, once embedder uses
+// |setSuppressDialogs|.
 - (void)setPageDialogOpenPolicy:(web::PageDialogOpenPolicy)policy;
 
 // Records the state (scroll position, form values, whatever can be harvested)

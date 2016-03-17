@@ -6,48 +6,36 @@ goog.provide('__crWeb.dialogOverrides');
 
 goog.require('__crWeb.core');
 
-// Namespace for this module.
 __gCrWeb.dialogOverrides = {};
 
-// Beginning of anonymous object.
 (function() {
   /*
-   * Install a wrapper around functions displaying dialogs in order to catch
-   * code displaying dialog.
+   * Installs a wrapper around geolocation functions displaying dialogs in order
+   * to control their suppression.
    *
    * Since the Javascript on the page may cache the value of those functions
    * and invoke them later, we must only install the wrapper once and change
    * their behaviour when required.
    *
-   * Returns a function that allows changing the value of the two booleans
-   * |suppressDialogs| and |notifyAboutDialogs| that are tested by the wrappers.
+   * Returns a function that allows changing the value of
+   * |suppressGeolocationDialogs| that is tested by the wrappers.
    */
-  var installDialogOverridesMethods = function() {
-    var suppressDialogs = false;
-    var notifyAboutDialogs = false;
+  var installGeolocationDialogOverridesMethods = function() {
+    var suppressGeolocationDialogs = false;
 
-    // Returns a wrapper function around |originalDialog|. The wrapper may
-    // suppress the dialog and notify host about show/suppress.
+    // Returns a wrapper function around original dialog function. The wrapper
+    // may suppress the dialog and notify host.
     var makeDialogWrapper = function(originalDialogGetter) {
       return function() {
-        if (!suppressDialogs) {
+        if (suppressGeolocationDialogs) {
+          __gCrWeb.message.invokeOnHost({
+              'command': 'geolocationDialog.suppressed'
+          });
+        } else {
           return originalDialogGetter().apply(null, arguments);
-        } else if (notifyAboutDialogs) {
-          __gCrWeb.message.invokeOnHost({'command': 'dialog.suppressed'});
         }
       };
     };
-
-    // Install wrapper around the following properties of |window|.
-    var wrappedFunctionNames = ['alert', 'confirm', 'prompt', 'open'];
-    var len = wrappedFunctionNames.length;
-    for (var i = 0; i < len; i++) {
-      (function(wrappedFunctionName) {
-        var wrappedDialogMethod = window[wrappedFunctionName];
-        window[wrappedFunctionName] = makeDialogWrapper(
-          function() { return wrappedDialogMethod; });
-      })(wrappedFunctionNames[i]);
-    }
 
     // Reading or writing to the property 'geolocation' too early breaks
     // the API. Make a copy of navigator and stub in the required methods
@@ -99,16 +87,14 @@ __gCrWeb.dialogOverrides = {};
     /** @suppress {const} */
     navigator = stubNavigator;
 
-    // Returns the closure allowing to change |suppressDialogs| and
-    // |notifyAboutDialogs| variables.
-    return function(setEnabled, setNotify) {
-      suppressDialogs = setEnabled;
-      notifyAboutDialogs = setNotify;
+    // Returns the closure allowing to change |suppressGeolocationDialogs|.
+    return function(setEnabled) {
+      suppressGeolocationDialogs = setEnabled;
     };
   };
 
-  // Override certain methods that produce dialogs. This needs to be installed
-  // after other window methods overrides.
-  __gCrWeb['setSuppressDialogs'] = installDialogOverridesMethods();
+  // Override geolocation methods that produce dialogs.
+  __gCrWeb['setSuppressGeolocationDialogs'] =
+      installGeolocationDialogOverridesMethods();
 
 }());  // End of anonymous object

@@ -241,9 +241,6 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   // If |YES|, call setSuppressDialogs when core.js is injected into the web
   // view.
   BOOL _setSuppressDialogsLater;
-  // If |YES|, call setSuppressDialogs when core.js is injected into the web
-  // view.
-  BOOL _setNotifyAboutDialogsLater;
   // The URL of an expected future recreation of the |webView|. Valid
   // only if the web view was discarded for non-user-visible reasons, such that
   // if the next load request is for that URL, it should be treated as a
@@ -433,9 +430,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'console' message.
 - (BOOL)handleConsoleMessage:(base::DictionaryValue*)message
                      context:(NSDictionary*)context;
-// Handles 'dialog.suppressed' message.
-- (BOOL)handleDialogSuppressedMessage:(base::DictionaryValue*)message
-                              context:(NSDictionary*)context;
+// Handles 'geolocationDialog.suppressed' message.
+- (BOOL)handleGeolocationDialogSuppressedMessage:(base::DictionaryValue*)message
+                                         context:(NSDictionary*)context;
 // Handles 'document.favicons' message.
 - (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message
                               context:(NSDictionary*)context;
@@ -521,6 +518,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 @synthesize webUsageEnabled = _webUsageEnabled;
 @synthesize usePlaceholderOverlay = _usePlaceholderOverlay;
 @synthesize loadPhase = _loadPhase;
+@synthesize suppressDialogs = _suppressDialogs;
 
 // Implemented by subclasses.
 @dynamic keyboardDisplayRequiresUserAction;
@@ -942,6 +940,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return scrollView.contentOffset.y == -scrollView.contentInset.top;
 }
 
+- (void)setSuppressDialogs:(BOOL)suppressDialogs {
+  _suppressDialogs = suppressDialogs;
+  if (self.webView) {
+    NSString* const kSetSuppressDialogs = [NSString
+        stringWithFormat:@"__gCrWeb.setSuppressGeolocationDialogs(%d);",
+                         suppressDialogs];
+    [self evaluateJavaScript:kSetSuppressDialogs stringResultHandler:nil];
+  } else {
+    _setSuppressDialogsLater = suppressDialogs;
+  }
+}
+
 - (void)presentSpoofingError {
   UMA_HISTOGRAM_ENUMERATION("Web.URLVerificationFailure",
                             [self webViewDocumentType],
@@ -1054,11 +1064,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self setPageChangeProbability:web::PAGE_CHANGE_PROBABILITY_LOW];
     // Default values for suppressDialogs and notifyAboutDialogs are NO,
     // so updating them only when necessary is a good optimization.
-    if (_setSuppressDialogsLater || _setNotifyAboutDialogsLater) {
-      [self setSuppressDialogs:_setSuppressDialogsLater
-                        notify:_setNotifyAboutDialogsLater];
+    if (_setSuppressDialogsLater) {
+      [self setSuppressDialogs:YES];
       _setSuppressDialogsLater = NO;
-      _setNotifyAboutDialogsLater = NO;
     }
 
     [_windowIDJSManager inject];
@@ -2014,8 +2022,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         @selector(handleAddPluginPlaceholdersMessage:context:);
     (*handlers)["chrome.send"] = @selector(handleChromeSendMessage:context:);
     (*handlers)["console"] = @selector(handleConsoleMessage:context:);
-    (*handlers)["dialog.suppressed"] =
-        @selector(handleDialogSuppressedMessage:context:);
+    (*handlers)["geolocationDialog.suppressed"] =
+        @selector(handleGeolocationDialogSuppressedMessage:context:);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["document.retitled"] =
@@ -2124,12 +2132,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return YES;
 }
 
-- (BOOL)handleDialogSuppressedMessage:(base::DictionaryValue*)message
-                              context:(NSDictionary*)context {
-  if ([_delegate
-          respondsToSelector:@selector(webControllerDidSuppressDialog:)]) {
-    [_delegate webControllerDidSuppressDialog:self];
-  }
+- (BOOL)handleGeolocationDialogSuppressedMessage:(base::DictionaryValue*)message
+                                         context:(NSDictionary*)context {
+  [self didSuppressDialog];
   return YES;
 }
 
@@ -3187,32 +3192,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)internalSuppressDialogs:(BOOL)suppressFlag notify:(BOOL)notifyFlag {
-  NSString* const kSetSuppressDialogs =
-      [NSString stringWithFormat:@"__gCrWeb.setSuppressDialogs(%d, %d);",
-                                 suppressFlag, notifyFlag];
-  [self setSuppressDialogsWithHelperScript:kSetSuppressDialogs];
-}
-
 - (void)setPageDialogOpenPolicy:(web::PageDialogOpenPolicy)policy {
   switch (policy) {
     case web::DIALOG_POLICY_ALLOW:
-      [self setSuppressDialogs:NO notify:NO];
+      [self setSuppressDialogs:NO];
       return;
     case web::DIALOG_POLICY_SUPPRESS:
-      [self setSuppressDialogs:YES notify:YES];
+      [self setSuppressDialogs:YES];
       return;
   }
   NOTREACHED();
-}
-
-- (void)setSuppressDialogs:(BOOL)suppressFlag notify:(BOOL)notifyFlag {
-  if (self.webView && [_earlyScriptManager hasBeenInjected]) {
-    [self internalSuppressDialogs:suppressFlag notify:notifyFlag];
-  } else {
-    _setSuppressDialogsLater = suppressFlag;
-    _setNotifyAboutDialogsLater = notifyFlag;
-  }
 }
 
 #pragma mark -
@@ -3616,6 +3605,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                     shouldOpenURL:url
                   mainDocumentURL:mainDocumentURL
                       linkClicked:linkClicked];
+}
+
+- (void)didSuppressDialog {
+  if ([_delegate respondsToSelector:@selector(webControllerDidSuppressDialog:)])
+    [_delegate webControllerDidSuppressDialog:self];
 }
 
 - (BOOL)isPutativeMainFrameRequest:(NSURLRequest*)request

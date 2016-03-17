@@ -457,12 +457,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   [super terminateNetworkActivity];
 }
 
-- (void)setPageDialogOpenPolicy:(web::PageDialogOpenPolicy)policy {
-  // TODO(eugenebut): implement dialogs/windows suppression using
-  // WKNavigationDelegate methods where possible.
-  [super setPageDialogOpenPolicy:policy];
-}
-
 - (void)close {
   [_certVerificationController shutDown];
   [super close];
@@ -695,10 +689,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)resetLoadState {
   // Nothing to do.
-}
-
-- (void)setSuppressDialogsWithHelperScript:(NSString*)script {
-  [self evaluateJavaScript:script stringResultHandler:nil];
 }
 
 - (void)applyWebViewScrollZoomScaleFromZoomState:
@@ -1214,6 +1204,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
       [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
       [space.authenticationMethod isEqual:NSURLAuthenticationMethodNTLM] ||
       [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPDigest]);
+
+  if (self.suppressDialogs) {
+    [self didSuppressDialog];
+    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+    return;
+  }
 
   SEL selector = @selector(webController:
          runAuthDialogForProtectionSpace:
@@ -1981,6 +1977,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
                forNavigationAction:(WKNavigationAction*)navigationAction
                     windowFeatures:(WKWindowFeatures*)windowFeatures {
+  if (self.suppressDialogs) {
+    [self didSuppressDialog];
+    return nil;
+  }
+
   GURL requestURL = net::GURLWithNSURL(navigationAction.request.URL);
 
   if (![self userIsInteracting]) {
@@ -2016,6 +2017,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     runJavaScriptAlertPanelWithMessage:(NSString*)message
                       initiatedByFrame:(WKFrameInfo*)frame
                      completionHandler:(void(^)())completionHandler {
+  if (self.suppressDialogs) {
+    [self didSuppressDialog];
+    completionHandler();
+    return;
+  }
+
   SEL alertSelector = @selector(webController:
            runJavaScriptAlertPanelWithMessage:
                                    requestURL:
@@ -2035,6 +2042,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                         initiatedByFrame:(WKFrameInfo*)frame
                        completionHandler:
         (void (^)(BOOL result))completionHandler {
+  if (self.suppressDialogs) {
+    [self didSuppressDialog];
+    completionHandler(NO);
+    return;
+  }
+
   SEL confirmationSelector = @selector(webController:
                 runJavaScriptConfirmPanelWithMessage:
                                           requestURL:
@@ -2056,6 +2069,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                          initiatedByFrame:(WKFrameInfo*)frame
                         completionHandler:
         (void (^)(NSString *result))completionHandler {
+  if (self.suppressDialogs) {
+    [self didSuppressDialog];
+    completionHandler(nil);
+    return;
+  }
+
   SEL textInputSelector = @selector(webController:
             runJavaScriptTextInputPanelWithPrompt:
                                       defaultText:

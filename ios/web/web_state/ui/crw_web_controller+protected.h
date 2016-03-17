@@ -153,13 +153,6 @@ struct NewWindowInfo {
 // subclass, since the existing logic is somewhat UIWebView-guesswork-based.
 - (void)resetLoadState;
 
-// Evaluates given JavaScript to suppress the dialogs. Subclasses should prefer
-// synchronous execution.
-- (void)setSuppressDialogsWithHelperScript:(NSString*)script;
-
-// Called when CRWWebController believes that web page title has been changed.
-- (void)titleDidChange;
-
 // Returns selector to handle JavaScript message with command property
 // |command|. Subclasses may override to handle class-specific messages.
 - (SEL)selectorToHandleJavaScriptCommand:(const std::string&)command;
@@ -349,6 +342,10 @@ struct NewWindowInfo {
 // loading, or when other page load mechanics are completed on a
 // non-document-changing URL change.
 - (void)didFinishNavigation;
+
+// Called when a JavaScript dialog, HTTP authentication dialog or window.open
+// call has been suppressed.
+- (void)didSuppressDialog;
 
 // Returns the referrer policy for the given referrer policy string (as reported
 // from JS).

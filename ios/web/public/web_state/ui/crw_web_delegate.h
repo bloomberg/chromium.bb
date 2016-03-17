@@ -199,8 +199,9 @@ typedef void (^SSLErrorCallback)(BOOL);
 - (void)webController:(CRWWebController*)webController
         didBlockPopup:(const web::BlockedPopupInfo&)blockedPopupInfo;
 
-// Called when CRWWebController did suppress a dialog (only if kSuppressDialogs
-// policy is set via -[CRWWebController setPageDialogsOpenPolicy:] method).
+// Called when CRWWebController did suppress a dialog (JavaScript, HTTP
+// authentication or window.open).
+// NOTE: Called only if CRWWebController.suppressDialogs is set to YES.
 - (void)webControllerDidSuppressDialog:(CRWWebController*)webController;
 
 // Called to retrieve the height of any header that is overlaying on top of the
