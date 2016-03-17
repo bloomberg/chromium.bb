@@ -167,6 +167,20 @@ get_weston_view(struct ivi_layout_surface *ivisurf)
 	return view;
 }
 
+static struct ivi_layout_screen *
+get_screen_from_output(struct weston_output *output)
+{
+	struct ivi_layout *layout = get_instance();
+	struct ivi_layout_screen *iviscrn = NULL;
+
+	wl_list_for_each(iviscrn, &layout->screen_list, link) {
+		if (iviscrn->output == output)
+			return iviscrn;
+	}
+
+	return NULL;
+}
+
 static void
 remove_all_notification(struct wl_list *listener_list)
 {
@@ -1489,7 +1503,7 @@ ivi_layout_get_layers_on_screen(struct weston_output *output,
 		return IVI_FAILED;
 	}
 
-	iviscrn = ivi_layout_get_screen_from_id(output->id);
+	iviscrn = get_screen_from_output(output);
 	length = wl_list_length(&iviscrn->order.layer_list);
 
 	if (length != 0) {
@@ -1961,7 +1975,7 @@ ivi_layout_screen_add_layer(struct weston_output *output,
 		return IVI_FAILED;
 	}
 
-	iviscrn = ivi_layout_get_screen_from_id(output->id);
+	iviscrn = get_screen_from_output(output);
 
 	if (addlayer->on_screen == iviscrn) {
 		weston_log("ivi_layout_screen_add_layer: addlayer is already available\n");
@@ -1991,7 +2005,7 @@ ivi_layout_screen_set_render_order(struct weston_output *output,
 		return IVI_FAILED;
 	}
 
-	iviscrn = ivi_layout_get_screen_from_id(output->id);
+	iviscrn = get_screen_from_output(output);
 
 	wl_list_for_each_safe(ivilayer, next,
 			      &iviscrn->pending.layer_list, pending.link) {
