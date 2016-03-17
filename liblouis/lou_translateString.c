@@ -2073,9 +2073,16 @@ resolveEmphasisPassages(
 	{
 		if(word_cnt >= table->emphRules[emphRule][lenPhraseOffset])
 		if(pass_end >= 0)
+		if(in_word)
 		{
 			convertToPassage(
 				pass_start, i, word_start, buffer, emphRule,
+				bit_begin, bit_end, bit_word, bit_symbol);
+		}
+		else
+		{
+			convertToPassage(
+				pass_start, pass_end, word_start, buffer, emphRule,
 				bit_begin, bit_end, bit_word, bit_symbol);
 		}
 	}
