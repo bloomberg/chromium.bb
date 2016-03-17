@@ -90,12 +90,12 @@ def trigger_task(
   ]
   manifest.add_task('echo stuff', cmd)
   data = {'request': manifest.to_json()}
-  response = net.url_open(swarming_url + '/test', data=data)
-  if not response:
+  response = net.url_read(swarming_url + '/test', data=data)
+  if response is None:
     # Failed to trigger. Return a failure.
     return 'failed_trigger'
 
-  result = json.load(response)
+  result = json.loads(response)
   # Old API uses harcoded config name. New API doesn't have concept of config
   # name so it uses the task name. Ignore this detail.
   test_keys = []

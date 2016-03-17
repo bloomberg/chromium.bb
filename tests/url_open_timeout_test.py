@@ -153,13 +153,22 @@ class UrlOpenTimeoutTest(auto_stub.TestCase):
     stream = self.call('sleep_after_response', 0.25, read_timeout=0.1)
     self.assertEqual(stream.read(), SleepingHandler.full_response)
 
-  def test_urlopen_timeouts(self):
+  def test_urlopen_timeout_early_stream(self):
     # Timeouts while reading from the stream.
-    for mode in ('sleep_after_headers', 'sleep_during_response'):
-      stream = self.call(mode, 0.25, read_timeout=0.1)
-      self.assertTrue(stream)
-      with self.assertRaises(net.TimeoutError):
-        stream.read()
+    stream = self.call('sleep_after_headers', 0.25, read_timeout=0.1)
+    self.assertTrue(stream)
+    gen = stream.iter_content(len(SleepingHandler.first_line))
+    with self.assertRaises(net.TimeoutError):
+      gen.next()
+
+  def test_urlopen_timeout_mid_stream(self):
+    # Timeouts while reading from the stream.
+    stream = self.call('sleep_during_response', 0.25, read_timeout=0.1)
+    self.assertTrue(stream)
+    gen = stream.iter_content(len(SleepingHandler.first_line))
+    gen.next()
+    with self.assertRaises(net.TimeoutError):
+      gen.next()
 
 
 if __name__ == '__main__':

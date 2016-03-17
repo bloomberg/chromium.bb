@@ -160,8 +160,7 @@ def url_read(url, **kwargs):
 
   Returns all data read or None if it was unable to connect or read the data.
   """
-  kwargs['stream'] = False
-  response = url_open(url, **kwargs)
+  response = url_open(url, stream=False, **kwargs)
   if not response:
     return None
   try:
@@ -187,16 +186,14 @@ def url_read_json(url, **kwargs):
 
 def url_retrieve(filepath, url, **kwargs):
   """Downloads an URL to a file. Returns True on success."""
-  response = url_open(url, **kwargs)
+  response = url_open(url, stream=False, **kwargs)
   if not response:
     return False
   try:
     with open(filepath, 'wb') as f:
-      while True:
-        buf = response.read(65536)
-        if not buf:
-          return True
+      for buf in response.iter_content(65536):
         f.write(buf)
+    return True
   except (IOError, OSError, TimeoutError):
     try:
       os.remove(filepath)
@@ -612,56 +609,54 @@ class HttpRequest(object):
     else:
       return '%s?%s' % (self.url, urllib.urlencode(self.params))
 
-  def make_fake_response(self, content='', headers=None):
-    """Makes new fake HttpResponse to this request, useful in tests."""
-    return HttpResponse.get_fake_response(content, self.get_full_url(), headers)
-
 
 class HttpResponse(object):
   """Response from HttpService."""
 
-  def __init__(self, stream, url, headers):
-    self._stream = stream
+  def __init__(self, response, url, headers):
+    self._response = response
     self._url = url
     self._headers = get_case_insensitive_dict(headers)
-    self._read = 0
     self._timeout_exc_classes = ()
 
-  @property
-  def content_length(self):
-    """Total length to the response or None if not known in advance."""
-    length = self.get_header('Content-Length')
-    return int(length) if length is not None else None
+  def iter_content(self, chunk_size):
+    assert all(issubclass(e, Exception) for e in self._timeout_exc_classes)
+    try:
+      read = 0
+      if hasattr(self._response, 'iter_content'):
+        # request.Response.
+        for buf in self._response.iter_content(chunk_size):
+          read += len(buf)
+          yield buf
+      else:
+        # File-like object.
+        while True:
+          buf = self._response.read(chunk_size)
+          if not buf:
+            break
+          read += len(buf)
+          yield buf
+    except self._timeout_exc_classes as e:
+      logging.error('Timeout while reading from %s, read %d of %s: %s',
+          self._url, read, self.get_header('Content-Length'), e)
+      raise TimeoutError(e)
+
+  def read(self):
+    assert all(issubclass(e, Exception) for e in self._timeout_exc_classes)
+    try:
+      if hasattr(self._response, 'content'):
+        # request.Response.
+        return self._response.content
+      # File-like object.
+      return self._response.read()
+    except self._timeout_exc_classes as e:
+      logging.error('Timeout while reading from %s, expected %s bytes: %s',
+          self._url, self.get_header('Content-Length'), e)
+      raise TimeoutError(e)
 
   def get_header(self, header):
     """Returns response header (as str) or None if no such header."""
     return self._headers.get(header)
-
-  def read(self, size=None):
-    """Reads up to |size| bytes from the stream and returns them.
-
-    If |size| is None reads all available bytes.
-
-    Raises TimeoutError on read timeout.
-    """
-    assert isinstance(self._timeout_exc_classes, tuple)
-    assert all(issubclass(e, Exception) for e in self._timeout_exc_classes)
-    try:
-      # cStringIO has a bug: stream.read(None) is not the same as stream.read().
-      data = self._stream.read() if size is None else self._stream.read(size)
-      self._read += len(data)
-      return data
-    except self._timeout_exc_classes as e:
-      logging.error('Timeout while reading from %s, read %d of %s: %s',
-          self._url, self._read, self.content_length, e)
-      raise TimeoutError(e)
-
-  @classmethod
-  def get_fake_response(cls, content, url, headers=None):
-    """Returns HttpResponse with predefined content, useful in tests."""
-    headers = dict(headers or {})
-    headers['Content-Length'] = len(content)
-    return cls(StringIO.StringIO(content), url, headers)
 
 
 class Authenticator(object):
@@ -699,7 +694,9 @@ class RequestsLibEngine(object):
     transformed to TimeoutError.
     """
     return (
-        socket.timeout, ssl.SSLError, requests.Timeout,
+        socket.timeout, ssl.SSLError,
+        requests.Timeout,
+        requests.ConnectionError,
         requests.packages.urllib3.exceptions.ProtocolError,
         requests.packages.urllib3.exceptions.TimeoutError)
 
@@ -740,11 +737,7 @@ class RequestsLibEngine(object):
           stream=request.stream,
           allow_redirects=request.follow_redirects)
       response.raise_for_status()
-      if request.stream:
-        stream = response.raw
-      else:
-        stream = StringIO.StringIO(response.content)
-      return HttpResponse(stream, request.get_full_url(), response.headers)
+      return HttpResponse(response, request.get_full_url(), response.headers)
     except requests.Timeout as e:
       raise TimeoutError(e)
     except requests.HTTPError as e:

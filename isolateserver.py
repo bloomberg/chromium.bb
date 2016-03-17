@@ -120,15 +120,6 @@ class Aborted(Error):
   pass
 
 
-def stream_read(stream, chunk_size):
-  """Reads chunks from |stream| and yields them."""
-  while True:
-    data = stream.read(chunk_size)
-    if not data:
-      break
-    yield data
-
-
 def file_read(path, chunk_size=isolated_format.DISK_FILE_CHUNK, offset=0):
   """Yields file content in chunks of |chunk_size| starting from |offset|."""
   with fs.open(path, 'rb') as f:
@@ -977,7 +968,8 @@ class IsolateServer(StorageApi):
     # for DB uploads
     content = response.get('content')
     if content is not None:
-      return base64.b64decode(content)
+      yield base64.b64decode(content)
+      return
 
     # for GS entities
     connection = net.url_open(response['url'])
@@ -1012,7 +1004,8 @@ class IsolateServer(StorageApi):
       if size is not None and last_byte_index + 1 != size:
         raise IOError('Incomplete response. Content-Range: %s' % content_range)
 
-    return stream_read(connection, NET_IO_FILE_CHUNK)
+    for data in connection.iter_content(NET_IO_FILE_CHUNK):
+      yield data
 
   def push(self, item, push_state, content=None):
     assert isinstance(item, Item)

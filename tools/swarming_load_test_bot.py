@@ -138,13 +138,13 @@ class FakeSwarmBot(object):
         if self._kill_event.is_set():
           return
         data = {'attributes': json.dumps(self._attributes)}
-        request = net.url_open(self._swarming + '/poll_for_test', data=data)
+        request = net.url_read(self._swarming + '/poll_for_test', data=data)
         if request is None:
           self._events.put('poll_for_test_empty')
           continue
         start = time.time()
         try:
-          manifest = json.load(request)
+          manifest = json.loads(request)
         except ValueError:
           self._progress.update_item('Failed to poll')
           self._events.put('poll_for_test_invalid')
@@ -219,13 +219,11 @@ class FakeSwarmBot(object):
       try:
         # Unregister itself. Otherwise the server will have tons of fake slaves
         # that the admin will have to remove manually.
-        response = net.url_open(
+        response = net.url_read(
             self._swarming + '/delete_machine_stats',
             data=[('r', self._bot_id)])
-        if not response:
+        if response is None:
           self._events.put('failed_unregister')
-        else:
-          response.read()
       finally:
         self._progress.update_item('%d quit' % self._index, bots=-1)
 
