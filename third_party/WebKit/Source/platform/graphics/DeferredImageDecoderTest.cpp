@@ -345,8 +345,12 @@ TEST_F(DeferredImageDecoderTest, frameOpacity)
     decoder->setData(*m_data, true);
 
     SkImageInfo pixInfo = SkImageInfo::MakeN32Premul(1, 1);
-    SkAutoPixmapStorage pixels;
-    pixels.alloc(pixInfo);
+
+    size_t rowBytes = pixInfo.minRowBytes();
+    size_t size = pixInfo.getSafeSize(rowBytes);
+
+    SkAutoMalloc storage(size);
+    SkPixmap pixmap(pixInfo, storage.get(), rowBytes);
 
     // Before decoding, the frame is not known to be opaque.
     RefPtr<SkImage> frame = decoder->createFrameAtIndex(0);
@@ -354,7 +358,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity)
     EXPECT_FALSE(frame->isOpaque());
 
     // Force a lazy decode by reading pixels.
-    EXPECT_TRUE(frame->readPixels(pixels, 0, 0));
+    EXPECT_TRUE(frame->readPixels(pixmap, 0, 0));
 
     // After decoding, the frame is known to be opaque.
     frame = decoder->createFrameAtIndex(0);
@@ -362,7 +366,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity)
     EXPECT_TRUE(frame->isOpaque());
 
     // Re-generating the opaque-marked frame should not fail.
-    EXPECT_TRUE(frame->readPixels(pixels, 0, 0));
+    EXPECT_TRUE(frame->readPixels(pixmap, 0, 0));
 }
 
 } // namespace blink

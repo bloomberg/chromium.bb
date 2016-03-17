@@ -29,26 +29,35 @@ ImagePixelLocker::ImagePixelLocker(PassRefPtr<const SkImage> image, SkAlphaType 
     : m_image(image)
 {
     SkImageInfo info;
-    size_t imageRowBytes;
+    size_t rowBytes;
 
     // If the image has in-RAM pixels and their format matches, use them directly.
     // TODO(fmalita): All current clients expect packed pixel rows.  Maybe we could update them
     // to support arbitrary rowBytes, and relax the check below.
-    m_pixels = m_image->peekPixels(&info, &imageRowBytes);
+    m_pixels = m_image->peekPixels(&info, &rowBytes);
     if (m_pixels
         && infoIsCompatible(info, alphaType, colorType)
-        && imageRowBytes == info.minRowBytes()) {
+        && rowBytes == info.minRowBytes()) {
         return;
     }
+
+    m_pixels = nullptr;
 
     // No luck, we need to read the pixels into our local buffer.
     info = SkImageInfo::Make(m_image->width(), m_image->height(), colorType, alphaType);
-    if (!m_pixelStorage.tryAlloc(info) || !m_image->readPixels(m_pixelStorage, 0, 0)) {
-        m_pixels = nullptr;
+    rowBytes = info.minRowBytes();
+    size_t size = info.getSafeSize(rowBytes);
+    if (0 == size)
         return;
-    }
 
-    m_pixels = m_pixelStorage.addr();
+    m_pixelStorage.reset(size); // this will throw on failure
+
+    SkPixmap pixmap(info, m_pixelStorage.get(), rowBytes);
+
+    if (!m_image->readPixels(pixmap, 0, 0))
+        return;
+
+    m_pixels = m_pixelStorage.get();
 }
 
 } // namespace blink

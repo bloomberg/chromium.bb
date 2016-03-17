@@ -28,7 +28,7 @@ public:
 private:
     const RefPtr<const SkImage> m_image;
     const void* m_pixels;
-    SkAutoPixmapStorage m_pixelStorage;
+    SkAutoMalloc m_pixelStorage;
 };
 
 } // namespace blink
