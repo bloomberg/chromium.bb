@@ -32,7 +32,7 @@ class MediaStreamRemoteVideoSourceUnderTest
   explicit MediaStreamRemoteVideoSourceUnderTest(
       scoped_ptr<TrackObserver> observer)
       : MediaStreamRemoteVideoSource(std::move(observer)) {}
-  using MediaStreamRemoteVideoSource::RenderInterfaceForTest;
+  using MediaStreamRemoteVideoSource::SinkInterfaceForTest;
 };
 
 class MediaStreamRemoteVideoSourceTest
@@ -131,7 +131,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
       RunClosure(quit_closure));
   cricket::WebRtcVideoFrame webrtc_frame;
   webrtc_frame.InitToBlack(320, 240, 1);
-  source()->RenderInterfaceForTest()->RenderFrame(&webrtc_frame);
+  source()->SinkInterfaceForTest()->OnFrame(webrtc_frame);
   run_loop.Run();
 
   EXPECT_EQ(1, sink.number_of_frames());

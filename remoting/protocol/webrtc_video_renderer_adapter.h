@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/media/base/videosinkinterface.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -17,12 +18,17 @@ namespace webrtc {
 class DesktopFrame;
 }  // namespace webrtc
 
+namespace cricket {
+class VideoFrame;
+}  // namespace cricket
+
 namespace remoting {
 namespace protocol {
 
 class FrameConsumer;
 
-class WebrtcVideoRendererAdapter : public webrtc::VideoRendererInterface {
+class WebrtcVideoRendererAdapter
+    : public rtc::VideoSinkInterface<cricket::VideoFrame> {
  public:
   WebrtcVideoRendererAdapter(
       scoped_refptr<webrtc::MediaStreamInterface> media_stream,
@@ -31,8 +37,8 @@ class WebrtcVideoRendererAdapter : public webrtc::VideoRendererInterface {
 
   std::string label() const { return media_stream_->label(); }
 
-  // webrtc::VideoRendererInterface implementation.
-  void RenderFrame(const cricket::VideoFrame* frame) override;
+  // rtc::VideoSinkInterface implementation.
+  void OnFrame(const cricket::VideoFrame& frame) override;
 
  private:
   void DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame);

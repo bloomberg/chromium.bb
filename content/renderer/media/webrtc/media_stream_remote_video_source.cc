@@ -18,6 +18,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/webrtc/media/base/videoframe.h"
+#include "third_party/webrtc/media/base/videosinkinterface.h"
 #include "third_party/webrtc/system_wrappers/include/tick_util.h"
 
 namespace content {
@@ -26,7 +27,7 @@ namespace content {
 // libjingle thread and forward it to the IO-thread.
 class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
     : public base::RefCountedThreadSafe<RemoteVideoSourceDelegate>,
-      public webrtc::VideoRendererInterface {
+      public rtc::VideoSinkInterface<cricket::VideoFrame> {
  public:
   RemoteVideoSourceDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -36,10 +37,10 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   friend class base::RefCountedThreadSafe<RemoteVideoSourceDelegate>;
   ~RemoteVideoSourceDelegate() override;
 
-  // Implements webrtc::VideoRendererInterface used for receiving video frames
+  // Implements rtc::VideoSinkInterface used for receiving video frames
   // from the PeerConnection video track. May be called on a libjingle internal
   // thread.
-  void RenderFrame(const cricket::VideoFrame* frame) override;
+  void OnFrame(const cricket::VideoFrame& frame) override;
 
   void DoRenderFrameOnIOThread(
       const scoped_refptr<media::VideoFrame>& video_frame);
@@ -77,10 +78,10 @@ MediaStreamRemoteVideoSource::
 RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
 }
 
-void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
-    const cricket::VideoFrame* incoming_frame) {
+void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
+    const cricket::VideoFrame& incoming_frame) {
   const base::TimeDelta incoming_timestamp = base::TimeDelta::FromMicroseconds(
-      incoming_frame->GetTimeStamp() / rtc::kNumNanosecsPerMicrosec);
+      incoming_frame.GetTimeStamp() / rtc::kNumNanosecsPerMicrosec);
   const base::TimeTicks render_time =
       base::TimeTicks() + incoming_timestamp + time_diff_;
 
@@ -94,13 +95,13 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
       incoming_timestamp - start_timestamp_;
 
   scoped_refptr<media::VideoFrame> video_frame;
-  if (incoming_frame->GetNativeHandle() != NULL) {
+  if (incoming_frame.GetNativeHandle() != NULL) {
     video_frame =
-        static_cast<media::VideoFrame*>(incoming_frame->GetNativeHandle());
+        static_cast<media::VideoFrame*>(incoming_frame.GetNativeHandle());
     video_frame->set_timestamp(elapsed_timestamp);
   } else {
     const cricket::VideoFrame* frame =
-        incoming_frame->GetCopyWithRotationApplied();
+        incoming_frame.GetCopyWithRotationApplied();
 
     gfx::Size size(frame->GetWidth(), frame->GetHeight());
 
@@ -178,7 +179,7 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
   delegate_ = new RemoteVideoSourceDelegate(io_task_runner(), frame_callback);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
-  video_track->AddRenderer(delegate_.get());
+  video_track->AddOrUpdateSink(delegate_.get(), rtc::VideoSinkWants());
   OnStartDone(MEDIA_DEVICE_OK);
 }
 
@@ -193,13 +194,13 @@ void MediaStreamRemoteVideoSource::StopSourceImpl() {
   DCHECK(state() != MediaStreamVideoSource::ENDED);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
-  video_track->RemoveRenderer(delegate_.get());
+  video_track->RemoveSink(delegate_.get());
   // This removes the references to the webrtc video track.
   observer_.reset();
 }
 
-webrtc::VideoRendererInterface*
-MediaStreamRemoteVideoSource::RenderInterfaceForTest() {
+rtc::VideoSinkInterface<cricket::VideoFrame>*
+MediaStreamRemoteVideoSource::SinkInterfaceForTest() {
   return delegate_.get();
 }
 

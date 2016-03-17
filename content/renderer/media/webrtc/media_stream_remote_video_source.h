@@ -49,7 +49,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
 
   // Used by tests to test that a frame can be received and that the
   // MediaStreamRemoteVideoSource behaves as expected.
-  webrtc::VideoRendererInterface* RenderInterfaceForTest();
+  rtc::VideoSinkInterface<cricket::VideoFrame>* SinkInterfaceForTest();
 
  private:
   void OnChanged(webrtc::MediaStreamTrackInterface::TrackState state);

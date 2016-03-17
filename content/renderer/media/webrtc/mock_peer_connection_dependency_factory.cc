@@ -27,7 +27,6 @@ using webrtc::IceCandidateInterface;
 using webrtc::MediaStreamInterface;
 using webrtc::ObserverInterface;
 using webrtc::SessionDescriptionInterface;
-using webrtc::VideoRendererInterface;
 using webrtc::VideoTrackSourceInterface;
 using webrtc::VideoTrackInterface;
 using webrtc::VideoTrackVector;
@@ -198,18 +197,21 @@ MockWebRtcVideoTrack::MockWebRtcVideoTrack(
       id_(id),
       state_(MediaStreamTrackInterface::kLive),
       source_(source),
-      renderer_(NULL) {}
+      sink_(NULL) {}
 
 MockWebRtcVideoTrack::~MockWebRtcVideoTrack() {}
 
-void MockWebRtcVideoTrack::AddRenderer(VideoRendererInterface* renderer) {
-  DCHECK(!renderer_);
-  renderer_ = renderer;
+void MockWebRtcVideoTrack::AddOrUpdateSink(
+    rtc::VideoSinkInterface<cricket::VideoFrame>* sink,
+    const rtc::VideoSinkWants& wants) {
+  DCHECK(!sink_);
+  sink_ = sink;
 }
 
-void MockWebRtcVideoTrack::RemoveRenderer(VideoRendererInterface* renderer) {
-  DCHECK(renderer_ == renderer);
-  renderer_ = NULL;
+void MockWebRtcVideoTrack::RemoveSink(
+    rtc::VideoSinkInterface<cricket::VideoFrame>* sink) {
+  DCHECK(sink_ == sink);
+  sink_ = NULL;
 }
 
 std::string MockWebRtcVideoTrack::kind() const {

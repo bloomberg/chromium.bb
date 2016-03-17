@@ -20,7 +20,6 @@ using webrtc::AudioTrackSinkInterface;
 using webrtc::MediaStreamInterface;
 using webrtc::ObserverInterface;
 using webrtc::PeerConnectionInterface;
-using webrtc::VideoRendererInterface;
 using webrtc::VideoTrackSourceInterface;
 using webrtc::VideoTrackInterface;
 
@@ -64,8 +63,10 @@ class MockVideoTrackInterface : public VideoTrackInterface {
   MOCK_CONST_METHOD0(state, TrackState());
   MOCK_METHOD1(set_enabled, bool(bool));
   MOCK_METHOD1(set_state, bool(TrackState));
-  MOCK_METHOD1(AddRenderer, void(VideoRendererInterface*));
-  MOCK_METHOD1(RemoveRenderer, void(VideoRendererInterface*));
+  MOCK_METHOD2(AddOrUpdateSink,
+               void(rtc::VideoSinkInterface<cricket::VideoFrame>*,
+                    const rtc::VideoSinkWants&));
+  MOCK_METHOD1(RemoveSink, void(rtc::VideoSinkInterface<cricket::VideoFrame>*));
   MOCK_CONST_METHOD0(GetSource, VideoTrackSourceInterface*());
 
  private:
