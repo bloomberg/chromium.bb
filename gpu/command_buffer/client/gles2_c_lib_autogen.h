@@ -1523,6 +1523,9 @@ void GL_APIENTRY GLES2SwapInterval(GLint interval) {
 void GL_APIENTRY GLES2FlushDriverCachesCHROMIUM() {
   gles2::GetGLContext()->FlushDriverCachesCHROMIUM();
 }
+GLuint GL_APIENTRY GLES2GetLastFlushIdCHROMIUM() {
+  return gles2::GetGLContext()->GetLastFlushIdCHROMIUM();
+}
 void GL_APIENTRY GLES2MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
   gles2::GetGLContext()->MatrixLoadfCHROMIUM(matrixMode, m);
 }
@@ -2886,6 +2889,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glFlushDriverCachesCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glFlushDriverCachesCHROMIUM),
+    },
+    {
+        "glGetLastFlushIdCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glGetLastFlushIdCHROMIUM),
     },
     {
         "glMatrixLoadfCHROMIUM",

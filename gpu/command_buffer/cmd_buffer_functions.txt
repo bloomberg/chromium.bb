@@ -316,6 +316,7 @@ GL_APICALL void         GL_APIENTRY glScheduleCALayerCHROMIUM (GLuint contents_t
 GL_APICALL void         GL_APIENTRY glCommitOverlayPlanesCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glSwapInterval (GLint interval);
 GL_APICALL void         GL_APIENTRY glFlushDriverCachesCHROMIUM (void);
+GL_APICALL GLuint       GL_APIENTRY glGetLastFlushIdCHROMIUM (void);
 
 // Extension CHROMIUM_path_rendering.
 GL_APICALL void         GL_APIENTRY glMatrixLoadfCHROMIUM (GLenumMatrixMode matrixMode, const GLfloat* m);

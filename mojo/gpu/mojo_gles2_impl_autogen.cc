@@ -1709,6 +1709,10 @@ void MojoGLES2Impl::FlushDriverCachesCHROMIUM() {
   MojoGLES2MakeCurrent(context_);
   glFlushDriverCachesCHROMIUM();
 }
+GLuint MojoGLES2Impl::GetLastFlushIdCHROMIUM() {
+  MojoGLES2MakeCurrent(context_);
+  return glGetLastFlushIdCHROMIUM();
+}
 void MojoGLES2Impl::MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
   MojoGLES2MakeCurrent(context_);
   glMatrixLoadfCHROMIUM(matrixMode, m);

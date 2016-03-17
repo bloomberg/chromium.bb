@@ -3479,6 +3479,12 @@ _FUNCTION_INFO = {
     'expectation': False,
     'unsafe': True,
   },
+  'GetLastFlushIdCHROMIUM': {
+    'gen_cmd': False,
+    'impl_func': 'False',
+    'result': ['GLuint'],
+    'extension': True,
+  },
   'LinkProgram': {
     'decoder_func': 'DoLinkProgram',
     'impl_func':  False,

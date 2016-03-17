@@ -2225,6 +2225,11 @@ void GLES2TraceImplementation::FlushDriverCachesCHROMIUM() {
   gl_->FlushDriverCachesCHROMIUM();
 }
 
+GLuint GLES2TraceImplementation::GetLastFlushIdCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetLastFlushIdCHROMIUM");
+  return gl_->GetLastFlushIdCHROMIUM();
+}
+
 void GLES2TraceImplementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
                                                    const GLfloat* m) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MatrixLoadfCHROMIUM");

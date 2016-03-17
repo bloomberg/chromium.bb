@@ -42,18 +42,6 @@ using blink::WGC3Dsync;
 
 namespace gpu_blink {
 
-namespace {
-
-uint32_t GenFlushID() {
-  static base::subtle::Atomic32 flush_id = 0;
-
-  base::subtle::Atomic32 my_id = base::subtle::Barrier_AtomicIncrement(
-      &flush_id, 1);
-  return static_cast<uint32_t>(my_id);
-}
-
-} // namespace anonymous
-
 class WebGraphicsContext3DErrorMessageCallback
     : public ::gpu::gles2::GLES2ImplementationErrorMessageCallback {
  public:
@@ -198,9 +186,7 @@ WebGraphicsContext3DImpl::WebGraphicsContext3DImpl()
       initialize_failed_(false),
       context_lost_callback_(0),
       error_message_callback_(0),
-      gl_(NULL),
-      flush_id_(0) {
-}
+      gl_(NULL) {}
 
 WebGraphicsContext3DImpl::~WebGraphicsContext3DImpl() {
 
@@ -213,9 +199,7 @@ void WebGraphicsContext3DImpl::synthesizeGLError(WGC3Denum error) {
   }
 }
 
-uint32_t WebGraphicsContext3DImpl::lastFlushID() {
-  return flush_id_;
-}
+DELEGATE_TO_GL_R(lastFlushID, GetLastFlushIdCHROMIUM, WebGLId)
 
 DELEGATE_TO_GL_R(insertFenceSyncCHROMIUM, InsertFenceSyncCHROMIUM, WGC3Duint64)
 
@@ -354,15 +338,8 @@ DELEGATE_TO_GL_1(enable, Enable, WGC3Denum)
 DELEGATE_TO_GL_1(enableVertexAttribArray, EnableVertexAttribArray,
                  WGC3Duint)
 
-void WebGraphicsContext3DImpl::finish() {
-  flush_id_ = GenFlushID();
-  gl_->Finish();
-}
-
-void WebGraphicsContext3DImpl::flush() {
-  flush_id_ = GenFlushID();
-  gl_->Flush();
-}
+DELEGATE_TO_GL(finish, Finish)
+DELEGATE_TO_GL(flush, Flush)
 
 DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
                  WGC3Denum, WGC3Denum, WGC3Denum, WebGLId)

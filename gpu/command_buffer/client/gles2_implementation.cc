@@ -76,6 +76,13 @@ GLuint ToGLuint(const void* ptr) {
   return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
 }
 
+uint32_t GenerateNextFlushId() {
+  static base::subtle::Atomic32 flush_id = 0;
+  base::subtle::Atomic32 my_id =
+      base::subtle::Barrier_AtomicIncrement(&flush_id, 1);
+  return static_cast<uint32_t>(my_id);
+}
+
 }  // anonymous namespace
 
 #if !defined(_MSC_VER)
@@ -142,6 +149,7 @@ GLES2Implementation::GLES2Implementation(
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       support_client_side_arrays_(support_client_side_arrays),
       use_count_(0),
+      flush_id_(0),
       max_extra_transfer_buffer_size_(
 #if defined(OS_NACL)
           0),
@@ -1326,6 +1334,7 @@ void GLES2Implementation::DrawElementsImpl(
 void GLES2Implementation::Flush() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFlush()");
+  flush_id_ = GenerateNextFlushId();
   // Insert the cmd to call glFlush
   helper_->Flush();
   FlushHelper();
@@ -1334,6 +1343,7 @@ void GLES2Implementation::Flush() {
 void GLES2Implementation::ShallowFlushCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glShallowFlushCHROMIUM()");
+  flush_id_ = GenerateNextFlushId();
   FlushHelper();
 }
 
@@ -1355,12 +1365,14 @@ void GLES2Implementation::OrderingBarrierCHROMIUM() {
 
 void GLES2Implementation::Finish() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
+  flush_id_ = GenerateNextFlushId();
   FinishHelper();
 }
 
 void GLES2Implementation::ShallowFinishCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2::ShallowFinishCHROMIUM");
+  flush_id_ = GenerateNextFlushId();
   // Flush our command buffer (tell the service to execute up to the flush cmd
   // and don't return until it completes).
   helper_->CommandBufferHelper::Finish();
@@ -1381,6 +1393,12 @@ void GLES2Implementation::FinishHelper() {
 
   if (aggressively_free_resources_)
     FreeEverything();
+}
+
+GLuint GLES2Implementation::GetLastFlushIdCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetLastFlushIdCHROMIUM()");
+  return flush_id_;
 }
 
 void GLES2Implementation::SwapBuffers() {

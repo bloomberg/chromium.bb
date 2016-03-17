@@ -792,6 +792,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // Used to check for single threaded access.
   int use_count_;
 
+  // Changed every time a flush or finish occurs.
+  uint32_t flush_id_;
+
   // Maximum amount of extra memory from the mapped memory pool to use when
   // needing to transfer something exceeding the default transfer buffer.
   // This should be 0 for low memory devices since they are already memory

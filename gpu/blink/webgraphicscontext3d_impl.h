@@ -922,7 +922,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   ::gpu::gles2::GLES2Interface* gl_;
   bool lose_context_when_out_of_memory_;
-  uint32_t flush_id_;
 };
 
 }  // namespace gpu_blink
