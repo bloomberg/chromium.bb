@@ -88,10 +88,10 @@ const ReadingListEntry& ReadingListModelMemory::AddEntry(
   FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
                     ReadingListWillAddUnreadEntry(this, entry));
   unread_.insert(unread_.begin(), entry);
+  hasUnseen_ = true;
   FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
                     ReadingListDidApplyChanges(this));
 
-  hasUnseen_ = true;
   return *unread_.begin();
 }
 
