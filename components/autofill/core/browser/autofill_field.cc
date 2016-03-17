@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -414,6 +415,27 @@ void FillStreetAddress(const base::string16& value,
   field->value = base::UTF8ToUTF16(line);
 }
 
+// Returns whether the |field| was filled with the state in |value| or its
+// abbreviation. First looks if |value| fits directly in the field, then looks
+// if the abbreviation of |value| fits. Does not fill if neither |value| or its
+// abbreviation are too long for the field.
+bool FillStateText(const base::string16& value, FormFieldData* field) {
+  if (field->max_length == 0 || field->max_length >= value.size()) {
+    // Fill the state value directly.
+    field->value = value;
+    return true;
+  } else {
+    // Fill with the state abbreviation.
+    base::string16 abbreviation;
+    state_names::GetNameAndAbbreviation(value, nullptr, &abbreviation);
+    if (!abbreviation.empty() && field->max_length >= abbreviation.size()) {
+      field->value = base::i18n::ToUpper(abbreviation);
+      return true;
+    }
+  }
+  return false;
+}
+
 std::string Hash32Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
   DCHECK_EQ(base::kSHA1Length, hash_bin.length());
@@ -566,6 +588,8 @@ bool AutofillField::FillFormField(const AutofillField& field,
   } else if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
     FillCreditCardNumberField(field, value, field_data);
     return true;
+  } else if (type.GetStorableType() == ADDRESS_HOME_STATE) {
+    return FillStateText(value, field_data);
   }
 
   field_data->value = value;

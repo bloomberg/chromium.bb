@@ -878,5 +878,52 @@ TEST_F(AutofillFieldTest, FindShortestSubstringMatchInSelect) {
   EXPECT_EQ(-1, ret);
 }
 
+// Tests that text state fields are filled correctly depending on their
+// maxlength attribute value.
+TEST_F(AutofillFieldTest, FillStateText) {
+  typedef struct {
+    HtmlFieldType field_type;
+    size_t field_max_length;
+    std::string value_to_fill;
+    std::string expected_value;
+    bool should_fill;
+  } TestCase;
+
+  TestCase test_cases[] = {
+      // Filling a state to a text field with the default maxlength value should
+      // fill the state value as is.
+      {HTML_TYPE_ADDRESS_LEVEL1, /* default value */ 0, "New York", "New York",
+       true},
+      {HTML_TYPE_ADDRESS_LEVEL1, /* default value */ 0, "NY", "NY", true},
+      // Filling a state to a text field with a maxlength value equal to the
+      // value's length should fill the state value as is.
+      {HTML_TYPE_ADDRESS_LEVEL1, 8, "New York", "New York", true},
+      // Filling a state to a text field with a maxlength value lower than the
+      // value's length but higher than the value's abbreviation should fill the
+      // state abbreviation.
+      {HTML_TYPE_ADDRESS_LEVEL1, 2, "New York", "NY", true},
+      {HTML_TYPE_ADDRESS_LEVEL1, 2, "NY", "NY", true},
+      // Filling a state to a text field with a maxlength value lower than the
+      // value's length and the value's abbreviation should not fill at all.
+      {HTML_TYPE_ADDRESS_LEVEL1, 1, "New York", "", false},
+      {HTML_TYPE_ADDRESS_LEVEL1, 1, "NY", "", false},
+      // Filling a state to a text field with a maxlength value lower than the
+      // value's length and that has no associated abbreviation should not fill
+      // at all.
+      {HTML_TYPE_ADDRESS_LEVEL1, 3, "Quebec", "", false}};
+
+  for (const TestCase& test_case : test_cases) {
+    AutofillField field;
+    field.SetHtmlType(test_case.field_type, HtmlFieldMode());
+    field.max_length = test_case.field_max_length;
+
+    bool has_filled = AutofillField::FillFormField(
+        field, ASCIIToUTF16(test_case.value_to_fill), "en-US", "en-US", &field);
+
+    EXPECT_EQ(test_case.should_fill, has_filled);
+    EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
+  }
+}
+
 }  // namespace
 }  // namespace autofill
