@@ -35,6 +35,10 @@ class ProcessedStudy {
 
   bool is_expired() const { return is_expired_; }
 
+  const std::string& single_feature_name() const {
+    return single_feature_name_;
+  }
+
   // Gets the index of the experiment with the given |name|. Returns -1 if no
   // experiment is found.
   int GetExperimentIndexByName(const std::string& name) const;
@@ -56,6 +60,10 @@ class ProcessedStudy {
 
   // Whether the study is expired.
   bool is_expired_;
+
+  // If the study has groups that enable/disable a single feature, the name of
+  // that feature.
+  std::string single_feature_name_;
 };
 
 }  // namespace variations

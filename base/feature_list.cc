@@ -108,6 +108,8 @@ void FeatureList::GetFeatureOverrides(std::string* enable_overrides,
       case OVERRIDE_DISABLE_FEATURE:
         target_list = disable_overrides;
         break;
+      case OVERRIDE_USE_DEFAULT:
+        continue;
     }
 
     if (!target_list->empty())
@@ -177,7 +179,10 @@ bool FeatureList::IsFeatureEnabled(const Feature& feature) {
       entry.field_trial->group();
 
     // TODO(asvitkine) Expand this section as more support is added.
-    return entry.overridden_state == OVERRIDE_ENABLE_FEATURE;
+
+    // If marked as OVERRIDE_USE_DEFAULT, simply return the default state below.
+    if (entry.overridden_state != OVERRIDE_USE_DEFAULT)
+      return entry.overridden_state == OVERRIDE_ENABLE_FEATURE;
   }
   // Otherwise, return the default state.
   return feature.default_state == FEATURE_ENABLED_BY_DEFAULT;

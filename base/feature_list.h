@@ -91,6 +91,7 @@ class BASE_EXPORT FeatureList {
 
   // Specifies whether a feature override enables or disables the feature.
   enum OverrideState {
+    OVERRIDE_USE_DEFAULT,
     OVERRIDE_DISABLE_FEATURE,
     OVERRIDE_ENABLE_FEATURE,
   };

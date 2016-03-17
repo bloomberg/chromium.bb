@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/format_macros.h"
@@ -176,6 +177,35 @@ TEST_F(FeatureListTest, FieldTrialOverrides) {
     EXPECT_TRUE(FieldTrialList::IsTrialActive(trial1->trial_name()));
     EXPECT_TRUE(FieldTrialList::IsTrialActive(trial2->trial_name()));
   }
+}
+
+TEST_F(FeatureListTest, FieldTrialAssociateUseDefault) {
+  FieldTrialList field_trial_list(nullptr);
+  scoped_ptr<FeatureList> feature_list(new FeatureList);
+
+  FieldTrial* trial1 = FieldTrialList::CreateFieldTrial("TrialExample1", "A");
+  FieldTrial* trial2 = FieldTrialList::CreateFieldTrial("TrialExample2", "B");
+  feature_list->RegisterFieldTrialOverride(
+      kFeatureOnByDefaultName, FeatureList::OVERRIDE_USE_DEFAULT, trial1);
+  feature_list->RegisterFieldTrialOverride(
+      kFeatureOffByDefaultName, FeatureList::OVERRIDE_USE_DEFAULT, trial2);
+  RegisterFeatureListInstance(std::move(feature_list));
+
+  // Initially, neither trial should be active.
+  EXPECT_FALSE(FieldTrialList::IsTrialActive(trial1->trial_name()));
+  EXPECT_FALSE(FieldTrialList::IsTrialActive(trial2->trial_name()));
+
+  // Check the feature enabled state is its default.
+  EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOnByDefault));
+  // The above should have activated |trial1|.
+  EXPECT_TRUE(FieldTrialList::IsTrialActive(trial1->trial_name()));
+  EXPECT_FALSE(FieldTrialList::IsTrialActive(trial2->trial_name()));
+
+  // Check the feature enabled state is its default.
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
+  // The above should have activated |trial2|.
+  EXPECT_TRUE(FieldTrialList::IsTrialActive(trial1->trial_name()));
+  EXPECT_TRUE(FieldTrialList::IsTrialActive(trial2->trial_name()));
 }
 
 TEST_F(FeatureListTest, CommandLineTakesPrecedenceOverFieldTrial) {

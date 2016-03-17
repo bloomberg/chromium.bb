@@ -19,7 +19,8 @@ namespace {
 bool ValidateStudyAndComputeTotalProbability(
     const Study& study,
     base::FieldTrial::Probability* total_probability,
-    bool* all_assignments_to_one_group) {
+    bool* all_assignments_to_one_group,
+    std::string* single_feature_name) {
   // At the moment, a missing default_experiment_name makes the study invalid.
   if (study.default_experiment_name().empty()) {
     DVLOG(1) << study.name() << " has no default experiment defined.";
@@ -43,6 +44,9 @@ bool ValidateStudyAndComputeTotalProbability(
 
   bool multiple_assigned_groups = false;
   bool found_default_group = false;
+  std::string single_feature_name_seen;
+  bool has_multiple_features = false;
+
   std::set<std::string> experiment_names;
   for (int i = 0; i < study.experiment_size(); ++i) {
     const Study_Experiment& experiment = study.experiment(i);
@@ -54,6 +58,28 @@ bool ValidateStudyAndComputeTotalProbability(
       DVLOG(1) << study.name() << " has a repeated experiment name "
                << study.experiment(i).name();
       return false;
+    }
+
+    if (!has_multiple_features) {
+      const auto& features = experiment.feature_association();
+      for (int i = 0; i < features.enable_feature_size(); ++i) {
+        const std::string& feature_name = features.enable_feature(i);
+        if (single_feature_name_seen.empty()) {
+          single_feature_name_seen = feature_name;
+        } else if (feature_name != single_feature_name_seen) {
+          has_multiple_features = true;
+          break;
+        }
+      }
+      for (int i = 0; i < features.disable_feature_size(); ++i) {
+        const std::string& feature_name = features.disable_feature(i);
+        if (single_feature_name_seen.empty()) {
+          single_feature_name_seen = feature_name;
+        } else if (feature_name != single_feature_name_seen) {
+          has_multiple_features = true;
+          break;
+        }
+      }
     }
 
     if (!experiment.has_forcing_flag() && experiment.probability_weight() > 0) {
@@ -73,6 +99,11 @@ bool ValidateStudyAndComputeTotalProbability(
     // valid.
     return false;
   }
+
+  if (!has_multiple_features && !single_feature_name_seen.empty())
+    single_feature_name->swap(single_feature_name_seen);
+  else
+    single_feature_name->clear();
 
   *total_probability = divisor;
   *all_assignments_to_one_group = !multiple_assigned_groups;
@@ -95,8 +126,10 @@ ProcessedStudy::~ProcessedStudy() {
 bool ProcessedStudy::Init(const Study* study, bool is_expired) {
   base::FieldTrial::Probability total_probability = 0;
   bool all_assignments_to_one_group = false;
+  std::string single_feature_name;
   if (!ValidateStudyAndComputeTotalProbability(*study, &total_probability,
-                                               &all_assignments_to_one_group)) {
+                                               &all_assignments_to_one_group,
+                                               &single_feature_name)) {
     return false;
   }
 
@@ -104,6 +137,7 @@ bool ProcessedStudy::Init(const Study* study, bool is_expired) {
   is_expired_ = is_expired;
   total_probability_ = total_probability;
   all_assignments_to_one_group_ = all_assignments_to_one_group;
+  single_feature_name_.swap(single_feature_name);
   return true;
 }
 

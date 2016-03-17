@@ -107,8 +107,8 @@ void RegisterFeatureOverrides(const ProcessedStudy& processed_study,
   // must be in the |study|.
   DCHECK_NE(-1, experiment_index);
 
-  const Study_Experiment& experiment =
-      processed_study.study()->experiment(experiment_index);
+  const Study& study = *processed_study.study();
+  const Study_Experiment& experiment = study.experiment(experiment_index);
 
   // Process all the features to enable.
   int feature_count = experiment.feature_association().enable_feature_size();
@@ -124,6 +124,23 @@ void RegisterFeatureOverrides(const ProcessedStudy& processed_study,
     feature_list->RegisterFieldTrialOverride(
         experiment.feature_association().disable_feature(i),
         base::FeatureList::OVERRIDE_DISABLE_FEATURE, trial);
+  }
+
+  // Check if this study enables/disables a single feature and uses explicit
+  // activation (i.e. the trial should be activated when queried). If so, ensure
+  // that groups that don't explicitly enable/disable that feature are still
+  // associated with it (i.e. so "Default" group gets reported).
+  //
+  // Note: This checks for ACTIVATION_EXPLICIT, since there is no reason to
+  // have this association with ACTIVATION_AUTO (where the trial starts active),
+  // as well as allowing flexibility to disable this behavior in the future from
+  // the server by introducing a new activation type.
+  if (!processed_study.single_feature_name().empty() &&
+      study.activation_type() == Study_ActivationType_ACTIVATION_EXPLICIT &&
+      !experiment.has_feature_association()) {
+    feature_list->RegisterFieldTrialOverride(
+        processed_study.single_feature_name(),
+        base::FeatureList::OVERRIDE_USE_DEFAULT, trial);
   }
 }
 
