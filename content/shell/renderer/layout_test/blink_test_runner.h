@@ -153,9 +153,6 @@ class BlinkTestRunner : public RenderViewObserver,
       int request_id,
       const std::vector<std::string>& event_platforms,
       const base::Callback<void(bool)>& callback) override;
-  void ResolveBeforeInstallPromptPromise(
-      int request_id,
-      const std::string& platform) override;
   blink::WebPlugin* CreatePluginPlaceholder(
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) override;

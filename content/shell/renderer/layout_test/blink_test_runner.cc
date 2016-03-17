@@ -29,13 +29,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
-#include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/gamepad_controller.h"
 #include "components/test_runner/layout_dump.h"
 #include "components/test_runner/layout_dump_flags.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/test_interfaces.h"
-#include "components/test_runner/tracked_dictionary.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
@@ -759,14 +757,6 @@ void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
                                           &reply);
 
   callback.Run(reply == blink::WebAppBannerPromptReply::Cancel);
-}
-
-void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
-      int request_id, const std::string& platform) {
-  test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
-  if (interfaces->GetAppBannerClient())
-    interfaces->GetAppBannerClient()->ResolvePromise(request_id, platform);
 }
 
 blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(

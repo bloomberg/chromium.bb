@@ -26,6 +26,10 @@ class TEST_RUNNER_EXPORT AppBannerClient
       int requestId,
       blink::WebAppBannerCallbacks* callbacks) override;
 
+  // Resolve the promise associated with the beforeinstallprompt event with the
+  // given |request_id|.  The promise is resolved with a result.platform set to
+  // |platform|.  If |platform| is not empty, result.outcome will be 'accepted',
+  // otherwise it will be 'dismissed'.
   void ResolvePromise(int request_id, const std::string& platform);
 
  private:

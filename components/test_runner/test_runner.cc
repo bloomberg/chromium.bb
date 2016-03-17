@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/mock_credential_manager_client.h"
 #include "components/test_runner/mock_web_speech_recognizer.h"
 #include "components/test_runner/test_interfaces.h"
@@ -1551,7 +1552,7 @@ void TestRunnerBindings::ResolveBeforeInstallPromptPromise(
   if (!runner_)
     return;
 
-  return runner_->ResolveBeforeInstallPromptPromise(request_id, platform);
+  runner_->ResolveBeforeInstallPromptPromise(request_id, platform);
 }
 
 std::string TestRunnerBindings::PlatformName() {
@@ -2934,7 +2935,7 @@ void TestRunner::DispatchBeforeInstallPromptEvent(
 void TestRunner::ResolveBeforeInstallPromptPromise(
     int request_id,
     const std::string& platform) {
-  delegate_->ResolveBeforeInstallPromptPromise(request_id, platform);
+  test_interfaces_->GetAppBannerClient()->ResolvePromise(request_id, platform);
 }
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {
