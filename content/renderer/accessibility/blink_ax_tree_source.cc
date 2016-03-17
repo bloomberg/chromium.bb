@@ -18,6 +18,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/web_frame_utils.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -170,14 +171,9 @@ AXContentTreeData BlinkAXTreeSource::GetTreeData() const {
 
     // Get the tree ID for the parent frame.
     blink::WebFrame* parent_web_frame = web_frame->parent();
-    if (parent_web_frame && parent_web_frame->isWebRemoteFrame()) {
-      RenderFrameProxy* parent_render_frame_proxy =
-          RenderFrameProxy::FromWebFrame(parent_web_frame);
-      tree_data.parent_routing_id = parent_render_frame_proxy->routing_id();
-    } else if (parent_web_frame && parent_web_frame->isWebLocalFrame()) {
-      RenderFrame* parent_render_frame = RenderFrame::FromWebFrame(
-          parent_web_frame);
-      tree_data.parent_routing_id = parent_render_frame->GetRoutingID();
+    if (parent_web_frame) {
+      tree_data.parent_routing_id =
+          GetRoutingIdForFrameOrProxy(parent_web_frame);
     }
   }
 
@@ -492,19 +488,10 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     // Iframe.
     if (is_iframe) {
       WebFrame* frame = WebFrame::fromFrameOwnerElement(element);
-      if (frame && frame->isWebRemoteFrame()) {
-        RenderFrameProxy* render_frame_proxy =
-            RenderFrameProxy::FromWebFrame(frame);
-        DCHECK(render_frame_proxy);
+      if (frame) {
         dst->AddContentIntAttribute(
             AX_CONTENT_ATTR_CHILD_ROUTING_ID,
-            render_frame_proxy->routing_id());
-      } else if (frame && frame->isWebLocalFrame()) {
-        RenderFrame* render_frame = RenderFrame::FromWebFrame(frame);
-        DCHECK(render_frame);
-        dst->AddContentIntAttribute(
-            AX_CONTENT_ATTR_CHILD_ROUTING_ID,
-            render_frame->GetRoutingID());
+            GetRoutingIdForFrameOrProxy(frame));
       }
     }
   }
