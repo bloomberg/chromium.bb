@@ -60,7 +60,7 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {AUTOFILL_WALLET_DATA, "AUTOFILL_WALLET", "autofill_wallet",
      "Autofill Wallet", sync_pb::EntitySpecifics::kAutofillWalletFieldNumber,
      34},
-    {AUTOFILL_WALLET_METADATA, "AUTOFILL_WALLET_METADATA",
+    {AUTOFILL_WALLET_METADATA, "WALLET_METADATA",
      "autofill_wallet_metadata", "Autofill Wallet Metadata",
      sync_pb::EntitySpecifics::kWalletMetadataFieldNumber, 35},
     {THEMES, "THEME", "themes", "Themes",
