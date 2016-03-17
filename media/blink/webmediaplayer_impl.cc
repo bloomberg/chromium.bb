@@ -1105,6 +1105,12 @@ void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
     return;
 #endif
 
+#if defined(OS_MACOSX)
+  // TODO(sandersd): Idle suspend is disabled on OSX since hardware decoded
+  // frames are owned by the video decoder in the GPU process. A mechanism for
+  // detaching ownership from the decoder is needed. http://crbug.com/595716.
+  return;
+#else
   // Suspend should never be requested unless required or we're already in an
   // idle state (paused or ended).
   DCHECK(must_suspend || paused_ || ended_);
@@ -1115,6 +1121,7 @@ void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
   pipeline_controller_.Suspend();
   if (must_suspend && delegate_)
     delegate_->PlayerGone(delegate_id_);
+#endif
 }
 
 void WebMediaPlayerImpl::OnPlay() {
