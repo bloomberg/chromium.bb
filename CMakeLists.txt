@@ -37,6 +37,9 @@ else ()
       STRING "" FORCE)
 endif ()
 
+set(CMAKE_CXX_FLAGS "-D__STDC_CONSTANT_MACROS ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-D__STDC_LIMIT_MACROS ${CMAKE_CXX_FLAGS}")
+
 # mkvparser section.
 # TODO(tomfinegan): move to mkvparser/CMakeLists.txt.
 add_library(mkvparser STATIC

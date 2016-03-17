@@ -5,8 +5,9 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
+#include <stdint.h>
+
 #include <array>
-#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <iomanip>
@@ -20,7 +21,6 @@
 #include "common/file_util.h"
 #include "common/libwebm_util.h"
 #include "mkvmuxer.hpp"
-#include "mkvmuxertypes.hpp"
 #include "mkvparser/mkvreader.hpp"
 #include "mkvwriter.hpp"
 #include "testing/test_util.h"
@@ -123,7 +123,7 @@ TEST_F(MuxerTest, SegmentInfo) {
   info->set_duration(2.345);
   EXPECT_STREQ(kAppString, info->muxing_app());
   EXPECT_STREQ(kAppString, info->writing_app());
-  EXPECT_EQ(static_cast<uint64>(kTimeCodeScale), info->timecode_scale());
+  EXPECT_EQ(static_cast<uint64_t>(kTimeCodeScale), info->timecode_scale());
   EXPECT_DOUBLE_EQ(2.345, info->duration());
   AddVideoTrack();
 
@@ -141,19 +141,19 @@ TEST_F(MuxerTest, AddTracks) {
   VideoTrack* const video =
       dynamic_cast<VideoTrack*>(segment_.GetTrackByNumber(kVideoTrackNumber));
   ASSERT_TRUE(video != NULL);
-  EXPECT_EQ(static_cast<uint64>(kWidth), video->width());
-  EXPECT_EQ(static_cast<uint64>(kHeight), video->height());
+  EXPECT_EQ(static_cast<uint64_t>(kWidth), video->width());
+  EXPECT_EQ(static_cast<uint64_t>(kHeight), video->height());
   video->set_name(kTrackName);
   video->set_display_width(kWidth - 10);
   video->set_display_height(kHeight - 10);
   video->set_frame_rate(0.5);
   EXPECT_STREQ(kTrackName, video->name());
-  const uint64 kDisplayWidth = kWidth - 10;
+  const uint64_t kDisplayWidth = kWidth - 10;
   EXPECT_EQ(kDisplayWidth, video->display_width());
-  const uint64 kDisplayHeight = kHeight - 10;
+  const uint64_t kDisplayHeight = kHeight - 10;
   EXPECT_EQ(kDisplayHeight, video->display_height());
   EXPECT_DOUBLE_EQ(0.5, video->frame_rate());
-  EXPECT_EQ(static_cast<uint64>(kVideoTrackNumber), video->uid());
+  EXPECT_EQ(static_cast<uint64_t>(kVideoTrackNumber), video->uid());
 
   // Add an Audio Track
   const int aud_track =
@@ -162,14 +162,14 @@ TEST_F(MuxerTest, AddTracks) {
   AudioTrack* const audio =
       dynamic_cast<AudioTrack*>(segment_.GetTrackByNumber(aud_track));
   EXPECT_EQ(kSampleRate, audio->sample_rate());
-  EXPECT_EQ(static_cast<uint64>(kChannels), audio->channels());
+  EXPECT_EQ(static_cast<uint64_t>(kChannels), audio->channels());
   ASSERT_TRUE(audio != NULL);
   audio->set_name(kTrackName);
   audio->set_bit_depth(kBitDepth);
   audio->set_uid(kAudioTrackNumber);
   EXPECT_STREQ(kTrackName, audio->name());
-  EXPECT_EQ(static_cast<uint64>(kBitDepth), audio->bit_depth());
-  EXPECT_EQ(static_cast<uint64>(kAudioTrackNumber), audio->uid());
+  EXPECT_EQ(static_cast<uint64_t>(kBitDepth), audio->bit_depth());
+  EXPECT_EQ(static_cast<uint64_t>(kAudioTrackNumber), audio->uid());
 
   AddDummyFrameAndFinalize(kVideoTrackNumber);
   CloseWriter();
@@ -487,7 +487,7 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
 TEST_F(MuxerTest, MaxClusterSize) {
   EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
-  const uint64 kMaxClusterSize = 20;
+  const uint64_t kMaxClusterSize = 20;
   segment_.set_max_cluster_size(kMaxClusterSize);
   EXPECT_EQ(kMaxClusterSize, segment_.max_cluster_size());
   EXPECT_TRUE(segment_.AddFrame(dummy_data_, 1, kVideoTrackNumber, 0, false));
@@ -512,7 +512,7 @@ TEST_F(MuxerTest, MaxClusterSize) {
 TEST_F(MuxerTest, MaxClusterDuration) {
   EXPECT_TRUE(SegmentInit(false, false));
   AddVideoTrack();
-  const uint64 kMaxClusterDuration = 4000000;
+  const uint64_t kMaxClusterDuration = 4000000;
   segment_.set_max_cluster_duration(kMaxClusterDuration);
 
   EXPECT_EQ(kMaxClusterDuration, segment_.max_cluster_duration());
@@ -537,9 +537,9 @@ TEST_F(MuxerTest, MaxClusterDuration) {
 }
 
 TEST_F(MuxerTest, SetCuesTrackNumber) {
-  const uint64 kTrackNumber = 10;
+  const uint64_t kTrackNumber = 10;
   EXPECT_TRUE(SegmentInit(true, false));
-  const uint64 vid_track =
+  const uint64_t vid_track =
       segment_.AddVideoTrack(kWidth, kHeight, kTrackNumber);
   EXPECT_EQ(kTrackNumber, vid_track);
   segment_.GetTrackByNumber(vid_track)->set_uid(kVideoTrackNumber);

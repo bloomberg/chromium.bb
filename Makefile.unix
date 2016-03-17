@@ -1,5 +1,5 @@
 CXX       := g++
-CXXFLAGS  := -W -Wall -g -MMD -MP
+CXXFLAGS  := -W -Wall -g -MMD -MP -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS
 LIBWEBMA  := libwebm.a
 LIBWEBMSO := libwebm.so
 WEBMOBJS  := mkvmuxer.o mkvmuxerutil.o mkvwriter.o

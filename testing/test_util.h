@@ -8,8 +8,9 @@
 #ifndef LIBWEBM_TESTING_TEST_UTIL_H_
 #define LIBWEBM_TESTING_TEST_UTIL_H_
 
+#include <stdint.h>
+
 #include <cstddef>
-#include <cstdint>
 #include <string>
 
 namespace libwebm {

@@ -5,6 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
+#include <stdint.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -158,8 +159,8 @@ int main(int argc, char* argv[]) {
   bool cues_before_clusters = false;
   bool cues_on_video_track = true;
   bool cues_on_audio_track = false;
-  libwebm::uint64 max_cluster_duration = 0;
-  libwebm::uint64 max_cluster_size = 0;
+  uint64_t max_cluster_duration = 0;
+  uint64_t max_cluster_size = 0;
   bool switch_tracks = false;
   int audio_track_number = 0;  // 0 tells muxer to decide.
   int video_track_number = 0;  // 0 tells muxer to decide.
@@ -170,9 +171,9 @@ int main(int argc, char* argv[]) {
 
   bool output_cues_block_number = true;
 
-  libwebm::uint64 display_width = 0;
-  libwebm::uint64 display_height = 0;
-  libwebm::uint64 stereo_mode = 0;
+  uint64_t display_width = 0;
+  uint64_t display_height = 0;
+  uint64_t stereo_mode = 0;
 
   metadata_files_t metadata_files;
 
@@ -207,8 +208,7 @@ int main(int argc, char* argv[]) {
         cues_on_video_track = false;
     } else if (!strcmp("-max_cluster_duration", argv[i]) && i < argc_check) {
       const double seconds = strtod(argv[++i], &end);
-      max_cluster_duration =
-          static_cast<libwebm::uint64>(seconds * 1000000000.0);
+      max_cluster_duration = static_cast<uint64_t>(seconds * 1000000000.0);
     } else if (!strcmp("-max_cluster_size", argv[i]) && i < argc_check) {
       max_cluster_size = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-switch_tracks", argv[i]) && i < argc_check) {
@@ -344,8 +344,8 @@ int main(int argc, char* argv[]) {
   const libwebm::mkvparser::Tracks* const parser_tracks =
       parser_segment->GetTracks();
   unsigned long i = 0;
-  libwebm::uint64 vid_track = 0;  // no track added
-  libwebm::uint64 aud_track = 0;  // no track added
+  uint64_t vid_track = 0;  // no track added
+  uint64_t aud_track = 0;  // no track added
 
   using libwebm::mkvparser::Track;
 

@@ -33,7 +33,7 @@ bool SampleMuxerMetadata::Load(const char* file, Kind kind) {
   if (kind == kChapters)
     return LoadChapters(file);
 
-  uint64 track_num;
+  uint64_t track_num;
 
   if (!AddTrack(kind, &track_num)) {
     printf("Unable to add track for WebVTT file \"%s\"\n", file);
@@ -58,7 +58,7 @@ bool SampleMuxerMetadata::AddChapters() {
   return true;
 }
 
-bool SampleMuxerMetadata::Write(int64 time_ns) {
+bool SampleMuxerMetadata::Write(int64_t time_ns) {
   typedef cues_set_t::iterator iter_t;
 
   iter_t i = cues_set_.begin();
@@ -174,8 +174,8 @@ bool SampleMuxerMetadata::AddChapter(const cue_t& cue) {
   const time_ms_t stop_time_ms = cue.stop_time.presentation();
 
   enum { kNsPerMs = 1000000 };
-  const uint64 start_time_ns = start_time_ms * kNsPerMs;
-  const uint64 stop_time_ns = stop_time_ms * kNsPerMs;
+  const uint64_t start_time_ns = start_time_ms * kNsPerMs;
+  const uint64_t stop_time_ns = stop_time_ms * kNsPerMs;
 
   chapter->set_time(*segment_, start_time_ns, stop_time_ns);
 
@@ -203,7 +203,7 @@ bool SampleMuxerMetadata::AddChapter(const cue_t& cue) {
   return true;
 }
 
-bool SampleMuxerMetadata::AddTrack(Kind kind, uint64* track_num) {
+bool SampleMuxerMetadata::AddTrack(Kind kind, uint64_t* track_num) {
   *track_num = 0;
 
   // Track number value 0 means "let muxer choose track number"
@@ -252,7 +252,7 @@ bool SampleMuxerMetadata::AddTrack(Kind kind, uint64* track_num) {
 }
 
 bool SampleMuxerMetadata::Parse(const char* file, Kind /* kind */,
-                                uint64 track_num) {
+                                uint64_t track_num) {
   libwebvtt::VttReader r;
   int e = r.Open(file);
 
@@ -361,26 +361,26 @@ void SampleMuxerMetadata::WriteCuePayload(const cue_t::payload_t& payload,
 
 bool SampleMuxerMetadata::SortableCue::Write(mkvmuxer::Segment* segment) const {
   // Cue start time expressed in milliseconds
-  const int64 start_ms = cue.start_time.presentation();
+  const int64_t start_ms = cue.start_time.presentation();
 
   // Cue start time expressed in nanoseconds (MKV time)
-  const int64 start_ns = start_ms * 1000000;
+  const int64_t start_ns = start_ms * 1000000;
 
   // Cue stop time expressed in milliseconds
-  const int64 stop_ms = cue.stop_time.presentation();
+  const int64_t stop_ms = cue.stop_time.presentation();
 
   // Cue stop time expressed in nanonseconds
-  const int64 stop_ns = stop_ms * 1000000;
+  const int64_t stop_ns = stop_ms * 1000000;
 
   // Metadata blocks always specify the block duration.
-  const int64 duration_ns = stop_ns - start_ns;
+  const int64_t duration_ns = stop_ns - start_ns;
 
   std::string frame;
   MakeFrame(cue, &frame);
 
-  typedef const uint8* data_t;
+  typedef const uint8_t* data_t;
   const data_t buf = reinterpret_cast<data_t>(frame.data());
-  const uint64 len = frame.length();
+  const uint64_t len = frame.length();
 
   mkvmuxer::Frame muxer_frame;
   if (!muxer_frame.Init(buf, len))
