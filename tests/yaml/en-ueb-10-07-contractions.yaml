@@ -691,7 +691,6 @@ tests:
   - 2atitude
 - - Beatrice
   - ',2atrice'
-  - xfail: true
 - - become
   - 2come
 - - begonia
@@ -766,6 +765,7 @@ tests:
   - di_s$
 - - disulphide
   - disulphide
+  - xfail: true
 - - indistinct
   - 9di/9ct
 
@@ -785,7 +785,6 @@ tests:
   - ',mc,connell'
 - - O'Connor
   - ',o'',connor'
-  - xfail: true
 - - MetroDisco
   - ',metro,disco'
 - - be'ave
@@ -810,10 +809,8 @@ tests:
   - ',be,l9da'
 - - conCUR
   - con,,cur
-  - xfail: true
 - - DisCORD
   - ',dis,,cord'
-  - xfail: true
 - - DISlike
   - ',,dis,''like'
   - xfail: true
@@ -976,7 +973,6 @@ tests:
   - 2atitude
 - - Beatrice
   - ',2atrice'
-  - xfail: true
 - - cinéaste
   - c9~/ea/e
 - - coffee
@@ -1056,7 +1052,6 @@ tests:
   - geanticl9e
 - - preamble
   - preamble
-  - xfail: true
 - - reaction
   - reac;n
 

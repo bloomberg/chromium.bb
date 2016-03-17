@@ -1,18 +1,18 @@
 # liblouis: Unified English Braille Code (Grade 2)
 #
 #  This file is free software; you can redistribute it and/or modify it
-#   under the terms of the Lesser or Library GNU General Public License 
+#   under the terms of the Lesser or Library GNU General Public License
 #  as published by the
 #  Free Software Foundation; either version 3, or (at your option) any
 #  later version.
-# 
+#
 #  This file is distributed in the hope that it will be useful, but
 #  WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  Library GNU General Public License for more details.
 #
-#  You should have received a copy of the Library GNU General Public 
-#  License along with this program; see the file COPYING.  If not, write 
+#  You should have received a copy of the Library GNU General Public
+#  License along with this program; see the file COPYING.  If not, write
 #  to
 #  the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 #  Boston, MA 02110-1301, USA.
@@ -47,7 +47,6 @@ seqafterpattern 'RE
 seqafterpattern 'S
 seqafterpattern 'T
 seqafterpattern 'VE
-
 seqafterexpression '([DSTdst]|ll|[rv]e|LL|[RV]E)
 
 #   10.1   Alphabetic Wordsigns
@@ -124,8 +123,7 @@ contraction X
 contraction Y
 contraction Z
 
-#TODO:  check
-#contraction ÿ
+midendword eness 15-56-234 closeness
 
 
 #   10.2   Strong Wordsigns
@@ -145,6 +143,12 @@ always for 123456
 always of 12356
 always the 2346
 always with 23456
+
+always bio =
+midendword bious 12-24-1256-234 dubious
+always chloro 16-123-135-1235-135
+midendword eand 15-12346 meander
+always ffor 124-123456
 
 
 #   10.4   Strong Groupsigns
@@ -197,8 +201,6 @@ match %[^_]|%[^_~]%<*[([{] his %[^_]|[;:)}\\]]%>*%[^_~] 236
 
 # in
 
-match !%[_1]%1* in - 35
-match - in %1*!%[_1] 35
 match %[^_]!%[_1]* in !%[_1]*%[^_] 35
 
 # was
@@ -212,44 +214,74 @@ match %[^_]|%[^_~]%<*[([{] were %[^_]|[;:)}\\]]%>*%[^_~] 2356
 
 #   10.6   Lower Groupsigns
 
-midword bb 23
-midword cc 25
-midword ea 2
-midword ff 235
-midword gg 2356
-
 #   10.6.1
+#   10.6.2
 
+match %[^_~]%<* be ati!n 23              beati*
+match %[^_~]%<* be atr 23                bea*
+match %[^_~]%<* be c![hkq] 23            bec*
+match %[^_~]%<* be dra 23                bedr*
+match %[^_~]%<* be de!(%>*%[_~^]) 23     bede*
+match %[^_~]%<* be da 23                 bed*
+match %[^_~]%<* be elz 23                bee*
+match %[^_~]%<* be g![gs] 23             beg*
+match %[^_~]%<* be in 23                 bei*
+match %[^_~]%<* be l[aeiouwy] 23         bel*
+match %[^_~]%<* be neficen 23            beneficen*
+match %[^_~]%<* be net('s)?%>*%[_~^] 23  benet
+match %[^_~]%<* be ne![dft] 23           bene*
+match %[^_~]%<* be n[aiu] 23             ben*
+match %[^_~]%<* be r[a] 23               bere*
+match %[^_~]%<* be re!n 23               ber*
+match %[^_~]%<* be stir 23               besti*
+match %[^_~]%<* be st[or] 23             best*
+match %[^_~]%<* be s![st] 23             bes*
+match %[^_~]%<* be t![chst'] 23          bet*
 match %[^_~]%<* be [bfhjmopqwxz] 23
 
-match %[^_~]%<* be ati!n 23  bea*
-match %[^_~]%<* be c![hkq] 23    bec*
-match %[^_~]%<* be dra 23          bedr*
-match %[^_~]%<* be de!(%>*%[_~^]) 23      bed*
-match %[^_~]%<* be da 23      bed*
-match %[^_~]%<* be elz 23
-match %[^_~]%<* be g![gs] 23        beg*
-match %[^_~]%<* be in 23           bei*
-match %[^_~]%<* be l[aeiouwy] 23   bel*
-match %[^_~]%<* be neficen 23         beneficen*
-match %[^_~]%<* be net('s)?%>*%[_~^] 23
-match %[^_~]%<* be ne![dft] 23          bene*
-match %[^_~]%<* be n[aiu] 23         ben*
-match %[^_~]%<* be r[a] 23         bere*
-match %[^_~]%<* be re!n 23         ber*
-match %[^_~]%<* be stir 23           besti*
-match %[^_~]%<* be st[or] 23           best*
-match %[^_~]%<* be s![st] 23           bes*
-match %[^_~]%<* be t![chst'] 23       bet*
+match %[^_~]%<* con c!h 25
+match %[^_~]%<* con est 25
+match %[^_~]%<* con [abdfghijklmnopqrstuvwxyz] 25
 
-# be  12-15   10.6.2  10.6.3
+match %[^_~]%<* dis c![s'] 256
+match %[^_~]%<* dis he![dsv] 256
+match %[^_~]%<* dis h![ceiprtw'] 256
+match %[^_~]%<* dis p!i 256
+match %[^_~]%<* dis [abdefgijlmnoqrstuvwxyz] 256
 
-begword con 25
-begword dis 256
+#   10.6.5
 
-word en =
-always en 26
-#  in is used in 10.5
+match %a bb %a 23
+match %a cc %a 25
+match %a ea %a 2
+match %a ff %a 235
+match %a gg %a 2356
+
+word arccosine 345-14-14-135-234-35-15
+midword cch 14-16 saccharine
+word dumbbell =
+always ear 15-345
+
+#   10.6.7
+
+begword deact =   deactivate
+#begword deall = deallocate
+sufword geanticline 1245-15-1-1345-2345-24-14-123-35-15
+sufword pream =   preamble
+always reac =   overreact*
+
+#   10.6.8
+#   10.6.9
+
+match %[^_~]%<* en %>*%[_~^] =   must be first
+match !%[_1]%1* en - 26
+match - en %1*!%[_1] 26
+
+begword forens 123456-26-234 forensic
+always fore 123456-15
+
+match !%[_1]%1* in - 35
+match - in %1*!%[_1] 35
 
 
 #   10.7   Initial-Letter Contractions
@@ -257,43 +289,52 @@ always en 26
 always cannot 456-14
 always character 5-16
 always day 5-145
-always ever 5-15
+# ever 10.7.4
 always father 5-124
-always had 456-125
-always here 5-125
+# had 10.7.3
+# here 10.7.5
 always know 5-13
 always lord 5-123
 always many 456-134
 always mother 5-134
-always name 5-1345
-always one 5-135
+# name 10.7.5
+# one 10.7.6
 always ought 5-1256
 always part 5-1234
 always question 5-12345
 always right 5-1235
-always some 5-234
+# some 10.7.7
 always spirit 456-234
 always their 456-2346
+# there 10.7.2
+# these 10.7.2
+# those 10.7.2
 always through 5-1456
-always time 5-2345
-always under 5-136
+# time 10.7.8
+# under 10.7.9
+# upon 10.7.2
 always where 5-156
+# whose 10.7.2
 always word 45-2456
 always work 5-2456
 always world 456-2456
 always young 5-13456
 
-#   easier to define specific allowances in 10.7.2
+
+#   10.7.1
+
+word aright 1-5-1235
+always chemo 16-15-134-135
+word chlordane 16-123-135-1235-145-1-1345-15
+
+#   10.7.2
+
 word there 5-2346
 word these 45-2346
 word those 45-1456
 word upon 45-136
 word whose 45-156
-
-#   10.7.2
-
 word hereupon 5-125-45-136
-word thereafter 5-2346-1-124
 word thereby 5-2346-12-13456
 word therefore 5-2346-123456-15
 word therefrom 5-2346-124-1235-135-134
@@ -306,12 +347,113 @@ word whereupon 5-156-45-136
 word wherever 156-12456-5-15
 word whosesoever 45-156-234-135-5-15
 
+#   10.7.3
+
+always had 456-125
+sufword hade = hadean
+word jehad =
+word jihad =
+always menhaden 134-26-125-1-145-26
+
+
+#   10.7.4
+
+always ever 5-15
+word asseverate 1-234-234-5-15-1-2345-15
+always eversion 15-1236-12456-46-1345
+always evert 15-1236-12456-2345
+always forever 123456-5-15 forevermore
+midendword iever 24-15-1236-12456
+always nevertheless 1345-5-15-2346-46-234
+begword reverb  1235-15-1236-12456-12
+word revere 1235-15-1236-12456-15
+word reverify 1235-15-1236-12456-24-124-13456
+always sever 234-15-1236-12456 perseverance
+word sever 234-5-15
+sufword several 234-5-15-1-123 severally
+word severed 234-5-15-1246
+word severing 234-5-15-346
+always severn 234-5-15-1345
+word severs 234-5-15-234
+
+#   10.7.5
+
+always here 5-125
+word atmosphere 1-2345-134-135-234-1234-5-125
+always hered 125-12456-1246
+always hereford 125-12456-15-123456-145
+always heren 125-12456-26
+midendword herence 125-12456-56-15 adherence
+always herer 125-12456-12456
+always heres 125-12456-15-234
+always heret 125-12456-15-2345
+word heretofore 5-125-2345-135-123456-15
+
+always name 5-1345
+sufword enamel 26-1-134-15-123 enameled
+always ename 15-5-1345
+midendword nament 1345-1-56-2345 tournament
+begword un = unameliorated
+
+#   10.7.6
+
+always one 5-135
+sufword anemone =
+word antigone =
+word demonetise 145-15-134-5-135-2345-24-234-15
+word donegal =
+always hermione 125-12456-134-24-135-1345-15
+word krone 13-1235-135-1345-15
+sufword lone 123-5-135 lonely
+always loner 123-135-1345-12456
+always minestrone 134-35-15-34-1235-135-1345-15
+word monetary 134-5-135-2345-345-13456
+begword noness = nonessential
+word nonetheless 1345-5-135-2346-46-234
+always nonex =
+midendword oned 135-1345-1246
+endword onea =
+midendword oneer 135-1345-15-12456
+always oneida =
+midendword oneless 5-135-46-234 tonelessly
+midendword onel = salmonella colonel
+midendword onement 5-135-56-2345 atonement
+always onem = phoneme
+midendword onent 135-1345-26-2345
+midendword oneous 135-1345-15-1256-234 erroneous
+always oner 135-1345-12456
+midendword onese = Cantonese,
+always onesi =
+midendword oness 135-56-234
+midendword onet = phonetics bayonet
+always oon = sooner
+always peritoneum 1234-12456-24-2345-135-1345-15-136-134
+always persephone 1234-12456-234-15-1234-125-135-1345-15
+always shoshone 146-135-146-135-1345-15
+begword unmen 136-1345-134-26 unmentioned
+
+#   10.7.7
+
+always some 5-234
+word gasometer 1245-1-234-135-134-15-2345-12456
+midendword ometer 135-134-15-2345-12456 gasometer
+midendword somed 234-135-134-1246 ransomed
+begword somer 234-135-134-12456 somersault
+
 #   10.7.8
 
+always time 5-2345
 sufword presentiment 1234-1235-15-234-26-2345-24-56-2345
 sufword sentiment 234-26-2345-24-56-2345
 sufword sentimental 234-26-2345-24-56-2345-1-123
 word unsentimental 136-1345-234-26-2345-24-56-2345-1-123
+begword centi 14-26-2345-24 10^-2
+
+#   10.7.9
+
+match %[^_~]%<*|![ao] under - 5-136
+word underived 136-1345-145-12456-24-1236-1246
+word underogatory 136-1345-145-12456-135-1245-1-2345-135-1235-13456
 
 
 #   10.8   Final-Letter Groupsigns
@@ -319,7 +461,7 @@ word unsentimental 136-1345-234-26-2345-24-56-2345-1-123
 midendword ance 46-15
 midendword ence 56-15
 midendword ful 56-123
-midendword ity 56-13456 
+midendword ity 56-13456
 midendword less 46-234
 midendword ment 56-2345
 midendword ness 56-234
@@ -328,6 +470,8 @@ midendword ound 46-145
 midendword ount 46-2345
 midendword sion 46-1345
 midendword tion 56-1345
+
+#midendword oned 135-1345-1246???
 
 #   10.8.3
 
@@ -426,6 +570,58 @@ match %[_~^]%<*%a* great %a*%>*%[_~^] 1245-1235-2345
 match %[_~^]%<* letter (%2%a*)?%>*%[_~^] 123-1235
 match %[_~^]%<* little (%2%a*)?%>*%[_~^] 123-123
 match %[_~^]%<* quick (%2%a*)?%>*%[_~^] 12345-13
+
+#   10.9.5
+
+contraction ab     about
+contraction abv    above
+contraction ac     according
+contraction acr    across
+contraction af     after
+contraction afn    afternoon
+contraction afw    afterward
+contraction ag     again
+contraction alm    almost
+contraction alr    already
+contraction al     also
+contraction alt    altogether
+contraction alw    always
+contraction bl     blind
+contraction brl    braille
+contraction cd     could
+contraction dcv    deceive
+contraction dcvg   deceiving
+contraction dcl    declare
+contraction dclg   declaring
+contraction ei     either
+contraction fr     friend
+contraction gd     good
+contraction grt    great
+contraction hm     him
+contraction hmf    himself
+contraction imm    immediate
+contraction xs     its
+contraction xf     itself
+contraction lr     letter
+contraction ll     little
+contraction myf    myself
+contraction nec    necessary
+contraction nei    neither
+contraction pd     paid
+contraction qk     quick
+contraction rcv    receive
+contraction rcvg   receiving
+contraction rjc    rejoice
+contraction rjcg   rejoicing
+contraction sd     said
+contraction td     today
+contraction tgr    together
+contraction tm     tomorrow
+contraction tn     tonight
+contraction wd     would
+contraction yr     your
+contraction yrf    yourself
+contraction yrvs   yourselves
 
 #   Appendex 1
 
@@ -992,576 +1188,146 @@ sufword stateroom 34-1-2345-15-1235-135-135-134
 sufword storeroom 34-135-1235-15-1235-135-135-134
 sufword tearoom 2345-2-1235-135-135-134
 
-
 #   10.11.1
 
-word shorthand 146-135-1235-2345-125-12346
+match %[_~^]%<* shorthand %>*%[_~^] 146-135-1235-2345-125-12346
+match %[_~^]%<* warthog (s|'s)?%>*%[_~^] 2456-345-2345-125-135-1245
+sufword airedale =
+always bottlen = bottlenosed bottleneck
+always daredevil 145-345-15-145-15-1236-24-123
 
+#   10.11.2
+
+midword angh = Shanghai
 
 #   misc
 
+word abalone =
+begword aforem 1-123456-15-134 aforementioned
 word beethoven 12-15-15-2345-125-135-1236-26
+sufword cation 14-1-2345-24-135-1345
+#always chs 16-234 dachshund
+midendword eance 15-46-15 vengeance
 
 ################################################################################
 
-# the letter a
-always aa 1-1 back-translation: maasai
-always aar 1-345 Aaron
-contraction ab
-word abalone =
-contraction abv
-contraction ac
-contraction acly
-contraction acr
-contraction af
-contraction afn
-begword aforem 1-123456-15-134 aforementioned 
-#word aforesaid 1-123456-15-234-145
-always afr 1-124-1235
-contraction afw
-contraction ag
-sufword airedale =
-contraction al
-contraction alm
-contraction alr
-contraction alt
-word alth =
-contraction alw
-midendword anda 12346-1 panda
-always andar 12346-345 standard
-sufword anemone = 
-midword angh = Shanghai
-always anterior 1-1345-2345-12456-24-135-1235
-word antigone =
-word arccosine 345-14-14-135-234-35-15
-word aright 1-5-1235
-contraction as
-word asseverate 1-234-234-5-15-1-2345-15
-always athe 1-2346 back-translation: lathe
-word atmosphere 1-2345-134-135-234-1234-5-125
-midendword aunder 1-136-1345-145-12456 saunders
-begword auto = autofocus
-
-# the letter b
-sufword bandog =
-sufword battledo = battledor battledome
-always bio =
-midendword bious 12-24-1256-234 dubious
-contraction bl
-always blenz 12-123-26-1356
-always bless 12-46-234 joblessness
-always boat = boathook
-always bottlen = bottlenosed
-contraction brl
-
-# the letter c
-word can't 14-3-2345
-sufword cation 14-1-2345-24-135-1345
-midword cch 14-16
-contraction cd
-begword centi 14-26-2345-24 10^-2
-always chemo 16-15-134-135
-word chieftainess 16-24-15-124-2345-1-35-15-234-234
-word chlordane 16-123-135-1235-145-1-1345-15
-always chloro 16-123-135-1235-135
-always chs 16-234 dachshund
-always cicerone 14-24-14-12456-135-1345-15
-word citizeness 14-24-2345-24-1356-26-15-234-234
-sufword clever 14-123-5-15 cleverest
-begword cofac = cofactor
-always cofound 14-135-124-46-145
-always coname 14-135-5-1345
-begword conan =
-word conatus =
-always conch 14-135-1345-16
-word conch 14-135-1345-16
-word conches 14-135-1345-16-15-234
-always cone 14-5-135
-word conestoga 25-15-34-135-1245-1
-word conidium =
-word cony =
-sufword coworker 14-135-5-2456-12456
-begword cowr = cowrote
-always cred 14-1235-1246 incredulous
-
-# the letter d
-endword 'd 3-145 back-translation: = doesn't work
-always daredevil 145-345-15-145-15-1236-24-123
-contraction dcl
-contraction dcld
-contraction dclg
-contraction dclr
-contraction dcls
-contraction dcv
-contraction dcvd
-contraction dcvg
-contraction dcvr
-contraction dcvs
-sufword deaconess 145-2-14-135-56-234
-begword deact = deactivation
-begword deall = deallocate
-begword deca 145-15-14-1 10^1
-begword decarb 145-15-14-345-12
-begword deci 145-15-14-24 10^-1
-word demonetise 145-15-134-5-135-2345-24-234-15
-begword denation 145-15-1345-1-56-1345
-always derogate 145-12456-135-1245-1-2345-15
-begword dino 145-35-135 dinoflagellate
-word disc =
-word discs =
-always dish 145-24-146
-begword disha 256-125-1 dishabile
-begword dishear 256-125-15-345 disheartened
-begword disho 256-125-135 dishonor
-begword dishone 256-125-5-135 dishonest
-sufword disk =
-sufword dispirit 145-24-456-234 dispirited
-begword disul = disulfide
-always dledee =
-always dledum = tweedledee and tweedledum
-always donee =
-word donegal =
-word dumbbell =
-
-# the letter e
-midendword eance 15-46-15 vengeance
-midendword eand 15-12346 meander
-always ear 15-345
-always edress = vinedresser
-contraction ei
-begword electro =
-word 'em = 
-always ename 15-5-1345
-sufword enamel 26-1-134-15-123 enameled
-midendword encephal 26-14-15-1234-125-1-123
-midendword eness 15-56-234 closeness
-midendword enook =
-always enzym 26-1356-13456-134
-begword epi =
-always eversion 15-1236-12456-46-1345
-always evert 15-1236-12456-2345
-begword extra =
-
-# the letter f
-sufword falconet =
-always fein 124-15-35 Feingold
-begword femto 124-15-134-2345-135 10^-15
-sufword feringhee 124-12456-35-126-15-15
-always ffor 124-123456
-begword fired = firedamp firedrake
-begword fora 123456-1 foramen
-always fore 123456-15
-begword forens 123456-26-234 forensic
-always forever 123456-5-15 forevermore
-contraction fr
-contraction frs
 
 # the letter g
-sufword garderobe 1245-345-145-15-1235-135-12-15
-word gasometer 1245-1-234-135-134-15-2345-12456
-always gastight 1245-1-234-2345-24-126-2345
-contraction gd
-word geanticline 1245-15-1-1345-2345-24-14-123-35-15
 always ghead 1245-125-2-145
 always gheart 1245-125-15-345-2345
-midendword ghill = dunghill
 midendword ghorn = bighorn
 always ghouse 1245-125-1256-234-15
-always ghz = (gigahertz)
-begword giga 1245-24-1245-1 10^9
 begword givea = giveaway
-sufword gnome = gnomedb
-contraction grt
 
 # the letter h
-sufword hade = hadean 
-always handsomer 125-12346-5-234-1235
-word hearth 125-15-345-1456
-word hearths 125-15-345-1456-234
-word heatheness 125-2-2346-1345-15-234-234
-begword hecto 125-15-14-2345-135 10^2
 always hedgerow 125-1246-1245-15-1235-246
-always hered 125-12456-1246
-always hereford 125-12456-15-123456-145
-always heren 125-12456-26
-midendword herence 125-12456-56-15 adherence
-always herer 125-12456-12456
-always heres 125-12456-15-234
-always heret 125-12456-15-2345
-word heretofore 5-125-2345-135-123456-15
 word herf =
-always hermione 125-12456-134-24-135-1345-15
-word hm 56-125-134
-contraction hmf
-sufword hmm =
-word housed 125-1256-234-1246
-always hwh =
-begword hyper 125-13456-1234-12456
-begword hypo =
 
 # the letter i
-word I 24
-midendword iever 24-15-1236-12456
-contraction imm
-#word immediately 24-134-134-123-13456
-contraction immly
-begword immuno = immunofluorescence
-begword inerad 35-15-1235-1-145 ineradicable
 midendword iness 24-56-234
 begword infra 35-124-1235-1
-always ingar 35-1245-345 Weingarten
 midword ingen 35-1245-26 palingenesis (new birth)
 midword ingenc 346-26-14 contingency
 midendword ingent 346-26-2345 stringent
-begword ingl 35-1245-123 inglewood inglenook
-#word ingot 35-1245-135-2345
 begword inter 35-2345-12456
 begword intra 35-2345-1235-1
-always isinglass 24-234-35-1245-123-1-234-234
 begword iso =
-always isomer 24-234-135-134-12456
-word isothere 24-234-135-2346-1235-15
-word it'd 1346-3-145
-word it'll 1346-3-123-123
-word it's 1346-3-234
-
-# the letter j
-word jaconet =
-word jehad =
-word jihad = 
 
 # the letter k
 begword kilo 13-24-123-135 10^3
 always knot = knothole
-word konev =
-word krone 13-1235-135-1345-15
 
 # the letter l
 word limeade =
-always lineag 123-35-2-1245
-always lineage 123-35-2-1245-15
-midendword lingian 123-346-24-1-1345
-contraction ll
-endword 'll 3-123-123
-contraction llr
-sufword lone 123-5-135 lonely
-always loner 123-135-1345-12456
-always lonesome 123-5-135-5-234
-contraction lr
-contraction lrs
 
 # the letter m
-endword 'm 3-134
-begword macro =
 always maha =
-begword mc =
-begword mccon 134-14-25
-word mch =
-always medic 134-1246-24-14 medicare
-begword mega 134-15-1245-1 10^6
-always menhaden 134-26-125-1-145-26
-midword menth 134-26-1456 Blumenthal
-begword meta =
-begword micro =
 begword micro 134-24-14-1235-135 10^-6
-begword milli 134-24-123-123-24 10^-3
-word milling 134-24-123-123-346
-always minestrone 134-35-15-34-1235-135-1345-15
 begword mishand 134-24-234-125-12346 mishandled
 always mishap =
-sufword mishear 134-24-234-125-15-345 misheard
-sufword misoneism =
 begword missh 134-24-234-146 misshapen
-begword misst 134-24-234-34 missstep
 begword mistak 134-24-34-1-13
-sufword mistreat 134-24-234-2345-1235-2-2345
-word monetary 134-5-135-2345-345-13456
 begword mono =
-word more'n =
-always motheat 1456-2-2345 motheaten
 word motheaten 134-135-1456-2-2345-26
 word mst =
 begword multi =
-#TODO:  must be better way
-#word mustn 134-34-1345
-#word musty 134-34-13456
-contraction myf
-begword myo = myofibroblasts
 
 # the letter n
-midendword nament 1345-1-56-2345 tournament
-always namese =
-begword nano 1345-1-1345-135 10^-9
-word near-by 1345-15-345-36-12-13456
-contraction nec
-contraction nei
-always nevertheless 1345-5-15-2346-46-234
-begword nonen 1345-135-1345-26 nonentity
-always noneq =
-begword noness = nonessential
-word nonetheless 1345-5-135-2346-46-234
-always nonex =
 begword nong = nongraphical
-word noone 1345-135-5-135
 word nosed 1345-135-234-1246
 begword nose = nosedive
 word noway = change entry of noways
-word noways =
+#word noways =
 word nowhere 1345-135-5-156
 word nowise =
 sufword nuthatch 1345-136-2345-125-1-2345-16
 
 # the letter o
-word O 135
 midendword oence 135-26-14-15 electroencephalogram
 midendword ofar 135-124-345 insofar
 always ofold = twofold
 midword ofor 135-123456
-midendword ometer 135-134-15-2345-12456 gasometer
-endword onea =
-midword onea 135-1345-2 Hasmonean
-midendword oned 135-1345-1246
-midendword oneer 135-1345-15-12456
-word onef =
-always oneida =
-midendword oneless 5-135-46-234 tonelessly
-midendword onel = salmonella colonel
-midendword onement 5-135-56-2345 atonement
-always onem = phoneme
-midendword onent 135-1345-26-2345
-midendword oneous 135-1345-15-1256-234 erroneous
-always oner 135-1345-12456
-midendword onese = Cantonese,
-always onesi =
-midendword oness 135-56-234
-midendword onet = phonetics bayonet
-endword onez = Ordonez
-always oon = sooner
 word orangeade =
-endword ouno = radiouno
-word ourvs =
-begword out 1256-2345 outhaul
 always oweed 135-2456-15-1246 locoweed
 always owork 135-5-2456 cowork stuccowork
 
 # the letter p
 begword parth 1234-345-1456 parthian
-begword parthe 1234-345-2346 parthenon
 begword parthen 1234-345-2346-1345 parthenon parthenogenesis
-begword patho 1234-1-1456-135
-contraction pd
-word percvg =
-word perh =
-begword peri 1234-12456-24
-always peritoneum 1234-12456-24-2345-135-1345-15-136-134
-always peroneal 1234-12456-135-1345-2-123
-always persephone 1234-12456-234-15-1234-125-135-1345-15
-begword peta 1234-15-2345-1 10^15
-always pher 1234-125-12456 cyphered
-begword photo =
-begword pico 1234-24-14-135 10^-12
 always pineapple 1234-35-15-1-1234-1234-123-15
-begword pinedr 1234-35-15-145-1235 pinedrop
 word pityard 1234-24-2345-13456-345-145
-always poleax = poleax
-begword poly =
 begword post 1234-135-34
-sufword potherb 1234-123-2345-125-12456-12
 begword potho = pothole pothook
-sufword potsherd 1234-135-2345-146-12456-145
-#begword pre =
-#begword pre =
-always preach 1234-1235-2-16
-sufword predator 1234-1235-1246-1-2345-135-1235
-always predecess 1234-1235-1246-15-14-15-234-234
 always predicat 1234-1235-1246-24-14-1-2345
-sufword pren 1234-1235-26
-always prounion =
-begword pseudo =
-begword psycho 1234-234-13456-16-135
-
-# the letter q
-contraction qk
 
 # the letter r
 sufword raw = rawhide
-contraction rcv
-contraction rcvd
-contraction rcvg
-contraction rcvr
-contraction rcvs
-endword 're 3-1235-15
-begword reab = reabsorbed
-always reac =
 always reach 1235-2-16
 begword readj = readjust
 begword readm = readmit
 begword reaff 1235-15-1-235
-begword reaffor 1235-15-1-125-123456 reafforestation
 sufword reagent 1235-15-1-1245-26-2345
-begword reagg 1235-15-1-2356 reaggregated
-endword reagh 1235-2-126 castlereagh
 begword realig = realign
 begword rean = reanalyze, reanimate
-begword reappor = reapportion
 begword reapp = reappear
 begword reass 1235-15-1-234-234
-begword reatt = reattach
-begword reau = reauthorization
-begword reavow  1235-15-1-1236-246
 begword reaw = reawaken
-always redingote 1235-1246-346-135-2345-15
 word reichstag 1235-15-24-16-234-2345-1-1245
-always renegad 1235-26-15-1245-1-145
-begword resth 1235-15-34-125 restharrow
-word restharrow 1235-15-34-125-1-1235-1235-246
 begword retro =
-begword reverb  1235-15-1236-12456-12
-word revere 1235-15-1236-12456-15
-word reverify 1235-15-1236-12456-24-124-13456
 begword ribof =
-contraction rjc
-contraction rjcd
-contraction rjcg
-contraction rjcr
-contraction rjcs
-begword roped = ropedance
 
 # the letter s
-endword 's 3-234
-word sadowa =
 begword saw = sawhorse
-word sch =
-contraction sd
-always sever 234-15-1236-12456 perseverance 
-midword sever 234-15-1236-12456 perseverance 
-word sever 234-5-15
-sufword several 234-5-15-1-123 severally
-word several 234-5-15-1-123 severally
-word severed 234-5-15-1246
-word severing 234-5-15-346
-always severn 234-5-15-1345
-word severs 234-5-15-234
-always shaus = In German names
 word shd =
-midendword sheart 124-125-15-345-2345
-endword sheimer 234-125-15-24-134-12456
-always shofar 146-12356-345
-midendword shood =
-always shoshone 146-135-146-135-1345-15
-#always shoulder 146-1256-123-145-12456
-midendword shouse 234-125-1256-234-15
-word singapore 234-346-1-1234-135-1235-15 
-always smitheren 234-134-24-2346-1235-26 proper name
-midendword somed 234-135-134-1246 ransomed
-begword somer 234-135-134-12456 somersault 
-always sparerib 234-1234-345-15-1235-14-12
-word sphere 234-1234-5-125
-begword spiken = spikenard
 always ssh =
-always \s-\shis 6-36-125-24-234
-#always sst =
-always \s-\swas 36-36-2456-1-234
-partword st 34
 midword stak 234-2345-1-13
 always sth 234-1456
 always sthe 234-2346
 always sthood 34-125-135-135-145 priesthood
 always stime 234-5-2345
-always stingar 34-346-345
 midendword stion 234-56-1345
 midendword stown 234-2345-246-1345 Pickstown
 begword styro 34-13456-1235-135 styrofoam
 word subbasement 234-136-12-12-1-234-15-56-2345
-begword super 234-136-1234-12456
 
 # the letter t
-endword 't 3-2345
-contraction td
-begword tera 2345-12456-1 10^12
-contraction tgr
-word that's 2345-3-234
-always thea 2346-1 theater
 midendword thead 2345-125-2-145
 always theart 2345-125-15-345-2345 sweetheart
 always theast 1456-2-34
 always thence 1456-56-15
-midendword thereal 2346-1235-2-123 ethereal
-midendword thereally 2346-1235-2-123-123-13456 ethereally
-always thered 2346-1235-1246
-always thereen 2346-1235-15-26 smithereens
-always therer 2346-1235-12456
-always theres 2346-1235-15-234 theresa therese 
-always theret  2346-1235-15-2345
 always thold = berthold
 always thood =
-sufword thorn 1456-135-1235-1345
 always thouse 2345-125-1256-234-15
-word thyf =
-word tiddledywinks 2345-24-145-145-123-15-145-13456-2456-35-13-234
 midendword timet = altimeter
-contraction tm
-contraction tn
 always tnam =
 word toenail =
 begword trans =
-always tranship 2345-1235-1-1345-146-24-1234
-begword trans = transtype
 always turtledove =
-#always twould 2345-2456-145
-
-# the letter u
-begword ultra =
-begword underiv =
-word underived 136-1345-145-12456-24-1236-1246
-begword underog =
-word underogatory 136-1345-145-12456-135-1245-1-2345-135-1235-13456
-begword unmen 136-1345-134-26 unmentioned
-#word unsaid 136-1345-234-145
-begword un = unameliorated
 
 # the letter v
 begword vaing 1236-1-35-1245 vainglory
-endword 've 3-1236-15
-always vicenar 1236-24-14-26-345
 begword vice = viceroy
-sufword violone =
 
 # the letter w
-sufword wakerif =
-contraction wd
-midendword whart 2456-125-345-2345 Newhart
 word where'er 156-12456-15-3-12456
-begword wired = wiredance
 always wiseacr =
-#word would've 2456-145-3-1236-15
-
-# the letter x
-contraction xs
-
-# the letter y
-begword yocto 13456-135-14-2345-135 10^-24
-begword yotta 13456-135-2345-2345-1 10^24
-word you'd 13456-3-145
-word you'll 13456-3-123-123
-always you'n 13456-1256-3-1345
-word you're 13456-3-1235-15
-#word yours 13456-1235-234
-word you've 13456-3-1236-15
-contraction yr
-contraction yrf
-contraction yrs
-contraction yrvs
-
-# the letter z
-begword zepto 1356-15-1234-2345-135 10^-21
-begword zetta 1356-15-2345-2345-1 10^21
-always zingaro  1356-346-345-135
-endword zione =
-always zwinglian 1356-2456-346-123-24-1-1345
-
-# problems handled with multipass opcodes
-pass2 @36-36-36 @36-36
-pass2 @6-236-3456 @3-3456
-pass2 @6-56 @56-6
-
