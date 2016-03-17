@@ -3864,6 +3864,9 @@ doOpcode:
 				break;
 			}
 
+			/*   realloc may have moved table, so make sure newRule is still valid   */
+			newRule = (TranslationTableRule*)&table->ruleArea[newRuleOffset];
+
 			memcpy(&table->ruleArea[offset], patterns, len * sizeof(widechar));
 			newRule->patterns = offset;
 
