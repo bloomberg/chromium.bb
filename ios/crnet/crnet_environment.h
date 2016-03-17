@@ -93,16 +93,10 @@ class CrNetEnvironment {
   void set_sdch_pref_store_filename(const std::string& pref_store) {
     sdch_pref_store_filename_ = pref_store;
   }
-  void set_alternate_protocol_threshold(double threshold) {
-    alternate_protocol_threshold_ = threshold;
-  }
 
   bool spdy_enabled() const { return spdy_enabled_; }
   bool quic_enabled() const { return quic_enabled_; }
   bool sdch_enabled() const { return sdch_enabled_; }
-  double alternate_protocol_threshold() const {
-    return alternate_protocol_threshold_;
-  }
 
   // Clears the network stack's disk cache.
   void ClearCache(ClearCacheCallback callback);
@@ -142,7 +136,6 @@ class CrNetEnvironment {
   bool quic_enabled_;
   bool sdch_enabled_;
   std::string sdch_pref_store_filename_;
-  double alternate_protocol_threshold_;
 
   static CrNetEnvironment* chrome_net_;
   scoped_ptr<base::Thread> network_io_thread_;

@@ -887,7 +887,7 @@ TEST_P(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     AlternativeServiceInfoVector alternative_service_info_vector;
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     alternative_service_info_vector.push_back(
-        AlternativeServiceInfo(alternative_service, 1.0, expiration));
+        AlternativeServiceInfo(alternative_service, expiration));
     HostPortPair host_port_pair(alternative_service.host_port_pair());
     http_server_properties.SetAlternativeServices(
         host_port_pair, alternative_service_info_vector);
@@ -931,7 +931,7 @@ TEST_P(HttpStreamFactoryTest, QuicDisablePreConnectIfZeroRtt) {
     AlternativeServiceInfoVector alternative_service_info_vector;
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     alternative_service_info_vector.push_back(
-        AlternativeServiceInfo(alternative_service, 1.0, expiration));
+        AlternativeServiceInfo(alternative_service, expiration));
     HostPortPair host_port_pair(alternative_service.host_port_pair());
     http_server_properties.SetAlternativeServices(
         host_port_pair, alternative_service_info_vector);
@@ -1564,7 +1564,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     AlternativeServiceInfoVector alternative_service_info_vector;
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     alternative_service_info_vector.push_back(
-        AlternativeServiceInfo(alternative_service, 1.0, expiration));
+        AlternativeServiceInfo(alternative_service, expiration));
     HostPortPair host_port_pair(alternative_service.host_port_pair());
     http_server_properties_.SetAlternativeServices(
         host_port_pair, alternative_service_info_vector);
@@ -1888,7 +1888,7 @@ TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   session->http_server_properties()->SetAlternativeService(
       HostPortPair("www.google.com", 8888),
-      AlternativeService(NPN_HTTP_2, "www.google.com", 9999), 1.0, expiration);
+      AlternativeService(NPN_HTTP_2, "www.google.com", 9999), expiration);
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;

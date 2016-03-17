@@ -138,7 +138,6 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
     Optional<bool> enable_http2;
     Optional<bool> parse_alternative_services;
     Optional<bool> enable_alternative_service_with_different_host;
-    Optional<double> alternative_service_probability_threshold;
 
     Optional<bool> enable_npn;
 
@@ -348,11 +347,6 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
   // Returns the QUIC connection options specified by any flags in
   // |quic_trial_params|.
   static net::QuicTagVector GetQuicConnectionOptions(
-      const VariationParameters& quic_trial_params);
-
-  // Returns the alternative service probability threshold specified by
-  // any flags in |quic_trial_params|.
-  static double GetAlternativeProtocolProbabilityThreshold(
       const VariationParameters& quic_trial_params);
 
   static net::URLRequestContext* ConstructSystemRequestContext(

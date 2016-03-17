@@ -112,7 +112,7 @@ void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
         HostPortPair("www.example.org", 80),
         AlternativeService(AlternateProtocolFromNextProto(test_params.protocol),
                            "www.example.org", 443),
-        1.0, expiration);
+        expiration);
   }
 }
 

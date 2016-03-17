@@ -235,7 +235,6 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params.disable_quic_on_timeout_with_open_streams);
   EXPECT_TRUE(params.enable_quic_for_proxies);
   EXPECT_EQ(1350u, params.quic_max_packet_length);
-  EXPECT_EQ(1.0, params.alternative_service_probability_threshold);
   EXPECT_EQ(default_params.quic_supported_versions,
             params.quic_supported_versions);
   EXPECT_EQ(net::QuicTagVector(), params.quic_connection_options);
@@ -602,47 +601,6 @@ TEST_F(IOThreadTest, QuicDelayTcpConnection) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_delay_tcp_race);
-}
-
-TEST_F(IOThreadTest, AlternativeServiceProbabilityThresholdFromFlag) {
-  command_line_.AppendSwitchASCII("alternative-service-probability-threshold",
-                                  "0.5");
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(.5, params.alternative_service_probability_threshold);
-}
-
-TEST_F(IOThreadTest, AlternativeServiceProbabilityThresholdFromEnableQuicFlag) {
-  command_line_.AppendSwitch("enable-quic");
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(0, params.alternative_service_probability_threshold);
-}
-
-// TODO(bnc): Remove when new parameter name rolls out and server configuration
-// is changed.
-TEST_F(IOThreadTest, AlternativeServiceProbabilityThresholdFromOldParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["alternate_protocol_probability_threshold"] = ".5";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(.5, params.alternative_service_probability_threshold);
-}
-
-TEST_F(IOThreadTest, AlternativeServiceProbabilityThresholdFromParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["alternative_service_probability_threshold"] = ".5";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(.5, params.alternative_service_probability_threshold);
 }
 
 TEST_F(IOThreadTest, QuicWhitelistFromCommandLinet) {

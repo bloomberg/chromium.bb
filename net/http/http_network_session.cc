@@ -98,7 +98,6 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       parse_alternative_services(false),
       enable_alternative_service_with_different_host(false),
-      alternative_service_probability_threshold(1),
       enable_npn(true),
       enable_brotli(false),
       enable_quic(false),
@@ -244,8 +243,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
 
   next_protos_.push_back(kProtoHTTP11);
 
-  http_server_properties_->SetAlternativeServiceProbabilityThreshold(
-      params.alternative_service_probability_threshold);
   http_server_properties_->SetMaxServerConfigsStoredInProperties(
       params.quic_max_server_configs_stored_in_properties);
 }
@@ -321,8 +318,6 @@ scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->Set("connection_options", std::move(connection_options));
   dict->SetString("origin_to_force_quic_on",
                   params_.origin_to_force_quic_on.ToString());
-  dict->SetDouble("alternative_service_probability_threshold",
-                  params_.alternative_service_probability_threshold);
   dict->SetDouble("load_server_info_timeout_srtt_multiplier",
                   params_.quic_load_server_info_timeout_srtt_multiplier);
   dict->SetBoolean("enable_connection_racing",
