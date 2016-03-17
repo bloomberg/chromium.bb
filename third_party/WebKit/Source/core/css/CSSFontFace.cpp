@@ -110,7 +110,7 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
 
 bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, UChar32 character)
 {
-    if (m_ranges.contains(character)) {
+    if (m_ranges->contains(character)) {
         if (loadStatus() == FontFace::Unloaded)
             load(fontDescription);
         return true;
@@ -118,9 +118,9 @@ bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, 
     return false;
 }
 
-bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, const FontDataRange& range)
+bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, const FontDataForRangeSet& rangeSet)
 {
-    if (m_ranges.contains(range) || (range.isEntireRange() && m_ranges.isEntireRange())) {
+    if (m_ranges == rangeSet.ranges()) {
         if (loadStatus() == FontFace::Unloaded) {
             load(fontDescription);
         }

@@ -53,6 +53,7 @@ class Font;
 class GlyphBuffer;
 class SimpleFontData;
 class HarfBuzzShaper;
+class UnicodeRangeSet;
 
 // Shaping text runs is split into several stages: Run segmentation, shaping the
 // initial segment, identify shaped and non-shaped sequences of the shaping
@@ -162,8 +163,7 @@ private:
         unsigned startIndex,
         unsigned numCharacters,
         const SimpleFontData* currentFont,
-        unsigned currentFontRangeFrom,
-        unsigned currentFontRangeTo,
+        PassRefPtr<UnicodeRangeSet> currentFontRangeSet,
         UScriptCode currentRunScript,
         hb_language_t);
     bool extractShapeResults(hb_buffer_t* harfBuzzBuffer,

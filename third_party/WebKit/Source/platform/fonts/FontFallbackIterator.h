@@ -5,7 +5,7 @@
 #ifndef FontFallbackIterator_h
 #define FontFallbackIterator_h
 
-#include "platform/fonts/FontDataRange.h"
+#include "platform/fonts/FontDataForRangeSet.h"
 #include "platform/fonts/FontFallbackPriority.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
@@ -21,7 +21,6 @@ using namespace WTF;
 class FontDescription;
 class FontFallbackList;
 class SimpleFontData;
-struct FontDataRange;
 class FontFamily;
 
 class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
@@ -41,14 +40,14 @@ public:
     // Some system fallback APIs (Windows, Android) require a character, or a
     // portion of the string to be passed.  On Mac and Linux, we get a list of
     // fonts without passing in characters.
-    const FontDataRange next(const Vector<UChar32>& hintList);
+    const FontDataForRangeSet next(const Vector<UChar32>& hintList);
 
 private:
     FontFallbackIterator(const FontDescription&, PassRefPtr<FontFallbackList>,
         FontFallbackPriority);
-    bool rangeContributesForHint(const Vector<UChar32> hintList, const FontDataRange&);
+    bool rangeSetContributesForHint(const Vector<UChar32> hintList, const FontDataForRangeSet&);
     bool alreadyLoadingRangeForHintChar(UChar32 hintChar);
-    void willUseRange(const AtomicString& family, const FontDataRange&);
+    void willUseRange(const AtomicString& family, const FontDataForRangeSet&);
 
     const PassRefPtr<SimpleFontData> fallbackPriorityFont(UChar32 hint);
     const PassRefPtr<SimpleFontData> uniqueSystemFontForHint(UChar32 hint);
@@ -56,7 +55,7 @@ private:
     const FontDescription& m_fontDescription;
     RefPtr<FontFallbackList> m_fontFallbackList;
     int m_currentFontDataIndex;
-    unsigned m_segmentedIndex;
+    unsigned m_segmentedFaceIndex;
 
     enum FallbackStage {
         FallbackPriorityFonts,
@@ -69,7 +68,7 @@ private:
 
     FallbackStage m_fallbackStage;
     HashMap<UChar32, RefPtr<SimpleFontData>> m_visitedSystemFonts;
-    Vector<FontDataRange> m_loadingCustomFontForRanges;
+    Vector<FontDataForRangeSet> m_trackedLoadingRangeSets;
     FontFallbackPriority m_fontFallbackPriority;
 };
 

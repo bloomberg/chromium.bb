@@ -54,7 +54,7 @@ public:
 
     PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) override;
     void willUseFontData(const FontDescription&, const AtomicString& family, UChar32) override;
-    void willUseRange(const FontDescription&, const AtomicString& familyName, const FontDataRange&) override;
+    void willUseRange(const FontDescription&, const AtomicString& familyName, const FontDataForRangeSet&) override;
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString& family);
 
 #if !ENABLE(OILPAN)

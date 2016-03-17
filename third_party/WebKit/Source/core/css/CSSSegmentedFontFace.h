@@ -69,7 +69,7 @@ public:
     bool checkFont(const String&) const;
     void match(const String&, WillBeHeapVector<RefPtrWillBeMember<FontFace>>&) const;
     void willUseFontData(const FontDescription&, UChar32);
-    void willUseRange(const FontDescription&, const FontDataRange&);
+    void willUseRange(const FontDescription&, const blink::FontDataForRangeSet&);
 
     DECLARE_TRACE();
 

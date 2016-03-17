@@ -245,27 +245,31 @@ void GlyphPageTreeNode::initializePurePage(const FontData* fontData, unsigned pa
         haveGlyphs = false;
 
         const SegmentedFontData* segmentedFontData = toSegmentedFontData(fontData);
-        for (int i = segmentedFontData->numRanges() - 1; i >= 0; i--) {
-            const FontDataRange& range = segmentedFontData->rangeAt(i);
-            // all this casting is to ensure all the parameters to min and max have the same type,
-            // to avoid ambiguous template parameter errors on Windows
-            int from = max(0, static_cast<int>(range.from()) - static_cast<int>(start));
-            int to = 1 + min(static_cast<int>(range.to()) - static_cast<int>(start), static_cast<int>(GlyphPage::size) - 1);
-            if (from >= static_cast<int>(GlyphPage::size) || to <= 0)
-                continue;
+        for (int i = segmentedFontData->numFaces() - 1; i >= 0; i--) {
+            const FontDataForRangeSet& fontDataForRangeSet = segmentedFontData->faceAt(i);
+            RefPtr<UnicodeRangeSet> ranges = fontDataForRangeSet.ranges();
+            for (size_t i = 0; i < ranges->size(); ++i) {
+                const UnicodeRange& range = ranges->rangeAt(i);
+                // all this casting is to ensure all the parameters to min and max have the same type,
+                // to avoid ambiguous template parameter errors on Windows
+                int from = max(0, static_cast<int>(range.from()) - static_cast<int>(start));
+                int to = 1 + min(static_cast<int>(range.to()) - static_cast<int>(start), static_cast<int>(GlyphPage::size) - 1);
+                if (from >= static_cast<int>(GlyphPage::size) || to <= 0)
+                    continue;
 
-            // If this is a custom font needs to be loaded, do not fill
-            // the page so that font fallback is used while loading.
-            RefPtr<CustomFontData> customData = range.fontData()->customFontData();
-            if (customData && customData->isLoadingFallback()) {
-                for (int j = from; j < to; j++) {
-                    m_page->setCustomFontToLoad(j, customData.get());
-                    haveGlyphs = true;
+                // If this is a custom font needs to be loaded, do not fill
+                // the page so that font fallback is used while loading.
+                RefPtr<CustomFontData> customData = fontDataForRangeSet.fontData()->customFontData();
+                if (customData && customData->isLoadingFallback()) {
+                    for (int j = from; j < to; j++) {
+                        m_page->setCustomFontToLoad(j, customData.get());
+                        haveGlyphs = true;
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            haveGlyphs |= fill(m_page.get(), from, to - from, buffer + from * (start < 0x10000 ? 1 : 2), (to - from) * (start < 0x10000 ? 1 : 2), range.fontData().get());
+                haveGlyphs |= fill(m_page.get(), from, to - from, buffer + from * (start < 0x10000 ? 1 : 2), (to - from) * (start < 0x10000 ? 1 : 2), fontDataForRangeSet.fontData().get());
+            }
         }
     }
 
