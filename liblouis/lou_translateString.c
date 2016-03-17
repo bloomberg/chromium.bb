@@ -2605,9 +2605,13 @@ markEmphases()
 			emphasisBuffer[srcmax] |= TNOTE_END;
 		}
 	}
-	
-	resolveEmphasisWords(emphasisBuffer,
-	                     CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
+
+	if(table->emphRules[capsRule][wordOffset])
+	  resolveEmphasisWords(emphasisBuffer,
+			       CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
+	else if(table->emphRules[capsRule][singleLetterOffset])
+	  resolveEmphasisSymbols(emphasisBuffer,
+				 CAPS_BEGIN, CAPS_END, CAPS_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, capsRule,
 	                        CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
 	resolveEmphasisResets(emphasisBuffer,
