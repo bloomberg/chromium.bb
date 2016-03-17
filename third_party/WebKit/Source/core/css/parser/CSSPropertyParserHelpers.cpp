@@ -288,7 +288,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeIdentRange(CSSParserTokenRange&
 
 PassRefPtrWillBeRawPtr<CSSCustomIdentValue> consumeCustomIdent(CSSParserTokenRange& range)
 {
-    if (range.peek().type() != IdentToken)
+    if (range.peek().type() != IdentToken || isCSSWideKeyword(range.peek().id()))
         return nullptr;
     return CSSCustomIdentValue::create(range.consumeIncludingWhitespace().value());
 }

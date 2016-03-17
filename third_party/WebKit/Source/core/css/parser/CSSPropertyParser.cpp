@@ -564,11 +564,6 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeTransformOrigin(CSSParserToke
     return nullptr;
 }
 
-static inline bool isCSSWideKeyword(const CSSValueID& id)
-{
-    return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
-}
-
 // Methods for consuming non-shorthand properties starts here.
 static PassRefPtrWillBeRawPtr<CSSValue> consumeWillChange(CSSParserTokenRange& range)
 {

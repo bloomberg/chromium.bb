@@ -68,6 +68,11 @@ template<CSSValueID... names> PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeI
     return cssValuePool().createIdentifierValue(range.consumeIncludingWhitespace().id());
 }
 
+static inline bool isCSSWideKeyword(const CSSValueID& id)
+{
+    return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
+}
+
 } // namespace CSSPropertyParserHelpers
 
 } // namespace blink
