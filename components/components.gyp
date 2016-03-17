@@ -19,6 +19,7 @@
     'bubble.gypi',
     'captive_portal.gypi',
     'certificate_reporting.gypi',
+    'client_update_protocol.gypi',
     'cloud_devices.gypi',
     'component_updater.gypi',
     'content_settings.gypi',

@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/update_client/client_update_protocol_ecdsa.h"
+#include "components/client_update_protocol/ecdsa.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/utils.h"
 #include "net/http/http_response_headers.h"
@@ -78,7 +78,7 @@ void RequestSender::SendInternal() {
 
   if (use_signing_) {
     DCHECK(!public_key_.empty());
-    signer_ = ClientUpdateProtocolEcdsa::Create(kKeyVersion, public_key_);
+    signer_ = client_update_protocol::Ecdsa::Create(kKeyVersion, public_key_);
     std::string request_query_string;
     signer_->SignRequest(request_body_, &request_query_string);
 

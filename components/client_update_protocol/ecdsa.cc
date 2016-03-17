@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/update_client/client_update_protocol_ecdsa.h"
+#include "components/client_update_protocol/ecdsa.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -15,7 +15,7 @@
 #include "crypto/sha2.h"
 #include "crypto/signature_verifier.h"
 
-namespace update_client {
+namespace client_update_protocol {
 
 namespace {
 
@@ -84,27 +84,22 @@ bool ParseETagHeader(const base::StringPiece& etag_header_value_in,
 
 }  // namespace
 
-ClientUpdateProtocolEcdsa::ClientUpdateProtocolEcdsa(
-    int key_version,
-    const base::StringPiece& public_key)
+Ecdsa::Ecdsa(int key_version, const base::StringPiece& public_key)
     : pub_key_version_(key_version),
       public_key_(public_key.begin(), public_key.end()) {}
 
-ClientUpdateProtocolEcdsa::~ClientUpdateProtocolEcdsa() {}
+Ecdsa::~Ecdsa() {}
 
-scoped_ptr<ClientUpdateProtocolEcdsa> ClientUpdateProtocolEcdsa::Create(
-    int key_version,
-    const base::StringPiece& public_key) {
+scoped_ptr<Ecdsa> Ecdsa::Create(int key_version,
+                                const base::StringPiece& public_key) {
   DCHECK_GT(key_version, 0);
   DCHECK(!public_key.empty());
 
-  return make_scoped_ptr(
-      new ClientUpdateProtocolEcdsa(key_version, public_key));
+  return make_scoped_ptr(new Ecdsa(key_version, public_key));
 }
 
-void ClientUpdateProtocolEcdsa::SignRequest(
-    const base::StringPiece& request_body,
-    std::string* query_params) {
+void Ecdsa::SignRequest(const base::StringPiece& request_body,
+                        std::string* query_params) {
   DCHECK(!request_body.empty());
   DCHECK(query_params);
 
@@ -126,9 +121,8 @@ void ClientUpdateProtocolEcdsa::SignRequest(
                                      request_hash_hex.c_str());
 }
 
-bool ClientUpdateProtocolEcdsa::ValidateResponse(
-    const base::StringPiece& response_body,
-    const base::StringPiece& server_etag) {
+bool Ecdsa::ValidateResponse(const base::StringPiece& response_body,
+                             const base::StringPiece& server_etag) {
   DCHECK(!request_hash_.empty());
   DCHECK(!request_query_cup2key_.empty());
 
@@ -190,4 +184,4 @@ bool ClientUpdateProtocolEcdsa::ValidateResponse(
   return verifier.VerifyFinal();
 }
 
-}  // namespace update_client
+}  // namespace client_update_protocol

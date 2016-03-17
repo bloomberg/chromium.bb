@@ -110,6 +110,9 @@
     'child_trace_message_filter_unittest_sources': [
       'tracing/child_trace_message_filter_unittest.cc',
     ],
+    'client_update_protocol_unittest_sources': [
+      'client_update_protocol/ecdsa_unittest.cc',
+    ],
     'cloud_devices_unittest_sources': [
       'cloud_devices/common/cloud_devices_urls_unittest.cc',
       'cloud_devices/common/printer_description_unittest.cc',
@@ -811,7 +814,6 @@
     ],
     'update_client_unittest_sources': [
       'update_client/component_patcher_unittest.cc',
-      'update_client/client_update_protocol_ecdsa_unittest.cc',
       'update_client/crx_downloader_unittest.cc',
       'update_client/ping_manager_unittest.cc',
       'update_client/request_sender_unittest.cc',
@@ -945,6 +947,7 @@
         '<@(bubble_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
         '<@(certificate_reporting_unittest_sources)',
+        '<@(client_update_protocol_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
         '<@(component_updater_unittest_sources)',
         '<@(content_settings_unittest_sources)',

@@ -11,12 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "components/update_client/client_update_protocol_ecdsa.h"
+#include "components/client_update_protocol/ecdsa.h"
 #include "crypto/random.h"
 #include "crypto/secure_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace update_client {
+namespace client_update_protocol {
 
 namespace {
 
@@ -41,7 +41,7 @@ std::string GetPublicKeyForTesting() {
 class CupEcdsaTest : public testing::Test {
  protected:
   void SetUp() override {
-    cup_ = ClientUpdateProtocolEcdsa::Create(8, GetPublicKeyForTesting());
+    cup_ = Ecdsa::Create(8, GetPublicKeyForTesting());
     ASSERT_TRUE(cup_.get());
   }
 
@@ -50,10 +50,10 @@ class CupEcdsaTest : public testing::Test {
         base::StringPrintf("%d:%u", cup_->pub_key_version_, nonce);
   }
 
-  ClientUpdateProtocolEcdsa& CUP() { return *cup_.get(); }
+  Ecdsa& CUP() { return *cup_.get(); }
 
  private:
-  scoped_ptr<ClientUpdateProtocolEcdsa> cup_;
+  scoped_ptr<Ecdsa> cup_;
 };
 
 TEST_F(CupEcdsaTest, SignRequest) {
@@ -295,4 +295,4 @@ TEST_F(CupEcdsaTest, ValidateResponse_TestSigning) {
       ":2727bc2b3c33feb6800a830f4055901dd87d65a84184c5fbeb3f816db0a243f5"));
 }
 
-}  // namespace update_client
+}  // namespace client_update_protocol

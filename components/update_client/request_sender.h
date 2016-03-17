@@ -16,13 +16,16 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+namespace client_update_protocol {
+class Ecdsa;
+}
+
 namespace net {
 class URLFetcher;
 }
 
 namespace update_client {
 
-class ClientUpdateProtocolEcdsa;
 class Configurator;
 
 // Sends a request to one of the urls provided. The class implements a chain
@@ -84,7 +87,7 @@ class RequestSender : public net::URLFetcherDelegate {
   std::string public_key_;
   std::vector<GURL>::const_iterator cur_url_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
-  scoped_ptr<ClientUpdateProtocolEcdsa> signer_;
+  scoped_ptr<client_update_protocol::Ecdsa> signer_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSender);
 };
