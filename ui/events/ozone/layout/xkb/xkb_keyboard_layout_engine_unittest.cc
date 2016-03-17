@@ -45,6 +45,7 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
   struct KeysymEntry {
     DomCode dom_code;
     xkb_keysym_t keysym;
+    base::char16 character;
   };
 
   struct RuleNames {
@@ -128,7 +129,7 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
           return false;
         }
         *xkb_keysym = keysym_entry_->keysym;
-        *character = 0;
+        *character = keysym_entry_->character;
         return true;
     }
     return false;
@@ -815,6 +816,9 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForNonPrintable) {
     {{DomCode::ENTER, XKB_KEY_Return}, VKEY_RETURN},
     {{DomCode::NUMPAD_ENTER, XKB_KEY_KP_Enter}, VKEY_RETURN},
     {{DomCode::SLEEP, XKB_KEY_XF86Sleep}, VKEY_SLEEP},
+    // Verify that number pad digits produce located VKEY codes.
+    {{DomCode::NUMPAD0, XKB_KEY_KP_0, '0'}, VKEY_NUMPAD0},
+    {{DomCode::NUMPAD9, XKB_KEY_KP_9, '9'}, VKEY_NUMPAD9},
   };
   for (const auto& e : kVkeyTestCase) {
     SCOPED_TRACE(static_cast<int>(e.test.dom_code));

@@ -33,10 +33,15 @@ typedef base::Callback<void(const std::string&,
                             scoped_ptr<char, base::FreeDeleter>)>
     LoadKeymapCallback;
 
-KeyboardCode AlphanumericKeyboardCode(base::char16 character) {
+KeyboardCode AlphanumericKeyboardCode(xkb_keysym_t xkb_keysym,
+                                      base::char16 character) {
   // Plain ASCII letters and digits map directly to VKEY values.
-  if ((character >= '0') && (character <= '9'))
-    return static_cast<KeyboardCode>(VKEY_0 + character - '0');
+  if ((character >= '0') && (character <= '9')) {
+    int zero = ((xkb_keysym >= XKB_KEY_KP_0) && (xkb_keysym <= XKB_KEY_KP_9))
+                   ? VKEY_NUMPAD0
+                   : VKEY_0;
+    return static_cast<KeyboardCode>(zero + character - '0');
+  }
   if ((character >= 'a') && (character <= 'z'))
     return static_cast<KeyboardCode>(VKEY_A + character - 'a');
   if ((character >= 'A') && (character <= 'Z'))
@@ -783,7 +788,7 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
   }
 
   *dom_key = DomKey::FromCharacter(character);
-  *key_code = AlphanumericKeyboardCode(character);
+  *key_code = AlphanumericKeyboardCode(xkb_keysym, character);
   if (*key_code == VKEY_UNKNOWN) {
     *key_code = DifficultKeyboardCode(dom_code, flags, xkb_keycode, xkb_flags,
                                       xkb_keysym, character);
@@ -884,7 +889,7 @@ KeyboardCode XkbKeyboardLayoutEngine::DifficultKeyboardCode(
     return NonPrintableDomKeyToKeyboardCode(plain_key);
 
   // Plain ASCII letters and digits map directly to VKEY values.
-  KeyboardCode key_code = AlphanumericKeyboardCode(plain_character);
+  KeyboardCode key_code = AlphanumericKeyboardCode(xkb_keysym, plain_character);
   if (key_code != VKEY_UNKNOWN)
     return key_code;
 
