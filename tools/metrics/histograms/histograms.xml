@@ -25078,6 +25078,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrAborted.CountPerUpload" units="aborts">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The count of the ABORTED bucket in Net.ErrorCodesForMainFrame3 at the time
+    histograms are being uploaded.
+  </summary>
+</histogram>
+
+<histogram name="Net.ErrAborted.ProportionPerUpload" units="%">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The bucket proportion of the ABORTED bucket in Net.ErrorCodesForMainFrame3
+    at the time histograms are being uploaded.
+  </summary>
+</histogram>
+
 <histogram name="Net.ErrAborted.ReceivedBytes" units="bytes">
   <owner>csharrison@chromium.org</owner>
   <summary>

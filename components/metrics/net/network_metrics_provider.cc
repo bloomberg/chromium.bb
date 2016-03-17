@@ -10,11 +10,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
+#include "net/base/net_errors.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/metrics/net/wifi_access_point_info_provider_chromeos.h"
@@ -22,12 +25,13 @@
 
 namespace metrics {
 
-NetworkMetricsProvider::NetworkMetricsProvider(
-    base::TaskRunner* io_task_runner)
+NetworkMetricsProvider::NetworkMetricsProvider(base::TaskRunner* io_task_runner)
     : io_task_runner_(io_task_runner),
       connection_type_is_ambiguous_(false),
       wifi_phy_layer_protocol_is_ambiguous_(false),
       wifi_phy_layer_protocol_(net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN),
+      total_aborts_(0),
+      total_codes_(0),
       weak_ptr_factory_(this) {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
@@ -43,6 +47,7 @@ void NetworkMetricsProvider::ProvideGeneralMetrics(
   // ProvideGeneralMetrics is called on the main thread, at the time a metrics
   // record is being finalized.
   net::NetworkChangeNotifier::FinalizingMetricsLogRecord();
+  LogAggregatedMetrics();
 }
 
 void NetworkMetricsProvider::ProvideSystemProfileMetrics(
@@ -237,6 +242,23 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
       vendor->add_element_identifier(oui);
     else
       NOTREACHED();
+  }
+}
+
+void NetworkMetricsProvider::LogAggregatedMetrics() {
+  base::HistogramBase* error_codes = base::SparseHistogram::FactoryGet(
+      "Net.ErrorCodesForMainFrame3",
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  scoped_ptr<base::HistogramSamples> samples = error_codes->SnapshotSamples();
+  base::HistogramBase::Count new_aborts =
+      samples->GetCount(-net::ERR_ABORTED) - total_aborts_;
+  base::HistogramBase::Count new_codes = samples->TotalCount() - total_codes_;
+  if (new_codes > 0) {
+    UMA_HISTOGRAM_COUNTS("Net.ErrAborted.CountPerUpload", new_aborts);
+    UMA_HISTOGRAM_PERCENTAGE("Net.ErrAborted.ProportionPerUpload",
+                             (100 * new_aborts) / new_codes);
+    total_codes_ += new_codes;
+    total_aborts_ += new_aborts;
   }
 }
 
