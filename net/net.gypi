@@ -213,7 +213,6 @@
       'ssl/ssl_server_config.cc',
       'ssl/ssl_server_config.h',
       'ssl/token_binding.h',
-      'ssl/token_binding_nss.cc',
       'ssl/token_binding_openssl.cc',
 
       # Most files in net/quic are in net_nacl_common_sources, except for the
@@ -1195,6 +1194,7 @@
       'ssl/test_ssl_private_key.h',
       'ssl/threaded_ssl_private_key.cc',
       'ssl/threaded_ssl_private_key.h',
+      'ssl/token_binding_nss.cc',
       'third_party/mozilla_security_manager/nsKeygenHandler.cpp',
       'third_party/mozilla_security_manager/nsKeygenHandler.h',
       'third_party/mozilla_security_manager/nsNSSCertificateDB.cpp',
