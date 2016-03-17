@@ -702,6 +702,16 @@ if (is_android) {
   }
 }
 
+bundle_data("ui_base_unittests_bundle_data") {
+  sources = [
+    "test/data/data_pack_unittest/truncated-header.pak",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 # GYP version: ui/base/ui_base_tests.gyp:ui_base_unittests
 test("ui_base_unittests") {
   sources = [
@@ -799,6 +809,7 @@ test("ui_base_unittests") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    ":ui_base_unittests_bundle_data",
     "//base",
     "//base/test:test_support",
     "//net",
@@ -818,12 +829,12 @@ test("ui_base_unittests") {
     "//url",
   ]
 
-  if (is_ios) {
-    # TODO(GYP) lots of iOS-only steps for ui_base_unittests
-  }
-
   if (build_ime) {
     deps += [ "//ui/base/ime" ]
+  }
+
+  if (is_ios) {
+    deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
   }
 
   if (is_win) {

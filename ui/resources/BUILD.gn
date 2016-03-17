@@ -71,6 +71,21 @@ if (is_ios || is_mac) {
       ":repack_ui_test_pak",
     ]
   }
+
+  # This needs to be a separate target from ui_test_pak as ui_base_unittests
+  # wants the generate .pak file in the bundle to be named en.lpro/locale.pak
+  # while components_unittests wants it to be named ui_test.pak.
+  bundle_data("ui_test_pak_bundle_data") {
+    public_deps = [
+      ":ui_test_pak",
+    ]
+    sources = [
+      "$root_out_dir/ui_test.pak",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/en.lproj/locale.pak",
+    ]
+  }
 } else {
   copy("ui_test_pak") {
     sources = [
