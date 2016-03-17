@@ -208,9 +208,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 #endif
 
 // Test fails on Windows because GPU Channel set-up fails.
-// Mac only fails GPU set-up on MacOS 10.6, but we have no version-specific
-// macros for disabling tests.
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN)
 #define MAYBE_GrContextKeepsGpuChannelAlive GrContextKeepsGpuChannelAlive
 #else
 #define MAYBE_GrContextKeepsGpuChannelAlive \
