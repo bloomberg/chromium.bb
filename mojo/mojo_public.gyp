@@ -508,6 +508,17 @@
       ],
       'includes': [ 'mojom_bindings_generator.gypi' ],
     },
+    {
+      'target_name': 'mojo_public_test_variant',
+      'type': 'static_library',
+      'variables': {
+        'mojom_variant': 'test_variant',
+      },
+      'sources': [
+        'public/interfaces/bindings/tests/test_variant.mojom',
+      ],
+      'includes': [ 'mojom_bindings_generator.gypi' ],
+    },
   ],
   'conditions': [
     ['OS == "android"', {

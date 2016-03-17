@@ -46,6 +46,9 @@ _kind_to_cpp_literal_suffix = {
 # generator library code so that filters can use the generator as context.
 _current_typemap = {}
 _for_blink = False
+# TODO(rockot, yzshen): The variant handling is kind of a hack currently. Make
+# it right.
+_variant = None
 
 
 def ConstantValue(constant):
@@ -66,7 +69,8 @@ def DefaultValue(field):
 def NamespaceToArray(namespace):
   return namespace.split(".") if namespace else []
 
-def GetNamePartsForKind(kind, add_same_module_namespaces, internal):
+def GetNamePartsForKind(kind, add_same_module_namespaces, add_variant,
+                        internal):
   def MapKindName_(kind):
     if not internal:
       return kind.name
@@ -80,8 +84,11 @@ def GetNamePartsForKind(kind, add_same_module_namespaces, internal):
   parts = []
   if kind.imported_from:
     parts.extend(NamespaceToArray(kind.imported_from["namespace"]))
-  elif hasattr(kind, "module") and add_same_module_namespaces:
-    parts.extend(NamespaceToArray(kind.module.namespace))
+  elif add_same_module_namespaces:
+    if hasattr(kind, "module"):
+      parts.extend(NamespaceToArray(kind.module.namespace))
+    if _variant and add_variant:
+      parts.append(_variant)
   if internal:
     parts.append("internal")
   if kind.parent_kind:
@@ -90,17 +97,17 @@ def GetNamePartsForKind(kind, add_same_module_namespaces, internal):
   return parts
 
 def GetNameForKind(kind, internal=False):
-  parts = GetNamePartsForKind(kind, False, internal)
+  parts = GetNamePartsForKind(kind, False, False, internal)
   return "::".join(parts)
 
 def GetQualifiedNameForKind(kind, internal=False):
   # Always start with an empty part to force a leading "::" on output.
   parts = [""]
-  parts.extend(GetNamePartsForKind(kind, True, internal))
+  parts.extend(GetNamePartsForKind(kind, True, True, internal))
   return "::".join(parts)
 
 def GetFullMojomNameForKind(kind):
-  parts = GetNamePartsForKind(kind, True, False)
+  parts = GetNamePartsForKind(kind, True, False, False)
   return ".".join(parts)
 
 def IsTypemappedKind(kind):
@@ -559,6 +566,8 @@ class Generator(generator.Generator):
     _current_typemap = self.typemap
     global _for_blink
     _for_blink = self.for_blink
+    global _variant
+    _variant = self.variant
     suffix = "-%s" % self.variant if self.variant else ""
     self.Write(self.GenerateModuleHeader(),
         self.MatchMojomFilePath("%s%s.h" % (self.module.name, suffix)))

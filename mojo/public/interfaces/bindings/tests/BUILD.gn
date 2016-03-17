@@ -116,3 +116,13 @@ mojom("test_wtf_types_blink") {
   for_blink = true
   variant = "blink"
 }
+
+mojom("test_variant") {
+  testonly = true
+
+  sources = [
+    "test_variant.mojom",
+  ]
+
+  variant = "variant_test"
+}
