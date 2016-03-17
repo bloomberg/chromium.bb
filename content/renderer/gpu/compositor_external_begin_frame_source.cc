@@ -43,6 +43,7 @@ void CompositorExternalBeginFrameSource::OnNeedsBeginFramesChanged(
 void CompositorExternalBeginFrameSource::AddObserver(
     cc::BeginFrameObserver* obs) {
   DCHECK(CalledOnValidThread());
+  SetClientReady();
   BeginFrameSourceBase::AddObserver(obs);
   // Send a MISSED begin frame if necessary.
   if (missed_begin_frame_args_.IsValid()) {
@@ -56,7 +57,8 @@ void CompositorExternalBeginFrameSource::AddObserver(
 
 void CompositorExternalBeginFrameSource::SetClientReady() {
   DCHECK(CalledOnValidThread());
-  DCHECK(!begin_frame_source_proxy_.get());
+  if (begin_frame_source_proxy_)
+    return;
   begin_frame_source_proxy_ =
       new CompositorExternalBeginFrameSourceProxy(this);
   begin_frame_source_filter_handler_ = base::Bind(

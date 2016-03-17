@@ -914,7 +914,6 @@ scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
   if (settings_.use_external_begin_frame_source &&
       settings_.wait_for_beginframe_interval) {
     DCHECK(external_begin_frame_source_);
-    DCHECK(external_begin_frame_source_->is_ready());
   }
   return std::move(output_surface);
 }

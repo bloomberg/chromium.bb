@@ -38,7 +38,7 @@ class SynchronousCompositorExternalBeginFrameSource
 
   // cc::BeginFrameSourceBase implementation.
   void OnNeedsBeginFramesChanged(bool needs_begin_frames) override;
-  void SetClientReady() override;
+  void AddObserver(cc::BeginFrameObserver* obs) override;
 
  private:
   bool CalledOnValidThread() const;

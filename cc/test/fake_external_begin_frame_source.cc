@@ -14,18 +14,12 @@ namespace cc {
 
 FakeExternalBeginFrameSource::FakeExternalBeginFrameSource(double refresh_rate)
     : milliseconds_per_frame_(1000.0 / refresh_rate),
-      is_ready_(false),
       weak_ptr_factory_(this) {
   DetachFromThread();
 }
 
 FakeExternalBeginFrameSource::~FakeExternalBeginFrameSource() {
   DCHECK(CalledOnValidThread());
-}
-
-void FakeExternalBeginFrameSource::SetClientReady() {
-  DCHECK(CalledOnValidThread());
-  is_ready_ = true;
 }
 
 void FakeExternalBeginFrameSource::OnNeedsBeginFramesChanged(

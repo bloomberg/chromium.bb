@@ -68,7 +68,6 @@ Scheduler::Scheduler(
   begin_impl_frame_deadline_closure_ = base::Bind(
       &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
 
-  begin_frame_source_->SetClientReady();
   ProcessScheduledActions();
 }
 

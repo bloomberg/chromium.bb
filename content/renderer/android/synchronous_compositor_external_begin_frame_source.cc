@@ -61,8 +61,12 @@ void SynchronousCompositorExternalBeginFrameSource::OnNeedsBeginFramesChanged(
     client_->OnNeedsBeginFramesChange(needs_begin_frames);
 }
 
-void SynchronousCompositorExternalBeginFrameSource::SetClientReady() {
+void SynchronousCompositorExternalBeginFrameSource::AddObserver(
+    cc::BeginFrameObserver* obs) {
   DCHECK(CalledOnValidThread());
+  BeginFrameSourceBase::AddObserver(obs);
+  if (registered_)
+    return;
   registry_->RegisterBeginFrameSource(routing_id_, this);
   registered_ = true;
 }

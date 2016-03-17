@@ -33,7 +33,6 @@ class CompositorExternalBeginFrameSource
   // cc::BeginFrameSourceBase implementation.
   void AddObserver(cc::BeginFrameObserver* obs) override;
   void OnNeedsBeginFramesChanged(bool needs_begin_frames) override;
-  void SetClientReady() override;
 
  private:
   class CompositorExternalBeginFrameSourceProxy
@@ -59,6 +58,7 @@ class CompositorExternalBeginFrameSource
     DISALLOW_COPY_AND_ASSIGN(CompositorExternalBeginFrameSourceProxy);
   };
 
+  void SetClientReady();
   void OnMessageReceived(const IPC::Message& message);
 
   void OnBeginFrame(const cc::BeginFrameArgs& args);

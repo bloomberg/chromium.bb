@@ -17,11 +17,6 @@ class FakeExternalBeginFrameSource
   explicit FakeExternalBeginFrameSource(double refresh_rate);
   ~FakeExternalBeginFrameSource() override;
 
-  bool is_ready() const { return is_ready_; }
-
-  // BeginFrameSource implementation.
-  void SetClientReady() override;
-
   // BeginFrameSourceBase overrides.
   void OnNeedsBeginFramesChanged(bool needs_begin_frames) override;
 
@@ -30,7 +25,6 @@ class FakeExternalBeginFrameSource
 
  private:
   double milliseconds_per_frame_;
-  bool is_ready_;
   base::CancelableClosure begin_frame_task_;
   base::WeakPtrFactory<FakeExternalBeginFrameSource> weak_ptr_factory_;
 };

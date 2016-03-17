@@ -126,9 +126,6 @@ class CC_EXPORT BeginFrameSource {
   virtual void AddObserver(BeginFrameObserver* obs) = 0;
   virtual void RemoveObserver(BeginFrameObserver* obs) = 0;
 
-  // Tells the Source that client is ready to handle BeginFrames messages.
-  virtual void SetClientReady() = 0;
-
   // Tracing support - Recommend (but not required) to call this implementation
   // in any override.
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const = 0;
@@ -149,7 +146,6 @@ class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
   void DidFinishFrame(size_t remaining_frames) override {}
   void AddObserver(BeginFrameObserver* obs) override;
   void RemoveObserver(BeginFrameObserver* obs) override;
-  void SetClientReady() override {}
 
   // Tracing support - Recommend (but not required) to call this implementation
   // in any override.
