@@ -17,6 +17,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include "base/atomic_sequence_num.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -76,11 +77,10 @@ GLuint ToGLuint(const void* ptr) {
   return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
 }
 
+static base::StaticAtomicSequenceNumber g_flush_id;
+
 uint32_t GenerateNextFlushId() {
-  static base::subtle::Atomic32 flush_id = 0;
-  base::subtle::Atomic32 my_id =
-      base::subtle::Barrier_AtomicIncrement(&flush_id, 1);
-  return static_cast<uint32_t>(my_id);
+  return static_cast<uint32_t>(g_flush_id.GetNext());
 }
 
 }  // anonymous namespace
