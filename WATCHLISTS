@@ -576,9 +576,6 @@
     'netinfo': {
       'filepath': 'netinfo',
     },
-    'network_quality': {
-      'filepath': 'net/base/network_quality*',
-    },
     'notifications': {
       'filepath': 'chrome/browser/extensions/api/notifications/|' \
         'chrome/browser/notifications/|' \
@@ -677,6 +674,9 @@
     'remoting': {
       'filepath': 'remoting/' \
                   '|testing/chromoting'
+    },
+    'resource_scheduler': {
+      'filepath' : 'content/browser/loader/resource_scheduler*'
     },
     'rlz_id': {
       'filepath' :'rlz/lib/machine_id.cc|'\
@@ -1433,7 +1433,6 @@
     'net_error_list': ['mmenke@chromium.org'],
     'netinfo': ['jkarlin+watch@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
-    'network_quality': ['rdsmith@chromium.org'],
     'notifications': ['peter@chromium.org',
                       'mlamouri+watch-notifications@chromium.org'],
     'ntp': ['dbeam+watch-ntp@chromium.org',
@@ -1471,6 +1470,7 @@
                'dyu@chromium.org',
                'dennisjeffrey@chromium.org'],
     'remoting': ['chromoting-reviews@chromium.org'],
+    'resource_scheduler': ['rdsmith@chromium.org'],
     'rlz_id': ['gab+watch@chromium.org',
                'robertshield+watch@chromium.org',
                'alito+watch@chromium.org'],
