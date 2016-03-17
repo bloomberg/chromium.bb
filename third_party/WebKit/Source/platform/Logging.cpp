@@ -31,74 +31,22 @@
 
 namespace blink {
 
-WTFLogChannel LogNotYetImplemented =  { WTFLogChannelOff };
-
-WTFLogChannel LogFrames =             { WTFLogChannelOff };
-WTFLogChannel LogLoading =            { WTFLogChannelOff };
-WTFLogChannel LogPopupBlocking =      { WTFLogChannelOff };
-WTFLogChannel LogEvents =             { WTFLogChannelOff };
-
-WTFLogChannel LogEditing =            { WTFLogChannelOff };
-WTFLogChannel LogLiveConnect =        { WTFLogChannelOff };
-WTFLogChannel LogIconDatabase =       { WTFLogChannelOff };
-WTFLogChannel LogSQLDatabase =        { WTFLogChannelOff };
-
-WTFLogChannel LogSpellingAndGrammar = { WTFLogChannelOff };
-WTFLogChannel LogBackForward =        { WTFLogChannelOff };
-WTFLogChannel LogHistory =            { WTFLogChannelOff };
-
-WTFLogChannel LogPlatformLeaks =      { WTFLogChannelOff };
-WTFLogChannel LogResourceLoading =    { WTFLogChannelOff };
-
-WTFLogChannel LogNetwork =            { WTFLogChannelOff };
-WTFLogChannel LogFTP =                { WTFLogChannelOff };
-WTFLogChannel LogThreading =          { WTFLogChannelOff };
-WTFLogChannel LogStorageAPI =         { WTFLogChannelOff };
-
-WTFLogChannel LogMedia =              { WTFLogChannelOff };
-WTFLogChannel LogPlugins =            { WTFLogChannelOff };
-WTFLogChannel LogArchives =           { WTFLogChannelOff };
-WTFLogChannel LogProgress =           { WTFLogChannelOff };
-
 WTFLogChannel LogFileAPI =            { WTFLogChannelOff };
-
-WTFLogChannel LogWebAudio =           { WTFLogChannelOff };
-WTFLogChannel LogCompositing =        { WTFLogChannelOff };
-WTFLogChannel LogGamepad =            { WTFLogChannelOff };
-
-WTFLogChannel LogScriptedAnimationController = { WTFLogChannelOff };
-WTFLogChannel LogTimers =                      { WTFLogChannelOff };
-
 WTFLogChannel LogFonts =              { WTFLogChannelOff };
+WTFLogChannel LogMedia =              { WTFLogChannelOff };
+WTFLogChannel LogNetwork =            { WTFLogChannelOff };
+WTFLogChannel LogNotYetImplemented =  { WTFLogChannelOff };
+WTFLogChannel LogPlugins =            { WTFLogChannelOff };
+WTFLogChannel LogResourceLoading =    { WTFLogChannelOff };
+WTFLogChannel LogSQLDatabase =        { WTFLogChannelOff };
+WTFLogChannel LogStorageAPI =         { WTFLogChannelOff };
+WTFLogChannel LogTimers =             { WTFLogChannelOff };
+WTFLogChannel LogWebAudio =           { WTFLogChannelOff };
 
 WTFLogChannel* getChannelFromName(const String& channelName)
 {
     if (!(channelName.length() >= 2))
         return 0;
-
-    if (equalIgnoringCase(channelName, String("BackForward")))
-        return &LogBackForward;
-
-    if (equalIgnoringCase(channelName, String("Editing")))
-        return &LogEditing;
-
-    if (equalIgnoringCase(channelName, String("Events")))
-        return &LogEvents;
-
-    if (equalIgnoringCase(channelName, String("Frames")))
-        return &LogFrames;
-
-    if (equalIgnoringCase(channelName, String("FTP")))
-        return &LogFTP;
-
-    if (equalIgnoringCase(channelName, String("History")))
-        return &LogHistory;
-
-    if (equalIgnoringCase(channelName, String("IconDatabase")))
-        return &LogIconDatabase;
-
-    if (equalIgnoringCase(channelName, String("Loading")))
-        return &LogLoading;
 
     if (equalIgnoringCase(channelName, String("Media")))
         return &LogMedia;
@@ -109,23 +57,11 @@ WTFLogChannel* getChannelFromName(const String& channelName)
     if (equalIgnoringCase(channelName, String("NotYetImplemented")))
         return &LogNotYetImplemented;
 
-    if (equalIgnoringCase(channelName, String("PlatformLeaks")))
-        return &LogPlatformLeaks;
-
     if (equalIgnoringCase(channelName, String("ResourceLoading")))
         return &LogResourceLoading;
 
     if (equalIgnoringCase(channelName, String("Plugins")))
         return &LogPlugins;
-
-    if (equalIgnoringCase(channelName, String("PopupBlocking")))
-        return &LogPopupBlocking;
-
-    if (equalIgnoringCase(channelName, String("Progress")))
-        return &LogProgress;
-
-    if (equalIgnoringCase(channelName, String("SpellingAndGrammar")))
-        return &LogSpellingAndGrammar;
 
     if (equalIgnoringCase(channelName, String("SQLDatabase")))
         return &LogSQLDatabase;
@@ -133,26 +69,11 @@ WTFLogChannel* getChannelFromName(const String& channelName)
     if (equalIgnoringCase(channelName, String("StorageAPI")))
         return &LogStorageAPI;
 
-    if (equalIgnoringCase(channelName, String("LiveConnect")))
-        return &LogLiveConnect;
-
-    if (equalIgnoringCase(channelName, String("Threading")))
-        return &LogThreading;
-
     if (equalIgnoringCase(channelName, String("FileAPI")))
         return &LogFileAPI;
 
     if (equalIgnoringCase(channelName, String("WebAudio")))
         return &LogWebAudio;
-
-    if (equalIgnoringCase(channelName, String("Compositing")))
-        return &LogCompositing;
-
-    if (equalIgnoringCase(channelName, String("Gamepad")))
-        return &LogGamepad;
-
-    if (equalIgnoringCase(channelName, String("ScriptedAnimationController")))
-        return &LogScriptedAnimationController;
 
     if (equalIgnoringCase(channelName, String("Timers")))
         return &LogTimers;

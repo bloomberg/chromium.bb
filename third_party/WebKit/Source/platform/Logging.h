@@ -38,35 +38,17 @@
 
 namespace blink {
 
-PLATFORM_EXPORT extern WTFLogChannel LogNotYetImplemented;
-PLATFORM_EXPORT extern WTFLogChannel LogFrames;
-PLATFORM_EXPORT extern WTFLogChannel LogLoading;
-PLATFORM_EXPORT extern WTFLogChannel LogPopupBlocking;
-PLATFORM_EXPORT extern WTFLogChannel LogEvents;
-PLATFORM_EXPORT extern WTFLogChannel LogEditing;
-PLATFORM_EXPORT extern WTFLogChannel LogLiveConnect;
-PLATFORM_EXPORT extern WTFLogChannel LogIconDatabase;
-PLATFORM_EXPORT extern WTFLogChannel LogSQLDatabase;
-PLATFORM_EXPORT extern WTFLogChannel LogSpellingAndGrammar;
-PLATFORM_EXPORT extern WTFLogChannel LogBackForward;
-PLATFORM_EXPORT extern WTFLogChannel LogHistory;
-PLATFORM_EXPORT extern WTFLogChannel LogPlatformLeaks;
-PLATFORM_EXPORT extern WTFLogChannel LogResourceLoading;
-PLATFORM_EXPORT extern WTFLogChannel LogNetwork;
-PLATFORM_EXPORT extern WTFLogChannel LogFTP;
-PLATFORM_EXPORT extern WTFLogChannel LogThreading;
-PLATFORM_EXPORT extern WTFLogChannel LogStorageAPI;
-PLATFORM_EXPORT extern WTFLogChannel LogMedia;
-PLATFORM_EXPORT extern WTFLogChannel LogPlugins;
-PLATFORM_EXPORT extern WTFLogChannel LogArchives;
-PLATFORM_EXPORT extern WTFLogChannel LogProgress;
 PLATFORM_EXPORT extern WTFLogChannel LogFileAPI;
-PLATFORM_EXPORT extern WTFLogChannel LogWebAudio;
-PLATFORM_EXPORT extern WTFLogChannel LogCompositing;
-PLATFORM_EXPORT extern WTFLogChannel LogGamepad;
-PLATFORM_EXPORT extern WTFLogChannel LogScriptedAnimationController;
-PLATFORM_EXPORT extern WTFLogChannel LogTimers;
 PLATFORM_EXPORT extern WTFLogChannel LogFonts;
+PLATFORM_EXPORT extern WTFLogChannel LogMedia;
+PLATFORM_EXPORT extern WTFLogChannel LogNetwork;
+PLATFORM_EXPORT extern WTFLogChannel LogNotYetImplemented;
+PLATFORM_EXPORT extern WTFLogChannel LogPlugins;
+PLATFORM_EXPORT extern WTFLogChannel LogResourceLoading;
+PLATFORM_EXPORT extern WTFLogChannel LogSQLDatabase;
+PLATFORM_EXPORT extern WTFLogChannel LogStorageAPI;
+PLATFORM_EXPORT extern WTFLogChannel LogTimers;
+PLATFORM_EXPORT extern WTFLogChannel LogWebAudio;
 
 PLATFORM_EXPORT WTFLogChannel* getChannelFromName(const String& channelName);
 
