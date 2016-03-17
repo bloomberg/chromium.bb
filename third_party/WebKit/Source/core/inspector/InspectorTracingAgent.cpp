@@ -43,21 +43,14 @@ void InspectorTracingAgent::restore()
 {
     emitMetadataEvents();
 }
-void InspectorTracingAgent::start(ErrorString* errorString,
+void InspectorTracingAgent::start(ErrorString*,
     const Maybe<String>& categories,
     const Maybe<String>& options,
     const Maybe<double>& bufferUsageReportingInterval,
     const Maybe<String>& transferMode,
-    const Maybe<protocol::Tracing::TraceConfig>& config,
     PassOwnPtr<StartCallback> callback)
 {
     ASSERT(sessionId().isEmpty());
-    if (config.isJust()) {
-        *errorString =
-            "Using trace config on renderer targets is not supported yet.";
-        return;
-    }
-
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
     m_client->enableTracing(categories.fromMaybe(String()));
     emitMetadataEvents();

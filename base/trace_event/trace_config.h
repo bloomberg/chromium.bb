@@ -130,10 +130,6 @@ class BASE_EXPORT TraceConfig {
   // disabled-by-default-memory-infra category is enabled.
   explicit TraceConfig(const std::string& config_string);
 
-  // Functionally identical to the above, but takes a parsed dictionary as input
-  // instead of its JSON serialization.
-  explicit TraceConfig(const DictionaryValue& config);
-
   TraceConfig(const TraceConfig& tc);
 
   ~TraceConfig();
@@ -194,10 +190,7 @@ class BASE_EXPORT TraceConfig {
   // in the suffix 'Debug' or 'Test'.
   void InitializeDefault();
 
-  // Initialize from a config dictionary.
-  void InitializeFromConfigDict(const DictionaryValue& dict);
-
-  // Initialize from a config string.
+  // Initialize from the config string
   void InitializeFromConfigString(const std::string& config_string);
 
   // Initialize from category filter and trace options strings
