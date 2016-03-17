@@ -118,7 +118,7 @@
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">
-    Passwords and Forms
+    Passwords and forms
   </message>
   <message name="IDS_SETTINGS_AUTOFILL" desc="Name for the autofill section and toggle.">
     Autofill settings
@@ -376,7 +376,7 @@
 
   <!-- Date/time Page -->
   <message name="IDS_SETTINGS_DATE_TIME" desc="Name of the settings page which displays date and time preferences.">
-    Date &amp; Time
+    Date and time
   </message>
   <message name="IDS_SETTINGS_TIME_ZONE" desc="Label for the picker which allows users to choose their time zone.">
     Time zone:
@@ -434,7 +434,7 @@
   <if expr="chromeos">
     <!-- Internet Page -->
     <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
-      Internet Connection
+      Internet connection
     </message>
     <message name="IDS_SETTINGS_INTERNET_DETAIL" desc="Name of the settings page which displays network details.">
       Network Details
@@ -446,7 +446,7 @@
 
   <!-- On Startup Page -->
   <message name="IDS_SETTINGS_ON_STARTUP" desc="Name of the on startup page.">
-    On Startup
+    On startup
   </message>
   <message name="IDS_SETTINGS_ON_STARTUP_OPEN_NEW_TAB" desc="Radio button option to open the new tab page.">
     Open the New Tab page
@@ -469,7 +469,7 @@
 
   <!-- Languages Page -->
   <message name="IDS_SETTINGS_LANGUAGES_PAGE_TITLE" desc="Name of the settings page which displays language and input method preferences.">
-    Language &amp; Input
+    Languages
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE" desc="Title for the list of languages that are enabled.">
     Languages
@@ -513,7 +513,7 @@
 
   <!-- Privacy Page -->
   <message name="IDS_SETTINGS_PRIVACY" desc="Name of the settings page which allows users to modify privacy and security settings.">
-    Privacy &amp; Security
+    Privacy and security
   </message>
   <message name="IDS_SETTINGS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference to help with navigation errors.">
     Use a web service to help resolve navigation errors
@@ -553,6 +553,11 @@
   </message>
   <message name="IDS_SETTINGS_TITLE_AND_COUNT" desc="The title of a section in the settings page with a count of the total number of items in the section">
     <ph name="TITLE">$1<ex>Block</ex></ph> - <ph name="COUNT">$2<ex>42</ex></ph>
+  </message>
+
+  <!-- Reset Settings Page -->
+  <message name="IDS_SETTINGS_RESET" desc="Name of the settings page where settings may be reset.">
+    Reset
   </message>
 
   <!-- Search Page -->

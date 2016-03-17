@@ -353,7 +353,7 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
 
 void AddResetStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-    {"resetPageTitle", IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE},
+    {"resetPageTitle", IDS_SETTINGS_RESET},
     {"resetPageDescription", IDS_RESET_PROFILE_SETTINGS_DESCRIPTION},
     {"resetPageExplanation", IDS_RESET_PROFILE_SETTINGS_EXPLANATION},
     {"resetPageCommit", IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON},
