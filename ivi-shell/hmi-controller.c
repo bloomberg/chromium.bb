@@ -130,6 +130,7 @@ struct hmi_controller {
 	struct wl_client                   *user_interface;
 	struct ui_setting                   ui_setting;
 
+	struct weston_output * workspace_background_output;
 	int32_t				    screen_num;
 };
 
@@ -520,23 +521,6 @@ switch_mode(struct hmi_controller *hmi_ctrl,
 	free(pp_surface);
 }
 
-
-/**
- * Internal method to get ivi_layout_screen
- */
-static struct ivi_layout_screen *
-get_screen(int32_t screen_idx, struct hmi_controller *hmi_ctrl)
-{
-	struct ivi_layout_screen *iviscrn  = NULL;
-
-	if (screen_idx > hmi_ctrl->screen_num - 1)
-		weston_log("Invalid index. Return NULL\n");
-	else
-		iviscrn = ivi_layout_interface->get_screen_from_id(screen_idx);
-
-	return iviscrn;
-}
-
 /**
  * Internal method for transition
  */
@@ -561,10 +545,10 @@ hmi_controller_fade_run(struct hmi_controller *hmi_ctrl, uint32_t is_fade_in,
 
 /**
  * Internal method to create ivi_layer with hmi_controller_layer and
- * add to a ivi_screen
+ * add to a weston_output
  */
 static void
-create_layer(struct ivi_layout_screen *iviscrn,
+create_layer(struct weston_output *output,
 	     struct hmi_controller_layer *layer)
 {
 	int32_t ret = 0;
@@ -575,7 +559,7 @@ create_layer(struct ivi_layout_screen *iviscrn,
 						       layer->height);
 	assert(layer->ivilayer != NULL);
 
-	ret = ivi_layout_interface->screen_add_layer(iviscrn, layer->ivilayer);
+	ret = ivi_layout_interface->screen_add_layer(output, layer->ivilayer);
 	assert(!ret);
 
 	ret = ivi_layout_interface->layer_set_destination_rectangle(layer->ivilayer,
@@ -771,7 +755,6 @@ hmi_controller_destroy(struct wl_listener *listener, void *data)
 static struct hmi_controller *
 hmi_controller_create(struct weston_compositor *ec)
 {
-	struct ivi_layout_screen *iviscrn  = NULL;
 	struct link_layer *tmp_link_layer = NULL;
 	int32_t panel_height = 0;
 	struct hmi_controller *hmi_ctrl = MEM_ALLOC(sizeof(*hmi_ctrl));
@@ -787,14 +770,9 @@ hmi_controller_create(struct weston_compositor *ec)
 	hmi_ctrl->compositor = ec;
 	hmi_ctrl->screen_num = wl_list_length(&ec->output_list);
 
-	/* TODO: shall support hotplug of screens */
-	iviscrn = get_screen(0, hmi_ctrl);
-
 	/* init base ivi_layer*/
 	wl_list_init(&hmi_ctrl->base_layer_list);
-	for (i = 0; i < hmi_ctrl->screen_num; i++) {
-		output = ivi_layout_interface->screen_get_output(get_screen(i, hmi_ctrl));
-
+	wl_list_for_each(output, &ec->output_list, link) {
 		base_layer = MEM_ALLOC(1 * sizeof(struct hmi_controller_layer));
 		base_layer->x = 0;
 		base_layer->y = 0;
@@ -805,16 +783,16 @@ hmi_controller_create(struct weston_compositor *ec)
 						(i * hmi_ctrl->hmi_setting->base_layer_id_offset);
 		wl_list_insert(&hmi_ctrl->base_layer_list, &base_layer->link);
 
-		create_layer(get_screen(i, hmi_ctrl), base_layer);
+		create_layer(output, base_layer);
+		i++;
 	}
 
+	i = 0;
 	panel_height = hmi_ctrl->hmi_setting->panel_height;
 
 	/* init application ivi_layer */
 	wl_list_init(&hmi_ctrl->application_layer_list);
-	for (i = 0; i < hmi_ctrl->screen_num; i++) {
-		output = ivi_layout_interface->screen_get_output(get_screen(i, hmi_ctrl));
-
+	wl_list_for_each(output, &ec->output_list, link) {
 		application_layer = MEM_ALLOC(1 * sizeof(struct hmi_controller_layer));
 		application_layer->x = 0;
 		application_layer->y = 0;
@@ -825,12 +803,13 @@ hmi_controller_create(struct weston_compositor *ec)
 						(i * hmi_ctrl->hmi_setting->base_layer_id_offset);
 		wl_list_insert(&hmi_ctrl->application_layer_list, &application_layer->link);
 
-		create_layer(get_screen(i, hmi_ctrl), application_layer);
+		create_layer(output, application_layer);
+		i++;
 	}
 
-	output = ivi_layout_interface->screen_get_output(iviscrn);
-
 	/* init workspace background ivi_layer */
+	output = wl_container_of(ec->output_list.next, output, link);
+	hmi_ctrl->workspace_background_output = output;
 	hmi_ctrl->workspace_background_layer.x = 0;
 	hmi_ctrl->workspace_background_layer.y = 0;
 	hmi_ctrl->workspace_background_layer.width =
@@ -841,7 +820,7 @@ hmi_controller_create(struct weston_compositor *ec)
 	hmi_ctrl->workspace_background_layer.id_layer =
 		hmi_ctrl->hmi_setting->workspace_background_layer_id;
 
-	create_layer(iviscrn, &hmi_ctrl->workspace_background_layer);
+	create_layer(output, &hmi_ctrl->workspace_background_layer);
 	ivi_layout_interface->layer_set_opacity(
 		hmi_ctrl->workspace_background_layer.ivilayer, 0);
 	ivi_layout_interface->layer_set_visibility(
@@ -1140,7 +1119,6 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 	struct ivi_layout_surface* layout_surface = NULL;
 	uint32_t *add_surface_id = NULL;
 
-	struct ivi_layout_screen *iviscrn = NULL;
 	struct link_layer *tmp_link_layer = NULL;
 
 	if (0 == x_count)
@@ -1241,8 +1219,7 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 	hmi_ctrl->workspace_layer.id_layer =
 		hmi_ctrl->hmi_setting->workspace_layer_id;
 
-	iviscrn = get_screen(0, hmi_ctrl);
-	create_layer(iviscrn, &hmi_ctrl->workspace_layer);
+	create_layer(hmi_ctrl->workspace_background_output, &hmi_ctrl->workspace_layer);
 	ivi_layout_interface->layer_set_opacity(hmi_ctrl->workspace_layer.ivilayer, 0);
 	ivi_layout_interface->layer_set_visibility(hmi_ctrl->workspace_layer.ivilayer,
 					false);

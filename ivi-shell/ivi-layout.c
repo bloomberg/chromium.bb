@@ -1412,7 +1412,7 @@ ivi_layout_get_properties_of_layer(struct ivi_layout_layer *ivilayer)
 static int32_t
 ivi_layout_get_screens_under_layer(struct ivi_layout_layer *ivilayer,
 				   int32_t *pLength,
-				   struct ivi_layout_screen ***ppArray)
+				   struct weston_output ***ppArray)
 {
 	int32_t length = 0;
 	int32_t n = 0;
@@ -1427,13 +1427,13 @@ ivi_layout_get_screens_under_layer(struct ivi_layout_layer *ivilayer,
 
 	if (length != 0) {
 		/* the Array must be free by module which called this function */
-		*ppArray = calloc(length, sizeof(struct ivi_layout_screen *));
+		*ppArray = calloc(length, sizeof(struct weston_output *));
 		if (*ppArray == NULL) {
 			weston_log("fails to allocate memory\n");
 			return IVI_FAILED;
 		}
 
-		(*ppArray)[n++] = ivilayer->on_screen;
+		(*ppArray)[n++] = ivilayer->on_screen->output;
 	}
 
 	*pLength = length;
@@ -1475,19 +1475,21 @@ ivi_layout_get_layers(int32_t *pLength, struct ivi_layout_layer ***ppArray)
 }
 
 static int32_t
-ivi_layout_get_layers_on_screen(struct ivi_layout_screen *iviscrn,
+ivi_layout_get_layers_on_screen(struct weston_output *output,
 				int32_t *pLength,
 				struct ivi_layout_layer ***ppArray)
 {
+	struct ivi_layout_screen *iviscrn = NULL;
 	struct ivi_layout_layer *ivilayer = NULL;
 	int32_t length = 0;
 	int32_t n = 0;
 
-	if (iviscrn == NULL || pLength == NULL || ppArray == NULL) {
+	if (output == NULL || pLength == NULL || ppArray == NULL) {
 		weston_log("ivi_layout_get_layers_on_screen: invalid argument\n");
 		return IVI_FAILED;
 	}
 
+	iviscrn = ivi_layout_get_screen_from_id(output->id);
 	length = wl_list_length(&iviscrn->order.layer_list);
 
 	if (length != 0) {
@@ -1949,13 +1951,17 @@ ivi_layout_surface_set_orientation(struct ivi_layout_surface *ivisurf,
 }
 
 static int32_t
-ivi_layout_screen_add_layer(struct ivi_layout_screen *iviscrn,
+ivi_layout_screen_add_layer(struct weston_output *output,
 			    struct ivi_layout_layer *addlayer)
 {
-	if (iviscrn == NULL || addlayer == NULL) {
+	struct ivi_layout_screen *iviscrn;
+
+	if (output == NULL || addlayer == NULL) {
 		weston_log("ivi_layout_screen_add_layer: invalid argument\n");
 		return IVI_FAILED;
 	}
+
+	iviscrn = ivi_layout_get_screen_from_id(output->id);
 
 	if (addlayer->on_screen == iviscrn) {
 		weston_log("ivi_layout_screen_add_layer: addlayer is already available\n");
@@ -1971,18 +1977,21 @@ ivi_layout_screen_add_layer(struct ivi_layout_screen *iviscrn,
 }
 
 static int32_t
-ivi_layout_screen_set_render_order(struct ivi_layout_screen *iviscrn,
+ivi_layout_screen_set_render_order(struct weston_output *output,
 				   struct ivi_layout_layer **pLayer,
 				   const int32_t number)
 {
+	struct ivi_layout_screen *iviscrn;
 	struct ivi_layout_layer *ivilayer = NULL;
 	struct ivi_layout_layer *next = NULL;
 	int32_t i = 0;
 
-	if (iviscrn == NULL) {
+	if (output == NULL) {
 		weston_log("ivi_layout_screen_set_render_order: invalid argument\n");
 		return IVI_FAILED;
 	}
+
+	iviscrn = ivi_layout_get_screen_from_id(output->id);
 
 	wl_list_for_each_safe(ivilayer, next,
 			      &iviscrn->pending.layer_list, pending.link) {

@@ -444,12 +444,12 @@ struct ivi_layout_interface {
 					    struct ivi_layout_layer ***ppArray);
 
 	/**
-	 * \brief Get all Layers of the given screen
+	 * \brief Get all Layers of the given weston_output
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
 	 * \return IVI_FAILED if the method call was failed
 	 */
-	int32_t (*get_layers_on_screen)(struct ivi_layout_screen *iviscrn,
+	int32_t (*get_layers_on_screen)(struct weston_output *output,
 					int32_t *pLength,
 					struct ivi_layout_layer ***ppArray);
 
@@ -568,32 +568,32 @@ struct ivi_layout_interface {
 		(*get_screen_from_id)(uint32_t id_screen);
 
 	/**
-	 * \brief Get the ivi_screens under the given ivi_layer
+	 * \brief Get the weston_outputs under the given ivi_layer
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
 	 * \return IVI_FAILED if the method call was failed
 	 */
 	int32_t (*get_screens_under_layer)(struct ivi_layout_layer *ivilayer,
 					   int32_t *pLength,
-					   struct ivi_layout_screen ***ppArray);
+					   struct weston_output ***ppArray);
 
 	/**
-	 * \brief Add a ivi_layer to a ivi_screen which is currently managed
+	 * \brief Add a ivi_layer to a weston_output which is currently managed
 	 * by the service
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
 	 * \return IVI_FAILED if the method call was failed
 	 */
-	int32_t (*screen_add_layer)(struct ivi_layout_screen *iviscrn,
+	int32_t (*screen_add_layer)(struct weston_output *output,
 				    struct ivi_layout_layer *addlayer);
 
 	/**
-	 * \brief Sets render order of ivi_layers on a ivi_screen
+	 * \brief Sets render order of ivi_layers on a weston_output
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
 	 * \return IVI_FAILED if the method call was failed
 	 */
-	int32_t (*screen_set_render_order)(struct ivi_layout_screen *iviscrn,
+	int32_t (*screen_set_render_order)(struct weston_output *output,
 					   struct ivi_layout_layer **pLayer,
 					   const int32_t number);
 
