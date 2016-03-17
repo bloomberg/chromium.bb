@@ -52,7 +52,6 @@ source_set("ui") {
     "//chrome/app/theme:theme_resources",
     "//chrome/common",
     "//components/app_modal",
-    "//components/auto_login_parser",
     "//components/autofill/core/browser",
     "//components/bookmarks/browser",
     "//components/browser_sync/browser",
