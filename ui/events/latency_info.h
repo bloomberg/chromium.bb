@@ -15,8 +15,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "ipc/ipc_param_traits.h"
 #include "ui/events/events_base_export.h"
+
+#if !defined(OS_IOS)
+#include "ipc/ipc_param_traits.h"  // nogncheck
+#endif
 
 namespace ui {
 
@@ -229,7 +232,9 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   // Whether a terminal component has been added.
   bool terminated_;
 
+#if !defined(OS_IOS)
   friend struct IPC::ParamTraits<ui::LatencyInfo>;
+#endif
 };
 
 }  // namespace ui
