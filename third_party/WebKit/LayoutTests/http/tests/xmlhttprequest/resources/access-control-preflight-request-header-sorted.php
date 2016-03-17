@@ -4,8 +4,8 @@ if ($_SERVER["REQUEST_METHOD"] == "OPTIONS") {
     // "sorted lexicographically, and byte lowercased".
     // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
     if ($_SERVER["HTTP_ACCESS_CONTROL_REQUEST_HEADERS"] ==
-        'x-custom-s, x-custom-test, x-custom-u, x-custom-ua, x-custom-v') {
-        header("Access-Control-Allow-Headers: x-custom-s, x-custom-test, x-custom-u, x-custom-ua, x-custom-v");
+        'content-type, x-custom-s, x-custom-test, x-custom-u, x-custom-ua, x-custom-v') {
+        header("Access-Control-Allow-Headers: content-type, x-custom-s, x-custom-test, x-custom-u, x-custom-ua, x-custom-v");
     } else {
         header("HTTP/1.1 400");
     }
