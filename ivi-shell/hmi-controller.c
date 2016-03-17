@@ -961,12 +961,9 @@ ivi_hmi_controller_set_panel(struct hmi_controller *hmi_ctrl,
 			     uint32_t id_surface)
 {
 	struct ivi_layout_surface *ivisurf  = NULL;
-	struct hmi_controller_layer *base_layer =
-					wl_container_of(hmi_ctrl->base_layer_list.prev,
-							base_layer,
-							link);
+	struct hmi_controller_layer *base_layer;
 	struct ivi_layout_layer   *ivilayer = NULL;
-	const int32_t width  = base_layer->width;
+	int32_t width;
 	int32_t ret = 0;
 	int32_t panel_height = hmi_ctrl->hmi_setting->panel_height;
 	const int32_t dstx = 0;
@@ -986,6 +983,7 @@ ivi_hmi_controller_set_panel(struct hmi_controller *hmi_ctrl,
 		assert(!ret);
 
 		dsty = base_layer->height - panel_height;
+		width = base_layer->width;
 
 		ret = ivi_layout_interface->surface_set_destination_rectangle(
 			ivisurf, dstx, dsty, width, panel_height);
