@@ -4,17 +4,16 @@
 
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 
-#import <UIKit/UIKit.h>
+#include <CoreFoundation/CoreFoundation.h>
 #import <WebKit/WebKit.h>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 
 namespace {
 
-// Converts result of WKWebView script evaluation to UIWebView format.
-NSString* UIResultFromWKResult(id result) {
+// Converts result of WKWebView script evaluation to a string.
+NSString* StringResultFromWKResult(id result) {
   if (!result)
     return @"";
 
@@ -42,18 +41,6 @@ namespace web {
 
 NSString* const kJSEvaluationErrorDomain = @"JSEvaluationError";
 
-void EvaluateJavaScript(UIWebView* web_view,
-                        NSString* script,
-                        JavaScriptCompletion completion_handler) {
-  base::WeakNSObject<UIWebView> weak_web_view(web_view);
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSString* result =
-        [weak_web_view stringByEvaluatingJavaScriptFromString:script];
-    if (completion_handler)
-      completion_handler(result, nil);
-  });
-}
-
 void EvaluateJavaScript(WKWebView* web_view,
                         NSString* script,
                         JavaScriptCompletion completion_handler) {
@@ -79,7 +66,7 @@ void EvaluateJavaScript(WKWebView* web_view,
   // need to call those completion handlers.
   if (completion_handler) {
     web_view_completion_handler = ^(id result, NSError* error) {
-      completion_handler(UIResultFromWKResult(result), error);
+      completion_handler(StringResultFromWKResult(result), error);
     };
   }
   [web_view evaluateJavaScript:script

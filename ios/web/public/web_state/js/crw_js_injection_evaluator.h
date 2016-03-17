@@ -21,6 +21,7 @@ typedef void (^JavaScriptCompletion)(NSString*, NSError*);
 // with results of the evaluation (which may be nil if the implementing object
 // has no way to run the evaluation or the evaluation returns a nil value)
 // or an NSError if there is an error. The |completionHandler| can be nil.
+// TODO(crbug.com/595761): Change this API to return |id| instead of string.
 - (void)evaluateJavaScript:(NSString*)script
        stringResultHandler:(web::JavaScriptCompletion)handler;
 
