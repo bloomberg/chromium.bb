@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <html>
 <body>
-This test sets caret at the beginning of backward text and moving the character to left and right.  WebKit should not crash and you should see PASS below:
 <textarea id="editor">&#8238;LTR
 </textarea>
 <script>
-onload = function() {
+test(function() {
     var sel = window.getSelection();
     sel.empty();
     var test = document.getElementById("editor");
@@ -20,12 +21,7 @@ onload = function() {
     test.selectionEnd = 1;
     getSelection().modify("move", "right", "character");
     getSelection().modify("move", "right", "character");
-    document.body.innerHTML = "PASS";
-};
-
-if (window.testRunner)
-    testRunner.dumpAsText();
-
+}, "This test sets caret at the beginning of backward text and moving the character to left and right.");
 </script>
 </body>
 </html>
