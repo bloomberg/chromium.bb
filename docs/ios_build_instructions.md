@@ -104,19 +104,19 @@ file.
 file (removing the `chromium_ios_signing=0` if you want to make
 developer-signed builds):
 
-```json
-{
-  "GYP_DEFINES" : "OS=ios chromium_ios_signing=0",
-  "GYP_GENERATORS" : "ninja,xcode-ninja",
-}
-```
+    ```json
+    {
+      "GYP_DEFINES" : "OS=ios chromium_ios_signing=0",
+      "GYP_GENERATORS" : "ninja,xcode-ninja",
+    }
+    ```
 
 3.  Make sure to sync again to fetch the iOS specific dependencies and
 regenerate build rules using:
 
-```shell
-gclient sync
-```
+    ```shell
+    gclient sync
+    ```
 
 ## Troubleshooting
 
