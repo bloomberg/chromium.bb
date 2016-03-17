@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <iterator>
 #include <string>
 
 #include "base/callback.h"
@@ -43,7 +44,8 @@ class CONTENT_EXPORT FrameTree {
   class NodeRange;
   class ConstNodeRange;
 
-  class CONTENT_EXPORT NodeIterator {
+  class CONTENT_EXPORT NodeIterator
+      : public std::iterator<std::forward_iterator_tag, FrameTreeNode> {
    public:
     NodeIterator(const NodeIterator& other);
     ~NodeIterator();
