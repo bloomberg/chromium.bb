@@ -12,6 +12,11 @@ MojoMediaClient::~MojoMediaClient() {}
 
 void MojoMediaClient::Initialize() {}
 
+scoped_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return nullptr;
+}
+
 scoped_ptr<RendererFactory> MojoMediaClient::CreateRendererFactory(
     const scoped_refptr<MediaLog>& media_log) {
   return nullptr;

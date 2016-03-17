@@ -67,7 +67,7 @@ scoped_ptr<MediaCodecBridge> CreateMediaCodec(
 }  // namespace (anonymous)
 
 MediaCodecAudioDecoder::MediaCodecAudioDecoder(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       state_(STATE_UNINITIALIZED),
       pending_input_buf_index_(kInvalidBufferIndex) {

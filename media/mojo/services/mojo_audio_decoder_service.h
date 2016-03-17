@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -15,7 +16,7 @@ namespace media {
 class MojoAudioDecoderService : public interfaces::AudioDecoder {
  public:
   MojoAudioDecoderService(
-      scoped_ptr<AudioDecoder> decoder,
+      scoped_ptr<media::AudioDecoder> decoder,
       mojo::InterfaceRequest<interfaces::AudioDecoder> request);
 
   ~MojoAudioDecoderService() final;
@@ -37,7 +38,7 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
   mojo::StrongBinding<interfaces::AudioDecoder> binding_;
 
   // The AudioDecoder that does actual decoding work.
-  scoped_ptr<AudioDecoder> decoder_;
+  scoped_ptr<media::AudioDecoder> decoder_;
 
   // The destination for the decoded buffers.
   interfaces::AudioDecoderClientPtr client_;

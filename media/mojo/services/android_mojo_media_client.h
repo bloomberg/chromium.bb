@@ -16,6 +16,9 @@ class AndroidMojoMediaClient : public MojoMediaClient {
   ~AndroidMojoMediaClient() final;
 
   // MojoMediaClient implementation.
+  scoped_ptr<AudioDecoder> CreateAudioDecoder(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
+
   scoped_ptr<CdmFactory> CreateCdmFactory(
       mojo::shell::mojom::InterfaceProvider* interface_provider) final;
 

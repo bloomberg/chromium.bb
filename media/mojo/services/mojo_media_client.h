@@ -5,6 +5,7 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
 #define MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
 
+#include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
@@ -31,6 +32,9 @@ class MojoMediaClient {
 
   // Called exactly once before any other method.
   virtual void Initialize();
+
+  virtual scoped_ptr<AudioDecoder> CreateAudioDecoder(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // TODO(xhwang): Consider creating Renderer and CDM directly in the client
   // instead of creating factories. See http://crbug.com/586211

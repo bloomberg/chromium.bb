@@ -39,6 +39,8 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
   ~ServiceFactoryImpl() final;
 
   // interfaces::ServiceFactory implementation.
+  void CreateAudioDecoder(
+      mojo::InterfaceRequest<interfaces::AudioDecoder> audio_decoder) final;
   void CreateRenderer(
       mojo::InterfaceRequest<interfaces::Renderer> renderer) final;
   void CreateCdm(

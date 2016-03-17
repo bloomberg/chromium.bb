@@ -5,6 +5,7 @@
 #include "media/mojo/services/android_mojo_media_client.h"
 
 #include "media/base/android/android_cdm_factory.h"
+#include "media/filters/android/media_codec_audio_decoder.h"
 #include "media/mojo/interfaces/provision_fetcher.mojom.h"
 #include "media/mojo/services/mojo_provision_fetcher.h"
 #include "mojo/shell/public/cpp/connect.h"
@@ -28,6 +29,12 @@ AndroidMojoMediaClient::AndroidMojoMediaClient() {}
 AndroidMojoMediaClient::~AndroidMojoMediaClient() {}
 
 // MojoMediaClient overrides.
+
+scoped_ptr<AudioDecoder> AndroidMojoMediaClient::CreateAudioDecoder(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return make_scoped_ptr(new MediaCodecAudioDecoder(task_runner));
+}
+
 scoped_ptr<CdmFactory> AndroidMojoMediaClient::CreateCdmFactory(
     mojo::shell::mojom::InterfaceProvider* interface_provider) {
   return make_scoped_ptr(new AndroidCdmFactory(

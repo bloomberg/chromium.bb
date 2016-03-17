@@ -8,6 +8,7 @@
 #include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
+#include "media/mojo/services/mojo_audio_decoder_service.h"
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "media/mojo/services/mojo_renderer_service.h"
@@ -34,6 +35,22 @@ ServiceFactoryImpl::~ServiceFactoryImpl() {
 }
 
 // interfaces::ServiceFactory implementation.
+
+void ServiceFactoryImpl::CreateAudioDecoder(
+    mojo::InterfaceRequest<interfaces::AudioDecoder> request) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
+      base::MessageLoop::current()->task_runner());
+
+  scoped_ptr<AudioDecoder> audio_decoder =
+      mojo_media_client_->CreateAudioDecoder(task_runner);
+  if (!audio_decoder) {
+    LOG(ERROR) << "AudioDecoder creation failed.";
+    return;
+  }
+
+  new MojoAudioDecoderService(std::move(audio_decoder), std::move(request));
+}
+
 void ServiceFactoryImpl::CreateRenderer(
     mojo::InterfaceRequest<interfaces::Renderer> request) {
   // The created object is owned by the pipe.

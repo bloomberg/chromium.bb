@@ -8,7 +8,7 @@
 namespace media {
 
 MojoAudioDecoderService::MojoAudioDecoderService(
-    scoped_ptr<AudioDecoder> decoder,
+    scoped_ptr<media::AudioDecoder> decoder,
     mojo::InterfaceRequest<interfaces::AudioDecoder> request)
     : binding_(this, std::move(request)), decoder_(std::move(decoder)) {}
 

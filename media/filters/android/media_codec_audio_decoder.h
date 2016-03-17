@@ -103,7 +103,7 @@ class AudioTimestampHelper;
 class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
  public:
   explicit MediaCodecAudioDecoder(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MediaCodecAudioDecoder() override;
 
   // AudioDecoder implementation.
