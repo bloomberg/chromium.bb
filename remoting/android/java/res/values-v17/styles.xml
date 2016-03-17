@@ -43,6 +43,7 @@
 
     <style name="ToolbarStyle">
         <item name="android:background">?attr/colorPrimary</item>
+        <!--suppress NewApi -->
         <item name="android:elevation">4dp</item>
         <item name="contentInsetStart">@dimen/toolbar_content_inset_start</item>
     </style>
