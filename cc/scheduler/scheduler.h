@@ -80,6 +80,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetCanDraw(bool can_draw);
   void NotifyReadyToActivate();
   void NotifyReadyToDraw();
+  void SetBeginFrameSource(BeginFrameSource* source);
 
   void SetNeedsBeginMainFrame();
   // Requests a single impl frame (after the current frame if there is one
@@ -139,6 +140,10 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
+
+  const BeginFrameSource* begin_frame_source() const {
+    return begin_frame_source_;
+  }
 
  protected:
   Scheduler(SchedulerClient* client,

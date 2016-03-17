@@ -233,9 +233,6 @@ class TestScheduler : public Scheduler {
   }
 
   BeginFrameSource& frame_source() { return *begin_frame_source_; }
-  bool FrameProductionThrottled() {
-    return settings_.throttle_frame_production;
-  }
 
   bool MainThreadMissedLastDeadline() const {
     return state_machine_.main_thread_missed_last_deadline();

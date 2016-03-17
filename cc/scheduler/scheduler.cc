@@ -49,7 +49,7 @@ Scheduler::Scheduler(
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
       task_runner_(task_runner),
-      begin_frame_source_(begin_frame_source),
+      begin_frame_source_(nullptr),
       observing_begin_frame_source_(false),
       compositor_timing_history_(std::move(compositor_timing_history)),
       begin_impl_frame_deadline_mode_(
@@ -68,6 +68,7 @@ Scheduler::Scheduler(
   begin_impl_frame_deadline_closure_ = base::Bind(
       &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
 
+  SetBeginFrameSource(begin_frame_source);
   ProcessScheduledActions();
 }
 
@@ -111,6 +112,17 @@ void Scheduler::NotifyReadyToDraw() {
   // Future work might still needed for crbug.com/352894.
   state_machine_.NotifyReadyToDraw();
   ProcessScheduledActions();
+}
+
+void Scheduler::SetBeginFrameSource(BeginFrameSource* source) {
+  DCHECK(source);
+  if (source == begin_frame_source_)
+    return;
+  if (begin_frame_source_ && observing_begin_frame_source_)
+    begin_frame_source_->RemoveObserver(this);
+  begin_frame_source_ = source;
+  if (observing_begin_frame_source_)
+    begin_frame_source_->AddObserver(this);
 }
 
 void Scheduler::SetNeedsBeginMainFrame() {
@@ -744,7 +756,7 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
       &frame_tracing_enabled);
-  if (frame_tracing_enabled) {
+  if (frame_tracing_enabled && begin_frame_source_) {
     state->BeginDictionary("begin_frame_source_");
     begin_frame_source_->AsValueInto(state);
     state->EndDictionary();
