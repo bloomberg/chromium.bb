@@ -936,7 +936,7 @@ LayoutPoint PaintLayer::computeOffsetFromTransformedAncestor() const
 
 PaintLayer* PaintLayer::compositingContainer() const
 {
-    if (!stackingNode()->isTreatedAsOrStackingContext())
+    if (!stackingNode()->isStacked())
         return parent();
     if (PaintLayerStackingNode* ancestorStackingNode = stackingNode()->ancestorStackingContextNode())
         return ancestorStackingNode->layer();
@@ -1213,10 +1213,10 @@ void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild)
 
     setNeedsCompositingInputsUpdate();
 
-    if (!child->stackingNode()->isTreatedAsOrStackingContext() && !layoutObject()->documentBeingDestroyed())
+    if (!child->stackingNode()->isStacked() && !layoutObject()->documentBeingDestroyed())
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
-    if (child->stackingNode()->isTreatedAsOrStackingContext() || child->firstChild()) {
+    if (child->stackingNode()->isStacked() || child->firstChild()) {
         // Dirty the z-order list in which we are contained. The ancestorStackingContextNode() can be null in the
         // case where we're building up generated content layers. This is ok, since the lists will start
         // off dirty in that case anyway.
@@ -1247,10 +1247,10 @@ PaintLayer* PaintLayer::removeChild(PaintLayer* oldChild)
     if (m_last == oldChild)
         m_last = oldChild->previousSibling();
 
-    if (!oldChild->stackingNode()->isTreatedAsOrStackingContext() && !layoutObject()->documentBeingDestroyed())
+    if (!oldChild->stackingNode()->isStacked() && !layoutObject()->documentBeingDestroyed())
         compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
-    if (oldChild->stackingNode()->isTreatedAsOrStackingContext() || oldChild->firstChild()) {
+    if (oldChild->stackingNode()->isStacked() || oldChild->firstChild()) {
         // Dirty the z-order list in which we are contained.  When called via the
         // reattachment process in removeOnlyThisLayer, the layer may already be disconnected
         // from the main layer tree, so we need to null-check the
@@ -2572,13 +2572,12 @@ bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const Comp
     return true;
 }
 
-void PaintLayer::styleChanged(StyleDifference diff, const ComputedStyle* oldStyle)
+void PaintLayer::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     if (attemptDirectCompositingUpdate(diff, oldStyle))
         return;
 
-    m_stackingNode->updateIsTreatedAsStackingContext();
-    m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
+    m_stackingNode->styleDidChange(oldStyle);
 
     if (m_scrollableArea)
         m_scrollableArea->updateAfterStyleChange(oldStyle);

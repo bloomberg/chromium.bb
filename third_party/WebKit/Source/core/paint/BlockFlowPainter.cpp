@@ -37,7 +37,7 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint
             *floatingObject, LayoutPoint(paintOffset.x()
             + m_layoutBlockFlow.xPositionForFloatIncludingMargin(*floatingObject) - floatingLayoutObject->location().x(), paintOffset.y()
             + m_layoutBlockFlow.yPositionForFloatIncludingMargin(*floatingObject) - floatingLayoutObject->location().y()));
-        ObjectPainter(*floatingLayoutObject).paintAsPseudoStackingContext(floatPaintInfo, childPoint);
+        ObjectPainter(*floatingLayoutObject).paintAllPhasesAtomically(floatPaintInfo, childPoint);
     }
 }
 

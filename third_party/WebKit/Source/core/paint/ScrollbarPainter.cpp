@@ -29,7 +29,7 @@ void ScrollbarPainter::paintIntoRect(const LayoutScrollbarPart& layoutScrollbarP
     const_cast<LayoutScrollbarPart&>(layoutScrollbarPart).setHeight(rect.height());
 
     PaintInfo paintInfo(graphicsContext, pixelSnappedIntRect(rect), PaintPhaseForeground, GlobalPaintNormalPhase, PaintLayerNoFlag);
-    ObjectPainter(layoutScrollbarPart).paintAsPseudoStackingContext(paintInfo, paintOffset);
+    ObjectPainter(layoutScrollbarPart).paintAllPhasesAtomically(paintInfo, paintOffset);
 }
 
 } // namespace blink

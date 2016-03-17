@@ -1284,29 +1284,20 @@ public:
     // a containing stacking context defines in which order the stacking contexts
     // below are painted. In Blink, a stacking context is defined by non-auto
     // z-index'. This invariant is enforced by the logic in StyleAdjuster
-    // See CSS 2.1, Appendix E for more details.
+    // See CSS 2.1, Appendix E (https://www.w3.org/TR/CSS21/zindex.html) for more details.
     bool isStackingContext() const { return !hasAutoZIndex(); }
 
-    // Some elements are "treated as if they create a new stacking context" for
-    // the purpose of painting and hit testing. This means that they are painted
-    // atomically (like a stacking context) but they don't determine the
-    // stacking of the elements underneath them (stacking contexts or elements
-    // "treated as stacking context"). See PaintLayerStackingNode for
-    // more about painting order.
-    bool isTreatedAsStackingContext() const
-    {
-        // FIXME: Floating objects are also considered stacking contexts.
-        return position() != StaticPosition;
-    }
-
-    // Returns true if  an element is a stacking context or "treated as a
-    // stacking context". Most callers care about this as it follows the
-    // painting order where we collect anything that returns true from this
-    // function under the enclosing stacking context.
-    bool isTreatedAsOrStackingContext() const
-    {
-        return isStackingContext() || isTreatedAsStackingContext();
-    }
+    // Stacking contexts and positioned elements[1] are stacked (sorted in negZOrderList
+    // and posZOrderList) in their enclosing stacking contexts.
+    //
+    // [1] According to CSS2.1, Appendix E.2.8 (https://www.w3.org/TR/CSS21/zindex.html),
+    // positioned elements with 'z-index: auto' are "treated as if it created a new
+    // stacking context" and z-ordered together with other elements with 'z-index: 0'.
+    // The difference of them from normal stacking contexts is that they don't determine
+    // the stacking of the elements underneath them.
+    // (Note: There are also other elements treated as stacking context during painting,
+    // but not managed in stacks. See ObjectPainter::paintAllPhasesAtomically().)
+    bool isStacked() const { return isStackingContext() || position() != StaticPosition; }
 
     bool hasAutoZIndex() const { return m_box->hasAutoZIndex(); }
     void setHasAutoZIndex() { SET_VAR(m_box, m_hasAutoZIndex, true); SET_VAR(m_box, m_zIndex, 0); }

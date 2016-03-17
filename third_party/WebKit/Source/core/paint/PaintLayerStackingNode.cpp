@@ -52,7 +52,7 @@
 namespace blink {
 
 // FIXME: This should not require PaintLayer. There is currently a cycle where
-// in order to determine if we shoulBeTreatedAsStackingContext() we have to ask the paint
+// in order to determine if we isStacked() we have to ask the paint
 // layer about some of its state.
 PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
     : m_layer(layer)
@@ -61,7 +61,7 @@ PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
     , m_stackingParent(0)
 #endif
 {
-    m_isTreatedAsOrStackingContext = shouldBeTreatedAsOrStackingContext();
+    m_isStacked = layoutObject()->styleRef().isStacked();
 
     // Non-stacking contexts should have empty z-order lists. As this is already the case,
     // there is no need to dirty / recompute these lists.
@@ -161,7 +161,7 @@ void PaintLayerStackingNode::collectLayers(OwnPtr<Vector<PaintLayerStackingNode*
     if (layer()->isInTopLayer())
         return;
 
-    if (isTreatedAsOrStackingContext()) {
+    if (isStacked()) {
         OwnPtr<Vector<PaintLayerStackingNode*>>& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
         if (!buffer)
             buffer = adoptPtr(new Vector<PaintLayerStackingNode*>);
@@ -217,13 +217,14 @@ void PaintLayerStackingNode::updateLayerListsIfNeeded()
     reflectionLayer->stackingNode()->updateZOrderLists();
 }
 
-void PaintLayerStackingNode::updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle)
+void PaintLayerStackingNode::styleDidChange(const ComputedStyle* oldStyle)
 {
-    bool wasStackingContext = oldStyle ? !oldStyle->hasAutoZIndex() : false;
+    bool wasStackingContext = oldStyle ? oldStyle->isStackingContext() : false;
     int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;
 
     bool isStackingContext = this->isStackingContext();
-    if (isStackingContext == wasStackingContext && oldZIndex == zIndex())
+    bool shouldBeStacked = layoutObject()->styleRef().isStacked();
+    if (isStackingContext == wasStackingContext && m_isStacked == shouldBeStacked && oldZIndex == zIndex())
         return;
 
     dirtyStackingContextZOrderLists();
@@ -232,18 +233,12 @@ void PaintLayerStackingNode::updateStackingNodesAfterStyleChange(const ComputedS
         dirtyZOrderLists();
     else
         clearZOrderLists();
-}
 
-void PaintLayerStackingNode::updateIsTreatedAsStackingContext()
-{
-    bool isTreatedAsOrStackingContext = shouldBeTreatedAsOrStackingContext();
-    if (isTreatedAsOrStackingContext == this->isTreatedAsOrStackingContext())
-        return;
-
-    m_isTreatedAsOrStackingContext = isTreatedAsOrStackingContext;
-    if (!layoutObject()->documentBeingDestroyed() && !layer()->isRootLayer())
-        compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
-    dirtyStackingContextZOrderLists();
+    if (m_isStacked != shouldBeStacked) {
+        m_isStacked = shouldBeStacked;
+        if (!layoutObject()->documentBeingDestroyed() && !layer()->isRootLayer())
+            compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+    }
 }
 
 PaintLayerStackingNode* PaintLayerStackingNode::ancestorStackingContextNode() const

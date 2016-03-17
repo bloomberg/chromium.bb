@@ -58,30 +58,38 @@ class PaintLayerCompositor;
 class ComputedStyle;
 class LayoutBoxModelObject;
 
-// PaintLayerStackingNode represents anything that is a stacking
-// context or treated as a stacking context.
+// PaintLayerStackingNode represents a stacked element which is either a
+// stacking context (i.e. an element with non-auto z-index) or a positioned
+// element with auto z-index which is treated as a stacking context but
+// doesn't contain other stacked elements.
+// See https://chromium.googlesource.com/chromium/src.git/+/master/third_party/WebKit/Source/core/paint/README.md
+// for more details of stacked elements.
 //
-// Stacking contexts are the basis for the CSS painting algorithm. The paint
-// order is determined by walking stacking contexts (or elements treated like a
-// stacking context like positioned objects or floats) in an order defined by
-// ‘z-index’. This walk is interleaved with content that is not a stacking.
-// context. See CSS 2.1 appendix E for the actual algorithm
+// Stacked elements are the basis for the CSS painting algorithm. The paint
+// order is determined by walking stacked elements in an order defined by
+// ‘z-index’. This walk is interleaved with non-stacked contents.
+// See CSS 2.1 appendix E for the actual algorithm
 // http://www.w3.org/TR/CSS21/zindex.html
 // See also PaintLayerPainter (in particular paintLayerContents) for
 // our implementation of the walk.
 //
-// Stacking contexts form a subtree over the layout tree. Ideally we would want
+// Stacked elements form a subtree over the layout tree. Ideally we would want
 // objects of this class to be a node in this tree but there are potential
 // issues with stale pointers so we rely on PaintLayer's tree
 // structure.
 //
-// This class's purpose is to represent a node in the stacking context tree
+// This class's purpose is to represent a node in the stacked element tree
 // (aka paint tree). It currently caches the z-order lists for painting and
 // hit-testing.
 //
 // To implement any z-order list iterations, use
 // PaintLayerStackingNodeIterator and
 // PaintLayerStackingNodeReverseIterator.
+//
+// Only a real stacking context can have non-empty z-order lists thus contain
+// child nodes in the tree. The z-order lists of a positioned element with auto
+// z-index are always empty (i.e. it's a leaf of the stacked element tree).
+// A real stacking context can also be a leaf if it doesn't contain any stacked elements.
 class CORE_EXPORT PaintLayerStackingNode {
     USING_FAST_MALLOC(PaintLayerStackingNode);
     WTF_MAKE_NONCOPYABLE(PaintLayerStackingNode);
@@ -92,6 +100,11 @@ public:
     int zIndex() const { return layoutObject()->style()->zIndex(); }
 
     bool isStackingContext() const { return layoutObject()->style()->isStackingContext(); }
+
+    // Whether the node is stacked. See documentation for the class about "stacked".
+    // For now every PaintLayer has a PaintLayerStackingNode, even if the layer is not stacked
+    // (e.g. a scrollable layer which is statically positioned and is not a stacking context).
+    bool isStacked() const { return m_isStacked; }
 
     // Update our normal and z-index lists.
     void updateLayerListsIfNeeded();
@@ -105,10 +118,7 @@ public:
     bool hasPositiveZOrderList() const { return posZOrderList() && posZOrderList()->size(); }
     bool hasNegativeZOrderList() const { return negZOrderList() && negZOrderList()->size(); }
 
-    bool isTreatedAsOrStackingContext() const { return m_isTreatedAsOrStackingContext; }
-    void updateIsTreatedAsStackingContext();
-
-    void updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle);
+    void styleDidChange(const ComputedStyle* oldStyle);
 
     PaintLayerStackingNode* ancestorStackingContextNode() const;
 
@@ -147,8 +157,6 @@ private:
     void setStackingParent(PaintLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
 #endif
 
-    bool shouldBeTreatedAsOrStackingContext() const { return layoutObject()->style()->isTreatedAsOrStackingContext(); }
-
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
     PaintLayerCompositor* compositor() const;
@@ -158,7 +166,7 @@ private:
     PaintLayer* m_layer;
 
     // m_posZOrderList holds a sorted list of all the descendant nodes within
-    // that have z-indices of 0 or greater (auto will count as 0).
+    // that have z-indices of 0 (or is treated as 0 for positioned objects) or greater.
     // m_negZOrderList holds descendants within our stacking context with
     // negative z-indices.
     OwnPtr<Vector<PaintLayerStackingNode*>> m_posZOrderList;
@@ -167,16 +175,15 @@ private:
     // This boolean caches whether the z-order lists above are dirty.
     // It is only ever set for stacking contexts, as no other element can
     // have z-order lists.
-    unsigned m_zOrderListsDirty : 1;
+    bool m_zOrderListsDirty : 1;
 
-    // This attribute caches whether the element was a stacking context or
-    // was treated like a stacking context, so that we can do comparison against
-    // it during style change (styleDidChange in particular), as we have lost
-    // the previous style information.
-    unsigned m_isTreatedAsOrStackingContext: 1;
+    // This attribute caches whether the element was stacked. It's needed to check the
+    // current stacked status (instead of the new stacked status determined by the new
+    // style which has not been realized yet) when a layer is removed due to style change.
+    bool m_isStacked : 1;
 
 #if ENABLE(ASSERT)
-    unsigned m_layerListMutationAllowed : 1;
+    bool m_layerListMutationAllowed : 1;
     PaintLayerStackingNode* m_stackingParent;
 #endif
 };

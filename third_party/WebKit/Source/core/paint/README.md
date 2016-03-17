@@ -2,6 +2,59 @@
 
 This directory contains implementation of painters of layout objects.
 
+## Stacked contents and stacking contexts
+
+This chapter is basically a clarification of [CSS 2.1 appendix E. Elaborate description
+of Stacking Contexts](http://www.w3.org/TR/CSS21/zindex.html).
+
+According to the documentation, we can have the following types of elements that are
+treated in different ways during painting:
+
+*   Stacked elements: elements that are z-ordered in stacking contexts.
+
+    *   Stacking contexts: elements with non-auto z-indices.
+
+    *   Elements that are not real stacking contexts but are treated as stacking
+        contexts but don't manage other stacked elements. Their z-ordering are
+        managed by real stacking contexts. They are positioned elements with
+        `z-index: auto` (E.2.8 in the documentation).
+
+        They must be managed by the enclosing stacking context as stacked elements
+        because `z-index:auto` and `z-index:0` are considered equal for stacking
+        context sorting and they may interleave by DOM order.
+
+        The difference of a stacked element of this type from a real stacking context
+        is that it doesn't manage z-ordering of stacked descendants. These descendants
+        are managed by the parent stacking context of this stacked element.
+
+    "Stacked element" is not defined as a formal term in the documentation, but we found
+    it convenient to use this term to refer to any elements participating z-index ordering
+    in stacking contexts.
+
+    A stacked element is represented by a `PaintLayerStackingNode` associated with a
+    `PaintLayer`. It's painted as self-painting `PaintLayer`s by `PaintLayerPainter`
+    by executing all of the steps of the painting algorithm explained in the documentation
+    for the element. When painting a stacked element of the second type, we don't
+    paint its stacked descendants which are managed by the parent stacking context.
+
+*   Non-stacked pseudo stacking contexts: elements that are not stacked, but paint
+    their descendants (excluding any stacked contents) as if they created stacking
+    contexts. This includes
+
+    *   inline blocks, inline tables, inline-level replaced elements
+        (E.2.7.2.1.4 in the documentation)
+    *   non-positioned floating elements (E.2.5 in the documentation)
+    *   [flex items](http://www.w3.org/TR/css-flexbox-1/#painting)
+    *   [grid items](http://www.w3.org/TR/css-grid-1/#z-order)
+    *   custom scrollbar parts
+
+    They are painted by `ObjectPainter::paintAllPhasesAtomically()` which executes
+    all of the steps of the painting algorithm explained in the documentation, except
+    ignores any descendants which are positioned or have non-auto z-index (which is
+    achieved by skipping descendants with self-painting layers).
+
+*   Other normal elements.
+
 ## Painters
 
 ## Paint invalidation

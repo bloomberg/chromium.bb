@@ -232,7 +232,7 @@ public:
     void removeOnlyThisLayer();
     void insertOnlyThisLayer();
 
-    void styleChanged(StyleDifference, const ComputedStyle* oldStyle);
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle);
 
     // FIXME: Many people call this function while it has out-of-date information.
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }

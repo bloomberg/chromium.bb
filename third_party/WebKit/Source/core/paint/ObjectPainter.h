@@ -38,10 +38,12 @@ public:
     // - flex items (http://www.w3.org/TR/css-flexbox-1/#painting),
     // - grid items (http://www.w3.org/TR/css-grid-1/#z-order),
     // - custom scrollbar parts.
+    // Also see https://chromium.googlesource.com/chromium/src.git/+/master/third_party/WebKit/Source/core/paint/README.md.
+    //
     // It is expected that the caller will call this function independent of the value of paintInfo.phase,
     // and this function will do atomic paint (for PaintPhaseForeground), normal paint (for PaintPhaseSelection
     // and PaintPhaseTextClip) or nothing (other paint phases) according to paintInfo.phase.
-    void paintAsPseudoStackingContext(const PaintInfo&, const LayoutPoint& paintOffset);
+    void paintAllPhasesAtomically(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     static void drawDashedOrDottedBoxSide(GraphicsContext&, int x1, int y1, int x2, int y2,

@@ -57,7 +57,7 @@ public:
 
     const PaintLayer* compositingContainer(const PaintLayer& layer) const
     {
-        return layer.stackingNode()->isTreatedAsOrStackingContext() ? m_compositingStackingContext : m_compositingAncestor;
+        return layer.stackingNode()->isStacked() ? m_compositingStackingContext : m_compositingAncestor;
     }
 
     const PaintLayer* compositingStackingContext() const

@@ -233,7 +233,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         // from the style.
         layer()->setLayerType(type);
 
-        layer()->styleChanged(diff, oldStyle);
+        layer()->styleDidChange(diff, oldStyle);
         if (hadLayer && layer()->isSelfPaintingLayer() != layerWasSelfPainting)
             setChildNeedsLayout();
     }
@@ -296,10 +296,10 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
 void LayoutBoxModelObject::createLayer(PaintLayerType type)
 {
     // If the current paint invalidation container is not a stacking context and this object is
-    // a or treated as a stacking context, creating this layer may cause this object and its
+    // stacked content, creating this layer may cause this object and its
     // descendants to change paint invalidation container. Therefore we must eagerly invalidate
     // them on the original paint invalidation container before creating the layer.
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && isRooted() && styleRef().isTreatedAsOrStackingContext()) {
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && isRooted() && styleRef().isStacked()) {
         const LayoutBoxModelObject& currentPaintInvalidationContainer = containerForPaintInvalidation();
         if (!currentPaintInvalidationContainer.styleRef().isStackingContext())
             invalidatePaintIncludingNonSelfPaintingLayerDescendants(currentPaintInvalidationContainer);

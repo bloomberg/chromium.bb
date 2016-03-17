@@ -532,7 +532,7 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext, int x1, i
     graphicsContext.fillPolygon(4, quad, color, antialias);
 }
 
-void ObjectPainter::paintAsPseudoStackingContext(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void ObjectPainter::paintAllPhasesAtomically(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // Pass PaintPhaseSelection and PaintPhaseTextClip to the descendants so that they will paint
     // for selection and text clip respectively. We don't need complete painting for these phases.

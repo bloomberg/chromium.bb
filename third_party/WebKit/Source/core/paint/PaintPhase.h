@@ -36,7 +36,7 @@ namespace blink {
 //     below inline content that can overlap them.
 //  3. Foreground phase: all inlines are fully painted. Atomic inline elements will
 //     get all 4 phases invoked on them during this phase, as if they were stacking
-//     contexts (see ObjectPainter::paintAsPseudoStackingContext()).
+//     contexts (see ObjectPainter::paintAllPhasesAtomically()).
 //  4. Outline phase: outlines are painted over the foreground.
 
 enum PaintPhase {

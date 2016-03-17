@@ -55,10 +55,10 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
 
     if (continueRendering) {
         // Paint all phases of FO elements atomically as though the FO element established its own stacking context.
-        // The delegate forwards calls to paint() in LayoutObject::paintAsPseudoStackingContext() to
+        // The delegate forwards calls to paint() in LayoutObject::paintAllPhasesAtomically() to
         // BlockPainter::paint(), instead of m_layoutSVGForeignObject.paint() (which would call this method again).
         BlockPainterDelegate delegate(m_layoutSVGForeignObject);
-        ObjectPainter(delegate).paintAsPseudoStackingContext(paintContext.paintInfo(), LayoutPoint());
+        ObjectPainter(delegate).paintAllPhasesAtomically(paintContext.paintInfo(), LayoutPoint());
     }
 }
 

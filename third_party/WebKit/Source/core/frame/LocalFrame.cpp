@@ -633,7 +633,7 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     // Paint starting at the nearest self painting layer, clipped to the object itself.
     // TODO(pdr): This will also paint the content behind the object if the object contains
     // transparency but the layer is opaque. We could directly call layoutObject->paint(...)
-    // (see ObjectPainter::paintAsPseudoStackingContext) but this would skip self-painting children.
+    // (see ObjectPainter::paintAllPhasesAtomically) but this would skip self-painting children.
     PaintLayer* layer = layoutObject->enclosingLayer()->enclosingSelfPaintingLayer();
     IntRect absoluteBoundingBox = layoutObject->absoluteBoundingBoxRectIncludingDescendants();
     FloatRect boundingBox = layer->layoutObject()->absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms).boundingBox();
