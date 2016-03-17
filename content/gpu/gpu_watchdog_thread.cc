@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -208,9 +209,12 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
 
 #if defined(OS_WIN)
   arm_cpu_time_ = GetWatchedThreadTime();
+
+  QueryUnbiasedInterruptTime(&arm_interrupt_time_);
 #endif
 
   check_time_ = base::Time::Now();
+  check_timeticks_ = base::TimeTicks::Now();
   // Immediately after the computer is woken up from being suspended it might
   // be pretty sluggish, so allow some extra time before the next timeout.
   base::TimeDelta timeout = timeout_ * (after_suspend ? 3 : 1);
@@ -332,6 +336,28 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
       return;
   }
 #endif
+
+// Store variables so they're available in crash dumps to help determine the
+// cause of any hang.
+#if defined(OS_WIN)
+  ULONGLONG fire_interrupt_time;
+  QueryUnbiasedInterruptTime(&fire_interrupt_time);
+
+  // This is the time since the watchdog was armed, in 100ns intervals,
+  // ignoring time where the computer is suspended.
+  ULONGLONG interrupt_delay = fire_interrupt_time - arm_interrupt_time_;
+
+  base::debug::Alias(&interrupt_delay);
+  base::debug::Alias(&time_since_arm);
+
+  bool using_high_res_timer = base::Time::IsHighResolutionTimerInUse();
+  base::debug::Alias(&using_high_res_timer);
+#endif
+
+  base::Time current_time = base::Time::Now();
+  base::TimeTicks current_timeticks = base::TimeTicks::Now();
+  base::debug::Alias(&current_time);
+  base::debug::Alias(&current_timeticks);
 
   LOG(ERROR) << "The GPU process hung. Terminating after "
              << timeout_.InMilliseconds() << " ms.";

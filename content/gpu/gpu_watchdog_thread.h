@@ -108,6 +108,10 @@ class GpuWatchdogThread : public base::Thread,
 #if defined(OS_WIN)
   void* watched_thread_handle_;
   base::TimeDelta arm_cpu_time_;
+
+  // This measures the time that the system has been running, in units of 100
+  // ns.
+  ULONGLONG arm_interrupt_time_;
 #endif
 
   // Time after which it's assumed that the computer has been suspended since
@@ -118,6 +122,7 @@ class GpuWatchdogThread : public base::Thread,
 
   // This is the time the last check was sent.
   base::Time check_time_;
+  base::TimeTicks check_timeticks_;
 
 #if defined(OS_CHROMEOS)
   FILE* tty_file_;
