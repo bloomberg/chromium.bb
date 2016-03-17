@@ -838,7 +838,7 @@ test("content_perftests") {
 
 test("content_gl_tests") {
   sources = [
-    "../common/gpu/client/gl_helper_unittest.cc",
+    "../browser/compositor/gl_helper_unittest.cc",
     "../common/gpu/client/gpu_in_process_context_tests.cc",
     "run_all_gl_tests.cc",
   ]
@@ -875,7 +875,7 @@ test("content_gl_tests") {
 
 test("content_gl_benchmark") {
   sources = [
-    "../common/gpu/client/gl_helper_benchmark.cc",
+    "../browser/compositor/gl_helper_benchmark.cc",
     "run_gl_benchmark.cc",
   ]
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GL_HELPER_SCALING_H_
-#define CONTENT_COMMON_GPU_CLIENT_GL_HELPER_SCALING_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_GL_HELPER_SCALING_H_
+#define CONTENT_BROWSER_COMPOSITOR_GL_HELPER_SCALING_H_
 
 #include <deque>
 #include <map>
 #include <vector>
 
 #include "base/macros.h"
-#include "content/common/gpu/client/gl_helper.h"
+#include "content/browser/compositor/gl_helper.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -52,34 +52,30 @@ class CONTENT_EXPORT GLHelperScaling {
 
   typedef std::pair<ShaderType, bool> ShaderProgramKeyType;
 
-  GLHelperScaling(gpu::gles2::GLES2Interface* gl,
-                  GLHelper* helper);
+  GLHelperScaling(gpu::gles2::GLES2Interface* gl, GLHelper* helper);
   ~GLHelperScaling();
   void InitBuffer();
 
-  GLHelper::ScalerInterface* CreateScaler(
-      GLHelper::ScalerQuality quality,
-      gfx::Size src_size,
-      gfx::Rect src_subrect,
-      const gfx::Size& dst_size,
-      bool vertically_flip_texture,
-      bool swizzle);
+  GLHelper::ScalerInterface* CreateScaler(GLHelper::ScalerQuality quality,
+                                          gfx::Size src_size,
+                                          gfx::Rect src_subrect,
+                                          const gfx::Size& dst_size,
+                                          bool vertically_flip_texture,
+                                          bool swizzle);
 
-  GLHelper::ScalerInterface* CreatePlanarScaler(
-      const gfx::Size& src_size,
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      bool vertically_flip_texture,
-      bool swizzle,
-      const float color_weights[4]);
+  GLHelper::ScalerInterface* CreatePlanarScaler(const gfx::Size& src_size,
+                                                const gfx::Rect& src_subrect,
+                                                const gfx::Size& dst_size,
+                                                bool vertically_flip_texture,
+                                                bool swizzle,
+                                                const float color_weights[4]);
 
-  ShaderInterface* CreateYuvMrtShader(
-      const gfx::Size& src_size,
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      bool vertically_flip_texture,
-      bool swizzle,
-      ShaderType shader);
+  ShaderInterface* CreateYuvMrtShader(const gfx::Size& src_size,
+                                      const gfx::Rect& src_subrect,
+                                      const gfx::Size& dst_size,
+                                      bool vertically_flip_texture,
+                                      bool swizzle,
+                                      ShaderType shader);
 
  private:
   // A ScaleOp represents a pass in a scaler pipeline, in one dimension.
@@ -88,8 +84,7 @@ class CONTENT_EXPORT GLHelperScaling {
   // Exposed in the header file for testing purposes.
   struct ScaleOp {
     ScaleOp(int factor, bool x, int size)
-        : scale_factor(factor), scale_x(x), scale_size(size) {
-    }
+        : scale_factor(factor), scale_x(x), scale_size(size) {}
 
     // Calculate a set of ScaleOp needed to convert an image of size
     // |src| into an image of size |dst|. If |scale_x| is true, then
@@ -138,7 +133,7 @@ class CONTENT_EXPORT GLHelperScaling {
     // 2 means 50% scale
     // 3 means 33% scale, etc.
     int scale_factor;
-    bool scale_x;  // Otherwise y
+    bool scale_x;    // Otherwise y
     int scale_size;  // Size to scale to.
   };
 
@@ -169,7 +164,7 @@ class CONTENT_EXPORT GLHelperScaling {
                            const gfx::Size& dst_size,
                            bool vertically_flip_texture,
                            bool swizzle,
-                           std::vector<ScalerStage> *scaler_stages);
+                           std::vector<ScalerStage>* scaler_stages);
 
   // Take two queues of ScaleOp structs and generate a
   // vector of scaler stages. This is the second half of
@@ -183,8 +178,7 @@ class CONTENT_EXPORT GLHelperScaling {
       bool swizzle,
       std::deque<GLHelperScaling::ScaleOp>* x_ops,
       std::deque<GLHelperScaling::ScaleOp>* y_ops,
-      std::vector<ScalerStage> *scaler_stages);
-
+      std::vector<ScalerStage>* scaler_stages);
 
   scoped_refptr<ShaderProgram> GetShaderProgram(ShaderType type, bool swizzle);
 
@@ -199,8 +193,7 @@ class CONTENT_EXPORT GLHelperScaling {
   // drawing a quad.
   ScopedBuffer vertex_attributes_buffer_;
 
-  std::map<ShaderProgramKeyType,
-           scoped_refptr<ShaderProgram> > shader_programs_;
+  std::map<ShaderProgramKeyType, scoped_refptr<ShaderProgram>> shader_programs_;
 
   friend class ShaderProgram;
   friend class ScalerImpl;
@@ -208,7 +201,6 @@ class CONTENT_EXPORT GLHelperScaling {
   DISALLOW_COPY_AND_ASSIGN(GLHelperScaling);
 };
 
-
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GL_HELPER_SCALING_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_GL_HELPER_SCALING_H_

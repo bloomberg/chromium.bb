@@ -24,8 +24,8 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "content/common/gpu/client/gl_helper.h"
-#include "content/common/gpu/client/gl_helper_scaling.h"
+#include "content/browser/compositor/gl_helper.h"
+#include "content/browser/compositor/gl_helper_scaling.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -39,15 +39,13 @@ using blink::WebGLId;
 using blink::WebGraphicsContext3D;
 
 content::GLHelper::ScalerQuality kQualities[] = {
-  content::GLHelper::SCALER_QUALITY_BEST,
-  content::GLHelper::SCALER_QUALITY_GOOD,
-  content::GLHelper::SCALER_QUALITY_FAST,
+    content::GLHelper::SCALER_QUALITY_BEST,
+    content::GLHelper::SCALER_QUALITY_GOOD,
+    content::GLHelper::SCALER_QUALITY_FAST,
 };
 
-const char *kQualityNames[] = {
-  "best",
-  "good",
-  "fast",
+const char* kQualityNames[] = {
+    "best", "good", "fast",
 };
 
 class GLHelperTest : public testing::Test {
@@ -59,12 +57,10 @@ class GLHelperTest : public testing::Test {
         CreateOffscreenContext(attributes, lose_context_when_out_of_memory);
     context_->InitializeOnCurrentThread();
 
-    helper_.reset(
-        new content::GLHelper(context_->GetGLInterface(),
-                              context_->GetContextSupport()));
+    helper_.reset(new content::GLHelper(context_->GetGLInterface(),
+                                        context_->GetContextSupport()));
     helper_scaling_.reset(new content::GLHelperScaling(
-        context_->GetGLInterface(),
-        helper_.get()));
+        context_->GetGLInterface(), helper_.get()));
   }
 
   void TearDown() override {
@@ -73,9 +69,7 @@ class GLHelperTest : public testing::Test {
     context_.reset(NULL);
   }
 
-
-  void LoadPngFileToSkBitmap(const base::FilePath& filename,
-                             SkBitmap* bitmap) {
+  void LoadPngFileToSkBitmap(const base::FilePath& filename, SkBitmap* bitmap) {
     std::string compressed;
     base::ReadFileToString(base::MakeAbsoluteFilePath(filename), &compressed);
     ASSERT_TRUE(compressed.size());
@@ -91,10 +85,8 @@ class GLHelperTest : public testing::Test {
         static_cast<unsigned char*>(bitmap->getPixels()),
         gfx::PNGCodec::FORMAT_BGRA,
         gfx::Size(bitmap->width(), bitmap->height()),
-        static_cast<int>(bitmap->rowBytes()),
-        true,
-        std::vector<gfx::PNGCodec::Comment>(),
-        &compressed));
+        static_cast<int>(bitmap->rowBytes()), true,
+        std::vector<gfx::PNGCodec::Comment>(), &compressed));
     ASSERT_TRUE(compressed.size());
     FILE* f = base::OpenFile(filename, "wb");
     ASSERT_TRUE(f);
@@ -110,30 +102,19 @@ class GLHelperTest : public testing::Test {
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
-
 TEST_F(GLHelperTest, ScaleBenchmark) {
-  int output_sizes[] = { 1920, 1080,
-                         1249, 720,  // Output size on pixel
-                         256, 144 };
-  int input_sizes[] = { 3200, 2040,
-                        2560, 1476,  // Pixel tab size
-                        1920, 1080,
-                        1280, 720,
-                        800, 480,
-                        256, 144 };
+  int output_sizes[] = {1920, 1080, 1249, 720,  // Output size on pixel
+                        256,  144};
+  int input_sizes[] = {3200, 2040, 2560, 1476,  // Pixel tab size
+                       1920, 1080, 1280, 720,  800, 480, 256, 144};
 
   for (size_t q = 0; q < arraysize(kQualities); q++) {
-    for (size_t outsize = 0;
-         outsize < arraysize(output_sizes);
-         outsize += 2) {
-      for (size_t insize = 0;
-           insize < arraysize(input_sizes);
-           insize += 2) {
+    for (size_t outsize = 0; outsize < arraysize(output_sizes); outsize += 2) {
+      for (size_t insize = 0; insize < arraysize(input_sizes); insize += 2) {
         WebGLId src_texture = context_->createTexture();
         WebGLId dst_texture = context_->createTexture();
         WebGLId framebuffer = context_->createFramebuffer();
-        const gfx::Size src_size(input_sizes[insize],
-                                 input_sizes[insize + 1]);
+        const gfx::Size src_size(input_sizes[insize], input_sizes[insize + 1]);
         const gfx::Size dst_size(output_sizes[outsize],
                                  output_sizes[outsize + 1]);
         SkBitmap input;
@@ -144,35 +125,18 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
 
         context_->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         context_->bindTexture(GL_TEXTURE_2D, dst_texture);
-        context_->texImage2D(GL_TEXTURE_2D,
-                             0,
-                             GL_RGBA,
-                             dst_size.width(),
-                             dst_size.height(),
-                             0,
-                             GL_RGBA,
-                             GL_UNSIGNED_BYTE,
+        context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dst_size.width(),
+                             dst_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                              0);
         context_->bindTexture(GL_TEXTURE_2D, src_texture);
-        context_->texImage2D(GL_TEXTURE_2D,
-                             0,
-                             GL_RGBA,
-                             src_size.width(),
-                             src_size.height(),
-                             0,
-                             GL_RGBA,
-                             GL_UNSIGNED_BYTE,
+        context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src_size.width(),
+                             src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                              input.getPixels());
 
-        gfx::Rect src_subrect(0, 0,
-                              src_size.width(), src_size.height());
+        gfx::Rect src_subrect(0, 0, src_size.width(), src_size.height());
         scoped_ptr<content::GLHelper::ScalerInterface> scaler(
-          helper_->CreateScaler(kQualities[q],
-                                src_size,
-                                src_subrect,
-                                dst_size,
-                                false,
-                                false));
+            helper_->CreateScaler(kQualities[q], src_size, src_subrect,
+                                  dst_size, false, false));
         // Scale once beforehand before we start measuring.
         scaler->Scale(src_texture, dst_texture);
         context_->finish();
@@ -200,15 +164,13 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
         context_->deleteFramebuffer(framebuffer);
 
         std::string name;
-        name = base::StringPrintf("scale_%dx%d_to_%dx%d_%s",
-                                  src_size.width(),
-                                  src_size.height(),
-                                  dst_size.width(),
-                                  dst_size.height(),
-                                  kQualityNames[q]);
+        name = base::StringPrintf("scale_%dx%d_to_%dx%d_%s", src_size.width(),
+                                  src_size.height(), dst_size.width(),
+                                  dst_size.height(), kQualityNames[q]);
 
         float ms = (end_time - start_time).InMillisecondsF() / iterations;
-        printf("*RESULT gpu_scale_time: %s=%.2f ms\n", name.c_str(), ms);
+        VLOG(0) << base::StringPrintf("*RESULT gpu_scale_time: %s=%.2f ms\n",
+                                      name.c_str(), ms);
       }
     }
   }
@@ -222,36 +184,20 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
 // the table below.
 TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
   int percents[] = {
-    230,
-    180,
-    150,
-    110,
-    90,
-    70,
-    50,
-    49,
-    40,
-    20,
-    10,
+      230, 180, 150, 110, 90, 70, 50, 49, 40, 20, 10,
   };
 
   SkBitmap input;
-  LoadPngFileToSkBitmap(base::FilePath(
-      FILE_PATH_LITERAL("testimage.png")), &input);
+  LoadPngFileToSkBitmap(base::FilePath(FILE_PATH_LITERAL("testimage.png")),
+                        &input);
 
   WebGLId framebuffer = context_->createFramebuffer();
   WebGLId src_texture = context_->createTexture();
   const gfx::Size src_size(input.width(), input.height());
   context_->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   context_->bindTexture(GL_TEXTURE_2D, src_texture);
-  context_->texImage2D(GL_TEXTURE_2D,
-                       0,
-                       GL_RGBA,
-                       src_size.width(),
-                       src_size.height(),
-                       0,
-                       GL_RGBA,
-                       GL_UNSIGNED_BYTE,
+  context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src_size.width(),
+                       src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                        input.getPixels());
 
   for (size_t q = 0; q < arraysize(kQualities); q++) {
@@ -259,27 +205,19 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
       const gfx::Size dst_size(input.width() * percents[p] / 100,
                                input.height() * percents[p] / 100);
       WebGLId dst_texture = helper_->CopyAndScaleTexture(
-        src_texture,
-        src_size,
-        dst_size,
-        false,
-        kQualities[q]);
+          src_texture, src_size, dst_size, false, kQualities[q]);
 
       SkBitmap output_pixels;
       output_pixels.allocN32Pixels(dst_size.width(), dst_size.height());
 
       helper_->ReadbackTextureSync(
-          dst_texture,
-          gfx::Rect(0, 0,
-                    dst_size.width(),
-                    dst_size.height()),
-          static_cast<unsigned char *>(output_pixels.getPixels()),
+          dst_texture, gfx::Rect(0, 0, dst_size.width(), dst_size.height()),
+          static_cast<unsigned char*>(output_pixels.getPixels()),
           kN32_SkColorType);
       context_->deleteTexture(dst_texture);
       std::string filename = base::StringPrintf("testoutput_%s_%d.ppm",
-                                                kQualityNames[q],
-                                                percents[p]);
-      VLOG(0) << "Writing " <<  filename;
+                                                kQualityNames[q], percents[p]);
+      VLOG(0) << "Writing " << filename;
       SaveToFile(&output_pixels, base::FilePath::FromUTF8Unsafe(filename));
     }
   }

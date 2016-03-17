@@ -5,8 +5,8 @@
 #include "content/browser/compositor/owned_mailbox.h"
 
 #include "base/logging.h"
+#include "content/browser/compositor/gl_helper.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/common/gpu/client/gl_helper.h"
 
 namespace content {
 

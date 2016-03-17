@@ -4,9 +4,9 @@
 
 #include "content/browser/compositor/reflector_texture.h"
 
+#include "content/browser/compositor/gl_helper.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/gl_helper.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 

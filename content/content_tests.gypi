@@ -1663,7 +1663,7 @@
             '..',
           ],
           'sources': [
-            'common/gpu/client/gl_helper_unittest.cc',
+            'browser/compositor/gl_helper_unittest.cc',
             'common/gpu/client/gpu_in_process_context_tests.cc',
             'test/run_all_gl_tests.cc',
           ],
@@ -1701,7 +1701,7 @@
             '..',
           ],
           'sources': [
-            'common/gpu/client/gl_helper_benchmark.cc',
+            'browser/compositor/gl_helper_benchmark.cc',
             'test/run_gl_benchmark.cc',
           ],
         },

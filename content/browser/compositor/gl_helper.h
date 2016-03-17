@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GL_HELPER_H_
-#define CONTENT_COMMON_GPU_CLIENT_GL_HELPER_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_GL_HELPER_H_
+#define CONTENT_BROWSER_COMPOSITOR_GL_HELPER_H_
 
 #include "base/atomicops.h"
 #include "base/callback.h"
@@ -338,10 +338,7 @@ class CONTENT_EXPORT GLHelper {
   // Creates |scaler_impl_| if NULL.
   void InitScalerImpl();
 
-  enum ReadbackSwizzle {
-    kSwizzleNone = 0,
-    kSwizzleBGRA
-  };
+  enum ReadbackSwizzle { kSwizzleNone = 0, kSwizzleBGRA };
 
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
@@ -379,4 +376,4 @@ class CONTENT_EXPORT ReadbackYUVInterface {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GL_HELPER_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_GL_HELPER_H_

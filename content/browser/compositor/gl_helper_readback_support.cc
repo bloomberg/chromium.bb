@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gl_helper_readback_support.h"
+#include "content/browser/compositor/gl_helper_readback_support.h"
 #include "base/logging.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -81,20 +81,20 @@ void GLHelperReadbackSupport::GetAdditionalFormat(GLenum format,
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  gl_->TexImage2D(
-      GL_TEXTURE_2D, 0, format, kTestSize, kTestSize, 0, format, type, NULL);
+  gl_->TexImage2D(GL_TEXTURE_2D, 0, format, kTestSize, kTestSize, 0, format,
+                  type, NULL);
   ScopedFramebuffer dst_framebuffer(gl_);
   ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
                                                              dst_framebuffer);
-  gl_->FramebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst_texture, 0);
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                            dst_texture, 0);
   GLint format_tmp = 0, type_tmp = 0;
   gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &format_tmp);
   gl_->GetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &type_tmp);
   *format_out = format_tmp;
   *type_out = type_tmp;
 
-  struct FormatCacheEntry entry = { format, type, *format_out, *type_out };
+  struct FormatCacheEntry entry = {format, type, *format_out, *type_out};
   format_cache_.push_back(entry);
 }
 

@@ -10,7 +10,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "content/common/gpu/client/gl_helper.h"
+#include "content/browser/compositor/gl_helper.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"

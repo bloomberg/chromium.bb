@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GL_HELPER_READBACK_SUPPORT_H_
-#define CONTENT_COMMON_GPU_CLIENT_GL_HELPER_READBACK_SUPPORT_H_
+#ifndef CONTENT_BROWSER_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#define CONTENT_BROWSER_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
 
 #include <stddef.h>
 
 #include <vector>
 
-#include "content/common/gpu/client/gl_helper.h"
+#include "content/browser/compositor/gl_helper.h"
 
 namespace content {
 
@@ -36,8 +36,11 @@ class CONTENT_EXPORT GLHelperReadbackSupport {
                                   size_t* bytes_per_pixel);
   // Provides the additional readback format/type pairing for a render target
   // of a given format/type pairing
-  void GetAdditionalFormat(GLenum format, GLenum type, GLenum *format_out,
-                           GLenum *type_out);
+  void GetAdditionalFormat(GLenum format,
+                           GLenum type,
+                           GLenum* format_out,
+                           GLenum* type_out);
+
  private:
   struct FormatCacheEntry {
     GLenum format;
@@ -69,4 +72,4 @@ class CONTENT_EXPORT GLHelperReadbackSupport {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GL_HELPER_READBACK_SUPPORT_H_
+#endif  // CONTENT_BROWSER_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_

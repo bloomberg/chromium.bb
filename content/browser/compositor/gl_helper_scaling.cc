@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gl_helper_scaling.h"
+#include "content/browser/compositor/gl_helper_scaling.h"
 
 #include <stddef.h>
 
@@ -146,14 +146,8 @@ class ScalerImpl : public GLHelper::ScalerInterface,
       gl_->GenTextures(1, &intermediate_texture_);
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_,
                                                         intermediate_texture_);
-      gl_->TexImage2D(GL_TEXTURE_2D,
-                      0,
-                      GL_RGBA,
-                      spec_.src_size.width(),
-                      spec_.src_size.height(),
-                      0,
-                      GL_RGBA,
-                      GL_UNSIGNED_BYTE,
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, spec_.src_size.width(),
+                      spec_.src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                       NULL);
     }
   }
@@ -178,11 +172,8 @@ class ScalerImpl : public GLHelper::ScalerInterface,
     scoped_ptr<GLenum[]> buffers(new GLenum[dest_textures.size()]);
     for (size_t t = 0; t < dest_textures.size(); t++) {
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dest_textures[t]);
-      gl_->FramebufferTexture2D(GL_FRAMEBUFFER,
-                                GL_COLOR_ATTACHMENT0 + t,
-                                GL_TEXTURE_2D,
-                                dest_textures[t],
-                                0);
+      gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + t,
+                                GL_TEXTURE_2D, dest_textures[t], 0);
       buffers[t] = GL_COLOR_ATTACHMENT0 + t;
     }
     ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, source_texture);
@@ -194,12 +185,9 @@ class ScalerImpl : public GLHelper::ScalerInterface,
 
     ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(
         gl_, scaler_helper_->vertex_attributes_buffer_);
-    shader_program_->UseProgram(spec_.src_size,
-                                spec_.src_subrect,
-                                spec_.dst_size,
-                                spec_.scale_x,
-                                spec_.vertically_flip_texture,
-                                color_weights_);
+    shader_program_->UseProgram(spec_.src_size, spec_.src_subrect,
+                                spec_.dst_size, spec_.scale_x,
+                                spec_.vertically_flip_texture, color_weights_);
     gl_->Viewport(0, 0, spec_.dst_size.width(), spec_.dst_size.height());
 
     if (dest_textures.size() > 1) {
@@ -382,13 +370,9 @@ void GLHelperScaling::ConvertScalerOpsToScalerStages(
       }
     }
 
-    scaler_stages->push_back(ScalerStage(current_shader,
-                                         src_size,
-                                         src_subrect,
-                                         intermediate_size,
-                                         scale_x,
-                                         vertically_flip_texture,
-                                         swizzle));
+    scaler_stages->push_back(ScalerStage(current_shader, src_size, src_subrect,
+                                         intermediate_size, scale_x,
+                                         vertically_flip_texture, swizzle));
     src_size = intermediate_size;
     src_subrect = gfx::Rect(intermediate_size);
     vertically_flip_texture = false;
@@ -406,37 +390,23 @@ void GLHelperScaling::ComputeScalerStages(
     std::vector<ScalerStage>* scaler_stages) {
   if (quality == GLHelper::SCALER_QUALITY_FAST ||
       src_subrect.size() == dst_size) {
-    scaler_stages->push_back(ScalerStage(SHADER_BILINEAR,
-                                         src_size,
-                                         src_subrect,
-                                         dst_size,
-                                         false,
-                                         vertically_flip_texture,
-                                         swizzle));
+    scaler_stages->push_back(ScalerStage(SHADER_BILINEAR, src_size, src_subrect,
+                                         dst_size, false,
+                                         vertically_flip_texture, swizzle));
     return;
   }
 
   std::deque<GLHelperScaling::ScaleOp> x_ops, y_ops;
-  GLHelperScaling::ScaleOp::AddOps(src_subrect.width(),
-                                   dst_size.width(),
-                                   true,
+  GLHelperScaling::ScaleOp::AddOps(src_subrect.width(), dst_size.width(), true,
                                    quality == GLHelper::SCALER_QUALITY_GOOD,
                                    &x_ops);
-  GLHelperScaling::ScaleOp::AddOps(src_subrect.height(),
-                                   dst_size.height(),
-                                   false,
-                                   quality == GLHelper::SCALER_QUALITY_GOOD,
-                                   &y_ops);
+  GLHelperScaling::ScaleOp::AddOps(
+      src_subrect.height(), dst_size.height(), false,
+      quality == GLHelper::SCALER_QUALITY_GOOD, &y_ops);
 
-  ConvertScalerOpsToScalerStages(quality,
-                                 src_size,
-                                 src_subrect,
-                                 dst_size,
-                                 vertically_flip_texture,
-                                 swizzle,
-                                 &x_ops,
-                                 &y_ops,
-                                 scaler_stages);
+  ConvertScalerOpsToScalerStages(quality, src_size, src_subrect, dst_size,
+                                 vertically_flip_texture, swizzle, &x_ops,
+                                 &y_ops, scaler_stages);
 }
 
 GLHelper::ScalerInterface* GLHelperScaling::CreateScaler(
@@ -447,13 +417,8 @@ GLHelper::ScalerInterface* GLHelperScaling::CreateScaler(
     bool vertically_flip_texture,
     bool swizzle) {
   std::vector<ScalerStage> scaler_stages;
-  ComputeScalerStages(quality,
-                      src_size,
-                      src_subrect,
-                      dst_size,
-                      vertically_flip_texture,
-                      swizzle,
-                      &scaler_stages);
+  ComputeScalerStages(quality, src_size, src_subrect, dst_size,
+                      vertically_flip_texture, swizzle, &scaler_stages);
 
   ScalerImpl* ret = NULL;
   for (unsigned int i = 0; i < scaler_stages.size(); i++) {
@@ -469,13 +434,8 @@ GLHelper::ScalerInterface* GLHelperScaling::CreatePlanarScaler(
     bool vertically_flip_texture,
     bool swizzle,
     const float color_weights[4]) {
-  ScalerStage stage(SHADER_PLANAR,
-                    src_size,
-                    src_subrect,
-                    dst_size,
-                    true,
-                    vertically_flip_texture,
-                    swizzle);
+  ScalerStage stage(SHADER_PLANAR, src_size, src_subrect, dst_size, true,
+                    vertically_flip_texture, swizzle);
   return new ScalerImpl(gl_, this, stage, NULL, color_weights);
 }
 
@@ -487,28 +447,22 @@ GLHelperScaling::ShaderInterface* GLHelperScaling::CreateYuvMrtShader(
     bool swizzle,
     ShaderType shader) {
   DCHECK(shader == SHADER_YUV_MRT_PASS1 || shader == SHADER_YUV_MRT_PASS2);
-  ScalerStage stage(shader,
-                    src_size,
-                    src_subrect,
-                    dst_size,
-                    true,
-                    vertically_flip_texture,
-                    swizzle);
+  ScalerStage stage(shader, src_size, src_subrect, dst_size, true,
+                    vertically_flip_texture, swizzle);
   return new ScalerImpl(gl_, this, stage, NULL, NULL);
 }
 
 const GLfloat GLHelperScaling::kVertexAttributes[] = {
-    -1.0f, -1.0f, 0.0f, 0.0f,     // vertex 0
-    1.0f,  -1.0f, 1.0f, 0.0f,     // vertex 1
-    -1.0f, 1.0f,  0.0f, 1.0f,     // vertex 2
-    1.0f,  1.0f,  1.0f, 1.0f, };  // vertex 3
+    -1.0f, -1.0f, 0.0f, 0.0f,  // vertex 0
+    1.0f,  -1.0f, 1.0f, 0.0f,  // vertex 1
+    -1.0f, 1.0f,  0.0f, 1.0f,  // vertex 2
+    1.0f,  1.0f,  1.0f, 1.0f,
+};  // vertex 3
 
 void GLHelperScaling::InitBuffer() {
   ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(gl_,
                                                     vertex_attributes_buffer_);
-  gl_->BufferData(GL_ARRAY_BUFFER,
-                  sizeof(kVertexAttributes),
-                  kVertexAttributes,
+  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(kVertexAttributes), kVertexAttributes,
                   GL_STATIC_DRAW);
 }
 
@@ -812,7 +766,7 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         break;
     }
     if (swizzle) {
-      switch(type) {
+      switch (type) {
         case SHADER_YUV_MRT_PASS1:
           fragment_program.append("  gl_FragData[0] = gl_FragData[0].bgra;\n");
           break;
@@ -889,24 +843,15 @@ void ShaderProgram::UseProgram(const gfx::Size& src_size,
   // OpenGL defines the last parameter to VertexAttribPointer as type
   // "const GLvoid*" even though it is actually an offset into the buffer
   // object's data store and not a pointer to the client's address space.
-  const void* offsets[2] = {
-      0, reinterpret_cast<const void*>(2 * sizeof(GLfloat))
-  };
+  const void* offsets[2] = {0,
+                            reinterpret_cast<const void*>(2 * sizeof(GLfloat))};
 
-  gl_->VertexAttribPointer(position_location_,
-                           2,
-                           GL_FLOAT,
-                           GL_FALSE,
-                           4 * sizeof(GLfloat),
-                           offsets[0]);
+  gl_->VertexAttribPointer(position_location_, 2, GL_FLOAT, GL_FALSE,
+                           4 * sizeof(GLfloat), offsets[0]);
   gl_->EnableVertexAttribArray(position_location_);
 
-  gl_->VertexAttribPointer(texcoord_location_,
-                           2,
-                           GL_FLOAT,
-                           GL_FALSE,
-                           4 * sizeof(GLfloat),
-                           offsets[1]);
+  gl_->VertexAttribPointer(texcoord_location_, 2, GL_FLOAT, GL_FALSE,
+                           4 * sizeof(GLfloat), offsets[1]);
   gl_->EnableVertexAttribArray(texcoord_location_);
 
   gl_->Uniform1i(texture_location_, 0);
@@ -916,7 +861,8 @@ void ShaderProgram::UseProgram(const gfx::Size& src_size,
       static_cast<float>(src_subrect.x()) / src_size.width(),
       static_cast<float>(src_subrect.y()) / src_size.height(),
       static_cast<float>(src_subrect.width()) / src_size.width(),
-      static_cast<float>(src_subrect.height()) / src_size.height(), };
+      static_cast<float>(src_subrect.height()) / src_size.height(),
+  };
   if (flip_y) {
     src_subrect_texcoord[1] += src_subrect_texcoord[3];
     src_subrect_texcoord[3] *= -1.0;
@@ -924,12 +870,11 @@ void ShaderProgram::UseProgram(const gfx::Size& src_size,
   gl_->Uniform4fv(src_subrect_location_, 1, src_subrect_texcoord);
 
   gl_->Uniform2f(src_pixelsize_location_, src_size.width(), src_size.height());
-  gl_->Uniform2f(dst_pixelsize_location_,
-                 static_cast<float>(dst_size.width()),
+  gl_->Uniform2f(dst_pixelsize_location_, static_cast<float>(dst_size.width()),
                  static_cast<float>(dst_size.height()));
 
-  gl_->Uniform2f(
-      scaling_vector_location_, scale_x ? 1.0 : 0.0, scale_x ? 0.0 : 1.0);
+  gl_->Uniform2f(scaling_vector_location_, scale_x ? 1.0 : 0.0,
+                 scale_x ? 0.0 : 1.0);
   gl_->Uniform4fv(color_weights_location_, 1, color_weights);
 }
 

@@ -538,6 +538,12 @@
       # NOTE: These files are here instead of in compositor_browser_sources
       # because the latter is not built on Android, whereas these files are
       # needed on all platforms.
+      'browser/compositor/gl_helper.cc',
+      'browser/compositor/gl_helper.h',
+      'browser/compositor/gl_helper_readback_support.cc',
+      'browser/compositor/gl_helper_readback_support.h',
+      'browser/compositor/gl_helper_scaling.cc',
+      'browser/compositor/gl_helper_scaling.h',
       'browser/compositor/surface_utils.cc',
       'browser/compositor/surface_utils.h',
       'browser/device_sensors/ambient_light_mac.cc',
