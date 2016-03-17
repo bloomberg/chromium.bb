@@ -558,16 +558,6 @@ struct ivi_layout_interface {
 	 */
 
 	/**
-	 * \brief get ivi_layout_screen from id of ivi_screen
-	 *
-	 * \return (struct ivi_layout_screen *)
-	 *              if the method call was successful
-	 * \return NULL if the method call was failed
-	 */
-	struct ivi_layout_screen *
-		(*get_screen_from_id)(uint32_t id_screen);
-
-	/**
 	 * \brief Get the weston_outputs under the given ivi_layer
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful

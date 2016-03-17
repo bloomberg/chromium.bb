@@ -1361,20 +1361,6 @@ ivi_layout_get_surface_from_id(uint32_t id_surface)
 	return NULL;
 }
 
-static struct ivi_layout_screen *
-ivi_layout_get_screen_from_id(uint32_t id_screen)
-{
-	struct ivi_layout *layout = get_instance();
-	struct ivi_layout_screen *iviscrn = NULL;
-
-	wl_list_for_each(iviscrn, &layout->screen_list, link) {
-		if (iviscrn->output->id == id_screen)
-			return iviscrn;
-	}
-
-	return NULL;
-}
-
 static int32_t
 ivi_layout_surface_add_notification(struct ivi_layout_surface *ivisurf,
 				    surface_property_notification_func callback,
@@ -2444,9 +2430,8 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.layer_set_transition			= ivi_layout_layer_set_transition,
 
 	/**
-	 * screen controller interfaces part1
+	 * screen controller interfaces
 	 */
-	.get_screen_from_id		= ivi_layout_get_screen_from_id,
 	.get_screens_under_layer	= ivi_layout_get_screens_under_layer,
 	.screen_add_layer		= ivi_layout_screen_add_layer,
 	.screen_set_render_order	= ivi_layout_screen_set_render_order,
