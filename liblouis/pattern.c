@@ -40,7 +40,7 @@ static const TranslationTableHeader *table;
 static TranslationTableCharacter *
 findCharOrDots (widechar c, int m)
 {
-/*Look up character or dot pattern in the appropriate  
+/*Look up character or dot pattern in the appropriate
 * table. */
   static TranslationTableCharacter noChar =
     { 0, 0, 0, CTC_Space, 32, 32, 32 };
@@ -272,12 +272,25 @@ static void pattern_output_expression(const widechar *expr_data, int expr_crs)
 		case PTN_ATTRIBUTES:
 
 			printf("%%    \t%d\t%d\t", EXPR_PRV(expr_crs), EXPR_NXT(expr_crs));
-			if(EXPR_DATA_0(expr_crs) & (CTC_EndOfInput >> 16))  printf("^");
-			if(EXPR_DATA_1(expr_crs) & CTC_Space)      printf("_");
-			if(EXPR_DATA_1(expr_crs) & CTC_Digit)      printf("#");
-			if(EXPR_DATA_1(expr_crs) & CTC_Letter)     printf("a");
-			if(EXPR_DATA_1(expr_crs) & CTC_UpperCase)  printf("u");
-			if(EXPR_DATA_1(expr_crs) & CTC_LowerCase)  printf("l");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined0 >> 16))  printf("0");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined1 >> 16))  printf("1");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined2 >> 16))  printf("2");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined3 >> 16))  printf("3");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined4 >> 16))  printf("4");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined5 >> 16))  printf("5");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined6 >> 16))  printf("6");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined7 >> 16))  printf("7");
+			if(EXPR_DATA_0(expr_crs) & (CTC_EndOfInput >> 16))    printf("^");
+			if(EXPR_DATA_1(expr_crs) & CTC_Space)         printf("_");
+			if(EXPR_DATA_1(expr_crs) & CTC_Digit)         printf("#");
+			if(EXPR_DATA_1(expr_crs) & CTC_Letter)        printf("a");
+			if(EXPR_DATA_1(expr_crs) & CTC_UpperCase)     printf("u");
+			if(EXPR_DATA_1(expr_crs) & CTC_LowerCase)     printf("l");
+			if(EXPR_DATA_1(expr_crs) & CTC_Punctuation)   printf(".");
+			if(EXPR_DATA_1(expr_crs) & CTC_Sign)          printf("$");
+			if(EXPR_DATA_1(expr_crs) & CTC_SeqDelimiter)  printf("~");
+			if(EXPR_DATA_1(expr_crs) & CTC_SeqBefore)     printf("<");
+			if(EXPR_DATA_1(expr_crs) & CTC_SeqAfter)      printf(">");
 			puts("");
 			break;
 
@@ -324,6 +337,128 @@ void pattern_output(const widechar *expr_data)
 	printf("%d    \tlength\n", expr_data[0]);
 	printf("%d    \tloops\n", expr_data[1]);
 	pattern_output_expression(expr_data, 2);
+}
+
+static void pattern_print_expression(const widechar *expr_data, int expr_crs)
+{
+	int i;
+
+	if(expr_crs == PTN_END)
+		return;
+
+	while(EXPR_TYPE(expr_crs) != PTN_END)
+	{
+		switch(EXPR_TYPE(expr_crs))
+		{
+		case PTN_START:  break;
+
+		case PTN_GROUP:
+
+			printf(" (");
+			pattern_print_expression(expr_data, EXPR_DATA_0(expr_crs));
+			printf(") ");
+			break;
+
+		case PTN_NOT:
+
+			printf("!");
+			pattern_print_expression(expr_data, EXPR_DATA_0(expr_crs));
+			break;
+
+		case PTN_ONE_MORE:
+
+			pattern_print_expression(expr_data, EXPR_DATA_0(expr_crs));
+			printf("+");
+			break;
+
+		case PTN_ZERO_MORE:
+
+			pattern_print_expression(expr_data, EXPR_DATA_0(expr_crs));
+			printf("*");
+			break;
+
+		case PTN_OPTIONAL:
+
+			pattern_print_expression(expr_data, EXPR_DATA_0(expr_crs));
+			printf("?");
+			break;
+
+		case PTN_ALTERNATE:
+
+			pattern_print_expression(expr_data, EXPR_DATA_0(expr_crs));
+			printf(" | ");
+			pattern_print_expression(expr_data, EXPR_DATA_1(expr_crs));
+			break;
+
+		case PTN_ANY:
+
+			printf(".");
+			break;
+
+		case PTN_ATTRIBUTES:
+
+			printf("%%[");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined0 >> 16))  printf("0");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined1 >> 16))  printf("1");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined2 >> 16))  printf("2");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined3 >> 16))  printf("3");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined4 >> 16))  printf("4");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined5 >> 16))  printf("5");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined6 >> 16))  printf("6");
+			if(EXPR_DATA_0(expr_crs) & (CTC_UserDefined7 >> 16))  printf("7");
+			if(EXPR_DATA_0(expr_crs) & (CTC_EndOfInput >> 16))    printf("^");
+			if(EXPR_DATA_1(expr_crs) & CTC_Space)         printf("_");
+			if(EXPR_DATA_1(expr_crs) & CTC_Digit)         printf("#");
+			if(EXPR_DATA_1(expr_crs) & CTC_Letter)        printf("a");
+			if(EXPR_DATA_1(expr_crs) & CTC_UpperCase)     printf("u");
+			if(EXPR_DATA_1(expr_crs) & CTC_LowerCase)     printf("l");
+			if(EXPR_DATA_1(expr_crs) & CTC_Punctuation)   printf(".");
+			if(EXPR_DATA_1(expr_crs) & CTC_Sign)          printf("$");
+			if(EXPR_DATA_1(expr_crs) & CTC_SeqDelimiter)  printf("~");
+			if(EXPR_DATA_1(expr_crs) & CTC_SeqBefore)     printf("<");
+			if(EXPR_DATA_1(expr_crs) & CTC_SeqAfter)      printf(">");
+			printf("]");
+			break;
+
+		case PTN_CHARS:
+
+			if(EXPR_DATA_0(expr_crs) == 1)
+				printf("%c", EXPR_DATA_1(expr_crs));
+			else
+			{
+				printf("[");
+				for(i = 0; i < EXPR_DATA_0(expr_crs); i++)
+					printf("%c", EXPR_CONST_DATA(expr_crs)[i + 1]);
+				printf("]");
+			}
+			break;
+
+		case PTN_HOOK:
+
+			printf("@[");
+			for(i = 0; i < EXPR_DATA_0(expr_crs); i++)
+				printf("%c", EXPR_CONST_DATA(expr_crs)[i + 1]);
+			printf("]");
+			break;
+
+		case PTN_END_OF_INPUT:
+
+			printf("^");
+			break;
+
+		//default:  printf("%d?\n", EXPR_TYPE(expr_crs));  break;
+		}
+
+		expr_crs = EXPR_NXT(expr_crs);
+	}
+
+	return;
+}
+
+void pattern_print(const widechar *expr_data)
+{
+	pattern_print_expression(expr_data, 2);
+	puts("");
 }
 
 #ifdef CHECK_OUTPUT_DEFINED
@@ -482,19 +617,19 @@ static int pattern_insert_alternate(const widechar *input,
 
 	if(EXPR_TYPE(*expr_crs) == PTN_START)
 		return 0;
-	
+
 	expr_insert = *expr_crs;
-	
+
 	if(*expr_crs + 13 >= expr_max)
 		return 0;
 	*expr_crs += 5;
-	expr_group = *expr_crs;	
+	expr_group = *expr_crs;
 	EXPR_TYPE(expr_group) = PTN_GROUP;
 	EXPR_PRV(expr_group) = PTN_END;
 	EXPR_NXT(expr_group) = PTN_END;
 	*expr_crs += 4;
 	EXPR_DATA_0(expr_group) = *expr_crs;
-	
+
 	EXPR_TYPE(*expr_crs) = PTN_ERROR;
 	EXPR_PRV(*expr_crs) = PTN_END;
 	EXPR_NXT(*expr_crs) = PTN_END;
@@ -544,7 +679,7 @@ static int pattern_compile_expression(const widechar *input,
 		(*input_crs)++;
 		if(*input_crs >= input_max)
 			return 0;
-			
+
 		/*   find closing parenthesis   */
 		nest = esc = 0;
 		for(input_end = *input_crs; input_end < input_max; input_end++)
@@ -677,7 +812,7 @@ static int pattern_compile_expression(const widechar *input,
 		(*input_crs)++;
 		if(*input_crs >= input_max)
 			return 0;
-			
+
 		/*   find closing bracket   */
 		if(input[*input_crs] == '[')
 		{
@@ -696,7 +831,7 @@ static int pattern_compile_expression(const widechar *input,
 		}
 
 		EXPR_TYPE(*expr_crs) = PTN_ATTRIBUTES;
-		
+
 		attrs0 = attrs1 = 0;
 		for( ; (*input_crs) < input_end; (*input_crs)++)
 		switch(input[*input_crs])
@@ -726,7 +861,7 @@ static int pattern_compile_expression(const widechar *input,
 		}
 		EXPR_DATA_0(*expr_crs) = attrs1;
 		EXPR_DATA_1(*expr_crs) = attrs0;
-		
+
 		if(set)
 			(*input_crs)++;
 		if(attrs0 & CTC_SeqAfter)
@@ -741,7 +876,7 @@ static int pattern_compile_expression(const widechar *input,
 		(*input_crs)++;
 		if(*input_crs >= input_max)
 			return 0;
-			
+
 		/*   find closing bracket   */
 		esc = 0;
 		for(input_end = *input_crs; input_end < input_max; input_end++)
@@ -786,7 +921,7 @@ static int pattern_compile_expression(const widechar *input,
 		(*input_crs)++;
 		if(*input_crs >= input_max)
 			return 0;
-			
+
 		/*   find closing bracket   */
 		if(input[*input_crs] == '[')
 		{
