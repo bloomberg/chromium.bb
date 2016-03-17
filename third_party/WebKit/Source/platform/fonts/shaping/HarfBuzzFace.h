@@ -31,7 +31,6 @@
 #ifndef HarfBuzzFace_h
 #define HarfBuzzFace_h
 
-#include "platform/fonts/UnicodeRangeSet.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -61,7 +60,7 @@ public:
     // In order to support the restricting effect of unicode-range optionally a
     // range restriction can be passed in, which will restrict which glyphs we
     // return in the harfBuzzGetGlyph function.
-    hb_font_t* createFont(PassRefPtr<UnicodeRangeSet> = nullptr) const;
+    hb_font_t* createFont(unsigned rangeFrom = 0, unsigned rangeTo = kMaxCodepoint) const;
     hb_face_t* face() const { return m_face; }
 
 private:

@@ -48,7 +48,7 @@ class CORE_EXPORT CSSFontFace final : public NoBaseWillBeGarbageCollectedFinaliz
     WTF_MAKE_NONCOPYABLE(CSSFontFace);
 public:
     CSSFontFace(FontFace* fontFace, Vector<UnicodeRange>& ranges)
-        : m_ranges(adoptRef(new UnicodeRangeSet(ranges)))
+        : m_ranges(ranges)
         , m_segmentedFontFace(nullptr)
         , m_fontFace(fontFace)
     {
@@ -57,7 +57,7 @@ public:
 
     FontFace* fontFace() const { return m_fontFace; }
 
-    PassRefPtr<UnicodeRangeSet> ranges() { return m_ranges; }
+    UnicodeRangeSet& ranges() { return m_ranges; }
 
     void setSegmentedFontFace(CSSSegmentedFontFace*);
     void clearSegmentedFontFace() { m_segmentedFontFace = nullptr; }
@@ -74,7 +74,7 @@ public:
 
     FontFace::LoadStatusType loadStatus() const { return m_fontFace->loadStatus(); }
     bool maybeScheduleFontLoad(const FontDescription&, UChar32);
-    bool maybeScheduleFontLoad(const FontDescription&, const FontDataForRangeSet&);
+    bool maybeScheduleFontLoad(const FontDescription&, const FontDataRange&);
     void load();
     void load(const FontDescription&);
 
@@ -85,7 +85,7 @@ public:
 private:
     void setLoadStatus(FontFace::LoadStatusType);
 
-    RefPtr<UnicodeRangeSet> m_ranges;
+    UnicodeRangeSet m_ranges;
     RawPtrWillBeMember<CSSSegmentedFontFace> m_segmentedFontFace;
     WillBeHeapDeque<OwnPtrWillBeMember<CSSFontFaceSource>> m_sources;
     RawPtrWillBeMember<FontFace> m_fontFace;

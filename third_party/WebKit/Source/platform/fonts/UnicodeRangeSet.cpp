@@ -62,6 +62,15 @@ bool UnicodeRangeSet::contains(UChar32 c) const
     return it != m_ranges.end() && it->contains(c);
 }
 
+bool UnicodeRangeSet::contains(const FontDataRange& range) const
+{
+    for (auto it = m_ranges.begin(); it != m_ranges.end(); ++it) {
+        if (*it == range)
+            return true;
+    }
+    return false;
+}
+
 bool UnicodeRangeSet::intersectsWith(const String& text) const
 {
     if (text.isEmpty())
@@ -81,17 +90,4 @@ bool UnicodeRangeSet::intersectsWith(const String& text) const
     return false;
 }
 
-bool UnicodeRangeSet::operator==(const UnicodeRangeSet& other) const
-{
-    if (m_ranges.size() == 0 && other.size() == 0)
-        return true;
-    if (m_ranges.size() != other.size()) {
-        return false;
-    }
-    bool equal = true;
-    for (size_t i = 0; i < m_ranges.size(); ++i) {
-        equal = equal && m_ranges[i] == other.m_ranges[i];
-    }
-    return equal;
-}
 }

@@ -147,11 +147,11 @@ void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, co
         face->willUseFontData(fontDescription, character);
 }
 
-void CSSFontSelector::willUseRange(const FontDescription& fontDescription, const AtomicString& family, const FontDataForRangeSet& rangeSet)
+void CSSFontSelector::willUseRange(const FontDescription& fontDescription, const AtomicString& family, const FontDataRange& range)
 {
     CSSSegmentedFontFace* face = m_fontFaceCache.get(fontDescription, family);
     if (face)
-        face->willUseRange(fontDescription, rangeSet);
+        face->willUseRange(fontDescription, range);
 }
 
 bool CSSFontSelector::isPlatformFontAvailable(const FontDescription& fontDescription, const AtomicString& passedFamily)

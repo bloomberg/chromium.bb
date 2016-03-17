@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontData.h"
-#include "platform/fonts/FontDataForRangeSet.h"
+#include "platform/fonts/FontDataRange.h"
 #include "platform/fonts/SimpleFontData.h"
 
 namespace blink {
@@ -39,9 +39,9 @@ public:
 
     ~SegmentedFontData() override;
 
-    void appendFace(const FontDataForRangeSet& fontDataForRangeSet) { m_faces.append(fontDataForRangeSet); }
-    unsigned numFaces() const { return m_faces.size(); }
-    const FontDataForRangeSet& faceAt(unsigned i) const { return m_faces[i]; }
+    void appendRange(const FontDataRange& range) { m_ranges.append(range); }
+    unsigned numRanges() const { return m_ranges.size(); }
+    const FontDataRange& rangeAt(unsigned i) const { return m_ranges[i]; }
     bool containsCharacter(UChar32) const;
 
 private:
@@ -55,7 +55,7 @@ private:
     bool isSegmented() const override;
     bool shouldSkipDrawing() const override;
 
-    Vector<FontDataForRangeSet, 1> m_faces;
+    Vector<FontDataRange, 1> m_ranges;
 };
 
 DEFINE_FONT_DATA_TYPE_CASTS(SegmentedFontData, true);
