@@ -547,12 +547,11 @@ TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
   EXPECT_EQ(3, client_->client()->GetNumSentClientHellos());
 }
 
-// TODO(rch): figure out how to detect missing v6 supprt (like on the linux
+// TODO(rch): figure out how to detect missing v6 support (like on the linux
 // try bots) and selectively disable this test.
 TEST_P(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
-  IPAddress ip;
-  CHECK(ip.AssignFromIPLiteral("::1"));
-  server_address_ = IPEndPoint(ip, server_address_.port());
+  server_address_ =
+      IPEndPoint(IPAddress::IPv6Localhost(), server_address_.port());
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));

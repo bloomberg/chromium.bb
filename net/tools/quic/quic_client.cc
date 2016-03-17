@@ -149,10 +149,9 @@ bool QuicClient::CreateUDPSocketAndBind() {
   if (bind_to_address_.size() != 0) {
     client_address = IPEndPoint(bind_to_address_, local_port_);
   } else if (server_address_.GetSockAddrFamily() == AF_INET) {
-    client_address = IPEndPoint(IPAddress(0, 0, 0, 0), local_port_);
+    client_address = IPEndPoint(IPAddress::IPv4AllZeros(), local_port_);
   } else {
-    IPAddress any6;
-    CHECK(any6.AssignFromIPLiteral("::"));
+    IPAddress any6 = IPAddress::IPv6AllZeros();
     client_address = IPEndPoint(any6, local_port_);
   }
 

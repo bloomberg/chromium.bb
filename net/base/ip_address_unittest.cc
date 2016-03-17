@@ -82,6 +82,16 @@ TEST(IPAddressTest, IsZero) {
   EXPECT_FALSE(empty_address.IsZero());
 }
 
+TEST(IPAddressTest, AllZeros) {
+  EXPECT_TRUE(IPAddress::AllZeros(0).empty());
+
+  EXPECT_EQ(3u, IPAddress::AllZeros(3).size());
+  EXPECT_TRUE(IPAddress::AllZeros(3).IsZero());
+
+  EXPECT_EQ("0.0.0.0", IPAddress::IPv4AllZeros().ToString());
+  EXPECT_EQ("::", IPAddress::IPv6AllZeros().ToString());
+}
+
 TEST(IPAddressTest, ToString) {
   uint8_t addr1[4] = {0, 0, 0, 0};
   IPAddress ip_address1(addr1);

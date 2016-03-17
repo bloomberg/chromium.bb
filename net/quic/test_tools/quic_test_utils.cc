@@ -456,17 +456,15 @@ QuicVersion QuicVersionMin() {
 }
 
 IPAddress Loopback4() {
-  return IPAddress(127, 0, 0, 1);
+  return IPAddress::IPv4Localhost();
 }
 
 IPAddress Loopback6() {
-  IPAddress addr;
-  CHECK(addr.AssignFromIPLiteral("::1"));
-  return addr;
+  return IPAddress::IPv6Localhost();
 }
 
 IPAddress Any4() {
-  return IPAddress(0, 0, 0, 0);
+  return IPAddress::IPv4AllZeros();
 }
 
 void GenerateBody(string* body, int length) {

@@ -1027,9 +1027,7 @@ TEST_P(QuicConnectionTest, SelfAddressChangeAtClient) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   // Cause change in self_address.
-  IPAddress address;
-  ASSERT_TRUE(address.AssignFromIPLiteral("1.1.1.1"));
-  IPEndPoint self_address(address, 123);
+  IPEndPoint self_address(IPAddress(1, 1, 1, 1), 123);
   EXPECT_CALL(visitor_, OnStreamFrame(_));
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address,
                                   kPeerAddress);
@@ -1050,9 +1048,7 @@ TEST_P(QuicConnectionTest, SelfAddressChangeAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   // Cause change in self_address.
-  IPAddress address;
-  ASSERT_TRUE(address.AssignFromIPLiteral("1.1.1.1"));
-  IPEndPoint self_address(address, 123);
+  IPEndPoint self_address(IPAddress(1, 1, 1, 1), 123);
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_ERROR_MIGRATING_ADDRESS, _));
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address,
                                   kPeerAddress);

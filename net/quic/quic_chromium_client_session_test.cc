@@ -48,8 +48,7 @@ namespace net {
 namespace test {
 namespace {
 
-const IPEndPoint kIpEndPoint =
-    IPEndPoint(IPAddress(std::vector<uint8_t>(kIPv4AddressSize, 0)), 0);
+const IPEndPoint kIpEndPoint = IPEndPoint(IPAddress::IPv4AllZeros(), 0);
 const char kServerHostname[] = "test.example.com";
 const uint16_t kServerPort = 443;
 const size_t kMaxReadersPerQuicSession = 5;

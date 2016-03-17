@@ -95,6 +95,12 @@ class NET_EXPORT IPAddress {
   // Returns an IPAddress made up of |num_zero_bytes| zeros.
   static IPAddress AllZeros(size_t num_zero_bytes);
 
+  // Returns an IPAddress instance representing the 0.0.0.0 address.
+  static IPAddress IPv4AllZeros();
+
+  // Returns an IPAddress instance representing the :: address.
+  static IPAddress IPv6AllZeros();
+
   bool operator==(const IPAddress& that) const;
   bool operator!=(const IPAddress& that) const;
   bool operator<(const IPAddress& that) const;

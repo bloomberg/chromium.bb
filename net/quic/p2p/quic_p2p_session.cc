@@ -31,7 +31,7 @@ QuicP2PSession::QuicP2PSession(const QuicConfig& config,
   // ToString() to format addresses for logging and ToString() is not allowed
   // for empty addresses.
   // TODO(sergeyu): Fix QuicConnection and remove SetSelfAddress() call below.
-  this->connection()->SetSelfAddress(IPEndPoint(IPAddress(0, 0, 0, 0), 0));
+  this->connection()->SetSelfAddress(IPEndPoint(IPAddress::IPv4AllZeros(), 0));
 }
 
 QuicP2PSession::~QuicP2PSession() {}

@@ -229,7 +229,7 @@ class QuicP2PSessionTest : public ::testing::Test {
     QuicChromiumPacketWriter* writer =
         new QuicChromiumPacketWriter(socket.get());
     scoped_ptr<QuicConnection> quic_connection1(new QuicConnection(
-        0, IPEndPoint(IPAddress(0, 0, 0, 0), 0), &quic_helper_, writer,
+        0, IPEndPoint(IPAddress::IPv4AllZeros(), 0), &quic_helper_, writer,
         true /* owns_writer */, perspective, QuicSupportedVersions()));
     writer->SetConnection(quic_connection1.get());
 

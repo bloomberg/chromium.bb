@@ -77,8 +77,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  net::IPAddress ip;
-  CHECK(ip.AssignFromIPLiteral("::"));
+  net::IPAddress ip = net::IPAddress::IPv6AllZeros();
 
   net::QuicConfig config;
   net::QuicSimpleServer server(

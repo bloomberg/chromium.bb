@@ -89,6 +89,16 @@ IPAddress IPAddress::AllZeros(size_t num_zero_bytes) {
   return IPAddress(std::vector<uint8_t>(num_zero_bytes));
 }
 
+// static
+IPAddress IPAddress::IPv4AllZeros() {
+  return AllZeros(kIPv4AddressSize);
+}
+
+// static
+IPAddress IPAddress::IPv6AllZeros() {
+  return AllZeros(kIPv6AddressSize);
+}
+
 bool IPAddress::operator==(const IPAddress& that) const {
   return ip_address_ == that.ip_address_;
 }
