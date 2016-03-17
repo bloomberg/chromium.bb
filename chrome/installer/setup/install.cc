@@ -253,10 +253,14 @@ installer::InstallStatus InstallNewVersion(
   return installer::INSTALL_FAILED;
 }
 
+}  // namespace
+
+namespace installer {
+
 void UpdatePerUserShortcutsInLocation(
     const ShellUtil::ShortcutLocation shortcut_location,
     BrowserDistribution* dist,
-    const base::FilePath& old_target_path_prefix,
+    const base::FilePath& old_target_dir,
     const base::FilePath& old_target_path_suffix,
     const base::FilePath& new_target_path) {
   base::FilePath shortcut_path;
@@ -281,7 +285,7 @@ void UpdatePerUserShortcutsInLocation(
     base::FilePath existing_target_path;
     if (!base::win::ResolveShortcut(shortcut, &existing_target_path, nullptr) ||
         !base::StartsWith(existing_target_path.value(),
-                          old_target_path_prefix.value(),
+                          old_target_dir.AsEndingWithSeparator().value(),
                           base::CompareCase::INSENSITIVE_ASCII) ||
         !base::EndsWith(existing_target_path.value(),
                         old_target_path_suffix.value(),
@@ -295,10 +299,6 @@ void UpdatePerUserShortcutsInLocation(
                                           base::win::SHORTCUT_UPDATE_EXISTING);
   }
 }
-
-}  // end namespace
-
-namespace installer {
 
 void EscapeXmlAttributeValueInSingleQuotes(base::string16* att_value) {
   base::ReplaceChars(*att_value, base::ASCIIToUTF16("&"),

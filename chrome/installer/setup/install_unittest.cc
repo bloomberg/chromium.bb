@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
@@ -203,6 +204,12 @@ class InstallShortcutTest : public testing::Test {
   base::FilePath system_start_menu_shortcut_;
   base::FilePath system_start_menu_subdir_shortcut_;
 };
+
+base::FilePath GetNormalizedFilePath(const base::FilePath& path) {
+  base::FilePath normalized_path;
+  base::NormalizeFilePath(path, &normalized_path);
+  return normalized_path;
+}
 
 }  // namespace
 
@@ -457,6 +464,154 @@ TEST_F(InstallShortcutTest, CreateIfNoSystemLevelSomeSystemShortcutsExist) {
                               expected_properties_);
   base::win::ValidateShortcut(user_start_menu_shortcut_,
                               expected_start_menu_properties_);
+}
+
+TEST_F(InstallShortcutTest, UpdatePerUserShortcuts) {
+  static const struct TestCase {
+    const base::FilePath::CharType* relative_target_path;
+    bool should_update;
+  } kTargetPathsToUpdate[] = {
+      {FILE_PATH_LITERAL("AppData\\Local\\Google\\Chrome "
+                         "SxS\\Temp\\scoped_dir\\new_chrome.exe"),
+       false},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome SxS\\Temp\\scoped_dir\\chrome.exe"),
+       false},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe"),
+       false},
+      {FILE_PATH_LITERAL("AppData\\Local\\Google\\Chrome "
+                         "SxS\\Application\\something_else.exe"),
+       false},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome\\Temp\\scoped_dir\\new_chrome.exe"),
+       true},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome\\Temp\\scoped_dir\\chrome.exe"),
+       true},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"),
+       true},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome\\Application\\something_else.exe"),
+       false},
+      {FILE_PATH_LITERAL("something_else.exe"), false},
+  };
+
+  // Create shortcuts.
+  for (size_t i = 0; i < arraysize(kTargetPathsToUpdate); ++i) {
+    const base::FilePath target_path =
+        temp_dir_.path().Append(kTargetPathsToUpdate[i].relative_target_path);
+    ASSERT_TRUE(base::CreateDirectory(target_path.DirName()));
+    base::File file(target_path, base::File::FLAG_CREATE);
+    ASSERT_TRUE(file.IsValid());
+
+    base::win::ShortcutProperties properties;
+    properties.set_target(target_path);
+    ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
+        user_desktop_shortcut_.InsertBeforeExtension(base::SizeTToString16(i)),
+        properties, base::win::SHORTCUT_CREATE_ALWAYS));
+  }
+
+  // Update shortcuts.
+  const base::FilePath new_target_path =
+      temp_dir_.path().Append(FILE_PATH_LITERAL(
+          "AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"));
+  installer::UpdatePerUserShortcutsInLocation(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
+      new_target_path.DirName().DirName(), new_target_path.BaseName(),
+      new_target_path);
+
+  // Verify that shortcuts were updated correctly.
+  for (size_t i = 0; i < arraysize(kTargetPathsToUpdate); ++i) {
+    base::FilePath target_path;
+    ASSERT_TRUE(base::win::ResolveShortcut(
+        user_desktop_shortcut_.InsertBeforeExtension(base::SizeTToString16(i)),
+        &target_path, nullptr));
+
+    if (kTargetPathsToUpdate[i].should_update) {
+      EXPECT_EQ(GetNormalizedFilePath(new_target_path),
+                GetNormalizedFilePath(target_path));
+    } else {
+      EXPECT_EQ(GetNormalizedFilePath(temp_dir_.path().Append(
+                    kTargetPathsToUpdate[i].relative_target_path)),
+                GetNormalizedFilePath(target_path));
+    }
+  }
+}
+
+TEST_F(InstallShortcutTest, UpdatePerUserShortcutsCanary) {
+  static const struct TestCase {
+    const base::FilePath::CharType* relative_target_path;
+    bool should_update;
+  } kTargetPathsToUpdate[] = {
+      {FILE_PATH_LITERAL("AppData\\Local\\Google\\Chrome "
+                         "SxS\\Temp\\scoped_dir\\new_chrome.exe"),
+       true},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome SxS\\Temp\\scoped_dir\\chrome.exe"),
+       true},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe"),
+       true},
+      {FILE_PATH_LITERAL("AppData\\Local\\Google\\Chrome "
+                         "SxS\\Application\\something_else.exe"),
+       false},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome\\Temp\\scoped_dir\\new_chrome.exe"),
+       false},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome\\Temp\\scoped_dir\\chrome.exe"),
+       false},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"),
+       false},
+      {FILE_PATH_LITERAL(
+           "AppData\\Local\\Google\\Chrome\\Application\\something_else.exe"),
+       false},
+      {FILE_PATH_LITERAL("something_else.exe"), false},
+  };
+
+  // Create shortcuts.
+  for (size_t i = 0; i < arraysize(kTargetPathsToUpdate); ++i) {
+    const base::FilePath target_path =
+        temp_dir_.path().Append(kTargetPathsToUpdate[i].relative_target_path);
+    ASSERT_TRUE(base::CreateDirectory(target_path.DirName()));
+    base::File file(target_path, base::File::FLAG_CREATE);
+    ASSERT_TRUE(file.IsValid());
+
+    base::win::ShortcutProperties properties;
+    properties.set_target(target_path);
+    ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
+        user_desktop_shortcut_.InsertBeforeExtension(base::SizeTToString16(i)),
+        properties, base::win::SHORTCUT_CREATE_ALWAYS));
+  }
+
+  // Update shortcuts.
+  const base::FilePath new_target_path =
+      temp_dir_.path().Append(FILE_PATH_LITERAL(
+          "AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe"));
+  installer::UpdatePerUserShortcutsInLocation(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
+      new_target_path.DirName().DirName(), new_target_path.BaseName(),
+      new_target_path);
+
+  // Verify that shortcuts were updated correctly.
+  for (size_t i = 0; i < arraysize(kTargetPathsToUpdate); ++i) {
+    base::FilePath target_path;
+    ASSERT_TRUE(base::win::ResolveShortcut(
+        user_desktop_shortcut_.InsertBeforeExtension(base::SizeTToString16(i)),
+        &target_path, nullptr));
+
+    if (kTargetPathsToUpdate[i].should_update) {
+      EXPECT_EQ(GetNormalizedFilePath(new_target_path),
+                GetNormalizedFilePath(target_path));
+    } else {
+      EXPECT_EQ(GetNormalizedFilePath(temp_dir_.path().Append(
+                    kTargetPathsToUpdate[i].relative_target_path)),
+                GetNormalizedFilePath(target_path));
+    }
+  }
 }
 
 TEST(EscapeXmlAttributeValueTest, EscapeCrazyValue) {
