@@ -532,7 +532,7 @@ extern "C"
     alloc_srcMapping,
     alloc_prevSrcMapping
   } AllocBuf;
-  
+
 typedef enum
 {
 	PTN_LAST,
@@ -542,9 +542,10 @@ typedef enum
 	PTN_NOT,
 	PTN_ZERO_MORE,
 	PTN_ONE_MORE,
+	PTN_OR,
+	PTN_GROUP,
 
 	PTN_CHARS,
-
 	PTN_ATTRIBUTES,
 } PatternCodes;
 
