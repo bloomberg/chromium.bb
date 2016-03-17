@@ -221,9 +221,8 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
                                 CONTENT_SETTING_BLOCK);
 
   // Set plugins to Plugin Power Saver on example.com and subdomains.
-  ContentSettingsPattern pattern =
-       ContentSettingsPattern::FromString("[*.]example.com");
-  map->SetContentSetting(pattern, ContentSettingsPattern::Wildcard(),
+  GURL host("http://example.com/");
+  map->SetContentSettingDefaultScope(host, GURL(),
                          CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
                          CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
@@ -235,7 +234,6 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
                          CONTENT_SETTING_ALLOW);
 
   GURL unmatched_host("https://www.google.com");
-  GURL host("http://example.com/");
   ASSERT_EQ(CONTENT_SETTING_BLOCK, map->GetContentSetting(
       unmatched_host, unmatched_host, CONTENT_SETTINGS_TYPE_PLUGINS,
       std::string()));
