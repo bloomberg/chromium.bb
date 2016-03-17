@@ -46,9 +46,6 @@ class MetaBuildWrapper(object):
     self.configs = {}
     self.masters = {}
     self.mixins = {}
-    self.private_configs = []
-    self.common_dev_configs = []
-    self.unsupported_configs = []
 
   def Main(self, args):
     self.ParseArgs(args)
@@ -272,32 +269,11 @@ class MetaBuildWrapper(object):
     # Read the file to make sure it parses.
     self.ReadConfigFile()
 
-    # Figure out the whole list of configs and ensure that no config is
-    # listed in more than one category.
+    # Build a list of all of the configs referenced by builders.
     all_configs = {}
-    for config in self.common_dev_configs:
-      all_configs[config] = 'common_dev_configs'
-    for config in self.private_configs:
-      if config in all_configs:
-        errs.append('config "%s" listed in "private_configs" also '
-                    'listed in "%s"' % (config, all_configs['config']))
-      else:
-        all_configs[config] = 'private_configs'
-    for config in self.unsupported_configs:
-      if config in all_configs:
-        errs.append('config "%s" listed in "unsupported_configs" also '
-                    'listed in "%s"' % (config, all_configs['config']))
-      else:
-        all_configs[config] = 'unsupported_configs'
-
     for master in self.masters:
-      for builder in self.masters[master]:
-        config = self.masters[master][builder]
-        if config in all_configs and all_configs[config] not in self.masters:
-          errs.append('Config "%s" used by a bot is also listed in "%s".' %
-                      (config, all_configs[config]))
-        else:
-          all_configs[config] = master
+      for config in self.masters[master].values():
+        all_configs[config] = master
 
     # Check that every referenced config actually exists.
     for config, loc in all_configs.items():
@@ -568,12 +544,9 @@ class MetaBuildWrapper(object):
       raise MBErr('Failed to parse config file "%s": %s' %
                  (self.args.config_file, e))
 
-    self.common_dev_configs = contents['common_dev_configs']
     self.configs = contents['configs']
     self.masters = contents['masters']
     self.mixins = contents['mixins']
-    self.private_configs = contents['private_configs']
-    self.unsupported_configs = contents['unsupported_configs']
 
   def ConfigFromArgs(self):
     if self.args.config:

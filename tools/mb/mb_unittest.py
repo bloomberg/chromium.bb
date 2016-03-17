@@ -103,32 +103,30 @@ class FakeFile(object):
 
 TEST_CONFIG = """\
 {
-  'common_dev_configs': ['gn_debug'],
   'configs': {
     'gyp_rel_bot': ['gyp', 'rel', 'goma'],
-    'gn_debug': ['gn', 'debug', 'goma'],
-    'gyp_debug': ['gyp', 'debug'],
+    'gn_debug_goma': ['gn', 'debug', 'goma'],
+    'gyp_debug': ['gyp', 'debug', 'fake_feature1'],
     'gn_rel_bot': ['gn', 'rel', 'goma'],
-    'private': ['gyp', 'rel', 'fake_feature1'],
-    'unsupported': ['gn', 'fake_feature2'],
+    'gyp_crosscompile': ['gyp', 'crosscompile'],
   },
   'masters': {
     'chromium': {},
     'fake_master': {
       'fake_builder': 'gyp_rel_bot',
       'fake_gn_builder': 'gn_rel_bot',
+      'fake_gyp_crosscompile_builder': 'gyp_crosscompile',
+      'fake_gn_debug_builder': 'gn_debug_goma',
       'fake_gyp_builder': 'gyp_debug',
     },
   },
   'mixins': {
+    'crosscompile': {
+      'gyp_crosscompile': True,
+    },
     'fake_feature1': {
       'gn_args': 'enable_doom_melon=true',
-      'gyp_crosscompile': True,
       'gyp_defines': 'doom_melon=1',
-    },
-    'fake_feature2': {
-      'gn_args': 'enable_doom_melon=false',
-      'gyp_defaults': 'doom_melon=0',
     },
     'gyp': {'type': 'gyp'},
     'gn': {'type': 'gn'},
@@ -143,15 +141,12 @@ TEST_CONFIG = """\
       'gn_args': 'is_debug=true',
     },
   },
-  'private_configs': ['private'],
-  'unsupported_configs': ['unsupported'],
 }
 """
 
 
 TEST_BAD_CONFIG = """\
 {
-  'common_dev_configs': ['gn_rel_bot_1'],
   'configs': {
     'gn_rel_bot_1': ['gn', 'rel', 'chrome_with_codecs'],
     'gn_rel_bot_2': ['gn', 'rel', 'bad_nested_config'],
@@ -174,8 +169,6 @@ TEST_BAD_CONFIG = """\
       'gn_args': 'is_debug=false',
     },
   },
-  'private_configs': ['private'],
-  'unsupported_configs': ['unsupported'],
 }
 """
 
@@ -209,13 +202,13 @@ class UnitTest(unittest.TestCase):
     mbw = self.fake_mbw(files)
 
     # The first time we run this, the build dir doesn't exist, so no clobber.
-    self.check(['gen', '-c', 'gn_debug', '//out/Debug'], mbw=mbw, ret=0)
+    self.check(['gen', '-c', 'gn_debug_goma', '//out/Debug'], mbw=mbw, ret=0)
     self.assertEqual(mbw.rmdirs, [])
     self.assertEqual(mbw.files['/fake_src/out/Debug/mb_type'], 'gn')
 
     # The second time we run this, the build dir exists and matches, so no
     # clobber.
-    self.check(['gen', '-c', 'gn_debug', '//out/Debug'], mbw=mbw, ret=0)
+    self.check(['gen', '-c', 'gn_debug_goma', '//out/Debug'], mbw=mbw, ret=0)
     self.assertEqual(mbw.rmdirs, [])
     self.assertEqual(mbw.files['/fake_src/out/Debug/mb_type'], 'gn')
 
@@ -243,7 +236,7 @@ class UnitTest(unittest.TestCase):
     mbw.Call = lambda cmd, env=None, buffer_output=True: (
         0, 'out/Default/foo_unittests\n', '')
 
-    self.check(['analyze', '-c', 'gn_debug', '//out/Default',
+    self.check(['analyze', '-c', 'gn_debug_goma', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
     out = json.loads(mbw.files['/tmp/out.json'])
     self.assertEqual(out, {
@@ -261,7 +254,7 @@ class UnitTest(unittest.TestCase):
     mbw = self.fake_mbw(files)
     mbw.Call = lambda cmd, env=None, buffer_output=True: (
         0, 'out/Default/foo_unittests\n', '')
-    self.check(['analyze', '-c', 'gn_debug', '//out/Default',
+    self.check(['analyze', '-c', 'gn_debug_goma', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
     out = json.loads(mbw.files['/tmp/out.json'])
     self.assertEqual(out, {
@@ -283,7 +276,7 @@ class UnitTest(unittest.TestCase):
         (1, 'The input matches no targets, configs, or files\n', ''),
     ]
 
-    self.check(['analyze', '-c', 'gn_debug', '//out/Default',
+    self.check(['analyze', '-c', 'gn_debug_goma', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
     out = json.loads(mbw.files['/tmp/out.json'])
     self.assertEqual(out, {
@@ -293,14 +286,14 @@ class UnitTest(unittest.TestCase):
     })
 
   def test_gn_gen(self):
-    self.check(['gen', '-c', 'gn_debug', '//out/Default', '-g', '/goma'],
+    self.check(['gen', '-c', 'gn_debug_goma', '//out/Default', '-g', '/goma'],
                ret=0,
                out=('/fake_src/buildtools/linux64/gn gen //out/Default '
                     '\'--args=is_debug=true use_goma=true goma_dir="/goma"\' '
                     '--check\n'))
 
     mbw = self.fake_mbw(win32=True)
-    self.check(['gen', '-c', 'gn_debug', '-g', 'c:\\goma', '//out/Debug'],
+    self.check(['gen', '-c', 'gn_debug_goma', '-g', 'c:\\goma', '//out/Debug'],
                mbw=mbw, ret=0,
                out=('c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
                     '"--args=is_debug=true use_goma=true goma_dir=\\"'
@@ -310,7 +303,7 @@ class UnitTest(unittest.TestCase):
   def test_gn_gen_fails(self):
     mbw = self.fake_mbw()
     mbw.Call = lambda cmd, env=None, buffer_output=True: (1, '', '')
-    self.check(['gen', '-c', 'gn_debug', '//out/Default'], mbw=mbw, ret=1)
+    self.check(['gen', '-c', 'gn_debug_goma', '//out/Default'], mbw=mbw, ret=1)
 
   def test_gn_gen_swarming(self):
     files = {
@@ -328,7 +321,7 @@ class UnitTest(unittest.TestCase):
     }
     mbw = self.fake_mbw(files)
     self.check(['gen',
-                '-c', 'gn_debug',
+                '-c', 'gn_debug_goma',
                 '--swarming-targets-file', '/tmp/swarming_targets',
                 '//out/Default'], mbw=mbw, ret=0)
     self.assertIn('/fake_src/out/Default/base_unittests.isolate',
@@ -349,8 +342,8 @@ class UnitTest(unittest.TestCase):
           "base_unittests\n"
       ),
     }
-    self.check(['isolate', '-c', 'gn_debug', '//out/Default', 'base_unittests'],
-               files=files, ret=0)
+    self.check(['isolate', '-c', 'gn_debug_goma', '//out/Default',
+                'base_unittests'], files=files, ret=0)
 
     # test running isolate on an existing build_dir
     files['/fake_src/out/Default/args.gn'] = 'is_debug = True\n'
@@ -374,11 +367,11 @@ class UnitTest(unittest.TestCase):
           "base_unittests\n"
       ),
     }
-    self.check(['run', '-c', 'gn_debug', '//out/Default', 'base_unittests'],
-               files=files, ret=0)
+    self.check(['run', '-c', 'gn_debug_goma', '//out/Default',
+                'base_unittests'], files=files, ret=0)
 
   def test_gn_lookup(self):
-    self.check(['lookup', '-c', 'gn_debug'], ret=0)
+    self.check(['lookup', '-c', 'gn_debug_goma'], ret=0)
 
   def test_gn_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gn_rel_bot', '-g', '/foo'], ret=0,
@@ -388,13 +381,13 @@ class UnitTest(unittest.TestCase):
 
   def test_gyp_analyze(self):
     mbw = self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
-                     '/tmp/in.json', '/tmp/out.json'],
-                     ret=0)
+                      '/tmp/in.json', '/tmp/out.json'], ret=0)
     self.assertIn('analyzer', mbw.calls[0])
 
   def test_gyp_crosscompile(self):
     mbw = self.fake_mbw()
-    self.check(['gen', '-c', 'private', '//out/Release'], mbw=mbw, ret=0)
+    self.check(['gen', '-c', 'gyp_crosscompile', '//out/Release'],
+               mbw=mbw, ret=0)
     self.assertTrue(mbw.cross_compile)
 
   def test_gyp_gen(self):

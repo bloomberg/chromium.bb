@@ -93,22 +93,6 @@
       'chromeos', 'ozone', 'gn', 'release_trybot',
     ],
 
-    'dev_gn_debug': [
-      'gn', 'debug', 'shared', 'full_symbols',
-    ],
-
-    'dev_gn_release': [
-      'gn', 'release', 'shared',
-    ],
-
-    'dev_gyp_debug': [
-      'gyp', 'debug', 'shared', 'full_symbols',
-    ],
-
-    'dev_gyp_release': [
-      'gyp', 'release', 'shared',
-    ],
-
     'embedded_gyp_debug_bot': [
       'embedded', 'gyp', 'debug_bot',
     ],
@@ -519,29 +503,6 @@
     ],
   },
 
-  # This is a list of configs that do not actually exist on any bot
-  # but are used so commonly by devs that we must support them.
-  'common_dev_configs': [
-    'dev_gn_debug',
-    'dev_gn_release',
-    'dev_gyp_debug',
-    'dev_gyp_release',
-  ],
-
-  # This is a list of configs that some private (not publicly accessible)
-  # bot somewhere uses and that we must support. Ideally we should actually
-  # have a bot for each of these on the public waterfall. Each config should
-  # at least have a contact listed.
-  'private_configs': [
-  ],
-
-  # This is a list of configs that are not commonly used by that we should
-  # make some effort to support, but if it breaks that is not the end of
-  # the world. Each config should have a contact listed, and we expect the
-  # contact to be on the hook for fixing the config.
-  'unsupported_configs': [
-  ],
-
   # This is a dict mapping a given 'mixin' name to a dict of settings that
   # mb should use. See //tools/mb/docs/user_guide.md for more information.
   'mixins': {
@@ -673,11 +634,6 @@
     'embedded': {
       'gn_args': 'error',
       'gyp_defines': 'embedded=1',
-    },
-
-    'full_symbols': {
-      'gn_args': 'symbol_level=2',
-      'gyp_defines': 'fastbuild=0',
     },
 
     'gn_linux_upload': {
