@@ -42,6 +42,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -3694,6 +3695,42 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenPopupWithRemoteParent) {
       "    window.opener === window.opener.top.frames[0]);",
       &success));
   EXPECT_TRUE(success);
+}
+
+// Test that cross-process popups can't be navigated to disallowed URLs by
+// their opener.  This ensures that proper URL validation is performed when
+// RenderFrameProxyHosts are navigated.  See https://crbug.com/595339.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Open a cross-site popup.
+  GURL popup_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  Shell* popup = OpenPopup(shell()->web_contents(), popup_url, "foo");
+  EXPECT_TRUE(popup);
+  EXPECT_NE(popup->web_contents()->GetSiteInstance(),
+            shell()->web_contents()->GetSiteInstance());
+
+  // From the opener, navigate the popup to a file:/// URL.  This should be
+  // disallowed and result in an about:blank navigation.
+  GURL file_url("file:///");
+  NavigateNamedFrame(shell()->web_contents(), file_url, "foo");
+  EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            popup->web_contents()->GetLastCommittedURL());
+
+  // Navigate popup back to a cross-site URL.
+  EXPECT_TRUE(NavigateToURL(popup, popup_url));
+  EXPECT_NE(popup->web_contents()->GetSiteInstance(),
+            shell()->web_contents()->GetSiteInstance());
+
+  // Now try the same test with a chrome:// URL.
+  GURL chrome_url(std::string(kChromeUIScheme) + "://" +
+                  std::string(kChromeUIGpuHost));
+  NavigateNamedFrame(shell()->web_contents(), chrome_url, "foo");
+  EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            popup->web_contents()->GetLastCommittedURL());
 }
 
 // Verify that named frames are discoverable from their opener's ancestors.

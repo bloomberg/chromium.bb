@@ -248,6 +248,9 @@ void RenderFrameProxyHost::OnDetach() {
 
 void RenderFrameProxyHost::OnOpenURL(
     const FrameHostMsg_OpenURL_Params& params) {
+  GURL validated_url(params.url);
+  GetProcess()->FilterURL(false, &validated_url);
+
   // Verify that we are in the same BrowsingInstance as the current
   // RenderFrameHost.
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
@@ -261,7 +264,7 @@ void RenderFrameProxyHost::OnOpenURL(
   // TODO(alexmos, creis): Figure out whether |params.user_gesture| needs to be
   // passed in as well.
   frame_tree_node_->navigator()->RequestTransferURL(
-      current_rfh, params.url, site_instance_.get(), std::vector<GURL>(),
+      current_rfh, validated_url, site_instance_.get(), std::vector<GURL>(),
       params.referrer, ui::PAGE_TRANSITION_LINK, GlobalRequestID(),
       params.should_replace_current_entry);
 }
