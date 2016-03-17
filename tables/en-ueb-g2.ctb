@@ -183,7 +183,6 @@ class lowerdotspunc +=*,.?!"'“”‘’
 
 # be
 
-match %[^_~]%<* be %l 23   10.6.2  10.6.3
 match %[^_]|%[^_~]%<*[([{] be %[^_]|[;:)}\\]]%>*%[^_~] 23
 
 # enough
@@ -213,15 +212,40 @@ match %[^_]|%[^_~]%<*[([{] were %[^_]|[;:)}\\]]%>*%[^_~] 2356
 
 #   10.6   Lower Groupsigns
 
-#   be handled in 10.5   
-begword con 25
-begword dis 256
-
 midword bb 23
 midword cc 25
 midword ea 2
 midword ff 235
 midword gg 2356
+
+#   10.6.1
+
+match %[^_~]%<* be [bfhjmopqwxz] 23
+
+match %[^_~]%<* be ati!n 23  bea*
+match %[^_~]%<* be c![hkq] 23    bec*
+match %[^_~]%<* be dra 23          bedr*
+match %[^_~]%<* be de!(%>*%[_~^]) 23      bed*
+match %[^_~]%<* be da 23      bed*
+match %[^_~]%<* be elz 23
+match %[^_~]%<* be g![gs] 23        beg*
+match %[^_~]%<* be in 23           bei*
+match %[^_~]%<* be l[aeiouwy] 23   bel*
+match %[^_~]%<* be neficen 23         beneficen*
+match %[^_~]%<* be net('s)?%>*%[_~^] 23
+match %[^_~]%<* be ne![dft] 23          bene*
+match %[^_~]%<* be n[aiu] 23         ben*
+match %[^_~]%<* be r[a] 23         bere*
+match %[^_~]%<* be re!n 23         ber*
+match %[^_~]%<* be stir 23           besti*
+match %[^_~]%<* be st[or] 23           best*
+match %[^_~]%<* be s![st] 23           bes*
+match %[^_~]%<* be t![chst'] 23       bet*
+
+# be  12-15   10.6.2  10.6.3
+
+begword con 25
+begword dis 256
 
 word en =
 always en 26
@@ -325,69 +349,70 @@ word heatheness 125-2-2346-1345-15-234-234
 
 attribute 2 BCDFGHJKLMNPQRSTVWXZbcdfghjklmnpqrstvwxz'  no vowels (except w) and 2.6.4
 
-sufword about 1-12
-sufword above 1-12-1236
-sufword according 1-14
-sufword across 1-14-1235
-
-sufword afternoon 1-124-1345
-sufword afterward 1-124-2456
-word again 1-1245
-word against 1-1245-34
-word almost 1-123-134
-word already 1-123-1235
-word also 1-123
-word although 1-123-1456
-word altogether 1-123-2345
-word always 1-123-2456
-word because 23-14
-sufword before 23-124
-word behind 23-125
-sufword below 23-123
-word beneath 23-1345
-word beyond 23-13456
-sufword conceive 25-14-1236
-sufword conceiving 25-14-1236-1245
-sufword could 14-145
-always deceive 145-14-1236
-always deceiving 145-14-1236-1245
-always declare 145-14-123
-word declaring 145-14-123-1245
-word either 15-24
-word herself 125-12456-124
-word him 125-134
-word himself 125-134-124
-word immediate 24-134-134
-word its 1346-234
-word itself 1346-124
-always much 134-16
-word must 134-34
-word myself 134-13456-124
-prfword necessary 1345-15-14
-word neither 1345-15-24
-word oneself 5-135-124
-always ourselves 1256-1235-1236-234
-prfword paid 1234-145
-always perceive 1234-12456-14-1236
-always perceiving 1234-12456-14-1236-1245
-always perhaps 1234-12456-125
-always receive 1235-14-1236
-always receiving 1235-14-1236-1245
-always rejoice 1235-245-14
-always rejoicing 1235-245-14-1245
-word said 234-145
-sufword should 146-145
-sufword such 234-16
-word themselves 2346-134-1236-234
-word thyself 1456-13456-124
-word today 2345-145
-always together 2345-1245-1235
-word tomorrow 2345-134
-word tonight 2345-1345
-sufword would 2456-145
-word your 13456-1235
-word yourself 13456-1235-124
-word yourselves 13456-1235-1236-234
+match %[_~^]%<* about (s|'s)?%>*%[_~^] 1-12
+match %[_~^]%<* above (s|'s)?%>*%[_~^] 1-12-1236
+match %[_~^]%<* according (s|'s)?%>*%[_~^] 1-14
+match %[_~^]%<* across (s|'s)?%>*%[_~^] 1-14-1235
+match %[_~^]%<* afternoon (s|'s)?%>*%[_~^] 1-124-1345
+match %[_~^]%<* afterward (s|'s)?%>*%[_~^] 1-124-2456
+match %[_~^]%<* again (s|'s)?%>*%[_~^] 1-1245
+match %[_~^]%<* against (s|'s)?%>*%[_~^] 1-1245-34
+match %[_~^]%<* almost (s|'s)?%>*%[_~^] 1-123-134
+match %[_~^]%<* already (s|'s)?%>*%[_~^] 1-123-1235
+match %[_~^]%<* also (s|'s)?%>*%[_~^] 1-123
+match %[_~^]%<* although (s|'s)?%>*%[_~^] 1-123-1456
+match %[_~^]%<* altogether (s|'s)?%>*%[_~^] 1-123-2345
+match %[_~^]%<* always (s|'s)?%>*%[_~^] 1-123-2456
+match %[_~^]%<* because (s|'s)?%>*%[_~^] 23-14
+match %[_~^]%<* before (s|'s)?%>*%[_~^] 23-124
+match %[_~^]%<* behind (s|'s)?%>*%[_~^] 23-125
+match %[_~^]%<* below (s|'s)?%>*%[_~^] 23-123
+match %[_~^]%<* beneath (s|'s)?%>*%[_~^] 23-1345
+match %[_~^]%<* beside (s|'s)?%>*%[_~^] 23-234
+match %[_~^]%<* between (s|'s)?%>*%[_~^] 23-2345
+match %[_~^]%<* beyond (s|'s)?%>*%[_~^] 23-13456
+match %[_~^]%<* conceive (s|'s)?%>*%[_~^] 25-14-1236
+match %[_~^]%<* conceiving (s|'s)?%>*%[_~^] 25-14-1236-1245
+match %[_~^]%<* could (s|'s)?%>*%[_~^] 14-145
+match %[_~^]%<* deceive (s|'s)?%>*%[_~^] 145-14-1236
+match %[_~^]%<* deceiving (s|'s)?%>*%[_~^] 145-14-1236-1245
+match %[_~^]%<* declare (s|'s)?%>*%[_~^] 145-14-123
+match %[_~^]%<* declaring (s|'s)?%>*%[_~^] 145-14-123-1245
+match %[_~^]%<* either (s|'s)?%>*%[_~^] 15-24
+match %[_~^]%<* herself (s|'s)?%>*%[_~^] 125-12456-124
+match %[_~^]%<* him (s|'s)?%>*%[_~^] 125-134
+match %[_~^]%<* himself (s|'s)?%>*%[_~^] 125-134-124
+match %[_~^]%<* immediate (s|'s)?%>*%[_~^] 24-134-134
+match %[_~^]%<* its (s|'s)?%>*%[_~^] 1346-234
+match %[_~^]%<* itself (s|'s)?%>*%[_~^] 1346-124
+match %[_~^]%<* much (s|'s)?%>*%[_~^] 134-16
+match %[_~^]%<* must (s|'s)?%>*%[_~^] 134-34
+match %[_~^]%<* myself (s|'s)?%>*%[_~^] 134-13456-124
+match %[_~^]%<* necessary (s|'s)?%>*%[_~^] 1345-15-14
+match %[_~^]%<* neither (s|'s)?%>*%[_~^] 1345-15-24
+match %[_~^]%<* oneself (s|'s)?%>*%[_~^] 5-135-124
+match %[_~^]%<* ourselves (s|'s)?%>*%[_~^] 1256-1235-1236-234
+match %[_~^]%<* paid (s|'s)?%>*%[_~^] 1234-145
+match %[_~^]%<* perceive (s|'s)?%>*%[_~^] 1234-12456-14-1236
+match %[_~^]%<* perceiving (s|'s)?%>*%[_~^] 1234-12456-14-1236-1245
+match %[_~^]%<* perhaps (s|'s)?%>*%[_~^] 1234-12456-125
+match %[_~^]%<* receive (s|'s)?%>*%[_~^] 1235-14-1236
+match %[_~^]%<* receiving (s|'s)?%>*%[_~^] 1235-14-1236-1245
+match %[_~^]%<* rejoice (s|'s)?%>*%[_~^] 1235-245-14
+match %[_~^]%<* rejoicing (s|'s)?%>*%[_~^] 1235-245-14-1245
+match %[_~^]%<* said (s|'s)?%>*%[_~^] 234-145
+match %[_~^]%<* should (s|'s)?%>*%[_~^] 146-145
+match %[_~^]%<* such (s|'s)?%>*%[_~^] 234-16
+match %[_~^]%<* themselves (s|'s)?%>*%[_~^] 2346-134-1236-234
+match %[_~^]%<* thyself (s|'s)?%>*%[_~^] 1456-13456-124
+match %[_~^]%<* today (s|'s)?%>*%[_~^] 2345-145
+match %[_~^]%<* together (s|'s)?%>*%[_~^] 2345-1245-1235
+match %[_~^]%<* tomorrow (s|'s)?%>*%[_~^] 2345-134
+match %[_~^]%<* tonight (s|'s)?%>*%[_~^] 2345-1345
+match %[_~^]%<* would (s|'s)?%>*%[_~^] 2456-145
+match %[_~^]%<* your (s|'s)?%>*%[_~^] 13456-1235
+match %[_~^]%<* yourself (s|'s)?%>*%[_~^] 13456-1235-124
+match %[_~^]%<* yourselves (s|'s)?%>*%[_~^] 13456-1235-1236-234
 
 #   10.9.3
 
@@ -408,539 +433,539 @@ word abouts 1-12-1256-2345-234
 word almosts 1-123-134-135-34-234
 word hims 125-24-134-234
 
-#sufword 'twould 3-2345-2456-145
-#sufword 'twould've 3-2345-2456-145-3-1236-15
-#sufword 'twoulda 3-2345-2456-145-1
-#sufword 'twouldn't 3-2345-2456-145-1345-3-2345
-#sufword 'twouldn't've 3-2345-2456-145-1345-3-2345-3-1236-15
-#sufword aboutface 1-12-124-1-14-15
-#sufword aboutfaced 1-12-124-1-14-1246
-#sufword aboutfacer 1-12-124-1-14-12456
-#sufword aboutfacing 1-12-124-1-14-346
-#sufword aboutturn 1-12-2345-136-1235-1345
-#sufword aboutturned 1-12-2345-136-1235-1345-1246
-#sufword aboveboard 1-12-1236-12-135-345-145
-#sufword aboveground 1-12-1236-1245-1235-46-145
-#sufword abovementioned 1-12-1236-134-26-56-1345-1246
-sufword accordingly 1-14-123-13456
-#sufword aforesaid 1-123456-15-234-145
-#sufword afterbattle 1-124-12-1-2345-2345-123-15
-#sufword afterbirth 1-124-12-24-1235-1456
-#sufword afterbreakfast 1-124-12-1235-2-13-124-1-34
-#sufword afterburn 1-124-12-136-1235-1345
-#sufword afterburned 1-124-12-136-1235-1345-1246
-#sufword afterburner 1-124-12-136-1235-1345-12456
-#sufword afterburning 1-124-12-136-1235-1345-346
-#sufword aftercare 1-124-14-345-15
-#sufword afterclap 1-124-14-123-1-1234
-#sufword aftercoffee 1-124-14-12356-124-15-15
-#sufword afterdamp 1-124-145-1-134-1234
-#sufword afterdark 1-124-145-345-13
-#sufword afterdeck 1-124-145-15-14-13
-#sufword afterdinner 1-124-145-35-1345-12456
-#sufword afterflow 1-124-124-123-246
-#sufword aftergame 1-124-1245-1-134-15
-#sufword afterglow 1-124-1245-123-246
-#sufword afterguard 1-124-1245-136-345-145
-#sufword afterhatch 1-124-125-1-2345-16
-#sufword afterhatches 1-124-125-1-2345-16-15-234
-#sufword afterhour 1-124-125-1256-1235
-#sufword afterlife 1-124-123-24-124-15
-#sufword afterlight 1-124-123-24-126-2345
-#sufword afterlives 1-124-123-24-1236-15-234
-#sufword afterlunch 1-124-123-136-1345-16
-#sufword afterlunches 1-124-123-136-1345-16-15-234
-#sufword aftermarket 1-124-134-345-13-15-2345
-#sufword aftermatch 1-124-134-1-2345-16
-#sufword aftermatches 1-124-134-1-2345-16-15-234
-#sufword aftermath 1-124-134-1-1456
-#sufword aftermeeting 1-124-134-15-15-2345-346
-#sufword aftermidday 1-124-134-24-145-5-145
-#sufword aftermidnight 1-124-134-24-145-1345-24-126-2345
-#sufword aftermost 1-124-134-135-34
-#sufword afternoontea 1-124-1345-2345-15-1
-#sufword afterpain 1-124-1234-1-35
-#sufword afterparties 1-124-5-1234-24-15-234
-#sufword afterparty 1-124-5-1234-13456
-#sufword afterpiece 1-124-1234-24-15-14-15
-#sufword afterplay 1-124-1234-123-1-13456
-#sufword aftersale 1-124-234-1-123-15
-#sufword afterschool 1-124-234-16-135-135-123
-#sufword aftersensation 1-124-234-26-234-1-56-1345
-#sufword aftershave 1-124-146-1-1236-15
-#sufword aftershock 1-124-146-135-14-13
-#sufword aftershow 1-124-146-246
-#sufword aftershower 1-124-146-246-12456
-#sufword aftersupper 1-124-234-136-1234-1234-12456
-#sufword aftertaste 1-124-2345-1-34-15
-#sufword aftertax 1-124-2345-1-1346
-#sufword aftertaxes 1-124-2345-1-1346-15-234
-#sufword aftertea 1-124-2345-15-1
-#sufword aftertheatre 1-124-2346-1-2345-1235-15
-#sufword afterthought 1-124-1456-5-1256
-#sufword aftertime 1-124-5-2345
-#sufword aftertreatment 1-124-2345-1235-2-2345-56-2345
-#sufword afterword 1-124-45-2456
-#sufword afterwork 1-124-5-2456
-#sufword afterworld 1-124-456-2456
-#sufword apperceive 1-1234-1234-12456-14-1236
-#sufword apperceived 1-1234-1234-12456-14-1236-145
-#sufword apperceiver 1-1234-1234-12456-14-1236-1235
-#sufword apperceiving 1-1234-1234-12456-14-1236-1245
-#sufword archdeceiver 345-16-145-14-1236-1235
-#sufword beforehand 23-124-125-12346
-#sufword befriend 23-124-1235
-#sufword behindhand 23-125-125-12346
-sufword belittle 23-123-123
-sufword belittled 23-123-123-145
-sufword belittlement 23-123-123-56-2345
-sufword belittler 23-123-123-1235
-#sufword belowdeck 23-123-145-15-14-13
-#sufword belowground 23-123-1245-1235-46-145
-#sufword belowmentioned 23-123-134-26-56-1345-1246
-#sufword beneathdeck 23-1345-145-15-14-13
-#sufword beneathground 23-1345-1245-1235-46-145
-#sufword betweendeck 23-2345-145-15-14-13
-#sufword betweentime 23-2345-5-2345
-#sufword betweenwhile 23-2345-156-24-123-15
-#sufword blindfish 12-123-124-24-146
-#sufword blindfishes 12-123-124-24-146-15-234
-#sufword blindfold 12-123-124-135-123-145
-#sufword blindfolded 12-123-124-135-123-145-1246
-#sufword blindfolder 12-123-124-135-123-145-12456
-#sufword blindfolding 12-123-124-135-123-145-346
-#sufword blindly 12-123-123-13456
-#sufword blindman 12-123-134-1-1345
-#sufword blindmen 12-123-134-26
-#sufword blindness 12-123-56-234
-#sufword blindnesses 12-123-56-234-15-234
-#sufword blindside 12-123-234-24-145-15
-#sufword blindsided 12-123-234-24-145-1246
-#sufword blindsider 12-123-234-24-145-12456
-#sufword blindsiding 12-123-234-24-145-346
-#sufword blindsight 12-123-234-24-126-2345
-#sufword blindstories 12-123-34-135-1235-24-15-234
-#sufword blindstory 12-123-34-135-1235-13456
-#sufword blindworm 12-123-2456-135-1235-134
-sufword bloodletter 12-123-135-135-145-123-1235
-#sufword boyfriend 12-135-13456-124-1235
-#sufword brailled 12-1235-123-145
-#sufword brailler 12-1235-123-1235
-#sufword braillewriter 12-1235-123-2456-1235-24-2345-12456
-#sufword braillewriting 12-1235-123-2456-1235-24-2345-346
-#sufword brailley 12-1235-123-13456
-#sufword brainchildren 12-1235-1-35-16-1345
-sufword chainletter 16-1-35-123-1235
-#sufword children'swear 16-1345-3-234-2456-15-345
-#sufword colorblind 14-135-123-135-1235-12-123
-#sufword colorblindness 14-135-123-135-1235-12-123-56-234
-#sufword colorblindnesses 14-135-123-135-1235-12-123-56-234-15-234
-#sufword colourblind 14-135-123-1256-1235-12-123
-#sufword colourblindness 14-135-123-1256-1235-12-123-56-234
-#sufword colourblindnesses 14-135-123-1256-1235-12-123-56-234-15-234
-#sufword conceived 25-14-1236-145
-#sufword conceiver 25-14-1236-1235
-#sufword could've 14-145-3-1236-15
-#sufword coulda 14-145-1
-#sufword couldest 14-145-15-34
-#sufword couldn't 14-145-1345-3-2345
-#sufword couldn't've 14-145-1345-3-2345-3-1236-15
-#sufword couldst 14-145-34
-#sufword deafblind 145-2-124-12-123
-#sufword deafblindness 145-2-124-12-123-56-234
-#sufword deafblindnesses 145-2-124-12-123-56-234-15-234
-#sufword deceived 145-14-1236-145
-#sufword deceiver 145-14-1236-1235
-#sufword declared 145-14-123-145
-#sufword declarer 145-14-123-1235
-#sufword defriend 145-15-124-1235
-#sufword do-it-yourselfer 145-36-1346-36-13456-1235-124-12456
-sufword doublequick 145-1256-12-123-15-12345-13
-sufword eastabout 15-1-34-1-12
-sufword feelgood 124-15-15-123-1245-145
-sufword feetfirst 124-15-15-2345-124-34
-sufword firstaid 124-34-1-24-145
-sufword firstaider 124-34-1-24-145-12456
-#sufword firstborn 124-34-12-135-1235-1345
-#sufword firstclass 124-34-14-123-1-234-234
-#sufword firstclasses 124-34-14-123-1-234-234-15-234
-#sufword firstday 124-34-5-145
-#sufword firstdayer 124-34-5-145-12456
-#sufword firstfruit 124-34-124-1235-136-24-2345
-#sufword firstfruiting 124-34-124-1235-136-24-2345-346
-#sufword firstgeneration 124-34-1245-26-12456-1-56-1345
-#sufword firsthand 124-34-125-12346
-#sufword firsthanded 124-34-125-12346-1246
-#sufword firstling 124-34-123-346
-#sufword firstly 124-34-123-13456
-#sufword firstness 124-34-56-234
-#sufword firstnight 124-34-1345-24-126-2345
-#sufword firstnighter 124-34-1345-24-126-2345-12456
-#sufword firstrate 124-34-1235-1-2345-15
-#sufword firstrated 124-34-1235-1-2345-1246
-#sufword firstrating 124-34-1235-1-2345-346
-#sufword firststring 124-34-34-1235-346
-#sufword forasmuch 123456-1-234-134-16
-#sufword foresaid 123456-15-234-145
-#sufword fosterchildren 124-135-34-12456-16-1345
-#sufword friendless 124-1235-46-234
-#sufword friendlessness 124-1235-46-234-56-234
-#sufword friendlessnesses 124-1235-46-234-56-234-15-234
-#sufword friendlier 124-1235-123-24-12456
-#sufword friendlies 124-1235-123-24-15-234
-#sufword friendliest 124-1235-123-24-15-34
-#sufword friendliness 124-1235-123-24-56-234
-#sufword friendlinesses 124-1235-123-24-56-234-15-234
-#sufword friendly 124-1235-123-13456
-#sufword friendship 124-1235-146-24-1234
-sufword gadabout 1245-1-145-1-12
-#sufword gainsaid 1245-1-35-234-145
-#sufword galfriend 1245-1-123-124-1235
-#sufword gentlemanfriend 1245-26-2345-123-15-134-1-1345-124-1235
-#sufword gentlemenfriends 1245-26-2345-123-15-134-26-124-1235-234
-#sufword girlfriend 1245-24-1235-123-124-1235
-#sufword godchildren 1245-135-145-16-1345
-sufword goodafternoon 1245-145-1-124-1345
-#sufword goodby 1245-145-12-13456
-#sufword goodbye 1245-145-12-13456-15
-#sufword goodbyeing 1245-145-12-13456-15-346
-#sufword goodbying 1245-145-12-13456-346
-#sufword goodday 1245-145-5-145
-sufword gooder 1245-145-12456
-sufword goodest 1245-145-15-34
-sufword goodevening 1245-145-15-1236-26-346
-#sufword goodfellow 1245-145-124-15-123-123-246
-#sufword goodfellowship 1245-145-124-15-123-123-246-146-24-1234
-#sufword goodhearted 1245-145-125-15-345-2345-1246
-#sufword goodheartedly 1245-145-125-15-345-2345-1246-123-13456
-#sufword goodheartedness 1245-145-125-15-345-2345-1246-56-234
-#sufword goodhumor 1245-145-125-136-134-135-1235
-#sufword goodhumored 1245-145-125-136-134-135-1235-1246
-#sufword goodhumoredly 1245-145-125-136-134-135-1235-1246-123-13456
-#sufword goodhumoredness 1245-145-125-136-134-135-1235-1246-56-234
-#sufword goodhumorednesses 1245-145-125-136-134-135-1235-1246-56-234-15-234
-#sufword goodhumour 1245-145-125-136-134-1256-1235
-#sufword goodhumoured 1245-145-125-136-134-1256-1235-1246
-#sufword goodhumouredly 1245-145-125-136-134-1256-1235-1246-123-13456
-#sufword goodhumouredness 1245-145-125-136-134-1256-1235-1246-56-234
-#sufword goodhumourednesses 1245-145-125-136-134-1256-1235-1246-56-234-15-234
-sufword goodie 1245-145-24-15
-sufword goodish 1245-145-24-146
-#sufword goodlier 1245-145-123-24-12456
-#sufword goodliest 1245-145-123-24-15-34
-#sufword goodliness 1245-145-123-24-56-234
-#sufword goodlook 1245-145-123-135-135-13
-#sufword goodlooker 1245-145-123-135-135-13-12456
-#sufword goodlooking 1245-145-123-135-135-13-346
-#sufword goodly 1245-145-123-13456
-#sufword goodman 1245-145-134-1-1345
-#sufword goodmen 1245-145-134-26
-#sufword goodmorning 1245-145-134-135-1235-1345-346
-#sufword goodnature 1245-145-1345-1-2345-136-1235-15
-#sufword goodnatured 1245-145-1345-1-2345-136-1235-1246
-#sufword goodnaturedly 1245-145-1345-1-2345-136-1235-1246-123-13456
-#sufword goodnaturedness 1245-145-1345-1-2345-136-1235-1246-56-234
-#sufword goodness 1245-145-56-234
-#sufword goodnesses 1245-145-56-234-15-234
-#sufword goodnight 1245-145-1345-24-126-2345
-#sufword goodsize 1245-145-234-24-1356-15
-#sufword goodsized 1245-145-234-24-1356-1246
-#sufword goodtempered 1245-145-2345-15-134-1234-12456-1246
-#sufword goodtemperedly 1245-145-2345-15-134-1234-12456-1246-123-13456
-#sufword goodtime 1245-145-5-2345
-sufword goodun 1245-145-136-1345
-#sufword goodwife 1245-145-2456-24-124-15
-#sufword goodwill 1245-145-2456-24-123-123
-#sufword goodwilled 1245-145-2456-24-123-123-1246
-#sufword goodwives 1245-145-2456-24-1236-15-234
-sufword goody 1245-145-13456
-sufword goodyear 1245-145-13456-15-345
-#sufword grandchildren 1245-1235-12346-16-1345
-#sufword greataunt 1245-1235-2345-1-136-1345-2345
-#sufword greatbatch 1245-1235-2345-12-1-2345-16
-#sufword greatcircle 1245-1235-2345-14-24-1235-14-123-15
-#sufword greatcoat 1245-1235-2345-14-135-1-2345
-#sufword greaten 1245-1235-2345-26
-#sufword greatened 1245-1235-2345-26-1246
-#sufword greatener 1245-1235-2345-26-12456
-#sufword greatening 1245-1235-2345-26-346
-#sufword greater 1245-1235-2345-12456
-#sufword greatest 1245-1235-2345-15-34
-#sufword greatgrandaunt 1245-1235-2345-1245-1235-12346-1-136-1345-2345
-#sufword greatgrandchild 1245-1235-2345-1245-1235-12346-16-24-123-145
-#sufword greatgrandchildren 1245-1235-2345-1245-1235-12346-16-1345
-#sufword greatgranddad 1245-1235-2345-1245-1235-12346-145-1-145
-#sufword greatgranddaughter 1245-1235-2345-1245-1235-12346-145-1-136-126-2345-12456
-#sufword greatgrandfather 1245-1235-2345-1245-1235-12346-5-124
-#sufword greatgrandfatherhood 1245-1235-2345-1245-1235-12346-5-124-125-135-135-145
-#sufword greatgrandma 1245-1235-2345-1245-1235-12346-134-1
-#sufword greatgrandmother 1245-1235-2345-1245-1235-12346-5-134
-#sufword greatgrandmotherhood 1245-1235-2345-1245-1235-12346-5-134-125-135-135-145
-#sufword greatgrandnephew 1245-1235-2345-1245-1235-12346-1345-15-1234-125-15-2456
-#sufword greatgrandniece 1245-1235-2345-1245-1235-12346-1345-24-15-14-15
-#sufword greatgrandpa 1245-1235-2345-1245-1235-12346-1234-1
-#sufword greatgrandparent 1245-1235-2345-1245-1235-12346-1234-345-26-2345
-#sufword greatgrandparenthood 1245-1235-2345-1245-1235-12346-1234-345-26-2345-125-135-135-145
-#sufword greatgrandson 1245-1235-2345-1245-1235-12346-234-135-1345
-#sufword greatgranduncle 1245-1235-2345-1245-1235-12346-136-1345-14-123-15
-#sufword greathearted 1245-1235-2345-125-15-345-2345-1246
-#sufword greatheartedly 1245-1235-2345-125-15-345-2345-1246-123-13456
-#sufword greatheartedness 1245-1235-2345-125-15-345-2345-1246-56-234
-#sufword greatheartednesses 1245-1235-2345-125-15-345-2345-1246-56-234-15-234
-#sufword greatly 1245-1235-2345-123-13456
-#sufword greatnephew 1245-1235-2345-1345-15-1234-125-15-2456
-#sufword greatness 1245-1235-2345-56-234
-#sufword greatnesses 1245-1235-2345-56-234-15-234
-#sufword greatniece 1245-1235-2345-1345-24-15-14-15
-#sufword greatsword 1245-1235-2345-234-45-2456
-#sufword greatuncle 1245-1235-2345-136-1345-14-123-15
-#sufword guyfriend 1245-136-13456-124-1235
-sufword hateletter 125-1-2345-15-123-1235
-sufword headfirst 125-2-145-124-34
-sufword hereabout 5-125-1-12
-sufword hereafter 5-125-1-124
-#sufword hereagain 5-125-1-1245
-#sufword hereagainst 5-125-1-1245-34
-sufword hereinabove 5-125-35-1-12-1236
-sufword hereinafter 5-125-35-1-124
-#sufword hereinagain 5-125-35-1-1245
-#sufword highlypaid 125-24-126-123-13456-1234-145
-#sufword himbo 125-134-12-135
-#sufword himboes 125-134-12-135-15-234
-#sufword illpaid 24-123-123-1234-145
-#sufword immediately 24-134-134-123-13456
-#sufword immediateness 24-134-134-56-234
-#sufword inasmuch 35-1-234-134-16
-#sufword insomuch 35-234-135-134-16
-sufword knockabout 13-1345-135-14-13-1-12
-#sufword ladyfriend 123-1-145-13456-124-1235
-sufword layabout 123-1-13456-1-12
-#sufword letterbodies 123-1235-12-135-145-24-15-234
-#sufword letterbody 123-1235-12-135-145-13456
-#sufword letterbomb 123-1235-12-135-134-12
-#sufword letterbombed 123-1235-12-135-134-12-1246
-#sufword letterbomber 123-1235-12-135-134-12-12456
-#sufword letterbombing 123-1235-12-135-134-12-346
-#sufword letterbox 123-1235-12-135-1346
-#sufword letterboxed 123-1235-12-135-1346-1246
-#sufword letterboxer 123-1235-12-135-1346-12456
-#sufword letterboxes 123-1235-12-135-1346-15-234
-#sufword letterboxing 123-1235-12-135-1346-346
-sufword lettered 123-1235-1246
-sufword letterer 123-1235-12456
-#sufword letterform 123-1235-123456-134
-#sufword letterhead 123-1235-125-2-145
-#sufword letterheading 123-1235-125-2-145-346
-sufword lettering 123-1235-346
-#sufword letterman 123-1235-134-1-1345
-#sufword lettermen 123-1235-134-26
-sufword letteropener 123-1235-135-1234-26-12456
-#sufword letterperfect 123-1235-1234-12456-124-15-14-2345
-#sufword letterpress 123-1235-1234-1235-15-234-234
-#sufword letterpressed 123-1235-1234-1235-15-234-234-1246
-#sufword letterpresses 123-1235-1234-1235-15-234-234-15-234
-#sufword letterpressing 123-1235-1234-1235-15-234-234-346
-#sufword letterquality 123-1235-12345-136-1-123-56-13456
-#sufword letterspace 123-1235-234-1234-1-14-15
-#sufword letterspaced 123-1235-234-1234-1-14-1246
-#sufword letterspacing 123-1235-234-1234-1-14-346
-#sufword lettertext 123-1235-2345-15-1346-2345
-#sufword littled 123-123-145
-#sufword littleneck 123-123-1345-15-14-13
-#sufword littleness 123-123-56-234
-#sufword littlenesses 123-123-56-234-15-234
-#sufword littler 123-123-1235
-#sufword littlest 123-123-34
-#sufword lovechildren 123-135-1236-15-16-1345
-sufword loveletter 123-135-1236-15-123-1235
-#sufword lowlypaid 123-246-123-13456-1234-145
-#sufword manfriend 134-1-1345-124-1235
-#sufword menfriends 134-26-124-1235-234
-sufword midafternoon 134-24-145-1-124-1345
-#sufword misbraille 134-24-234-12-1235-123
-#sufword misbrailled 134-24-234-12-1235-123-145
-#sufword misperceive 134-24-234-1234-12456-14-1236
-#sufword misperceived 134-24-234-1234-12456-14-1236-145
-#sufword misperceiver 134-24-234-1234-12456-14-1236-1235
-#sufword misperceiving 134-24-234-1234-12456-14-1236-1245
-#sufword missaid 134-24-234-234-145
-sufword morningafter 134-135-1235-1345-346-1-124
-#sufword muchly 134-16-123-13456
-#sufword muchness 134-16-56-234
-#sufword must've 134-34-3-1236-15
-#sufword musta 134-34-1
-#sufword mustard 134-34-345-145
-#sufword mustier 134-34-24-12456
-#sufword mustiest 134-34-24-15-34
-#sufword mustily 134-34-24-123-13456
-#sufword mustiness 134-34-24-56-234
-#sufword mustn't 134-34-1345-3-2345
-#sufword mustn't've 134-34-1345-3-2345-3-1236-15
-#sufword musty 134-34-13456
-sufword newsletter 1345-15-2456-234-123-1235
-sufword nonesuch 1345-5-135-234-16
-sufword nonsuch 1345-135-1345-234-16
-sufword northabout 1345-135-1235-1456-1-12
-#sufword overmuch 135-1236-12456-134-16
-#sufword overpaid 135-1236-12456-1234-145
-#sufword penfriend 1234-26-124-1235
-#sufword perceived 1234-12456-14-1236-145
-#sufword perceiver 1234-12456-14-1236-1235
-#sufword perhapses 1234-12456-125-15-234
-#sufword poorlypaid 1234-135-135-1235-123-13456-1234-145
-#sufword postpaid 1234-135-34-1234-145
-#sufword preceive 1234-1235-14-1236
-#sufword preceiver 1234-1235-14-1236-1235
-#sufword preceiving 1234-1235-14-1236-1245
-#sufword prepaid 1234-1235-15-1234-145
-#sufword purblind 1234-136-1235-12-123
-#sufword purblindly 1234-136-1235-12-123-123-13456
-#sufword purblindness 1234-136-1235-12-123-56-234
-#sufword purblindnesses 1234-136-1235-12-123-56-234-15-234
-#sufword quickdraw 12345-13-145-1235-1-2456
-sufword quicken 12345-13-26
-sufword quickened 12345-13-26-1246
-sufword quickener 12345-13-26-12456
-sufword quickening 12345-13-26-346
-sufword quicker 12345-13-12456
-sufword quickest 12345-13-15-34
-#sufword quickfire 12345-13-124-24-1235-15
-#sufword quickfiring 12345-13-124-24-1235-346
-#sufword quickfreeze 12345-13-124-1235-15-15-1356-15
-#sufword quickfreezing 12345-13-124-1235-15-15-1356-346
-#sufword quickfroze 12345-13-124-1235-135-1356-15
-#sufword quickfrozen 12345-13-124-1235-135-1356-26
-sufword quickie 12345-13-24-15
-sufword quickish 12345-13-24-146
-sufword quickishly 12345-13-24-146-123-13456
-#sufword quicklime 12345-13-123-24-134-15
-#sufword quickly 12345-13-123-13456
-#sufword quickness 12345-13-56-234
-#sufword quicknesses 12345-13-56-234-15-234
-#sufword quicksand 12345-13-234-12346
-#sufword quickset 12345-13-234-15-2345
-#sufword quicksilver 12345-13-234-24-123-1236-12456
-#sufword quicksilvered 12345-13-234-24-123-1236-12456-1246
-#sufword quicksilvering 12345-13-234-24-123-1236-12456-346
-#sufword quicksnap 12345-13-234-1345-1-1234
-#sufword quickstep 12345-13-34-15-1234
-#sufword quickstepped 12345-13-34-15-1234-1234-1246
-#sufword quickstepper 12345-13-34-15-1234-1234-12456
-#sufword quickstepping 12345-13-34-15-1234-1234-346
-#sufword quicktempered 12345-13-2345-15-134-1234-12456-1246
-#sufword quicktime 12345-13-5-2345
-#sufword quickwitted 12345-13-2456-24-2345-2345-1246
-#sufword quickwittedly 12345-13-2456-24-2345-2345-1246-123-13456
-#sufword quickwittedness 12345-13-2456-24-2345-2345-1246-56-234
-sufword quicky 12345-13-13456
-sufword readacross 1235-2-145-1-14-1235
-#sufword rebraille 1235-15-12-1235-123
-#sufword rebrailled 1235-15-12-1235-123-145
-#sufword rebrailler 1235-15-12-1235-123-1235
-#sufword received 1235-14-1236-145
-#sufword receiver 1235-14-1236-1235
-#sufword receivership 1235-14-1236-1235-146-24-1234
-#sufword rejoiced 1235-245-14-145
-#sufword rejoiceful 1235-245-14-56-123
-#sufword rejoicefully 1235-245-14-56-123-123-13456
-#sufword rejoicefulness 1235-245-14-56-123-56-234
-#sufword rejoicer 1235-245-14-1235
-#sufword rejoicingly 1235-245-14-1245-123-13456
-sufword reletter 1235-15-123-1235
-sufword relettered 1235-15-123-1235-1246
-sufword relettering 1235-15-123-1235-346
-#sufword repaid 1235-15-1234-145
-sufword rightabout 5-1235-1-12
-sufword roundabout 1235-46-145-1-12
-sufword roustabout 1235-1256-34-1-12
-sufword runabout 1235-136-1345-1-12
-#sufword saidest 234-145-15-34
-#sufword saidst 234-145-34
-sufword scattergood 234-14-1-2345-2345-12456-1245-145
-#sufword schoolchildren 234-16-135-135-123-16-1345
-#sufword schoolfriend 234-16-135-135-123-124-1235
-#sufword should've 146-145-3-1236-15
-#sufword shoulda 146-145-1
-#sufword shouldest 146-145-15-34
-#sufword shouldn't 146-145-1345-3-2345
-#sufword shouldn't've 146-145-1345-3-2345-3-1236-15
-#sufword shouldst 146-145-34
-#sufword snowblind 234-1345-246-12-123
-#sufword snowblindness 234-1345-246-12-123-56-234
-#sufword snowblindnesses 234-1345-246-12-123-56-234-15-234
-sufword somesuch 5-234-234-16
-sufword southabout 234-1256-1456-1-12
-#sufword stepchildren 34-15-1234-16-1345
-sufword stirabout 34-24-1235-1-12
-#sufword suchlike 234-16-123-24-13-15
-sufword supergood 234-136-1234-12456-1245-145
-sufword superquick 234-136-1234-12456-12345-13
-sufword tailfirst 2345-1-24-123-124-34
-sufword thereabout 5-2346-1-12
-sufword thereafter 5-2346-1-124
-#sufword thereagain 5-2346-1-1245
-#sufword thereagainst 5-2346-1-1245-34
-sufword thereinafter 5-2346-35-1-124
-#sufword thereinagain 5-2346-35-1-1245
-#sufword togetherness 2345-1245-1235-56-234
-sufword turnabout 2345-136-1235-1345-1-12
-sufword unaccording 136-1345-1-14
-sufword unaccordingly 136-1345-1-14-123-13456
-#sufword unblindfold 136-1345-12-123-124-135-123-145
-#sufword unblindfolded 136-1345-12-123-124-135-123-145-1246
-#sufword unblindfolding 136-1345-12-123-124-135-123-145-346
-#sufword unbraille 136-1345-12-1235-123
-#sufword unbrailled 136-1345-12-1235-123-145
-#sufword undeceive 136-1345-145-14-1236
-#sufword undeceived 136-1345-145-14-1236-145
-#sufword undeceiver 136-1345-145-14-1236-1235
-#sufword undeceiving 136-1345-145-14-1236-1245
-#sufword undeclare 136-1345-145-14-123
-#sufword undeclared 136-1345-145-14-123-145
-#sufword underpaid 5-136-1234-145
-#sufword unfriend 136-1345-124-1235
-#sufword unfriendlier 136-1345-124-1235-123-24-12456
-#sufword unfriendliest 136-1345-124-1235-123-24-15-34
-#sufword unfriendliness 136-1345-124-1235-123-24-56-234
-#sufword unfriendlinesses 136-1345-124-1235-123-24-56-234-15-234
-#sufword unfriendly 136-1345-124-1235-123-13456
-sufword unlettered 136-1345-123-1235-1246
-#sufword unnecessary 136-1345-1345-15-14
-#sufword unpaid 136-1345-1234-145
-#sufword unperceive 136-1345-1234-12456-14-1236
-#sufword unperceived 136-1345-1234-12456-14-1236-145
-#sufword unperceiving 136-1345-1234-12456-14-1236-1245
-sufword unquick 136-1345-12345-13
-#sufword unreceived 136-1345-1235-14-1236-145
-#sufword unrejoice 136-1345-1235-245-14
-#sufword unrejoiced 136-1345-1235-245-14-145
-#sufword unrejoiceful 136-1345-1235-245-14-56-123
-#sufword unrejoicefully 136-1345-1235-245-14-56-123-123-13456
-#sufword unrejoicefulness 136-1345-1235-245-14-56-123-56-234
-#sufword unrejoicer 136-1345-1235-245-14-1235
-#sufword unrejoicing 136-1345-1235-245-14-1245
-#sufword unrejoicingly 136-1345-1235-245-14-1245-123-13456
-sufword walkabout 2456-1-123-13-1-12
-#sufword wellpaid 2456-15-123-123-1234-145
-sufword westabout 2456-15-34-1-12
-sufword whereabout 5-156-1-12
-sufword whereafter 5-156-1-124
-#sufword whereagain 5-156-1-1245
-#sufword whereagainst 5-156-1-1245-34
-sufword whereinafter 5-156-35-1-124
-#sufword whereinagain 5-156-35-1-1245
-#sufword womanfriend 2456-135-134-1-1345-124-1235
-#sufword womenfriends 2456-135-134-26-124-1235-234
-#sufword would've 2456-145-3-1236-15
-#sufword woulda 2456-145-1
-#sufword wouldest 2456-145-15-34
-#sufword wouldn't 2456-145-1345-3-2345
-#sufword wouldn't've 2456-145-1345-3-2345-3-1236-15
-#sufword wouldst 2456-145-34
+match %[_~^]%<* 'twould (s|'s)?%>*%[_~^] 3-2345-2456-145
+match %[_~^]%<* 'twould've (s|'s)?%>*%[_~^] 3-2345-2456-145-3-1236-15
+match %[_~^]%<* 'twoulda (s|'s)?%>*%[_~^] 3-2345-2456-145-1
+match %[_~^]%<* 'twouldn't (s|'s)?%>*%[_~^] 3-2345-2456-145-1345-3-2345
+match %[_~^]%<* 'twouldn't've (s|'s)?%>*%[_~^] 3-2345-2456-145-1345-3-2345-3-1236-15
+match %[_~^]%<* aboutface (s|'s)?%>*%[_~^] 1-12-124-1-14-15
+match %[_~^]%<* aboutfaced (s|'s)?%>*%[_~^] 1-12-124-1-14-1246
+match %[_~^]%<* aboutfacer (s|'s)?%>*%[_~^] 1-12-124-1-14-12456
+match %[_~^]%<* aboutfacing (s|'s)?%>*%[_~^] 1-12-124-1-14-346
+match %[_~^]%<* aboutturn (s|'s)?%>*%[_~^] 1-12-2345-136-1235-1345
+match %[_~^]%<* aboutturned (s|'s)?%>*%[_~^] 1-12-2345-136-1235-1345-1246
+match %[_~^]%<* aboveboard (s|'s)?%>*%[_~^] 1-12-1236-12-135-345-145
+match %[_~^]%<* aboveground (s|'s)?%>*%[_~^] 1-12-1236-1245-1235-46-145
+match %[_~^]%<* abovementioned (s|'s)?%>*%[_~^] 1-12-1236-134-26-56-1345-1246
+match %[_~^]%<* accordingly (s|'s)?%>*%[_~^] 1-14-123-13456
+match %[_~^]%<* aforesaid (s|'s)?%>*%[_~^] 1-123456-15-234-145
+match %[_~^]%<* afterbattle (s|'s)?%>*%[_~^] 1-124-12-1-2345-2345-123-15
+match %[_~^]%<* afterbirth (s|'s)?%>*%[_~^] 1-124-12-24-1235-1456
+match %[_~^]%<* afterbreakfast (s|'s)?%>*%[_~^] 1-124-12-1235-2-13-124-1-34
+match %[_~^]%<* afterburn (s|'s)?%>*%[_~^] 1-124-12-136-1235-1345
+match %[_~^]%<* afterburned (s|'s)?%>*%[_~^] 1-124-12-136-1235-1345-1246
+match %[_~^]%<* afterburner (s|'s)?%>*%[_~^] 1-124-12-136-1235-1345-12456
+match %[_~^]%<* afterburning (s|'s)?%>*%[_~^] 1-124-12-136-1235-1345-346
+match %[_~^]%<* aftercare (s|'s)?%>*%[_~^] 1-124-14-345-15
+match %[_~^]%<* afterclap (s|'s)?%>*%[_~^] 1-124-14-123-1-1234
+match %[_~^]%<* aftercoffee (s|'s)?%>*%[_~^] 1-124-14-12356-124-15-15
+match %[_~^]%<* afterdamp (s|'s)?%>*%[_~^] 1-124-145-1-134-1234
+match %[_~^]%<* afterdark (s|'s)?%>*%[_~^] 1-124-145-345-13
+match %[_~^]%<* afterdeck (s|'s)?%>*%[_~^] 1-124-145-15-14-13
+match %[_~^]%<* afterdinner (s|'s)?%>*%[_~^] 1-124-145-35-1345-12456
+match %[_~^]%<* afterflow (s|'s)?%>*%[_~^] 1-124-124-123-246
+match %[_~^]%<* aftergame (s|'s)?%>*%[_~^] 1-124-1245-1-134-15
+match %[_~^]%<* afterglow (s|'s)?%>*%[_~^] 1-124-1245-123-246
+match %[_~^]%<* afterguard (s|'s)?%>*%[_~^] 1-124-1245-136-345-145
+match %[_~^]%<* afterhatch (s|'s)?%>*%[_~^] 1-124-125-1-2345-16
+match %[_~^]%<* afterhatches (s|'s)?%>*%[_~^] 1-124-125-1-2345-16-15-234
+match %[_~^]%<* afterhour (s|'s)?%>*%[_~^] 1-124-125-1256-1235
+match %[_~^]%<* afterlife (s|'s)?%>*%[_~^] 1-124-123-24-124-15
+match %[_~^]%<* afterlight (s|'s)?%>*%[_~^] 1-124-123-24-126-2345
+match %[_~^]%<* afterlives (s|'s)?%>*%[_~^] 1-124-123-24-1236-15-234
+match %[_~^]%<* afterlunch (s|'s)?%>*%[_~^] 1-124-123-136-1345-16
+match %[_~^]%<* afterlunches (s|'s)?%>*%[_~^] 1-124-123-136-1345-16-15-234
+match %[_~^]%<* aftermarket (s|'s)?%>*%[_~^] 1-124-134-345-13-15-2345
+match %[_~^]%<* aftermatch (s|'s)?%>*%[_~^] 1-124-134-1-2345-16
+match %[_~^]%<* aftermatches (s|'s)?%>*%[_~^] 1-124-134-1-2345-16-15-234
+match %[_~^]%<* aftermath (s|'s)?%>*%[_~^] 1-124-134-1-1456
+match %[_~^]%<* aftermeeting (s|'s)?%>*%[_~^] 1-124-134-15-15-2345-346
+match %[_~^]%<* aftermidday (s|'s)?%>*%[_~^] 1-124-134-24-145-5-145
+match %[_~^]%<* aftermidnight (s|'s)?%>*%[_~^] 1-124-134-24-145-1345-24-126-2345
+match %[_~^]%<* aftermost (s|'s)?%>*%[_~^] 1-124-134-135-34
+match %[_~^]%<* afternoontea (s|'s)?%>*%[_~^] 1-124-1345-2345-15-1
+match %[_~^]%<* afterpain (s|'s)?%>*%[_~^] 1-124-1234-1-35
+match %[_~^]%<* afterparties (s|'s)?%>*%[_~^] 1-124-5-1234-24-15-234
+match %[_~^]%<* afterparty (s|'s)?%>*%[_~^] 1-124-5-1234-13456
+match %[_~^]%<* afterpiece (s|'s)?%>*%[_~^] 1-124-1234-24-15-14-15
+match %[_~^]%<* afterplay (s|'s)?%>*%[_~^] 1-124-1234-123-1-13456
+match %[_~^]%<* aftersale (s|'s)?%>*%[_~^] 1-124-234-1-123-15
+match %[_~^]%<* afterschool (s|'s)?%>*%[_~^] 1-124-234-16-135-135-123
+match %[_~^]%<* aftersensation (s|'s)?%>*%[_~^] 1-124-234-26-234-1-56-1345
+match %[_~^]%<* aftershave (s|'s)?%>*%[_~^] 1-124-146-1-1236-15
+match %[_~^]%<* aftershock (s|'s)?%>*%[_~^] 1-124-146-135-14-13
+match %[_~^]%<* aftershow (s|'s)?%>*%[_~^] 1-124-146-246
+match %[_~^]%<* aftershower (s|'s)?%>*%[_~^] 1-124-146-246-12456
+match %[_~^]%<* aftersupper (s|'s)?%>*%[_~^] 1-124-234-136-1234-1234-12456
+match %[_~^]%<* aftertaste (s|'s)?%>*%[_~^] 1-124-2345-1-34-15
+match %[_~^]%<* aftertax (s|'s)?%>*%[_~^] 1-124-2345-1-1346
+match %[_~^]%<* aftertaxes (s|'s)?%>*%[_~^] 1-124-2345-1-1346-15-234
+match %[_~^]%<* aftertea (s|'s)?%>*%[_~^] 1-124-2345-15-1
+match %[_~^]%<* aftertheatre (s|'s)?%>*%[_~^] 1-124-2346-1-2345-1235-15
+match %[_~^]%<* afterthought (s|'s)?%>*%[_~^] 1-124-1456-5-1256
+match %[_~^]%<* aftertime (s|'s)?%>*%[_~^] 1-124-5-2345
+match %[_~^]%<* aftertreatment (s|'s)?%>*%[_~^] 1-124-2345-1235-2-2345-56-2345
+match %[_~^]%<* afterword (s|'s)?%>*%[_~^] 1-124-45-2456
+match %[_~^]%<* afterwork (s|'s)?%>*%[_~^] 1-124-5-2456
+match %[_~^]%<* afterworld (s|'s)?%>*%[_~^] 1-124-456-2456
+match %[_~^]%<* apperceive (s|'s)?%>*%[_~^] 1-1234-1234-12456-14-1236
+match %[_~^]%<* apperceived (s|'s)?%>*%[_~^] 1-1234-1234-12456-14-1236-145
+match %[_~^]%<* apperceiver (s|'s)?%>*%[_~^] 1-1234-1234-12456-14-1236-1235
+match %[_~^]%<* apperceiving (s|'s)?%>*%[_~^] 1-1234-1234-12456-14-1236-1245
+match %[_~^]%<* archdeceiver (s|'s)?%>*%[_~^] 345-16-145-14-1236-1235
+match %[_~^]%<* beforehand (s|'s)?%>*%[_~^] 23-124-125-12346
+match %[_~^]%<* befriend (s|'s)?%>*%[_~^] 23-124-1235
+match %[_~^]%<* behindhand (s|'s)?%>*%[_~^] 23-125-125-12346
+match %[_~^]%<* belittle (s|'s)?%>*%[_~^] 23-123-123
+match %[_~^]%<* belittled (s|'s)?%>*%[_~^] 23-123-123-145
+match %[_~^]%<* belittlement (s|'s)?%>*%[_~^] 23-123-123-56-2345
+match %[_~^]%<* belittler (s|'s)?%>*%[_~^] 23-123-123-1235
+match %[_~^]%<* belowdeck (s|'s)?%>*%[_~^] 23-123-145-15-14-13
+match %[_~^]%<* belowground (s|'s)?%>*%[_~^] 23-123-1245-1235-46-145
+match %[_~^]%<* belowmentioned (s|'s)?%>*%[_~^] 23-123-134-26-56-1345-1246
+match %[_~^]%<* beneathdeck (s|'s)?%>*%[_~^] 23-1345-145-15-14-13
+match %[_~^]%<* beneathground (s|'s)?%>*%[_~^] 23-1345-1245-1235-46-145
+match %[_~^]%<* betweendeck (s|'s)?%>*%[_~^] 23-2345-145-15-14-13
+match %[_~^]%<* betweentime (s|'s)?%>*%[_~^] 23-2345-5-2345
+match %[_~^]%<* betweenwhile (s|'s)?%>*%[_~^] 23-2345-156-24-123-15
+match %[_~^]%<* blindfish (s|'s)?%>*%[_~^] 12-123-124-24-146
+match %[_~^]%<* blindfishes (s|'s)?%>*%[_~^] 12-123-124-24-146-15-234
+match %[_~^]%<* blindfold (s|'s)?%>*%[_~^] 12-123-124-135-123-145
+match %[_~^]%<* blindfolded (s|'s)?%>*%[_~^] 12-123-124-135-123-145-1246
+match %[_~^]%<* blindfolder (s|'s)?%>*%[_~^] 12-123-124-135-123-145-12456
+match %[_~^]%<* blindfolding (s|'s)?%>*%[_~^] 12-123-124-135-123-145-346
+match %[_~^]%<* blindly (s|'s)?%>*%[_~^] 12-123-123-13456
+match %[_~^]%<* blindman (s|'s)?%>*%[_~^] 12-123-134-1-1345
+match %[_~^]%<* blindmen (s|'s)?%>*%[_~^] 12-123-134-26
+match %[_~^]%<* blindness (s|'s)?%>*%[_~^] 12-123-56-234
+match %[_~^]%<* blindnesses (s|'s)?%>*%[_~^] 12-123-56-234-15-234
+match %[_~^]%<* blindside (s|'s)?%>*%[_~^] 12-123-234-24-145-15
+match %[_~^]%<* blindsided (s|'s)?%>*%[_~^] 12-123-234-24-145-1246
+match %[_~^]%<* blindsider (s|'s)?%>*%[_~^] 12-123-234-24-145-12456
+match %[_~^]%<* blindsiding (s|'s)?%>*%[_~^] 12-123-234-24-145-346
+match %[_~^]%<* blindsight (s|'s)?%>*%[_~^] 12-123-234-24-126-2345
+match %[_~^]%<* blindstories (s|'s)?%>*%[_~^] 12-123-34-135-1235-24-15-234
+match %[_~^]%<* blindstory (s|'s)?%>*%[_~^] 12-123-34-135-1235-13456
+match %[_~^]%<* blindworm (s|'s)?%>*%[_~^] 12-123-2456-135-1235-134
+match %[_~^]%<* bloodletter (s|'s)?%>*%[_~^] 12-123-135-135-145-123-1235
+match %[_~^]%<* boyfriend (s|'s)?%>*%[_~^] 12-135-13456-124-1235
+match %[_~^]%<* brailled (s|'s)?%>*%[_~^] 12-1235-123-145
+match %[_~^]%<* brailler (s|'s)?%>*%[_~^] 12-1235-123-1235
+match %[_~^]%<* braillewriter (s|'s)?%>*%[_~^] 12-1235-123-2456-1235-24-2345-12456
+match %[_~^]%<* braillewriting (s|'s)?%>*%[_~^] 12-1235-123-2456-1235-24-2345-346
+match %[_~^]%<* brailley (s|'s)?%>*%[_~^] 12-1235-123-13456
+match %[_~^]%<* brainchildren (s|'s)?%>*%[_~^] 12-1235-1-35-16-1345
+match %[_~^]%<* chainletter (s|'s)?%>*%[_~^] 16-1-35-123-1235
+match %[_~^]%<* children'swear (s|'s)?%>*%[_~^] 16-1345-3-234-2456-15-345
+match %[_~^]%<* colorblind (s|'s)?%>*%[_~^] 14-135-123-135-1235-12-123
+match %[_~^]%<* colorblindness (s|'s)?%>*%[_~^] 14-135-123-135-1235-12-123-56-234
+match %[_~^]%<* colorblindnesses (s|'s)?%>*%[_~^] 14-135-123-135-1235-12-123-56-234-15-234
+match %[_~^]%<* colourblind (s|'s)?%>*%[_~^] 14-135-123-1256-1235-12-123
+match %[_~^]%<* colourblindness (s|'s)?%>*%[_~^] 14-135-123-1256-1235-12-123-56-234
+match %[_~^]%<* colourblindnesses (s|'s)?%>*%[_~^] 14-135-123-1256-1235-12-123-56-234-15-234
+match %[_~^]%<* conceived (s|'s)?%>*%[_~^] 25-14-1236-145
+match %[_~^]%<* conceiver (s|'s)?%>*%[_~^] 25-14-1236-1235
+match %[_~^]%<* could've (s|'s)?%>*%[_~^] 14-145-3-1236-15
+match %[_~^]%<* coulda (s|'s)?%>*%[_~^] 14-145-1
+match %[_~^]%<* couldest (s|'s)?%>*%[_~^] 14-145-15-34
+match %[_~^]%<* couldn't (s|'s)?%>*%[_~^] 14-145-1345-3-2345
+match %[_~^]%<* couldn't've (s|'s)?%>*%[_~^] 14-145-1345-3-2345-3-1236-15
+match %[_~^]%<* couldst (s|'s)?%>*%[_~^] 14-145-34
+match %[_~^]%<* deafblind (s|'s)?%>*%[_~^] 145-2-124-12-123
+match %[_~^]%<* deafblindness (s|'s)?%>*%[_~^] 145-2-124-12-123-56-234
+match %[_~^]%<* deafblindnesses (s|'s)?%>*%[_~^] 145-2-124-12-123-56-234-15-234
+match %[_~^]%<* deceived (s|'s)?%>*%[_~^] 145-14-1236-145
+match %[_~^]%<* deceiver (s|'s)?%>*%[_~^] 145-14-1236-1235
+match %[_~^]%<* declared (s|'s)?%>*%[_~^] 145-14-123-145
+match %[_~^]%<* declarer (s|'s)?%>*%[_~^] 145-14-123-1235
+match %[_~^]%<* defriend (s|'s)?%>*%[_~^] 145-15-124-1235
+match %[_~^]%<* do-it-yourselfer (s|'s)?%>*%[_~^] 145-36-1346-36-13456-1235-124-12456
+match %[_~^]%<* doublequick (s|'s)?%>*%[_~^] 145-1256-12-123-15-12345-13
+match %[_~^]%<* eastabout (s|'s)?%>*%[_~^] 15-1-34-1-12
+match %[_~^]%<* feelgood (s|'s)?%>*%[_~^] 124-15-15-123-1245-145
+match %[_~^]%<* feetfirst (s|'s)?%>*%[_~^] 124-15-15-2345-124-34
+match %[_~^]%<* firstaid (s|'s)?%>*%[_~^] 124-34-1-24-145
+match %[_~^]%<* firstaider (s|'s)?%>*%[_~^] 124-34-1-24-145-12456
+match %[_~^]%<* firstborn (s|'s)?%>*%[_~^] 124-34-12-135-1235-1345
+match %[_~^]%<* firstclass (s|'s)?%>*%[_~^] 124-34-14-123-1-234-234
+match %[_~^]%<* firstclasses (s|'s)?%>*%[_~^] 124-34-14-123-1-234-234-15-234
+match %[_~^]%<* firstday (s|'s)?%>*%[_~^] 124-34-5-145
+match %[_~^]%<* firstdayer (s|'s)?%>*%[_~^] 124-34-5-145-12456
+match %[_~^]%<* firstfruit (s|'s)?%>*%[_~^] 124-34-124-1235-136-24-2345
+match %[_~^]%<* firstfruiting (s|'s)?%>*%[_~^] 124-34-124-1235-136-24-2345-346
+match %[_~^]%<* firstgeneration (s|'s)?%>*%[_~^] 124-34-1245-26-12456-1-56-1345
+match %[_~^]%<* firsthand (s|'s)?%>*%[_~^] 124-34-125-12346
+match %[_~^]%<* firsthanded (s|'s)?%>*%[_~^] 124-34-125-12346-1246
+match %[_~^]%<* firstling (s|'s)?%>*%[_~^] 124-34-123-346
+match %[_~^]%<* firstly (s|'s)?%>*%[_~^] 124-34-123-13456
+match %[_~^]%<* firstness (s|'s)?%>*%[_~^] 124-34-56-234
+match %[_~^]%<* firstnight (s|'s)?%>*%[_~^] 124-34-1345-24-126-2345
+match %[_~^]%<* firstnighter (s|'s)?%>*%[_~^] 124-34-1345-24-126-2345-12456
+match %[_~^]%<* firstrate (s|'s)?%>*%[_~^] 124-34-1235-1-2345-15
+match %[_~^]%<* firstrated (s|'s)?%>*%[_~^] 124-34-1235-1-2345-1246
+match %[_~^]%<* firstrating (s|'s)?%>*%[_~^] 124-34-1235-1-2345-346
+match %[_~^]%<* firststring (s|'s)?%>*%[_~^] 124-34-34-1235-346
+match %[_~^]%<* forasmuch (s|'s)?%>*%[_~^] 123456-1-234-134-16
+match %[_~^]%<* foresaid (s|'s)?%>*%[_~^] 123456-15-234-145
+match %[_~^]%<* fosterchildren (s|'s)?%>*%[_~^] 124-135-34-12456-16-1345
+match %[_~^]%<* friendless (s|'s)?%>*%[_~^] 124-1235-46-234
+match %[_~^]%<* friendlessness (s|'s)?%>*%[_~^] 124-1235-46-234-56-234
+match %[_~^]%<* friendlessnesses (s|'s)?%>*%[_~^] 124-1235-46-234-56-234-15-234
+match %[_~^]%<* friendlier (s|'s)?%>*%[_~^] 124-1235-123-24-12456
+match %[_~^]%<* friendlies (s|'s)?%>*%[_~^] 124-1235-123-24-15-234
+match %[_~^]%<* friendliest (s|'s)?%>*%[_~^] 124-1235-123-24-15-34
+match %[_~^]%<* friendliness (s|'s)?%>*%[_~^] 124-1235-123-24-56-234
+match %[_~^]%<* friendlinesses (s|'s)?%>*%[_~^] 124-1235-123-24-56-234-15-234
+match %[_~^]%<* friendly (s|'s)?%>*%[_~^] 124-1235-123-13456
+match %[_~^]%<* friendship (s|'s)?%>*%[_~^] 124-1235-146-24-1234
+match %[_~^]%<* gadabout (s|'s)?%>*%[_~^] 1245-1-145-1-12
+match %[_~^]%<* gainsaid (s|'s)?%>*%[_~^] 1245-1-35-234-145
+match %[_~^]%<* galfriend (s|'s)?%>*%[_~^] 1245-1-123-124-1235
+match %[_~^]%<* gentlemanfriend (s|'s)?%>*%[_~^] 1245-26-2345-123-15-134-1-1345-124-1235
+match %[_~^]%<* gentlemenfriends (s|'s)?%>*%[_~^] 1245-26-2345-123-15-134-26-124-1235-234
+match %[_~^]%<* girlfriend (s|'s)?%>*%[_~^] 1245-24-1235-123-124-1235
+match %[_~^]%<* godchildren (s|'s)?%>*%[_~^] 1245-135-145-16-1345
+match %[_~^]%<* goodafternoon (s|'s)?%>*%[_~^] 1245-145-1-124-1345
+match %[_~^]%<* goodby (s|'s)?%>*%[_~^] 1245-145-12-13456
+match %[_~^]%<* goodbye (s|'s)?%>*%[_~^] 1245-145-12-13456-15
+match %[_~^]%<* goodbyeing (s|'s)?%>*%[_~^] 1245-145-12-13456-15-346
+match %[_~^]%<* goodbying (s|'s)?%>*%[_~^] 1245-145-12-13456-346
+match %[_~^]%<* goodday (s|'s)?%>*%[_~^] 1245-145-5-145
+match %[_~^]%<* gooder (s|'s)?%>*%[_~^] 1245-145-12456
+match %[_~^]%<* goodest (s|'s)?%>*%[_~^] 1245-145-15-34
+match %[_~^]%<* goodevening (s|'s)?%>*%[_~^] 1245-145-15-1236-26-346
+match %[_~^]%<* goodfellow (s|'s)?%>*%[_~^] 1245-145-124-15-123-123-246
+match %[_~^]%<* goodfellowship (s|'s)?%>*%[_~^] 1245-145-124-15-123-123-246-146-24-1234
+match %[_~^]%<* goodhearted (s|'s)?%>*%[_~^] 1245-145-125-15-345-2345-1246
+match %[_~^]%<* goodheartedly (s|'s)?%>*%[_~^] 1245-145-125-15-345-2345-1246-123-13456
+match %[_~^]%<* goodheartedness (s|'s)?%>*%[_~^] 1245-145-125-15-345-2345-1246-56-234
+match %[_~^]%<* goodhumor (s|'s)?%>*%[_~^] 1245-145-125-136-134-135-1235
+match %[_~^]%<* goodhumored (s|'s)?%>*%[_~^] 1245-145-125-136-134-135-1235-1246
+match %[_~^]%<* goodhumoredly (s|'s)?%>*%[_~^] 1245-145-125-136-134-135-1235-1246-123-13456
+match %[_~^]%<* goodhumoredness (s|'s)?%>*%[_~^] 1245-145-125-136-134-135-1235-1246-56-234
+match %[_~^]%<* goodhumorednesses (s|'s)?%>*%[_~^] 1245-145-125-136-134-135-1235-1246-56-234-15-234
+match %[_~^]%<* goodhumour (s|'s)?%>*%[_~^] 1245-145-125-136-134-1256-1235
+match %[_~^]%<* goodhumoured (s|'s)?%>*%[_~^] 1245-145-125-136-134-1256-1235-1246
+match %[_~^]%<* goodhumouredly (s|'s)?%>*%[_~^] 1245-145-125-136-134-1256-1235-1246-123-13456
+match %[_~^]%<* goodhumouredness (s|'s)?%>*%[_~^] 1245-145-125-136-134-1256-1235-1246-56-234
+match %[_~^]%<* goodhumourednesses (s|'s)?%>*%[_~^] 1245-145-125-136-134-1256-1235-1246-56-234-15-234
+match %[_~^]%<* goodie (s|'s)?%>*%[_~^] 1245-145-24-15
+match %[_~^]%<* goodish (s|'s)?%>*%[_~^] 1245-145-24-146
+match %[_~^]%<* goodlier (s|'s)?%>*%[_~^] 1245-145-123-24-12456
+match %[_~^]%<* goodliest (s|'s)?%>*%[_~^] 1245-145-123-24-15-34
+match %[_~^]%<* goodliness (s|'s)?%>*%[_~^] 1245-145-123-24-56-234
+match %[_~^]%<* goodlook (s|'s)?%>*%[_~^] 1245-145-123-135-135-13
+match %[_~^]%<* goodlooker (s|'s)?%>*%[_~^] 1245-145-123-135-135-13-12456
+match %[_~^]%<* goodlooking (s|'s)?%>*%[_~^] 1245-145-123-135-135-13-346
+match %[_~^]%<* goodly (s|'s)?%>*%[_~^] 1245-145-123-13456
+match %[_~^]%<* goodman (s|'s)?%>*%[_~^] 1245-145-134-1-1345
+match %[_~^]%<* goodmen (s|'s)?%>*%[_~^] 1245-145-134-26
+match %[_~^]%<* goodmorning (s|'s)?%>*%[_~^] 1245-145-134-135-1235-1345-346
+match %[_~^]%<* goodnature (s|'s)?%>*%[_~^] 1245-145-1345-1-2345-136-1235-15
+match %[_~^]%<* goodnatured (s|'s)?%>*%[_~^] 1245-145-1345-1-2345-136-1235-1246
+match %[_~^]%<* goodnaturedly (s|'s)?%>*%[_~^] 1245-145-1345-1-2345-136-1235-1246-123-13456
+match %[_~^]%<* goodnaturedness (s|'s)?%>*%[_~^] 1245-145-1345-1-2345-136-1235-1246-56-234
+match %[_~^]%<* goodness (s|'s)?%>*%[_~^] 1245-145-56-234
+match %[_~^]%<* goodnesses (s|'s)?%>*%[_~^] 1245-145-56-234-15-234
+match %[_~^]%<* goodnight (s|'s)?%>*%[_~^] 1245-145-1345-24-126-2345
+match %[_~^]%<* goodsize (s|'s)?%>*%[_~^] 1245-145-234-24-1356-15
+match %[_~^]%<* goodsized (s|'s)?%>*%[_~^] 1245-145-234-24-1356-1246
+match %[_~^]%<* goodtempered (s|'s)?%>*%[_~^] 1245-145-2345-15-134-1234-12456-1246
+match %[_~^]%<* goodtemperedly (s|'s)?%>*%[_~^] 1245-145-2345-15-134-1234-12456-1246-123-13456
+match %[_~^]%<* goodtime (s|'s)?%>*%[_~^] 1245-145-5-2345
+match %[_~^]%<* goodun (s|'s)?%>*%[_~^] 1245-145-136-1345
+match %[_~^]%<* goodwife (s|'s)?%>*%[_~^] 1245-145-2456-24-124-15
+match %[_~^]%<* goodwill (s|'s)?%>*%[_~^] 1245-145-2456-24-123-123
+match %[_~^]%<* goodwilled (s|'s)?%>*%[_~^] 1245-145-2456-24-123-123-1246
+match %[_~^]%<* goodwives (s|'s)?%>*%[_~^] 1245-145-2456-24-1236-15-234
+match %[_~^]%<* goody (s|'s)?%>*%[_~^] 1245-145-13456
+match %[_~^]%<* goodyear (s|'s)?%>*%[_~^] 1245-145-13456-15-345
+match %[_~^]%<* grandchildren (s|'s)?%>*%[_~^] 1245-1235-12346-16-1345
+match %[_~^]%<* greataunt (s|'s)?%>*%[_~^] 1245-1235-2345-1-136-1345-2345
+match %[_~^]%<* greatbatch (s|'s)?%>*%[_~^] 1245-1235-2345-12-1-2345-16
+match %[_~^]%<* greatcircle (s|'s)?%>*%[_~^] 1245-1235-2345-14-24-1235-14-123-15
+match %[_~^]%<* greatcoat (s|'s)?%>*%[_~^] 1245-1235-2345-14-135-1-2345
+match %[_~^]%<* greaten (s|'s)?%>*%[_~^] 1245-1235-2345-26
+match %[_~^]%<* greatened (s|'s)?%>*%[_~^] 1245-1235-2345-26-1246
+match %[_~^]%<* greatener (s|'s)?%>*%[_~^] 1245-1235-2345-26-12456
+match %[_~^]%<* greatening (s|'s)?%>*%[_~^] 1245-1235-2345-26-346
+match %[_~^]%<* greater (s|'s)?%>*%[_~^] 1245-1235-2345-12456
+match %[_~^]%<* greatest (s|'s)?%>*%[_~^] 1245-1235-2345-15-34
+match %[_~^]%<* greatgrandaunt (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-1-136-1345-2345
+match %[_~^]%<* greatgrandchild (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-16-24-123-145
+match %[_~^]%<* greatgrandchildren (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-16-1345
+match %[_~^]%<* greatgranddad (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-145-1-145
+match %[_~^]%<* greatgranddaughter (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-145-1-136-126-2345-12456
+match %[_~^]%<* greatgrandfather (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-5-124
+match %[_~^]%<* greatgrandfatherhood (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-5-124-125-135-135-145
+match %[_~^]%<* greatgrandma (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-134-1
+match %[_~^]%<* greatgrandmother (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-5-134
+match %[_~^]%<* greatgrandmotherhood (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-5-134-125-135-135-145
+match %[_~^]%<* greatgrandnephew (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-1345-15-1234-125-15-2456
+match %[_~^]%<* greatgrandniece (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-1345-24-15-14-15
+match %[_~^]%<* greatgrandpa (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-1234-1
+match %[_~^]%<* greatgrandparent (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-1234-345-26-2345
+match %[_~^]%<* greatgrandparenthood (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-1234-345-26-2345-125-135-135-145
+match %[_~^]%<* greatgrandson (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-234-135-1345
+match %[_~^]%<* greatgranduncle (s|'s)?%>*%[_~^] 1245-1235-2345-1245-1235-12346-136-1345-14-123-15
+match %[_~^]%<* greathearted (s|'s)?%>*%[_~^] 1245-1235-2345-125-15-345-2345-1246
+match %[_~^]%<* greatheartedly (s|'s)?%>*%[_~^] 1245-1235-2345-125-15-345-2345-1246-123-13456
+match %[_~^]%<* greatheartedness (s|'s)?%>*%[_~^] 1245-1235-2345-125-15-345-2345-1246-56-234
+match %[_~^]%<* greatheartednesses (s|'s)?%>*%[_~^] 1245-1235-2345-125-15-345-2345-1246-56-234-15-234
+match %[_~^]%<* greatly (s|'s)?%>*%[_~^] 1245-1235-2345-123-13456
+match %[_~^]%<* greatnephew (s|'s)?%>*%[_~^] 1245-1235-2345-1345-15-1234-125-15-2456
+match %[_~^]%<* greatness (s|'s)?%>*%[_~^] 1245-1235-2345-56-234
+match %[_~^]%<* greatnesses (s|'s)?%>*%[_~^] 1245-1235-2345-56-234-15-234
+match %[_~^]%<* greatniece (s|'s)?%>*%[_~^] 1245-1235-2345-1345-24-15-14-15
+match %[_~^]%<* greatsword (s|'s)?%>*%[_~^] 1245-1235-2345-234-45-2456
+match %[_~^]%<* greatuncle (s|'s)?%>*%[_~^] 1245-1235-2345-136-1345-14-123-15
+match %[_~^]%<* guyfriend (s|'s)?%>*%[_~^] 1245-136-13456-124-1235
+match %[_~^]%<* hateletter (s|'s)?%>*%[_~^] 125-1-2345-15-123-1235
+match %[_~^]%<* headfirst (s|'s)?%>*%[_~^] 125-2-145-124-34
+match %[_~^]%<* hereabout (s|'s)?%>*%[_~^] 5-125-1-12
+match %[_~^]%<* hereafter (s|'s)?%>*%[_~^] 5-125-1-124
+match %[_~^]%<* hereagain (s|'s)?%>*%[_~^] 5-125-1-1245
+match %[_~^]%<* hereagainst (s|'s)?%>*%[_~^] 5-125-1-1245-34
+match %[_~^]%<* hereinabove (s|'s)?%>*%[_~^] 5-125-35-1-12-1236
+match %[_~^]%<* hereinafter (s|'s)?%>*%[_~^] 5-125-35-1-124
+match %[_~^]%<* hereinagain (s|'s)?%>*%[_~^] 5-125-35-1-1245
+match %[_~^]%<* highlypaid (s|'s)?%>*%[_~^] 125-24-126-123-13456-1234-145
+match %[_~^]%<* himbo (s|'s)?%>*%[_~^] 125-134-12-135
+match %[_~^]%<* himboes (s|'s)?%>*%[_~^] 125-134-12-135-15-234
+match %[_~^]%<* illpaid (s|'s)?%>*%[_~^] 24-123-123-1234-145
+match %[_~^]%<* immediately (s|'s)?%>*%[_~^] 24-134-134-123-13456
+match %[_~^]%<* immediateness (s|'s)?%>*%[_~^] 24-134-134-56-234
+match %[_~^]%<* inasmuch (s|'s)?%>*%[_~^] 35-1-234-134-16
+match %[_~^]%<* insomuch (s|'s)?%>*%[_~^] 35-234-135-134-16
+match %[_~^]%<* knockabout (s|'s)?%>*%[_~^] 13-1345-135-14-13-1-12
+match %[_~^]%<* ladyfriend (s|'s)?%>*%[_~^] 123-1-145-13456-124-1235
+match %[_~^]%<* layabout (s|'s)?%>*%[_~^] 123-1-13456-1-12
+match %[_~^]%<* letterbodies (s|'s)?%>*%[_~^] 123-1235-12-135-145-24-15-234
+match %[_~^]%<* letterbody (s|'s)?%>*%[_~^] 123-1235-12-135-145-13456
+match %[_~^]%<* letterbomb (s|'s)?%>*%[_~^] 123-1235-12-135-134-12
+match %[_~^]%<* letterbombed (s|'s)?%>*%[_~^] 123-1235-12-135-134-12-1246
+match %[_~^]%<* letterbomber (s|'s)?%>*%[_~^] 123-1235-12-135-134-12-12456
+match %[_~^]%<* letterbombing (s|'s)?%>*%[_~^] 123-1235-12-135-134-12-346
+match %[_~^]%<* letterbox (s|'s)?%>*%[_~^] 123-1235-12-135-1346
+match %[_~^]%<* letterboxed (s|'s)?%>*%[_~^] 123-1235-12-135-1346-1246
+match %[_~^]%<* letterboxer (s|'s)?%>*%[_~^] 123-1235-12-135-1346-12456
+match %[_~^]%<* letterboxes (s|'s)?%>*%[_~^] 123-1235-12-135-1346-15-234
+match %[_~^]%<* letterboxing (s|'s)?%>*%[_~^] 123-1235-12-135-1346-346
+match %[_~^]%<* lettered (s|'s)?%>*%[_~^] 123-1235-1246
+match %[_~^]%<* letterer (s|'s)?%>*%[_~^] 123-1235-12456
+match %[_~^]%<* letterform (s|'s)?%>*%[_~^] 123-1235-123456-134
+match %[_~^]%<* letterhead (s|'s)?%>*%[_~^] 123-1235-125-2-145
+match %[_~^]%<* letterheading (s|'s)?%>*%[_~^] 123-1235-125-2-145-346
+match %[_~^]%<* lettering (s|'s)?%>*%[_~^] 123-1235-346
+match %[_~^]%<* letterman (s|'s)?%>*%[_~^] 123-1235-134-1-1345
+match %[_~^]%<* lettermen (s|'s)?%>*%[_~^] 123-1235-134-26
+match %[_~^]%<* letteropener (s|'s)?%>*%[_~^] 123-1235-135-1234-26-12456
+match %[_~^]%<* letterperfect (s|'s)?%>*%[_~^] 123-1235-1234-12456-124-15-14-2345
+match %[_~^]%<* letterpress (s|'s)?%>*%[_~^] 123-1235-1234-1235-15-234-234
+match %[_~^]%<* letterpressed (s|'s)?%>*%[_~^] 123-1235-1234-1235-15-234-234-1246
+match %[_~^]%<* letterpresses (s|'s)?%>*%[_~^] 123-1235-1234-1235-15-234-234-15-234
+match %[_~^]%<* letterpressing (s|'s)?%>*%[_~^] 123-1235-1234-1235-15-234-234-346
+match %[_~^]%<* letterquality (s|'s)?%>*%[_~^] 123-1235-12345-136-1-123-56-13456
+match %[_~^]%<* letterspace (s|'s)?%>*%[_~^] 123-1235-234-1234-1-14-15
+match %[_~^]%<* letterspaced (s|'s)?%>*%[_~^] 123-1235-234-1234-1-14-1246
+match %[_~^]%<* letterspacing (s|'s)?%>*%[_~^] 123-1235-234-1234-1-14-346
+match %[_~^]%<* lettertext (s|'s)?%>*%[_~^] 123-1235-2345-15-1346-2345
+match %[_~^]%<* littled (s|'s)?%>*%[_~^] 123-123-145
+match %[_~^]%<* littleneck (s|'s)?%>*%[_~^] 123-123-1345-15-14-13
+match %[_~^]%<* littleness (s|'s)?%>*%[_~^] 123-123-56-234
+match %[_~^]%<* littlenesses (s|'s)?%>*%[_~^] 123-123-56-234-15-234
+match %[_~^]%<* littler (s|'s)?%>*%[_~^] 123-123-1235
+match %[_~^]%<* littlest (s|'s)?%>*%[_~^] 123-123-34
+match %[_~^]%<* lovechildren (s|'s)?%>*%[_~^] 123-135-1236-15-16-1345
+match %[_~^]%<* loveletter (s|'s)?%>*%[_~^] 123-135-1236-15-123-1235
+match %[_~^]%<* lowlypaid (s|'s)?%>*%[_~^] 123-246-123-13456-1234-145
+match %[_~^]%<* manfriend (s|'s)?%>*%[_~^] 134-1-1345-124-1235
+match %[_~^]%<* menfriends (s|'s)?%>*%[_~^] 134-26-124-1235-234
+match %[_~^]%<* midafternoon (s|'s)?%>*%[_~^] 134-24-145-1-124-1345
+match %[_~^]%<* misbraille (s|'s)?%>*%[_~^] 134-24-234-12-1235-123
+match %[_~^]%<* misbrailled (s|'s)?%>*%[_~^] 134-24-234-12-1235-123-145
+match %[_~^]%<* misperceive (s|'s)?%>*%[_~^] 134-24-234-1234-12456-14-1236
+match %[_~^]%<* misperceived (s|'s)?%>*%[_~^] 134-24-234-1234-12456-14-1236-145
+match %[_~^]%<* misperceiver (s|'s)?%>*%[_~^] 134-24-234-1234-12456-14-1236-1235
+match %[_~^]%<* misperceiving (s|'s)?%>*%[_~^] 134-24-234-1234-12456-14-1236-1245
+match %[_~^]%<* missaid (s|'s)?%>*%[_~^] 134-24-234-234-145
+match %[_~^]%<* morningafter (s|'s)?%>*%[_~^] 134-135-1235-1345-346-1-124
+match %[_~^]%<* muchly (s|'s)?%>*%[_~^] 134-16-123-13456
+match %[_~^]%<* muchness (s|'s)?%>*%[_~^] 134-16-56-234
+match %[_~^]%<* must've (s|'s)?%>*%[_~^] 134-34-3-1236-15
+match %[_~^]%<* musta (s|'s)?%>*%[_~^] 134-34-1
+match %[_~^]%<* mustard (s|'s)?%>*%[_~^] 134-34-345-145
+match %[_~^]%<* mustier (s|'s)?%>*%[_~^] 134-34-24-12456
+match %[_~^]%<* mustiest (s|'s)?%>*%[_~^] 134-34-24-15-34
+match %[_~^]%<* mustily (s|'s)?%>*%[_~^] 134-34-24-123-13456
+match %[_~^]%<* mustiness (s|'s)?%>*%[_~^] 134-34-24-56-234
+match %[_~^]%<* mustn't (s|'s)?%>*%[_~^] 134-34-1345-3-2345
+match %[_~^]%<* mustn't've (s|'s)?%>*%[_~^] 134-34-1345-3-2345-3-1236-15
+match %[_~^]%<* musty (s|'s)?%>*%[_~^] 134-34-13456
+match %[_~^]%<* newsletter (s|'s)?%>*%[_~^] 1345-15-2456-234-123-1235
+match %[_~^]%<* nonesuch (s|'s)?%>*%[_~^] 1345-5-135-234-16
+match %[_~^]%<* nonsuch (s|'s)?%>*%[_~^] 1345-135-1345-234-16
+match %[_~^]%<* northabout (s|'s)?%>*%[_~^] 1345-135-1235-1456-1-12
+match %[_~^]%<* overmuch (s|'s)?%>*%[_~^] 135-1236-12456-134-16
+match %[_~^]%<* overpaid (s|'s)?%>*%[_~^] 135-1236-12456-1234-145
+match %[_~^]%<* penfriend (s|'s)?%>*%[_~^] 1234-26-124-1235
+match %[_~^]%<* perceived (s|'s)?%>*%[_~^] 1234-12456-14-1236-145
+match %[_~^]%<* perceiver (s|'s)?%>*%[_~^] 1234-12456-14-1236-1235
+match %[_~^]%<* perhapses (s|'s)?%>*%[_~^] 1234-12456-125-15-234
+match %[_~^]%<* poorlypaid (s|'s)?%>*%[_~^] 1234-135-135-1235-123-13456-1234-145
+match %[_~^]%<* postpaid (s|'s)?%>*%[_~^] 1234-135-34-1234-145
+match %[_~^]%<* preceive (s|'s)?%>*%[_~^] 1234-1235-14-1236
+match %[_~^]%<* preceiver (s|'s)?%>*%[_~^] 1234-1235-14-1236-1235
+match %[_~^]%<* preceiving (s|'s)?%>*%[_~^] 1234-1235-14-1236-1245
+match %[_~^]%<* prepaid (s|'s)?%>*%[_~^] 1234-1235-15-1234-145
+match %[_~^]%<* purblind (s|'s)?%>*%[_~^] 1234-136-1235-12-123
+match %[_~^]%<* purblindly (s|'s)?%>*%[_~^] 1234-136-1235-12-123-123-13456
+match %[_~^]%<* purblindness (s|'s)?%>*%[_~^] 1234-136-1235-12-123-56-234
+match %[_~^]%<* purblindnesses (s|'s)?%>*%[_~^] 1234-136-1235-12-123-56-234-15-234
+match %[_~^]%<* quickdraw (s|'s)?%>*%[_~^] 12345-13-145-1235-1-2456
+match %[_~^]%<* quicken (s|'s)?%>*%[_~^] 12345-13-26
+match %[_~^]%<* quickened (s|'s)?%>*%[_~^] 12345-13-26-1246
+match %[_~^]%<* quickener (s|'s)?%>*%[_~^] 12345-13-26-12456
+match %[_~^]%<* quickening (s|'s)?%>*%[_~^] 12345-13-26-346
+match %[_~^]%<* quicker (s|'s)?%>*%[_~^] 12345-13-12456
+match %[_~^]%<* quickest (s|'s)?%>*%[_~^] 12345-13-15-34
+match %[_~^]%<* quickfire (s|'s)?%>*%[_~^] 12345-13-124-24-1235-15
+match %[_~^]%<* quickfiring (s|'s)?%>*%[_~^] 12345-13-124-24-1235-346
+match %[_~^]%<* quickfreeze (s|'s)?%>*%[_~^] 12345-13-124-1235-15-15-1356-15
+match %[_~^]%<* quickfreezing (s|'s)?%>*%[_~^] 12345-13-124-1235-15-15-1356-346
+match %[_~^]%<* quickfroze (s|'s)?%>*%[_~^] 12345-13-124-1235-135-1356-15
+match %[_~^]%<* quickfrozen (s|'s)?%>*%[_~^] 12345-13-124-1235-135-1356-26
+match %[_~^]%<* quickie (s|'s)?%>*%[_~^] 12345-13-24-15
+match %[_~^]%<* quickish (s|'s)?%>*%[_~^] 12345-13-24-146
+match %[_~^]%<* quickishly (s|'s)?%>*%[_~^] 12345-13-24-146-123-13456
+match %[_~^]%<* quicklime (s|'s)?%>*%[_~^] 12345-13-123-24-134-15
+match %[_~^]%<* quickly (s|'s)?%>*%[_~^] 12345-13-123-13456
+match %[_~^]%<* quickness (s|'s)?%>*%[_~^] 12345-13-56-234
+match %[_~^]%<* quicknesses (s|'s)?%>*%[_~^] 12345-13-56-234-15-234
+match %[_~^]%<* quicksand (s|'s)?%>*%[_~^] 12345-13-234-12346
+match %[_~^]%<* quickset (s|'s)?%>*%[_~^] 12345-13-234-15-2345
+match %[_~^]%<* quicksilver (s|'s)?%>*%[_~^] 12345-13-234-24-123-1236-12456
+match %[_~^]%<* quicksilvered (s|'s)?%>*%[_~^] 12345-13-234-24-123-1236-12456-1246
+match %[_~^]%<* quicksilvering (s|'s)?%>*%[_~^] 12345-13-234-24-123-1236-12456-346
+match %[_~^]%<* quicksnap (s|'s)?%>*%[_~^] 12345-13-234-1345-1-1234
+match %[_~^]%<* quickstep (s|'s)?%>*%[_~^] 12345-13-34-15-1234
+match %[_~^]%<* quickstepped (s|'s)?%>*%[_~^] 12345-13-34-15-1234-1234-1246
+match %[_~^]%<* quickstepper (s|'s)?%>*%[_~^] 12345-13-34-15-1234-1234-12456
+match %[_~^]%<* quickstepping (s|'s)?%>*%[_~^] 12345-13-34-15-1234-1234-346
+match %[_~^]%<* quicktempered (s|'s)?%>*%[_~^] 12345-13-2345-15-134-1234-12456-1246
+match %[_~^]%<* quicktime (s|'s)?%>*%[_~^] 12345-13-5-2345
+match %[_~^]%<* quickwitted (s|'s)?%>*%[_~^] 12345-13-2456-24-2345-2345-1246
+match %[_~^]%<* quickwittedly (s|'s)?%>*%[_~^] 12345-13-2456-24-2345-2345-1246-123-13456
+match %[_~^]%<* quickwittedness (s|'s)?%>*%[_~^] 12345-13-2456-24-2345-2345-1246-56-234
+match %[_~^]%<* quicky (s|'s)?%>*%[_~^] 12345-13-13456
+match %[_~^]%<* readacross (s|'s)?%>*%[_~^] 1235-2-145-1-14-1235
+match %[_~^]%<* rebraille (s|'s)?%>*%[_~^] 1235-15-12-1235-123
+match %[_~^]%<* rebrailled (s|'s)?%>*%[_~^] 1235-15-12-1235-123-145
+match %[_~^]%<* rebrailler (s|'s)?%>*%[_~^] 1235-15-12-1235-123-1235
+match %[_~^]%<* received (s|'s)?%>*%[_~^] 1235-14-1236-145
+match %[_~^]%<* receiver (s|'s)?%>*%[_~^] 1235-14-1236-1235
+match %[_~^]%<* receivership (s|'s)?%>*%[_~^] 1235-14-1236-1235-146-24-1234
+match %[_~^]%<* rejoiced (s|'s)?%>*%[_~^] 1235-245-14-145
+match %[_~^]%<* rejoiceful (s|'s)?%>*%[_~^] 1235-245-14-56-123
+match %[_~^]%<* rejoicefully (s|'s)?%>*%[_~^] 1235-245-14-56-123-123-13456
+match %[_~^]%<* rejoicefulness (s|'s)?%>*%[_~^] 1235-245-14-56-123-56-234
+match %[_~^]%<* rejoicer (s|'s)?%>*%[_~^] 1235-245-14-1235
+match %[_~^]%<* rejoicingly (s|'s)?%>*%[_~^] 1235-245-14-1245-123-13456
+match %[_~^]%<* reletter (s|'s)?%>*%[_~^] 1235-15-123-1235
+match %[_~^]%<* relettered (s|'s)?%>*%[_~^] 1235-15-123-1235-1246
+match %[_~^]%<* relettering (s|'s)?%>*%[_~^] 1235-15-123-1235-346
+match %[_~^]%<* repaid (s|'s)?%>*%[_~^] 1235-15-1234-145
+match %[_~^]%<* rightabout (s|'s)?%>*%[_~^] 5-1235-1-12
+match %[_~^]%<* roundabout (s|'s)?%>*%[_~^] 1235-46-145-1-12
+match %[_~^]%<* roustabout (s|'s)?%>*%[_~^] 1235-1256-34-1-12
+match %[_~^]%<* runabout (s|'s)?%>*%[_~^] 1235-136-1345-1-12
+match %[_~^]%<* saidest (s|'s)?%>*%[_~^] 234-145-15-34
+match %[_~^]%<* saidst (s|'s)?%>*%[_~^] 234-145-34
+match %[_~^]%<* scattergood (s|'s)?%>*%[_~^] 234-14-1-2345-2345-12456-1245-145
+match %[_~^]%<* schoolchildren (s|'s)?%>*%[_~^] 234-16-135-135-123-16-1345
+match %[_~^]%<* schoolfriend (s|'s)?%>*%[_~^] 234-16-135-135-123-124-1235
+match %[_~^]%<* should've (s|'s)?%>*%[_~^] 146-145-3-1236-15
+match %[_~^]%<* shoulda (s|'s)?%>*%[_~^] 146-145-1
+match %[_~^]%<* shouldest (s|'s)?%>*%[_~^] 146-145-15-34
+match %[_~^]%<* shouldn't (s|'s)?%>*%[_~^] 146-145-1345-3-2345
+match %[_~^]%<* shouldn't've (s|'s)?%>*%[_~^] 146-145-1345-3-2345-3-1236-15
+match %[_~^]%<* shouldst (s|'s)?%>*%[_~^] 146-145-34
+match %[_~^]%<* snowblind (s|'s)?%>*%[_~^] 234-1345-246-12-123
+match %[_~^]%<* snowblindness (s|'s)?%>*%[_~^] 234-1345-246-12-123-56-234
+match %[_~^]%<* snowblindnesses (s|'s)?%>*%[_~^] 234-1345-246-12-123-56-234-15-234
+match %[_~^]%<* somesuch (s|'s)?%>*%[_~^] 5-234-234-16
+match %[_~^]%<* southabout (s|'s)?%>*%[_~^] 234-1256-1456-1-12
+match %[_~^]%<* stepchildren (s|'s)?%>*%[_~^] 34-15-1234-16-1345
+match %[_~^]%<* stirabout (s|'s)?%>*%[_~^] 34-24-1235-1-12
+match %[_~^]%<* suchlike (s|'s)?%>*%[_~^] 234-16-123-24-13-15
+match %[_~^]%<* supergood (s|'s)?%>*%[_~^] 234-136-1234-12456-1245-145
+match %[_~^]%<* superquick (s|'s)?%>*%[_~^] 234-136-1234-12456-12345-13
+match %[_~^]%<* tailfirst (s|'s)?%>*%[_~^] 2345-1-24-123-124-34
+match %[_~^]%<* thereabout (s|'s)?%>*%[_~^] 5-2346-1-12
+match %[_~^]%<* thereafter (s|'s)?%>*%[_~^] 5-2346-1-124
+match %[_~^]%<* thereagain (s|'s)?%>*%[_~^] 5-2346-1-1245
+match %[_~^]%<* thereagainst (s|'s)?%>*%[_~^] 5-2346-1-1245-34
+match %[_~^]%<* thereinafter (s|'s)?%>*%[_~^] 5-2346-35-1-124
+match %[_~^]%<* thereinagain (s|'s)?%>*%[_~^] 5-2346-35-1-1245
+match %[_~^]%<* togetherness (s|'s)?%>*%[_~^] 2345-1245-1235-56-234
+match %[_~^]%<* turnabout (s|'s)?%>*%[_~^] 2345-136-1235-1345-1-12
+match %[_~^]%<* unaccording (s|'s)?%>*%[_~^] 136-1345-1-14
+match %[_~^]%<* unaccordingly (s|'s)?%>*%[_~^] 136-1345-1-14-123-13456
+match %[_~^]%<* unblindfold (s|'s)?%>*%[_~^] 136-1345-12-123-124-135-123-145
+match %[_~^]%<* unblindfolded (s|'s)?%>*%[_~^] 136-1345-12-123-124-135-123-145-1246
+match %[_~^]%<* unblindfolding (s|'s)?%>*%[_~^] 136-1345-12-123-124-135-123-145-346
+match %[_~^]%<* unbraille (s|'s)?%>*%[_~^] 136-1345-12-1235-123
+match %[_~^]%<* unbrailled (s|'s)?%>*%[_~^] 136-1345-12-1235-123-145
+match %[_~^]%<* undeceive (s|'s)?%>*%[_~^] 136-1345-145-14-1236
+match %[_~^]%<* undeceived (s|'s)?%>*%[_~^] 136-1345-145-14-1236-145
+match %[_~^]%<* undeceiver (s|'s)?%>*%[_~^] 136-1345-145-14-1236-1235
+match %[_~^]%<* undeceiving (s|'s)?%>*%[_~^] 136-1345-145-14-1236-1245
+match %[_~^]%<* undeclare (s|'s)?%>*%[_~^] 136-1345-145-14-123
+match %[_~^]%<* undeclared (s|'s)?%>*%[_~^] 136-1345-145-14-123-145
+match %[_~^]%<* underpaid (s|'s)?%>*%[_~^] 5-136-1234-145
+match %[_~^]%<* unfriend (s|'s)?%>*%[_~^] 136-1345-124-1235
+match %[_~^]%<* unfriendlier (s|'s)?%>*%[_~^] 136-1345-124-1235-123-24-12456
+match %[_~^]%<* unfriendliest (s|'s)?%>*%[_~^] 136-1345-124-1235-123-24-15-34
+match %[_~^]%<* unfriendliness (s|'s)?%>*%[_~^] 136-1345-124-1235-123-24-56-234
+match %[_~^]%<* unfriendlinesses (s|'s)?%>*%[_~^] 136-1345-124-1235-123-24-56-234-15-234
+match %[_~^]%<* unfriendly (s|'s)?%>*%[_~^] 136-1345-124-1235-123-13456
+match %[_~^]%<* unlettered (s|'s)?%>*%[_~^] 136-1345-123-1235-1246
+match %[_~^]%<* unnecessary (s|'s)?%>*%[_~^] 136-1345-1345-15-14
+match %[_~^]%<* unpaid (s|'s)?%>*%[_~^] 136-1345-1234-145
+match %[_~^]%<* unperceive (s|'s)?%>*%[_~^] 136-1345-1234-12456-14-1236
+match %[_~^]%<* unperceived (s|'s)?%>*%[_~^] 136-1345-1234-12456-14-1236-145
+match %[_~^]%<* unperceiving (s|'s)?%>*%[_~^] 136-1345-1234-12456-14-1236-1245
+match %[_~^]%<* unquick (s|'s)?%>*%[_~^] 136-1345-12345-13
+match %[_~^]%<* unreceived (s|'s)?%>*%[_~^] 136-1345-1235-14-1236-145
+match %[_~^]%<* unrejoice (s|'s)?%>*%[_~^] 136-1345-1235-245-14
+match %[_~^]%<* unrejoiced (s|'s)?%>*%[_~^] 136-1345-1235-245-14-145
+match %[_~^]%<* unrejoiceful (s|'s)?%>*%[_~^] 136-1345-1235-245-14-56-123
+match %[_~^]%<* unrejoicefully (s|'s)?%>*%[_~^] 136-1345-1235-245-14-56-123-123-13456
+match %[_~^]%<* unrejoicefulness (s|'s)?%>*%[_~^] 136-1345-1235-245-14-56-123-56-234
+match %[_~^]%<* unrejoicer (s|'s)?%>*%[_~^] 136-1345-1235-245-14-1235
+match %[_~^]%<* unrejoicing (s|'s)?%>*%[_~^] 136-1345-1235-245-14-1245
+match %[_~^]%<* unrejoicingly (s|'s)?%>*%[_~^] 136-1345-1235-245-14-1245-123-13456
+match %[_~^]%<* walkabout (s|'s)?%>*%[_~^] 2456-1-123-13-1-12
+match %[_~^]%<* wellpaid (s|'s)?%>*%[_~^] 2456-15-123-123-1234-145
+match %[_~^]%<* westabout (s|'s)?%>*%[_~^] 2456-15-34-1-12
+match %[_~^]%<* whereabout (s|'s)?%>*%[_~^] 5-156-1-12
+match %[_~^]%<* whereafter (s|'s)?%>*%[_~^] 5-156-1-124
+match %[_~^]%<* whereagain (s|'s)?%>*%[_~^] 5-156-1-1245
+match %[_~^]%<* whereagainst (s|'s)?%>*%[_~^] 5-156-1-1245-34
+match %[_~^]%<* whereinafter (s|'s)?%>*%[_~^] 5-156-35-1-124
+match %[_~^]%<* whereinagain (s|'s)?%>*%[_~^] 5-156-35-1-1245
+match %[_~^]%<* womanfriend (s|'s)?%>*%[_~^] 2456-135-134-1-1345-124-1235
+match %[_~^]%<* womenfriends (s|'s)?%>*%[_~^] 2456-135-134-26-124-1235-234
+match %[_~^]%<* would've (s|'s)?%>*%[_~^] 2456-145-3-1236-15
+match %[_~^]%<* woulda (s|'s)?%>*%[_~^] 2456-145-1
+match %[_~^]%<* wouldest (s|'s)?%>*%[_~^] 2456-145-15-34
+match %[_~^]%<* wouldn't (s|'s)?%>*%[_~^] 2456-145-1345-3-2345
+match %[_~^]%<* wouldn't've (s|'s)?%>*%[_~^] 2456-145-1345-3-2345-3-1236-15
+match %[_~^]%<* wouldst (s|'s)?%>*%[_~^] 2456-145-34
 
 #   Appendix 1.2
 
-sufword acrosses 1-14-1235-135-234-234-15-234
+#sufword acrosses 1-14-1235-135-234-234-15-234
 sufword dafter 145-1-124-2345-12456
 sufword drafter 145-1235-1-124-2345-12456
 sufword grafter 1245-1235-1-124-2345-12456
@@ -952,9 +977,9 @@ match %[_~^]%<*%a* after (%2%a*)?%>*%[_~^] 1-124
 match %[_~^]%<*%a* blind (%2%a*)?%>*%[_~^] 12-123
 match %[_~^]%<*%a* friend (%2%a*)?%>*%[_~^] 124-1235
 
+#   extra shortforms
 
-#   Used in 9.2 page 138
-word newsletters 1345-15-2456-234-123-1235-234
+match %[_~^]%<* unsaid (s|'s)?%>*%[_~^] 136-1345-234-145
 
 
 #   10.11
@@ -967,6 +992,15 @@ sufword stateroom 34-1-2345-15-1235-135-135-134
 sufword storeroom 34-135-1235-15-1235-135-135-134
 sufword tearoom 2345-2-1235-135-135-134
 
+
+#   10.11.1
+
+word shorthand 146-135-1235-2345-125-12346
+
+
+#   misc
+
+word beethoven 12-15-15-2345-125-135-1236-26
 
 ################################################################################
 
@@ -982,7 +1016,7 @@ contraction acr
 contraction af
 contraction afn
 begword aforem 1-123456-15-134 aforementioned 
-word aforesaid 1-123456-15-234-145
+#word aforesaid 1-123456-15-234-145
 always afr 1-124-1235
 contraction afw
 contraction ag
@@ -1007,78 +1041,10 @@ always athe 1-2346 back-translation: lathe
 word atmosphere 1-2345-134-135-234-1234-5-125
 midendword aunder 1-136-1345-145-12456 saunders
 begword auto = autofocus
-syllable away =
 
 # the letter b
 sufword bandog =
 sufword battledo = battledor battledome
-begword bea 12-2
-always bear 12-15-345
-begword beatif 23-1-2345-24-124
-begword beatit 23-1-2345-24-2345
-begword beatr 23-1-2345-1235 Beatrice
-word bec =
-always beck 12-15-14-13
-always bed 12-1246
-begword beda 23-145-1 bedazzle
-word bede 12-1246-15 bede (a name)
-begword bede 23-145-15 bedevil
-begword bedi 23-145-24 bedizzened
-begword bedra 23-145-1235-1
-always bedragg 23-145-1235-1-2356
-begword bee 12-15-15
-word bee 12-15-15
-always been 12-15-26
-always beer 12-15-12456
-word beg =
-begword begg 12-15-2356
-word begs =
-sufword beguine 12-15-1245-136-35-15 proper name
-word beh =
-word behring 12-15-125-1235-346
-begword bei = beijing
-sufword being 23-346
-word bel =
-sufword belch 12-15-123-16
-begword beld = Beldon
-begword belf = belfry, belfast
-begword belg = Belgium
-begword belk = Belkin
-always bell =
-begword belm = Belmont
-begword beln = Belnick
-always belt =
-begword belw = belwether
-always ben 12-26
-always benares 23-1345-345-15-234
-begword bene 12-26-15
-begword benefic 23-1345-15-124-24-14 beneficent
-begword benev 23-1345-15-1236
-begword beni 23-1345-24
-begword benu 23-1345-136 benumbed
-begword ber 12-12456
-begword bera 23-1235-1 berating
-begword bere 23-1235-15 bereft
-begword berea 23-1235-2 bereaved
-begword beri 23-1235-24 beribboned
-always beriberi 12-12456-24-12-12456-24
-always bering 12-12456-346
-word bes =
-sufword beside 23-234
-sufword bess = Bessie
-always best 12-15-34
-sufword bestow 23-34-246
-word bet =
-syllable beth 12-15-1456 Bethany
-always bethe 12-15-2346 Bethel (Hans) Bethe
-always bets =
-always bett =
-word between 23-2345
-always beu = Beulah
-sufword bev = bevies
-begword bever 12-5-15 Beverly beverage
-word bey =
-always bezel =
 always bio =
 midendword bious 12-24-1256-234 dubious
 contraction bl
@@ -1094,7 +1060,6 @@ sufword cation 14-1-2345-24-135-1345
 midword cch 14-16
 contraction cd
 begword centi 14-26-2345-24 10^-2
-syllable chand 16-12346 merchandise
 always chemo 16-15-134-135
 word chieftainess 16-24-15-124-2345-1-35-15-234-234
 word chlordane 16-123-135-1235-145-1-1345-15
@@ -1115,7 +1080,6 @@ always cone 14-5-135
 word conestoga 25-15-34-135-1245-1
 word conidium =
 word cony =
-word could've 14-145-3-1236-15
 sufword coworker 14-135-5-2456-12456
 begword cowr = cowrote
 always cred 14-1235-1246 incredulous
@@ -1157,8 +1121,6 @@ always dledee =
 always dledum = tweedledee and tweedledum
 always donee =
 word donegal =
-syllable down 145-246-1345 facedown
-syllable drum = kettledrum
 word dumbbell =
 
 # the letter e
@@ -1185,11 +1147,8 @@ sufword falconet =
 always fein 124-15-35 Feingold
 begword femto 124-15-134-2345-135 10^-15
 sufword feringhee 124-12456-35-126-15-15
-syllable ffold 235-135-123-145 scaffold
 always ffor 124-123456
 begword fired = firedamp firedrake
-syllable fold =
-syllable foot =
 begword fora 123456-1 foramen
 always fore 123456-15
 begword forens 123456-26-234 forensic
@@ -1212,24 +1171,16 @@ always ghz = (gigahertz)
 begword giga 1245-24-1245-1 10^9
 begword givea = giveaway
 sufword gnome = gnomedb
-syllable grad = leningrad
 contraction grt
 
 # the letter h
 sufword hade = hadean 
-syllable hand 125-12346
 always handsomer 125-12346-5-234-1235
-syllable hawk =
-syllable hawthorn 125-1-2456-1456-135-1235-1345
-syllable head 125-2-145
-syllable heart 125-15-345-2345
 word hearth 125-15-345-1456
 word hearths 125-15-345-1456-234
 word heatheness 125-2-2346-1345-15-234-234
 begword hecto 125-15-14-2345-135 10^2
 always hedgerow 125-1246-1245-15-1235-246
-syllable herd 125-12456-145 goatherd
-syllable herd = goatherd
 always hered 125-12456-1246
 always hereford 125-12456-15-123456-145
 always heren 125-12456-26
@@ -1243,16 +1194,8 @@ always hermione 125-12456-134-24-135-1345-15
 word hm 56-125-134
 contraction hmf
 sufword hmm =
-syllable holm =
-syllable hood =
-syllable horn =
-syllable horse = horseradish
-syllable hound 125-46-145 loghound 
-syllable house 125-1256-234-15 
 word housed 125-1256-234-1246
-syllable hunter 125-136-1345-2345-12456 pothunter
 always hwh =
-syllable hydro =
 begword hyper 125-13456-1234-12456
 begword hypo =
 
@@ -1260,7 +1203,7 @@ begword hypo =
 word I 24
 midendword iever 24-15-1236-12456
 contraction imm
-word immediately 24-134-134-123-13456
+#word immediately 24-134-134-123-13456
 contraction immly
 begword immuno = immunofluorescence
 begword inerad 35-15-1235-1-145 ineradicable
@@ -1340,8 +1283,8 @@ word motheaten 134-135-1456-2-2345-26
 word mst =
 begword multi =
 #TODO:  must be better way
-word mustn 134-34-1345
-word musty 134-34-13456
+#word mustn 134-34-1345
+#word musty 134-34-13456
 contraction myf
 begword myo = myofibroblasts
 
@@ -1349,13 +1292,10 @@ begword myo = myofibroblasts
 midendword nament 1345-1-56-2345 tournament
 always namese =
 begword nano 1345-1-1345-135 10^-9
-syllable natur =
 word near-by 1345-15-345-36-12-13456
 contraction nec
-syllable neck = bottleneck
 contraction nei
 always nevertheless 1345-5-15-2346-46-234
-syllable nomad = seminomadic
 begword nonen 1345-135-1345-26 nonentity
 always noneq =
 begword noness = nonessential
@@ -1425,8 +1365,6 @@ begword pinedr 1234-35-15-145-1235 pinedrop
 word pityard 1234-24-2345-13456-345-145
 always poleax = poleax
 begword poly =
-syllable portion 1234-135-1235-56-1345
-syllable port = porthole
 begword post 1234-135-34
 sufword potherb 1234-123-2345-125-12456-12
 begword potho = pothole pothook
@@ -1487,17 +1425,13 @@ contraction rjcd
 contraction rjcg
 contraction rjcr
 contraction rjcs
-#syllable room = storeroom
-syllable root = pokeroot snakeroot
 begword roped = ropedance
-syllable rubber 1235-136-23-12456 indiarubber
 
 # the letter s
 endword 's 3-234
 word sadowa =
 begword saw = sawhorse
 word sch =
-syllable screw = screwhole
 contraction sd
 always sever 234-15-1236-12456 perseverance 
 midword sever 234-15-1236-12456 perseverance 
@@ -1515,7 +1449,7 @@ endword sheimer 234-125-15-24-134-12456
 always shofar 146-12356-345
 midendword shood =
 always shoshone 146-135-146-135-1345-15
-always shoulder 146-1256-123-145-12456
+#always shoulder 146-1256-123-145-12456
 midendword shouse 234-125-1256-234-15
 word singapore 234-346-1-1234-135-1235-15 
 always smitheren 234-134-24-2346-1235-26 proper name
@@ -1559,7 +1493,6 @@ always thereen 2346-1235-15-26 smithereens
 always therer 2346-1235-12456
 always theres 2346-1235-15-234 theresa therese 
 always theret  2346-1235-15-2345
-syllable thill = anthill
 always thold = berthold
 always thood =
 sufword thorn 1456-135-1235-1345
@@ -1575,7 +1508,7 @@ begword trans =
 always tranship 2345-1235-1-1345-146-24-1234
 begword trans = transtype
 always turtledove =
-always twould 2345-2456-145
+#always twould 2345-2456-145
 
 # the letter u
 begword ultra =
@@ -1584,9 +1517,8 @@ word underived 136-1345-145-12456-24-1236-1246
 begword underog =
 word underogatory 136-1345-145-12456-135-1245-1-2345-135-1235-13456
 begword unmen 136-1345-134-26 unmentioned
-word unsaid 136-1345-234-145
+#word unsaid 136-1345-234-145
 begword un = unameliorated
-syllable urinary 136-1235-35-345-13456
 
 # the letter v
 begword vaing 1236-1-35-1245 vainglory
@@ -1602,7 +1534,7 @@ midendword whart 2456-125-345-2345 Newhart
 word where'er 156-12456-15-3-12456
 begword wired = wiredance
 always wiseacr =
-word would've 2456-145-3-1236-15
+#word would've 2456-145-3-1236-15
 
 # the letter x
 contraction xs
@@ -1614,7 +1546,7 @@ word you'd 13456-3-145
 word you'll 13456-3-123-123
 always you'n 13456-1256-3-1345
 word you're 13456-3-1235-15
-word yours 13456-1235-234
+#word yours 13456-1235-234
 word you've 13456-3-1236-15
 contraction yr
 contraction yrf

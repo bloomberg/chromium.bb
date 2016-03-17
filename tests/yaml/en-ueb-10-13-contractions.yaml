@@ -286,12 +286,10 @@ tests:
   - misconceiv$
 - - '"couldx"'
   - 8c|ldx0
-  - xfail: true
 - - Himalayas
   - ',himalayas'
 - - Suchet
   - ',su*et'
-  - xfail: true
 - - Yourcenar
   - ',y|rc5>'
 

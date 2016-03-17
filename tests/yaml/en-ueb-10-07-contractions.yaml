@@ -446,6 +446,7 @@ tests:
   - a~6edile
 - - anthill
   - anthill
+  - xfail: true
 - - blessèd
   - b.s~*ed
 - - deshabille
@@ -467,6 +468,7 @@ tests:
   - '%anghai'
 - - Stalingrad
   - ',/al9grad'
+  - xfail: true
 - - viceregal
   - viceregal
 
@@ -689,6 +691,7 @@ tests:
   - 2atitude
 - - Beatrice
   - ',2atrice'
+  - xfail: true
 - - become
   - 2come
 - - begonia
@@ -830,7 +833,6 @@ tests:
   - xfail: true
 - - Belg
   - ',belg'
-  - xfail: true
 - - bet
   - bet
 - - Bev
@@ -974,6 +976,7 @@ tests:
   - 2atitude
 - - Beatrice
   - ',2atrice'
+  - xfail: true
 - - cinéaste
   - c9~/ea/e
 - - coffee
@@ -990,6 +993,7 @@ tests:
   - ebb-tide
 - - hideaway
   - hideaway
+  - xfail: true
 - - idea(s)
   - idea"<s">
 - - Leander
@@ -1201,7 +1205,6 @@ tests:
   - xfail: true
 - - (bein')
   - '"<29''">'
-  - xfail: true
 - - bein'
   - 2in'
   - xfail: true
