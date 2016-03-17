@@ -26,6 +26,8 @@ namespace content {
 
 namespace {
 
+const int64_t kFallbackTickTimeoutInMilliseconds = 100;
+
 // Do not limit number of resources, so use an unrealistically high value.
 const size_t kNumResourcesLimit = 10 * 1000 * 1000;
 
@@ -75,7 +77,9 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       current_sw_canvas_(nullptr),
       memory_policy_(0u),
       did_swap_(false),
-      frame_swap_message_queue_(frame_swap_message_queue) {
+      frame_swap_message_queue_(frame_swap_message_queue),
+      fallback_tick_pending_(false),
+      fallback_tick_running_(false) {
   thread_checker_.DetachFromThread();
   DCHECK(registry_);
   capabilities_.adjust_deadline_for_parent = false;
@@ -115,6 +119,7 @@ void SynchronousCompositorOutputSurface::DetachFromClient() {
     registry_->UnregisterOutputSurface(routing_id_, this);
   }
   cc::OutputSurface::DetachFromClient();
+  CancelFallbackTick();
 }
 
 void SynchronousCompositorOutputSurface::Reshape(const gfx::Size& size,
@@ -127,15 +132,44 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
-  sync_client_->SwapBuffers(frame);
+  if (!fallback_tick_running_)
+    sync_client_->SwapBuffers(frame);
   client_->DidSwapBuffers();
   did_swap_ = true;
+}
+
+void SynchronousCompositorOutputSurface::CancelFallbackTick() {
+  fallback_tick_.Cancel();
+  fallback_tick_pending_ = false;
+}
+
+void SynchronousCompositorOutputSurface::FallbackTickFired() {
+  DCHECK(CalledOnValidThread());
+  TRACE_EVENT0("renderer",
+               "SynchronousCompositorOutputSurface::FallbackTickFired");
+  base::AutoReset<bool> in_fallback_tick(&fallback_tick_running_, true);
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(1, 1);
+  bitmap.eraseColor(0);
+  SkCanvas canvas(bitmap);
+  fallback_tick_pending_ = false;
+  DemandDrawSw(&canvas);
 }
 
 void SynchronousCompositorOutputSurface::Invalidate() {
   DCHECK(CalledOnValidThread());
   if (sync_client_)
     sync_client_->Invalidate();
+
+  if (!fallback_tick_pending_) {
+    fallback_tick_.Reset(
+        base::Bind(&SynchronousCompositorOutputSurface::FallbackTickFired,
+                   base::Unretained(this)));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, fallback_tick_.callback(),
+        base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
+    fallback_tick_pending_ = true;
+  }
 }
 
 void SynchronousCompositorOutputSurface::DemandDrawHw(
@@ -148,6 +182,7 @@ void SynchronousCompositorOutputSurface::DemandDrawHw(
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(context_provider_.get());
+  CancelFallbackTick();
 
   surface_size_ = surface_size;
   client_->SetExternalTilePriorityConstraints(viewport_rect_for_tile_priority,
@@ -160,6 +195,7 @@ void SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
+  CancelFallbackTick();
 
   base::AutoReset<SkCanvas*> canvas_resetter(&current_sw_canvas_, canvas);
 

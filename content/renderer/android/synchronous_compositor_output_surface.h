@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -103,6 +104,9 @@ class SynchronousCompositorOutputSurface
                        bool hardware_draw);
   bool CalledOnValidThread() const;
 
+  void CancelFallbackTick();
+  void FallbackTickFired();
+
   const int routing_id_;
   SynchronousCompositorRegistry* const registry_;  // unowned
   bool registered_;
@@ -116,6 +120,10 @@ class SynchronousCompositorOutputSurface
   cc::ManagedMemoryPolicy memory_policy_;
   bool did_swap_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
+
+  base::CancelableClosure fallback_tick_;
+  bool fallback_tick_pending_;
+  bool fallback_tick_running_;
 
   base::ThreadChecker thread_checker_;
 
