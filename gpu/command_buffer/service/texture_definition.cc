@@ -13,6 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
+// gl_stream_texture_image.h is included to work around crbug.com/595189, a
+// compiler bug in VS 2015 Update 2 RC.
+#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"

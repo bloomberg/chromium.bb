@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_STREAM_TEXTURE_IMAGE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GL_STREAM_TEXTURE_IMAGE_H_
 
+#include "gpu/gpu_export.h"
 #include "ui/gl/gl_image.h"
 
 namespace gpu {
