@@ -39,36 +39,43 @@ class ContextTestBase : public content::ContentBrowserTest {
     content::BrowserGpuChannelHostFactory* factory =
         content::BrowserGpuChannelHostFactory::instance();
     CHECK(factory);
-    bool lose_context_when_out_of_memory = false;
     base::RunLoop run_loop;
     factory->EstablishGpuChannel(kInitCause, run_loop.QuitClosure());
     run_loop.Run();
     scoped_refptr<content::GpuChannelHost>
         gpu_channel_host(factory->GetGpuChannel());
-    DCHECK(gpu_channel_host.get());
-    context_.reset(
+    CHECK(gpu_channel_host.get());
+
+    bool lose_context_when_out_of_memory = false;
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> web_context(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-            gpu_channel_host.get(),
-            blink::WebGraphicsContext3D::Attributes(),
-            lose_context_when_out_of_memory,
-            GURL(),
+            gpu_channel_host.get(), blink::WebGraphicsContext3D::Attributes(),
+            lose_context_when_out_of_memory, GURL(),
             WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-            NULL));
-    CHECK(context_.get());
-    context_->InitializeOnCurrentThread();
-    context_support_ = context_->GetContextSupport();
+            nullptr));
+
+    provider_ = content::ContextProviderCommandBuffer::Create(
+        std::move(web_context), content::OFFSCREEN_CONTEXT_FOR_TESTING);
+    bool bound = provider_->BindToCurrentThread();
+    CHECK(bound);
+    gl_ = provider_->ContextGL();
+    context_support_ = provider_->ContextSupport();
+
     ContentBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
     // Must delete the context first.
-    context_.reset(NULL);
+    provider_ = nullptr;
     ContentBrowserTest::TearDownOnMainThread();
   }
 
  protected:
-  scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl> context_;
+  gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
+
+ private:
+  scoped_refptr<content::ContextProviderCommandBuffer> provider_;
 };
 
 }  // namespace

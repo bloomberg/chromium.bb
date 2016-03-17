@@ -7,31 +7,51 @@
 #include <string>
 #include <vector>
 
-#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_surface.h"
 
 namespace {
 
-using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
-
 class ContextTestBase : public testing::Test {
  public:
   void SetUp() override {
-    blink::WebGraphicsContext3D::Attributes attributes;
-    bool lose_context_when_out_of_memory = false;
-    typedef WebGraphicsContext3DInProcessCommandBufferImpl WGC3DIPCBI;
-    context_ = WGC3DIPCBI::CreateOffscreenContext(
-        attributes, lose_context_when_out_of_memory);
-    context_->InitializeOnCurrentThread();
-    context_support_ = context_->GetContextSupport();
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = 8;
+    attributes.depth_size = 24;
+    attributes.red_size = 8;
+    attributes.green_size = 8;
+    attributes.blue_size = 8;
+    attributes.stencil_size = 8;
+    attributes.samples = 4;
+    attributes.sample_buffers = 1;
+    attributes.bind_generates_resource = false;
+
+    context_.reset(gpu::GLInProcessContext::Create(
+        nullptr,                     /* service */
+        nullptr,                     /* surface */
+        true,                        /* offscreen */
+        gfx::kNullAcceleratedWidget, /* window */
+        gfx::Size(1, 1),             /* size */
+        nullptr,                     /* share_context */
+        true,                        /* use_global_share_group */
+        attributes, gfx::PreferDiscreteGpu,
+        ::gpu::GLInProcessContextSharedMemoryLimits(),
+        nullptr, /* gpu_memory_buffer_manager */
+        nullptr /* image_factory */));
+    gl_ = context_->GetImplementation();
+    context_support_ = context_->GetImplementation();
   }
 
   void TearDown() override { context_.reset(NULL); }
 
  protected:
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context_;
+  gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
+
+ private:
+  scoped_ptr<gpu::GLInProcessContext> context_;
 };
 
 }  // namespace
