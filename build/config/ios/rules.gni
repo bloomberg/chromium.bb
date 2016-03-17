@@ -147,6 +147,13 @@ template("app") {
       ":$_bundle_data_info_plist",
     ]
 
+    if (use_ios_simulator) {
+      if (!defined(data_deps)) {
+        data_deps = []
+      }
+      data_deps += [ "//testing/iossim(${host_toolchain})" ]
+    }
+
     bundle_root_dir = "$root_out_dir/$_app_name.app"
     bundle_resources_dir = bundle_root_dir
     bundle_executable_dir = bundle_root_dir
@@ -158,6 +165,4 @@ template("app") {
   # - find a way to make "ninja -C out/Default base_unittests.app" work as
   #   an alias to "ninja -C out/Default base_unittests" (for convenience
   #   and compatibility with gyp),
-  # - implement //testing/iossim(//build/toolchain/mac:clang_x64) and then
-  #   add a depency to that target.
 }
