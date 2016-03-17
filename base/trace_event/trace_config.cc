@@ -105,6 +105,10 @@ TraceConfig::TraceConfig(const std::string& category_filter_string,
   InitializeFromStrings(category_filter_string, trace_options_string);
 }
 
+TraceConfig::TraceConfig(const DictionaryValue& config) {
+  InitializeFromConfigDict(config);
+}
+
 TraceConfig::TraceConfig(const std::string& config_string) {
   if (!config_string.empty())
     InitializeFromConfigString(config_string);
@@ -288,18 +292,10 @@ void TraceConfig::InitializeDefault() {
   excluded_categories_.push_back("*Test");
 }
 
-void TraceConfig::InitializeFromConfigString(const std::string& config_string) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(config_string));
-  if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
-    InitializeDefault();
-    return;
-  }
-  scoped_ptr<base::DictionaryValue> dict(
-        static_cast<base::DictionaryValue*>(value.release()));
-
+void TraceConfig::InitializeFromConfigDict(const DictionaryValue& dict) {
   record_mode_ = RECORD_UNTIL_FULL;
   std::string record_mode;
-  if (dict->GetString(kRecordModeParam, &record_mode)) {
+  if (dict.GetString(kRecordModeParam, &record_mode)) {
     if (record_mode == kRecordUntilFull) {
       record_mode_ = RECORD_UNTIL_FULL;
     } else if (record_mode == kRecordContinuously) {
@@ -312,40 +308,55 @@ void TraceConfig::InitializeFromConfigString(const std::string& config_string) {
   }
 
   bool enable_sampling;
-  if (!dict->GetBoolean(kEnableSamplingParam, &enable_sampling))
+  if (!dict.GetBoolean(kEnableSamplingParam, &enable_sampling))
     enable_sampling_ = false;
   else
     enable_sampling_ = enable_sampling;
 
   bool enable_systrace;
-  if (!dict->GetBoolean(kEnableSystraceParam, &enable_systrace))
+  if (!dict.GetBoolean(kEnableSystraceParam, &enable_systrace))
     enable_systrace_ = false;
   else
     enable_systrace_ = enable_systrace;
 
   bool enable_argument_filter;
-  if (!dict->GetBoolean(kEnableArgumentFilterParam, &enable_argument_filter))
+  if (!dict.GetBoolean(kEnableArgumentFilterParam, &enable_argument_filter))
     enable_argument_filter_ = false;
   else
     enable_argument_filter_ = enable_argument_filter;
 
-  base::ListValue* category_list = nullptr;
-  if (dict->GetList(kIncludedCategoriesParam, &category_list))
+  const base::ListValue* category_list = nullptr;
+  if (dict.GetList(kIncludedCategoriesParam, &category_list))
     SetCategoriesFromIncludedList(*category_list);
-  if (dict->GetList(kExcludedCategoriesParam, &category_list))
+  if (dict.GetList(kExcludedCategoriesParam, &category_list))
     SetCategoriesFromExcludedList(*category_list);
-  if (dict->GetList(kSyntheticDelaysParam, &category_list))
+  if (dict.GetList(kSyntheticDelaysParam, &category_list))
     SetSyntheticDelaysFromList(*category_list);
 
   if (IsCategoryEnabled(MemoryDumpManager::kTraceCategory)) {
     // If dump triggers not set, the client is using the legacy with just
     // category enabled. So, use the default periodic dump config.
-    base::DictionaryValue* memory_dump_config = nullptr;
-    if (dict->GetDictionary(kMemoryDumpConfigParam, &memory_dump_config))
+    const base::DictionaryValue* memory_dump_config = nullptr;
+    if (dict.GetDictionary(kMemoryDumpConfigParam, &memory_dump_config))
       SetMemoryDumpConfig(*memory_dump_config);
     else
       SetDefaultMemoryDumpConfig();
   }
+}
+
+void TraceConfig::InitializeFromConfigString(const std::string& config_string) {
+  scoped_ptr<Value> value(JSONReader::Read(config_string));
+  if (!value)
+    return InitializeDefault();
+
+  const DictionaryValue* dict = nullptr;
+  bool is_dict = value->GetAsDictionary(&dict);
+
+  if (!is_dict)
+    return InitializeDefault();
+
+  DCHECK(dict);
+  InitializeFromConfigDict(*dict);
 }
 
 void TraceConfig::InitializeFromStrings(

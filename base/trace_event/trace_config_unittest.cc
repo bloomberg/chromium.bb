@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config.h"
@@ -23,6 +24,27 @@ const char kDefaultTraceConfigString[] =
     "\"excluded_categories\":[\"*Debug\",\"*Test\"],"
     "\"record_mode\":\"record-until-full\""
   "}";
+
+const char kCustomTraceConfigString[] =
+  "{"
+    "\"enable_argument_filter\":true,"
+    "\"enable_sampling\":true,"
+    "\"enable_systrace\":true,"
+    "\"excluded_categories\":[\"excluded\",\"exc_pattern*\"],"
+    "\"included_categories\":[\"included\","
+                            "\"inc_pattern*\","
+                            "\"disabled-by-default-cc\","
+                            "\"disabled-by-default-memory-infra\"],"
+    "\"memory_dump_config\":{"
+      "\"triggers\":["
+        "{\"mode\":\"light\",\"periodic_interval_ms\":50},"
+        "{\"mode\":\"detailed\",\"periodic_interval_ms\":1000}"
+      "]"
+    "},"
+    "\"record_mode\":\"record-continuously\","
+    "\"synthetic_delays\":[\"test.Delay1;16\",\"test.Delay2;32\"]"
+  "}";
+
 }  // namespace
 
 TEST(TraceConfigTest, TraceConfigFromValidLegacyFormat) {
@@ -257,6 +279,47 @@ TEST(TraceConfigTest, ConstructDefaultTraceConfig) {
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("CategoryDebug,Category1"));
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("CategoryTest,not-excluded-category"));
   EXPECT_FALSE(tc.IsCategoryGroupEnabled("CategoryDebug,CategoryTest"));
+}
+
+TEST(TraceConfigTest, TraceConfigFromDict) {
+  // Passing in empty dictionary will not result in default trace config.
+  DictionaryValue dict;
+  TraceConfig tc(dict);
+  EXPECT_STRNE(kDefaultTraceConfigString, tc.ToString().c_str());
+  EXPECT_EQ(RECORD_UNTIL_FULL, tc.GetTraceRecordMode());
+  EXPECT_FALSE(tc.IsSamplingEnabled());
+  EXPECT_FALSE(tc.IsSystraceEnabled());
+  EXPECT_FALSE(tc.IsArgumentFilterEnabled());
+  EXPECT_STREQ("", tc.ToCategoryFilterString().c_str());
+
+  scoped_ptr<Value> default_value(JSONReader::Read(kDefaultTraceConfigString));
+  DCHECK(default_value);
+  const DictionaryValue* default_dict = nullptr;
+  bool is_dict = default_value->GetAsDictionary(&default_dict);
+  DCHECK(is_dict);
+  TraceConfig default_tc(*default_dict);
+  EXPECT_STREQ(kDefaultTraceConfigString, default_tc.ToString().c_str());
+  EXPECT_EQ(RECORD_UNTIL_FULL, default_tc.GetTraceRecordMode());
+  EXPECT_FALSE(default_tc.IsSamplingEnabled());
+  EXPECT_FALSE(default_tc.IsSystraceEnabled());
+  EXPECT_FALSE(default_tc.IsArgumentFilterEnabled());
+  EXPECT_STREQ("-*Debug,-*Test", default_tc.ToCategoryFilterString().c_str());
+
+  scoped_ptr<Value> custom_value(JSONReader::Read(kCustomTraceConfigString));
+  DCHECK(custom_value);
+  const DictionaryValue* custom_dict = nullptr;
+  DCHECK(custom_value->GetAsDictionary(&custom_dict));
+  TraceConfig custom_tc(*custom_dict);
+  EXPECT_STREQ(kCustomTraceConfigString, custom_tc.ToString().c_str());
+  EXPECT_EQ(RECORD_CONTINUOUSLY, custom_tc.GetTraceRecordMode());
+  EXPECT_TRUE(custom_tc.IsSamplingEnabled());
+  EXPECT_TRUE(custom_tc.IsSystraceEnabled());
+  EXPECT_TRUE(custom_tc.IsArgumentFilterEnabled());
+  EXPECT_STREQ("included,inc_pattern*,"
+               "disabled-by-default-cc,disabled-by-default-memory-infra,"
+               "-excluded,-exc_pattern*,"
+               "DELAY(test.Delay1;16),DELAY(test.Delay2;32)",
+               custom_tc.ToCategoryFilterString().c_str());
 }
 
 TEST(TraceConfigTest, TraceConfigFromValidString) {

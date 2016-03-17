@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -29,6 +30,46 @@ using Response = DevToolsProtocolClient::Response;
 namespace {
 
 const double kMinimumReportingInterval = 250.0;
+
+const char kRecordModeParam[] = "record_mode";
+
+// Convert from camel case to separator + lowercase.
+std::string ConvertFromCamelCase(const std::string& in_str, char separator) {
+  std::string out_str;
+  out_str.reserve(in_str.size());
+  for (const char& c : in_str) {
+    if (isupper(c)) {
+      out_str.push_back(separator);
+      out_str.push_back(tolower(c));
+    } else {
+      out_str.push_back(c);
+    }
+  }
+  return out_str;
+}
+
+scoped_ptr<base::Value> ConvertDictKeyStyle(const base::Value& value) {
+  const base::DictionaryValue* dict = nullptr;
+  if (value.GetAsDictionary(&dict)) {
+    scoped_ptr<base::DictionaryValue> out_dict(new base::DictionaryValue());
+    for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
+         it.Advance()) {
+      out_dict->Set(ConvertFromCamelCase(it.key(), '_'),
+                    ConvertDictKeyStyle(it.value()));
+    }
+    return std::move(out_dict);
+  }
+
+  const base::ListValue* list = nullptr;
+  if (value.GetAsList(&list)) {
+    scoped_ptr<base::ListValue> out_list(new base::ListValue());
+    for (const auto& value : *list)
+      out_list->Append(ConvertDictKeyStyle(*value));
+    return std::move(out_list);
+  }
+
+  return value.CreateDeepCopy();
+}
 
 class DevToolsTraceSinkProxy : public TracingController::TraceDataSink {
  public:
@@ -130,22 +171,36 @@ void TracingHandler::OnTraceToStreamComplete(const std::string& stream_handle) {
       TracingCompleteParams::Create()->set_stream(stream_handle));
 }
 
-Response TracingHandler::Start(DevToolsCommandId command_id,
-                               const std::string* categories,
-                               const std::string* options,
-                               const double* buffer_usage_reporting_interval,
-                               const std::string* transfer_mode) {
+Response TracingHandler::Start(
+    DevToolsCommandId command_id,
+    const std::string* categories,
+    const std::string* options,
+    const double* buffer_usage_reporting_interval,
+    const std::string* transfer_mode,
+    const scoped_ptr<base::DictionaryValue>& config) {
   if (IsTracing())
     return Response::InternalError("Tracing is already started");
+
+  if (config && (categories || options)) {
+    return Response::InternalError(
+        "Either trace config (preferred), or categories+options should be "
+        "specified, but not both.");
+  }
 
   did_initiate_recording_ = true;
   return_as_stream_ =
       transfer_mode && *transfer_mode == start::kTransferModeReturnAsStream;
-  base::trace_event::TraceConfig trace_config(
-      categories ? *categories : std::string(),
-      options ? *options : std::string());
   if (buffer_usage_reporting_interval)
     SetupTimer(*buffer_usage_reporting_interval);
+
+  base::trace_event::TraceConfig trace_config;
+  if (config) {
+    trace_config = GetTraceConfigFromDevToolsConfig(*config);
+  } else if (categories || options) {
+    trace_config = base::trace_event::TraceConfig(
+        categories ? *categories : std::string(),
+        options ? *options : std::string());
+  }
 
   // If inspected target is a render process Tracing.start will be handled by
   // tracing agent in the renderer.
@@ -279,6 +334,21 @@ bool TracingHandler::IsTracing() const {
 bool TracingHandler::IsStartupTracingActive() {
   return ::tracing::TraceConfigFile::GetInstance()->IsEnabled() &&
       TracingController::GetInstance()->IsTracing();
+}
+
+// static
+base::trace_event::TraceConfig TracingHandler::GetTraceConfigFromDevToolsConfig(
+    const base::DictionaryValue& devtools_config) {
+  scoped_ptr<base::Value> value = ConvertDictKeyStyle(devtools_config);
+  DCHECK(value && value->IsType(base::Value::TYPE_DICTIONARY));
+  scoped_ptr<base::DictionaryValue> tracing_dict(
+      static_cast<base::DictionaryValue*>(value.release()));
+
+  std::string mode;
+  if (tracing_dict->GetString(kRecordModeParam, &mode))
+    tracing_dict->SetString(kRecordModeParam, ConvertFromCamelCase(mode, '-'));
+
+  return base::trace_event::TraceConfig(*tracing_dict);
 }
 
 }  // namespace tracing
