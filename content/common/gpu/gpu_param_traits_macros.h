@@ -11,7 +11,6 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/base/video_codecs.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/swap_result.h"
@@ -20,10 +19,6 @@
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
-
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
-                              media::VIDEO_CODEC_PROFILE_MIN,
-                              media::VIDEO_CODEC_PROFILE_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::VideoDecodeAcceleratorSupportedProfile)
   IPC_STRUCT_TRAITS_MEMBER(profile)
