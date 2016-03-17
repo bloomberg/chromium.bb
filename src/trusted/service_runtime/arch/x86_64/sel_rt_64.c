@@ -13,7 +13,7 @@
  * This header declares the _mm_getcsr function.
  */
 #if NACL_WINDOWS
-#include <mmintrin.h>
+#include <intrin.h>
 #else
 #include <xmmintrin.h>
 #endif
