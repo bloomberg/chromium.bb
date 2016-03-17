@@ -133,7 +133,7 @@
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
       <!-- Network Error Pages -->
-      <if expr="not is_android">
+      <if expr="not is_android and not is_ios">
         <message name="IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_BODY" desc="When a page fails to load, sometimes we suggest disabling predicting network actions.  These are details below a header for non Android devices.">
           Go to
           the Chromium menu &gt;
@@ -144,19 +144,11 @@
           If this does not resolve the issue, we recommend selecting this option
           again for improved performance.
         </message>
-      </if>
-      <if expr="is_android">
-        <message name="IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_BODY" desc="When a page fails to load, sometimes we suggest disabling predicting network actions.  These are details below a header for Android devices.  Note that on devices without mobile network (3G) capability, the setting is a checkbox, while on other devices, it is a list of three items.  The words _disable_ and _re-enabling_ can be used for both cases.">
-          Go to the Chromium menu &gt; Settings &gt; (Advanced) Privacy
-          and disable &quot;Prefetch page resources.&quot;
-          If this does not resolve the issue, we recommend re-enabling this option
-          again for improved performance.
+        <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_HEADER" desc="When a webpage fails to load, in some cases we suggest reconfiguring the firewall.  This is a header above some details.">
+          Allow Chromium to access the network in your firewall or antivirus
+          settings.
         </message>
       </if>
-      <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_HEADER" desc="When a webpage fails to load, in some cases we suggest reconfiguring the firewall.  This is a header above some details.">
-        Allow Chromium to access the network in your firewall or antivirus
-        settings.
-      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_ENROLLMENT_CHECK_PENDING" desc="Summary in the error page when the user tries to browse before the forced enrollment check has finished.">
         Chromium OS hasn’t completed its initial setup.
       </message>
@@ -165,10 +157,6 @@
           Go to
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           and deselect any proxies that have been selected.
-        </message>
-      </if>
-      <if expr="is_android or is_ios">
-        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Instructions for disabling use of a proxy server (leave empty for Android and iOS).">
         </message>
       </if>
       <if expr="not chromeos and is_posix and not is_macosx and not is_android and not is_ios">

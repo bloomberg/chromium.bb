@@ -669,6 +669,7 @@ void GetSuggestionsSummaryList(int error_code,
         IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_SUMMARY, false);
   }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   if ((suggestions & SUGGEST_DNS_CONFIG) &&
       (suggestions & SUGGEST_FIREWALL_CONFIG) &&
       (suggestions & SUGGEST_PROXY_CONFIG)) {
@@ -690,6 +691,7 @@ void GetSuggestionsSummaryList(int error_code,
     DCHECK(!(suggestions & SUGGEST_FIREWALL_CONFIG));
     DCHECK(!(suggestions & SUGGEST_DNS_CONFIG));
   }
+#endif
 
   if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
@@ -773,6 +775,7 @@ void AddSuggestionsDetails(int error_code,
           IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_BODY, false);
   }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (suggestions & SUGGEST_DNS_CONFIG) {
     AddSuggestionDetailDictionaryToList(suggestions_details,
           IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_HEADER,
@@ -810,6 +813,7 @@ void AddSuggestionsDetails(int error_code,
     suggest_proxy_config->SetString("proxyTitle",
         l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
   }
+#endif
 
   if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE &&
       error_code == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
