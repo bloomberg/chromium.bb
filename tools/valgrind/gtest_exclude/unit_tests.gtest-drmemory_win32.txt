@@ -88,3 +88,4 @@ PluginInfoMessageFilterTest.FindEnabledPlugin
 # https://crbug.com/595490
 SpellCheckTest.SpellCheckStrings_EN_US
 SpellCheckTest.SpellCheckText
+SpellCheckTest.CreateTextCheckingResultsKeepsTypographicalApostrophe
