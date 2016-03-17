@@ -239,11 +239,10 @@ class HWTestList(object):
                         retry=False, max_retries=None, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
-    suite_list = HWTestList.DefaultListNonCanary(**default_dict)
-    suite_list.extend(
-        [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                 num=1, **default_dict)])
-    return suite_list
+    return [config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+                                    num=1, **default_dict)]
 
   @classmethod
   def SharedPoolAndroidPFQ(cls, **kwargs):
