@@ -790,13 +790,12 @@ static struct hmi_controller *
 hmi_controller_create(struct weston_compositor *ec)
 {
 	struct ivi_layout_screen *iviscrn  = NULL;
-	int32_t screen_width   = 0;
-	int32_t screen_height  = 0;
 	struct link_layer *tmp_link_layer = NULL;
 	int32_t panel_height = 0;
 	struct hmi_controller *hmi_ctrl = MEM_ALLOC(sizeof(*hmi_ctrl));
 	struct hmi_controller_layer *base_layer = NULL;
 	struct hmi_controller_layer *application_layer = NULL;
+	struct weston_output *output;
 
 	int32_t i = 0;
 
@@ -817,15 +816,13 @@ hmi_controller_create(struct weston_compositor *ec)
 	/* init base ivi_layer*/
 	wl_list_init(&hmi_ctrl->base_layer_list);
 	for (i = 0; i < hmi_ctrl->screen_num; i++) {
-		ivi_layout_interface->get_screen_resolution(get_screen(i, hmi_ctrl),
-						 &screen_width,
-						 &screen_height);
+		output = ivi_layout_interface->screen_get_output(get_screen(i, hmi_ctrl));
 
 		base_layer = MEM_ALLOC(1 * sizeof(struct hmi_controller_layer));
 		base_layer->x = 0;
 		base_layer->y = 0;
-		base_layer->width = screen_width;
-		base_layer->height = screen_height;
+		base_layer->width = output->current_mode->width;
+		base_layer->height = output->current_mode->height;
 		base_layer->id_layer =
 			hmi_ctrl->hmi_setting->base_layer_id +
 						(i * hmi_ctrl->hmi_setting->base_layer_id_offset);
@@ -839,15 +836,13 @@ hmi_controller_create(struct weston_compositor *ec)
 	/* init application ivi_layer */
 	wl_list_init(&hmi_ctrl->application_layer_list);
 	for (i = 0; i < hmi_ctrl->screen_num; i++) {
-		ivi_layout_interface->get_screen_resolution(get_screen(i, hmi_ctrl),
-						 &screen_width,
-						 &screen_height);
+		output = ivi_layout_interface->screen_get_output(get_screen(i, hmi_ctrl));
 
 		application_layer = MEM_ALLOC(1 * sizeof(struct hmi_controller_layer));
 		application_layer->x = 0;
 		application_layer->y = 0;
-		application_layer->width = screen_width;
-		application_layer->height = screen_height - panel_height;
+		application_layer->width = output->current_mode->width;
+		application_layer->height = output->current_mode->height - panel_height;
 		application_layer->id_layer =
 			hmi_ctrl->hmi_setting->application_layer_id +
 						(i * hmi_ctrl->hmi_setting->base_layer_id_offset);
@@ -856,15 +851,15 @@ hmi_controller_create(struct weston_compositor *ec)
 		create_layer(get_screen(i, hmi_ctrl), application_layer);
 	}
 
-	ivi_layout_interface->get_screen_resolution(iviscrn, &screen_width,
-					 &screen_height);
+	output = ivi_layout_interface->screen_get_output(iviscrn);
 
 	/* init workspace background ivi_layer */
 	hmi_ctrl->workspace_background_layer.x = 0;
 	hmi_ctrl->workspace_background_layer.y = 0;
-	hmi_ctrl->workspace_background_layer.width = screen_width;
+	hmi_ctrl->workspace_background_layer.width =
+		output->current_mode->width;
 	hmi_ctrl->workspace_background_layer.height =
-		screen_height - panel_height;
+		output->current_mode->height - panel_height;
 
 	hmi_ctrl->workspace_background_layer.id_layer =
 		hmi_ctrl->hmi_setting->workspace_background_layer_id;

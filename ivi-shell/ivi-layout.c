@@ -1362,24 +1362,6 @@ ivi_layout_get_screen_from_id(uint32_t id_screen)
 }
 
 static int32_t
-ivi_layout_get_screen_resolution(struct ivi_layout_screen *iviscrn,
-				 int32_t *pWidth, int32_t *pHeight)
-{
-	struct weston_output *output = NULL;
-
-	if (iviscrn == NULL || pWidth == NULL || pHeight == NULL) {
-		weston_log("ivi_layout_get_screen_resolution: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	output   = iviscrn->output;
-	*pWidth  = output->current_mode->width;
-	*pHeight = output->current_mode->height;
-
-	return IVI_SUCCEEDED;
-}
-
-static int32_t
 ivi_layout_surface_add_notification(struct ivi_layout_surface *ivisurf,
 				    surface_property_notification_func callback,
 				    void *userdata)
@@ -2475,7 +2457,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	 * screen controller interfaces part1
 	 */
 	.get_screen_from_id		= ivi_layout_get_screen_from_id,
-	.get_screen_resolution		= ivi_layout_get_screen_resolution,
 	.get_screens			= ivi_layout_get_screens,
 	.get_screens_under_layer	= ivi_layout_get_screens_under_layer,
 	.screen_add_layer		= ivi_layout_screen_add_layer,

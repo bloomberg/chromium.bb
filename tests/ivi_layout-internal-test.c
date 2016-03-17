@@ -565,33 +565,6 @@ test_screen_id(struct test_context *ctx)
 }
 
 static void
-test_screen_resolution(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_screen **iviscrns;
-	int32_t screen_length = 0;
-	struct weston_output *output;
-	int32_t width;
-	int32_t height;
-	int32_t i;
-
-	iassert(lyt->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
-	iassert(screen_length > 0);
-
-	for (i = 0; i < screen_length; ++i) {
-		output = lyt->screen_get_output(iviscrns[i]);
-		iassert(output != NULL);
-		iassert(lyt->get_screen_resolution(
-			    iviscrns[i], &width, &height) == IVI_SUCCEEDED);
-		iassert(width == output->current_mode->width);
-		iassert(height == output->current_mode->height);
-	}
-
-	if (screen_length > 0)
-		free(iviscrns);
-}
-
-static void
 test_screen_render_order(struct test_context *ctx)
 {
 #define LAYER_NUM (3)
@@ -641,29 +614,6 @@ test_screen_render_order(struct test_context *ctx)
 
 	free(iviscrns);
 #undef LAYER_NUM
-}
-
-static void
-test_screen_bad_resolution(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_screen **iviscrns;
-	int32_t screen_length = 0;
-	struct ivi_layout_screen *iviscrn;
-	int32_t width;
-	int32_t height;
-
-	iassert(lyt->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
-	iassert(screen_length > 0);
-
-	if (screen_length <= 0)
-		return;
-
-	iviscrn = iviscrns[0];
-	iassert(lyt->get_screen_resolution(NULL, &width, &height) == IVI_FAILED);
-	iassert(lyt->get_screen_resolution(iviscrn, NULL, &height) == IVI_FAILED);
-	iassert(lyt->get_screen_resolution(iviscrn, &width, NULL) == IVI_FAILED);
-	free(iviscrns);
 }
 
 static void
@@ -989,9 +939,7 @@ run_internal_tests(void *data)
 	test_get_layer_after_destory_layer(ctx);
 
 	test_screen_id(ctx);
-	test_screen_resolution(ctx);
 	test_screen_render_order(ctx);
-	test_screen_bad_resolution(ctx);
 	test_screen_bad_render_order(ctx);
 	test_commit_changes_after_render_order_set_layer_destroy(ctx);
 

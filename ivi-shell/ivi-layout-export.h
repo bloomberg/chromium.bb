@@ -568,16 +568,6 @@ struct ivi_layout_interface {
 		(*get_screen_from_id)(uint32_t id_screen);
 
 	/**
-	 * \brief Get the screen resolution of a specific ivi_screen
-	 *
-	 * \return IVI_SUCCEEDED if the method call was successful
-	 * \return IVI_FAILED if the method call was failed
-	 */
-	int32_t (*get_screen_resolution)(struct ivi_layout_screen *iviscrn,
-					 int32_t *pWidth,
-					 int32_t *pHeight);
-
-	/**
 	 * \brief Get the ivi_screens
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
