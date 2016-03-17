@@ -196,11 +196,6 @@ private:
             client->setTouchAction(static_cast<WebTouchAction>(touchAction));
     }
 
-    GraphicsLayerFactory* graphicsLayerFactory() const override
-    {
-        return m_popup->m_webView->graphicsLayerFactory();
-    }
-
     void attachRootGraphicsLayer(GraphicsLayer* graphicsLayer, LocalFrame* localRoot) override
     {
         m_popup->setRootGraphicsLayer(graphicsLayer);

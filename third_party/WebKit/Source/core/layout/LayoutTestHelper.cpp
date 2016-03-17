@@ -6,24 +6,9 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "platform/graphics/test/FakeGraphicsLayerFactory.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
-
-namespace {
-
-class FakeChromeClient : public EmptyChromeClient {
-public:
-    static PassOwnPtrWillBeRawPtr<FakeChromeClient> create() { return adoptPtrWillBeNoop(new FakeChromeClient); }
-
-    GraphicsLayerFactory* graphicsLayerFactory() const override
-    {
-        return FakeGraphicsLayerFactory::instance();
-    }
-};
-
-} // namespace
 
 RenderingTest::RenderingTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient)
     : m_frameLoaderClient(frameLoaderClient) { }
@@ -32,7 +17,7 @@ void RenderingTest::SetUp()
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FakeChromeClient>, chromeClient, (FakeChromeClient::create()));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<EmptyChromeClient>, chromeClient, (EmptyChromeClient::create()));
     pageClients.chromeClient = chromeClient.get();
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, m_frameLoaderClient.release(), settingOverrider());
 

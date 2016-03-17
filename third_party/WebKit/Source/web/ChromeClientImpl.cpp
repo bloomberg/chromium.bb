@@ -773,11 +773,6 @@ String ChromeClientImpl::acceptLanguages()
     return m_webView->client()->acceptLanguages();
 }
 
-GraphicsLayerFactory* ChromeClientImpl::graphicsLayerFactory() const
-{
-    return m_webView->graphicsLayerFactory();
-}
-
 void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFrame* localRoot)
 {
     // FIXME: For top-level frames we still use the WebView as a WebWidget. This

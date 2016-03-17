@@ -920,7 +920,7 @@ void PaintLayerCompositor::updateOverflowControlsLayers()
 
     if (requiresHorizontalScrollbarLayer()) {
         if (!m_layerForHorizontalScrollbar) {
-            m_layerForHorizontalScrollbar = GraphicsLayer::create(graphicsLayerFactory(), this);
+            m_layerForHorizontalScrollbar = GraphicsLayer::create(this);
         }
 
         if (m_layerForHorizontalScrollbar->parent() != controlsParent) {
@@ -939,7 +939,7 @@ void PaintLayerCompositor::updateOverflowControlsLayers()
 
     if (requiresVerticalScrollbarLayer()) {
         if (!m_layerForVerticalScrollbar) {
-            m_layerForVerticalScrollbar = GraphicsLayer::create(graphicsLayerFactory(), this);
+            m_layerForVerticalScrollbar = GraphicsLayer::create(this);
         }
 
         if (m_layerForVerticalScrollbar->parent() != controlsParent) {
@@ -958,7 +958,7 @@ void PaintLayerCompositor::updateOverflowControlsLayers()
 
     if (requiresScrollCornerLayer()) {
         if (!m_layerForScrollCorner)
-            m_layerForScrollCorner = GraphicsLayer::create(graphicsLayerFactory(), this);
+            m_layerForScrollCorner = GraphicsLayer::create(this);
 
         if (m_layerForScrollCorner->parent() != controlsParent)
             controlsParent->addChild(m_layerForScrollCorner.get());
@@ -978,7 +978,7 @@ void PaintLayerCompositor::ensureRootLayer()
 
     Settings* settings = m_layoutView.document().settings();
     if (!m_rootContentLayer) {
-        m_rootContentLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        m_rootContentLayer = GraphicsLayer::create(this);
         IntRect overflowRect = m_layoutView.pixelSnappedLayoutOverflowRect();
         m_rootContentLayer->setSize(FloatSize(overflowRect.maxX(), overflowRect.maxY()));
         m_rootContentLayer->setPosition(FloatPoint());
@@ -996,17 +996,17 @@ void PaintLayerCompositor::ensureRootLayer()
         ASSERT(!m_containerLayer);
 
         // Create a layer to host the clipping layer and the overflow controls layers.
-        m_overflowControlsHostLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        m_overflowControlsHostLayer = GraphicsLayer::create(this);
 
         // Clip iframe's overflow controls layer.
         bool containerMasksToBounds = !m_layoutView.frame()->isLocalRoot();
         m_overflowControlsHostLayer->setMasksToBounds(containerMasksToBounds);
 
         // Create a clipping layer if this is an iframe or settings require to clip.
-        m_containerLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        m_containerLayer = GraphicsLayer::create(this);
         m_containerLayer->setMasksToBounds(containerMasksToBounds);
 
-        m_scrollLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
+        m_scrollLayer = GraphicsLayer::create(this);
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(m_scrollLayer.get(), true);
 
@@ -1167,13 +1167,6 @@ ScrollingCoordinator* PaintLayerCompositor::scrollingCoordinator() const
     if (Page* page = this->page())
         return page->scrollingCoordinator();
 
-    return nullptr;
-}
-
-GraphicsLayerFactory* PaintLayerCompositor::graphicsLayerFactory() const
-{
-    if (Page* page = this->page())
-        return page->chromeClient().graphicsLayerFactory();
     return nullptr;
 }
 

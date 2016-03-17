@@ -78,7 +78,7 @@ void PageOverlay::update()
         return;
 
     if (!m_layer) {
-        m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), this);
+        m_layer = GraphicsLayer::create(this);
         m_layer->setDrawsContent(true);
 
         if (WebDevToolsAgentImpl* devTools = m_viewImpl->mainFrameDevToolsAgentImpl())

@@ -39,7 +39,6 @@
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
@@ -86,9 +85,10 @@ static PaintInvalidationTrackingMap& paintInvalidationTrackingMap()
     return map;
 }
 
-PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerFactory* factory, GraphicsLayerClient* client)
+PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerClient* client)
 {
-    return factory->createGraphicsLayer(client);
+    OwnPtr<GraphicsLayer> layer = adoptPtr(new GraphicsLayer(client));
+    return layer.release();
 }
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)

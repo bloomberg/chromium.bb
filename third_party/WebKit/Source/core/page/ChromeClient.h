@@ -54,7 +54,6 @@ class Frame;
 class FloatPoint;
 class GraphicsContext;
 class GraphicsLayer;
-class GraphicsLayerFactory;
 class HitTestResult;
 class HTMLFormControlElement;
 class HTMLInputElement;
@@ -177,9 +176,6 @@ public:
 
     // Asychronous request to enumerate all files in a directory chosen by the user.
     virtual void enumerateChosenDirectory(FileChooser*) = 0;
-
-    // Allows ports to customize the type of graphics layers created by this page.
-    virtual GraphicsLayerFactory* graphicsLayerFactory() const { return nullptr; }
 
     // Pass 0 as the GraphicsLayer to detach the root layer.
     // This sets the graphics layer for the LocalFrame's WebWidget, if it has

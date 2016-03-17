@@ -432,7 +432,6 @@ public:
 
     GraphicsLayer* rootGraphicsLayer();
     void setRootGraphicsLayer(GraphicsLayer*);
-    GraphicsLayerFactory* graphicsLayerFactory() const;
     PaintLayerCompositor* compositor() const;
     void scheduleAnimation();
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*);
@@ -733,7 +732,6 @@ private:
     WebLayerTreeView* m_layerTreeView;
     WebLayer* m_rootLayer;
     GraphicsLayer* m_rootGraphicsLayer;
-    OwnPtr<GraphicsLayerFactory> m_graphicsLayerFactory;
     bool m_matchesHeuristicsForGpuRasterization;
     static const WebInputEvent* m_currentInputEvent;
 

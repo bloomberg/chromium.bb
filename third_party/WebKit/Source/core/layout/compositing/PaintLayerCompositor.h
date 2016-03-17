@@ -36,7 +36,6 @@ namespace blink {
 class PaintLayer;
 class DocumentLifecycle;
 class GraphicsLayer;
-class GraphicsLayerFactory;
 class IntPoint;
 class Page;
 class LayoutPart;
@@ -201,7 +200,6 @@ private:
 
     Page* page() const;
 
-    GraphicsLayerFactory* graphicsLayerFactory() const;
     ScrollingCoordinator* scrollingCoordinator() const;
 
     void enableCompositingModeIfNeeded();

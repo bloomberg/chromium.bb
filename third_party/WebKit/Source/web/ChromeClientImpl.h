@@ -118,8 +118,6 @@ public:
     bool haveScrollEventHandlers() const override;
     void setTouchAction(TouchAction) override;
 
-    GraphicsLayerFactory* graphicsLayerFactory() const override;
-
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
 

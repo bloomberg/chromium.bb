@@ -211,11 +211,7 @@ CompositedLayerMapping::~CompositedLayerMapping()
 
 PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(CompositingReasons reasons, SquashingDisallowedReasons squashingDisallowedReasons)
 {
-    GraphicsLayerFactory* graphicsLayerFactory = nullptr;
-    if (Page* page = layoutObject()->frame()->page())
-        graphicsLayerFactory = page->chromeClient().graphicsLayerFactory();
-
-    OwnPtr<GraphicsLayer> graphicsLayer = GraphicsLayer::create(graphicsLayerFactory, this);
+    OwnPtr<GraphicsLayer> graphicsLayer = GraphicsLayer::create(this);
 
     graphicsLayer->setCompositingReasons(reasons);
     graphicsLayer->setSquashingDisallowedReasons(squashingDisallowedReasons);

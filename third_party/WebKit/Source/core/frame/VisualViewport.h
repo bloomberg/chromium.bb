@@ -52,7 +52,6 @@ namespace blink {
 class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
-class GraphicsLayerFactory;
 class IntRect;
 class IntSize;
 class LocalFrame;
@@ -73,7 +72,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    void attachToLayerTree(GraphicsLayer*, GraphicsLayerFactory*);
+    void attachToLayerTree(GraphicsLayer*);
+
     GraphicsLayer* rootGraphicsLayer()
     {
         return m_rootTransformLayer.get();

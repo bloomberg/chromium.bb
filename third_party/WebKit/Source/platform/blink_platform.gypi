@@ -611,7 +611,6 @@
       'graphics/GraphicsLayerClient.h',
       'graphics/GraphicsLayerDebugInfo.cpp',
       'graphics/GraphicsLayerDebugInfo.h',
-      'graphics/GraphicsLayerFactory.h',
       'graphics/GraphicsTypes.cpp',
       'graphics/GraphicsTypes.h',
       'graphics/GraphicsTypes3D.h',
@@ -1242,8 +1241,6 @@
       'threading/BackgroundTaskRunnerTest.cpp',
     ],
     'platform_test_support_files': [
-      'graphics/test/FakeGraphicsLayerFactory.cpp',
-      'graphics/test/FakeGraphicsLayerFactory.h',
       'testing/FontTestHelpers.cpp',
       'testing/FontTestHelpers.h',
       'testing/GeometryPrinters.cpp',

@@ -14,7 +14,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/graphics/test/FakeGraphicsLayerFactory.h"
 #include "platform/heap/Handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,10 +30,6 @@ public:
     MockChromeClient() : m_hasScheduledAnimation(false) { }
 
     // ChromeClient
-    GraphicsLayerFactory* graphicsLayerFactory() const override
-    {
-        return FakeGraphicsLayerFactory::instance();
-    }
     MOCK_METHOD1(didPaint, void(const PaintArtifact&));
     MOCK_METHOD2(attachRootGraphicsLayer, void(GraphicsLayer*, LocalFrame* localRoot));
     MOCK_METHOD2(setToolTip, void(const String&, TextDirection));

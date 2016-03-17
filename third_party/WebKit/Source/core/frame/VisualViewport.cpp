@@ -47,7 +47,6 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarThemeOverlay.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -62,7 +61,6 @@ using blink::WebScrollbar;
 using blink::WebScrollbarLayer;
 using blink::FrameHost;
 using blink::GraphicsLayer;
-using blink::GraphicsLayerFactory;
 
 namespace blink {
 
@@ -276,7 +274,7 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoi
 //     +- verticalScrollbarLayer [ owned by PaintLayerCompositor ]
 //     +- scroll corner (non-overlay only) [ owned by PaintLayerCompositor ]
 //
-void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, GraphicsLayerFactory* graphicsLayerFactory)
+void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot)
 {
     TRACE_EVENT1("blink", "VisualViewport::attachToLayerTree", "currentLayerTreeRoot", (bool)currentLayerTreeRoot);
     if (!currentLayerTreeRoot) {
@@ -296,13 +294,13 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Grap
             && !m_innerViewportContainerLayer);
 
         // FIXME: The root transform layer should only be created on demand.
-        m_rootTransformLayer = GraphicsLayer::create(graphicsLayerFactory, this);
-        m_innerViewportContainerLayer = GraphicsLayer::create(graphicsLayerFactory, this);
-        m_overscrollElasticityLayer = GraphicsLayer::create(graphicsLayerFactory, this);
-        m_pageScaleLayer = GraphicsLayer::create(graphicsLayerFactory, this);
-        m_innerViewportScrollLayer = GraphicsLayer::create(graphicsLayerFactory, this);
-        m_overlayScrollbarHorizontal = GraphicsLayer::create(graphicsLayerFactory, this);
-        m_overlayScrollbarVertical = GraphicsLayer::create(graphicsLayerFactory, this);
+        m_rootTransformLayer = GraphicsLayer::create(this);
+        m_innerViewportContainerLayer = GraphicsLayer::create(this);
+        m_overscrollElasticityLayer = GraphicsLayer::create(this);
+        m_pageScaleLayer = GraphicsLayer::create(this);
+        m_innerViewportScrollLayer = GraphicsLayer::create(this);
+        m_overlayScrollbarHorizontal = GraphicsLayer::create(this);
+        m_overlayScrollbarVertical = GraphicsLayer::create(this);
 
         ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
         ASSERT(coordinator);

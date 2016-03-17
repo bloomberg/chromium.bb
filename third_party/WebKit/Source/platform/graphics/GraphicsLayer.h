@@ -57,8 +57,6 @@
 namespace blink {
 
 class FloatRect;
-class GraphicsLayerFactory;
-class GraphicsLayerFactoryChromium;
 class Image;
 class LinkHighlight;
 class JSONObject;
@@ -74,7 +72,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient, public cc::LayerClient, public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); USING_FAST_MALLOC(GraphicsLayer);
 public:
-    static PassOwnPtr<GraphicsLayer> create(GraphicsLayerFactory*, GraphicsLayerClient*);
+    static PassOwnPtr<GraphicsLayer> create(GraphicsLayerClient*);
 
     ~GraphicsLayer() override;
 
@@ -258,11 +256,8 @@ protected:
     bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
 
     explicit GraphicsLayer(GraphicsLayerClient*);
-    // GraphicsLayerFactoryChromium that wants to create a GraphicsLayer need to be friends.
-    friend class GraphicsLayerFactoryChromium;
     // for testing
     friend class CompositedLayerMappingTest;
-    friend class FakeGraphicsLayerFactory;
     friend class PaintControllerPaintTestBase;
 
 private:

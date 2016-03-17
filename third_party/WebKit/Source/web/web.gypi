@@ -43,8 +43,6 @@
       'FullscreenController.h',
       'GeolocationClientProxy.cpp',
       'GeolocationClientProxy.h',
-      'GraphicsLayerFactoryChromium.cpp',
-      'GraphicsLayerFactoryChromium.h',
       'IndexedDBClientImpl.cpp',
       'IndexedDBClientImpl.h',
       'InspectorEmulationAgent.cpp',

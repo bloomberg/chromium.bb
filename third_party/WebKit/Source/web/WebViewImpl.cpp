@@ -157,7 +157,6 @@
 #include "web/DatabaseClientImpl.h"
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
-#include "web/GraphicsLayerFactoryChromium.h"
 #include "web/InspectorOverlay.h"
 #include "web/LinkHighlightImpl.h"
 #include "web/PageOverlay.h"
@@ -431,7 +430,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeView(nullptr)
     , m_rootLayer(nullptr)
     , m_rootGraphicsLayer(nullptr)
-    , m_graphicsLayerFactory(adoptPtr(new GraphicsLayerFactoryChromium()))
     , m_matchesHeuristicsForGpuRasterization(false)
     , m_flingModifier(0)
     , m_flingSourceDevice(WebGestureDeviceUninitialized)
@@ -4215,7 +4213,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
-    visualViewport.attachToLayerTree(layer, graphicsLayerFactory());
+    visualViewport.attachToLayerTree(layer);
     if (layer) {
         m_rootGraphicsLayer = visualViewport.rootGraphicsLayer();
         m_rootLayer = m_rootGraphicsLayer->platformLayer();
@@ -4248,11 +4246,6 @@ void WebViewImpl::invalidateRect(const IntRect& rect)
         updateLayerTreeViewport();
     else if (m_client)
         m_client->didInvalidateRect(rect);
-}
-
-GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
-{
-    return m_graphicsLayerFactory.get();
 }
 
 PaintLayerCompositor* WebViewImpl::compositor() const
