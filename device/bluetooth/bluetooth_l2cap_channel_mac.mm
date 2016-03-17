@@ -116,7 +116,7 @@ void BluetoothL2capChannelMac::SetSocket(BluetoothSocketMac* socket) {
 }
 
 IOBluetoothDevice* BluetoothL2capChannelMac::GetDevice() {
-  return [channel_ getDevice];
+  return [channel_ device];
 }
 
 uint16_t BluetoothL2capChannelMac::GetOutgoingMTU() {
@@ -142,7 +142,7 @@ void BluetoothL2capChannelMac::OnChannelOpenComplete(
   }
 
   socket()->OnChannelOpenComplete(
-      BluetoothClassicDeviceMac::GetDeviceAddress([channel getDevice]), status);
+      BluetoothClassicDeviceMac::GetDeviceAddress([channel device]), status);
 }
 
 void BluetoothL2capChannelMac::OnChannelClosed(
