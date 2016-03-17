@@ -116,29 +116,23 @@ const int kUndefinedOutputSurfaceId = -1;
 
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
-class GLHelperHolder
-    : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+class GLHelperHolder {
  public:
   static GLHelperHolder* Create();
-  ~GLHelperHolder() override;
 
-  void Initialize();
-
-  // WebGraphicsContextLostCallback implementation.
-  void onContextLost() override;
-
-  GLHelper* GetGLHelper() { return gl_helper_.get(); }
+  GLHelper* gl_helper() { return gl_helper_.get(); }
   bool IsLost() {
-    return !context_ ||
-           context_->GetGLInterface()->GetGraphicsResetStatusKHR() !=
-               GL_NO_ERROR;
+    if (!gl_helper_)
+      return true;
+    return provider_->ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
   }
 
  private:
-  GLHelperHolder();
-  static scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3D();
+  GLHelperHolder() = default;
+  void Initialize();
+  void OnContextLost();
 
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
+  scoped_refptr<ContextProviderCommandBuffer> provider_;
   scoped_ptr<GLHelper> gl_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GLHelperHolder);
@@ -147,45 +141,17 @@ class GLHelperHolder
 GLHelperHolder* GLHelperHolder::Create() {
   GLHelperHolder* holder = new GLHelperHolder;
   holder->Initialize();
-
   return holder;
 }
 
-GLHelperHolder::GLHelperHolder() {
-}
-
-GLHelperHolder::~GLHelperHolder() {
-}
-
 void GLHelperHolder::Initialize() {
-  context_ = CreateContext3D();
-  if (context_) {
-    context_->setContextLostCallback(this);
-    gl_helper_.reset(new GLHelper(context_->GetImplementation(),
-                                  context_->GetContextSupport()));
-  }
-}
-
-void GLHelperHolder::onContextLost() {
-  // Need to post a task because the command buffer client cannot be deleted
-  // from within this callback.
-  LOG(ERROR) << "Context lost.";
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&RenderWidgetHostViewAndroid::OnContextLost));
-}
-
-scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-GLHelperHolder::CreateContext3D() {
-  BrowserGpuChannelHostFactory* factory =
-      BrowserGpuChannelHostFactory::instance();
+  auto* factory = BrowserGpuChannelHostFactory::instance();
   scoped_refptr<GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
-  // GLHelper can only be used in asynchronous APIs for postprocessing after
-  // Browser Compositor operations (i.e. readback).
-  if (!gpu_channel_host.get()) {
-    // The Browser Compositor is in charge of reestablishing the channel.
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-  }
+
+  // The Browser Compositor is in charge of reestablishing the channel if its
+  // missing.
+  if (!gpu_channel_host)
+    return;
 
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
@@ -209,17 +175,25 @@ GLHelperHolder::CreateContext3D() {
           gpu::kNullSurfaceHandle,  // offscreen
           url, gpu_channel_host.get(), attrs, lose_context_when_out_of_memory,
           limits, nullptr));
-  context->SetContextType(BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
-  if (context->InitializeOnCurrentThread()) {
-    context->GetImplementation()->TraceBeginCHROMIUM(
-        "gpu_toplevel",
-        base::StringPrintf("CmdBufferImageTransportFactory-%p", context.get())
-            .c_str());
-  } else {
-    context.reset();
-  }
+  provider_ = ContextProviderCommandBuffer::Create(
+      std::move(context), BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+  if (!provider_->BindToCurrentThread())
+    return;
+  provider_->ContextGL()->TraceBeginCHROMIUM(
+      "gpu_toplevel",
+      base::StringPrintf("CmdBufferImageTransportFactory-%p", provider_.get())
+          .c_str());
+  provider_->SetLostContextCallback(
+      base::Bind(&GLHelperHolder::OnContextLost, base::Unretained(this)));
+  gl_helper_.reset(
+      new GLHelper(provider_->ContextGL(), provider_->ContextSupport()));
+}
 
-  return context;
+void GLHelperHolder::OnContextLost() {
+  // Need to post a task because the command buffer client cannot be deleted
+  // from within this callback.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&RenderWidgetHostViewAndroid::OnContextLost));
 }
 
 // This can only be used for readback postprocessing. It may return null if the
@@ -235,7 +209,7 @@ GLHelper* GetPostReadbackGLHelper() {
   if (!g_readback_helper_holder)
     g_readback_helper_holder = GLHelperHolder::Create();
 
-  return g_readback_helper_holder->GetGLHelper();
+  return g_readback_helper_holder->gl_helper();
 }
 
 void CopyFromCompositingSurfaceFinished(
