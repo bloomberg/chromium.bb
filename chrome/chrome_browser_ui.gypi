@@ -563,6 +563,10 @@
       'browser/ui/ash/launcher/chrome_launcher_controller.h',
       'browser/ui/ash/launcher/launcher_app_tab_helper.cc',
       'browser/ui/ash/launcher/launcher_app_tab_helper.h',
+      'browser/ui/ash/launcher/launcher_app_updater.cc',
+      'browser/ui/ash/launcher/launcher_app_updater.h',
+      'browser/ui/ash/launcher/launcher_extension_app_updater.cc',
+      'browser/ui/ash/launcher/launcher_extension_app_updater.h',
       'browser/ui/ash/launcher/launcher_application_menu_item_model.cc',
       'browser/ui/ash/launcher/launcher_application_menu_item_model.h',
       'browser/ui/ash/launcher/launcher_context_menu.cc',
@@ -729,6 +733,8 @@
       'browser/ui/app_list/arc/arc_app_utils.h',
       'browser/ui/app_list/search/arc_app_result.cc',
       'browser/ui/app_list/search/arc_app_result.h',
+      'browser/ui/ash/launcher/launcher_arc_app_updater.cc',
+      'browser/ui/ash/launcher/launcher_arc_app_updater.h',
     ],
     # ChromeOS sources that should not be included in the official build.
     'chrome_browser_ui_chromeos_non_official_sources': [

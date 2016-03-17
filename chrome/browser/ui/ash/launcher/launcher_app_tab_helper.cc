@@ -22,6 +22,10 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#endif
+
 namespace {
 
 const extensions::Extension* GetExtensionForTab(Profile* profile,
@@ -104,6 +108,10 @@ std::string LauncherAppTabHelper::GetAppID(content::WebContents* tab) {
 }
 
 bool LauncherAppTabHelper::IsValidIDForCurrentUser(const std::string& id) {
+#if defined(OS_CHROMEOS)
+  if (ArcAppListPrefs::Get(profile_)->IsRegistered(id))
+    return true;
+#endif
   return GetExtensionByID(profile_, id) != NULL;
 }
 

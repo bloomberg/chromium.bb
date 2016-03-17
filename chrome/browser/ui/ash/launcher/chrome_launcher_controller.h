@@ -29,10 +29,10 @@
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
+#include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/window_observer.h"
 
@@ -89,11 +89,11 @@ class ChromeLauncherController
       public ash::ShelfModelObserver,
       public ash::ShellObserver,
       public ash::WindowTreeHostManager::Observer,
-      public extensions::ExtensionRegistryObserver,
       public AppIconLoaderDelegate,
       public syncable_prefs::PrefServiceSyncableObserver,
       public AppSyncUIStateObserver,
       public ExtensionEnableFlowDelegate,
+      public LauncherAppUpdater::Delegate,
       public ash::ShelfLayoutManagerObserver,
       public ash::ShelfItemDelegateManagerObserver {
  public:
@@ -312,13 +312,13 @@ class ChromeLauncherController
   // ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
-  // ExtensionRegistryObserver:
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
+  // LauncherAppUpdater:
+  void OnAppInstalled(content::BrowserContext* browser_context,
+                      const std::string& app_id) override;
+  void OnAppUpdated(content::BrowserContext* browser_context,
+                    const std::string& app_id) override;
+  void OnAppUninstalled(content::BrowserContext* browser_context,
+                        const std::string& app_id) override;
 
   // syncable_prefs::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
@@ -578,6 +578,9 @@ class ChromeLauncherController
 
   // Used to load the image for an extension app item.
   std::vector<scoped_ptr<AppIconLoader>> app_icon_loaders_;
+
+  // Used to handle app load/unload events.
+  std::vector<scoped_ptr<LauncherAppUpdater>> app_updaters_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

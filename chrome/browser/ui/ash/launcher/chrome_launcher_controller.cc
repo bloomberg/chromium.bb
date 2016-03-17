@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
+#include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -100,7 +101,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 #include "components/user_manager/user_manager.h"
@@ -762,6 +766,13 @@ bool ChromeLauncherController::IsPlatformApp(ash::ShelfID id) {
 void ChromeLauncherController::LaunchApp(const std::string& app_id,
                                          ash::LaunchSource source,
                                          int event_flags) {
+#if defined(OS_CHROMEOS)
+  if (ArcAppListPrefs::Get(profile_)->IsRegistered(app_id)) {
+    arc::LaunchApp(profile_, app_id);
+    return;
+  }
+#endif
+
   // |extension| could be NULL when it is being unloaded for updating.
   const Extension* extension = GetExtensionForAppID(app_id);
   if (!extension)
@@ -1249,10 +1260,9 @@ void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
   app_window_controller_->AdditionalUserAddedToSession(profile);
 }
 
-void ChromeLauncherController::OnExtensionLoaded(
+void ChromeLauncherController::OnAppInstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
-  const std::string& app_id = extension->id();
+    const std::string& app_id) {
   if (IsAppPinned(app_id)) {
     // Clear and re-fetch to ensure icon is up-to-date.
     AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
@@ -1265,32 +1275,31 @@ void ChromeLauncherController::OnExtensionLoaded(
   UpdateAppLaunchersFromPref();
 }
 
-void ChromeLauncherController::OnExtensionUnloaded(
+void ChromeLauncherController::OnAppUpdated(
     content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
-  const std::string& app_id = extension->id();
-  const Profile* profile = Profile::FromBrowserContext(browser_context);
-
-  // Since we might have windowed apps of this type which might have
-  // outstanding locks which needs to be removed.
-  if (GetShelfIDForAppID(app_id) &&
-      reason == UnloadedExtensionInfo::REASON_UNINSTALL) {
-    CloseWindowedAppsFromRemovedExtension(app_id, profile);
-  }
-
+    const std::string& app_id) {
   if (IsAppPinned(app_id)) {
     AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
-    if (reason == UnloadedExtensionInfo::REASON_UNINSTALL) {
-      if (profile == profile_) {
-        DoUnpinAppWithID(app_id);
-      }
-      if (app_icon_loader)
-        app_icon_loader->ClearImage(app_id);
-    } else {
-      if (app_icon_loader)
-        app_icon_loader->UpdateImage(app_id);
-    }
+    if (app_icon_loader)
+      app_icon_loader->UpdateImage(app_id);
+  }
+}
+
+void ChromeLauncherController::OnAppUninstalled(
+    content::BrowserContext* browser_context,
+    const std::string& app_id) {
+  // Since we might have windowed apps of this type which might have
+  // outstanding locks which needs to be removed.
+  const Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (GetShelfIDForAppID(app_id))
+    CloseWindowedAppsFromRemovedExtension(app_id, profile);
+
+  if (IsAppPinned(app_id)) {
+    if (profile == profile_)
+      DoUnpinAppWithID(app_id);
+    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+    if (app_icon_loader)
+      app_icon_loader->ClearImage(app_id);
   }
 }
 
@@ -2232,14 +2241,22 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
                  base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
 
-  extensions::ExtensionRegistry::Get(profile_)->AddObserver(this);
+  scoped_ptr<LauncherAppUpdater> extension_app_updater(
+      new LauncherExtensionAppUpdater(this, profile_));
+  app_updaters_.push_back(std::move(extension_app_updater));
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<LauncherAppUpdater> arc_app_updater(
+      new LauncherArcAppUpdater(this, profile_));
+  app_updaters_.push_back(std::move(arc_app_updater));
+#endif
 }
 
 void ChromeLauncherController::ReleaseProfile() {
   if (app_sync_ui_state_)
     app_sync_ui_state_->RemoveObserver(this);
 
-  extensions::ExtensionRegistry::Get(profile_)->RemoveObserver(this);
+  app_updaters_.clear();
 
   PrefServiceSyncableFromProfile(profile_)->RemoveObserver(this);
 

@@ -83,6 +83,13 @@
 #include "chrome/test/base/test_browser_window_aura.h"
 #endif  // defined(USE_AURA)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/test/fake_app_instance.h"
+#include "components/arc/test/fake_arc_bridge_service.h"
+#endif  // defined(OS_CHROMEOS)
+
 using base::ASCIIToUTF16;
 using extensions::Extension;
 using extensions::Manifest;
@@ -368,6 +375,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                                     Extension::NO_FLAGS,
                                     "ffffffffffffffffffffffffffffffff",
                                     &error);
+
+#if defined(OS_CHROMEOS)
+    arc_test_.SetUp(profile());
+    arc_test_.bridge_service()->SetReady();
+#endif  // defined(OS_CHROMEOS)
   }
 
   // Creates a running V2 app (not pinned) of type |app_id|.
@@ -528,7 +540,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         result.append(", ");
       switch (model_->items()[i].type) {
         case ash::TYPE_PLATFORM_APP:
-            result+= "*";
+          result += "*";
             // FALLTHROUGH
         case ash::TYPE_WINDOWED_APP: {
           const std::string& app =
@@ -597,6 +609,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             } else if (app == extension8_->id()) {
               result += "App8";
               EXPECT_TRUE(launcher_controller_->IsAppPinned(extension8_->id()));
+#if defined(OS_CHROMEOS)
+            } else if (app == ArcAppTest::GetAppId(arc_test_.fake_apps()[0])) {
+              result += arc_test_.fake_apps()[0].name;
+#endif  // defined(OS_CHROMEOS)
             } else {
               result += "unknown";
             }
@@ -634,6 +650,18 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         account_id.GetUserEmail());
   }
 
+#if defined(OS_CHROMEOS)
+  void InstallArcApps() {
+    arc_test_.app_instance()->RefreshAppList();
+    arc_test_.app_instance()->SendRefreshAppList(arc_test_.fake_apps());
+  }
+
+  void UninstallArcApps() {
+    arc_test_.app_instance()->RefreshAppList();
+    arc_test_.app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
+  }
+#endif  // defined(OS_CHROMEOS)
+
   // Needed for extension service & friends to work.
   scoped_refptr<Extension> extension1_;
   scoped_refptr<Extension> extension2_;
@@ -643,6 +671,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extension6_;
   scoped_refptr<Extension> extension7_;
   scoped_refptr<Extension> extension8_;
+#if defined(OS_CHROMEOS)
+  ArcAppTest arc_test_;
+#endif  // defined(OS_CHROMEOS)
   scoped_ptr<ChromeLauncherController> launcher_controller_;
   scoped_ptr<TestShelfModelObserver> model_observer_;
   scoped_ptr<ash::ShelfModel> model_;
@@ -1059,6 +1090,7 @@ TEST_F(ChromeLauncherControllerTest, RestoreDefaultAppsRandomOrder) {
   InsertPrefValue(&policy_value, 0, extension1_->id());
   InsertPrefValue(&policy_value, 1, extension2_->id());
   InsertPrefValue(&policy_value, 2, extension3_->id());
+
   profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
                                                   policy_value.DeepCopy());
   SetShelfChromeIconIndex(0);
@@ -1384,6 +1416,36 @@ TEST_F(ChromeLauncherControllerTest, CheckRunningAppOrder) {
   launcher_controller_->UnlockV1AppWithID(extension3_->id());
   RestoreUnpinnedRunningApplicationOrder(current_account_id);
   EXPECT_EQ("AppList, Chrome", GetPinnedAppStatus());
+}
+
+// Validate that Arc app is pinned correctly and pin is removed automatically
+// once app is uninstalled.
+TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
+  InitLauncherController();
+
+  const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+
+  InstallArcApps();
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension2_.get());
+
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
+
+  launcher_controller_->PinAppWithID(extension1_->id());
+  launcher_controller_->PinAppWithID(arc_app_id);
+  launcher_controller_->PinAppWithID(extension2_->id());
+
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(arc_app_id));
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
+
+  EXPECT_EQ("AppList, Chrome, App1, Fake App 0, App2", GetPinnedAppStatus());
+  UninstallArcApps();
+  EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
+  InstallArcApps();
+  EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 }
 
 // Check that with multi profile V1 apps are properly added / removed from the
