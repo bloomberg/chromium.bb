@@ -398,6 +398,14 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
     }
 
     /**
+     * @see InputConnection#deleteSurroundingTextInCodePoints(int, int)
+     */
+    public boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
+        // TODO(changwan): Implement this. http://crbug.com/595525
+        return false;
+    }
+
+    /**
      * @see InputConnection#sendKeyEvent(android.view.KeyEvent)
      */
     @Override
