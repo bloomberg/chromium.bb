@@ -17,12 +17,13 @@
 using content::BrowserThread;
 using feedback::FeedbackData;
 
+namespace extensions {
+
 namespace {
 
-void PopulateSystemInfo(
-    extensions::SystemInformationList* sys_info_list,
-    const std::string& key,
-    const std::string& value) {
+void PopulateSystemInfo(SystemInformationList* sys_info_list,
+                        const std::string& key,
+                        const std::string& value) {
   base::DictionaryValue sys_info_value;
   sys_info_value.Set("key", new base::StringValue(key));
   sys_info_value.Set("value", new base::StringValue(value));
@@ -35,8 +36,6 @@ void PopulateSystemInfo(
 
 }  // namespace
 
-namespace extensions {
-
 FeedbackService::FeedbackService() {
 }
 
@@ -47,75 +46,77 @@ void FeedbackService::SendFeedback(
     Profile* profile,
     scoped_refptr<FeedbackData> feedback_data,
     const SendFeedbackCallback& callback) {
-  send_feedback_callback_ = callback;
-  feedback_data_ = feedback_data;
-  feedback_data_->set_locale(g_browser_process->GetApplicationLocale());
-  feedback_data_->set_user_agent(GetUserAgent());
+  feedback_data->set_locale(g_browser_process->GetApplicationLocale());
+  feedback_data->set_user_agent(GetUserAgent());
 
-  if (!feedback_data_->attached_file_uuid().empty()) {
+  if (!feedback_data->attached_file_uuid().empty()) {
     // Self-deleting object.
-    BlobReader* attached_file_reader = new BlobReader(
-        profile, feedback_data_->attached_file_uuid(),
-        base::Bind(&FeedbackService::AttachedFileCallback, AsWeakPtr()));
+    BlobReader* attached_file_reader =
+        new BlobReader(profile, feedback_data->attached_file_uuid(),
+                       base::Bind(&FeedbackService::AttachedFileCallback,
+                                  AsWeakPtr(), feedback_data, callback));
     attached_file_reader->Start();
   }
 
-  if (!feedback_data_->screenshot_uuid().empty()) {
+  if (!feedback_data->screenshot_uuid().empty()) {
     // Self-deleting object.
-    BlobReader* screenshot_reader = new BlobReader(
-        profile, feedback_data_->screenshot_uuid(),
-        base::Bind(&FeedbackService::ScreenshotCallback, AsWeakPtr()));
+    BlobReader* screenshot_reader =
+        new BlobReader(profile, feedback_data->screenshot_uuid(),
+                       base::Bind(&FeedbackService::ScreenshotCallback,
+                                  AsWeakPtr(), feedback_data, callback));
     screenshot_reader->Start();
   }
 
-  CompleteSendFeedback();
-}
-
-void FeedbackService::AttachedFileCallback(scoped_ptr<std::string> data,
-                                           int64_t /* total_blob_length */) {
-  feedback_data_->set_attached_file_uuid(std::string());
-  if (data)
-    feedback_data_->AttachAndCompressFileData(std::move(data));
-
-  CompleteSendFeedback();
-}
-
-void FeedbackService::ScreenshotCallback(scoped_ptr<std::string> data,
-                                         int64_t /* total_blob_length */) {
-  feedback_data_->set_screenshot_uuid(std::string());
-  if (data)
-    feedback_data_->set_image(std::move(data));
-
-  CompleteSendFeedback();
+  CompleteSendFeedback(feedback_data, callback);
 }
 
 void FeedbackService::GetSystemInformation(
     const GetSystemInformationCallback& callback) {
-  system_information_callback_ = callback;
-
   system_logs::ScrubbedSystemLogsFetcher* fetcher =
       new system_logs::ScrubbedSystemLogsFetcher();
-  fetcher->Fetch(
-      base::Bind(&FeedbackService::OnSystemLogsFetchComplete, AsWeakPtr()));
+  fetcher->Fetch(base::Bind(&FeedbackService::OnSystemLogsFetchComplete,
+                            AsWeakPtr(), callback));
 }
 
+void FeedbackService::AttachedFileCallback(
+    scoped_refptr<feedback::FeedbackData> feedback_data,
+    const SendFeedbackCallback& callback,
+    scoped_ptr<std::string> data,
+    int64_t /* total_blob_length */) {
+  feedback_data->set_attached_file_uuid(std::string());
+  if (data)
+    feedback_data->AttachAndCompressFileData(std::move(data));
+
+  CompleteSendFeedback(feedback_data, callback);
+}
+
+void FeedbackService::ScreenshotCallback(
+    scoped_refptr<feedback::FeedbackData> feedback_data,
+    const SendFeedbackCallback& callback,
+    scoped_ptr<std::string> data,
+    int64_t /* total_blob_length */) {
+  feedback_data->set_screenshot_uuid(std::string());
+  if (data)
+    feedback_data->set_image(std::move(data));
+
+  CompleteSendFeedback(feedback_data, callback);
+}
 
 void FeedbackService::OnSystemLogsFetchComplete(
+    const GetSystemInformationCallback& callback,
     scoped_ptr<system_logs::SystemLogsResponse> sys_info_map) {
   SystemInformationList sys_info_list;
-  if (!sys_info_map.get()) {
-    system_information_callback_.Run(sys_info_list);
-    return;
+  if (sys_info_map.get()) {
+    for (const auto& itr : *sys_info_map)
+      PopulateSystemInfo(&sys_info_list, itr.first, itr.second);
   }
 
-  for (system_logs::SystemLogsResponse::iterator it = sys_info_map->begin();
-       it != sys_info_map->end(); ++it)
-    PopulateSystemInfo(&sys_info_list, it->first, it->second);
-
-  system_information_callback_.Run(sys_info_list);
+  callback.Run(sys_info_list);
 }
 
-void FeedbackService::CompleteSendFeedback() {
+void FeedbackService::CompleteSendFeedback(
+    scoped_refptr<feedback::FeedbackData> feedback_data,
+    const SendFeedbackCallback& callback) {
   // A particular data collection is considered completed if,
   // a.) The blob URL is invalid - this will either happen because we never had
   //     a URL and never needed to read this data, or that the data read failed
@@ -123,16 +124,18 @@ void FeedbackService::CompleteSendFeedback() {
   // b.) The associated data object exists, meaning that the data has been read
   //     and the read callback has updated the associated data on the feedback
   //     object.
-  bool attached_file_completed = feedback_data_->attached_file_uuid().empty();
-  bool screenshot_completed = feedback_data_->screenshot_uuid().empty();
+  const bool attached_file_completed =
+      feedback_data->attached_file_uuid().empty();
+  const bool screenshot_completed = feedback_data->screenshot_uuid().empty();
 
   if (screenshot_completed && attached_file_completed) {
     // Signal the feedback object that the data from the feedback page has been
     // filled - the object will manage sending of the actual report.
-    feedback_data_->OnFeedbackPageDataComplete();
+    feedback_data->OnFeedbackPageDataComplete();
+
     // TODO(rkc): Change this once we have FeedbackData/Util refactored to
     // report the status of the report being sent.
-    send_feedback_callback_.Run(true);
+    callback.Run(true);
   }
 }
 

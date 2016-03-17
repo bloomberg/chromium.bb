@@ -63,7 +63,12 @@ var FeedbackFlow = {
 var attachedFileBlob = null;
 var lastReader = null;
 
-var feedbackInfo = null;
+/**
+ * Determines whether the system information associated with this instance of
+ * the feedback window has been received.
+ * @type {boolean}
+ */
+var isSystemInfoReady = false;
 
 /**
  * The callback used by the sys_info_page to receive the event that the system
@@ -176,29 +181,13 @@ function sendReport() {
   if (!$('screenshot-checkbox').checked)
     feedbackInfo.screenshot = null;
 
-  if (useSystemInfo) {
-    // The user chose to include the system information as part of the report.
-    // If they are not ready yet, we have to send the report later.
-    if (!isSystemInfoReady()) {
-      // The report will be sent later by the feedback extension's background
-      // page (see event_handler.js).
-      sendReportLater(feedbackInfo);
-
-      // No landing page for login screen feedback.
-      if (feedbackInfo.flow != FeedbackFlow.LOGIN)
-        window.open(FEEDBACK_LANDING_PAGE, '_blank');
-      window.close();
-      return true;
-    }
-  }
-
-  chrome.feedbackPrivate.sendFeedback(feedbackInfo, function(result) {
-    // No landing page for login screen feedback.
-    if (feedbackInfo.flow != FeedbackFlow.LOGIN)
-      window.open(FEEDBACK_LANDING_PAGE, '_blank');
-    window.close();
-  });
-
+  // Request sending the report, show the landing page (if allowed), and close
+  // this window right away. The FeedbackRequest object that represents this
+  // report will take care of sending the report in the background.
+  sendFeedbackReport(useSystemInfo);
+  if (feedbackInfo.flow != FeedbackFlow.LOGIN)
+    window.open(FEEDBACK_LANDING_PAGE, '_blank');
+  window.close();
   return true;
 }
 
@@ -267,18 +256,9 @@ function resizeAppWindow() {
 /**
  * A callback to be invoked when the background page of this extension receives
  * the system information.
- * @param {Object} sysInfo The received system information.
  */
-function onSystemInformation(sysInfo) {
-  // Concatenate the feedbackInfo's systemInformation with the newly received
-  // sysInfo once (if any).
-  if (feedbackInfo.systemInformation) {
-    feedbackInfo.systemInformation =
-      feedbackInfo.systemInformation.concat(sysInfo);
-  } else {
-    feedbackInfo.systemInformation = sysInfo;
-  }
-
+function onSystemInformation() {
+  isSystemInfoReady = true;
   // In case the sys_info_page needs to be notified by this event, do so.
   if (sysInfoPageOnSysInfoReadyCallback != null) {
     sysInfoPageOnSysInfoReadyCallback(feedbackInfo.systemInformation);
@@ -301,8 +281,6 @@ function initialize() {
   // Add listener to receive the feedback info object.
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.sentFromEventPage) {
-      feedbackInfo = request.data;
-
       if (!feedbackInfo.flow)
         feedbackInfo.flow = FeedbackFlow.REGULAR;
 
@@ -329,8 +307,8 @@ function initialize() {
         $('user-email-text').value = email;
       });
 
-      // Initiate getting the system info and use it to prepare the full
-      // feedback info.
+      // Initiate getting the system info.
+      isSystemInfoReady = false;
       getSystemInformation(onSystemInformation);
 
       // An extension called us with an attached file.
@@ -385,7 +363,7 @@ function initialize() {
                 // Gets the full system information for the new window.
                 appWindow.contentWindow.getFullSystemInfo =
                     function(callback) {
-                      if (isSystemInfoReady()) {
+                      if (isSystemInfoReady) {
                         callback(feedbackInfo.systemInformation);
                         return;
                       }

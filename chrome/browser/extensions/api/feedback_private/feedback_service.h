@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -23,16 +24,16 @@ using extensions::api::feedback_private::SystemInformation;
 
 namespace extensions {
 
-typedef std::vector<linked_ptr<SystemInformation> > SystemInformationList;
+using SystemInformationList = std::vector<linked_ptr<SystemInformation>>;
 
 // The feedback service provides the ability to gather the various pieces of
 // data needed to send a feedback report and then send the report once all
 // the pieces are available.
 class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
  public:
-  typedef base::Callback<void(bool)> SendFeedbackCallback;
-  typedef base::Callback<void(const SystemInformationList& sys_info)>
-      GetSystemInformationCallback;
+  using SendFeedbackCallback = base::Callback<void(bool)>;
+  using GetSystemInformationCallback =
+      base::Callback<void(const SystemInformationList&)>;
 
   FeedbackService();
   virtual ~FeedbackService();
@@ -48,22 +49,23 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
 
  private:
   // Callbacks to receive blob data.
-  void AttachedFileCallback(scoped_ptr<std::string> data,
+  void AttachedFileCallback(scoped_refptr<feedback::FeedbackData> feedback_data,
+                            const SendFeedbackCallback& callback,
+                            scoped_ptr<std::string> data,
                             int64_t total_blob_length);
-  void ScreenshotCallback(scoped_ptr<std::string> data,
+  void ScreenshotCallback(scoped_refptr<feedback::FeedbackData> feedback_data,
+                          const SendFeedbackCallback& callback,
+                          scoped_ptr<std::string> data,
                           int64_t total_blob_length);
+
+  void OnSystemLogsFetchComplete(
+      const GetSystemInformationCallback& callback,
+      scoped_ptr<system_logs::SystemLogsResponse> sys_info);
 
   // Checks if we have read all the blobs we need to; signals the feedback
   // data object once all the requisite data has been populated.
-  void CompleteSendFeedback();
-
-  void OnSystemLogsFetchComplete(
-      scoped_ptr<system_logs::SystemLogsResponse> sys_info);
-
-  GetSystemInformationCallback system_information_callback_;
-  SendFeedbackCallback send_feedback_callback_;
-
-  scoped_refptr<feedback::FeedbackData> feedback_data_;
+  void CompleteSendFeedback(scoped_refptr<feedback::FeedbackData> feedback_data,
+                            const SendFeedbackCallback& callback);
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackService);
 };
