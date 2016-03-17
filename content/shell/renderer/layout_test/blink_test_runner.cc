@@ -32,7 +32,6 @@
 #include "components/test_runner/gamepad_controller.h"
 #include "components/test_runner/layout_dump.h"
 #include "components/test_runner/layout_dump_flags.h"
-#include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_interfaces.h"
@@ -107,7 +106,6 @@ using blink::WebString;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLRequest;
-using blink::WebScreenOrientationType;
 using blink::WebTestingSupport;
 using blink::WebTraceLocation;
 using blink::WebThread;
@@ -288,26 +286,6 @@ void BlinkTestRunner::SetDeviceMotionData(const WebDeviceMotionData& data) {
 void BlinkTestRunner::SetDeviceOrientationData(
     const WebDeviceOrientationData& data) {
   SetMockDeviceOrientationData(data);
-}
-
-void BlinkTestRunner::SetScreenOrientation(
-    const WebScreenOrientationType& orientation) {
-  test_runner::MockScreenOrientationClient* mock_client =
-      proxy()->GetScreenOrientationClientMock();
-  mock_client->UpdateDeviceOrientation(
-      render_view()->GetWebView()->mainFrame()->toWebLocalFrame(), orientation);
-}
-
-void BlinkTestRunner::DisableMockScreenOrientation() {
-  test_runner::MockScreenOrientationClient* mock_client =
-      proxy()->GetScreenOrientationClientMock();
-  mock_client->SetDisabled(true);
-}
-
-void BlinkTestRunner::ResetScreenOrientation() {
-  test_runner::MockScreenOrientationClient* mock_client =
-      proxy()->GetScreenOrientationClientMock();
-  mock_client->ResetData();
 }
 
 void BlinkTestRunner::PrintMessage(const std::string& message) {

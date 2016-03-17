@@ -18,7 +18,6 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/common/shell_test_configuration.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "v8/include/v8.h"
 
 class SkBitmap;
@@ -71,10 +70,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceMotionData(const blink::WebDeviceMotionData& data) override;
   void SetDeviceOrientationData(
       const blink::WebDeviceOrientationData& data) override;
-  void SetScreenOrientation(
-      const blink::WebScreenOrientationType& orientation) override;
-  void DisableMockScreenOrientation() override;
-  void ResetScreenOrientation() override;
   void PrintMessage(const std::string& message) override;
   void PostTask(test_runner::WebTask* task) override;
   void PostDelayedTask(test_runner::WebTask* task, long long ms) override;

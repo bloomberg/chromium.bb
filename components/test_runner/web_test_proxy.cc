@@ -608,21 +608,17 @@ void WebTestProxyBase::LayoutAndPaintAsyncThen(const base::Closure& callback) {
 
 void WebTestProxyBase::GetScreenOrientationForTesting(
     blink::WebScreenInfo& screen_info) {
-  if (!screen_orientation_client_ || screen_orientation_client_->IsDisabled())
+  MockScreenOrientationClient* mock_client = GetScreenOrientationClientMock();
+  if (mock_client->IsDisabled())
     return;
   // Override screen orientation information with mock data.
-  screen_info.orientationType =
-      screen_orientation_client_->CurrentOrientationType();
-  screen_info.orientationAngle =
-      screen_orientation_client_->CurrentOrientationAngle();
+  screen_info.orientationType = mock_client->CurrentOrientationType();
+  screen_info.orientationAngle = mock_client->CurrentOrientationAngle();
 }
 
 MockScreenOrientationClient*
 WebTestProxyBase::GetScreenOrientationClientMock() {
-  if (!screen_orientation_client_.get()) {
-    screen_orientation_client_.reset(new MockScreenOrientationClient);
-  }
-  return screen_orientation_client_.get();
+  return test_interfaces_->GetTestRunner()->getMockScreenOrientationClient();
 }
 
 MockWebSpeechRecognizer* WebTestProxyBase::GetSpeechRecognizerMock() {

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/mock_credential_manager_client.h"
+#include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/mock_web_speech_recognizer.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_preferences.h"
@@ -1663,6 +1664,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       delegate_(nullptr),
       web_view_(nullptr),
       web_content_settings_(new WebContentSettings()),
+      mock_screen_orientation_client_(new MockScreenOrientationClient),
       weak_factory_(this) {}
 
 TestRunner::~TestRunner() {}
@@ -1700,6 +1702,7 @@ void TestRunner::Reset() {
 
   top_loading_frame_ = nullptr;
   layout_dump_flags_.Reset();
+  mock_screen_orientation_client_->ResetData();
   wait_until_external_url_load_ = false;
   policy_delegate_enabled_ = false;
   policy_delegate_is_permissive_ = false;
@@ -1720,7 +1723,6 @@ void TestRunner::Reset() {
     delegate_->UseUnfortunateSynchronousResizeMode(false);
     delegate_->DisableAutoResizeMode(WebSize());
     delegate_->DeleteAllCookies();
-    delegate_->ResetScreenOrientation();
     delegate_->SetBluetoothMockDataSet("");
     delegate_->ClearGeofencingMockProvider();
     delegate_->ResetPermissions();
@@ -2500,6 +2502,10 @@ void TestRunner::SetMockDeviceOrientation(bool has_alpha, double alpha,
   delegate_->SetDeviceOrientationData(orientation);
 }
 
+MockScreenOrientationClient* TestRunner::getMockScreenOrientationClient() {
+  return mock_screen_orientation_client_.get();
+}
+
 void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
   blink::WebScreenOrientationType orientation;
 
@@ -2509,15 +2515,19 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
     orientation = WebScreenOrientationPortraitSecondary;
   } else if (orientation_str == "landscape-primary") {
     orientation = WebScreenOrientationLandscapePrimary;
-  } else if (orientation_str == "landscape-secondary") {
+  } else {
+    DCHECK_EQ("landscape-secondary", orientation_str);
     orientation = WebScreenOrientationLandscapeSecondary;
   }
 
-  delegate_->SetScreenOrientation(orientation);
+  // TODO(lukasza): This is broken for OOPIFs.
+  WebLocalFrame* main_frame = web_view_->mainFrame()->toWebLocalFrame();
+  mock_screen_orientation_client_->UpdateDeviceOrientation(
+      main_frame, orientation);
 }
 
 void TestRunner::DisableMockScreenOrientation() {
-  delegate_->DisableMockScreenOrientation();
+  mock_screen_orientation_client_->SetDisabled(true);
 }
 
 void TestRunner::DidAcquirePointerLock() {

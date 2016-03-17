@@ -270,7 +270,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
 
   scoped_ptr<MockCredentialManagerClient> credential_manager_client_;
   scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
-  scoped_ptr<MockScreenOrientationClient> screen_orientation_client_;
 
   std::string accept_languages_;
 

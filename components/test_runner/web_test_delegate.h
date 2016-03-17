@@ -77,17 +77,6 @@ class WebTestDelegate {
   virtual void SetDeviceOrientationData(
       const blink::WebDeviceOrientationData& data) = 0;
 
-  // Set orientation to set when registering via
-  // Platform::setScreenOrientationListener().
-  virtual void SetScreenOrientation(
-      const blink::WebScreenOrientationType& orientation) = 0;
-
-  // Reset the screen orientation data used for testing.
-  virtual void ResetScreenOrientation() = 0;
-
-  // Disables screen orientation test-specific mock.
-  virtual void DisableMockScreenOrientation() = 0;
-
   // Add a message to the text dump for the layout test.
   virtual void PrintMessage(const std::string& message) = 0;
 

@@ -41,6 +41,7 @@ class Arguments;
 namespace test_runner {
 
 class InvokeCallbackTask;
+class MockScreenOrientationClient;
 class TestInterfaces;
 class WebContentSettings;
 class WebTestDelegate;
@@ -81,6 +82,7 @@ class TestRunner : public WebTestRunner,
 
   // Methods used by WebTestProxyBase.
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
+  MockScreenOrientationClient* getMockScreenOrientationClient();
   bool shouldDumpSelectionRect() const;
   bool isPrinting() const;
   bool shouldDumpAsTextWithPixelResults();
@@ -811,6 +813,8 @@ class TestRunner : public WebTestRunner,
     PointerLockWillFailSync,
   } pointer_lock_planned_result_;
   bool use_mock_theme_;
+
+  scoped_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 
