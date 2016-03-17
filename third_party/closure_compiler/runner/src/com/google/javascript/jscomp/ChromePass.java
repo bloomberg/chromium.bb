@@ -257,6 +257,7 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
 
         Node pathArg = crExportPathNode.getChildAtIndex(1);
         if (pathArg.isString()) {
+            // TODO(dbeam): support cr.exportPath('ns').value.
             createAndInsertObjectsForQualifiedName(parent, pathArg.getString());
         }
     }

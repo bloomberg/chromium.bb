@@ -25,6 +25,8 @@ var cr = cr || function() {
    * @param {*=} opt_object The object to expose at the end of the path.
    * @param {Object=} opt_objectToExportTo The object to add the path to;
    *     default is {@code global}.
+   * @return {!Object} The last object exported (i.e. exportPath('cr.ui')
+   *     returns a reference to the ui property of window.cr).
    * @private
    */
   function exportPath(name, opt_object, opt_objectToExportTo) {
@@ -42,7 +44,7 @@ var cr = cr || function() {
       }
     }
     return cur;
-  };
+  }
 
   /**
    * Fires a property change event on the target.
