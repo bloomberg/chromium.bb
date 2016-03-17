@@ -142,6 +142,38 @@ class V8TodoMVC(perf_benchmark.PerfBenchmark):
     return True
 
 
+class V8TodoMVCIgnition(perf_benchmark.PerfBenchmark):
+  """Measures V8 Execution metrics on the TodoMVC examples using ignition."""
+  page_set = page_sets.TodoMVCPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    existing_js_flags = []
+    for extra_arg in options.extra_browser_args:
+      if extra_arg.startswith('--js-flags='):
+        existing_js_flags.extend(shlex.split(extra_arg[len('--js-flags='):]))
+    options.AppendExtraBrowserArgs([
+        # This overrides any existing --js-flags, hence we have to include the
+        # previous flags as well.
+        '--js-flags="--ignition %s"' % (' '.join(existing_js_flags))
+    ])
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
+    category_filter.AddIncludedCategory('v8')
+    category_filter.AddIncludedCategory('blink.console')
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetLegacyTimelineBasedMetrics([v8_execution.V8ExecutionMetric()])
+    return options
+
+  @classmethod
+  def Name(cls):
+    return 'v8.todomvc-ignition'
+
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
+
+
 # Disabled on reference builds because they don't support the new
 # Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
 @benchmark.Disabled('reference', 'android')  # crbug.com/579546
