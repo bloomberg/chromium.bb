@@ -215,9 +215,9 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
   if (extension->is_hosted_app()) {
-    AppLaunchParams launch_params(profile, extension, NEW_FOREGROUND_TAB,
-                                  extensions::SOURCE_COMMAND_LINE);
-    OpenApplication(launch_params);
+    OpenApplication(CreateAppLaunchParamsUserContainer(
+        profile, extension, NEW_FOREGROUND_TAB,
+        extensions::SOURCE_COMMAND_LINE));
     return;
   }
   if (files.empty()) {

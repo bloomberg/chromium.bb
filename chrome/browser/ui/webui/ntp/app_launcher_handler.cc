@@ -532,9 +532,9 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
     if (browser)
       old_contents = browser->tab_strip_model()->GetActiveWebContents();
 
-    AppLaunchParams params(profile, extension,
-                           old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB,
-                           extensions::SOURCE_NEW_TAB_PAGE);
+    AppLaunchParams params = CreateAppLaunchParamsUserContainer(
+        profile, extension, old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB,
+        extensions::SOURCE_NEW_TAB_PAGE);
     params.override_url = GURL(url);
     WebContents* new_contents = OpenApplication(params);
 

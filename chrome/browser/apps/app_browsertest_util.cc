@@ -127,10 +127,9 @@ void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
 }
 
 void PlatformAppBrowserTest::LaunchHostedApp(const Extension* extension) {
-  AppLaunchParams launch_params(browser()->profile(), extension,
-                                NEW_FOREGROUND_TAB,
-                                extensions::SOURCE_COMMAND_LINE);
-  OpenApplication(launch_params);
+  OpenApplication(CreateAppLaunchParamsUserContainer(
+      browser()->profile(), extension, NEW_FOREGROUND_TAB,
+      extensions::SOURCE_COMMAND_LINE));
 }
 
 WebContents* PlatformAppBrowserTest::GetFirstAppWindowWebContents() {

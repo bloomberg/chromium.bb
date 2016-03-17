@@ -39,9 +39,8 @@ void ChromeNewWindowDelegateChromeos::OpenFileManager() {
 
   const extensions::Extension* const extension =
       service->GetInstalledExtension(kFileManagerAppId);
-  OpenApplication(AppLaunchParams(profile, extension, CURRENT_TAB,
-                                  chrome::HOST_DESKTOP_TYPE_ASH,
-                                  extensions::SOURCE_KEYBOARD));
+  OpenApplication(CreateAppLaunchParamsUserContainer(
+      profile, extension, NEW_FOREGROUND_TAB, extensions::SOURCE_KEYBOARD));
 }
 
 void ChromeNewWindowDelegateChromeos::OpenGetHelp() {

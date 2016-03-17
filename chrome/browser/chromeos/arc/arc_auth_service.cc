@@ -252,9 +252,8 @@ void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
   CHECK(extension &&
         extensions::util::IsAppLaunchable(kArcSupportExtensionId, profile_));
 
-  AppLaunchParams params(profile_, extension, NEW_WINDOW,
-                         extensions::SOURCE_CHROME_INTERNAL);
-  OpenApplication(params);
+  OpenApplication(CreateAppLaunchParamsUserContainer(
+      profile_, extension, NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }
 
 void ArcAuthService::OnMergeSessionSuccess(const std::string& data) {

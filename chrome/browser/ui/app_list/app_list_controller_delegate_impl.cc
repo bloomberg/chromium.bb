@@ -111,8 +111,8 @@ void AppListControllerDelegateImpl::LaunchApp(
     int event_flags) {
   AppListServiceImpl::RecordAppListAppLaunch();
 
-  AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB,
-                         extensions::SOURCE_APP_LAUNCHER);
+  AppLaunchParams params = CreateAppLaunchParamsUserContainer(
+      profile, extension, NEW_FOREGROUND_TAB, extensions::SOURCE_APP_LAUNCHER);
 
   if (source != LAUNCH_FROM_UNKNOWN &&
       extension->id() == extensions::kWebStoreAppId) {
@@ -124,7 +124,6 @@ void AppListControllerDelegateImpl::LaunchApp(
         AppListSourceToString(source));
   }
 
-  FillLaunchParams(&params);
   OpenApplication(params);
 }
 
@@ -137,8 +136,6 @@ void AppListControllerDelegateImpl::ShowForProfileByPath(
 bool AppListControllerDelegateImpl::ShouldShowUserIcon() {
   return g_browser_process->profile_manager()->GetNumberOfProfiles() > 1;
 }
-
-void AppListControllerDelegateImpl::FillLaunchParams(AppLaunchParams* params) {}
 
 void AppListControllerDelegateImpl::OnCloseCreateShortcutsPrompt(
     bool created) {

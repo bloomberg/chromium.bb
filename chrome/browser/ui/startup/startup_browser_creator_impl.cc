@@ -330,9 +330,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
                              extensions::SOURCE_COMMAND_LINE);
       params.command_line = command_line_;
       params.current_directory = cur_dir_;
-      // If we are being launched from the command line, default to native
-      // desktop.
-      params.desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
       ::OpenApplicationWithReenablePrompt(params);
       return true;
     }

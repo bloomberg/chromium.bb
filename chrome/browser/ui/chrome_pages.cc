@@ -104,9 +104,8 @@ void ShowHelpImpl(Browser* browser,
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  AppLaunchParams params(profile, extension, CURRENT_TAB, host_desktop_type,
-                         app_launch_source);
-  OpenApplication(params);
+  OpenApplication(CreateAppLaunchParamsUserContainer(
+      profile, extension, NEW_FOREGROUND_TAB, app_launch_source));
 #else
   GURL url;
   switch (source) {

@@ -27,7 +27,3 @@ gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
       GetImageSkiaNamed(GetAppListIconResourceId());
   return *resource;
 }
-
-void AppListControllerDelegateWin::FillLaunchParams(AppLaunchParams* params) {
-  params->desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-}

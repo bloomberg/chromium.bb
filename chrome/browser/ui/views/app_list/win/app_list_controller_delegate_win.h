@@ -19,9 +19,6 @@ class AppListControllerDelegateWin : public AppListControllerDelegateViews {
   gfx::ImageSkia GetWindowIcon() override;
 
  private:
-  // AppListcontrollerDelegateImpl:
-  void FillLaunchParams(AppLaunchParams* params) override;
-
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);
 };
 
