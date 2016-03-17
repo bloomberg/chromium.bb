@@ -4,6 +4,8 @@
 
 #include "core/fetch/Resource.h"
 
+#include "core/fetch/MemoryCache.h"
+#include "platform/SharedBuffer.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -15,6 +17,22 @@
 namespace blink {
 
 namespace {
+
+class UnlockableResource : public Resource {
+public:
+    static RefPtrWillBeRawPtr<UnlockableResource> create(const KURL& url)
+    {
+        return adoptRefWillBeNoop(new UnlockableResource(ResourceRequest(url), Resource::Raw));
+    }
+
+private:
+    UnlockableResource(const ResourceRequest& request, Type type)
+        : Resource(request, type)
+        {
+        }
+
+    bool isSafeToUnlock() const override { return true; }
+};
 
 class MockPlatform final : public TestingPlatformSupport {
 public:
@@ -70,6 +88,29 @@ TEST(ResourceTest, SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedVia
     response.setWasFetchedViaServiceWorker(true);
     createTestResourceAndSetCachedMetadata(response);
     EXPECT_EQ(0u, mock.cachedURLs().size());
+}
+
+TEST(ResourceTest, LockFailureNoCrash)
+{
+    ResourceResponse response(createTestResourceResponse());
+    RefPtrWillBeRawPtr<UnlockableResource> resource = UnlockableResource::create(response.url());
+    memoryCache()->add(resource.get());
+    resource->setResponse(response);
+
+    // A Resource won't be put in DiscardableMemory unless it is at least 16KiB.
+    Vector<char> dataVector(4*4096);
+    for (int i = 0; i < 4096; i++)
+        dataVector.append("test", 4);
+    resource->setResourceBuffer(SharedBuffer::adoptVector(dataVector));
+
+    resource->setLoadFinishTime(currentTime());
+    resource->finish();
+    resource->prune();
+    ASSERT_TRUE(resource->isPurgeable());
+    bool didLock = resource->lock();
+    ASSERT_FALSE(didLock);
+    EXPECT_EQ(nullptr, resource->resourceBuffer());
+    EXPECT_EQ(size_t(0), resource->encodedSize());
 }
 
 } // namespace blink

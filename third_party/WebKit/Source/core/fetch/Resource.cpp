@@ -890,6 +890,8 @@ bool Resource::lock()
     // If locking fails, our buffer has been purged. There's no point
     // in leaving a purged resource in MemoryCache.
     if (!m_data->lock()) {
+        m_data.clear();
+        setEncodedSize(0);
         memoryCache()->remove(this);
         return false;
     }
