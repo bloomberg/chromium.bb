@@ -17,11 +17,11 @@
 #include "common/file_util.h"
 #include "common/hdr_util.h"
 
-// libwebm parser includes
-#include "mkvparser.hpp"
-#include "mkvreader.hpp"
+// libwebm mkvparser includes
+#include "mkvparser/mkvparser.hpp"
+#include "mkvparser/mkvreader.hpp"
 
-// libwebm muxer includes
+// libwebm mkvmuxer includes
 #include "mkvmuxer.hpp"
 #include "mkvmuxertypes.hpp"
 #include "mkvwriter.hpp"

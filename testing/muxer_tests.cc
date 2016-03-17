@@ -17,13 +17,12 @@
 #include "gtest/gtest-message.h"
 #include "gtest/gtest.h"
 
-#include "mkvmuxer.hpp"
-#include "mkvmuxertypes.hpp"
-#include "mkvreader.hpp"
-#include "mkvwriter.hpp"
-
 #include "common/file_util.h"
 #include "common/libwebm_util.h"
+#include "mkvmuxer.hpp"
+#include "mkvmuxertypes.hpp"
+#include "mkvparser/mkvreader.hpp"
+#include "mkvwriter.hpp"
 #include "testing/test_util.h"
 
 #ifdef _MSC_VER

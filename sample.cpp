@@ -13,8 +13,8 @@
 #include <memory>
 #include <new>
 
-#include "mkvparser.hpp"
-#include "mkvreader.hpp"
+#include "mkvparser/mkvparser.hpp"
+#include "mkvparser/mkvreader.hpp"
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.

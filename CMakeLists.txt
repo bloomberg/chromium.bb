@@ -37,6 +37,15 @@ else ()
       STRING "" FORCE)
 endif ()
 
+# mkvparser section.
+# TODO(tomfinegan): move to mkvparser/CMakeLists.txt.
+add_library(mkvparser STATIC
+            "${LIBWEBM_SRC_DIR}/mkvparser/mkvparser.cpp"
+            "${LIBWEBM_SRC_DIR}/mkvparser/mkvparser.hpp"
+            "${LIBWEBM_SRC_DIR}/mkvparser/mkvreader.cpp"
+            "${LIBWEBM_SRC_DIR}/mkvparser/mkvreader.hpp"
+            "${LIBWEBM_SRC_DIR}/webmids.hpp")
+
 # Libwebm section.
 add_library(webm STATIC
             "${LIBWEBM_SRC_DIR}/common/file_util.cc"
@@ -48,13 +57,11 @@ add_library(webm STATIC
             "${LIBWEBM_SRC_DIR}/mkvmuxertypes.hpp"
             "${LIBWEBM_SRC_DIR}/mkvmuxerutil.cpp"
             "${LIBWEBM_SRC_DIR}/mkvmuxerutil.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvparser.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvparser.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvreader.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvreader.hpp"
             "${LIBWEBM_SRC_DIR}/mkvwriter.cpp"
             "${LIBWEBM_SRC_DIR}/mkvwriter.hpp"
             "${LIBWEBM_SRC_DIR}/webmids.hpp")
+target_link_libraries(webm LINK_PUBLIC mkvparser)
+
 if (WIN32)
   # Use libwebm and libwebm.lib for project and library name on Windows (instead
   # webm and webm.lib).

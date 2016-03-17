@@ -14,9 +14,8 @@
 #include <iomanip>
 #include <string>
 
-#include "mkvparser.hpp"
-#include "mkvreader.hpp"
-
+#include "mkvparser/mkvparser.hpp"
+#include "mkvparser/mkvreader.hpp"
 #include "testing/test_util.h"
 
 using libwebm::mkvparser::AudioTrack;

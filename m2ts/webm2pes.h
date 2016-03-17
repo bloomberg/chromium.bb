@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "mkvparser.hpp"
-#include "mkvreader.hpp"
+#include "mkvparser/mkvparser.hpp"
+#include "mkvparser/mkvreader.hpp"
 
 #include "common/libwebm_util.h"
 

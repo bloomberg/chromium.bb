@@ -14,8 +14,8 @@
 #include <string>
 #include <utility>
 
-#include "mkvparser.hpp"
-#include "mkvreader.hpp"
+#include "mkvparser/mkvparser.hpp"
+#include "mkvparser/mkvreader.hpp"
 #include "webvttparser.h"
 
 #ifdef _MSC_VER

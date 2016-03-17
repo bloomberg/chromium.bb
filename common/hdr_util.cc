@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <new>
 
-#include "../mkvparser.hpp"
+#include "mkvparser/mkvparser.hpp"
 
 namespace libwebm {
 bool CopyPrimaryChromaticity(const mkvparser::PrimaryChromaticity& parser_pc,
