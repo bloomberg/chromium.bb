@@ -42,6 +42,7 @@
     'public/android/java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java',
     'public/android/java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java',
     'public/android/java/src/org/chromium/content_public/browser/LoadUrlParams.java',
+    'public/android/java/src/org/chromium/content_public/common/MediaMetadata.java',
    ],
   'variables': {
     'jni_gen_package': 'content',

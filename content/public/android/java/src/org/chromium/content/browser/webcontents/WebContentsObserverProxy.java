@@ -12,6 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.common.MediaMetadata;
 
 /**
  * Serves as a compound observer proxy for dispatching WebContentsObserver callbacks,
@@ -233,9 +234,11 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
-    public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {
+    public void mediaSessionStateChanged(
+            boolean isControllable, boolean isSuspended, MediaMetadata metadata) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().mediaSessionStateChanged(isControllable, isSuspended);
+            mObserversIterator.next().mediaSessionStateChanged(
+                    isControllable, isSuspended, metadata);
         }
     }
 

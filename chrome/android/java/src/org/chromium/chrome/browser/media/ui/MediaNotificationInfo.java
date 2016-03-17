@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.common.MediaMetadata;
 
 /**
  * Exposes information about the current media notification to the external clients.
@@ -42,7 +43,7 @@ public class MediaNotificationInfo {
      */
     public static final class Builder {
 
-        private String mTitle = "";
+        private MediaMetadata mMetadata;
         private boolean mIsPaused = false;
         private String mOrigin = "";
         private int mTabId = Tab.INVALID_TAB_ID;
@@ -61,12 +62,12 @@ public class MediaNotificationInfo {
         }
 
         public MediaNotificationInfo build() {
-            assert mTitle != null;
+            assert mMetadata != null;
             assert mOrigin != null;
             assert mListener != null;
 
             return new MediaNotificationInfo(
-                    mTitle,
+                    mMetadata,
                     mIsPaused,
                     mOrigin,
                     mTabId,
@@ -79,8 +80,8 @@ public class MediaNotificationInfo {
                     mListener);
         }
 
-        public Builder setTitle(String title) {
-            mTitle = title;
+        public Builder setMetadata(MediaMetadata metadata) {
+            mMetadata = metadata;
             return this;
         }
 
@@ -141,9 +142,9 @@ public class MediaNotificationInfo {
     private final int mActions;
 
     /**
-     * The title of the media.
+     * The metadata associated with the media.
      */
-    public final String title;
+    public final MediaMetadata metadata;
 
     /**
      * The current state of the media, paused or not.
@@ -213,7 +214,7 @@ public class MediaNotificationInfo {
 
     /**
      * Create a new MediaNotificationInfo.
-     * @param title The title of the media.
+     * @param metadata The metadata associated with the media.
      * @param isPaused The current state of the media, paused or not.
      * @param origin The origin of the tab containing the media.
      * @param tabId The id of the tab containing the media.
@@ -223,7 +224,7 @@ public class MediaNotificationInfo {
      * @param listener The listener for the control events.
      */
     private MediaNotificationInfo(
-            String title,
+            MediaMetadata metadata,
             boolean isPaused,
             String origin,
             int tabId,
@@ -234,7 +235,7 @@ public class MediaNotificationInfo {
             Bitmap image,
             Intent contentIntent,
             MediaNotificationListener listener) {
-        this.title = title;
+        this.metadata = metadata;
         this.isPaused = isPaused;
         this.origin = origin;
         this.tabId = tabId;
@@ -259,7 +260,7 @@ public class MediaNotificationInfo {
                 && icon == other.icon
                 && mActions == other.mActions
                 && id == other.id
-                && TextUtils.equals(title, other.title)
+                && metadata.equals(other.metadata)
                 && TextUtils.equals(origin, other.origin)
                 && image == other.image || (image != null && image.sameAs(other.image))
                 && contentIntent.equals(other.contentIntent)
@@ -270,7 +271,7 @@ public class MediaNotificationInfo {
     public int hashCode() {
         int result = isPaused ? 1 : 0;
         result = 31 * result + (isPrivate ? 1 : 0);
-        result = 31 * result + (title == null ? 0 : title.hashCode());
+        result = 31 * result + (metadata == null ? 0 : metadata.hashCode());
         result = 31 * result + (origin == null ? 0 : origin.hashCode());
         result = 31 * result + (image == null ? 0 : image.hashCode());
         result = 31 * result + (contentIntent == null ? 0 : contentIntent.hashCode());

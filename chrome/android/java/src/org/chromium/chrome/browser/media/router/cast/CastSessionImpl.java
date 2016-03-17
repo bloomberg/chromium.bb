@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.common.MediaMetadata;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -128,7 +130,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
         }
 
         mNotificationBuilder = new MediaNotificationInfo.Builder()
-                .setTitle(mCastDevice.getFriendlyName())
+                .setMetadata(new MediaMetadata(mCastDevice.getFriendlyName(), "", ""))
                 .setPaused(false)
                 .setOrigin(origin)
                 // TODO(avayvod): the same session might have more than one tab id. Should we track

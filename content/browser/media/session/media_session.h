@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/media_metadata.h"
 
 class MediaSessionBrowserTest;
 
@@ -57,6 +58,11 @@ class MediaSession : public WebContentsObserver,
   CONTENT_EXPORT static MediaSession* Get(WebContents* web_contents);
 
   ~MediaSession() override;
+
+  void setMetadata(const MediaMetadata& metadata) {
+    metadata_ = metadata;
+  }
+  const MediaMetadata& metadata() const { return metadata_; }
 
   // Adds the given player to the current media session. Returns whether the
   // player was successfully added. If it returns false, AddPlayer() should be
@@ -183,6 +189,8 @@ class MediaSession : public WebContentsObserver,
   // The volume multiplier of this session. All players in this session should
   // multiply their volume with this multiplier to get the effective volume.
   double volume_multiplier_;
+
+  MediaMetadata metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSession);
 };

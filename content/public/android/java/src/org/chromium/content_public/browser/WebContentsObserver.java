@@ -4,6 +4,8 @@
 
 package org.chromium.content_public.browser;
 
+import org.chromium.content_public.common.MediaMetadata;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -163,9 +165,11 @@ public abstract class WebContentsObserver {
     /**
      * Called when the media session state changed.
      * @param isControllable if the session can be resumed or suspended.
-     * @param isSuspended if the session currently suspended or not
+     * @param isSuspended if the session currently suspended or not.
+     * @param metadata of the media session.
      */
-    public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {}
+    public void mediaSessionStateChanged(
+            boolean isControllable, boolean isSuspended, MediaMetadata metadata) {}
 
     /**
      * Stop observing the web contents and clean up associated references.

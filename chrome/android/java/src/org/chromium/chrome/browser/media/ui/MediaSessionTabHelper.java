@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media.ui;
 
 import android.app.Activity;
 import android.media.AudioManager;
+import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.common.MediaMetadata;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URI;
@@ -36,6 +38,7 @@ public class MediaSessionTabHelper {
     private WebContentsObserver mWebContentsObserver;
     private int mPreviousVolumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE;
     private MediaNotificationInfo.Builder mNotificationInfoBuilder = null;
+    private MediaMetadata mFallbackMetadata;
 
     private MediaNotificationListener mControlsListener = new MediaNotificationListener() {
         @Override
@@ -84,7 +87,8 @@ public class MediaSessionTabHelper {
             }
 
             @Override
-            public void mediaSessionStateChanged(boolean isControllable, boolean isPaused) {
+            public void mediaSessionStateChanged(boolean isControllable, boolean isPaused,
+                    MediaMetadata metadata) {
                 if (!isControllable) {
                     hideNotification();
                     return;
@@ -97,8 +101,20 @@ public class MediaSessionTabHelper {
                             + "Showing the full URL instead.");
                 }
 
+                mFallbackMetadata = null;
+
+                // The page's title is used as a placeholder if no title is specified in the
+                // metadata.
+                if (TextUtils.isEmpty(metadata.getTitle())) {
+                    mFallbackMetadata = new MediaMetadata(
+                            sanitizeMediaTitle(mTab.getTitle()),
+                            metadata.getArtist(),
+                            metadata.getAlbum());
+                    metadata = mFallbackMetadata;
+                }
+
                 mNotificationInfoBuilder = new MediaNotificationInfo.Builder()
-                        .setTitle(sanitizeMediaTitle(mTab.getTitle()))
+                        .setMetadata(metadata)
                         .setPaused(isPaused)
                         .setOrigin(origin)
                         .setTabId(mTab.getId())
@@ -145,9 +161,11 @@ public class MediaSessionTabHelper {
         @Override
         public void onTitleUpdated(Tab tab) {
             assert tab == mTab;
-            if (mNotificationInfoBuilder == null) return;
+            if (mNotificationInfoBuilder == null || mFallbackMetadata == null) return;
 
-            mNotificationInfoBuilder.setTitle(sanitizeMediaTitle(mTab.getTitle()));
+            mFallbackMetadata.setTitle(sanitizeMediaTitle(mTab.getTitle()));
+            mNotificationInfoBuilder.setMetadata(mFallbackMetadata);
+
             MediaNotificationManager.show(ApplicationStatus.getApplicationContext(),
                     mNotificationInfoBuilder.build());
         }

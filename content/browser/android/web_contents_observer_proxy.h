@@ -73,7 +73,8 @@ class WebContentsObserverProxy : public WebContentsObserver {
       const GURL& url,
       NavigationController::ReloadType reload_type) override;
   void MediaSessionStateChanged(bool is_controllable,
-                                bool is_suspended) override;
+                                bool is_suspended,
+                                const MediaMetadata& metadata) override;
   void SetToBaseURLForDataURLIfNeeded(std::string* url);
 
   void DidFailLoadInternal(bool is_provisional_load,

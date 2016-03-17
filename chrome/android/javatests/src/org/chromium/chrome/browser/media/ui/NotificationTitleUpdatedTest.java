@@ -19,6 +19,7 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.common.MediaMetadata;
 
 /**
  * Test of media notifications to see whether the text updates when the tab title changes
@@ -102,7 +103,7 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
                             tab.getWebContents().getObserversForTesting();
                     while (observers.hasNext()) {
                         observers.next().mediaSessionStateChanged(
-                                isControllable, isSuspended);
+                                isControllable, isSuspended, new MediaMetadata("", "", ""));
                     }
                 }
             });
@@ -125,7 +126,7 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
                 @Override
                 public void run() {
                     assertEquals(title, MediaNotificationManager
-                            .getNotificationInfoForTesting(NOTIFICATION_ID).title);
+                            .getNotificationInfoForTesting(NOTIFICATION_ID).metadata.getTitle());
                 }
             });
     }

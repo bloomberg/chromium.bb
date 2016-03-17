@@ -24,6 +24,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.media.MediaRouter;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.View;
@@ -502,7 +503,7 @@ public class MediaNotificationManager {
             playPauseButtonId = R.id.button2;
         }
 
-        contentView.setTextViewText(R.id.title, mMediaNotificationInfo.title);
+        contentView.setTextViewText(R.id.title, mMediaNotificationInfo.metadata.getTitle());
         contentView.setTextViewText(R.id.status, mMediaNotificationInfo.origin);
         if (mNotificationIcon != null) {
             contentView.setImageViewBitmap(R.id.icon, mNotificationIcon);
@@ -541,7 +542,7 @@ public class MediaNotificationManager {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
-                    mMediaNotificationInfo.title);
+                    mMediaNotificationInfo.metadata.getTitle());
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
                     mMediaNotificationInfo.origin);
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
@@ -554,10 +555,19 @@ public class MediaNotificationManager {
             }
         } else {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE,
-                    mMediaNotificationInfo.title);
+                    mMediaNotificationInfo.metadata.getTitle());
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
                     mMediaNotificationInfo.origin);
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, mediaSessionImage);
+        }
+
+        if (!TextUtils.isEmpty(mMediaNotificationInfo.metadata.getArtist())) {
+            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
+                    mMediaNotificationInfo.metadata.getArtist());
+        }
+        if (!TextUtils.isEmpty(mMediaNotificationInfo.metadata.getAlbum())) {
+            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM,
+                    mMediaNotificationInfo.metadata.getAlbum());
         }
 
         return metadataBuilder.build();

@@ -234,6 +234,8 @@
       'common/android/gin_java_bridge_value.h',
       'common/android/hash_set.cc',
       'common/android/hash_set.h',
+      'common/android/media_metadata_android.cc',
+      'common/android/media_metadata_android.h',
       'common/android/sync_compositor_messages.cc',
       'common/android/sync_compositor_messages.h',
       'common/appcache_interfaces.cc',

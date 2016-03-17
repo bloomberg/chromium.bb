@@ -48,8 +48,9 @@ class MockWebContentsObserver : public WebContentsObserver {
   MockWebContentsObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
 
-  MOCK_METHOD2(MediaSessionStateChanged,
-               void(bool is_controllable, bool is_suspended));
+  MOCK_METHOD3(MediaSessionStateChanged,
+               void(bool is_controllable, bool is_suspended,
+                    const content::MediaMetadata& metadata));
 };
 
 }  // namespace
@@ -488,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionType) {
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsShowForContent) {
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false));
+              MediaSessionStateChanged(true, false, testing::_));
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
@@ -502,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsShowForContent) {
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsNoShowForTransient) {
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(false, false));
+              MediaSessionStateChanged(false, false, testing::_));
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
@@ -516,9 +517,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsNoShowForTransient) {
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsHideWhenStopped) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(false, true))
+              MediaSessionStateChanged(false, true, testing::_))
       .After(showControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -534,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsHideWhenStopped) {
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsShownAcceptTransient) {
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false));
+              MediaSessionStateChanged(true, false, testing::_));
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
@@ -550,10 +551,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsShownAcceptTransient) {
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsShownAfterContentAdded) {
-  Expectation dontShowControls = EXPECT_CALL(
-      *mock_web_contents_observer(), MediaSessionStateChanged(false, false));
+  Expectation dontShowControls = EXPECT_CALL(*mock_web_contents_observer(),
+      MediaSessionStateChanged(false, false, testing::_));
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false))
+              MediaSessionStateChanged(true, false, testing::_))
       .After(dontShowControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -571,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsStayIfOnlyOnePlayerHasBeenPaused) {
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false));
+              MediaSessionStateChanged(true, false, testing::_));
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
@@ -590,9 +591,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsHideWhenTheLastPlayerIsRemoved) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(false, true))
+              MediaSessionStateChanged(false, true, testing::_))
       .After(showControls);
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
@@ -614,9 +615,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsHideWhenAllThePlayersAreRemoved) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(false, true))
+              MediaSessionStateChanged(false, true, testing::_))
       .After(showControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -634,9 +635,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsNotHideWhenTheLastPlayerIsPaused) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, true))
+              MediaSessionStateChanged(true, true, testing::_))
       .After(showControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -659,9 +660,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        SuspendTemporaryUpdatesControls) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, true))
+              MediaSessionStateChanged(true, true, testing::_))
       .After(showControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -677,12 +678,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsUpdatedWhenResumed) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   Expectation pauseControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                          MediaSessionStateChanged(true, true))
-                                  .After(showControls);
+      MediaSessionStateChanged(true, true, testing::_)).After(showControls);
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false))
+              MediaSessionStateChanged(true, false, testing::_))
       .After(pauseControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -699,9 +699,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsUpdatedWhenResumed) {
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsHideWhenSessionSuspendedPermanently) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(false, true))
+              MediaSessionStateChanged(false, true, testing::_))
       .After(showControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -718,12 +718,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ConstrolsHideWhenSessionStops) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   Expectation pauseControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                          MediaSessionStateChanged(true, true))
-                                  .After(showControls);
+      MediaSessionStateChanged(true, true, testing::_)).After(showControls);
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(false, true))
+              MediaSessionStateChanged(false, true, testing::_))
       .After(pauseControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -740,12 +739,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsHideWhenSessionChangesFromContentToTransient) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   Expectation pauseControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                          MediaSessionStateChanged(true, true))
-                                  .After(showControls);
+      MediaSessionStateChanged(true, true, testing::_)).After(showControls);
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(false, false))
+              MediaSessionStateChanged(false, false, testing::_))
       .After(pauseControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -765,12 +763,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsUpdatedWhenNewPlayerResetsSession) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   Expectation pauseControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                          MediaSessionStateChanged(true, true))
-                                  .After(showControls);
+      MediaSessionStateChanged(true, true, testing::_)).After(showControls);
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false))
+              MediaSessionStateChanged(true, false, testing::_))
       .After(pauseControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -789,12 +786,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsResumedWhenPlayerIsResumed) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   Expectation pauseControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                          MediaSessionStateChanged(true, true))
-                                  .After(showControls);
+      MediaSessionStateChanged(true, true, testing::_)).After(showControls);
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false))
+              MediaSessionStateChanged(true, false, testing::_))
       .After(pauseControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
@@ -813,9 +809,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsUpdatedDueToResumeSessionAction) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, true)).After(showControls);
+              MediaSessionStateChanged(true, true, testing::_))
+      .After(showControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
@@ -830,12 +827,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        ControlsUpdatedDueToSuspendSessionAction) {
   Expectation showControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                         MediaSessionStateChanged(true, false));
+      MediaSessionStateChanged(true, false, testing::_));
   Expectation pauseControls = EXPECT_CALL(*mock_web_contents_observer(),
-                                          MediaSessionStateChanged(true, true))
-                                  .After(showControls);
+      MediaSessionStateChanged(true, true, testing::_)).After(showControls);
   EXPECT_CALL(*mock_web_contents_observer(),
-              MediaSessionStateChanged(true, false))
+              MediaSessionStateChanged(true, false, testing::_))
       .After(pauseControls);
 
   scoped_ptr<MockMediaSessionObserver> media_session_observer(

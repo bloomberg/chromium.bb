@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.common.MediaMetadata;
 
 import javax.annotation.Nullable;
 
@@ -117,7 +118,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
     }
 
     private void updateNotification() {
-        mNotificationBuilder.setTitle(mTitle);
+        mNotificationBuilder.setMetadata(new MediaMetadata(mTitle, "", ""));
         if (mState == PlayerState.PAUSED || mState == PlayerState.PLAYING) {
             mNotificationBuilder.setPaused(mState != PlayerState.PLAYING);
             mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP
