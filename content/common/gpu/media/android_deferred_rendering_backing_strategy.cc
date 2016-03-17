@@ -30,15 +30,6 @@
 
 namespace content {
 
-namespace {
-// clang-format off
-const float kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
-                                   0.0f, 1.0f, 0.0f, 0.0f,
-                                   0.0f, 0.0f, 1.0f, 0.0f,
-                                   0.0f, 0.0f, 0.0f, 1.0f};
-// clang-format on
-}
-
 AndroidDeferredRenderingBackingStrategy::
     AndroidDeferredRenderingBackingStrategy(AVDAStateProvider* state_provider)
     : state_provider_(state_provider), media_codec_(nullptr) {}
@@ -296,7 +287,11 @@ void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
                  GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   }
 
-  // TODO(liberato,watk): Use the SurfaceTexture matrix when copying.
+
+
+  float transform_matrix[16];
+  surface_texture_->GetTransformMatrix(transform_matrix);
+
   gpu::CopyTextureCHROMIUMResourceManager copier;
   copier.Initialize(
       gl_decoder,
@@ -304,8 +299,8 @@ void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
   copier.DoCopyTextureWithTransform(gl_decoder, GL_TEXTURE_EXTERNAL_OES,
                                     shared_state_->surface_texture_service_id(),
                                     GL_TEXTURE_2D, tmp_texture_id, size.width(),
-                                    size.height(), false, false, false,
-                                    kIdentityMatrix);
+                                    size.height(), true, false, false,
+                                    transform_matrix);
 
   // Create an EGLImage from the 2D texture we just copied into. By associating
   // the EGLImage with the PictureBuffer textures they will remain valid even
