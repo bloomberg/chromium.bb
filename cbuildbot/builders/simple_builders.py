@@ -156,29 +156,24 @@ class SimpleBuilder(generic_builders.Builder):
                      update_metadata=True, builder_run=builder_run,
                      afdo_use=config.afdo_use)
 
-    if builder_run.config.compilecheck or builder_run.options.compilecheck:
-      self._RunStage(test_stages.UnitTestStage, board,
-                     builder_run=builder_run)
-      return
-
-    # Build the image first before doing anything else.
-    # TODO(davidjames): Remove this lock once http://crbug.com/352994 is fixed.
-    with self._build_image_lock:
-      self._RunStage(build_stages.BuildImageStage, board,
-                     builder_run=builder_run, afdo_use=config.afdo_use)
-
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
     # that make sense when read in order.  Also keep in mind that, since we
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
-
-    # Determine whether to run the DetectIrrelevantChangesStage
-    stage_list = []
     changes = self._GetChangesUnderTest()
+    stage_list = []
     if changes:
       stage_list += [[report_stages.DetectIrrelevantChangesStage, board,
                       changes]]
+    stage_list += [[test_stages.UnitTestStage, board]]
+
+    # Skip most steps if we're a compilecheck builder.
+    if builder_run.config.compilecheck or builder_run.options.compilecheck:
+      for x in stage_list:
+        self._RunStage(*x, builder_run=builder_run)
+      return
+
     stage_list += [[chrome_stages.SimpleChromeWorkflowStage, board]]
 
     if config.vm_test_runs > 1:
@@ -204,7 +199,6 @@ class SimpleBuilder(generic_builders.Builder):
         [release_stages.SigningStage, board],
         [release_stages.PaygenStage, board],
         [test_stages.ImageTestStage, board],
-        [test_stages.UnitTestStage, board],
         [artifact_stages.UploadPrebuiltsStage, board],
         [artifact_stages.DevInstallerPrebuiltsStage, board],
         [artifact_stages.DebugSymbolsStage, board],
@@ -214,6 +208,11 @@ class SimpleBuilder(generic_builders.Builder):
 
     stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
                   for x in stage_list]
+
+    # Build the image first before running the steps.
+    with self._build_image_lock:
+      self._RunStage(build_stages.BuildImageStage, board,
+                     builder_run=builder_run, afdo_use=config.afdo_use)
 
     parallel.RunParallelSteps([
         lambda: self._RunParallelStages(stage_objs + [archive_stage]),
