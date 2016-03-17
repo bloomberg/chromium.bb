@@ -14,7 +14,6 @@ import android.view.ContextMenu;
 import android.view.KeyEvent;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -213,7 +212,6 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @LargeTest
     @Feature({"Browser"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/592594")
     public void testSaveDataUrl()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("dataUrlIcon", R.id.contextmenu_save_image, "download.gif");
@@ -221,7 +219,6 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @LargeTest
     @Feature({"Browser"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/592594")
     public void testSaveImage()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("testImage", R.id.contextmenu_save_image, "test_image.png");
@@ -229,7 +226,6 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @LargeTest
     @Feature({"Browser"})
-    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/592594")
     public void testSaveVideo()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
