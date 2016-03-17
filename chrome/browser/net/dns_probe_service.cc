@@ -4,11 +4,14 @@
 
 #include "chrome/browser/net/dns_probe_service.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
@@ -19,7 +22,6 @@ using base::StringToInt;
 using error_page::DnsProbeStatus;
 using net::DnsClient;
 using net::DnsConfig;
-using net::IPAddressNumber;
 using net::ParseIPLiteralToNumber;
 using net::NetworkChangeNotifier;
 
@@ -34,15 +36,8 @@ const int kMaxResultAgeMs = 5000;
 
 // The public DNS servers used by the DnsProbeService to verify internet
 // connectivity.
-const char kGooglePublicDns1[] = "8.8.8.8";
-const char kGooglePublicDns2[] = "8.8.4.4";
-
-net::IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
-  IPAddressNumber dns_ip_number;
-  bool rv = ParseIPLiteralToNumber(dns_ip_literal, &dns_ip_number);
-  DCHECK(rv);
-  return net::IPEndPoint(dns_ip_number, net::dns_protocol::kDefaultPort);
-}
+const uint8_t kGooglePublicDns1[] = {8, 8, 8, 8};
+const uint8_t kGooglePublicDns2[] = {8, 8, 4, 4};
 
 DnsProbeStatus EvaluateResults(DnsProbeRunner::Result system_result,
                                DnsProbeRunner::Result public_result) {
@@ -154,8 +149,10 @@ void DnsProbeService::SetSystemClientToCurrentConfig() {
 
 void DnsProbeService::SetPublicClientToGooglePublicDns() {
   DnsConfig public_config;
-  public_config.nameservers.push_back(MakeDnsEndPoint(kGooglePublicDns1));
-  public_config.nameservers.push_back(MakeDnsEndPoint(kGooglePublicDns2));
+  public_config.nameservers.push_back(net::IPEndPoint(
+      net::IPAddress(kGooglePublicDns1), net::dns_protocol::kDefaultPort));
+  public_config.nameservers.push_back(net::IPEndPoint(
+      net::IPAddress(kGooglePublicDns2), net::dns_protocol::kDefaultPort));
   public_config.attempts = 1;
   public_config.randomize_ports = false;
 

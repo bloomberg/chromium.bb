@@ -26,7 +26,6 @@ using net::DnsClient;
 using net::DnsResponse;
 using net::DnsTransaction;
 using net::DnsTransactionFactory;
-using net::IPAddressNumber;
 using net::IPEndPoint;
 using net::NetLog;
 using net::NetworkChangeNotifier;

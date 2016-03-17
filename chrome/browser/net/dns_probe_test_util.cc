@@ -7,23 +7,21 @@
 #include <stdint.h>
 
 #include "chrome/browser/net/dns_probe_runner.h"
+#include "net/base/ip_address.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
 
 using net::DnsClient;
 using net::DnsConfig;
-using net::IPAddressNumber;
 using net::MockDnsClientRule;
 using net::MockDnsClientRuleList;
-using net::ParseIPLiteralToNumber;
 
 namespace chrome_browser_net {
 
 scoped_ptr<DnsClient> CreateMockDnsClientForProbes(
     MockDnsClientRule::Result result) {
   DnsConfig config;
-  IPAddressNumber dns_ip;
-  ParseIPLiteralToNumber("192.168.1.1", &dns_ip);
+  net::IPAddress dns_ip(192, 168, 1, 1);
   const uint16_t kDnsPort = net::dns_protocol::kDefaultPort;
   config.nameservers.push_back(net::IPEndPoint(dns_ip, kDnsPort));
 
