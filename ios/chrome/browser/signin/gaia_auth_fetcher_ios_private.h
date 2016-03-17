@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_GAIA_AUTH_FETCHER_IOS_PRIVATE_H_
 #define IOS_CHROME_BROWSER_SIGNIN_GAIA_AUTH_FETCHER_IOS_PRIVATE_H_
 
-#import <Webkit/Webkit.h>
+#import <WebKit/WebKit.h>
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
