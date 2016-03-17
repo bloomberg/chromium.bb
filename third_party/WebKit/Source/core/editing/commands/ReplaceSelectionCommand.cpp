@@ -1329,7 +1329,16 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         VisiblePosition next = nextPositionOf(endOfInsertedContent, CannotCrossEditingBoundary);
 
         if (selectionEndWasEndOfParagraph || !isEndOfParagraph(endOfInsertedContent) || next.isNull()) {
-            if (!isStartOfParagraph(endOfInsertedContent)) {
+            if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(currentRoot)) {
+                if (!insertedNodes.lastLeafInserted()->nextSibling()) {
+                    insertNodeAfter(textControl->createPlaceholderBreakElement(), insertedNodes.lastLeafInserted(), editingState);
+                    if (editingState->isAborted())
+                        return;
+                }
+                setEndingSelection(createVisiblePosition(positionAfterNode(insertedNodes.lastLeafInserted())));
+                // Select up to the paragraph separator that was added.
+                lastPositionToSelect = endingSelection().visibleStart().deepEquivalent();
+            } else if (!isStartOfParagraph(endOfInsertedContent)) {
                 setEndingSelection(endOfInsertedContent);
                 Element* enclosingBlockElement = enclosingBlock(endOfInsertedContent.deepEquivalent().anchorNode());
                 if (isListItem(enclosingBlockElement)) {
@@ -1338,11 +1347,6 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                     if (editingState->isAborted())
                         return;
                     setEndingSelection(createVisiblePosition(firstPositionInNode(newListItem.get())));
-                } else if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(enclosingBlockElement)) {
-                    insertNodeAfter(textControl->createPlaceholderBreakElement(), insertedNodes.lastLeafInserted(), editingState);
-                    if (editingState->isAborted())
-                        return;
-                    setEndingSelection(createVisiblePosition(positionAfterNode(insertedNodes.lastLeafInserted())));
                 } else {
                     // Use a default paragraph element (a plain div) for the empty paragraph, using the last paragraph
                     // block's style seems to annoy users.
