@@ -125,6 +125,11 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   // Update the locally cached set of system colors.
   void UpdateSystemColors();
 
+  // Painting functions that paint to SkCanvas.
+  void PaintMenuSeparator(SkCanvas* canvas, const gfx::Rect& rect) const;
+  void PaintMenuGutter(SkCanvas* canvas, const gfx::Rect& rect) const;
+  void PaintMenuBackground(SkCanvas* canvas, const gfx::Rect& rect) const;
+
   // Paint directly to canvas' HDC.
   void PaintDirect(SkCanvas* canvas,
                    Part part,

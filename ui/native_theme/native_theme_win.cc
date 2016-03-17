@@ -30,6 +30,7 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/common_theme.h"
 
@@ -245,16 +246,17 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
       CommonThemePaintComboboxArrow(canvas, rect);
       return;
     case kMenuPopupGutter:
-      CommonThemePaintMenuGutter(canvas, rect);
+      PaintMenuGutter(canvas, rect);
       return;
     case kMenuPopupSeparator:
-      CommonThemePaintMenuSeparator(canvas, rect);
+      PaintMenuSeparator(canvas, rect);
       return;
     case kMenuPopupBackground:
-      CommonThemePaintMenuBackground(canvas, rect);
+      PaintMenuBackground(canvas, rect);
       return;
     case kMenuItemBackground:
-      CommonThemePaintMenuItemBackground(canvas, state, rect, extra.menu_item);
+      CommonThemePaintMenuItemBackground(this, canvas, state, rect,
+                                         extra.menu_item);
       return;
     default:
       break;
@@ -356,6 +358,29 @@ void NativeThemeWin::OnSysColorChange() {
 void NativeThemeWin::UpdateSystemColors() {
   for (int kSystemColor : kSystemColors)
     system_colors_[kSystemColor] = color_utils::GetSysSkColor(kSystemColor);
+}
+
+void NativeThemeWin::PaintMenuSeparator(SkCanvas* canvas,
+                                        const gfx::Rect& rect) const {
+  SkPaint paint;
+  paint.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
+  int position_y = rect.y() + rect.height() / 2;
+  canvas->drawLine(rect.x(), position_y, rect.right(), position_y, paint);
+}
+
+void NativeThemeWin::PaintMenuGutter(SkCanvas* canvas,
+                                     const gfx::Rect& rect) const {
+  SkPaint paint;
+  paint.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
+  int position_x = rect.x() + rect.width() / 2;
+  canvas->drawLine(position_x, rect.y(), position_x, rect.bottom(), paint);
+}
+
+void NativeThemeWin::PaintMenuBackground(SkCanvas* canvas,
+                                         const gfx::Rect& rect) const {
+  SkPaint paint;
+  paint.setColor(GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
+  canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
 void NativeThemeWin::PaintDirect(SkCanvas* canvas,

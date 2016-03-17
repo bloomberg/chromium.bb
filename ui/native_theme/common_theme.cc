@@ -437,30 +437,8 @@ void CommonThemePaintComboboxArrow(SkCanvas* canvas, const gfx::Rect& rect) {
   CommonThemeCreateCanvas(canvas)->DrawImageInt(*arrow, rect.x(), rect.y());
 }
 
-void CommonThemePaintMenuSeparator(SkCanvas* canvas, const gfx::Rect& rect) {
-  SkPaint paint;
-  paint.setColor(
-      GetAuraColor(NativeTheme::kColorId_MenuSeparatorColor, nullptr));
-  int position_y = rect.y() + rect.height() / 2;
-  canvas->drawLine(rect.x(), position_y, rect.right(), position_y, paint);
-}
-
-void CommonThemePaintMenuGutter(SkCanvas* canvas, const gfx::Rect& rect) {
-  SkPaint paint;
-  paint.setColor(
-      GetAuraColor(NativeTheme::kColorId_MenuSeparatorColor, nullptr));
-  int position_x = rect.x() + rect.width() / 2;
-  canvas->drawLine(position_x, rect.y(), position_x, rect.bottom(), paint);
-}
-
-void CommonThemePaintMenuBackground(SkCanvas* canvas, const gfx::Rect& rect) {
-  SkPaint paint;
-  paint.setColor(
-      GetAuraColor(NativeTheme::kColorId_MenuBackgroundColor, nullptr));
-  canvas->drawRect(gfx::RectToSkRect(rect), paint);
-}
-
 void CommonThemePaintMenuItemBackground(
+    const NativeTheme* theme,
     SkCanvas* canvas,
     NativeTheme::State state,
     const gfx::Rect& rect,
@@ -470,11 +448,11 @@ void CommonThemePaintMenuItemBackground(
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:
       paint.setColor(
-          GetAuraColor(NativeTheme::kColorId_MenuBackgroundColor, nullptr));
+          theme->GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
       break;
     case NativeTheme::kHovered:
-      paint.setColor(GetAuraColor(
-          NativeTheme::kColorId_FocusedMenuItemBackgroundColor, nullptr));
+      paint.setColor(theme->GetSystemColor(
+          NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
       break;
     default:
       NOTREACHED() << "Invalid state " << state;
