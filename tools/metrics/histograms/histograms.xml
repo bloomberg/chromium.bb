@@ -21485,6 +21485,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.AvailPageFile" units="MB">
+  <obsolete>
+    Deprecated in 595320 and replaced with Memory.Stats.Win.AvailPageFile2.
+  </obsolete>
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Windows-only metric that represents the maximum amount of memory the current
+    process can commit. This value is equal to or smaller than the system-wide
+    available commit value.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Stats.Win.AvailPageFile2" units="MB">
   <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the maximum amount of memory the current
@@ -21494,6 +21506,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.AvailPhys" units="MB">
+  <obsolete>
+    Deprecated in 595320 and replaced with Memory.Stats.Win.AvailPhys2.
+  </obsolete>
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Windows-only metric that represents the amount of physical memory currently
+    available. This is the amount of physical memory that can be immediately
+    reused without having to write its contents to disk first. It is the sum of
+    the size of the standby, free, and zero lists.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Stats.Win.AvailPhys2" units="MB">
   <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the amount of physical memory currently
@@ -21504,6 +21529,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.AvailVirtual" units="MB">
+  <obsolete>
+    Deprecated in 595320 and replaced with Memory.Stats.Win.AvailVirtual2.
+  </obsolete>
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Windows-only metric that represents the amount of unreserved and uncommitted
+    memory currently in the user-mode portion of the virtual address space of
+    the calling process.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Stats.Win.AvailVirtual2" units="MB">
   <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the amount of unreserved and uncommitted
@@ -21522,6 +21559,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.TotalPageFile" units="MB">
+  <obsolete>
+    Deprecated in 595320 and replaced with Memory.Stats.Win.TotalPageFile2.
+  </obsolete>
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Windows-only metric that represents the current committed memory limit for
+    the system or the current process, whichever is smaller.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Stats.Win.TotalPageFile2" units="MB">
   <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the current committed memory limit for
@@ -21530,6 +21578,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.TotalPhys" units="MB">
+  <obsolete>
+    Deprecated in 595320 and replaced with Memory.Stats.Win.TotalPhys2.
+  </obsolete>
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Windows-only metric that represents the amount of actual physical memory.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Stats.Win.TotalPhys2" units="MB">
   <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the amount of actual physical memory.
@@ -21537,6 +21595,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Stats.Win.TotalVirtual" units="MB">
+  <obsolete>
+    Deprecated in 595320 and replaced with Memory.Stats.Win.TotalVirtual2.
+  </obsolete>
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Windows-only metric that represents the size of the user-mode portion of the
+    virtual address space of the calling process. This value depends on the type
+    of process, the type of processor, and the configuration of the operating
+    system. For example, this value is approximately 2 GB for most 32-bit
+    processes on an x86 processor and approximately 3 GB for 32-bit processes
+    that are large address aware running on a system with 4-gigabyte tuning
+    enabled.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Stats.Win.TotalVirtual2" units="MB">
   <owner>georgesak@chromium.org</owner>
   <summary>
     Windows-only metric that represents the size of the user-mode portion of the

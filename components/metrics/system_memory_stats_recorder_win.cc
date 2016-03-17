@@ -10,6 +10,9 @@
 #include "base/process/process_metrics.h"
 
 namespace metrics {
+namespace {
+enum { kMBytes = 1024 * 1024 };
+}
 
 void RecordMemoryStats(RecordMemoryStatsType type) {
   MEMORYSTATUSEX mem_status;
@@ -21,18 +24,18 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
     case RECORD_MEMORY_STATS_TAB_DISCARDED: {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Stats.Win.MemoryLoad",
                                   mem_status.dwMemoryLoad, 0, 100, 101);
-      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.TotalPhys",
-                                    mem_status.ullTotalPhys);
-      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.AvailPhys",
-                                    mem_status.ullAvailPhys);
-      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.TotalPageFile",
-                                    mem_status.ullTotalPageFile);
-      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.AvailPageFile",
-                                    mem_status.ullAvailPageFile);
-      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.TotalVirtual",
-                                    mem_status.ullTotalVirtual);
-      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.AvailVirtual",
-                                    mem_status.ullAvailVirtual);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.TotalPhys2",
+                                    mem_status.ullTotalPhys / kMBytes);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.AvailPhys2",
+                                    mem_status.ullAvailPhys / kMBytes);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.TotalPageFile2",
+                                    mem_status.ullTotalPageFile / kMBytes);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.AvailPageFile2",
+                                    mem_status.ullAvailPageFile / kMBytes);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.TotalVirtual2",
+                                    mem_status.ullTotalVirtual / kMBytes);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.AvailVirtual2",
+                                    mem_status.ullAvailVirtual / kMBytes);
       break;
     }
     default:
