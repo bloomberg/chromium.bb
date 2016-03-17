@@ -466,23 +466,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (!render_frame_created_)
     return false;
 
-  // Filter out most IPC messages if this frame is swapped out.
-  // We still want to handle certain ACKs to keep our state consistent.
-  if (is_swapped_out()) {
-    if (!SwappedOutMessages::CanHandleWhileSwappedOut(msg)) {
-      // If this is a synchronous message and we decided not to handle it,
-      // we must send an error reply, or else the renderer will be stuck
-      // and won't respond to future requests.
-      if (msg.is_sync()) {
-        IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
-        reply->set_reply_error();
-        Send(reply);
-      }
-      // Don't continue looking for someone to handle it.
-      return true;
-    }
-  }
-
   // This message map is for handling internal IPC messages which should not
   // be dispatched to other objects.
   bool handled = true;
@@ -1317,11 +1300,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // Reset frame tree state associated with this process.  This must happen
   // before RenderViewTerminated because observers expect the subframes of any
   // affected frames to be cleared first.
-  // Note: When a RenderFrameHost is swapped out there is a different one
-  // which is the current host. In this case, the FrameTreeNode state must
-  // not be reset.
-  if (!is_swapped_out())
-    frame_tree_node_->ResetForNewProcess();
+  frame_tree_node_->ResetForNewProcess();
 
   // Reset state for the current RenderFrameHost once the FrameTreeNode has been
   // reset.
@@ -1358,13 +1337,9 @@ void RenderFrameHostImpl::OnSwappedOut() {
     render_view_host_->set_is_swapped_out(true);
   }
 
-  if (frame_tree_node_->render_manager()->DeleteFromPendingList(this)) {
-    // We are now deleted.
-    return;
-  }
-
-  // If this RFH wasn't pending deletion, then it is now swapped out.
-  SetState(RenderFrameHostImpl::STATE_SWAPPED_OUT);
+  bool deleted =
+      frame_tree_node_->render_manager()->DeleteFromPendingList(this);
+  CHECK(deleted);
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
@@ -1897,33 +1872,24 @@ void RenderFrameHostImpl::RegisterMojoServices() {
 }
 
 void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
-  // Only main frames should be swapped out and retained inside a proxy host.
-  if (rfh_state == STATE_SWAPPED_OUT)
-    CHECK(!GetParent());
-
-  // We update the number of RenderFrameHosts in a SiteInstance when the swapped
-  // out status of a RenderFrameHost gets flipped to/from active.
-  if (!IsRFHStateActive(rfh_state_) && IsRFHStateActive(rfh_state))
-    GetSiteInstance()->IncrementActiveFrameCount();
-  else if (IsRFHStateActive(rfh_state_) && !IsRFHStateActive(rfh_state))
+  // We decrement the number of RenderFrameHosts in a SiteInstance when the
+  // status of a RenderFrameHost gets flipped from active.
+  if (IsRFHStateActive(rfh_state_) && !IsRFHStateActive(rfh_state))
     GetSiteInstance()->DecrementActiveFrameCount();
 
-  // The active and swapped out state of the RVH is determined by its main
-  // frame, since subframes should have their own widgets.
+  // The active state of the RVH is determined by its main frame, since
+  // subframes should have their own widgets.
   if (frame_tree_node_->IsMainFrame()) {
     render_view_host_->set_is_active(IsRFHStateActive(rfh_state));
-    render_view_host_->set_is_swapped_out(rfh_state == STATE_SWAPPED_OUT);
+    render_view_host_->set_is_swapped_out(false);
   }
 
-  // Whenever we change the RFH state to and from active or swapped out state,
-  // we should not be waiting for beforeunload or close acks.  We clear them
-  // here to be safe, since they can cause navigations to be ignored in
+  // Whenever we change the RFH state to and from active state, we should not be
+  // waiting for beforeunload or close acks.  We clear them here to be safe,
+  // since they can cause navigations to be ignored in
   // OnDidCommitProvisionalLoad.
   // TODO(creis): Move is_waiting_for_beforeunload_ack_ into the state machine.
-  if (rfh_state == STATE_DEFAULT ||
-      rfh_state == STATE_SWAPPED_OUT ||
-      rfh_state_ == STATE_DEFAULT ||
-      rfh_state_ == STATE_SWAPPED_OUT) {
+  if (rfh_state == STATE_DEFAULT || rfh_state_ == STATE_DEFAULT) {
     if (is_waiting_for_beforeunload_ack_) {
       is_waiting_for_beforeunload_ack_ = false;
       render_view_host_->GetWidget()->decrement_in_flight_event_count();

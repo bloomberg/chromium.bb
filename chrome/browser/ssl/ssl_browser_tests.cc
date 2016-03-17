@@ -928,6 +928,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
       browser(), embedded_test_server()->GetURL("/ssl/google.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  content::RenderFrameHost* rfh = tab->GetMainFrame();
   ASSERT_TRUE(entry);
 
   // Now go to a bad HTTPS page that shows an interstitial.
@@ -941,13 +942,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   // Simulate user clicking on back button (crbug.com/39248).
   chrome::GoBack(browser(), CURRENT_TAB);
 
-  // Wait until we hear the load failure, and make sure we haven't swapped out
-  // the previous page.  Prevents regression of http://crbug.com/82667.
-  // TODO(creis/nick): Move the swapped-out part of this test into content
-  // and remove IsRenderViewHostSwappedOut from the public API.
+  // Wait until we hear the load failure, and make sure we haven't changed
+  // the previous RFH.  Prevents regression of http://crbug.com/82667.
   load_failed_observer.Wait();
-  EXPECT_FALSE(content::RenderFrameHostTester::IsRenderFrameHostSwappedOut(
-      tab->GetMainFrame()));
+  EXPECT_EQ(rfh, tab->GetMainFrame());
 
   // We should be back at the original good page.
   EXPECT_FALSE(browser()->tab_strip_model()->GetActiveWebContents()->

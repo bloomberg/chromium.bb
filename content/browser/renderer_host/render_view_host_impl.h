@@ -332,6 +332,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CleanUpSwappedOutRVHOnProcessCrash);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           NavigateMainFrameToChildSite);
+
   // Send RenderViewReady to observers once the process is launched, but not
   // re-entrantly.
   void PostRenderViewReady();

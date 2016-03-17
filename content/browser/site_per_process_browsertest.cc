@@ -5959,4 +5959,43 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
                                 .cert_id);
 }
 
+// Tests that the swapped out state on RenderViewHost is properly reset when
+// the main frame is navigated to the same SiteInstance as one of its child
+// frames.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateMainFrameToChildSite) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = contents->GetFrameTree()->root();
+  EXPECT_EQ(1U, root->child_count());
+
+  // Ensure the RenderViewHost for the SiteInstance of the child is considered
+  // in swapped out state.
+  RenderViewHostImpl* rvh = contents->GetFrameTree()->GetRenderViewHost(
+      root->child_at(0)->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(rvh->is_swapped_out_);
+
+  // Have the child frame navigate its parent to its SiteInstance.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  std::string script = base::StringPrintf(
+      "window.domAutomationController.send("
+      "parent.location = '%s');",
+      b_url.spec().c_str());
+
+  TestFrameNavigationObserver frame_observer(root);
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(), script));
+  frame_observer.Wait();
+  EXPECT_EQ(b_url, root->current_url());
+
+  // Verify that the same RenderViewHost is preserved and that it is no longer
+  // in swapped out state.
+  EXPECT_EQ(rvh, contents->GetFrameTree()->GetRenderViewHost(
+                     root->current_frame_host()->GetSiteInstance()));
+  EXPECT_FALSE(rvh->is_swapped_out_);
+}
+
 }  // namespace content

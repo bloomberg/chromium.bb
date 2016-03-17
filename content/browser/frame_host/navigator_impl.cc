@@ -616,16 +616,9 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
   DCHECK(!render_frame_host->GetParent() ||
          SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
-  // If this came from a swapped out RenderFrameHost, we only allow the request
-  // if we are still in the same BrowsingInstance.
   SiteInstance* current_site_instance = render_frame_host->frame_tree_node()
                                             ->current_frame_host()
                                             ->GetSiteInstance();
-  if (render_frame_host->is_swapped_out() &&
-      !render_frame_host->GetSiteInstance()->IsRelatedSiteInstance(
-          current_site_instance)) {
-    return;
-  }
 
   // TODO(creis): Pass the redirect_chain into this method to support client
   // redirects.  http://crbug.com/311721.

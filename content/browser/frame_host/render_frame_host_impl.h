@@ -110,13 +110,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
     STATE_DEFAULT = 0,
     // The RFH has not received the SwapOutACK yet, but the new page has
     // committed in a different RFH.  Upon reception of the SwapOutACK, the RFH
-    // will either enter STATE_SWAPPED_OUT (if it is a main frame and there are
-    // other active frames in its SiteInstance) or it will be deleted.
+    // will be deleted.
     STATE_PENDING_SWAP_OUT,
-    // The RFH is swapped out and stored inside a RenderFrameProxyHost, being
-    // used as a placeholder to allow cross-process communication.  Only main
-    // frames can enter this state.
-    STATE_SWAPPED_OUT,
   };
   // Helper function to determine whether the RFH state should contribute to the
   // number of active frames of a SiteInstance or not.
@@ -359,10 +354,6 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // Called when either the SwapOut request has been acknowledged or has timed
   // out.
   void OnSwappedOut();
-
-  // Whether this RenderFrameHost has been swapped out, such that the frame is
-  // now rendered by a RenderFrameHost in a different process.
-  bool is_swapped_out() const { return rfh_state_ == STATE_SWAPPED_OUT; }
 
   // The current state of this RFH.
   RenderFrameHostImplState rfh_state() const { return rfh_state_; }

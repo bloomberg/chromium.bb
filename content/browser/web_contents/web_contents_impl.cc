@@ -3846,7 +3846,6 @@ void WebContentsImpl::RunJavaScriptMessage(
   // showing an interstitial as it's shown over the previous page and we don't
   // want the hidden page's dialogs to interfere with the interstitial.
   bool suppress_this_message =
-      static_cast<RenderFrameHostImpl*>(render_frame_host)->is_swapped_out() ||
       ShowingInterstitialPage() || !delegate_ ||
       delegate_->ShouldSuppressDialogs(this) ||
       !delegate_->GetJavaScriptDialogManager(this);

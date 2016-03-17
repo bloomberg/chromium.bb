@@ -1714,7 +1714,6 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   EXPECT_NE(host2, host);
 
   EXPECT_EQ(host, manager->current_frame_host());
-  EXPECT_FALSE(manager->current_frame_host()->is_swapped_out());
   EXPECT_EQ(host2, GetPendingFrameHost(manager));
 
   // 3) Close the tab. -------------------------

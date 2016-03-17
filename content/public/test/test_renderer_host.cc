@@ -50,11 +50,6 @@ RenderFrameHost* RenderFrameHostTester::GetPendingForController(
   return web_contents->GetRenderManagerForTesting()->pending_frame_host();
 }
 
-// static
-bool RenderFrameHostTester::IsRenderFrameHostSwappedOut(RenderFrameHost* rfh) {
-  return static_cast<RenderFrameHostImpl*>(rfh)->is_swapped_out();
-}
-
 // RenderViewHostTester -------------------------------------------------------
 
 // static
