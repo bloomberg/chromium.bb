@@ -5,6 +5,11 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_DECRYPTOR_SERVICE_H_
 #define MEDIA_MOJO_SERVICES_MOJO_DECRYPTOR_SERVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -53,6 +58,8 @@ class MojoDecryptorService : public interfaces::Decryptor {
       const DecryptAndDecodeVideoCallback& callback) final;
   void ResetDecoder(interfaces::DemuxerStream::Type stream_type) final;
   void DeinitializeDecoder(interfaces::DemuxerStream::Type stream_type) final;
+  void ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,
+                           uint64_t buffer_size) final;
 
  private:
   // Callback executed once Decrypt() is done.
@@ -91,6 +98,11 @@ class MojoDecryptorService : public interfaces::Decryptor {
   // Decryptor referenced by |cdm_|.
   scoped_refptr<MediaKeys> cdm_;
   media::Decryptor* decryptor_;
+
+  // Keep a reference to VideoFrames until ReleaseSharedBuffer() is called
+  // to release it.
+  std::unordered_map<MojoHandle, scoped_refptr<VideoFrame>>
+      in_use_video_frames_;
 
   base::WeakPtr<MojoDecryptorService> weak_this_;
   base::WeakPtrFactory<MojoDecryptorService> weak_factory_;

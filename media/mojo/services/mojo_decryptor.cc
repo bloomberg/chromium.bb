@@ -15,6 +15,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
+#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "mojo/shell/public/cpp/connect.h"
 
@@ -183,7 +184,25 @@ void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
   }
 
   scoped_refptr<VideoFrame> frame(video_frame.To<scoped_refptr<VideoFrame>>());
+
+  // If using shared memory, ensure that ReleaseSharedBuffer() is called when
+  // |frame| is destroyed.
+  if (frame->storage_type() == VideoFrame::STORAGE_MOJO_SHARED_BUFFER) {
+    MojoSharedBufferVideoFrame* mojo_frame =
+        static_cast<MojoSharedBufferVideoFrame*>(frame.get());
+    mojo_frame->SetMojoSharedBufferDoneCB(base::Bind(
+        &MojoDecryptor::ReleaseSharedBuffer, weak_factory_.GetWeakPtr()));
+  }
+
   video_decode_cb.Run(static_cast<Decryptor::Status>(status), frame);
+}
+
+void MojoDecryptor::ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,
+                                        size_t buffer_size) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  remote_decryptor_->ReleaseSharedBuffer(std::move(buffer), buffer_size);
 }
 
 void MojoDecryptor::CreateDataPipes() {
