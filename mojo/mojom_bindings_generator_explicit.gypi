@@ -32,8 +32,8 @@
           '--for_blink',
         ],
         'wtf_dependencies%': [
-          'mojo_public.gyp:mojo_cpp_bindings_wtf_support',
-          '../third_party/WebKit/Source/wtf/wtf.gyp:wtf',
+          '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings_wtf_support',
+          '<(DEPTH)/third_party/WebKit/Source/wtf/wtf.gyp:wtf',
         ],
       }, {
         'mojom_generator_wtf_arg%': [],
