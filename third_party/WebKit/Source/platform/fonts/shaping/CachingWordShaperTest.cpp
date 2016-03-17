@@ -445,6 +445,24 @@ TEST_F(CachingWordShaperTest, SegmentCJKCommonAndNonCJK)
     ASSERT_FALSE(iterator.next(&wordResult));
 }
 
+TEST_F(CachingWordShaperTest, SegmentCJKSmallFormVariants)
+{
+    const UChar str[] = {
+        0x5916, // CJK UNIFIED IDEOGRPAH
+        0xFE50, // SMALL COMMA
+        0x0
+    };
+    TextRun textRun(str, 2);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(2u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
 TEST_F(CachingWordShaperTest, TextOrientationFallbackShouldNotInFallbackList)
 {
     const UChar str[] = {

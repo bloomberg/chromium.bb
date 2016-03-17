@@ -322,7 +322,7 @@ TEST(CharacterTest, TestIsCJKIdeographOrSymbol)
     EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x33FF));
 
     TestSpecificUChar32RangeIdeographSymbol(0xF860, 0xF862);
-    TestSpecificUChar32RangeIdeographSymbol(0xFE30, 0xFE4F);
+    TestSpecificUChar32RangeIdeographSymbol(0xFE30, 0xFE6F);
 
     EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE10));
     EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE11));

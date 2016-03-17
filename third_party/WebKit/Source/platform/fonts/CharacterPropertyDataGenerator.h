@@ -84,7 +84,8 @@ static const UChar32 isCJKIdeographOrSymbolRanges[] = {
     0x3200, 0x33FF,
     0xF860, 0xF862,
     // CJK Compatibility Forms.
-    0xFE30, 0xFE4F,
+    // Small Form Variants (for CNS 11643).
+    0xFE30, 0xFE6F,
     // Halfwidth and Fullwidth Forms
     // Usually only used in CJK
     0xFF00, 0xFF0C,
