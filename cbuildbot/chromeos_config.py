@@ -390,6 +390,7 @@ _arm_internal_release_boards = frozenset([
     'daisy_skate',
     'daisy_spring',
     'elm',
+    'gru',
     'kayle',
     'nyan',
     'nyan_big',
@@ -645,6 +646,7 @@ _waterfall_config_map = {
 
         # Experimental Canaries (Group)
         'glados-release-group',
+        'gru-release-group',
         'oak-release-group',
         'storm-release-group',
 
@@ -2905,6 +2907,13 @@ def GetConfig():
       'kunimitsu', 'kunimitsu', (
           'lars',
           'sentry',
+      ),
+      important=False,
+  )
+
+  # gru-based boards
+  _AddGroupConfig(
+      'gru', 'gru', (
       ),
       important=False,
   )

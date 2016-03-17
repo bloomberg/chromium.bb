@@ -49,6 +49,8 @@ glados-paladin
   chell-release
   glados-cheets-release
   glados-release
+[gru-release-group]
+  gru-release
 guado_moblab-paladin
 guado_moblab-release
 internal-toolchain-minor
