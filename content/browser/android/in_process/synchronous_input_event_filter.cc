@@ -69,7 +69,7 @@ void SynchronousInputEventFilter::DidStopFlinging(int routing_id) {
     compositor->DidStopFlinging();
 }
 
-void SynchronousInputEventFilter::NonBlockingInputEventHandled(
+void SynchronousInputEventFilter::NotifyInputEventHandled(
     int routing_id,
     blink::WebInputEvent::Type type) {}
 

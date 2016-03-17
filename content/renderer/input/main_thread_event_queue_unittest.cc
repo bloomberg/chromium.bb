@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/renderer/input/non_blocking_event_queue.h"
+#include "content/renderer/input/main_thread_event_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::WebInputEvent;
@@ -25,34 +25,35 @@ namespace {
 const int kTestRoutingID = 13;
 }
 
-class NonBlockingEventQueueTest : public testing::Test,
-                                  public NonBlockingEventQueueClient {
+class MainThreadEventQueueTest : public testing::Test,
+                                 public MainThreadEventQueueClient {
  public:
-  NonBlockingEventQueueTest() : queue_(kTestRoutingID, this) {}
+  MainThreadEventQueueTest() : queue_(kTestRoutingID, this) {}
 
-  void SendNonBlockingEvent(int routing_id,
-                            const blink::WebInputEvent* event,
-                            const ui::LatencyInfo& latency) override {
+  void SendEventToMainThread(int routing_id,
+                             const blink::WebInputEvent* event,
+                             const ui::LatencyInfo& latency,
+                             InputEventDispatchType type) override {
     ASSERT_EQ(kTestRoutingID, routing_id);
     const unsigned char* eventPtr =
         reinterpret_cast<const unsigned char*>(event);
     last_event_.assign(eventPtr, eventPtr + event->size);
   }
 
-  WebInputEventQueue<MouseWheelEventWithLatencyInfo>& wheel_event_queue() {
+  WebInputEventQueue<PendingMouseWheelEvent>& wheel_event_queue() {
     return queue_.wheel_events_;
   }
 
-  WebInputEventQueue<TouchEventWithLatencyInfo>& touch_event_queue() {
+  WebInputEventQueue<PendingTouchEvent>& touch_event_queue() {
     return queue_.touch_events_;
   }
 
  protected:
-  NonBlockingEventQueue queue_;
+  MainThreadEventQueue queue_;
   std::vector<unsigned char> last_event_;
 };
 
-TEST_F(NonBlockingEventQueueTest, NonBlockingWheel) {
+TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
   WebMouseWheelEvent kEvents[4] = {
       SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, 53, 0, false),
       SyntheticWebMouseWheelEventBuilder::Build(20, 20, 0, 53, 0, false),
@@ -62,9 +63,11 @@ TEST_F(NonBlockingEventQueueTest, NonBlockingWheel) {
 
   ASSERT_EQ(WebInputEventQueueState::ITEM_NOT_PENDING,
             wheel_event_queue().state());
-  queue_.HandleEvent(&kEvents[0], ui::LatencyInfo());
+  queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, wheel_event_queue().state());
-  queue_.HandleEvent(&kEvents[1], ui::LatencyInfo());
+  queue_.HandleEvent(&kEvents[1], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(kEvents[0].size, last_event_.size());
   ASSERT_TRUE(memcmp(&last_event_[0], &kEvents[0], kEvents[0].size) == 0);
   queue_.EventHandled(blink::WebInputEvent::MouseWheel);
@@ -76,14 +79,17 @@ TEST_F(NonBlockingEventQueueTest, NonBlockingWheel) {
             wheel_event_queue().state());
 
   // Ensure that coalescing takes place.
-  queue_.HandleEvent(&kEvents[0], ui::LatencyInfo());
-  queue_.HandleEvent(&kEvents[2], ui::LatencyInfo());
-  queue_.HandleEvent(&kEvents[3], ui::LatencyInfo());
+  queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_.HandleEvent(&kEvents[2], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_.HandleEvent(&kEvents[3], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(1u, wheel_event_queue().size());
   ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, wheel_event_queue().state());
 }
 
-TEST_F(NonBlockingEventQueueTest, NonBlockingTouch) {
+TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   SyntheticWebTouchEvent kEvents[4];
   kEvents[0].PressPoint(10, 10);
   kEvents[1].PressPoint(10, 10);
@@ -96,9 +102,11 @@ TEST_F(NonBlockingEventQueueTest, NonBlockingTouch) {
 
   ASSERT_EQ(WebInputEventQueueState::ITEM_NOT_PENDING,
             touch_event_queue().state());
-  queue_.HandleEvent(&kEvents[0], ui::LatencyInfo());
+  queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, touch_event_queue().state());
-  queue_.HandleEvent(&kEvents[1], ui::LatencyInfo());
+  queue_.HandleEvent(&kEvents[1], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(kEvents[0].size, last_event_.size());
   ASSERT_TRUE(memcmp(&last_event_[0], &kEvents[0], kEvents[0].size) == 0);
   queue_.EventHandled(blink::WebInputEvent::TouchStart);
@@ -110,9 +118,12 @@ TEST_F(NonBlockingEventQueueTest, NonBlockingTouch) {
             touch_event_queue().state());
 
   // Ensure that coalescing takes place.
-  queue_.HandleEvent(&kEvents[0], ui::LatencyInfo());
-  queue_.HandleEvent(&kEvents[2], ui::LatencyInfo());
-  queue_.HandleEvent(&kEvents[3], ui::LatencyInfo());
+  queue_.HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_.HandleEvent(&kEvents[2], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  queue_.HandleEvent(&kEvents[3], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
+                     INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   ASSERT_EQ(1u, touch_event_queue().size());
   ASSERT_EQ(WebInputEventQueueState::ITEM_PENDING, touch_event_queue().state());
 }

@@ -61,7 +61,7 @@ void InputEventFilter::SetBoundHandler(const Handler& handler) {
 void InputEventFilter::DidAddInputHandler(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
-  route_queues_[routing_id].reset(new NonBlockingEventQueue(routing_id, this));
+  route_queues_[routing_id].reset(new MainThreadEventQueue(routing_id, this));
 }
 
 void InputEventFilter::DidRemoveInputHandler(int routing_id) {
@@ -85,7 +85,7 @@ void InputEventFilter::DidStopFlinging(int routing_id) {
   SendMessage(make_scoped_ptr(new InputHostMsg_DidStopFlinging(routing_id)));
 }
 
-void InputEventFilter::NonBlockingInputEventHandled(
+void InputEventFilter::NotifyInputEventHandled(
     int routing_id,
     blink::WebInputEvent::Type type) {
   DCHECK(target_task_runner_->BelongsToCurrentThread());
@@ -163,9 +163,10 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   ui::LatencyInfo latency_info = base::get<1>(params);
   InputEventDispatchType dispatch_type = base::get<2>(params);
   DCHECK(event);
-  DCHECK_EQ(DISPATCH_TYPE_NORMAL, dispatch_type);
+  DCHECK(dispatch_type == DISPATCH_TYPE_BLOCKING ||
+         dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
 
-  bool send_ack = WebInputEventTraits::WillReceiveAckFromRenderer(*event);
+  bool send_ack = dispatch_type == DISPATCH_TYPE_BLOCKING;
 
   // Intercept |DidOverscroll| notifications, bundling any triggered overscroll
   // response with the input event ack.
@@ -176,21 +177,13 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
 
   InputEventAckState ack_state = handler_.Run(routing_id, event, &latency_info);
 
-  if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING) {
+  if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
+      ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
     DCHECK(!overscroll_params);
     RouteQueueMap::iterator iter = route_queues_.find(routing_id);
     if (iter != route_queues_.end())
-      iter->second->HandleEvent(event, latency_info);
-  } else if (ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
-    DCHECK(!overscroll_params);
-    TRACE_EVENT_INSTANT0(
-        "input", "InputEventFilter::ForwardToHandler::ForwardToMainListener",
-        TRACE_EVENT_SCOPE_THREAD);
-    IPC::Message new_msg =
-        InputMsg_HandleInputEvent(routing_id, event, latency_info,
-                                  InputEventDispatchType::DISPATCH_TYPE_NORMAL);
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(main_listener_, new_msg));
-    send_ack = false;
+      send_ack &= iter->second->HandleEvent(event, latency_info, dispatch_type,
+                                            ack_state);
   }
 
   if (!send_ack)
@@ -220,14 +213,16 @@ void InputEventFilter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
   sender_->Send(message.release());
 }
 
-void InputEventFilter::SendNonBlockingEvent(int routing_id,
-                                            const blink::WebInputEvent* event,
-                                            const ui::LatencyInfo& latency) {
-  TRACE_EVENT_INSTANT0("input", "InputEventFilter::SendNonBlockingEvent",
-                       TRACE_EVENT_SCOPE_THREAD);
-  IPC::Message new_msg = InputMsg_HandleInputEvent(
-      routing_id, event, latency,
-      InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING);
+void InputEventFilter::SendEventToMainThread(
+    int routing_id,
+    const blink::WebInputEvent* event,
+    const ui::LatencyInfo& latency_info,
+    InputEventDispatchType dispatch_type) {
+  TRACE_EVENT_INSTANT0(
+      "input", "InputEventFilter::ForwardToHandler::SendEventToMainThread",
+      TRACE_EVENT_SCOPE_THREAD);
+  IPC::Message new_msg =
+      InputMsg_HandleInputEvent(routing_id, event, latency_info, dispatch_type);
   main_task_runner_->PostTask(FROM_HERE, base::Bind(main_listener_, new_msg));
 }
 

@@ -306,6 +306,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
   }
 
   bool non_blocking =
+      dispatch_type ==
+          InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN ||
       dispatch_type == InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING;
   // TODO(dtapuska): Use the input_event.timeStampSeconds as the start
   // ideally this should be when the event was sent by the compositor to the
@@ -397,14 +399,18 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   // Note that we can't use handling_event_type_ here since it will be overriden
   // by reentrant calls for events after the paused one.
-  bool no_ack = ignore_ack_for_mouse_move_from_debugger_ &&
-                input_event.type == WebInputEvent::MouseMove;
-  if (non_blocking) {
+  bool can_send_ack = !(ignore_ack_for_mouse_move_from_debugger_ &&
+                        input_event.type == WebInputEvent::MouseMove);
+  if (dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN ||
+      dispatch_type == DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN) {
     // |non_blocking| means it was ack'd already by the InputHandlerProxy
     // so let the delegate know the event has been handled.
-    delegate_->NonBlockingInputEventHandled(input_event.type);
-  } else if (WebInputEventTraits::WillReceiveAckFromRenderer(input_event) &&
-             !no_ack) {
+    delegate_->NotifyInputEventHandled(input_event.type);
+  }
+
+  if ((dispatch_type == DISPATCH_TYPE_BLOCKING ||
+       dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) &&
+      can_send_ack) {
     scoped_ptr<InputEventAck> response(new InputEventAck(
         input_event.type, ack_result, swap_latency_info,
         std::move(event_overscroll),
@@ -437,7 +443,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   } else {
     DCHECK(!event_overscroll) << "Unexpected overscroll for un-acked event";
   }
-  if (!no_ack && RenderThreadImpl::current()) {
+  if (can_send_ack && RenderThreadImpl::current()) {
     RenderThreadImpl::current()
         ->GetRendererScheduler()
         ->DidHandleInputEventOnMainThread(input_event);

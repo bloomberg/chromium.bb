@@ -131,8 +131,7 @@ void CompositorMusConnection::OnWindowInputEvent(
   if (ack_state != INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
     return;
   base::Callback<void(bool)> ack = base::Bind(&::DoNothingBool);
-  const bool send_ack =
-      WebInputEventTraits::WillReceiveAckFromRenderer(*web_event);
+  const bool send_ack = WebInputEventTraits::ShouldBlockEventStream(*web_event);
   if (send_ack) {
     // Ultimately, this ACK needs to go back to the Mus client lib which is not
     // thread-safe and lives on the compositor thread. For ACKs that are passed

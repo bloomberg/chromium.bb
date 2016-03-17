@@ -46,8 +46,7 @@ TouchEventWithLatencyInfo ObtainCancelEventForTouchEvent(
 bool ShouldTouchTriggerTimeout(const WebTouchEvent& event) {
   return (event.type == WebInputEvent::TouchStart ||
           event.type == WebInputEvent::TouchMove) &&
-         WebInputEventTraits::WillReceiveAckFromRenderer(event) &&
-         event.cancelable;
+         WebInputEventTraits::ShouldBlockEventStream(event) && event.cancelable;
 }
 
 // Compare all properties of touch points to determine the state.

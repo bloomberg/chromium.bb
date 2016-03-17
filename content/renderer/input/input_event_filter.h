@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/renderer/input/input_handler_manager_client.h"
-#include "content/renderer/input/non_blocking_event_queue.h"
+#include "content/renderer/input/main_thread_event_queue.h"
 #include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -43,7 +43,7 @@ namespace content {
 
 class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
                                         public IPC::MessageFilter,
-                                        public NonBlockingEventQueueClient {
+                                        public MainThreadEventQueueClient {
  public:
   InputEventFilter(
       const base::Callback<void(const IPC::Message&)>& main_listener,
@@ -66,8 +66,8 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;
   void DidStopFlinging(int routing_id) override;
-  void NonBlockingInputEventHandled(int routing_id,
-                                    blink::WebInputEvent::Type type) override;
+  void NotifyInputEventHandled(int routing_id,
+                               blink::WebInputEvent::Type type) override;
 
   // IPC::MessageFilter methods:
   void OnFilterAdded(IPC::Sender* sender) override;
@@ -75,10 +75,11 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void OnChannelClosing() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // NonBlockingEventQueueClient methods:
-  void SendNonBlockingEvent(int routing_id,
-                            const blink::WebInputEvent* event,
-                            const ui::LatencyInfo& latency) override;
+  // MainThreadEventQueueClient methods:
+  void SendEventToMainThread(int routing_id,
+                             const blink::WebInputEvent* event,
+                             const ui::LatencyInfo& latency,
+                             InputEventDispatchType dispatch_type) override;
 
  private:
   ~InputEventFilter() override;
@@ -105,7 +106,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   std::set<int> routes_;
 
   using RouteQueueMap =
-      std::unordered_map<int, scoped_ptr<NonBlockingEventQueue>>;
+      std::unordered_map<int, scoped_ptr<MainThreadEventQueue>>;
   RouteQueueMap route_queues_;
 
   // Used to intercept overscroll notifications while an event is being

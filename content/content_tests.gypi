@@ -714,7 +714,7 @@
       'renderer/gpu/render_widget_compositor_unittest.cc',
       'renderer/ico_image_decoder_unittest.cc',
       'renderer/input/input_event_filter_unittest.cc',
-      'renderer/input/non_blocking_event_queue_unittest.cc',
+      'renderer/input/main_thread_event_queue_unittest.cc',
       'renderer/manifest/manifest_parser_unittest.cc',
       'renderer/media/android/media_info_loader_unittest.cc',
       'renderer/media/audio_message_filter_unittest.cc',

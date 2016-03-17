@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/test/fake_compositor_dependencies.h"
@@ -38,8 +39,11 @@ class InteractiveRenderWidget : public RenderWidget {
   }
 
   void SendInputEvent(const blink::WebInputEvent& event) {
-    OnHandleInputEvent(&event, ui::LatencyInfo(),
-                       InputEventDispatchType::DISPATCH_TYPE_NORMAL);
+    OnHandleInputEvent(
+        &event, ui::LatencyInfo(),
+        WebInputEventTraits::ShouldBlockEventStream(event)
+            ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
+            : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING);
   }
 
   void set_always_overscroll(bool overscroll) {

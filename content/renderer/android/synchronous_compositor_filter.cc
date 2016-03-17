@@ -236,7 +236,7 @@ void SynchronousCompositorFilter::DidStopFlinging(int routing_id) {
   Send(new InputHostMsg_DidStopFlinging(routing_id));
 }
 
-void SynchronousCompositorFilter::NonBlockingInputEventHandled(
+void SynchronousCompositorFilter::NotifyInputEventHandled(
     int routing_id,
     blink::WebInputEvent::Type type) {}
 

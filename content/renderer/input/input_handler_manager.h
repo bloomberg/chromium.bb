@@ -69,8 +69,8 @@ class CONTENT_EXPORT InputHandlerManager {
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
-  void NonBlockingInputEventHandledOnMainThread(int routing_id,
-                                                blink::WebInputEvent::Type);
+  void NotifyInputEventHandledOnMainThread(int routing_id,
+                                           blink::WebInputEvent::Type);
 
   // Callback only from the compositor's thread.
   void RemoveInputHandler(int routing_id);
@@ -110,9 +110,8 @@ class CONTENT_EXPORT InputHandlerManager {
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
-  void NonBlockingInputEventHandledOnCompositorThread(
-      int routing_id,
-      blink::WebInputEvent::Type);
+  void NotifyInputEventHandledOnCompositorThread(int routing_id,
+                                                 blink::WebInputEvent::Type);
 
   typedef base::ScopedPtrHashMap<int,  // routing_id
                                  scoped_ptr<InputHandlerWrapper>>

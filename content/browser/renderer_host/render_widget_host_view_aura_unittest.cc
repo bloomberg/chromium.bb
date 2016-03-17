@@ -519,8 +519,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       return;
     }
 
-    if (!WebInputEventTraits::WillReceiveAckFromRenderer(
-            *base::get<0>(params)))
+    InputEventDispatchType dispatch_type = base::get<2>(params);
+    if (dispatch_type == InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING)
       return;
 
     const blink::WebInputEvent* event = base::get<0>(params);

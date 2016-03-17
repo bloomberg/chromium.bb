@@ -239,7 +239,7 @@ class InputRouterImplPerfTest : public testing::Test {
 
   void SendEventAckIfNecessary(const blink::WebInputEvent& event,
                                InputEventAckState ack_result) {
-    if (!WebInputEventTraits::WillReceiveAckFromRenderer(event))
+    if (!WebInputEventTraits::ShouldBlockEventStream(event))
       return;
     InputEventAck ack(event.type, ack_result);
     InputHostMsg_HandleInputEvent_ACK response(0, ack);

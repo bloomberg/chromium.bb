@@ -49,9 +49,8 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void DidOverscroll(int routing_id,
                              const DidOverscrollParams& params) = 0;
   virtual void DidStopFlinging(int routing_id) = 0;
-  virtual void NonBlockingInputEventHandled(
-      int routing_id,
-      blink::WebInputEvent::Type type) = 0;
+  virtual void NotifyInputEventHandled(int routing_id,
+                                       blink::WebInputEvent::Type type) = 0;
 
  protected:
   InputHandlerManagerClient() {}

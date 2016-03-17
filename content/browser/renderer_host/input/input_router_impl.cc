@@ -364,21 +364,23 @@ void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
   if (OfferToClient(input_event, latency_info))
     return;
 
-  OfferToRenderer(input_event, latency_info);
-
   // Touch events should always indicate in the event whether they are
   // cancelable (respect ACK disposition) or not except touchmove.
-  bool needs_synthetic_ack =
-      !WebInputEventTraits::WillReceiveAckFromRenderer(input_event);
+  bool should_block = WebInputEventTraits::ShouldBlockEventStream(input_event);
+
+  OfferToRenderer(input_event, latency_info,
+                  should_block
+                      ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
+                      : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING);
 
   if (WebInputEvent::isTouchEventType(input_event.type) &&
       input_event.type != WebInputEvent::TouchMove) {
     const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(input_event);
-    DCHECK_EQ(needs_synthetic_ack, !touch.cancelable);
+    DCHECK_EQ(should_block, touch.cancelable);
   }
 
-  // The synthetic acks are sent immediately.
-  if (needs_synthetic_ack) {
+  // Generate a synthetic ack if the event was sent so it doesn't block.
+  if (!should_block) {
     ProcessInputEventAck(
         input_event.type, INPUT_EVENT_ACK_STATE_IGNORED, latency_info,
         WebInputEventTraits::GetUniqueTouchEventId(input_event),
@@ -415,7 +417,8 @@ bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
 }
 
 bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
-                                      const ui::LatencyInfo& latency_info) {
+                                      const ui::LatencyInfo& latency_info,
+                                      InputEventDispatchType dispatch_type) {
   // This conversion is temporary. WebInputEvent should be generated
   // directly from ui::Event with the viewport coordinates. See
   // crbug.com/563730.
@@ -424,13 +427,12 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
   const WebInputEvent* event_to_send =
       event_in_viewport ? event_in_viewport.get() : &input_event;
 
-  if (Send(new InputMsg_HandleInputEvent(
-          routing_id(), event_to_send, latency_info,
-          InputEventDispatchType::DISPATCH_TYPE_NORMAL))) {
+  if (Send(new InputMsg_HandleInputEvent(routing_id(), event_to_send,
+                                         latency_info, dispatch_type))) {
     // Ack messages for ignored ack event types should never be sent by the
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.
-    if (WebInputEventTraits::WillReceiveAckFromRenderer(*event_to_send)) {
+    if (dispatch_type == InputEventDispatchType::DISPATCH_TYPE_BLOCKING) {
       input_event_start_time_ = TimeTicks::Now();
       client_->IncrementInFlightEventCount();
     }

@@ -181,17 +181,17 @@ void InputHandlerManager::ObserveGestureEventAndResultOnCompositorThread(
       gesture_event, scroll_result);
 }
 
-void InputHandlerManager::NonBlockingInputEventHandledOnMainThread(
+void InputHandlerManager::NotifyInputEventHandledOnMainThread(
     int routing_id,
     blink::WebInputEvent::Type type) {
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
-          &InputHandlerManager::NonBlockingInputEventHandledOnCompositorThread,
+          &InputHandlerManager::NotifyInputEventHandledOnCompositorThread,
           base::Unretained(this), routing_id, type));
 }
 
-void InputHandlerManager::NonBlockingInputEventHandledOnCompositorThread(
+void InputHandlerManager::NotifyInputEventHandledOnCompositorThread(
     int routing_id,
     blink::WebInputEvent::Type handled_type) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -199,7 +199,7 @@ void InputHandlerManager::NonBlockingInputEventHandledOnCompositorThread(
   if (it == input_handlers_.end())
     return;
 
-  client_->NonBlockingInputEventHandled(routing_id, handled_type);
+  client_->NotifyInputEventHandled(routing_id, handled_type);
 }
 
 InputEventAckState InputHandlerManager::HandleInputEvent(

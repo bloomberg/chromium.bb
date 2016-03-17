@@ -65,8 +65,8 @@ class SynchronousCompositorFilter
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;
   void DidStopFlinging(int routing_id) override;
-  void NonBlockingInputEventHandled(int routing_id,
-                                    blink::WebInputEvent::Type type) override;
+  void NotifyInputEventHandled(int routing_id,
+                               blink::WebInputEvent::Type type) override;
 
   // SynchronousInputHandlerProxyClient overrides.
   void DidAddSynchronousHandlerProxy(

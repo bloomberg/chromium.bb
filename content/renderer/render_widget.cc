@@ -993,14 +993,14 @@ void RenderWidget::OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) {
   Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, *input_event_ack));
 }
 
-void RenderWidget::NonBlockingInputEventHandled(
+void RenderWidget::NotifyInputEventHandled(
     blink::WebInputEvent::Type handled_type) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   InputHandlerManager* input_handler_manager =
       render_thread ? render_thread->input_handler_manager() : NULL;
   if (input_handler_manager) {
-    input_handler_manager->NonBlockingInputEventHandledOnMainThread(
-        routing_id_, handled_type);
+    input_handler_manager->NotifyInputEventHandledOnMainThread(routing_id_,
+                                                               handled_type);
   }
 }
 

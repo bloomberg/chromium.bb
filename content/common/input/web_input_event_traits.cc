@@ -466,8 +466,7 @@ void WebInputEventTraits::Coalesce(const WebInputEvent& event_to_coalesce,
   Apply(WebInputEventCoalesce(), event->type, event_to_coalesce, event);
 }
 
-bool WebInputEventTraits::WillReceiveAckFromRenderer(
-    const WebInputEvent& event) {
+bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
   switch (event.type) {
     case WebInputEvent::MouseDown:
     case WebInputEvent::MouseUp:

@@ -52,7 +52,7 @@ class CONTENT_EXPORT RenderWidgetMusConnection
   void OnDidHandleKeyEvent() override;
   void OnDidOverscroll(const DidOverscrollParams& params) override;
   void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) override;
-  void NonBlockingInputEventHandled(
+  void NotifyInputEventHandled(
       blink::WebInputEvent::Type handled_type) override;
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
   void UpdateTextInputState(ShowIme show_ime,

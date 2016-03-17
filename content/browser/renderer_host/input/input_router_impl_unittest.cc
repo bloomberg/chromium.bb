@@ -1021,11 +1021,11 @@ TEST_F(InputRouterImplTest, UnhandledWheelEventWithGestureScrolling) {
 TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   OnHasTouchEventHandlers(true);
   // Only acks for TouchCancel should always be ignored.
-  ASSERT_TRUE(WebInputEventTraits::WillReceiveAckFromRenderer(
+  ASSERT_TRUE(WebInputEventTraits::ShouldBlockEventStream(
       GetEventWithType(WebInputEvent::TouchStart)));
-  ASSERT_TRUE(WebInputEventTraits::WillReceiveAckFromRenderer(
+  ASSERT_TRUE(WebInputEventTraits::ShouldBlockEventStream(
       GetEventWithType(WebInputEvent::TouchMove)));
-  ASSERT_TRUE(WebInputEventTraits::WillReceiveAckFromRenderer(
+  ASSERT_TRUE(WebInputEventTraits::ShouldBlockEventStream(
       GetEventWithType(WebInputEvent::TouchEnd)));
 
   // Precede the TouchCancel with an appropriate TouchStart;
@@ -1084,8 +1084,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
       WebInputEvent::GestureScrollEnd};
   for (size_t i = 0; i < arraysize(eventTypes); ++i) {
     WebInputEvent::Type type = eventTypes[i];
-    if (WebInputEventTraits::WillReceiveAckFromRenderer(
-            GetEventWithType(type))) {
+    if (WebInputEventTraits::ShouldBlockEventStream(GetEventWithType(type))) {
       SimulateGestureEvent(type, blink::WebGestureDeviceTouchscreen);
       EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
       EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
@@ -1115,7 +1114,7 @@ TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
   for (int i = start_type; i <= end_type; ++i) {
     WebInputEvent::Type type = static_cast<WebInputEvent::Type>(i);
     int expected_in_flight_event_count =
-        !WebInputEventTraits::WillReceiveAckFromRenderer(GetEventWithType(type))
+        !WebInputEventTraits::ShouldBlockEventStream(GetEventWithType(type))
             ? 0
             : 1;
 
@@ -1135,7 +1134,7 @@ TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
 }
 
 // Guard against breaking changes to the list of ignored event ack types in
-// |WebInputEventTraits::WillReceiveAckFromRenderer|.
+// |WebInputEventTraits::ShouldBlockEventStream|.
 TEST_F(InputRouterImplTest, RequiredEventAckTypes) {
   const WebInputEvent::Type kRequiredEventAckTypes[] = {
     WebInputEvent::MouseMove,
@@ -1153,7 +1152,7 @@ TEST_F(InputRouterImplTest, RequiredEventAckTypes) {
   };
   for (size_t i = 0; i < arraysize(kRequiredEventAckTypes); ++i) {
     const WebInputEvent::Type required_ack_type = kRequiredEventAckTypes[i];
-    ASSERT_TRUE(WebInputEventTraits::WillReceiveAckFromRenderer(
+    ASSERT_TRUE(WebInputEventTraits::ShouldBlockEventStream(
         GetEventWithType(required_ack_type)));
   }
 }
@@ -1584,7 +1583,7 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
                        blink::WebGestureDeviceTouchscreen);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   // This test will become invalid if GestureTap stops requiring an ack.
-  ASSERT_TRUE(WebInputEventTraits::WillReceiveAckFromRenderer(
+  ASSERT_TRUE(WebInputEventTraits::ShouldBlockEventStream(
       GetEventWithType(WebInputEvent::GestureTap)));
   EXPECT_EQ(2, client_->in_flight_event_count());
   SendInputEventACK(WebInputEvent::GestureTap,
@@ -1614,7 +1613,7 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   SimulateGestureEvent(WebInputEvent::GestureDoubleTap,
                        blink::WebGestureDeviceTouchscreen);
   // This test will become invalid if GestureDoubleTap stops requiring an ack.
-  ASSERT_TRUE(WebInputEventTraits::WillReceiveAckFromRenderer(
+  ASSERT_TRUE(WebInputEventTraits::ShouldBlockEventStream(
       GetEventWithType(WebInputEvent::GestureDoubleTap)));
   EXPECT_EQ(1, client_->in_flight_event_count());
   SendInputEventACK(WebInputEvent::GestureTap, INPUT_EVENT_ACK_STATE_CONSUMED);
