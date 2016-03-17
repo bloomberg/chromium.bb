@@ -87,13 +87,18 @@ public:
     friend class ListHashSetReverseIterator<ListHashSet>;
     friend class ListHashSetConstReverseIterator<ListHashSet>;
 
-    template <typename ValueType> struct HashTableAddResult final {
+    struct AddResult final {
         STACK_ALLOCATED();
-        HashTableAddResult(Node* storedValue, bool isNewEntry) : storedValue(storedValue), isNewEntry(isNewEntry) { }
-        Node* storedValue;
+        friend class ListHashSet<ValueArg, inlineCapacity, HashArg, AllocatorArg>;
+        AddResult(Node* node, bool isNewEntry)
+            : storedValue(&node->m_value)
+            , isNewEntry(isNewEntry)
+            , m_node(node) { }
+        ValueType* storedValue;
         bool isNewEntry;
+    private:
+        Node* m_node;
     };
-    typedef HashTableAddResult<ValueType> AddResult;
 
     ListHashSet();
     ListHashSet(const ListHashSet&);
@@ -841,7 +846,7 @@ typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCa
 template <typename T, size_t inlineCapacity, typename U, typename V>
 typename ListHashSet<T, inlineCapacity, U, V>::iterator ListHashSet<T, inlineCapacity, U, V>::addReturnIterator(ValuePassInType value)
 {
-    return makeIterator(add(value).storedValue);
+    return makeIterator(add(value).m_node);
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>

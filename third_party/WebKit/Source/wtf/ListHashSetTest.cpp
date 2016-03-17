@@ -560,7 +560,7 @@ TEST(ListHashSetTest, WithOwnPtr)
         // AddResult in a separate scope to avoid assertion hit,
         // since we modify the container further.
         OwnPtrSet::AddResult res1 = set.add(adoptPtr(ptr1));
-        EXPECT_EQ(res1.storedValue->m_value.get(), ptr1);
+        EXPECT_EQ(res1.storedValue->get(), ptr1);
     }
 
     EXPECT_FALSE(deleted1);
@@ -572,7 +572,7 @@ TEST(ListHashSetTest, WithOwnPtr)
     Dummy* ptr2 = new Dummy(deleted2);
     {
         OwnPtrSet::AddResult res2 = set.add(adoptPtr(ptr2));
-        EXPECT_EQ(res2.storedValue->m_value.get(), ptr2);
+        EXPECT_EQ(res2.storedValue->get(), ptr2);
     }
 
     EXPECT_FALSE(deleted2);
