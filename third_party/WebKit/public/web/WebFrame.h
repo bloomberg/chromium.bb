@@ -217,7 +217,7 @@ public:
     BLINK_EXPORT void appendChild(WebFrame*);
 
     // Removes the given child from this frame.
-    virtual void removeChild(WebFrame*);
+    BLINK_EXPORT void removeChild(WebFrame*);
 
     // Returns the parent frame or 0 if this is a top-most frame.
     BLINK_EXPORT WebFrame* parent() const;

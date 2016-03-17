@@ -5,7 +5,6 @@
 #ifndef WebRemoteFrameImpl_h
 #define WebRemoteFrameImpl_h
 
-#include "core/frame/FrameOwner.h"
 #include "core/frame/RemoteFrame.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
@@ -13,9 +12,7 @@
 #include "web/WebExport.h"
 #include "web/WebFrameImplBase.h"
 #include "wtf/Compiler.h"
-#include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -45,7 +42,6 @@ public:
     bool hasHorizontalScrollbar() const override;
     bool hasVerticalScrollbar() const override;
     WebView* view() const override;
-    void removeChild(WebFrame*) override;
     WebDocument document() const override;
     WebPerformance performance() const override;
     bool dispatchBeforeUnloadEvent() override;
@@ -188,8 +184,6 @@ private:
     OwnPtrWillBeMember<RemoteFrameClientImpl> m_frameClient;
     RefPtrWillBeMember<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;
-
-    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>> m_ownersForChildren;
 
 #if ENABLE(OILPAN)
     // Oilpan: WebRemoteFrameImpl must remain alive until close() is called.

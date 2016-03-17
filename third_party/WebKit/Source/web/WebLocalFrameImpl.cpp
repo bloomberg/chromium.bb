@@ -227,7 +227,7 @@
 #include "web/MIDIClientProxy.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/NotificationPermissionClientImpl.h"
-#include "web/RemoteBridgeFrameOwner.h"
+#include "web/RemoteFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/SuspendableScriptExecutor.h"
 #include "web/TextFinder.h"
@@ -1451,8 +1451,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, 
 
     frame->setOwner(oldFrame->owner());
 
-    if (frame->owner() && !frame->owner()->isLocal()) {
-        toRemoteBridgeFrameOwner(frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
+    if (frame->owner() && frame->owner()->isRemote()) {
+        toRemoteFrameOwner(frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
         // Since a remote frame doesn't get the notifications about frame owner
         // property modifications, we need to sync up those properties here.
         webFrame->setFrameOwnerProperties(frameOwnerProperties);
@@ -1870,9 +1870,9 @@ void WebLocalFrameImpl::setFrameOwnerProperties(const WebFrameOwnerProperties& f
     // for frames with a remote owner.
     FrameOwner* owner = frame()->owner();
     ASSERT(owner);
-    toRemoteBridgeFrameOwner(owner)->setScrollingMode(frameOwnerProperties.scrollingMode);
-    toRemoteBridgeFrameOwner(owner)->setMarginWidth(frameOwnerProperties.marginWidth);
-    toRemoteBridgeFrameOwner(owner)->setMarginHeight(frameOwnerProperties.marginHeight);
+    toRemoteFrameOwner(owner)->setScrollingMode(frameOwnerProperties.scrollingMode);
+    toRemoteFrameOwner(owner)->setMarginWidth(frameOwnerProperties.marginWidth);
+    toRemoteFrameOwner(owner)->setMarginHeight(frameOwnerProperties.marginHeight);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::localRoot()

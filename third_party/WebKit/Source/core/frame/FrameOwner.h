@@ -23,6 +23,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual bool isLocal() const = 0;
+    virtual bool isRemote() const = 0;
 
     virtual void setContentFrame(Frame&) = 0;
     virtual void clearContentFrame() = 0;
@@ -51,6 +52,7 @@ public:
 
     // FrameOwner overrides:
     bool isLocal() const override { return false; }
+    bool isRemote() const override { return false; }
     void setContentFrame(Frame&) override { }
     void clearContentFrame() override { }
     SandboxFlags getSandboxFlags() const override { return SandboxNone; }

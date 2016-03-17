@@ -17,7 +17,7 @@
 #include "public/web/WebPerformance.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebTreeScopeType.h"
-#include "web/RemoteBridgeFrameOwner.h"
+#include "web/RemoteFrameOwner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include <v8/include/v8.h>
@@ -49,7 +49,6 @@ DEFINE_TRACE(WebRemoteFrameImpl)
 {
     visitor->trace(m_frameClient);
     visitor->trace(m_frame);
-    visitor->trace(m_ownersForChildren);
     visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
     WebFrame::traceFrames(visitor, this);
     WebFrameImplBase::trace(visitor);
@@ -173,12 +172,6 @@ WebView* WebRemoteFrameImpl::view() const
     if (!frame())
         return nullptr;
     return WebViewImpl::fromPage(frame()->page());
-}
-
-void WebRemoteFrameImpl::removeChild(WebFrame* frame)
-{
-    WebFrame::removeChild(frame);
-    m_ownersForChildren.remove(frame);
 }
 
 WebDocument WebRemoteFrameImpl::document() const
@@ -605,14 +598,13 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling, const WebFrameOwnerProperties& frameOwnerProperties, WebFrame* opener)
 {
     WebLocalFrameImpl* child = WebLocalFrameImpl::create(scope, client, opener);
-    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
-        m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(static_cast<SandboxFlags>(sandboxFlags), frameOwnerProperties));
     insertAfter(child, previousSibling);
+    RefPtrWillBeRawPtr<RemoteFrameOwner> owner = RemoteFrameOwner::create(static_cast<SandboxFlags>(sandboxFlags), frameOwnerProperties);
     // FIXME: currently this calls LocalFrame::init() on the created LocalFrame, which may
     // result in the browser observing two navigations to about:blank (one from the initial
     // frame creation, and one from swapping it into the remote process). FrameLoader might
     // need a special initialization function for this case to avoid that duplicate navigation.
-    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name, uniqueName);
+    child->initializeCoreFrame(frame()->host(), owner.get(), name, uniqueName);
     // Partially related with the above FIXME--the init() call may trigger JS dispatch. However,
     // if the parent is remote, it should never be detached synchronously...
     ASSERT(child->frame());
@@ -629,10 +621,9 @@ void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner,
 WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client, WebFrame* opener)
 {
     WebRemoteFrameImpl* child = WebRemoteFrameImpl::create(scope, client, opener);
-    WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
-        m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(static_cast<SandboxFlags>(sandboxFlags), WebFrameOwnerProperties()));
     appendChild(child);
-    child->initializeCoreFrame(frame()->host(), result.storedValue->value.get(), name, uniqueName);
+    RefPtrWillBeRawPtr<RemoteFrameOwner> owner = RemoteFrameOwner::create(static_cast<SandboxFlags>(sandboxFlags), WebFrameOwnerProperties());
+    child->initializeCoreFrame(frame()->host(), owner.get(), name, uniqueName);
     return child;
 }
 

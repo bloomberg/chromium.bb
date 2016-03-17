@@ -59,7 +59,7 @@ static bool fullscreenIsAllowedForAllOwners(const Document& document)
         // TODO(alexmos): The allowfullscreen attribute will need to be
         // replicated for this to work with OOPIFs.  For now, deny fullscreen
         // access inside OOPIFs until https://crbug.com/550497 is fixed.
-        if (!frame->owner()->isLocal())
+        if (frame->owner()->isRemote())
             return false;
 
         HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(frame->owner());

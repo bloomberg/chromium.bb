@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-#ifndef RemoteBridgeFrameOwner_h
-#define RemoteBridgeFrameOwner_h
+#ifndef RemoteFrameOwner_h
+#define RemoteFrameOwner_h
 
 #include "core/frame/FrameOwner.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -16,16 +16,17 @@ namespace blink {
 // 1. Allows the local frame's loader to retrieve sandbox flags associated with
 //    its owner element in another process.
 // 2. Trigger a load event on its owner element once it finishes a load.
-class RemoteBridgeFrameOwner final : public NoBaseWillBeGarbageCollectedFinalized<RemoteBridgeFrameOwner>, public FrameOwner {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteBridgeFrameOwner);
+class RemoteFrameOwner final : public RefCountedWillBeGarbageCollectedFinalized<RemoteFrameOwner>, public FrameOwner {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);
 public:
-    static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+    static PassRefPtrWillBeRawPtr<RemoteFrameOwner> create(SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
-        return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(flags, frameOwnerProperties));
+        return adoptRefWillBeNoop(new RemoteFrameOwner(flags, frameOwnerProperties));
     }
 
     // FrameOwner overrides:
     bool isLocal() const override { return false; }
+    bool isRemote() const override { return true; }
     void setContentFrame(Frame&) override;
     void clearContentFrame() override;
     SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
@@ -44,7 +45,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RemoteBridgeFrameOwner(SandboxFlags, const WebFrameOwnerProperties&);
+    RemoteFrameOwner(SandboxFlags, const WebFrameOwnerProperties&);
 
     RawPtrWillBeMember<Frame> m_frame;
     SandboxFlags m_sandboxFlags;
@@ -53,8 +54,8 @@ private:
     int m_marginHeight;
 };
 
-DEFINE_TYPE_CASTS(RemoteBridgeFrameOwner, FrameOwner, owner, !owner->isLocal(), !owner.isLocal());
+DEFINE_TYPE_CASTS(RemoteFrameOwner, FrameOwner, owner, owner->isRemote(), owner.isRemote());
 
 } // namespace blink
 
-#endif // RemoteBridgeFrameOwner_h
+#endif // RemoteFrameOwner_h

@@ -75,6 +75,7 @@ public:
 
     // FrameOwner overrides:
     bool isLocal() const override { return true; }
+    bool isRemote() const override { return false; }
     void setContentFrame(Frame&) override;
     void clearContentFrame() override;
     void dispatchLoad() override;

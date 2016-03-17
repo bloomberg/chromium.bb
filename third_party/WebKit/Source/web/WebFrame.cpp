@@ -18,7 +18,7 @@
 #include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebSandboxFlags.h"
 #include "web/OpenedFrameTracker.h"
-#include "web/RemoteBridgeFrameOwner.h"
+#include "web/RemoteFrameOwner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include <algorithm>
@@ -72,6 +72,13 @@ bool WebFrame::swap(WebFrame* frame)
     AtomicString name = oldFrame->tree().name();
     AtomicString uniqueName = oldFrame->tree().uniqueName();
     FrameOwner* owner = oldFrame->owner();
+#if !ENABLE(OILPAN)
+    // Persistence of a remote frame owner is complicated in the pre-Oilpan
+    // world. Please see RemoteFrameOwner::setContentFrame() for the details.
+    RefPtr<RemoteFrameOwner> remoteOwnerProtector;
+    if (owner && owner->isRemote())
+        remoteOwnerProtector = toRemoteFrameOwner(owner);
+#endif
 
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     HashMap<DOMWrapperWorld*, v8::Local<v8::Object>> globals;
@@ -129,7 +136,7 @@ void WebFrame::setFrameOwnerSandboxFlags(WebSandboxFlags flags)
     // for frames with a remote owner.
     FrameOwner* owner = toImplBase()->frame()->owner();
     ASSERT(owner);
-    toRemoteBridgeFrameOwner(owner)->setSandboxFlags(static_cast<SandboxFlags>(flags));
+    toRemoteFrameOwner(owner)->setSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
 bool WebFrame::shouldEnforceStrictMixedContentChecking() const
