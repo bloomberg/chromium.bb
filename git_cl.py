@@ -1328,8 +1328,6 @@ or verify this branch is set up to track another (via the --track argument to
 
   def _IssueSetting(self):
     """Return the git setting that stores this change's issue."""
-    if settings.GetIsGerrit():
-      return 'branch.%s.gerritissue' % self.GetBranch()
     return 'branch.%s.rietveldissue' % self.GetBranch()
 
   def _PatchsetSetting(self):

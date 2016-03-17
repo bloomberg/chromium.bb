@@ -321,7 +321,6 @@ class TestGitCl(TestCase):
          'diff', '--name-status', '--no-renames', '-r', 'fake_ancestor_sha...',
          '.'],),
         'M\tPRESUBMIT.py'),
-      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git',
          'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git',
@@ -335,7 +334,6 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_bypassed(cls):
     return [
-      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git',
          'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
@@ -345,6 +343,7 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_3(cls):
     return [
+      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git',
          'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
          '-l100000', '-C50', 'fake_ancestor_sha',
@@ -570,7 +569,7 @@ class TestGitCl(TestCase):
            'diff', '--name-status', '--no-renames', '-r',
            'fake_ancestor_sha...', '.'],),
          'M\t.gitignore\n'),
-        ((['git', 'config', 'branch.master.gerritissue'],), ''),
+        ((['git', 'config', 'branch.master.rietveldissue'],), ''),
         ((['git',
            'config', 'branch.master.rietveldpatchset'],), ''),
         ((['git',
@@ -663,7 +662,7 @@ class TestGitCl(TestCase):
         ]
     if squash:
       calls += [
-          ((['git', 'config', 'branch.master.gerritissue', '123456'],), ''),
+          ((['git', 'config', 'branch.master.rietveldissue', '123456'],), ''),
           ((['git', 'rev-parse', 'HEAD'],), 'abcdef0123456789'),
           ((['git', 'update-ref', '-m', 'Uploaded abcdef0123456789',
             'refs/heads/git_cl_uploads/master', 'abcdef0123456789'],),
