@@ -141,6 +141,7 @@ static const char * const modules[] = {
 	"atmel-hlcdc",
 	"fsl-dcu-drm",
 	"vc4",
+	"virtio_gpu",
 };
 
 int util_open(const char *device, const char *module)
