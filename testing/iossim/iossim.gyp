@@ -13,6 +13,7 @@
     ['OS!="ios" or "<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja"', {
       'targets': [
         {
+          # GN version //testing/iossim(//build/toolchain/mac:clang_x64)
           'target_name': 'iossim',
           'toolsets': ['host'],
           'type': 'executable',
