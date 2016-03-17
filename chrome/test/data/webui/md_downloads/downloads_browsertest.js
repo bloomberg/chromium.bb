@@ -24,9 +24,6 @@ DownloadsBrowserTest.prototype = {
   browsePreload: 'chrome://downloads/manager.html',
 
   /** @override */
-  commandLineSwitches: [{switchName: 'enable-md-downloads'}],
-
-  /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'layout_tests.js',
   ]),
