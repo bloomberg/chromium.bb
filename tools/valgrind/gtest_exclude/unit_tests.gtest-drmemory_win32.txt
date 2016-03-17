@@ -84,3 +84,7 @@ SigninErrorNotifierTest.NoErrorAuthStatusProviders
 
 # https://crbug.com/577410
 PluginInfoMessageFilterTest.FindEnabledPlugin
+
+# https://crbug.com/595490
+SpellCheckTest.SpellCheckStrings_EN_US
+SpellCheckTest.SpellCheckText
