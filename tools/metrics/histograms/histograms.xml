@@ -65271,8 +65271,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="169" label="INPUT_METHOD_PRIVATE_ON_DICTIONARY_CHANGED"/>
   <int value="170" label="INPUT_METHOD_PRIVATE_ON_DICTIONARY_LOADED"/>
   <int value="171" label="INSTANCE_ID_ON_TOKEN_REFRESH"/>
-  <int value="172" label="LOCATION_ON_LOCATION_ERROR"/>
-  <int value="173" label="LOCATION_ON_LOCATION_UPDATE"/>
+  <int value="172" label="DELETED_LOCATION_ON_LOCATION_ERROR"/>
+  <int value="173" label="DELETED_LOCATION_ON_LOCATION_UPDATE"/>
   <int value="174" label="LOG_PRIVATE_ON_CAPTURED_EVENTS"/>
   <int value="175" label="MANAGEMENT_ON_DISABLED"/>
   <int value="176" label="MANAGEMENT_ON_ENABLED"/>
@@ -65971,8 +65971,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="448" label="DEVELOPERPRIVATE_LOADPROJECT"/>
   <int value="449" label="COMMANDLINEPRIVATE_HASSWITCH"/>
   <int value="450" label="NETWORKINGPRIVATE_GETMANAGEDPROPERTIES"/>
-  <int value="451" label="LOCATION_WATCHLOCATION"/>
-  <int value="452" label="LOCATION_CLEARWATCH"/>
+  <int value="451" label="DELETED_LOCATION_WATCHLOCATION"/>
+  <int value="452" label="DELETED_LOCATION_CLEARWATCH"/>
   <int value="453" label="DELETED_BLUETOOTH_ADDPROFILE"/>
   <int value="454" label="DELETED_BLUETOOTH_REMOVEPROFILE"/>
   <int value="455" label="DELETED_BLUETOOTH_GETPROFILES"/>
@@ -66105,8 +66105,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="579" label="WEBRTCLOGGINGPRIVATE_UPLOAD"/>
   <int value="580" label="WEBRTCLOGGINGPRIVATE_DISCARD"/>
   <int value="581" label="DELETED_WEBVIEW_OVERRIDEUSERAGENT"/>
-  <int value="582" label="PRINCIPALSPRIVATE_SHOWAVATARBUBBLE"/>
-  <int value="583" label="PRINCIPALSPRIVATE_SIGNOUT"/>
+  <int value="582" label="DELETED_PRINCIPALSPRIVATE_SHOWAVATARBUBBLE"/>
+  <int value="583" label="DELETED_PRINCIPALSPRIVATE_SIGNOUT"/>
   <int value="584" label="CAST_CHANNEL_OPEN"/>
   <int value="585" label="CAST_CHANNEL_SEND"/>
   <int value="586" label="CAST_CHANNEL_CLOSE"/>
@@ -66184,7 +66184,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="657" label="BOOKMARKMANAGERPRIVATE_REDOINFO"/>
   <int value="658" label="MEDIAGALLERIES_ADDUSERSELECTEDFOLDER"/>
   <int value="659"
-      label="PREFERENCESPRIVATE_GETSYNCCATEGORIESWITHOUTPASSPHRASE"/>
+      label="DELETED_PREFERENCESPRIVATE_GETSYNCCATEGORIESWITHOUTPASSPHRASE"/>
   <int value="660" label="DELETED_READINGLISTPRIVATE_ADDENTRY"/>
   <int value="661" label="DELETED_READINGLISTPRIVATE_REMOVEENTRY"/>
   <int value="662" label="DELETED_READINGLISTPRIVATE_GETENTRIES"/>
