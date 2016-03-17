@@ -257,7 +257,7 @@ void MockWebSpeechRecognizer::StepTask::RunIfValid() {
     return;
   }
 
-  Task* task = object_->task_queue_.front();
+  MockWebSpeechRecognizer::Task* task = object_->task_queue_.front();
   object_->task_queue_.pop_front();
   task->run();
   delete task;

@@ -30,8 +30,6 @@
 #include "build/build_config.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/test_runner/gamepad_controller.h"
-#include "components/test_runner/test_interfaces.h"
-#include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
@@ -113,18 +111,6 @@ using blink::WebView;
 namespace content {
 
 namespace {
-
-class InvokeTaskHelper : public blink::WebTaskRunner::Task {
- public:
-  InvokeTaskHelper(scoped_ptr<test_runner::WebTask> task)
-      : task_(std::move(task)) {}
-
-  // WebThread::Task implementation:
-  void run() override { task_->run(); }
-
- private:
-  scoped_ptr<test_runner::WebTask> task_;
-};
 
 class SyncNavigationStateVisitor : public RenderViewVisitor {
  public:
@@ -290,17 +276,15 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
   Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
 }
 
-void BlinkTestRunner::PostTask(test_runner::WebTask* task) {
+void BlinkTestRunner::PostTask(blink::WebTaskRunner::Task* task) {
   Platform::current()->currentThread()->getWebTaskRunner()->postTask(
-      WebTraceLocation(__FUNCTION__, __FILE__),
-      new InvokeTaskHelper(make_scoped_ptr(task)));
+      WebTraceLocation(__FUNCTION__, __FILE__), task);
 }
 
-void BlinkTestRunner::PostDelayedTask(test_runner::WebTask* task,
+void BlinkTestRunner::PostDelayedTask(blink::WebTaskRunner::Task* task,
                                       long long ms) {
   Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(
-      WebTraceLocation(__FUNCTION__, __FILE__),
-      new InvokeTaskHelper(make_scoped_ptr(task)), ms);
+      WebTraceLocation(__FUNCTION__, __FILE__), task, ms);
 }
 
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(

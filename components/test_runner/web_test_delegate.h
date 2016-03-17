@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
@@ -82,8 +83,9 @@ class WebTestDelegate {
 
   // The delegate takes ownership of the WebTask objects and is responsible
   // for deleting them.
-  virtual void PostTask(WebTask* task) = 0;
-  virtual void PostDelayedTask(WebTask* task, long long ms) = 0;
+  virtual void PostTask(blink::WebTaskRunner::Task* task) = 0;
+  virtual void PostDelayedTask(blink::WebTaskRunner::Task* task,
+                               long long ms) = 0;
 
   // Register a new isolated filesystem with the given files, and return the
   // new filesystem id.

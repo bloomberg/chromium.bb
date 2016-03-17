@@ -71,8 +71,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceOrientationData(
       const blink::WebDeviceOrientationData& data) override;
   void PrintMessage(const std::string& message) override;
-  void PostTask(test_runner::WebTask* task) override;
-  void PostDelayedTask(test_runner::WebTask* task, long long ms) override;
+  void PostTask(blink::WebTaskRunner::Task* task) override;
+  void PostDelayedTask(blink::WebTaskRunner::Task* task, long long ms) override;
   blink::WebString RegisterIsolatedFileSystem(
       const blink::WebVector<blink::WebString>& absolute_filenames) override;
   long long GetCurrentTimeInMillisecond() override;

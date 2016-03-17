@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "third_party/WebKit/public/platform/WebTaskRunner.h"
 
 namespace test_runner {
 
@@ -15,15 +16,15 @@ class WebTaskList;
 
 // WebTask represents a task which can run by WebTestDelegate::postTask() or
 // WebTestDelegate::postDelayedTask().
-class WebTask {
+class WebTask : public blink::WebTaskRunner::Task {
  public:
   explicit WebTask(WebTaskList*);
-  virtual ~WebTask();
+  ~WebTask() override;
 
   // The main code of this task.
   // An implementation of run() should return immediately if cancel() was
   // called.
-  virtual void run() = 0;
+  void run() override = 0;
   virtual void cancel() = 0;
 
  protected:
