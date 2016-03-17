@@ -49,6 +49,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -523,12 +524,13 @@ class SSLUITest
     ASSERT_TRUE(https_server_expired_.Start());
     ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
 
-    // Set up the build and current clock times to be more than a year apart.
-    scoped_ptr<base::SimpleTestClock> mock_clock(new base::SimpleTestClock());
-    mock_clock->SetNow(base::Time::NowFromSystemTime());
-    mock_clock->Advance(base::TimeDelta::FromDays(367));
-    SSLErrorHandler::SetClockForTest(mock_clock.get());
-    ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
+    // Set network time back ten minutes, which is sufficient to
+    // trigger the reporting.
+    g_browser_process->network_time_tracker()->UpdateNetworkTime(
+        base::Time::Now() - base::TimeDelta::FromMinutes(10),
+        base::TimeDelta::FromMilliseconds(1),   /* resolution */
+        base::TimeDelta::FromMilliseconds(500), /* latency */
+        base::TimeTicks::Now() /* posting time of this update */);
 
     // Opt in to sending reports for invalid certificate chains.
     certificate_reporting_test_utils::SetCertReportingOptIn(browser, opt_in);
@@ -898,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
   EXPECT_EQ(title, expected_title);
 }
 
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClock) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingBuildTime) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   // Set up the build and current clock times to be more than a year apart.
@@ -907,6 +909,26 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClock) {
   mock_clock->Advance(base::TimeDelta::FromDays(367));
   SSLErrorHandler::SetClockForTest(mock_clock.get());
   ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
+
+  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  WebContents* clock_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForInterstitialAttach(clock_tab);
+  InterstitialPage* clock_interstitial = clock_tab->GetInterstitialPage();
+  ASSERT_TRUE(clock_interstitial);
+  EXPECT_EQ(BadClockBlockingPage::kTypeForTesting,
+            clock_interstitial->GetDelegateForTesting()->GetTypeForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingNetwork) {
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  // Set network forward ten minutes, which is sufficient to trigger
+  // the interstitial.
+  g_browser_process->network_time_tracker()->UpdateNetworkTime(
+      base::Time::Now() + base::TimeDelta::FromMinutes(10),
+      base::TimeDelta::FromMilliseconds(1),   /* resolution */
+      base::TimeDelta::FromMilliseconds(500), /* latency */
+      base::TimeTicks::Now() /* posting time of this update */);
 
   ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
   WebContents* clock_tab = browser()->tab_strip_model()->GetActiveWebContents();

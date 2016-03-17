@@ -16,6 +16,7 @@ BadClockUI::BadClockUI(const GURL& request_url,
                        int cert_error,
                        const net::SSLInfo& ssl_info,
                        const base::Time& time_triggered,
+                       ssl_errors::ClockState clock_state,
                        const std::string& languages,
                        ControllerClient* controller)
     : request_url_(request_url),
@@ -23,13 +24,13 @@ BadClockUI::BadClockUI(const GURL& request_url,
       ssl_info_(ssl_info),
       time_triggered_(time_triggered),
       languages_(languages),
-      controller_(controller) {
+      controller_(controller),
+      clock_state_(clock_state) {
   controller_->metrics_helper()->RecordUserInteraction(
       security_interstitials::MetricsHelper::TOTAL_VISITS);
 
-  // TODO(felt): Separate the clock statistics from the main ssl statistics.
-  ssl_errors::RecordUMAStatistics(false, time_triggered_, request_url_,
-                                  cert_error_, *ssl_info_.cert.get());
+  ssl_errors::RecordUMAStatisticsForClockInterstitial(false, clock_state_,
+                                                      cert_error_);
 }
 
 BadClockUI::~BadClockUI() {
@@ -54,9 +55,17 @@ void BadClockUI::PopulateClockStrings(base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("overridable", false);
   load_time_data->SetBoolean("hide_primary_button",
                              !controller_->CanLaunchDateAndTimeSettings());
-  int heading_string = ssl_errors::IsUserClockInTheFuture(time_triggered_)
-                           ? IDS_CLOCK_ERROR_AHEAD_HEADING
-                           : IDS_CLOCK_ERROR_BEHIND_HEADING;
+  int heading_string = 0;
+  switch (clock_state_) {
+    case ssl_errors::CLOCK_STATE_FUTURE:
+      heading_string = IDS_CLOCK_ERROR_AHEAD_HEADING;
+      break;
+    case ssl_errors::CLOCK_STATE_PAST:
+      heading_string = IDS_CLOCK_ERROR_BEHIND_HEADING;
+      break;
+    default:
+      NOTREACHED();
+  }
   load_time_data->SetString("tabTitle",
                             l10n_util::GetStringUTF16(IDS_CLOCK_ERROR_TITLE));
   load_time_data->SetString("heading",

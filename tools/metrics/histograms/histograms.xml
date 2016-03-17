@@ -18021,6 +18021,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.clockstate.build_time" enum="ClockStates">
+  <owner>mab@chromium.org</owner>
+  <summary>
+    State of the system clock, as inferred from the build timestamp, when an SSL
+    CERT_INVALID_DATE error is seen.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl.clockstate.network" enum="ClockStates">
+  <owner>mab@chromium.org</owner>
+  <summary>
+    State of the system clock, relative to network time, when an SSL
+    CERT_INVALID_DATE error is seen.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl.connection_type"
     enum="ResourcePrefetchPredictorNetworkType">
   <owner>felt@chromium.org</owner>
@@ -61325,6 +61341,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Read Text"/>
 </enum>
 
+<enum name="ClockStates" type="int">
+  <int value="0"
+      label="CLOCK_STATE_UNKNOWN: accuracy of system clock is unknown"/>
+  <int value="1" label="CLOCK_STATE_OK: system clock is roughly accurate"/>
+  <int value="2" label="CLOCK_STATE_PAST: system clock is in the past"/>
+  <int value="3" label="CLOCK_STATE_FUTURE: system clock is in the future"/>
+</enum>
+
 <enum name="CloudImportUserAction" type="int">
   <int value="0" label="IMPORT_INITIATED"/>
 </enum>
@@ -81913,8 +81937,16 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SSLErrorCauses" type="int">
-  <int value="0" label="CLOCK_PAST: System clock set early"/>
-  <int value="1" label="CLOCK_FUTURE: System clock set late"/>
+  <int value="0" label="CLOCK_PAST: System clock set early">
+    This cause is recorded if the SSL error is CERT_DATE_INVALID and Chrome had
+    reason to believe that the system clock was behind.  Methods of detecting
+    clock inaccuracy have changed over time.
+  </int>
+  <int value="1" label="CLOCK_FUTURE: System clock set late">
+    This cause is recorded if the SSL error is CERT_DATE_INVALID and Chrome had
+    reason to believe that the system clock was behind.  Methods of detecting
+    clock inaccuracy have changed over time.
+  </int>
   <int value="2"
       label="WWW_SUBDOMAIN_MATCH: Difference between the URL and the DNS is
              www">

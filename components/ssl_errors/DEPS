@@ -1,4 +1,6 @@
 include_rules = [
+  "+components/network_time",
+  "+components/prefs",
   "+components/url_formatter",
   "+grit",
   "+net",

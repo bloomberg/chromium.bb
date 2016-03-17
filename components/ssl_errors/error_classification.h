@@ -18,18 +18,42 @@ namespace net {
 class X509Certificate;
 }
 
+namespace network_time {
+class NetworkTimeTracker;
+}
+
 namespace ssl_errors {
 
 typedef std::vector<std::string> HostnameTokens;
 
 // Methods for identifying specific error causes. ------------------------------
 
-// Returns true if the system time is in the past.
-bool IsUserClockInThePast(const base::Time& time_now);
+// What is known about the accuracy of system clock.  Do not change or
+// reorder; these values are used in an UMA histogram.
+enum ClockState {
+  // Not known whether system clock is close enough.
+  CLOCK_STATE_UNKNOWN,
 
-// Returns true if the system time is too far in the future or the user is
-// using a version of Chrome which is more than 1 year old.
-bool IsUserClockInTheFuture(const base::Time& time_now);
+  // System clock is "close enough", per network time.
+  CLOCK_STATE_OK,
+
+  // System clock is behind.
+  CLOCK_STATE_PAST,
+
+  // System clock is ahead.
+  CLOCK_STATE_FUTURE,
+
+  CLOCK_STATE_MAX,
+};
+
+// Compares |now_system| to the build time and to the current network time, and
+// returns an inference about the state of the system clock.  A result from
+// network time, if available, will always be preferred to a result from the
+// build time.  Calling this function records UMA statistics: it's assumed that
+// it's called in the course of handling an SSL error.
+ClockState GetClockState(
+    const base::Time& now_system,
+    const network_time::NetworkTimeTracker* network_time_tracker);
 
 // Returns true if |hostname| is too broad for the scope of a wildcard
 // certificate. E.g.:
@@ -70,6 +94,13 @@ void RecordUMAStatistics(bool overridable,
                          const GURL& request_url,
                          int cert_error,
                          const net::X509Certificate& cert);
+
+// Specialization of |RecordUMAStatistics| to be used when the bad clock
+// interstitial is shown.  |cert_error| is required only for sanity-checking: it
+// must always be |ssl_errors::ErrorInfo::CERT_DATE_INVALID|.
+void RecordUMAStatisticsForClockInterstitial(bool overridable,
+                                             ssl_errors::ClockState clock_state,
+                                             int cert_error);
 
 // Helper methods for classification. ------------------------------------------
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -98,7 +99,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   virtual void ShowCaptivePortalInterstitial(const GURL& landing_url);
   virtual void ShowSSLInterstitial();
 
-  void ShowBadClockInterstitial(const base::Time& now);
+  void ShowBadClockInterstitial(const base::Time& now,
+                                ssl_errors::ClockState clock_state);
 
   // Gets the result of whether the suggested URL is valid. Displays
   // common name mismatch interstitial or ssl interstitial accordingly.

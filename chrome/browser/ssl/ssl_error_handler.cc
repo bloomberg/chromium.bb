@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -32,6 +33,10 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 #endif
+
+namespace network_time {
+class NetworkTimeTracker;
+}
 
 namespace {
 
@@ -136,15 +141,6 @@ bool IsSSLCommonNameMismatchHandlingEnabled() {
          "Enabled";
 }
 
-bool IsErrorDueToBadClock(const base::Time& now, int error) {
-  if (ssl_errors::ErrorInfo::NetErrorToErrorType(error) !=
-      ssl_errors::ErrorInfo::CERT_DATE_INVALID) {
-    return false;
-  }
-  return ssl_errors::IsUserClockInThePast(now) ||
-         ssl_errors::IsUserClockInTheFuture(now);
-}
-
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SSLErrorHandler);
@@ -209,9 +205,15 @@ void SSLErrorHandler::StartHandlingError() {
   const base::Time now = g_testing_clock == nullptr
                              ? base::Time::NowFromSystemTime()
                              : g_testing_clock->Now();
-  if (IsErrorDueToBadClock(now, cert_error_)) {
-    ShowBadClockInterstitial(now);
-    return;  // |this| is deleted after showing the interstitial.
+  if (ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error_) ==
+      ssl_errors::ErrorInfo::CERT_DATE_INVALID) {
+    ssl_errors::ClockState clock_state = ssl_errors::GetClockState(
+        now, g_browser_process->network_time_tracker());
+    if (clock_state == ssl_errors::CLOCK_STATE_FUTURE ||
+        clock_state == ssl_errors::CLOCK_STATE_PAST) {
+      ShowBadClockInterstitial(now, clock_state);
+      return;  // |this| is deleted after showing the interstitial.
+    }
   }
 
   std::vector<std::string> dns_names;
@@ -340,10 +342,13 @@ void SSLErrorHandler::ShowSSLInterstitial() {
   web_contents_->RemoveUserData(UserDataKey());
 }
 
-void SSLErrorHandler::ShowBadClockInterstitial(const base::Time& now) {
+void SSLErrorHandler::ShowBadClockInterstitial(
+    const base::Time& now,
+    ssl_errors::ClockState clock_state) {
   RecordUMA(SHOW_BAD_CLOCK);
   (new BadClockBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
-                            now, std::move(ssl_cert_reporter_), callback_))
+                            now, clock_state, std::move(ssl_cert_reporter_),
+                            callback_))
       ->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".

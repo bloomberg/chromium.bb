@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "components/ssl_errors/error_classification.h"
 #include "net/ssl/ssl_info.h"
 
 class CertReportHelper;
@@ -38,6 +39,7 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
                        const net::SSLInfo& ssl_info,
                        const GURL& request_url,
                        const base::Time& time_triggered,
+                       ssl_errors::ClockState clock_state,
                        scoped_ptr<SSLCertReporter> ssl_cert_reporter,
                        const base::Callback<void(bool)>& callback);
 

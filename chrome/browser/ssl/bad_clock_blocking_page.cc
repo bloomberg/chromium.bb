@@ -56,6 +56,7 @@ BadClockBlockingPage::BadClockBlockingPage(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     const base::Time& time_triggered,
+    ssl_errors::ClockState clock_state,
     scoped_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
@@ -86,7 +87,7 @@ BadClockBlockingPage::BadClockBlockingPage(
       false /* overridable */, controller_->metrics_helper()));
 
   bad_clock_ui_.reset(new security_interstitials::BadClockUI(
-      request_url, cert_error, ssl_info, time_triggered, languages,
+      request_url, cert_error, ssl_info, time_triggered, clock_state, languages,
       controller_.get()));
 }
 

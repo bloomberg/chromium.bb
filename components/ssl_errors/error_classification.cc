@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/network_change_notifier.h"
@@ -117,23 +118,30 @@ base::LazyInstance<base::Time> g_testing_build_time = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
+static ssl_errors::ErrorInfo::ErrorType RecordErrorType(int cert_error) {
+  ssl_errors::ErrorInfo::ErrorType error_type =
+      ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error);
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type", error_type,
+                            ssl_errors::ErrorInfo::END_OF_ENUM);
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.connection_type",
+                            net::NetworkChangeNotifier::GetConnectionType(),
+                            net::NetworkChangeNotifier::CONNECTION_LAST);
+  return error_type;
+}
+
 void RecordUMAStatistics(bool overridable,
                          const base::Time& current_time,
                          const GURL& request_url,
                          int cert_error,
                          const net::X509Certificate& cert) {
-  ssl_errors::ErrorInfo::ErrorType type =
-      ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error);
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type", type,
-                            ssl_errors::ErrorInfo::END_OF_ENUM);
-  switch (type) {
+  ssl_errors::ErrorInfo::ErrorType error_type = RecordErrorType(cert_error);
+
+  switch (error_type) {
     case ssl_errors::ErrorInfo::CERT_DATE_INVALID: {
-      if (IsUserClockInThePast(base::Time::NowFromSystemTime())) {
-        RecordSSLInterstitialCause(overridable, CLOCK_PAST);
-      } else if (IsUserClockInTheFuture(base::Time::NowFromSystemTime())) {
-        RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
-      } else if (cert.HasExpired() &&
-                 (current_time - cert.valid_expiry()).InDays() < 28) {
+      // Note: not reached when displaying the bad clock interstitial.
+      // See |RecordUMAStatisticsForClockInterstitial| below.
+      if (cert.HasExpired() &&
+          (current_time - cert.valid_expiry()).InDays() < 28) {
         RecordSSLInterstitialCause(overridable, EXPIRED_RECENTLY);
       }
       break;
@@ -176,35 +184,57 @@ void RecordUMAStatistics(bool overridable,
     default:
       break;
   }
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.connection_type",
-                            net::NetworkChangeNotifier::GetConnectionType(),
-                            net::NetworkChangeNotifier::CONNECTION_LAST);
 }
 
-bool IsUserClockInThePast(const base::Time& time_now) {
-  base::Time build_time;
-  if (!g_testing_build_time.Get().is_null()) {
-    build_time = g_testing_build_time.Get();
-  } else {
-    build_time = base::GetBuildTime();
-  }
+void RecordUMAStatisticsForClockInterstitial(bool overridable,
+                                             ssl_errors::ClockState clock_state,
+                                             int cert_error) {
+  ssl_errors::ErrorInfo::ErrorType error_type = RecordErrorType(cert_error);
+  DCHECK(error_type == ssl_errors::ErrorInfo::CERT_DATE_INVALID);
 
-  if (time_now < build_time - base::TimeDelta::FromDays(2))
-    return true;
-  return false;
+  if (clock_state == ssl_errors::CLOCK_STATE_FUTURE) {
+    RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
+  } else if (clock_state == ssl_errors::CLOCK_STATE_PAST) {
+    RecordSSLInterstitialCause(overridable, CLOCK_PAST);
+  } else {
+    NOTREACHED();
+  }
 }
 
-bool IsUserClockInTheFuture(const base::Time& time_now) {
-  base::Time build_time;
-  if (!g_testing_build_time.Get().is_null()) {
-    build_time = g_testing_build_time.Get();
-  } else {
-    build_time = base::GetBuildTime();
+ClockState GetClockState(
+    const base::Time& now_system,
+    const network_time::NetworkTimeTracker* network_time_tracker) {
+  base::Time now_network;
+  base::TimeDelta uncertainty;
+  const base::TimeDelta kNetworkTimeFudge = base::TimeDelta::FromMinutes(5);
+  ClockState network_state = CLOCK_STATE_UNKNOWN;
+  if (network_time_tracker->GetNetworkTime(&now_network, &uncertainty)) {
+    if (now_system < now_network - uncertainty - kNetworkTimeFudge) {
+      network_state = CLOCK_STATE_PAST;
+    } else if (now_system > now_network + uncertainty + kNetworkTimeFudge) {
+      network_state = CLOCK_STATE_FUTURE;
+    } else {
+      network_state = CLOCK_STATE_OK;
+    }
   }
 
-  if (time_now > build_time + base::TimeDelta::FromDays(365))
-    return true;
-  return false;
+  ClockState build_time_state = CLOCK_STATE_UNKNOWN;
+  base::Time build_time = g_testing_build_time.Get().is_null()
+                              ? base::GetBuildTime()
+                              : g_testing_build_time.Get();
+  if (now_system < build_time - base::TimeDelta::FromDays(2)) {
+    build_time_state = CLOCK_STATE_PAST;
+  } else if (now_system > build_time + base::TimeDelta::FromDays(365)) {
+    build_time_state = CLOCK_STATE_FUTURE;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.network",
+                            network_state, CLOCK_STATE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.build_time",
+                            build_time_state, CLOCK_STATE_MAX);
+
+  return network_state == CLOCK_STATE_UNKNOWN ? build_time_state
+                                              : network_state;
 }
 
 void SetBuildTimeForTesting(const base::Time& testing_time) {
