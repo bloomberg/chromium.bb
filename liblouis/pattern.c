@@ -605,56 +605,6 @@ static int pattern_compile_1(const widechar *input,
                              widechar *expr_crs,
                              widechar *loop_cnts);
 
-static int pattern_insert_alternate(const widechar *input,
-                                    const int input_max,
-                                    int *input_crs,
-                                    widechar *expr_data,
-                                    const int expr_max,
-                                    widechar *expr_crs,
-                                    widechar *loop_cnts)
-{
-	int expr_insert, expr_group;
-
-	if(EXPR_TYPE(*expr_crs) == PTN_START)
-		return 0;
-
-	expr_insert = *expr_crs;
-
-	if(*expr_crs + 13 >= expr_max)
-		return 0;
-	*expr_crs += 5;
-	expr_group = *expr_crs;
-	EXPR_TYPE(expr_group) = PTN_GROUP;
-	EXPR_PRV(expr_group) = PTN_END;
-	EXPR_NXT(expr_group) = PTN_END;
-	*expr_crs += 4;
-	EXPR_DATA_0(expr_group) = *expr_crs;
-
-	EXPR_TYPE(*expr_crs) = PTN_ERROR;
-	EXPR_PRV(*expr_crs) = PTN_END;
-	EXPR_NXT(*expr_crs) = PTN_END;
-	if(!pattern_compile_1(input, input_max, input_crs, expr_data, expr_max, expr_crs, loop_cnts))
-		return 0;
-	EXPR_NXT(*expr_crs) = expr_group;
-
-	if(*expr_crs + 8 >= expr_max)
-		return 0;
-	*expr_crs += 3;
-	EXPR_TYPE(*expr_crs) = PTN_ALTERNATE;
-
-	/*   relink    */
-	EXPR_NXT(EXPR_PRV(expr_insert)) = expr_group;
-	EXPR_PRV(expr_group) = EXPR_PRV(expr_insert);
-
-	EXPR_NXT(expr_group) = *expr_crs;
-	EXPR_PRV(*expr_crs) = expr_group;
-
-	EXPR_NXT(*expr_crs) = expr_insert;
-	EXPR_PRV(expr_insert) = *expr_crs;
-
-	return *expr_crs += 5;
-}
-
 static int pattern_compile_expression(const widechar *input,
                                       const int input_max,
                                       int *input_crs,
@@ -864,11 +814,6 @@ static int pattern_compile_expression(const widechar *input,
 
 		if(set)
 			(*input_crs)++;
-		if(attrs0 & CTC_SeqAfter)
-		{
-			i = 0;
-			return pattern_insert_alternate(table->seqAfterExpression, table->seqAfterExpressionLength, &i, expr_data, expr_max, expr_crs, loop_cnts);
-		}
 		return *expr_crs += 5;
 
 	case '[':
@@ -991,6 +936,73 @@ static int pattern_compile_expression(const widechar *input,
 	return 0;
 }
 
+static int pattern_insert_alternate(const widechar *input,
+                                    const int input_max,
+                                    int *input_crs,
+                                    widechar *expr_data,
+                                    const int expr_max,
+                                    widechar *expr_crs,
+                                    widechar *loop_cnts,
+                                    int expr_insert)
+{
+	int expr_group, expr_alt, expr_end;
+
+	if(EXPR_TYPE(*expr_crs) == PTN_START)
+		return 0;
+
+	if(*expr_crs + 12 >= expr_max)
+		return 0;
+
+	/*   setup alternate expression   */
+	expr_alt = *expr_crs;
+	EXPR_TYPE(expr_alt) = PTN_ALTERNATE;
+	EXPR_PRV(expr_alt) = PTN_END;
+	EXPR_NXT(expr_alt) = PTN_END;
+	*expr_crs += 5;
+
+	/*   setup group expression   */
+	expr_group = *expr_crs;
+	EXPR_TYPE(expr_group) = PTN_GROUP;
+	EXPR_PRV(expr_group) = PTN_END;
+	EXPR_NXT(expr_group) = PTN_END;
+	*expr_crs += 4;
+	EXPR_DATA_0(expr_group) = *expr_crs;
+
+	EXPR_TYPE(*expr_crs) = PTN_ERROR;
+	EXPR_PRV(*expr_crs) = PTN_END;
+	EXPR_NXT(*expr_crs) = PTN_END;
+	if(!pattern_compile_1(input, input_max, input_crs, expr_data, expr_max, expr_crs, loop_cnts))
+		return 0;
+	expr_end = *expr_crs;
+	EXPR_NXT(expr_end) = expr_group;
+
+	/*   setup last end expression   */
+	if(*expr_crs + 3 >= expr_max)
+		return 0;
+	*expr_crs += 3;
+	EXPR_TYPE(*expr_crs) = PTN_END;
+	EXPR_NXT(*expr_crs) = PTN_END;
+
+	/*   replace insert expression with group expression using last end expression   */
+	EXPR_NXT(EXPR_PRV(expr_insert)) = expr_group;
+	EXPR_PRV(expr_group) = EXPR_PRV(expr_insert);
+
+	EXPR_NXT(expr_group) = *expr_crs;
+	EXPR_PRV(*expr_crs) = expr_group;
+
+	/*   link alternate and insert expressions before group end expression   */
+	EXPR_NXT(EXPR_PRV(expr_end)) = expr_alt;
+	EXPR_PRV(expr_alt) = EXPR_PRV(expr_end);
+
+	EXPR_NXT(expr_alt) = expr_insert;
+	EXPR_PRV(expr_insert) = expr_alt;
+
+	EXPR_NXT(expr_insert) = expr_end;
+	EXPR_PRV(expr_end) = expr_insert;
+
+	return *expr_crs;
+}
+
 /* Compile all expression sequences, resolving character sets, attributes,
  * groups, nots, and hooks.  Note that unlike the other compile functions, on
  * returning the expr_crs is set to the last end expression, not after it.
@@ -1003,7 +1015,7 @@ static int pattern_compile_1(const widechar *input,
                              widechar *expr_crs,
                              widechar *loop_cnts)
 {
-	int expr_crs_prv;
+	int expr_crs_prv, i;
 
 	if(*expr_crs + 6 >= expr_max)
 		return 0;
@@ -1034,6 +1046,14 @@ static int pattern_compile_1(const widechar *input,
 		EXPR_TYPE(*expr_crs) = PTN_END;
 		EXPR_PRV(*expr_crs) = expr_crs_prv;
 		EXPR_NXT(*expr_crs) = PTN_END;
+
+		/*   insert seqafterexpression before attributes of seqafterchars   */
+		if(EXPR_TYPE(expr_crs_prv) == PTN_ATTRIBUTES)
+		if(EXPR_DATA_1(expr_crs_prv) & CTC_SeqAfter)
+		{
+			i = 0;
+			pattern_insert_alternate(table->seqAfterExpression, table->seqAfterExpressionLength, &i, expr_data, expr_max, expr_crs, loop_cnts, expr_crs_prv);
+		}
 	}
 
 	return *expr_crs;
