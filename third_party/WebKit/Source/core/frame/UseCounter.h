@@ -132,10 +132,6 @@ public:
         SubFrameBeforeUnloadRegistered = 97,
         SubFrameBeforeUnloadFired = 98,
         ConsoleMarkTimeline = 102,
-        ElementGetAttributeNode = 107,
-        ElementSetAttributeNode = 108,
-        ElementRemoveAttributeNode = 109,
-        ElementGetAttributeNodeNS = 110,
         DocumentCreateAttribute = 111,
         DocumentCreateAttributeNS = 112,
         DocumentCreateCDATASection = 113, // Removed from DOM4.
@@ -157,9 +153,6 @@ public:
         PrefixedAndUnprefixedAnimationIterationEvent = 136,
         EventReturnValue = 137, // Legacy IE extension.
         SVGSVGElement = 138,
-        InsertAdjacentText = 140,
-        InsertAdjacentElement = 141,
-        HasAttributes = 142,
         DOMSubtreeModifiedEvent = 143,
         DOMNodeInsertedEvent = 144,
         DOMNodeRemovedEvent = 145,
@@ -211,7 +204,6 @@ public:
         HTMLElementInnerText = 213,
         HTMLElementOuterText = 214,
         ReplaceDocumentViaJavaScriptURL = 215,
-        ElementSetAttributeNodeNS = 216,
         ElementPrefixedMatchesSelector = 217,
         CSSStyleSheetRules = 219,
         CSSStyleSheetAddRule = 220,
@@ -243,7 +235,6 @@ public:
         // The above items are available in M34 branch.
 
         HTMLAnchorElementPingAttribute = 276,
-        InsertAdjacentHTML = 278,
         SVGClassName = 279,
         HTMLMediaElementSeekToFragmentStart = 281,
         HTMLMediaElementPauseAtFragmentEnd = 282,
