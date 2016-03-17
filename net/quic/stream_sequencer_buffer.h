@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE StreamSequencerBuffer
  public:
   // A Gap indicates a missing chunk of bytes between
   // [begin_offset, end_offset) in the stream
-  struct Gap {
+  struct NET_EXPORT_PRIVATE Gap {
     Gap(QuicStreamOffset begin_offset, QuicStreamOffset end_offset);
     QuicStreamOffset begin_offset;
     QuicStreamOffset end_offset;

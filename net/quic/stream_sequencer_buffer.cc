@@ -166,7 +166,7 @@ inline void StreamSequencerBuffer::UpdateGapList(
                  start_offset + bytes_written) {
     // New data has been written into the middle of the buffer.
     auto current = gap_with_new_data_written++;
-    size_t current_end = current->end_offset;
+    QuicStreamOffset current_end = current->end_offset;
     current->end_offset = start_offset;
     gaps_.insert(gap_with_new_data_written,
                  Gap(start_offset + bytes_written, current_end));

@@ -198,6 +198,10 @@ bool QuicPacketGenerator::HasQueuedFrames() const {
   return packet_creator_.HasPendingFrames() || HasPendingFrames();
 }
 
+bool QuicPacketGenerator::IsPendingPacketEmpty() const {
+  return !packet_creator_.HasPendingFrames();
+}
+
 bool QuicPacketGenerator::HasPendingFrames() const {
   return should_send_ack_ || should_send_stop_waiting_ ||
          !queued_control_frames_.empty();
@@ -205,12 +209,16 @@ bool QuicPacketGenerator::HasPendingFrames() const {
 
 bool QuicPacketGenerator::AddNextPendingFrame() {
   if (should_send_ack_) {
-    delegate_->PopulateAckFrame(&pending_ack_frame_);
-    // If we can't this add the frame now, then we still need to do so later.
-    should_send_ack_ =
-        !packet_creator_.AddSavedFrame(QuicFrame(&pending_ack_frame_));
-    // Return success if we have cleared out this flag (i.e., added the frame).
-    // If we still need to send, then the frame is full, and we have failed.
+    if (FLAGS_quic_dont_copy_acks) {
+      should_send_ack_ =
+          !packet_creator_.AddSavedFrame(delegate_->GetUpdatedAckFrame());
+    } else {
+      delegate_->PopulateAckFrame(&pending_ack_frame_);
+      // If we can't this add the frame now, then we still need to do so later.
+      should_send_ack_ =
+          !packet_creator_.AddSavedFrame(QuicFrame(&pending_ack_frame_));
+      // Return success if we have added the frame.
+    }
     return !should_send_ack_;
   }
 

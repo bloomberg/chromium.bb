@@ -11,7 +11,6 @@
 #include "base/rand_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_flags.h"
-#include "net/quic/quic_frame_list.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/reliable_quic_stream.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -554,54 +553,6 @@ TEST_F(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
   ASSERT_TRUE(VerifyReadableRegions(expected));
 
   sequencer_->MarkConsumed(6);
-}
-
-TEST(QuicFrameListTest, FrameOverlapsBufferedData) {
-  QuicFrameList buffer;
-
-  // Ensure that FrameOverlapsBufferedData returns appropriate responses when
-  // there is existing data buffered.
-  const int kBufferedOffset = 10;
-  const int kBufferedDataLength = 3;
-  const int kNewDataLength = 3;
-  string data(kNewDataLength, '.');
-
-  // No overlap if no buffered frames.
-  EXPECT_EQ(0u, buffer.BytesBuffered());
-  size_t bytes_written;
-  // Add a buffered frame.
-  buffer.OnStreamData(
-      kBufferedOffset,
-      StringPiece(string(kBufferedDataLength, '.').data(), kBufferedDataLength),
-      QuicTime::Zero(), &bytes_written);
-
-  // New byte range partially overlaps with buffered frame, start offset
-  // preceding buffered frame.
-  EXPECT_TRUE(QuicStreamSequencerPeer::FrameOverlapsBufferedData(
-      &buffer, QuicStreamFrame(1, false, kBufferedOffset - 1, data)));
-  EXPECT_TRUE(QuicStreamSequencerPeer::FrameOverlapsBufferedData(
-      &buffer,
-      QuicStreamFrame(1, false, kBufferedOffset - kNewDataLength + 1, data)));
-
-  // New byte range partially overlaps with buffered frame, start offset inside
-  // existing buffered frame.
-  EXPECT_TRUE(QuicStreamSequencerPeer::FrameOverlapsBufferedData(
-      &buffer, QuicStreamFrame(1, false, kBufferedOffset + 1, data)));
-  EXPECT_TRUE(QuicStreamSequencerPeer::FrameOverlapsBufferedData(
-      &buffer, QuicStreamFrame(
-                   1, false, kBufferedOffset + kBufferedDataLength - 1, data)));
-
-  // New byte range entirely outside of buffered frames, start offset
-  // preceeding buffered frame.
-  EXPECT_FALSE(QuicStreamSequencerPeer::FrameOverlapsBufferedData(
-      &buffer,
-      QuicStreamFrame(1, false, kBufferedOffset - kNewDataLength, data)));
-
-  // New byte range entirely outside of buffered frames, start offset later than
-  // buffered frame.
-  EXPECT_FALSE(QuicStreamSequencerPeer::FrameOverlapsBufferedData(
-      &buffer,
-      QuicStreamFrame(1, false, kBufferedOffset + kBufferedDataLength, data)));
 }
 
 TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {

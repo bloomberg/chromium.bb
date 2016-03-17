@@ -5,6 +5,7 @@
 #include "net/quic/quic_multipath_received_packet_manager.h"
 
 #include "net/quic/quic_connection_stats.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -127,6 +128,7 @@ TEST_F(QuicMultipathReceivedPacketManagerTest, IsAwaitingPacket) {
 }
 
 TEST_F(QuicMultipathReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
+  FLAGS_quic_dont_copy_acks = false;
   std::vector<QuicAckFrame> ack_frames;
   EXPECT_EQ(static_cast<size_t>(0), ack_frames.size());
   EXPECT_CALL(*manager_0_, ack_frame_updated()).WillOnce(Return(false));

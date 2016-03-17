@@ -82,11 +82,9 @@ QuicData* DecryptWithNonce(ChaCha20Poly1305Decrypter* decrypter,
   decrypter->SetNoncePrefix(nonce_prefix);
   memcpy(&packet_number, nonce.data() + nonce_prefix.size(),
          sizeof(packet_number));
-  if (FLAGS_quic_include_path_id_in_iv) {
-    path_id = static_cast<QuicPathId>(
-        packet_number >> 8 * (sizeof(packet_number) - sizeof(path_id)));
-    packet_number &= UINT64_C(0x00FFFFFFFFFFFFFF);
-  }
+  path_id = static_cast<QuicPathId>(
+      packet_number >> 8 * (sizeof(packet_number) - sizeof(path_id)));
+  packet_number &= UINT64_C(0x00FFFFFFFFFFFFFF);
   scoped_ptr<char[]> output(new char[ciphertext.length()]);
   size_t output_length = 0;
   const bool success = decrypter->DecryptPacket(

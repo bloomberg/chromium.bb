@@ -148,7 +148,7 @@ SendAlgorithmSimulator::PacketEvent SendAlgorithmSimulator::NextSendEvent() {
     QuicTime::Delta transfer_send_time = it->start_time.Subtract(clock_->Now());
     if (clock_->Now() >= it->start_time) {
       transfer_send_time = it->sender->send_algorithm->TimeUntilSend(
-          clock_->Now(), it->bytes_in_flight, HAS_RETRANSMITTABLE_DATA);
+          clock_->Now(), it->bytes_in_flight);
     }
     if (transfer_send_time < next_send_time) {
       next_send_time = transfer_send_time;

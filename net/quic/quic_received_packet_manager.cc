@@ -14,6 +14,7 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_connection_stats.h"
+#include "net/quic/quic_flags.h"
 
 using std::max;
 using std::min;
@@ -146,8 +147,10 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     QuicTime receipt_time) {
   QuicPacketNumber packet_number = header.packet_number;
   DCHECK(IsAwaitingPacket(packet_number));
+  if (FLAGS_quic_dont_copy_acks && !ack_frame_updated_) {
+    ack_frame_.received_packet_times.clear();
+  }
   ack_frame_updated_ = true;
-
   // Adds the range of packet numbers from max(largest observed + 1, least
   // awaiting ack) up to packet_number not including packet_number.
   ack_frame_.missing_packets.Add(
@@ -205,6 +208,7 @@ struct isTooLarge {
 void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
     QuicAckFrame* ack_frame,
     QuicTime approximate_now) {
+  DCHECK(!FLAGS_quic_dont_copy_acks);
   ack_frame_updated_ = false;
   *ack_frame = ack_frame_;
   ack_frame->entropy_hash = EntropyHash(ack_frame_.largest_observed);
@@ -233,11 +237,39 @@ void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
     }
   }
 
-  // TODO(ianswett): Instead of transferring all the information over,
-  // consider giving the QuicPacketGenerator a reference to this ack frame
-  // and clear it afterwards.
   ack_frame->received_packet_times.clear();
   ack_frame->received_packet_times.swap(ack_frame_.received_packet_times);
+}
+
+const QuicFrame QuicReceivedPacketManager::GetUpdatedAckFrame(
+    QuicTime approximate_now) {
+  ack_frame_updated_ = false;
+  ack_frame_.entropy_hash = EntropyHash(ack_frame_.largest_observed);
+
+  if (time_largest_observed_ == QuicTime::Zero()) {
+    // We have received no packets.
+    ack_frame_.ack_delay_time = QuicTime::Delta::Infinite();
+  } else {
+    // Ensure the delta is zero if approximate now is "in the past".
+    ack_frame_.ack_delay_time =
+        approximate_now < time_largest_observed_
+            ? QuicTime::Delta::Zero()
+            : approximate_now.Subtract(time_largest_observed_);
+  }
+
+  // Clear all packet times if any are too far from largest observed.
+  // It's expected this is extremely rare.
+  for (PacketTimeVector::iterator it = ack_frame_.received_packet_times.begin();
+       it != ack_frame_.received_packet_times.end();) {
+    if (ack_frame_.largest_observed - it->first >=
+        numeric_limits<uint8_t>::max()) {
+      it = ack_frame_.received_packet_times.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  return QuicFrame(&ack_frame_);
 }
 
 QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(

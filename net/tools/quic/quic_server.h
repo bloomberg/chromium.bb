@@ -113,9 +113,6 @@ class QuicServer : public EpollCallbackInterface {
   // because the socket would otherwise overflow.
   bool overflow_supported_;
 
-  // If true, use recvmmsg for reading.
-  bool use_recvmmsg_;
-
   // config_ contains non-crypto parameters that are negotiated in the crypto
   // handshake.
   QuicConfig config_;

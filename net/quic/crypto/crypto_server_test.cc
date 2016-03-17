@@ -129,7 +129,9 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
         client_address_(Loopback4(), 1234),
         config_(QuicCryptoServerConfig::TESTING,
                 rand_,
-                CryptoTestUtils::ProofSourceForTesting()) {
+                CryptoTestUtils::ProofSourceForTesting()),
+        compressed_certs_cache_(
+            QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
     supported_versions_ = GetParam().supported_versions;
     config_.set_enable_serving_sct(true);
 
@@ -298,7 +300,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
         result, 1 /* ConnectionId */, server_ip, client_address_,
         supported_versions_.front(), supported_versions_,
         use_stateless_rejects_, server_designated_connection_id, &clock_, rand_,
-        &params_, &crypto_proof_, &out_, &error_details);
+        &compressed_certs_cache_, &params_, &crypto_proof_, &out_,
+        &error_details);
 
     if (should_succeed) {
       ASSERT_EQ(error, QUIC_NO_ERROR) << "Message failed with error "
@@ -401,6 +404,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   QuicVersion client_version_;
   string client_version_string_;
   QuicCryptoServerConfig config_;
+  QuicCompressedCertsCache compressed_certs_cache_;
   QuicCryptoServerConfig::ConfigOptions config_options_;
   QuicCryptoNegotiatedParameters params_;
   QuicCryptoProof crypto_proof_;
@@ -580,7 +584,6 @@ TEST_P(CryptoServerTest, BadSourceAddressToken) {
 }
 
 TEST_P(CryptoServerTest, BadClientNonce) {
-  // Invalid nonces should be ignored.
   // clang-format off
   static const char* const kBadNonces[] = {
     "",
@@ -590,6 +593,7 @@ TEST_P(CryptoServerTest, BadClientNonce) {
   // clang-format on
 
   for (size_t i = 0; i < arraysize(kBadNonces); i++) {
+    // Invalid nonces should be ignored, in an inchoate CHLO.
     // clang-format off
     CryptoHandshakeMessage msg = CryptoTestUtils::Message(
         "CHLO",
@@ -602,6 +606,30 @@ TEST_P(CryptoServerTest, BadClientNonce) {
     const HandshakeFailureReason kRejectReasons[] = {
         SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
     CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+
+    // Invalid nonces should result in CLIENT_NONCE_INVALID_FAILURE.
+    // clang-format off
+    CryptoHandshakeMessage msg1 = CryptoTestUtils::Message(
+        "CHLO",
+        "AEAD", "AESG",
+        "KEXS", "C255",
+        "SCID", scid_hex_.c_str(),
+        "#004b5453", srct_hex_.c_str(),
+        "PUBS", pub_hex_.c_str(),
+        "NONC", kBadNonces[i],
+        "NONP", kBadNonces[i],
+        "XLCT", XlctHexString().c_str(),
+        "VER\0", client_version_string_.c_str(),
+        "$padding", static_cast<int>(kClientHelloMinimumSize),
+        nullptr);
+    // clang-format on
+
+    ShouldSucceed(msg1);
+
+    CheckRejectTag();
+    const HandshakeFailureReason kRejectReasons1[] = {
+        CLIENT_NONCE_INVALID_FAILURE};
+    CheckRejectReasons(kRejectReasons1, arraysize(kRejectReasons1));
   }
 }
 

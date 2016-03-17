@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "net/quic/quic_frame_list.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -20,9 +19,6 @@ namespace test {
 class QuicStreamSequencerPeer {
  public:
   static size_t GetNumBufferedBytes(QuicStreamSequencer* sequencer);
-
-  static bool FrameOverlapsBufferedData(QuicFrameList* buffer,
-                                        const QuicStreamFrame& frame);
 
   static QuicStreamOffset GetCloseOffset(QuicStreamSequencer* sequencer);
 

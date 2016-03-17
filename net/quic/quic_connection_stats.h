@@ -54,6 +54,8 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   QuicPacketCount slowstart_packets_sent;
   // Number of packets lost exiting slow start.
   QuicPacketCount slowstart_packets_lost;
+  // Number of bytes lost exiting slow start.
+  QuicByteCount slowstart_bytes_lost;
 
   QuicPacketCount packets_dropped;  // Duplicate or less than least unacked.
   size_t crypto_retransmit_count;

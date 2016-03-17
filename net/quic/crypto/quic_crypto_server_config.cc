@@ -292,8 +292,7 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
     msg.SetTaglist(kKEXS, kC255, 0);
   }
   if (FLAGS_quic_crypto_server_config_default_has_chacha20) {
-    if (FLAGS_quic_use_rfc7539 &&
-        ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
+    if (ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
       msg.SetTaglist(kAEAD, kAESG, kCC12, kCC20, 0);
     } else {
       msg.SetTaglist(kAEAD, kAESG, kCC12, 0);
@@ -554,6 +553,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     QuicConnectionId server_designated_connection_id,
     const QuicClock* clock,
     QuicRandom* rand,
+    QuicCompressedCertsCache* compressed_certs_cache,
     QuicCryptoNegotiatedParameters* params,
     QuicCryptoProof* crypto_proof,
     CryptoHandshakeMessage* out,
@@ -629,7 +629,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     BuildRejection(version, *primary_config, client_hello, info,
                    validate_chlo_result.cached_network_params,
                    use_stateless_rejects, server_designated_connection_id, rand,
-                   params, *crypto_proof, out);
+                   compressed_certs_cache, params, *crypto_proof, out);
     return QUIC_NO_ERROR;
   }
 
@@ -1064,6 +1064,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
       info->client_nonce.size() != kNonceSize) {
     info->reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
     // Invalid client nonce.
+    LOG(ERROR) << "Invalid client nonce: " << client_hello.DebugString();
     DVLOG(1) << "Invalid client nonce.";
     if (FLAGS_use_early_return_when_verifying_chlo) {
       helper.ValidationComplete(QUIC_NO_ERROR, "");
@@ -1150,6 +1151,7 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
     const IPAddress& client_ip,
     const QuicClock* clock,
     QuicRandom* rand,
+    QuicCompressedCertsCache* compressed_certs_cache,
     const QuicCryptoNegotiatedParameters& params,
     const CachedNetworkParameters* cached_network_params,
     CryptoHandshakeMessage* out) const {
@@ -1173,8 +1175,8 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
     return false;
   }
 
-  const string compressed = CertCompressor::CompressChain(
-      chain->certs, params.client_common_set_hashes,
+  const string compressed = CompressChain(
+      compressed_certs_cache, chain, params.client_common_set_hashes,
       params.client_cached_cert_hashes, primary_config_->common_cert_sets);
 
   out->SetStringPiece(kCertificateTag, compressed);
@@ -1199,6 +1201,7 @@ void QuicCryptoServerConfig::BuildRejection(
     bool use_stateless_rejects,
     QuicConnectionId server_designated_connection_id,
     QuicRandom* rand,
+    QuicCompressedCertsCache* compressed_certs_cache,
     QuicCryptoNegotiatedParameters* params,
     const QuicCryptoProof& crypto_proof,
     CryptoHandshakeMessage* out) const {
@@ -1242,9 +1245,10 @@ void QuicCryptoServerConfig::BuildRejection(
     params->client_cached_cert_hashes = client_cached_cert_hashes.as_string();
   }
 
-  const string compressed = CertCompressor::CompressChain(
-      crypto_proof.chain->certs, params->client_common_set_hashes,
-      params->client_cached_cert_hashes, config.common_cert_sets);
+  const string compressed =
+      CompressChain(compressed_certs_cache, crypto_proof.chain,
+                    params->client_common_set_hashes,
+                    params->client_cached_cert_hashes, config.common_cert_sets);
 
   // kREJOverheadBytes is a very rough estimate of how much of a REJ
   // message is taken up by things other than the certificates.
@@ -1277,6 +1281,34 @@ void QuicCryptoServerConfig::BuildRejection(
       }
     }
   }
+}
+
+const string QuicCryptoServerConfig::CompressChain(
+    QuicCompressedCertsCache* compressed_certs_cache,
+    const scoped_refptr<ProofSource::Chain>& chain,
+    const string& client_common_set_hashes,
+    const string& client_cached_cert_hashes,
+    const CommonCertSets* common_sets) const {
+  // Check whether the compressed certs is available in the cache.
+  if (FLAGS_quic_use_cached_compressed_certs) {
+    DCHECK(compressed_certs_cache);
+    const string* cached_value = compressed_certs_cache->GetCompressedCert(
+        chain, client_common_set_hashes, client_cached_cert_hashes);
+    if (cached_value) {
+      return *cached_value;
+    }
+  }
+
+  const string compressed =
+      CertCompressor::CompressChain(chain->certs, client_common_set_hashes,
+                                    client_common_set_hashes, common_sets);
+
+  // Insert the newly compressed cert to cache.
+  if (FLAGS_quic_use_cached_compressed_certs) {
+    compressed_certs_cache->Insert(chain, client_common_set_hashes,
+                                   client_cached_cert_hashes, compressed);
+  }
+  return compressed;
 }
 
 scoped_refptr<QuicCryptoServerConfig::Config>

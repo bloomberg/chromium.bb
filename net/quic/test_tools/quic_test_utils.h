@@ -602,10 +602,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD1(OnRetransmissionTimeout, void(bool));
   MOCK_METHOD0(OnConnectionMigration, void());
   MOCK_METHOD0(RevertRetransmissionTimeout, void());
-  MOCK_CONST_METHOD3(TimeUntilSend,
+  MOCK_CONST_METHOD2(TimeUntilSend,
                      QuicTime::Delta(QuicTime now,
-                                     QuicByteCount bytes_in_flight,
-                                     HasRetransmittableData));
+                                     QuicByteCount bytes_in_flight));
   MOCK_CONST_METHOD0(PacingRate, QuicBandwidth(void));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_CONST_METHOD0(HasReliableBandwidthEstimate, bool());
@@ -631,7 +630,7 @@ class MockLossAlgorithm : public LossDetectionInterface {
   MOCK_CONST_METHOD0(GetLossDetectionType, LossDetectionType());
   MOCK_METHOD4(DetectLosses,
                void(const QuicUnackedPacketMap& unacked_packets,
-                    const QuicTime& time,
+                    QuicTime time,
                     const RttStats& rtt_stats,
                     SendAlgorithmInterface::CongestionVector* packets_lost));
   MOCK_CONST_METHOD0(GetLossTimeout, QuicTime());

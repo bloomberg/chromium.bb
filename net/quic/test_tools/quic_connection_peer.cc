@@ -34,6 +34,12 @@ void QuicConnectionPeer::PopulateAckFrame(QuicConnection* connection,
 }
 
 // static
+const QuicFrame QuicConnectionPeer::GetUpdatedAckFrame(
+    QuicConnection* connection) {
+  return connection->GetUpdatedAckFrame();
+}
+
+// static
 void QuicConnectionPeer::PopulateStopWaitingFrame(
     QuicConnection* connection,
     QuicStopWaitingFrame* stop_waiting) {

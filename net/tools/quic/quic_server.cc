@@ -26,9 +26,6 @@
 #include "net/tools/quic/quic_packet_reader.h"
 #include "net/tools/quic/quic_socket_utils.h"
 
-// TODO(rtenneti): Add support for MMSG_MORE.
-#define MMSG_MORE 0
-
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
 #endif
@@ -61,7 +58,6 @@ QuicServer::QuicServer(
       fd_(-1),
       packets_dropped_(0),
       overflow_supported_(false),
-      use_recvmmsg_(false),
       config_(config),
       crypto_config_(kSourceAddressTokenSecret,
                      QuicRandom::GetInstance(),
@@ -73,10 +69,6 @@ QuicServer::QuicServer(
 }
 
 void QuicServer::Initialize() {
-#if MMSG_MORE
-  use_recvmmsg_ = true;
-#endif
-
   // If an initial flow control window has not explicitly been set, then use a
   // sensible value for a server: 1 MB for session, 64 KB for each stream.
   const uint32_t kInitialSessionFlowControlWindow = 1 * 1024 * 1024;  // 1 MB
@@ -175,15 +167,9 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
     DVLOG(1) << "EPOLLIN";
     bool more_to_read = true;
     while (more_to_read) {
-      if (use_recvmmsg_) {
-        more_to_read = packet_reader_->ReadAndDispatchPackets(
-            fd_, port_, dispatcher_.get(),
-            overflow_supported_ ? &packets_dropped_ : nullptr);
-      } else {
-        more_to_read = QuicPacketReader::ReadAndDispatchSinglePacket(
-            fd_, port_, dispatcher_.get(),
-            overflow_supported_ ? &packets_dropped_ : nullptr);
-      }
+      more_to_read = packet_reader_->ReadAndDispatchPackets(
+          fd_, port_, dispatcher_.get(),
+          overflow_supported_ ? &packets_dropped_ : nullptr);
     }
   }
   if (event->in_events & EPOLLOUT) {

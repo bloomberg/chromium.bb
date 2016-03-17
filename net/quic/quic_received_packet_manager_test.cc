@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "net/quic/quic_connection_stats.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/test_tools/quic_received_packet_manager_peer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -300,6 +301,7 @@ TEST_F(QuicReceivedPacketManagerTest, DontWaitForPacketsBefore) {
 }
 
 TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
+  FLAGS_quic_dont_copy_acks = false;
   QuicPacketHeader header;
   header.packet_number = 2u;
   QuicTime two_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
@@ -335,6 +337,46 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   // UpdateReceivedPacketInfo should discard any times which can't be
   // expressed on the wire.
   EXPECT_EQ(2ul, ack.received_packet_times.size());
+}
+
+TEST_F(QuicReceivedPacketManagerTest, GetUpdatedAckFrame) {
+  FLAGS_quic_dont_copy_acks = true;
+  QuicPacketHeader header;
+  header.packet_number = 2u;
+  QuicTime two_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
+  received_manager_.RecordPacketReceived(0u, header, two_ms);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
+
+  QuicFrame ack = received_manager_.GetUpdatedAckFrame(QuicTime::Zero());
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
+  // When UpdateReceivedPacketInfo with a time earlier than the time of the
+  // largest observed packet, make sure that the delta is 0, not negative.
+  EXPECT_EQ(QuicTime::Delta::Zero(), ack.ack_frame->ack_delay_time);
+  EXPECT_EQ(1u, ack.ack_frame->received_packet_times.size());
+
+  QuicTime four_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(4));
+  ack = received_manager_.GetUpdatedAckFrame(four_ms);
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
+  // When UpdateReceivedPacketInfo after not having received a new packet,
+  // the delta should still be accurate.
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(2),
+            ack.ack_frame->ack_delay_time);
+  // And received packet times won't have change.
+  EXPECT_EQ(1u, ack.ack_frame->received_packet_times.size());
+
+  header.packet_number = 999u;
+  received_manager_.RecordPacketReceived(0u, header, two_ms);
+  header.packet_number = 4u;
+  received_manager_.RecordPacketReceived(0u, header, two_ms);
+  header.packet_number = 1000u;
+  received_manager_.RecordPacketReceived(0u, header, two_ms);
+  EXPECT_TRUE(received_manager_.ack_frame_updated());
+  ack = received_manager_.GetUpdatedAckFrame(two_ms);
+  EXPECT_FALSE(received_manager_.ack_frame_updated());
+  // UpdateReceivedPacketInfo should discard any times which can't be
+  // expressed on the wire.
+  EXPECT_EQ(2u, ack.ack_frame->received_packet_times.size());
 }
 
 TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedConnectionStats) {

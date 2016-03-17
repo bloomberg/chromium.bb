@@ -48,15 +48,21 @@ class QuicPacketReader {
                                       ProcessPacketInterface* processor,
                                       QuicPacketCount* packets_dropped);
 
-  // Same as ReadAndDispatchPackets, only does one packet at a time.
+ private:
+  // Initialize the internal state of the reader.
+  void Initialize();
+
+  // Reads and dispatches many packets using recvmmsg.
+  bool ReadAndDispatchManyPackets(int fd,
+                                  int port,
+                                  ProcessPacketInterface* processor,
+                                  QuicPacketCount* packets_dropped);
+
+  // Reads and dispatches a single packet using recvmsg.
   static bool ReadAndDispatchSinglePacket(int fd,
                                           int port,
                                           ProcessPacketInterface* processor,
                                           QuicPacketCount* packets_dropped);
-
- private:
-  // Initialize the internal state of the reader.
-  void Initialize();
 
   // Storage only used when recvmmsg is available.
 

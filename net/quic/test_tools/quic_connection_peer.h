@@ -40,6 +40,8 @@ class QuicConnectionPeer {
 
   static void PopulateAckFrame(QuicConnection* connection, QuicAckFrame* ack);
 
+  static const QuicFrame GetUpdatedAckFrame(QuicConnection* connection);
+
   static void PopulateStopWaitingFrame(QuicConnection* connection,
                                        QuicStopWaitingFrame* stop_waiting);
 

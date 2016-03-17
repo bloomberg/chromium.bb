@@ -48,7 +48,7 @@ namespace test {
 namespace {
 
 const char kServerHostname[] = "test.example.com";
-const uint16_t kPort = 80;
+const uint16_t kPort = 443;
 
 class TestQuicClientSession : public QuicClientSession {
  public:

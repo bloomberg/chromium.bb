@@ -173,7 +173,11 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
             static_cast<QuicByteCount>(config.ReceivedSocketReceiveBuffer()));
     QuicByteCount max_cwnd_bytes = static_cast<QuicByteCount>(
         receive_buffer_bytes_ * kConservativeReceiveBufferFraction);
-    max_cwnd_bytes = min(max_cwnd_bytes, kMaxCongestionWindow * kDefaultTCPMSS);
+    if (!FLAGS_quic_dont_limit_max_cwnd) {
+      // TODO(ianswett): Remove kMaxCongestionWindow once deprecated.
+      max_cwnd_bytes =
+          min(max_cwnd_bytes, kMaxCongestionWindow * kDefaultTCPMSS);
+    }
     send_algorithm_->SetMaxCongestionWindow(max_cwnd_bytes);
   }
   send_algorithm_->SetFromConfig(config, perspective_);
@@ -723,7 +727,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
 }
 
 bool QuicSentPacketManager::MaybeUpdateRTT(const QuicAckFrame& ack_frame,
-                                           const QuicTime& ack_receive_time) {
+                                           QuicTime ack_receive_time) {
   // We rely on ack_delay_time to compute an RTT estimate, so we
   // only update rtt when the largest observed gets acked.
   // NOTE: If ack is a truncated ack, then the largest observed is in fact
@@ -761,8 +765,8 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
   if (pending_timer_transmission_count_ > 0) {
     return QuicTime::Delta::Zero();
   }
-  return send_algorithm_->TimeUntilSend(now, unacked_packets_.bytes_in_flight(),
-                                        retransmittable);
+  return send_algorithm_->TimeUntilSend(now,
+                                        unacked_packets_.bytes_in_flight());
 }
 
 // Uses a 25ms delayed ack timer. Also helps with better signaling

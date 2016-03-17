@@ -135,6 +135,12 @@ class StreamSequencerBufferPeer {
     return &(buffer_->frame_arrival_time_map_);
   }
 
+  void set_total_bytes_read(QuicStreamOffset total_bytes_read) {
+    buffer_->total_bytes_read_ = total_bytes_read;
+  }
+
+  void set_gaps(const std::list<Gap>& gaps) { buffer_->gaps_ = gaps; }
+
  private:
   StreamSequencerBuffer* buffer_;
 };
@@ -275,6 +281,39 @@ TEST_F(StreamSequencerBufferTest, OnStreamDataWithoutOverlap) {
   EXPECT_EQ(3, helper_->GapSize());
   EXPECT_EQ(1024u + 100u, buffer_->BytesBuffered());
   EXPECT_TRUE(helper_->CheckBufferInvariants());
+}
+
+TEST_F(StreamSequencerBufferTest, OnStreamDataInLongStreamWithOverlap) {
+  // Assume a stream has already buffered almost 4GB.
+  uint64_t total_bytes_read = pow(2, 32) - 1;
+  helper_->set_total_bytes_read(total_bytes_read);
+  helper_->set_gaps(std::list<Gap>(
+      1, Gap(total_bytes_read, std::numeric_limits<QuicStreamOffset>::max())));
+
+  // Three new out of order frames arrive.
+  const size_t kBytesToWrite = 100;
+  string source(kBytesToWrite, 'a');
+  size_t written;
+  // Frame [2^32 + 500, 2^32 + 600).
+  QuicStreamOffset offset = pow(2, 32) + 500;
+  EXPECT_EQ(
+      QUIC_NO_ERROR,
+      buffer_->OnStreamData(offset, source, clock_.ApproximateNow(), &written));
+  EXPECT_EQ(2, helper_->GapSize());
+
+  // Frame [2^32 + 700, 2^32 + 800).
+  offset = pow(2, 32) + 700;
+  EXPECT_EQ(
+      QUIC_NO_ERROR,
+      buffer_->OnStreamData(offset, source, clock_.ApproximateNow(), &written));
+  EXPECT_EQ(3, helper_->GapSize());
+
+  // Another frame [2^32 + 300, 2^32 + 400).
+  offset = pow(2, 32) + 300;
+  EXPECT_EQ(
+      QUIC_NO_ERROR,
+      buffer_->OnStreamData(offset, source, clock_.ApproximateNow(), &written));
+  EXPECT_EQ(4, helper_->GapSize());
 }
 
 TEST_F(StreamSequencerBufferTest, OnStreamDataTillEnd) {

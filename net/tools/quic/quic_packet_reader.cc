@@ -60,9 +60,19 @@ void QuicPacketReader::Initialize() {
 
 QuicPacketReader::~QuicPacketReader() {}
 
-// TODO(danzh): write a public method to wrap ReadAndDispatchPackets() and
-// ReadAndDispatchSinglePacket() based on MMSG_MORE.
 bool QuicPacketReader::ReadAndDispatchPackets(
+    int fd,
+    int port,
+    ProcessPacketInterface* processor,
+    QuicPacketCount* packets_dropped) {
+#if MMSG_MORE
+  return ReadAndDispatchManyPackets(fd, port, processor, packets_dropped);
+#else
+  return ReadAndDispatchSinglePacket(fd, port, processor, packets_dropped);
+#endif
+}
+
+bool QuicPacketReader::ReadAndDispatchManyPackets(
     int fd,
     int port,
     ProcessPacketInterface* processor,

@@ -641,7 +641,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   manager_.MaybeRetransmitTailLossProbe();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(3);
-  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
@@ -688,7 +688,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   manager_.MaybeRetransmitTailLossProbe();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(101);
-  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
@@ -703,7 +703,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
   EXPECT_TRUE(manager_.MaybeRetransmitTailLossProbe());
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(102);
-  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
@@ -1163,7 +1163,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
   EXPECT_TRUE(manager_.MaybeRetransmitTailLossProbe());
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(3);
-  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
@@ -1512,7 +1512,7 @@ TEST_F(QuicSentPacketManagerTest,
 
   // Ensure the smaller send window only allows 16 packets to be sent.
   for (QuicPacketNumber i = 1; i <= 16; ++i) {
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
         .WillOnce(Return(QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
               manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
@@ -1524,7 +1524,7 @@ TEST_F(QuicSentPacketManagerTest,
     manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
   }
-  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
@@ -1536,7 +1536,7 @@ TEST_F(QuicSentPacketManagerTest, ReceiveWindowLimited) {
 
   // Ensure the smaller send window only allows 256 * 0.95 packets to be sent.
   for (QuicPacketNumber i = 1; i <= 244; ++i) {
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
         .WillOnce(Return(QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
               manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
@@ -1548,7 +1548,7 @@ TEST_F(QuicSentPacketManagerTest, ReceiveWindowLimited) {
     manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
   }
-  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
             manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));

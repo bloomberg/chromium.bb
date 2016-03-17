@@ -74,7 +74,6 @@ QuicClient::QuicClient(IPEndPoint server_address,
       initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false),
-      use_recvmmsg_(false),
       store_response_(false),
       latest_response_code_(-1),
       packet_reader_(new QuicPacketReader()) {}
@@ -93,10 +92,6 @@ QuicClient::~QuicClient() {
 
 bool QuicClient::Initialize() {
   QuicClientBase::Initialize();
-
-#if MMSG_MORE
-  use_recvmmsg_ = true;
-#endif
 
   set_num_sent_client_hellos(0);
   set_num_stateless_rejects_received(0);
@@ -395,15 +390,9 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
   if (event->in_events & EPOLLIN) {
     bool more_to_read = true;
     while (connected() && more_to_read) {
-      if (use_recvmmsg_) {
-        more_to_read = packet_reader_->ReadAndDispatchPackets(
-            GetLatestFD(), QuicClient::GetLatestClientAddress().port(), this,
-            overflow_supported_ ? &packets_dropped_ : nullptr);
-      } else {
-        more_to_read = QuicPacketReader::ReadAndDispatchSinglePacket(
-            GetLatestFD(), QuicClient::GetLatestClientAddress().port(), this,
-            overflow_supported_ ? &packets_dropped_ : nullptr);
-      }
+      more_to_read = packet_reader_->ReadAndDispatchPackets(
+          GetLatestFD(), QuicClient::GetLatestClientAddress().port(), this,
+          overflow_supported_ ? &packets_dropped_ : nullptr);
     }
   }
   if (connected() && (event->in_events & EPOLLOUT)) {

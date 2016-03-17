@@ -223,7 +223,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       random_generator_(helper->GetRandomGenerator()),
       connection_id_(connection_id),
       peer_address_(address),
-      migrating_peer_port_(0),
       last_packet_decrypted_(false),
       last_size_(0),
       current_packet_data_(nullptr),
@@ -235,6 +234,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       pending_version_negotiation_packet_(false),
       save_crypto_packets_as_termination_packets_(false),
       silent_close_enabled_(false),
+      close_connection_after_five_rtos_(false),
       received_packet_manager_(&stats_),
       ack_queued_(false),
       num_retransmittable_packets_received_since_last_ack_sent_(0),
@@ -281,10 +281,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       version_negotiation_state_(START_NEGOTIATION),
       perspective_(perspective),
       connected_(true),
-      peer_ip_changed_(false),
-      peer_port_changed_(false),
-      self_ip_changed_(false),
-      self_port_changed_(false),
       can_truncate_connection_ids_(true),
       mtu_discovery_target_(0),
       mtu_probe_count_(0),
@@ -369,6 +365,10 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (FLAGS_quic_ack_decimation2 &&
       config.HasClientSentConnectionOption(kAKD2, perspective_)) {
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
+  }
+  if (FLAGS_quic_enable_rto_timeout &&
+      config.HasClientSentConnectionOption(k5RTO, perspective_)) {
+    close_connection_after_five_rtos_ = true;
   }
 }
 
@@ -580,6 +580,13 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
                                    "when multipath is not enabled.");
     return false;
   }
+  if (!packet_generator_.IsPendingPacketEmpty()) {
+    QUIC_BUG << "Pending frames must be serialized before incoming packets are "
+             << "processed, because that may change a queued ack frame.";
+    SendConnectionCloseWithDetails(QUIC_INTERNAL_ERROR,
+                                   "Should not process packets while sending.");
+    return false;
+  }
 
   // If this packet has already been seen, or the sender has told us that it
   // will not be retransmitted, then stop processing the packet.
@@ -669,7 +676,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
-  if (FLAGS_quic_respect_send_alarm2 && send_alarm_->IsSet()) {
+  if (send_alarm_->IsSet()) {
     send_alarm_->Cancel();
   }
   ProcessAckFrame(incoming_ack);
@@ -1024,6 +1031,10 @@ void QuicConnection::PopulateAckFrame(QuicAckFrame* ack) {
                                                     clock_->ApproximateNow());
 }
 
+const QuicFrame QuicConnection::GetUpdatedAckFrame() {
+  return received_packet_manager_.GetUpdatedAckFrame(clock_->ApproximateNow());
+}
+
 void QuicConnection::PopulateStopWaitingFrame(
     QuicStopWaitingFrame* stop_waiting) {
   stop_waiting->least_unacked = GetLeastUnacked();
@@ -1105,7 +1116,7 @@ QuicConsumedData QuicConnection::SendStreamData(
   // also if there is possibility of revival. Only bundle an ack if there's no
   // processing left that may cause received_info_ to change.
   ScopedRetransmissionScheduler alarm_delayer(this);
-  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
   return packet_generator_.ConsumeData(id, iov, offset, fin, listener);
 }
 
@@ -1113,7 +1124,7 @@ void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicRstStreamErrorCode error,
                                    QuicStreamOffset bytes_written) {
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(QuicFrame(new QuicRstStreamFrame(
       id, AdjustErrorForVersion(error, version()), bytes_written)));
 
@@ -1147,20 +1158,20 @@ void QuicConnection::SendRstStream(QuicStreamId id,
 void QuicConnection::SendWindowUpdate(QuicStreamId id,
                                       QuicStreamOffset byte_offset) {
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicWindowUpdateFrame(id, byte_offset)));
 }
 
 void QuicConnection::SendBlocked(QuicStreamId id) {
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(QuicFrame(new QuicBlockedFrame(id)));
 }
 
 void QuicConnection::SendPathClose(QuicPathId path_id) {
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(QuicFrame(new QuicPathCloseFrame(path_id)));
   OnPathClosed(path_id);
 }
@@ -1201,17 +1212,13 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   last_size_ = packet.length();
   current_packet_data_ = packet.data();
 
-  if (FLAGS_check_peer_address_change_after_decryption) {
-    last_packet_destination_address_ = self_address;
-    last_packet_source_address_ = peer_address;
-    if (!IsInitializedIPEndPoint(self_address_)) {
-      self_address_ = last_packet_destination_address_;
-    }
-    if (!IsInitializedIPEndPoint(peer_address_)) {
-      peer_address_ = last_packet_source_address_;
-    }
-  } else {
-    CheckForAddressMigration(self_address, peer_address);
+  last_packet_destination_address_ = self_address;
+  last_packet_source_address_ = peer_address;
+  if (!IsInitializedIPEndPoint(self_address_)) {
+    self_address_ = last_packet_destination_address_;
+  }
+  if (!IsInitializedIPEndPoint(peer_address_)) {
+    peer_address_ = last_packet_source_address_;
   }
 
   stats_.bytes_received += packet.length();
@@ -1242,35 +1249,6 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   current_packet_data_ = nullptr;
 }
 
-void QuicConnection::CheckForAddressMigration(const IPEndPoint& self_address,
-                                              const IPEndPoint& peer_address) {
-  peer_ip_changed_ = false;
-  peer_port_changed_ = false;
-  self_ip_changed_ = false;
-  self_port_changed_ = false;
-
-  if (peer_address_.address().empty()) {
-    peer_address_ = peer_address;
-  }
-  if (self_address_.address().empty()) {
-    self_address_ = self_address;
-  }
-
-  if (!peer_address.address().empty() && !peer_address_.address().empty()) {
-    peer_ip_changed_ = (peer_address.address() != peer_address_.address());
-    peer_port_changed_ = (peer_address.port() != peer_address_.port());
-
-    // Store in case we want to migrate connection in ProcessValidatedPacket.
-    migrating_peer_ip_ = peer_address.address();
-    migrating_peer_port_ = peer_address.port();
-  }
-
-  if (!self_address.address().empty() && !self_address_.address().empty()) {
-    self_ip_changed_ = (self_address.address() != self_address_.address());
-    self_port_changed_ = (self_address.port() != self_address_.port());
-  }
-}
-
 void QuicConnection::OnCanWrite() {
   DCHECK(!writer_->IsWriteBlocked());
 
@@ -1285,8 +1263,8 @@ void QuicConnection::OnCanWrite() {
     return;
   }
 
-  {  // Limit the scope of the bundler. ACK inclusion happens elsewhere.
-    ScopedPacketBundler bundler(this, NO_ACK);
+  {
+    ScopedPacketBundler bundler(this, SEND_ACK_IF_QUEUED);
     visitor_->OnCanWrite();
     visitor_->PostProcessAfterData();
   }
@@ -1310,7 +1288,7 @@ void QuicConnection::WriteIfNotBlocked() {
 
 void QuicConnection::WriteAndBundleAcksIfNotBlocked() {
   if (!writer_->IsWriteBlocked()) {
-    ScopedPacketBundler bundler(this, ack_queued_ ? SEND_ACK : NO_ACK);
+    ScopedPacketBundler bundler(this, SEND_ACK_IF_QUEUED);
     OnCanWrite();
   }
 }
@@ -1321,24 +1299,14 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     return false;
   }
 
-  if (FLAGS_check_peer_address_change_after_decryption) {
-    if (perspective_ == Perspective::IS_SERVER &&
-        IsInitializedIPEndPoint(self_address_) &&
-        IsInitializedIPEndPoint(last_packet_destination_address_) &&
-        (!(self_address_ == last_packet_destination_address_))) {
-      SendConnectionCloseWithDetails(
-          QUIC_ERROR_MIGRATING_ADDRESS,
-          "Self address migration is not supported at the server.");
-      return false;
-    }
-  } else {
-    if (perspective_ == Perspective::IS_SERVER &&
-        (self_ip_changed_ || self_port_changed_)) {
-      SendConnectionCloseWithDetails(
-          QUIC_ERROR_MIGRATING_ADDRESS,
-          "Self address migration is not supported at the server.");
-      return false;
-    }
+  if (perspective_ == Perspective::IS_SERVER &&
+      IsInitializedIPEndPoint(self_address_) &&
+      IsInitializedIPEndPoint(last_packet_destination_address_) &&
+      (!(self_address_ == last_packet_destination_address_))) {
+    SendConnectionCloseWithDetails(
+        QUIC_ERROR_MIGRATING_ADDRESS,
+        "Self address migration is not supported at the server.");
+    return false;
   }
 
   if (!Near(header.packet_number, last_header_.packet_number)) {
@@ -1474,17 +1442,15 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return false;
   }
 
-  if (FLAGS_quic_respect_send_alarm2) {
-    // Allow acks to be sent immediately.
-    // TODO(ianswett): Remove retransmittable from
-    // SendAlgorithmInterface::TimeUntilSend.
-    if (retransmittable == NO_RETRANSMITTABLE_DATA) {
-      return true;
-    }
-    // If the send alarm is set, wait for it to fire.
-    if (send_alarm_->IsSet()) {
-      return false;
-    }
+  // Allow acks to be sent immediately.
+  // TODO(ianswett): Remove retransmittable from
+  // SendAlgorithmInterface::TimeUntilSend.
+  if (retransmittable == NO_RETRANSMITTABLE_DATA) {
+    return true;
+  }
+  // If the send alarm is set, wait for it to fire.
+  if (send_alarm_->IsSet()) {
+    return false;
   }
 
   QuicTime now = clock_->Now();
@@ -1501,9 +1467,6 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     DVLOG(1) << ENDPOINT << "Delaying sending " << delay.ToMilliseconds()
              << "ms";
     return false;
-  }
-  if (!FLAGS_quic_respect_send_alarm2) {
-    send_alarm_->Cancel();
   }
   return true;
 }
@@ -1760,7 +1723,7 @@ void QuicConnection::OnPingTimeout() {
 }
 
 void QuicConnection::SendPing() {
-  ScopedPacketBundler bundler(this, ack_queued_ ? SEND_ACK : NO_ACK);
+  ScopedPacketBundler bundler(this, SEND_ACK_IF_QUEUED);
   packet_generator_.AddControlFrame(QuicFrame(QuicPingFrame()));
   // Send PING frame immediately, without checking for congestion window bounds.
   packet_generator_.FlushAllQueuedFrames();
@@ -1779,6 +1742,14 @@ void QuicConnection::SendAck() {
 
 void QuicConnection::OnRetransmissionTimeout() {
   if (!sent_packet_manager_.HasUnackedPackets()) {
+    return;
+  }
+
+  if (close_connection_after_five_rtos_ &&
+      sent_packet_manager_.consecutive_rto_count() >= 4) {
+    // Close on the 5th consecutive RTO, so after 4 previous RTOs have occurred.
+    SendConnectionCloseWithDetails(QUIC_TOO_MANY_RTOS,
+                                   "5 consecutive retransmission timeouts");
     return;
   }
 
@@ -1956,7 +1927,7 @@ void QuicConnection::SendGoAway(QuicErrorCode error,
            << QuicUtils::ErrorToString(error) << " (" << error << ")";
 
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicGoAwayFrame(error, last_good_stream_id, reason)));
 }
@@ -2121,7 +2092,7 @@ void QuicConnection::MaybeSetMtuAlarm() {
 
 QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
     QuicConnection* connection,
-    AckBundling send_ack)
+    AckBundling ack_mode)
     : connection_(connection),
       already_in_batch_mode_(connection != nullptr &&
                              connection->packet_generator_.InBatchMode()) {
@@ -2134,15 +2105,27 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
     DVLOG(1) << "Entering Batch Mode.";
     connection_->packet_generator_.StartBatchOperations();
   }
-  // Bundle an ack if the alarm is set or with every second packet if we need to
-  // raise the peer's least unacked.
-  bool ack_pending =
-      connection_->ack_alarm_->IsSet() || connection_->stop_waiting_count_ > 1;
-  if (send_ack == SEND_ACK || (send_ack == BUNDLE_PENDING_ACK && ack_pending)) {
+  if (ShouldSendAck(ack_mode)) {
     DVLOG(1) << "Bundling ack with outgoing packet.";
-    DCHECK(send_ack == SEND_ACK || connection_->ack_frame_updated() ||
+    DCHECK(ack_mode == SEND_ACK || connection_->ack_frame_updated() ||
            connection_->stop_waiting_count_ > 1);
     connection_->SendAck();
+  }
+}
+
+bool QuicConnection::ScopedPacketBundler::ShouldSendAck(
+    AckBundling ack_mode) const {
+  switch (ack_mode) {
+    case SEND_ACK:
+      return true;
+    case SEND_ACK_IF_QUEUED:
+      return connection_->ack_queued();
+    case SEND_ACK_IF_PENDING:
+      return connection_->ack_alarm_->IsSet() ||
+             connection_->stop_waiting_count_ > 1;
+    default:
+      QUIC_BUG << "Unsupported ack_mode.";
+      return true;
   }
 }
 
@@ -2271,50 +2254,25 @@ void QuicConnection::DiscoverMtu() {
 
 void QuicConnection::MaybeMigrateConnectionToNewPeerAddress() {
   IPEndPoint last_peer_address;
-  if (FLAGS_check_peer_address_change_after_decryption) {
-    last_peer_address = last_packet_source_address_;
-  } else {
-    last_peer_address = IPEndPoint(
-        peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address(),
-        peer_port_changed_ ? migrating_peer_port_ : peer_address_.port());
-  }
+  last_peer_address = last_packet_source_address_;
   PeerAddressChangeType peer_address_change_type =
       QuicUtils::DetermineAddressChangeType(peer_address_, last_peer_address);
   // TODO(fayang): Currently, all peer address change type are allowed. Need to
   // add a method ShouldAllowPeerAddressChange(PeerAddressChangeType type) to
-  // determine whehter |type| is allowed.
-  if (FLAGS_check_peer_address_change_after_decryption) {
-    if (peer_address_change_type == NO_CHANGE) {
-      return;
-    }
-
-    IPEndPoint old_peer_address = peer_address_;
-    peer_address_ = last_packet_source_address_;
-
-    DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
-             << old_peer_address.ToString() << " to "
-             << peer_address_.ToString() << ", migrating connection.";
-
-    visitor_->OnConnectionMigration(peer_address_change_type);
-    sent_packet_manager_.OnConnectionMigration(peer_address_change_type);
-
+  // determine whether |type| is allowed.
+  if (peer_address_change_type == NO_CHANGE) {
     return;
   }
 
-  if (peer_ip_changed_ || peer_port_changed_) {
-    IPEndPoint old_peer_address = peer_address_;
-    peer_address_ = IPEndPoint(
-        peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address(),
-        peer_port_changed_ ? migrating_peer_port_ : peer_address_.port());
+  IPEndPoint old_peer_address = peer_address_;
+  peer_address_ = last_packet_source_address_;
 
-    DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
-             << old_peer_address.ToString() << " to "
-             << peer_address_.ToString() << ", migrating connection.";
+  DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
+           << old_peer_address.ToString() << " to " << peer_address_.ToString()
+           << ", migrating connection.";
 
-    visitor_->OnConnectionMigration(peer_address_change_type);
-    DCHECK_NE(peer_address_change_type, NO_CHANGE);
-    sent_packet_manager_.OnConnectionMigration(peer_address_change_type);
-  }
+  visitor_->OnConnectionMigration(peer_address_change_type);
+  sent_packet_manager_.OnConnectionMigration(peer_address_change_type);
 }
 
 void QuicConnection::OnPathClosed(QuicPathId path_id) {

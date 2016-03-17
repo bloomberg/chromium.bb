@@ -43,6 +43,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
                bool(HasRetransmittableData retransmittable,
                     IsHandshake handshake));
   MOCK_METHOD1(PopulateAckFrame, void(QuicAckFrame*));
+  MOCK_METHOD0(GetUpdatedAckFrame, const QuicFrame());
   MOCK_METHOD1(PopulateStopWaitingFrame, void(QuicStopWaitingFrame*));
   MOCK_METHOD1(OnSerializedPacket, void(SerializedPacket* packet));
   MOCK_METHOD2(OnUnrecoverableError,
@@ -213,6 +214,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   QuicPacketCreator* creator_;
   SimpleQuicFramer simple_framer_;
   vector<SerializedPacket> packets_;
+  QuicAckFrame ack_frame_;
 
  private:
   scoped_ptr<char[]> data_array_;
@@ -238,7 +240,12 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldNotFlush) {
   delegate_.SetCanWriteOnlyNonRetransmittable();
   generator_.StartBatchOperations();
 
-  EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  if (FLAGS_quic_dont_copy_acks) {
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  } else {
+    EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  }
   EXPECT_CALL(debug_delegate, OnFrameAddedToPacket(_)).Times(1);
 
   generator_.SetShouldSendAck(false);
@@ -248,7 +255,12 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldNotFlush) {
 TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldFlush) {
   delegate_.SetCanWriteOnlyNonRetransmittable();
 
-  EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  if (FLAGS_quic_dont_copy_acks) {
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  } else {
+    EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  }
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
 
@@ -268,7 +280,12 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_MultipleCalls) {
   delegate_.SetCanWriteAnything();
 
   // Only one AckFrame should be created.
-  EXPECT_CALL(delegate_, PopulateAckFrame(_)).Times(1);
+  if (FLAGS_quic_dont_copy_acks) {
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  } else {
+    EXPECT_CALL(delegate_, PopulateAckFrame(_)).Times(1);
+  }
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .Times(1)
       .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
@@ -496,7 +513,12 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   generator_.StartBatchOperations();
 
   // When the first write operation is invoked, the ack frame will be returned.
-  EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  if (FLAGS_quic_dont_copy_acks) {
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  } else {
+    EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  }
 
   // Send some data and a control frame
   generator_.ConsumeData(3, MakeIOVector("quux"), 7, false, nullptr);
@@ -528,7 +550,12 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
   generator_.StartBatchOperations();
 
   // When the first write operation is invoked, the ack frame will be returned.
-  EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  if (FLAGS_quic_dont_copy_acks) {
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  } else {
+    EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  }
 
   {
     InSequence dummy;
@@ -817,7 +844,12 @@ TEST_F(QuicPacketGeneratorTest, DontCrashOnInvalidStopWaiting) {
   generator_.StartBatchOperations();
 
   // Set up frames to write into the creator when control frames are written.
-  EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  if (FLAGS_quic_dont_copy_acks) {
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  } else {
+    EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  }
   EXPECT_CALL(delegate_, PopulateStopWaitingFrame(_));
   // Generator should have queued control frames, and creator should be empty.
   EXPECT_TRUE(generator_.HasQueuedFrames());

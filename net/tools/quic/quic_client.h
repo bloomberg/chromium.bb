@@ -281,9 +281,6 @@ class QuicClient : public QuicClientBase,
   // because the socket would otherwise overflow.
   bool overflow_supported_;
 
-  // If true, use recvmmsg for reading.
-  bool use_recvmmsg_;
-
   // If true, store the latest response code, headers, and body.
   bool store_response_;
   // HTTP response code from most recent response.

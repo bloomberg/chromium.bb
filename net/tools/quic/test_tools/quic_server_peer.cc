@@ -19,11 +19,6 @@ bool QuicServerPeer::SetSmallSocket(QuicServer* server) {
 }
 
 // static
-void QuicServerPeer::DisableRecvmmsg(QuicServer* server) {
-  server->use_recvmmsg_ = false;
-}
-
-// static
 QuicDispatcher* QuicServerPeer::GetDispatcher(QuicServer* server) {
   return server->dispatcher_.get();
 }

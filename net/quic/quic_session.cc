@@ -184,8 +184,8 @@ void QuicSession::OnCanWrite() {
     return;
   }
 
-  QuicConnection::ScopedPacketBundler ack_bundler(connection_.get(),
-                                                  QuicConnection::NO_ACK);
+  QuicConnection::ScopedPacketBundler ack_bundler(
+      connection_.get(), QuicConnection::SEND_ACK_IF_QUEUED);
   for (size_t i = 0; i < num_writes; ++i) {
     if (!(write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
           write_blocked_streams_.HasWriteBlockedDataStreams())) {

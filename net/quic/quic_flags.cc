@@ -62,9 +62,6 @@ bool FLAGS_quic_measure_headers_hol_blocking_time = true;
 // Disable QUIC's userspace pacing.
 bool FLAGS_quic_disable_pacing = false;
 
-// If true, don't send QUIC packets if the send alarm is set.
-bool FLAGS_quic_respect_send_alarm2 = true;
-
 // If true, Close the connection instead of writing unencrypted stream data.
 bool FLAGS_quic_never_write_unencrypted_data = true;
 
@@ -74,15 +71,8 @@ bool FLAGS_quic_require_fix = true;
 // If true, headers stream will support receiving PUSH_PROMISE frames.
 bool FLAGS_quic_supports_push_promise = false;
 
-// If true, QUIC will support RFC 7539 variants of ChaCha20 Poly1305.
-bool FLAGS_quic_use_rfc7539 = true;
-
 // When turn on, log packet loss into transport connection stats LossEvent.
 bool FLAGS_quic_log_loss_event = true;
-
-// If true, for QUIC authenticated encryption algorithms, last 8 bytes
-// of IV comprise packet path id and lower 7 bytes of packet number.
-bool FLAGS_quic_include_path_id_in_iv = true;
 
 // If true, make sure new incoming streams correctly cede to higher
 // priority (or batch) streams when doing QUIC writes.
@@ -97,10 +87,6 @@ bool FLAGS_quic_different_max_num_open_streams = true;
 // case for this is places where ChaCha20 is prohibitively expensive compared to
 // AES-GCM.
 bool FLAGS_quic_crypto_server_config_default_has_chacha20 = true;
-
-// If true, checking for peer address change is postponed after the packet gets
-// decrypted.
-bool FLAGS_check_peer_address_change_after_decryption = true;
 
 // If true, always log the cached network parameters, regardless of whether
 // bandwidth-resumption has been enabled.
@@ -133,3 +119,22 @@ bool FLAGS_quic_inplace_encryption2 = true;
 // If true, SpdyFramer will call OnStreamEnd from SpdyFramerVisitorInterface
 // instead of empty-data sentinel calls when the stream is to be ended.
 bool FLAGS_spdy_on_stream_end = true;
+
+// If true, QuicCryptoServerConfig will use cached compressed certificates
+// if the uncompressed certs to be compressed hits the cache.
+bool FLAGS_quic_use_cached_compressed_certs = true;
+
+// Enable a connection option allowing connections to time out if more than 5
+// consecutive RTOs are sent.
+bool FLAGS_quic_enable_rto_timeout = true;
+
+// Do not limit the max CWND to 200 packets in QUIC.
+bool FLAGS_quic_dont_limit_max_cwnd = true;
+
+// Don't copy QuicAckFrame or QuicStopWaitingFrame into the
+// QuicPacketGenerator.
+bool FLAGS_quic_dont_copy_acks = true;
+
+// Use a byte conservation approach instead of packet conservation in the
+// Slow Start Large Reduction experiment.
+bool FLAGS_quic_sslr_byte_conservation = true;

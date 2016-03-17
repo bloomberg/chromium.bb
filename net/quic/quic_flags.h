@@ -23,20 +23,16 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_handshake_confirmation;
 NET_EXPORT_PRIVATE extern bool FLAGS_shift_quic_cubic_epoch_when_app_limited;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_measure_headers_hol_blocking_time;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_pacing;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_respect_send_alarm2;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_never_write_unencrypted_data;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_fix;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_stateless_version_negotiation;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_supports_push_promise;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_supports_push_promise;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_rfc7539;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_log_loss_event;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_include_path_id_in_iv;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_cede_correctly;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_different_max_num_open_streams;
 NET_EXPORT_PRIVATE extern bool
     FLAGS_quic_crypto_server_config_default_has_chacha20;
-NET_EXPORT_PRIVATE extern bool FLAGS_check_peer_address_change_after_decryption;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_log_received_parameters;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_new_tcp_sender;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_save_initial_subkey_secret;
@@ -45,5 +41,10 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_connection_defer_ack_response;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_only_cancel_set_alarms;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_inplace_encryption2;
 NET_EXPORT_PRIVATE extern bool FLAGS_spdy_on_stream_end;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_cached_compressed_certs;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_rto_timeout;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_limit_max_cwnd;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_copy_acks;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_sslr_byte_conservation;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

@@ -296,9 +296,12 @@ class NET_EXPORT_PRIVATE QuicConnection
       public QuicSentPacketManager::NetworkChangeVisitor {
  public:
   enum AckBundling {
-    NO_ACK = 0,
-    SEND_ACK = 1,
-    BUNDLE_PENDING_ACK = 2,
+    // Send an ack if it's already queued in the connection.
+    SEND_ACK_IF_QUEUED,
+    // Always send an ack.
+    SEND_ACK,
+    // Bundle an ack with outgoing data.
+    SEND_ACK_IF_PENDING,
   };
 
   enum AckMode { TCP_ACKING, ACK_DECIMATION, ACK_DECIMATION_WITH_REORDERING };
@@ -456,6 +459,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                             IsHandshake handshake) override;
   void PopulateAckFrame(QuicAckFrame* ack) override;
+  const QuicFrame GetUpdatedAckFrame() override;
   void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting) override;
 
   // QuicPacketCreator::DelegateInterface
@@ -613,6 +617,8 @@ class NET_EXPORT_PRIVATE QuicConnection
     ~ScopedPacketBundler();
 
    private:
+    bool ShouldSendAck(AckBundling ack_mode) const;
+
     QuicConnection* connection_;
     bool already_in_batch_mode_;
   };
@@ -657,6 +663,8 @@ class NET_EXPORT_PRIVATE QuicConnection
     return termination_packets_.get();
   }
 
+  bool ack_queued() const { return ack_queued_; }
+
   bool ack_frame_updated() const;
 
   QuicConnectionHelperInterface* helper() { return helper_; }
@@ -676,14 +684,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // version from |available_versions| which is also supported. Returns true if
   // such a version exists, false otherwise.
   bool SelectMutualVersion(const QuicVersionVector& available_versions);
-
-  bool peer_ip_changed() const { return peer_ip_changed_; }
-
-  bool peer_port_changed() const { return peer_port_changed_; }
-
-  const IPAddress& migrating_peer_ip() const { return migrating_peer_ip_; }
-
-  uint16_t migrating_peer_port() const { return migrating_peer_port_; }
 
   const IPEndPoint& last_packet_source_address() const {
     return last_packet_source_address_;
@@ -839,15 +839,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   IPEndPoint self_address_;
   IPEndPoint peer_address_;
 
-  // Used to store latest peer IP address for IP address migration.
-  IPAddress migrating_peer_ip_;
-  // Used to store latest peer port to possibly migrate to later.
-  uint16_t migrating_peer_port_;
-
   // True if the last packet has gotten far enough in the framer to be
   // decrypted.
   bool last_packet_decrypted_;
-  QuicByteCount last_size_;   // Size of the last received packet.
+  QuicByteCount last_size_;  // Size of the last received packet.
   // TODO(rch): remove this when b/27221014 is fixed.
   const char* current_packet_data_;  // UDP payload of packet currently being
                                      // parsed or nullptr.
@@ -893,6 +888,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // to lack of network activity.
   // This is particularly important on mobile, where connections are short.
   bool silent_close_enabled_;
+
+  // When true, close the QUIC connection after 5 RTOs.  Due to the min rto of
+  // 200ms, this is over 5 seconds.
+  bool close_connection_after_five_rtos_;
 
   QuicReceivedPacketManager received_packet_manager_;
   QuicSentEntropyManager sent_entropy_manager_;
@@ -985,20 +984,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // True by default.  False if we've received or sent an explicit connection
   // close.
   bool connected_;
-
-  // Set to true if the UDP packet headers have a new IP address for the peer.
-  bool peer_ip_changed_;
-
-  // Set to true if the UDP packet headers have a new port for the peer.
-  bool peer_port_changed_;
-
-  // Set to true if the UDP packet headers are addressed to a different IP.
-  // We do not support connection migration when the self IP changed.
-  bool self_ip_changed_;
-
-  // Set to true if the UDP packet headers are addressed to a different port.
-  // We do not support connection migration when the self port changed.
-  bool self_port_changed_;
 
   // Destination address of the last received packet.
   IPEndPoint last_packet_destination_address_;
