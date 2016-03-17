@@ -130,6 +130,18 @@ Polymer({
   },
 
   /**
+   * @param {boolean} isNtp Whether to use the NTP as the home page.
+   * @param {string} homepage If not using NTP, use this URL.
+   * @return {string} The sub-label.
+   * @private
+   */
+  getShowHomeSubLabel_: function(isNtp, homepage) {
+    if (isNtp)
+      return this.i18n('homePageNtp');
+    return homepage || this.i18n('exampleDotCom');
+  },
+
+  /**
    * @param {boolean} enabled Whether the theme reset is available.
    */
   setResetThemeEnabled: function(enabled) {
