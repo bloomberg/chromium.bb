@@ -51,29 +51,33 @@ seqafterexpression '([DSTdst]|ll|[rv]e|LL|[RV]E)
 
 #   10.1   Alphabetic Wordsigns
 
-word as 1356   must be before contraction as
-word but 12
-word can 14
-word do 145
-word every 15
-word from 124
-word go 1245
-word have 125
-word it 1346
-word just 245
-word knowledge 13
-word like 123
-word more 134
-word not 1345
-word people 1234
-word quite 12345
-word rather 1235
-word so 234
-word that 2345
-word us 136
-word very 1236
-word will 2456
-word you 13456
+#   10.1.1   standing alone
+#   10.1.2   followed by 'd, 'll, 're, 's, 't, 've and standing alone
+
+#   must be before contractions?
+match %[^_~]%<* as ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1356
+match %[^_~]%<* but ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 12
+match %[^_~]%<* can ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 14
+match %[^_~]%<* do ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 145
+match %[^_~]%<* every ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 15
+match %[^_~]%<* from ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 124
+match %[^_~]%<* go ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1245
+match %[^_~]%<* have ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 125
+match %[^_~]%<* it ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1346
+match %[^_~]%<* just ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 245
+match %[^_~]%<* knowledge ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 13
+match %[^_~]%<* like ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 123
+match %[^_~]%<* more ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 134
+match %[^_~]%<* not ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1345
+match %[^_~]%<* people ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1234
+match %[^_~]%<* quite ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 12345
+match %[^_~]%<* rather ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1235
+match %[^_~]%<* so ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 234
+match %[^_~]%<* that ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 2345
+match %[^_~]%<* us ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 136
+match %[^_~]%<* very ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1236
+match %[^_~]%<* will ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 2456
+match %[^_~]%<* you ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 13456
 
 contraction b
 contraction c
@@ -123,60 +127,133 @@ contraction X
 contraction Y
 contraction Z
 
-midendword eness 15-56-234 closeness
-
 
 #   10.2   Strong Wordsigns
 
-word child 16
-word out 1256
-word shall 146
-word still 34
-word this 1456
-word which 156
+#   10.2.1   standing alone
+#   10.2.2   followed by 'd, 'll, 're, 's, 't, 've and standing alone
+
+match %[^_~]%<* child ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 16
+match %[^_~]%<* out ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1256
+match %[^_~]%<* shall ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 146
+match %[^_~]%<* still ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 34
+match %[^_~]%<* this ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 1456
+match %[^_~]%<* which ('([DSTdst]|ll|[rv]e|LL|[RV]E))?%>*%[^_~] 156
 
 
 #   10.3   Strong Contractions
 
 always and 12346
-always for 123456
-always of 12356
-always the 2346
-always with 23456
 
-always bio =
-midendword bious 12-24-1256-234 dubious
-always chloro 16-123-135-1235-135
-midendword eand 15-12346 meander
-always ffor 124-123456
+always for 123456
+
+always of 12356
+match [Bb] io f =
+match [Cc]h loro f =
+match [Ii]n so f =
+match [Pp] iano f =
+match [Rr] ibo f =
+match [Ss]t yro f =
+match [Tt] wo f =
+begword micro 134-24-14-1235-135 10^-6
+begword retro =
+
+#   see 10.11.2
+always the 2346
+match [Mm] oth ea 135-1456   motheaten
+always sthe 234-2346   anesthetic
+match - thea d 2345-125-2   pothead
+always theart 2345-125-15-345-2345 sweetheart
+always theast 1456-2-34
+always thence 1456-56-15
+
+always with 23456
 
 
 #   10.4   Strong Groupsigns
+#   see 10.11.2
 
 always ar 345
+begword infra 35-124-1235-1
+
 always ch 16
+always reach 1235-2-16   ?reac?
+
 always ed 1246
+word nosed 1345-135-234-1246
+begword nose = nosedive   ?nosedove?
+always turtledove =
+
 always er 12456
+always hedgerow 125-1246-1245-15-1235-246
+begword vice = viceroy
+
 always gh 126
+always ghead 1245-125-2-145
+always gheart 1245-125-15-345-2345
+midendword ghorn = bighorn
+always ghouse 1245-125-1256-234-15
+
 always ou 1256
+
 always ow 246
+begword kilo 13-24-123-135 10^3
+begword mono =
+word noway = change entry of noways
+word nowhere 1345-135-5-156
+word nowise =
+always oweed 135-2456-15-1246 locoweed
+always owork 135-5-2456 cowork stuccowork
+
 always sh 146
+begword mishand 134-24-234-125-12346 mishandled
+always mishap =
+begword missh 134-24-234-146 misshapen
+always ssh =
+begword trans =
+
 always st 34
+begword mistak 134-24-34-1-13
+begword post 1234-135-34
+word reichstag 1235-15-24-16-234-2345-1-1245
+always stime 234-5-2345
+midword stak 234-2345-1-13
+always sth 234-1456
+always sthood 34-125-135-135-145 priesthood
+midendword stion 234-56-1345
+midendword stown 234-2345-246-1345 Pickstown
+
 always th 1456
+always knot = knothole
+sufword nuthatch 1345-136-2345-125-1-2345-16
+begword potho = pothole pothook
+always thold = berthold
+always thood =
+always thouse 2345-125-1256-234-15
+
 always wh 156
+sufword raw = rawhide
+begword saw = sawhorse
+
 
 #   10.4.2
 
-word ch =
-word ou =
-word sh =
-word st =
-word th =
-word wh =
+match (%[^_~]%<*) ch ('([DSTdst]|ll|[rv]e|LL|[RV]E))?(%>*%[^_~]) =
+#match - ch - 16
+match (%[^_~]%<*) ou ('([DSTdst]|ll|[rv]e|LL|[RV]E))?(%>*%[^_~]) =
+match (%[^_~]%<*) sh ('([DSTdst]|ll|[rv]e|LL|[RV]E))?(%>*%[^_~]) =
+match (%[^_~]%<*) st ('([DSTdst]|ll|[rv]e|LL|[RV]E))?(%>*%[^_~]) =
+match (%[^_~]%<*) th ('([DSTdst]|ll|[rv]e|LL|[RV]E))?(%>*%[^_~]) =
+match (%[^_~]%<*) wh ('([DSTdst]|ll|[rv]e|LL|[RV]E))?(%>*%[^_~]) =
 
 #   10.4.3
 
 match !%[^_~] ing - 346
+
+midword ingen 35-1245-26 palingenesis (new birth)
+midword ingenc 346-26-14 contingency
+midendword ingent 346-26-2345 stringent
+begword vaing 1236-1-35-1245 vainglory
 
 
 #   10.5   Lower Wordsigns
@@ -252,15 +329,36 @@ match %[^_~]%<* dis [abdefgijlmnoqrstuvwxyz] 256
 #   10.6.5
 
 match %a bb %a 23
-match %a cc %a 25
-match %a ea %a 2
-match %a ff %a 235
-match %a gg %a 2356
+word dumbbell =
+word subbasement 234-136-12-12-1-234-15-56-2345
 
+match %a cc %a 25
 word arccosine 345-14-14-135-234-35-15
 midword cch 14-16 saccharine
-word dumbbell =
+
+match %a ea %a 2
 always ear 15-345
+midendword eand 15-12346 meander
+begword givea = giveaway
+word limeade =
+word orangeade =
+always pineapple 1234-35-15-1-1234-1234-123-15
+begword readj = readjust
+begword readm = readmit
+begword reaff 1235-15-1-235
+sufword reagent 1235-15-1-1245-26-2345
+begword realig = realign
+begword rean = reanalyze, reanimate
+begword reapp = reappear
+begword reass 1235-15-1-234-234
+begword reaw = reawaken
+always wiseacr =
+
+match %a ff %a 235
+always ffor 124-123456
+
+match %a gg %a 2356
+
 
 #   10.6.7
 
@@ -279,9 +377,13 @@ match - en %1*!%[_1] 26
 
 begword forens 123456-26-234 forensic
 always fore 123456-15
+midendword eness 15-56-234 closeness
+word toenail =
 
 match !%[_1]%1* in - 35
 match - in %1*!%[_1] 35
+
+midendword iness 24-56-234
 
 
 #   10.7   Initial-Letter Contractions
@@ -320,12 +422,16 @@ always work 5-2456
 always world 456-2456
 always young 5-13456
 
+begword parth 1234-345-1456 parthian
+begword parthen 1234-345-2346-1345 parthenon parthenogenesis
+
 
 #   10.7.1
 
 word aright 1-5-1235
 always chemo 16-15-134-135
 word chlordane 16-123-135-1235-145-1-1345-15
+word where'er 156-12456-15-3-12456
 
 #   10.7.2
 
@@ -394,6 +500,7 @@ sufword enamel 26-1-134-15-123 enameled
 always ename 15-5-1345
 midendword nament 1345-1-56-2345 tournament
 begword un = unameliorated
+always tnam =
 
 #   10.7.6
 
@@ -439,6 +546,7 @@ word gasometer 1245-1-234-135-134-15-2345-12456
 midendword ometer 135-134-15-2345-12456 gasometer
 midendword somed 234-135-134-1246 ransomed
 begword somer 234-135-134-12456 somersault
+begword iso =
 
 #   10.7.8
 
@@ -448,6 +556,8 @@ sufword sentiment 234-26-2345-24-56-2345
 sufword sentimental 234-26-2345-24-56-2345-1-123
 word unsentimental 136-1345-234-26-2345-24-56-2345-1-123
 begword centi 14-26-2345-24 10^-2
+begword multi =
+midendword timet = altimeter
 
 #   10.7.9
 
@@ -459,13 +569,22 @@ word underogatory 136-1345-145-12456-135-1245-1-2345-135-1235-13456
 #   10.8   Final-Letter Groupsigns
 
 midendword ance 46-15
+
 midendword ence 56-15
+midendword oence 135-26-14-15 electroencephalogram
+
 midendword ful 56-123
+
 midendword ity 56-13456
+word pityard 1234-24-2345-13456-345-145
+
 midendword less 46-234
 midendword ment 56-2345
 midendword ness 56-234
+
 midendword ong 56-1245
+begword nong = nongraphical
+
 midendword ound 46-145
 midendword ount 46-2345
 midendword sion 46-1345
@@ -571,6 +690,11 @@ match %[_~^]%<* letter (%2%a*)?%>*%[_~^] 123-1235
 match %[_~^]%<* little (%2%a*)?%>*%[_~^] 123-123
 match %[_~^]%<* quick (%2%a*)?%>*%[_~^] 12345-13
 
+#   10.9.4
+
+word herf =
+word mst =
+
 #   10.9.5
 
 contraction ab     about
@@ -622,6 +746,8 @@ contraction wd     would
 contraction yr     your
 contraction yrf    yourself
 contraction yrvs   yourselves
+
+word shd =
 
 #   Appendex 1
 
@@ -1209,125 +1335,3 @@ sufword cation 14-1-2345-24-135-1345
 #always chs 16-234 dachshund
 midendword eance 15-46-15 vengeance
 
-################################################################################
-
-
-# the letter g
-always ghead 1245-125-2-145
-always gheart 1245-125-15-345-2345
-midendword ghorn = bighorn
-always ghouse 1245-125-1256-234-15
-begword givea = giveaway
-
-# the letter h
-always hedgerow 125-1246-1245-15-1235-246
-word herf =
-
-# the letter i
-midendword iness 24-56-234
-begword infra 35-124-1235-1
-midword ingen 35-1245-26 palingenesis (new birth)
-midword ingenc 346-26-14 contingency
-midendword ingent 346-26-2345 stringent
-begword inter 35-2345-12456
-begword intra 35-2345-1235-1
-begword iso =
-
-# the letter k
-begword kilo 13-24-123-135 10^3
-always knot = knothole
-
-# the letter l
-word limeade =
-
-# the letter m
-always maha =
-begword micro 134-24-14-1235-135 10^-6
-begword mishand 134-24-234-125-12346 mishandled
-always mishap =
-begword missh 134-24-234-146 misshapen
-begword mistak 134-24-34-1-13
-begword mono =
-word motheaten 134-135-1456-2-2345-26
-word mst =
-begword multi =
-
-# the letter n
-begword nong = nongraphical
-word nosed 1345-135-234-1246
-begword nose = nosedive
-word noway = change entry of noways
-#word noways =
-word nowhere 1345-135-5-156
-word nowise =
-sufword nuthatch 1345-136-2345-125-1-2345-16
-
-# the letter o
-midendword oence 135-26-14-15 electroencephalogram
-midendword ofar 135-124-345 insofar
-always ofold = twofold
-midword ofor 135-123456
-word orangeade =
-always oweed 135-2456-15-1246 locoweed
-always owork 135-5-2456 cowork stuccowork
-
-# the letter p
-begword parth 1234-345-1456 parthian
-begword parthen 1234-345-2346-1345 parthenon parthenogenesis
-always pineapple 1234-35-15-1-1234-1234-123-15
-word pityard 1234-24-2345-13456-345-145
-begword post 1234-135-34
-begword potho = pothole pothook
-always predicat 1234-1235-1246-24-14-1-2345
-
-# the letter r
-sufword raw = rawhide
-always reach 1235-2-16
-begword readj = readjust
-begword readm = readmit
-begword reaff 1235-15-1-235
-sufword reagent 1235-15-1-1245-26-2345
-begword realig = realign
-begword rean = reanalyze, reanimate
-begword reapp = reappear
-begword reass 1235-15-1-234-234
-begword reaw = reawaken
-word reichstag 1235-15-24-16-234-2345-1-1245
-begword retro =
-begword ribof =
-
-# the letter s
-begword saw = sawhorse
-word shd =
-always ssh =
-midword stak 234-2345-1-13
-always sth 234-1456
-always sthe 234-2346
-always sthood 34-125-135-135-145 priesthood
-always stime 234-5-2345
-midendword stion 234-56-1345
-midendword stown 234-2345-246-1345 Pickstown
-begword styro 34-13456-1235-135 styrofoam
-word subbasement 234-136-12-12-1-234-15-56-2345
-
-# the letter t
-midendword thead 2345-125-2-145
-always theart 2345-125-15-345-2345 sweetheart
-always theast 1456-2-34
-always thence 1456-56-15
-always thold = berthold
-always thood =
-always thouse 2345-125-1256-234-15
-midendword timet = altimeter
-always tnam =
-word toenail =
-begword trans =
-always turtledove =
-
-# the letter v
-begword vaing 1236-1-35-1245 vainglory
-begword vice = viceroy
-
-# the letter w
-word where'er 156-12456-15-3-12456
-always wiseacr =
