@@ -12,8 +12,8 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 
-import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,8 +25,12 @@ import java.util.Set;
  * cleaned up in response to java side GC of API objects. (Private/internal
  * interfaces should always favor explicit resource releases / destroy()
  * protocol for this rather than depend on GC to trigger native cleanup).
+ * NOTE this uses WeakReference rather than PhantomReference, to avoid delaying the
+ * cleanup processing until after finalizers (if any) have run. In general usage of
+ * this class indicates the client does NOT use finalizers anyway (Good), so this should
+ * not be a visible difference in practice.
  */
-public class CleanupReference extends PhantomReference<Object> {
+public class CleanupReference extends WeakReference<Object> {
     private static final String TAG = "cr.CleanupReference";
 
     private static final boolean DEBUG = false;  // Always check in as false!
