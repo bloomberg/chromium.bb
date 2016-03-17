@@ -79,16 +79,16 @@
     ],
     "instrumentation_tests": [
       {
-        "test": "AndroidWebViewTest"
+        "test": "android_webview_test_apk"
       },
       {
-        "test": "ChromePublicTest"
+        "test": "chrome_public_test_apk"
       },
       {
-        "test": "ChromeSyncShellTest"
+        "test": "chrome_sync_shell_test_apk"
       },
       {
-        "test": "ContentShellTest"
+        "test": "content_shell_test_apk"
       }
     ]
   },
