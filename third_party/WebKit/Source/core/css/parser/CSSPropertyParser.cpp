@@ -3278,6 +3278,54 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeJustifyItems(CSSParserTokenRange&
     return consumeSelfPositionOverflowPosition(range);
 }
 
+static PassRefPtrWillBeRawPtr<CSSCustomIdentValue> consumeCustomIdentForGridLine(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueAuto || range.peek().id() == CSSValueSpan)
+        return nullptr;
+    return consumeCustomIdent(range);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeGridLine(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> spanValue = nullptr;
+    RefPtrWillBeRawPtr<CSSCustomIdentValue> gridLineName = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> numericValue = consumeInteger(range);
+    if (numericValue) {
+        gridLineName = consumeCustomIdentForGridLine(range);
+        spanValue = consumeIdent<CSSValueSpan>(range);
+    } else if ((spanValue = consumeIdent<CSSValueSpan>(range))) {
+        numericValue = consumeInteger(range);
+        gridLineName = consumeCustomIdentForGridLine(range);
+        if (!numericValue)
+            numericValue = consumeInteger(range);
+    } else if ((gridLineName = consumeCustomIdentForGridLine(range))) {
+        numericValue = consumeInteger(range);
+        spanValue = consumeIdent<CSSValueSpan>(range);
+        if (!spanValue && !numericValue)
+            return gridLineName.release();
+    } else {
+        return nullptr;
+    }
+
+    if (spanValue && numericValue && numericValue->getIntValue() < 0)
+        return nullptr; // Negative numbers are not allowed for span.
+    if (numericValue && numericValue->getIntValue() == 0)
+        return nullptr; // An <integer> value of zero makes the declaration invalid.
+
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+    if (spanValue)
+        values->append(spanValue.release());
+    if (numericValue)
+        values->append(numericValue.release());
+    if (gridLineName)
+        values->append(gridLineName.release());
+    ASSERT(values->length());
+    return values.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3640,6 +3688,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyJustifyItems:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return consumeJustifyItems(m_range);
+    case CSSPropertyGridColumnEnd:
+    case CSSPropertyGridColumnStart:
+    case CSSPropertyGridRowEnd:
+    case CSSPropertyGridRowStart:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeGridLine(m_range);
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {
