@@ -23,9 +23,7 @@
 
 #availableIcons iron-icon {
   border: 1px solid var(--google-grey-500);
-  height: 32px;
   padding: 17px;
-  width: 32px;
 }
 
 #availableIcons .iron-selected {

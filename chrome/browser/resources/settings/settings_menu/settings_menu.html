@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <if expr="chromeos">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
@@ -13,11 +14,11 @@
 
 <dom-module id="settings-menu">
   <template>
-    <style>
+    <style include="settings-shared">
       iron-icon {
+        --iron-icon-fill-color: var(--settings-side-nav-color);
+        --iron-icon-stroke-color: var(--settings-side-nav-color);
         -webkit-margin-end: 16px;
-        height: 20px;
-        width: 20px;
       }
 
       .menu-trigger span {
@@ -26,8 +27,8 @@
       }
 
       paper-menu {
-        background-color: rgb(236, 239, 241);
-        color: #5a5a5a;
+        background-color: var(--settings-background-color);
+        color: var(--settings-side-nav-color);
         font-size: 13px;
         --paper-menu-selected-item: {
           font-weight: 500;
@@ -45,7 +46,7 @@
 
       paper-submenu paper-menu {
         --paper-menu-selected-item: {
-          color: #4285f4;
+          color: var(--google-blue-500);
           font-weight: 500;
         };
         padding: 0;

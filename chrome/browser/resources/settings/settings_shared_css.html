@@ -6,10 +6,22 @@
         --checkbox-margin-start: 2px;
         --checkbox-size: 16px;
         --checkbox-spacing: 18px;
+        --iron-icon-fill-color: var(--paper-grey-500);
+        --iron-icon-height: 20px;
+        --iron-icon-stroke-color: var(--paper-grey-500);
+        --iron-icon-width: 20px;
+        --paper-icon-button: {
+          width: 36px;
+          height: 36px;
+        }
+        --settings-background-color: var(--paper-blue-grey-50);
         --settings-secondary: {
           color: var(--paper-grey-500);
           font-weight: 400;
         }
+        --settings-side-nav-color: var(--google-grey-600);
+        /* TODO(dschuyler): replace this rgb with a --paper color */
+        --settings-title-bar-color: rgb(52, 73, 94);
       }
 
       h2 {
@@ -22,12 +34,10 @@
         min-height: 40px;
       }
 
-      iron-icon {
-        color: var(--paper-grey-300);
-      }
-
+      iron-icon[icon=check],
       iron-icon[icon=done] {
-        color: var(--google-green-500);
+       --iron-icon-fill-color: var(--google-green-500);
+       --iron-icon-stroke-color: var(--google-green-500);
       }
 
       paper-button {
@@ -138,12 +148,6 @@
         border-bottom: 1px solid var(--paper-grey-300);
       }
 
-      .list-item iron-icon {
-        @apply(--layout-center);
-        height: 20px;
-        width: 20px;
-      }
-
       .list-item select {
         -webkit-margin-start: 4px;
       }
@@ -190,12 +194,6 @@
 
       .settings-box.two-line {
         min-height: 52px;
-      }
-
-      .settings-box iron-icon {
-        @apply(--layout-center);
-        height: 20px;
-        width: 20px;
       }
 
       .settings-box .secondary {

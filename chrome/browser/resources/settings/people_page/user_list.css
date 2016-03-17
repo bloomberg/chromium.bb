@@ -2,15 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.clear-icon {
-  color: #6e6e6e;
-}
-
-.clear-icon::shadow iron-icon {
-  height: 18px;
-  width: 18px;
-}
-
 .soft-border {
   border: 1px solid #c4c4c4;
   border-radius: 2px;
