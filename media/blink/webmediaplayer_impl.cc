@@ -865,8 +865,17 @@ void WebMediaPlayerImpl::OnCdmAttached(bool success) {
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   seeking_ = false;
   seek_time_ = base::TimeDelta();
-  if (paused_)
+  if (paused_) {
+#if defined(OS_ANDROID)  // WMPI_CAST
+    if (isRemote()) {
+      paused_time_ = base::TimeDelta::FromSecondsD(cast_impl_.currentTime());
+    } else {
+      paused_time_ = pipeline_.GetMediaTime();
+    }
+#else
     paused_time_ = pipeline_.GetMediaTime();
+#endif
+  }
   if (time_updated)
     should_notify_time_changed_ = true;
 }
