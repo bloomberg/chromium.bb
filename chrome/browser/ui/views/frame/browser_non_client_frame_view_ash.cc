@@ -116,8 +116,6 @@ void BrowserNonClientFrameViewAsh::Init() {
     window_icon_->Update();
   }
 
-  UpdateAvatar();
-
   if (UsePackagedAppHeaderStyle() || UseWebAppHeaderStyle()) {
     ash::DefaultHeaderPainter* header_painter = new ash::DefaultHeaderPainter;
     header_painter_.reset(header_painter);

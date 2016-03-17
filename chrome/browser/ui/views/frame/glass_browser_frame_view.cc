@@ -91,8 +91,6 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       throbber_frame_(0) {
   if (browser_view->ShouldShowWindowIcon())
     InitThrobberIcons();
-
-  UpdateAvatar();
 }
 
 GlassBrowserFrameView::~GlassBrowserFrameView() {

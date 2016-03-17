@@ -126,8 +126,6 @@ void BrowserNonClientFrameViewMus::Init() {
     AddChildView(window_icon_);
     window_icon_->Update();
   }
-
-  UpdateAvatar();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

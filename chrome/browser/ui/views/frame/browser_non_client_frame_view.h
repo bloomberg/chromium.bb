@@ -86,6 +86,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void UpdateOldAvatarButton();
 
  private:
+  // views::NonClientFrameView:
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+
   // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,

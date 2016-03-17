@@ -627,13 +627,7 @@ bool BrowserView::ShouldShowAvatar() const {
   // Don't show incognito avatar in the guest session.
   if (IsOffTheRecord() && !IsGuestSession())
     return true;
-  // This function is called via BrowserNonClientFrameView::UpdateAvatarInfo
-  // during the creation of the BrowserWindow, so browser->window() will not
-  // yet be set. In this case we can safely return false.
-  if (!browser_->window())
-    return false;
-  return chrome::MultiUserWindowManager::ShouldShowAvatar(
-      browser_->window()->GetNativeWindow());
+  return chrome::MultiUserWindowManager::ShouldShowAvatar(GetNativeWindow());
 #else
   if (!IsBrowserTypeNormal())
     return false;
@@ -771,11 +765,8 @@ void BrowserView::SetAlwaysOnTop(bool always_on_top) {
 
 gfx::NativeWindow BrowserView::GetNativeWindow() const {
   // While the browser destruction is going on, the widget can already be gone,
-  // but utility functions like FindBrowserWithWindow will come here and crash.
-  // We short circuit therefore.
-  if (!GetWidget())
-    return nullptr;
-  return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+  // but utility functions like FindBrowserWithWindow will still call this.
+  return GetWidget() ? GetWidget()->GetNativeWindow() : nullptr;
 }
 
 StatusBubble* BrowserView::GetStatusBubble() {
@@ -1257,12 +1248,11 @@ gfx::Rect BrowserView::GetRootWindowResizerRect() const {
 
 void BrowserView::ConfirmAddSearchProvider(TemplateURL* template_url,
                                            Profile* profile) {
-  chrome::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url,
-                           nullptr, profile);
+  chrome::EditSearchEngine(GetNativeWindow(), template_url, nullptr, profile);
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
-  UpdateRecommendedMessageBox::Show(GetWidget()->GetNativeWindow());
+  UpdateRecommendedMessageBox::Show(GetNativeWindow());
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {

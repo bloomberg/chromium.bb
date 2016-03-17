@@ -189,6 +189,12 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
     avatar_button_->SetAvatarIcon(avatar, is_rectangle);
 }
 
+void BrowserNonClientFrameView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this)
+    UpdateAvatar();
+}
+
 void BrowserNonClientFrameView::OnProfileAdded(
     const base::FilePath& profile_path) {
   OnProfileAvatarChanged(profile_path);
