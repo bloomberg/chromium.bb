@@ -30,6 +30,7 @@ a.se, 0
 a.ssl.fastly.net, 4
 aa.no, 0
 aaa, 0
+aaa.pro, 0
 aarborte.no, 0
 aarp, 0
 ab.ca, 0
@@ -94,6 +95,7 @@ accident-investigation.aero, 0
 accident-prevention.aero, 0
 accountant, 0
 accountants, 0
+acct.pro, 0
 achi.nagano.jp, 0
 aco, 0
 act.au, 0
@@ -141,7 +143,7 @@ agency, 0
 agents.aero, 0
 agr.br, 0
 agrar.hu, 0
-agrica.za, 0
+agric.za, 0
 agriculture.museum, 0
 agrigento.it, 0
 agrinet.tn, 0
@@ -284,13 +286,16 @@ aosta.it, 0
 aostavalley.it, 0
 aoste.it, 0
 ap-northeast-1.compute.amazonaws.com, 4
+ap-northeast-2.compute.amazonaws.com, 4
 ap-southeast-1.compute.amazonaws.com, 4
 ap-southeast-2.compute.amazonaws.com, 4
 ap.gov.pl, 0
 ap.it, 0
 apartments, 0
+api.githubcloud.com, 6
 app, 0
 apple, 0
+apps.fbsbx.com, 4
 appspot.com, 4
 aq, 0
 aq.it, 0
@@ -445,6 +450,7 @@ averoy.no, 0
 avianca, 0
 aviation.museum, 0
 avocat.fr, 0
+avocat.pro, 0
 avoues.fr, 0
 aw, 0
 awaji.hyogo.jp, 0
@@ -1125,6 +1131,7 @@ co.cl, 0
 co.cm, 0
 co.com, 4
 co.cr, 0
+co.cz, 4
 co.gg, 0
 co.gl, 0
 co.gy, 0
@@ -1532,7 +1539,6 @@ dontexist.net, 4
 dontexist.org, 4
 doomdns.com, 4
 doomdns.org, 4
-doosan, 0
 doshi.yamanashi.jp, 0
 dot, 0
 dovre.no, 0
@@ -1589,6 +1595,7 @@ dyndns.info, 4
 dyndns.org, 4
 dyndns.tv, 4
 dyndns.ws, 4
+dynv6.net, 4
 dyroy.no, 0
 dz, 0
 e-burg.ru, 0
@@ -1654,6 +1661,7 @@ edu.gn, 0
 edu.gp, 0
 edu.gr, 0
 edu.gt, 0
+edu.gy, 0
 edu.hk, 0
 edu.hn, 0
 edu.ht, 0
@@ -1851,6 +1859,7 @@ experts-comptables.fr, 0
 exposed, 0
 express, 0
 express.aero, 0
+ext.githubcloud.com, 6
 extraspace, 0
 f.bg, 0
 f.se, 0
@@ -2130,6 +2139,7 @@ fukushima.fukushima.jp, 0
 fukushima.hokkaido.jp, 0
 fukushima.jp, 0
 fukuyama.hiroshima.jp, 0
+fun, 0
 funabashi.chiba.jp, 0
 funagata.yamagata.jp, 0
 funahashi.toyama.jp, 0
@@ -2232,7 +2242,10 @@ ginan.gifu.jp, 0
 ginowan.okinawa.jp, 0
 ginoza.okinawa.jp, 0
 giske.no, 0
+gist.githubcloud.com, 4
 github.io, 4
+githubcloud.com, 4
+githubcloudusercontent.com, 6
 githubusercontent.com, 4
 gives, 0
 giving, 0
@@ -2257,6 +2270,7 @@ glogow.pl, 0
 gloppen.no, 0
 gm, 0
 gmail, 0
+gmbh, 0
 gmina.pl, 0
 gmo, 0
 gmx, 0
@@ -2373,6 +2387,7 @@ gov.gh, 0
 gov.gi, 0
 gov.gn, 0
 gov.gr, 0
+gov.gy, 0
 gov.hk, 0
 gov.ie, 0
 gov.il, 0
@@ -2825,6 +2840,7 @@ hyogo.jp, 0
 hyuga.miyazaki.jp, 0
 hyundai, 0
 i.bg, 0
+i.ng, 0
 i.ph, 0
 i.se, 0
 i234.me, 4
@@ -4480,6 +4496,7 @@ mx.na, 0
 my, 0
 my.eu.org, 4
 my.id, 0
+mydrobo.com, 4
 myds.me, 4
 mykolaiv.ua, 0
 myoko.niigata.jp, 0
@@ -5181,6 +5198,7 @@ org.gn, 0
 org.gp, 0
 org.gr, 0
 org.gt, 0
+org.gy, 0
 org.hk, 0
 org.hn, 0
 org.ht, 0
@@ -5664,6 +5682,7 @@ rec.co, 0
 rec.nf, 0
 rec.ro, 0
 rec.ve, 0
+recht.pro, 0
 recipes, 0
 recreation.aero, 0
 red, 0
@@ -5793,6 +5812,7 @@ rzgw.gov.pl, 0
 s.bg, 0
 s.se, 0
 s3-ap-northeast-1.amazonaws.com, 4
+s3-ap-northeast-2.amazonaws.com, 4
 s3-ap-southeast-1.amazonaws.com, 4
 s3-ap-southeast-2.amazonaws.com, 4
 s3-eu-central-1.amazonaws.com, 4
@@ -5805,6 +5825,7 @@ s3-us-gov-west-1.amazonaws.com, 4
 s3-us-west-1.amazonaws.com, 4
 s3-us-west-2.amazonaws.com, 4
 s3.amazonaws.com, 4
+s3.ap-northeast-2.amazonaws.com, 4
 s3.cn-north-1.amazonaws.com.cn, 4
 s3.eu-central-1.amazonaws.com, 4
 sa, 0
@@ -6360,6 +6381,7 @@ storfjord.no, 0
 stpetersburg.museum, 0
 strand.no, 0
 stranda.no, 0
+stream, 0
 stryn.no, 0
 student.aero, 0
 studio, 0
@@ -6738,7 +6760,6 @@ toyoura.hokkaido.jp, 0
 toys, 0
 tozawa.yamagata.jp, 0
 tozsde.hu, 0
-tp, 0
 tp.it, 0
 tr, 0
 tr.eu.org, 4
@@ -7266,6 +7287,8 @@ wzmiuw.gov.pl, 0
 x.bg, 0
 x.se, 0
 xbox, 0
+xen.prgmr.com, 4
+xenapponazure.com, 4
 xerox, 0
 xfinity, 0
 xihuan, 0
