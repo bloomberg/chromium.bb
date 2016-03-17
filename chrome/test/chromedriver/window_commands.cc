@@ -347,7 +347,7 @@ Status ExecuteSwitchToFrame(
         "  return document.evaluate(xpath, document, null, "
         "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
         "}";
-    std::string xpath = "(/html/body//iframe|/html/frameset/frame)";
+    std::string xpath = "(/html/body//iframe|/html/frameset//frame)";
     std::string id_string;
     int id_int;
     if (id->GetAsString(&id_string)) {

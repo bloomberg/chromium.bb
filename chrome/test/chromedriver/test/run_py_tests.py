@@ -400,6 +400,21 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.SwitchToParentFrame()
     self.assertTrue('One' in self._driver.GetPageSource())
 
+  def testSwitchToNestedFrame(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/nested_frameset.html'))
+    self._driver.SwitchToFrameByIndex(0)
+    self.assertTrue(self._driver.FindElement("id", "link").IsDisplayed())
+    self._driver.SwitchToMainFrame()
+    self._driver.SwitchToFrame('2Frame')
+    self.assertTrue(self._driver.FindElement("id", "l1").IsDisplayed())
+    self._driver.SwitchToMainFrame()
+    self._driver.SwitchToFrame('fourth_frame')
+    self.assertTrue('One' in self._driver.GetPageSource())
+    self._driver.SwitchToMainFrame()
+    self._driver.SwitchToFrameByIndex(4)
+    self.assertTrue(self._driver.FindElement("id", "aa1").IsDisplayed())
+
   def testExecuteInRemovedFrame(self):
     self._driver.ExecuteScript(
         'var frame = document.createElement("iframe");'
