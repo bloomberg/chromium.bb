@@ -29,6 +29,12 @@ namespace cc {
 class SharedBitmap;
 }
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace test_runner {
 
 class WebTestDelegate;
@@ -150,6 +156,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
   blink::WebRect rect_;
   blink::WebGraphicsContext3D* context_;
+  gpu::gles2::GLES2Interface* gl_;
   unsigned color_texture_;
   cc::TextureMailbox texture_mailbox_;
   scoped_ptr<cc::SharedBitmap> shared_bitmap_;

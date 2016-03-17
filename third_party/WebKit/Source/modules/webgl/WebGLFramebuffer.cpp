@@ -25,6 +25,7 @@
 
 #include "modules/webgl/WebGLFramebuffer.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderbuffer.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "modules/webgl/WebGLTexture.h"
@@ -48,8 +49,8 @@ private:
     bool isSharedObject(WebGLSharedObject*) const override;
     bool valid() const override;
     void onDetached(WebGraphicsContext3D*) override;
-    void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
-    void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
+    void attach(gpu::gles2::GLES2Interface*, GLenum target, GLenum attachment) override;
+    void unattach(gpu::gles2::GLES2Interface*, GLenum target, GLenum attachment) override;
 
     Member<WebGLRenderbuffer> m_renderbuffer;
 };
@@ -90,15 +91,15 @@ void WebGLRenderbufferAttachment::onDetached(WebGraphicsContext3D* context)
     m_renderbuffer->onDetached(context);
 }
 
-void WebGLRenderbufferAttachment::attach(WebGraphicsContext3D* context, GLenum target, GLenum attachment)
+void WebGLRenderbufferAttachment::attach(gpu::gles2::GLES2Interface* gl, GLenum target, GLenum attachment)
 {
     Platform3DObject object = objectOrZero(m_renderbuffer.get());
-    context->framebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, object);
+    gl->FramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, object);
 }
 
-void WebGLRenderbufferAttachment::unattach(WebGraphicsContext3D* context, GLenum target, GLenum attachment)
+void WebGLRenderbufferAttachment::unattach(gpu::gles2::GLES2Interface* gl, GLenum target, GLenum attachment)
 {
-    context->framebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, 0);
+    gl->FramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, 0);
 }
 
 class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
@@ -115,8 +116,8 @@ private:
     bool isSharedObject(WebGLSharedObject*) const override;
     bool valid() const override;
     void onDetached(WebGraphicsContext3D*) override;
-    void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
-    void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
+    void attach(gpu::gles2::GLES2Interface*, GLenum target, GLenum attachment) override;
+    void unattach(gpu::gles2::GLES2Interface*, GLenum target, GLenum attachment) override;
 
     Member<WebGLTexture> m_texture;
     GLenum m_target;
@@ -163,23 +164,23 @@ void WebGLTextureAttachment::onDetached(WebGraphicsContext3D* context)
     m_texture->onDetached(context);
 }
 
-void WebGLTextureAttachment::attach(WebGraphicsContext3D* context, GLenum target, GLenum attachment)
+void WebGLTextureAttachment::attach(gpu::gles2::GLES2Interface* gl, GLenum target, GLenum attachment)
 {
     Platform3DObject object = objectOrZero(m_texture.get());
     if (m_target == GL_TEXTURE_3D || m_target == GL_TEXTURE_2D_ARRAY) {
-        context->framebufferTextureLayer(target, attachment, object, m_level, m_layer);
+        gl->FramebufferTextureLayer(target, attachment, object, m_level, m_layer);
     } else {
-        context->framebufferTexture2D(target, attachment, m_target, object, m_level);
+        gl->FramebufferTexture2D(target, attachment, m_target, object, m_level);
     }
 }
 
-void WebGLTextureAttachment::unattach(WebGraphicsContext3D* context, GLenum target, GLenum attachment)
+void WebGLTextureAttachment::unattach(gpu::gles2::GLES2Interface* gl, GLenum target, GLenum attachment)
 {
     // GL_DEPTH_STENCIL_ATTACHMENT attachment is valid in ES3.
     if (m_target == GL_TEXTURE_3D || m_target == GL_TEXTURE_2D_ARRAY) {
-        context->framebufferTextureLayer(target, attachment, 0, m_level, m_layer);
+        gl->FramebufferTextureLayer(target, attachment, 0, m_level, m_layer);
     } else {
-        context->framebufferTexture2D(target, attachment, m_target, 0, m_level);
+        gl->FramebufferTexture2D(target, attachment, m_target, 0, m_level);
     }
 }
 
@@ -249,7 +250,7 @@ void WebGLFramebuffer::attach(GLenum target, GLenum attachment, GLenum attachmen
     ASSERT(isBound(target));
     WebGLAttachment* attachmentObject = getAttachment(attachment);
     if (attachmentObject)
-        attachmentObject->attach(context()->webContext(), target, attachmentPoint);
+        attachmentObject->attach(context()->contextGL(), target, attachmentPoint);
 }
 
 WebGLSharedObject* WebGLFramebuffer::getAttachmentObject(GLenum attachment) const
@@ -305,7 +306,7 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(GLenum target, WebGL
             WebGLAttachment* attachmentObject = it.value.get();
             if (attachmentObject->isSharedObject(attachment)) {
                 GLenum attachmentType = it.key;
-                attachmentObject->unattach(context()->webContext(), target, attachmentType);
+                attachmentObject->unattach(context()->contextGL(), target, attachmentType);
                 removeAttachmentFromBoundFramebuffer(target, attachmentType);
                 checkMore = true;
                 break;

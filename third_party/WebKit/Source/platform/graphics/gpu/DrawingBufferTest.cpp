@@ -567,34 +567,9 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     testing::Mock::VerifyAndClearExpectations(webContext());
 }
 
-class DepthStencilTrackingContext : public MockWebGraphicsContext3D {
+class DepthStencilTrackingGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 public:
-    DepthStencilTrackingContext()
-        : m_nextRenderBufferId(1)
-        , m_stencilAttachment(0)
-        , m_depthAttachment(0)
-        , m_depthStencilAttachment(0) {}
-    ~DepthStencilTrackingContext() override {}
-
-    int numAllocatedRenderBuffer() const { return m_nextRenderBufferId - 1; }
-    WebGLId stencilAttachment() const { return m_stencilAttachment; }
-    WebGLId depthAttachment() const { return m_depthAttachment; }
-    WebGLId depthStencilAttachment() const { return m_depthStencilAttachment; }
-
-    WebString getString(WGC3Denum type) override
-    {
-        if (type == GL_EXTENSIONS) {
-            return WebString::fromUTF8("GL_OES_packed_depth_stencil");
-        }
-        return WebString();
-    }
-
-    WebGLId createRenderbuffer() override
-    {
-        return ++m_nextRenderBufferId;
-    }
-
-    void framebufferRenderbuffer(WGC3Denum target, WGC3Denum attachment, WGC3Denum renderbuffertarget, WebGLId renderbuffer) override
+    void FramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) override
     {
         switch (attachment) {
         case GL_DEPTH_ATTACHMENT:
@@ -612,14 +587,47 @@ public:
         }
     }
 
+    uint32_t stencilAttachment() const { return m_stencilAttachment; }
+    uint32_t depthAttachment() const { return m_depthAttachment; }
+    uint32_t depthStencilAttachment() const { return m_depthStencilAttachment; }
+
+private:
+    uint32_t m_depthAttachment = 0;
+    uint32_t m_stencilAttachment = 0;
+    uint32_t m_depthStencilAttachment = 0;
+};
+
+class DepthStencilTrackingContext : public MockWebGraphicsContext3D {
+public:
+    DepthStencilTrackingContext() : m_nextRenderBufferId(1) {}
+    ~DepthStencilTrackingContext() override {}
+
+    int numAllocatedRenderBuffer() const { return m_nextRenderBufferId - 1; }
+    WebGLId stencilAttachment() const { return m_contextGL.stencilAttachment(); }
+    WebGLId depthAttachment() const { return m_contextGL.depthAttachment(); }
+    WebGLId depthStencilAttachment() const { return m_contextGL.depthStencilAttachment(); }
+
+    WebString getString(WGC3Denum type) override
+    {
+        if (type == GL_EXTENSIONS) {
+            return WebString::fromUTF8("GL_OES_packed_depth_stencil");
+        }
+        return WebString();
+    }
+
+    WebGLId createRenderbuffer() override
+    {
+        return ++m_nextRenderBufferId;
+    }
+
     void getIntegerv(WGC3Denum ptype, WGC3Dint* value) override
     {
         switch (ptype) {
         case GL_DEPTH_BITS:
-            *value = (m_depthAttachment || m_depthStencilAttachment) ? 24 : 0;
+            *value = (depthAttachment() || depthStencilAttachment()) ? 24 : 0;
             return;
         case GL_STENCIL_BITS:
-            *value = (m_stencilAttachment || m_depthStencilAttachment) ? 8 : 0;
+            *value = (stencilAttachment() || depthStencilAttachment()) ? 8 : 0;
             return;
         }
         MockWebGraphicsContext3D::getIntegerv(ptype, value);
@@ -629,10 +637,7 @@ public:
 
 private:
     WebGLId m_nextRenderBufferId;
-    WebGLId m_stencilAttachment;
-    WebGLId m_depthAttachment;
-    WebGLId m_depthStencilAttachment;
-    gpu::gles2::GLES2InterfaceStub m_contextGL;
+    DepthStencilTrackingGLES2Interface m_contextGL;
 };
 
 struct DepthStencilTestCase {

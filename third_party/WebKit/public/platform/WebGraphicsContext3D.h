@@ -211,8 +211,6 @@ public:
     virtual void enableVertexAttribArray(WGC3Duint index) = 0;
     virtual void finish() = 0;
     virtual void flush() = 0;
-    virtual void framebufferRenderbuffer(WGC3Denum target, WGC3Denum attachment, WGC3Denum renderbuffertarget, WebGLId renderbuffer) = 0;
-    virtual void framebufferTexture2D(WGC3Denum target, WGC3Denum attachment, WGC3Denum textarget, WebGLId texture, WGC3Dint level) = 0;
     virtual void frontFace(WGC3Denum mode) = 0;
     virtual void generateMipmap(WGC3Denum target) = 0;
 
@@ -434,7 +432,6 @@ public:
     virtual void drawRangeElements(WGC3Denum mode, WGC3Duint start, WGC3Duint end, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset) { }
     virtual void endTransformFeedback(void) { }
     virtual WGC3Dsync fenceSync(WGC3Denum condition, WGC3Dbitfield flags) { return nullptr; }
-    virtual void framebufferTextureLayer(WGC3Denum target, WGC3Denum attachment, WGC3Duint texture, WGC3Dint level, WGC3Dint layer) { }
     virtual void getActiveUniformBlockName(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dchar *uniformBlockName) { }
     virtual void getActiveUniformBlockiv(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }
     virtual void getActiveUniformsiv(WebGLId program, WGC3Dsizei uniformCount, const WGC3Duint *uniformIndices, WGC3Denum pname, WGC3Dint *params) { }

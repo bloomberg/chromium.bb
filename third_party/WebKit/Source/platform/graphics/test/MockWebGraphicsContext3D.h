@@ -98,8 +98,6 @@ public:
     virtual void enableVertexAttribArray(WGC3Duint index) { }
     virtual void finish() { }
     virtual void flush() { }
-    virtual void framebufferRenderbuffer(WGC3Denum target, WGC3Denum attachment, WGC3Denum renderbuffertarget, WebGLId renderbuffer) { }
-    virtual void framebufferTexture2D(WGC3Denum target, WGC3Denum attachment, WGC3Denum textarget, WebGLId texture, WGC3Dint level) { }
     virtual void frontFace(WGC3Denum mode) { }
     virtual void generateMipmap(WGC3Denum target) { }
 

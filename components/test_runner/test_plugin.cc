@@ -16,6 +16,7 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "components/test_runner/web_test_delegate.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -37,36 +38,6 @@
 namespace test_runner {
 
 namespace {
-
-// GLenum values copied from gl2.h.
-#define GL_FALSE 0
-#define GL_TRUE 1
-#define GL_ONE 1
-#define GL_TRIANGLES 0x0004
-#define GL_ONE_MINUS_SRC_ALPHA 0x0303
-#define GL_DEPTH_TEST 0x0B71
-#define GL_BLEND 0x0BE2
-#define GL_SCISSOR_TEST 0x0B90
-#define GL_TEXTURE_2D 0x0DE1
-#define GL_FLOAT 0x1406
-#define GL_RGBA 0x1908
-#define GL_UNSIGNED_BYTE 0x1401
-#define GL_TEXTURE_MAG_FILTER 0x2800
-#define GL_TEXTURE_MIN_FILTER 0x2801
-#define GL_TEXTURE_WRAP_S 0x2802
-#define GL_TEXTURE_WRAP_T 0x2803
-#define GL_NEAREST 0x2600
-#define GL_COLOR_BUFFER_BIT 0x4000
-#define GL_CLAMP_TO_EDGE 0x812F
-#define GL_ARRAY_BUFFER 0x8892
-#define GL_STATIC_DRAW 0x88E4
-#define GL_FRAGMENT_SHADER 0x8B30
-#define GL_VERTEX_SHADER 0x8B31
-#define GL_COMPILE_STATUS 0x8B81
-#define GL_LINK_STATUS 0x8B82
-#define GL_COLOR_ATTACHMENT0 0x8CE0
-#define GL_FRAMEBUFFER_COMPLETE 0x8CD5
-#define GL_FRAMEBUFFER 0x8D40
 
 void PremultiplyAlpha(const unsigned color_in[3],
                       float alpha,
@@ -149,8 +120,9 @@ TestPlugin::TestPlugin(blink::WebFrame* frame,
                        WebTestDelegate* delegate)
     : frame_(frame),
       delegate_(delegate),
-      container_(0),
-      context_(0),
+      container_(nullptr),
+      context_(nullptr),
+      gl_(nullptr),
       color_texture_(0),
       mailbox_changed_(false),
       framebuffer_(0),
@@ -203,6 +175,7 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
   blink::WebGraphicsContext3D::Attributes attrs;
   context_ =
       blink::Platform::current()->createOffscreenGraphicsContext3D(attrs);
+  gl_ = context_->getGLES2Interface();
 
   if (!InitScene())
     return false;
@@ -231,11 +204,12 @@ void TestPlugin::destroy() {
   layer_ = NULL;
   DestroyScene();
 
+  gl_ = nullptr;
   delete context_;
-  context_ = 0;
+  context_ = nullptr;
 
-  container_ = 0;
-  frame_ = 0;
+  container_ = nullptr;
+  frame_ = nullptr;
 
   blink::Platform::current()->mainThread()->getWebTaskRunner()->postTask(
       blink::WebTraceLocation(__FUNCTION__, __FILE__),
@@ -284,8 +258,8 @@ void TestPlugin::updateGeometry(
                          GL_UNSIGNED_BYTE,
                          0);
     context_->bindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    context_->framebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture_, 0);
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, color_texture_, 0);
 
     DrawSceneGL();
 

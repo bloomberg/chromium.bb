@@ -144,15 +144,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void enableVertexAttribArray(blink::WGC3Duint index) override;
   void finish() override;
   void flush() override;
-  void framebufferRenderbuffer(blink::WGC3Denum target,
-                               blink::WGC3Denum attachment,
-                               blink::WGC3Denum renderbuffertarget,
-                               blink::WebGLId renderbuffer) override;
-  void framebufferTexture2D(blink::WGC3Denum target,
-                            blink::WGC3Denum attachment,
-                            blink::WGC3Denum textarget,
-                            blink::WebGLId texture,
-                            blink::WGC3Dint level) override;
   void frontFace(blink::WGC3Denum mode) override;
   void generateMipmap(blink::WGC3Denum target) override;
 
@@ -685,11 +676,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void endTransformFeedback(void) override;
   blink::WGC3Dsync fenceSync(blink::WGC3Denum condition,
                              blink::WGC3Dbitfield flags) override;
-  void framebufferTextureLayer(blink::WGC3Denum target,
-                               blink::WGC3Denum attachment,
-                               blink::WGC3Duint texture,
-                               blink::WGC3Dint level,
-                               blink::WGC3Dint layer) override;
   void getActiveUniformBlockName(blink::WGC3Duint program,
                                  blink::WGC3Duint uniformBlockIndex,
                                  blink::WGC3Dsizei bufSize,

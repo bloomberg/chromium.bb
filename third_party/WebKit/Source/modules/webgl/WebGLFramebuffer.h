@@ -29,6 +29,12 @@
 #include "modules/webgl/WebGLContextObject.h"
 #include "modules/webgl/WebGLSharedObject.h"
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace blink {
 
 class WebGLRenderbuffer;
@@ -45,8 +51,8 @@ public:
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
         virtual bool valid() const = 0;
         virtual void onDetached(WebGraphicsContext3D*) = 0;
-        virtual void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) = 0;
-        virtual void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) = 0;
+        virtual void attach(gpu::gles2::GLES2Interface*, GLenum target, GLenum attachment) = 0;
+        virtual void unattach(gpu::gles2::GLES2Interface*, GLenum target, GLenum attachment) = 0;
 
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 

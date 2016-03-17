@@ -675,7 +675,7 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
         if (m_context->getError() == GL_OUT_OF_MEMORY)
             return false;
 
-        m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleColorBuffer);
+        m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleColorBuffer);
         resizeDepthStencil(size);
         if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             return false;
@@ -698,7 +698,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
     else
         m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
-    m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthStencilBuffer);
+    m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthStencilBuffer);
     m_context->bindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
@@ -880,7 +880,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
     if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
         fbo = m_context->createFramebuffer();
         m_context->bindFramebuffer(GL_FRAMEBUFFER, fbo);
-        m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_frontColorBuffer.texInfo.parameters.target, m_frontColorBuffer.texInfo.textureId, 0);
+        m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_frontColorBuffer.texInfo.parameters.target, m_frontColorBuffer.texInfo.textureId, 0);
     } else {
         m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer());
     }
@@ -889,7 +889,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
     flipVertically(static_cast<uint8_t*>(pixels.data()), width, height);
 
     if (fbo) {
-        m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_frontColorBuffer.texInfo.parameters.target, 0, 0);
+        m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_frontColorBuffer.texInfo.parameters.target, 0, 0);
         m_context->deleteFramebuffer(fbo);
     }
 
@@ -1037,7 +1037,7 @@ void DrawingBuffer::attachColorBufferToCurrentFBO()
     if (m_antiAliasingMode == MSAAImplicitResolve)
         m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_colorBuffer.textureId, 0, m_sampleCount);
     else
-        m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_colorBuffer.textureId, 0);
+        m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_colorBuffer.textureId, 0);
 
     m_context->bindTexture(GL_TEXTURE_2D, m_texture2DBinding);
 }

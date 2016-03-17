@@ -341,12 +341,6 @@ DELEGATE_TO_GL_1(enableVertexAttribArray, EnableVertexAttribArray,
 DELEGATE_TO_GL(finish, Finish)
 DELEGATE_TO_GL(flush, Flush)
 
-DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
-                 WGC3Denum, WGC3Denum, WGC3Denum, WebGLId)
-
-DELEGATE_TO_GL_5(framebufferTexture2D, FramebufferTexture2D,
-                 WGC3Denum, WGC3Denum, WGC3Denum, WebGLId, WGC3Dint)
-
 DELEGATE_TO_GL_1(frontFace, FrontFace, WGC3Denum)
 
 DELEGATE_TO_GL_1(generateMipmap, GenerateMipmap, WGC3Denum)
@@ -1018,8 +1012,6 @@ WGC3Dsync WebGraphicsContext3DImpl::fenceSync(WGC3Denum condition,
                                               WGC3Dbitfield flags) {
   return reinterpret_cast<WGC3Dsync>(gl_->FenceSync(condition, flags));
 }
-DELEGATE_TO_GL_5(framebufferTextureLayer, FramebufferTextureLayer, WGC3Denum,
-                 WGC3Denum, WGC3Duint, WGC3Dint, WGC3Dint)
 DELEGATE_TO_GL_5(getActiveUniformBlockName, GetActiveUniformBlockName,
                  WGC3Duint, WGC3Duint, WGC3Dsizei, WGC3Dsizei *, WGC3Dchar *)
 DELEGATE_TO_GL_4(getActiveUniformBlockiv, GetActiveUniformBlockiv, WGC3Duint,

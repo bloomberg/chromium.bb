@@ -10,6 +10,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLActiveInfo.h"
 #include "modules/webgl/WebGLBuffer.h"
 #include "modules/webgl/WebGLFenceSync.h"
@@ -307,10 +308,10 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(ScriptState* scriptStat
         return;
     }
     if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-        webContext()->framebufferTextureLayer(target, GL_DEPTH_ATTACHMENT, objectOrZero(texture), level, layer);
-        webContext()->framebufferTextureLayer(target, GL_STENCIL_ATTACHMENT, objectOrZero(texture), level, layer);
+        contextGL()->FramebufferTextureLayer(target, GL_DEPTH_ATTACHMENT, objectOrZero(texture), level, layer);
+        contextGL()->FramebufferTextureLayer(target, GL_STENCIL_ATTACHMENT, objectOrZero(texture), level, layer);
     } else {
-        webContext()->framebufferTextureLayer(target, attachment, objectOrZero(texture), level, layer);
+        contextGL()->FramebufferTextureLayer(target, attachment, objectOrZero(texture), level, layer);
     }
     if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
         // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.

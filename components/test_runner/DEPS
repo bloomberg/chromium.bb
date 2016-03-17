@@ -1,6 +1,7 @@
 include_rules = [
   "+cc",
   "+gin",
+  "+gpu/command_buffer/client",
   "+net/base",
   "+skia",
   "+third_party/skia",
