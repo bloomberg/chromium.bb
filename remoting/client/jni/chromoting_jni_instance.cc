@@ -408,6 +408,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT);
 
+#if defined(ENABLE_WEBRTC_REMOTING_CLIENT)
   if (flags_.find("useWebrtc") != std::string::npos) {
     VLOG(0) << "Attempting to connect using WebRTC.";
     scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
@@ -416,7 +417,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
     protocol_config->set_ice_supported(false);
     client_->set_protocol_config(std::move(protocol_config));
   }
-
+#endif  // defined(ENABLE_WEBRTC_REMOTING_CLIENT)
   client_->Start(signaling_.get(), client_auth_config_, transport_context,
                  host_jid_, capabilities_);
 }

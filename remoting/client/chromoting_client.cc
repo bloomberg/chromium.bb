@@ -73,11 +73,11 @@ void ChromotingClient::Start(
   if (!connection_) {
     if (protocol_config_->webrtc_supported()) {
       DCHECK(!protocol_config_->ice_supported());
-#if defined(OS_NACL)
-      LOG(FATAL) << "WebRTC is not supported in webapp.";
-#else   // defined(OS_NACL)
+#if !defined(ENABLE_WEBRTC_REMOTING_CLIENT)
+      LOG(FATAL) << "WebRTC is not supported.";
+#else
       connection_.reset(new protocol::WebrtcConnectionToHost());
-#endif  // !defined(OS_NACL)
+#endif
     } else {
       DCHECK(protocol_config_->ice_supported());
       connection_.reset(new protocol::IceConnectionToHost());

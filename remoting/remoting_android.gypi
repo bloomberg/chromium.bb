@@ -59,6 +59,13 @@
             'client/jni/remoting_jni_registrar.cc',
             'client/jni/remoting_jni_registrar.h',
           ],
+          'conditions': [
+            ['buildtype!="Official"', {
+              'defines': [
+                'ENABLE_WEBRTC_REMOTING_CLIENT'
+              ]
+            }]
+          ],
         },  # end of target 'remoting_client_jni'
         {
           'target_name': 'remoting_android_resources',

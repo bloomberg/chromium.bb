@@ -14,6 +14,12 @@ config("version") {
   defines = [ "VERSION=$chrome_version_full" ]
 }
 
+config("enable_webrtc_remoting_client") {
+  if (!is_official_build && !is_nacl) {
+    defines = [ "ENABLE_WEBRTC_REMOTING_CLIENT=1" ]
+  }
+}
+
 group("remoting_all") {
   testonly = true
 

@@ -22,6 +22,13 @@
         '<@(remoting_client_sources)',
         '<@(remoting_client_standalone_sources)',
       ],
+      'conditions': [
+        ['buildtype!="Official"', {
+          'defines': [
+            'ENABLE_WEBRTC_REMOTING_CLIENT'
+          ]
+        }]
+      ],
     },  # end of target 'remoting_client'
 
     {
