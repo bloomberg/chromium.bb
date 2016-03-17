@@ -93,12 +93,6 @@ void returnValueAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyC
     info.GetReturnValue().Set(impl->returnValue());
 }
 
-void evaluateWithExceptionDetailsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    info.GetReturnValue().Set(impl->evaluateWithExceptionDetails(info[0], info[1]));
-}
-
 void scopeTypeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
@@ -160,7 +154,6 @@ const JavaScriptCallFrameWrapper::V8AttributeConfiguration V8JavaScriptCallFrame
 };
 
 const JavaScriptCallFrameWrapper::V8MethodConfiguration V8JavaScriptCallFrameMethods[] = {
-    {"evaluateWithExceptionDetails", evaluateWithExceptionDetailsMethodCallback},
     {"scopeType", scopeTypeMethodCallback},
     {"scopeName", scopeNameMethodCallback},
     {"scopeStartLocation", scopeStartLocationMethodCallback},

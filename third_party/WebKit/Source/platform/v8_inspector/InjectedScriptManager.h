@@ -63,6 +63,20 @@ public:
     void releaseObjectGroup(const String16& objectGroup);
     void setCustomObjectFormatterEnabled(bool);
 
+    class ScopedGlobalObjectExtension {
+        PROTOCOL_DISALLOW_COPY(ScopedGlobalObjectExtension);
+    public:
+        // Pass InjectedScriptManager to affect all contexts which have access.
+        ScopedGlobalObjectExtension(InjectedScript* current, InjectedScriptManager*, v8::MaybeLocal<v8::Object> extension);
+        ~ScopedGlobalObjectExtension();
+
+    private:
+        void setOnGlobal(v8::Local<v8::Object> global, v8::Local<v8::Object> extension);
+
+        v8::Local<v8::Symbol> m_symbol;
+        v8::Local<v8::Context> m_context;
+        Vector<v8::Local<v8::Value>> m_globals;
+    };
 private:
     explicit InjectedScriptManager(V8DebuggerImpl*);
 

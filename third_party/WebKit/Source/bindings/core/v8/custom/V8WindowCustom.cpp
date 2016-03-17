@@ -283,7 +283,7 @@ static bool installTestInterfaceIfNeeded(LocalFrame& frame, v8::Local<v8::String
     return false;
 }
 
-static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const AtomicString& nameString, const v8::PropertyCallbackInfo<v8::Value>& info)
+static bool namedPropertyFromDebuggerScopeExtension(v8::Local<v8::Name> name, const AtomicString& nameString, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!InspectorInstrumentation::hasFrontends())
         return false;
@@ -295,13 +295,12 @@ static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const Atomic
 
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
-
     v8::Local<v8::Object> global = context->Global();
-    v8::Local<v8::Value> commandLineAPI;
+    v8::Local<v8::Value> scopeExtensionValue;
 
-    if (v8Call(global->Get(context, V8Debugger::commandLineAPISymbol(isolate)), commandLineAPI)) {
+    if (v8Call(global->Get(context, V8Debugger::scopeExtensionSymbol(isolate)), scopeExtensionValue)) {
         v8::Local<v8::Value> value;
-        if (commandLineAPI->IsObject() && v8Call(commandLineAPI->ToObject(isolate)->Get(context, name), value)) {
+        if (scopeExtensionValue->IsObject() && v8Call(scopeExtensionValue->ToObject(isolate)->Get(context, name), value)) {
             if (isMethod) {
                 v8SetReturnValue(info, value);
                 return true;
@@ -309,14 +308,13 @@ static bool installCommandLineAPIIfNeeded(v8::Local<v8::Name> name, const Atomic
             if (isGetter && value->IsFunction()) {
                 v8::Local<v8::Function> getterFunction = v8::Local<v8::Function>::Cast(value);
                 v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-                if (getterFunction->Call(context, commandLineAPI, 0, nullptr).ToLocal(&value)) {
+                if (getterFunction->Call(context, scopeExtensionValue, 0, nullptr).ToLocal(&value)) {
                     v8SetReturnValue(info, value);
                     return true;
                 }
             }
         }
     }
-
     return false;
 }
 
@@ -350,7 +348,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     if (installTestInterfaceIfNeeded(toLocalFrame(*frame), nameString, info))
         return;
 
-    if (installCommandLineAPIIfNeeded(name, propName, info))
+    if (namedPropertyFromDebuggerScopeExtension(name, propName, info))
         return;
 
     // Search named items in the document.

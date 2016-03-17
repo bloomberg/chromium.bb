@@ -37,7 +37,6 @@
 #include "platform/v8_inspector/InjectedScriptManager.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
-#include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
@@ -211,7 +210,7 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
     if (script.IsEmpty()) {
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
-            *exceptionDetails = createExceptionDetails(isolate, message);
+            *exceptionDetails = injectedScript->createExceptionDetails(message);
         else
             *errorString = "Script compilation failed";
         return;
@@ -265,13 +264,19 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     }
     v8::TryCatch tryCatch(isolate);
 
+    v8::MaybeLocal<v8::Object> commandLineAPI = includeCommandLineAPI.fromMaybe(false) ? injectedScript->commandLineAPI(errorString) : v8::MaybeLocal<v8::Object>();
+    if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
+        return;
+
+    InjectedScriptManager::ScopedGlobalObjectExtension scopeExtension(injectedScript, nullptr, commandLineAPI);
+
     v8::Local<v8::Value> value;
-    v8::MaybeLocal<v8::Value> maybeValue = injectedScript->runCompiledScript(script, includeCommandLineAPI.fromMaybe(false));
+    v8::MaybeLocal<v8::Value> maybeValue = m_debugger->runCompiledScript(context, script);
     if (maybeValue.IsEmpty()) {
         value = tryCatch.Exception();
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
-            *exceptionDetails = createExceptionDetails(isolate, message);
+            *exceptionDetails = injectedScript->createExceptionDetails(message);
     } else {
         value = maybeValue.ToLocalChecked();
     }
@@ -281,7 +286,14 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         return;
     }
 
-    *result = injectedScript->wrapObject(value, objectGroup.fromMaybe(""));
+    // InjectedScript may be gone after any evaluate call - find it again.
+    injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
+    if (!injectedScript) {
+        *errorString = "Inspected frame has gone during script running";
+        return;
+    }
+
+    *result = injectedScript->wrapObject(errorString, value, objectGroup.fromMaybe(""));
 }
 
 void V8RuntimeAgentImpl::setInspectorState(protocol::DictionaryValue* state)
@@ -352,7 +364,8 @@ PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> c
     InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
     if (!injectedScript)
         return nullptr;
-    return injectedScript->wrapObject(value, groupName, generatePreview);
+    ErrorString errorString;
+    return injectedScript->wrapObject(&errorString, value, groupName, false, generatePreview);
 }
 
 PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
@@ -417,17 +430,6 @@ void V8RuntimeAgentImpl::reportExecutionContextDestroyed(v8::Local<v8::Context> 
     if (!m_enabled)
         return;
     m_frontend->executionContextDestroyed(contextId);
-}
-
-PassOwnPtr<ExceptionDetails> V8RuntimeAgentImpl::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
-{
-    OwnPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toProtocolStringWithTypeCheck(message->Get())).build();
-    exceptionDetails->setLine(message->GetLineNumber());
-    exceptionDetails->setColumn(message->GetStartColumn());
-    v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
-    if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
-        exceptionDetails->setStack(m_debugger->createStackTrace(messageStackTrace, messageStackTrace->GetFrameCount())->buildInspectorObject());
-    return exceptionDetails.release();
 }
 
 } // namespace blink

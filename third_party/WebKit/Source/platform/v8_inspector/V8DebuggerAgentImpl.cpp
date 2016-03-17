@@ -720,7 +720,7 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
     }
 
     String16 groupName = injectedScript->objectGroupName(*remoteId);
-    if (!injectedScript->wrapObjectProperty(errorString, detailsObject, toV8String(m_isolate, "function"), groupName, false))
+    if (!injectedScript->wrapObjectProperty(errorString, detailsObject, toV8String(m_isolate, "function"), groupName))
         return;
 
     protocol::ErrorSupport errors;
@@ -926,11 +926,43 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     if (!injectedScript)
         return;
 
-    v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
+    v8::HandleScope scope(injectedScript->isolate());
 
-    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    injectedScript->evaluateOnCallFrame(errorString, callStack, callFrameId, expression, objectGroup.fromMaybe(""), includeCommandLineAPI.fromMaybe(false), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, exceptionDetails);
+    if (!injectedScript->canAccessInspectedWindow()) {
+        *errorString = "Can not access given context";
+        return;
+    }
+
+    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrameNoScopes(remoteId->frameOrdinal());
+    if (!javaScriptCallFrame) {
+        *errorString = "Could not find call frame with given id";
+        return;
+    }
+
+    v8::MaybeLocal<v8::Object> commandLineAPI = includeCommandLineAPI.fromMaybe(false) ? injectedScript->commandLineAPI(errorString) : v8::MaybeLocal<v8::Object>();
+    if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
+        return;
+
+    InjectedScriptManager::ScopedGlobalObjectExtension scopeExtension(injectedScript, m_injectedScriptManager, commandLineAPI);
+
+    v8::TryCatch tryCatch(injectedScript->isolate());
+
+    v8::MaybeLocal<v8::Value> maybeResultValue = javaScriptCallFrame->evaluate(toV8String(injectedScript->isolate(), expression));
+
+    // InjectedScript may be gone after any evaluate call - find it again.
+    injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
+    if (!injectedScript)
+        return;
+
+    injectedScript->wrapEvaluateResult(errorString,
+        maybeResultValue,
+        tryCatch,
+        objectGroup.fromMaybe(""),
+        returnByValue.fromMaybe(false),
+        generatePreview.fromMaybe(false),
+        result,
+        wasThrown,
+        exceptionDetails);
 }
 
 void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
@@ -1012,7 +1044,7 @@ void V8DebuggerAgentImpl::getPromiseById(ErrorString* errorString, int promiseId
         return;
     }
     InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(value->CreationContext());
-    *promise = injectedScript->wrapObject(value, objectGroup.fromMaybe(""));
+    *promise = injectedScript->wrapObject(errorString, value, objectGroup.fromMaybe(""));
 }
 
 void V8DebuggerAgentImpl::didUpdatePromise(const String16& eventType, PassOwnPtr<protocol::Debugger::PromiseDetails> promise)
@@ -1422,7 +1454,8 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
         InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
         if (injectedScript) {
             m_breakReason = isPromiseRejection ? protocol::Debugger::Paused::ReasonEnum::PromiseRejection : protocol::Debugger::Paused::ReasonEnum::Exception;
-            auto obj = injectedScript->wrapObject(exception, V8DebuggerAgentImpl::backtraceObjectGroup);
+            ErrorString errorString;
+            auto obj = injectedScript->wrapObject(&errorString, exception, V8DebuggerAgentImpl::backtraceObjectGroup);
             m_breakAuxData = obj ? obj->serialize() : nullptr;
             // m_breakAuxData might be null after this.
         }

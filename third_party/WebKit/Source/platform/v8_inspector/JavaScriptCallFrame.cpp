@@ -191,26 +191,12 @@ v8::Local<v8::Value> JavaScriptCallFrame::returnValue() const
     return v8::Local<v8::Object>::New(m_isolate, m_callFrame)->Get(toV8StringInternalized(m_isolate, "returnValue"));
 }
 
-v8::Local<v8::Value> JavaScriptCallFrame::evaluateWithExceptionDetails(v8::Local<v8::Value> expression, v8::Local<v8::Value> scopeExtension)
+v8::MaybeLocal<v8::Value> JavaScriptCallFrame::evaluate(v8::Local<v8::Value> expression)
 {
     v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kRunMicrotasks);
     v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
     v8::Local<v8::Function> evalFunction = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, "evaluate")));
-    v8::Local<v8::Value> argv[] = {
-        expression,
-        scopeExtension
-    };
-    v8::TryCatch tryCatch(m_isolate);
-    v8::Local<v8::Object> wrappedResult = v8::Object::New(m_isolate);
-    v8::Local<v8::Value> result;
-    if (evalFunction->Call(m_isolate->GetCurrentContext(), callFrame, WTF_ARRAY_LENGTH(argv), argv).ToLocal(&result)) {
-        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), result);
-        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), v8::Undefined(m_isolate));
-    } else {
-        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), tryCatch.Exception());
-        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), createExceptionDetails(m_isolate, tryCatch.Message()));
-    }
-    return wrappedResult;
+    return evalFunction->Call(m_isolate->GetCurrentContext(), callFrame, 1, &expression);
 }
 
 v8::MaybeLocal<v8::Value> JavaScriptCallFrame::restart()

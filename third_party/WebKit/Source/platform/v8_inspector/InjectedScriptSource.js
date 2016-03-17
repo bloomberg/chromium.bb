@@ -289,13 +289,14 @@ InjectedScript.prototype = {
      * @param {*} object
      * @param {string} groupName
      * @param {boolean} canAccessInspectedGlobalObject
+     * @param {boolean} forceValueType
      * @param {boolean} generatePreview
      * @return {!RuntimeAgent.RemoteObject}
      */
-    wrapObject: function(object, groupName, canAccessInspectedGlobalObject, generatePreview)
+    wrapObject: function(object, groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview)
     {
         if (canAccessInspectedGlobalObject)
-            return this._wrapObject(object, groupName, false, generatePreview);
+            return this._wrapObject(object, groupName, forceValueType, generatePreview);
         return this._fallbackWrapper(object);
     },
 
@@ -401,6 +402,14 @@ InjectedScript.prototype = {
     clearLastEvaluationResult: function()
     {
         delete this._lastResult;
+    },
+
+    /**
+     * @param {*} result
+     */
+    setLastEvaluationResult: function(result)
+    {
+        this._lastResult = result;
     },
 
     /**
@@ -646,7 +655,16 @@ InjectedScript.prototype = {
      */
     evaluate: function(expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
-        return this._evaluateAndWrap(null, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview);
+        var scopeExtensionForEval = injectCommandLineAPI ? new CommandLineAPI(this._commandLineAPIImpl) : undefined;
+        var wrappedResult = InjectedScriptHost.evaluateWithExceptionDetails(expression, scopeExtensionForEval);
+        if (objectGroup === "console" && !wrappedResult.exceptionDetails)
+            this._lastResult = wrappedResult.result;
+        if (!wrappedResult.exceptionDetails) {
+            return { wasThrown: false,
+                     result: this._wrapObject(wrappedResult.result, objectGroup, returnByValue, generatePreview),
+                     __proto__: null };
+        }
+        return this._createThrownValue(wrappedResult.result, objectGroup, generatePreview, wrappedResult.exceptionDetails);
     },
 
     /**
@@ -779,26 +797,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {?JavaScriptCallFrame} callFrame
-     * @param {string} expression
-     * @param {string} objectGroup
-     * @param {boolean} injectCommandLineAPI
-     * @param {boolean} returnByValue
-     * @param {boolean} generatePreview
-     * @return {!Object}
-     */
-    _evaluateAndWrap: function(callFrame, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
-    {
-        var wrappedResult = this._evaluateOn(callFrame, objectGroup, expression, injectCommandLineAPI);
-        if (!wrappedResult.exceptionDetails) {
-            return { wasThrown: false,
-                     result: this._wrapObject(wrappedResult.result, objectGroup, returnByValue, generatePreview),
-                     __proto__: null };
-        }
-        return this._createThrownValue(wrappedResult.result, objectGroup, generatePreview, wrappedResult.exceptionDetails);
-    },
-
-    /**
      * @param {*} value
      * @param {string|undefined} objectGroup
      * @param {boolean} generatePreview
@@ -814,27 +812,6 @@ InjectedScript.prototype = {
             } catch (e) {}
         }
         return { wasThrown: true, result: remoteObject, exceptionDetails: exceptionDetails, __proto__: null };
-    },
-
-    /**
-     * @param {?JavaScriptCallFrame} callFrame
-     * @param {string} objectGroup
-     * @param {string} expression
-     * @param {boolean} injectCommandLineAPI
-     * @return {*}
-     */
-    _evaluateOn: function(callFrame, objectGroup, expression, injectCommandLineAPI)
-    {
-        // Only install command line api object for the time of evaluation.
-        // Surround the expression in with statements to inject our command line API so that
-        // the window object properties still take more precedent than our API functions.
-
-        var scopeExtensionForEval = (callFrame && injectCommandLineAPI) ? new CommandLineAPI(this._commandLineAPIImpl, callFrame) : undefined;
-        var wrappedResult = callFrame ? callFrame.evaluateWithExceptionDetails(expression, scopeExtensionForEval) : InjectedScriptHost.evaluateWithExceptionDetails(expression, injectCommandLineAPI ? new CommandLineAPI(this._commandLineAPIImpl, callFrame) : undefined);
-        if (objectGroup === "console" && !wrappedResult.exceptionDetails)
-            this._lastResult = wrappedResult.result;
-        return wrappedResult;
-
     },
 
     /**
@@ -857,29 +834,11 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {!JavaScriptCallFrame} topCallFrame
-     * @param {string} callFrameId
-     * @param {string} expression
-     * @param {string} objectGroup
-     * @param {boolean} injectCommandLineAPI
-     * @param {boolean} returnByValue
-     * @param {boolean} generatePreview
-     * @return {*}
-     */
-    evaluateOnCallFrame: function(topCallFrame, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
-    {
-        var callFrame = this._callFrameForId(topCallFrame, callFrameId);
-        if (!callFrame)
-            return "Could not find call frame with given id";
-        return this._evaluateAndWrap(callFrame, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview);
-    },
-
-    /**
      * @return {!CommandLineAPI}
      */
     commandLineAPI: function()
     {
-        return new CommandLineAPI(this._commandLineAPIImpl, null);
+        return new CommandLineAPI(this._commandLineAPIImpl);
     },
 
     /**
@@ -1481,24 +1440,9 @@ InjectedScript.CallFrameProxy._createScopeJson = function(scopeTypeCode, scopeNa
 /**
  * @constructor
  * @param {!CommandLineAPIImpl} commandLineAPIImpl
- * @param {?JavaScriptCallFrame} callFrame
  */
-function CommandLineAPI(commandLineAPIImpl, callFrame)
+function CommandLineAPI(commandLineAPIImpl)
 {
-    /**
-     * @param {string} member
-     * @return {boolean}
-     */
-    function inScopeVariables(member)
-    {
-        var scopeChain = callFrame.scopeChain;
-        for (var i = 0; i < scopeChain.length; ++i) {
-            if (member in scopeChain[i])
-                return true;
-        }
-        return false;
-    }
-
     /**
      * @param {string} name The name of the method for which a toString method should be generated.
      * @return {function():string}
@@ -1523,18 +1467,12 @@ function CommandLineAPI(commandLineAPIImpl, callFrame)
 
     for (var i = 0; i < CommandLineAPI.members_.length; ++i) {
         var member = CommandLineAPI.members_[i];
-        if (callFrame && inScopeVariables(member))
-            continue;
-
         this[member] = bind(commandLineAPIImpl[member], commandLineAPIImpl);
         this[member].toString = customToStringMethod(member);
     }
 
     for (var i = 0; i < 5; ++i) {
         var member = "$" + i;
-        if (callFrame && inScopeVariables(member))
-            continue;
-
         this[member] = bind(commandLineAPIImpl._inspectedObject, commandLineAPIImpl, i);
     }
 

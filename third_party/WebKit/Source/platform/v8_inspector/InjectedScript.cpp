@@ -38,6 +38,7 @@
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8FunctionCall.h"
+#include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
@@ -155,20 +156,6 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String16& ob
     *result = makeEvalCall(errorString, function, wasThrown);
 }
 
-void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String16& callFrameId, const String16& expression, const String16& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "evaluateOnCallFrame");
-    function.appendArgument(callFrames);
-    function.appendArgument(callFrameId);
-    function.appendArgument(expression);
-    function.appendArgument(objectGroup);
-    function.appendArgument(includeCommandLineAPI);
-    function.appendArgument(returnByValue);
-    function.appendArgument(generatePreview);
-    *result = makeEvalCall(errorString, function, wasThrown, exceptionDetails);
-}
-
 void InjectedScript::getFunctionDetails(ErrorString* errorString, const String16& functionId, OwnPtr<FunctionDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
@@ -237,25 +224,6 @@ void InjectedScript::releaseObject(const String16& objectId)
     m_native->unbind(boundId);
 }
 
-v8::MaybeLocal<v8::Value> InjectedScript::runCompiledScript(v8::Local<v8::Script> script, bool includeCommandLineAPI)
-{
-    v8::Local<v8::Symbol> commandLineAPISymbolValue = V8Debugger::commandLineAPISymbol(m_isolate);
-    v8::Local<v8::Object> global = context()->Global();
-    if (includeCommandLineAPI) {
-        V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "commandLineAPI");
-        bool hadException = false;
-        v8::Local<v8::Value> commandLineAPI = function.call(hadException, false);
-        if (!hadException)
-            global->Set(commandLineAPISymbolValue, commandLineAPI);
-    }
-
-    v8::MaybeLocal<v8::Value> maybeValue = m_manager->debugger()->runCompiledScript(context(), script);
-    if (includeCommandLineAPI)
-        global->Delete(context(), commandLineAPISymbolValue);
-
-    return maybeValue;
-}
-
 PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object> callFrames)
 {
     v8::HandleScope handles(m_isolate);
@@ -271,19 +239,21 @@ PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
     return Array<CallFrame>::create();
 }
 
-PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local<v8::Value> value, const String16& groupName, bool generatePreview) const
+PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(ErrorString* errorString, v8::Local<v8::Value> value, const String16& groupName, bool forceValueType, bool generatePreview) const
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "wrapObject");
     v8::Local<v8::Value> wrappedObject;
-    ErrorString errorString;
-    if (!wrapValue(&errorString, value, groupName, generatePreview).ToLocal(&wrappedObject))
+    if (!wrapValue(errorString, value, groupName, forceValueType, generatePreview).ToLocal(&wrappedObject))
         return nullptr;
     protocol::ErrorSupport errors;
-    return protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), wrappedObject).get(), &errors);
+    OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), wrappedObject).get(), &errors);
+    if (!remoteObject)
+        *errorString = "Object has too long reference chain";
+    return remoteObject.release();
 }
 
-bool InjectedScript::wrapObjectProperty(ErrorString* error, v8::Local<v8::Object> object, v8::Local<v8::Value> key, const String16& groupName, bool generatePreview) const
+bool InjectedScript::wrapObjectProperty(ErrorString* error, v8::Local<v8::Object> object, v8::Local<v8::Value> key, const String16& groupName, bool forceValueType, bool generatePreview) const
 {
     v8::Local<v8::Value> property;
     if (!object->Get(context(), key).ToLocal(&property)) {
@@ -291,7 +261,7 @@ bool InjectedScript::wrapObjectProperty(ErrorString* error, v8::Local<v8::Object
         return false;
     }
     v8::Local<v8::Value> wrappedProperty;
-    if (!wrapValue(error, property, groupName, generatePreview).ToLocal(&wrappedProperty))
+    if (!wrapValue(error, property, groupName, forceValueType, generatePreview).ToLocal(&wrappedProperty))
         return false;
     v8::Maybe<bool> success = object->Set(context(), key, wrappedProperty);
     if (success.IsNothing() || !success.FromJust()) {
@@ -301,12 +271,13 @@ bool InjectedScript::wrapObjectProperty(ErrorString* error, v8::Local<v8::Object
     return true;
 }
 
-v8::MaybeLocal<v8::Value> InjectedScript::wrapValue(ErrorString* error, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview) const
+v8::MaybeLocal<v8::Value> InjectedScript::wrapValue(ErrorString* error, v8::Local<v8::Value> value, const String16& groupName, bool forceValueType, bool generatePreview) const
 {
     V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "wrapObject");
     function.appendArgument(value);
     function.appendArgument(groupName);
     function.appendArgument(canAccessInspectedWindow());
+    function.appendArgument(forceValueType);
     function.appendArgument(generatePreview);
     bool hadException = false;
     v8::Local<v8::Value> r = callFunctionWithEvalEnabled(function, hadException);
@@ -476,6 +447,17 @@ void InjectedScript::dispose()
     m_manager->discardInjectedScript(m_contextId);
 }
 
+bool InjectedScript::setLastEvaluationResult(ErrorString* errorString, v8::Local<v8::Value> value)
+{
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "setLastEvaluationResult");
+    function.appendArgument(value);
+    bool hadException = false;
+    function.call(hadException, false);
+    if (hadException)
+        *errorString = "Internal error";
+    return !hadException;
+}
+
 v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* errorString, protocol::Runtime::CallArgument* callArgument)
 {
     if (callArgument->hasObjectId()) {
@@ -505,6 +487,64 @@ v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* error
         return object;
     }
     return v8::Undefined(m_isolate);
+}
+
+v8::MaybeLocal<v8::Object> InjectedScript::commandLineAPI(ErrorString* errorString)
+{
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "commandLineAPI");
+    bool hadException = false;
+    v8::Local<v8::Value> scopeExtensionValue = function.call(hadException, false);
+    v8::Local<v8::Object> scopeExtensionObject;
+    if (hadException || scopeExtensionValue.IsEmpty() || !scopeExtensionValue->ToObject(context()).ToLocal(&scopeExtensionObject)) {
+        *errorString = "Internal error";
+        return v8::MaybeLocal<v8::Object>();
+    }
+    return scopeExtensionObject;
+}
+
+PassOwnPtr<protocol::Runtime::ExceptionDetails> InjectedScript::createExceptionDetails(v8::Local<v8::Message> message)
+{
+    OwnPtr<protocol::Runtime::ExceptionDetails> exceptionDetailsObject = protocol::Runtime::ExceptionDetails::create().setText(toProtocolString(message->Get())).build();
+    exceptionDetailsObject->setUrl(toProtocolStringWithTypeCheck(message->GetScriptResourceName()));
+    exceptionDetailsObject->setScriptId(String16::number(message->GetScriptOrigin().ScriptID()->Value()));
+
+    v8::Maybe<int> lineNumber = message->GetLineNumber(context());
+    if (lineNumber.IsJust())
+        exceptionDetailsObject->setLine(lineNumber.FromJust());
+    v8::Maybe<int> columnNumber = message->GetStartColumn(context());
+    if (columnNumber.IsJust())
+        exceptionDetailsObject->setColumn(columnNumber.FromJust());
+
+    v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
+    if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
+        exceptionDetailsObject->setStack(m_manager->debugger()->createStackTrace(stackTrace, stackTrace->GetFrameCount())->buildInspectorObject());
+    return exceptionDetailsObject.release();
+}
+
+void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal<v8::Value> maybeResultValue, const v8::TryCatch& tryCatch, const String16& objectGroup, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+{
+    v8::Local<v8::Value> resultValue;
+    if (!tryCatch.HasCaught()) {
+        if (!maybeResultValue.ToLocal(&resultValue)) {
+            *errorString = "Internal error";
+            return;
+        }
+        OwnPtr<RemoteObject> remoteObject = wrapObject(errorString, resultValue, objectGroup, returnByValue, generatePreview);
+        if (!remoteObject)
+            return;
+        if (objectGroup == "console" && !setLastEvaluationResult(errorString, resultValue))
+            return;
+        *result = remoteObject.release();
+        *wasThrown = false;
+    } else {
+        v8::Local<v8::Value> exception = tryCatch.Exception();
+        OwnPtr<RemoteObject> remoteObject = wrapObject(errorString, exception, objectGroup, false, generatePreview && !exception->IsNativeError());
+        if (!remoteObject)
+            return;
+        *result = remoteObject.release();
+        *exceptionDetails = createExceptionDetails(tryCatch.Message());
+        *wasThrown = true;
+    }
 }
 
 } // namespace blink

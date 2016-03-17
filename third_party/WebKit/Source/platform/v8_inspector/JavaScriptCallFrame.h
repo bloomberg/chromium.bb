@@ -66,7 +66,7 @@ public:
     bool isAtReturn() const;
     v8::Local<v8::Value> returnValue() const;
 
-    v8::Local<v8::Value> evaluateWithExceptionDetails(v8::Local<v8::Value> expression, v8::Local<v8::Value> scopeExtension);
+    v8::MaybeLocal<v8::Value> evaluate(v8::Local<v8::Value> expression);
     v8::MaybeLocal<v8::Value> restart();
     v8::MaybeLocal<v8::Value> setVariableValue(int scopeNumber, v8::Local<v8::Value> variableName, v8::Local<v8::Value> newValue);
 

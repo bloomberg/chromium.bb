@@ -45,7 +45,7 @@ public:
     virtual void contextCreated(const V8ContextInfo&) = 0;
     virtual void contextDestroyed(v8::Local<v8::Context>) = 0;
 
-    static v8::Local<v8::Symbol> commandLineAPISymbol(v8::Isolate*);
+    static v8::Local<v8::Symbol> scopeExtensionSymbol(v8::Isolate*);
     static bool isCommandLineAPIMethod(const String16& name);
     static bool isCommandLineAPIGetter(const String16& name);
 

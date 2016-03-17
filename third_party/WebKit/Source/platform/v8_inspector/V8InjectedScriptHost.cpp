@@ -326,21 +326,21 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsCallback(const v8::Functi
         return;
     }
 
-    v8::Local<v8::Symbol> commandLineAPISymbolValue = V8Debugger::commandLineAPISymbol(isolate);
+    v8::Local<v8::Symbol> scopeExtensionSymbolValue = V8Debugger::scopeExtensionSymbol(isolate);
     v8::Local<v8::Object> global = context->Global();
     if (info.Length() >= 2 && info[1]->IsObject()) {
         v8::Local<v8::Object> commandLineAPI = info[1]->ToObject(isolate);
-        global->Set(commandLineAPISymbolValue, commandLineAPI);
+        global->Set(scopeExtensionSymbolValue, commandLineAPI);
     }
 
     v8::MaybeLocal<v8::Value> result = host->debugger()->runCompiledScript(context, script);
     if (result.IsEmpty()) {
-        global->Delete(context, commandLineAPISymbolValue);
+        global->Delete(context, scopeExtensionSymbolValue);
         setExceptionAsReturnValue(info, wrappedResult, tryCatch);
         return;
     }
 
-    global->Delete(context, commandLineAPISymbolValue);
+    global->Delete(context, scopeExtensionSymbolValue);
     wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), result.ToLocalChecked());
     wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), v8::Undefined(isolate));
     v8SetReturnValue(info, wrappedResult);
@@ -509,9 +509,9 @@ void V8InjectedScriptHost::idToObjectGroupNameCallback(const v8::FunctionCallbac
         info.GetReturnValue().Set(toV8String(info.GetIsolate(), groupName));
 }
 
-v8::Local<v8::Symbol> V8Debugger::commandLineAPISymbol(v8::Isolate* isolate)
+v8::Local<v8::Symbol> V8Debugger::scopeExtensionSymbol(v8::Isolate* isolate)
 {
-    return v8::Symbol::ForApi(isolate, toV8StringInternalized(isolate, "commandLineAPI"));
+    return v8::Symbol::ForApi(isolate, toV8StringInternalized(isolate, "scopeExtension"));
 }
 
 bool V8Debugger::isCommandLineAPIMethod(const String16& name)

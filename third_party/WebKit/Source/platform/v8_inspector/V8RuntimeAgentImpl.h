@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class InjectedScript;
 class InjectedScriptManager;
 class V8DebuggerImpl;
 
@@ -127,10 +128,7 @@ public:
     v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* groupName = nullptr) override;
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
     void clearInspectedObjects() override;
-
 private:
-    PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
-
     int m_contextGroupId;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Runtime* m_frontend;

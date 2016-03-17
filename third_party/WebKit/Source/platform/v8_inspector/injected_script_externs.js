@@ -179,13 +179,6 @@ function JavaScriptCallFrame()
 }
 
 /**
- * @param {string} script
- * @param {!Object=} scopeExtension
- * @return {*}
- */
-JavaScriptCallFrame.prototype.evaluateWithExceptionDetails = function(script, scopeExtension) {}
-
-/**
  * @param {number} scopeIndex
  * @return {number}
  */

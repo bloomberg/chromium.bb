@@ -185,4 +185,36 @@ v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String16
     return injectedScriptValue.As<v8::Object>();
 }
 
+
+InjectedScriptManager::ScopedGlobalObjectExtension::ScopedGlobalObjectExtension(InjectedScript* current, InjectedScriptManager* manager, v8::MaybeLocal<v8::Object> extension)
+    : m_context(current->context())
+{
+    v8::Local<v8::Object> extensionObject;
+    if (!extension.ToLocal(&extensionObject))
+        return;
+
+    m_symbol = V8Debugger::scopeExtensionSymbol(current->isolate());
+    if (!manager) {
+        setOnGlobal(current->context()->Global(), extensionObject);
+    } else {
+        InjectedScriptManager::IdToInjectedScriptMap::iterator end = manager->m_idToInjectedScript.end();
+        for (InjectedScriptManager::IdToInjectedScriptMap::iterator it = manager->m_idToInjectedScript.begin(); it != end; ++it) {
+            if (it->second->canAccessInspectedWindow())
+                setOnGlobal(it->second->context()->Global(), extensionObject);
+        }
+    }
+}
+
+InjectedScriptManager::ScopedGlobalObjectExtension::~ScopedGlobalObjectExtension()
+{
+    for (size_t i = 0; i < m_globals.size(); ++i)
+        m_globals[i]->ToObject(m_context).ToLocalChecked()->Delete(m_context, m_symbol);
+}
+
+void InjectedScriptManager::ScopedGlobalObjectExtension::setOnGlobal(v8::Local<v8::Object> global, v8::Local<v8::Object> extension)
+{
+    if (global->Set(m_context, m_symbol, extension).FromMaybe(false))
+        m_globals.append(global);
+}
+
 } // namespace blink

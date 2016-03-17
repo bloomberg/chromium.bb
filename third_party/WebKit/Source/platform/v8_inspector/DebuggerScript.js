@@ -547,9 +547,9 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         return location ? location.column : 0;
     }
 
-    function evaluate(expression, scopeExtension)
+    function evaluate(expression)
     {
-        return frameMirror.evaluate(expression, false, scopeExtension).value();
+        return frameMirror.evaluate(expression, false).value();
     }
 
     function restart()
