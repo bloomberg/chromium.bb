@@ -280,6 +280,15 @@ Background.prototype = {
     if (!newRange)
       return;
 
+    // Is the range invalid?
+    if (newRange.start.node.role === undefined ||
+        newRange.end.node.role === undefined) {
+      // Restore range to the focused location.
+      chrome.automation.getFocus(function(f) {
+        newRange = cursors.Range.fromNode(f);
+      });
+    }
+
     if (!this.inExcursion_)
       this.savedRange_ = new cursors.Range(newRange.start, newRange.end);
 
