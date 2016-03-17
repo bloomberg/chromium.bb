@@ -651,8 +651,7 @@ cr.define('print_preview', function() {
       this.appState_.setInitialized();
 
       $('document-title').innerText = settings.documentTitle;
-      this.hideSystemDialogLink_ = settings.hidePrintWithSystemDialogLink ||
-                                   settings.isInAppKioskMode;
+      this.hideSystemDialogLink_ = settings.isInAppKioskMode;
       if ($('system-dialog-link')) {
         setIsVisible($('system-dialog-link'),
                      this.shouldShowSystemDialogLink_());

@@ -167,9 +167,6 @@ const char kPrintAutomaticallyInKioskMode[] = "printAutomaticallyInKioskMode";
 const char kAppKioskMode[] = "appKioskMode";
 // Dictionary field to store Cloud Print base URL.
 const char kCloudPrintUrl[] = "cloudPrintUrl";
-#if defined(OS_WIN)
-const char kHidePrintWithSystemDialogLink[] = "hidePrintWithSystemDialogLink";
-#endif
 // Name of a dictionary field holding the state of selection for document.
 const char kDocumentHasSelection[] = "documentHasSelection";
 // Dictionary field holding the default destination selection rules.
@@ -1293,13 +1290,6 @@ void PrintPreviewHandler::SendInitialSettings(
                               cmdline->HasSwitch(switches::kKioskModePrinting));
   initial_settings.SetBoolean(kAppKioskMode,
                               chrome::IsRunningInForcedAppMode());
-#if defined(OS_WIN)
-  // In Win8 metro, the system print dialog can only open on the desktop.  Doing
-  // so will cause the browser to appear hung, so we don't show the link in
-  // metro.
-  bool is_ash = (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH);
-  initial_settings.SetBoolean(kHidePrintWithSystemDialogLink, is_ash);
-#endif
   if (prefs) {
     const std::string rules_str =
         prefs->GetString(prefs::kPrintPreviewDefaultDestinationSelectionRules);
