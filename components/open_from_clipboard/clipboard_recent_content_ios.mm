@@ -148,9 +148,6 @@ void ClipboardRecentContentIOS::SuppressClipboardContent() {
 }
 
 void ClipboardRecentContentIOS::PasteboardChanged() {
-  NSString* pasteboard_string = [[UIPasteboard generalPasteboard] string];
-  if (!pasteboard_string)
-    return;
   url_from_pasteboard_cache_ = URLFromPasteboard();
   if (!url_from_pasteboard_cache_.is_empty()) {
     base::RecordAction(
@@ -158,6 +155,10 @@ void ClipboardRecentContentIOS::PasteboardChanged() {
   }
   last_pasteboard_change_date_.reset([[NSDate date] retain]);
   last_pasteboard_change_count_ = [UIPasteboard generalPasteboard].changeCount;
+  NSString* pasteboard_string = [[UIPasteboard generalPasteboard] string];
+  if (!pasteboard_string) {
+    pasteboard_string = @"";
+  }
   NSData* MD5 = WeakMD5FromNSString(pasteboard_string);
   last_pasteboard_entry_md5_.reset([MD5 retain]);
   SaveToUserDefaults();
@@ -180,13 +181,6 @@ ClipboardRecentContentIOS::ClipboardRecentContentIOS(
 }
 
 bool ClipboardRecentContentIOS::HasPasteboardChanged(base::TimeDelta uptime) {
-  // If [[UIPasteboard generalPasteboard] string] is nil, the content of the
-  // pasteboard cannot be accessed. This case should not be considered as a
-  // pasteboard change.
-  NSString* pasteboard_string = [[UIPasteboard generalPasteboard] string];
-  if (!pasteboard_string)
-    return NO;
-
   // If |MD5Changed|, we know for sure there has been at least one pasteboard
   // copy since last time it was checked.
   // If the pasteboard content is still the same but the device was not
@@ -202,6 +196,10 @@ bool ClipboardRecentContentIOS::HasPasteboardChanged(base::TimeDelta uptime) {
   if (not_rebooted)
     return change_count_changed;
 
+  NSString* pasteboard_string = [[UIPasteboard generalPasteboard] string];
+  if (!pasteboard_string) {
+    pasteboard_string = @"";
+  }
   NSData* md5 = WeakMD5FromNSString(pasteboard_string);
   BOOL md5_changed = ![md5 isEqualToData:last_pasteboard_entry_md5_];
 
