@@ -324,15 +324,15 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
 
     @Override
     public void onClosed(StateChangeReason reason) {
-        if (mContainerHasInfoBars && mTabModelSelector != null) {
+        if (mReaderModePanel == null || mTabModelSelector == null) return;
+
+        if (mContainerHasInfoBars) {
             Tab curTab = mTabModelSelector.getCurrentTab();
             if (curTab != null) {
                 InfoBarContainer container = curTab.getInfoBarContainer();
-                container.setIsObscuredByOtherView(false);
+                if (container != null) container.setIsObscuredByOtherView(false);
             }
         }
-
-        if (mReaderModePanel == null) return;
 
         // Only dismiss the panel if the close was a result of user interaction.
         if (reason != StateChangeReason.FLING && reason != StateChangeReason.SWIPE
