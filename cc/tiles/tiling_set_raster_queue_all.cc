@@ -35,10 +35,10 @@ TilingSetRasterQueueAll::TilingSetRasterQueueAll(
   // Find high and low res tilings and initialize the iterators.
   PictureLayerTiling* high_res_tiling = nullptr;
   PictureLayerTiling* low_res_tiling = nullptr;
-  // This variable would point to a tiling that has a NON_IDEAL_RESOLUTION
-  // resolution on the active tree, but HIGH_RESOLUTION on the pending tree.
-  // These tilings are the only non-ideal tilings that could have required for
-  // activation tiles, so they need to be considered for rasterization.
+  // This variable would point to a tiling that has a NON_IDEAL_RESOLUTION or
+  // LOW_RESOLUTION on the active tree, but HIGH_RESOLUTION on the pending tree.
+  // These tilings are the only non-high res tilings that could have required
+  // for activation tiles, so they need to be considered for rasterization.
   PictureLayerTiling* active_non_ideal_pending_high_res_tiling = nullptr;
   for (size_t i = 0; i < tiling_set_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tiling_set_->tiling_at(i);
@@ -46,7 +46,7 @@ TilingSetRasterQueueAll::TilingSetRasterQueueAll(
       high_res_tiling = tiling;
     if (prioritize_low_res && tiling->resolution() == LOW_RESOLUTION)
       low_res_tiling = tiling;
-    if (tree == ACTIVE_TREE && tiling->resolution() == NON_IDEAL_RESOLUTION) {
+    if (tree == ACTIVE_TREE && tiling->resolution() != HIGH_RESOLUTION) {
       const PictureLayerTiling* twin =
           client->GetPendingOrActiveTwinTiling(tiling);
       if (twin && twin->resolution() == HIGH_RESOLUTION)
