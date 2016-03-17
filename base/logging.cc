@@ -30,8 +30,6 @@ typedef HANDLE MutexHandle;
 #elif defined(OS_POSIX)
 #if defined(OS_NACL)
 #include <sys/time.h>  // timespec doesn't seem to be in <time.h>
-#else
-#include <sys/syscall.h>
 #endif
 #include <time.h>
 #endif
