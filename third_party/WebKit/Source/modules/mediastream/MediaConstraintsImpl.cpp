@@ -434,14 +434,15 @@ static WebMediaConstraints createFromNamedConstraints(ExecutionContext* context,
         return constraints;
     // We ignore unknow names and syntax errors in optional constraints.
     MediaErrorState ignoredErrorState;
-    parseOldStyleNames(context, optional, false, advanced, ignoredErrorState);
-    if (advanced.isEmpty()) {
-        WebVector<WebMediaTrackConstraintSet> emptyVector;
-        constraints.initialize(basic, emptyVector);
-    } else {
-        WebVector<WebMediaTrackConstraintSet> advancedVector(&advanced, 1);
-        constraints.initialize(basic, advancedVector);
+    Vector<WebMediaTrackConstraintSet> advancedVector;
+    for (const auto& optionalConstraint : optional) {
+        WebMediaTrackConstraintSet advancedElement;
+        WebVector<WebMediaConstraint> elementAsList(&optionalConstraint, 1);
+        parseOldStyleNames(context, elementAsList, false, advancedElement, ignoredErrorState);
+        if (!advancedElement.isEmpty())
+            advancedVector.append(advancedElement);
     }
+    constraints.initialize(basic, advancedVector);
     return constraints;
 }
 
