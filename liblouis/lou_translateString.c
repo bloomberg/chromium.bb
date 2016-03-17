@@ -1395,6 +1395,9 @@ for_selectRule ()
 				{
 					widechar *patterns, *pattern;
 
+					if(dontContract || (mode & noContractions))
+						break;
+
 					patterns = (widechar*)&table->ruleArea[transRule->patterns];
 
 					/*   check before pattern   */

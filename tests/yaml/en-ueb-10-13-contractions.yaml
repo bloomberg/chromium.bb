@@ -319,6 +319,7 @@ tests:
   - ',mr ,feelgrt f ,gdge ,/reet'
 - - Ms Letterkenny's Littleport home.
   - ',ms ,lrk5ny''s ,llport home4'
+  - xfail: true
 - - Quicksburg, Virginia
   - ',qksburg1 ,virg9ia'
 - - Blindoc

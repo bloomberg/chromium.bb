@@ -1054,12 +1054,12 @@ static int pattern_compile_1(const widechar *input,
 		EXPR_NXT(*expr_crs) = PTN_END;
 
 		/*   insert seqafterexpression before attributes of seqafterchars   */
-		if(EXPR_TYPE(expr_crs_prv) == PTN_ATTRIBUTES)
-		if(EXPR_DATA_1(expr_crs_prv) & CTC_SeqAfter)
-		{
-			i = 0;
-			pattern_insert_alternate(table->seqAfterExpression, table->seqAfterExpressionLength, &i, expr_data, expr_max, expr_crs, loop_cnts, expr_crs_prv);
-		}
+//		if(EXPR_TYPE(expr_crs_prv) == PTN_ATTRIBUTES)
+//		if(EXPR_DATA_1(expr_crs_prv) & CTC_SeqAfter)
+//		{
+//			i = 0;
+//			pattern_insert_alternate(table->seqAfterExpression, table->seqAfterExpressionLength, &i, expr_data, expr_max, expr_crs, loop_cnts, expr_crs_prv);
+//		}
 	}
 
 	return *expr_crs;
