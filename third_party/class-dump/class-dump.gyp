@@ -9,6 +9,7 @@
   },
   'targets': [
     {
+      # GN version //third_party/class-dump(//build/toolchain/mac:clang_x64)
       'target_name': 'class-dump',
       'toolsets': ['host'],
       'type': 'executable',
