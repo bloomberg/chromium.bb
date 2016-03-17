@@ -147,7 +147,8 @@ void StreamMixerAlsaInputImpl::PrepareToDelete(
       fade_frames_remaining_ = queued_frames_including_resampler_;
     } else if (state_ == kStateNormalPlayback) {
       fade_out_frames_total_ =
-          std::min(queued_frames_including_resampler_, NormalFadeFrames());
+          std::min(static_cast<int>(queued_frames_including_resampler_),
+                   NormalFadeFrames());
       fade_frames_remaining_ = fade_out_frames_total_;
     }
   }
@@ -199,9 +200,9 @@ MediaPipelineBackendAlsa::RenderingDelay StreamMixerAlsaInputImpl::QueueData(
   }
 
   MediaPipelineBackendAlsa::RenderingDelay delay = mixer_rendering_delay_;
-  delay.delay_microseconds +=
-      static_cast<int64_t>(queued_frames_including_resampler_) *
-      base::Time::kMicrosecondsPerSecond / input_samples_per_second_;
+  delay.delay_microseconds += static_cast<int64_t>(
+      queued_frames_including_resampler_ * base::Time::kMicrosecondsPerSecond /
+      input_samples_per_second_);
   return delay;
 }
 
@@ -226,7 +227,8 @@ void StreamMixerAlsaInputImpl::DidQueueData(bool end_of_stream) {
 void StreamMixerAlsaInputImpl::AfterWriteFrames(
     const MediaPipelineBackendAlsa::RenderingDelay& mixer_rendering_delay) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
-  int resampler_queued_frames = (resampler_ ? resampler_->BufferedFrames() : 0);
+  double resampler_queued_frames =
+      (resampler_ ? resampler_->BufferedFrames() : 0);
 
   bool queued_more_data = false;
   MediaPipelineBackendAlsa::RenderingDelay total_delay;
@@ -267,7 +269,8 @@ int StreamMixerAlsaInputImpl::MaxReadSize() {
   {
     base::AutoLock lock(queue_lock_);
     if (state_ == kStateGotEos)
-      return std::max(queued_frames_including_resampler_, kDefaultReadSize);
+      return std::max(static_cast<int>(queued_frames_including_resampler_),
+                      kDefaultReadSize);
     queued_frames = queued_frames_;
   }
 

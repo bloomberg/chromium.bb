@@ -152,7 +152,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   scoped_refptr<DecoderBufferBase> pending_data_;
   std::deque<scoped_refptr<DecoderBufferBase>> queue_;
   int queued_frames_;
-  int queued_frames_including_resampler_;
+  double queued_frames_including_resampler_;
   MediaPipelineBackendAlsa::RenderingDelay mixer_rendering_delay_;
   // End of members that queue_lock_ controls access for.
 
