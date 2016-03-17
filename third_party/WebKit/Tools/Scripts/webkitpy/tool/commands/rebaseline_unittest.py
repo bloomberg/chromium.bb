@@ -1422,20 +1422,6 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
             ],
             auth_refresh_token_json=RIETVELD_REFRESH_TOKEN)
 
-    def test_execute_with_commit_author(self):
-        COMMIT_AUTHOR = "JRR Tolkien <tolkien@greyhavens.org>"
-        self._basic_execute_test(
-            [
-                ['git', 'cl', 'upload', '-f'],
-                ['git', 'pull'],
-                ['git', 'cl', 'land', '-f', '-v'],
-                ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
-            ], commit_author=COMMIT_AUTHOR)
-        self.assertEqual(self.tool.scm().local_commits(),
-            [['Auto-rebaseline for r1234\n\nhttps://chromium.googlesource.com/chromium/src/+/6469e754a1\n\nTBR=foobarbaz1@chromium.org\n',
-            True,
-            COMMIT_AUTHOR]])
-
     def test_execute_with_dry_run(self):
         self._basic_execute_test([], dry_run=True)
         self.assertEqual(self.tool.scm().local_commits(), [])
