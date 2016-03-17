@@ -2212,7 +2212,7 @@ drm_output_choose_initial_mode(struct drm_output *output,
 		    height == drm_mode->base.height)
 			configured = drm_mode;
 
-		if (memcmp(&current_mode, &drm_mode->mode_info,
+		if (memcmp(current_mode, &drm_mode->mode_info,
 			   sizeof *current_mode) == 0)
 			current = drm_mode;
 
