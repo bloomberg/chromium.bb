@@ -365,6 +365,7 @@ Buffer::~Buffer() {}
 
 scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
     cc::TextureMailbox* texture_mailbox,
+    bool secure_output_only,
     bool lost_context) {
   DLOG_IF(WARNING, use_count_)
       << "Producing a texture mailbox for a buffer that has not been released";
@@ -407,9 +408,6 @@ scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
         new Texture(context_provider.get(), gpu_memory_buffer_.get(),
                     texture_target_, query_type_));
   }
-
-  // TODO(dcastagna): Set properly based on the flag on the imported buffer.
-  bool secure_output_only = false;
 
   if (use_zero_copy_) {
     // Zero-copy means using the contents texture directly.

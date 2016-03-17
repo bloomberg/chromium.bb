@@ -58,6 +58,7 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // |lost_context| is true.
   scoped_ptr<cc::SingleReleaseCallback> ProduceTextureMailbox(
       cc::TextureMailbox* mailbox,
+      bool secure_output_only,
       bool lost_context);
 
   // Returns the size of the buffer.

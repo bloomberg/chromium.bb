@@ -7,6 +7,7 @@
 #include <grp.h>
 #include <linux/input.h>
 #include <scaler-server-protocol.h>
+#include <secure-output-unstable-v1-server-protocol.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <wayland-server-core.h>
@@ -102,6 +103,10 @@ DEFINE_WINDOW_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
 // A property key containing a boolean set to true if a viewport is associated
 // with window.
 DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
+
+// A property key containing a boolean set to true if a security object is
+// associated with window.
+DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_buffer_interface:
@@ -1875,10 +1880,6 @@ void scaler_get_viewport(wl_client* client,
 
   wl_resource* viewport_resource = wl_resource_create(
       client, &wl_viewport_interface, wl_resource_get_version(resource), id);
-  if (!viewport_resource) {
-    wl_resource_post_no_memory(resource);
-    return;
-  }
 
   SetImplementation(viewport_resource, &viewport_implementation,
                     make_scoped_ptr(new Viewport(surface)));
@@ -1892,11 +1893,93 @@ const uint32_t scaler_version = 2;
 void bind_scaler(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(
       client, &wl_scaler_interface, std::min(version, scaler_version), id);
-  if (!resource) {
-    wl_client_post_no_memory(client);
+
+  wl_resource_set_implementation(resource, &scaler_implementation, data,
+                                 nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// security_interface:
+
+class Security : public SurfaceObserver {
+ public:
+  explicit Security(Surface* surface) : surface_(surface) {
+    surface_->AddSurfaceObserver(this);
+    surface_->SetProperty(kSurfaceHasSecurityKey, true);
+  }
+  ~Security() override {
+    if (surface_) {
+      surface_->RemoveSurfaceObserver(this);
+      surface_->SetOnlyVisibleOnSecureOutput(false);
+      surface_->SetProperty(kSurfaceHasSecurityKey, false);
+    }
+  }
+
+  void OnlyVisibleOnSecureOutput() {
+    if (surface_)
+      surface_->SetOnlyVisibleOnSecureOutput(true);
+  }
+
+  // Overridden from SurfaceObserver:
+  void OnSurfaceDestroying(Surface* surface) override {
+    surface->RemoveSurfaceObserver(this);
+    surface_ = nullptr;
+  }
+
+ private:
+  Surface* surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(Security);
+};
+
+void security_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void security_only_visible_on_secure_output(wl_client* client,
+                                            wl_resource* resource) {
+  GetUserDataAs<Security>(resource)->OnlyVisibleOnSecureOutput();
+}
+
+const struct zwp_security_v1_interface security_implementation = {
+    security_destroy, security_only_visible_on_secure_output};
+
+////////////////////////////////////////////////////////////////////////////////
+// secure_output_interface:
+
+void secure_output_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void secure_output_get_security(wl_client* client,
+                                wl_resource* resource,
+                                uint32_t id,
+                                wl_resource* surface_resource) {
+  Surface* surface = GetUserDataAs<Surface>(surface_resource);
+  if (surface->GetProperty(kSurfaceHasSecurityKey)) {
+    wl_resource_post_error(resource, ZWP_SECURE_OUTPUT_V1_ERROR_SECURITY_EXISTS,
+                           "a security object for that surface already exists");
     return;
   }
-  wl_resource_set_implementation(resource, &scaler_implementation, data,
+
+  wl_resource* security_resource =
+      wl_resource_create(client, &zwp_security_v1_interface, 1, id);
+
+  SetImplementation(security_resource, &security_implementation,
+                    make_scoped_ptr(new Security(surface)));
+}
+
+const struct zwp_secure_output_v1_interface secure_output_implementation = {
+    secure_output_destroy, secure_output_get_security};
+
+void bind_secure_output(wl_client* client,
+                        void* data,
+                        uint32_t version,
+                        uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zwp_secure_output_v1_interface, 1, id);
+
+  wl_resource_set_implementation(resource, &secure_output_implementation, data,
                                  nullptr);
 }
 
@@ -1930,6 +2013,8 @@ Server::Server(Display* display)
                    display_, bind_seat);
   wl_global_create(wl_display_.get(), &wl_scaler_interface, scaler_version,
                    display_, bind_scaler);
+  wl_global_create(wl_display_.get(), &zwp_secure_output_v1_interface, 1,
+                   display_, bind_secure_output);
 }
 
 Server::~Server() {}

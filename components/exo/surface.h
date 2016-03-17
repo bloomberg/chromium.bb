@@ -83,6 +83,10 @@ class Surface : public aura::Window,
   // This sets the surface viewport for scaling.
   void SetViewport(const gfx::Size& viewport);
 
+  // This sets the only visible on secure output flag, preventing it from
+  // appearing in screenshots or from being viewed on non-secure displays.
+  void SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output);
+
   // Surface state (damage regions, attached buffers, etc.) is double-buffered.
   // A Commit() call atomically applies all pending state, replacing the
   // current state. Commit() is not guaranteed to be synchronous. See
@@ -189,6 +193,9 @@ class Surface : public aura::Window,
 
   // The viewport to take effect when Commit() is called.
   gfx::Size pending_viewport_;
+
+  // The secure output visibility state to take effect when Commit() is called.
+  bool pending_only_visible_on_secure_output_;
 
   // The buffer that is currently set as content of surface.
   base::WeakPtr<Buffer> current_buffer_;

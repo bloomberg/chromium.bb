@@ -133,6 +133,26 @@ TEST_F(SurfaceTest, SetViewport) {
   EXPECT_EQ(viewport.ToString(), surface->bounds().size().ToString());
 }
 
+TEST_F(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
+  gfx::Size buffer_size(1, 1);
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  scoped_ptr<Surface> surface(new Surface);
+
+  surface->Attach(buffer.get());
+  surface->SetOnlyVisibleOnSecureOutput(true);
+  surface->Commit();
+
+  cc::TextureMailbox mailbox;
+  scoped_ptr<cc::SingleReleaseCallback> release_callback;
+  bool rv = surface->layer()->PrepareTextureMailbox(&mailbox, &release_callback,
+                                                    false);
+  ASSERT_TRUE(rv);
+
+  EXPECT_TRUE(mailbox.secure_output_only());
+  release_callback->Run(gpu::SyncToken(), false);
+}
+
 TEST_F(SurfaceTest, Commit) {
   scoped_ptr<Surface> surface(new Surface);
 

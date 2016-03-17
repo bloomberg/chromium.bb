@@ -40,7 +40,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   // Produce a texture mailbox for the contents of the buffer.
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> buffer_release_callback =
-      buffer->ProduceTextureMailbox(&texture_mailbox, false);
+      buffer->ProduceTextureMailbox(&texture_mailbox, false, false);
   ASSERT_TRUE(buffer_release_callback);
 
   // Release buffer.
@@ -58,7 +58,7 @@ TEST_F(BufferTest, IsLost) {
   // Acquire a texture mailbox for the contents of the buffer.
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> buffer_release_callback =
-      buffer->ProduceTextureMailbox(&texture_mailbox, false);
+      buffer->ProduceTextureMailbox(&texture_mailbox, false, false);
   ASSERT_TRUE(buffer_release_callback);
 
   scoped_refptr<cc::ContextProvider> context_provider =
@@ -77,7 +77,7 @@ TEST_F(BufferTest, IsLost) {
 
   // Producing a new texture mailbox for the contents of the buffer.
   buffer_release_callback =
-      buffer->ProduceTextureMailbox(&texture_mailbox, is_lost);
+      buffer->ProduceTextureMailbox(&texture_mailbox, false, is_lost);
   ASSERT_TRUE(buffer_release_callback);
 
   // Release buffer.

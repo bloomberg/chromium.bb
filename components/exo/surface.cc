@@ -124,6 +124,7 @@ Surface::Surface()
       has_pending_contents_(false),
       pending_input_region_(SkIRect::MakeLargest()),
       pending_buffer_scale_(1.0f),
+      pending_only_visible_on_secure_output_(false),
       input_region_(SkIRect::MakeLargest()),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
@@ -295,6 +296,13 @@ void Surface::SetViewport(const gfx::Size& viewport) {
   pending_viewport_ = viewport;
 }
 
+void Surface::SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output) {
+  TRACE_EVENT1("exo", "Surface::SetOnlyVisibleOnSecureOutput",
+               "only_visible_on_secure_output", only_visible_on_secure_output);
+
+  pending_only_visible_on_secure_output_ = only_visible_on_secure_output;
+}
+
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 
@@ -317,11 +325,17 @@ void Surface::CommitSurfaceHierarchy() {
     current_buffer_ = pending_buffer_;
     pending_buffer_.reset();
 
+    // TODO(dcastagna): Make secure_output_only a layer property instead of a
+    // texture mailbox flag so this can be changed without have to provide
+    // new contents.
+    bool secure_output_only = pending_only_visible_on_secure_output_;
+    pending_only_visible_on_secure_output_ = false;
+
     cc::TextureMailbox texture_mailbox;
     scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
     if (current_buffer_) {
-      texture_mailbox_release_callback =
-          current_buffer_->ProduceTextureMailbox(&texture_mailbox, false);
+      texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
+          &texture_mailbox, secure_output_only, false);
     }
 
     if (texture_mailbox_release_callback) {
@@ -497,10 +511,15 @@ void Surface::OnCompositingEnded(ui::Compositor* compositor) {
   if (!current_buffer_)
     return;
 
+  // TODO(dcastagna): Make secure_output_only a layer property instead of a
+  // texture mailbox flag.
+  bool secure_output_only = false;
+
   // Update contents by producing a new texture mailbox for the current buffer.
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback =
-      current_buffer_->ProduceTextureMailbox(&texture_mailbox, true);
+      current_buffer_->ProduceTextureMailbox(&texture_mailbox,
+                                             secure_output_only, true);
   if (texture_mailbox_release_callback) {
     layer()->SetTextureMailbox(texture_mailbox,
                                std::move(texture_mailbox_release_callback),
