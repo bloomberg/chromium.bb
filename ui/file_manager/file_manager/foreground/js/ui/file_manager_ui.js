@@ -352,19 +352,20 @@ FileManagerUI.prototype.initAdditionalUI = function(
       queryRequiredElement('#navigation-list-splitter', this.element));
 
   // Details container.
+  var listDetailsSplitter =
+      queryRequiredElement('#list-details-splitter', this.element);
+  this.decorateSplitter_(listDetailsSplitter, true);
+  this.detailsContainer = new DetailsContainer(
+      queryRequiredElement('#details-container', this.element),
+      singlePanel,
+      listDetailsSplitter,
+      this.detailsButton,
+      this.detailsButtonToggleRipple_);
+
   chrome.commandLinePrivate.hasSwitch('enable-files-details-panel',
       function(enabled) {
     if (enabled) {
       this.detailsButton.style.display = 'block';
-      var listDetailsSplitter =
-          queryRequiredElement('#list-details-splitter', this.element);
-      this.decorateSplitter_(listDetailsSplitter, true);
-      this.detailsContainer = new DetailsContainer(
-          queryRequiredElement('#details-container', this.element),
-          singlePanel,
-          listDetailsSplitter,
-          this.detailsButton,
-          this.detailsButtonToggleRipple_);
     }
   }.bind(this));
 

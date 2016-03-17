@@ -151,13 +151,84 @@ a:focus {
 .details-container > #single-file-details {
   display: flex;
   flex: auto;
-  flex-direction: row;
+  flex-direction: column;
   width: 100%;
 }
 
 #single-file-details > .details-list {
   flex: auto;
   width: 100%;
+}
+
+/* Filename header of details panel for single file */
+
+#single-file-details > .filename-container {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  padding: 0 6px;
+  width: 100%;
+}
+
+.filename-container > .filename {
+  -webkit-padding-end: 6px;
+  flex: auto;
+  font-weight: 500;
+  overflow: hidden;
+}
+
+/* Filetype icon of details panel for single file */
+
+#single-file-details > .thumbnail-container {
+  box-sizing: border-box;
+  padding: 6px;
+  position: relative;
+  width: 100%;
+}
+
+#single-file-details > .thumbnail-container:before {
+  content: "";
+  display: block;
+  padding-top: 100%;
+}
+
+.thumbnail-container > .thumbnail {
+  background-color: rgb(230, 230, 230);
+  background-position: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.thumbnail-container > .thumbnail.loaded {
+  background-image: none;
+}
+
+.thumbnail > img {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.thumbnail > video {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.thumbnail > audio {
+  bottom: 0px;
+  left: 0px;
+  height: auto;
+  position: absolute;
+  width: 100%;
+}
+
+.details-list > li:not(.available) {
+  display: none;
 }
 
 /* Directory tree at the left. */

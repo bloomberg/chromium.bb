@@ -183,9 +183,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DetailsPanel,
     FileManagerDetailsPanelBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openDetailsPanel"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "openDetailsPanelForSingleFile")));
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "openDetailsPanel"),
+        TestParameter(NOT_IN_GUEST_MODE, "openDetailsPanelForSingleFile"),
+        TestParameter(NOT_IN_GUEST_MODE, "openSingleFileAndSeeDetailsPanel")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_DirectoryTreeContextMenu DISABLED_DirectoryTreeContextMenu

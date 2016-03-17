@@ -421,7 +421,8 @@ FileTable.decorate = function(
   var columnModel = new FileTableColumnModel(columns);
 
   self.columnModel = columnModel;
-  self.setDateTimeFormat(true);
+
+  self.formatter_ = new FileMetadataFormatter();
   self.setRenderFunction(self.renderTableRow_.bind(self,
       self.getRenderFunction()));
 
@@ -595,15 +596,7 @@ FileTable.prototype.setImportStatusVisible = function(visible) {
  * @param {boolean} use12hourClock True if 12 hours clock, False if 24 hours.
  */
 FileTable.prototype.setDateTimeFormat = function(use12hourClock) {
-  this.timeFormatter_ = new Intl.DateTimeFormat(
-      [] /* default locale */,
-      {hour: 'numeric', minute: 'numeric', hour12: use12hourClock});
-  this.dateFormatter_ = new Intl.DateTimeFormat(
-      [] /* default locale */,
-      {
-        year: 'numeric', month: 'short', day: 'numeric',
-        hour: 'numeric', minute: 'numeric', hour12: use12hourClock
-      });
+  this.formatter_.setDateTimeFormat(use12hourClock);
 };
 
 /**
@@ -725,15 +718,8 @@ FileTable.prototype.updateSize_ = function(div, entry) {
   var metadata = this.metadataModel_.getCache(
       [entry], ['size', 'hosted'])[0];
   var size = metadata.size;
-  if (size === null || size === undefined) {
-    div.textContent = '...';
-  } else if (size === -1) {
-    div.textContent = '--';
-  } else if (size === 0 && metadata.hosted) {
-    div.textContent = '--';
-  } else {
-    div.textContent = util.bytesToString(size);
-  }
+  var hosted = metadata.hosted;
+  div.textContent = this.formatter_.formatSize(size, hosted);
 };
 
 /**
@@ -861,34 +847,7 @@ FileTable.prototype.updateDate_ = function(div, entry) {
   var modTime = this.metadataModel_.getCache(
       [entry], ['modificationTime'])[0].modificationTime;
 
-  if (!modTime) {
-    div.textContent = '...';
-    return;
-  }
-
-  var today = new Date();
-  today.setHours(0);
-  today.setMinutes(0);
-  today.setSeconds(0);
-  today.setMilliseconds(0);
-
-  /**
-   * Number of milliseconds in a day.
-   */
-  var MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
-
-  if (isNaN(modTime.getTime())) {
-    // In case of 'Invalid Date'.
-    div.textContent = '--';
-  } else if (modTime >= today &&
-      modTime < today.getTime() + MILLISECONDS_IN_DAY) {
-    div.textContent = strf('TIME_TODAY', this.timeFormatter_.format(modTime));
-  } else if (modTime >= today - MILLISECONDS_IN_DAY && modTime < today) {
-    div.textContent = strf('TIME_YESTERDAY',
-                           this.timeFormatter_.format(modTime));
-  } else {
-    div.textContent = this.dateFormatter_.format(modTime);
-  }
+  div.textContent = this.formatter_.formatModDate(modTime);
 };
 
 /**

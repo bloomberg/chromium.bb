@@ -47,14 +47,30 @@ function DetailsContainer(element, singlePanel, splitter, button,
    * @type {boolean}
    */
   this.visible = false;
+  /**
+   * @private {Array<!FileEntry>}
+   */
+  this.pendingEntries_ = null;
   this.setVisibility(false);
 }
 
 DetailsContainer.prototype.onFileSelectionChanged = function(event) {
   var entries = event.target.selection.entries;
+  if (this.visible) {
+    this.pendingEntries_ = null;
+    this.display_(entries);
+  } else {
+    this.pendingEntries_ = entries;
+  }
+};
+
+/**
+ * Disply details of entries
+ * @param {!Array<!FileEntry>} entries
+ */
+DetailsContainer.prototype.display_ = function(entries) {
   if (entries.length === 0) {
     this.singlePanel_.removeAttribute('activated');
-    this.singlePanel_.classList.toggle('activated', false);
     // TODO(ryoh): make a panel for empty selection
   } else if (entries.length === 1) {
     this.singlePanel_.setAttribute('activated', '');
@@ -69,13 +85,25 @@ DetailsContainer.prototype.onFileSelectionChanged = function(event) {
  * @param {boolean} visibility True if the details panel is visible.
  */
 DetailsContainer.prototype.setVisibility = function(visibility) {
+  this.visible = visibility;
   if (visibility) {
     this.splitter_.setAttribute('activated', '');
     this.element_.setAttribute('activated', '');
+    if (this.pendingEntries_) {
+      this.display_(this.pendingEntries_);
+    }
   } else {
     this.splitter_.removeAttribute('activated');
     this.element_.removeAttribute('activated');
   }
-  this.visible = visibility;
   this.toggleRipple_.activated = visibility;
+  this.singlePanel_.onVisibilityChanged(visibility);
+};
+
+/**
+ * Sets date and time format.
+ * @param {boolean} use12hourClock True if 12 hours clock, False if 24 hours.
+ */
+DetailsContainer.prototype.setDateTimeFormat = function(use12hourClock) {
+  this.singlePanel_.setDateTimeFormat(use12hourClock);
 };

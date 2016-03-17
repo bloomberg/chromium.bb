@@ -833,6 +833,7 @@ FileManager.prototype = /** @struct */ {
         this.metadataModel_,
         this.volumeManager_,
         this.historyLoader_);
+
     var singlePanel = queryRequiredElement('#single-file-details', dom);
     SingleFileDetailsPanel.decorate(
         assertInstanceof(singlePanel, HTMLDivElement),
@@ -980,6 +981,7 @@ FileManager.prototype = /** @struct */ {
     // Create metadata update controller.
     this.metadataUpdateController_ = new MetadataUpdateController(
         this.ui_.listContainer,
+        assert(this.ui_.detailsContainer),
         this.directoryModel_,
         this.metadataModel_);
 

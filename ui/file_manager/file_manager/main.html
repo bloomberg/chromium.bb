@@ -412,8 +412,23 @@
       <div class="splitter" id="list-details-splitter"></div>
       <div id="details-container" class="details-container">
         <div id="single-file-details">
-          <div class="filename"></div>
-          <ul class="details-list"></ul>
+          <div class="filename-container">
+            <div class="filename-icon detail-icon"></div>
+            <div class="filename"></div>
+          </div>
+          <div class="thumbnail-container">
+            <div class="thumbnail"></div>
+          </div>
+          <ul class="details-list">
+            <li class='modification-time'>
+              <span i18n-content="DATE_COLUMN_LABEL"></span>:
+              <span class='content'></span>
+            </li>
+            <li class='file-size'>
+              <span i18n-content="SIZE_COLUMN_LABEL"></span>:
+              <span class='content'></span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

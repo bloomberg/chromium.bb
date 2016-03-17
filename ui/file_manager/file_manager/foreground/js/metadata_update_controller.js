@@ -5,12 +5,14 @@
 /**
  * Controller for list contents update.
  * @param {!ListContainer} listContainer
+ * @param {!DetailsContainer} detailsContainer
  * @param {!DirectoryModel} directoryModel
  * @param {!MetadataModel} metadataModel
  * @constructor
  * @struct
  */
 function MetadataUpdateController(listContainer,
+                                  detailsContainer,
                                   directoryModel,
                                   metadataModel) {
   /**
@@ -30,6 +32,12 @@ function MetadataUpdateController(listContainer,
    * @const
    */
   this.listContainer_ = listContainer;
+
+  /**
+   * @private {!DetailsContainer}
+   * @const
+   */
+  this.detailsContainer_ = detailsContainer;
 
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
@@ -110,6 +118,7 @@ MetadataUpdateController.prototype.onPreferencesChanged_ = function() {
   chrome.fileManagerPrivate.getPreferences(function(prefs) {
     var use12hourClock = !prefs.use24hourClock;
     this.listContainer_.table.setDateTimeFormat(use12hourClock);
+    this.detailsContainer_.setDateTimeFormat(use12hourClock);
     this.refreshCurrentDirectoryMetadata();
   }.bind(this));
 };
