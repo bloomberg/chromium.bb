@@ -299,7 +299,10 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
                 ASSERT(previous->m_resource);
                 ASSERT(contains(previous->m_resource.get()));
             }
-            if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded() && current->m_resource->isLoaded()) {
+            // TODO(leon.han@intel.com): We shouldn't be hitting the case
+            // that current->m_resource is null here, would turn the case into
+            // ASSERT(current->m_resource) after crbug.com/594644 got resolved.
+            if (current->m_resource && !current->m_resource->hasClients() && !current->m_resource->isPreloaded() && current->m_resource->isLoaded()) {
                 // Destroy our decoded data. This will remove us from
                 // m_liveDecodedResources, and possibly move us to a different
                 // LRU list in m_allResources.
@@ -323,7 +326,10 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
                 ASSERT(previous->m_resource);
                 ASSERT(contains(previous->m_resource.get()));
             }
-            if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded()) {
+            // TODO(leon.han@intel.com): We shouldn't be hitting the case
+            // that current->m_resource is null here, would turn the case into
+            // ASSERT(current->m_resource) after crbug.com/594644 got resolved.
+            if (current->m_resource && !current->m_resource->hasClients() && !current->m_resource->isPreloaded()) {
                 evict(current);
                 if (targetSize && m_deadSize <= targetSize)
                     return;
