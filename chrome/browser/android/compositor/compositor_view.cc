@@ -213,9 +213,12 @@ void CompositorView::SetSceneLayer(JNIEnv* env,
   SceneLayer* scene_layer = SceneLayer::FromJavaObject(env, jscene_layer);
 
   if (scene_layer_ != scene_layer) {
-    // Old tree provider is being detached.
-    if (scene_layer_ != nullptr)
+    // The old tree should be detached only if it is not the cached layer or
+    // the cached layer is not somewhere in the new root.
+    if (scene_layer_ != nullptr
+        && !scene_layer_->layer()->HasAncestor(scene_layer->layer().get())) {
       scene_layer_->OnDetach();
+    }
 
     scene_layer_ = scene_layer;
 
