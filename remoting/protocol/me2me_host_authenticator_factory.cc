@@ -125,7 +125,7 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
           token_validator_factory_);
     }
 
-    return NegotiatingHostAuthenticator::CreateWithPin(
+    return NegotiatingHostAuthenticator::CreateWithSharedSecret(
         normalized_local_jid, normalized_remote_jid, local_cert_, key_pair_,
         pin_hash_, pairing_registry_);
   }

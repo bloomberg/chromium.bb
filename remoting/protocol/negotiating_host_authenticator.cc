@@ -37,32 +37,17 @@ NegotiatingHostAuthenticator::NegotiatingHostAuthenticator(
 
 // static
 scoped_ptr<NegotiatingHostAuthenticator>
-NegotiatingHostAuthenticator::CreateForIt2Me(const std::string& local_id,
-                                             const std::string& remote_id,
-                                             const std::string& local_cert,
-                                             scoped_refptr<RsaKeyPair> key_pair,
-                                             const std::string& access_code) {
-  scoped_ptr<NegotiatingHostAuthenticator> result(
-      new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
-                                       key_pair));
-  result->shared_secret_hash_ = access_code;
-  result->AddMethod(Method::SHARED_SECRET_PLAIN_SPAKE2_P224);
-  return result;
-}
-
-// static
-scoped_ptr<NegotiatingHostAuthenticator>
-NegotiatingHostAuthenticator::CreateWithPin(
+NegotiatingHostAuthenticator::CreateWithSharedSecret(
     const std::string& local_id,
     const std::string& remote_id,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& pin_hash,
+    const std::string& shared_secret_hash,
     scoped_refptr<PairingRegistry> pairing_registry) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
                                        key_pair));
-  result->shared_secret_hash_ = pin_hash;
+  result->shared_secret_hash_ = shared_secret_hash;
   result->pairing_registry_ = pairing_registry;
   result->AddMethod(Method::SHARED_SECRET_SPAKE2_CURVE25519);
   result->AddMethod(Method::SHARED_SECRET_SPAKE2_P224);
@@ -245,7 +230,6 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
       resume_callback.Run();
       break;
 
-    case Method::SHARED_SECRET_PLAIN_SPAKE2_P224:
     case Method::SHARED_SECRET_SPAKE2_P224:
       current_authenticator_ = V2Authenticator::CreateForHost(
           local_cert_, local_key_pair_, shared_secret_hash_,

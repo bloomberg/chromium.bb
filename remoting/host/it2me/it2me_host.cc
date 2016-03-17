@@ -29,6 +29,7 @@
 #include "remoting/host/it2me_desktop_environment.h"
 #include "remoting/host/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/ice_transport.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
@@ -467,6 +468,8 @@ void It2MeHost::OnReceivedSupportID(
 
   std::string host_secret = GenerateSupportHostSecret();
   std::string access_code = support_id + host_secret;
+  std::string access_code_hash =
+      protocol::GetSharedSecretHash(support_id, access_code);
 
   std::string local_certificate = host_key_pair_->GenerateCertificate();
   if (local_certificate.empty()) {
@@ -479,7 +482,7 @@ void It2MeHost::OnReceivedSupportID(
 
   scoped_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::It2MeHostAuthenticatorFactory(
-          local_certificate, host_key_pair_, access_code,
+          local_certificate, host_key_pair_, access_code_hash,
           required_client_domain_));
   host_->SetAuthenticatorFactory(std::move(factory));
 

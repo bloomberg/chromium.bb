@@ -37,7 +37,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  private:
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;
-  std::string access_code_;
+  std::string access_code_hash_;
   std::string required_client_domain_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHostAuthenticatorFactory);
