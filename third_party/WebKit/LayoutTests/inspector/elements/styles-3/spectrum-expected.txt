@@ -4,9 +4,9 @@ Tests WebInspector.Spectrum
 Testing: red
 red
 Testing: #ABC
-#ABC
+#abc
 Testing: #ABCDEF
-#ABCDEF
+#abcdef
 Testing: rgb(1, 2, 3)
 rgb(1, 2, 3)
 Testing: rgba(1, 2, 3, 0.2)

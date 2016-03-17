@@ -7,8 +7,8 @@ color: red
   simple: true
   original: red
   nickname: red
-  hex: #FF0000
-  shorthex: #F00
+  hex: #ff0000
+  shorthex: #f00
   rgb: rgb(255, 0, 0)
   hsl: hsl(0, 100%, 50%)
 
@@ -16,7 +16,7 @@ color: #F00
   simple: true
   original: #F00
   nickname: red
-  hex: #FF0000
+  hex: #ff0000
   shorthex: #F00
   rgb: rgb(255, 0, 0)
   hsl: hsl(0, 100%, 50%)
@@ -25,8 +25,8 @@ color: rgb(255,0,0)
   simple: true
   original: rgb(255,0,0)
   nickname: red
-  hex: #FF0000
-  shorthex: #F00
+  hex: #ff0000
+  shorthex: #f00
   rgb: rgb(255,0,0)
   hsl: hsl(0, 100%, 50%)
 
@@ -34,8 +34,8 @@ color: rgb(300,0,0)
   simple: true
   original: rgb(300,0,0)
   nickname: red
-  hex: #FF0000
-  shorthex: #F00
+  hex: #ff0000
+  shorthex: #f00
   rgb: rgb(255, 0, 0)
   hsl: hsl(0, 100%, 50%)
 
@@ -43,8 +43,8 @@ color: rgb(255,-10,0)
   simple: true
   original: rgb(255,-10,0)
   nickname: red
-  hex: #FF0000
-  shorthex: #F00
+  hex: #ff0000
+  shorthex: #f00
   rgb: rgb(255, 0, 0)
   hsl: hsl(0, 100%, 50%)
 
@@ -52,8 +52,8 @@ color: rgb(110%, 0%, 0%)
   simple: true
   original: rgb(110%, 0%, 0%)
   nickname: red
-  hex: #FF0000
-  shorthex: #F00
+  hex: #ff0000
+  shorthex: #f00
   rgb: rgb(255, 0, 0)
   hsl: hsl(0, 100%, 50%)
 
@@ -69,8 +69,8 @@ color: hsl(-120, 100%, 50%)
   simple: true
   original: hsl(-120, 100%, 50%)
   nickname: blue
-  hex: #0000FF
-  shorthex: #00F
+  hex: #0000ff
+  shorthex: #00f
   rgb: rgb(0, 0, 255)
   hsl: hsl(-120, 100%, 50%)
 
@@ -78,8 +78,8 @@ color: hsl(-120, 200%, 200%)
   simple: true
   original: hsl(-120, 200%, 200%)
   nickname: white
-  hex: #FFFFFF
-  shorthex: #FFF
+  hex: #ffffff
+  shorthex: #fff
   rgb: rgb(255, 255, 255)
   hsl: hsl(-120, 200%, 200%)
 
@@ -120,7 +120,7 @@ color: hsl(200.5,0%,50%)
 color: hsla(200,1.5%,50%,1)
   simple: true
   original: hsla(200,1.5%,50%,1)
-  hex: #7E8081
+  hex: #7e8081
   rgb: rgb(126, 128, 129)
   hsl: hsl(200, 1%, 50%)
 
@@ -160,8 +160,8 @@ color: rgba(255, 0, 0, 5)
   simple: true
   original: rgba(255, 0, 0, 5)
   nickname: red
-  hex: #FF0000
-  shorthex: #F00
+  hex: #ff0000
+  shorthex: #f00
   rgb: rgb(255, 0, 0)
   hsl: hsl(0, 100%, 50%)
 

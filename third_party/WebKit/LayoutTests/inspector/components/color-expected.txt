@@ -7,8 +7,8 @@ Dumping 'red' in different formats:
  - hsla(0, 100%, 50%, 1)
  - hsv(0, 100%, 100%)
  - hsva(0, 100%, 100%, 1)
- - #FF0000
- - #F00
+ - #ff0000
+ - #f00
  - red
  - default: red
  - inverse color: rgba(0, 255, 255, 1)
@@ -33,8 +33,8 @@ Dumping 'blue' in different formats:
  - hsla(240, 100%, 50%, 1)
  - hsv(240, 100%, 100%)
  - hsva(240, 100%, 100%, 1)
- - #0000FF
- - #00F
+ - #0000ff
+ - #00f
  - blue
  - default: blue
  - inverse color: rgba(255, 255, 0, 1)
@@ -46,8 +46,8 @@ Dumping 'cyan' in different formats:
  - hsla(180, 100%, 50%, 1)
  - hsv(180, 100%, 100%)
  - hsva(180, 100%, 100%, 1)
- - #00FFFF
- - #0FF
+ - #00ffff
+ - #0ff
  - cyan
  - default: cyan
  - inverse color: rgba(255, 0, 0, 1)
@@ -59,8 +59,8 @@ Dumping 'magenta' in different formats:
  - hsla(300, 100%, 50%, 1)
  - hsv(300, 100%, 100%)
  - hsva(300, 100%, 100%, 1)
- - #FF00FF
- - #F0F
+ - #ff00ff
+ - #f0f
  - magenta
  - default: magenta
  - inverse color: rgba(0, 255, 0, 1)
@@ -72,8 +72,8 @@ Dumping 'yellow' in different formats:
  - hsla(60, 100%, 50%, 1)
  - hsv(60, 100%, 100%)
  - hsva(60, 100%, 100%, 1)
- - #FFFF00
- - #FF0
+ - #ffff00
+ - #ff0
  - yellow
  - default: yellow
  - inverse color: rgba(0, 0, 255, 1)
@@ -85,8 +85,8 @@ Dumping 'white' in different formats:
  - hsla(0, 0%, 100%, 1)
  - hsv(0, 0%, 100%)
  - hsva(0, 0%, 100%, 1)
- - #FFFFFF
- - #FFF
+ - #ffffff
+ - #fff
  - white
  - default: white
  - inverse color: rgba(0, 0, 0, 1)
@@ -111,7 +111,7 @@ Dumping 'rgb(94, 126, 91)' in different formats:
  - hsla(115, 16%, 43%, 1)
  - hsv(115, 28%, 49%)
  - hsva(115, 28%, 49%, 1)
- - #5E7E5B
+ - #5e7e5b
  - null
  - null
  - default: rgb(94, 126, 91)
@@ -137,7 +137,7 @@ Dumping 'hsl(212, 55%, 32%)' in different formats:
  - hsla(212, 55%, 32%, 1)
  - hsv(212, 71%, 50%)
  - hsva(212, 71%, 50%, 1)
- - #254F7E
+ - #254f7e
  - null
  - null
  - default: hsl(212, 55%, 32%)
@@ -164,9 +164,9 @@ Dumping '#00FFFF' in different formats:
  - hsv(180, 100%, 100%)
  - hsva(180, 100%, 100%, 1)
  - #00FFFF
- - #0FF
+ - #0ff
  - cyan
- - default: #00FFFF
+ - default: #00ffff
  - inverse color: rgba(255, 0, 0, 1)
  - setAlpha(0.42): rgba(0, 255, 255, 0.42)
 Dumping '#0FF' in different formats:
@@ -176,10 +176,10 @@ Dumping '#0FF' in different formats:
  - hsla(180, 100%, 50%, 1)
  - hsv(180, 100%, 100%)
  - hsva(180, 100%, 100%, 1)
- - #00FFFF
+ - #00ffff
  - #0FF
  - cyan
- - default: #0FF
+ - default: #0ff
  - inverse color: rgba(255, 0, 0, 1)
  - setAlpha(0.42): rgba(0, 255, 255, 0.42)
 

@@ -9,7 +9,7 @@ Running: editKeywordAsOriginal
 1px solid red
 
 Running: editKeywordAsHex
-1px solid #F00
+1px solid #f00
 
 Running: editKeywordAsHSL
 1px solid hsl(0, 100%, 50%)
@@ -21,7 +21,7 @@ Running: editHexAsOriginal
 #ffffee
 
 Running: editHexAsHex
-#FFE
+#ffe
 
 Running: editHexAsHSL
 hsl(60, 100%, 97%)
