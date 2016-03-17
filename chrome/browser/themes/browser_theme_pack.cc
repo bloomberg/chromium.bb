@@ -48,7 +48,8 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
-// change default theme assets.
+// change default theme assets or if you need themes to recreate their generated
+// images (which are cached).
 const int kThemePackVersion = 41;
 
 // IDs that are in the DataPack won't clash with the positive integer
