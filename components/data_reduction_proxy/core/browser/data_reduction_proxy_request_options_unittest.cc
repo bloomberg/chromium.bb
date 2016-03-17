@@ -38,7 +38,6 @@ const char kOtherProxy[] = "testproxy:17";
 const char kVersion[] = "0.1.2.3";
 const char kExpectedBuild[] = "2";
 const char kExpectedPatch[] = "3";
-const char kBogusVersion[] = "0.0";
 const char kExpectedCredentials[] = "96bd72ec4a050ba60981743d41787768";
 const char kExpectedSession[] = "0-1633771873-1633771873-1633771873";
 
@@ -114,14 +113,13 @@ void SetHeaderExpectations(const std::string& session,
     expected_options.push_back(
         std::string(kClientHeaderOption) + "=" + client);
   }
-  if (!build.empty()) {
-    expected_options.push_back(
-        std::string(kBuildNumberHeaderOption) + "=" + build);
-  }
-  if (!patch.empty()) {
-    expected_options.push_back(
-        std::string(kPatchNumberHeaderOption) + "=" + patch);
-  }
+  EXPECT_FALSE(build.empty());
+  expected_options.push_back(std::string(kBuildNumberHeaderOption) + "=" +
+                             build);
+  EXPECT_FALSE(patch.empty());
+  expected_options.push_back(std::string(kPatchNumberHeaderOption) + "=" +
+                             patch);
+
   for (const auto& experiment : experiments) {
     expected_options.push_back(
         std::string(kExperimentsOption) + "=" + experiment);
@@ -258,26 +256,13 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 }
 
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationBogusVersion) {
-  std::string expected_header;
-  SetHeaderExpectations(kExpectedSession2, kExpectedCredentials2, std::string(),
-                        kClientStr, std::string(), std::string(),
-                        std::vector<std::string>(), &expected_header);
-
-  CreateRequestOptions(kBogusVersion);
-
-  // Now set a key.
-  request_options()->SetKeyOnIO(kTestKey2);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
-}
-
 TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
   std::string expected_header;
   SetHeaderExpectations(std::string(), std::string(), kSecureSession,
-                        kClientStr, std::string(), std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch,
                         std::vector<std::string>(), &expected_header);
 
-  CreateRequestOptions(kBogusVersion);
+  CreateRequestOptions(kVersion);
   request_options()->SetSecureSession(kSecureSession);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 }
@@ -291,10 +276,10 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
   expected_experiments.push_back("\"foo,bar\"");
   std::string expected_header;
   SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, std::string(), std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch,
                         expected_experiments, &expected_header);
 
-  CreateRequestOptions(kBogusVersion);
+  CreateRequestOptions(kVersion);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 }
 
@@ -347,10 +332,10 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
       expected_experiments.push_back(test.expected_experiment);
 
     SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                          kClientStr, std::string(), std::string(),
+                          kClientStr, kExpectedBuild, kExpectedPatch,
                           expected_experiments, &expected_header);
 
-    CreateRequestOptions(kBogusVersion);
+    CreateRequestOptions(kVersion);
     VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
   }
 }

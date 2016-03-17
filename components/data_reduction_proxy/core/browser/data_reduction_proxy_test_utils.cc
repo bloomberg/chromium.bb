@@ -85,10 +85,8 @@ void TestDataReductionProxyRequestOptions::set_offset(
 
 MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
     Client client,
-    const std::string& version,
     DataReductionProxyConfig* config)
-    : TestDataReductionProxyRequestOptions(client, version, config) {
-}
+    : TestDataReductionProxyRequestOptions(client, "1.2.3.4", config) {}
 
 MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {
 }
@@ -438,8 +436,8 @@ DataReductionProxyTestContext::Builder::Build() {
   scoped_ptr<DataReductionProxyRequestOptions> request_options;
   if (use_mock_request_options_) {
     test_context_flags |= USE_MOCK_REQUEST_OPTIONS;
-    request_options.reset(new MockDataReductionProxyRequestOptions(
-        client_, std::string(), config.get()));
+    request_options.reset(
+        new MockDataReductionProxyRequestOptions(client_, config.get()));
   } else {
     request_options.reset(
         new DataReductionProxyRequestOptions(client_, config.get()));

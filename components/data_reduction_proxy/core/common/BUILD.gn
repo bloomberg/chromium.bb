@@ -113,4 +113,8 @@ source_set("unit_tests") {
 process_version("version_header") {
   template_file = "version.h.in"
   output = "$target_gen_dir/version.h"
+  extra_args = [
+    "-e",
+    "VERSION_FULL=\"%s.%s.%s.%s\" % (MAJOR,MINOR,BUILD,PATCH)",
+  ]
 }

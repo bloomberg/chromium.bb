@@ -83,7 +83,6 @@ class MockDataReductionProxyRequestOptions
     : public TestDataReductionProxyRequestOptions {
  public:
   MockDataReductionProxyRequestOptions(Client client,
-                                       const std::string& version,
                                        DataReductionProxyConfig* config);
 
   ~MockDataReductionProxyRequestOptions();
