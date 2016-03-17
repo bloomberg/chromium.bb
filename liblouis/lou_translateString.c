@@ -1098,115 +1098,13 @@ inSequence()
 	return 1;
 }
 
-static int pattern_check_chars(const widechar input, const widechar *expr)
-{
-	int rcrs, rcnt, i;
-
-	rcrs = 0;
-	rcnt = expr[0] + 1;
-	rcrs++;
-
-	for(i = rcrs; i < rcnt; i++)
-	if(input == expr[i])
-		break;
-
-	if(i == rcnt)
-		return 0;
-	return 1;
-}
-
-static __attribute__((unused)) int pattern_check(
+int pattern_check(
 	const widechar *input,
+	const int input_start,
 	const int input_minmax,
-	const int input_at,
-	const int direction,
-	const widechar *expr)
-{
-	int input_crs;
-	int attrs;
-
-	input_crs = input_at;
-	attrs = 0;
-
-	if(expr[0] == PTN_LAST)
-		return 1;
-
-	if(expr[1] == PTN_END_OF_INPUT)
-	if(input_at * direction >= input_minmax * direction)
-		return 1;
-	else
-		return 0;
-
-	if(input_at * direction >= input_minmax * direction)
-	{
-		switch(expr[1])
-		{
-		case PTN_ZERO_MORE:  return pattern_check(input, input_minmax, input_at, direction, &expr[expr[0]]);
-		case PTN_OR:  return pattern_check(input, input_minmax, input_at, direction, &expr[expr[0]]);
-		case PTN_ATTRIBUTES:
-
-			attrs = expr[2] << 16;
-			return attrs & CTC_EndOfInput;
-		}
-		return 0;
-	}
-
-	switch(expr[1])
-	{
-		case PTN_ZERO_MORE:
-		case PTN_ONE_MORE:
-
-			/*   match as much as possible   */
-			input_crs = input_at;
-			while(pattern_check(input, input_minmax, input_crs, direction, &expr[2]))
-				input_crs += direction;
-
-			/*   check next expression   */
-			while(input_crs * direction > input_at * direction)
-			if(pattern_check(input, input_minmax, input_crs, direction, &expr[expr[0]]))
-				return 1;
-			else
-				input_crs -= direction;
-
-			/*   check if nothing succeeds   */
-			if(expr[1] == PTN_ZERO_MORE)
-				return pattern_check(input, input_minmax, input_at, direction, &expr[expr[0]]);
-			return 0;
-
-		case PTN_OR:
-
-			if(pattern_check(input, input_minmax, input_at, direction, &expr[2]))
-				return 1;
-			return pattern_check(input, input_minmax, input_at, direction, &expr[expr[0]]);
-
-		case PTN_NOT:
-
-			if(pattern_check(input, input_minmax, input_at, direction, &expr[2]))
-				return 0;
-			break;
-
-		case PTN_GROUP:
-
-			if(!pattern_check(input, input_minmax, input_at, direction, &expr[2]))
-				return 0;
-			break;
-
-		case PTN_ATTRIBUTES:
-
-			attrs = ((expr[2] << 16) | expr[3]) & ~CTC_EndOfInput;
-			if(!checkAttr(input[input_at], attrs, 0))
-				return 0;
-			break;
-
-		case PTN_CHARS:
-
-			if(!pattern_check_chars(input[input_at], &expr[2]))
-				return 0;
-			break;
-	}
-
-	return pattern_check(input, input_minmax, input_at + direction, direction, &expr[expr[0]]);
-}
+	const int input_dir,
+	const widechar *expr_data,
+	const TranslationTableHeader *t);
 
 static void
 for_selectRule ()
@@ -1492,26 +1390,26 @@ for_selectRule ()
 			  break;
 		      }
 		    break;
-		    
+
 				case CTO_Match:
 				{
 					widechar *patterns, *pattern;
-					
+
 					patterns = (widechar*)&table->ruleArea[transRule->patterns];
-					
+
 					/*   check before pattern   */
 					pattern = &patterns[1];
-					if(!pattern_check(currentInput, -1, src - 1, -1, pattern))
+					if(!pattern_check(currentInput, src - 1, -1, -1, pattern, table))
 						break;
-					
+
 					/*   check after pattern   */
 					pattern = &patterns[patterns[0]];
-					if(!pattern_check(currentInput, srcmax, src + transRule->charslen, 1, pattern))
+					if(!pattern_check(currentInput, src + transRule->charslen, srcmax, 1, pattern, table))
 						break;
-					
+
 					return;
 				}
-				
+
 		  default:
 		    break;
 		  }

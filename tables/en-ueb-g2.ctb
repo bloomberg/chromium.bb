@@ -48,6 +48,8 @@ seqafterpattern 'S
 seqafterpattern 'T
 seqafterpattern 'VE
 
+seqafterexpression '([DSTdst]|ll|[rv]e|LL|[RV]E)
+
 
 #   10.1   Alphabetic Wordsigns
 
