@@ -42,6 +42,13 @@ class SignalTest : public ContextTestBase {
 };
 
 CONTEXT_TEST_F(SignalTest, BasicSignalSyncTokenTest) {
+#if defined(OS_WIN)
+  // The IPC version of ContextTestBase::SetUpOnMainThread does not succeed on
+  // some platforms.
+  if (!gl_)
+    return;
+#endif
+
   const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
   gl_->ShallowFlushCHROMIUM();
 
@@ -52,6 +59,13 @@ CONTEXT_TEST_F(SignalTest, BasicSignalSyncTokenTest) {
 };
 
 CONTEXT_TEST_F(SignalTest, EmptySignalSyncTokenTest) {
+#if defined(OS_WIN)
+  // The IPC version of ContextTestBase::SetUpOnMainThread does not succeed on
+  // some platforms.
+  if (!gl_)
+    return;
+#endif
+
   // Signalling something that doesn't exist should run the callback
   // immediately.
   gpu::SyncToken sync_token;
@@ -59,6 +73,13 @@ CONTEXT_TEST_F(SignalTest, EmptySignalSyncTokenTest) {
 };
 
 CONTEXT_TEST_F(SignalTest, InvalidSignalSyncTokenTest) {
+#if defined(OS_WIN)
+  // The IPC version of ContextTestBase::SetUpOnMainThread does not succeed on
+  // some platforms.
+  if (!gl_)
+    return;
+#endif
+
   // Signalling something that doesn't exist should run the callback
   // immediately.
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
@@ -68,6 +89,13 @@ CONTEXT_TEST_F(SignalTest, InvalidSignalSyncTokenTest) {
 };
 
 CONTEXT_TEST_F(SignalTest, BasicSignalQueryTest) {
+#if defined(OS_WIN)
+  // The IPC version of ContextTestBase::SetUpOnMainThread does not succeed on
+  // some platforms.
+  if (!gl_)
+    return;
+#endif
+
   unsigned query;
   gl_->GenQueriesEXT(1, &query);
   gl_->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query);
@@ -78,6 +106,13 @@ CONTEXT_TEST_F(SignalTest, BasicSignalQueryTest) {
 };
 
 CONTEXT_TEST_F(SignalTest, SignalQueryUnboundTest) {
+#if defined(OS_WIN)
+  // The IPC version of ContextTestBase::SetUpOnMainThread does not succeed on
+  // some platforms.
+  if (!gl_)
+    return;
+#endif
+
   GLuint query;
   gl_->GenQueriesEXT(1, &query);
   TestSignalQuery(query);
@@ -85,6 +120,13 @@ CONTEXT_TEST_F(SignalTest, SignalQueryUnboundTest) {
 };
 
 CONTEXT_TEST_F(SignalTest, InvalidSignalQueryUnboundTest) {
+#if defined(OS_WIN)
+  // The IPC version of ContextTestBase::SetUpOnMainThread does not succeed on
+  // some platforms.
+  if (!gl_)
+    return;
+#endif
+
   // Signalling something that doesn't exist should run the callback
   // immediately.
   TestSignalQuery(928729087);

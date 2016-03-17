@@ -30,6 +30,8 @@ const content::CauseForGpuLaunch kInitCause =
 class ContextTestBase : public content::ContentBrowserTest {
  public:
   void SetUpOnMainThread() override {
+    // This may leave the provider_ null in some cases, so tests need to early
+    // out.
     if (!content::BrowserGpuChannelHostFactory::CanUseForTesting())
       return;
 
@@ -71,8 +73,8 @@ class ContextTestBase : public content::ContentBrowserTest {
   }
 
  protected:
-  gpu::gles2::GLES2Interface* gl_;
-  gpu::ContextSupport* context_support_;
+  gpu::gles2::GLES2Interface* gl_ = nullptr;
+  gpu::ContextSupport* context_support_ = nullptr;
 
  private:
   scoped_refptr<content::ContextProviderCommandBuffer> provider_;
