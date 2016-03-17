@@ -6,8 +6,8 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#ifndef WEBVTTPARSER_H_  // NOLINT
-#define WEBVTTPARSER_H_
+#ifndef WEBVTT_WEBVTTPARSER_H_
+#define WEBVTT_WEBVTTPARSER_H_
 
 #include <list>
 #include <string>
@@ -155,4 +155,4 @@ class Parser : private LineReader {
 
 }  // namespace libwebvtt
 
-#endif  // WEBVTTPARSER_H_  // NOLINT
+#endif  // WEBVTT_WEBVTTPARSER_H_

@@ -84,26 +84,26 @@ add_executable(sample_muxer
                "${LIBWEBM_SRC_DIR}/sample_muxer.cpp"
                "${LIBWEBM_SRC_DIR}/sample_muxer_metadata.cc"
                "${LIBWEBM_SRC_DIR}/sample_muxer_metadata.h"
-               "${LIBWEBM_SRC_DIR}/vttreader.cc"
-               "${LIBWEBM_SRC_DIR}/vttreader.h"
-               "${LIBWEBM_SRC_DIR}/webvttparser.cc"
-               "${LIBWEBM_SRC_DIR}/webvttparser.h")
+               "${LIBWEBM_SRC_DIR}/webvtt/vttreader.cc"
+               "${LIBWEBM_SRC_DIR}/webvtt/vttreader.h"
+               "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.cc"
+               "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.h")
 target_link_libraries(sample_muxer LINK_PUBLIC webm)
 
 # Dumpvtt section.
 add_executable(dumpvtt
                "${LIBWEBM_SRC_DIR}/dumpvtt.cc"
-               "${LIBWEBM_SRC_DIR}/vttreader.cc"
-               "${LIBWEBM_SRC_DIR}/vttreader.h"
-               "${LIBWEBM_SRC_DIR}/webvttparser.cc"
-               "${LIBWEBM_SRC_DIR}/webvttparser.h")
+               "${LIBWEBM_SRC_DIR}/webvtt/vttreader.cc"
+               "${LIBWEBM_SRC_DIR}/webvtt/vttreader.h"
+               "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.cc"
+               "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.h")
 target_link_libraries(dumpvtt LINK_PUBLIC webm)
 
 # Vttdemux section.
 add_executable(vttdemux
                "${LIBWEBM_SRC_DIR}/vttdemux.cc"
-               "${LIBWEBM_SRC_DIR}/webvttparser.cc"
-               "${LIBWEBM_SRC_DIR}/webvttparser.h")
+               "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.cc"
+               "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.h")
 target_link_libraries(vttdemux LINK_PUBLIC webm)
 
 if (ENABLE_WEBMTS)

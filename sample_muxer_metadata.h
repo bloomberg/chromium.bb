@@ -15,8 +15,7 @@
 #include <set>
 #include <string>
 
-#include "mkvmuxertypes.hpp"
-#include "webvttparser.h"
+#include "webvtt/webvttparser.h"
 
 namespace libwebm {
 

@@ -16,7 +16,7 @@
 
 #include "mkvparser/mkvparser.hpp"
 #include "mkvparser/mkvreader.hpp"
-#include "webvttparser.h"
+#include "webvtt/webvttparser.h"
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.

@@ -6,8 +6,8 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#ifndef VTTREADER_H_  // NOLINT
-#define VTTREADER_H_
+#ifndef WEBVTT_VTTREADER_H_
+#define WEBVTT_VTTREADER_H_
 
 #include <cstdio>
 #include "./webvttparser.h"
@@ -41,4 +41,4 @@ class VttReader : public libwebvtt::Reader {
 
 }  // namespace libwebvtt
 
-#endif  // VTTREADER_H_  // NOLINT
+#endif  // WEBVTT_VTTREADER_H_
