@@ -50,8 +50,8 @@ SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
 
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window_]);
-  constrained_window_.reset(
-      new ConstrainedWindowMac(this, host_web_contents, sheet));
+  constrained_window_ =
+      CreateAndShowWebModalDialogMac(this, host_web_contents, sheet);
 }
 
 SigninViewControllerDelegateMac::~SigninViewControllerDelegateMac() {}
