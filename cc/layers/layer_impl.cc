@@ -207,7 +207,9 @@ void LayerImpl::DistributeScroll(ScrollState* scroll_state) {
 
 void LayerImpl::ApplyScroll(ScrollState* scroll_state) {
   DCHECK(scroll_state);
-  layer_tree_impl()->ApplyScroll(this, scroll_state);
+  ScrollNode* node = layer_tree_impl()->property_trees()->scroll_tree.Node(
+      scroll_tree_index());
+  layer_tree_impl()->ApplyScroll(node, scroll_state);
 }
 
 void LayerImpl::SetNumDescendantsThatDrawContent(int num_descendants) {
@@ -427,20 +429,9 @@ void LayerImpl::GetContentsResourceId(ResourceId* resource_id,
 }
 
 gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
-  gfx::ScrollOffset adjusted_scroll(scroll);
-  if (!user_scrollable_horizontal_)
-    adjusted_scroll.set_x(0);
-  if (!user_scrollable_vertical_)
-    adjusted_scroll.set_y(0);
-  DCHECK(scrollable());
-  gfx::ScrollOffset old_offset = CurrentScrollOffset();
-  gfx::ScrollOffset new_offset =
-      ClampScrollOffsetToLimits(old_offset + adjusted_scroll);
-  SetCurrentScrollOffset(new_offset);
-
-  gfx::ScrollOffset unscrolled =
-      old_offset + gfx::ScrollOffset(scroll) - new_offset;
-  return gfx::Vector2dF(unscrolled.x(), unscrolled.y());
+  ScrollTree& scroll_tree = layer_tree_impl()->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index());
+  return scroll_tree.ScrollBy(scroll_node, scroll, layer_tree_impl());
 }
 
 void LayerImpl::SetScrollClipLayer(int scroll_clip_layer_id) {
@@ -458,6 +449,14 @@ LayerImpl* LayerImpl::scroll_clip_layer() const {
 
 bool LayerImpl::scrollable() const {
   return scroll_clip_layer_id_ != Layer::INVALID_ID;
+}
+
+void LayerImpl::set_user_scrollable_horizontal(bool scrollable) {
+  user_scrollable_horizontal_ = scrollable;
+}
+
+void LayerImpl::set_user_scrollable_vertical(bool scrollable) {
+  user_scrollable_vertical_ = scrollable;
 }
 
 bool LayerImpl::user_scrollable(ScrollbarOrientation orientation) const {

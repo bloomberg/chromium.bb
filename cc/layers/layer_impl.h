@@ -441,15 +441,11 @@ class CC_EXPORT LayerImpl {
   LayerImpl* scroll_clip_layer() const;
   bool scrollable() const;
 
-  void set_user_scrollable_horizontal(bool scrollable) {
-    user_scrollable_horizontal_ = scrollable;
-  }
+  void set_user_scrollable_horizontal(bool scrollable);
   bool user_scrollable_horizontal() const {
     return user_scrollable_horizontal_;
   }
-  void set_user_scrollable_vertical(bool scrollable) {
-    user_scrollable_vertical_ = scrollable;
-  }
+  void set_user_scrollable_vertical(bool scrollable);
   bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
 
   bool user_scrollable(ScrollbarOrientation orientation) const;

@@ -43,17 +43,21 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   gfx::Vector2dF pending_content_delta = content_delta;
 
-  pending_content_delta -= host_impl_->ScrollLayer(InnerScrollLayer(),
-                                                   pending_content_delta,
-                                                   viewport_point,
-                                                   is_direct_manipulation);
+  ScrollTree& scroll_tree =
+      host_impl_->active_tree()->property_trees()->scroll_tree;
+  ScrollNode* inner_node =
+      scroll_tree.Node(InnerScrollLayer()->scroll_tree_index());
+  pending_content_delta -= host_impl_->ScrollSingleNode(
+      inner_node, pending_content_delta, viewport_point, is_direct_manipulation,
+      &scroll_tree);
 
   ScrollResult result;
 
-  pending_content_delta -= host_impl_->ScrollLayer(OuterScrollLayer(),
-                                                   pending_content_delta,
-                                                   viewport_point,
-                                                   is_direct_manipulation);
+  ScrollNode* outer_node =
+      scroll_tree.Node(OuterScrollLayer()->scroll_tree_index());
+  pending_content_delta -= host_impl_->ScrollSingleNode(
+      outer_node, pending_content_delta, viewport_point, is_direct_manipulation,
+      &scroll_tree);
   result.consumed_delta = delta - AdjustOverscroll(pending_content_delta);
 
   result.content_scrolled_delta = content_delta - pending_content_delta;

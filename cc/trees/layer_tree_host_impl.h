@@ -170,7 +170,7 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) override;
-  void ApplyScroll(LayerImpl* layer, ScrollState* scroll_state);
+  void ApplyScroll(ScrollNode* scroll_node, ScrollState* scroll_state);
   InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
   bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
                               ScrollDirection direction) override;
@@ -574,10 +574,11 @@ class CC_EXPORT LayerTreeHostImpl
     return frame_timing_tracker_.get();
   }
 
-  gfx::Vector2dF ScrollLayer(LayerImpl* layer_impl,
-                             const gfx::Vector2dF& delta,
-                             const gfx::Point& viewport_point,
-                             bool is_direct_manipulation);
+  gfx::Vector2dF ScrollSingleNode(ScrollNode* scroll_node,
+                                  const gfx::Vector2dF& delta,
+                                  const gfx::Point& viewport_point,
+                                  bool is_direct_manipulation,
+                                  ScrollTree* scroll_tree);
 
   // Record main frame timing information.
   // |start_of_main_frame_args| is the BeginFrameArgs of the beginning of the
@@ -636,10 +637,11 @@ class CC_EXPORT LayerTreeHostImpl
   BeginFrameTracker current_begin_frame_tracker_;
 
  private:
-  gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
-      LayerImpl* layer_impl,
+  gfx::Vector2dF ScrollNodeWithViewportSpaceDelta(
+      ScrollNode* scroll_node,
       const gfx::PointF& viewport_point,
-      const gfx::Vector2dF& viewport_delta);
+      const gfx::Vector2dF& viewport_delta,
+      ScrollTree* scroll_tree);
 
   void CreateAndSetRenderer();
   void CleanUpTileManagerAndUIResources();

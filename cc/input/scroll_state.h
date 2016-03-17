@@ -93,6 +93,7 @@ class CC_EXPORT ScrollState {
   bool caused_scroll_x() const { return data_.caused_scroll_x; }
   bool caused_scroll_y() const { return data_.caused_scroll_y; }
 
+  LayerTreeImpl* layer_tree_impl() { return layer_tree_impl_; }
   ScrollStateData* data() { return &data_; }
 
  private:

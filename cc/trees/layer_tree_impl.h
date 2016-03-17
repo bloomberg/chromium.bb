@@ -324,8 +324,8 @@ class CC_EXPORT LayerTreeImpl {
   // The outer viewport scroll layer scrolls first.
   bool DistributeRootScrollOffset(const gfx::ScrollOffset& root_offset);
 
-  void ApplyScroll(LayerImpl* layer, ScrollState* scroll_state) {
-    layer_tree_host_impl_->ApplyScroll(layer, scroll_state);
+  void ApplyScroll(ScrollNode* scroll_node, ScrollState* scroll_state) {
+    layer_tree_host_impl_->ApplyScroll(scroll_node, scroll_state);
   }
 
   // Call this function when you expect there to be a swap buffer.

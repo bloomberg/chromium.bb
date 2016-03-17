@@ -2773,8 +2773,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         if (!scroll_node->data.scrollable)
           continue;
 
-        LayerImpl* layer_impl = active_tree_->LayerById(scroll_node->owner_id);
-        gfx::ScrollOffset current_offset = layer_impl->CurrentScrollOffset();
+        gfx::ScrollOffset current_offset =
+            scroll_tree.current_scroll_offset(scroll_node->owner_id);
         gfx::ScrollOffset target_offset =
             ScrollOffsetWithDelta(current_offset, pending_delta);
         target_offset.SetToMax(gfx::ScrollOffset());
@@ -2795,7 +2795,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
                                  std::abs(actual_delta.y()) > kEpsilon);
 
         if (!can_layer_scroll) {
-          layer_impl->ScrollBy(actual_delta);
+          scroll_tree.ScrollBy(scroll_node, actual_delta, active_tree());
           pending_delta -= actual_delta;
           continue;
         }
@@ -2814,14 +2814,15 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   return scroll_status;
 }
 
-gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
-    LayerImpl* layer_impl,
+gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
+    ScrollNode* scroll_node,
     const gfx::PointF& viewport_point,
-    const gfx::Vector2dF& viewport_delta) {
+    const gfx::Vector2dF& viewport_delta,
+    ScrollTree* scroll_tree) {
   // Layers with non-invertible screen space transforms should not have passed
   // the scroll hit test in the first place.
   const gfx::Transform screen_space_transform =
-      layer_impl->ScreenSpaceTransform();
+      scroll_tree->ScreenSpaceTransform(scroll_node->id);
   DCHECK(screen_space_transform.IsInvertible());
   gfx::Transform inverse_screen_space_transform(
       gfx::Transform::kSkipInitialization);
@@ -2859,10 +2860,13 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
     return gfx::Vector2dF();
 
   // Apply the scroll delta.
-  gfx::ScrollOffset previous_offset = layer_impl->CurrentScrollOffset();
-  layer_impl->ScrollBy(local_end_point - local_start_point);
+  gfx::ScrollOffset previous_offset =
+      scroll_tree->current_scroll_offset(scroll_node->owner_id);
+  scroll_tree->ScrollBy(scroll_node, local_end_point - local_start_point,
+                        active_tree());
   gfx::ScrollOffset scrolled =
-      layer_impl->CurrentScrollOffset() - previous_offset;
+      scroll_tree->current_scroll_offset(scroll_node->owner_id) -
+      previous_offset;
 
   // Get the end point in the layer's content space so we can apply its
   // ScreenSpaceTransform.
@@ -2881,16 +2885,20 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   return actual_viewport_end_point - viewport_point;
 }
 
-static gfx::Vector2dF ScrollLayerWithLocalDelta(
-    LayerImpl* layer_impl,
+static gfx::Vector2dF ScrollNodeWithLocalDelta(
+    ScrollNode* scroll_node,
     const gfx::Vector2dF& local_delta,
-    float page_scale_factor) {
-  gfx::ScrollOffset previous_offset = layer_impl->CurrentScrollOffset();
+    float page_scale_factor,
+    LayerTreeImpl* layer_tree_impl) {
+  ScrollTree& scroll_tree = layer_tree_impl->property_trees()->scroll_tree;
+  gfx::ScrollOffset previous_offset =
+      scroll_tree.current_scroll_offset(scroll_node->owner_id);
   gfx::Vector2dF delta = local_delta;
   delta.Scale(1.f / page_scale_factor);
-  layer_impl->ScrollBy(delta);
+  scroll_tree.ScrollBy(scroll_node, delta, layer_tree_impl);
   gfx::ScrollOffset scrolled =
-      layer_impl->CurrentScrollOffset() - previous_offset;
+      scroll_tree.current_scroll_offset(scroll_node->owner_id) -
+      previous_offset;
   gfx::Vector2dF consumed_scroll(scrolled.x(), scrolled.y());
   consumed_scroll.Scale(page_scale_factor);
 
@@ -2899,10 +2907,12 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(
 
 // TODO(danakj): Make this into two functions, one with delta, one with
 // viewport_point, no bool required.
-gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,
-                                              const gfx::Vector2dF& delta,
-                                              const gfx::Point& viewport_point,
-                                              bool is_direct_manipulation) {
+gfx::Vector2dF LayerTreeHostImpl::ScrollSingleNode(
+    ScrollNode* scroll_node,
+    const gfx::Vector2dF& delta,
+    const gfx::Point& viewport_point,
+    bool is_direct_manipulation,
+    ScrollTree* scroll_tree) {
   // Events representing direct manipulation of the screen (such as gesture
   // events) need to be transformed from viewport coordinates to local layer
   // coordinates so that the scrolling contents exactly follow the user's
@@ -2911,14 +2921,15 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,
   // can just apply them directly, but the page scale factor is applied to the
   // scroll delta.
   if (is_direct_manipulation) {
-    return ScrollLayerWithViewportSpaceDelta(
-        layer_impl, gfx::PointF(viewport_point), delta);
+    return ScrollNodeWithViewportSpaceDelta(
+        scroll_node, gfx::PointF(viewport_point), delta, scroll_tree);
   }
   float scale_factor = active_tree()->current_page_scale_factor();
-  return ScrollLayerWithLocalDelta(layer_impl, delta, scale_factor);
+  return ScrollNodeWithLocalDelta(scroll_node, delta, scale_factor,
+                                  active_tree());
 }
 
-void LayerTreeHostImpl::ApplyScroll(LayerImpl* layer,
+void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
                                     ScrollState* scroll_state) {
   DCHECK(scroll_state);
   gfx::Point viewport_point(scroll_state->start_position_x(),
@@ -2929,7 +2940,7 @@ void LayerTreeHostImpl::ApplyScroll(LayerImpl* layer,
   // details.
   const float kEpsilon = 0.1f;
 
-  if (layer == InnerViewportScrollLayer()) {
+  if (scroll_node->data.is_inner_viewport_scroll_layer) {
     bool affect_top_controls = !wheel_scrolling_;
     Viewport::ScrollResult result = viewport()->ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
@@ -2940,15 +2951,17 @@ void LayerTreeHostImpl::ApplyScroll(LayerImpl* layer,
         std::abs(result.content_scrolled_delta.y()) > kEpsilon);
     scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
   } else {
-    applied_delta = ScrollLayer(layer, delta, viewport_point,
-                                scroll_state->is_direct_manipulation());
+    applied_delta = ScrollSingleNode(
+        scroll_node, delta, viewport_point,
+        scroll_state->is_direct_manipulation(),
+        &scroll_state->layer_tree_impl()->property_trees()->scroll_tree);
   }
 
   // If the layer wasn't able to move, try the next one in the hierarchy.
   bool scrolled = std::abs(applied_delta.x()) > kEpsilon;
   scrolled = scrolled || std::abs(applied_delta.y()) > kEpsilon;
 
-  if (scrolled && layer != InnerViewportScrollLayer()) {
+  if (scrolled && !scroll_node->data.is_inner_viewport_scroll_layer) {
     // If the applied delta is within 45 degrees of the input
     // delta, bail out to make it easier to scroll just one layer
     // in one direction without affecting any of its parents.
@@ -2969,9 +2982,7 @@ void LayerTreeHostImpl::ApplyScroll(LayerImpl* layer,
   if (!scrolled)
     return;
 
-  scroll_state->set_current_native_scrolling_node(
-      active_tree()->property_trees()->scroll_tree.Node(
-          layer->scroll_tree_index()));
+  scroll_state->set_current_native_scrolling_node(scroll_node);
 }
 
 void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
@@ -3085,7 +3096,6 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
   if (scroll_node) {
     for (; scroll_tree.parent(scroll_node);
          scroll_node = scroll_tree.parent(scroll_node)) {
-      LayerImpl* layer_impl = active_tree_->LayerById(scroll_node->owner_id);
       // The inner viewport layer represents the viewport.
       if (!scroll_node->data.scrollable ||
           scroll_node->data.is_outer_viewport_scroll_layer)
@@ -3103,7 +3113,7 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
       gfx::Vector2dF delta = gfx::Vector2dF(0.f, page);
 
       gfx::Vector2dF applied_delta =
-          ScrollLayerWithLocalDelta(layer_impl, delta, 1.f);
+          ScrollNodeWithLocalDelta(scroll_node, delta, 1.f, active_tree());
 
       if (!applied_delta.IsZero()) {
         client_->SetNeedsCommitOnImplThread();

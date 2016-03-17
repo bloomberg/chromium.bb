@@ -1131,12 +1131,16 @@ TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
 
   // Trying to scroll if not user_scrollable_vertical will fail.
   host_impl_->InnerViewportScrollLayer()->set_user_scrollable_vertical(false);
+  SetNeedsRebuildPropertyTrees();
+  DrawFrame();
   EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), SCROLL_FORWARD));
   EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), SCROLL_BACKWARD));
 
   host_impl_->InnerViewportScrollLayer()->set_user_scrollable_vertical(true);
+  SetNeedsRebuildPropertyTrees();
+  DrawFrame();
   EXPECT_TRUE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), SCROLL_FORWARD));
   EXPECT_FLOAT_EQ(875.f,
@@ -1178,6 +1182,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), overflow->CurrentScrollOffset());
 
   overflow->set_user_scrollable_horizontal(false);
+  SetNeedsRebuildPropertyTrees();
+  DrawFrame();
 
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_->ScrollBegin(BeginState(scroll_position).get(),
@@ -1192,6 +1198,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->CurrentScrollOffset());
 
   overflow->set_user_scrollable_vertical(false);
+  SetNeedsRebuildPropertyTrees();
+  DrawFrame();
 
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_->ScrollBegin(BeginState(scroll_position).get(),
@@ -9068,13 +9076,12 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
   gfx::Size outer_viewport = gfx::Size(50, 80);
   gfx::Size inner_viewport = gfx::Size(25, 40);
   SetupVirtualViewportLayers(content_size, outer_viewport, inner_viewport);
-  SetNeedsRebuildPropertyTrees();
-  DrawFrame();
-
   // Make inner viewport unscrollable.
   LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
   inner_scroll->set_user_scrollable_horizontal(false);
   inner_scroll->set_user_scrollable_vertical(false);
+  SetNeedsRebuildPropertyTrees();
+  DrawFrame();
 
   // Ensure inner viewport doesn't react to scrolls (test it's unscrollable).
   EXPECT_VECTOR_EQ(gfx::Vector2dF(), inner_scroll->CurrentScrollOffset());

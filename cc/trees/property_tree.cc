@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/scroll_state.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/property_tree.pb.h"
@@ -1655,6 +1656,54 @@ const gfx::ScrollOffset ScrollTree::GetScrollOffsetDeltaForTesting(
                : synced_scroll_offset(layer_id)->PendingDelta().get();
   else
     return gfx::ScrollOffset();
+}
+
+void ScrollTree::DistributeScroll(ScrollNode* scroll_node,
+                                  ScrollState* scroll_state) {
+  DCHECK(scroll_node && scroll_state);
+  if (scroll_state->FullyConsumed())
+    return;
+  scroll_state->DistributeToScrollChainDescendant();
+
+  // If the scroll doesn't propagate, and we're currently scrolling
+  // a node other than this one, prevent the scroll from
+  // propagating to this node.
+  if (!scroll_state->should_propagate() &&
+      scroll_state->delta_consumed_for_scroll_sequence() &&
+      scroll_state->current_native_scrolling_node()->id != scroll_node->id) {
+    return;
+  }
+
+  scroll_state->layer_tree_impl()->ApplyScroll(scroll_node, scroll_state);
+}
+
+gfx::Vector2dF ScrollTree::ScrollBy(ScrollNode* scroll_node,
+                                    const gfx::Vector2dF& scroll,
+                                    LayerTreeImpl* layer_tree_impl) {
+  gfx::ScrollOffset adjusted_scroll(scroll);
+  if (!scroll_node->data.user_scrollable_horizontal)
+    adjusted_scroll.set_x(0);
+  if (!scroll_node->data.user_scrollable_vertical)
+    adjusted_scroll.set_y(0);
+  DCHECK(scroll_node->data.scrollable);
+  gfx::ScrollOffset old_offset = current_scroll_offset(scroll_node->owner_id);
+  gfx::ScrollOffset new_offset =
+      ClampScrollOffsetToLimits(old_offset + adjusted_scroll, scroll_node);
+  if (SetScrollOffset(scroll_node->owner_id, new_offset))
+    layer_tree_impl->DidUpdateScrollOffset(scroll_node->owner_id,
+                                           scroll_node->data.transform_id);
+
+  gfx::ScrollOffset unscrolled =
+      old_offset + gfx::ScrollOffset(scroll) - new_offset;
+  return gfx::Vector2dF(unscrolled.x(), unscrolled.y());
+}
+
+gfx::ScrollOffset ScrollTree::ClampScrollOffsetToLimits(
+    gfx::ScrollOffset offset,
+    ScrollNode* scroll_node) const {
+  offset.SetToMin(MaxScrollOffset(scroll_node->id));
+  offset.SetToMax(gfx::ScrollOffset());
+  return offset;
 }
 
 PropertyTrees::PropertyTrees()

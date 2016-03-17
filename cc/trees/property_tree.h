@@ -30,6 +30,7 @@ class TreeNode;
 }
 
 class LayerTreeImpl;
+class ScrollState;
 struct ScrollAndScaleSet;
 
 // ------------------------------*IMPORTANT*---------------------------------
@@ -596,6 +597,11 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   const gfx::ScrollOffset GetScrollOffsetDeltaForTesting(int layer_id) const;
   void CollectScrollDeltasForTesting();
 
+  void DistributeScroll(ScrollNode* scroll_node, ScrollState* scroll_state);
+  gfx::Vector2dF ScrollBy(ScrollNode* scroll_node,
+                          const gfx::Vector2dF& scroll,
+                          LayerTreeImpl* layer_tree_impl);
+
  private:
   int currently_scrolling_node_id_;
   ScrollOffsetMap layer_id_to_scroll_offset_map_;
@@ -606,6 +612,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void UpdateScrollOffsetMapEntry(int key,
                                   ScrollOffsetMap* new_scroll_offset_map,
                                   LayerTreeImpl* layer_tree_impl);
+  gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset,
+                                              ScrollNode* scroll_node) const;
 };
 
 class CC_EXPORT PropertyTrees final {
