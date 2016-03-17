@@ -1085,7 +1085,7 @@
                   '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
-                  '--link_flags=-B>(tc_lib_dir_newlib_mips) ^(link_flags) >(_link_flags)',
+                  '--link_flags=-B>(tc_lib_dir_newlib_mips) -L>(tc_lib_dir_newlib_mips) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_mips)',
                 ],
               },
