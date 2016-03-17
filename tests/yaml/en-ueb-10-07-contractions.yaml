@@ -299,7 +299,6 @@ tests:
   - '|-(-!-way'
 - - chifforobe
   - '*i6orobe'
-  - xfail: true
 - - twofold
   - twofold
 - - insofar
@@ -446,7 +445,6 @@ tests:
   - a~6edile
 - - anthill
   - anthill
-  - xfail: true
 - - blessèd
   - b.s~*ed
 - - deshabille
@@ -468,7 +466,6 @@ tests:
   - '%anghai'
 - - Stalingrad
   - ',/al9grad'
-  - xfail: true
 - - viceregal
   - viceregal
 
@@ -825,6 +822,7 @@ tests:
   - 4t4
 - - mod cons
   - mod 3s
+  - xfail: true
 - - BEd
   - ',b,$'
   - xfail: true
@@ -989,7 +987,6 @@ tests:
   - ebb-tide
 - - hideaway
   - hideaway
-  - xfail: true
 - - idea(s)
   - idea"<s">
 - - Leander
@@ -1363,7 +1360,6 @@ tests:
   - td
 - - Lucknow
   - ',luckn{'
-  - xfail: true
 - - chlordane
   - '*lordane'
 - - chemotherapy
@@ -1443,7 +1439,6 @@ tests:
   - ',hades'
 - - Hadrian
   - ',hadrian'
-  - xfail: true
 - - menhaden
   - m5had5
 - - shadow
@@ -1481,13 +1476,11 @@ tests:
   - ev}.n
 - - Guinevere
   - ',gu9ev}e'
-  - xfail: true
 - - McKeever
   - ',mc,keev}'
   - xfail: true
 - - Monteverdi
   - ',montev}di'
-  - xfail: true
 - - persevere
   - p}sev}e
 - - reverberate
@@ -1696,7 +1689,6 @@ tests:
   - c5timet}
 - - Mortimer
   - ',mortim}'
-  - xfail: true
 - - multimedia
   - multim$ia
 - - sentiment
