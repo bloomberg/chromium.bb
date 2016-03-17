@@ -278,6 +278,9 @@ crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-pic
 crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ Skip ]
 
+# Mac does not support fractional scale factor.
+crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static [ Skip ]
+
 # TODO(oshima): Move the event scaling code to eventSender and remove this.
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
