@@ -1397,6 +1397,8 @@ for_selectRule ()
 
 					if(dontContract || (mode & noContractions))
 						break;
+					if(checkEmphasisChange(0))
+						break;
 
 					patterns = (widechar*)&table->ruleArea[transRule->patterns];
 

@@ -251,7 +251,6 @@ tests:
   - .1un.'necess>y
   - typeform:
       italic: '++         '
-    xfail: true
 - - www.afterschool.gov
   - www4aft}s*ool4gov
 - - aftereffect

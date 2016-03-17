@@ -186,7 +186,6 @@ tests:
   - un,,self,'i%
 - - XXIInd
   - ',,xxii,''nd'
-  - xfail: true
 - - VIIb
   - ',,vii,''b'
 
