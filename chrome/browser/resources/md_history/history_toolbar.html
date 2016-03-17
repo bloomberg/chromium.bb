@@ -80,9 +80,9 @@
     </style>
     <div id="toolbar-container">
       <div id="main-content" hidden$="[[itemsSelected_]]">
-        <h1 i18n-content="title" id="title"></h1>
-        <cr-search-field id="search-input"
-            i18n-values="label:search;clear-label:clearSearch">
+        <h1 id="title">$i18n{title}</h1>
+        <cr-search-field id="search-input" label="$i18n{search}"
+            clear-label="$i18n{clearSearch}">
         </cr-search-field>
       </div>
 
@@ -90,10 +90,12 @@
         <paper-icon-button icon="clear" id="cancel-icon-button"
             on-tap="onClearSelectionTap_"></paper-icon-button>
         <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
-        <paper-button id="cancel-button" on-tap="onClearSelectionTap_"
-            i18n-content="cancel"></paper-button>
-        <paper-button id="delete-button" on-tap="onDeleteTap_"
-            i18n-content="delete"></paper-button>
+        <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button id="delete-button" on-tap="onDeleteTap_">
+          $i18n{delete}
+        </paper-button>
       </div>
     </div>
 
@@ -101,8 +103,8 @@
       <div id="front-padding"></div>
       <div id="centered-buttons" hidden$="[[itemsSelected_]]">
         <paper-button on-tap="onClearBrowsingDataTap_"
-            i18n-content="clearBrowsingData"
             id="clear-browsing-data-button">
+          $i18n{clearBrowsingData}
         </paper-button>
       </div>
       <div id="back-padding"></div>

@@ -49,10 +49,11 @@
       </template>
     </iron-list>
     <cr-shared-menu id="sharedMenu">
-      <paper-item i18n-content="moreFromSite" on-tap="onMoreFromSiteTap_">
+      <paper-item on-tap="onMoreFromSiteTap_">
+        $i18n{moreFromSite}
       </paper-item>
-      <paper-item i18n-content="removeFromHistory"
-          on-tap="onRemoveFromHistoryTap_">
+      <paper-item on-tap="onRemoveFromHistoryTap_">
+        $i18n{removeFromHistory}
       </paper-item>
     </cr-shared-menu>
   </template>

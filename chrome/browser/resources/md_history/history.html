@@ -2,7 +2,7 @@
 <html i18n-values="dir:textdirection;lang:language">
 <head>
   <meta charset="utf8">
-  <title i18n-content="title"></title>
+  <title>$i18n{title}</title>
 
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
 
@@ -64,7 +64,11 @@
 
   <script src="history.js"></script>
 
-  <!-- Prepare strings and perform i18n substitutions. -->
+  <!--
+    Prepare strings and perform i18n substitutions.
+    TODO(tsergeant): Remove once we are fully converted to
+    ReplaceTemplateExpressions. It is currently only used for the <html> tag.
+  -->
   <link rel="import" href="chrome://resources/html/i18n_template.html">
 </body>
 
