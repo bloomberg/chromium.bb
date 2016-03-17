@@ -6,6 +6,8 @@
 #define CONTENT_RENDERER_ORIGIN_TRIALS_WEB_TRIAL_TOKEN_VALIDATOR_IMPL_H_
 
 #include <string>
+
+#include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebTrialTokenValidator.h"
 

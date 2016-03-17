@@ -100,11 +100,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/move.h"
-#include "build/build_config.h"
 
 namespace base {
 

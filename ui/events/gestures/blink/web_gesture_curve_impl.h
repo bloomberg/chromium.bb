@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"

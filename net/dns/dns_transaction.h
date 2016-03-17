@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
