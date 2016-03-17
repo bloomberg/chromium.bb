@@ -79,8 +79,10 @@ PP_Var PluginObject::Create(PepperPluginInstanceImpl* instance,
   // If the V8 context is empty, we may be in the process of tearing down the
   // frame and may not have a valid isolate (in particular due to re-entrancy).
   // We shouldn't try to call gin::CreateHandle.
-  if (try_catch.GetContext().IsEmpty())
+  if (try_catch.GetContext().IsEmpty()) {
+    ppp_class->Deallocate(ppp_class_data);
     return PP_MakeUndefined();
+  }
   gin::Handle<PluginObject> object =
       gin::CreateHandle(instance->GetIsolate(),
                         new PluginObject(instance, ppp_class, ppp_class_data));
