@@ -98,8 +98,8 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
       web_contents_hidden_callback_.Run();
   }
 
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override {
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
     if (!nav_entry_committed_callback_.is_null())
       nav_entry_committed_callback_.Run();
   }

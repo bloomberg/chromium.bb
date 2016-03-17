@@ -54,8 +54,8 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void WasHidden() override;
 
   static const char kContentAutofillDriverFactoryWebContentsUserDataKey[];

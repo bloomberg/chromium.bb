@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -95,9 +96,10 @@ void ContentAutofillDriverFactory::DidNavigateAnyFrame(
   frame_driver_map_[render_frame_host]->DidNavigateFrame(details, params);
 }
 
-void ContentAutofillDriverFactory::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  client_->HideAutofillPopup();
+void ContentAutofillDriverFactory::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->HasCommitted())
+    client_->HideAutofillPopup();
 }
 
 void ContentAutofillDriverFactory::WasHidden() {

@@ -37,6 +37,12 @@ NavigationObserver::NavigationObserver(content::WebContents* web_contents)
 NavigationObserver::~NavigationObserver() {
 }
 
+void NavigationObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (quit_on_entry_committed_)
+    message_loop_runner_->Quit();
+}
+
 void NavigationObserver::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
@@ -47,12 +53,6 @@ void NavigationObserver::DidFinishLoad(
   } else if (!render_frame_host->GetParent()) {
     message_loop_runner_->Quit();
   }
-}
-
-void NavigationObserver::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  if (quit_on_entry_committed_)
-    message_loop_runner_->Quit();
 }
 
 void NavigationObserver::Wait() {

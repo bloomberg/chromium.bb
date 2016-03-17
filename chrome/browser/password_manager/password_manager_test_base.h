@@ -39,10 +39,10 @@ class NavigationObserver : public content::WebContentsObserver {
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
   // content::WebContentsObserver:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override;
 
  private:
   std::string wait_for_path_;
