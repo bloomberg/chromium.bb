@@ -21,6 +21,16 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
           create_base_authenticator_callback);
   ~PairingClientAuthenticator() override;
 
+  // Start() or StartPaired() must be called after the authenticator is created.
+  // Start() handles both cases when pairing exists and when it doesn't.
+  // StartPaired() can only be used when pairing exists (i.e. client_id and
+  // pairing_secret are set in the |client_auth_config|). It is used to
+  // initialize the authenticator synchronously in
+  // NegotiatingClientAuthentitcator, while Start() may be executed
+  // asynchronously to fetch the PIN.
+  void Start(State initial_state, const base::Closure& resume_callback);
+  void StartPaired(State initial_state);
+
   // Authenticator interface.
   State state() const override;
 
@@ -29,7 +39,6 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
   void CreateSpakeAuthenticatorWithPin(
       State initial_state,
       const base::Closure& resume_callback) override;
-  void AddPairingElements(buzz::XmlElement* message) override;
 
   void OnPinFetched(State initial_state,
                     const base::Closure& resume_callback,
@@ -37,9 +46,6 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
 
   ClientAuthenticationConfig client_auth_config_;
   CreateBaseAuthenticatorCallback create_base_authenticator_callback_;
-
-  // Set to true after client_id is sent to the host.
-  bool sent_client_id_ = false;
 
   // Set to true if a PIN-based authenticator has been requested but has not
   // yet been set.

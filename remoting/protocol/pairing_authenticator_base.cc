@@ -13,11 +13,6 @@
 namespace remoting {
 namespace protocol {
 
-const buzz::StaticQName PairingAuthenticatorBase::kPairingInfoTag =
-    { kChromotingXmlNamespace, "pairing-info" };
-const buzz::StaticQName PairingAuthenticatorBase::kClientIdAttribute =
-    { "", "client-id" };
-
 namespace {
 const buzz::StaticQName kPairingFailedTag =
     { kChromotingXmlNamespace, "pairing-failed" };
@@ -82,7 +77,6 @@ void PairingAuthenticatorBase::ProcessMessage(
 scoped_ptr<buzz::XmlElement> PairingAuthenticatorBase::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
   scoped_ptr<buzz::XmlElement> result = spake2_authenticator_->GetNextMessage();
-  AddPairingElements(result.get());
   MaybeAddErrorMessage(result.get());
   return result;
 }

@@ -60,6 +60,8 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
                                        const base::Closure& resume_callback,
                                        const std::string& shared_secret);
 
+  bool is_paired();
+
   std::string local_id_;
   std::string remote_id_;
 

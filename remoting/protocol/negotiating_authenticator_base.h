@@ -109,6 +109,9 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   static const buzz::StaticQName kSupportedMethodsAttributeQName;
   static const char kSupportedMethodsSeparator;
 
+  static const buzz::StaticQName kPairingInfoTag;
+  static const buzz::StaticQName kClientIdAttribute;
+
   // Parses a string that defines an authentication method. Returns
   // Method::INVALID if the string is invalid.
   static Method ParseMethodString(const std::string& value);

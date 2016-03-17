@@ -19,13 +19,33 @@ PairingClientAuthenticator::PairingClientAuthenticator(
     const CreateBaseAuthenticatorCallback& create_base_authenticator_callback)
     : client_auth_config_(client_auth_config),
       create_base_authenticator_callback_(create_base_authenticator_callback),
-      weak_factory_(this) {
-  spake2_authenticator_ = create_base_authenticator_callback_.Run(
-      client_auth_config.pairing_secret, MESSAGE_READY);
-  using_paired_secret_ = true;
-}
+      weak_factory_(this) {}
 
 PairingClientAuthenticator::~PairingClientAuthenticator() {}
+
+void PairingClientAuthenticator::Start(State initial_state,
+                                       const base::Closure& resume_callback) {
+  if (client_auth_config_.pairing_client_id.empty() ||
+      client_auth_config_.pairing_secret.empty()) {
+    // Send pairing error to make it clear that PIN is being used instead of
+    // pairing secret.
+    error_message_ = "not-paired";
+    using_paired_secret_ = false;
+    CreateSpakeAuthenticatorWithPin(initial_state, resume_callback);
+  } else {
+    StartPaired(initial_state);
+    resume_callback.Run();
+  }
+}
+
+void PairingClientAuthenticator::StartPaired(State initial_state) {
+  DCHECK(!client_auth_config_.pairing_client_id.empty());
+  DCHECK(!client_auth_config_.pairing_secret.empty());
+
+  using_paired_secret_ = true;
+  spake2_authenticator_ = create_base_authenticator_callback_.Run(
+      client_auth_config_.pairing_secret, initial_state);
+}
 
 Authenticator::State PairingClientAuthenticator::state() const {
   if (waiting_for_pin_)
@@ -42,20 +62,6 @@ void PairingClientAuthenticator::CreateSpakeAuthenticatorWithPin(
       true,
       base::Bind(&PairingClientAuthenticator::OnPinFetched,
                  weak_factory_.GetWeakPtr(), initial_state, resume_callback));
-}
-
-void PairingClientAuthenticator::AddPairingElements(buzz::XmlElement* message) {
-  // If the client id and secret have not yet been sent, do so now. Note that
-  // in this case the V2Authenticator is being used optimistically to send the
-  // first message of the SPAKE exchange since we don't yet know whether or not
-  // the host will accept the client id or request that we fall back to the PIN.
-  if (!sent_client_id_) {
-    buzz::XmlElement* pairing_tag = new buzz::XmlElement(kPairingInfoTag);
-    pairing_tag->AddAttr(kClientIdAttribute,
-                         client_auth_config_.pairing_client_id);
-    message->AddElement(pairing_tag);
-    sent_client_id_ = true;
-  }
 }
 
 void PairingClientAuthenticator::OnPinFetched(

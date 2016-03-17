@@ -23,24 +23,27 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
       const std::string& pin);
   ~PairingHostAuthenticator() override;
 
+  // Initialize the authenticator with the given |client_id| in
+  // |preferred_initial_state|.
+  void Initialize(const std::string& client_id,
+                  Authenticator::State preferred_initial_state,
+                  const base::Closure& resume_callback);
+
   // Authenticator interface.
   State state() const override;
   RejectionReason rejection_reason() const override;
-  void ProcessMessage(const buzz::XmlElement* message,
-                      const base::Closure& resume_callback) override;
 
  private:
   // PairingAuthenticatorBase overrides.
   void CreateSpakeAuthenticatorWithPin(
       State initial_state,
       const base::Closure& resume_callback) override;
-  void AddPairingElements(buzz::XmlElement* message) override;
 
-  // Continue processing a protocol message once the pairing information for
-  // the client id has been received.
-  void ProcessMessageWithPairing(const buzz::XmlElement* message,
-                                 const base::Closure& resume_callback,
-                                 PairingRegistry::Pairing pairing);
+  // Continue initializing once the pairing information for the client id has
+  // been received.
+  void InitializeWithPairing(Authenticator::State preferred_initial_state,
+                             const base::Closure& resume_callback,
+                             PairingRegistry::Pairing pairing);
 
   // Protocol state.
   scoped_refptr<PairingRegistry> pairing_registry_;

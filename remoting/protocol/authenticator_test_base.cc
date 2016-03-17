@@ -87,8 +87,9 @@ void AuthenticatorTestBase::ContinueAuthExchangeWith(Authenticator* sender,
   scoped_ptr<buzz::XmlElement> message;
   ASSERT_NE(Authenticator::WAITING_MESSAGE, sender->state());
   if (sender->state() == Authenticator::ACCEPTED ||
-      sender->state() == Authenticator::REJECTED)
+      sender->state() == Authenticator::REJECTED) {
     return;
+  }
 
   // Verify that once the started flag for either party is set to true,
   // it should always stay true.

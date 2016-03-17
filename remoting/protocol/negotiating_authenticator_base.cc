@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/name_value_map.h"
@@ -42,12 +43,17 @@ const NameMapElement<NegotiatingAuthenticatorBase::Method>
 
 }  // namespace
 
-const buzz::StaticQName NegotiatingAuthenticatorBase::kMethodAttributeQName =
-    { "", "method" };
+const buzz::StaticQName NegotiatingAuthenticatorBase::kMethodAttributeQName = {
+    "", "method"};
 const buzz::StaticQName
-NegotiatingAuthenticatorBase::kSupportedMethodsAttributeQName =
-    { "", "supported-methods" };
+    NegotiatingAuthenticatorBase::kSupportedMethodsAttributeQName = {
+        "", "supported-methods"};
 const char NegotiatingAuthenticatorBase::kSupportedMethodsSeparator = ',';
+
+const buzz::StaticQName NegotiatingAuthenticatorBase::kPairingInfoTag = {
+    kChromotingXmlNamespace, "pairing-info"};
+const buzz::StaticQName NegotiatingAuthenticatorBase::kClientIdAttribute = {
+    "", "client-id"};
 
 NegotiatingAuthenticatorBase::NegotiatingAuthenticatorBase(
     Authenticator::State initial_state)
@@ -88,28 +94,37 @@ std::string NegotiatingAuthenticatorBase::MethodToString(Method method) {
 void NegotiatingAuthenticatorBase::ProcessMessageInternal(
     const buzz::XmlElement* message,
     const base::Closure& resume_callback) {
+  DCHECK_EQ(state_, PROCESSING_MESSAGE);
+
   if (current_authenticator_->state() == WAITING_MESSAGE) {
     // If the message was not discarded and the authenticator is waiting for it,
     // give it to the underlying authenticator to process.
     // |current_authenticator_| is owned, so Unretained() is safe here.
-    state_ = PROCESSING_MESSAGE;
-    current_authenticator_->ProcessMessage(message, base::Bind(
-        &NegotiatingAuthenticatorBase::UpdateState,
-        base::Unretained(this), resume_callback));
+    current_authenticator_->ProcessMessage(
+        message, base::Bind(&NegotiatingAuthenticatorBase::UpdateState,
+                            base::Unretained(this), resume_callback));
   } else {
-    // Otherwise, just discard the message and run the callback.
-    resume_callback.Run();
+    // Otherwise, just discard the message.
+    UpdateState(resume_callback);
   }
 }
 
 void NegotiatingAuthenticatorBase::UpdateState(
     const base::Closure& resume_callback) {
+  DCHECK_EQ(state_, PROCESSING_MESSAGE);
+
   // After the underlying authenticator finishes processing the message, the
   // NegotiatingAuthenticatorBase must update its own state before running the
   // |resume_callback| to resume the session negotiation.
   state_ = current_authenticator_->state();
+
+  // Verify that this is a valid state transition.
+  DCHECK(state_ == MESSAGE_READY || state_ == ACCEPTED || state_ == REJECTED)
+      << "State: " << state_;
+
   if (state_ == REJECTED)
     rejection_reason_ = current_authenticator_->rejection_reason();
+
   resume_callback.Run();
 }
 

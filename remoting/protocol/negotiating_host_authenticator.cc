@@ -94,6 +94,12 @@ void NegotiatingHostAuthenticator::ProcessMessage(
     const buzz::XmlElement* message,
     const base::Closure& resume_callback) {
   DCHECK_EQ(state(), WAITING_MESSAGE);
+  state_ = PROCESSING_MESSAGE;
+
+  const buzz::XmlElement* pairing_tag = message->FirstNamed(kPairingInfoTag);
+  if (pairing_tag) {
+    client_id_ = pairing_tag->Attr(kClientIdAttribute);
+  }
 
   std::string method_attr = message->Attr(kMethodAttributeQName);
   Method method = ParseMethodString(method_attr);
@@ -149,10 +155,9 @@ void NegotiatingHostAuthenticator::ProcessMessage(
 
     // Drop the current message because we've chosen a different method.
     current_method_ = method;
-    state_ = PROCESSING_MESSAGE;
-    CreateAuthenticator(MESSAGE_READY, base::Bind(
-        &NegotiatingHostAuthenticator::UpdateState,
-        base::Unretained(this), resume_callback));
+    CreateAuthenticator(MESSAGE_READY,
+                        base::Bind(&NegotiatingHostAuthenticator::UpdateState,
+                                   base::Unretained(this), resume_callback));
     return;
   }
 
@@ -160,12 +165,13 @@ void NegotiatingHostAuthenticator::ProcessMessage(
   // method yet, use the client's preferred method and process the message.
   if (current_method_ == Method::INVALID) {
     current_method_ = method;
-    state_ = PROCESSING_MESSAGE;
     // Copy the message since the authenticator may process it asynchronously.
-    CreateAuthenticator(WAITING_MESSAGE, base::Bind(
-        &NegotiatingAuthenticatorBase::ProcessMessageInternal,
-        base::Unretained(this), base::Owned(new buzz::XmlElement(*message)),
-        resume_callback));
+    CreateAuthenticator(
+        WAITING_MESSAGE,
+        base::Bind(&NegotiatingAuthenticatorBase::ProcessMessageInternal,
+                   base::Unretained(this),
+                   base::Owned(new buzz::XmlElement(*message)),
+                   resume_callback));
     return;
   }
 
@@ -192,28 +198,23 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
         base::Bind(&Spake2Authenticator::CreateForHost, local_id_, remote_id_,
                    local_cert_, local_key_pair_),
         token_validator_factory_->CreateTokenValidator(local_id_, remote_id_)));
+  } else if (current_method_ == Method::PAIRED_SPAKE2_P224) {
+    PairingHostAuthenticator* pairing_authenticator =
+        new PairingHostAuthenticator(pairing_registry_,
+                                     base::Bind(&V2Authenticator::CreateForHost,
+                                                local_cert_, local_key_pair_),
+                                     shared_secret_hash_);
+    current_authenticator_.reset(pairing_authenticator);
+    pairing_authenticator->Initialize(client_id_, preferred_initial_state,
+                                      resume_callback);
+    return;
   } else if (current_method_ == Method::SHARED_SECRET_SPAKE2_CURVE25519) {
     current_authenticator_ = Spake2Authenticator::CreateForHost(
         local_id_, remote_id_, local_cert_, local_key_pair_,
         shared_secret_hash_, preferred_initial_state);
-  } else if (current_method_ == Method::PAIRED_SPAKE2_P224 &&
-             preferred_initial_state == WAITING_MESSAGE) {
-    // If the client requested Spake2Pair and sent an initial message, attempt
-    // the paired connection protocol.
-    current_authenticator_.reset(new PairingHostAuthenticator(
-        pairing_registry_, base::Bind(&V2Authenticator::CreateForHost,
-                                      local_cert_, local_key_pair_),
-        shared_secret_hash_));
   } else {
-    // In all other cases, use the V2 protocol. Note that this includes the
-    // case where the protocol is Spake2Pair but the client is not yet paired.
-    // In this case, the on-the-wire protocol is plain Spake2, advertised as
-    // Spake2Pair so that the client knows that the host supports pairing and
-    // that it can therefore present the option to the user when they enter
-    // the PIN.
     DCHECK(current_method_ == Method::SHARED_SECRET_PLAIN_SPAKE2_P224 ||
-           current_method_ == Method::SHARED_SECRET_SPAKE2_P224 ||
-           current_method_ == Method::PAIRED_SPAKE2_P224);
+           current_method_ == Method::SHARED_SECRET_SPAKE2_P224);
     current_authenticator_ = V2Authenticator::CreateForHost(
         local_cert_, local_key_pair_, shared_secret_hash_,
         preferred_initial_state);

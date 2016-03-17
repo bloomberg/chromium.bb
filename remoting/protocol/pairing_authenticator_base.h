@@ -53,18 +53,11 @@ class PairingAuthenticatorBase : public Authenticator {
   scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
 
  protected:
-  static const buzz::StaticQName kPairingInfoTag;
-  static const buzz::StaticQName kClientIdAttribute;
-
   // Create a Spake2 authenticator in the specified state, prompting the user
   // for the PIN first if necessary.
   virtual void CreateSpakeAuthenticatorWithPin(
       State initial_state,
       const base::Closure& resume_callback) = 0;
-
-  // Amend an authenticator message, for example to add client- or host-specific
-  // elements to it.
-  virtual void AddPairingElements(buzz::XmlElement* message) = 0;
 
   // A non-fatal error message that derived classes should set in order to
   // cause the peer to be notified that pairing has failed and that it should
@@ -81,7 +74,7 @@ class PairingAuthenticatorBase : public Authenticator {
   bool using_paired_secret_ = false;
 
  private:
-  // Helper methods for ProcessMessage and GetNextMessage
+  // Helper methods for ProcessMessage() and GetNextMessage().
   void MaybeAddErrorMessage(buzz::XmlElement* message);
   bool HasErrorMessage(const buzz::XmlElement* message) const;
   void CheckForFailedSpakeExchange(const base::Closure& resume_callback);

@@ -40,7 +40,9 @@ class Authenticator {
   //    WAITING_MESSAGE -> REJECTED
   //    WAITING_MESSAGE -> PROCESSING_MESSAGE
   // After asynchronous message processing finishes:
-  ///   PROCESSING_MESSAGE -> MESSAGE_READY
+  //    PROCESSING_MESSAGE -> MESSAGE_READY
+  //    PROCESSING_MESSAGE -> ACCEPTED
+  //    PROCESSING_MESSAGE -> REJECTED
   // When GetNextMessage() is called:
   //    MESSAGE_READY -> WAITING_MESSAGE
   //    MESSAGE_READY -> ACCEPTED

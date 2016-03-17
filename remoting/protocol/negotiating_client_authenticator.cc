@@ -50,6 +50,7 @@ void NegotiatingClientAuthenticator::ProcessMessage(
     const buzz::XmlElement* message,
     const base::Closure& resume_callback) {
   DCHECK_EQ(state(), WAITING_MESSAGE);
+  state_ = PROCESSING_MESSAGE;
 
   std::string method_attr = message->Attr(kMethodAttributeQName);
   Method method = ParseMethodString(method_attr);
@@ -68,7 +69,6 @@ void NegotiatingClientAuthenticator::ProcessMessage(
 
     current_method_ = method;
     method_set_by_host_ = true;
-    state_ = PROCESSING_MESSAGE;
 
     // Copy the message since the authenticator may process it asynchronously.
     base::Closure callback = base::Bind(
@@ -97,6 +97,14 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
       result = CreateEmptyAuthenticatorMessage();
     }
 
+    if (is_paired()) {
+      // If the client is paired with the host then attach pairing client_id to
+      // the message.
+      buzz::XmlElement* pairing_tag = new buzz::XmlElement(kPairingInfoTag);
+      result->AddElement(pairing_tag);
+      pairing_tag->AddAttr(kClientIdAttribute, config_.pairing_client_id);
+    }
+
     // Include a list of supported methods.
     std::string supported_methods;
     for (Method method : methods_) {
@@ -114,6 +122,7 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
 void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     Authenticator::State preferred_initial_state,
     const base::Closure& resume_callback) {
+  DCHECK_EQ(state(), PROCESSING_MESSAGE);
   DCHECK(current_method_ != Method::INVALID);
   if (current_method_ == Method::THIRD_PARTY_SPAKE2_P224) {
     current_authenticator_.reset(new ThirdPartyClientAuthenticator(
@@ -126,14 +135,18 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
                    remote_id_),
         config_.fetch_third_party_token_callback));
     resume_callback.Run();
+  } else if (current_method_ == Method::PAIRED_SPAKE2_P224) {
+    PairingClientAuthenticator* pairing_authenticator =
+        new PairingClientAuthenticator(
+            config_, base::Bind(&V2Authenticator::CreateForClient));
+    current_authenticator_ = make_scoped_ptr(pairing_authenticator);
+    pairing_authenticator->Start(preferred_initial_state, resume_callback);
   } else {
     DCHECK(current_method_ == Method::SHARED_SECRET_PLAIN_SPAKE2_P224 ||
-           current_method_ == Method::PAIRED_SPAKE2_P224 ||
            current_method_ == Method::SHARED_SECRET_SPAKE2_P224 ||
            current_method_ == Method::SHARED_SECRET_SPAKE2_CURVE25519);
-    bool pairing_supported = (current_method_ == Method::PAIRED_SPAKE2_P224);
     config_.fetch_secret_callback.Run(
-        pairing_supported,
+        false,
         base::Bind(
             &NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator,
             weak_factory_.GetWeakPtr(), preferred_initial_state,
@@ -142,13 +155,14 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
 }
 
 void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
-  if (!config_.pairing_client_id.empty() && !config_.pairing_secret.empty() &&
+  if (is_paired() &&
       std::find(methods_.begin(), methods_.end(), Method::PAIRED_SPAKE2_P224) !=
           methods_.end()) {
-    // If the client specified a pairing id and shared secret, then create a
-    // PairingAuthenticator.
-    current_authenticator_.reset(new PairingClientAuthenticator(
-        config_, base::Bind(&V2Authenticator::CreateForClient)));
+    PairingClientAuthenticator* pairing_authenticator =
+        new PairingClientAuthenticator(
+            config_, base::Bind(&V2Authenticator::CreateForClient));
+    current_authenticator_ = make_scoped_ptr(pairing_authenticator);
+    pairing_authenticator->StartPaired(MESSAGE_READY);
     current_method_ = Method::PAIRED_SPAKE2_P224;
   }
 }
@@ -170,6 +184,10 @@ void NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator(
         V2Authenticator::CreateForClient(shared_secret_hash, initial_state);
   }
   resume_callback.Run();
+}
+
+bool NegotiatingClientAuthenticator::is_paired() {
+  return !config_.pairing_client_id.empty() && !config_.pairing_secret.empty();
 }
 
 }  // namespace protocol

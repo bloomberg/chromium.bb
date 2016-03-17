@@ -71,7 +71,6 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   // (Asynchronously) creates an authenticator, and stores it in
   // |current_authenticator_|. Authenticators that can be started in either
   // state will be created in |preferred_initial_state|.
-  // |resume_callback| is called after |current_authenticator_| is set.
   void CreateAuthenticator(Authenticator::State preferred_initial_state,
                            const base::Closure& resume_callback);
 
@@ -89,6 +88,8 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
 
   // Used only for pairing authenticators.
   scoped_refptr<PairingRegistry> pairing_registry_;
+
+  std::string client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NegotiatingHostAuthenticator);
 };
