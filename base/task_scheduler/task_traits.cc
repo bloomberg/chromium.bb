@@ -4,6 +4,8 @@
 
 #include "base/task_scheduler/task_traits.h"
 
+#include <ostream>
+
 namespace base {
 
 // Do not rely on defaults hard-coded below beyond the guarantees described in
@@ -30,6 +32,20 @@ TaskTraits& TaskTraits::WithShutdownBehavior(
     TaskShutdownBehavior shutdown_behavior) {
   shutdown_behavior_ = shutdown_behavior;
   return *this;
+}
+
+void PrintTo(const TaskPriority& task_priority, std::ostream* os) {
+  switch (task_priority) {
+    case TaskPriority::BACKGROUND:
+      *os << "BACKGROUND";
+      break;
+    case TaskPriority::USER_VISIBLE:
+      *os << "USER_VISIBLE";
+      break;
+    case TaskPriority::USER_BLOCKING:
+      *os << "USER_BLOCKING";
+      break;
+  }
 }
 
 }  // namespace base

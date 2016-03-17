@@ -5,36 +5,37 @@
 #ifndef BASE_TASK_SCHEDULER_TASK_TRAITS_H_
 #define BASE_TASK_SCHEDULER_TASK_TRAITS_H_
 
+#include <stdint.h>
+
+#include <iosfwd>
+
 #include "base/base_export.h"
 #include "build/build_config.h"
 
 namespace base {
 
-using TaskPriorityUnderlyingType = char;
-
-// Valid priorities supported by the task scheduler.
-// A higher value means a higher priority in the scheduler.
-enum class TaskPriority : TaskPriorityUnderlyingType {
-  // This task affects UI immediately after a user interaction.
-  // Example: Generating data shown in the UI immediately after a click.
-  USER_BLOCKING = 2,
+// Valid priorities supported by the task scheduler. Note: internal algorithms
+// depend on priorities being expressed as a continuous zero-based list from
+// lowest to highest priority. Users of this API shouldn't otherwise care about
+// nor use the underlying values.
+enum class TaskPriority {
+  // This will always be equal to the lowest priority available.
+  LOWEST = 0,
+  // User won't notice if this task takes an arbitrarily long time to complete.
+  BACKGROUND = LOWEST,
   // This task affects UI or responsiveness of future user interactions. It is
   // not an immediate response to a user interaction.
   // Examples:
   // - Updating the UI to reflect progress on a long task.
   // - Loading data that might be shown in the UI after a future user
   //   interaction.
-  USER_VISIBLE = 1,
-  // Everything else (user won't notice if this takes an arbitrarily long time
-  // to complete).
-  BACKGROUND = 0,
+  USER_VISIBLE,
+  // This task affects UI immediately after a user interaction.
+  // Example: Generating data shown in the UI immediately after a click.
+  USER_BLOCKING,
+  // This will always be equal to the highest priority available.
+  HIGHEST = USER_BLOCKING,
 };
-
-static_assert(TaskPriority::BACKGROUND < TaskPriority::USER_VISIBLE &&
-                  TaskPriority::USER_VISIBLE < TaskPriority::USER_BLOCKING,
-              "Higher priorities must correspond to higher underlying values.");
-
-const TaskPriorityUnderlyingType kNumTaskPriorities = 3;
 
 // Valid shutdown behaviors supported by the task scheduler.
 enum class TaskShutdownBehavior {
@@ -76,6 +77,7 @@ enum class TaskShutdownBehavior {
 
 // Describes metadata for a single task or a group of tasks.
 class BASE_EXPORT TaskTraits {
+ public:
   // Constructs a default TaskTraits for tasks with
   //     (1) no I/O,
   //     (2) low priority, and
@@ -83,6 +85,8 @@ class BASE_EXPORT TaskTraits {
   // Tasks that require stricter guarantees should highlight those by requesting
   // explicit traits below.
   TaskTraits();
+  TaskTraits(const TaskTraits& other) = default;
+  TaskTraits& operator=(const TaskTraits& other) = default;
   ~TaskTraits();
 
   // Allows tasks with these traits to do file I/O.
@@ -121,6 +125,9 @@ enum class ExecutionMode {
   // Executes one task at a time on a single thread in posting order.
   SINGLE_THREADED,
 };
+
+// Pretty Printer for Google Test.
+void BASE_EXPORT PrintTo(const TaskPriority& task_priority, std::ostream* os);
 
 }  // namespace base
 
