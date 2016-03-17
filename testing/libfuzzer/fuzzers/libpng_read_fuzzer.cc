@@ -70,7 +70,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  // Reading
+  // Reading.
   png_read_info(png_ptr, info_ptr);
   png_voidp row = png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
   base::ScopedClosureRunner png_deleter(base::Bind(
@@ -90,6 +90,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         &compression_type, &filter_type)) {
     return 0;
   }
+
+  // This is going to be too slow.
+  if (height > 100000000 / width)
+    return 0;
 
   int passes = png_set_interlace_handling(png_ptr);
   png_start_read_image(png_ptr);
