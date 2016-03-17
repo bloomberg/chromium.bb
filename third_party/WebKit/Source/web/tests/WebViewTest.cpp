@@ -2188,6 +2188,22 @@ TEST_F(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone)
     EXPECT_STREQ("", clipHtml.utf8().c_str());
 }
 
+TEST_F(WebViewTest, SmartClipDoesNotCrashPositionReversed)
+{
+    WebString clipText;
+    WebString clipHtml;
+    WebRect clipRect;
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("smartclip_reversed_positions.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip_reversed_positions.html");
+    webView->resize(WebSize(500, 500));
+    webView->updateAllLifecyclePhases();
+    // Left upper corner of the rect will be end position in the DOM hierarchy.
+    WebRect cropRect(30, 110, 400, 250);
+    // This should not still crash. See crbug.com/589082 for more details.
+    webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
+}
+
 class CreateChildCounterFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CreateChildCounterFrameClient() : m_count(0) { }
