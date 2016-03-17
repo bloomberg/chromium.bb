@@ -203,8 +203,6 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     if (!provider)
         return false;
     WebGraphicsContext3D* sharedContext = provider->context3d();
-    if (!sharedContext)
-        return false;
 
     OwnPtr<WebExternalTextureMailbox> mailbox = adoptPtr(new WebExternalTextureMailbox);
     mailbox->textureSize = WebSize(textureImage->width(), textureImage->height());
@@ -249,8 +247,6 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     if (!provider)
         return false;
     WebGraphicsContext3D* context3D = provider->context3d();
-    if (!context3D)
-        return false;
     Platform3DObject textureId = m_surface->getBackingTextureHandleForOverwrite();
     if (!textureId)
         return false;
