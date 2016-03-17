@@ -36,22 +36,23 @@ NegotiatingHostAuthenticator::NegotiatingHostAuthenticator(
       local_key_pair_(key_pair) {}
 
 // static
-scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateForIt2Me(
-    const std::string& local_id,
-    const std::string& remote_id,
-    const std::string& local_cert,
-    scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& access_code) {
+scoped_ptr<NegotiatingHostAuthenticator>
+NegotiatingHostAuthenticator::CreateForIt2Me(const std::string& local_id,
+                                             const std::string& remote_id,
+                                             const std::string& local_cert,
+                                             scoped_refptr<RsaKeyPair> key_pair,
+                                             const std::string& access_code) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_id, remote_id, local_cert,
                                        key_pair));
   result->shared_secret_hash_ = access_code;
   result->AddMethod(Method::SHARED_SECRET_PLAIN_SPAKE2_P224);
-  return std::move(result);
+  return result;
 }
 
 // static
-scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithPin(
+scoped_ptr<NegotiatingHostAuthenticator>
+NegotiatingHostAuthenticator::CreateWithPin(
     const std::string& local_id,
     const std::string& remote_id,
     const std::string& local_cert,
@@ -66,13 +67,14 @@ scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithPin(
   result->AddMethod(Method::SHARED_SECRET_SPAKE2_CURVE25519);
   result->AddMethod(Method::SHARED_SECRET_SPAKE2_P224);
   if (pairing_registry.get()) {
+    result->AddMethod(Method::PAIRED_SPAKE2_CURVE25519);
     result->AddMethod(Method::PAIRED_SPAKE2_P224);
   }
-  return std::move(result);
+  return result;
 }
 
 // static
-scoped_ptr<Authenticator>
+scoped_ptr<NegotiatingHostAuthenticator>
 NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
     const std::string& local_id,
     const std::string& remote_id,
@@ -85,7 +87,7 @@ NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
   result->token_validator_factory_ = token_validator_factory;
   result->AddMethod(Method::THIRD_PARTY_SPAKE2_CURVE25519);
   result->AddMethod(Method::THIRD_PARTY_SPAKE2_P224);
-  return std::move(result);
+  return result;
 }
 
 NegotiatingHostAuthenticator::~NegotiatingHostAuthenticator() {}
@@ -188,38 +190,69 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
     const base::Closure& resume_callback) {
   DCHECK(current_method_ != Method::INVALID);
 
-  if (current_method_ == Method::THIRD_PARTY_SPAKE2_P224) {
-    current_authenticator_.reset(new ThirdPartyHostAuthenticator(
-        base::Bind(&V2Authenticator::CreateForHost, local_cert_,
-                   local_key_pair_),
-        token_validator_factory_->CreateTokenValidator(local_id_, remote_id_)));
-  } else if (current_method_ == Method::THIRD_PARTY_SPAKE2_CURVE25519) {
-    current_authenticator_.reset(new ThirdPartyHostAuthenticator(
-        base::Bind(&Spake2Authenticator::CreateForHost, local_id_, remote_id_,
-                   local_cert_, local_key_pair_),
-        token_validator_factory_->CreateTokenValidator(local_id_, remote_id_)));
-  } else if (current_method_ == Method::PAIRED_SPAKE2_P224) {
-    PairingHostAuthenticator* pairing_authenticator =
-        new PairingHostAuthenticator(pairing_registry_,
-                                     base::Bind(&V2Authenticator::CreateForHost,
-                                                local_cert_, local_key_pair_),
-                                     shared_secret_hash_);
-    current_authenticator_.reset(pairing_authenticator);
-    pairing_authenticator->Initialize(client_id_, preferred_initial_state,
-                                      resume_callback);
-    return;
-  } else if (current_method_ == Method::SHARED_SECRET_SPAKE2_CURVE25519) {
-    current_authenticator_ = Spake2Authenticator::CreateForHost(
-        local_id_, remote_id_, local_cert_, local_key_pair_,
-        shared_secret_hash_, preferred_initial_state);
-  } else {
-    DCHECK(current_method_ == Method::SHARED_SECRET_PLAIN_SPAKE2_P224 ||
-           current_method_ == Method::SHARED_SECRET_SPAKE2_P224);
-    current_authenticator_ = V2Authenticator::CreateForHost(
-        local_cert_, local_key_pair_, shared_secret_hash_,
-        preferred_initial_state);
+  switch(current_method_) {
+    case Method::INVALID:
+      NOTREACHED();
+      break;
+
+    case Method::THIRD_PARTY_SPAKE2_P224:
+      current_authenticator_.reset(new ThirdPartyHostAuthenticator(
+          base::Bind(&V2Authenticator::CreateForHost, local_cert_,
+                     local_key_pair_),
+          token_validator_factory_->CreateTokenValidator(local_id_,
+                                                         remote_id_)));
+      resume_callback.Run();
+      break;
+
+    case Method::THIRD_PARTY_SPAKE2_CURVE25519:
+      current_authenticator_.reset(new ThirdPartyHostAuthenticator(
+          base::Bind(&Spake2Authenticator::CreateForHost, local_id_, remote_id_,
+                     local_cert_, local_key_pair_),
+          token_validator_factory_->CreateTokenValidator(local_id_,
+                                                         remote_id_)));
+      resume_callback.Run();
+      break;
+
+    case Method::PAIRED_SPAKE2_P224: {
+      PairingHostAuthenticator* pairing_authenticator =
+          new PairingHostAuthenticator(
+              pairing_registry_, base::Bind(&V2Authenticator::CreateForHost,
+                                            local_cert_, local_key_pair_),
+              shared_secret_hash_);
+      current_authenticator_.reset(pairing_authenticator);
+      pairing_authenticator->Initialize(client_id_, preferred_initial_state,
+                                        resume_callback);
+      break;
+    }
+
+    case Method::PAIRED_SPAKE2_CURVE25519: {
+      PairingHostAuthenticator* pairing_authenticator =
+          new PairingHostAuthenticator(
+              pairing_registry_,
+              base::Bind(&Spake2Authenticator::CreateForHost, local_id_,
+                         remote_id_, local_cert_, local_key_pair_),
+              shared_secret_hash_);
+      current_authenticator_.reset(pairing_authenticator);
+      pairing_authenticator->Initialize(client_id_, preferred_initial_state,
+                                        resume_callback);
+      break;
+    }
+
+    case Method::SHARED_SECRET_SPAKE2_CURVE25519:
+      current_authenticator_ = Spake2Authenticator::CreateForHost(
+          local_id_, remote_id_, local_cert_, local_key_pair_,
+          shared_secret_hash_, preferred_initial_state);
+      resume_callback.Run();
+      break;
+
+    case Method::SHARED_SECRET_PLAIN_SPAKE2_P224:
+    case Method::SHARED_SECRET_SPAKE2_P224:
+      current_authenticator_ = V2Authenticator::CreateForHost(
+          local_cert_, local_key_pair_, shared_secret_hash_,
+          preferred_initial_state);
+      resume_callback.Run();
+      break;
   }
-  resume_callback.Run();
 }
 
 }  // namespace protocol

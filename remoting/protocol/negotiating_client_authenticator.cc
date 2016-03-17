@@ -36,6 +36,7 @@ NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
     AddMethod(Method::THIRD_PARTY_SPAKE2_P224);
   }
 
+  AddMethod(Method::PAIRED_SPAKE2_CURVE25519);
   AddMethod(Method::PAIRED_SPAKE2_P224);
 
   AddMethod(Method::SHARED_SECRET_SPAKE2_CURVE25519);
@@ -124,33 +125,55 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     const base::Closure& resume_callback) {
   DCHECK_EQ(state(), PROCESSING_MESSAGE);
   DCHECK(current_method_ != Method::INVALID);
-  if (current_method_ == Method::THIRD_PARTY_SPAKE2_P224) {
-    current_authenticator_.reset(new ThirdPartyClientAuthenticator(
-        base::Bind(&V2Authenticator::CreateForClient),
-        config_.fetch_third_party_token_callback));
-    resume_callback.Run();
-  } else if (current_method_ == Method::THIRD_PARTY_SPAKE2_CURVE25519) {
-    current_authenticator_.reset(new ThirdPartyClientAuthenticator(
-        base::Bind(&Spake2Authenticator::CreateForClient, local_id_,
-                   remote_id_),
-        config_.fetch_third_party_token_callback));
-    resume_callback.Run();
-  } else if (current_method_ == Method::PAIRED_SPAKE2_P224) {
-    PairingClientAuthenticator* pairing_authenticator =
-        new PairingClientAuthenticator(
-            config_, base::Bind(&V2Authenticator::CreateForClient));
-    current_authenticator_ = make_scoped_ptr(pairing_authenticator);
-    pairing_authenticator->Start(preferred_initial_state, resume_callback);
-  } else {
-    DCHECK(current_method_ == Method::SHARED_SECRET_PLAIN_SPAKE2_P224 ||
-           current_method_ == Method::SHARED_SECRET_SPAKE2_P224 ||
-           current_method_ == Method::SHARED_SECRET_SPAKE2_CURVE25519);
-    config_.fetch_secret_callback.Run(
-        false,
-        base::Bind(
-            &NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator,
-            weak_factory_.GetWeakPtr(), preferred_initial_state,
-            resume_callback));
+  switch (current_method_) {
+    case Method::INVALID:
+      NOTREACHED();
+      break;
+
+    case Method::THIRD_PARTY_SPAKE2_P224:
+      current_authenticator_.reset(new ThirdPartyClientAuthenticator(
+          base::Bind(&V2Authenticator::CreateForClient),
+          config_.fetch_third_party_token_callback));
+      resume_callback.Run();
+      break;
+
+    case Method::THIRD_PARTY_SPAKE2_CURVE25519:
+      current_authenticator_.reset(new ThirdPartyClientAuthenticator(
+          base::Bind(&Spake2Authenticator::CreateForClient, local_id_,
+                     remote_id_),
+          config_.fetch_third_party_token_callback));
+      resume_callback.Run();
+      break;
+
+    case Method::PAIRED_SPAKE2_P224: {
+      PairingClientAuthenticator* pairing_authenticator =
+          new PairingClientAuthenticator(
+              config_, base::Bind(&V2Authenticator::CreateForClient));
+      current_authenticator_ = make_scoped_ptr(pairing_authenticator);
+      pairing_authenticator->Start(preferred_initial_state, resume_callback);
+      break;
+    }
+
+    case Method::PAIRED_SPAKE2_CURVE25519: {
+      PairingClientAuthenticator* pairing_authenticator =
+          new PairingClientAuthenticator(
+              config_, base::Bind(&Spake2Authenticator::CreateForClient,
+                                  local_id_, remote_id_));
+      current_authenticator_ = make_scoped_ptr(pairing_authenticator);
+      pairing_authenticator->Start(preferred_initial_state, resume_callback);
+      break;
+    }
+
+    case Method::SHARED_SECRET_PLAIN_SPAKE2_P224:
+    case Method::SHARED_SECRET_SPAKE2_P224:
+    case Method::SHARED_SECRET_SPAKE2_CURVE25519:
+      config_.fetch_secret_callback.Run(
+          false,
+          base::Bind(
+              &NegotiatingClientAuthenticator::CreateSharedSecretAuthenticator,
+              weak_factory_.GetWeakPtr(), preferred_initial_state,
+              resume_callback));
+      break;
   }
 }
 

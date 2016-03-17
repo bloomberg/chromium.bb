@@ -77,8 +77,8 @@ class NegotiatingAuthenticatorBase : public Authenticator {
 
     // SPAKE2 using shared pairing secret. Falls back to PIN-based
     // authentication when pairing fails.
-    // TODO(sergeyu): Add CURVE25519 variant. crbug.com/593123
     PAIRED_SPAKE2_P224,
+    PAIRED_SPAKE2_CURVE25519,
 
     // Authentication using third-party authentication server.
     // SPAKE2 with P224 using shared pairing secret. Falls back to PIN-based
@@ -103,7 +103,6 @@ class NegotiatingAuthenticatorBase : public Authenticator {
 
  protected:
   friend class NegotiatingAuthenticatorTest;
-  FRIEND_TEST_ALL_PREFIXES(NegotiatingAuthenticatorTest, IncompatibleMethods);
 
   static const buzz::StaticQName kMethodAttributeQName;
   static const buzz::StaticQName kSupportedMethodsAttributeQName;

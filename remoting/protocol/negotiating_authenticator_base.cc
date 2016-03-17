@@ -34,6 +34,8 @@ const NameMapElement<NegotiatingAuthenticatorBase::Method>
 
         {NegotiatingAuthenticatorBase::Method::PAIRED_SPAKE2_P224,
          "spake2_pair"},
+        {NegotiatingAuthenticatorBase::Method::PAIRED_SPAKE2_CURVE25519,
+         "pair_spake2_curve25519"},
 
         {NegotiatingAuthenticatorBase::Method::THIRD_PARTY_SPAKE2_P224,
          "third_party"},
