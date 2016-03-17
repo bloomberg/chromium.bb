@@ -168,7 +168,7 @@ InspectorTest.validateASTRanges = function(ast)
 
     function validate(textNode)
     {
-        if (textNode.range.extract(textNode.document.text) !== textNode.text)
+        if (textNode.document.text.extract(textNode.range) !== textNode.text)
             invalidNodes.push(textNode);
     }
 }
@@ -234,7 +234,7 @@ InspectorTest.runCSSEditTests = function(header, tests)
         }
         var test = tests.shift();
         logTestName(test.name);
-        var text = astSourceMap.cssAST().document.text;
+        var text = astSourceMap.cssAST().document.text.value();
         var edits = test(text);
         logSourceEdits(text, edits);
         var ranges = edits.map(edit => edit.oldRange);
@@ -262,7 +262,7 @@ InspectorTest.runCSSEditTests = function(header, tests)
     {
         customTitle = customTitle || ast.document.url.split("/").pop();
         InspectorTest.addResult("===== " + customTitle + " =====");
-        var text = ast.document.text.replace(/ /g, ".");
+        var text = ast.document.text.value().replace(/ /g, ".");
         var lines = text.split("\n");
         if (!avoidIndent)
             lines = indent(lines);
@@ -287,7 +287,7 @@ InspectorTest.runCSSEditTests = function(header, tests)
             var edit = edits[i];
             var range = edit.oldRange;
             var line = String.sprintf("{%d, %d, %d, %d}", range.startLine, range.startColumn, range.endLine, range.endColumn);
-            line += String.sprintf(" '%s' => '%s'", range.extract(text), edit.newText);
+            line += String.sprintf(" '%s' => '%s'", (new WebInspector.Text(text)).extract(range), edit.newText);
             lines.push(line);
         }
         lines = indent(lines);
@@ -307,7 +307,7 @@ InspectorTest.createEdit = function(source, pattern, newText, matchNumber)
     if (!match)
         return null;
     var sourceRange = new WebInspector.SourceRange(match.index, match[0].length);
-    var textRange = sourceRange.toTextRange(source);
+    var textRange = sourceRange.toTextRange(new WebInspector.Text(source));
     return new WebInspector.SourceEdit("", textRange, newText);
 }
 

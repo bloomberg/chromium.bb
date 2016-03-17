@@ -8,7 +8,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             for (var property of clone.rules[0].properties)
                 property.name.setText("NEW-NAME");
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -17,7 +17,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             for (var property of clone.rules[0].properties)
                 property.value.setText("NEW-VALUE");
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -26,7 +26,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             for (var property of clone.rules[0].properties)
                 property.setDisabled(true);
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -35,7 +35,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var clone = cssAST.clone();
             for (var property of clone.rules[0].properties)
                 property.setDisabled(false);
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -43,7 +43,7 @@ InspectorTest.runEditingTests = function(cssAST)
         {
             var clone = cssAST.clone();
             clone.rules[0].properties[0].remove();
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -53,7 +53,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var properties = clone.rules[0].properties;
             while (properties.length)
                 properties[0].remove();
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -63,7 +63,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var rule = clone.rules[0];
             var anchor = rule.properties[0];
             rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [false], anchor, true);
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -73,7 +73,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var rule = clone.rules[0];
             var anchor = rule.properties[rule.properties.length - 1];
             rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [false], anchor, false);
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -83,7 +83,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var rule = clone.rules[0];
             var anchor = rule.properties[1];
             rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [true], anchor, true);
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -96,7 +96,7 @@ InspectorTest.runEditingTests = function(cssAST)
                 ["VALUE", "VALUE", "VALUE", "VALUE"],
                 [false, false, false, false],
                 anchor, false);
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -109,7 +109,7 @@ InspectorTest.runEditingTests = function(cssAST)
                 ["VALUE", "VALUE", "VALUE", "VALUE"],
                 [false, false, false, false],
                 anchor, true);
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -120,7 +120,7 @@ InspectorTest.runEditingTests = function(cssAST)
             var anchor = rule.properties[rule.properties.length - 1];
             rule.insertProperties(["NEW-NAME"], ["NEW-VALUE"], [false], anchor, false);
             anchor.remove();
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
 
@@ -133,7 +133,7 @@ InspectorTest.runEditingTests = function(cssAST)
             lastProperty.name.setText("CHANGED");
             rule.properties[0].value.setText("CHANGED");
             rule.properties[1].setDisabled(true);
-            InspectorTest.addResult(clone.document.newText());
+            InspectorTest.addResult(clone.document.newText().value());
             next();
         },
     ]);
