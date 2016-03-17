@@ -19,7 +19,9 @@
 #include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/shell/public/cpp/connector.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -825,8 +827,8 @@ void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
       new base::Callback<void(bool)>(
           base::Bind(&mojom::WindowTree::OnWindowInputEventAck,
                      base::Unretained(tree_), event_id)));
-  window->input_event_handler_->OnWindowInputEvent(window, std::move(event),
-                                                   &ack_callback);
+  window->input_event_handler_->OnWindowInputEvent(
+      window, *event.To<scoped_ptr<ui::Event>>().get(), &ack_callback);
 
   // The handler did not take ownership of the callback, so we send the ack,
   // marking the event as not consumed.

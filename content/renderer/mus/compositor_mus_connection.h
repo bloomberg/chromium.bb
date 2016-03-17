@@ -71,7 +71,7 @@ class CONTENT_EXPORT CompositorMusConnection
   // InputEventHandler implementation:
   void OnWindowInputEvent(
       mus::Window* window,
-      mus::mojom::EventPtr event,
+      const ui::Event& event,
       scoped_ptr<base::Callback<void(bool)>>* ack_callback) override;
 
   const int routing_id_;

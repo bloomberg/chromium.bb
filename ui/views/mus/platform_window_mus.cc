@@ -222,15 +222,16 @@ void PlatformWindowMus::OnRequestClose(mus::Window* window) {
 
 void PlatformWindowMus::OnWindowInputEvent(
     mus::Window* view,
-    mus::mojom::EventPtr event,
+    const ui::Event& event,
     scoped_ptr<base::Callback<void(bool)>>* ack_callback) {
   // It's possible dispatching the event will spin a nested message loop. Ack
   // the callback now, otherwise we appear unresponsive for the life of the
   // nested message loop.
   (*ack_callback)->Run(true);
   ack_callback->reset();
-  scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event>>());
-  delegate_->DispatchEvent(ui_event.get());
+  // TODO(moshayedi): Avoid cloning after updating PlatformWindowDelegate to
+  // accept constant pointers.
+  delegate_->DispatchEvent(ui::Event::Clone(event).get());
 }
 
 }  // namespace views

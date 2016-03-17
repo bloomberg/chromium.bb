@@ -51,6 +51,7 @@ source_set("cpp") {
     "//cc/surfaces:surface_id",
     "//components/mus/common:mus_common",
     "//mojo/converters/geometry",
+    "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
     "//mojo/gles2",
     "//mojo/gpu:mojo_gles2_implementation",
@@ -58,6 +59,7 @@ source_set("cpp") {
     "//mojo/public/cpp/system",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/interfaces",
+    "//ui/events",
     "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
   ]

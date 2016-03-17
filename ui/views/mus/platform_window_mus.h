@@ -25,6 +25,7 @@ class Connector;
 }
 
 namespace ui {
+class Event;
 class ViewProp;
 }
 
@@ -84,7 +85,7 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   // mus::InputEventHandler:
   void OnWindowInputEvent(
       mus::Window* view,
-      mus::mojom::EventPtr event,
+      const ui::Event& event,
       scoped_ptr<base::Callback<void(bool)>>* ack_callback) override;
 
   ui::PlatformWindowDelegate* delegate_;

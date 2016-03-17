@@ -26,6 +26,7 @@
 #include "content/test/fake_renderer_scheduler.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event_utils.h"
 
 namespace {
 
@@ -207,13 +208,13 @@ class CompositorMusConnectionTest : public testing::Test {
   CompositorMusConnectionTest() {}
   ~CompositorMusConnectionTest() override {}
 
-  // Initializes |event| with valid parameters for a key event, so that it can
-  // be converted to a web event by CompositorMusConnection.
-  void GenerateKeyEvent(mus::mojom::EventPtr& event);
+  // Returns a valid key event, so that it can be converted to a web event by
+  // CompositorMusConnection.
+  scoped_ptr<ui::Event> GenerateKeyEvent();
 
   // Calls CompositorMusConnection::OnWindowInputEvent.
   void OnWindowInputEvent(mus::Window* window,
-                          mus::mojom::EventPtr event,
+                          const ui::Event& event,
                           scoped_ptr<base::Callback<void(bool)>>* ack_callback);
 
   // Confirms the state of pending tasks enqueued on each task runner, and runs
@@ -263,21 +264,16 @@ class CompositorMusConnectionTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CompositorMusConnectionTest);
 };
 
-void CompositorMusConnectionTest::GenerateKeyEvent(
-    mus::mojom::EventPtr& event) {
-  event->action = mus::mojom::EventType::KEY_PRESSED;
-  event->time_stamp = base::TimeTicks::Now().ToInternalValue();
-  event->key_data = mus::mojom::KeyData::New();
-  event->key_data->is_char = true;
-  event->key_data->windows_key_code = mus::mojom::KeyboardCode::A;
+scoped_ptr<ui::Event> CompositorMusConnectionTest::GenerateKeyEvent() {
+  return scoped_ptr<ui::Event>(new ui::KeyEvent(
+      ui::ET_KEY_PRESSED, ui::KeyboardCode::VKEY_A, ui::EF_NONE));
 }
 
 void CompositorMusConnectionTest::OnWindowInputEvent(
     mus::Window* window,
-    mus::mojom::EventPtr event,
+    const ui::Event& event,
     scoped_ptr<base::Callback<void(bool)>>* ack_callback) {
-  compositor_connection_->OnWindowInputEvent(window, std::move(event),
-                                             ack_callback);
+  compositor_connection_->OnWindowInputEvent(window, event, ack_callback);
 }
 
 void CompositorMusConnectionTest::VerifyAndRunQueues(
@@ -334,14 +330,13 @@ TEST_F(CompositorMusConnectionTest, NotConsumed) {
       InputEventAckState::INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   mus::TestWindow test_window;
-  mus::mojom::EventPtr event = mus::mojom::Event::New();
-  GenerateKeyEvent(event);
+  scoped_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   scoped_ptr<base::Callback<void(bool)>> ack_callback(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback)));
 
-  OnWindowInputEvent(&test_window, std::move(event), &ack_callback);
+  OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
   // OnWindowInputEvent is expected to clear the callback if it plans on
   // handling the ack.
   EXPECT_FALSE(ack_callback.get());
@@ -362,14 +357,13 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
   input_handler->set_state(InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
 
   mus::TestWindow test_window;
-  mus::mojom::EventPtr event = mus::mojom::Event::New();
-  GenerateKeyEvent(event);
+  scoped_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   scoped_ptr<base::Callback<void(bool)>> ack_callback(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback)));
 
-  OnWindowInputEvent(&test_window, std::move(event), &ack_callback);
+  OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
   // OnWindowInputEvent is expected to clear the callback if it plans on
   // handling the ack.
   EXPECT_FALSE(ack_callback.get());
@@ -385,14 +379,13 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
 // arrives, that only the most recent ack is fired.
 TEST_F(CompositorMusConnectionTest, LostAck) {
   mus::TestWindow test_window;
-  mus::mojom::EventPtr event1 = mus::mojom::Event::New();
-  GenerateKeyEvent(event1);
+  scoped_ptr<ui::Event> event1(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback1(new TestCallback);
   scoped_ptr<base::Callback<void(bool)>> ack_callback1(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback1)));
 
-  OnWindowInputEvent(&test_window, std::move(event1), &ack_callback1);
+  OnWindowInputEvent(&test_window, *event1.get(), &ack_callback1);
   EXPECT_FALSE(ack_callback1.get());
   // When simulating the timeout the ack is never enqueued
   VerifyAndRunQueues(true, false);
@@ -403,13 +396,12 @@ TEST_F(CompositorMusConnectionTest, LostAck) {
   input_handler->set_delegate(connection());
   input_handler->set_state(InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  mus::mojom::EventPtr event2 = mus::mojom::Event::New();
-  GenerateKeyEvent(event2);
+  scoped_ptr<ui::Event> event2(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback2(new TestCallback);
   scoped_ptr<base::Callback<void(bool)>> ack_callback2(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback2)));
-  OnWindowInputEvent(&test_window, std::move(event2), &ack_callback2);
+  OnWindowInputEvent(&test_window, *event2.get(), &ack_callback2);
   EXPECT_FALSE(ack_callback2.get());
 
   VerifyAndRunQueues(true, true);
@@ -426,14 +418,13 @@ TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
   input_handler_manager()->SetHandleInputEventResult(
       InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
   mus::TestWindow test_window;
-  mus::mojom::EventPtr event = mus::mojom::Event::New();
-  GenerateKeyEvent(event);
+  scoped_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   scoped_ptr<base::Callback<void(bool)>> ack_callback(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback)));
 
-  OnWindowInputEvent(&test_window, std::move(event), &ack_callback);
+  OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
 
   EXPECT_TRUE(ack_callback.get());
   VerifyAndRunQueues(false, false);
@@ -444,17 +435,16 @@ TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
 // CompositorMusConnection does not consume the ack, nor calls it.
 TEST_F(CompositorMusConnectionTest, RendererWillNotSendAck) {
   mus::TestWindow test_window;
-  mus::mojom::EventPtr event = mus::mojom::Event::New();
-  event->action = mus::mojom::EventType::POINTER_DOWN;
-  event->time_stamp = base::TimeTicks::Now().ToInternalValue();
-  event->pointer_data = mus::mojom::PointerData::New();
+  ui::PointerEvent event(ui::ET_POINTER_DOWN,
+                         ui::EventPointerType::POINTER_TYPE_MOUSE, gfx::Point(),
+                         gfx::Point(), ui::EF_NONE, 0, ui::EventTimeForNow());
 
   scoped_refptr<TestCallback> test_callback(new TestCallback);
   scoped_ptr<base::Callback<void(bool)>> ack_callback(
       new base::Callback<void(bool)>(
           base::Bind(&::TestCallback::BoolCallback, test_callback)));
 
-  OnWindowInputEvent(&test_window, std::move(event), &ack_callback);
+  OnWindowInputEvent(&test_window, event, &ack_callback);
   EXPECT_TRUE(ack_callback.get());
 
   VerifyAndRunQueues(true, false);

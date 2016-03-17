@@ -140,7 +140,7 @@ class TestInputEventHandler : public InputEventHandler {
   // InputEventHandler:
   void OnWindowInputEvent(
       Window* target,
-      mojom::EventPtr event,
+      const ui::Event& event,
       scoped_ptr<base::Callback<void(bool)>>* ack_callback) override {
     EXPECT_FALSE(received_event_)
         << "Observer was not reset after receiving event.";
@@ -349,17 +349,15 @@ TEST_F(WindowTreeClientImplTest, InputEventBasic) {
   scoped_ptr<ui::Event> ui_event(
       new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_NONE, 0));
-  mojom::EventPtr mus_event = mojom::Event::From(*ui_event);
-  setup.window_tree_client()->OnWindowInputEvent(1, root->id(),
-                                                 std::move(mus_event));
+  setup.window_tree_client()->OnWindowInputEvent(
+      1, root->id(), mojom::Event::From(*ui_event.get()));
   EXPECT_TRUE(event_handler.received_event());
   EXPECT_TRUE(setup.window_tree()->WasEventAcked(1));
   event_handler.Reset();
 
   event_handler.set_should_manually_ack();
-  mus_event = mojom::Event::From(*ui_event);
-  setup.window_tree_client()->OnWindowInputEvent(33, root->id(),
-                                                 std::move(mus_event));
+  setup.window_tree_client()->OnWindowInputEvent(
+      33, root->id(), mojom::Event::From(*ui_event.get()));
   EXPECT_TRUE(event_handler.received_event());
   EXPECT_FALSE(setup.window_tree()->WasEventAcked(33));
 

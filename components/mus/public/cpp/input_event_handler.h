@@ -6,7 +6,11 @@
 #define COMPONENTS_MUS_PUBLIC_CPP_INPUT_EVENT_HANDLER_H_
 
 #include "base/callback_forward.h"
-#include "components/mus/public/interfaces/input_events.mojom.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace ui {
+class Event;
+}
 
 namespace mus {
 
@@ -21,7 +25,7 @@ class InputEventHandler {
   // the callback, then WindowTreeClientImpl will ack the event as not consumed.
   virtual void OnWindowInputEvent(
       Window* target,
-      mojom::EventPtr event,
+      const ui::Event& event,
       scoped_ptr<base::Callback<void(bool)>>* ack_callback) = 0;
 
  protected:

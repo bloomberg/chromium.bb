@@ -9,6 +9,7 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/converters/blink/blink_input_events_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/events/latency_info.h"
 
 namespace {
@@ -115,11 +116,12 @@ void CompositorMusConnection::OnEmbed(mus::Window* root) {
 
 void CompositorMusConnection::OnWindowInputEvent(
     mus::Window* window,
-    mus::mojom::EventPtr event,
+    const ui::Event& event,
     scoped_ptr<base::Callback<void(bool)>>* ack_callback) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  scoped_ptr<blink::WebInputEvent> web_event =
-      event.To<scoped_ptr<blink::WebInputEvent>>();
+  // TODO(moshayedi): Convert ui::Event directly to blink::WebInputEvent.
+  scoped_ptr<blink::WebInputEvent> web_event(
+      mus::mojom::Event::From(event).To<scoped_ptr<blink::WebInputEvent>>());
   // TODO(sad): We probably need to plumb LatencyInfo through Mus.
   ui::LatencyInfo info;
   InputEventAckState ack_state = input_handler_manager_->HandleInputEvent(
