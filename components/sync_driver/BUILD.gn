@@ -126,8 +126,10 @@ source_set("sync_driver") {
   ]
 
   public_deps = [
+    "//sync",
     "//third_party/cacheinvalidation",
   ]
+
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -141,7 +143,6 @@ source_set("sync_driver") {
     "//components/version_info",
     "//google_apis",
     "//net",
-    "//sync",
   ]
 
   if (enable_configuration_policy) {

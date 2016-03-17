@@ -22,6 +22,7 @@
         'version_info',
       ],
       'export_dependent_settings': [
+        '../sync/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
       'include_dirs': [

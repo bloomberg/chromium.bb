@@ -14,6 +14,10 @@ source_set("browser") {
     "signin_confirmation_helper.h",
   ]
 
+  public_deps = [
+    "//components/sync_driver",
+  ]
+
   deps = [
     "//base",
     "//components/autofill/core/browser",
@@ -31,7 +35,6 @@ source_set("browser") {
     "//components/signin/core/browser",
     "//components/strings",
     "//components/sync_bookmarks",
-    "//components/sync_driver",
     "//components/sync_sessions",
     "//components/syncable_prefs",
     "//components/variations",

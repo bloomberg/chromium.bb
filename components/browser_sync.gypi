@@ -38,6 +38,9 @@
       'include_dirs': [
         '..',
       ],
+      'export_dependent_settings': [
+        'sync_driver',
+      ],
       'sources': [
         # Note: file list duplicated in GN build.
         'browser_sync/browser/profile_sync_components_factory_impl.cc',
