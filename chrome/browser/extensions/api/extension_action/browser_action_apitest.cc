@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -51,6 +52,12 @@ using content::WebContents;
 
 namespace extensions {
 namespace {
+
+void ExecuteExtensionAction(Browser* browser, const Extension* extension) {
+  ExtensionActionRunner::GetForWebContents(
+      browser->tab_strip_model()->GetActiveWebContents())
+      ->RunAction(extension, true);
+}
 
 // An ImageSkia source that will do nothing (i.e., have a blank skia). We need
 // this because we need a blank canvas at a certain size, and that can't be done
@@ -147,8 +154,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
 
-  ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
-      extension, browser(), true);
+  ExecuteExtensionAction(browser(), extension);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
@@ -550,16 +556,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
             BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
 
   // A click in the regular profile should open a tab in the regular profile.
-  ExtensionActionAPI* extension_action_api =
-      ExtensionActionAPI::Get(browser()->profile());
-  extension_action_api->ExecuteExtensionAction(
-      extension, browser(), true);
+  ExecuteExtensionAction(browser(), extension);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   // A click in the incognito profile should open a tab in the
   // incognito profile.
-  extension_action_api->ExecuteExtensionAction(
-      extension, incognito_browser, true);
+  ExecuteExtensionAction(incognito_browser, extension);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -582,8 +584,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
       content::NotificationService::AllSources());
 
   // Click the browser action.
-  ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
-      extension, browser(), true);
+  ExecuteExtensionAction(browser(), extension);
 
   // It can take a moment for the background page to actually get destroyed
   // so we wait for the notification before checking that it's really gone

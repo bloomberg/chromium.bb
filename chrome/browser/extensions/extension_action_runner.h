@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -31,8 +32,6 @@ namespace IPC {
 class Message;
 }
 
-class ExtensionAction;
-
 namespace extensions {
 class Extension;
 class ExtensionRegistry;
@@ -45,19 +44,27 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   explicit ExtensionActionRunner(content::WebContents* web_contents);
   ~ExtensionActionRunner() override;
 
-  // Returns the ExtensionActionRunner for the given |web_contents|, or NULL
+  // Returns the ExtensionActionRunner for the given |web_contents|, or null
   // if one does not exist.
   static ExtensionActionRunner* GetForWebContents(
       content::WebContents* web_contents);
+
+  // Executes the action for the given |extension| and returns any further
+  // action (like showing a popup) that should be taken. If
+  // |grant_tab_permissions| is true, this will also grant activeTab to the
+  // extension (so this should only be done if this is through a direct user
+  // action).
+  ExtensionAction::ShowAction RunAction(const Extension* extension,
+                                        bool grant_tab_permissions);
+
+  // Runs any actions that were blocked for the given |extension|. As a
+  // requirement, this will grant activeTab permission to the extension.
+  void RunBlockedActions(const Extension* extension);
 
   // Notifies the ExtensionActionRunner that an extension has been granted
   // active tab permissions. This will run any pending injections for that
   // extension.
   void OnActiveTabPermissionGranted(const Extension* extension);
-
-  // Notifies the ExtensionActionRunner that the action for |extension| has
-  // been clicked, running any pending tasks that were previously shelved.
-  void OnClicked(const Extension* extension);
 
   // Called when a webRequest event for the given |extension| was blocked.
   void OnWebRequestBlocked(const Extension* extension);

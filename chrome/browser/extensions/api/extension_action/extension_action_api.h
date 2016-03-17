@@ -78,15 +78,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   void SetBrowserActionVisibility(const std::string& extension_id,
                                   bool visible);
 
-  // Executes the action of the given |extension| on the |browser|'s active
-  // web contents. If |grant_tab_permissions| is true, this will also grant
-  // activeTab to the extension (so this should only be done if this is through
-  // a direct user action). Returns the action that should be taken.
-  ExtensionAction::ShowAction ExecuteExtensionAction(
-      const Extension* extension,
-      Browser* browser,
-      bool grant_active_tab_permissions);
-
   // Opens the popup for the given |extension| in the given |browser|'s window.
   // If |grant_active_tab_permissions| is true, this grants the extension
   // activeTab (so this should only be done if this is through a direct user
@@ -95,20 +86,14 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                 Browser* browser,
                                 bool grant_active_tab_permissions);
 
-  // Returns true if the |extension| has a visible page action on the given
-  // |web_contents|.
-  bool PageActionWantsToRun(const Extension* extension,
-                            content::WebContents* web_contents);
-
-  // Returns true if the |extension| has a blocked script that wants to inject
-  // on the given |web_contents|.
-  bool HasBeenBlocked(const Extension* extension,
-                      content::WebContents* web_contents);
-
   // Notifies that there has been a change in the given |extension_action|.
   void NotifyChange(ExtensionAction* extension_action,
                     content::WebContents* web_contents,
                     content::BrowserContext* browser_context);
+
+  // Dispatches the onClicked event for extension that owns the given action.
+  void DispatchExtensionActionClicked(const ExtensionAction& extension_action,
+                                      content::WebContents* web_contents);
 
   // Clears the values for all ExtensionActions for the tab associated with the
   // given |web_contents| (and signals that page actions changed).
@@ -134,11 +119,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                 events::HistogramValue histogram_value,
                                 const std::string& event_name,
                                 scoped_ptr<base::ListValue> event_args);
-
-  // Called when either a browser or page action is executed. Figures out which
-  // event to send based on what the extension wants.
-  void ExtensionActionExecuted(const ExtensionAction& extension_action,
-                               content::WebContents* web_contents);
 
   // BrowserContextKeyedAPI implementation.
   void Shutdown() override;

@@ -527,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // Grant activeTab permission, and perform another XHR. The extension should
   // receive the event.
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
-  runner->OnClicked(extension);
+  runner->RunAction(extension, true);
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
   PerformXhrInPage(web_contents, kHost, port, kXhrPath);
   EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));

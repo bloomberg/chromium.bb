@@ -142,6 +142,14 @@ class ExtensionActionViewController
       content::WebContents* web_contents,
       const gfx::Size& size);
 
+  // Returns true if this extension has a page action and that page action wants
+  // to run on the given |web_contents|.
+  bool PageActionWantsToRun(content::WebContents* web_contents) const;
+
+  // Returns true if this extension has been blocked on the given
+  // |web_contents|.
+  bool HasBeenBlocked(content::WebContents* web_contents) const;
+
   // The extension associated with the action we're displaying.
   scoped_refptr<const extensions::Extension> extension_;
 

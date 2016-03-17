@@ -141,7 +141,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_TRUE(image_source->paint_blocked_actions_decoration());
 
-  action_runner->OnClicked(browser_action_ext.get());
+  action_runner->RunBlockedActions(browser_action_ext.get());
   image_source =
       browser_action->GetIconImageSourceForTesting(web_contents, kSize);
   EXPECT_FALSE(image_source->grayscale());
@@ -191,7 +191,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
                            web_contents, false);
   toolbar_model()->SetVisibleIconCount(2u);
 
-  action_runner->OnClicked(page_action_ext.get());
+  action_runner->RunBlockedActions(page_action_ext.get());
   image_source = page_action->GetIconImageSourceForTesting(web_contents, kSize);
   EXPECT_TRUE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());

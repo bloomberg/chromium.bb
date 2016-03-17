@@ -455,7 +455,7 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
     ExtensionActionRunner* runner =
         ExtensionActionRunner::GetForWebContents(web_contents);
     if (runner && runner->WantsToRun(extension))
-      runner->OnClicked(extension);
+      runner->RunBlockedActions(extension);
   }
 }
 

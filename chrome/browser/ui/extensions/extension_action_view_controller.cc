@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
@@ -33,6 +34,7 @@
 
 using extensions::ActionInfo;
 using extensions::CommandService;
+using extensions::ExtensionActionRunner;
 
 ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
@@ -119,16 +121,13 @@ bool ExtensionActionViewController::IsEnabled(
 
   return extension_action_->GetIsVisible(
              SessionTabHelper::IdForTab(web_contents)) ||
-         extensions::ExtensionActionAPI::Get(browser_->profile())
-             ->HasBeenBlocked(extension(), web_contents);
+         HasBeenBlocked(web_contents);
 }
 
 bool ExtensionActionViewController::WantsToRun(
     content::WebContents* web_contents) const {
-  extensions::ExtensionActionAPI* action_api =
-      extensions::ExtensionActionAPI::Get(browser_->profile());
-  return action_api->PageActionWantsToRun(extension(), web_contents) ||
-         action_api->HasBeenBlocked(extension(), web_contents);
+  return ExtensionIsValid() &&
+         (PageActionWantsToRun(web_contents) || HasBeenBlocked(web_contents));
 }
 
 bool ExtensionActionViewController::HasPopup(
@@ -208,9 +207,13 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
   if (!ExtensionIsValid())
     return false;
 
-  if (extensions::ExtensionActionAPI::Get(browser_->profile())
-          ->ExecuteExtensionAction(
-              extension_.get(), browser_, grant_tab_permissions) ==
+  content::WebContents* web_contents = view_delegate_->GetCurrentWebContents();
+  ExtensionActionRunner* action_runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  if (!action_runner)
+    return false;
+
+  if (action_runner->RunAction(extension(), grant_tab_permissions) ==
       ExtensionAction::ACTION_SHOW_POPUP) {
     GURL popup_url = extension_action_->GetPopupUrl(
         SessionTabHelper::IdForTab(view_delegate_->GetCurrentWebContents()));
@@ -401,14 +404,27 @@ ExtensionActionViewController::GetIconImageSource(
     bool is_overflow =
         toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode();
 
-    extensions::ExtensionActionAPI* api =
-        extensions::ExtensionActionAPI::Get(browser_->profile());
-    bool has_blocked_actions = api->HasBeenBlocked(extension(), web_contents);
+    bool has_blocked_actions = HasBeenBlocked(web_contents);
     image_source->set_paint_blocked_actions_decoration(has_blocked_actions);
     image_source->set_paint_page_action_decoration(
         !has_blocked_actions && is_overflow &&
-        api->PageActionWantsToRun(extension(), web_contents));
+        PageActionWantsToRun(web_contents));
   }
 
   return image_source;
+}
+
+bool ExtensionActionViewController::PageActionWantsToRun(
+    content::WebContents* web_contents) const {
+  return extension_action_->action_type() ==
+             extensions::ActionInfo::TYPE_PAGE &&
+         extension_action_->GetIsVisible(
+             SessionTabHelper::IdForTab(web_contents));
+}
+
+bool ExtensionActionViewController::HasBeenBlocked(
+    content::WebContents* web_contents) const {
+  ExtensionActionRunner* action_runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  return action_runner && action_runner->WantsToRun(extension());
 }

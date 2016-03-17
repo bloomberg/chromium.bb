@@ -12,9 +12,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -251,8 +252,9 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
         break;
       }
       case ACTION_BROWSER_ACTION: {
-        ExtensionActionAPI::Get(profile())->ExecuteExtensionAction(
-            *extension, browser(), true);
+        ExtensionActionRunner::GetForWebContents(
+            browser()->tab_strip_model()->GetActiveWebContents())
+            ->RunAction(*extension, true);
         break;
       }
       case ACTION_NEW_TAB: {

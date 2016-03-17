@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
@@ -40,8 +41,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
   // Granting to the extension should give it access to page.html.
   {
     ResultCatcher catcher;
-    ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
-        extension, browser(), true);
+    ExtensionActionRunner::GetForWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents())
+        ->RunAction(extension, true);
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 

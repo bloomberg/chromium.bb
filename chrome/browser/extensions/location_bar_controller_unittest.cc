@@ -69,6 +69,12 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
     return SessionTabHelper::IdForTab(web_contents());
   }
 
+  bool PageActionWantsToRun(const Extension* extension) {
+    ExtensionAction* page_action =
+        ExtensionActionManager::Get(profile())->GetPageAction(*extension);
+    return page_action && page_action->GetIsVisible(tab_id());
+  }
+
   const Extension* AddExtension(bool has_page_actions,
                                 const std::string& name) {
     DictionaryBuilder manifest;
@@ -168,16 +174,12 @@ TEST_F(LocationBarControllerUnitTest, NavigationClearsState) {
   page_action.SetTitle(tab_id(), "Goodbye");
   page_action.SetPopupUrl(tab_id(), extension->GetResourceURL("popup.html"));
 
-  ExtensionActionAPI* extension_action_api =
-      ExtensionActionAPI::Get(profile());
   // By default, extensions shouldn't want to act on a page.
-  EXPECT_FALSE(
-      extension_action_api->PageActionWantsToRun(extension, web_contents()));
+  EXPECT_FALSE(PageActionWantsToRun(extension));
   // Showing the page action should indicate that an extension *does* want to
   // run on the page.
   page_action.SetIsVisible(tab_id(), true);
-  EXPECT_TRUE(
-      extension_action_api->PageActionWantsToRun(extension, web_contents()));
+  EXPECT_TRUE(PageActionWantsToRun(extension));
 
   EXPECT_EQ("Goodbye", page_action.GetTitle(tab_id()));
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
@@ -189,16 +191,14 @@ TEST_F(LocationBarControllerUnitTest, NavigationClearsState) {
   EXPECT_EQ("Goodbye", page_action.GetTitle(tab_id()));
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
             page_action.GetPopupUrl(tab_id()));
-  EXPECT_TRUE(
-      extension_action_api->PageActionWantsToRun(extension, web_contents()));
+  EXPECT_TRUE(PageActionWantsToRun(extension));
 
   // Should discard the settings, and go back to the defaults.
   NavigateAndCommit(GURL("http://www.yahoo.com"));
 
   EXPECT_EQ("Hello", page_action.GetTitle(tab_id()));
   EXPECT_EQ(GURL(), page_action.GetPopupUrl(tab_id()));
-  EXPECT_FALSE(
-      extension_action_api->PageActionWantsToRun(extension, web_contents()));
+  EXPECT_FALSE(PageActionWantsToRun(extension));
 }
 
 }  // namespace

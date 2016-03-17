@@ -68,13 +68,40 @@ ExtensionActionRunner* ExtensionActionRunner::GetForWebContents(
   return tab_helper ? tab_helper->extension_action_runner() : NULL;
 }
 
-void ExtensionActionRunner::OnActiveTabPermissionGranted(
-    const Extension* extension) {
-  if (WantsToRun(extension))
-    OnClicked(extension);
+ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
+    const Extension* extension,
+    bool grant_tab_permissions) {
+  bool has_pending_scripts = WantsToRun(extension);
+  if (grant_tab_permissions) {
+    TabHelper::FromWebContents(web_contents())
+        ->active_tab_permission_granter()
+        ->GrantIfRequested(extension);
+    // If the extension had blocked actions, granting active tab will have
+    // run the extension. Don't execute further since clicking should run
+    // blocked actions *or* the normal extension action, not both.
+    if (has_pending_scripts)
+      return ExtensionAction::ACTION_NONE;
+  }
+
+  ExtensionAction* extension_action =
+      ExtensionActionManager::Get(browser_context_)
+          ->GetExtensionAction(*extension);
+
+  // Anything that gets here should have a page or browser action.
+  DCHECK(extension_action);
+  int tab_id = SessionTabHelper::IdForTab(web_contents());
+  if (!extension_action->GetIsVisible(tab_id))
+    return ExtensionAction::ACTION_NONE;
+
+  if (extension_action->HasPopup(tab_id))
+    return ExtensionAction::ACTION_SHOW_POPUP;
+
+  ExtensionActionAPI::Get(browser_context_)
+      ->DispatchExtensionActionClicked(*extension_action, web_contents());
+  return ExtensionAction::ACTION_NONE;
 }
 
-void ExtensionActionRunner::OnClicked(const Extension* extension) {
+void ExtensionActionRunner::RunBlockedActions(const Extension* extension) {
   DCHECK(ContainsKey(pending_scripts_, extension->id()) ||
          web_request_blocked_.count(extension->id()) != 0);
 
@@ -92,6 +119,12 @@ void ExtensionActionRunner::OnClicked(const Extension* extension) {
   // The extension ran, so we need to tell the ExtensionActionAPI that we no
   // longer want to act.
   NotifyChange(extension);
+}
+
+void ExtensionActionRunner::OnActiveTabPermissionGranted(
+    const Extension* extension) {
+  if (WantsToRun(extension))
+    RunBlockedActions(extension);
 }
 
 void ExtensionActionRunner::OnWebRequestBlocked(const Extension* extension) {

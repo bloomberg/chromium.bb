@@ -261,7 +261,7 @@ testing::AssertionResult ActiveScriptTester::Verify() {
   DCHECK(wants_to_run);
 
   // Grant permission by clicking on the extension action.
-  runner->OnClicked(extension_);
+  runner->RunAction(extension_, true);
 
   // Now, the extension should be able to inject the script.
   inject_success_listener_->WaitUntilSatisfied();
@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
       new ExtensionTestMessageListener(kInjectSucceeded,
                                        false /* won't reply */));
   inject_success_listener.set_extension_id(extension1->id());
-  action_runner->OnClicked(extension1);
+  action_runner->RunAction(extension1, true);
   inject_success_listener.WaitUntilSatisfied();
 }
 

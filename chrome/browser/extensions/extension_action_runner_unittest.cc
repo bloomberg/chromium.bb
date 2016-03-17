@@ -199,9 +199,6 @@ TEST_F(ExtensionActionRunnerUnitTest, RequestPermissionAndExecute) {
   ASSERT_EQ(0u, GetExecutionCountForExtension(extension->id()));
   ASSERT_FALSE(runner()->WantsToRun(extension));
 
-  ExtensionActionAPI* extension_action_api = ExtensionActionAPI::Get(profile());
-  ASSERT_FALSE(extension_action_api->HasBeenBlocked(extension, web_contents()));
-
   // Since the extension requests all_hosts, we should require user consent.
   EXPECT_TRUE(RequiresUserConsent(extension));
 
@@ -209,16 +206,14 @@ TEST_F(ExtensionActionRunnerUnitTest, RequestPermissionAndExecute) {
   // executed.
   RequestInjection(extension);
   EXPECT_TRUE(runner()->WantsToRun(extension));
-  EXPECT_TRUE(extension_action_api->HasBeenBlocked(extension, web_contents()));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Click to accept the extension executing.
-  runner()->OnClicked(extension);
+  runner()->RunAction(extension, true);
 
   // The extension should execute, and the extension shouldn't want to run.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
   EXPECT_FALSE(runner()->WantsToRun(extension));
-  EXPECT_FALSE(extension_action_api->HasBeenBlocked(extension, web_contents()));
 
   // Since we already executed on the given page, we shouldn't need permission
   // for a second time.
@@ -239,7 +234,7 @@ TEST_F(ExtensionActionRunnerUnitTest, RequestPermissionAndExecute) {
 
   // Grant access.
   RequestInjection(extension);
-  runner()->OnClicked(extension);
+  runner()->RunAction(extension, true);
   EXPECT_EQ(2u, GetExecutionCountForExtension(extension->id()));
   EXPECT_FALSE(runner()->WantsToRun(extension));
 
@@ -271,7 +266,7 @@ TEST_F(ExtensionActionRunnerUnitTest, PendingInjectionsRemovedAtNavigation) {
 
   // Request and accept a new injection.
   RequestInjection(extension);
-  runner()->OnClicked(extension);
+  runner()->RunAction(extension, true);
 
   // The extension should only have executed once, even though a grand total
   // of two executions were requested.
@@ -295,7 +290,7 @@ TEST_F(ExtensionActionRunnerUnitTest, MultiplePendingInjection) {
 
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
-  runner()->OnClicked(extension);
+  runner()->RunAction(extension, true);
 
   // All pending injections should have executed.
   EXPECT_EQ(kNumInjections, GetExecutionCountForExtension(extension->id()));
@@ -393,7 +388,7 @@ TEST_F(ExtensionActionRunnerUnitTest, TestAlwaysRun) {
   // Allow the extension to always run on this origin.
   ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.GrantHostPermission(web_contents()->GetLastCommittedURL());
-  runner()->OnClicked(extension);
+  runner()->RunAction(extension, true);
 
   // The extension should execute, and the extension shouldn't want to run.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
@@ -449,7 +444,7 @@ TEST_F(ExtensionActionRunnerUnitTest, TestDifferentScriptRunLocations) {
   EXPECT_EQ(BLOCKED_ACTION_SCRIPT_AT_START | BLOCKED_ACTION_SCRIPT_OTHER,
             runner()->GetBlockedActions(extension));
 
-  runner()->OnClicked(extension);
+  runner()->RunAction(extension, true);
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner()->GetBlockedActions(extension));
 }
 

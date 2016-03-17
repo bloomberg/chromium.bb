@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -60,8 +61,9 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, Basic) {
   {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
-    ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
-        extension, browser(), true);
+    ExtensionActionRunner::GetForWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents())
+        ->RunAction(extension, true);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 
@@ -103,8 +105,9 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, AddPopup) {
   // install a page action popup.
   {
     ResultCatcher catcher;
-    ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
-        extension, browser(), true);
+    ExtensionActionRunner::GetForWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents())
+        ->RunAction(extension, true);
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -229,8 +232,9 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, TestTriggerPageAction) {
   {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
-    ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
-        extension, browser(), true);
+    ExtensionActionRunner::GetForWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents())
+        ->RunAction(extension, true);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 
