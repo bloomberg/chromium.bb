@@ -495,9 +495,7 @@ void DataPipeConsumerDispatcher::NotifyRead(uint32_t num_bytes) {
 }
 
 void DataPipeConsumerDispatcher::OnPortStatusChanged() {
-  // This has to be outside |lock_| because the watch callback can call data
-  // pipe functions which then try to acquire |lock_|.
-  RequestContext request_context;
+  DCHECK(RequestContext::current());
 
   base::AutoLock lock(lock_);
 

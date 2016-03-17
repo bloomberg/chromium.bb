@@ -18,7 +18,10 @@ base::LazyInstance<base::ThreadLocalPointer<RequestContext>>::Leaky
 
 }  // namespace
 
-RequestContext::RequestContext() : tls_context_(g_current_context.Pointer()){
+RequestContext::RequestContext() : RequestContext(Source::LOCAL_API_CALL) {}
+
+RequestContext::RequestContext(Source source)
+    : source_(source), tls_context_(g_current_context.Pointer()) {
   // We allow nested RequestContexts to exist as long as they aren't actually
   // used for anything.
   if (!tls_context_->Get())
@@ -26,23 +29,34 @@ RequestContext::RequestContext() : tls_context_(g_current_context.Pointer()){
 }
 
 RequestContext::~RequestContext() {
-  // NOTE: Callbacks invoked by this destructor are allowed to initiate new
-  // EDK requests on this thread, so we need to reset the thread-local context
-  // pointer before calling them.
-  if (IsCurrent())
+  if (IsCurrent()) {
+    // NOTE: Callbacks invoked by this destructor are allowed to initiate new
+    // EDK requests on this thread, so we need to reset the thread-local context
+    // pointer before calling them. We persist the original notification source
+    // since we're starting over at the bottom of the stack.
     tls_context_->Set(nullptr);
 
-  for (const WatchNotifyFinalizer& watch :
-      watch_notify_finalizers_.container()) {
-    // Establish a new request context for the extent of each callback to ensure
-    // that they don't themselves invoke callbacks while holding a watcher lock.
-    RequestContext request_context;
-    watch.watcher->MaybeInvokeCallback(watch.result, watch.state);
-  }
+    MojoWatchNotificationFlags flags = MOJO_WATCH_NOTIFICATION_FLAG_NONE;
+    if (source_ == Source::SYSTEM)
+      flags |= MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM;
 
-  for (const scoped_refptr<Watcher>& watcher :
-          watch_cancel_finalizers_.container())
-    watcher->Cancel();
+    for (const WatchNotifyFinalizer& watch :
+        watch_notify_finalizers_.container()) {
+      // Establish a new request context for the extent of each callback to
+      // ensure that they don't themselves invoke callbacks while holding a
+      // watcher lock.
+      RequestContext request_context(source_);
+      watch.watcher->MaybeInvokeCallback(watch.result, watch.state, flags);
+    }
+
+    for (const scoped_refptr<Watcher>& watcher :
+            watch_cancel_finalizers_.container())
+      watcher->Cancel();
+  } else {
+    // It should be impossible for nested contexts to have finalizers.
+    DCHECK(watch_notify_finalizers_.container().empty());
+    DCHECK(watch_cancel_finalizers_.container().empty());
+  }
 }
 
 // static

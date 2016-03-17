@@ -15,12 +15,13 @@ Watcher::Watcher(MojoHandleSignals signals, const WatchCallback& callback)
 }
 
 void Watcher::MaybeInvokeCallback(MojoResult result,
-                                  const HandleSignalsState& state) {
+                                  const HandleSignalsState& state,
+                                  MojoWatchNotificationFlags flags) {
   base::AutoLock lock(lock_);
   if (is_cancelled_)
     return;
 
-  callback_.Run(result, state);
+  callback_.Run(result, state, flags);
 }
 
 void Watcher::NotifyForStateChange(const HandleSignalsState& signals_state) {
@@ -29,9 +30,9 @@ void Watcher::NotifyForStateChange(const HandleSignalsState& signals_state) {
     request_context->AddWatchNotifyFinalizer(
         make_scoped_refptr(this), MOJO_RESULT_OK, signals_state);
   } else if (!signals_state.can_satisfy(signals_)) {
-    request_context->AddWatchNotifyFinalizer(make_scoped_refptr(this),
-                                             MOJO_RESULT_FAILED_PRECONDITION,
-                                             signals_state);
+    request_context->AddWatchNotifyFinalizer(
+        make_scoped_refptr(this), MOJO_RESULT_FAILED_PRECONDITION,
+        signals_state);
   }
 }
 

@@ -121,16 +121,22 @@ void Watcher::OnHandleReady(MojoResult result) {
 // static
 void Watcher::CallOnHandleReady(uintptr_t context,
                                 MojoResult result,
-                                MojoHandleSignalsState signals_state) {
+                                MojoHandleSignalsState signals_state,
+                                MojoWatchNotificationFlags flags) {
   // NOTE: It is safe to assume the Watcher still exists because this callback
   // will never be run after the Watcher's destructor.
   //
   // TODO: Maybe we should also expose |signals_state| throught he Watcher API.
   // Current HandleWatcher users have no need for it, so it's omitted here.
   Watcher* watcher = reinterpret_cast<Watcher*>(context);
-  watcher->task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Watcher::OnHandleReady, watcher->weak_self_, result));
+  if ((flags & MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM) &&
+      watcher->task_runner_->RunsTasksOnCurrentThread()) {
+    watcher->OnHandleReady(result);
+  } else {
+    watcher->task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&Watcher::OnHandleReady, watcher->weak_self_, result));
+  }
 }
 
 }  // namespace mojo

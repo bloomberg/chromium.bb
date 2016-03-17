@@ -24,7 +24,8 @@ extern "C" {
 // documentation for |MojoWatch()| for more details.
 typedef void (*MojoWatchCallback)(uintptr_t context,
                                   MojoResult result,
-                                  struct MojoHandleSignalsState signals_state);
+                                  struct MojoHandleSignalsState signals_state,
+                                  MojoWatchNotificationFlags flags);
 
 // Note: Pointer parameters that are labelled "optional" may be null (at least
 // under some circumstances). Non-const pointer parameters are also labeled

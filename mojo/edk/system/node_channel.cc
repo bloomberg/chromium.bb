@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/request_context.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "mojo/edk/system/mach_port_relay.h"
@@ -384,6 +385,8 @@ void NodeChannel::OnChannelMessage(const void* payload,
                                    ScopedPlatformHandleVectorPtr handles) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
+  RequestContext request_context(RequestContext::Source::SYSTEM);
+
 #if defined(OS_WIN)
   // If we receive handles from a known process, rewrite them to our own
   // process. This can occur when a privileged node receives handles directly
@@ -584,6 +587,8 @@ void NodeChannel::OnChannelMessage(const void* payload,
 
 void NodeChannel::OnChannelError() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+
+  RequestContext request_context(RequestContext::Source::SYSTEM);
 
   ShutDown();
   // |OnChannelError()| may cause |this| to be destroyed, but still need access

@@ -8,6 +8,7 @@
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
 #include "mojo/edk/system/handle_signals_state.h"
+#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/edk/system/watcher.h"
 
 namespace base {
@@ -27,13 +28,24 @@ namespace edk {
 // for any reason. Therefore it is important to always use
 // |RequestContext::current()| rather than referring to any local instance
 // directly.
-class RequestContext {
+class MOJO_SYSTEM_IMPL_EXPORT RequestContext {
  public:
+  // Identifies the source of the current stack frame's RequestContext.
+  enum class Source {
+    LOCAL_API_CALL,
+    SYSTEM,
+  };
+
+  // Constructs a RequestContext with a LOCAL_API_CALL Source.
   RequestContext();
+
+  explicit RequestContext(Source source);
   ~RequestContext();
 
   // Returns the current thread-local RequestContext.
   static RequestContext* current();
+
+  Source source() const { return source_; }
 
   // Adds a finalizer to this RequestContext corresponding to a watch callback
   // which should be triggered in response to some handle state change. If
@@ -73,6 +85,8 @@ class RequestContext {
       base::StackVector<WatchNotifyFinalizer, kStaticWatchFinalizersCapacity>;
   using WatchCancelFinalizerList =
       base::StackVector<scoped_refptr<Watcher>, kStaticWatchFinalizersCapacity>;
+
+  const Source source_;
 
   WatchNotifyFinalizerList watch_notify_finalizers_;
   WatchCancelFinalizerList watch_cancel_finalizers_;

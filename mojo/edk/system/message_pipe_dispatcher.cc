@@ -639,7 +639,7 @@ HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateNoLock() const {
 }
 
 void MessagePipeDispatcher::OnPortStatusChanged() {
-  RequestContext request_context;
+  DCHECK(RequestContext::current());
 
   base::AutoLock lock(signal_lock_);
 

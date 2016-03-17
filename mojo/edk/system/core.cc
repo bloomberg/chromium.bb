@@ -51,9 +51,10 @@ const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
 void CallWatchCallback(MojoWatchCallback callback,
                        uintptr_t context,
                        MojoResult result,
-                       const HandleSignalsState& signals_state) {
-  callback(context, result,
-           static_cast<MojoHandleSignalsState>(signals_state));
+                       const HandleSignalsState& signals_state,
+                       MojoWatchNotificationFlags flags) {
+  callback(context, result, static_cast<MojoHandleSignalsState>(signals_state),
+      flags);
 }
 
 }  // namespace

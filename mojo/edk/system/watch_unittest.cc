@@ -17,7 +17,8 @@ namespace {
 
 void IgnoreResult(uintptr_t context,
                   MojoResult result,
-                  MojoHandleSignalsState signals) {
+                  MojoHandleSignalsState signals,
+                  MojoWatchNotificationFlags flags) {
 }
 
 // A test helper class for watching a handle. The WatchHelper instance is used
@@ -56,11 +57,13 @@ class WatchHelper {
  private:
   static void OnNotify(uintptr_t context,
                        MojoResult result,
-                       MojoHandleSignalsState state) {
+                       MojoHandleSignalsState state,
+                       MojoWatchNotificationFlags flags) {
     WatchHelper* watcher = reinterpret_cast<WatchHelper*>(context);
     CHECK(watcher->watching_);
     if (result == MOJO_RESULT_CANCELLED)
       watcher->watching_ = false;
+    CHECK_EQ(flags, MOJO_WATCH_NOTIFICATION_FLAG_NONE);
     watcher->callback_(result, state);
   }
 

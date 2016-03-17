@@ -84,7 +84,8 @@ class Watcher {
 
   static void CallOnHandleReady(uintptr_t context,
                                 MojoResult result,
-                                MojoHandleSignalsState signals_state);
+                                MojoHandleSignalsState signals_state,
+                                MojoWatchNotificationFlags flags);
 
   base::ThreadChecker thread_checker_;
 

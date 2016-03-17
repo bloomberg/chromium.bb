@@ -29,8 +29,9 @@ struct HandleSignalsState;
 // its cancellation, which is why it's ref-counted.
 class Watcher : public base::RefCountedThreadSafe<Watcher> {
  public:
-  using WatchCallback =
-      base::Callback<void(MojoResult, const HandleSignalsState&)>;
+  using WatchCallback = base::Callback<void(MojoResult,
+                                            const HandleSignalsState&,
+                                            MojoWatchNotificationFlags)>;
 
   // Constructs a new Watcher which watches for |signals| to be satisfied on a
   // handle and which invokes |callback| either when one such signal is
@@ -39,7 +40,9 @@ class Watcher : public base::RefCountedThreadSafe<Watcher> {
 
   // Runs the Watcher's callback with the given arguments if it hasn't been
   // cancelled yet.
-  void MaybeInvokeCallback(MojoResult result, const HandleSignalsState& state);
+  void MaybeInvokeCallback(MojoResult result,
+                           const HandleSignalsState& state,
+                           MojoWatchNotificationFlags flags);
 
   // Notifies the Watcher of a state change. This may result in the Watcher
   // adding a finalizer to the current RequestContext to invoke its callback,
