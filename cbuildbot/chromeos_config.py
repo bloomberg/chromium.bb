@@ -1686,7 +1686,6 @@ def GetConfig():
       'guado_moblab',
       'kayle',
       'lakitu',
-      'lakitu_mobbuild',
       'leon',
       'link',
       'lumpy',
@@ -2545,13 +2544,6 @@ def GetConfig():
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       run_gce_tests=True,
       sign_types=['base'],
-      important=True,
-  )
-
-  site_config.Add(
-      'lakitu_mobbuild-release', _release,
-      _base_configs['lakitu_mobbuild'],
-      signer_tests=False,
       important=True,
   )
 

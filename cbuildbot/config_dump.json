@@ -10277,7 +10277,6 @@
     },
     "lakitu_mobbuild-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "lakitu_mobbuild"
         ],
@@ -10285,6 +10284,7 @@
         "description": "Commit Queue (internal)",
         "disk_layout": "base",
         "image_test": false,
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10322,7 +10322,6 @@
     },
     "lakitu_mobbuild-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "lakitu_mobbuild"
@@ -10333,8 +10332,6 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
-        "important": true,
-        "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": []
     },

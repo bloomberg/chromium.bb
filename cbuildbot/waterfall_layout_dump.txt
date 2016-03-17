@@ -68,8 +68,6 @@ kayle-release
 lakitu-incremental
 lakitu-paladin
 lakitu-release
-lakitu_mobbuild-paladin
-lakitu_mobbuild-release
 lakitu_next-incremental
 lakitu_next-paladin
 lakitu_next-release
