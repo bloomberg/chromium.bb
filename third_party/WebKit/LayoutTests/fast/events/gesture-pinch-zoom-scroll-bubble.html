@@ -6,7 +6,7 @@ window.jsTestIsAsync = true;
 
 function testVerticalScroll() {
   // Do a purely vertical scroll. This will scroll contents only.
-  eventSender.continuousMouseScrollBy(0, -1);
+  eventSender.continuousMouseScrollBy(0, -2);
   shouldBecomeEqual('internals.visualViewportScrollX() == 200 && ' +
     'internals.visualViewportScrollY() == 301', 'true', testHorizontalScroll);
 }
@@ -14,7 +14,7 @@ function testVerticalScroll() {
 function testHorizontalScroll() {
   // Do a purely horizontal scroll. This will change pinch virtual viewport
   // offset only.
-  eventSender.continuousMouseScrollBy(-1, 0);
+  eventSender.continuousMouseScrollBy(-2, 0);
   shouldBecomeEqual('internals.visualViewportScrollX() == 201 && ' +
     'internals.visualViewportScrollY() == 301', 'true', testDiagonalScroll);
 }
@@ -23,7 +23,7 @@ function testDiagonalScroll() {
   // Do a diagonal scroll. This will scroll the contents, and then bubble the
   // result up to the visual viewport, where it will change the pinch
   // virtual viewport offset.
-  eventSender.continuousMouseScrollBy(2, 2);
+  eventSender.continuousMouseScrollBy(4, 4);
   shouldBecomeEqual('internals.visualViewportScrollX() == 199 && ' +
     'internals.visualViewportScrollY() == 299', 'true', finishJSTest);
 }

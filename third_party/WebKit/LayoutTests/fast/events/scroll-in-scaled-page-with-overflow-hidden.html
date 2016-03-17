@@ -34,7 +34,7 @@
 
         if (window.eventSender) {
             eventSender.mouseMoveTo(100, 100);
-            eventSender.mouseScrollBy(0, -5);
+            eventSender.mouseScrollBy(0, -10);
         }
 
         shouldBecomeEqual("internals.visualViewportScrollY()", "200", finishJSTest);

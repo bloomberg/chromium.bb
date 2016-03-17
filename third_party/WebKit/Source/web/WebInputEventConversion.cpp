@@ -153,8 +153,8 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 {
     m_position = widget->convertFromRootFrame(flooredIntPoint(convertHitPointToRootFrame(widget, FloatPoint(e.x, e.y))));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
-    m_deltaX = e.deltaX;
-    m_deltaY = e.deltaY;
+    m_deltaX = scaleDeltaToWindow(widget, e.deltaX);
+    m_deltaY = scaleDeltaToWindow(widget, e.deltaY);
     m_wheelTicksX = e.wheelTicksX;
     m_wheelTicksY = e.wheelTicksY;
     m_granularity = e.scrollByPage ?
