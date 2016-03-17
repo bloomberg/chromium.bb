@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<body>
+<div contenteditable id="root" class="editing">
+<span id="span">f    oo   bar    baz</span>
+</div>
+<div id="log"></div>
+<script>
+test(function () {
+  var selection = getSelection();
+  selection.collapse(span.firstChild, 0);
+  selection.modify("move", "forward", "character");
+  selection.modify("move", "forward", "character");
+  for (i = 0; i < 7; i++) {
+    selection.modify("extend", "forward", "character");
+  }
+  assert_equals(selection.toString(), "oo bar ");
+});
+</script>
+
+</body>

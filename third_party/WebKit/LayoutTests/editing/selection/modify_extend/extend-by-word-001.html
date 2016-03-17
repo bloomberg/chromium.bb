@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<body>
+<div contenteditable id="root" class="editing">
+<div id="span">foo<span class="Apple-tab-span" style="white-space:pre">	</span>bar</div>
+</div>
+<div id="log"></div>
+
+<script>
+test(function () {
+  var selection = getSelection();
+  selection.collapse(span.firstChild, 0);
+  for (i = 0; i < 4; i++) {
+    selection.modify("move", "forward", "character");
+  }
+  selection.modify("extend", "forward", "word");
+  assert_equals(selection.anchorNode, span.childNodes[2]);
+  assert_equals(selection.anchorOffset, 0);
+  assert_equals(selection.focusNode, span.childNodes[2]);
+  assert_equals(selection.focusOffset, 3);
+});
+</script>
+
+</body>
