@@ -15,6 +15,7 @@
     'autofill.gypi',
     'bookmarks.gypi',
     'browser_sync.gypi',
+    'browsing_data_ui.gypi',
     'bubble.gypi',
     'captive_portal.gypi',
     'certificate_reporting.gypi',

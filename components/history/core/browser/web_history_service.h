@@ -114,6 +114,9 @@ class WebHistoryService : public KeyedService {
   // Used for tests.
   size_t GetNumberOfPendingAudioHistoryRequests();
 
+  // Whether there are other forms of browsing history stored on the server.
+  bool HasOtherFormsOfBrowsingHistory() const;
+
  protected:
   // This function is pulled out for testing purposes. Caller takes ownership of
   // the new Request.

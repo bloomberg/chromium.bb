@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/history/core/browser",
+  "+components/browser_sync/browser",
+]

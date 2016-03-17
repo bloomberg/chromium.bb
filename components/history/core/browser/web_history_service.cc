@@ -437,6 +437,12 @@ size_t WebHistoryService::GetNumberOfPendingAudioHistoryRequests() {
   return pending_audio_history_requests_.size();
 }
 
+bool WebHistoryService::HasOtherFormsOfBrowsingHistory() const {
+  // TODO(msramek): Query history.google.com for existence of other forms of
+  // browsing history. In the meantime, assume that there isn't.
+  return false;
+}
+
 // static
 void WebHistoryService::QueryHistoryCompletionCallback(
     const WebHistoryService::QueryWebHistoryCallback& callback,
