@@ -655,13 +655,20 @@ def SubzeroRuntimeCommands(arch, out_dir):
     LlcArchArgs = [ '-mcpu=x86-64']
   elif arch == 'arm-linux':
     Triple = 'arm-linux-gnu'
-    LlcArchArgs = [ '-mcpu=cortex-a9']
+    LlcArchArgs = [ '-mcpu=cortex-a9', '-float-abi=hard', '-mattr=+neon']
   elif arch == 'arm':
-    Triple = 'arm-none-nacl-gnu'
-    LlcArchArgs = [ '-mcpu=cortex-a9']
+    Triple = 'armv7a-none-nacl'
+    LlcArchArgs = [ '-mcpu=cortex-a9', '-float-abi=hard', '-mattr=+neon']
+  elif arch == 'arm-nonsfi':
+    Triple = 'armv7a-none-linux-gnueabihf'
+    LlcArchArgs = [ '-mcpu=cortex-a9', '-float-abi=hard', '-mattr=+neon',
+                    '-relocation-model=pic', '-force-tls-non-pic',
+                    '-malign-double']
+    AsmSourceBase = 'szrt_asm_arm32'
   else:
     return []
   LlcArchArgs.append('-mtriple=' + Triple)
+
   return [
     command.Command([
         PnaclTool('clang'), '-O2',

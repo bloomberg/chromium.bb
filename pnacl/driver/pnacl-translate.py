@@ -287,14 +287,23 @@ def SetUpArch():
       is_nonsfi = '1'
     else:
       is_sandbox = '1'
-  env.append('SZ_FLAGS_ARCH', '--sandbox=' + is_sandbox)
-  env.append('SZ_FLAGS_ARCH', '--nonsfi=' + is_nonsfi)
-  env.append('SZ_FLAGS_ARCH', '--target=' + base_arch.lower())
-  if base_arch not in ('X8632', 'X8664'):
+
+  # Subzero arch setup below.
+  if base_arch not in ('X8632', 'X8664', 'ARM'):
     env.set('SZ_UNSUPPORTED', '1')
     # Hard-fail on an unsupported architecture.
     if env.getbool('USE_SZ'):
       Log.Fatal('Unsupported architecture when using --sz: ' + base_arch)
+    return
+
+  sz_target = {
+      'arm': 'arm32',
+      'x8632': 'x8632',
+      'x8664': 'x8664',
+  }[base_arch.lower()]
+  env.append('SZ_FLAGS_ARCH', '--sandbox=' + is_sandbox)
+  env.append('SZ_FLAGS_ARCH', '--nonsfi=' + is_nonsfi)
+  env.append('SZ_FLAGS_ARCH', '--target=' + sz_target)
   # This is a fine place to map OPT_LEVEL to the Subzero equivalent, with
   # default of -O2.
   sz_opt_map = {

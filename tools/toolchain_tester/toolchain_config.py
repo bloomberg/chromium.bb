@@ -280,6 +280,34 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0_O0'] = ToolchainConfig(
     is_flaky = True,
     TRANSLATE_FLAGS='-translate-fast')
 
+# Based on llvm_pnacl_arm_O0 with TRANSLATE_FLAGS+=--use-sz
+TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0_sz'] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'],
+    desc='pnacl llvm with Subzero [arm32]',
+    attributes=['arm', 'O0f', 'O2b_sz'],
+    TRANSLATE_FLAGS = '--use-sz')
+
+# Based on llvm_pnacl_arm_O3 with TRANSLATE_FLAGS+=--use-sz
+TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3_sz'] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'],
+    desc='pnacl llvm with Subzero [arm32]',
+    attributes=['arm', 'O3f', 'O2b_sz'],
+    TRANSLATE_FLAGS = '--use-sz')
+
+# Based on llvm_pnacl_arm_O3_O0 with TRANSLATE_FLAGS+=--use-sz
+TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3_O0_sz'] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3_O0'],
+    desc='pnacl llvm with Subzero -Om1 [arm32]',
+    attributes=['arm', 'O3f', 'O0b_sz'],
+    TRANSLATE_FLAGS = '-translate-fast --use-sz')
+
+# Based on llvm_pnacl_arm_O0_O0 with TRANSLATE_FLAGS+=--use-sz
+TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0_O0_sz'] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0_O0'],
+    desc='pnacl llvm with Subzero -Om1 [arm32]',
+    attributes=['arm', 'O0f', 'O0b_sz'],
+    TRANSLATE_FLAGS = '-translate-fast --use-sz')
+
 ######################################################################
 # PNACL + SEL_LDR [X8632]
 ######################################################################
