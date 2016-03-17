@@ -80,7 +80,6 @@ struct ivi_layout;
 
 struct ivi_layout_screen {
 	struct wl_list link;
-	uint32_t id_screen;
 
 	struct ivi_layout *layout;
 	struct weston_output *output;
@@ -249,7 +248,6 @@ create_screen(struct weston_compositor *ec)
 	struct ivi_layout *layout = get_instance();
 	struct ivi_layout_screen *iviscrn = NULL;
 	struct weston_output *output = NULL;
-	int32_t count = 0;
 
 	wl_list_for_each(output, &ec->output_list, link) {
 		iviscrn = calloc(1, sizeof *iviscrn);
@@ -259,9 +257,6 @@ create_screen(struct weston_compositor *ec)
 		}
 
 		iviscrn->layout = layout;
-
-		iviscrn->id_screen = count;
-		count++;
 
 		iviscrn->output = output;
 
@@ -1325,7 +1320,7 @@ ivi_layout_get_id_of_layer(struct ivi_layout_layer *ivilayer)
 static uint32_t
 ivi_layout_get_id_of_screen(struct ivi_layout_screen *iviscrn)
 {
-	return iviscrn->id_screen;
+	return iviscrn->output->id;
 }
 
 static struct ivi_layout_layer *
@@ -1365,7 +1360,7 @@ ivi_layout_get_screen_from_id(uint32_t id_screen)
 	struct ivi_layout_screen *iviscrn = NULL;
 
 	wl_list_for_each(iviscrn, &layout->screen_list, link) {
-		if (iviscrn->id_screen == id_screen)
+		if (iviscrn->output->id == id_screen)
 			return iviscrn;
 	}
 
