@@ -35,9 +35,9 @@
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
-#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
@@ -113,7 +113,7 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
 
     // Obtain the font-family property and the src property. Both must be defined.
     RefPtrWillBeRawPtr<CSSValue> family = properties.getPropertyCSSValue(CSSPropertyFontFamily);
-    if (!family || (!family->isCustomIdentValue() && !family->isPrimitiveValue()))
+    if (!family || (!family->isFontFamilyValue() && !family->isPrimitiveValue()))
         return nullptr;
     RefPtrWillBeRawPtr<CSSValue> src = properties.getPropertyCSSValue(CSSPropertySrc);
     if (!src || !src->isValueList())
@@ -278,8 +278,8 @@ bool FontFace::setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue> value, CSSPrope
 bool FontFace::setFamilyValue(const CSSValue& familyValue)
 {
     AtomicString family;
-    if (familyValue.isCustomIdentValue()) {
-        family = AtomicString(toCSSCustomIdentValue(familyValue).value());
+    if (familyValue.isFontFamilyValue()) {
+        family = AtomicString(toCSSFontFamilyValue(familyValue).value());
     } else if (toCSSPrimitiveValue(familyValue).isValueID()) {
         // We need to use the raw text for all the generic family types, since @font-face is a way of actually
         // defining what font to use for those types.

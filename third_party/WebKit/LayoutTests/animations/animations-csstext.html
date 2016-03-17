@@ -6,6 +6,8 @@ test(function(){
     var div = document.createElement('div');
     div.style.animationName = 'anim';
     assert_equals(div.style.cssText, 'animation-name: anim;');
+    div.style.animationName = "\\ ";
+    assert_equals(div.style.cssText, 'animation-name: \\ ;');
     div.style.animation = 'hello 2s';
     assert_equals(div.style.cssText, 'animation: hello 2s;');
 }, 'cssText serializes animation properties sanely');

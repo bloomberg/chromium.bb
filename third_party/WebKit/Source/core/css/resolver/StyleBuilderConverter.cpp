@@ -143,9 +143,9 @@ static FontDescription::GenericFamilyType convertGenericFamily(CSSValueID valueI
 static bool convertFontFamilyName(StyleResolverState& state, CSSValue& value,
     FontDescription::GenericFamilyType& genericFamily, AtomicString& familyName)
 {
-    if (value.isCustomIdentValue()) {
+    if (value.isFontFamilyValue()) {
         genericFamily = FontDescription::NoFamily;
-        familyName = AtomicString(toCSSCustomIdentValue(value).value());
+        familyName = AtomicString(toCSSFontFamilyValue(value).value());
     } else if (state.document().settings()) {
         genericFamily = convertGenericFamily(toCSSPrimitiveValue(value).getValueID());
         familyName = state.fontBuilder().genericFontFamilyName(genericFamily);

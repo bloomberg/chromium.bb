@@ -14,7 +14,7 @@ var spanElement = document.getElementById('testspan');
 
 var computedStyle = window.getComputedStyle(spanElement);
 shouldBe("spanElement.innerHTML", "'foo'");
-shouldBe("computedStyle.getPropertyValue('font-family')", "\"'Arial [ding dong]', 'Helvetica [Xft]', Courier\"");
+shouldBe("computedStyle.getPropertyValue('font-family')", "'\"Arial [ding dong]\", \"Helvetica [Xft]\", Courier'");
 
 document.body.removeChild(spanElement);
 

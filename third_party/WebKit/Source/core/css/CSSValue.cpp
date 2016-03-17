@@ -36,6 +36,7 @@
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
@@ -119,6 +120,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSCursorImageValue>(*this, other);
         case FontFaceSrcClass:
             return compareCSSValues<CSSFontFaceSrcValue>(*this, other);
+        case FontFamilyClass:
+            return compareCSSValues<CSSFontFamilyValue>(*this, other);
         case FontFeatureClass:
             return compareCSSValues<CSSFontFeatureValue>(*this, other);
         case FunctionClass:
@@ -209,6 +212,8 @@ String CSSValue::cssText() const
         return toCSSCursorImageValue(this)->customCSSText();
     case FontFaceSrcClass:
         return toCSSFontFaceSrcValue(this)->customCSSText();
+    case FontFamilyClass:
+        return toCSSFontFamilyValue(this)->customCSSText();
     case FontFeatureClass:
         return toCSSFontFeatureValue(this)->customCSSText();
     case FunctionClass:
@@ -305,6 +310,9 @@ void CSSValue::destroy()
         return;
     case FontFaceSrcClass:
         delete toCSSFontFaceSrcValue(this);
+        return;
+    case FontFamilyClass:
+        delete toCSSFontFamilyValue(this);
         return;
     case FontFeatureClass:
         delete toCSSFontFeatureValue(this);
@@ -433,6 +441,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case FontFaceSrcClass:
         toCSSFontFaceSrcValue(this)->~CSSFontFaceSrcValue();
         return;
+    case FontFamilyClass:
+        toCSSFontFamilyValue(this)->~CSSFontFamilyValue();
+        return;
     case FontFeatureClass:
         toCSSFontFeatureValue(this)->~CSSFontFeatureValue();
         return;
@@ -559,6 +570,9 @@ DEFINE_TRACE(CSSValue)
         return;
     case FontFaceSrcClass:
         toCSSFontFaceSrcValue(this)->traceAfterDispatch(visitor);
+        return;
+    case FontFamilyClass:
+        toCSSFontFamilyValue(this)->traceAfterDispatch(visitor);
         return;
     case FontFeatureClass:
         toCSSFontFeatureValue(this)->traceAfterDispatch(visitor);

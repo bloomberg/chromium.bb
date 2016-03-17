@@ -5,6 +5,7 @@
 #include "core/css/CSSCustomIdentValue.h"
 
 #include "core/css/CSSMarkup.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -27,7 +28,9 @@ String CSSCustomIdentValue::customCSSText() const
 {
     if (isKnownPropertyID())
         return getPropertyNameAtomicString(m_propertyId);
-    return quoteCSSStringIfNeeded(m_string);
+    StringBuilder builder;
+    serializeIdentifier(m_string, builder);
+    return builder.toString();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSCustomIdentValue)

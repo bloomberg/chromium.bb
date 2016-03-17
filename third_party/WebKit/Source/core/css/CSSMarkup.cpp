@@ -68,79 +68,6 @@ static bool isCSSTokenizerIdentifier(const String& string)
     return isCSSTokenizerIdentifier(string.characters16(), length);
 }
 
-template <typename CharacterType>
-static inline String quoteCSSStringInternal(const CharacterType* characters, unsigned length)
-{
-    // For efficiency, we first pre-calculate the length of the quoted string, then we build the actual one.
-    // Please see below for the actual logic.
-    unsigned quotedStringSize = 2; // Two quotes surrounding the entire string.
-    bool afterEscape = false;
-    for (unsigned i = 0; i < length; ++i) {
-        CharacterType ch = characters[i];
-        if (ch == '\\' || ch == '\'') {
-            quotedStringSize += 2;
-            afterEscape = false;
-        } else if (ch < 0x20 || ch == 0x7F) {
-            quotedStringSize += 2 + (ch >= 0x10);
-            afterEscape = true;
-        } else {
-            quotedStringSize += 1 + (afterEscape && (isASCIIHexDigit(ch) || ch == ' '));
-            afterEscape = false;
-        }
-    }
-
-    StringBuffer<CharacterType> buffer(quotedStringSize);
-    unsigned index = 0;
-    buffer[index++] = '\'';
-    afterEscape = false;
-    for (unsigned i = 0; i < length; ++i) {
-        CharacterType ch = characters[i];
-        if (ch == '\\' || ch == '\'') {
-            buffer[index++] = '\\';
-            buffer[index++] = ch;
-            afterEscape = false;
-        } else if (ch < 0x20 || ch == 0x7F) { // Control characters.
-            buffer[index++] = '\\';
-            placeByteAsHexCompressIfPossible(ch, buffer, index, Lowercase);
-            afterEscape = true;
-        } else {
-            // Space character may be required to separate backslash-escape sequence and normal characters.
-            if (afterEscape && (isASCIIHexDigit(ch) || ch == ' '))
-                buffer[index++] = ' ';
-            buffer[index++] = ch;
-            afterEscape = false;
-        }
-    }
-    buffer[index++] = '\'';
-
-    ASSERT(quotedStringSize == index);
-    return String::adopt(buffer);
-}
-
-// We use single quotes for now because Serialization.cpp uses double quotes.
-static String quoteCSSString(const String& string)
-{
-    // This function expands each character to at most 3 characters ('\u0010' -> '\' '1' '0') as well as adds
-    // 2 quote characters (before and after). Make sure the resulting size (3 * length + 2) will not overflow unsigned.
-
-    unsigned length = string.length();
-
-    if (!length)
-        return String("\'\'");
-
-    if (length > std::numeric_limits<unsigned>::max() / 3 - 2)
-        return emptyString();
-
-    if (string.is8Bit())
-        return quoteCSSStringInternal(string.characters8(), length);
-    return quoteCSSStringInternal(string.characters16(), length);
-}
-
-String quoteCSSStringIfNeeded(const String& string)
-{
-    return isCSSTokenizerIdentifier(string) ? string : quoteCSSString(string);
-}
-
 static void serializeCharacter(UChar32 c, StringBuilder& appendTo)
 {
     appendTo.append('\\');
@@ -198,7 +125,8 @@ void serializeString(const String& string, StringBuilder& appendTo)
     while (index < string.length()) {
         UChar32 c = string.characterStartingAt(index);
         index += U16_LENGTH(c);
-        if (c <= 0x1f)
+
+        if (c <= 0x1f || c == 0x7f)
             serializeCharacterAsCodePoint(c, appendTo);
         else if (c == 0x22 || c == 0x5c)
             serializeCharacter(c, appendTo);
@@ -219,6 +147,11 @@ String serializeString(const String& string)
 String serializeURI(const String& string)
 {
     return "url(" + serializeString(string) + ")";
+}
+
+String serializeFontFamily(const String& string)
+{
+    return isCSSTokenizerIdentifier(string) ? string : serializeString(string);
 }
 
 } // namespace blink

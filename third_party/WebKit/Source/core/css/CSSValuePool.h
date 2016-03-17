@@ -31,6 +31,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSCustomIdentValue.h"
+#include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -46,7 +47,7 @@ class CORE_EXPORT CSSValuePool :  public NoBaseWillBeGarbageCollectedFinalized<C
     USING_FAST_MALLOC_WILL_BE_REMOVED(CSSValuePool);
 public:
     PassRefPtrWillBeRawPtr<CSSValueList> createFontFaceValue(const AtomicString&);
-    PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createFontFamilyValue(const String&);
+    PassRefPtrWillBeRawPtr<CSSFontFamilyValue> createFontFamilyValue(const String&);
     PassRefPtrWillBeRawPtr<CSSInheritedValue> createInheritedValue() { return m_inheritedValue; }
     PassRefPtrWillBeRawPtr<CSSInitialValue> createImplicitInitialValue() { return m_implicitInitialValue; }
     PassRefPtrWillBeRawPtr<CSSInitialValue> createExplicitInitialValue() { return m_explicitInitialValue; }
@@ -86,7 +87,7 @@ private:
     using FontFaceValueCache = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<CSSValueList>>;
     FontFaceValueCache m_fontFaceValueCache;
 
-    using FontFamilyValueCache = WillBeHeapHashMap<String, RefPtrWillBeMember<CSSCustomIdentValue>>;
+    using FontFamilyValueCache = WillBeHeapHashMap<String, RefPtrWillBeMember<CSSFontFamilyValue>>;
     FontFamilyValueCache m_fontFamilyValueCache;
 
     friend CORE_EXPORT CSSValuePool& cssValuePool();

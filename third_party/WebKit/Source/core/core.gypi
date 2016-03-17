@@ -1126,6 +1126,8 @@
             'css/CSSFontFaceSource.h',
             'css/CSSFontFaceSrcValue.cpp',
             'css/CSSFontFaceSrcValue.h',
+            'css/CSSFontFamilyValue.cpp',
+            'css/CSSFontFamilyValue.h',
             'css/CSSFontFeatureValue.cpp',
             'css/CSSFontFeatureValue.h',
             'css/CSSFontSelector.cpp',
