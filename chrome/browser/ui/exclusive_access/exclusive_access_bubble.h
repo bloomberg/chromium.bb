@@ -30,9 +30,9 @@ class Rect;
 //   has elapsed, the next user input re-displays the bubble.
 class ExclusiveAccessBubble : public gfx::AnimationDelegate {
  public:
-  explicit ExclusiveAccessBubble(ExclusiveAccessManager* manager,
-                                 const GURL& url,
-                                 ExclusiveAccessBubbleType bubble_type);
+  ExclusiveAccessBubble(ExclusiveAccessManager* manager,
+                        const GURL& url,
+                        ExclusiveAccessBubbleType bubble_type);
   ~ExclusiveAccessBubble() override;
 
   // Informs the ExclusiveAccessBubble of some user input, which may update
