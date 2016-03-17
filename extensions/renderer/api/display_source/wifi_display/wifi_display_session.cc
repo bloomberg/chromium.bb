@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_session.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/timer/timer.h"
 #include "content/public/common/service_registry.h"
@@ -69,15 +71,20 @@ void WiFiDisplaySession::Start(const CompletionCallback& callback) {
 
 void WiFiDisplaySession::Terminate(const CompletionCallback& callback) {
   DCHECK_EQ(DisplaySourceSession::Established, state_);
-  service_->Disconnect();
-  state_ = DisplaySourceSession::Terminating;
+  Terminate();
   teminate_completion_callback_ = callback;
 }
 
 void WiFiDisplaySession::OnConnected(const mojo::String& ip_address) {
   DCHECK_EQ(DisplaySourceSession::Established, state_);
   ip_address_ = ip_address;
-  media_manager_.reset(new WiFiDisplayMediaManager());
+  media_manager_.reset(
+      new WiFiDisplayMediaManager(
+          params_.video_track,
+          params_.audio_track,
+          base::Bind(
+              &WiFiDisplaySession::OnMediaError,
+              weak_factory_.GetWeakPtr())));
   wfd_source_.reset(wds::Source::Create(this, media_manager_.get(), this));
   wfd_source_->Start();
 }
@@ -115,26 +122,6 @@ void WiFiDisplaySession::OnMessage(const mojo::String& data) {
   DCHECK_EQ(DisplaySourceSession::Established, state_);
   DCHECK(wfd_source_);
   wfd_source_->RTSPDataReceived(data);
-}
-
-void WiFiDisplaySession::OnIPCConnectionError() {
-  // We must explicitly notify the session termination as it will never
-  // arrive from browser process (IPC is broken).
-  switch (state_) {
-    case DisplaySourceSession::Idle:
-    case DisplaySourceSession::Establishing:
-      RunStartCallback(false, kErrorInternal);
-      break;
-    case DisplaySourceSession::Terminating:
-    case DisplaySourceSession::Established:
-      error_callback_.Run(api::display_source::ERROR_TYPE_UNKNOWN_ERROR,
-                          kErrorInternal);
-      state_ = DisplaySourceSession::Idle;
-      terminated_callback_.Run();
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 std::string WiFiDisplaySession::GetLocalIPAddress() const {
@@ -178,18 +165,45 @@ void WiFiDisplaySession::ErrorOccurred(wds::ErrorType error) {
     error_callback_.Run(api::display_source::ERROR_TYPE_UNKNOWN_ERROR,
                         kErrorInternal);
   }
-
-  if (state_ == DisplaySourceSession::Established) {
-    // The session cannot continue.
-    service_->Disconnect();
-    state_ = DisplaySourceSession::Terminating;
-  }
+  // The session cannot continue.
+  Terminate();
 }
 
 void WiFiDisplaySession::SessionCompleted() {
   DCHECK_NE(DisplaySourceSession::Idle, state_);
+  // The session has finished normally.
+  Terminate();
+}
+
+void WiFiDisplaySession::OnIPCConnectionError() {
+  // We must explicitly notify the session termination as it will never
+  // arrive from browser process (IPC is broken).
+  switch (state_) {
+    case DisplaySourceSession::Idle:
+    case DisplaySourceSession::Establishing:
+      RunStartCallback(false, kErrorInternal);
+      break;
+    case DisplaySourceSession::Terminating:
+    case DisplaySourceSession::Established:
+      error_callback_.Run(api::display_source::ERROR_TYPE_UNKNOWN_ERROR,
+                          kErrorInternal);
+      state_ = DisplaySourceSession::Idle;
+      terminated_callback_.Run();
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void WiFiDisplaySession::OnMediaError(const std::string& error) {
+  DCHECK_NE(DisplaySourceSession::Idle, state_);
+  error_callback_.Run(api::display_source::ERROR_TYPE_MEDIA_PIPELINE_ERROR,
+                      error);
+  Terminate();
+}
+
+void WiFiDisplaySession::Terminate() {
   if (state_ == DisplaySourceSession::Established) {
-    // The session has finished normally.
     service_->Disconnect();
     state_ = DisplaySourceSession::Terminating;
   }

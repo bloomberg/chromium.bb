@@ -5,14 +5,26 @@
 #ifndef EXTENSIONS_BROWSER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_MEDIA_MANAGER_H_
 #define EXTENSIONS_BROWSER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_MEDIA_MANAGER_H_
 
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "base/callback.h"
 #include "base/macros.h"
+#include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
 
 namespace extensions {
 
 class WiFiDisplayMediaManager : public wds::SourceMediaManager {
  public:
-  WiFiDisplayMediaManager();
+  using ErrorCallback = base::Callback<void(const std::string&)>;
+
+  WiFiDisplayMediaManager(
+      const blink::WebMediaStreamTrack& video_track,
+      const blink::WebMediaStreamTrack& audio_track,
+      const ErrorCallback& error_callback);
+
   ~WiFiDisplayMediaManager() override;
 
  private:
@@ -24,7 +36,7 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   bool IsPaused() const override;
   wds::SessionType GetSessionType() const override;
   void SetSinkRtpPorts(int port1, int port2) override;
-  std::pair<int,int> GetSinkRtpPorts() const override;
+  std::pair<int, int> GetSinkRtpPorts() const override;
   int GetLocalRtpPort() const override;
 
   bool InitOptimalVideoFormat(
@@ -38,6 +50,15 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   void SendIDRPicture() override;
 
   std::string GetSessionId() const override;
+
+ private:
+  blink::WebMediaStreamTrack video_track_;
+  blink::WebMediaStreamTrack audio_track_;
+
+  std::pair<int, int> sink_rtp_ports_;
+  wds::H264VideoFormat optimal_video_format_;
+
+  ErrorCallback error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplayMediaManager);
 };

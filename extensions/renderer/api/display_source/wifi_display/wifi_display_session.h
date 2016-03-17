@@ -63,6 +63,11 @@ class WiFiDisplaySession: public DisplaySourceSession,
   // A connection error handler for the mojo objects used in this class.
   void OnIPCConnectionError();
 
+  // An error handler for media pipeline error.
+  void OnMediaError(const std::string& error);
+
+  void Terminate();
+
   void RunStartCallback(bool success, const std::string& error = "");
   void RunTerminateCallback(bool success, const std::string& error = "");
 
