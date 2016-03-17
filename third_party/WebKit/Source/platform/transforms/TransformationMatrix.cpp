@@ -1398,6 +1398,17 @@ AffineTransform TransformationMatrix::toAffineTransform() const
                            m_matrix[1][1], m_matrix[3][0], m_matrix[3][1]);
 }
 
+void TransformationMatrix::flattenTo2d()
+{
+    m_matrix[2][0] = 0;
+    m_matrix[2][1] = 0;
+    m_matrix[0][2] = 0;
+    m_matrix[1][2] = 0;
+    m_matrix[2][2] = 1;
+    m_matrix[3][2] = 0;
+    m_matrix[2][3] = 0;
+}
+
 static inline void blendFloat(double& from, double to, double progress)
 {
     if (from != to)

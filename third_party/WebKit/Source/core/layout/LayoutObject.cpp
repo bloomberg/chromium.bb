@@ -2413,6 +2413,13 @@ void LayoutObject::localToAncestorRects(Vector<LayoutRect>& rects, const LayoutB
     }
 }
 
+TransformationMatrix LayoutObject::localToAncestorTransform(const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode, bool* wasFixed) const
+{
+    TransformState transformState(TransformState::ApplyTransformDirection);
+    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed);
+    return transformState.accumulatedTransform();
+}
+
 FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& localPoint, PaintLayer** backingLayer)
 {
     const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidation();

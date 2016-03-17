@@ -987,9 +987,21 @@ public:
     }
 
     // Convert a local quad into the coordinate system of container, taking transforms into account.
+    // If the LayoutBoxModelObject ancestor is non-null, the result will be in the space of the ancestor.
+    // Otherwise:
+    //   If TraverseDocumentBoundaries is specified, the result will be in the space of the local root frame.
+    //   Otherwise, the result will be in the space of the containing frame.
     FloatQuad localToAncestorQuad(const FloatQuad&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
     FloatPoint localToAncestorPoint(const FloatPoint&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const;
     void localToAncestorRects(Vector<LayoutRect>&, const LayoutBoxModelObject* ancestor, const LayoutPoint& preOffset, const LayoutPoint& postOffset) const;
+
+    // Return the transformation matrix to map points from local to the coordinate system of a container, taking transforms into account.
+    // Passing null for |ancestor| behaves the same as localToAncestorQuad.
+    TransformationMatrix localToAncestorTransform(const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
+    TransformationMatrix localToAbsoluteTransform(MapCoordinatesFlags mode = 0, bool* wasFixed = nullptr) const
+    {
+        return localToAncestorTransform(nullptr, mode, wasFixed);
+    }
 
     // Convert a local point into the coordinate system of backing coordinates. Also returns the backing layer if needed.
     FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, PaintLayer** backingLayer = nullptr);

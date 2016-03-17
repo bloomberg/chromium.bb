@@ -47,6 +47,7 @@ public:
         : m_lastPlanarPoint(p)
         , m_lastPlanarQuad(quad)
         , m_accumulatingTransform(false)
+        , m_forceAccumulatingTransform(false)
         , m_mapPoint(true)
         , m_mapQuad(true)
         , m_direction(mappingDirection)
@@ -56,6 +57,7 @@ public:
     TransformState(TransformDirection mappingDirection, const FloatPoint& p)
         : m_lastPlanarPoint(p)
         , m_accumulatingTransform(false)
+        , m_forceAccumulatingTransform(false)
         , m_mapPoint(true)
         , m_mapQuad(false)
         , m_direction(mappingDirection)
@@ -65,8 +67,20 @@ public:
     TransformState(TransformDirection mappingDirection, const FloatQuad& quad)
         : m_lastPlanarQuad(quad)
         , m_accumulatingTransform(false)
+        , m_forceAccumulatingTransform(false)
         , m_mapPoint(false)
         , m_mapQuad(true)
+        , m_direction(mappingDirection)
+    {
+    }
+
+    // Accumulate a transform but don't map any points directly.
+    TransformState(TransformDirection mappingDirection)
+        : m_accumulatedTransform(TransformationMatrix::create())
+        , m_accumulatingTransform(true)
+        , m_forceAccumulatingTransform(true)
+        , m_mapPoint(false)
+        , m_mapQuad(false)
         , m_direction(mappingDirection)
     {
     }
@@ -106,6 +120,9 @@ public:
     FloatPoint mappedPoint(bool* wasClamped = 0) const;
     FloatQuad mappedQuad(bool* wasClamped = 0) const;
 
+    // Return the accumulated transform.
+    const TransformationMatrix& accumulatedTransform() const;
+
 private:
     void translateTransform(const LayoutSize&);
     void translateMappedCoordinates(const LayoutSize&);
@@ -119,6 +136,7 @@ private:
     OwnPtr<TransformationMatrix> m_accumulatedTransform;
     LayoutSize m_accumulatedOffset;
     bool m_accumulatingTransform;
+    bool m_forceAccumulatingTransform;
     bool m_mapPoint, m_mapQuad;
     TransformDirection m_direction;
 };

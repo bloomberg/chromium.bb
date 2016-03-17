@@ -1045,4 +1045,96 @@ TEST_F(MapCoordinatesTest, SVGForeignObject)
     EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
+TEST_F(MapCoordinatesTest, LocalToAbsoluteTransform)
+{
+    setBodyInnerHTML(
+        "<div id='container' style='position: absolute; left: 0; top: 0;'>"
+        "  <div id='scale' style='transform: scale(2.0); transform-origin: left top;'>"
+        "    <div id='child'></div>"
+        "  </div>"
+        "</div>");
+    LayoutBoxModelObject* container = toLayoutBoxModelObject(getLayoutObjectByElementId("container"));
+    TransformationMatrix containerMatrix = container->localToAbsoluteTransform();
+    EXPECT_TRUE(containerMatrix.isIdentity());
+
+    LayoutObject* child = getLayoutObjectByElementId("child");
+    TransformationMatrix childMatrix = child->localToAbsoluteTransform();
+    EXPECT_FALSE(childMatrix.isIdentityOrTranslation());
+    EXPECT_TRUE(childMatrix.isAffine());
+    EXPECT_EQ(0.0, childMatrix.projectPoint(FloatPoint(0.0, 0.0)).x());
+    EXPECT_EQ(0.0, childMatrix.projectPoint(FloatPoint(0.0, 0.0)).y());
+    EXPECT_EQ(20.0, childMatrix.projectPoint(FloatPoint(10.0, 20.0)).x());
+    EXPECT_EQ(40.0, childMatrix.projectPoint(FloatPoint(10.0, 20.0)).y());
+}
+
+TEST_F(MapCoordinatesTest, LocalToAncestorTransform)
+{
+    setBodyInnerHTML(
+        "<div id='container'>"
+        "  <div id='rotate1' style='transform: rotate(45deg); transform-origin: left top;'>"
+        "    <div id='rotate2' style='transform: rotate(90deg); transform-origin: left top;'>"
+        "      <div id='child'></div>"
+        "    </div>"
+        "  </div>"
+        "</div>");
+    LayoutBoxModelObject* container = toLayoutBoxModelObject(getLayoutObjectByElementId("container"));
+    LayoutBoxModelObject* rotate1 = toLayoutBoxModelObject(getLayoutObjectByElementId("rotate1"));
+    LayoutBoxModelObject* rotate2 = toLayoutBoxModelObject(getLayoutObjectByElementId("rotate2"));
+    LayoutObject* child = getLayoutObjectByElementId("child");
+    TransformationMatrix matrix;
+
+    matrix = child->localToAncestorTransform(rotate2);
+    EXPECT_TRUE(matrix.isIdentity());
+
+    // Rotate (100, 0) 90 degrees to (0, 100)
+    matrix = child->localToAncestorTransform(rotate1);
+    EXPECT_FALSE(matrix.isIdentity());
+    EXPECT_TRUE(matrix.isAffine());
+    EXPECT_NEAR(0.0, matrix.projectPoint(FloatPoint(100.0, 0.0)).x(), LayoutUnit::epsilon());
+    EXPECT_NEAR(100.0, matrix.projectPoint(FloatPoint(100.0, 0.0)).y(), LayoutUnit::epsilon());
+
+    // Rotate (100, 0) 135 degrees to (-70.7, 70.7)
+    matrix = child->localToAncestorTransform(container);
+    EXPECT_FALSE(matrix.isIdentity());
+    EXPECT_TRUE(matrix.isAffine());
+    EXPECT_NEAR(-100.0 * sqrt(2.0) / 2.0, matrix.projectPoint(FloatPoint(100.0, 0.0)).x(), LayoutUnit::epsilon());
+    EXPECT_NEAR(100.0 * sqrt(2.0) / 2.0, matrix.projectPoint(FloatPoint(100.0, 0.0)).y(), LayoutUnit::epsilon());
+}
+
+TEST_F(MapCoordinatesTest, LocalToAbsoluteTransformFlattens)
+{
+    document().frame()->settings()->setAcceleratedCompositingEnabled(true);
+    setBodyInnerHTML(
+        "<div style='position: absolute; left: 0; top: 0;'>"
+        "  <div style='transform: rotateY(45deg); -webkit-transform-style:preserve-3d;'>"
+        "    <div style='transform: rotateY(-45deg); -webkit-transform-style:preserve-3d;'>"
+        "      <div id='child1'></div>"
+        "    </div>"
+        "  </div>"
+        "  <div style='transform: rotateY(45deg);'>"
+        "    <div style='transform: rotateY(-45deg);'>"
+        "      <div id='child2'></div>"
+        "    </div>"
+        "  </div>"
+        "</div>");
+    LayoutObject* child1 = getLayoutObjectByElementId("child1");
+    LayoutObject* child2 = getLayoutObjectByElementId("child2");
+    TransformationMatrix matrix;
+
+    matrix = child1->localToAbsoluteTransform();
+
+    // With child1, the rotations cancel and points should map basically back to themselves.
+    EXPECT_NEAR(100.0, matrix.projectPoint(FloatPoint(100.0, 50.0)).x(), LayoutUnit::epsilon());
+    EXPECT_NEAR(50.0, matrix.projectPoint(FloatPoint(100.0, 50.0)).y(), LayoutUnit::epsilon());
+    EXPECT_NEAR(50.0, matrix.projectPoint(FloatPoint(50.0, 100.0)).x(), LayoutUnit::epsilon());
+    EXPECT_NEAR(100.0, matrix.projectPoint(FloatPoint(50.0, 100.0)).y(), LayoutUnit::epsilon());
+
+    // With child2, each rotation gets flattened and the end result is approximately a 90-degree rotation.
+    matrix = child2->localToAbsoluteTransform();
+    EXPECT_NEAR(50.0, matrix.projectPoint(FloatPoint(100.0, 50.0)).x(), LayoutUnit::epsilon());
+    EXPECT_NEAR(50.0, matrix.projectPoint(FloatPoint(100.0, 50.0)).y(), LayoutUnit::epsilon());
+    EXPECT_NEAR(25.0, matrix.projectPoint(FloatPoint(50.0, 100.0)).x(), LayoutUnit::epsilon());
+    EXPECT_NEAR(100.0, matrix.projectPoint(FloatPoint(50.0, 100.0)).y(), LayoutUnit::epsilon());
+}
+
 } // namespace blink

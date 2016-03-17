@@ -319,6 +319,10 @@ public:
 
     AffineTransform toAffineTransform() const;
 
+    // Flatten into a 2-D transformation (non-invertable).
+    // Same as gfx::Transform::FlattenTo2d(); see the docs for that function for details and discussion.
+    void flattenTo2d();
+
     bool operator==(const TransformationMatrix& m2) const
     {
         return m_matrix[0][0] == m2.m_matrix[0][0]
