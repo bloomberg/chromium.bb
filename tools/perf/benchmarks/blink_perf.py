@@ -178,6 +178,10 @@ class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
   test = _BlinkPerfMeasurement
 
   @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/593973.
+
+  @classmethod
   def Name(cls):
     return 'blink_perf.canvas'
 
