@@ -36,7 +36,7 @@ class MessageView {
   MessageView(Channel::MessagePtr message, size_t offset)
       : message_(std::move(message)),
         offset_(offset),
-        handles_(message_->TakeHandles()) {
+        handles_(message_->TakeHandlesForTransport()) {
     DCHECK_GT(message_->data_num_bytes(), offset_);
   }
 
@@ -136,6 +136,41 @@ class ChannelPosix : public Channel,
       size_t num_handles,
       const void* extra_header,
       size_t extra_header_size) override {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    // On OSX, we can have mach ports which are located in the extra header
+    // section.
+    using MachPortsEntry = Channel::Message::MachPortsEntry;
+    CHECK(extra_header_size >= num_handles * sizeof(MachPortsEntry));
+    size_t num_mach_ports = 0;
+    const MachPortsEntry* mach_ports =
+        reinterpret_cast<const MachPortsEntry*>(extra_header);
+    for (size_t i = 0; i < num_handles; i++) {
+      if (mach_ports[i].mach_port != MACH_PORT_NULL)
+        num_mach_ports++;
+    }
+    CHECK(num_mach_ports <= num_handles);
+    if (incoming_platform_handles_.size() + num_mach_ports < num_handles)
+      return nullptr;
+
+    ScopedPlatformHandleVectorPtr handles(
+        new PlatformHandleVector(num_handles));
+    for (size_t i = 0, mach_port_index = 0; i < num_handles; ++i) {
+      if (mach_port_index < num_mach_ports &&
+          mach_ports[mach_port_index].index == i) {
+        (*handles)[i] = PlatformHandle(
+            static_cast<mach_port_t>(mach_ports[mach_port_index].mach_port));
+        CHECK((*handles)[i].type == PlatformHandle::Type::MACH);
+        // These are actually just Mach port names until they're resolved from
+        // the remote process.
+        (*handles)[i].type = PlatformHandle::Type::MACH_NAME;
+        mach_port_index++;
+      } else {
+        CHECK(!incoming_platform_handles_.empty());
+        (*handles)[i] = incoming_platform_handles_.front();
+        incoming_platform_handles_.pop_front();
+      }
+    }
+#else
     if (incoming_platform_handles_.size() < num_handles)
       return nullptr;
 
@@ -145,6 +180,7 @@ class ChannelPosix : public Channel,
       (*handles)[i] = incoming_platform_handles_.front();
       incoming_platform_handles_.pop_front();
     }
+#endif
 
     return handles;
   }

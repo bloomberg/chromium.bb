@@ -27,6 +27,8 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mach_port_broker.h"
 #endif
 
 namespace mojo {
@@ -147,6 +149,10 @@ void MultiprocessTestHelper::ChildSetup() {
   primordial_pipe_token = base::CommandLine::ForCurrentProcess()
       ->GetSwitchValueASCII(kMojoPrimordialPipeToken);
   CHECK(!primordial_pipe_token.empty());
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  CHECK(base::MachPortBroker::ChildSendTaskPortToParent("mojo_test"));
+#endif
 
   SetParentPipeHandle(
       PlatformChannelPair::PassClientHandleFromParentProcess(

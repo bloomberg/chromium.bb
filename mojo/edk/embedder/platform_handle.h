@@ -30,7 +30,7 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
 
   bool is_valid() const {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-    if (type == Type::MACH)
+    if (type == Type::MACH || type == Type::MACH_NAME)
       return port != MACH_PORT_NULL;
 #endif
     return handle != -1;
@@ -40,6 +40,11 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
     POSIX,
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     MACH,
+    // MACH_NAME isn't a real Mach port. But rather the "name" of one that can
+    // be resolved to a real port later. This distinction is needed so that the
+    // "port" doesn't try to be closed if CloseIfNecessary() is called. Having
+    // this also allows us to do checks in other places.
+    MACH_NAME,
 #endif
   };
   Type type = Type::POSIX;

@@ -105,6 +105,13 @@ component("system") {
                             # which is uninteresting.
   }
 
+  if (is_mac && !is_ios) {
+    sources += [
+      "mach_port_relay.cc",
+      "mach_port_relay.h",
+    ]
+  }
+
   allow_circular_includes_from = [ "//mojo/edk/embedder" ]
 }
 

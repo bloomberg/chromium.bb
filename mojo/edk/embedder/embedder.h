@@ -20,6 +20,10 @@
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
+namespace base {
+class PortProvider;
+}
+
 namespace mojo {
 namespace edk {
 
@@ -137,6 +141,13 @@ MOJO_SYSTEM_IMPL_EXPORT void InitIPCSupport(
 // the system was initialized. Upon completion the ProcessDelegate's
 // |OnShutdownComplete()| method is invoked.
 MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+// Set the |base::PortProvider| for this process. Can be called on any thread,
+// but must be set in the root process before any Mach ports can be transferred.
+MOJO_SYSTEM_IMPL_EXPORT void SetMachPortProvider(
+    base::PortProvider* port_provider);
+#endif
 
 // Creates a message pipe over an arbitrary platform channel. The other end of
 // the channel must also be passed to this function. Either endpoint can be in

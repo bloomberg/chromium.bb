@@ -146,6 +146,12 @@
            # uninteresting.
           'msvs_disabled_warnings': [ 4324 ],
         }],
+        ['OS=="mac" and OS!="ios"', {
+          'sources': [
+            'edk/system/mach_port_relay.cc',
+            'edk/system/mach_port_relay.h',
+          ],
+        }],
       ],
     },
     {

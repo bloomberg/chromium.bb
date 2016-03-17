@@ -8,10 +8,15 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "mojo/edk/embedder/platform_handle.h"
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mach_logging.h"
+#endif
 
 namespace mojo {
 namespace edk {
@@ -43,6 +48,12 @@ Channel::Message::Message(size_t payload_size,
 #if defined(OS_WIN)
   // On Windows we serialize platform handles into the extra header space.
   extra_header_size = max_handles_ * sizeof(PlatformHandle);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  // On OSX, some of the platform handles may be mach ports, which are
+  // serialised into the message buffer. Since there could be a mix of fds and
+  // mach ports, we store the mach ports as an <index, port> pair (of uint32_t),
+  // so that the original ordering of handles can be re-created.
+  extra_header_size = max_handles * sizeof(MachPortsEntry);
 #endif
   // Pad extra header data to be aliged to |kChannelMessageAlignment| bytes.
   if (extra_header_size % kChannelMessageAlignment) {
@@ -78,14 +89,19 @@ Channel::Message::Message(size_t payload_size,
       static_cast<uint16_t>(sizeof(Header) + extra_header_size);
 #endif
 
-#if defined(OS_WIN)
   if (max_handles_ > 0) {
+#if defined(OS_WIN)
     handles_ = reinterpret_cast<PlatformHandle*>(mutable_extra_header());
     // Initialize all handles to invalid values.
     for (size_t i = 0; i < max_handles_; ++i)
       handles()[i] = PlatformHandle();
-  }
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+    mach_ports_ = reinterpret_cast<MachPortsEntry*>(mutable_extra_header());
+    // Initialize all handles to invalid values.
+    for (size_t i = 0; i < max_handles_; ++i)
+      mach_ports_[i] = {0, static_cast<uint32_t>(MACH_PORT_NULL)};
 #endif
+  }
 }
 
 Channel::Message::~Message() {
@@ -100,9 +116,9 @@ Channel::Message::~Message() {
 // static
 Channel::MessagePtr Channel::Message::Deserialize(const void* data,
                                                   size_t data_num_bytes) {
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !(defined(OS_MACOSX) && !defined(OS_IOS))
   // We only serialize messages into other messages when performing message
-  // relay on Windows.
+  // relay on Windows and OSX.
   NOTREACHED();
   return nullptr;
 #else
@@ -123,16 +139,19 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
   }
 
   uint32_t extra_header_size = header->num_header_bytes - sizeof(Header);
+#if defined(OS_WIN)
   uint32_t max_handles = extra_header_size / sizeof(PlatformHandle);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  uint32_t max_handles = extra_header_size / sizeof(MachPortsEntry);
+#endif
   if (header->num_handles > max_handles) {
-    DLOG(ERROR) << "Decoding invalid message:" << header->num_handles << " > "
-                << max_handles;
+    DLOG(ERROR) << "Decoding invalid message:" << header->num_handles
+                << " > " << max_handles;
     return nullptr;
   }
 
-  MessagePtr message(
-      new Message(data_num_bytes - header->num_header_bytes, max_handles));
-
+  MessagePtr message(new Message(data_num_bytes - header->num_header_bytes,
+                                 max_handles));
   DCHECK_EQ(message->data_num_bytes(), data_num_bytes);
   DCHECK_EQ(message->extra_header_size(), extra_header_size);
   DCHECK_EQ(message->header_->num_header_bytes, header->num_header_bytes);
@@ -184,8 +203,10 @@ bool Channel::Message::has_mach_ports() const {
     return false;
 
   for (const auto& handle : (*handle_vector_)) {
-    if (handle.type == PlatformHandle::Type::MACH)
+    if (handle.type == PlatformHandle::Type::MACH ||
+        handle.type == PlatformHandle::Type::MACH_NAME) {
       return true;
+    }
   }
   return false;
 }
@@ -217,6 +238,21 @@ void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
   std::swap(handle_vector_, new_handles);
 #endif  // defined(OS_WIN)
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  size_t mach_port_index = 0;
+  for (size_t i = 0; i < max_handles_; ++i)
+    mach_ports_[i] = {0, static_cast<uint32_t>(MACH_PORT_NULL)};
+  for (size_t i = 0; i < handle_vector_->size(); i++) {
+    if ((*handle_vector_)[i].type == PlatformHandle::Type::MACH ||
+        (*handle_vector_)[i].type == PlatformHandle::Type::MACH_NAME) {
+      mach_port_t port = (*handle_vector_)[i].port;
+      mach_ports_[mach_port_index].index = i;
+      mach_ports_[mach_port_index].mach_port = port;
+      mach_port_index++;
+    }
+  }
+#endif
 }
 
 ScopedPlatformHandleVectorPtr Channel::Message::TakeHandles() {
@@ -227,7 +263,39 @@ ScopedPlatformHandleVectorPtr Channel::Message::TakeHandles() {
       new PlatformHandleVector(header_->num_handles));
   for (size_t i = 0; i < header_->num_handles; ++i)
     std::swap(moved_handles->at(i), handles()[i]);
+  header_->num_handles = 0;
   return moved_handles;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  for (size_t i = 0; i < max_handles_; ++i)
+    mach_ports_[i] = {0, static_cast<uint32_t>(MACH_PORT_NULL)};
+  header_->num_handles = 0;
+  return std::move(handle_vector_);
+#else
+  header_->num_handles = 0;
+  return std::move(handle_vector_);
+#endif
+}
+
+ScopedPlatformHandleVectorPtr Channel::Message::TakeHandlesForTransport() {
+#if defined(OS_WIN)
+  // Not necessary on Windows.
+  NOTREACHED();
+  return nullptr;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  if (handle_vector_) {
+    for (auto it = handle_vector_->begin(); it != handle_vector_->end(); ) {
+      if (it->type == PlatformHandle::Type::MACH ||
+          it->type == PlatformHandle::Type::MACH_NAME) {
+        // For Mach port names, we can can just leak them. They're not real
+        // ports anyways. For real ports, they're leaked because this is a child
+        // process and the remote process will take ownership.
+        it = handle_vector_->erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+  return std::move(handle_vector_);
 #else
   return std::move(handle_vector_);
 #endif

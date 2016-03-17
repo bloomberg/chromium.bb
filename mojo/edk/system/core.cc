@@ -99,6 +99,12 @@ void Core::InitChild(ScopedPlatformHandle platform_handle) {
   GetNodeController()->ConnectToParent(std::move(platform_handle));
 }
 
+void Core::SetMachPortProvider(base::PortProvider* port_provider) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  GetNodeController()->CreateMachPortRelay(port_provider);
+#endif
+}
+
 MojoHandle Core::AddDispatcher(scoped_refptr<Dispatcher> dispatcher) {
   base::AutoLock lock(handles_lock_);
   return handles_.AddDispatcher(dispatcher);

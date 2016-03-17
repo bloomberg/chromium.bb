@@ -66,6 +66,17 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
       char padding[6];
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
     };
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    struct MachPortsEntry {
+      uint16_t index;
+      uint32_t mach_port;
+      static_assert(sizeof(mach_port_t) <= sizeof(uint32_t),
+                    "mach_port_t must be no larger than uint32_t");
+    };
+    static_assert(sizeof(MachPortsEntry) == 6,
+                  "sizeof(MachPortsEntry) must be 6 bytes");
+#endif
 #pragma pack(pop)
 
     // Allocates and owns a buffer for message data with enough capacity for
@@ -111,6 +122,11 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     // handles().
     void SetHandles(ScopedPlatformHandleVectorPtr new_handles);
     ScopedPlatformHandleVectorPtr TakeHandles();
+    // Version of TakeHandles that returns a vector of platform handles suitable
+    // for transfer over an underlying OS mechanism. i.e. file descriptors over
+    // a unix domain socket. Any handle that cannot be transferred this way,
+    // such as Mach ports, will be removed.
+    ScopedPlatformHandleVectorPtr TakeHandlesForTransport();
 
 #if defined(OS_WIN)
     // Prepares the handles in this message for use in a different process.
@@ -131,11 +147,15 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     Header* header_;
 
 #if defined(OS_WIN)
-    // On Windows, handles are serialized in the data buffer along with the
-    // rest of the payload.
+    // On Windows, handles are serialised into the extra header section.
     PlatformHandle* handles_ = nullptr;
 #else
     ScopedPlatformHandleVectorPtr handle_vector_;
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    // On OSX, handles are serialised into the extra header section.
+    MachPortsEntry* mach_ports_ = nullptr;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(Message);

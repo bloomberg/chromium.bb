@@ -117,6 +117,7 @@
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
+#include "content/browser/mach_broker_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
@@ -1198,7 +1199,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
           ->task_runner()));
   mojo_shell_context_.reset(new MojoShellContext);
-#endif
+#if defined(OS_MACOSX)
+  mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
+#endif  // defined(OS_MACOSX)
+#endif  // !defined(OS_IOS)
 
 #if !defined(OS_IOS)
   indexed_db_thread_.reset(new base::Thread("IndexedDB"));

@@ -25,11 +25,16 @@
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"
 
+namespace base {
+class PortProvider;
+}
+
 namespace mojo {
 namespace edk {
 
 class Broker;
 class Core;
+class MachPortRelay;
 class PortsMessage;
 
 // The owner of ports::Node which facilitates core EDK implementation. All
@@ -55,6 +60,11 @@ class NodeController : public ports::NodeDelegate,
   scoped_refptr<base::TaskRunner> io_task_runner() const {
     return io_task_runner_;
   }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Create the relay used to transfer mach ports between processes.
+  void CreateMachPortRelay(base::PortProvider* port_provider);
+#endif
 
   // Called exactly once, shortly after construction, and before any other
   // methods are called on this object.
@@ -162,13 +172,16 @@ class NodeController : public ports::NodeDelegate,
   void OnIntroduce(const ports::NodeName& from_node,
                    const ports::NodeName& name,
                    ScopedPlatformHandle channel_handle) override;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   void OnRelayPortsMessage(const ports::NodeName& from_node,
                            base::ProcessHandle from_process,
                            const ports::NodeName& destination,
                            Channel::MessagePtr message) override;
 #endif
   void OnChannelError(const ports::NodeName& from_node) override;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  MachPortRelay* GetMachPortRelay() override;
+#endif
 
   // Marks this NodeController for destruction when the IO thread shuts down.
   // This is used in case Core is torn down before the IO thread. Must only be
@@ -256,6 +269,12 @@ class NodeController : public ports::NodeDelegate,
 #if defined(OS_POSIX)
   // Broker for sync shared buffer creation (posix-only) in children.
   scoped_ptr<Broker> broker_;
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  base::Lock mach_port_relay_lock_;
+  // Relay for transferring mach ports to/from children.
+  scoped_ptr<MachPortRelay> mach_port_relay_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(NodeController);

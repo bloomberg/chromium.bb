@@ -55,6 +55,8 @@ class MultiprocessTestHelper {
   // |EXPECT_TRUE(WaitForChildTestShutdown());|.
   bool WaitForChildTestShutdown();
 
+  const base::Process& test_child() const { return test_child_; }
+
   // Used by macros in mojo/edk/test/mojo_test_base.h to support multiprocess
   // test client initialization.
   static void ChildSetup();

@@ -5,7 +5,9 @@
 #ifndef MOJO_EDK_SYSTEM_NODE_CHANNEL_H_
 #define MOJO_EDK_SYSTEM_NODE_CHANNEL_H_
 
+#include <queue>
 #include <unordered_map>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,12 +20,20 @@
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/ports/name.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "mojo/edk/system/mach_port_relay.h"
+#endif
+
 namespace mojo {
 namespace edk {
 
 // Wraps a Channel to send and receive Node control messages.
 class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
-                    public Channel::Delegate {
+                    public Channel::Delegate
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+                    , public MachPortRelay::Observer
+#endif
+  {
  public:
   class Delegate {
    public:
@@ -52,7 +62,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
     virtual void OnIntroduce(const ports::NodeName& from_node,
                              const ports::NodeName& name,
                              ScopedPlatformHandle channel_handle) = 0;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
     virtual void OnRelayPortsMessage(const ports::NodeName& from_node,
                                      base::ProcessHandle from_process,
                                      const ports::NodeName& destination,
@@ -60,6 +70,10 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
 #endif
 
     virtual void OnChannelError(const ports::NodeName& node) = 0;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    virtual MachPortRelay* GetMachPortRelay() = 0;
+#endif
   };
 
   static scoped_refptr<NodeChannel> Create(
@@ -106,7 +120,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void Introduce(const ports::NodeName& name,
                  ScopedPlatformHandle channel_handle);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   // Relay the message to the specified node via this channel.  This is used to
   // pass windows handles between two processes that do not have permission to
   // duplicate handles into the other's address space. The relay process is
@@ -118,6 +132,10 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
  private:
   friend class base::RefCountedThreadSafe<NodeChannel>;
 
+  using PendingMessageQueue = std::queue<Channel::MessagePtr>;
+  using PendingRelayMessageQueue =
+      std::queue<std::pair<ports::NodeName, Channel::MessagePtr>>;
+
   NodeChannel(Delegate* delegate,
               ScopedPlatformHandle platform_handle,
               scoped_refptr<base::TaskRunner> io_task_runner);
@@ -128,6 +146,13 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                         size_t payload_size,
                         ScopedPlatformHandleVectorPtr handles) override;
   void OnChannelError() override;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // MachPortRelay::Observer:
+  void OnProcessReady(base::ProcessHandle process) override;
+
+  void ProcessPendingMessagesWithMachPorts();
+#endif
 
   void WriteChannelMessage(Channel::MessagePtr message);
 
@@ -142,6 +167,12 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
 
   base::Lock remote_process_handle_lock_;
   base::ProcessHandle remote_process_handle_ = base::kNullProcessHandle;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  base::Lock pending_mach_messages_lock_;
+  PendingMessageQueue pending_write_messages_;
+  PendingRelayMessageQueue pending_relay_messages_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(NodeChannel);
 };

@@ -210,11 +210,6 @@ void PlatformSharedBuffer::InitFromSharedMemoryHandle(
     base::SharedMemoryHandle handle) {
   DCHECK(!shared_memory_);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // TODO(crbug.com/582468): Support Mach shared memory.
-  CHECK(handle.GetType() == base::SharedMemoryHandle::POSIX);
-#endif
-
   // TODO(crbug.com/556587): Support read-only handles.
   shared_memory_.reset(new base::SharedMemory(handle, false));
 }

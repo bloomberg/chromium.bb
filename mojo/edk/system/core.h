@@ -27,6 +27,10 @@
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
+namespace base {
+class PortProvider;
+}
+
 namespace mojo {
 namespace edk {
 
@@ -66,6 +70,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // Creates a message pipe endpoint and connects it to a pipe the parent has
   // associated with |token|.
   ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token);
+
+  // Sets the mach port provider for this process.
+  void SetMachPortProvider(base::PortProvider* port_provider);
 
   MojoHandle AddDispatcher(scoped_refptr<Dispatcher> dispatcher);
 

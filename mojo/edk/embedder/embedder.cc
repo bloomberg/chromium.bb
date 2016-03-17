@@ -119,6 +119,13 @@ void ShutdownIPCSupport() {
                  base::Unretained(internal::g_process_delegate)));
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+void SetMachPortProvider(base::PortProvider* port_provider) {
+  DCHECK(port_provider);
+  internal::g_core->SetMachPortProvider(port_provider);
+}
+#endif
+
 ScopedMessagePipeHandle CreateMessagePipe(
     ScopedPlatformHandle platform_handle) {
   CHECK(internal::g_process_delegate);
