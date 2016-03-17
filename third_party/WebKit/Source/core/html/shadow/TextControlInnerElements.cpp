@@ -27,6 +27,7 @@
 #include "core/html/shadow/TextControlInnerElements.h"
 
 #include "core/HTMLNames.h"
+#include "core/css/resolver/StyleAdjuster.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/events/MouseEvent.h"
@@ -142,7 +143,11 @@ PassRefPtr<ComputedStyle> TextControlInnerEditorElement::customStyleForLayoutObj
     if (!parentLayoutObject || !parentLayoutObject->isTextControl())
         return originalStyleForLayoutObject();
     LayoutTextControlItem textControlLayoutItem = LayoutTextControlItem(toLayoutTextControl(parentLayoutObject));
-    return textControlLayoutItem.createInnerEditorStyle(textControlLayoutItem.styleRef());
+    RefPtr<ComputedStyle> innerEditorStyle = textControlLayoutItem.createInnerEditorStyle(textControlLayoutItem.styleRef());
+    // Using StyleAdjuster::adjustComputedStyle updates unwanted style. We'd like
+    // to apply only editing-related.
+    StyleAdjuster::adjustStyleForEditing(*innerEditorStyle);
+    return innerEditorStyle.release();
 }
 
 // ----------------------------

@@ -231,6 +231,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         || style.hasFilter()))
         style.setTransformStyle3D(TransformStyle3DFlat);
 
+    adjustStyleForEditing(style);
+
     bool isSVGElement = element && element->isSVGElement();
     if (isSVGElement) {
         // Only the root <svg> element in an SVG document fragment tree honors css position
@@ -246,6 +248,19 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
             style.clearMultiCol();
     }
     adjustStyleForAlignment(style, parentStyle);
+}
+
+void StyleAdjuster::adjustStyleForEditing(ComputedStyle& style)
+{
+    if (style.userModify() != READ_WRITE_PLAINTEXT_ONLY)
+        return;
+    // Collapsing whitespace is harmful in plain-text editing.
+    if (style.whiteSpace() == NORMAL)
+        style.setWhiteSpace(PRE_WRAP);
+    else if (style.whiteSpace() == NOWRAP)
+        style.setWhiteSpace(PRE);
+    else if (style.whiteSpace() == PRE_LINE)
+        style.setWhiteSpace(PRE_WRAP);
 }
 
 void StyleAdjuster::adjustStyleForFirstLetter(ComputedStyle& style)

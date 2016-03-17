@@ -41,6 +41,7 @@ public:
     { }
 
     void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*);
+    static void adjustStyleForEditing(ComputedStyle&);
 
 private:
     void adjustStyleForFirstLetter(ComputedStyle&);

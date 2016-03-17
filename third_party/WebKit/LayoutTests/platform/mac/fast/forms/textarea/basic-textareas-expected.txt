@@ -611,10 +611,11 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 120x65
           LayoutText {#text} at (0,0) size 120x65
-            text run at (0,0) width 70: "Lorem ipsum "
-            text run at (69,0) width 28: "dolor"
+            text run at (0,0) width 100: "Lorem ipsum  dolor"
+            text run at (99,0) width 4: " "
             text run at (0,13) width 116: "ABCDEFGHIJKLMNOP"
             text run at (0,26) width 78: "QRSTUVWXYZ"
+            text run at (77,26) width 4: " "
             text run at (0,39) width 120: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
     layer at (144,500) size 141x32 clip at (145,501) size 124x15 scrollWidth 426 scrollHeight 17
@@ -633,20 +634,20 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (77,26) width 4: " "
             text run at (0,39) width 120: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
-    layer at (430,500) size 141x32 clip at (431,501) size 124x15 scrollWidth 423 scrollHeight 17
+    layer at (430,500) size 141x32 clip at (431,501) size 124x15 scrollWidth 426 scrollHeight 17
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x13
-          LayoutText {#text} at (0,0) size 422x13
-            text run at (0,0) width 70: "Lorem ipsum "
-            text run at (69,0) width 353: "dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
+          LayoutText {#text} at (0,0) size 425x13
+            text run at (0,0) width 425: "Lorem ipsum  dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
     layer at (573,500) size 141x32 clip at (574,501) size 124x30 scrollHeight 69
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 120x65
           LayoutText {#text} at (0,0) size 120x65
-            text run at (0,0) width 70: "Lorem ipsum "
-            text run at (69,0) width 28: "dolor"
+            text run at (0,0) width 100: "Lorem ipsum  dolor"
+            text run at (99,0) width 4: " "
             text run at (0,13) width 116: "ABCDEFGHIJKLMNOP"
             text run at (0,26) width 78: "QRSTUVWXYZ"
+            text run at (77,26) width 4: " "
             text run at (0,39) width 120: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
     layer at (1,593) size 141x47 clip at (2,594) size 124x30 scrollWidth 195 scrollHeight 43
@@ -1338,10 +1339,11 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 120x65
           LayoutText {#text} at (0,0) size 120x65
-            text run at (0,0) width 70: "Lorem ipsum "
-            text run at (69,0) width 28: "dolor"
+            text run at (0,0) width 100: "Lorem ipsum  dolor"
+            text run at (99,0) width 4: " "
             text run at (0,13) width 116: "ABCDEFGHIJKLMNOP"
             text run at (0,26) width 78: "QRSTUVWXYZ"
+            text run at (77,26) width 4: " "
             text run at (0,39) width 120: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
     layer at (144,482) size 141x32 clip at (145,483) size 124x15 scrollWidth 426 scrollHeight 17
@@ -1360,20 +1362,20 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (77,26) width 4: " "
             text run at (0,39) width 120: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
-    layer at (430,482) size 141x32 clip at (431,483) size 124x15 scrollWidth 423 scrollHeight 17
+    layer at (430,482) size 141x32 clip at (431,483) size 124x15 scrollWidth 426 scrollHeight 17
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x13
-          LayoutText {#text} at (0,0) size 422x13
-            text run at (0,0) width 70: "Lorem ipsum "
-            text run at (69,0) width 353: "dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
+          LayoutText {#text} at (0,0) size 425x13
+            text run at (0,0) width 425: "Lorem ipsum  dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
     layer at (573,482) size 141x32 clip at (574,483) size 124x30 scrollHeight 69
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 120x65
           LayoutText {#text} at (0,0) size 120x65
-            text run at (0,0) width 70: "Lorem ipsum "
-            text run at (69,0) width 28: "dolor"
+            text run at (0,0) width 100: "Lorem ipsum  dolor"
+            text run at (99,0) width 4: " "
             text run at (0,13) width 116: "ABCDEFGHIJKLMNOP"
             text run at (0,26) width 78: "QRSTUVWXYZ"
+            text run at (77,26) width 4: " "
             text run at (0,39) width 120: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
     layer at (1,572) size 141x47 clip at (2,573) size 124x30 scrollWidth 195 scrollHeight 43
