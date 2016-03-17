@@ -175,8 +175,7 @@ bool PlatformSharedBuffer::Init() {
   base::SharedMemoryCreateOptions options;
   options.size = num_bytes_;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  // TODO(crbug.com/582468): Support Mach shared memory.
-  options.type = base::SharedMemoryHandle::POSIX;
+  options.type = base::SharedMemoryHandle::MACH;
 #endif
 
   shared_memory_.reset(new base::SharedMemory);
