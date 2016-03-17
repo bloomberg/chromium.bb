@@ -46,6 +46,7 @@ public class ClientId {
      * @return A {@link ClientId} that represents this BookmarkId.
      */
     public static ClientId createClientIdForBookmarkId(BookmarkId id) {
+        if (id == null) return null;
         return new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, id.toString());
     }
 }

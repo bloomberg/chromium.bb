@@ -279,6 +279,7 @@ junit_binary("chrome_junit_tests") {
     "junit/src/org/chromium/chrome/browser/media/router/cast/TestUtils.java",
     "junit/src/org/chromium/chrome/browser/notifications/NotificationUIManagerUnitTest.java",
     "junit/src/org/chromium/chrome/browser/ntp/NativePageFactoryTest.java",
+    "junit/src/org/chromium/chrome/browser/offlinepages/ClientIdTest.java",
     "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridgeTest.java",
     "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtilsTest.java",
     "junit/src/org/chromium/chrome/browser/omaha/ResponseParserTest.java",
