@@ -915,14 +915,10 @@ ivi_hmi_controller_set_background(struct hmi_controller *hmi_ctrl,
 	struct ivi_layout_surface *ivisurf = NULL;
 	struct hmi_controller_layer *base_layer = NULL;
 	struct ivi_layout_layer   *ivilayer = NULL;
-	struct hmi_controller_layer *application_layer =
-					wl_container_of(hmi_ctrl->application_layer_list.prev,
-							application_layer,
-							link);
-	const int32_t dstx = application_layer->x;
-	const int32_t dsty = application_layer->y;
-	const int32_t width  = application_layer->width;
-	const int32_t height = application_layer->height;
+	int32_t dstx;
+	int32_t dsty;
+	int32_t width;
+	int32_t height;
 	int32_t ret = 0;
 	int32_t i = 0;
 
@@ -930,7 +926,10 @@ ivi_hmi_controller_set_background(struct hmi_controller *hmi_ctrl,
 		uint32_t *add_surface_id = wl_array_add(&hmi_ctrl->ui_widgets,
 							sizeof(*add_surface_id));
 		*add_surface_id = id_surface + (i * hmi_ctrl->ui_setting.surface_id_offset);
-
+		dstx = base_layer->x;
+		dsty = base_layer->y;
+		width  = base_layer->width;
+		height = base_layer->height;
 		ivilayer = base_layer->ivilayer;
 
 		ivisurf = ivi_layout_interface->get_surface_from_id(*add_surface_id);
