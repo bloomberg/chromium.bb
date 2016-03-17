@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "components/test_runner/layout_dump.h"
-#include "components/test_runner/layout_dump_flags.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_runner.h"
 #include "content/public/renderer/render_frame.h"
@@ -47,13 +45,11 @@ bool LayoutTestRenderFrameObserver::OnMessageReceived(
 }
 
 void LayoutTestRenderFrameObserver::OnLayoutDumpRequest() {
-  const test_runner::LayoutDumpFlags& layout_dump_flags =
+  std::string dump =
       LayoutTestRenderProcessObserver::GetInstance()
           ->test_interfaces()
           ->TestRunner()
-          ->GetLayoutDumpFlags();
-  std::string dump =
-      test_runner::DumpLayout(render_frame()->GetWebFrame(), layout_dump_flags);
+          ->DumpLayout(render_frame()->GetWebFrame());
   Send(new ShellViewHostMsg_LayoutDumpResponse(routing_id(), dump));
 }
 

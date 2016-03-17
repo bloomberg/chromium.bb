@@ -30,8 +30,6 @@
 #include "build/build_config.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/test_runner/gamepad_controller.h"
-#include "components/test_runner/layout_dump.h"
-#include "components/test_runner/layout_dump_flags.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_interfaces.h"
@@ -885,11 +883,9 @@ void BlinkTestRunner::CaptureDump() {
     return;
   }
 
-  const test_runner::LayoutDumpFlags& layout_dump_flags =
-      interfaces->TestRunner()->GetLayoutDumpFlags();
-  if (!layout_dump_flags.dump_child_frames()) {
-    std::string layout_dump = DumpLayout(
-        render_view()->GetMainRenderFrame()->GetWebFrame(), layout_dump_flags);
+  if (!interfaces->TestRunner()->IsRecursiveLayoutDumpRequested()) {
+    std::string layout_dump = interfaces->TestRunner()->DumpLayout(
+        render_view()->GetMainRenderFrame()->GetWebFrame());
     OnLayoutDumpCompleted(layout_dump);
     return;
   }

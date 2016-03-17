@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/test_runner/app_banner_client.h"
+#include "components/test_runner/layout_dump.h"
 #include "components/test_runner/mock_credential_manager_client.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/mock_web_speech_recognizer.h"
@@ -1836,9 +1837,14 @@ void TestRunner::GetAudioData(std::vector<unsigned char>* buffer_view) const {
   *buffer_view = audio_data_;
 }
 
-const LayoutDumpFlags& TestRunner::GetLayoutDumpFlags() {
+bool TestRunner::IsRecursiveLayoutDumpRequested() {
   CheckResponseMimeType();
-  return layout_dump_flags_;
+  return layout_dump_flags_.dump_child_frames();
+}
+
+std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
+  CheckResponseMimeType();
+  return ::test_runner::DumpLayout(frame, layout_dump_flags_);
 }
 
 void TestRunner::ReplicateLayoutDumpFlagsChanges(

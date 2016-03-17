@@ -14,11 +14,10 @@ class DictionaryValue;
 
 namespace blink {
 class WebContentSettingsClient;
+class WebLocalFrame;
 }
 
 namespace test_runner {
-
-class LayoutDumpFlags;
 
 class WebTestRunner {
  public:
@@ -35,11 +34,16 @@ class WebTestRunner {
   virtual bool ShouldDumpAsAudio() const = 0;
   virtual void GetAudioData(std::vector<unsigned char>* buffer_view) const = 0;
 
-  // Gets layout dump flags (i.e. dump-as-text or dump-as-markup) requested
-  // by the test (i.e. via testRunner.dumpAsText() called from javascript).
-  virtual const LayoutDumpFlags& GetLayoutDumpFlags() = 0;
+  // Reports if tests requested a recursive layout dump of all frames
+  // (i.e. by calling testRunner.dumpChildFramesAsText() from javascript).
+  virtual bool IsRecursiveLayoutDumpRequested() = 0;
 
-  // Replicates changes to layout dump flags.
+  // Dumps layout of |frame| using the mode requested by the current test
+  // (i.e. text mode if testRunner.dumpAsText() was called from javascript).
+  virtual std::string DumpLayout(blink::WebLocalFrame* frame) = 0;
+
+  // Replicates changes to layout dump flags (i.e. changes that happened in
+  // another renderer). See also WebTestDelegate::OnLayoutDumpFlagsChanged.
   virtual void ReplicateLayoutDumpFlagsChanges(
       const base::DictionaryValue& changed_values) = 0;
 

@@ -73,7 +73,8 @@ class TestRunner : public WebTestRunner,
   bool ShouldGeneratePixelResults() override;
   bool ShouldDumpAsAudio() const override;
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
-  const LayoutDumpFlags& GetLayoutDumpFlags() override;
+  bool IsRecursiveLayoutDumpRequested() override;
+  std::string DumpLayout(blink::WebLocalFrame* frame) override;
   void ReplicateLayoutDumpFlagsChanges(
       const base::DictionaryValue& changed_values) override;
   bool HasCustomTextDump(std::string* custom_text_dump) const override;
