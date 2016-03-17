@@ -588,16 +588,6 @@ struct ivi_layout_interface {
 					   const int32_t number);
 
 	/**
-	 * \brief get weston_output from ivi_layout_screen.
-	 *
-	 * \return (struct weston_output *)
-	 *              if the method call was successful
-	 * \return NULL if the method call was failed
-	 */
-	struct weston_output *(*screen_get_output)(struct ivi_layout_screen *);
-
-
-	/**
 	 * transision animation for layer
 	 */
 	void (*transition_move_layer_cancel)(struct ivi_layout_layer *layer);

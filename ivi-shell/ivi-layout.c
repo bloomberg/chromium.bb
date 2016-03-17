@@ -2012,12 +2012,6 @@ ivi_layout_screen_set_render_order(struct weston_output *output,
 	return IVI_SUCCEEDED;
 }
 
-static struct weston_output *
-ivi_layout_screen_get_output(struct ivi_layout_screen *iviscrn)
-{
-	return iviscrn->output;
-}
-
 /**
  * This function is used by the additional ivi-module because of dumping ivi_surface sceenshot.
  * The ivi-module, e.g. ivi-controller.so, is in wayland-ivi-extension of Genivi's Layer Management.
@@ -2435,7 +2429,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.get_screens_under_layer	= ivi_layout_get_screens_under_layer,
 	.screen_add_layer		= ivi_layout_screen_add_layer,
 	.screen_set_render_order	= ivi_layout_screen_set_render_order,
-	.screen_get_output		= ivi_layout_screen_get_output,
 
 	/**
 	 * animation
