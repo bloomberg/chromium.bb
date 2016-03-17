@@ -51,12 +51,20 @@ namespace base {
     } while (0)
 
 class HistogramSamples;
+class PersistentMemoryAllocator;
 
 class BASE_EXPORT SparseHistogram : public HistogramBase {
  public:
   // If there's one with same name, return the existing one. If not, create a
   // new one.
   static HistogramBase* FactoryGet(const std::string& name, int32_t flags);
+
+  // Create a histogram using data in persistent storage.
+  static scoped_ptr<HistogramBase> PersistentCreate(
+      PersistentMemoryAllocator* allocator,
+      const std::string& name,
+      HistogramSamples::Metadata* meta,
+      HistogramSamples::Metadata* logged_meta);
 
   ~SparseHistogram() override;
 
@@ -83,6 +91,11 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   // Clients should always use FactoryGet to create SparseHistogram.
   explicit SparseHistogram(const std::string& name);
 
+  SparseHistogram(PersistentMemoryAllocator* allocator,
+                  const std::string& name,
+                  HistogramSamples::Metadata* meta,
+                  HistogramSamples::Metadata* logged_meta);
+
   friend BASE_EXPORT HistogramBase* DeserializeHistogramInfo(
       base::PickleIterator* iter);
   static HistogramBase* DeserializeInfoImpl(base::PickleIterator* iter);
@@ -107,8 +120,8 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   // Protects access to |samples_|.
   mutable base::Lock lock_;
 
-  SampleMap samples_;
-  SampleMap logged_samples_;
+  scoped_ptr<HistogramSamples> samples_;
+  scoped_ptr<HistogramSamples> logged_samples_;
 
   DISALLOW_COPY_AND_ASSIGN(SparseHistogram);
 };

@@ -20,13 +20,15 @@
 
 namespace base {
 
+// The logic here is similar to that of PersistentSampleMap but with different
+// data structures. Changes here likely need to be duplicated there.
 class BASE_EXPORT SampleMap : public HistogramSamples {
  public:
   SampleMap();
   explicit SampleMap(uint64_t id);
   ~SampleMap() override;
 
-  // HistogramSamples implementation:
+  // HistogramSamples:
   void Accumulate(HistogramBase::Sample value,
                   HistogramBase::Count count) override;
   HistogramBase::Count GetCount(HistogramBase::Sample value) const override;
@@ -34,36 +36,13 @@ class BASE_EXPORT SampleMap : public HistogramSamples {
   scoped_ptr<SampleCountIterator> Iterator() const override;
 
  protected:
-  bool AddSubtractImpl(
-      SampleCountIterator* iter,
-      HistogramSamples::Operator op) override;  // |op| is ADD or SUBTRACT.
+  // Performs arithemetic. |op| is ADD or SUBTRACT.
+  bool AddSubtractImpl(SampleCountIterator* iter, Operator op) override;
 
  private:
   std::map<HistogramBase::Sample, HistogramBase::Count> sample_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(SampleMap);
-};
-
-class BASE_EXPORT SampleMapIterator : public SampleCountIterator {
- public:
-  typedef std::map<HistogramBase::Sample, HistogramBase::Count>
-      SampleToCountMap;
-
-  explicit SampleMapIterator(const SampleToCountMap& sample_counts);
-  ~SampleMapIterator() override;
-
-  // SampleCountIterator implementation:
-  bool Done() const override;
-  void Next() override;
-  void Get(HistogramBase::Sample* min,
-           HistogramBase::Sample* max,
-           HistogramBase::Count* count) const override;
-
- private:
-  void SkipEmptyBuckets();
-
-  SampleToCountMap::const_iterator iter_;
-  const SampleToCountMap::const_iterator end_;
 };
 
 }  // namespace base

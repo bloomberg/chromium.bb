@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/synchronization/lock.h"
 
@@ -71,12 +72,12 @@ scoped_ptr<BucketRanges> CreateRangesFromData(
 size_t CalculateRequiredCountsBytes(size_t bucket_count) {
   // 2 because each "sample count" also requires a backup "logged count"
   // used for calculating the delta during snapshot operations.
-  const unsigned kBytesPerBucket = 2 * sizeof(HistogramBase::AtomicCount);
+  const size_t kBytesPerBucket = 2 * sizeof(HistogramBase::AtomicCount);
 
   // If the |bucket_count| is such that it would overflow the return type,
   // perhaps as the result of a malicious actor, then return zero to
   // indicate the problem to the caller.
-  if (bucket_count > std::numeric_limits<uint32_t>::max() / kBytesPerBucket)
+  if (bucket_count > std::numeric_limits<size_t>::max() / kBytesPerBucket)
     return 0;
 
   return bucket_count * kBytesPerBucket;
@@ -276,6 +277,18 @@ scoped_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
     return nullptr;
   }
 
+  // Sparse histograms are quite different so handle them as a special case.
+  if (histogram_data_ptr->histogram_type == SPARSE_HISTOGRAM) {
+    scoped_ptr<HistogramBase> histogram = SparseHistogram::PersistentCreate(
+        memory_allocator(), histogram_data_ptr->name,
+        &histogram_data_ptr->samples_metadata,
+        &histogram_data_ptr->logged_metadata);
+    DCHECK(histogram);
+    histogram->SetFlags(histogram_data_ptr->flags);
+    RecordCreateHistogramResult(CREATE_HISTOGRAM_SUCCESS);
+    return histogram;
+  }
+
   // Copy the histogram_data to local storage because anything in persistent
   // memory cannot be trusted as it could be changed at any moment by a
   // malicious actor that shares access. The contents of histogram_data are
@@ -318,7 +331,7 @@ scoped_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
           histogram_data.counts_ref, kTypeIdCountsArray);
   size_t counts_bytes =
       CalculateRequiredCountsBytes(histogram_data.bucket_count);
-  if (!counts_data || !counts_bytes ||
+  if (!counts_data || counts_bytes == 0 ||
       memory_allocator_->GetAllocSize(histogram_data.counts_ref) <
           counts_bytes) {
     RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_COUNTS_ARRAY);
@@ -445,49 +458,64 @@ scoped_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
     return nullptr;
   }
 
-  // If CalculateRequiredCountsBytes() returns zero then the bucket_count
-  // was not valid.
-  size_t bucket_count = bucket_ranges->bucket_count();
-  size_t counts_bytes = CalculateRequiredCountsBytes(bucket_count);
-  if (!counts_bytes) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  size_t ranges_bytes = (bucket_count + 1) * sizeof(HistogramBase::Sample);
-  PersistentMemoryAllocator::Reference ranges_ref =
-      memory_allocator_->Allocate(ranges_bytes, kTypeIdRangesArray);
-  PersistentMemoryAllocator::Reference counts_ref =
-      memory_allocator_->Allocate(counts_bytes, kTypeIdCountsArray);
+  // Create the metadata necessary for a persistent sparse histogram. This
+  // is done first because it is a small subset of what is required for
+  // other histograms.
   PersistentMemoryAllocator::Reference histogram_ref =
       memory_allocator_->Allocate(
           offsetof(PersistentHistogramData, name) + name.length() + 1,
           kTypeIdHistogram);
-  HistogramBase::Sample* ranges_data =
-      memory_allocator_->GetAsObject<HistogramBase::Sample>(ranges_ref,
-                                                            kTypeIdRangesArray);
   PersistentHistogramData* histogram_data =
       memory_allocator_->GetAsObject<PersistentHistogramData>(histogram_ref,
                                                               kTypeIdHistogram);
-
-  // Only continue here if all allocations were successful. If they weren't,
-  // there is no way to free the space but that's not really a problem since
-  // the allocations only fail because the space is full or corrupt and so
-  // any future attempts will also fail.
-  if (counts_ref && ranges_data && histogram_data) {
-    strcpy(histogram_data->name, name.c_str());
-    for (size_t i = 0; i < bucket_ranges->size(); ++i)
-      ranges_data[i] = bucket_ranges->range(i);
-
+  if (histogram_data) {
+    memcpy(histogram_data->name, name.c_str(), name.size() + 1);
     histogram_data->histogram_type = histogram_type;
-    histogram_data->flags = flags;
-    histogram_data->minimum = minimum;
-    histogram_data->maximum = maximum;
-    histogram_data->bucket_count = static_cast<uint32_t>(bucket_count);
-    histogram_data->ranges_ref = ranges_ref;
-    histogram_data->ranges_checksum = bucket_ranges->checksum();
-    histogram_data->counts_ref = counts_ref;
+    histogram_data->flags = flags | HistogramBase::kIsPersistent;
+  }
 
+  // Create the remaining metadata necessary for regular histograms.
+  if (histogram_type != SPARSE_HISTOGRAM) {
+    size_t bucket_count = bucket_ranges->bucket_count();
+    size_t counts_bytes = CalculateRequiredCountsBytes(bucket_count);
+    if (counts_bytes == 0) {
+      // |bucket_count| was out-of-range.
+      NOTREACHED();
+      return nullptr;
+    }
+
+    size_t ranges_bytes = (bucket_count + 1) * sizeof(HistogramBase::Sample);
+    PersistentMemoryAllocator::Reference counts_ref =
+        memory_allocator_->Allocate(counts_bytes, kTypeIdCountsArray);
+    PersistentMemoryAllocator::Reference ranges_ref =
+        memory_allocator_->Allocate(ranges_bytes, kTypeIdRangesArray);
+    HistogramBase::Sample* ranges_data =
+        memory_allocator_->GetAsObject<HistogramBase::Sample>(
+            ranges_ref, kTypeIdRangesArray);
+
+    // Only continue here if all allocations were successful. If they weren't,
+    // there is no way to free the space but that's not really a problem since
+    // the allocations only fail because the space is full or corrupt and so
+    // any future attempts will also fail.
+    if (counts_ref && ranges_data && histogram_data) {
+      for (size_t i = 0; i < bucket_ranges->size(); ++i)
+        ranges_data[i] = bucket_ranges->range(i);
+
+      histogram_data->minimum = minimum;
+      histogram_data->maximum = maximum;
+      // |bucket_count| must fit within 32-bits or the allocation of the counts
+      // array would have failed for being too large; the allocator supports
+      // less than 4GB total size.
+      histogram_data->bucket_count = static_cast<uint32_t>(bucket_count);
+      histogram_data->ranges_ref = ranges_ref;
+      histogram_data->ranges_checksum = bucket_ranges->checksum();
+      histogram_data->counts_ref = counts_ref;
+    } else {
+      histogram_data = nullptr;  // Clear this for proper handling below.
+    }
+  }
+
+  if (histogram_data) {
     // Create the histogram using resources in persistent memory. This ends up
     // resolving the "ref" values stored in histogram_data instad of just
     // using what is already known above but avoids duplicating the switch

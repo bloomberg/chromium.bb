@@ -127,10 +127,9 @@ class Histogram::Factory {
   }
 
   // Perform any required datafill on the just-created histogram.  If
-  // overridden, be sure to call the "super" version.
-  virtual void FillHistogram(HistogramBase* histogram) {
-    histogram->SetFlags(flags_);
-  }
+  // overridden, be sure to call the "super" version -- this method may not
+  // always remain empty.
+  virtual void FillHistogram(HistogramBase* histogram) {}
 
   // These values are protected (instead of private) because they need to
   // be accessible to methods of sub-classes in order to avoid passing
@@ -172,7 +171,7 @@ HistogramBase* Histogram::Factory::Build() {
     }
 
     // Try to create the histogram using a "persistent" allocator. As of
-    // 2015-01-14, the availability of such is controlled by a base::Feature
+    // 2016-02-25, the availability of such is controlled by a base::Feature
     // that is off by default. If the allocator doesn't exist or if
     // allocating from it fails, code below will allocate the histogram from
     // the process heap.
@@ -181,7 +180,6 @@ HistogramBase* Histogram::Factory::Build() {
     PersistentHistogramAllocator* allocator =
         PersistentHistogramAllocator::GetGlobalAllocator();
     if (allocator) {
-      flags_ |= HistogramBase::kIsPersistent;
       tentative_histogram = allocator->AllocateHistogram(
           histogram_type_,
           name_,
@@ -199,6 +197,7 @@ HistogramBase* Histogram::Factory::Build() {
       DCHECK(!allocator);  // Shouldn't have failed.
       flags_ &= ~HistogramBase::kIsPersistent;
       tentative_histogram = HeapAlloc(registered_ranges);
+      tentative_histogram->SetFlags(flags_);
     }
 
     FillHistogram(tentative_histogram.get());

@@ -37,11 +37,12 @@ class HistogramTest : public testing::TestWithParam<bool> {
   HistogramTest() : use_persistent_histogram_allocator_(GetParam()) {}
 
   void SetUp() override {
+    if (use_persistent_histogram_allocator_)
+      CreatePersistentHistogramAllocator();
+
     // Each test will have a clean state (no Histogram / BucketRanges
     // registered).
     InitializeStatisticsRecorder();
-    if (use_persistent_histogram_allocator_)
-      CreatePersistentHistogramAllocator();
   }
 
   void TearDown() override {
@@ -69,14 +70,8 @@ class HistogramTest : public testing::TestWithParam<bool> {
     // any persistent memory segment (which simplifies some tests).
     PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
 
-    if (!allocator_memory_)
-      allocator_memory_.reset(new char[kAllocatorMemorySize]);
-
-    PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
-    memset(allocator_memory_.get(), 0, kAllocatorMemorySize);
-    PersistentHistogramAllocator::CreateGlobalAllocatorOnPersistentMemory(
-        allocator_memory_.get(), kAllocatorMemorySize, 0, 0,
-        "HistogramAllocatorTest");
+    PersistentHistogramAllocator::CreateGlobalAllocatorOnLocalMemory(
+        kAllocatorMemorySize, 0, "HistogramAllocatorTest");
     allocator_ =
         PersistentHistogramAllocator::GetGlobalAllocator()->memory_allocator();
   }

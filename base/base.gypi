@@ -416,6 +416,8 @@
           'metrics/persistent_histogram_allocator.h',
           'metrics/persistent_memory_allocator.cc',
           'metrics/persistent_memory_allocator.h',
+          'metrics/persistent_sample_map.cc',
+          'metrics/persistent_sample_map.h',
           'metrics/sample_map.cc',
           'metrics/sample_map.h',
           'metrics/sample_vector.cc',

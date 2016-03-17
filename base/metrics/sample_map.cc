@@ -5,11 +5,75 @@
 #include "base/metrics/sample_map.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace base {
 
 typedef HistogramBase::Count Count;
 typedef HistogramBase::Sample Sample;
+
+namespace {
+
+// An iterator for going through a SampleMap. The logic here is identical
+// to that of PersistentSampleMapIterator but with different data structures.
+// Changes here likely need to be duplicated there.
+class SampleMapIterator : public SampleCountIterator {
+ public:
+  typedef std::map<HistogramBase::Sample, HistogramBase::Count>
+      SampleToCountMap;
+
+  explicit SampleMapIterator(const SampleToCountMap& sample_counts);
+  ~SampleMapIterator() override;
+
+  // SampleCountIterator:
+  bool Done() const override;
+  void Next() override;
+  void Get(HistogramBase::Sample* min,
+           HistogramBase::Sample* max,
+           HistogramBase::Count* count) const override;
+
+ private:
+  void SkipEmptyBuckets();
+
+  SampleToCountMap::const_iterator iter_;
+  const SampleToCountMap::const_iterator end_;
+};
+
+SampleMapIterator::SampleMapIterator(const SampleToCountMap& sample_counts)
+    : iter_(sample_counts.begin()),
+      end_(sample_counts.end()) {
+  SkipEmptyBuckets();
+}
+
+SampleMapIterator::~SampleMapIterator() {}
+
+bool SampleMapIterator::Done() const {
+  return iter_ == end_;
+}
+
+void SampleMapIterator::Next() {
+  DCHECK(!Done());
+  ++iter_;
+  SkipEmptyBuckets();
+}
+
+void SampleMapIterator::Get(Sample* min, Sample* max, Count* count) const {
+  DCHECK(!Done());
+  if (min)
+    *min = iter_->first;
+  if (max)
+    *max = iter_->first + 1;
+  if (count)
+    *count = iter_->second;
+}
+
+void SampleMapIterator::SkipEmptyBuckets() {
+  while (!Done() && iter_->second == 0) {
+    ++iter_;
+  }
+}
+
+}  // namespace
 
 SampleMap::SampleMap() : SampleMap(0) {}
 
@@ -39,11 +103,10 @@ Count SampleMap::TotalCount() const {
 }
 
 scoped_ptr<SampleCountIterator> SampleMap::Iterator() const {
-  return scoped_ptr<SampleCountIterator>(new SampleMapIterator(sample_counts_));
+  return make_scoped_ptr(new SampleMapIterator(sample_counts_));
 }
 
-bool SampleMap::AddSubtractImpl(SampleCountIterator* iter,
-                                HistogramSamples::Operator op) {
+bool SampleMap::AddSubtractImpl(SampleCountIterator* iter, Operator op) {
   Sample min;
   Sample max;
   Count count;
@@ -55,40 +118,6 @@ bool SampleMap::AddSubtractImpl(SampleCountIterator* iter,
     sample_counts_[min] += (op == HistogramSamples::ADD) ? count : -count;
   }
   return true;
-}
-
-SampleMapIterator::SampleMapIterator(const SampleToCountMap& sample_counts)
-    : iter_(sample_counts.begin()),
-      end_(sample_counts.end()) {
-  SkipEmptyBuckets();
-}
-
-SampleMapIterator::~SampleMapIterator() {}
-
-bool SampleMapIterator::Done() const {
-  return iter_ == end_;
-}
-
-void SampleMapIterator::Next() {
-  DCHECK(!Done());
-  ++iter_;
-  SkipEmptyBuckets();
-}
-
-void SampleMapIterator::Get(Sample* min, Sample* max, Count* count) const {
-  DCHECK(!Done());
-  if (min != NULL)
-    *min = iter_->first;
-  if (max != NULL)
-    *max = iter_->first + 1;
-  if (count != NULL)
-    *count = iter_->second;
-}
-
-void SampleMapIterator::SkipEmptyBuckets() {
-  while (!Done() && iter_->second == 0) {
-    ++iter_;
-  }
 }
 
 }  // namespace base
