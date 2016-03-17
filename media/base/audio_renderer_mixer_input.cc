@@ -32,12 +32,14 @@ AudioRendererMixerInput::AudioRendererMixerInput(
                            base::Unretained(this))) {}
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
+  DCHECK(!started_);
   DCHECK(!mixer_);
 }
 
 void AudioRendererMixerInput::Initialize(
     const AudioParameters& params,
     AudioRendererSink::RenderCallback* callback) {
+  DCHECK(!started_);
   DCHECK(!mixer_);
   DCHECK(callback);
 
@@ -106,6 +108,7 @@ void AudioRendererMixerInput::Pause() {
 }
 
 bool AudioRendererMixerInput::SetVolume(double volume) {
+  base::AutoLock auto_lock(volume_lock_);
   volume_ = volume;
   return true;
 }
@@ -190,7 +193,13 @@ double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
         frames_filled, audio_bus->frames() - frames_filled);
   }
 
-  return frames_filled > 0 ? volume_ : 0;
+  // We're reading |volume_| from the audio device thread and must avoid racing
+  // with the main/media thread calls to SetVolume(). See thread safety comment
+  // in the header file.
+  {
+    base::AutoLock auto_lock(volume_lock_);
+    return frames_filled > 0 ? volume_ : 0;
+  }
 }
 
 void AudioRendererMixerInput::OnRenderError() {

@@ -1,6 +1,17 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// THREAD SAFETY
+//
+// This class is generally not thread safe. Callers should ensure thread safety.
+// For instance, the |sink_lock_| in WebAudioSourceProvider synchronizes access
+// to this object across the main thread (for WebAudio APIs) and the
+// media thread (for HTMLMediaElement APIs).
+//
+// The one exception is protection for |volume_| via |volume_lock_|. This lock
+// prevents races between SetVolume() (called on any thread) and ProvideInput
+// (called on audio device thread). See http://crbug.com/588992.
 
 #ifndef MEDIA_BASE_AUDIO_RENDERER_MIXER_INPUT_H_
 #define MEDIA_BASE_AUDIO_RENDERER_MIXER_INPUT_H_
@@ -9,6 +20,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/output_device.h"
@@ -68,6 +80,10 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
  private:
   friend class AudioRendererMixerInputTest;
+
+  // Protect |volume_|, accessed by separate threads in ProvideInput() and
+  // SetVolume().
+  base::Lock volume_lock_;
 
   bool started_;
   bool playing_;
