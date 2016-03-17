@@ -500,7 +500,7 @@ Polymer({
 
   ready: function() {
     this.elementReadyTimeMs_ = performance.now();
-    document.addEventListener('keydown', this.checkForEscapePress_.bind(this));
+    document.addEventListener('keydown', this.onKeydown_.bind(this));
     this.setSearchFocusHandlers_();
     this.showSinkList_();
   },
@@ -577,24 +577,6 @@ Polymer({
         !this.findCastModeByType_(this.shownCastModeValue_)) {
       this.setShownCastMode_(media_router.AUTO_CAST_MODE);
       this.rebuildSinksToShow_();
-    }
-  },
-
-  /**
-   * Catch an Escape button press when searching to cause it to only exit the
-   * filter view and not exit the dialog.
-   * @param {!Event} e Keydown event object for the event.
-   */
-  checkForEscapePress_: function(e) {
-    if (e.keyCode == media_router.KEYCODE_ESC) {
-      if (this.isUserSearching_) {
-        this.showSinkList_();
-        e.preventDefault();
-      } else {
-        this.fire('close-dialog', {
-          pressEscToClose: true,
-        });
-      }
     }
   },
 
@@ -1328,6 +1310,29 @@ Polymer({
       this.resetRouteCreationProperties_(true);
     } else {
       this.pendingCreatedRouteId_ = route.id;
+    }
+  },
+
+  /**
+   * Called when a keydown event is fired.
+   * @param {!Event} e Keydown event object for the event.
+   */
+  onKeydown_: function(e) {
+    // The ESC key may be pressed with a combination of other keys. It is
+    // handled on the C++ side instead of the JS side on non-mac platforms,
+    // which uses toolkit-views. Handle the expected behavior on all platforms
+    // here.
+    if (e.keyCode == media_router.KEYCODE_ESC && !e.shiftKey &&
+        !e.ctrlKey && !e.altKey && !e.metaKey) {
+      // When searching, allow ESC as a mechanism to leave the filter view.
+      if (this.isUserSearching_) {
+        this.showSinkList_();
+        e.preventDefault();
+      } else {
+        this.fire('close-dialog', {
+          pressEscToClose: true,
+        });
+      }
     }
   },
 

@@ -56,14 +56,6 @@ cr.define('media_router', function() {
     container.addEventListener('start-casting-to-route-click',
                                onStartCastingToRouteClick);
 
-    // Pressing the ESC key closes the dialog.
-    document.addEventListener('keydown', function(e) {
-      if (e.keyCode == media_router.KEYCODE_ESC) {
-        container.maybeReportUserFirstAction(
-            media_router.MediaRouterUserAction.CLOSE);
-      }
-    });
-
     window.addEventListener('blur', onWindowBlur);
   }
 
