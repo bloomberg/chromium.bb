@@ -187,6 +187,11 @@
             "group_name": "Enabled"
         }
     ],
+    "SimpleCacheTrial": [
+        {
+            "group_name": "ExperimentYes"
+        }
+    ],
     "SpdyEnableDependencies": [
         {
             "group_name": "Enable"
