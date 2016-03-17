@@ -65,13 +65,16 @@ NavigationHandleImpl::NavigationHandleImpl(
       frame_tree_node_(frame_tree_node),
       next_index_(0),
       navigation_start_(navigation_start),
-      pending_nav_entry_id_(pending_nav_entry_id) {
+      pending_nav_entry_id_(pending_nav_entry_id),
+      is_in_commit_(false) {
   DCHECK(!navigation_start.is_null());
   GetDelegate()->DidStartNavigation(this);
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
   GetDelegate()->DidFinishNavigation(this);
+
+  CHECK(!is_in_commit_);
 
   // Cancel the navigation on the IO thread if the NavigationHandle is being
   // destroyed in the middle of the NavigationThrottles checks.

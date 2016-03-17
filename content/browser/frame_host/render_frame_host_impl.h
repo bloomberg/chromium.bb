@@ -932,6 +932,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // called (no pending instance should be set).
   bool should_reuse_web_ui_;
 
+  // True if the RenderFrameHost is in the process of committing a navigation.
+  // This is temporary to help pinpoint the cause of crbug.com/589365.
+  // TODO(clamy): Remove once enough data has been gathered.
+  bool is_in_commit_;
+
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
 

@@ -567,8 +567,15 @@ void NavigatorImpl::DidNavigate(
                                         transition_type);
     render_frame_host->navigation_handle()->DidCommitNavigation(
         params, is_navigation_within_page, render_frame_host);
+
+    // TODO(clamy): Remove this once enough data has been gathered for
+    // crbug.com/589365.
+    render_frame_host->navigation_handle()->set_is_in_commit(false);
+
     render_frame_host->SetNavigationHandle(nullptr);
   }
+
+  // TODO(clamy): The NavigationHandle should always be reset here.
 
   if (!did_navigate)
     return;  // No navigation happened.

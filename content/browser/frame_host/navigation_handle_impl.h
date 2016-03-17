@@ -214,6 +214,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool same_page,
       RenderFrameHostImpl* render_frame_host);
 
+  // TODO(clamy): Remove this once enough data has been gathered for
+  // crbug.com/589365.
+  void set_is_in_commit(bool is_in_commit) { is_in_commit_ = is_in_commit; }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -294,6 +298,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding ServiceWorkerNetworkProvider is created in the renderer.
   scoped_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+
+  // True if the RenderFrameHost that owns the NavigationHandle is in the
+  // process of committing a navigation.  This is temporary to help pinpoint
+  // the cause of crbug.com/589365.
+  // TODO(clamy): Remove once enough data has been gathered.
+  bool is_in_commit_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };
