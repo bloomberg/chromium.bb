@@ -425,12 +425,28 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
           0x33);
+    case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR: {
+      const SkColor tab_color =
+          GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
+      const SkColor frame_color =
+          GetColor(ThemeProperties::COLOR_FRAME, incognito);
+      const SeparatorColorKey key(tab_color, frame_color);
+      auto i = separator_color_cache_.find(key);
+      if (i != separator_color_cache_.end())
+        return i->second;
+      const SkColor separator_color = GetSeparatorColor(tab_color, frame_color);
+      separator_color_cache_[key] = separator_color;
+      return separator_color;
+    }
     case ThemeProperties::COLOR_BACKGROUND_TAB: {
       // The tints here serve a different purpose than TINT_BACKGROUND_TAB.
       // That tint is used to create background tab images for custom themes by
       // lightening the frame images.  The tints here create solid colors for
-      // background tabs by darkening the foreground tab (toolbar) color.
-      const color_utils::HSL kTint = {-1, -1, 0.4296875};
+      // background tabs by darkening the foreground tab (toolbar) color.  These
+      // values are chosen to turn the default normal and incognito MD frame
+      // colors (0xf2f2f2 and 0x505050) into 0xd0d0d0 and 0x373737,
+      // respectively.
+      const color_utils::HSL kTint = {-1, -1, 0.42975};
       const color_utils::HSL kTintIncognito = {-1, -1, 0.34375};
       return color_utils::HSLShift(
           GetColor(ThemeProperties::COLOR_TOOLBAR, incognito),
@@ -589,6 +605,62 @@ bool ThemeService::ShouldUseNativeFrame() const {
 bool ThemeService::HasCustomImage(int id) const {
   return BrowserThemePack::IsPersistentImageID(id) && theme_supplier_ &&
          theme_supplier_->HasCustomImage(id);
+}
+
+// static
+SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
+                                        SkColor frame_color) {
+  // We use this alpha value for the separator if possible.
+  const SkAlpha kAlpha = 0x40;
+
+  // In most cases, if the tab is lighter than the frame, we darken the
+  // frame; if the tab is darker than the frame, we lighten the frame.
+  // However, if the frame is already very dark or very light, respectively,
+  // this won't contrast sufficiently with the frame color, so we'll need to
+  // reverse when we're lightening and darkening.
+  const double tab_luminance = color_utils::GetRelativeLuminance(tab_color);
+  const double frame_luminance = color_utils::GetRelativeLuminance(frame_color);
+  const bool lighten = tab_luminance < frame_luminance;
+  SkColor separator_color = lighten ? SK_ColorWHITE : SK_ColorBLACK;
+  double separator_luminance = color_utils::GetRelativeLuminance(
+      color_utils::AlphaBlend(separator_color, frame_color, kAlpha));
+  // The minimum contrast ratio here is just under the ~1.1469 in the default MD
+  // incognito theme.  We want the separator to still darken the frame in that
+  // theme, but that's about as low of contrast as we're willing to accept.
+  const double kMinContrastRatio = 1.1465;
+  if (color_utils::GetContrastRatio(separator_luminance, frame_luminance) >=
+      kMinContrastRatio)
+    return SkColorSetA(separator_color, kAlpha);
+
+  // We need to reverse whether we're darkening or lightening.  We know the new
+  // separator color will contrast with the frame; check whether it also
+  // contrasts at least as well with the tab.
+  separator_color = color_utils::InvertColor(separator_color);
+  separator_luminance = color_utils::GetRelativeLuminance(
+      color_utils::AlphaBlend(separator_color, frame_color, kAlpha));
+  if (color_utils::GetContrastRatio(separator_luminance, tab_luminance) >=
+      color_utils::GetContrastRatio(separator_luminance, frame_luminance))
+    return SkColorSetA(separator_color, kAlpha);
+
+  // The reversed separator doesn't contrast enough with the tab.  Compute the
+  // resulting luminance from adjusting the tab color, instead of the frame
+  // color, by the separator color.
+  const double target_luminance = color_utils::GetRelativeLuminance(
+      color_utils::AlphaBlend(separator_color, tab_color, kAlpha));
+
+  // Now try to compute an alpha for the separator such that, when blended with
+  // the frame, it results in the above luminance.  Because the luminance
+  // computation is not easily invertible, we use a binary search over the
+  // possible range of alpha values.
+  SkAlpha alpha = 128;
+  for (int delta = lighten ? 64 : -64; delta != 0; delta /= 2) {
+    const double luminance = color_utils::GetRelativeLuminance(
+        color_utils::AlphaBlend(separator_color, frame_color, alpha));
+    if (luminance == target_luminance)
+      break;
+    alpha += (luminance < target_luminance) ? -delta : delta;
+  }
+  return SkColorSetA(separator_color, alpha);
 }
 
 gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id, bool incognito) const {

@@ -747,6 +747,8 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
     // MD the client edge images start at the top of the toolbar.
     y += md ? toolbar_bounds.y() : toolbar_bounds.bottom();
   } else {
+    // Note that windows without tabstrips are never themed, so we always use
+    // the default colors in this section.
     toolbar_color = ThemeProperties::GetDefaultColor(
         ThemeProperties::COLOR_TOOLBAR, incognito);
 
@@ -757,7 +759,8 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
 
       // Shadow.
       BrowserView::Paint1pxHorizontalLine(
-          canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
+          canvas, ThemeProperties::GetDefaultColor(
+                      ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR, incognito),
           client_bounds, true);
     } else {
       // Ensure the client edge rects are drawn to the top of the location bar.

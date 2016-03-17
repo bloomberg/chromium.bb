@@ -418,10 +418,15 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     paint.setAntiAlias(true);
     const SkColor stroke_color =
         tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR);
+    const float alpha = SkColorGetA(stroke_color);
+    const SkAlpha shadow_alpha =
+        base::saturated_cast<SkAlpha>(std::round(2.1875f * alpha));
     skia::RefPtr<SkDrawLooper> stroke_looper =
-        CreateShadowDrawLooper(SkColorSetA(stroke_color, 0x8C));
+        CreateShadowDrawLooper(SkColorSetA(stroke_color, shadow_alpha));
     paint.setLooper(stroke_looper.get());
-    paint.setColor(SkColorSetA(stroke_color, pressed ? 0x38 : 0x27));
+    const SkAlpha path_alpha = static_cast<SkAlpha>(
+        std::round((pressed ? 0.875f : 0.609375f) * alpha));
+    paint.setColor(SkColorSetA(stroke_color, path_alpha));
     canvas->DrawPath(stroke, paint);
   } else {
     // Fill.
@@ -567,8 +572,10 @@ void NewTabButton::PaintFill(bool pressed,
       }
       const SkColor stroke_color = GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR);
+      const SkAlpha alpha = static_cast<SkAlpha>(
+          std::round(SkColorGetA(stroke_color) * 0.59375f));
       skia::RefPtr<SkDrawLooper> looper =
-          CreateShadowDrawLooper(SkColorSetA(stroke_color, 0x26));
+          CreateShadowDrawLooper(SkColorSetA(stroke_color, alpha));
       paint.setLooper(looper.get());
       canvas->DrawPath(fill, paint);
     }

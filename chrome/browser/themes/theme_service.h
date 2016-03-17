@@ -215,6 +215,20 @@ class ThemeService : public base::NonThreadSafe,
   friend class BrowserThemeProvider;
   friend class theme_service_internal::ThemeServiceTest;
 
+  // Key for cache of separator colors; pair is <tab color, frame color>.
+  using SeparatorColorKey = std::pair<SkColor, SkColor>;
+  using SeparatorColorCache = std::map<SeparatorColorKey, SkColor>;
+
+  // Computes the "toolbar top separator" color.  This color is drawn atop the
+  // frame to separate it from tabs, the toolbar, and the new tab button, as
+  // well as atop background tabs to separate them from other tabs or the
+  // toolbar.  We use semitransparent black or white so as to darken or lighten
+  // the frame, with the goal of contrasting with both the frame color and the
+  // active tab (i.e. toolbar) color.  (It's too difficult to try to find colors
+  // that will contrast with both of these as well as the background tab color,
+  // and contrasting with the foreground tab is the most important).
+  static SkColor GetSeparatorColor(SkColor tab_color, SkColor frame_color);
+
   // These methods provide the implementation for ui::ThemeProvider (exposed
   // via BrowserThemeProvider).
   gfx::ImageSkia* GetImageSkiaNamed(int id, bool incognito) const;
@@ -294,6 +308,10 @@ class ThemeService : public base::NonThreadSafe,
 
   // The number of infobars currently displayed.
   int number_of_infobars_;
+
+  // A cache of already-computed values for COLOR_TOOLBAR_TOP_SEPARATOR, which
+  // can be expensive to compute.
+  mutable SeparatorColorCache separator_color_cache_;
 
   content::NotificationRegistrar registrar_;
 
