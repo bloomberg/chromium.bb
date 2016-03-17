@@ -94,9 +94,6 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
   // GCMDriver implementation:
   void UpdateAccountMapping(const AccountMapping& account_mapping) override;
   void RemoveAccountMapping(const std::string& account_id) override;
-  void AddAppHandler(const std::string& app_id,
-                     GCMAppHandler* handler) override;
-  void RemoveAppHandler(const std::string& app_id) override;
   void RegisterImpl(const std::string& app_id,
                     const std::vector<std::string>& sender_ids) override;
 
@@ -156,15 +153,6 @@ void CustomFakeGCMDriver::UpdateAccountMapping(
 
 void CustomFakeGCMDriver::RemoveAccountMapping(const std::string& account_id) {
   last_removed_account_id_ = account_id;
-}
-
-void CustomFakeGCMDriver::AddAppHandler(const std::string& app_id,
-                                        GCMAppHandler* handler) {
-  GCMDriver::AddAppHandler(app_id, handler);
-}
-
-void CustomFakeGCMDriver::RemoveAppHandler(const std::string& app_id) {
-  GCMDriver::RemoveAppHandler(app_id);
 }
 
 void CustomFakeGCMDriver::RegisterImpl(
