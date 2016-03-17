@@ -131,7 +131,6 @@ struct hmi_controller {
 	struct ui_setting                   ui_setting;
 
 	int32_t				    screen_num;
-	struct ivi_layout_screen	  **pp_screen;
 };
 
 struct launcher_info {
@@ -521,22 +520,6 @@ switch_mode(struct hmi_controller *hmi_ctrl,
 	free(pp_surface);
 }
 
-/**
- * Internal method to get screens from weston core
- * TODO: shall support hotplug of screens
- */
-static int32_t
-get_screens(struct hmi_controller *hmi_ctrl)
-{
-	hmi_ctrl->pp_screen = NULL;
-	hmi_ctrl->screen_num = 0;
-	ivi_layout_interface->get_screens(&hmi_ctrl->screen_num, &hmi_ctrl->pp_screen);
-
-	if (hmi_ctrl->pp_screen == NULL)
-		return -1;
-	else
-		return 0;
-}
 
 /**
  * Internal method to get ivi_layout_screen
@@ -549,7 +532,7 @@ get_screen(int32_t screen_idx, struct hmi_controller *hmi_ctrl)
 	if (screen_idx > hmi_ctrl->screen_num - 1)
 		weston_log("Invalid index. Return NULL\n");
 	else
-		iviscrn = hmi_ctrl->pp_screen[screen_idx];
+		iviscrn = ivi_layout_interface->get_screen_from_id(screen_idx);
 
 	return iviscrn;
 }
@@ -767,7 +750,6 @@ hmi_controller_destroy(struct wl_listener *listener, void *data)
 
 	wl_array_release(&hmi_ctrl->ui_widgets);
 	free(hmi_ctrl->hmi_setting);
-	free(hmi_ctrl->pp_screen);
 	free(hmi_ctrl);
 }
 
@@ -803,14 +785,9 @@ hmi_controller_create(struct weston_compositor *ec)
 	hmi_ctrl->layout_mode = IVI_HMI_CONTROLLER_LAYOUT_MODE_TILING;
 	hmi_ctrl->hmi_setting = hmi_server_setting_create(ec);
 	hmi_ctrl->compositor = ec;
+	hmi_ctrl->screen_num = wl_list_length(&ec->output_list);
 
 	/* TODO: shall support hotplug of screens */
-	if (get_screens(hmi_ctrl) < 0) {
-		weston_log("ivi-shell: Failed to get screens\n");
-		hmi_ctrl = NULL;
-		return hmi_ctrl;
-	}
-
 	iviscrn = get_screen(0, hmi_ctrl);
 
 	/* init base ivi_layer*/

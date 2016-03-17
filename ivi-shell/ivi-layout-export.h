@@ -568,14 +568,6 @@ struct ivi_layout_interface {
 		(*get_screen_from_id)(uint32_t id_screen);
 
 	/**
-	 * \brief Get the ivi_screens
-	 *
-	 * \return IVI_SUCCEEDED if the method call was successful
-	 * \return IVI_FAILED if the method call was failed
-	 */
-	int32_t (*get_screens)(int32_t *pLength, struct ivi_layout_screen ***ppArray);
-
-	/**
 	 * \brief Get the ivi_screens under the given ivi_layer
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful

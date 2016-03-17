@@ -1410,39 +1410,6 @@ ivi_layout_get_properties_of_layer(struct ivi_layout_layer *ivilayer)
 }
 
 static int32_t
-ivi_layout_get_screens(int32_t *pLength, struct ivi_layout_screen ***ppArray)
-{
-	struct ivi_layout *layout = get_instance();
-	struct ivi_layout_screen *iviscrn = NULL;
-	int32_t length = 0;
-	int32_t n = 0;
-
-	if (pLength == NULL || ppArray == NULL) {
-		weston_log("ivi_layout_get_screens: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	length = wl_list_length(&layout->screen_list);
-
-	if (length != 0) {
-		/* the Array must be free by module which called this function */
-		*ppArray = calloc(length, sizeof(struct ivi_layout_screen *));
-		if (*ppArray == NULL) {
-			weston_log("fails to allocate memory\n");
-			return IVI_FAILED;
-		}
-
-		wl_list_for_each(iviscrn, &layout->screen_list, link) {
-			(*ppArray)[n++] = iviscrn;
-		}
-	}
-
-	*pLength = length;
-
-	return IVI_SUCCEEDED;
-}
-
-static int32_t
 ivi_layout_get_screens_under_layer(struct ivi_layout_layer *ivilayer,
 				   int32_t *pLength,
 				   struct ivi_layout_screen ***ppArray)
@@ -2457,7 +2424,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	 * screen controller interfaces part1
 	 */
 	.get_screen_from_id		= ivi_layout_get_screen_from_id,
-	.get_screens			= ivi_layout_get_screens,
 	.get_screens_under_layer	= ivi_layout_get_screens_under_layer,
 	.screen_add_layer		= ivi_layout_screen_add_layer,
 	.screen_set_render_order	= ivi_layout_screen_set_render_order,

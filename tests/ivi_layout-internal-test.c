@@ -544,46 +544,20 @@ test_get_layer_after_destory_layer(struct test_context *ctx)
 }
 
 static void
-test_screen_id(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_screen **iviscrns;
-	struct weston_output *output;
-	int32_t screen_length = 0;
-	int32_t i;
-
-	iassert(lyt->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
-	iassert(screen_length > 0);
-
-	for (i = 0; i < screen_length; ++i) {
-		output = lyt->screen_get_output(iviscrns[i]);
-		iassert(lyt->get_screen_from_id(output->id) == iviscrns[i]);
-	}
-
-	if (screen_length > 0)
-		free(iviscrns);
-}
-
-static void
 test_screen_render_order(struct test_context *ctx)
 {
 #define LAYER_NUM (3)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_screen **iviscrns;
-	int32_t screen_length = 0;
 	struct ivi_layout_screen *iviscrn;
 	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
 	struct ivi_layout_layer **array;
 	int32_t length = 0;
 	uint32_t i;
 
-	iassert(lyt->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
-	iassert(screen_length > 0);
-
-	if (screen_length <= 0)
+	if (wl_list_empty(&ctx->compositor->output_list))
 		return;
 
-	iviscrn = iviscrns[0];
+	iviscrn = lyt->get_screen_from_id(0);
 
 	for (i = 0; i < LAYER_NUM; i++)
 		ivilayers[i] = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(i), 200, 300);
@@ -612,7 +586,6 @@ test_screen_render_order(struct test_context *ctx)
 	for (i = 0; i < LAYER_NUM; i++)
 		lyt->layer_destroy(ivilayers[i]);
 
-	free(iviscrns);
 #undef LAYER_NUM
 }
 
@@ -621,21 +594,16 @@ test_screen_bad_render_order(struct test_context *ctx)
 {
 #define LAYER_NUM (3)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_screen **iviscrns;
-	int32_t screen_length;
 	struct ivi_layout_screen *iviscrn;
 	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
 	struct ivi_layout_layer **array;
 	int32_t length = 0;
 	uint32_t i;
 
-	iassert(lyt->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
-	iassert(screen_length > 0);
-
-	if (screen_length <= 0)
+	if (wl_list_empty(&ctx->compositor->output_list))
 		return;
 
-	iviscrn = iviscrns[0];
+	iviscrn = lyt->get_screen_from_id(0);
 
 	for (i = 0; i < LAYER_NUM; i++)
 		ivilayers[i] = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(i), 200, 300);
@@ -651,7 +619,6 @@ test_screen_bad_render_order(struct test_context *ctx)
 	for (i = 0; i < LAYER_NUM; i++)
 		lyt->layer_destroy(ivilayers[i]);
 
-	free(iviscrns);
 #undef LAYER_NUM
 }
 
@@ -661,19 +628,14 @@ test_commit_changes_after_render_order_set_layer_destroy(
 {
 #define LAYER_NUM (3)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_screen **iviscrns;
-	int32_t screen_length;
 	struct ivi_layout_screen *iviscrn;
 	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
 	uint32_t i;
 
-	iassert(lyt->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
-	iassert(screen_length > 0);
-
-	if (screen_length <= 0)
+	if (wl_list_empty(&ctx->compositor->output_list))
 		return;
 
-	iviscrn = iviscrns[0];
+	iviscrn = lyt->get_screen_from_id(0);
 
 	for (i = 0; i < LAYER_NUM; i++)
 		ivilayers[i] = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(i), 200, 300);
@@ -686,8 +648,6 @@ test_commit_changes_after_render_order_set_layer_destroy(
 
 	lyt->layer_destroy(ivilayers[0]);
 	lyt->layer_destroy(ivilayers[2]);
-
-	free(iviscrns);
 #undef LAYER_NUM
 }
 
@@ -938,7 +898,6 @@ run_internal_tests(void *data)
 	test_layer_create_duplicate(ctx);
 	test_get_layer_after_destory_layer(ctx);
 
-	test_screen_id(ctx);
 	test_screen_render_order(ctx);
 	test_screen_bad_render_order(ctx);
 	test_commit_changes_after_render_order_set_layer_destroy(ctx);
