@@ -387,8 +387,7 @@ bool NotificationsTest::CheckOriginInSetting(
 }
 
 void NotificationsTest::DropOriginPreference(const GURL& origin) {
-  DesktopNotificationProfileUtil::ClearSetting(browser()->profile(),
-      ContentSettingsPattern::FromURLNoWildcard(origin));
+  DesktopNotificationProfileUtil::ClearSetting(browser()->profile(), origin);
 }
 
 // Flaky on Windows, Mac, Linux: http://crbug.com/437414.

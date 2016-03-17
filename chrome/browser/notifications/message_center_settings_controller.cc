@@ -350,8 +350,16 @@ void MessageCenterSettingsController::SetNotifierEnabled(
                    << notifier.notifier_id.url.spec();
       }
 
-      if (pattern.IsValid())
-        DesktopNotificationProfileUtil::ClearSetting(profile, pattern);
+      if (pattern.IsValid()) {
+        // Note that we don't use DesktopNotificationProfileUtil::ClearSetting()
+        // here because pattern might be from user manual input and not match
+        // the default one used by ClearSetting().
+        HostContentSettingsMapFactory::GetForProfile(profile)
+            ->SetContentSetting(pattern, ContentSettingsPattern::Wildcard(),
+                                CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                content_settings::ResourceIdentifier(),
+                                CONTENT_SETTING_DEFAULT);
+      }
     }
   } else {
     NotifierStateTrackerFactory::GetForProfile(profile)

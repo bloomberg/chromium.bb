@@ -17,39 +17,29 @@ void DesktopNotificationProfileUtil::ResetToDefaultContentSetting(
 }
 
 // Clears the notifications setting for the given pattern.
-void DesktopNotificationProfileUtil::ClearSetting(
-    Profile* profile, const ContentSettingsPattern& pattern) {
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-      pattern,
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(),
-      CONTENT_SETTING_DEFAULT);
+void DesktopNotificationProfileUtil::ClearSetting(Profile* profile,
+                                                  const GURL& origin) {
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(
+          origin, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+          content_settings::ResourceIdentifier(), CONTENT_SETTING_DEFAULT);
 }
 
 // Methods to setup and modify permission preferences.
 void DesktopNotificationProfileUtil::GrantPermission(
     Profile* profile, const GURL& origin) {
-  ContentSettingsPattern primary_pattern =
-      ContentSettingsPattern::FromURLNoWildcard(origin);
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-      primary_pattern,
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(),
-      CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(
+          origin, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+          content_settings::ResourceIdentifier(), CONTENT_SETTING_ALLOW);
 }
 
 void DesktopNotificationProfileUtil::DenyPermission(
     Profile* profile, const GURL& origin) {
-  ContentSettingsPattern primary_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(origin);
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-      primary_pattern,
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(),
-      CONTENT_SETTING_BLOCK);
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(
+          origin, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+          content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
 }
 
 void DesktopNotificationProfileUtil::GetNotificationsSettings(

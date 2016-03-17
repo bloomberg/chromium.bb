@@ -340,8 +340,7 @@ static void SetNotificationSettingForOrigin(
   ContentSetting setting = (ContentSetting) value;
   switch (setting) {
     case CONTENT_SETTING_DEFAULT:
-      DesktopNotificationProfileUtil::ClearSetting(
-          profile, ContentSettingsPattern::FromURLNoWildcard(url));
+      DesktopNotificationProfileUtil::ClearSetting(profile, url);
       break;
     case CONTENT_SETTING_ALLOW:
       DesktopNotificationProfileUtil::GrantPermission(profile, url);

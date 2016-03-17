@@ -17,9 +17,8 @@ class DesktopNotificationProfileUtil {
   // NOTE: This should only be called on the UI thread.
   static void ResetToDefaultContentSetting(Profile* profile);
 
-  // Clears the notifications setting for the given pattern.
-  static void ClearSetting(
-      Profile* profile, const ContentSettingsPattern& pattern);
+  // Clears the notifications setting for the given url.
+  static void ClearSetting(Profile* profile, const GURL& origin);
 
   // Methods to setup and modify permission preferences.
   static void GrantPermission(Profile* profile, const GURL& origin);

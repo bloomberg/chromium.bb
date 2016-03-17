@@ -170,8 +170,7 @@ NotificationPermissionContext::~NotificationPermissionContext() {}
 void NotificationPermissionContext::ResetPermission(
     const GURL& requesting_origin,
     const GURL& embedder_origin) {
-  DesktopNotificationProfileUtil::ClearSetting(
-      profile(), ContentSettingsPattern::FromURLNoWildcard(requesting_origin));
+  DesktopNotificationProfileUtil::ClearSetting(profile(), requesting_origin);
 }
 
 void NotificationPermissionContext::CancelPermissionRequest(
