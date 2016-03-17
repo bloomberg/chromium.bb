@@ -745,8 +745,6 @@ scoped_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
 void MockClientSocketFactory::ClearSSLSessionCache() {
 }
 
-const char MockClientSocket::kTlsUnique[] = "MOCK_TLSUNIQ";
-
 MockClientSocket::MockClientSocket(const BoundNetLog& net_log)
     : connected_(false),
       net_log_(net_log),
@@ -814,11 +812,6 @@ int MockClientSocket::ExportKeyingMaterial(const base::StringPiece& label,
                                            unsigned char* out,
                                            unsigned int outlen) {
   memset(out, 'A', outlen);
-  return OK;
-}
-
-int MockClientSocket::GetTLSUniqueChannelBinding(std::string* out) {
-  out->assign(MockClientSocket::kTlsUnique);
   return OK;
 }
 

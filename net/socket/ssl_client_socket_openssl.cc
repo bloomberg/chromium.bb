@@ -602,11 +602,6 @@ int SSLClientSocketOpenSSL::ExportKeyingMaterial(
   return OK;
 }
 
-int SSLClientSocketOpenSSL::GetTLSUniqueChannelBinding(std::string* out) {
-  NOTIMPLEMENTED();
-  return ERR_NOT_IMPLEMENTED;
-}
-
 int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
   // It is an error to create an SSLClientSocket whose context has no
   // TransportSecurityState.

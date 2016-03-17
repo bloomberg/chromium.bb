@@ -537,9 +537,6 @@ class MockClientSocketFactory : public ClientSocketFactory {
 
 class MockClientSocket : public SSLClientSocket {
  public:
-  // Value returned by GetTLSUniqueChannelBinding().
-  static const char kTlsUnique[];
-
   // The BoundNetLog is needed to test LoadTimingInfo, which uses NetLog IDs as
   // unique socket IDs.
   explicit MockClientSocket(const BoundNetLog& net_log);
@@ -576,7 +573,6 @@ class MockClientSocket : public SSLClientSocket {
                            const base::StringPiece& context,
                            unsigned char* out,
                            unsigned int outlen) override;
-  int GetTLSUniqueChannelBinding(std::string* out) override;
   NextProtoStatus GetNextProto(std::string* proto) const override;
   ChannelIDService* GetChannelIDService() const override;
   Error GetSignedEKMForTokenBinding(crypto::ECPrivateKey* key,

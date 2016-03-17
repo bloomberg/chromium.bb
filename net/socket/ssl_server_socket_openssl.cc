@@ -67,7 +67,6 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
                            const base::StringPiece& context,
                            unsigned char* out,
                            unsigned int outlen) override;
-  int GetTLSUniqueChannelBinding(std::string* out) override;
 
   // Socket interface (via StreamSocket).
   int Read(IOBuffer* buf,
@@ -251,11 +250,6 @@ int SSLServerSocketOpenSSL::ExportKeyingMaterial(
     return MapOpenSSLError(ssl_error, err_tracer);
   }
   return OK;
-}
-
-int SSLServerSocketOpenSSL::GetTLSUniqueChannelBinding(std::string* out) {
-  NOTIMPLEMENTED();
-  return ERR_NOT_IMPLEMENTED;
 }
 
 int SSLServerSocketOpenSSL::Read(IOBuffer* buf,

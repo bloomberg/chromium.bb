@@ -94,7 +94,6 @@ class SSLServerSocketNSS : public SSLServerSocket {
                            const base::StringPiece& context,
                            unsigned char* out,
                            unsigned int outlen) override;
-  int GetTLSUniqueChannelBinding(std::string* out) override;
 
   // Socket interface (via StreamSocket).
   int Read(IOBuffer* buf,
@@ -282,22 +281,6 @@ int SSLServerSocketNSS::ExportKeyingMaterial(const base::StringPiece& label,
     LogFailedNSSFunction(net_log_, "SSL_ExportKeyingMaterial", "");
     return MapNSSError(PORT_GetError());
   }
-  return OK;
-}
-
-int SSLServerSocketNSS::GetTLSUniqueChannelBinding(std::string* out) {
-  if (!IsConnected())
-    return ERR_SOCKET_NOT_CONNECTED;
-  unsigned char buf[64];
-  unsigned int len;
-  SECStatus result = SSL_GetChannelBinding(nss_fd_,
-                                           SSL_CHANNEL_BINDING_TLS_UNIQUE,
-                                           buf, &len, arraysize(buf));
-  if (result != SECSuccess) {
-    LogFailedNSSFunction(net_log_, "SSL_GetChannelBinding", "");
-    return MapNSSError(PORT_GetError());
-  }
-  out->assign(reinterpret_cast<char*>(buf), len);
   return OK;
 }
 

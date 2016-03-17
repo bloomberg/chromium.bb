@@ -67,7 +67,6 @@ class SSLClientSocketNSS : public SSLClientSocket {
                            const base::StringPiece& context,
                            unsigned char* out,
                            unsigned int outlen) override;
-  int GetTLSUniqueChannelBinding(std::string* out) override;
 
   // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override;
