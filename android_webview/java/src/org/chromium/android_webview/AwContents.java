@@ -316,9 +316,13 @@ public class AwContents implements SmartClipProvider,
 
     private static final class DestroyRunnable implements Runnable {
         private final long mNativeAwContents;
+        // Hold onto a reference to the window (via its wrapper), so that it is not destroyed
+        // until we are done here.
+        private final WindowAndroidWrapper mWindowAndroid;
 
-        private DestroyRunnable(long nativeAwContents) {
+        private DestroyRunnable(long nativeAwContents, WindowAndroidWrapper windowAndroid) {
             mNativeAwContents = nativeAwContents;
+            mWindowAndroid = windowAndroid;
         }
         @Override
         public void run() {
@@ -991,7 +995,7 @@ public class AwContents implements SmartClipProvider,
         // The native side object has been bound to this java instance, so now is the time to
         // bind all the native->java relationships.
         mCleanupReference =
-                new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
+                new CleanupReference(this, new DestroyRunnable(mNativeAwContents, mWindowAndroid));
     }
 
     private void installWebContentsObserver() {
