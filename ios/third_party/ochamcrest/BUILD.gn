@@ -175,25 +175,20 @@ copy("ochamcrest_copy_files") {
   ]
 }
 
-config("ochamcrest_config") {
+config("config") {
   visibility = [ ":ochamcrest" ]
   libs = [ "XCTest.framework" ]
   include_dirs = [ "$root_gen_dir/ios/third_party/ochamcrest" ]
 }
 
-config("ochamcrest_private_config") {
-  visibility = [ ":ochamcrest" ]
-  cflags_objc = [ "-fobjc-arc" ]
-}
-
 source_set("ochamcrest") {
   testonly = true
   configs += [
-    ":ochamcrest_config",
-    ":ochamcrest_private_config",
+    ":config",
+    "//build/config/compiler:enable_arc",
     "//build/config/compiler:no_chromium_code",
   ]
-  public_configs = [ ":ochamcrest_config" ]
+  public_configs = [ ":config" ]
   public_deps = [
     ":ochamcrest_copy_files",
   ]

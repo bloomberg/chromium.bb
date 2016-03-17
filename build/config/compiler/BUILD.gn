@@ -1335,3 +1335,13 @@ config("default_symbols") {
     assert(false)
   }
 }
+
+if (is_ios || is_mac) {
+  # On Mac and iOS, this enables support for ARC (automatic ref-counting).
+  # See http://clang.llvm.org/docs/AutomaticReferenceCounting.html.
+  config("enable_arc") {
+    common_flags = [ "-fobjc-arc" ]
+    cflags_objc = common_flags
+    cflags_objcc = common_flags
+  }
+}

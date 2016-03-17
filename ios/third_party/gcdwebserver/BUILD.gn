@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("public_config") {
+config("config") {
+  visibility = [ ":gcdwebserver" ]
   libs = [
     "CFNetwork.framework",
     "MobileCoreServices.framework",
@@ -16,14 +17,13 @@ config("public_config") {
   ]
 }
 
-config("internal_config") {
+config("private_config") {
   visibility = [ ":gcdwebserver" ]
 
   # TODO(crbug.com/569158): Suppresses warnings that are treated as errors
   # when minimum iOS version support is increased to iOS 9 and up.
   # This should be removed once all deprecation violations have been fixed.
   cflags = [ "-Wno-deprecated-declarations" ]
-  cflags_objc = [ "-fobjc-arc" ]
 }
 
 source_set("gcdwebserver") {
@@ -60,6 +60,9 @@ source_set("gcdwebserver") {
     "src/GCDWebServer/Responses/GCDWebServerStreamedResponse.m",
   ]
 
-  public_configs = [ ":public_config" ]
-  configs += [ ":internal_config" ]
+  public_configs = [ ":config" ]
+  configs += [
+    ":private_config",
+    "//build/config/compiler:enable_arc",
+  ]
 }
