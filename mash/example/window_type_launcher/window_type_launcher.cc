@@ -5,8 +5,8 @@
 #include "mash/example/window_type_launcher/window_type_launcher.h"
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mash/login/public/interfaces/login.mojom.h"
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/connection.h"
@@ -283,13 +283,13 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       connector_->ConnectToInterface("mojo:mash_shell", &shell);
       shell->LockScreen();
     } else if (sender == logout_button_) {
-      mash::login::mojom::LoginPtr login;
-      connector_->ConnectToInterface("mojo:login", &login);
-      login->Logout();
+      mash::shell::mojom::ShellPtr shell;
+      connector_->ConnectToInterface("mojo:mash_shell", &shell);
+      shell->Logout();
     } else if (sender == switch_user_button_) {
-      mash::login::mojom::LoginPtr login;
-      connector_->ConnectToInterface("mojo:login", &login);
-      login->SwitchUser();
+      mash::shell::mojom::ShellPtr shell;
+      connector_->ConnectToInterface("mojo:mash_shell", &shell);
+      shell->SwitchUser();
     } else if (sender == widgets_button_) {
       NOTIMPLEMENTED();
     }
@@ -382,4 +382,8 @@ void WindowTypeLauncher::Initialize(mojo::Connector* connector,
   params.delegate = new WindowTypeLauncherView(connector);
   widget->Init(params);
   widget->Show();
+}
+
+void WindowTypeLauncher::ShellConnectionLost() {
+  base::MessageLoop::current()->QuitWhenIdle();
 }

@@ -1,0 +1,10 @@
+{
+  "manifest_version": 1,
+  "name": "mojo:connect_test_singleton_app",
+  "display_name": "Connect Test Singleton App",
+  "capabilities": {
+    "required": {
+      "mojo:shell": { "classes": [ "all_users" ] }
+    }
+  }
+}

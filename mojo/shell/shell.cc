@@ -129,28 +129,25 @@ class Shell::Instance : public mojom::Connector,
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
   }
 
-  ~Instance() override {}
-
-  void OnShellClientLost() {
-    shell_client_.reset();
-    OnConnectionLost();
+  ~Instance() override {
+    if (parent_)
+      parent_->RemoveChild(this);
+    // |children_| will be modified during destruction.
+    std::set<Instance*> children = children_;
+    for (auto child : children)
+      shell_->OnInstanceError(child);
   }
 
-  void OnConnectionLost() {
-    // Any time a Connector is lost or we lose the ShellClient connection, it
-    // may have been the last pipe using this Instance. If so, clean up.
-    if (connectors_.empty() && !shell_client_) {
-      // Deletes |this|.
-      shell_->OnInstanceError(this);
-    }
+  Instance* parent() { return parent_; }
+  void AddChild(Instance* child) {
+    children_.insert(child);
+    child->parent_ = this;
   }
-
-  void OnInitializeResponse(mojom::ConnectorRequest connector_request) {
-    if (connector_request.is_pending()) {
-      connectors_.AddBinding(this, std::move(connector_request));
-      connectors_.set_connection_error_handler(
-          base::Bind(&Instance::OnConnectionLost, base::Unretained(this)));
-    }
+  void RemoveChild(Instance* child) {
+    auto it = children_.find(child);
+    DCHECK(it != children_.end());
+    children_.erase(it);
+    child->parent_ = nullptr;
   }
 
   void ConnectToClient(scoped_ptr<ConnectParams> params) {
@@ -176,7 +173,8 @@ class Shell::Instance : public mojom::Connector,
     CHECK(!shell_client_);
     shell_client_ = std::move(client);
     shell_client_.set_connection_error_handler(
-        base::Bind(&Instance::OnShellClientLost, base::Unretained(this)));
+        base::Bind(&Instance::OnShellClientLost, base::Unretained(this),
+                   shell_->GetWeakPtr()));
     shell_client_->Initialize(mojom::Identity::From(identity_), id_,
                               base::Bind(&Instance::OnInitializeResponse,
                                          base::Unretained(this)));
@@ -384,6 +382,29 @@ class Shell::Instance : public mojom::Connector,
     shell_->NotifyPIDAvailable(id_, pid_);
   }
 
+  void OnShellClientLost(base::WeakPtr<mojo::shell::Shell> shell) {
+    shell_client_.reset();
+    OnConnectionLost(shell);
+  }
+
+  void OnConnectionLost(base::WeakPtr<mojo::shell::Shell> shell) {
+    // Any time a Connector is lost or we lose the ShellClient connection, it
+    // may have been the last pipe using this Instance. If so, clean up.
+    if (shell && connectors_.empty() && !shell_client_) {
+      // Deletes |this|.
+      shell->OnInstanceError(this);
+    }
+  }
+
+  void OnInitializeResponse(mojom::ConnectorRequest connector_request) {
+    if (connector_request.is_pending()) {
+      connectors_.AddBinding(this, std::move(connector_request));
+      connectors_.set_connection_error_handler(
+          base::Bind(&Instance::OnConnectionLost, base::Unretained(this),
+                     shell_->GetWeakPtr()));
+    }
+  }
+
   mojo::shell::Shell* const shell_;
 
   // An id that identifies this instance. Distinct from pid, as a single process
@@ -399,6 +420,8 @@ class Shell::Instance : public mojom::Connector,
   BindingSet<mojom::Shell> shell_bindings_;
   NativeRunner* runner_ = nullptr;
   base::ProcessId pid_ = base::kNullProcessId;
+  Instance* parent_ = nullptr;
+  std::set<Instance*> children_;
   base::WeakPtrFactory<Instance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
@@ -425,9 +448,10 @@ Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
       weak_ptr_factory_(this) {
   mojom::ShellClientPtr client;
   mojom::ShellClientRequest request = GetProxy(&client);
-  Instance* instance = CreateInstance(CreateShellIdentity(),
+  Instance* instance = CreateInstance(Identity(), CreateShellIdentity(),
                                       GetPermissiveCapabilities());
   instance->StartWithClient(std::move(client));
+  singletons_.insert(kShellName);
   shell_connection_.reset(new ShellConnection(this, std::move(request)));
 
   if (catalog)
@@ -467,7 +491,7 @@ mojom::ShellClientRequest Shell::InitInstanceForEmbedder(
 
 void Shell::SetLoaderForName(scoped_ptr<Loader> loader,
                              const std::string& name) {
-  NameToLoaderMap::iterator it = name_to_loader_.find(name);
+  auto it = name_to_loader_.find(name);
   if (it != name_to_loader_.end())
     delete it->second;
   name_to_loader_[name] = loader.release();
@@ -496,8 +520,10 @@ bool Shell::AcceptConnection(Connection* connection) {
 // Shell, private:
 
 void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
-  Instance* instance =
-      CreateInstance(CreateCatalogIdentity(), CapabilitySpec());
+  Instance* instance = CreateInstance(CreateShellIdentity(),
+                                      CreateCatalogIdentity(),
+                                      CapabilitySpec());
+  singletons_.insert(kCatalogName);
   instance->StartWithClient(std::move(catalog));
 
   // TODO(beng): this doesn't work anymore.
@@ -509,7 +535,9 @@ void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
 }
 
 void Shell::TerminateShellConnections() {
-  STLDeleteValues(&identity_to_instance_);
+  Instance* instance = GetExistingInstance(CreateShellIdentity());
+  DCHECK(instance);
+  OnInstanceError(instance);
 }
 
 void Shell::OnInstanceError(Instance* instance) {
@@ -588,12 +616,16 @@ bool Shell::ConnectToExistingInstance(scoped_ptr<ConnectParams>* params) {
   return !!instance;
 }
 
-Shell::Instance* Shell::CreateInstance(const Identity& target,
+Shell::Instance* Shell::CreateInstance(const Identity& source,
+                                       const Identity& target,
                                        const CapabilitySpec& spec) {
   CHECK(target.user_id() != mojom::kInheritUserID);
   Instance* instance = new Instance(this, target, spec);
   DCHECK(identity_to_instance_.find(target) ==
          identity_to_instance_.end());
+  Instance* source_instance = GetExistingInstance(source);
+  if (source_instance)
+    source_instance->AddChild(instance);
   identity_to_instance_[target] = instance;
   mojom::InstanceInfoPtr info = instance->CreateInstanceInfo();
   instance_listeners_.ForAllPtrs(
@@ -678,13 +710,16 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
     capabilities = capabilities_ptr.To<CapabilitySpec>();
 
   // Clients that request "all_users" class from the shell are allowed to
-  // field connection requests from any user.
-  if (HasClass(capabilities, kCapabilityClass_AllUsers))
+  // field connection requests from any user. They also run with a synthetic
+  // user id generated here. The user id provided via Connect() is ignored.
+  if (HasClass(capabilities, kCapabilityClass_AllUsers)) {
     singletons_.insert(target.name());
+    target.set_user_id(base::GenerateGUID());
+  }
 
   mojom::ClientProcessConnectionPtr client_process_connection =
       params->TakeClientProcessConnection();
-  Instance* instance = CreateInstance(target, capabilities);
+  Instance* instance = CreateInstance(params->source(), target, capabilities);
 
   // Below are various paths through which a new Instance can be bound to a
   // ShellClient proxy.
@@ -734,6 +769,10 @@ Loader* Shell::GetLoaderForName(const std::string& name) {
   if (name_it != name_to_loader_.end())
     return name_it->second;
   return default_loader_.get();
+}
+
+base::WeakPtr<Shell> Shell::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void Shell::CleanupRunner(NativeRunner* runner) {

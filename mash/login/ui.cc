@@ -79,6 +79,7 @@ UI::~UI() {
   // Prevent the window manager from restarting during graceful shutdown.
   window_manager_connection_->SetConnectionLostClosure(base::Closure());
   is_showing_ = false;
+  // TODO(beng): we should be terminating this app at this point.
 }
 
 views::View* UI::GetContentsView() { return this; }

@@ -43,13 +43,16 @@ class Init : public mojo::ShellClient,
                     const mojo::String& user_id) override;
   void StopServicesForUser(const mojo::String& user_id) override;
 
+  void UserServiceQuit(const std::string& user_id);
+
+  void StartTracing();
+  void StartResourceProvider();
   void StartLogin();
 
   mojo::Connector* connector_;
   scoped_ptr<mojo::Connection> login_connection_;
   mojo::BindingSet<mojom::Init> init_bindings_;
   std::map<std::string, scoped_ptr<mojo::Connection>> user_services_;
-  const std::string login_user_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Init);
 };

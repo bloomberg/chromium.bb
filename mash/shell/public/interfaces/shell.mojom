@@ -11,6 +11,8 @@ interface ScreenlockStateListener {
 };
 
 interface Shell {
+  Logout();
+  SwitchUser();
   LockScreen();
   UnlockScreen();
   AddScreenlockStateListener(ScreenlockStateListener listener);

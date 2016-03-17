@@ -6,7 +6,11 @@
     "provided": {
       "user_id": [ ],
       "client_process": [ ],
-      "instance_name": [ ]
+      "instance_name": [ ],
+      "all_users":  [ ]
+    },
+    "required": {
+      "mojo:shell": { "classes": [ "all_users" ] }
     }
   }
 }

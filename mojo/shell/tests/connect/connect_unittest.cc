@@ -30,6 +30,7 @@ const char kTestAppName[] = "mojo:connect_test_app";
 const char kTestAppAName[] = "mojo:connect_test_a";
 const char kTestAppBName[] = "mojo:connect_test_b";
 const char kTestClassAppName[] = "mojo:connect_test_class_app";
+const char kTestSingletonAppName[] = "mojo:connect_test_singleton_app";
 const char kTestDriverName[] = "exe:connect_test_driver";
 
 void ReceiveOneString(std::string* out_string,
@@ -355,26 +356,30 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
 // Verifies that a client with the "all_users" capability class can receive
 // connections from clients run as other users.
 TEST_F(ConnectTest, AllUsersSingleton) {
-  // Connect to an instance with an explicitly different user_id.
+  // Connect to an instance with an explicitly different user_id. This supplied
+  // user id should be ignored by the shell (which will generate its own
+  // synthetic user id for all-user singleton instances).
   const std::string singleton_userid = base::GenerateGUID();
-  Connector::ConnectParams params(Identity(kTestAppName, singleton_userid));
+  Connector::ConnectParams params(
+      Identity(kTestSingletonAppName, singleton_userid));
   scoped_ptr<Connection> connection = connector()->Connect(&params);
   {
     base::RunLoop loop;
     connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
     loop.Run();
-    EXPECT_EQ(connection->GetRemoteIdentity().user_id(), singleton_userid);
+    EXPECT_NE(connection->GetRemoteIdentity().user_id(), singleton_userid);
   }
-  // This connects using the current client's user_id, but should be bound to
-  // the instance run as |singleton_userid|.
+  // This connects using the current client's user_id. It should be bound to the
+  // same service started above, with the same shell-generated user id.
   scoped_ptr<Connection> inherit_connection =
-      connector()->Connect(kTestAppName);
+      connector()->Connect(kTestSingletonAppName);
   {
     base::RunLoop loop;
     inherit_connection->AddConnectionCompletedClosure(
         base::Bind(&QuitLoop, &loop));
     loop.Run();
-    EXPECT_EQ(connection->GetRemoteIdentity().user_id(), singleton_userid);
+    EXPECT_EQ(inherit_connection->GetRemoteIdentity().user_id(),
+              connection->GetRemoteIdentity().user_id());
   }
 }
 

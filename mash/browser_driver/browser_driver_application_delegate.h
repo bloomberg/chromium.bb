@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -30,6 +31,7 @@ class BrowserDriverApplicationDelegate : public mojo::ShellClient,
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
+  void ShellConnectionLost() override;
 
   // mus::mojom::AcceleratorHandler:
   void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
@@ -38,6 +40,7 @@ class BrowserDriverApplicationDelegate : public mojo::ShellClient,
 
   mojo::Connector* connector_;
   mojo::Binding<mus::mojom::AcceleratorHandler> binding_;
+  base::WeakPtrFactory<BrowserDriverApplicationDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDriverApplicationDelegate);
 };

@@ -87,11 +87,6 @@ class Shell : public ShellClient {
  private:
   class Instance;
 
-  using IdentityToInstanceMap = std::map<Identity, Instance*>;
-  using NameToLoaderMap = std::map<std::string, Loader*>;
-  using IdentityToShellClientFactoryMap =
-      std::map<Identity, mojom::ShellClientFactoryPtr>;
-
   // ShellClient:
   bool AcceptConnection(Connection* connection) override;
 
@@ -125,7 +120,8 @@ class Shell : public ShellClient {
   // and this function returns true.
   bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
 
-  Instance* CreateInstance(const Identity& target,
+  Instance* CreateInstance(const Identity& source,
+                           const Identity& target,
                            const CapabilitySpec& spec);
 
   // Called from the instance implementing mojom::Shell.
@@ -168,20 +164,22 @@ class Shell : public ShellClient {
   // is no loader configured for the name.
   Loader* GetLoaderForName(const std::string& name);
 
+  base::WeakPtr<Shell> GetWeakPtr();
+
   void CleanupRunner(NativeRunner* runner);
 
   // Loader management.
   // Loaders are chosen in the order they are listed here.
-  NameToLoaderMap name_to_loader_;
+  std::map<std::string, Loader*> name_to_loader_;
   scoped_ptr<Loader> default_loader_;
 
-  IdentityToInstanceMap identity_to_instance_;
+  std::map<Identity, Instance*> identity_to_instance_;
 
   // Tracks the names of instances that are allowed to field connection requests
   // from all users.
   std::set<std::string> singletons_;
 
-  IdentityToShellClientFactoryMap shell_client_factories_;
+  std::map<Identity, mojom::ShellClientFactoryPtr> shell_client_factories_;
   // Counter used to assign ids to client factories.
   uint32_t shell_client_factory_id_counter_;
 

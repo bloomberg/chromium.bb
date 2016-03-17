@@ -32,10 +32,6 @@ class Login : public mojom::Login {
   void ShowLoginUI() override {
     UI::Show(connector_, controller_);
   }
-  void Logout() override {
-    controller_->init()->StopServicesForUser(user_id_);
-    UI::Show(connector_, controller_);
-  }
   void SwitchUser() override {
     UI::Show(connector_, controller_);
   }

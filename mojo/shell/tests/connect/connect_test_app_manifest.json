@@ -9,7 +9,7 @@
         "classes": [ "class" ],
         "interfaces": ["mojo::shell::test::mojom::ConnectTestService"]
       },
-      "mojo:shell": { "classes": [ "user_id", "all_users" ] }
+      "mojo:shell": { "classes": [ "user_id" ] }
     }
   }
 }

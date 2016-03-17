@@ -37,6 +37,7 @@ class AppClient : public ShellClient,
 
   // ShellClient:
   bool AcceptConnection(Connection* connection) override;
+  void ShellConnectionLost() override;
 
   // InterfaceFactory<LifecycleControl>:
   void Create(Connection* connection, LifecycleControlRequest request) override;

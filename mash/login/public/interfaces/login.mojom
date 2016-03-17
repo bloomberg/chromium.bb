@@ -6,6 +6,5 @@ module mash.login.mojom;
 
 interface Login {
   ShowLoginUI();
-  Logout();
   SwitchUser();
 };

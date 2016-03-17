@@ -25,6 +25,7 @@ source_set("lifecycle") {
 
   data_deps = [
     ":lifecycle_unittest_app",
+    ":lifecycle_unittest_parent",
     ":lifecycle_unittest_exe",
     ":lifecycle_unittest_package",
     ":manifest",
@@ -113,6 +114,27 @@ mojo_native_application("lifecycle_unittest_app") {
 mojo_application_manifest("lifecycle_unittest_app_manifest") {
   application_name = "lifecycle_unittest_app"
   source = "app_manifest.json"
+}
+
+mojo_native_application("lifecycle_unittest_parent") {
+  testonly = true
+  sources = [
+    "parent.cc",
+  ]
+  deps = [
+    ":interfaces",
+    "//base",
+    "//mojo/shell/public/cpp:sources",
+  ]
+
+  data_deps = [
+    ":lifecycle_unittest_parent_manifest",
+  ]
+}
+
+mojo_application_manifest("lifecycle_unittest_parent_manifest") {
+  application_name = "lifecycle_unittest_parent"
+  source = "parent_manifest.json"
 }
 
 executable("lifecycle_unittest_exe") {

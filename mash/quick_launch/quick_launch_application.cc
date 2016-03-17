@@ -5,6 +5,7 @@
 #include "mash/quick_launch/quick_launch_application.h"
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/c/system/main.h"
@@ -103,6 +104,10 @@ void QuickLaunchApplication::Initialize(mojo::Connector* connector,
 
 bool QuickLaunchApplication::AcceptConnection(mojo::Connection* connection) {
   return true;
+}
+
+void QuickLaunchApplication::ShellConnectionLost() {
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace quick_launch

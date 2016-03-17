@@ -20,6 +20,10 @@ bool AppClient::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
+void AppClient::ShellConnectionLost() {
+  GracefulQuit();
+}
+
 void AppClient::Create(mojo::Connection* connection,
                        LifecycleControlRequest request) {
   bindings_.AddBinding(this, std::move(request));

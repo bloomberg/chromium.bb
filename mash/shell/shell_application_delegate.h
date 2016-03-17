@@ -39,6 +39,8 @@ class ShellApplicationDelegate
   bool AcceptConnection(mojo::Connection* connection) override;
 
   // mash::shell::mojom::Shell:
+  void Logout() override;
+  void SwitchUser() override;
   void AddScreenlockStateListener(
       mojom::ScreenlockStateListenerPtr listener) override;
   void LockScreen() override;

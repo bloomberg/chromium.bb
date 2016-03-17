@@ -21,3 +21,12 @@ interface LifecycleControl {
   // longer tracking this application.
   CloseShellConnection();
 };
+
+// Implemented by an app that connects to another app, thereby creating an
+// instance for it in the shell.
+interface Parent {
+  // Connects to another app and runs the callback when that app has acked a
+  // Ping.
+  ConnectToChild() => ();
+  Quit();
+};

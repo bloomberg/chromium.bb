@@ -14,7 +14,8 @@
 namespace mash {
 namespace init {
 
-Init::Init() : connector_(nullptr), login_user_id_(base::GenerateGUID()) {}
+Init::Init()
+    : connector_(nullptr) {}
 Init::~Init() {}
 
 void Init::Initialize(mojo::Connector* connector,
@@ -22,18 +23,23 @@ void Init::Initialize(mojo::Connector* connector,
                       uint32_t id) {
   connector_ = connector;
   connector_->Connect("mojo:mus");
+  StartTracing();
+  StartResourceProvider();
   StartLogin();
 }
 
 void Init::StartService(const mojo::String& name,
                         const mojo::String& user_id) {
-  DCHECK(user_services_.find(user_id) == user_services_.end());
-  mojo::Connector::ConnectParams params(mojo::Identity(name, user_id));
-  user_services_[user_id] = connector_->Connect(&params);
+  if (user_services_.find(user_id) == user_services_.end()) {
+    mojo::Connector::ConnectParams params(mojo::Identity(name, user_id));
+    scoped_ptr<mojo::Connection> connection = connector_->Connect(&params);
+    connection->SetConnectionLostClosure(
+        base::Bind(&Init::UserServiceQuit, base::Unretained(this), user_id));
+    user_services_[user_id] = std::move(connection);
+  }
 }
 
 void Init::StopServicesForUser(const mojo::String& user_id) {
-  // TODO(beng): Make shell cascade shutdown of services.
   auto it = user_services_.find(user_id);
   if (it != user_services_.end())
     user_services_.erase(it);
@@ -43,10 +49,22 @@ void Init::Create(mojo::Connection* connection, mojom::InitRequest request) {
   init_bindings_.AddBinding(this, std::move(request));
 }
 
+void Init::UserServiceQuit(const std::string& user_id) {
+  auto it = user_services_.find(user_id);
+  DCHECK(it != user_services_.end());
+  user_services_.erase(it);
+}
+
+void Init::StartTracing() {
+  connector_->Connect("mojo:tracing");
+}
+
+void Init::StartResourceProvider() {
+  connector_->Connect("mojo:resource_provider");
+}
+
 void Init::StartLogin() {
-  mojo::Connector::ConnectParams params(
-      mojo::Identity("mojo:login", login_user_id_));
-  login_connection_ = connector_->Connect(&params);
+  login_connection_ = connector_->Connect("mojo:login");
   login_connection_->AddInterface<mojom::Init>(this);
   login_connection_->SetConnectionLostClosure(
       base::Bind(&Init::StartLogin, base::Unretained(this)));

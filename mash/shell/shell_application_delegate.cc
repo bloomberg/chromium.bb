@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
+#include "mash/login/public/interfaces/login.mojom.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
 
@@ -30,6 +32,22 @@ void ShellApplicationDelegate::Initialize(mojo::Connector* connector,
 bool ShellApplicationDelegate::AcceptConnection(mojo::Connection* connection) {
   connection->AddInterface<mojom::Shell>(this);
   return true;
+}
+
+void ShellApplicationDelegate::Logout() {
+  // TODO(beng): Notify connected listeners that login is happening, potentially
+  // give them the option to stop it.
+  mash::login::mojom::LoginPtr login;
+  connector_->ConnectToInterface("mojo:login", &login);
+  login->ShowLoginUI();
+  // This kills the user environment.
+  base::MessageLoop::current()->QuitWhenIdle();
+}
+
+void ShellApplicationDelegate::SwitchUser() {
+  mash::login::mojom::LoginPtr login;
+  connector_->ConnectToInterface("mojo:login", &login);
+  login->SwitchUser();
 }
 
 void ShellApplicationDelegate::AddScreenlockStateListener(
