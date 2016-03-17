@@ -29,7 +29,8 @@ public class MostVisitedSites {
          *             visited URLs).
          */
         @CalledByNative("MostVisitedURLsObserver")
-        public void onMostVisitedURLsAvailable(String[] titles, String[] urls);
+        public void onMostVisitedURLsAvailable(
+                String[] titles, String[] urls, String[] whitelistIconPaths);
 
         /**
          * This is called when the list of popular URLs is initially available or updated.
@@ -89,10 +90,11 @@ public class MostVisitedSites {
     public void setMostVisitedURLsObserver(final MostVisitedURLsObserver observer, int numSites) {
         MostVisitedURLsObserver wrappedObserver = new MostVisitedURLsObserver() {
             @Override
-            public void onMostVisitedURLsAvailable(String[] titles, String[] urls) {
+            public void onMostVisitedURLsAvailable(
+                    String[] titles, String[] urls, String[] whitelistIconPaths) {
                 // Don't notify observer if we've already been destroyed.
                 if (mNativeMostVisitedSites != 0) {
-                    observer.onMostVisitedURLsAvailable(titles, urls);
+                    observer.onMostVisitedURLsAvailable(titles, urls, whitelistIconPaths);
                 }
             }
             @Override

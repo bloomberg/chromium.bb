@@ -8,7 +8,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -34,6 +36,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -68,6 +71,7 @@ public class NewTabPageView extends FrameLayout
 
     private static final int SHADOW_COLOR = 0x11000000;
     private static final long SNAP_SCROLL_DELAY_MS = 30;
+    private static final String TAG = "NewTabPageView";
 
     private ViewGroup mContentView;
     private NewTabScrollView mScrollView;
@@ -767,7 +771,8 @@ public class NewTabPageView extends FrameLayout
     // MostVisitedURLsObserver implementation
 
     @Override
-    public void onMostVisitedURLsAvailable(String[] titles, String[] urls) {
+    public void onMostVisitedURLsAvailable(
+            String[] titles, String[] urls, String[] whitelistIconPaths) {
         mMostVisitedLayout.removeAllViews();
 
         MostVisitedItem[] oldItems = mMostVisitedItems;
@@ -781,6 +786,7 @@ public class NewTabPageView extends FrameLayout
         for (int i = 0; i < titles.length; i++) {
             final String url = urls[i];
             final String title = titles[i];
+            final String whitelistIconPath = whitelistIconPaths[i];
             boolean offlineAvailable = mManager.isOfflineAvailable(url);
 
             // Look for an existing item to reuse.
@@ -789,7 +795,8 @@ public class NewTabPageView extends FrameLayout
                 MostVisitedItem oldItem = oldItems[j];
                 if (oldItem != null && TextUtils.equals(url, oldItem.getUrl())
                         && TextUtils.equals(title, oldItem.getTitle())
-                        && offlineAvailable == oldItem.isOfflineAvailable()) {
+                        && offlineAvailable == oldItem.isOfflineAvailable()
+                        && whitelistIconPath.equals(oldItem.getWhitelistIconPath())) {
                     item = oldItem;
                     item.setIndex(i);
                     oldItems[j] = null;
@@ -799,7 +806,8 @@ public class NewTabPageView extends FrameLayout
 
             // If nothing can be reused, create a new item.
             if (item == null) {
-                item = new MostVisitedItem(mManager, title, url, offlineAvailable, i);
+                item = new MostVisitedItem(
+                        mManager, title, url, whitelistIconPath, offlineAvailable, i);
                 View view =
                         mMostVisitedDesign.createMostVisitedItemView(inflater, item, isInitialLoad);
                 item.initView(view);
@@ -929,20 +937,22 @@ public class NewTabPageView extends FrameLayout
 
         class LargeIconCallbackImpl implements LargeIconCallback {
             private MostVisitedItem mItem;
+            private MostVisitedItemView mItemView;
             private boolean mIsInitialLoad;
 
-            public LargeIconCallbackImpl(MostVisitedItem item, boolean isInitialLoad) {
+            public LargeIconCallbackImpl(
+                    MostVisitedItem item, MostVisitedItemView itemView, boolean isInitialLoad) {
                 mItem = item;
+                mItemView = itemView;
                 mIsInitialLoad = isInitialLoad;
             }
 
             @Override
             public void onLargeIconAvailable(Bitmap icon, int fallbackColor) {
-                MostVisitedItemView view = (MostVisitedItemView) mItem.getView();
                 if (icon == null) {
                     mIconGenerator.setBackgroundColor(fallbackColor);
                     icon = mIconGenerator.generateIconForUrl(mItem.getUrl());
-                    view.setIcon(new BitmapDrawable(getResources(), icon));
+                    mItemView.setIcon(new BitmapDrawable(getResources(), icon));
                     mItem.setTileType(fallbackColor == ICON_BACKGROUND_COLOR
                             ? MostVisitedTileType.ICON_DEFAULT : MostVisitedTileType.ICON_COLOR);
                 } else {
@@ -954,7 +964,7 @@ public class NewTabPageView extends FrameLayout
                     roundedIcon.setCornerRadius(cornerRadius);
                     roundedIcon.setAntiAlias(true);
                     roundedIcon.setFilterBitmap(true);
-                    view.setIcon(roundedIcon);
+                    mItemView.setIcon(roundedIcon);
                     mItem.setTileType(MostVisitedTileType.ICON_REAL);
                 }
                 mSnapshotMostVisitedChanged = true;
@@ -969,11 +979,25 @@ public class NewTabPageView extends FrameLayout
             view.setTitle(getTitleForDisplay(item.getTitle(), item.getUrl()));
             view.setOfflineAvailable(item.isOfflineAvailable());
 
-            LargeIconCallback iconCallback = new LargeIconCallbackImpl(item, isInitialLoad);
+            LargeIconCallback iconCallback = new LargeIconCallbackImpl(item, view, isInitialLoad);
             if (isInitialLoad) mPendingLoadTasks++;
-            mManager.getLargeIconForUrl(item.getUrl(), mMinIconSize, iconCallback);
+            if (!loadWhitelistIcon(item, iconCallback)) {
+                mManager.getLargeIconForUrl(item.getUrl(), mMinIconSize, iconCallback);
+            }
 
             return view;
+        }
+
+        private boolean loadWhitelistIcon(MostVisitedItem item, LargeIconCallback iconCallback) {
+            if (item.getWhitelistIconPath().isEmpty()) return false;
+
+            Bitmap bitmap = BitmapFactory.decodeFile(item.getWhitelistIconPath());
+            if (bitmap == null) {
+                Log.d(TAG, "Image decoding failed: %s", item.getWhitelistIconPath());
+                return false;
+            }
+            iconCallback.onLargeIconAvailable(bitmap, Color.BLACK);
+            return true;
         }
 
         public void onIconUpdated(final String url) {
@@ -981,7 +1005,8 @@ public class NewTabPageView extends FrameLayout
             // Find a matching most visited item.
             for (MostVisitedItem item : mMostVisitedItems) {
                 if (item.getUrl().equals(url)) {
-                    LargeIconCallback iconCallback = new LargeIconCallbackImpl(item, false);
+                    LargeIconCallback iconCallback = new LargeIconCallbackImpl(
+                            item, (MostVisitedItemView) item.getView(), false);
                     mManager.getLargeIconForUrl(url, mMinIconSize, iconCallback);
                     break;
                 }

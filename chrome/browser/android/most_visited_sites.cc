@@ -160,23 +160,7 @@ bool NeedPopularSites(const PrefService* prefs, size_t num_tiles) {
 
 }  // namespace
 
-MostVisitedSites::Suggestion::Suggestion(const base::string16& title,
-                                         const std::string& url,
-                                         MostVisitedSource source)
-    : title(title), url(url), source(source), provider_index(-1) {}
-
-MostVisitedSites::Suggestion::Suggestion(const base::string16& title,
-                                         const GURL& url,
-                                         MostVisitedSource source)
-    : title(title), url(url), source(source), provider_index(-1) {}
-
-MostVisitedSites::Suggestion::Suggestion(const base::string16& title,
-                                         const std::string& url,
-                                         MostVisitedSource source,
-                                         int provider_index)
-    : title(title), url(url), source(source), provider_index(provider_index) {
-  DCHECK_EQ(MostVisitedSites::SUGGESTIONS_SERVICE, source);
-}
+MostVisitedSites::Suggestion::Suggestion() : provider_index(-1) {}
 
 MostVisitedSites::Suggestion::~Suggestion() {}
 
@@ -464,8 +448,12 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       continue;
     }
 
-    suggestions.push_back(make_scoped_ptr(
-        new Suggestion(visited.title, visited.url.spec(), TOP_SITES)));
+    scoped_ptr<Suggestion> suggestion(new Suggestion());
+    suggestion->title = visited.title;
+    suggestion->url = visited.url;
+    suggestion->source = TOP_SITES;
+
+    suggestions.push_back(std::move(suggestion));
   }
 
   received_most_visited_sites_ = true;
@@ -496,10 +484,14 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
       continue;
     }
 
-    suggestions.push_back(make_scoped_ptr(new Suggestion(
-        base::UTF8ToUTF16(suggestion.title()), suggestion.url(),
-        SUGGESTIONS_SERVICE,
-        suggestion.providers_size() > 0 ? suggestion.providers(0) : -1)));
+    scoped_ptr<Suggestion> generated_suggestion(new Suggestion());
+    generated_suggestion->title = base::UTF8ToUTF16(suggestion.title());
+    generated_suggestion->url = GURL(suggestion.url());
+    generated_suggestion->source = SUGGESTIONS_SERVICE;
+    if (suggestion.providers_size() > 0)
+      generated_suggestion->provider_index = suggestion.providers(0);
+
+    suggestions.push_back(std::move(generated_suggestion));
   }
 
   received_most_visited_sites_ = true;
@@ -543,8 +535,13 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
       continue;
     }
 
-    whitelist_suggestions.push_back(make_scoped_ptr(new Suggestion(
-        whitelist->title(), whitelist->entry_point(), WHITELIST)));
+    scoped_ptr<Suggestion> suggestion(new Suggestion());
+    suggestion->title = whitelist->title();
+    suggestion->url = whitelist->entry_point();
+    suggestion->source = WHITELIST;
+    suggestion->whitelist_icon_path = whitelist->large_icon_path();
+
+    whitelist_suggestions.push_back(std::move(suggestion));
     if (whitelist_suggestions.size() >= num_whitelist_suggestions)
       break;
   }
@@ -585,8 +582,12 @@ MostVisitedSites::CreatePopularSitesSuggestions(
       if (hosts.find(host) != hosts.end())
         continue;
 
-      popular_sites_suggestions.push_back(make_scoped_ptr(
-          new Suggestion(popular_site.title, popular_site.url, POPULAR)));
+      scoped_ptr<Suggestion> suggestion(new Suggestion());
+      suggestion->title = popular_site.title;
+      suggestion->url = GURL(popular_site.url);
+      suggestion->source = POPULAR;
+
+      popular_sites_suggestions.push_back(std::move(suggestion));
       if (popular_sites_suggestions.size() >= num_popular_sites_suggestions)
         break;
     }
@@ -777,17 +778,20 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
 
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
+  std::vector<std::string> whitelist_icon_paths;
   titles.reserve(num_suggestions);
   urls.reserve(num_suggestions);
   for (const auto& suggestion : current_suggestions_) {
     titles.push_back(suggestion->title);
     urls.push_back(suggestion->url.spec());
+    whitelist_icon_paths.push_back(suggestion->whitelist_icon_path.value());
   }
   JNIEnv* env = AttachCurrentThread();
   DCHECK_EQ(titles.size(), urls.size());
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
-      ToJavaArrayOfStrings(env, urls).obj());
+      ToJavaArrayOfStrings(env, urls).obj(),
+      ToJavaArrayOfStrings(env, whitelist_icon_paths).obj());
 }
 
 void MostVisitedSites::OnPopularSitesAvailable(bool success) {

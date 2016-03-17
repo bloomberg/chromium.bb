@@ -81,11 +81,14 @@ class MostVisitedSitesTest : public testing::Test {
       const TitleURL& title_url,
       bool is_personal,
       bool whitelist) {
-    return make_scoped_ptr(new MostVisitedSites::Suggestion(
-        title_url.title, title_url.url,
-        whitelist ? MostVisitedSites::WHITELIST
-                  : (is_personal ? MostVisitedSites::TOP_SITES
-                                 : MostVisitedSites::POPULAR)));
+    scoped_ptr<MostVisitedSites::Suggestion> suggestion =
+        make_scoped_ptr(new MostVisitedSites::Suggestion());
+    suggestion->title = title_url.title;
+    suggestion->url = GURL(title_url.url);
+    suggestion->source = whitelist ? MostVisitedSites::WHITELIST
+                                   : (is_personal ? MostVisitedSites::TOP_SITES
+                                                  : MostVisitedSites::POPULAR);
+    return suggestion;
   }
 };
 

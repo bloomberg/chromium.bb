@@ -49,25 +49,30 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
     private MostVisitedItemManager mManager;
     private String mTitle;
     private String mUrl;
+    private String mWhitelistIconPath;
     private boolean mOfflineAvailable;
     private int mIndex;
     private int mTileType;
     private View mView;
 
     /**
-     * Constructs a MostVisitedItem with the given manager, title, URL, index, and view.
+     * Constructs a MostVisitedItem with the given manager, title, URL, whitelist icon path, index,
+     * and view.
      *
      * @param manager The NewTabPageManager used to handle clicks and context menu events.
      * @param title The title of the page.
      * @param url The URL of the page.
+     * @param whitelistIconPath The path to the icon image file, if this is a whitelisted most
+     *                          visited item. Empty otherwise.
      * @param offlineAvailable Whether there is an offline copy of the URL available.
      * @param index The index of this item in the list of most visited items.
      */
     public MostVisitedItem(MostVisitedItemManager manager, String title, String url,
-            boolean offlineAvailable, int index) {
+            String whitelistIconPath, boolean offlineAvailable, int index) {
         mManager = manager;
         mTitle = title;
         mUrl = url;
+        mWhitelistIconPath = whitelistIconPath;
         mOfflineAvailable = offlineAvailable;
         mIndex = index;
         mTileType = MostVisitedTileType.NONE;
@@ -103,6 +108,13 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      */
     public String getTitle() {
         return mTitle;
+    }
+
+    /**
+     * @return The path of the whitelist icon associated with the URL.
+     */
+    public String getWhitelistIconPath() {
+        return mWhitelistIconPath;
     }
 
     /**

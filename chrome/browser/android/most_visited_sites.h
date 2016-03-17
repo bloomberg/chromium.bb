@@ -13,6 +13,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -85,19 +86,14 @@ class MostVisitedSites : public history::TopSitesObserver,
     base::string16 title;
     GURL url;
     MostVisitedSource source;
+
+    // Only valid for source == WHITELIST (empty otherwise).
+    base::FilePath whitelist_icon_path;
+
     // Only valid for source == SUGGESTIONS_SERVICE (-1 otherwise).
     int provider_index;
 
-    Suggestion(const base::string16& title,
-               const std::string& url,
-               MostVisitedSource source);
-    Suggestion(const base::string16& title,
-               const GURL& url,
-               MostVisitedSource source);
-    Suggestion(const base::string16& title,
-               const std::string& url,
-               MostVisitedSource source,
-               int provider_index);
+    Suggestion();
     ~Suggestion();
 
     // Get the Histogram name associated with the source.

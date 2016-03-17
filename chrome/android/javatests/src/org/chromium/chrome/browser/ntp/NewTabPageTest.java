@@ -49,6 +49,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
 
     private static final String[] FAKE_MOST_VISITED_TITLES = new String[] { "Simple" };
+    private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS = new String[] { "" };
 
     private Tab mTab;
     private NewTabPage mNtp;
@@ -83,8 +84,9 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                 public void run() {
                     // Create FakeMostVisitedSites after starting the activity, since it depends on
                     // native code.
-                    mFakeMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile(),
-                            FAKE_MOST_VISITED_TITLES, mFakeMostVisitedUrls);
+                    mFakeMostVisitedSites =
+                            new FakeMostVisitedSites(mTab.getProfile(), FAKE_MOST_VISITED_TITLES,
+                                    mFakeMostVisitedUrls, FAKE_MOST_VISITED_WHITELIST_ICON_PATHS);
                 }
             });
         } catch (Throwable t) {
