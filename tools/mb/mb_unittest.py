@@ -179,16 +179,6 @@ TEST_BAD_CONFIG = """\
 }
 """
 
-
-TEST_BAD_CONFIG_ERR = """\
-mb config file /fake_src/tools/mb/mb_config.pyl has problems:
-  Config "gn_rel_bot_1" used by a bot is also listed in "common_dev_configs".
-  Unknown config "unsupported" referenced from "unsupported_configs".
-  Unknown config "private" referenced from "private_configs".
-  Public artifact builder "a" can not contain the "chrome_with_codecs" mixin.
-  Public artifact builder "b" can not contain the "chrome_with_codecs" mixin."""
-
-
 class UnitTest(unittest.TestCase):
   def fake_mbw(self, files=None, win32=False):
     mbw = FakeMBW(win32=win32)
