@@ -1194,7 +1194,9 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
   if (!MainThreadOnly().have_reported_blocking_intervention_in_current_policy) {
     MainThreadOnly().have_reported_blocking_intervention_in_current_policy =
         true;
-    TRACE_TASK_EXECUTION("RendererSchedulerImpl::TaskBlocked", task);
+    TRACE_EVENT_INSTANT0("renderer.scheduler",
+                         "RendererSchedulerImpl::TaskBlocked",
+                         TRACE_EVENT_SCOPE_THREAD);
   }
 
   if (!MainThreadOnly().have_reported_blocking_intervention_since_navigation) {
