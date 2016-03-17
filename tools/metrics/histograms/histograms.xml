@@ -82415,6 +82415,42 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="699" label="OTHER_BLOCKED_DEFAULT">
     Other navigation; Blocked by global settings
   </int>
+  <int value="700" label="LINK_ALLOWED_WHITELIST">
+    Link; Allowed by whitelist
+  </int>
+  <int value="701" label="TYPED_ALLOWED_WHITELIST">
+    Typed URL; Allowed by whitelist
+  </int>
+  <int value="702" label="AUTO_BOOKMARK_ALLOWED_WHITELIST">
+    Bookmark; Allowed by whitelist
+  </int>
+  <int value="703" label="AUTO_SUBFRAME_ALLOWED_WHITELIST">
+    Subframe navigation; Allowed by whitelist
+  </int>
+  <int value="704" label="MANUAL_SUBFRAME_ALLOWED_WHITELIST">
+    Manual subframe navigation; Allowed by whitelist
+  </int>
+  <int value="705" label="GENERATED_ALLOWED_WHITELIST">
+    Generated from Omnibox; Allowed by whitelist
+  </int>
+  <int value="706" label="AUTO_TOPLEVEL_ALLOWED_WHITELIST">
+    Automatic toplevel navigation; Allowed by whitelist
+  </int>
+  <int value="707" label="FORM_SUBMIT_ALLOWED_WHITELIST">
+    Form submission; Allowed by whitelist
+  </int>
+  <int value="708" label="RELOAD_ALLOWED_WHITELIST">
+    Reload; Allowed by whitelist
+  </int>
+  <int value="709" label="KEYWORD_ALLOWED_WHITELIST">
+    Omnibox keyword; Allowed by whitelist
+  </int>
+  <int value="710" label="KEYWORD_GENERATED_ALLOWED_WHITELIST">
+    URL generated from Omnibox keyword; Allowed by whitelist
+  </int>
+  <int value="799" label="OTHER_ALLOWED_WHITELIST">
+    Other navigation; Allowed by whitelist
+  </int>
 </enum>
 
 <enum name="SuspendAttempt" type="int">

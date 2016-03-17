@@ -30,14 +30,15 @@ enum {
   FILTERING_BEHAVIOR_BLOCK_SAFESITES,
   FILTERING_BEHAVIOR_BLOCK_MANUAL,
   FILTERING_BEHAVIOR_BLOCK_DEFAULT,
-  FILTERING_BEHAVIOR_MAX = FILTERING_BEHAVIOR_BLOCK_DEFAULT
+  FILTERING_BEHAVIOR_ALLOW_WHITELIST,
+  FILTERING_BEHAVIOR_MAX = FILTERING_BEHAVIOR_ALLOW_WHITELIST
 };
 const int kHistogramFilteringBehaviorSpacing = 100;
 const int kHistogramPageTransitionMaxKnownValue =
     static_cast<int>(ui::PAGE_TRANSITION_KEYWORD_GENERATED);
 const int kHistogramPageTransitionFallbackValue =
     kHistogramFilteringBehaviorSpacing - 1;
-const int kHistogramMax = 700;
+const int kHistogramMax = 800;
 
 static_assert(kHistogramPageTransitionMaxKnownValue <
                   kHistogramPageTransitionFallbackValue,
@@ -53,6 +54,8 @@ int GetHistogramValueForFilteringBehavior(
   switch (behavior) {
     case SupervisedUserURLFilter::ALLOW:
     case SupervisedUserURLFilter::WARN:
+      if (reason == SupervisedUserURLFilter::WHITELIST)
+        return FILTERING_BEHAVIOR_ALLOW_WHITELIST;
       return uncertain ? FILTERING_BEHAVIOR_ALLOW_UNCERTAIN
                        : FILTERING_BEHAVIOR_ALLOW;
     case SupervisedUserURLFilter::BLOCK:
