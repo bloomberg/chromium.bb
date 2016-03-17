@@ -496,9 +496,9 @@
     {
       "command": "toggleSearchWidget",
       "sequence": {
-        "cvoxModifier": true,
         "keys": {
-          "keyCode": [191]
+          "keyCode": [70],
+          "ctrlKey": [true]
         }
       }
     }
