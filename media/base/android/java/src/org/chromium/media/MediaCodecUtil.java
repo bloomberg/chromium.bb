@@ -15,10 +15,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * A collection of MediaCodec utility functions.
@@ -32,37 +29,6 @@ class MediaCodecUtil {
     static final int MEDIA_CODEC_ENCODER = 1;
 
     /**
-     * This class represents supported android codec information.
-     */
-    @MainDex
-    private static class CodecInfo {
-        private final String mCodecType; // e.g. "video/x-vnd.on2.vp8".
-        private final String mCodecName; // e.g. "OMX.google.vp8.decoder".
-        private final int mDirection;
-
-        private CodecInfo(String codecType, String codecName, int direction) {
-            mCodecType = codecType;
-            mCodecName = codecName;
-            mDirection = direction;
-        }
-
-        @CalledByNative("CodecInfo")
-        private String codecType() {
-            return mCodecType;
-        }
-
-        @CalledByNative("CodecInfo")
-        private String codecName() {
-            return mCodecName;
-        }
-
-        @CalledByNative("CodecInfo")
-        private int direction() {
-            return mDirection;
-        }
-    }
-
-    /**
      * Class to pass parameters from createDecoder()
      */
     @MainDex
@@ -72,33 +38,35 @@ class MediaCodecUtil {
     }
 
     /**
-     * @return a list of supported android codec information.
+     * Class to abstract platform version API differences for interacting with
+     * the MediaCodecList.
      */
-    @SuppressWarnings("deprecation")
-    @CalledByNative
-    private static CodecInfo[] getCodecsInfo() {
-        // Return the first (highest-priority) codec for each MIME type.
-        Map<String, CodecInfo> encoderInfoMap = new HashMap<String, CodecInfo>();
-        Map<String, CodecInfo> decoderInfoMap = new HashMap<String, CodecInfo>();
-        int count = MediaCodecList.getCodecCount();
-        for (int i = 0; i < count; ++i) {
-            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-            int direction = info.isEncoder() ? MEDIA_CODEC_ENCODER : MEDIA_CODEC_DECODER;
-            String codecString = info.getName();
-            String[] supportedTypes = info.getSupportedTypes();
-            for (int j = 0; j < supportedTypes.length; ++j) {
-                Map<String, CodecInfo> map = info.isEncoder() ? encoderInfoMap : decoderInfoMap;
-                if (!map.containsKey(supportedTypes[j])) {
-                    map.put(supportedTypes[j],
-                            new CodecInfo(supportedTypes[j], codecString, direction));
-                }
+    @MainDex
+    private static class MediaCodecListHelper {
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        public MediaCodecListHelper() {
+            if (hasNewMediaCodecList()) {
+                mCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();
             }
         }
-        ArrayList<CodecInfo> codecInfos =
-                new ArrayList<CodecInfo>(decoderInfoMap.size() + encoderInfoMap.size());
-        codecInfos.addAll(encoderInfoMap.values());
-        codecInfos.addAll(decoderInfoMap.values());
-        return codecInfos.toArray(new CodecInfo[codecInfos.size()]);
+
+        @SuppressWarnings("deprecation")
+        public int getCodecCount() {
+            if (hasNewMediaCodecList()) return mCodecList.length;
+            return MediaCodecList.getCodecCount();
+        }
+
+        @SuppressWarnings("deprecation")
+        public MediaCodecInfo getCodecInfoAt(int index) {
+            if (hasNewMediaCodecList()) return mCodecList[index];
+            return MediaCodecList.getCodecInfoAt(index);
+        }
+
+        private boolean hasNewMediaCodecList() {
+            return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+        }
+
+        private MediaCodecInfo[] mCodecList;
     }
 
     /**
@@ -107,27 +75,24 @@ class MediaCodecUtil {
      * @param direction Whether this is encoder or decoder.
      * @return name of the codec.
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    @SuppressWarnings("deprecation")
     @CalledByNative
     private static String getDefaultCodecName(String mime, int direction) {
-        String codecName = "";
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            try {
-                MediaCodec mediaCodec = null;
-                if (direction == MEDIA_CODEC_ENCODER) {
-                    mediaCodec = MediaCodec.createEncoderByType(mime);
-                } else {
-                    mediaCodec = MediaCodec.createDecoderByType(mime);
-                }
-                codecName = mediaCodec.getName();
-                mediaCodec.release();
-            } catch (Exception e) {
-                Log.w(TAG, "getDefaultCodecName: Failed to create MediaCodec: %s, direction: %d",
-                        mime, direction, e);
+        MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
+        int codecCount = codecListHelper.getCodecCount();
+        for (int i = 0; i < codecCount; ++i) {
+            MediaCodecInfo info = codecListHelper.getCodecInfoAt(i);
+
+            int codecDirection = info.isEncoder() ? MEDIA_CODEC_ENCODER : MEDIA_CODEC_DECODER;
+            if (codecDirection != direction) continue;
+
+            String[] supportedTypes = info.getSupportedTypes();
+            for (int j = 0; j < supportedTypes.length; ++j) {
+                if (supportedTypes[j].equalsIgnoreCase(mime)) return info.getName();
             }
         }
-        return codecName;
+
+        Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
+        return "";
     }
 
     /**
@@ -135,63 +100,18 @@ class MediaCodecUtil {
      * @param mime MIME type of the media format.
      * @return a list of encoder supported color formats.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    @SuppressWarnings("deprecation")
     @CalledByNative
     private static int[] getEncoderColorFormatsForMime(String mime) {
-        MediaCodecInfo[] codecs = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
-            codecs = mediaCodecList.getCodecInfos();
-        } else {
-            int count = MediaCodecList.getCodecCount();
-            if (count <= 0) {
-                return null;
-            }
-            codecs = new MediaCodecInfo[count];
-            for (int i = 0; i < count; ++i) {
-                MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-                codecs[i] = info;
-            }
-        }
-
-        for (int i = 0; i < codecs.length; i++) {
-            if (!codecs[i].isEncoder()) {
-                continue;
-            }
-
-            String[] supportedTypes = codecs[i].getSupportedTypes();
-            for (int j = 0; j < supportedTypes.length; ++j) {
-                if (!supportedTypes[j].equalsIgnoreCase(mime)) {
-                    continue;
-                }
-
-                MediaCodecInfo.CodecCapabilities capabilities =
-                        codecs[i].getCapabilitiesForType(mime);
-                return capabilities.colorFormats;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get decoder name for the input MIME type.
-     * @param mime MIME type of the media.
-     * @return name of the decoder.
-     */
-    @SuppressWarnings("deprecation")
-    static String getDecoderNameForMime(String mime) {
-        int count = MediaCodecList.getCodecCount();
-        for (int i = 0; i < count; ++i) {
-            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-            if (info.isEncoder()) {
-                continue;
-            }
+        MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
+        int codecCount = codecListHelper.getCodecCount();
+        for (int i = 0; i < codecCount; i++) {
+            MediaCodecInfo info = codecListHelper.getCodecInfoAt(i);
+            if (!info.isEncoder()) continue;
 
             String[] supportedTypes = info.getSupportedTypes();
             for (int j = 0; j < supportedTypes.length; ++j) {
                 if (supportedTypes[j].equalsIgnoreCase(mime)) {
-                    return info.getName();
+                    return info.getCapabilitiesForType(supportedTypes[j]).colorFormats;
                 }
             }
         }
@@ -236,15 +156,15 @@ class MediaCodecUtil {
 
         // Do not create codec for blacklisted devices.
         if (!isDecoderSupportedForDevice(mime)) {
-            Log.e(TAG, "Decoder for type " + mime + " is not supported on this device");
+            Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
             return result;
         }
 
         try {
             // |isSecure| only applies to video decoders.
             if (mime.startsWith("video") && isSecure) {
-                String decoderName = getDecoderNameForMime(mime);
-                if (decoderName == null) return null;
+                String decoderName = getDefaultCodecName(mime, MEDIA_CODEC_DECODER);
+                if (decoderName.equals("")) return null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     // To work around an issue that we cannot get the codec info from the secure
                     // decoder, create an insecure decoder first so that we can query its codec
