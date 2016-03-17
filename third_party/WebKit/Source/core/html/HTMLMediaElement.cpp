@@ -795,6 +795,13 @@ void HTMLMediaElement::invokeLoadAlgorithm()
         // 4.10 - Update the duration attribute to Not-a-Number (NaN).
 
         cueTimeline().updateActiveCues(0);
+    } else if (!m_paused) {
+        // TODO(philipj): There is a proposal to always reset the paused state
+        // in the media element load algorithm, to avoid a bogus play() promise
+        // rejection: https://github.com/whatwg/html/issues/869
+        // This is where that change would have an effect, and it is measured to
+        // verify the assumption that it's a very rare situation.
+        UseCounter::count(document(), UseCounter::HTMLMediaElementLoadNetworkEmptyNotPaused);
     }
 
     // 5 - Set the playbackRate attribute to the value of the defaultPlaybackRate attribute.

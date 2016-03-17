@@ -68567,6 +68567,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1262" label="HTMLLabelElementHasNoControlAndFormIsAncestor"/>
   <int value="1263" label="HTMLLabelElementControlForNonFormAssociatedElement"/>
   <int value="1264" label="PatternAttributeUnicodeFlagIsIncompatible"/>
+  <int value="1265" label="HTMLMediaElementLoadNetworkEmptyNotPaused"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
