@@ -17,7 +17,7 @@ namespace blink {
 
 class InjectedScriptManager;
 
-class PLATFORM_EXPORT V8RuntimeAgent : public protocol::Dispatcher::RuntimeCommandHandler, public V8Debugger::Agent<protocol::Frontend::Runtime> {
+class PLATFORM_EXPORT V8RuntimeAgent : public protocol::Backend::Runtime, public V8Debugger::Agent<protocol::Frontend::Runtime> {
 public:
     // Cross-context inspectable values (DOM nodes in different worlds, etc.).
     class Inspectable {

@@ -77,11 +77,11 @@ public:
     void sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result);
 
 {% for domain in api.domains %}
-    virtual void registerAgent({{domain.domain}}CommandHandler* agent) { ASSERT(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
+    virtual void registerAgent(blink::protocol::Backend::{{domain.domain}}* agent) { ASSERT(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
 {% endfor %}
 
 private:
-    friend class CallbackBase;
+    friend class DispatcherCallbackBase;
     friend class DispatcherImplWeakPtr;
     using CallHandler = void (DispatcherImpl::*)(int sessionId, int callId, PassOwnPtr<DictionaryValue> messageObject, ErrorSupport* errors);
     using DispatchMap = protocol::HashMap<String16, CallHandler>;
@@ -97,7 +97,7 @@ private:
     FrontendChannel* m_frontendChannel;
 
 {% for domain in api.domains %}
-    {{domain.domain}}CommandHandler* m_{{domain.domain | lower}}Agent;
+    Backend::{{domain.domain}}* m_{{domain.domain | lower}}Agent;
 {% endfor %}
 
     void sendResponse(int sessionId, int callId, ErrorString invocationError, PassOwnPtr<protocol::DictionaryValue> result)
@@ -117,6 +117,28 @@ private:
     protocol::HashSet<DispatcherImplWeakPtr*> m_weakPtrs;
 };
 
+class PLATFORM_EXPORT DispatcherCallbackBase : public protocol::Backend::CallbackBase {
+public:
+    DispatcherCallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id)
+        : m_backendImpl(backendImpl), m_sessionId(sessionId), m_id(id) { }
+    virtual ~DispatcherCallbackBase() { }
+    void dispose() { m_backendImpl = nullptr; }
+
+protected:
+    void sendIfActive(PassOwnPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError)
+    {
+        if (!m_backendImpl->get())
+            return;
+        m_backendImpl->get()->sendResponse(m_sessionId, m_id, invocationError, nullptr, partialMessage);
+        m_backendImpl = nullptr;
+    }
+
+private:
+    OwnPtr<DispatcherImplWeakPtr> m_backendImpl;
+    int m_sessionId;
+    int m_id;
+};
+
 DispatcherImplWeakPtr::~DispatcherImplWeakPtr()
 {
     if (m_dispatcher)
@@ -131,29 +153,40 @@ const char DispatcherImpl::kInvalidRequest[] = "Invalid request";
     {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
 
     {% if "async" in command %}
-Dispatcher::{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback::{{command.name | to_title_case}}Callback(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id) : CallbackBase(backendImpl, sessionId, id) { }
 
-void Dispatcher::{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback::sendSuccess(
-      {%- for parameter in command.returns -%}
-        {%- if "optional" in parameter -%}
+class PLATFORM_EXPORT {{domain.domain}}{{command.name | to_title_case}}Callback : public Backend::{{domain.domain}}::{{command.name | to_title_case}}Callback, public DispatcherCallbackBase {
+public:
+    {{domain.domain}}{{command.name | to_title_case}}Callback(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id)
+        : DispatcherCallbackBase(backendImpl, sessionId, id) { }
+
+    void sendSuccess(
+    {%- for parameter in command.returns -%}
+      {%- if "optional" in parameter -%}
         const Maybe<{{resolve_type(parameter).raw_type}}>& {{parameter.name}}
-        {%- else -%}
+      {%- else -%}
         {{resolve_type(parameter).pass_type}} {{parameter.name}}
-        {%- endif -%}
-        {%- if not loop.last -%}, {% endif -%}
-      {% endfor %})
-{
-    OwnPtr<protocol::DictionaryValue> resultObject = DictionaryValue::create();
-      {% for parameter in command.returns %}
-        {% if "optional" in parameter %}
-    if ({{parameter.name}}.isJust())
-        resultObject->setValue("{{parameter.name}}", toValue({{parameter.name}}.fromJust()));
-       {% else %}
-    resultObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).to_raw_type % parameter.name}}));
-        {% endif %}
-      {% endfor %}
-    sendIfActive(resultObject.release(), ErrorString());
-}
+      {%- endif -%}
+      {%- if not loop.last -%}, {% endif -%}
+    {%- endfor -%}) override
+    {
+        OwnPtr<protocol::DictionaryValue> resultObject = DictionaryValue::create();
+          {% for parameter in command.returns %}
+            {% if "optional" in parameter %}
+        if ({{parameter.name}}.isJust())
+            resultObject->setValue("{{parameter.name}}", toValue({{parameter.name}}.fromJust()));
+           {% else %}
+        resultObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).to_raw_type % parameter.name}}));
+            {% endif %}
+          {% endfor %}
+        sendIfActive(resultObject.release(), ErrorString());
+    }
+
+    void sendFailure(const ErrorString& error) override
+    {
+        ASSERT(error.length());
+        sendIfActive(nullptr, error);
+    }
+};
     {% endif %}
 
 void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport* errors)
@@ -191,7 +224,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
     {% endif %}
 
     {% if "async" in command %}
-    OwnPtr<{{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback> callback = adoptPtr(new {{domain.domain}}CommandHandler::{{command.name | to_title_case}}Callback(weakPtr(), sessionId, callId));
+    OwnPtr<{{domain.domain}}{{command.name | to_title_case}}Callback> callback = adoptPtr(new {{domain.domain}}{{command.name | to_title_case}}Callback(weakPtr(), sessionId, callId));
     {% elif "returns" in command %}
     // Declare output parameters.
     OwnPtr<protocol::DictionaryValue> result = DictionaryValue::create();
@@ -326,30 +359,6 @@ bool Dispatcher::getCommandName(const String16& message, String16* result)
         return false;
 
     return true;
-}
-
-Dispatcher::CallbackBase::CallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id)
-    : m_backendImpl(backendImpl), m_sessionId(sessionId), m_id(id) { }
-
-Dispatcher::CallbackBase::~CallbackBase() { }
-
-void Dispatcher::CallbackBase::sendFailure(const ErrorString& error)
-{
-    ASSERT(error.length());
-    sendIfActive(nullptr, error);
-}
-
-void Dispatcher::CallbackBase::dispose()
-{
-    m_backendImpl = nullptr;
-}
-
-void Dispatcher::CallbackBase::sendIfActive(PassOwnPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError)
-{
-    if (!m_backendImpl->get())
-        return;
-    m_backendImpl->get()->sendResponse(m_sessionId, m_id, invocationError, nullptr, partialMessage);
-    m_backendImpl = nullptr;
 }
 
 } // namespace protocol

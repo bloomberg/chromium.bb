@@ -54,7 +54,7 @@ class TextResourceDecoder;
 
 using blink::protocol::Maybe;
 
-class CORE_EXPORT InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, protocol::Frontend::Page>, public protocol::Dispatcher::PageCommandHandler {
+class CORE_EXPORT InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, protocol::Frontend::Page>, public protocol::Backend::Page {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
 public:
     class Client {

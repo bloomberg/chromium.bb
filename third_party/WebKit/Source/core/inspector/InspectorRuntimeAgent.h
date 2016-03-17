@@ -52,7 +52,7 @@ using protocol::Maybe;
 
 class CORE_EXPORT InspectorRuntimeAgent
     : public InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>
-    , public protocol::Dispatcher::RuntimeCommandHandler {
+    , public protocol::Backend::Runtime {
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     class Client {

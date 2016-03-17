@@ -264,7 +264,7 @@ namespace CSSAgentState {
 static const char cssAgentEnabled[] = "cssAgentEnabled";
 }
 
-typedef blink::protocol::Dispatcher::CSSCommandHandler::EnableCallback EnableCallback;
+typedef blink::protocol::Backend::CSS::EnableCallback EnableCallback;
 
 namespace blink {
 

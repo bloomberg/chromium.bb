@@ -36,10 +36,10 @@ using blink::protocol::Array;
 using blink::protocol::CacheStorage::Cache;
 using blink::protocol::CacheStorage::DataEntry;
 
-typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::DeleteCacheCallback DeleteCacheCallback;
-typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::DeleteEntryCallback DeleteEntryCallback;
-typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::RequestCacheNamesCallback RequestCacheNamesCallback;
-typedef blink::protocol::Dispatcher::CacheStorageCommandHandler::RequestEntriesCallback RequestEntriesCallback;
+typedef blink::protocol::Backend::CacheStorage::DeleteCacheCallback DeleteCacheCallback;
+typedef blink::protocol::Backend::CacheStorage::DeleteEntryCallback DeleteEntryCallback;
+typedef blink::protocol::Backend::CacheStorage::RequestCacheNamesCallback RequestCacheNamesCallback;
+typedef blink::protocol::Backend::CacheStorage::RequestEntriesCallback RequestEntriesCallback;
 typedef blink::protocol::Dispatcher::CallbackBase RequestCallback;
 typedef blink::WebServiceWorkerCache::BatchOperation BatchOperation;
 

@@ -77,7 +77,7 @@
 
 namespace blink {
 
-using GetResponseBodyCallback = protocol::Dispatcher::NetworkCommandHandler::GetResponseBodyCallback;
+using GetResponseBodyCallback = protocol::Backend::Network::GetResponseBodyCallback;
 
 namespace ResourceAgentState {
 static const char resourceAgentEnabled[] = "resourceAgentEnabled";

@@ -47,7 +47,7 @@ class DictionaryValue;
 }
 
 
-class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, protocol::Frontend::DOMStorage>, public protocol::Dispatcher::DOMStorageCommandHandler {
+class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, protocol::Frontend::DOMStorage>, public protocol::Backend::DOMStorage {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDOMStorageAgent> create(Page* page)
     {

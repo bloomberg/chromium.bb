@@ -45,7 +45,7 @@ class WorkerInspectorProxy;
 
 class CORE_EXPORT InspectorWorkerAgent final
     : public InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>
-    , public protocol::Dispatcher::WorkerCommandHandler
+    , public protocol::Backend::Worker
     , public WorkerInspectorProxy::PageInspector {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:

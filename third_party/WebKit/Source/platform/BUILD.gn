@@ -183,6 +183,7 @@ action("inspector_protocol_sources") {
 
   inputs = [
     protocol_file,
+    "inspector_protocol/Backend_h.template",
     "inspector_protocol/Dispatcher_h.template",
     "inspector_protocol/Dispatcher_cpp.template",
     "inspector_protocol/Frontend_h.template",
@@ -191,6 +192,7 @@ action("inspector_protocol_sources") {
     "inspector_protocol/TypeBuilder_cpp.template",
   ]
   outputs = [
+    "$blink_platform_output_dir/inspector_protocol/Backend.h",
     "$blink_platform_output_dir/inspector_protocol/Dispatcher.cpp",
     "$blink_platform_output_dir/inspector_protocol/Dispatcher.h",
     "$blink_platform_output_dir/inspector_protocol/Frontend.cpp",

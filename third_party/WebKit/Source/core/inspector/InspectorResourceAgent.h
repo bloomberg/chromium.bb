@@ -69,7 +69,7 @@ namespace protocol {
 class DictionaryValue;
 }
 
-class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, protocol::Frontend::Network>, public protocol::Dispatcher::NetworkCommandHandler {
+class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, protocol::Frontend::Network>, public protocol::Backend::Network {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(InspectedFrames* inspectedFrames)
     {

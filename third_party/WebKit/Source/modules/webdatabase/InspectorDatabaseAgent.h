@@ -45,7 +45,7 @@ class InspectorFrontend;
 class Page;
 
 
-class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>, public protocol::Dispatcher::DatabaseCommandHandler {
+class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>, public protocol::Backend::Database {
     WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDatabaseAgent> create(Page* page)
@@ -64,11 +64,11 @@ public:
     void getDatabaseTableNames(ErrorString*, const String& databaseId, OwnPtr<protocol::Array<String>>* names) override;
     void executeSQL(ErrorString*, const String& databaseId, const String& query, PassOwnPtr<ExecuteSQLCallback>) override;
 
-    void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
+    void didOpenDatabase(blink::Database*, const String& domain, const String& name, const String& version);
 private:
     explicit InspectorDatabaseAgent(Page*);
 
-    Database* databaseForId(const String& databaseId);
+    blink::Database* databaseForId(const String& databaseId);
     InspectorDatabaseResource* findByFileName(const String& fileName);
 
     RawPtrWillBeMember<Page> m_page;

@@ -33,27 +33,30 @@ import jinja2
 
 cmdline_parser = optparse.OptionParser()
 cmdline_parser.add_option("--output_dir")
-cmdline_parser.add_option("--template_dir")
+cmdline_parser.add_option("--generate_dispatcher")
 
 try:
     arg_options, arg_values = cmdline_parser.parse_args()
-    if (len(arg_values) != 1):
-        raise Exception("Exactly one plain argument expected (found %s)" % len(arg_values))
-    input_json_filename = arg_values[0]
+    if (len(arg_values) == 0):
+        raise Exception("At least one plain argument expected (found %s)" % len(arg_values))
     output_dirname = arg_options.output_dir
+    generate_dispatcher = arg_options.generate_dispatcher
     if not output_dirname:
         raise Exception("Output directory must be specified")
 except Exception:
     # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
     exc = sys.exc_info()[1]
     sys.stderr.write("Failed to parse command-line arguments: %s\n\n" % exc)
-    sys.stderr.write("Usage: <script> --output_dir <output_dir> protocol.json\n")
+    sys.stderr.write("Usage: <script> --output_dir <output_dir> blink_protocol.json v8_protocol.json ...\n")
     exit(1)
 
-input_file = open(input_json_filename, "r")
-json_string = input_file.read()
-json_api = json.loads(json_string)
+json_api = {"domains": []}
 
+for filename in arg_values:
+    input_file = open(filename, "r")
+    json_string = input_file.read()
+    parsed_json = json.loads(json_string)
+    json_api["domains"] += parsed_json["domains"]
 
 def to_title_case(name):
     return name[:1].upper() + name[1:]
@@ -268,6 +271,7 @@ def generate(class_name):
 
 
 jinja_env = initialize_jinja_env(output_dirname)
+generate("Backend")
 generate("Dispatcher")
 generate("Frontend")
 generate("TypeBuilder")

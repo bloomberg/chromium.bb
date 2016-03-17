@@ -56,7 +56,7 @@ class DictionaryValue;
 
 class CORE_EXPORT InspectorDOMDebuggerAgent final
     : public InspectorBaseAgent<InspectorDOMDebuggerAgent, protocol::Frontend::DOMDebugger>
-    , public protocol::Dispatcher::DOMDebuggerCommandHandler {
+    , public protocol::Backend::DOMDebugger {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(v8::Isolate*, InspectorDOMAgent*, V8RuntimeAgent*, V8DebuggerAgent*);

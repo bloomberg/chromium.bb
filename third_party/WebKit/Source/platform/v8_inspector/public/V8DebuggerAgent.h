@@ -13,7 +13,7 @@ namespace blink {
 
 class V8RuntimeAgent;
 
-class PLATFORM_EXPORT V8DebuggerAgent : public protocol::Dispatcher::DebuggerCommandHandler, public V8Debugger::Agent<protocol::Frontend::Debugger> {
+class PLATFORM_EXPORT V8DebuggerAgent : public protocol::Backend::Debugger, public V8Debugger::Agent<protocol::Frontend::Debugger> {
 public:
     static const char backtraceObjectGroup[];
 

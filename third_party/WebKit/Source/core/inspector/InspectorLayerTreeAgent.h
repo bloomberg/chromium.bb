@@ -50,7 +50,7 @@ class PictureSnapshot;
 class PaintLayer;
 class PaintLayerCompositor;
 
-class CORE_EXPORT InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, protocol::Frontend::LayerTree>, public protocol::Dispatcher::LayerTreeCommandHandler {
+class CORE_EXPORT InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, protocol::Frontend::LayerTree>, public protocol::Backend::LayerTree {
     WTF_MAKE_NONCOPYABLE(InspectorLayerTreeAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(InspectedFrames* inspectedFrames)

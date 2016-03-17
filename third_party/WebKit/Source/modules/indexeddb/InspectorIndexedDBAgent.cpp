@@ -71,11 +71,11 @@ using blink::protocol::IndexedDB::KeyRange;
 using blink::protocol::IndexedDB::ObjectStore;
 using blink::protocol::IndexedDB::ObjectStoreIndex;
 
-typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
-typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::RequestDatabaseCallback RequestDatabaseCallback;
-typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::RequestDataCallback RequestDataCallback;
-typedef blink::protocol::Dispatcher::CallbackBase RequestCallback;
-typedef blink::protocol::Dispatcher::IndexedDBCommandHandler::ClearObjectStoreCallback ClearObjectStoreCallback;
+typedef blink::protocol::Backend::CallbackBase RequestCallback;
+typedef blink::protocol::Backend::IndexedDB::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
+typedef blink::protocol::Backend::IndexedDB::RequestDatabaseCallback RequestDatabaseCallback;
+typedef blink::protocol::Backend::IndexedDB::RequestDataCallback RequestDataCallback;
+typedef blink::protocol::Backend::IndexedDB::ClearObjectStoreCallback ClearObjectStoreCallback;
 
 namespace blink {
 

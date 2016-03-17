@@ -23,7 +23,7 @@ class InspectorDOMAgent;
 class TimingFunction;
 class V8RuntimeAgent;
 
-class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, protocol::Frontend::Animation>, public protocol::Dispatcher::AnimationCommandHandler {
+class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, protocol::Frontend::Animation>, public protocol::Backend::Animation {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
@@ -49,11 +49,11 @@ public:
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);
-    void animationPlayStateChanged(Animation*, Animation::AnimationPlayState, Animation::AnimationPlayState);
+    void animationPlayStateChanged(blink::Animation*, blink::Animation::AnimationPlayState, blink::Animation::AnimationPlayState);
     void didClearDocumentOfWindowObject(LocalFrame*);
 
     // Methods for other agents to use.
-    Animation* assertAnimation(ErrorString*, const String& id);
+    blink::Animation* assertAnimation(ErrorString*, const String& id);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -62,19 +62,19 @@ private:
 
     using AnimationType = protocol::Animation::Animation::TypeEnum;
 
-    PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(Animation&);
-    PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(Animation&, String, PassOwnPtr<protocol::Animation::KeyframesRule> keyframeRule = nullptr);
-    double normalizedStartTime(Animation&);
+    PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(blink::Animation&);
+    PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(blink::Animation&, String, PassOwnPtr<protocol::Animation::KeyframesRule> keyframeRule = nullptr);
+    double normalizedStartTime(blink::Animation&);
     AnimationTimeline& referenceTimeline();
-    Animation* animationClone(Animation*);
-    String createCSSId(Animation&);
+    blink::Animation* animationClone(blink::Animation*);
+    String createCSSId(blink::Animation&);
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     V8RuntimeAgent* m_runtimeAgent;
-    PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
-    PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimationClone;
+    PersistentHeapHashMapWillBeHeapHashMap<String, Member<blink::Animation>> m_idToAnimation;
+    PersistentHeapHashMapWillBeHeapHashMap<String, Member<blink::Animation>> m_idToAnimationClone;
     WillBeHeapHashMap<String, String> m_idToAnimationType;
     bool m_isCloning;
     HashSet<String> m_clearedAnimations;

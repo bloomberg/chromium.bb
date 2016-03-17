@@ -7,6 +7,7 @@
 #ifndef {{class_name}}_h
 #define {{class_name}}_h
 
+#include "platform/inspector_protocol/Backend.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
@@ -37,56 +38,7 @@ public:
     };
 
 {% for domain in api.domains %}
-    class PLATFORM_EXPORT {{domain.domain}}CommandHandler {
-    public:
-  {% for command in domain.commands %}
-    {% if "redirect" in command %}{% continue %}{% endif %}
-    {% if ("handlers" in command) and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
-    {% if "async" in command %}
-        class PLATFORM_EXPORT {{command.name | to_title_case}}Callback : public CallbackBase {
-        public:
-            {{command.name | to_title_case}}Callback(PassOwnPtr<DispatcherImplWeakPtr>, int sessionId, int id);
-            void sendSuccess(
-            {%- for parameter in command.returns -%}
-              {%- if "optional" in parameter -%}
-                const Maybe<{{resolve_type(parameter).raw_type}}>& {{parameter.name}}
-              {%- else -%}
-                {{resolve_type(parameter).pass_type}} {{parameter.name}}
-              {%- endif -%}
-              {%- if not loop.last -%}, {% endif -%}
-            {%- endfor -%}
-            );
-        };
-    {% endif %}
-        virtual void {{command.name}}(ErrorString*
-    {%- for parameter in command.parameters -%}
-        {%- if "optional" in parameter -%}
-            , const Maybe<{{resolve_type(parameter).raw_type}}>& in_{{parameter.name}}
-        {%- else -%}
-            , {{resolve_type(parameter).pass_type}} in_{{parameter.name}}
-        {%- endif -%}
-    {%- endfor -%}
-    {%- if "async" in command -%}
-            , PassOwnPtr<{{command.name | to_title_case}}Callback> callback
-    {%- else -%}
-      {%- for parameter in command.returns -%}
-        {%- if "optional" in parameter -%}
-            , Maybe<{{resolve_type(parameter).raw_type}}>* out_{{parameter.name}}
-        {%- else -%}
-            , {{resolve_type(parameter).type}}* out_{{parameter.name}}
-        {%- endif -%}
-      {%- endfor -%}
-    {%- endif -%}
-        ) = 0;
-  {% endfor %}
-
-    protected:
-        virtual ~{{domain.domain}}CommandHandler() { }
-    };
-{% endfor %}
-
-{% for domain in api.domains %}
-    virtual void registerAgent({{domain.domain | to_title_case}}CommandHandler*) = 0;
+    virtual void registerAgent(blink::protocol::Backend::{{domain.domain}}*) = 0;
 {% endfor %}
 
     virtual void clearFrontend() = 0;

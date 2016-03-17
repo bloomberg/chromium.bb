@@ -61,7 +61,7 @@ class LayoutObject;
 class CORE_EXPORT InspectorCSSAgent final
     : public InspectorBaseAgent<InspectorCSSAgent, protocol::Frontend::CSS>
     , public InspectorDOMAgent::DOMListener
-    , public protocol::Dispatcher::CSSCommandHandler
+    , public protocol::Backend::CSS
     , public InspectorStyleSheetBase::Listener {
     WTF_MAKE_NONCOPYABLE(InspectorCSSAgent);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCSSAgent);

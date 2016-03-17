@@ -41,7 +41,7 @@ namespace blink {
 class InspectedFrames;
 
 
-class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, protocol::Frontend::IndexedDB>, public protocol::Dispatcher::IndexedDBCommandHandler {
+class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, protocol::Frontend::IndexedDB>, public protocol::Backend::IndexedDB {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(InspectedFrames*);
 

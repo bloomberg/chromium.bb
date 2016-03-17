@@ -48,7 +48,7 @@
 #include "platform/inspector_protocol/Values.h"
 #include "wtf/Vector.h"
 
-typedef blink::protocol::Dispatcher::DatabaseCommandHandler::ExecuteSQLCallback ExecuteSQLCallback;
+typedef blink::protocol::Backend::Database::ExecuteSQLCallback ExecuteSQLCallback;
 
 namespace blink {
 
@@ -216,7 +216,7 @@ private:
 
 } // namespace
 
-void InspectorDatabaseAgent::didOpenDatabase(Database* database, const String& domain, const String& name, const String& version)
+void InspectorDatabaseAgent::didOpenDatabase(blink::Database* database, const String& domain, const String& name, const String& version)
 {
     if (InspectorDatabaseResource* resource = findByFileName(database->fileName())) {
         resource->setDatabase(database);
@@ -285,7 +285,7 @@ void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const Str
 
     *names = protocol::Array<String>::create();
 
-    Database* database = databaseForId(databaseId);
+    blink::Database* database = databaseForId(databaseId);
     if (database) {
         Vector<String> tableNames = database->tableNames();
         unsigned length = tableNames.size();
@@ -303,7 +303,7 @@ void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, 
         return;
     }
 
-    Database* database = databaseForId(databaseId);
+    blink::Database* database = databaseForId(databaseId);
     if (!database) {
         requestCallback->sendFailure("Database not found");
         return;
@@ -325,7 +325,7 @@ InspectorDatabaseResource* InspectorDatabaseAgent::findByFileName(const String& 
     return 0;
 }
 
-Database* InspectorDatabaseAgent::databaseForId(const String& databaseId)
+blink::Database* InspectorDatabaseAgent::databaseForId(const String& databaseId)
 {
     DatabaseResourcesHeapMap::iterator it = m_resources.find(databaseId);
     if (it == m_resources.end())

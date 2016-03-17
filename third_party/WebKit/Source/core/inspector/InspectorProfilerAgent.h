@@ -44,7 +44,7 @@ class InspectorFrontend;
 class V8Debugger;
 class V8ProfilerAgent;
 
-class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>, public protocol::Dispatcher::ProfilerCommandHandler {
+class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>, public protocol::Backend::Profiler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorProfilerAgent);
 public:

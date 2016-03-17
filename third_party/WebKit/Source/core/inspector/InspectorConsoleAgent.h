@@ -37,7 +37,7 @@ class ConsoleMessageStorage;
 class V8DebuggerAgent;
 class V8RuntimeAgent;
 
-class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>, public protocol::Dispatcher::ConsoleCommandHandler {
+class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>, public protocol::Backend::Console {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
     explicit InspectorConsoleAgent(V8RuntimeAgent*);

@@ -29,6 +29,7 @@
             'CodeGenerator.py',
             # Input files for the script.
             '../../devtools/protocol.json',
+            'Backend_h.template',
             'Dispatcher_h.template',
             'Dispatcher_cpp.template',
             'Frontend_h.template',
@@ -37,6 +38,7 @@
             'TypeBuilder_cpp.template',
           ],
           'outputs': [
+            '<(blink_platform_output_dir)/inspector_protocol/Backend.h',
             '<(blink_platform_output_dir)/inspector_protocol/Dispatcher.cpp',
             '<(blink_platform_output_dir)/inspector_protocol/Dispatcher.h',
             '<(blink_platform_output_dir)/inspector_protocol/Frontend.cpp',

@@ -40,7 +40,7 @@ using protocol::Array;
 
 class CORE_EXPORT InspectorDebuggerAgent
     : public InspectorBaseAgent<InspectorDebuggerAgent, protocol::Frontend::Debugger>
-    , public protocol::Dispatcher::DebuggerCommandHandler {
+    , public protocol::Backend::Debugger {
 public:
     ~InspectorDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();

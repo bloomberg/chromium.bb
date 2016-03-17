@@ -47,7 +47,7 @@ namespace blink {
 class V8HeapProfilerAgent;
 class V8RuntimeAgent;
 
-class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>, public protocol::Dispatcher::HeapProfilerCommandHandler {
+class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>, public protocol::Backend::HeapProfiler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorHeapProfilerAgent);
 public:

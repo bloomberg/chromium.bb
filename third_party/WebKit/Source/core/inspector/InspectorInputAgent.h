@@ -42,7 +42,7 @@ class InspectedFrames;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 
-class CORE_EXPORT InspectorInputAgent final : public InspectorBaseAgent<InspectorInputAgent, protocol::Frontend::Input>, public protocol::Dispatcher::InputCommandHandler {
+class CORE_EXPORT InspectorInputAgent final : public InspectorBaseAgent<InspectorInputAgent, protocol::Frontend::Input>, public protocol::Backend::Input {
     WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorInputAgent> create(InspectedFrames* inspectedFrames)
