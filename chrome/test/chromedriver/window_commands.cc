@@ -852,11 +852,11 @@ Status ExecuteScreenshot(
     if (status.IsError())
       return status;
     status = extension->CaptureScreenshot(&screenshot);
-    if (status.IsError()) {
-      LOG(WARNING) << "screenshot failed with extension, fallback to DevTools";
-      status = web_view->CaptureScreenshot(&screenshot);
-    }
   } else {
+    status = web_view->CaptureScreenshot(&screenshot);
+  }
+  if (status.IsError()) {
+    LOG(WARNING) << "screenshot failed, retrying";
     status = web_view->CaptureScreenshot(&screenshot);
   }
   if (status.IsError())
