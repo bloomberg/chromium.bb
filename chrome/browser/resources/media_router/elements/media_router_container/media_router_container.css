@@ -35,6 +35,7 @@
 
 #device-missing a {
   color: rgba(33, 150, 243, 0.87);
+  margin: 8px 0;
   text-decoration: none;
 }
 
