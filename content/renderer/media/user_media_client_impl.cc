@@ -64,13 +64,17 @@ void CopyBlinkRequestToStreamControls(const blink::WebUserMediaRequest& request,
     const blink::WebMediaTrackConstraintSet& audio_basic =
         request.audioConstraints().basic();
     CopyFirstString(audio_basic.mediaStreamSource.exact(),
-                    &(controls->audio.stream_source));
+                    &controls->audio.stream_source);
     CopyVector(audio_basic.deviceId.exact(), &(controls->audio.device_ids));
     // Optionals. They may be either in ideal or in advanced.exact.
-    // TODO(hta): Get alternatives only mentioned in advanced array.
     CopyVector(audio_basic.deviceId.ideal(),
                &controls->audio.alternate_device_ids);
-
+    for (const auto& constraint : request.audioConstraints().advanced()) {
+      CopyVector(constraint.deviceId.exact(),
+                 &controls->audio.alternate_device_ids);
+      CopyVector(constraint.deviceId.ideal(),
+                 &controls->audio.alternate_device_ids);
+    }
     if (audio_basic.hotwordEnabled.hasExact()) {
       controls->hotword_enabled = audio_basic.hotwordEnabled.exact();
     } else {
@@ -90,6 +94,12 @@ void CopyBlinkRequestToStreamControls(const blink::WebUserMediaRequest& request,
     CopyVector(video_basic.deviceId.exact(), &(controls->video.device_ids));
     CopyVector(video_basic.deviceId.ideal(),
                &(controls->video.alternate_device_ids));
+    for (const auto& constraint : request.videoConstraints().advanced()) {
+      CopyVector(constraint.deviceId.exact(),
+                 &controls->video.alternate_device_ids);
+      CopyVector(constraint.deviceId.ideal(),
+                 &controls->video.alternate_device_ids);
+    }
   }
 }
 
