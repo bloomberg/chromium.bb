@@ -122,7 +122,6 @@ extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
 extern const char kEnableMaterialDesignExtensions[];
-extern const char kEnableMaterialDesignHistory[];
 extern const char kEnableMaterialDesignPolicyPage[];
 extern const char kEnableNaCl[];
 extern const char kEnableNativeNotifications[];
@@ -402,7 +401,6 @@ extern const char kDisableInputImeAPI[];
 
 bool AboutInSettingsEnabled();
 bool MdExtensionsEnabled();
-bool MdHistoryEnabled();
 bool MdPolicyPageEnabled();
 bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();

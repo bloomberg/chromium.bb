@@ -23,6 +23,7 @@ extern const base::Feature kAutomaticTabDiscarding;
 extern const base::Feature kLinuxObsoleteSystemIsEndOfTheLine;
 #endif
 
+extern const base::Feature kMaterialDesignHistoryFeature;
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kRuntimeMemoryLeakDetector;

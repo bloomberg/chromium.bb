@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/url_formatter/url_fixer.h"
@@ -74,7 +75,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUIHistoryHost) {
     // Material design history is handled on the top-level chrome://history
     // host.
-    if (::switches::MdHistoryEnabled()) {
+    if (base::FeatureList::IsEnabled(features::kMaterialDesignHistoryFeature)) {
       host = chrome::kChromeUIHistoryHost;
       path = url->path();
     } else {

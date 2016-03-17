@@ -20,7 +20,8 @@ MaterialHistoryBrowserTest.prototype = {
 
   browsePreload: 'chrome://history',
 
-  commandLineSwitches: [{switchName: 'enable-md-history'}],
+  commandLineSwitches: [{switchName: 'enable-features',
+                         switchValue: 'MaterialDesignHistory'}],
 
   /** @override */
   runAccessibilityChecks: false,
