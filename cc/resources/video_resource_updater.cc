@@ -23,6 +23,11 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
+#if DCHECK_IS_ON()
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
+#endif
+
 namespace cc {
 
 namespace {
@@ -112,6 +117,14 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
   gpu::SyncToken sync_token_;
 };
 
+#if DCHECK_IS_ON()
+void OnVideoFrameDestruct(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const base::Closure& task) {
+  task_runner->PostTask(FROM_HERE, task);
+}
+#endif
+
 }  // namespace
 
 VideoResourceUpdater::PlaneResource::PlaneResource(
@@ -125,6 +138,9 @@ VideoResourceUpdater::PlaneResource::PlaneResource(
       mailbox(mailbox),
       ref_count(0),
       frame_ptr(nullptr),
+#if DCHECK_IS_ON()
+      destructed(false),
+#endif
       plane_index(0u) {
 }
 
@@ -135,9 +151,17 @@ bool VideoResourceUpdater::PlaneResourceMatchesUniqueID(
     const PlaneResource& plane_resource,
     const media::VideoFrame* video_frame,
     size_t plane_index) {
-  return plane_resource.frame_ptr == video_frame &&
-         plane_resource.plane_index == plane_index &&
-         plane_resource.timestamp == video_frame->timestamp();
+  bool matched = plane_resource.frame_ptr == video_frame &&
+                 plane_resource.plane_index == plane_index &&
+                 plane_resource.timestamp == video_frame->timestamp();
+#if DCHECK_IS_ON()
+  if ((plane_index == 0) && matched) {
+    DCHECK(!plane_resource.destructed)
+        << "ERROR: reused the destructed resource."
+        << " timestamp = " << plane_resource.timestamp;
+  }
+#endif
+  return matched;
 }
 
 void VideoResourceUpdater::SetPlaneResourceUniqueId(
@@ -147,6 +171,9 @@ void VideoResourceUpdater::SetPlaneResourceUniqueId(
   plane_resource->frame_ptr = video_frame;
   plane_resource->plane_index = plane_index;
   plane_resource->timestamp = video_frame->timestamp();
+#if DCHECK_IS_ON()
+  plane_resource->destructed = false;
+#endif
 }
 
 VideoFrameExternalResources::VideoFrameExternalResources()
@@ -393,6 +420,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // by software.
       video_renderer_->Copy(video_frame, &canvas, media::Context3D());
       SetPlaneResourceUniqueId(video_frame.get(), 0, &plane_resource);
+#if DCHECK_IS_ON()
+      // Add VideoFrame destructor callback.
+      video_frame->AddDestructionObserver(base::Bind(
+          &OnVideoFrameDestruct, base::ThreadTaskRunnerHandle::Get(),
+          base::Bind(&VideoResourceUpdater::MarkOldResource, AsWeakPtr(),
+                     base::Unretained(video_frame.get()),
+                     video_frame->timestamp())));
+#endif
     }
 
     external_resources.software_resources.push_back(plane_resource.resource_id);
@@ -488,6 +523,16 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       resource_provider_->CopyToResource(plane_resource.resource_id, pixels,
                                          resource_size_pixels);
       SetPlaneResourceUniqueId(video_frame.get(), i, &plane_resource);
+#if DCHECK_IS_ON()
+      // Add VideoFrame destructor callback.
+      if (i == 0) {
+        video_frame->AddDestructionObserver(base::Bind(
+            &OnVideoFrameDestruct, base::ThreadTaskRunnerHandle::Get(),
+            base::Bind(&VideoResourceUpdater::MarkOldResource, AsWeakPtr(),
+                       base::Unretained(video_frame.get()),
+                       video_frame->timestamp())));
+      }
+#endif
     }
 
     if (plane_resource.resource_format == LUMINANCE_F16) {
@@ -695,5 +740,27 @@ void VideoResourceUpdater::RecycleResource(
   --resource_it->ref_count;
   DCHECK_GE(resource_it->ref_count, 0);
 }
+
+#if DCHECK_IS_ON()
+// static
+void VideoResourceUpdater::MarkOldResource(
+    base::WeakPtr<VideoResourceUpdater> updater,
+    const media::VideoFrame* video_frame_ptr,
+    base::TimeDelta timestamp) {
+  if (!updater)
+    return;
+  const ResourceList::iterator resource_it = std::find_if(
+      updater->all_resources_.begin(), updater->all_resources_.end(),
+      [video_frame_ptr, timestamp](const PlaneResource& plane_resource) {
+        return plane_resource.frame_ptr == video_frame_ptr &&
+               plane_resource.timestamp == timestamp &&
+               plane_resource.plane_index == 0;
+      });
+  if (resource_it == updater->all_resources_.end())
+    return;
+
+  resource_it->destructed = true;
+}
+#endif
 
 }  // namespace cc
