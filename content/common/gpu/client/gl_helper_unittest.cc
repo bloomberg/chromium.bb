@@ -32,7 +32,8 @@
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gl_helper_readback_support.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
-#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -40,10 +41,6 @@
 #include "ui/gl/gl_implementation.h"
 
 namespace content {
-
-using blink::WebGLId;
-using blink::WebGraphicsContext3D;
-using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 content::GLHelper::ScalerQuality kQualities[] = {
     content::GLHelper::SCALER_QUALITY_BEST,
@@ -55,17 +52,34 @@ const char* kQualityNames[] = {"best", "good", "fast", };
 class GLHelperTest : public testing::Test {
  protected:
   void SetUp() override {
-    WebGraphicsContext3D::Attributes attributes;
-    bool lose_context_when_out_of_memory = false;
-    context_ =
-        WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-            attributes, lose_context_when_out_of_memory);
-    context_->InitializeOnCurrentThread();
-    context_support_ = context_->GetContextSupport();
-    helper_.reset(
-        new content::GLHelper(context_->GetGLInterface(), context_support_));
-    helper_scaling_.reset(new content::GLHelperScaling(
-        context_->GetGLInterface(), helper_.get()));
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = 8;
+    attributes.depth_size = 24;
+    attributes.red_size = 8;
+    attributes.green_size = 8;
+    attributes.blue_size = 8;
+    attributes.stencil_size = 8;
+    attributes.samples = 4;
+    attributes.sample_buffers = 1;
+    attributes.bind_generates_resource = false;
+
+    context_.reset(gpu::GLInProcessContext::Create(
+        nullptr,                     /* service */
+        nullptr,                     /* surface */
+        true,                        /* offscreen */
+        gfx::kNullAcceleratedWidget, /* window */
+        gfx::Size(1, 1),             /* size */
+        nullptr,                     /* share_context */
+        true,                        /* use_global_share_group */
+        attributes, gfx::PreferDiscreteGpu,
+        ::gpu::GLInProcessContextSharedMemoryLimits(),
+        nullptr, /* gpu_memory_buffer_manager */
+        nullptr /* image_factory */));
+    gl_ = context_->GetImplementation();
+    gpu::ContextSupport* support = context_->GetImplementation();
+
+    helper_.reset(new content::GLHelper(gl_, support));
+    helper_scaling_.reset(new content::GLHelperScaling(gl_, helper_.get()));
   }
 
   void TearDown() override {
@@ -700,22 +714,15 @@ class GLHelperTest : public testing::Test {
   }
 
   // Binds texture and framebuffer and loads the bitmap pixels into the texture.
-  void BindTextureAndFrameBuffer(WebGLId texture,
-                                 WebGLId framebuffer,
+  void BindTextureAndFrameBuffer(GLuint texture,
+                                 GLuint framebuffer,
                                  SkBitmap* bitmap,
                                  int width,
                                  int height) {
-    context_->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    context_->bindTexture(GL_TEXTURE_2D, texture);
-    context_->texImage2D(GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         width,
-                         height,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         bitmap->getPixels());
+    gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    gl_->BindTexture(GL_TEXTURE_2D, texture);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+                    GL_UNSIGNED_BYTE, bitmap->getPixels());
   }
 
   // Create a test image, transform it using
@@ -732,8 +739,10 @@ class GLHelperTest : public testing::Test {
     DCHECK(out_color_type == kAlpha_8_SkColorType ||
            out_color_type == kRGBA_8888_SkColorType ||
            out_color_type == kBGRA_8888_SkColorType);
-    WebGLId src_texture = context_->createTexture();
-    WebGLId framebuffer = context_->createFramebuffer();
+    GLuint src_texture;
+    gl_->GenTextures(1, &src_texture);
+    GLuint framebuffer;
+    gl_->GenFramebuffers(1, &framebuffer);
     scoped_ptr<SkBitmap> input_pixels =
         CreateTestBitmap(xsize, ysize, test_pattern);
     BindTextureAndFrameBuffer(
@@ -813,8 +822,8 @@ class GLHelperTest : public testing::Test {
             dummy_stages,
             message + " comparing against transformed/scaled");
 
-    context_->deleteTexture(src_texture);
-    context_->deleteFramebuffer(framebuffer);
+    gl_->DeleteTextures(1, &src_texture);
+    gl_->DeleteFramebuffers(1, &framebuffer);
   }
 
   // Scaling test: Create a test image, scale it using GLHelperScaling
@@ -826,8 +835,10 @@ class GLHelperTest : public testing::Test {
                  int test_pattern,
                  size_t quality_index,
                  bool flip) {
-    WebGLId src_texture = context_->createTexture();
-    WebGLId framebuffer = context_->createFramebuffer();
+    GLuint src_texture;
+    gl_->GenTextures(1, &src_texture);
+    GLuint framebuffer;
+    gl_->GenFramebuffers(1, &framebuffer);
     scoped_ptr<SkBitmap> input_pixels =
         CreateTestBitmap(xsize, ysize, test_pattern);
     BindTextureAndFrameBuffer(
@@ -857,12 +868,9 @@ class GLHelperTest : public testing::Test {
                          gfx::Size(scaled_xsize, scaled_ysize),
                          message);
 
-    WebGLId dst_texture =
-        helper_->CopyAndScaleTexture(src_texture,
-                                     gfx::Size(xsize, ysize),
-                                     gfx::Size(scaled_xsize, scaled_ysize),
-                                     flip,
-                                     kQualities[quality_index]);
+    GLuint dst_texture = helper_->CopyAndScaleTexture(
+        src_texture, gfx::Size(xsize, ysize),
+        gfx::Size(scaled_xsize, scaled_ysize), flip, kQualities[quality_index]);
 
     SkBitmap output_pixels;
     output_pixels.allocPixels(SkImageInfo::Make(scaled_xsize,
@@ -906,9 +914,9 @@ class GLHelperTest : public testing::Test {
             stages,
             message + " comparing against scaled");
 
-    context_->deleteTexture(src_texture);
-    context_->deleteTexture(dst_texture);
-    context_->deleteFramebuffer(framebuffer);
+    gl_->DeleteTextures(1, &src_texture);
+    gl_->DeleteTextures(1, &dst_texture);
+    gl_->DeleteFramebuffers(1, &framebuffer);
   }
 
   // Create a scaling pipeline and check that it is made up of
@@ -1182,7 +1190,7 @@ class GLHelperTest : public testing::Test {
                                       SkColorType color_type,
                                       const gfx::Size& src_size,
                                       const SkBitmap& input_pixels) {
-    context_->bindTexture(GL_TEXTURE_2D, src_texture);
+    gl_->BindTexture(GL_TEXTURE_2D, src_texture);
     GLenum format = 0;
     switch (color_type) {
       case kBGRA_8888_SkColorType:
@@ -1199,15 +1207,9 @@ class GLHelperTest : public testing::Test {
     }
     GLenum type = (color_type == kRGB_565_SkColorType) ?
                   GL_UNSIGNED_SHORT_5_6_5 : GL_UNSIGNED_BYTE;
-    context_->texImage2D(GL_TEXTURE_2D,
-                         0,
-                         format,
-                         src_size.width(),
-                         src_size.height(),
-                         0,
-                         format,
-                         type,
-                         input_pixels.getPixels());
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, format, src_size.width(),
+                    src_size.height(), 0, format, type,
+                    input_pixels.getPixels());
   }
 
   void ReadBackTexture(GLuint src_texture,
@@ -1244,7 +1246,8 @@ class GLHelperTest : public testing::Test {
       LOG(INFO) << "Skipping test format not supported" << color_type;
       return true;
     }
-    WebGLId src_texture = context_->createTexture();
+    GLuint src_texture;
+    gl_->GenTextures(1, &src_texture);
     SkBitmap input_pixels;
     input_pixels.allocPixels(info);
     // Test Pattern-1, Fill with Plain color pattern.
@@ -1298,7 +1301,7 @@ class GLHelperTest : public testing::Test {
       LOG(ERROR) << "Bitmap comparision failure Pattern-3";
       return false;
     }
-    context_->deleteTexture(src_texture);
+    gl_->DeleteTextures(1, &src_texture);
     if (HasFailure()) {
       return false;
     }
@@ -1318,7 +1321,8 @@ class GLHelperTest : public testing::Test {
                        bool flip,
                        bool use_mrt,
                        content::GLHelper::ScalerQuality quality) {
-    WebGLId src_texture = context_->createTexture();
+    GLuint src_texture;
+    gl_->GenTextures(1, &src_texture);
     SkBitmap input_pixels;
     input_pixels.allocN32Pixels(xsize, ysize);
 
@@ -1347,27 +1351,19 @@ class GLHelperTest : public testing::Test {
       }
     }
 
-    context_->bindTexture(GL_TEXTURE_2D, src_texture);
-    context_->texImage2D(GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         xsize,
-                         ysize,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         input_pixels.getPixels());
+    gl_->BindTexture(GL_TEXTURE_2D, src_texture);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, xsize, ysize, 0, GL_RGBA,
+                    GL_UNSIGNED_BYTE, input_pixels.getPixels());
 
     gpu::Mailbox mailbox;
-    context_->genMailboxCHROMIUM(mailbox.name);
+    gl_->GenMailboxCHROMIUM(mailbox.name);
     EXPECT_FALSE(mailbox.IsZero());
-    context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-    const blink::WGC3Duint64 fence_sync = context_->insertFenceSyncCHROMIUM();
-    context_->GetGLInterface()->ShallowFlushCHROMIUM();
+    gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
+    gl_->ShallowFlushCHROMIUM();
 
     gpu::SyncToken sync_token;
-    ASSERT_TRUE(context_->genSyncTokenCHROMIUM(fence_sync,
-                                               sync_token.GetData()));
+    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
     std::string message = base::StringPrintf(
         "input size: %dx%d "
@@ -1493,7 +1489,7 @@ class GLHelperTest : public testing::Test {
                  &input_pixels,
                  message + " V plane");
 
-    context_->deleteTexture(src_texture);
+    gl_->DeleteTextures(1, &src_texture);
   }
 
   void TestAddOps(int src, int dst, bool scale_x, bool allow3) {
@@ -1695,8 +1691,8 @@ class GLHelperTest : public testing::Test {
                    "8x1 -> 1x1 bilinear4 X\n");
   }
 
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context_;
-  gpu::ContextSupport* context_support_;
+  scoped_ptr<gpu::GLInProcessContext> context_;
+  gpu::gles2::GLES2Interface* gl_;
   scoped_ptr<content::GLHelper> helper_;
   scoped_ptr<content::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
