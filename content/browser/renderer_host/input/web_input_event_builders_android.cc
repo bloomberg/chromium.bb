@@ -45,6 +45,10 @@ ui::DomKey GetDomKeyFromEvent(
     int keycode,
     int modifiers,
     int unicode_character) {
+  // Synthetic key event, not enough information to get DomKey.
+  if (android_key_event.is_null() && !unicode_character)
+    return ui::DomKey::UNIDENTIFIED;
+
   if (!unicode_character && env) {
     // According to spec |kAllowedModifiers| should be Shift and AltGr, however
     // Android doesn't have AltGr key and ImeAdapter::getModifiers won't pass it

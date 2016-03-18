@@ -12,8 +12,10 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/android/key_event_utils.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
@@ -23,6 +25,7 @@ namespace {
 
 const int kCombiningAccent = 0x80000000;
 const int kCombiningAccentMask = 0x7fffffff;
+const int kCompositionKeyCode = 229;
 
 WebKeyboardEvent CreateFakeWebKeyboardEvent(JNIEnv* env,
                                             int key_code,
@@ -138,4 +141,29 @@ TEST(WebInputEventBuilderAndroidTest, DomKeyCtrlAlt) {
     EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.domKey)
         << ui::KeycodeConverter::DomKeyToKeyString(web_event.domKey);
   }
+}
+
+// Testing AKEYCODE_LAST_CHANNEL because it's overlapping with
+// COMPOSITION_KEY_CODE (both 229).
+TEST(WebInputEventBuilderAndroidTest, LastChannelKey) {
+  JNIEnv* env = AttachCurrentThread();
+
+  // AKEYCODE_LAST_CHANNEL (229) is not defined in minimum NDK.
+  WebKeyboardEvent web_event =
+      CreateFakeWebKeyboardEvent(env, 229, 0, 0);
+  EXPECT_EQ(229, web_event.nativeKeyCode);
+  EXPECT_EQ(ui::KeyboardCode::VKEY_UNKNOWN, web_event.windowsKeyCode);
+  EXPECT_EQ(static_cast<int>(ui::DomCode::NONE), web_event.domCode);
+  EXPECT_EQ(ui::DomKey::MEDIA_LAST, web_event.domKey);
+}
+
+// Synthetic key event should produce DomKey::UNIDENTIFIED.
+TEST(WebInputEventBuilderAndroidTest, DomKeySyntheticEvent) {
+  WebKeyboardEvent web_event = content::WebKeyboardEventBuilder::Build(
+      nullptr, nullptr, WebKeyboardEvent::KeyDown, 0, 0, kCompositionKeyCode, 0,
+      0, false);
+  EXPECT_EQ(kCompositionKeyCode, web_event.nativeKeyCode);
+  EXPECT_EQ(ui::KeyboardCode::VKEY_UNKNOWN, web_event.windowsKeyCode);
+  EXPECT_EQ(static_cast<int>(ui::DomCode::NONE), web_event.domCode);
+  EXPECT_EQ(ui::DomKey::UNIDENTIFIED, web_event.domKey);
 }
