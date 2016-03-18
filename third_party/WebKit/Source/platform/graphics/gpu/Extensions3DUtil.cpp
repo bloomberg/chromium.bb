@@ -69,7 +69,7 @@ bool Extensions3DUtil::ensureExtensionEnabled(const String& name)
         return true;
 
     if (m_requestableExtensions.contains(name)) {
-        m_context->requestExtensionCHROMIUM(name.ascii().data());
+        m_gl->RequestExtensionCHROMIUM(name.ascii().data());
         m_enabledExtensions.clear();
         m_requestableExtensions.clear();
         initializeExtensions();

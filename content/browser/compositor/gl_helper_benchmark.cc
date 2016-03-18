@@ -26,7 +26,8 @@
 #include "base/time/time.h"
 #include "content/browser/compositor/gl_helper.h"
 #include "content/browser/compositor/gl_helper_scaling.h"
-#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -34,9 +35,6 @@
 #include "ui/gl/gl_surface.h"
 
 namespace content {
-
-using blink::WebGLId;
-using blink::WebGraphicsContext3D;
 
 content::GLHelper::ScalerQuality kQualities[] = {
     content::GLHelper::SCALER_QUALITY_BEST,
@@ -51,16 +49,34 @@ const char* kQualityNames[] = {
 class GLHelperTest : public testing::Test {
  protected:
   void SetUp() override {
-    WebGraphicsContext3D::Attributes attributes;
-    bool lose_context_when_out_of_memory = false;
-    context_ = gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl::
-        CreateOffscreenContext(attributes, lose_context_when_out_of_memory);
-    context_->InitializeOnCurrentThread();
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = 8;
+    attributes.depth_size = 24;
+    attributes.red_size = 8;
+    attributes.green_size = 8;
+    attributes.blue_size = 8;
+    attributes.stencil_size = 8;
+    attributes.samples = 4;
+    attributes.sample_buffers = 1;
+    attributes.bind_generates_resource = false;
 
-    helper_.reset(new content::GLHelper(context_->GetGLInterface(),
-                                        context_->GetContextSupport()));
-    helper_scaling_.reset(new content::GLHelperScaling(
-        context_->GetGLInterface(), helper_.get()));
+    context_.reset(gpu::GLInProcessContext::Create(
+        nullptr,                     /* service */
+        nullptr,                     /* surface */
+        true,                        /* offscreen */
+        gfx::kNullAcceleratedWidget, /* window */
+        gfx::Size(1, 1),             /* size */
+        nullptr,                     /* share_context */
+        true,                        /* use_global_share_group */
+        attributes, gfx::PreferDiscreteGpu,
+        ::gpu::GLInProcessContextSharedMemoryLimits(),
+        nullptr, /* gpu_memory_buffer_manager */
+        nullptr /* image_factory */));
+    gl_ = context_->GetImplementation();
+    gpu::ContextSupport* support = context_->GetImplementation();
+
+    helper_.reset(new content::GLHelper(gl_, support));
+    helper_scaling_.reset(new content::GLHelperScaling(gl_, helper_.get()));
   }
 
   void TearDown() override {
@@ -95,8 +111,8 @@ class GLHelperTest : public testing::Test {
     base::CloseFile(f);
   }
 
-  scoped_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
-      context_;
+  scoped_ptr<gpu::GLInProcessContext> context_;
+  gpu::gles2::GLES2Interface* gl_;
   scoped_ptr<content::GLHelper> helper_;
   scoped_ptr<content::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
@@ -111,9 +127,12 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
   for (size_t q = 0; q < arraysize(kQualities); q++) {
     for (size_t outsize = 0; outsize < arraysize(output_sizes); outsize += 2) {
       for (size_t insize = 0; insize < arraysize(input_sizes); insize += 2) {
-        WebGLId src_texture = context_->createTexture();
-        WebGLId dst_texture = context_->createTexture();
-        WebGLId framebuffer = context_->createFramebuffer();
+        uint32_t src_texture;
+        gl_->GenTextures(1, &src_texture);
+        uint32_t dst_texture;
+        gl_->GenTextures(1, &dst_texture);
+        uint32_t framebuffer;
+        gl_->GenFramebuffers(1, &framebuffer);
         const gfx::Size src_size(input_sizes[insize], input_sizes[insize + 1]);
         const gfx::Size dst_size(output_sizes[outsize],
                                  output_sizes[outsize + 1]);
@@ -123,15 +142,14 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
         SkBitmap output_pixels;
         output_pixels.allocN32Pixels(dst_size.width(), dst_size.height());
 
-        context_->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        context_->bindTexture(GL_TEXTURE_2D, dst_texture);
-        context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dst_size.width(),
-                             dst_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                             0);
-        context_->bindTexture(GL_TEXTURE_2D, src_texture);
-        context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src_size.width(),
-                             src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                             input.getPixels());
+        gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        gl_->BindTexture(GL_TEXTURE_2D, dst_texture);
+        gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dst_size.width(),
+                        dst_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        gl_->BindTexture(GL_TEXTURE_2D, src_texture);
+        gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src_size.width(),
+                        src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                        input.getPixels());
 
         gfx::Rect src_subrect(0, 0, src_size.width(), src_size.height());
         scoped_ptr<content::GLHelper::ScalerInterface> scaler(
@@ -139,7 +157,7 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
                                   dst_size, false, false));
         // Scale once beforehand before we start measuring.
         scaler->Scale(src_texture, dst_texture);
-        context_->finish();
+        gl_->Finish();
 
         base::TimeTicks start_time = base::TimeTicks::Now();
         int iterations = 0;
@@ -148,9 +166,9 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
           for (int i = 0; i < 50; i++) {
             iterations++;
             scaler->Scale(src_texture, dst_texture);
-            context_->flush();
+            gl_->Flush();
           }
-          context_->finish();
+          gl_->Finish();
           end_time = base::TimeTicks::Now();
           if (iterations > 2000) {
             break;
@@ -159,9 +177,9 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
             break;
           }
         }
-        context_->deleteTexture(dst_texture);
-        context_->deleteTexture(src_texture);
-        context_->deleteFramebuffer(framebuffer);
+        gl_->DeleteTextures(1, &dst_texture);
+        gl_->DeleteTextures(1, &src_texture);
+        gl_->DeleteFramebuffers(1, &framebuffer);
 
         std::string name;
         name = base::StringPrintf("scale_%dx%d_to_%dx%d_%s", src_size.width(),
@@ -191,20 +209,22 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
   LoadPngFileToSkBitmap(base::FilePath(FILE_PATH_LITERAL("testimage.png")),
                         &input);
 
-  WebGLId framebuffer = context_->createFramebuffer();
-  WebGLId src_texture = context_->createTexture();
+  uint32_t framebuffer;
+  gl_->GenFramebuffers(1, &framebuffer);
+  uint32_t src_texture;
+  gl_->GenTextures(1, &src_texture);
   const gfx::Size src_size(input.width(), input.height());
-  context_->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-  context_->bindTexture(GL_TEXTURE_2D, src_texture);
-  context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src_size.width(),
-                       src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                       input.getPixels());
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+  gl_->BindTexture(GL_TEXTURE_2D, src_texture);
+  gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, src_size.width(),
+                  src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                  input.getPixels());
 
   for (size_t q = 0; q < arraysize(kQualities); q++) {
     for (size_t p = 0; p < arraysize(percents); p++) {
       const gfx::Size dst_size(input.width() * percents[p] / 100,
                                input.height() * percents[p] / 100);
-      WebGLId dst_texture = helper_->CopyAndScaleTexture(
+      uint32_t dst_texture = helper_->CopyAndScaleTexture(
           src_texture, src_size, dst_size, false, kQualities[q]);
 
       SkBitmap output_pixels;
@@ -214,15 +234,15 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
           dst_texture, gfx::Rect(0, 0, dst_size.width(), dst_size.height()),
           static_cast<unsigned char*>(output_pixels.getPixels()),
           kN32_SkColorType);
-      context_->deleteTexture(dst_texture);
+      gl_->DeleteTextures(1, &dst_texture);
       std::string filename = base::StringPrintf("testoutput_%s_%d.ppm",
                                                 kQualityNames[q], percents[p]);
       VLOG(0) << "Writing " << filename;
       SaveToFile(&output_pixels, base::FilePath::FromUTF8Unsafe(filename));
     }
   }
-  context_->deleteTexture(src_texture);
-  context_->deleteFramebuffer(framebuffer);
+  gl_->DeleteTextures(1, &src_texture);
+  gl_->DeleteFramebuffers(1, &framebuffer);
 }
 
 }  // namespace

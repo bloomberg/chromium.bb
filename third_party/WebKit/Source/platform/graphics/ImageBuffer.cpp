@@ -32,7 +32,7 @@
 
 #include "platform/graphics/ImageBuffer.h"
 
-#include "GrContext.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -52,6 +52,7 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/MathExtras.h"
@@ -177,7 +178,7 @@ WebLayer* ImageBuffer::platformLayer() const
     return m_surface->layer();
 }
 
-bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
     if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, destType, level))
         return false;
@@ -203,6 +204,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     if (!provider)
         return false;
     WebGraphicsContext3D* sharedContext = provider->context3d();
+    gpu::gles2::GLES2Interface* sharedGL = provider->contextGL();
 
     OwnPtr<WebExternalTextureMailbox> mailbox = adoptPtr(new WebExternalTextureMailbox);
     mailbox->textureSize = WebSize(textureImage->width(), textureImage->height());
@@ -210,12 +212,12 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
     sharedContext->genMailboxCHROMIUM(mailbox->name);
     sharedContext->produceTextureDirectCHROMIUM(textureInfo->fID, textureInfo->fTarget, mailbox->name);
-    const WGC3Duint64 sharedFenceSync = sharedContext->insertFenceSyncCHROMIUM();
+    const GLuint64 sharedFenceSync = sharedGL->InsertFenceSyncCHROMIUM();
     sharedContext->flush();
 
     mailbox->validSyncToken = sharedContext->genSyncTokenCHROMIUM(sharedFenceSync, mailbox->syncToken);
     if (mailbox->validSyncToken)
-        context->waitSyncTokenCHROMIUM(mailbox->syncToken);
+        gl->WaitSyncTokenCHROMIUM(mailbox->syncToken);
 
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(textureInfo->fTarget, mailbox->name);
 
@@ -225,13 +227,13 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     context->deleteTexture(sourceTexture);
 
-    const WGC3Duint64 contextFenceSync = context->insertFenceSyncCHROMIUM();
+    const GLuint64 contextFenceSync = gl->InsertFenceSyncCHROMIUM();
 
     context->flush();
 
     WGC3Dbyte syncToken[24];
     if (context->genSyncTokenCHROMIUM(contextFenceSync, syncToken))
-        sharedContext->waitSyncTokenCHROMIUM(syncToken);
+        sharedGL->WaitSyncTokenCHROMIUM(syncToken);
 
     // Undo grContext texture binding changes introduced in this function
     provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);
@@ -247,13 +249,14 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     if (!provider)
         return false;
     WebGraphicsContext3D* context3D = provider->context3d();
+    gpu::gles2::GLES2Interface* gl = provider->contextGL();
     Platform3DObject textureId = m_surface->getBackingTextureHandleForOverwrite();
     if (!textureId)
         return false;
 
     context3D->flush();
 
-    return drawingBuffer->copyToPlatformTexture(context3D, textureId, GL_RGBA,
+    return drawingBuffer->copyToPlatformTexture(context3D, gl, textureId, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false, sourceBuffer);
 }
 

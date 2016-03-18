@@ -45,6 +45,12 @@
 
 class SkPictureRecorder;
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace blink {
 
 class Canvas2DLayerBridgeHistogramLogger;
@@ -176,6 +182,7 @@ private:
 
     Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
     WebGraphicsContext3D* context();
+    gpu::gles2::GLES2Interface* contextGL();
     void startRecording();
     void skipQueuedDrawCommands();
     void flushRecordingOnly();

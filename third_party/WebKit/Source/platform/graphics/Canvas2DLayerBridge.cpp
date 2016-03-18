@@ -217,6 +217,7 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, WebEx
     if (imageInfo.empty())
         return false;
 
+    gpu::gles2::GLES2Interface* gl = contextGL();
     GLuint imageTexture = skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))->fID;
     context()->copySubTextureCHROMIUM(imageTexture, imageInfo.m_textureId, 0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
 
@@ -226,14 +227,14 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, WebEx
     context()->produceTextureDirectCHROMIUM(imageInfo.m_textureId, info.m_mailbox.textureTarget, info.m_mailbox.name);
     info.m_mailbox.allowOverlay = true;
 
-    const WGC3Duint64 fenceSync = context()->insertFenceSyncCHROMIUM();
+    const WGC3Duint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
     context()->flush();
     info.m_mailbox.validSyncToken = context()->genSyncTokenCHROMIUM(fenceSync, info.m_mailbox.syncToken);
 
     info.m_imageInfo = imageInfo;
     *outMailbox = info.m_mailbox;
 
-    context()->bindTexture(GC3D_TEXTURE_RECTANGLE_ARB, 0);
+    gl->BindTexture(GC3D_TEXTURE_RECTANGLE_ARB, 0);
 
     // Because we are changing the texture binding without going through skia,
     // we must dirty the context.
@@ -251,6 +252,7 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
     }
 
     WebGraphicsContext3D* webContext = context();
+    gpu::gles2::GLES2Interface* gl = contextGL();
     GLuint imageId = webContext->createGpuMemoryBufferImageCHROMIUM(m_size.width(), m_size.height(), GL_BGRA_EXT, GC3D_SCANOUT_CHROMIUM);
     if (!imageId)
         return Canvas2DLayerBridge::ImageInfo();
@@ -262,7 +264,7 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
     }
 
     GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
-    webContext->bindTexture(target, textureId);
+    gl->BindTexture(target, textureId);
     webContext->texParameteri(target, GL_TEXTURE_MAG_FILTER, getGLFilter());
     webContext->texParameteri(target, GL_TEXTURE_MIN_FILTER, getGLFilter());
     webContext->texParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -274,16 +276,17 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
 
 void Canvas2DLayerBridge::deleteCHROMIUMImage(ImageInfo info)
 {
-    if (m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
+    WebGraphicsContext3D* webContext = context();
+    gpu::gles2::GLES2Interface* gl = contextGL();
+    if (gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
         return;
 
     GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
-    WebGraphicsContext3D* webContext = context();
-    webContext->bindTexture(target, info.m_textureId);
+    gl->BindTexture(target, info.m_textureId);
     webContext->releaseTexImage2DCHROMIUM(target, info.m_imageId);
     webContext->destroyImageCHROMIUM(info.m_imageId);
     webContext->deleteTexture(info.m_textureId);
-    webContext->bindTexture(target, 0);
+    gl->BindTexture(target, 0);
 
     resetSkiaTextureBinding();
 }
@@ -341,8 +344,9 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
     mailboxInfo.m_mailbox.textureTarget = GL_TEXTURE_2D;
 
     WebGraphicsContext3D* webContext = context();
+    gpu::gles2::GLES2Interface* gl = contextGL();
     GLuint textureID = skia::GrBackendObjectToGrGLTextureInfo(mailboxInfo.m_image->getTextureHandle(true))->fID;
-    webContext->bindTexture(GL_TEXTURE_2D, textureID);
+    gl->BindTexture(GL_TEXTURE_2D, textureID);
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getGLFilter());
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, getGLFilter());
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -366,11 +370,11 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
     } else {
         // FIXME: We'd rather insert a syncpoint than perform a flush here,
         // but currently the canvas will flicker if we don't flush here.
-        const WGC3Duint64 fenceSync = webContext->insertFenceSyncCHROMIUM();
+        const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
         webContext->flush();
         mailboxInfo.m_mailbox.validSyncToken = webContext->genSyncTokenCHROMIUM(fenceSync, mailboxInfo.m_mailbox.syncToken);
     }
-    webContext->bindTexture(GL_TEXTURE_2D, 0);
+    gl->BindTexture(GL_TEXTURE_2D, 0);
     // Because we are changing the texture binding without going through skia,
     // we must dirty the context.
     grContext->resetContext(kTextureBinding_GrGLBackendState);
@@ -718,6 +722,17 @@ WebGraphicsContext3D* Canvas2DLayerBridge::context()
     return m_contextProvider ? m_contextProvider->context3d() : 0;
 }
 
+gpu::gles2::GLES2Interface* Canvas2DLayerBridge::contextGL()
+{
+    // Check on m_layer is necessary because contextGL() may be called during
+    // the destruction of m_layer
+    if (m_layer && !m_destructionInProgress) {
+        // Ensure rate limiter is disabled if context is lost.
+        checkSurfaceValid();
+    }
+    return m_contextProvider ? m_contextProvider->contextGL() : nullptr;
+}
+
 bool Canvas2DLayerBridge::checkSurfaceValid()
 {
     ASSERT(!m_destructionInProgress);
@@ -844,7 +859,7 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
             ASSERT(releasedMailboxInfo->m_imageInfo.empty());
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
             if (mailbox.validSyncToken) {
-                context()->waitSyncTokenCHROMIUM(mailbox.syncToken);
+                contextGL()->WaitSyncTokenCHROMIUM(mailbox.syncToken);
             }
             GrTexture* texture = releasedMailboxInfo->m_image->getTexture();
             if (texture) {

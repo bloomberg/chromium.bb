@@ -699,7 +699,7 @@ void WebGL2RenderingContextBase::renderbufferStorageImpl(
                 synthesizeGLError(GL_INVALID_OPERATION, functionName, "samples out of range");
                 return;
             }
-            webContext()->renderbufferStorageMultisampleCHROMIUM(
+            contextGL()->RenderbufferStorageMultisampleCHROMIUM(
                 target, samples, internalformat, width, height);
         }
         break;

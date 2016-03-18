@@ -199,29 +199,17 @@ void WebGraphicsContext3DImpl::synthesizeGLError(WGC3Denum error) {
   }
 }
 
-DELEGATE_TO_GL_R(lastFlushID, GetLastFlushIdCHROMIUM, WebGLId)
-
-DELEGATE_TO_GL_R(insertFenceSyncCHROMIUM, InsertFenceSyncCHROMIUM, WGC3Duint64)
-
 bool WebGraphicsContext3DImpl::genSyncTokenCHROMIUM(WGC3Duint64 fenceSync,
                                                     WGC3Dbyte* syncToken) {
   gl_->GenSyncTokenCHROMIUM(fenceSync, syncToken);
   return true;
 }
 
-DELEGATE_TO_GL_1(waitSyncTokenCHROMIUM, WaitSyncTokenCHROMIUM, const WGC3Dbyte*)
-
-DELEGATE_TO_GL_3(discardFramebufferEXT, DiscardFramebufferEXT, WGC3Denum,
-                 WGC3Dsizei, const WGC3Denum*)
-
 blink::WebString WebGraphicsContext3DImpl::
     getRequestableExtensionsCHROMIUM() {
   return blink::WebString::fromUTF8(
       gl_->GetRequestableExtensionsCHROMIUM());
 }
-
-DELEGATE_TO_GL_1(requestExtensionCHROMIUM, RequestExtensionCHROMIUM,
-                 const char*)
 
 void WebGraphicsContext3DImpl::blitFramebufferCHROMIUM(
     WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1,
@@ -233,97 +221,6 @@ void WebGraphicsContext3DImpl::blitFramebufferCHROMIUM(
       mask, filter);
 }
 
-DELEGATE_TO_GL_5(renderbufferStorageMultisampleCHROMIUM,
-                 RenderbufferStorageMultisampleCHROMIUM, WGC3Denum, WGC3Dsizei,
-                 WGC3Denum, WGC3Dsizei, WGC3Dsizei)
-
-DELEGATE_TO_GL_1(activeTexture, ActiveTexture, WGC3Denum)
-
-DELEGATE_TO_GL(applyScreenSpaceAntialiasingCHROMIUM,
-               ApplyScreenSpaceAntialiasingCHROMIUM);
-
-DELEGATE_TO_GL_2(attachShader, AttachShader, WebGLId, WebGLId)
-
-DELEGATE_TO_GL_3(bindAttribLocation, BindAttribLocation, WebGLId,
-                 WGC3Duint, const WGC3Dchar*)
-
-DELEGATE_TO_GL_2(bindBuffer, BindBuffer, WGC3Denum, WebGLId)
-
-DELEGATE_TO_GL_2(bindFramebuffer, BindFramebuffer, WGC3Denum, WebGLId)
-
-DELEGATE_TO_GL_2(bindRenderbuffer, BindRenderbuffer, WGC3Denum, WebGLId)
-
-DELEGATE_TO_GL_2(bindTexture, BindTexture, WGC3Denum, WebGLId)
-
-DELEGATE_TO_GL_4(blendColor, BlendColor,
-                 WGC3Dclampf, WGC3Dclampf, WGC3Dclampf, WGC3Dclampf)
-
-DELEGATE_TO_GL_1(blendEquation, BlendEquation, WGC3Denum)
-
-DELEGATE_TO_GL_2(blendEquationSeparate, BlendEquationSeparate,
-                 WGC3Denum, WGC3Denum)
-
-DELEGATE_TO_GL_2(blendFunc, BlendFunc, WGC3Denum, WGC3Denum)
-
-DELEGATE_TO_GL_4(blendFuncSeparate, BlendFuncSeparate,
-                 WGC3Denum, WGC3Denum, WGC3Denum, WGC3Denum)
-
-DELEGATE_TO_GL_4(bufferData, BufferData,
-                 WGC3Denum, WGC3Dsizeiptr, const void*, WGC3Denum)
-
-DELEGATE_TO_GL_4(bufferSubData, BufferSubData,
-                 WGC3Denum, WGC3Dintptr, WGC3Dsizeiptr, const void*)
-
-DELEGATE_TO_GL_1R(checkFramebufferStatus, CheckFramebufferStatus,
-                  WGC3Denum, WGC3Denum)
-
-DELEGATE_TO_GL_1(clear, Clear, WGC3Dbitfield)
-
-DELEGATE_TO_GL_4(clearColor, ClearColor,
-                 WGC3Dclampf, WGC3Dclampf, WGC3Dclampf, WGC3Dclampf)
-
-DELEGATE_TO_GL_1(clearDepth, ClearDepthf, WGC3Dclampf)
-
-DELEGATE_TO_GL_1(clearStencil, ClearStencil, WGC3Dint)
-
-DELEGATE_TO_GL_4(colorMask, ColorMask,
-                 WGC3Dboolean, WGC3Dboolean, WGC3Dboolean, WGC3Dboolean)
-
-DELEGATE_TO_GL_1(compileShader, CompileShader, WebGLId)
-
-DELEGATE_TO_GL_8(compressedTexImage2D, CompressedTexImage2D,
-                 WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dint, WGC3Dint,
-                 WGC3Dsizei, WGC3Dsizei, const void*)
-
-DELEGATE_TO_GL_9(compressedTexSubImage2D, CompressedTexSubImage2D,
-                 WGC3Denum, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint,
-                 WGC3Denum, WGC3Dsizei, const void*)
-
-DELEGATE_TO_GL_8(copyTexImage2D, CopyTexImage2D,
-                 WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dint, WGC3Dint,
-                 WGC3Dsizei, WGC3Dsizei, WGC3Dint)
-
-DELEGATE_TO_GL_8(copyTexSubImage2D, CopyTexSubImage2D,
-                 WGC3Denum, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint,
-                 WGC3Dsizei, WGC3Dsizei)
-
-DELEGATE_TO_GL_1(cullFace, CullFace, WGC3Denum)
-
-DELEGATE_TO_GL_1(depthFunc, DepthFunc, WGC3Denum)
-
-DELEGATE_TO_GL_1(depthMask, DepthMask, WGC3Dboolean)
-
-DELEGATE_TO_GL_2(depthRange, DepthRangef, WGC3Dclampf, WGC3Dclampf)
-
-DELEGATE_TO_GL_2(detachShader, DetachShader, WebGLId, WebGLId)
-
-DELEGATE_TO_GL_1(disable, Disable, WGC3Denum)
-
-DELEGATE_TO_GL_1(disableVertexAttribArray, DisableVertexAttribArray,
-                 WGC3Duint)
-
-DELEGATE_TO_GL_3(drawArrays, DrawArrays, WGC3Denum, WGC3Dint, WGC3Dsizei)
-
 void WebGraphicsContext3DImpl::drawElements(WGC3Denum mode,
                                                          WGC3Dsizei count,
                                                          WGC3Denum type,
@@ -332,11 +229,6 @@ void WebGraphicsContext3DImpl::drawElements(WGC3Denum mode,
       mode, count, type,
       reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
 }
-
-DELEGATE_TO_GL_1(enable, Enable, WGC3Denum)
-
-DELEGATE_TO_GL_1(enableVertexAttribArray, EnableVertexAttribArray,
-                 WGC3Duint)
 
 DELEGATE_TO_GL(finish, Finish)
 DELEGATE_TO_GL(flush, Flush)

@@ -161,7 +161,7 @@ public:
     void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource = false) override;
 
     // Destroys the TEXTURE_2D binding for the owned context
-    bool copyToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat,
+    bool copyToPlatformTexture(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*, Platform3DObject texture, GLenum internalFormat,
         GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceDrawingBuffer);
 
     void setPackAlignment(GLint param);

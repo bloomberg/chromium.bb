@@ -114,7 +114,7 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
         return false;
 
     Platform3DObject fbo = context->createFramebuffer();
-    context->bindFramebuffer(GL_FRAMEBUFFER, fbo);
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     const unsigned char* buffer = 0; // Chromium doesn't allow init data for depth/stencil tetxures.
     bool supportsDepth = (extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture")
@@ -125,13 +125,13 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
     Platform3DObject depthStencil = 0;
     if (supportsDepthStencil) {
         depthStencil = context->createTexture();
-        context->bindTexture(GL_TEXTURE_2D, depthStencil);
+        gl->BindTexture(GL_TEXTURE_2D, depthStencil);
         context->texImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_OES, 1, 1, 0, GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES, buffer);
     }
     Platform3DObject depth = 0;
     if (supportsDepth) {
         depth = context->createTexture();
-        context->bindTexture(GL_TEXTURE_2D, depth);
+        gl->BindTexture(GL_TEXTURE_2D, depth);
         context->texImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, buffer);
     }
 
@@ -141,16 +141,16 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
     for (GLint i = 0; i < maxAllowedBuffers; ++i) {
         Platform3DObject color = context->createTexture();
         colors.append(color);
-        context->bindTexture(GL_TEXTURE_2D, color);
+        gl->BindTexture(GL_TEXTURE_2D, color);
         context->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, color, 0);
-        if (context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             ok = false;
             break;
         }
         if (supportsDepth) {
             gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
-            if (context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
                 ok = false;
                 break;
             }
@@ -159,7 +159,7 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
         if (supportsDepthStencil) {
             gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthStencil, 0);
             gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthStencil, 0);
-            if (context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
                 ok = false;
                 break;
             }

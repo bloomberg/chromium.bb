@@ -150,7 +150,7 @@ WebGLRenderingContextBase* WebGLRenderingContextBase::oldestContext()
     ASSERT(!candidate->isContextLost());
     for (WebGLRenderingContextBase* context : activeContexts()) {
         ASSERT(!context->isContextLost());
-        if (context->webContext()->lastFlushID() < candidate->webContext()->lastFlushID()) {
+        if (context->contextGL()->GetLastFlushIdCHROMIUM() < candidate->contextGL()->GetLastFlushIdCHROMIUM()) {
             candidate = context;
         }
     }
@@ -1162,28 +1162,28 @@ WebGLRenderingContextBase::HowToClear WebGLRenderingContextBase::clearIfComposit
     // Determine if it's possible to combine the clear the user asked for and this clear.
     bool combinedClear = mask && !m_scissorEnabled;
 
-    webContext()->disable(GL_SCISSOR_TEST);
+    contextGL()->Disable(GL_SCISSOR_TEST);
     if (combinedClear && (mask & GL_COLOR_BUFFER_BIT)) {
-        webContext()->clearColor(m_colorMask[0] ? m_clearColor[0] : 0,
+        contextGL()->ClearColor(m_colorMask[0] ? m_clearColor[0] : 0,
             m_colorMask[1] ? m_clearColor[1] : 0,
             m_colorMask[2] ? m_clearColor[2] : 0,
             m_colorMask[3] ? m_clearColor[3] : 0);
     } else {
-        webContext()->clearColor(0, 0, 0, 0);
+        contextGL()->ClearColor(0, 0, 0, 0);
     }
-    webContext()->colorMask(true, true, true, true);
+    contextGL()->ColorMask(true, true, true, true);
     GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
     if (contextAttributes.get().depth()) {
         if (!combinedClear || !m_depthMask || !(mask & GL_DEPTH_BUFFER_BIT))
-            webContext()->clearDepth(1.0f);
+            contextGL()->ClearDepthf(1.0f);
         clearMask |= GL_DEPTH_BUFFER_BIT;
-        webContext()->depthMask(true);
+        contextGL()->DepthMask(true);
     }
     if (contextAttributes.get().stencil() || drawingBuffer()->hasImplicitStencilBuffer()) {
         if (combinedClear && (mask & GL_STENCIL_BUFFER_BIT))
-            webContext()->clearStencil(m_clearStencil & m_stencilMask);
+            contextGL()->ClearStencil(m_clearStencil & m_stencilMask);
         else
-            webContext()->clearStencil(0);
+            contextGL()->ClearStencil(0);
         clearMask |= GL_STENCIL_BUFFER_BIT;
         webContext()->stencilMaskSeparate(GL_FRONT, 0xFFFFFFFF);
     }
@@ -1204,15 +1204,15 @@ void WebGLRenderingContextBase::restoreStateAfterClear()
 
     // Restore the state that the context set.
     if (m_scissorEnabled)
-        webContext()->enable(GL_SCISSOR_TEST);
-    webContext()->clearColor(m_clearColor[0], m_clearColor[1],
+        contextGL()->Enable(GL_SCISSOR_TEST);
+    contextGL()->ClearColor(m_clearColor[0], m_clearColor[1],
         m_clearColor[2], m_clearColor[3]);
-    webContext()->colorMask(m_colorMask[0], m_colorMask[1],
+    contextGL()->ColorMask(m_colorMask[0], m_colorMask[1],
         m_colorMask[2], m_colorMask[3]);
-    webContext()->clearDepth(m_clearDepth);
-    webContext()->clearStencil(m_clearStencil);
+    contextGL()->ClearDepthf(m_clearDepth);
+    contextGL()->ClearStencil(m_clearStencil);
     webContext()->stencilMaskSeparate(GL_FRONT, m_stencilMask);
-    webContext()->depthMask(m_depthMask);
+    contextGL()->DepthMask(m_depthMask);
 }
 
 void WebGLRenderingContextBase::markLayerComposited()
@@ -1314,8 +1314,8 @@ void WebGLRenderingContextBase::reshape(int width, int height)
     drawingBuffer()->reset(IntSize(width, height));
     restoreStateAfterClear();
 
-    webContext()->bindTexture(GL_TEXTURE_2D, objectOrZero(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
-    webContext()->bindRenderbuffer(GL_RENDERBUFFER, objectOrZero(m_renderbufferBinding.get()));
+    contextGL()->BindTexture(GL_TEXTURE_2D, objectOrZero(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
+    contextGL()->BindRenderbuffer(GL_RENDERBUFFER, objectOrZero(m_renderbufferBinding.get()));
     drawingBuffer()->restoreFramebufferBindings();
 }
 
@@ -1338,7 +1338,7 @@ void WebGLRenderingContextBase::activeTexture(GLenum texture)
         return;
     }
     m_activeTextureUnit = texture - GL_TEXTURE0;
-    webContext()->activeTexture(texture);
+    contextGL()->ActiveTexture(texture);
 
     drawingBuffer()->setActiveTextureUnit(texture);
 
@@ -1352,7 +1352,7 @@ void WebGLRenderingContextBase::attachShader(ScriptState* scriptState, WebGLProg
         synthesizeGLError(GL_INVALID_OPERATION, "attachShader", "shader attachment already has shader");
         return;
     }
-    webContext()->attachShader(objectOrZero(program), objectOrZero(shader));
+    contextGL()->AttachShader(objectOrZero(program), objectOrZero(shader));
     shader->onAttached();
     preserveObjectWrapper(scriptState, program, "shader", shader->type(), shader);
 }
@@ -1367,7 +1367,7 @@ void WebGLRenderingContextBase::bindAttribLocation(WebGLProgram* program, GLuint
         synthesizeGLError(GL_INVALID_OPERATION, "bindAttribLocation", "reserved prefix");
         return;
     }
-    webContext()->bindAttribLocation(objectOrZero(program), index, name.utf8().data());
+    contextGL()->BindAttribLocation(objectOrZero(program), index, name.utf8().data());
 }
 
 bool WebGLRenderingContextBase::checkObjectToBeBound(const char* functionName, WebGLObject* object, bool& deleted)
@@ -1422,7 +1422,7 @@ void WebGLRenderingContextBase::bindBuffer(ScriptState* scriptState, GLenum targ
     if (!validateAndUpdateBufferBindTarget("bindBuffer", target, buffer))
         return;
 
-    webContext()->bindBuffer(target, objectOrZero(buffer));
+    contextGL()->BindBuffer(target, objectOrZero(buffer));
     preserveObjectWrapper(scriptState, this, "buffer", target, buffer);
     maybePreserveDefaultVAOObjectWrapper(scriptState);
 }
@@ -1460,7 +1460,7 @@ void WebGLRenderingContextBase::bindRenderbuffer(ScriptState* scriptState, GLenu
         return;
     }
     m_renderbufferBinding = renderBuffer;
-    webContext()->bindRenderbuffer(target, objectOrZero(renderBuffer));
+    contextGL()->BindRenderbuffer(target, objectOrZero(renderBuffer));
     preserveObjectWrapper(scriptState, this, "renderbuffer", 0, renderBuffer);
     if (renderBuffer)
         renderBuffer->setHasEverBeenBound();
@@ -1499,7 +1499,7 @@ void WebGLRenderingContextBase::bindTexture(ScriptState* scriptState, GLenum tar
         return;
     }
 
-    webContext()->bindTexture(target, objectOrZero(texture));
+    contextGL()->BindTexture(target, objectOrZero(texture));
     // This is called both internally and externally (from JavaScript). We only update which wrapper
     // is preserved when it's called from JavaScript.
     if (scriptState) {
@@ -1530,21 +1530,21 @@ void WebGLRenderingContextBase::blendColor(GLfloat red, GLfloat green, GLfloat b
 {
     if (isContextLost())
         return;
-    webContext()->blendColor(red, green, blue, alpha);
+    contextGL()->BlendColor(red, green, blue, alpha);
 }
 
 void WebGLRenderingContextBase::blendEquation(GLenum mode)
 {
     if (isContextLost() || !validateBlendEquation("blendEquation", mode))
         return;
-    webContext()->blendEquation(mode);
+    contextGL()->BlendEquation(mode);
 }
 
 void WebGLRenderingContextBase::blendEquationSeparate(GLenum modeRGB, GLenum modeAlpha)
 {
     if (isContextLost() || !validateBlendEquation("blendEquationSeparate", modeRGB) || !validateBlendEquation("blendEquationSeparate", modeAlpha))
         return;
-    webContext()->blendEquationSeparate(modeRGB, modeAlpha);
+    contextGL()->BlendEquationSeparate(modeRGB, modeAlpha);
 }
 
 
@@ -1552,7 +1552,7 @@ void WebGLRenderingContextBase::blendFunc(GLenum sfactor, GLenum dfactor)
 {
     if (isContextLost() || !validateBlendFuncFactors("blendFunc", sfactor, dfactor))
         return;
-    webContext()->blendFunc(sfactor, dfactor);
+    contextGL()->BlendFunc(sfactor, dfactor);
 }
 
 void WebGLRenderingContextBase::blendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
@@ -1560,7 +1560,7 @@ void WebGLRenderingContextBase::blendFuncSeparate(GLenum srcRGB, GLenum dstRGB, 
     // Note: Alpha does not have the same restrictions as RGB.
     if (isContextLost() || !validateBlendFuncFactors("blendFuncSeparate", srcRGB, dstRGB))
         return;
-    webContext()->blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+    contextGL()->BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
 void WebGLRenderingContextBase::bufferDataImpl(GLenum target, long long size, const void* data, GLenum usage)
@@ -1577,7 +1577,7 @@ void WebGLRenderingContextBase::bufferDataImpl(GLenum target, long long size, co
 
     buffer->setSize(size);
 
-    webContext()->bufferData(target, static_cast<GLsizeiptr>(size), data, usage);
+    contextGL()->BufferData(target, static_cast<GLsizeiptr>(size), data, usage);
 }
 
 void WebGLRenderingContextBase::bufferData(GLenum target, long long size, GLenum usage)
@@ -1623,7 +1623,7 @@ void WebGLRenderingContextBase::bufferSubDataImpl(GLenum target, long long offse
         return;
     }
 
-    webContext()->bufferSubData(target, static_cast<GLintptr>(offset), size, data);
+    contextGL()->BufferSubData(target, static_cast<GLintptr>(offset), size, data);
 }
 
 void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, DOMArrayBuffer* data)
@@ -1684,7 +1684,7 @@ GLenum WebGLRenderingContextBase::checkFramebufferStatus(GLenum target)
             return status;
         }
     }
-    return webContext()->checkFramebufferStatus(target);
+    return contextGL()->CheckFramebufferStatus(target);
 }
 
 void WebGLRenderingContextBase::clear(GLbitfield mask)
@@ -1708,7 +1708,7 @@ void WebGLRenderingContextBase::clear(GLbitfield mask)
             // claim that the stencil buffer doesn't exist.
             mask |= GL_STENCIL_BUFFER_BIT;
         }
-        webContext()->clear(mask);
+        contextGL()->Clear(mask);
     }
     markContextChanged(CanvasChanged);
 }
@@ -1729,7 +1729,7 @@ void WebGLRenderingContextBase::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfl
     m_clearColor[1] = g;
     m_clearColor[2] = b;
     m_clearColor[3] = a;
-    webContext()->clearColor(r, g, b, a);
+    contextGL()->ClearColor(r, g, b, a);
 }
 
 void WebGLRenderingContextBase::clearDepth(GLfloat depth)
@@ -1737,7 +1737,7 @@ void WebGLRenderingContextBase::clearDepth(GLfloat depth)
     if (isContextLost())
         return;
     m_clearDepth = depth;
-    webContext()->clearDepth(depth);
+    contextGL()->ClearDepthf(depth);
 }
 
 void WebGLRenderingContextBase::clearStencil(GLint s)
@@ -1745,7 +1745,7 @@ void WebGLRenderingContextBase::clearStencil(GLint s)
     if (isContextLost())
         return;
     m_clearStencil = s;
-    webContext()->clearStencil(s);
+    contextGL()->ClearStencil(s);
 }
 
 void WebGLRenderingContextBase::colorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
@@ -1756,14 +1756,14 @@ void WebGLRenderingContextBase::colorMask(GLboolean red, GLboolean green, GLbool
     m_colorMask[1] = green;
     m_colorMask[2] = blue;
     m_colorMask[3] = alpha;
-    webContext()->colorMask(red, green, blue, alpha);
+    contextGL()->ColorMask(red, green, blue, alpha);
 }
 
 void WebGLRenderingContextBase::compileShader(WebGLShader* shader)
 {
     if (isContextLost() || !validateWebGLObject("compileShader", shader))
         return;
-    webContext()->compileShader(objectOrZero(shader));
+    contextGL()->CompileShader(objectOrZero(shader));
 }
 
 void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, DOMArrayBufferView* data)
@@ -1774,7 +1774,7 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
         return;
     if (!validateCompressedTexFormat("compressedTexImage2D", internalformat))
         return;
-    webContext()->compressedTexImage2D(target, level, internalformat, width, height,
+    contextGL()->CompressedTexImage2D(target, level, internalformat, width, height,
         border, data->byteLength(), data->baseAddress());
 }
 
@@ -1786,7 +1786,7 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
         return;
     if (!validateCompressedTexFormat("compressedTexSubImage2D", format))
         return;
-    webContext()->compressedTexSubImage2D(target, level, xoffset, yoffset,
+    contextGL()->CompressedTexSubImage2D(target, level, xoffset, yoffset,
         width, height, format, data->byteLength(), data->baseAddress());
 }
 
@@ -1832,7 +1832,7 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         return;
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
-    webContext()->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
+    contextGL()->CopyTexImage2D(target, level, internalformat, x, y, width, height, border);
 }
 
 void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
@@ -1846,7 +1846,7 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GL
         return;
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
-    webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+    contextGL()->CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
 }
 
 WebGLBuffer* WebGLRenderingContextBase::createBuffer()
@@ -1922,7 +1922,7 @@ void WebGLRenderingContextBase::cullFace(GLenum mode)
 {
     if (isContextLost())
         return;
-    webContext()->cullFace(mode);
+    contextGL()->CullFace(mode);
 }
 
 bool WebGLRenderingContextBase::deleteObject(WebGLObject* object)
@@ -2027,7 +2027,7 @@ void WebGLRenderingContextBase::depthFunc(GLenum func)
 {
     if (isContextLost())
         return;
-    webContext()->depthFunc(func);
+    contextGL()->DepthFunc(func);
 }
 
 void WebGLRenderingContextBase::depthMask(GLboolean flag)
@@ -2035,7 +2035,7 @@ void WebGLRenderingContextBase::depthMask(GLboolean flag)
     if (isContextLost())
         return;
     m_depthMask = flag;
-    webContext()->depthMask(flag);
+    contextGL()->DepthMask(flag);
 }
 
 void WebGLRenderingContextBase::depthRange(GLfloat zNear, GLfloat zFar)
@@ -2047,7 +2047,7 @@ void WebGLRenderingContextBase::depthRange(GLfloat zNear, GLfloat zFar)
         synthesizeGLError(GL_INVALID_OPERATION, "depthRange", "zNear > zFar");
         return;
     }
-    webContext()->depthRange(zNear, zFar);
+    contextGL()->DepthRangef(zNear, zFar);
 }
 
 void WebGLRenderingContextBase::detachShader(ScriptState* scriptState, WebGLProgram* program, WebGLShader* shader)
@@ -2058,7 +2058,7 @@ void WebGLRenderingContextBase::detachShader(ScriptState* scriptState, WebGLProg
         synthesizeGLError(GL_INVALID_OPERATION, "detachShader", "shader not attached");
         return;
     }
-    webContext()->detachShader(objectOrZero(program), objectOrZero(shader));
+    contextGL()->DetachShader(objectOrZero(program), objectOrZero(shader));
     shader->onDetached(webContext());
     preserveObjectWrapper(scriptState, program, "shader", shader->type(), nullptr);
 }
@@ -2076,7 +2076,7 @@ void WebGLRenderingContextBase::disable(GLenum cap)
         m_scissorEnabled = false;
         drawingBuffer()->setScissorEnabled(m_scissorEnabled);
     }
-    webContext()->disable(cap);
+    contextGL()->Disable(cap);
 }
 
 void WebGLRenderingContextBase::disableVertexAttribArray(GLuint index)
@@ -2088,7 +2088,7 @@ void WebGLRenderingContextBase::disableVertexAttribArray(GLuint index)
         return;
     }
 
-    webContext()->disableVertexAttribArray(index);
+    contextGL()->DisableVertexAttribArray(index);
 }
 
 bool WebGLRenderingContextBase::validateRenderingState(const char* functionName)
@@ -2121,7 +2121,7 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode, GLint first, GLsizei cou
         return;
 
     clearIfComposited();
-    webContext()->drawArrays(mode, first, count);
+    contextGL()->DrawArrays(mode, first, count);
     markContextChanged(CanvasChanged);
 }
 
@@ -2173,7 +2173,7 @@ void WebGLRenderingContextBase::enable(GLenum cap)
         m_scissorEnabled = true;
         drawingBuffer()->setScissorEnabled(m_scissorEnabled);
     }
-    webContext()->enable(cap);
+    contextGL()->Enable(cap);
 }
 
 void WebGLRenderingContextBase::enableVertexAttribArray(GLuint index)
@@ -2185,7 +2185,7 @@ void WebGLRenderingContextBase::enableVertexAttribArray(GLuint index)
         return;
     }
 
-    webContext()->enableVertexAttribArray(index);
+    contextGL()->EnableVertexAttribArray(index);
 }
 
 void WebGLRenderingContextBase::finish()
@@ -3811,7 +3811,7 @@ void WebGLRenderingContextBase::bindValuebufferCHROMIUM(GLenum target, CHROMIUMV
     if (deleted)
         valuebuffer = 0;
     m_valuebufferBinding = valuebuffer;
-    webContext()->bindValuebufferCHROMIUM(target, objectOrZero(valuebuffer));
+    contextGL()->BindValuebufferCHROMIUM(target, objectOrZero(valuebuffer));
     if (valuebuffer)
         valuebuffer->setHasEverBeenBound();
 }
@@ -4069,7 +4069,7 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
         targetInternalformat = GL_RGBA;
         targetType = GL_UNSIGNED_BYTE;
         targetTexture = webContext()->createTexture();
-        webContext()->bindTexture(GL_TEXTURE_2D, targetTexture);
+        contextGL()->BindTexture(GL_TEXTURE_2D, targetTexture);
         webContext()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         webContext()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         webContext()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -4080,14 +4080,14 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
 
     if (!canvas->is3D()) {
         ImageBuffer* buffer = canvas->buffer();
-        if (!buffer->copyToPlatformTexture(webContext(), targetTexture, targetInternalformat, targetType,
+        if (!buffer->copyToPlatformTexture(webContext(), contextGL(), targetTexture, targetInternalformat, targetType,
             targetLevel, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             ASSERT_NOT_REACHED();
         }
     } else {
         WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
         ScopedTexture2DRestorer restorer(gl);
-        if (!gl->drawingBuffer()->copyToPlatformTexture(webContext(), targetTexture, targetInternalformat, targetType,
+        if (!gl->drawingBuffer()->copyToPlatformTexture(webContext(), contextGL(), targetTexture, targetInternalformat, targetType,
             targetLevel, m_unpackPremultiplyAlpha, !m_unpackFlipY, BackBuffer)) {
             ASSERT_NOT_REACHED();
         }
@@ -4095,13 +4095,13 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
 
     if (!possibleDirectCopy) {
         WebGLId tmpFBO = webContext()->createFramebuffer();
-        webContext()->bindFramebuffer(GL_FRAMEBUFFER, tmpFBO);
+        contextGL()->BindFramebuffer(GL_FRAMEBUFFER, tmpFBO);
         contextGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, targetTexture, 0);
-        webContext()->bindTexture(texture->getTarget(), texture->object());
+        contextGL()->BindTexture(texture->getTarget(), texture->object());
         if (functionType == TexImage2DByGPU) {
-            webContext()->copyTexSubImage2D(target, level, 0, 0, 0, 0, canvas->width(), canvas->height());
+            contextGL()->CopyTexSubImage2D(target, level, 0, 0, 0, 0, canvas->width(), canvas->height());
         } else if (functionType == TexSubImage2DByGPU) {
-            webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, 0, 0, canvas->width(), canvas->height());
+            contextGL()->CopyTexSubImage2D(target, level, xoffset, yoffset, 0, 0, canvas->width(), canvas->height());
         } else if (functionType == TexSubImage3DByGPU) {
             webContext()->copyTexSubImage3D(target, level, xoffset, yoffset, zoffset, 0, 0, canvas->width(), canvas->height());
         }
@@ -4183,7 +4183,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
                 video->paintCurrentFrame(imageBuffer->canvas(), IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
 
                 // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
-                if (imageBuffer->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
+                if (imageBuffer->copyToPlatformTexture(webContext(), contextGL(), texture->object(), internalformat, type,
                     level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
                     return;
                 }
@@ -6097,9 +6097,9 @@ void WebGLRenderingContextBase::enableOrDisable(GLenum capability, bool enable)
     if (isContextLost())
         return;
     if (enable)
-        webContext()->enable(capability);
+        contextGL()->Enable(capability);
     else
-        webContext()->disable(capability);
+        contextGL()->Disable(capability);
 }
 
 IntSize WebGLRenderingContextBase::clampedCanvasSize()
@@ -6149,7 +6149,7 @@ void WebGLRenderingContextBase::setFramebuffer(GLenum target, WebGLFramebuffer* 
         // Instead of binding fb 0, bind the drawing buffer.
         drawingBuffer()->bind(target);
     } else {
-        webContext()->bindFramebuffer(target, buffer->object());
+        contextGL()->BindFramebuffer(target, buffer->object());
     }
 }
 

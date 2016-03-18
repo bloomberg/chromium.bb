@@ -37,111 +37,14 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
 
-  uint32_t lastFlushID() override;
-
-  blink::WGC3Duint64 insertFenceSyncCHROMIUM() override;
   bool genSyncTokenCHROMIUM(blink::WGC3Duint64 fenceSync,
                             blink::WGC3Dbyte* syncToken) override;
-  void waitSyncTokenCHROMIUM(const blink::WGC3Dbyte* syncToken) override;
 
-  void activeTexture(blink::WGC3Denum texture) override;
-  void applyScreenSpaceAntialiasingCHROMIUM() override;
-  void attachShader(blink::WebGLId program, blink::WebGLId shader) override;
-  void bindAttribLocation(blink::WebGLId program,
-                          blink::WGC3Duint index,
-                          const blink::WGC3Dchar* name) override;
-  void bindBuffer(blink::WGC3Denum target, blink::WebGLId buffer) override;
-  void bindFramebuffer(blink::WGC3Denum target,
-                       blink::WebGLId framebuffer) override;
-  void bindRenderbuffer(blink::WGC3Denum target,
-                        blink::WebGLId renderbuffer) override;
-  void bindTexture(blink::WGC3Denum target, blink::WebGLId texture) override;
-  void blendColor(blink::WGC3Dclampf red,
-                  blink::WGC3Dclampf green,
-                  blink::WGC3Dclampf blue,
-                  blink::WGC3Dclampf alpha) override;
-  void blendEquation(blink::WGC3Denum mode) override;
-  void blendEquationSeparate(blink::WGC3Denum modeRGB,
-                             blink::WGC3Denum modeAlpha) override;
-  void blendFunc(blink::WGC3Denum sfactor, blink::WGC3Denum dfactor) override;
-  void blendFuncSeparate(blink::WGC3Denum srcRGB,
-                         blink::WGC3Denum dstRGB,
-                         blink::WGC3Denum srcAlpha,
-                         blink::WGC3Denum dstAlpha) override;
-
-  void bufferData(blink::WGC3Denum target,
-                  blink::WGC3Dsizeiptr size,
-                  const void* data,
-                  blink::WGC3Denum usage) override;
-  void bufferSubData(blink::WGC3Denum target,
-                     blink::WGC3Dintptr offset,
-                     blink::WGC3Dsizeiptr size,
-                     const void* data) override;
-
-  blink::WGC3Denum checkFramebufferStatus(blink::WGC3Denum target) override;
-  void clear(blink::WGC3Dbitfield mask) override;
-  void clearColor(blink::WGC3Dclampf red,
-                  blink::WGC3Dclampf green,
-                  blink::WGC3Dclampf blue,
-                  blink::WGC3Dclampf alpha) override;
-  void clearDepth(blink::WGC3Dclampf depth) override;
-  void clearStencil(blink::WGC3Dint s) override;
-  void colorMask(blink::WGC3Dboolean red,
-                 blink::WGC3Dboolean green,
-                 blink::WGC3Dboolean blue,
-                 blink::WGC3Dboolean alpha) override;
-  void compileShader(blink::WebGLId shader) override;
-
-  void compressedTexImage2D(blink::WGC3Denum target,
-                            blink::WGC3Dint level,
-                            blink::WGC3Denum internalformat,
-                            blink::WGC3Dsizei width,
-                            blink::WGC3Dsizei height,
-                            blink::WGC3Dint border,
-                            blink::WGC3Dsizei imageSize,
-                            const void* data) override;
-  void compressedTexSubImage2D(blink::WGC3Denum target,
-                               blink::WGC3Dint level,
-                               blink::WGC3Dint xoffset,
-                               blink::WGC3Dint yoffset,
-                               blink::WGC3Dsizei width,
-                               blink::WGC3Dsizei height,
-                               blink::WGC3Denum format,
-                               blink::WGC3Dsizei imageSize,
-                               const void* data) override;
-  void copyTexImage2D(blink::WGC3Denum target,
-                      blink::WGC3Dint level,
-                      blink::WGC3Denum internalformat,
-                      blink::WGC3Dint x,
-                      blink::WGC3Dint y,
-                      blink::WGC3Dsizei width,
-                      blink::WGC3Dsizei height,
-                      blink::WGC3Dint border) override;
-  void copyTexSubImage2D(blink::WGC3Denum target,
-                         blink::WGC3Dint level,
-                         blink::WGC3Dint xoffset,
-                         blink::WGC3Dint yoffset,
-                         blink::WGC3Dint x,
-                         blink::WGC3Dint y,
-                         blink::WGC3Dsizei width,
-                         blink::WGC3Dsizei height) override;
-  void cullFace(blink::WGC3Denum mode) override;
-  void depthFunc(blink::WGC3Denum func) override;
-  void depthMask(blink::WGC3Dboolean flag) override;
-  void depthRange(blink::WGC3Dclampf zNear, blink::WGC3Dclampf zFar) override;
-  void detachShader(blink::WebGLId program, blink::WebGLId shader) override;
-  void disable(blink::WGC3Denum cap) override;
-  void disableVertexAttribArray(blink::WGC3Duint index) override;
-  void drawArrays(blink::WGC3Denum mode,
-                  blink::WGC3Dint first,
-                  blink::WGC3Dsizei count) override;
   void drawElements(blink::WGC3Denum mode,
                     blink::WGC3Dsizei count,
                     blink::WGC3Denum type,
                     blink::WGC3Dintptr offset) override;
 
-  void enable(blink::WGC3Denum cap) override;
-  void enableVertexAttribArray(blink::WGC3Duint index) override;
   void finish() override;
   void flush() override;
   void frontFace(blink::WGC3Denum mode) override;
@@ -442,12 +345,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   void synthesizeGLError(blink::WGC3Denum) override;
 
-  void discardFramebufferEXT(blink::WGC3Denum target,
-                             blink::WGC3Dsizei numAttachments,
-                             const blink::WGC3Denum* attachments) override;
-
   blink::WebString getRequestableExtensionsCHROMIUM() override;
-  void requestExtensionCHROMIUM(const char*) override;
 
   void blitFramebufferCHROMIUM(blink::WGC3Dint srcX0,
                                blink::WGC3Dint srcY0,
@@ -459,13 +357,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                                blink::WGC3Dint dstY1,
                                blink::WGC3Dbitfield mask,
                                blink::WGC3Denum filter) override;
-  void renderbufferStorageMultisampleCHROMIUM(
-      blink::WGC3Denum target,
-      blink::WGC3Dsizei samples,
-      blink::WGC3Denum internalformat,
-      blink::WGC3Dsizei width,
-      blink::WGC3Dsizei height) override;
-
   blink::WebString getTranslatedShaderSourceANGLE(
       blink::WebGLId shader) override;
 

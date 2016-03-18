@@ -43,59 +43,12 @@ public:
 
     virtual void synthesizeGLError(WGC3Denum) { }
 
-    virtual void discardFramebufferEXT(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) { }
-    virtual void ensureFramebufferCHROMIUM() { }
-
     virtual WebString getRequestableExtensionsCHROMIUM() { return WebString(); }
-    virtual void requestExtensionCHROMIUM(const char*) { }
 
     virtual void blitFramebufferCHROMIUM(WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1, WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1, WGC3Dbitfield mask, WGC3Denum filter) { }
-    virtual void renderbufferStorageMultisampleCHROMIUM(WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height) { }
 
-    virtual void activeTexture(WGC3Denum texture) { }
-    virtual void attachShader(WebGLId program, WebGLId shader) { }
-    virtual void bindAttribLocation(WebGLId program, WGC3Duint index, const WGC3Dchar* name) { }
-    virtual void bindBuffer(WGC3Denum target, WebGLId buffer) { }
-    virtual void bindFramebuffer(WGC3Denum target, WebGLId framebuffer) { }
-    virtual void bindRenderbuffer(WGC3Denum target, WebGLId renderbuffer) { }
-    virtual void bindTexture(WGC3Denum target, WebGLId texture) { }
-    virtual void blendColor(WGC3Dclampf red, WGC3Dclampf green, WGC3Dclampf blue, WGC3Dclampf alpha) { }
-    virtual void blendEquation(WGC3Denum mode) { }
-    virtual void blendEquationSeparate(WGC3Denum modeRGB, WGC3Denum modeAlpha) { }
-    virtual void blendFunc(WGC3Denum sfactor, WGC3Denum dfactor) { }
-    virtual void blendFuncSeparate(WGC3Denum srcRGB, WGC3Denum dstRGB, WGC3Denum srcAlpha, WGC3Denum dstAlpha) { }
-
-    virtual void bufferData(WGC3Denum target, WGC3Dsizeiptr size, const void* data, WGC3Denum usage) { }
-    virtual void bufferSubData(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr size, const void* data) { }
-
-    virtual WGC3Denum checkFramebufferStatus(WGC3Denum target)
-    {
-        return GL_FRAMEBUFFER_COMPLETE;
-    }
-
-    virtual void clear(WGC3Dbitfield mask) { }
-    virtual void clearColor(WGC3Dclampf red, WGC3Dclampf green, WGC3Dclampf blue, WGC3Dclampf alpha) { }
-    virtual void clearDepth(WGC3Dclampf depth) { }
-    virtual void clearStencil(WGC3Dint s) { }
-    virtual void colorMask(WGC3Dboolean red, WGC3Dboolean green, WGC3Dboolean blue, WGC3Dboolean alpha) { }
-    virtual void compileShader(WebGLId shader) { }
-
-    virtual void compressedTexImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Dsizei imageSize, const void* data) { }
-    virtual void compressedTexSubImage2D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Dsizei imageSize, const void* data) { }
-    virtual void copyTexImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border) { }
-    virtual void copyTexSubImage2D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
-    virtual void cullFace(WGC3Denum mode) { }
-    virtual void depthFunc(WGC3Denum func) { }
-    virtual void depthMask(WGC3Dboolean flag) { }
-    virtual void depthRange(WGC3Dclampf zNear, WGC3Dclampf zFar) { }
-    virtual void detachShader(WebGLId program, WebGLId shader) { }
-    virtual void disable(WGC3Denum cap) { }
-    virtual void disableVertexAttribArray(WGC3Duint index) { }
-    virtual void drawArrays(WGC3Denum mode, WGC3Dint first, WGC3Dsizei count) { }
     virtual void drawElements(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset) { }
 
-    virtual void enable(WGC3Denum cap) { }
-    virtual void enableVertexAttribArray(WGC3Duint index) { }
     virtual void finish() { }
     virtual void flush() { }
     virtual void frontFace(WGC3Denum mode) { }

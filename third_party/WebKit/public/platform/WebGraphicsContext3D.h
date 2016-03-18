@@ -137,16 +137,7 @@ public:
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
-    // Each flush or finish is assigned an unique ID. The larger
-    // the ID number, the more recently the context has been flushed.
-    virtual uint32_t lastFlushID() { return 0; }
-
-    // GL_EXT_discard_framebuffer - makes specified attachments of currently bound framebuffer undefined.
-    virtual void discardFramebufferEXT(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) { }
-
-    virtual WGC3Duint64 insertFenceSyncCHROMIUM() { return 0; }
     virtual bool genSyncTokenCHROMIUM(WGC3Duint64, WGC3Dbyte*) { return false; }
-    virtual void waitSyncTokenCHROMIUM(const WGC3Dbyte*) {}
 
     // Synthesizes an OpenGL error which will be returned from a
     // later call to getError. This is used to emulate OpenGL ES
@@ -160,55 +151,15 @@ public:
 
     // GL_CHROMIUM_request_extension
     virtual WebString getRequestableExtensionsCHROMIUM() = 0;
-    virtual void requestExtensionCHROMIUM(const char*) = 0;
 
     // GL_CHROMIUM_framebuffer_multisample
     virtual void blitFramebufferCHROMIUM(WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1, WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1, WGC3Dbitfield mask, WGC3Denum filter) = 0;
-    virtual void renderbufferStorageMultisampleCHROMIUM(WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height) = 0;
 
     // The entry points below map directly to the OpenGL ES 2.0 API.
     // See: http://www.khronos.org/registry/gles/
     // and: http://www.khronos.org/opengles/sdk/docs/man/
-    virtual void activeTexture(WGC3Denum texture) = 0;
-    virtual void attachShader(WebGLId program, WebGLId shader) = 0;
-    virtual void bindAttribLocation(WebGLId program, WGC3Duint index, const WGC3Dchar* name) = 0;
-    virtual void bindBuffer(WGC3Denum target, WebGLId buffer) = 0;
-    virtual void bindFramebuffer(WGC3Denum target, WebGLId framebuffer) = 0;
-    virtual void bindRenderbuffer(WGC3Denum target, WebGLId renderbuffer) = 0;
-    virtual void bindTexture(WGC3Denum target, WebGLId texture) = 0;
-    virtual void blendColor(WGC3Dclampf red, WGC3Dclampf green, WGC3Dclampf blue, WGC3Dclampf alpha) = 0;
-    virtual void blendEquation(WGC3Denum mode) = 0;
-    virtual void blendEquationSeparate(WGC3Denum modeRGB, WGC3Denum modeAlpha) = 0;
-    virtual void blendFunc(WGC3Denum sfactor, WGC3Denum dfactor) = 0;
-    virtual void blendFuncSeparate(WGC3Denum srcRGB, WGC3Denum dstRGB, WGC3Denum srcAlpha, WGC3Denum dstAlpha) = 0;
-
-    virtual void bufferData(WGC3Denum target, WGC3Dsizeiptr size, const void* data, WGC3Denum usage) = 0;
-    virtual void bufferSubData(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr size, const void* data) = 0;
-
-    virtual WGC3Denum checkFramebufferStatus(WGC3Denum target) = 0;
-    virtual void clear(WGC3Dbitfield mask) = 0;
-    virtual void clearColor(WGC3Dclampf red, WGC3Dclampf green, WGC3Dclampf blue, WGC3Dclampf alpha) = 0;
-    virtual void clearDepth(WGC3Dclampf depth) = 0;
-    virtual void clearStencil(WGC3Dint s) = 0;
-    virtual void colorMask(WGC3Dboolean red, WGC3Dboolean green, WGC3Dboolean blue, WGC3Dboolean alpha) = 0;
-    virtual void compileShader(WebGLId shader) = 0;
-
-    virtual void compressedTexImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Dsizei imageSize, const void* data) = 0;
-    virtual void compressedTexSubImage2D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Dsizei imageSize, const void* data) = 0;
-    virtual void copyTexImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border) = 0;
-    virtual void copyTexSubImage2D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) = 0;
-    virtual void cullFace(WGC3Denum mode) = 0;
-    virtual void depthFunc(WGC3Denum func) = 0;
-    virtual void depthMask(WGC3Dboolean flag) = 0;
-    virtual void depthRange(WGC3Dclampf zNear, WGC3Dclampf zFar) = 0;
-    virtual void detachShader(WebGLId program, WebGLId shader) = 0;
-    virtual void disable(WGC3Denum cap) = 0;
-    virtual void disableVertexAttribArray(WGC3Duint index) = 0;
-    virtual void drawArrays(WGC3Denum mode, WGC3Dint first, WGC3Dsizei count) = 0;
     virtual void drawElements(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset) = 0;
 
-    virtual void enable(WGC3Denum cap) = 0;
-    virtual void enableVertexAttribArray(WGC3Duint index) = 0;
     virtual void finish() = 0;
     virtual void flush() = 0;
     virtual void frontFace(WGC3Denum mode) = 0;
@@ -330,9 +281,6 @@ public:
     virtual void setErrorMessageCallback(WebGraphicsErrorMessageCallback* callback) { }
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId shader) = 0;
-
-    // GL_CHROMIUM_screen_space_antialiasing
-    virtual void applyScreenSpaceAntialiasingCHROMIUM() { }
 
     // GL_EXT_texture_storage
     virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
