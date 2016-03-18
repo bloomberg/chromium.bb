@@ -1,2 +1,5 @@
 phajdan.jr@chromium.org
 sky@chromium.org
+
+# If you're doing structural changes get a review from one of the OWNERS.
+per-file BUILD.gn=*
