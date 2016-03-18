@@ -204,7 +204,7 @@ priority. Pri-0 generally implies an entire waterfall is down.
 **[Pri-1 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-1)**
 should be pinged daily, and checked to make sure someone is following up. Pri-1
 bugs are for a red test (not yet disabled), purple bot, or failing device. Here
-is the [list of Pri-1 bugs that have not been pinged today](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label:Performance-BotHealth%20label:Pri-1%20modified-before:today&sort=modified).
+is the [list of Pri-1 bugs that have not been pinged today](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label:Performance-BotHealth%20label:Pri-1%20modified-before:today-1&sort=modified).
 
 **[Pri-2 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-2)**
 are for disabled tests. These should be pinged weekly, and work towards fixing
