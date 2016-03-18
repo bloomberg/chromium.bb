@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/test_utils.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,13 +18,6 @@
 namespace base {
 namespace internal {
 namespace {
-
-// Death tests misbehave on Android.
-#if DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
-#define EXPECT_DCHECK_DEATH(statement, regex) EXPECT_DEATH(statement, regex)
-#else
-#define EXPECT_DCHECK_DEATH(statement, regex)
-#endif
 
 // Adapted from base::Lock's BasicLockTestThread to make sure
 // Acquire()/Release() don't crash.

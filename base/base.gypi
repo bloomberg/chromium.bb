@@ -636,6 +636,8 @@
           'task_runner.cc',
           'task_runner.h',
           'task_runner_util.h',
+          'task_scheduler/priority_queue.cc',
+          'task_scheduler/priority_queue.h',
           'task_scheduler/scheduler_lock.h',
           'task_scheduler/scheduler_lock_impl.cc',
           'task_scheduler/scheduler_lock_impl.h',
