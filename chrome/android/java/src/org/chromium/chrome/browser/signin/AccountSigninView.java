@@ -282,6 +282,13 @@ public class AccountSigninView extends FirstRunView
     }
 
     /**
+     * Changes the visuals slightly for when this view appears in the settings menu.
+     */
+    public void configureForSettingsPage() {
+        mHorizontalModeEnabled = false;
+    }
+
+    /**
      * Changes the visuals slightly for when this view is shown in a subsequent run after user adds
      * a Google account to the device.
      */
