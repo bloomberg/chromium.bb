@@ -961,4 +961,7 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
                 break;
         }
     }
+
+    @Override
+    public void onPropertyAnimationFinished(Property prop) {}
 }

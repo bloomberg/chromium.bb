@@ -238,6 +238,9 @@ public class ContextualSearchPeekPromoControl extends OverlayPanelInflater
         }
     }
 
+    @Override
+    public void onPropertyAnimationFinished(AnimationType prop) {}
+
     /**
      * Updates the UI for the appearance animation.
      *

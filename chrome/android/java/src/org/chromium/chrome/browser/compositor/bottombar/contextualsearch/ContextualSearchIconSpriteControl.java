@@ -131,4 +131,6 @@ public class ContextualSearchIconSpriteControl implements
         }
     }
 
+    @Override
+    public void onPropertyAnimationFinished(AnimationType prop) {}
 }

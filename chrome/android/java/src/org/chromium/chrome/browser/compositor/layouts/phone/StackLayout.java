@@ -1180,6 +1180,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         }
     }
 
+    @Override
+    public void onPropertyAnimationFinished(Property prop) {}
+
     /**
      * Called by the stacks whenever they start an animation.
      */

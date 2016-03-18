@@ -407,6 +407,9 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
         }
     }
 
+    @Override
+    public void onPropertyAnimationFinished(Property prop) {}
+
     /**
      * Steps the animation forward and updates all the animated values.
      * @param time      The current time of the app in ms.

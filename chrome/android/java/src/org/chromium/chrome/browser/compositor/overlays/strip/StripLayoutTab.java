@@ -504,6 +504,9 @@ public class StripLayoutTab
         }
     }
 
+    @Override
+    public void onPropertyAnimationFinished(Property prop) {}
+
     private void resetCloseRect() {
         RectF closeRect = getCloseRect();
         mCloseButton.setWidth(closeRect.width());
