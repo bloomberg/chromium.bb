@@ -424,6 +424,9 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
                               player_info.last_pipeline_status,
                               media::PIPELINE_STATUS_MAX + 1);
   } else {
+    // Note: This metric can be recorded as a result of normal operation with
+    // Media Source Extensions. If a site creates a MediaSource object but never
+    // creates a source buffer or appends data, PIPELINE_OK will be recorded.
     UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Unsupported",
                               player_info.last_pipeline_status,
                               media::PIPELINE_STATUS_MAX + 1);

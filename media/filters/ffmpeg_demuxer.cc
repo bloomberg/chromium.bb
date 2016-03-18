@@ -175,6 +175,17 @@ static const char* GetCodecName(const AVCodecContext* context) {
   return codec_descriptor ? codec_descriptor->name : kCodecNone;
 }
 
+static void SetTimeProperty(MediaLogEvent* event,
+                            const std::string& key,
+                            base::TimeDelta value) {
+  if (value == kInfiniteDuration())
+    event->params.SetString(key, "kInfiniteDuration");
+  else if (value == kNoTimestamp())
+    event->params.SetString(key, "kNoTimestamp");
+  else
+    event->params.SetDouble(key, value.InSecondsF());
+}
+
 scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     FFmpegDemuxer* demuxer,
     AVStream* stream,
@@ -1317,49 +1328,50 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   if (bitrate_ > 0)
     data_source_->SetBitrate(bitrate_);
 
-  // Audio logging
+  // Use a single MediaLogEvent to batch all parameter updates at once; this
+  // prevents throttling of events due to the large number of updates here.
+  scoped_ptr<MediaLogEvent> metadata_event =
+      media_log_->CreateEvent(MediaLogEvent::PROPERTY_CHANGE);
+
+  // Audio logging.
+  metadata_event->params.SetBoolean("found_audio_stream", !!audio_stream);
   if (audio_stream) {
-    AVCodecContext* audio_codec = audio_stream->codec;
-    media_log_->SetBooleanProperty("found_audio_stream", true);
-
-    SampleFormat sample_format = audio_config.sample_format();
-    std::string sample_name = SampleFormatToString(sample_format);
-
-    media_log_->SetStringProperty("audio_sample_format", sample_name);
-    media_log_->SetStringProperty("audio_codec_name",
-                                  GetCodecName(audio_codec));
-    media_log_->SetIntegerProperty("audio_channels_count",
-                                   audio_codec->channels);
-    media_log_->SetIntegerProperty("audio_samples_per_second",
-                                   audio_config.samples_per_second());
-  } else {
-    media_log_->SetBooleanProperty("found_audio_stream", false);
+    const AVCodecContext* audio_codec = audio_stream->codec;
+    metadata_event->params.SetString("audio_codec_name",
+                                     GetCodecName(audio_codec));
+    metadata_event->params.SetInteger("audio_channels_count",
+                                      audio_codec->channels);
+    metadata_event->params.SetString(
+        "audio_sample_format",
+        SampleFormatToString(audio_config.sample_format()));
+    metadata_event->params.SetInteger("audio_samples_per_second",
+                                      audio_config.samples_per_second());
   }
 
   // Video logging
+  metadata_event->params.SetBoolean("found_video_stream", !!video_stream);
   if (video_stream) {
-    AVCodecContext* video_codec = video_stream->codec;
-    media_log_->SetBooleanProperty("found_video_stream", true);
-    media_log_->SetStringProperty("video_codec_name",
-                                  GetCodecName(video_codec));
-    media_log_->SetIntegerProperty("width", video_codec->width);
-    media_log_->SetIntegerProperty("height", video_codec->height);
-    media_log_->SetIntegerProperty("coded_width", video_codec->coded_width);
-    media_log_->SetIntegerProperty("coded_height", video_codec->coded_height);
-    media_log_->SetStringProperty(
+    const AVCodecContext* video_codec = video_stream->codec;
+    metadata_event->params.SetString("video_codec_name",
+                                     GetCodecName(video_codec));
+    metadata_event->params.SetInteger("width", video_codec->width);
+    metadata_event->params.SetInteger("height", video_codec->height);
+    metadata_event->params.SetInteger("coded_width", video_codec->coded_width);
+    metadata_event->params.SetInteger("coded_height",
+                                      video_codec->coded_height);
+    metadata_event->params.SetString(
         "time_base", base::StringPrintf("%d/%d", video_codec->time_base.num,
                                         video_codec->time_base.den));
-    media_log_->SetStringProperty(
+    metadata_event->params.SetString(
         "video_format", VideoPixelFormatToString(video_config.format()));
-    media_log_->SetBooleanProperty("video_is_encrypted",
-                                   video_config.is_encrypted());
-  } else {
-    media_log_->SetBooleanProperty("found_video_stream", false);
+    metadata_event->params.SetBoolean("video_is_encrypted",
+                                      video_config.is_encrypted());
   }
 
-  media_log_->SetTimeProperty("max_duration", max_duration);
-  media_log_->SetTimeProperty("start_time", start_time_);
-  media_log_->SetIntegerProperty("bitrate", bitrate_);
+  SetTimeProperty(metadata_event.get(), "max_duration", max_duration);
+  SetTimeProperty(metadata_event.get(), "start_time", start_time_);
+  metadata_event->params.SetInteger("bitrate", bitrate_);
+  media_log_->AddEvent(std::move(metadata_event));
 
   media_tracks_updated_cb_.Run(std::move(media_tracks));
 

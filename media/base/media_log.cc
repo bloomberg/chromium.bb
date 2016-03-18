@@ -251,13 +251,6 @@ void MediaLog::SetStringProperty(
   AddEvent(std::move(event));
 }
 
-void MediaLog::SetIntegerProperty(
-    const std::string& key, int value) {
-  scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
-  event->params.SetInteger(key, value);
-  AddEvent(std::move(event));
-}
-
 void MediaLog::SetDoubleProperty(
     const std::string& key, double value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
@@ -269,16 +262,6 @@ void MediaLog::SetBooleanProperty(
     const std::string& key, bool value) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
   event->params.SetBoolean(key, value);
-  AddEvent(std::move(event));
-}
-
-void MediaLog::SetTimeProperty(
-    const std::string& key, base::TimeDelta value) {
-  scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
-  if (value.is_max())
-    event->params.SetString(key, "unknown");
-  else
-    event->params.SetDouble(key, value.InSecondsF());
   AddEvent(std::move(event));
 }
 
