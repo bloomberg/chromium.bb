@@ -2934,7 +2934,8 @@ translateString ()
 		{
 			if(currentInput[src] < 32 || currentInput[src] > 126)
 				goto failure;
-			if(!putCharacter(currentInput[src]))
+			widechar c = getDotsForChar(currentInput[src]);
+			if(!for_updatePositions(&c, 1, 1, 0))
 				goto failure;
 			src++;
 			continue;
