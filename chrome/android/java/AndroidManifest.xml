@@ -264,7 +264,7 @@ by a child template that "extends" this file.
         </activity>
         <activity android:name="org.chromium.chrome.browser.signin.AccountSigninActivity"
             android:theme="@style/MainTheme"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
         <activity android:name="org.chromium.chrome.browser.preferences.Preferences"
             android:theme="@style/PreferencesTheme"
@@ -371,7 +371,7 @@ by a child template that "extends" this file.
             android:hardwareAccelerated="true"
             android:launchMode="singleTask"
             android:noHistory="true"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:excludeFromRecents="true">
         </activity>
 
@@ -404,7 +404,7 @@ by a child template that "extends" this file.
             android:label="@string/physical_web_list_urls_activity_title"
             android:theme="@style/PhysicalWebNearbyUrlsListStyle"
             android:autoRemoveFromRecents="true"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:exported="false" >
         </activity>
 
