@@ -1946,11 +1946,12 @@ WebInputEventResult EventHandler::handleGestureEventInFrame(const GestureEventWi
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
 
     if (scrollbar) {
-        bool eventSwallowed = scrollbar->gestureEvent(gestureEvent);
-        if (gestureEvent.type() == PlatformEvent::GestureTapDown && eventSwallowed)
-            m_scrollbarHandlingScrollGesture = scrollbar;
-        if (eventSwallowed)
+        bool shouldUpdateCapture = false;
+        if (scrollbar->gestureEvent(gestureEvent, &shouldUpdateCapture)) {
+            if (shouldUpdateCapture)
+                m_scrollbarHandlingScrollGesture = scrollbar;
             return WebInputEventResult::HandledSuppressed;
+        }
     }
 
     if (eventTarget) {
@@ -2022,14 +2023,13 @@ WebInputEventResult EventHandler::handleGestureScrollEvent(const PlatformGesture
     }
 
     if (scrollbar) {
-        bool eventSwallowed = scrollbar->gestureEvent(gestureEvent);
-        if (gestureEvent.type() == PlatformEvent::GestureScrollEnd
-            || gestureEvent.type() == PlatformEvent::GestureFlingStart
-            || !eventSwallowed) {
-            m_scrollbarHandlingScrollGesture = nullptr;
-        }
-        if (eventSwallowed)
+        bool shouldUpdateCapture = false;
+        if (scrollbar->gestureEvent(gestureEvent, &shouldUpdateCapture)) {
+            if (shouldUpdateCapture)
+                m_scrollbarHandlingScrollGesture = scrollbar;
             return WebInputEventResult::HandledSuppressed;
+        }
+        m_scrollbarHandlingScrollGesture = nullptr;
     }
 
     if (eventTarget) {

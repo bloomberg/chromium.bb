@@ -119,7 +119,10 @@ public:
     void windowActiveChangedForSnowLeopardOnly();
     bool isWindowActive() const;
 
-    bool gestureEvent(const PlatformGestureEvent&);
+    // Return if the gesture event was handled. |shouldUpdateCapture|
+    // will be set to true if the handler should update the capture
+    // state for this scrollbar.
+    bool gestureEvent(const PlatformGestureEvent&, bool* shouldUpdateCapture);
 
     // These methods are used for platform scrollbars to give :hover feedback.  They will not get called
     // when the mouse went down in a scrollbar, since it is assumed the scrollbar will start
