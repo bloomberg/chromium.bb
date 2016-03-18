@@ -30,6 +30,7 @@ public abstract class ChromeFeatureList {
     }
 
     public static final String NTP_SNIPPETS = "NTPSnippets";
+    public static final String NTP_TOOLBAR = "NTPToolbar";
 
     private static native boolean nativeIsEnabled(String featureName);
 }

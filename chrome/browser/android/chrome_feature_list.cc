@@ -28,6 +28,7 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPOfflinePagesFeature,
     &kNTPSnippetsFeature,
+    &kNTPToolbarFeature,
     &kPhysicalWebFeature,
     &features::kSimplifiedFullscreenUI,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
@@ -41,6 +42,10 @@ const base::Feature kNTPOfflinePagesFeature {
 
 const base::Feature kNTPSnippetsFeature {
   "NTPSnippets", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
+const base::Feature kNTPToolbarFeature {
+  "NTPToolbar", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 const base::Feature kPhysicalWebFeature {

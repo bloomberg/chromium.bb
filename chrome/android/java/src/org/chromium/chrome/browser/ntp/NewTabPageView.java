@@ -123,6 +123,9 @@ public class NewTabPageView extends FrameLayout
         /** @return Whether the NTP Interests tab is enabled and its button should be shown. */
         boolean isInterestsEnabled();
 
+        /** @return Whether the toolbar at the bottom of the NTP is enabled and should be shown. */
+        boolean isToolbarEnabled();
+
         /** @return Whether the document mode opt out promo should be shown. */
         boolean shouldShowOptOutPromo();
 
@@ -305,25 +308,39 @@ public class NewTabPageView extends FrameLayout
             }
         });
 
+        // Set up the toolbar
         NewTabPageToolbar toolbar = (NewTabPageToolbar) findViewById(R.id.ntp_toolbar);
-        toolbar.getRecentTabsButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mManager.navigateToRecentTabs();
+        if (manager.isToolbarEnabled()) {
+            toolbar.getRecentTabsButton().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mManager.navigateToRecentTabs();
+                }
+            });
+            toolbar.getBookmarksButton().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mManager.navigateToBookmarks();
+                }
+            });
+            toolbar.getInterestsButton().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mManager.navigateToInterests();
+                }
+            });
+
+            // Set up interests
+            if (manager.isInterestsEnabled()) {
+                toolbar.getInterestsButton().setVisibility(View.VISIBLE);
             }
-        });
-        toolbar.getBookmarksButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mManager.navigateToBookmarks();
-            }
-        });
-        toolbar.getInterestsButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mManager.navigateToInterests();
-            }
-        });
+        } else {
+            ((ViewGroup) toolbar.getParent()).removeView(toolbar);
+            FrameLayout.LayoutParams params =
+                    (FrameLayout.LayoutParams) mScrollView.getLayoutParams();
+            params.bottomMargin = 0;
+            mScrollView.setLayoutParams(params);
+        }
 
         initializeSearchBoxScrollHandling();
         addOnLayoutChangeListener(this);
@@ -357,11 +374,6 @@ public class NewTabPageView extends FrameLayout
                 }
             });
             snippetsManager.setSnippetsView(mSnippetsView);
-        }
-
-        // Set up interests
-        if (manager.isInterestsEnabled()) {
-            toolbar.getInterestsButton().setVisibility(View.VISIBLE);
         }
     }
 

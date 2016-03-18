@@ -244,6 +244,11 @@ public class NewTabPage
                     && ChromeSigninController.get(mActivity).isSignedIn();
         }
 
+        @Override
+        public boolean isToolbarEnabled() {
+            return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_TOOLBAR);
+        }
+
         private void recordOpenedMostVisitedItem(MostVisitedItem item) {
             if (mIsDestroyed) return;
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_MOST_VISITED_ENTRY);
