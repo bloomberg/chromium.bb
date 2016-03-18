@@ -55,7 +55,6 @@ chrome_material_200_percent.pak: %(VersionDir)s\
 [TOUCH]
 
 [GOOGLE_CHROME]
-delegate_execute.exe: %(VersionDir)s\
 SecondaryTile.png: %(VersionDir)s\
 widevinecdmadapter.dll: %(VersionDir)s\
 #

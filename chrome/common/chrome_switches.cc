@@ -1213,10 +1213,6 @@ const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
 // they use a custom-user-data-dir which disables this.
 const char kEnableProfileShortcutManager[]  = "enable-profile-shortcut-manager";
 
-// For the DelegateExecute verb handler to launch Chrome in metro mode on
-// Windows 8 and higher.  Used when relaunching metro Chrome.
-const char kForceImmersive[]                = "force-immersive";
-
 // Whether or not the browser should warn if the profile is on a network share.
 // This flag is only relevant for Windows currently.
 const char kNoNetworkProfileWarning[]       = "no-network-profile-warning";
@@ -1229,18 +1225,11 @@ const char kPrefetchArgumentWatcher[] = "/prefetch:6";
 // /prefetch:7 is used by crashpad, which can't depend on constants defined
 // here. See crashpad_win.cc for more details.
 
-// For the DelegateExecute verb handler to launch Chrome in desktop mode on
-// Windows 8 and higher.  Used when relaunching metro Chrome.
-const char kForceDesktop[]                  = "force-desktop";
-
 // Makes Windows happy by allowing it to show "Enable access to this program"
 // checkbox in Add/Remove Programs->Set Program Access and Defaults. This only
 // shows an error box because the only way to hide Chrome is by uninstalling
 // it.
 const char kHideIcons[]                     = "hide-icons";
-
-// Relaunches metro Chrome on Windows 8 and higher using a given shortcut.
-const char kRelaunchShortcut[]              = "relaunch-shortcut";
 
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
@@ -1252,10 +1241,6 @@ const char kUninstall[]                     = "uninstall";
 // (which is assumed to be registered as default browser) and synchronously
 // connect to it.
 const char kViewerLaunchViaAppId[]          = "viewer-launch-via-appid";
-
-// Waits for the given handle to be signaled before relaunching metro Chrome on
-// Windows 8 and higher.
-const char kWaitForMutex[]                  = "wait-for-mutex";
 
 // Causes the process to run as a watcher process.
 const char kWatcherProcess[]                = "watcher";

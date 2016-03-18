@@ -422,7 +422,6 @@
             '../sandbox/sandbox.gyp:sandbox',
             '../third_party/kasko/kasko.gyp:kasko_features',
             '../ui/gfx/gfx.gyp:gfx',
-            '../win8/delegate_execute/delegate_execute.gyp:*',
             '../win8/win8.gyp:visual_elements_resources',
           ],
           'sources': [

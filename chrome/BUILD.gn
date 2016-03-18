@@ -147,7 +147,6 @@ if (!is_android) {
         "//sandbox",
         "//ui/gfx",
         "//win8:visual_elements_resources",
-        "//win8/delegate_execute",
       ]
       data_deps = [
         "//chrome/app/version_assembly:version_assembly_manifest",

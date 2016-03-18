@@ -199,9 +199,6 @@ bool IsRunningOldChrome() {
 }
 
 bool DoUpgradeTasks(const base::CommandLine& command_line) {
-  // The DelegateExecute verb handler finalizes pending in-use updates for
-  // metro mode launches, as Chrome cannot be gracefully relaunched when
-  // running in this mode.
   if (!SwapNewChromeExeIfPresent() && !IsRunningOldChrome())
     return false;
   // At this point the chrome.exe has been swapped with the new one.
