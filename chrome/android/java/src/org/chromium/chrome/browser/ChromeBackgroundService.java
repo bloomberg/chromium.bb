@@ -14,12 +14,10 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsController;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
-import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.BrowserStartupController;
 
 /**
  * {@link ChromeBackgroundService} is scheduled through the {@link GcmNetworkManager} when the
@@ -80,10 +78,8 @@ public class ChromeBackgroundService extends GcmTaskService {
     @SuppressFBWarnings("DM_EXIT")
     protected void launchBrowser(Context context) {
         Log.i(TAG, "Launching browser");
-        ContentApplication.initCommandLine(context);
         try {
-            BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesSync(false);
+            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ProcessInitException while starting the browser process");
             // Since the library failed to initialize nothing in the application
