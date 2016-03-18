@@ -612,7 +612,6 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Don't let the bookmarks show on top of the location bar while animating.
     SetPaintToLayer(true);
-    layer()->SetFillsBoundsOpaquely(false);
     layer()->SetMasksToBounds(true);
   }
 
@@ -2105,6 +2104,9 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
       gfx::CreateVectorIcon(gfx::VectorIconId::OVERFLOW_CHEVRON, 8,
                             theme_provider->GetColor(
                                 ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)));
+
+  // Redraw the background.
+  SchedulePaint();
 }
 
 bool BookmarkBarView::UpdateOtherAndManagedButtonsVisibility() {
