@@ -2208,6 +2208,7 @@
             'workers/DedicatedWorkerThread.h',
             'workers/InProcessWorkerBase.cpp',
             'workers/InProcessWorkerBase.h',
+            'workers/MainThreadWorkletGlobalScope.h',
             'workers/SharedWorker.cpp',
             'workers/SharedWorker.h',
             'workers/SharedWorkerGlobalScope.cpp',

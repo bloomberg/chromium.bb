@@ -10,8 +10,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SecurityContext.h"
-#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/heap/Handle.h"
 
@@ -22,7 +22,7 @@ class LocalFrame;
 class WorkerOrWorkletScriptController;
 class WorkletConsole;
 
-class WorkletGlobalScope : public RefCountedWillBeGarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public WorkerOrWorkletGlobalScope, public ScriptWrappable, public LocalFrameLifecycleObserver {
+class WorkletGlobalScope : public RefCountedWillBeGarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public MainThreadWorkletGlobalScope, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
 public:

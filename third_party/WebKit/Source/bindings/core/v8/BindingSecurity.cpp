@@ -36,6 +36,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
@@ -113,6 +114,15 @@ bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWi
 }
 
 bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const Location* target, SecurityReportingOption reportingOption)
+{
+    ASSERT(target);
+    const Frame* frame = target->frame();
+    if (!frame || !frame->securityContext())
+        return false;
+    return canAccessFrame(isolate, accessingWindow, frame->securityContext()->getSecurityOrigin(), frame->domWindow(), reportingOption);
+}
+
+bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const MainThreadWorkletGlobalScope* target, SecurityReportingOption reportingOption)
 {
     ASSERT(target);
     const Frame* frame = target->frame();

@@ -10,6 +10,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/worklet/WorkletGlobalScope.h"
 
 namespace blink {
@@ -72,6 +73,7 @@ void Worklet::onFinished(WorkerScriptLoader* scriptLoader, ScriptPromiseResolver
         // as workers, etc. For a SyntaxError we should reject, however if
         // the script throws a normal error, resolve. For now just resolve.
         m_workletGlobalScope->scriptController()->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->url()));
+        InspectorInstrumentation::scriptImported(m_workletGlobalScope.get(), scriptLoader->identifier(), scriptLoader->script());
         resolver->resolve();
     }
 

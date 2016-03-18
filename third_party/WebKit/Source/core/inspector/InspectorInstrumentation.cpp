@@ -42,6 +42,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
@@ -173,6 +174,13 @@ InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* 
 {
     if (context->isWorkerGlobalScope())
         return instrumentationForWorkerGlobalScope(toWorkerGlobalScope(context));
+
+    if (context->isWorkletGlobalScope()) {
+        LocalFrame* frame = toMainThreadWorkletGlobalScope(context)->frame();
+        if (frame)
+            return instrumentingAgentsFor(frame);
+    }
+
     return 0;
 }
 

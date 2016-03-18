@@ -43,7 +43,9 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/events/ErrorEvent.h"
 #include "core/frame/DOMTimer.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/WorkerThreadDebugger.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -148,8 +150,11 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
 
     ScriptState::Scope scope(m_scriptState.get());
 
-    // Name new context for debugging.
-    WorkerThreadDebugger::setContextDebugData(context);
+    // Name new context for debugging. For main thread worklet global scopes
+    // this is done once the context is initialized.
+    if (m_globalScope->isWorkerGlobalScope()) {
+        WorkerThreadDebugger::setContextDebugData(context);
+    }
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* wrapperTypeInfo = m_globalScope->getScriptWrappable()->wrapperTypeInfo();

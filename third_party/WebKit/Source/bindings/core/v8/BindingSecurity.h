@@ -43,6 +43,7 @@ class ExceptionState;
 class Frame;
 class LocalDOMWindow;
 class Location;
+class MainThreadWorkletGlobalScope;
 class Node;
 
 enum SecurityReportingOption {
@@ -70,6 +71,8 @@ public:
     // Location
     static bool shouldAllowAccessTo(v8::Isolate*, const LocalDOMWindow* accessingWindow, const Location* target, ExceptionState&);
     static bool shouldAllowAccessTo(v8::Isolate*, const LocalDOMWindow* accessingWindow, const Location* target, SecurityReportingOption);
+    // MainThreadWorkletGlobalScope
+    static bool shouldAllowAccessTo(v8::Isolate*, const LocalDOMWindow* accessingWindow, const MainThreadWorkletGlobalScope* target, SecurityReportingOption);
     // Prefer to use the previous overloads instead of falling back to using
     // Frame*.
     static bool shouldAllowAccessToFrame(v8::Isolate*, const LocalDOMWindow* accessingWindow, const Frame* target, SecurityReportingOption); // OBSOLETE

@@ -7,6 +7,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/frame/FrameConsole.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "modules/worklet/WorkletConsole.h"
 
 namespace blink {
@@ -16,11 +17,12 @@ PassRefPtrWillBeRawPtr<WorkletGlobalScope> WorkletGlobalScope::create(LocalFrame
 {
     RefPtrWillBeRawPtr<WorkletGlobalScope> workletGlobalScope = adoptRefWillBeNoop(new WorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate));
     workletGlobalScope->scriptController()->initializeContextIfNeeded();
+    MainThreadDebugger::contextCreated(workletGlobalScope->scriptController()->getScriptState(), workletGlobalScope->frame(), workletGlobalScope->getSecurityOrigin());
     return workletGlobalScope.release();
 }
 
 WorkletGlobalScope::WorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
-    : LocalFrameLifecycleObserver(frame)
+    : MainThreadWorkletGlobalScope(frame)
     , m_url(url)
     , m_userAgent(userAgent)
     , m_scriptController(WorkerOrWorkletScriptController::create(this, isolate))
@@ -105,7 +107,7 @@ DEFINE_TRACE(WorkletGlobalScope)
     visitor->trace(m_console);
     ExecutionContext::trace(visitor);
     SecurityContext::trace(visitor);
-    LocalFrameLifecycleObserver::trace(visitor);
+    MainThreadWorkletGlobalScope::trace(visitor);
 }
 
 } // namespace blink

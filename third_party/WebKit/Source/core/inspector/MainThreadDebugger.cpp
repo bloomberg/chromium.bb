@@ -34,6 +34,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Window.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -41,6 +42,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "wtf/OwnPtr.h"
@@ -158,6 +160,14 @@ void MainThreadDebugger::unmuteWarningsAndDeprecations()
 
 bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)
 {
+    ExecutionContext* executionContext = toExecutionContext(target);
+    ASSERT(executionContext);
+
+    if (executionContext->isWorkletGlobalScope()) {
+        MainThreadWorkletGlobalScope* globalScope = toMainThreadWorkletGlobalScope(executionContext);
+        return globalScope && BindingSecurity::shouldAllowAccessTo(m_isolate, toLocalDOMWindow(toDOMWindow(calling)), globalScope, DoNotReportSecurityError);
+    }
+
     DOMWindow* window = toDOMWindow(target);
     return window && BindingSecurity::shouldAllowAccessTo(m_isolate, toLocalDOMWindow(toDOMWindow(calling)), window, DoNotReportSecurityError);
 }
