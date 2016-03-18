@@ -47,6 +47,12 @@ protected:
     static const int kNumSupportedUnits = 15;
 };
 
+DEFINE_TYPE_CASTS(LengthValue, StyleValue, value,
+    (value->type() == StyleValue::SimpleLengthType
+        || value->type() == StyleValue::CalcLengthType),
+    (value.type() == StyleValue::SimpleLengthType
+        || value.type() == StyleValue::CalcLengthType));
+
 } // namespace blink
 
 #endif

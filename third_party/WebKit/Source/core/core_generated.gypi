@@ -115,6 +115,10 @@
       '<(blink_core_output_dir)/StyleBuilder.cpp',
       '<(blink_core_output_dir)/StyleBuilderFunctions.cpp',
 
+      # Generated from make_cssom_types.py
+      '<(blink_core_output_dir)/CSSOMKeywords.cpp',
+      '<(blink_core_output_dir)/CSSOMTypes.cpp',
+
       # Generated from make_css_property_metadata.py
       '<(blink_core_output_dir)/CSSPropertyMetadata.cpp',
 

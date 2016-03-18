@@ -1305,6 +1305,8 @@
             'css/StyleSheetContents.h',
             'css/StyleSheetList.cpp',
             'css/StyleSheetList.h',
+            'css/cssom/CSSOMKeywords.h',
+            'css/cssom/CSSOMTypes.h',
             'css/cssom/ImmutableStylePropertyMap.h',
             'css/cssom/StyleCalcLength.cpp',
             'css/cssom/StyleCalcLength.h',

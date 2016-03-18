@@ -17,6 +17,8 @@ public:
     static bool isEnabledProperty(CSSPropertyID);
     static bool isInterpolableProperty(CSSPropertyID);
     static bool isInheritedProperty(CSSPropertyID);
+    static bool propertySupportsPercentage(CSSPropertyID);
+    static bool propertySupportsMultiple(CSSPropertyID);
 
     static void filterEnabledCSSPropertiesIntoVector(const CSSPropertyID*, size_t length, Vector<CSSPropertyID>&);
 };

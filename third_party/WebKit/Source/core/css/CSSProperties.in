@@ -18,6 +18,18 @@
 // The property is a shorthand for several other properties.
 
 
+// Flags which go into CSSOMTypes:
+// - typedom_types=[Type|OtherType]
+// The property can take types specified in typedom_types for CSS Typed OM.
+// Keyword does not need to be specified as every property can take keywords.
+// - keywords=[keyword1|keyword2]
+// The property can take these keywords.
+// - supports_multiple
+// The property supports a list of values.
+// - supports_percentage
+// The property supports percentage types.
+
+
 // Flags which go into CSSPropertyMetadata:
 // - interpolable
 // The interpolable flag indicates whether a property can be animated smoothly.
@@ -149,7 +161,7 @@ border-top-color interpolable, custom_all
 border-top-left-radius interpolable, initial=initialBorderRadius, converter=convertRadius
 border-top-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
-border-top-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+border-top-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>, typedom_types=[Length], keywords=[thin|medium|thick], supports_percentage
 bottom interpolable, initial=initialOffset, converter=convertLengthOrAuto
 box-shadow interpolable, converter=convertShadow
 box-sizing
@@ -388,7 +400,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-user-select inherited
 white-space inherited
 widows interpolable, inherited, type_name=short, custom_all
-width interpolable, initial=initialSize, converter=convertLengthSizing
+width interpolable, initial=initialSize, converter=convertLengthSizing, typedom_types=[Length], keywords=[auto], supports_percentage
 will-change custom_all
 word-break inherited
 word-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing

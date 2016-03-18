@@ -73,6 +73,14 @@ def upper_first_letter(name):
     return name[0].upper() + name[1:]
 
 
+def camel_case(css_name):
+    """Convert hyphen-separated-name to UpperCamelCase.
+
+    E.g., '-foo-bar' becomes 'FooBar'.
+    """
+    return ''.join(upper_first_letter(word) for word in css_name.split('-'))
+
+
 def to_macro_style(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).upper()
@@ -84,3 +92,15 @@ def script_name(entry):
 
 def cpp_name(entry):
     return entry['ImplementedAs'] or script_name(entry)
+
+
+def enum_for_css_keyword(keyword):
+    return 'CSSValue' + ''.join(camel_case(keyword))
+
+
+def enum_for_css_property(property_name):
+    return 'CSSProperty' + ''.join(camel_case(property_name))
+
+
+def enum_for_css_property_alias(property_name):
+    return 'CSSPropertyAlias' + camel_case(property_name)

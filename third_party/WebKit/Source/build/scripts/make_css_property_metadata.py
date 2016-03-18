@@ -26,6 +26,8 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
             'properties': self._properties,
             'switches': [('interpolable', 'isInterpolableProperty'),
                          ('inherited', 'isInheritedProperty'),
+                         ('supports_percentage', 'propertySupportsPercentage'),
+                         ('supports_multiple', 'propertySupportsMultiple')
                         ],
             'first_enum_value': self._first_enum_value,
         }

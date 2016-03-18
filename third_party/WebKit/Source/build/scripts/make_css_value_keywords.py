@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 from in_file import InFile
+from name_utilities import enum_for_css_keyword
 from name_utilities import upper_first_letter
 import in_generator
 import license
@@ -121,16 +122,13 @@ class CSSValueKeywordsWriter(in_generator.Writer):
         first_keyword_id = 1
         for offset, keyword in enumerate(self._value_keywords):
             keyword['lower_name'] = keyword['name'].lower()
-            keyword['enum_name'] = self._enum_name_from_value_keyword(keyword['name'])
+            keyword['enum_name'] = enum_for_css_keyword(keyword['name'])
             keyword['enum_value'] = first_keyword_id + offset
             if keyword['name'].startswith('-internal-'):
                 assert keyword['mode'] is None, 'Can\'t specify mode for value keywords with the prefix "-internal-".'
                 keyword['mode'] = 'UASheet'
             else:
                 assert keyword['mode'] != 'UASheet', 'UASheet mode only value keywords should have the prefix "-internal-".'
-
-    def _enum_name_from_value_keyword(self, value_keyword):
-        return "CSSValue" + "".join(upper_first_letter(w) for w in value_keyword.split("-"))
 
     def _enum_declaration(self, keyword):
         return "    %(enum_name)s = %(enum_value)s," % keyword

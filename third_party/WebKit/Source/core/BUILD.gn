@@ -415,6 +415,12 @@ source_set("core_generated") {
 
     # Generated from make_css_property_metadata.py
     "$blink_core_output_dir/CSSPropertyMetadata.cpp",
+
+    # Generated from make_cssom_types.py
+    "$blink_core_output_dir/CSSOMTypes.cpp",
+
+    # Generated from make_cssom_keywords.py
+    "$blink_core_output_dir/CSSOMKeywords.cpp",
   ]
 
   configs -= core_config_remove
@@ -569,6 +575,7 @@ group("make_core_generated") {
     ":make_core_generated_css_property_names",
     ":make_core_generated_css_tokenizer_codepoints",
     ":make_core_generated_css_value_keywords",
+    ":make_core_generated_cssom_types",
     ":make_core_generated_event_factory",
     ":make_core_generated_event_names",
     ":make_core_generated_event_target_names",
@@ -645,6 +652,19 @@ css_properties("make_core_generated_style_builder") {
     "$blink_core_output_dir/StyleBuilder.cpp",
     "$blink_core_output_dir/StyleBuilderFunctions.h",
     "$blink_core_output_dir/StyleBuilderFunctions.cpp",
+  ]
+}
+
+# "CSSOMTypes" in make_core_generated from GYP.
+css_properties("make_core_generated_cssom_types") {
+  script = "../build/scripts/make_cssom_types.py"
+  other_inputs = [
+    "../build/scripts/templates/CSSOMKeywords.cpp.tmpl",
+    "../build/scripts/templates/CSSOMTypes.cpp.tmpl",
+  ]
+  outputs = [
+    "$blink_core_output_dir/CSSOMKeywords.cpp",
+    "$blink_core_output_dir/CSSOMTypes.cpp",
   ]
 }
 

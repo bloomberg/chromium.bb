@@ -369,6 +369,26 @@
           ],
         },
         {
+          'action_name': 'CSSOMTypes',
+          'inputs': [
+            '<@(css_properties_files)',
+            '../build/scripts/make_cssom_types.py',
+            '../build/scripts/templates/CSSOMKeywords.cpp.tmpl',
+            '../build/scripts/templates/CSSOMTypes.cpp.tmpl',
+          ],
+          'outputs': [
+            '<(blink_core_output_dir)/CSSOMKeywords.cpp',
+            '<(blink_core_output_dir)/CSSOMTypes.cpp',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_cssom_types.py',
+            'css/CSSProperties.in',
+            '--output_dir',
+            '<(blink_core_output_dir)',
+          ],
+        },
+        {
           'action_name': 'CSSPropertyMetadata',
           'inputs': [
             '<@(css_properties_files)',
