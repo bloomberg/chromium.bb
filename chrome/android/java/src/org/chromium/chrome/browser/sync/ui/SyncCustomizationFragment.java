@@ -249,6 +249,10 @@ public class SyncCustomizationFragment extends PreferenceFragment
     @Override
     public void onStart() {
         super.onStart();
+        // The current account may have been switched on a different screen so ensure the synced
+        // account preference displays the correct signed in account.
+        mSyncedAccountPreference.update();
+
         mIsBackendInitialized = mProfileSyncService.isBackendInitialized();
         mIsPassphraseRequired =
                 mIsBackendInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
