@@ -2459,7 +2459,6 @@ insertEmphasis(
 	const int *buffer,
 	const int at,
 	const EmphRuleNumber emphRule,
-	const unsigned int bit_begin,
 	const unsigned int bit_end,
 	const unsigned int bit_word,
 	const unsigned int bit_symbol)
@@ -2479,7 +2478,15 @@ insertEmphasis(
 			for_updatePositions(
 				&indicRule->charsdots[0], 0, indicRule->dotslen, 0);
 	}
-	
+}
+
+static void
+insertEmphasisBegin(
+	const int *buffer,
+	const int at,
+	const EmphRuleNumber emphRule,
+	const unsigned int bit_begin)
+{
 	if(buffer[at] & bit_begin)
 	{
 		if(brailleIndicatorDefined(table->emphRules[emphRule][firstWordOffset]))
@@ -2541,6 +2548,24 @@ endCount(
 	return cnt;
 }
 
+static int
+beginCount(
+	const int *buffer,
+	const int at,
+	const unsigned int bit_end,
+	const unsigned int bit_begin)
+{
+	if(!(buffer[at] & bit_begin))
+		return 0;
+	int i, cnt = 1;
+	for(i = at + 1; i < srcmax; i++)
+	if(buffer[i] & bit_end)
+		break;
+	else
+		cnt++;
+	return cnt;
+}
+
 static void
 insertEmphasesAt(const int at)
 {
@@ -2560,33 +2585,38 @@ insertEmphasesAt(const int at)
 
 		if(emphasisBuffer[at] & CAPS_EMPHASIS)
 		{
-			insertEmphasis(
-				emphasisBuffer, at, capsRule,
-				CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
 			insertEmphasisEnd(
 				emphasisBuffer, at, capsRule, CAPS_END, CAPS_WORD);
+			insertEmphasisBegin(
+				emphasisBuffer, at, capsRule, CAPS_BEGIN);
+			insertEmphasis(
+				emphasisBuffer, at, capsRule,
+				CAPS_END, CAPS_WORD, CAPS_SYMBOL);
 		}
 		return;
 	}
-	
+
 	/*   The order of inserting the end symbols must be the reverse
 	     of the insertions of the begin symbols so that they will
 	     nest properly when multiple emphases start and end at
 	     the same place   */
-#define CAPS_COUNT     0
-#define UNDER_COUNT    1
-#define BOLD_COUNT     2
-#define ITALIC_COUNT   3
-#define SCRIPT_COUNT   4
-#define TNOTE_COUNT    5
-#define TRANS1_COUNT   6
-#define TRANS2_COUNT   7
-#define TRANS3_COUNT   8
-#define TRANS4_COUNT   9
-#define TRANS5_COUNT   10
-	
-	type_counts[CAPS_COUNT] 
-		= endCount(emphasisBuffer, at, CAPS_END, CAPS_BEGIN, CAPS_WORD);
+	//TODO:  ordering with partial word using bit_word and bit_end
+
+#define UNDER_COUNT    0
+#define BOLD_COUNT     1
+#define ITALIC_COUNT   2
+#define SCRIPT_COUNT   3
+#define TNOTE_COUNT    4
+#define TRANS1_COUNT   5
+#define TRANS2_COUNT   6
+#define TRANS3_COUNT   7
+#define TRANS4_COUNT   8
+#define TRANS5_COUNT   9
+
+	if(emphasisBuffer[at] & CAPS_EMPHASIS)
+		insertEmphasisEnd(emphasisBuffer, at, capsRule, CAPS_END, CAPS_WORD);
+
+	/*   end bits   */
 	type_counts[UNDER_COUNT]
 		= endCount(emphasisBuffer, at, UNDER_END, UNDER_BEGIN, UNDER_WORD);
 	type_counts[BOLD_COUNT]
@@ -2607,22 +2637,18 @@ insertEmphasesAt(const int at)
 		= endCount(transNoteBuffer, at, TRANSNOTE_END << 12, TRANSNOTE_BEGIN << 12, TRANSNOTE_WORD << 12);
 	type_counts[TRANS5_COUNT]
 		= endCount(transNoteBuffer, at, TRANSNOTE_END << 16, TRANSNOTE_BEGIN << 16, TRANSNOTE_WORD << 16);
-	
-	for(i = 0; i < 8; i++)
+
+	for(i = 0; i < 10; i++)
 	{
 		max = 0;
-		for(j = 1; j < 9; j++)
+		for(j = 0; j < 10; j++)
 		if(type_counts[max] < type_counts[j])
 			max = j;
 		if(!type_counts[max])
 			break;
 		type_counts[max] = 0;
 		switch(max)
-		{	
-		case CAPS_COUNT:		
-			insertEmphasisEnd(
-				emphasisBuffer, at, capsRule, CAPS_END, CAPS_WORD);
-			break;			
+		{
 		case ITALIC_COUNT:
 			insertEmphasisEnd(
 				emphasisBuffer, at, emph1Rule, ITALIC_END, ITALIC_WORD);
@@ -2665,7 +2691,74 @@ insertEmphasesAt(const int at)
 			break;
 		}
 	}
+
+	/*   begin bits   */
+	type_counts[UNDER_COUNT]
+		= beginCount(emphasisBuffer, at, UNDER_END, UNDER_BEGIN);
+	type_counts[BOLD_COUNT]
+		= beginCount(emphasisBuffer, at, BOLD_END, BOLD_BEGIN);
+	type_counts[ITALIC_COUNT]
+		= beginCount(emphasisBuffer, at, ITALIC_END, ITALIC_BEGIN);
+	type_counts[SCRIPT_COUNT]
+		= beginCount(emphasisBuffer, at, SCRIPT_END, SCRIPT_BEGIN);
+	type_counts[TNOTE_COUNT]
+		= beginCount(emphasisBuffer, at, TNOTE_END, TNOTE_BEGIN);
+	type_counts[TRANS1_COUNT]
+		= beginCount(transNoteBuffer, at, TRANSNOTE_END, TRANSNOTE_BEGIN);
+	type_counts[TRANS2_COUNT]
+		= beginCount(transNoteBuffer, at, TRANSNOTE_END << 4, TRANSNOTE_BEGIN << 4);
+	type_counts[TRANS3_COUNT]
+		= beginCount(transNoteBuffer, at, TRANSNOTE_END << 8, TRANSNOTE_BEGIN << 8);
+	type_counts[TRANS4_COUNT]
+		= beginCount(transNoteBuffer, at, TRANSNOTE_END << 12, TRANSNOTE_BEGIN << 12);
+	type_counts[TRANS5_COUNT]
+		= beginCount(transNoteBuffer, at, TRANSNOTE_END << 16, TRANSNOTE_BEGIN << 16);
 	
+	for(i = 9; i >= 0; i--)
+	{
+		max = 9;
+		for(j = 9; j >= 0; j--)
+		if(type_counts[max] < type_counts[j])
+			max = j;
+		if(!type_counts[max])
+			break;
+		type_counts[max] = 0;
+		switch(max)
+		{
+		case ITALIC_COUNT:
+			insertEmphasisBegin(emphasisBuffer, at, emph1Rule, ITALIC_BEGIN);
+			break;
+		case UNDER_COUNT:
+			insertEmphasisBegin(emphasisBuffer, at, emph2Rule, UNDER_BEGIN);
+			break;
+		case BOLD_COUNT:
+			insertEmphasisBegin(emphasisBuffer, at, emph3Rule, BOLD_BEGIN);
+			break;
+		case SCRIPT_COUNT:
+			insertEmphasisBegin(emphasisBuffer, at, emph4Rule, SCRIPT_BEGIN);
+			break;
+		case TNOTE_COUNT:
+			insertEmphasisBegin(emphasisBuffer, at, emph5Rule, TNOTE_BEGIN);
+			break;
+		case TRANS1_COUNT:
+			insertEmphasisBegin(transNoteBuffer, at, emph6Rule, TRANSNOTE_BEGIN);
+			break;
+		case TRANS2_COUNT:
+			insertEmphasisBegin(transNoteBuffer, at, emph7Rule, TRANSNOTE_BEGIN << 4);
+			break;
+		case TRANS3_COUNT:
+			insertEmphasisBegin(transNoteBuffer, at, emph8Rule, TRANSNOTE_BEGIN << 8);
+			break;
+		case TRANS4_COUNT:
+			insertEmphasisBegin(transNoteBuffer, at, emph9Rule, TRANSNOTE_BEGIN << 12);
+			break;
+		case TRANS5_COUNT:
+			insertEmphasisBegin(transNoteBuffer, at, emph10Rule, TRANSNOTE_BEGIN << 16);
+			break;
+		}
+	}
+
+	/*   symbol and word bits   */
 	for(i = 4; i >= 0; i--)
 	{
 		mask = TRANSNOTE_MASK << (i * 4);
@@ -2681,7 +2774,6 @@ insertEmphasesAt(const int at)
 			}
 			insertEmphasis(
 				transNoteBuffer, at, emphRule,
-				TRANSNOTE_BEGIN << (i * 4),
 				TRANSNOTE_END << (i * 4),
 				TRANSNOTE_WORD << (i * 4),
 				TRANSNOTE_SYMBOL << (i * 4));
@@ -2690,23 +2782,23 @@ insertEmphasesAt(const int at)
 	if(emphasisBuffer[at] & TNOTE_EMPHASIS)
 		insertEmphasis(
 			emphasisBuffer, at, emph5Rule,
-			TNOTE_BEGIN, TNOTE_END, TNOTE_WORD, TNOTE_SYMBOL);
+			TNOTE_END, TNOTE_WORD, TNOTE_SYMBOL);
 	if(emphasisBuffer[at] & SCRIPT_EMPHASIS)
 		insertEmphasis(
 			emphasisBuffer, at, emph4Rule,
-			SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
+			SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
 	if(emphasisBuffer[at] & ITALIC_EMPHASIS)
 		insertEmphasis(
 			emphasisBuffer, at, emph1Rule,
-			ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
+			ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
 	if(emphasisBuffer[at] & BOLD_EMPHASIS)
 		insertEmphasis(
 			emphasisBuffer, at, emph3Rule,
-			BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);			
+			BOLD_END, BOLD_WORD, BOLD_SYMBOL);
 	if(emphasisBuffer[at] & UNDER_EMPHASIS)
 		insertEmphasis(
 			emphasisBuffer, at, emph2Rule,
-			UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);	
+			UNDER_END, UNDER_WORD, UNDER_SYMBOL);
 
 	/*   insert graded 1 mode indicator   */
 	if(transOpcode == CTO_Contraction)
@@ -2716,9 +2808,12 @@ insertEmphasesAt(const int at)
 
 	/*   insert capitalization last so it will be closest to word   */
 	if(emphasisBuffer[at] & CAPS_EMPHASIS)
+		insertEmphasisBegin(emphasisBuffer, at, capsRule, CAPS_BEGIN);
+
+	if(emphasisBuffer[at] & CAPS_EMPHASIS)
 		insertEmphasis(
 			emphasisBuffer, at, capsRule,
-			CAPS_BEGIN, CAPS_END, CAPS_WORD, CAPS_SYMBOL);
+			CAPS_END, CAPS_WORD, CAPS_SYMBOL);
 
 }
 
