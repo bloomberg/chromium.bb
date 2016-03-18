@@ -58,7 +58,7 @@ ChildProcessHost::~ChildProcessHost() {
 }
 
 mojom::ShellClientPtr ChildProcessHost::Start(
-    const String& name,
+    const Identity& target,
     const ProcessReadyCallback& callback,
     const base::Closure& quit_closure) {
   DCHECK(!child_process_.IsValid());
@@ -76,6 +76,11 @@ mojom::ShellClientPtr ChildProcessHost::Start(
       new base::CommandLine(target_path));
 
   child_command_line->AppendArguments(*parent_command_line, false);
+
+#ifndef NDEBUG
+  child_command_line->AppendSwitchASCII("n", target.name());
+  child_command_line->AppendSwitchASCII("u", target.user_id());
+#endif
 
   if (target_path != app_path_)
     child_command_line->AppendSwitchPath(switches::kChildProcess, app_path_);

@@ -96,7 +96,7 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
                                       Identity(), base::FilePath());
   base::RunLoop run_loop;
   child_process_host.Start(
-      String(),
+      Identity(),
       base::Bind(&ProcessReadyCallbackAdapater, run_loop.QuitClosure()),
       base::Bind(&base::DoNothing));
   run_loop.Run();

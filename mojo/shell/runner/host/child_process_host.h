@@ -61,7 +61,7 @@ class ChildProcessHost {
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
-  mojom::ShellClientPtr Start(const String& name,
+  mojom::ShellClientPtr Start(const Identity& target,
                               const ProcessReadyCallback& callback,
                               const base::Closure& quit_closure);
 

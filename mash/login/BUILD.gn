@@ -13,8 +13,6 @@ mojo_native_application("login") {
     "login.cc",
     "login.h",
     "main.cc",
-    "ui.cc",
-    "ui.h",
   ]
 
   deps = [

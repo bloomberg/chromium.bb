@@ -162,7 +162,7 @@ gfx::Display ScreenMus::GetPrimaryDisplay() const {
 }
 
 gfx::Display ScreenMus::GetDisplayNearestWindow(gfx::NativeView view) const {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return GetPrimaryDisplay();
 }
 

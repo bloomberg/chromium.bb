@@ -28,6 +28,11 @@ void Init::Initialize(mojo::Connector* connector,
   StartLogin();
 }
 
+bool Init::AcceptConnection(mojo::Connection* connection) {
+  connection->AddInterface<mojom::Init>(this);
+  return true;
+}
+
 void Init::StartService(const mojo::String& name,
                         const mojo::String& user_id) {
   if (user_services_.find(user_id) == user_services_.end()) {
@@ -66,8 +71,6 @@ void Init::StartResourceProvider() {
 void Init::StartLogin() {
   login_connection_ = connector_->Connect("mojo:login");
   login_connection_->AddInterface<mojom::Init>(this);
-  login_connection_->SetConnectionLostClosure(
-      base::Bind(&Init::StartLogin, base::Unretained(this)));
   mash::login::mojom::LoginPtr login;
   login_connection_->GetInterface(&login);
   login->ShowLoginUI();

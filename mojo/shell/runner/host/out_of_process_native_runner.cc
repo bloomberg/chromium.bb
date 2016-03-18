@@ -44,7 +44,7 @@ mojom::ShellClientPtr OutOfProcessNativeRunner::Start(
   child_process_host_.reset(new ChildProcessHost(
       launch_process_runner_, delegate_, start_sandboxed, target, app_path));
   return child_process_host_->Start(
-      target.name(), pid_available_callback,
+      target, pid_available_callback,
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,
                  base::Unretained(this)));
 }
