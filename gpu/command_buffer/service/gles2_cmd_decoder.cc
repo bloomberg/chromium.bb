@@ -3170,6 +3170,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.surfaceless = surfaceless_;
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   caps.flips_vertically = !is_offscreen && surface_->FlipsVertically();
+  caps.msaa_is_slow = feature_info_->workarounds().msaa_is_slow;
 
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;

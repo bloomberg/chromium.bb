@@ -40,8 +40,6 @@
          disable_ext_draw_buffers)                           \
   GPU_OP(DISABLE_GL_RGB_FORMAT,                              \
          disable_gl_rgb_format)                              \
-  GPU_OP(DISABLE_MSAA_ON_NON_WEBGL_CONTEXTS,                 \
-         disable_msaa_on_non_webgl_contexts)                 \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
   GPU_OP(DISABLE_MULTISAMPLED_RENDER_TO_TEXTURE,             \
@@ -102,6 +100,8 @@
          max_varying_vectors_16)                             \
   GPU_OP(MAX_VERTEX_UNIFORM_VECTORS_256,                     \
          max_vertex_uniform_vectors_256)                     \
+  GPU_OP(MSAA_IS_SLOW,                                       \
+         msaa_is_slow)                                       \
   GPU_OP(NEEDS_GLSL_BUILT_IN_FUNCTION_EMULATION,             \
          needs_glsl_built_in_function_emulation)             \
   GPU_OP(NEEDS_OFFSCREEN_BUFFER_WORKAROUND,                  \

@@ -350,6 +350,9 @@ class TestWebGraphicsContext3D {
   void set_support_texture_half_float_linear(bool support) {
     test_capabilities_.gpu.texture_half_float_linear = support;
   }
+  void set_msaa_is_slow(bool msaa_is_slow) {
+    test_capabilities_.gpu.msaa_is_slow = msaa_is_slow;
+  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(TestWebGraphicsContext3D* context3d) {

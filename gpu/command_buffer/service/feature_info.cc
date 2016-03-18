@@ -853,15 +853,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Check for multisample support
-
-  // crbug.com/527565 - On some GPUs, MSAA does not perform acceptably for
-  // rasterization. We disable it on non-WebGL contexts. For WebGL contexts
-  // we leave it up to the site to decide whether to enable MSAA.
-  bool disable_all_multisample =
-      workarounds_.disable_msaa_on_non_webgl_contexts && !IsWebGLContext();
-
-  if (!disable_all_multisample &&
-      !workarounds_.disable_chromium_framebuffer_multisample) {
+  if (!workarounds_.disable_chromium_framebuffer_multisample) {
     bool ext_has_multisample =
         extensions.Contains("GL_EXT_framebuffer_multisample") ||
         gl_version_info_->is_es3 ||
@@ -883,8 +875,7 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (!disable_all_multisample &&
-      !workarounds_.disable_multisampled_render_to_texture) {
+  if (!workarounds_.disable_multisampled_render_to_texture) {
     if (extensions.Contains("GL_EXT_multisampled_render_to_texture")) {
       feature_flags_.multisampled_render_to_texture = true;
     } else if (extensions.Contains("GL_IMG_multisampled_render_to_texture")) {
@@ -901,9 +892,8 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (!disable_all_multisample &&
-      (!gl_version_info_->is_es ||
-       extensions.Contains("GL_EXT_multisample_compatibility"))) {
+  if (!gl_version_info_->is_es ||
+       extensions.Contains("GL_EXT_multisample_compatibility")) {
     AddExtensionString("GL_EXT_multisample_compatibility");
     feature_flags_.ext_multisample_compatibility = true;
     validators_.capability.AddValue(GL_MULTISAMPLE_EXT);

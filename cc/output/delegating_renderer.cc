@@ -56,7 +56,13 @@ DelegatingRenderer::DelegatingRenderer(RendererClient* client,
     capabilities_.using_image = caps.gpu.image;
 
     capabilities_.allow_rasterize_on_demand = false;
-    capabilities_.max_msaa_samples = caps.gpu.max_samples;
+
+    // If MSAA is slow, we want this renderer to behave as though MSAA is not
+    // available. Set samples to 0 to achieve this.
+    if (caps.gpu.msaa_is_slow)
+      capabilities_.max_msaa_samples = 0;
+    else
+      capabilities_.max_msaa_samples = caps.gpu.max_samples;
   }
 }
 

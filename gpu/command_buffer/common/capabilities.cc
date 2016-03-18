@@ -83,6 +83,7 @@ Capabilities::Capabilities()
       timer_queries(false),
       surfaceless(false),
       flips_vertically(false),
+      msaa_is_slow(false),
       major_version(2),
       minor_version(0) {}
 

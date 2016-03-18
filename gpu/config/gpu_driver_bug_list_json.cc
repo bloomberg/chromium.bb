@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.50",
+  "version": "8.51",
   "entries": [
     {
       "id": 1,
@@ -1557,7 +1557,7 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "multi_gpu_category": "active",
       "features": [
-        "disable_msaa_on_non_webgl_contexts"
+        "msaa_is_slow"
       ]
     },
     {

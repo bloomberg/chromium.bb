@@ -105,19 +105,6 @@ class FeatureInfoTest
     info_->InitializeForTesting();
   }
 
-  void SetupInitExpectationsWithGLVersionAndContextTypeAndCommandLine(
-      const char* extensions,
-      const char* renderer,
-      const char* version,
-      ContextType context_type,
-      const base::CommandLine& command_line) {
-    GpuServiceTest::SetUpWithGLVersion(version, extensions);
-    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), extensions, renderer, version);
-    info_ = new FeatureInfo(command_line);
-    info_->Initialize(context_type, DisallowedFeatures());
-  }
-
   void SetupWithCommandLine(const base::CommandLine& command_line) {
     GpuServiceTest::SetUp();
     info_ = new FeatureInfo(command_line);
@@ -1421,30 +1408,6 @@ TEST_P(FeatureInfoTest, InitializeARB_texture_rgNoFloat) {
 TEST_P(FeatureInfoTest, InitializeCHROMIUM_ycbcr_422_imageTrue) {
   SetupInitExpectations("GL_APPLE_ycbcr_422");
   EXPECT_TRUE(info_->feature_flags().chromium_image_ycbcr_422);
-}
-
-TEST_P(FeatureInfoTest, DisableMsaaOnNonWebGLContexts) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitchASCII(
-      switches::kGpuDriverBugWorkarounds,
-      base::IntToString(gpu::DISABLE_MSAA_ON_NON_WEBGL_CONTEXTS));
-  SetupInitExpectationsWithGLVersionAndContextTypeAndCommandLine(
-      "GL_EXT_multisampled_render_to_texture GL_EXT_framebuffer_multisample",
-      "", "", CONTEXT_TYPE_OPENGLES2, command_line);
-  EXPECT_FALSE(info_->feature_flags().multisampled_render_to_texture);
-  EXPECT_FALSE(info_->feature_flags().chromium_framebuffer_multisample);
-}
-
-TEST_P(FeatureInfoTest, DontDisableMsaaOnWebGLContexts) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitchASCII(
-      switches::kGpuDriverBugWorkarounds,
-      base::IntToString(gpu::DISABLE_MSAA_ON_NON_WEBGL_CONTEXTS));
-  SetupInitExpectationsWithGLVersionAndContextTypeAndCommandLine(
-      "GL_EXT_multisampled_render_to_texture GL_EXT_framebuffer_multisample",
-      "", "", CONTEXT_TYPE_WEBGL1, command_line);
-  EXPECT_TRUE(info_->feature_flags().multisampled_render_to_texture);
-  EXPECT_TRUE(info_->feature_flags().chromium_framebuffer_multisample);
 }
 
 }  // namespace gles2

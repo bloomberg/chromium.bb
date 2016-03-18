@@ -10188,6 +10188,42 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 }
 
+class MsaaIsSlowLayerTreeHostImplTest : public LayerTreeHostImplTest {
+ public:
+  void CreateHostImplWithMsaaIsSlow(bool msaa_is_slow) {
+    LayerTreeSettings settings = DefaultSettings();
+    settings.gpu_rasterization_enabled = true;
+    settings.gpu_rasterization_msaa_sample_count = 4;
+    auto context_provider = TestContextProvider::Create();
+    context_provider->UnboundTestContext3d()->SetMaxSamples(4);
+    context_provider->UnboundTestContext3d()->set_msaa_is_slow(msaa_is_slow);
+    auto msaa_is_normal_output_surface =
+        FakeOutputSurface::Create3d(context_provider);
+    EXPECT_TRUE(
+        CreateHostImpl(settings, std::move(msaa_is_normal_output_surface)));
+  }
+};
+
+TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
+  // Ensure that without the msaa_is_slow cap we raster unsuitable content with
+  // msaa.
+  CreateHostImplWithMsaaIsSlow(false);
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
+            host_impl_->gpu_rasterization_status());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+
+  // Ensure that with the msaa_is_slow cap we don't raster unsuitable content
+  // with msaa.
+  CreateHostImplWithMsaaIsSlow(true);
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
+            host_impl_->gpu_rasterization_status());
+  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+}
+
 // A mock output surface which lets us detect calls to ForceReclaimResources.
 class MockReclaimResourcesOutputSurface : public FakeOutputSurface {
  public:

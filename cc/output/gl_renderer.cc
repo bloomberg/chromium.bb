@@ -373,7 +373,13 @@ GLRenderer::GLRenderer(RendererClient* client,
       context_caps.gpu.discard_framebuffer;
 
   capabilities_.allow_rasterize_on_demand = true;
-  capabilities_.max_msaa_samples = context_caps.gpu.max_samples;
+
+  // If MSAA is slow, we want this renderer to behave as though MSAA is not
+  // available. Set samples to 0 to achieve this.
+  if (context_caps.gpu.msaa_is_slow)
+    capabilities_.max_msaa_samples = 0;
+  else
+    capabilities_.max_msaa_samples = context_caps.gpu.max_samples;
 
   use_sync_query_ = context_caps.gpu.sync_query;
   use_blend_equation_advanced_ = context_caps.gpu.blend_equation_advanced;
