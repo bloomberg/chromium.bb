@@ -270,6 +270,9 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
   // to retrieve media data chunks while running in a https page. This pref
   // should be disabled once all the content providers are no longer doing that.
   prefs->allow_running_insecure_content = true;
+
+  // Enable 5% margins for WebVTT cues to keep within title-safe area
+  prefs->text_track_margin_percentage = 5;
 }
 
 void CastContentBrowserClient::ResourceDispatcherHostCreated() {

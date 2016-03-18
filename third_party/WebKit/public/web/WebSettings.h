@@ -229,6 +229,7 @@ public:
     virtual void setTextTrackFontFamily(const WebString&) = 0;
     virtual void setTextTrackFontStyle(const WebString&) = 0;
     virtual void setTextTrackFontVariant(const WebString&) = 0;
+    virtual void setTextTrackMarginPercentage(float) = 0;
     virtual void setTextTrackTextColor(const WebString&) = 0;
     virtual void setTextTrackTextShadow(const WebString&) = 0;
     virtual void setTextTrackTextSize(const WebString&) = 0;

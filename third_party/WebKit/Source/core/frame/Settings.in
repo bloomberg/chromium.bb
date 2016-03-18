@@ -352,6 +352,10 @@ textTrackTextColor type=String
 textTrackTextShadow type=String
 textTrackTextSize type=String
 
+# Margin for title-safe placement of cues with overscan, gives top and bottom margin size as
+# percentage of video element height (for horizontal text) into which cues will not be placed.
+textTrackMarginPercentage type=double, initial=0
+
 lowPriorityIframes initial=false
 
 reportWheelOverscroll initial=false

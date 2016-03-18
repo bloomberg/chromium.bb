@@ -1052,6 +1052,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setPresentationRequiresUserGesture(
       prefs.user_gesture_required_for_presentation);
 
+  settings->setTextTrackMarginPercentage(prefs.text_track_margin_percentage);
+
   // Needs to happen before setIgnoreVIewportTagScaleLimits below.
   web_view->setDefaultPageScaleLimits(
       prefs.default_minimum_page_scale_factor,

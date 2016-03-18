@@ -192,6 +192,11 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool user_gesture_required_for_presentation;
 
+  // Specifies the margin for WebVTT text tracks as a percentage of media
+  // element height/width (for horizontal/vertical text respectively).
+  // Cues will not be placed in this margin area.
+  float text_track_margin_percentage;
+
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;
   float font_scale_factor;

@@ -25,9 +25,11 @@
 
 #include "core/layout/LayoutVTTCue.h"
 
+#include "core/frame/Settings.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutState.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -43,16 +45,19 @@ public:
     SnapToLinesLayouter(LayoutVTTCue& cueBox, const IntRect& controlsRect)
         : m_cueBox(cueBox)
         , m_controlsRect(controlsRect)
+        , m_margin(0.0)
     {
+        if (Settings* settings = m_cueBox.document().settings())
+            m_margin = settings->textTrackMarginPercentage() / 100.0;
     }
 
     void layout();
 
 private:
-    bool isOutside() const;
+    bool isOutside(const IntRect&) const;
     bool isOverlapping() const;
-    LayoutUnit computeInitialPositionAdjustment(LayoutUnit&) const;
-    bool shouldSwitchDirection(InlineFlowBox*, LayoutUnit) const;
+    LayoutUnit computeInitialPositionAdjustment(LayoutUnit&, LayoutUnit, LayoutUnit) const;
+    bool shouldSwitchDirection(InlineFlowBox*, LayoutUnit, LayoutUnit) const;
 
     void moveBoxesBy(LayoutUnit distance)
     {
@@ -64,6 +69,7 @@ private:
     LayoutPoint m_specifiedPosition;
     LayoutVTTCue& m_cueBox;
     IntRect m_controlsRect;
+    double m_margin;
 };
 
 InlineFlowBox* SnapToLinesLayouter::findFirstLineBox() const
@@ -73,7 +79,8 @@ InlineFlowBox* SnapToLinesLayouter::findFirstLineBox() const
     return toLayoutInline(m_cueBox.firstChild())->firstLineBox();
 }
 
-LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& step) const
+LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& step, LayoutUnit maxDimension,
+    LayoutUnit margin) const
 {
     ASSERT(std::isfinite(m_cueBox.snapToLinesPosition()));
 
@@ -98,20 +105,21 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
 
     // 11. If line is less than zero...
     if (linePosition < 0) {
-        LayoutBlock* parentBlock = m_cueBox.containingBlock();
-
         // ... then increase position by max dimension ...
-        position += blink::isHorizontalWritingMode(writingMode) ? parentBlock->size().height() : parentBlock->size().width();
+        position += maxDimension;
 
         // ... and negate step.
         step = -step;
+    } else {
+        // ... Otherwise, increase position by margin.
+        position += margin;
     }
     return position;
 }
 
-bool SnapToLinesLayouter::isOutside() const
+bool SnapToLinesLayouter::isOutside(const IntRect& titleArea) const
 {
-    return !m_cueBox.containingBlock()->absoluteBoundingBoxRect().contains(m_cueBox.absoluteContentBox());
+    return !titleArea.contains(m_cueBox.absoluteContentBox());
 }
 
 bool SnapToLinesLayouter::isOverlapping() const
@@ -130,7 +138,7 @@ bool SnapToLinesLayouter::isOverlapping() const
     return false;
 }
 
-bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit step) const
+bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit step, LayoutUnit margin) const
 {
     // 17. Horizontal: If step is negative and the top of the first line box in
     // boxes is now above the top of the title area, or if step is positive and
@@ -142,9 +150,9 @@ bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox, Lay
     // now to the right of the right edge of the title area, jump to the step
     // labeled switch direction.
     LayoutUnit logicalTop = m_cueBox.logicalTop();
-    if (step < 0 && logicalTop < 0)
+    if (step < 0 && logicalTop < margin)
         return true;
-    if (step > 0 && logicalTop + firstLineBox->logicalHeight() > m_cueBox.containingBlock()->logicalHeight())
+    if (step > 0 && logicalTop + firstLineBox->logicalHeight() + margin > m_cueBox.containingBlock()->logicalHeight())
         return true;
     return false;
 }
@@ -158,7 +166,22 @@ void SnapToLinesLayouter::layout()
     if (!firstLineBox)
         return;
 
-    // Steps 1-3 skipped.
+    // 1. Horizontal: Let margin be a user-agent-defined vertical length which
+    // will be used to define a margin at the top and bottom edges of the video
+    // into which cues will not be placed.
+    //    Vertical: Let margin be a user-agent-defined horizontal length which
+    // will be used to define a margin at the top and bottom edges of the video
+    // into which cues will not be placed.
+    // 2. Horizontal: Let full dimension be the height of video's rendering area
+    //    Vertical: Let full dimension be the width of video's rendering area.
+    WritingMode writingMode = m_cueBox.style()->getWritingMode();
+    LayoutBlock* parentBlock = m_cueBox.containingBlock();
+    LayoutUnit fullDimension = blink::isHorizontalWritingMode(writingMode) ? parentBlock->size().height() : parentBlock->size().width();
+    LayoutUnit margin(fullDimension * m_margin);
+
+    // 3. Let max dimension be full dimension - (2 * margin)
+    LayoutUnit maxDimension = fullDimension - 2 * margin;
+
     // 4. Horizontal: Let step be the height of the first line box in boxes.
     //    Vertical: Let step be the width of the first line box in boxes.
     LayoutUnit step = firstLineBox->logicalHeight();
@@ -168,7 +191,7 @@ void SnapToLinesLayouter::layout()
         return;
 
     // Steps 6-11.
-    LayoutUnit positionAdjustment = computeInitialPositionAdjustment(step);
+    LayoutUnit positionAdjustment = computeInitialPositionAdjustment(step, maxDimension, margin);
 
     // 12. Move all boxes in boxes ...
     // Horizontal: ... down by the distance given by position
@@ -182,16 +205,29 @@ void SnapToLinesLayouter::layout()
     // XX. Let switched be false.
     bool switched = false;
 
-    // Step 14 skipped. (margin == 0; title area == video area)
+    // 14. Horizontal: Let title area be a box that covers all of the video's
+    // rendering area except for a height of margin at the top of the rendering
+    // area and a height of margin at the bottom of the rendering area.
+    // Vertical: Let title area be a box that covers all of the video’s
+    // rendering area except for a width of margin at the left of the rendering
+    // area and a width of margin at the right of the rendering area.
+    IntRect titleArea = m_cueBox.containingBlock()->absoluteBoundingBoxRect();
+    if (blink::isHorizontalWritingMode(writingMode)) {
+        titleArea.move(0, margin);
+        titleArea.contract(0, 2 * margin);
+    } else {
+        titleArea.move(margin, 0);
+        titleArea.contract(2 * margin, 0);
+    }
 
     // 15. Step loop: If none of the boxes in boxes would overlap any of the
     // boxes in output, and all of the boxes in output are entirely within the
     // title area box, then jump to the step labeled done positioning below.
-    while (isOutside() || isOverlapping()) {
+    while (isOutside(titleArea) || isOverlapping()) {
         // 16. Let current position score be the percentage of the area of the
         // bounding box of the boxes in boxes that is outside the title area
         // box.
-        if (!shouldSwitchDirection(firstLineBox, step)) {
+        if (!shouldSwitchDirection(firstLineBox, step, margin)) {
             // 18. Horizontal: Move all the boxes in boxes down by the distance
             // given by step. (If step is negative, then this will actually
             // result in an upwards movement of the boxes in absolute terms.)

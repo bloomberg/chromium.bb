@@ -169,6 +169,7 @@ public:
     void setTextTrackFontFamily(const WebString&) override;
     void setTextTrackFontStyle(const WebString&) override;
     void setTextTrackFontVariant(const WebString&) override;
+    void setTextTrackMarginPercentage(float) override;
     void setTextTrackTextColor(const WebString&) override;
     void setTextTrackTextShadow(const WebString&) override;
     void setTextTrackTextSize(const WebString&) override;

@@ -407,6 +407,11 @@ void WebSettingsImpl::setTextTrackFontVariant(const WebString& fontVariant)
     m_settings->setTextTrackFontVariant(fontVariant);
 }
 
+void WebSettingsImpl::setTextTrackMarginPercentage(float percentage)
+{
+    m_settings->setTextTrackMarginPercentage(percentage);
+}
+
 void WebSettingsImpl::setTextTrackTextColor(const WebString& color)
 {
     m_settings->setTextTrackTextColor(color);
