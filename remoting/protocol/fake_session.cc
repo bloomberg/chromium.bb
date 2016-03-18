@@ -13,6 +13,7 @@ namespace remoting {
 namespace protocol {
 
 const char kTestJid[] = "host1@gmail.com/chromoting123";
+const char kTestAuthKey[] = "test_auth_key";
 
 FakeSession::FakeSession()
     : config_(SessionConfig::ForTest()), jid_(kTestJid), weak_factory_(this) {}
@@ -32,6 +33,7 @@ void FakeSession::SimulateConnection(FakeSession* peer) {
   // Initialize transport and authenticator on the client.
   authenticator_.reset(new FakeAuthenticator(FakeAuthenticator::CLIENT, 0,
                                              FakeAuthenticator::ACCEPT, false));
+  authenticator_->set_auth_key(kTestAuthKey);
   transport_->Start(authenticator_.get(),
                     base::Bind(&FakeSession::SendTransportInfo,
                                weak_factory_.GetWeakPtr()));
@@ -39,6 +41,7 @@ void FakeSession::SimulateConnection(FakeSession* peer) {
   // Initialize transport and authenticator on the host.
   peer->authenticator_.reset(new FakeAuthenticator(
       FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, false));
+  peer->authenticator_->set_auth_key(kTestAuthKey);
   peer->transport_->Start(peer->authenticator_.get(),
                           base::Bind(&FakeSession::SendTransportInfo, peer_));
 

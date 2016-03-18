@@ -29,14 +29,14 @@ class FakeChannelAuthenticator : public ChannelAuthenticator {
 
   void CallDoneCallback();
 
-  int result_;
-  bool async_;
+  const int result_;
+  const bool async_;
 
   scoped_ptr<P2PStreamSocket> socket_;
   DoneCallback done_callback_;
 
-  bool did_read_bytes_;
-  bool did_write_bytes_;
+  bool did_read_bytes_ = false;
+  bool did_write_bytes_ = false;
 
   base::WeakPtrFactory<FakeChannelAuthenticator> weak_factory_;
 
@@ -64,6 +64,10 @@ class FakeAuthenticator : public Authenticator {
   // started() returns true.  Default to 0.
   void set_messages_till_started(int messages);
 
+  // Sets auth key to be returned by GetAuthKey(). Must be called when
+  // |round_trips| is set to 0.
+  void set_auth_key(const std::string& auth_key) { auth_key_ = auth_key; }
+
   // Authenticator interface.
   State state() const override;
   bool started() const override;
@@ -75,16 +79,16 @@ class FakeAuthenticator : public Authenticator {
   scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
 
  protected:
-  Type type_;
-  int round_trips_;
-  Action action_;
-  bool async_;
+  const Type type_;
+  const int round_trips_;
+  const Action action_;
+  const bool async_;
 
   // Total number of messages that have been processed.
-  int messages_;
+  int messages_ = 0;
   // Number of messages that the authenticator needs to process before started()
   // returns true.  Default to 0.
-  int messages_till_started_;
+  int messages_till_started_ = 0;
 
   std::string auth_key_;
 
@@ -104,10 +108,10 @@ class FakeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& remote_jid) override;
 
  private:
-  int round_trips_;
-  int messages_till_started_;
-  FakeAuthenticator::Action action_;
-  bool async_;
+  const int round_trips_;
+  const int messages_till_started_;
+  const FakeAuthenticator::Action action_;
+  const bool async_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeHostAuthenticatorFactory);
 };

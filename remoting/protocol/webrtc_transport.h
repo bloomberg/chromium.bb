@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "crypto/hmac.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
 #include "remoting/signaling/signal_strategy.h"
@@ -115,6 +116,8 @@ class WebrtcTransport : public Transport,
   scoped_refptr<TransportContext> transport_context_;
   EventHandler* event_handler_ = nullptr;
   SendTransportInfoCallback send_transport_info_callback_;
+
+  crypto::HMAC handshake_hmac_;
 
   scoped_ptr<webrtc::FakeAudioDeviceModule> fake_audio_device_module_;
 

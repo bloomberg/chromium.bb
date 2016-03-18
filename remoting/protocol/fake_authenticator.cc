@@ -24,13 +24,9 @@ namespace protocol {
 FakeChannelAuthenticator::FakeChannelAuthenticator(bool accept, bool async)
     : result_(accept ? net::OK : net::ERR_FAILED),
       async_(async),
-      did_read_bytes_(false),
-      did_write_bytes_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
-FakeChannelAuthenticator::~FakeChannelAuthenticator() {
-}
+FakeChannelAuthenticator::~FakeChannelAuthenticator() {}
 
 void FakeChannelAuthenticator::SecureAndAuthenticate(
     scoped_ptr<P2PStreamSocket> socket,
@@ -96,16 +92,9 @@ FakeAuthenticator::FakeAuthenticator(Type type,
                                      int round_trips,
                                      Action action,
                                      bool async)
-    : type_(type),
-      round_trips_(round_trips),
-      action_(action),
-      async_(async),
-      messages_(0),
-      messages_till_started_(0) {
-}
+    : type_(type), round_trips_(round_trips), action_(action), async_(async) {}
 
-FakeAuthenticator::~FakeAuthenticator() {
-}
+FakeAuthenticator::~FakeAuthenticator() {}
 
 void FakeAuthenticator::set_messages_till_started(int messages) {
   messages_till_started_ = messages;
@@ -192,6 +181,7 @@ scoped_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {
 
 const std::string& FakeAuthenticator::GetAuthKey() const {
   EXPECT_EQ(ACCEPTED, state());
+  DCHECK(!auth_key_.empty());
   return auth_key_;
 }
 
@@ -203,13 +193,14 @@ FakeAuthenticator::CreateChannelAuthenticator() const {
 }
 
 FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(
-    int round_trips, int messages_till_started,
-    FakeAuthenticator::Action action, bool async)
+    int round_trips,
+    int messages_till_started,
+    FakeAuthenticator::Action action,
+    bool async)
     : round_trips_(round_trips),
       messages_till_started_(messages_till_started),
-      action_(action), async_(async) {
-}
-
+      action_(action),
+      async_(async) {}
 FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() {}
 
 scoped_ptr<Authenticator> FakeHostAuthenticatorFactory::CreateAuthenticator(

@@ -28,6 +28,7 @@ namespace protocol {
 namespace {
 
 const char kChannelName[] = "test_channel";
+const char kAuthKey[] = "test_auth_key";
 
 class TestTransportEventHandler : public WebrtcTransport::EventHandler {
  public:
@@ -95,8 +96,8 @@ class WebrtcTransportTest : public testing::Test {
   void ProcessTransportInfo(scoped_ptr<WebrtcTransport>* target_transport,
                             scoped_ptr<buzz::XmlElement> transport_info) {
     ASSERT_TRUE(target_transport);
-    EXPECT_TRUE((*target_transport)
-                    ->ProcessTransportInfo(transport_info.get()));
+    EXPECT_TRUE(
+        (*target_transport)->ProcessTransportInfo(transport_info.get()));
   }
 
   void InitializeConnection() {
@@ -106,6 +107,7 @@ class WebrtcTransportTest : public testing::Test {
                             &host_event_handler_));
     host_authenticator_.reset(new FakeAuthenticator(
         FakeAuthenticator::HOST, 0, FakeAuthenticator::ACCEPT, false));
+    host_authenticator_->set_auth_key(kAuthKey);
 
     client_transport_.reset(
         new WebrtcTransport(jingle_glue::JingleThreadWrapper::current(),
@@ -113,6 +115,7 @@ class WebrtcTransportTest : public testing::Test {
                             &client_event_handler_));
     client_authenticator_.reset(new FakeAuthenticator(
         FakeAuthenticator::CLIENT, 0, FakeAuthenticator::ACCEPT, false));
+    client_authenticator_->set_auth_key(kAuthKey);
   }
 
   void StartConnection() {
@@ -231,6 +234,17 @@ TEST_F(WebrtcTransportTest, Connects) {
   InitializeConnection();
   StartConnection();
   WaitUntilConnected();
+}
+
+TEST_F(WebrtcTransportTest, InvalidAuthKey) {
+  InitializeConnection();
+  client_authenticator_->set_auth_key("Incorrect Key");
+  StartConnection();
+
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+
+  EXPECT_EQ(AUTHENTICATION_FAILED, client_error_);
 }
 
 TEST_F(WebrtcTransportTest, DataStream) {
