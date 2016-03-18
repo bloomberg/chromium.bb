@@ -29,6 +29,7 @@
 #pragma warning(disable : 4996)
 #endif
 
+namespace libwebm {
 namespace mkvmuxer {
 
 const float MasteringMetadata::kValueNotPresent = FLT_MAX;
@@ -121,7 +122,7 @@ bool WriteEbmlHeader(IMkvWriter* writer) {
 }
 
 bool ChunkedCopy(mkvparser::IMkvReader* source, mkvmuxer::IMkvWriter* dst,
-                 mkvmuxer::int64 start, int64 size) {
+                 int64 start, int64 size) {
   // TODO(vigneshv): Check if this is a reasonable value.
   const uint32 kBufSize = 2048;
   uint8* buf = new uint8[kBufSize];
@@ -3595,3 +3596,4 @@ bool Segment::WriteFramesLessThan(uint64 timestamp) {
 }
 
 }  // namespace mkvmuxer
+}  // namespace libwebm

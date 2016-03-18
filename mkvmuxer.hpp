@@ -17,9 +17,11 @@
 // For a description of the WebM elements see
 // http://www.webmproject.org/code/specs/container/.
 
+namespace libwebm {
+
 namespace mkvparser {
 class IMkvReader;
-}  // end namespace
+}  // namespace mkvparser
 
 namespace mkvmuxer {
 
@@ -1610,6 +1612,7 @@ class Segment {
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Segment);
 };
 
-}  // end namespace mkvmuxer
+}  // namespace mkvmuxer
+}  // namespace libwebm
 
 #endif  // MKVMUXER_HPP

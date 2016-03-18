@@ -28,9 +28,6 @@
 
 #include "sample_muxer_metadata.h"
 
-using mkvmuxer::int64;
-using mkvmuxer::uint64;
-
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
 #pragma warning(disable : 4996)
@@ -82,14 +79,14 @@ void Usage() {
 
 struct MetadataFile {
   const char* name;
-  SampleMuxerMetadata::Kind kind;
+  libwebm::SampleMuxerMetadata::Kind kind;
 };
 
 typedef std::list<MetadataFile> metadata_files_t;
 
 // Cache the WebVTT filenames specified as command-line args.
 bool LoadMetadataFiles(const metadata_files_t& files,
-                       SampleMuxerMetadata* metadata) {
+                       libwebm::SampleMuxerMetadata* metadata) {
   typedef metadata_files_t::const_iterator iter_t;
 
   iter_t i = files.begin();
@@ -112,14 +109,14 @@ int ParseArgWebVTT(char* argv[], int* argv_index, int argc_check,
   enum { kCount = 5 };
   struct Arg {
     const char* name;
-    SampleMuxerMetadata::Kind kind;
+    libwebm::SampleMuxerMetadata::Kind kind;
   };
   const Arg args[kCount] = {
-      {"-webvtt-subtitles", SampleMuxerMetadata::kSubtitles},
-      {"-webvtt-captions", SampleMuxerMetadata::kCaptions},
-      {"-webvtt-descriptions", SampleMuxerMetadata::kDescriptions},
-      {"-webvtt-metadata", SampleMuxerMetadata::kMetadata},
-      {"-webvtt-chapters", SampleMuxerMetadata::kChapters}};
+      {"-webvtt-subtitles", libwebm::SampleMuxerMetadata::kSubtitles},
+      {"-webvtt-captions", libwebm::SampleMuxerMetadata::kCaptions},
+      {"-webvtt-descriptions", libwebm::SampleMuxerMetadata::kDescriptions},
+      {"-webvtt-metadata", libwebm::SampleMuxerMetadata::kMetadata},
+      {"-webvtt-chapters", libwebm::SampleMuxerMetadata::kChapters}};
 
   for (int idx = 0; idx < kCount; ++idx) {
     const Arg& arg = args[idx];
@@ -159,8 +156,8 @@ int main(int argc, char* argv[]) {
   bool cues_before_clusters = false;
   bool cues_on_video_track = true;
   bool cues_on_audio_track = false;
-  uint64 max_cluster_duration = 0;
-  uint64 max_cluster_size = 0;
+  libwebm::uint64 max_cluster_duration = 0;
+  libwebm::uint64 max_cluster_size = 0;
   bool switch_tracks = false;
   int audio_track_number = 0;  // 0 tells muxer to decide.
   int video_track_number = 0;  // 0 tells muxer to decide.
@@ -170,9 +167,9 @@ int main(int argc, char* argv[]) {
 
   bool output_cues_block_number = true;
 
-  uint64 display_width = 0;
-  uint64 display_height = 0;
-  uint64 stereo_mode = 0;
+  libwebm::uint64 display_width = 0;
+  libwebm::uint64 display_height = 0;
+  libwebm::uint64 stereo_mode = 0;
 
   metadata_files_t metadata_files;
 
@@ -207,7 +204,8 @@ int main(int argc, char* argv[]) {
         cues_on_video_track = false;
     } else if (!strcmp("-max_cluster_duration", argv[i]) && i < argc_check) {
       const double seconds = strtod(argv[++i], &end);
-      max_cluster_duration = static_cast<uint64>(seconds * 1000000000.0);
+      max_cluster_duration =
+          static_cast<libwebm::uint64>(seconds * 1000000000.0);
     } else if (!strcmp("-max_cluster_size", argv[i]) && i < argc_check) {
       max_cluster_size = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-switch_tracks", argv[i]) && i < argc_check) {
@@ -243,7 +241,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Get parser header info
-  mkvparser::MkvReader reader;
+  libwebm::mkvparser::MkvReader reader;
 
   if (reader.Open(input)) {
     printf("\n Filename is invalid or error while opening.\n");
@@ -251,28 +249,31 @@ int main(int argc, char* argv[]) {
   }
 
   long long pos = 0;
-  mkvparser::EBMLHeader ebml_header;
+  libwebm::mkvparser::EBMLHeader ebml_header;
   long long ret = ebml_header.Parse(&reader, pos);
   if (ret) {
     printf("\n EBMLHeader::Parse() failed.");
     return EXIT_FAILURE;
   }
 
-  mkvparser::Segment* parser_segment_;
-  ret = mkvparser::Segment::CreateInstance(&reader, pos, parser_segment_);
+  libwebm::mkvparser::Segment* parser_segment_;
+  ret = libwebm::mkvparser::Segment::CreateInstance(&reader, pos,
+                                                    parser_segment_);
   if (ret) {
     printf("\n Segment::CreateInstance() failed.");
     return EXIT_FAILURE;
   }
 
-  const std::auto_ptr<mkvparser::Segment> parser_segment(parser_segment_);
+  const std::auto_ptr<libwebm::mkvparser::Segment> parser_segment(
+      parser_segment_);
   ret = parser_segment->Load();
   if (ret < 0) {
     printf("\n Segment::Load() failed.");
     return EXIT_FAILURE;
   }
 
-  const mkvparser::SegmentInfo* const segment_info = parser_segment->GetInfo();
+  const libwebm::mkvparser::SegmentInfo* const segment_info =
+      parser_segment->GetInfo();
   if (segment_info == NULL) {
     printf("\n Segment::GetInfo() failed.");
     return EXIT_FAILURE;
@@ -280,7 +281,7 @@ int main(int argc, char* argv[]) {
   const long long timeCodeScale = segment_info->GetTimeCodeScale();
 
   // Set muxer header info
-  mkvmuxer::MkvWriter writer;
+  libwebm::mkvmuxer::MkvWriter writer;
 
   const std::string temp_file = libwebm::GetTempFileName();
   if (!writer.Open(cues_before_clusters ? temp_file.c_str() : output)) {
@@ -289,7 +290,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Set Segment element attributes
-  mkvmuxer::Segment muxer_segment;
+  libwebm::mkvmuxer::Segment muxer_segment;
 
   if (!muxer_segment.Init(&writer)) {
     printf("\n Could not initialize muxer segment!\n");
@@ -297,9 +298,9 @@ int main(int argc, char* argv[]) {
   }
 
   if (live_mode)
-    muxer_segment.set_mode(mkvmuxer::Segment::kLive);
+    muxer_segment.set_mode(libwebm::mkvmuxer::Segment::kLive);
   else
-    muxer_segment.set_mode(mkvmuxer::Segment::kFile);
+    muxer_segment.set_mode(libwebm::mkvmuxer::Segment::kFile);
 
   if (chunking)
     muxer_segment.SetChunking(true, chunk_name);
@@ -311,18 +312,18 @@ int main(int argc, char* argv[]) {
   muxer_segment.OutputCues(output_cues);
 
   // Set SegmentInfo element attributes
-  mkvmuxer::SegmentInfo* const info = muxer_segment.GetSegmentInfo();
+  libwebm::mkvmuxer::SegmentInfo* const info = muxer_segment.GetSegmentInfo();
   info->set_timecode_scale(timeCodeScale);
   info->set_writing_app("sample_muxer");
 
-  const mkvparser::Tags* const tags = parser_segment->GetTags();
+  const libwebm::mkvparser::Tags* const tags = parser_segment->GetTags();
   if (copy_tags && tags) {
     for (int i = 0; i < tags->GetTagCount(); i++) {
-      const mkvparser::Tags::Tag* const tag = tags->GetTag(i);
-      mkvmuxer::Tag* muxer_tag = muxer_segment.AddTag();
+      const libwebm::mkvparser::Tags::Tag* const tag = tags->GetTag(i);
+      libwebm::mkvmuxer::Tag* muxer_tag = muxer_segment.AddTag();
 
       for (int j = 0; j < tag->GetSimpleTagCount(); j++) {
-        const mkvparser::Tags::SimpleTag* const simple_tag =
+        const libwebm::mkvparser::Tags::SimpleTag* const simple_tag =
             tag->GetSimpleTag(j);
         muxer_tag->add_simple_tag(simple_tag->GetTagName(),
                                   simple_tag->GetTagString());
@@ -331,20 +332,20 @@ int main(int argc, char* argv[]) {
   }
 
   // Set Tracks element attributes
-  const mkvparser::Tracks* const parser_tracks = parser_segment->GetTracks();
+  const libwebm::mkvparser::Tracks* const parser_tracks =
+      parser_segment->GetTracks();
   unsigned long i = 0;
-  uint64 vid_track = 0;  // no track added
-  uint64 aud_track = 0;  // no track added
+  libwebm::uint64 vid_track = 0;  // no track added
+  libwebm::uint64 aud_track = 0;  // no track added
 
-  using mkvparser::Track;
+  using libwebm::mkvparser::Track;
 
   while (i != parser_tracks->GetTracksCount()) {
     int track_num = i++;
     if (switch_tracks)
       track_num = i % parser_tracks->GetTracksCount();
 
-    const mkvparser::Track* const parser_track =
-        parser_tracks->GetTrackByIndex(track_num);
+    const Track* const parser_track = parser_tracks->GetTrackByIndex(track_num);
 
     if (parser_track == NULL)
       continue;
@@ -356,8 +357,8 @@ int main(int argc, char* argv[]) {
 
     if (track_type == Track::kVideo && output_video) {
       // Get the video track from the parser
-      const mkvparser::VideoTrack* const pVideoTrack =
-          static_cast<const mkvparser::VideoTrack*>(parser_track);
+      const libwebm::mkvparser::VideoTrack* const pVideoTrack =
+          static_cast<const libwebm::mkvparser::VideoTrack*>(parser_track);
       const long long width = pVideoTrack->GetWidth();
       const long long height = pVideoTrack->GetHeight();
 
@@ -370,15 +371,16 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
       }
 
-      mkvmuxer::VideoTrack* const video = static_cast<mkvmuxer::VideoTrack*>(
-          muxer_segment.GetTrackByNumber(vid_track));
+      libwebm::mkvmuxer::VideoTrack* const video =
+          static_cast<libwebm::mkvmuxer::VideoTrack*>(
+              muxer_segment.GetTrackByNumber(vid_track));
       if (!video) {
         printf("\n Could not get video track.\n");
         return EXIT_FAILURE;
       }
 
       if (pVideoTrack->GetColour()) {
-        mkvmuxer::Colour muxer_colour;
+        libwebm::mkvmuxer::Colour muxer_colour;
         if (!libwebm::CopyColour(*pVideoTrack->GetColour(), &muxer_colour))
           return EXIT_FAILURE;
         if (!video->SetColour(muxer_colour))
@@ -403,8 +405,8 @@ int main(int argc, char* argv[]) {
       }
     } else if (track_type == Track::kAudio && output_audio) {
       // Get the audio track from the parser
-      const mkvparser::AudioTrack* const pAudioTrack =
-          static_cast<const mkvparser::AudioTrack*>(parser_track);
+      const libwebm::mkvparser::AudioTrack* const pAudioTrack =
+          static_cast<const libwebm::mkvparser::AudioTrack*>(parser_track);
       const long long channels = pAudioTrack->GetChannels();
       const double sample_rate = pAudioTrack->GetSamplingRate();
 
@@ -417,8 +419,9 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
       }
 
-      mkvmuxer::AudioTrack* const audio = static_cast<mkvmuxer::AudioTrack*>(
-          muxer_segment.GetTrackByNumber(aud_track));
+      libwebm::mkvmuxer::AudioTrack* const audio =
+          static_cast<libwebm::mkvmuxer::AudioTrack*>(
+              muxer_segment.GetTrackByNumber(aud_track));
       if (!audio) {
         printf("\n Could not get audio track.\n");
         return EXIT_FAILURE;
@@ -455,7 +458,7 @@ int main(int argc, char* argv[]) {
   // add a track to the output file corresponding to each metadata
   // input file.
 
-  SampleMuxerMetadata metadata;
+  libwebm::SampleMuxerMetadata metadata;
 
   if (!metadata.Init(&muxer_segment)) {
     printf("\n Could not initialize metadata cache.\n");
@@ -469,7 +472,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
 
   // Set Cues element attributes
-  mkvmuxer::Cues* const cues = muxer_segment.GetCues();
+  libwebm::mkvmuxer::Cues* const cues = muxer_segment.GetCues();
   cues->set_output_block_number(output_cues_block_number);
   if (cues_on_video_track && vid_track)
     muxer_segment.CuesTrack(vid_track);
@@ -480,10 +483,10 @@ int main(int argc, char* argv[]) {
   unsigned char* data = NULL;
   int data_len = 0;
 
-  const mkvparser::Cluster* cluster = parser_segment->GetFirst();
+  const libwebm::mkvparser::Cluster* cluster = parser_segment->GetFirst();
 
   while ((cluster != NULL) && !cluster->EOS()) {
-    const mkvparser::BlockEntry* block_entry;
+    const libwebm::mkvparser::BlockEntry* block_entry;
 
     long status = cluster->GetFirst(block_entry);
 
@@ -493,9 +496,9 @@ int main(int argc, char* argv[]) {
     }
 
     while ((block_entry != NULL) && !block_entry->EOS()) {
-      const mkvparser::Block* const block = block_entry->GetBlock();
+      const libwebm::mkvparser::Block* const block = block_entry->GetBlock();
       const long long trackNum = block->GetTrackNumber();
-      const mkvparser::Track* const parser_track =
+      const libwebm::mkvparser::Track* const parser_track =
           parser_tracks->GetTrackByNumber(static_cast<unsigned long>(trackNum));
 
       // When |parser_track| is NULL, it means that the track number in the
@@ -518,7 +521,7 @@ int main(int argc, char* argv[]) {
         const int frame_count = block->GetFrameCount();
 
         for (int i = 0; i < frame_count; ++i) {
-          const mkvparser::Block::Frame& frame = block->GetFrame(i);
+          const libwebm::mkvparser::Block::Frame& frame = block->GetFrame(i);
 
           if (frame.len > data_len) {
             delete[] data;
@@ -531,7 +534,7 @@ int main(int argc, char* argv[]) {
           if (frame.Read(&reader, data))
             return EXIT_FAILURE;
 
-          mkvmuxer::Frame muxer_frame;
+          libwebm::mkvmuxer::Frame muxer_frame;
           if (!muxer_frame.Init(data, frame.len))
             return EXIT_FAILURE;
           muxer_frame.set_track_number(track_type == Track::kAudio ? aud_track :

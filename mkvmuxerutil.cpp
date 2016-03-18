@@ -29,6 +29,7 @@
 #pragma warning(disable : 4996)
 #endif
 
+namespace libwebm {
 namespace mkvmuxer {
 
 namespace {
@@ -592,9 +593,7 @@ void GetVersion(int32* major, int32* minor, int32* build, int32* revision) {
   *revision = 0;
 }
 
-}  // namespace mkvmuxer
-
-mkvmuxer::uint64 mkvmuxer::MakeUID(unsigned int* seed) {
+uint64 MakeUID(unsigned int* seed) {
   uint64 uid = 0;
 
 #ifdef __MINGW32__
@@ -628,3 +627,6 @@ mkvmuxer::uint64 mkvmuxer::MakeUID(unsigned int* seed) {
 
   return uid;
 }
+
+}  // namespace mkvmuxer
+}  // namespace libwebm

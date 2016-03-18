@@ -14,6 +14,7 @@
 #include "mkvmuxer.hpp"
 #include "mkvmuxertypes.hpp"
 
+namespace libwebm {
 namespace mkvmuxer {
 
 // Default implementation of the IMkvWriter interface on Windows.
@@ -46,6 +47,7 @@ class MkvWriter : public IMkvWriter {
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(MkvWriter);
 };
 
-}  // end namespace mkvmuxer
+}  // namespace mkvmuxer
+}  // namespace libwebm
 
 #endif  // MKVWRITER_HPP

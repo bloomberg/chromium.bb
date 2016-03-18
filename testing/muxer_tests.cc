@@ -14,8 +14,8 @@
 #include <ostream>
 #include <string>
 
-#include "gtest/gtest.h"
 #include "gtest/gtest-message.h"
+#include "gtest/gtest.h"
 
 #include "mkvmuxer.hpp"
 #include "mkvmuxertypes.hpp"
@@ -31,14 +31,14 @@
 #pragma warning(disable : 4996)
 #endif
 
-using ::mkvmuxer::AudioTrack;
-using ::mkvmuxer::Chapter;
-using ::mkvmuxer::Frame;
-using ::mkvmuxer::MkvWriter;
-using ::mkvmuxer::Segment;
-using ::mkvmuxer::SegmentInfo;
-using ::mkvmuxer::Track;
-using ::mkvmuxer::VideoTrack;
+using libwebm::mkvmuxer::AudioTrack;
+using libwebm::mkvmuxer::Chapter;
+using libwebm::mkvmuxer::Frame;
+using libwebm::mkvmuxer::MkvWriter;
+using libwebm::mkvmuxer::Segment;
+using libwebm::mkvmuxer::SegmentInfo;
+using libwebm::mkvmuxer::Track;
+using libwebm::mkvmuxer::VideoTrack;
 
 namespace libwebm {
 namespace test {
@@ -123,8 +123,7 @@ TEST_F(MuxerTest, SegmentInfo) {
   info->set_duration(2.345);
   EXPECT_STREQ(kAppString, info->muxing_app());
   EXPECT_STREQ(kAppString, info->writing_app());
-  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kTimeCodeScale),
-            info->timecode_scale());
+  EXPECT_EQ(static_cast<uint64>(kTimeCodeScale), info->timecode_scale());
   EXPECT_DOUBLE_EQ(2.345, info->duration());
   AddVideoTrack();
 
@@ -142,19 +141,19 @@ TEST_F(MuxerTest, AddTracks) {
   VideoTrack* const video =
       dynamic_cast<VideoTrack*>(segment_.GetTrackByNumber(kVideoTrackNumber));
   ASSERT_TRUE(video != NULL);
-  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kWidth), video->width());
-  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kHeight), video->height());
+  EXPECT_EQ(static_cast<uint64>(kWidth), video->width());
+  EXPECT_EQ(static_cast<uint64>(kHeight), video->height());
   video->set_name(kTrackName);
   video->set_display_width(kWidth - 10);
   video->set_display_height(kHeight - 10);
   video->set_frame_rate(0.5);
   EXPECT_STREQ(kTrackName, video->name());
-  const mkvmuxer::uint64 kDisplayWidth = kWidth - 10;
+  const uint64 kDisplayWidth = kWidth - 10;
   EXPECT_EQ(kDisplayWidth, video->display_width());
-  const mkvmuxer::uint64 kDisplayHeight = kHeight - 10;
+  const uint64 kDisplayHeight = kHeight - 10;
   EXPECT_EQ(kDisplayHeight, video->display_height());
   EXPECT_DOUBLE_EQ(0.5, video->frame_rate());
-  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kVideoTrackNumber), video->uid());
+  EXPECT_EQ(static_cast<uint64>(kVideoTrackNumber), video->uid());
 
   // Add an Audio Track
   const int aud_track =
@@ -163,14 +162,14 @@ TEST_F(MuxerTest, AddTracks) {
   AudioTrack* const audio =
       dynamic_cast<AudioTrack*>(segment_.GetTrackByNumber(aud_track));
   EXPECT_EQ(kSampleRate, audio->sample_rate());
-  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kChannels), audio->channels());
+  EXPECT_EQ(static_cast<uint64>(kChannels), audio->channels());
   ASSERT_TRUE(audio != NULL);
   audio->set_name(kTrackName);
   audio->set_bit_depth(kBitDepth);
   audio->set_uid(kAudioTrackNumber);
   EXPECT_STREQ(kTrackName, audio->name());
-  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kBitDepth), audio->bit_depth());
-  EXPECT_EQ(static_cast<mkvmuxer::uint64>(kAudioTrackNumber), audio->uid());
+  EXPECT_EQ(static_cast<uint64>(kBitDepth), audio->bit_depth());
+  EXPECT_EQ(static_cast<uint64>(kAudioTrackNumber), audio->uid());
 
   AddDummyFrameAndFinalize(kVideoTrackNumber);
   CloseWriter();
@@ -488,7 +487,7 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
 TEST_F(MuxerTest, MaxClusterSize) {
   EXPECT_TRUE(SegmentInit(false));
   AddVideoTrack();
-  const mkvmuxer::uint64 kMaxClusterSize = 20;
+  const uint64 kMaxClusterSize = 20;
   segment_.set_max_cluster_size(kMaxClusterSize);
   EXPECT_EQ(kMaxClusterSize, segment_.max_cluster_size());
   EXPECT_TRUE(segment_.AddFrame(dummy_data_, 1, kVideoTrackNumber, 0, false));
@@ -513,7 +512,7 @@ TEST_F(MuxerTest, MaxClusterSize) {
 TEST_F(MuxerTest, MaxClusterDuration) {
   EXPECT_TRUE(SegmentInit(false));
   AddVideoTrack();
-  const mkvmuxer::uint64 kMaxClusterDuration = 4000000;
+  const uint64 kMaxClusterDuration = 4000000;
   segment_.set_max_cluster_duration(kMaxClusterDuration);
 
   EXPECT_EQ(kMaxClusterDuration, segment_.max_cluster_duration());
@@ -538,9 +537,9 @@ TEST_F(MuxerTest, MaxClusterDuration) {
 }
 
 TEST_F(MuxerTest, SetCuesTrackNumber) {
-  const mkvmuxer::uint64 kTrackNumber = 10;
+  const uint64 kTrackNumber = 10;
   EXPECT_TRUE(SegmentInit(true));
-  const mkvmuxer::uint64 vid_track =
+  const uint64 vid_track =
       segment_.AddVideoTrack(kWidth, kHeight, kTrackNumber);
   EXPECT_EQ(kTrackNumber, vid_track);
   segment_.GetTrackByNumber(vid_track)->set_uid(kVideoTrackNumber);

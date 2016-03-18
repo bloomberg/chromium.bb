@@ -9,7 +9,7 @@
 #ifndef WEBMIDS_HPP
 #define WEBMIDS_HPP
 
-namespace mkvmuxer {
+namespace libwebm {
 
 enum MkvId {
   kMkvEBML = 0x1A45DFA3,
@@ -179,6 +179,6 @@ enum MkvId {
   kMkvTagString = 0x4487
 };
 
-}  // end namespace mkvmuxer
+}  // namespace libwebm
 
 #endif  // WEBMIDS_HPP

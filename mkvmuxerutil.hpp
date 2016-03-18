@@ -11,6 +11,7 @@
 
 #include "mkvmuxertypes.hpp"
 
+namespace libwebm {
 namespace mkvmuxer {
 class Cluster;
 class Frame;
@@ -78,6 +79,7 @@ void GetVersion(int32* major, int32* minor, int32* build, int32* revision);
 // the random-number generator (see POSIX rand_r() for semantics).
 uint64 MakeUID(unsigned int* seed);
 
-}  // end namespace mkvmuxer
+}  // namespace mkvmuxer
+}  // namespace libwebm
 
 #endif  // MKVMUXERUTIL_HPP

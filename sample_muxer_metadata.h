@@ -16,6 +16,8 @@
 #include "mkvmuxertypes.hpp"
 #include "webvttparser.h"
 
+namespace libwebm {
+
 namespace mkvmuxer {
 class Chapter;
 class Frame;
@@ -43,19 +45,19 @@ class SampleMuxerMetadata {
   // Write any WebVTT cues whose time is less or equal to |time_ns| as
   // a metadata block in its corresponding track.  If |time_ns| is
   // negative, write all remaining cues. Returns false on error.
-  bool Write(mkvmuxer::int64 time_ns);
+  bool Write(int64 time_ns);
 
  private:
   typedef libwebvtt::Cue cue_t;
 
   // Used to sort cues as they are loaded.
   struct SortableCue {
-    bool operator>(mkvmuxer::int64 time_ns) const {
+    bool operator>(int64 time_ns) const {
       // Cue start time expressed in milliseconds
-      const mkvmuxer::int64 start_ms = cue.start_time.presentation();
+      const int64 start_ms = cue.start_time.presentation();
 
       // Cue start time expressed in nanoseconds (MKV time)
-      const mkvmuxer::int64 start_ns = start_ms * 1000000;
+      const int64 start_ns = start_ms * 1000000;
 
       return (start_ns > time_ns);
     }
@@ -74,7 +76,7 @@ class SampleMuxerMetadata {
     // error.
     bool Write(mkvmuxer::Segment* segment) const;
 
-    mkvmuxer::uint64 track_num;
+    uint64 track_num;
     cue_t cue;
   };
 
@@ -97,12 +99,12 @@ class SampleMuxerMetadata {
   // Add a metadata track to the segment having the indicated |kind|,
   // returning the |track_num| that has been chosen for this track.
   // Returns false on error.
-  bool AddTrack(Kind kind, mkvmuxer::uint64* track_num);
+  bool AddTrack(Kind kind, uint64* track_num);
 
   // Parse the WebVTT |file| having the indicated |kind| and
   // |track_num|, adding each parsed cue to cues set.  Returns false
   // on error.
-  bool Parse(const char* file, Kind kind, mkvmuxer::uint64 track_num);
+  bool Parse(const char* file, Kind kind, uint64 track_num);
 
   // Converts a WebVTT cue to a Matroska metadata block.
   static void MakeFrame(const cue_t& cue, std::string* frame);
@@ -132,5 +134,7 @@ class SampleMuxerMetadata {
   SampleMuxerMetadata(const SampleMuxerMetadata&);
   SampleMuxerMetadata& operator=(const SampleMuxerMetadata&);
 };
+
+}  // namespace libwebm
 
 #endif  // SAMPLE_MUXER_METADATA_H_  // NOLINT

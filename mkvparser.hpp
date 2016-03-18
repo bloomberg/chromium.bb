@@ -11,6 +11,7 @@
 
 #include <cstddef>
 
+namespace libwebm {
 namespace mkvparser {
 
 const int E_PARSE_FAILED = -1;
@@ -1101,9 +1102,10 @@ class Segment {
   const BlockEntry* GetBlock(const CuePoint&, const CuePoint::TrackPosition&);
 };
 
-}  // end namespace mkvparser
+}  // namespace mkvparser
+}  // namespace libwebm
 
-inline long mkvparser::Segment::LoadCluster() {
+inline long libwebm::mkvparser::Segment::LoadCluster() {
   long long pos;
   long size;
 

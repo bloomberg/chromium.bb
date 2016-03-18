@@ -16,8 +16,10 @@
   TypeName(const TypeName&);                       \
   void operator=(const TypeName&)
 
-namespace mkvmuxer {
+namespace libwebm {
 
+// TODO(tomfinegan): These types are no longer necessary: drop these, and use
+// cstdint/stdint.h types.
 typedef unsigned char uint8;
 typedef short int16;
 typedef int int32;
@@ -25,6 +27,6 @@ typedef unsigned int uint32;
 typedef long long int64;
 typedef unsigned long long uint64;
 
-}  // end namespace mkvmuxer
+}  // namespace libwebm
 
 #endif  // MKVMUXERTYPES_HPP
