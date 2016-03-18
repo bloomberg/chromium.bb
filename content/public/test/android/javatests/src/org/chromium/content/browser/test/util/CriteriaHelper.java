@@ -74,12 +74,6 @@ public class CriteriaHelper {
         Assert.assertTrue(criteria.getFailureReason(), isSatisfied);
     }
 
-    // TODO(tedchoc): Remove once downstream tests point to pollInstrumentationThread.
-    public static void pollForCriteria(Criteria criteria, long maxTimeoutMs,
-            long checkIntervalMs) throws InterruptedException {
-        pollInstrumentationThread(criteria, maxTimeoutMs, checkIntervalMs);
-    }
-
     /**
      * Checks whether the given Criteria is satisfied polling at a default interval.
      *
@@ -93,11 +87,6 @@ public class CriteriaHelper {
      */
     public static void pollInstrumentationThread(Criteria criteria) throws InterruptedException {
         pollInstrumentationThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
-    }
-
-    // TODO(tedchoc): Remove once downstream tests point to pollInstrumentationThread.
-    public static void pollForCriteria(Criteria criteria) throws InterruptedException {
-        pollInstrumentationThread(criteria);
     }
 
     /**
@@ -133,12 +122,6 @@ public class CriteriaHelper {
         }, maxTimeoutMs, checkIntervalMs);
     }
 
-    // TODO(tedchoc): Remove once downstream tests point to pollUiThread.
-    public static void pollForUIThreadCriteria(final Criteria criteria, long maxTimeoutMs,
-            long checkIntervalMs) throws InterruptedException {
-        pollUiThread(criteria, maxTimeoutMs, checkIntervalMs);
-    }
-
     /**
      * Checks whether the given Criteria is satisfied polling at a default interval on the UI
      * thread.
@@ -148,11 +131,5 @@ public class CriteriaHelper {
      */
     public static void pollUiThread(final Criteria criteria) throws InterruptedException {
         pollUiThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
-    }
-
-    // TODO(tedchoc): Remove once downstream tests point to pollUiThread.
-    public static void pollForUIThreadCriteria(final Criteria criteria)
-            throws InterruptedException {
-        pollUiThread(criteria);
     }
 }

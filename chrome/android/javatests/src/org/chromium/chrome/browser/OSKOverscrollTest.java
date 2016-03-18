@@ -75,7 +75,7 @@ public class OSKOverscrollTest extends ChromeActivityTestCaseBase<ChromeActivity
 
     private void waitForKeyboard() throws InterruptedException {
         // Wait until the keyboard is showing.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Keyboard was never shown.") {
+        CriteriaHelper.pollUiThread(new Criteria("Keyboard was never shown.") {
             @Override
             public boolean isSatisfied() {
                 return UiUtils.isKeyboardShowing(
