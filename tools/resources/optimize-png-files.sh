@@ -32,7 +32,7 @@ ui/android/java/res
 ui/resources
 ui/chromeos/resources
 ui/webui/resources/images
-win8/metro_driver/resources
+win8/resources
 "
 
 # Files larger than this file size (in bytes) will
