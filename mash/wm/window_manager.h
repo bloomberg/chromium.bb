@@ -12,7 +12,7 @@
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
-#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mash {
@@ -22,13 +22,13 @@ class RootWindowController;
 
 class WindowManager : public mus::WindowObserver,
                       public mus::WindowManagerDelegate,
-                      public mash::shell::mojom::ScreenlockStateListener {
+                      public session::mojom::ScreenlockStateListener {
  public:
   WindowManager();
   ~WindowManager() override;
 
   void Initialize(RootWindowController* root_controller,
-                  mash::shell::mojom::Shell* shell);
+                  session::mojom::Session* session);
 
   mus::WindowManagerClient* window_manager_client() {
     return window_manager_client_;
@@ -61,7 +61,7 @@ class WindowManager : public mus::WindowObserver,
   RootWindowController* root_controller_;
   mus::WindowManagerClient* window_manager_client_;
 
-  mojo::Binding<mash::shell::mojom::ScreenlockStateListener> binding_;
+  mojo::Binding<session::mojom::ScreenlockStateListener> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

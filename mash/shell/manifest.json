@@ -1,5 +1,0 @@
-{
-  "name": "mojo:mash_shell",
-  "display_name": "System Service Controller",
-  "capabilities": { "*": ["*"] }
-}

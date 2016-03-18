@@ -660,7 +660,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       status_animation_setter.AddObserver(observer);
 
     GetLayer(shelf_)->SetOpacity(target_bounds.opacity);
-    // mash::wm::ShelfLayout manages window bounds when running mash_shell.
+    // mash::wm::ShelfLayout manages window bounds when running in mash.
     if (!aura::GetMusWindow(shelf_->GetNativeWindow())) {
       shelf_->SetBounds(ScreenUtil::ConvertRectToScreen(
           shelf_->GetNativeView()->parent(),
@@ -682,7 +682,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     // this can be simplified.
     gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
     status_bounds.Offset(target_bounds.shelf_bounds_in_root.OffsetFromOrigin());
-    // mash::wm::ShelfLayout manages window bounds when running mash_shell.
+    // mash::wm::ShelfLayout manages window bounds when running mash.
     if (!aura::GetMusWindow(shelf_->GetNativeWindow())) {
       shelf_->status_area_widget()->SetBounds(
           ScreenUtil::ConvertRectToScreen(

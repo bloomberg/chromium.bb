@@ -10,14 +10,14 @@ import("//tools/grit/repack.gni")
 
 source_set("lib") {
   sources = [
-    "shell_application_delegate.cc",
-    "shell_application_delegate.h",
+    "session.cc",
+    "session.h",
   ]
 
   deps = [
     "//base",
     "//mash/login/public/interfaces",
-    "//mash/shell/public/interfaces",
+    "//mash/session/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/shell/public/cpp",
@@ -32,8 +32,8 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("shell") {
-  output_name = "mash_shell"
+mojo_native_application("session") {
+  output_name = "mash_session"
 
   sources = [
     "main.cc",
@@ -42,7 +42,7 @@ mojo_native_application("shell") {
   deps = [
     ":lib",
     "//base",
-    "//mash/shell/public/interfaces",
+    "//mash/session/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/shell/public/cpp",
@@ -55,6 +55,6 @@ mojo_native_application("shell") {
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "mash_shell"
+  application_name = "mash_session"
   source = "manifest.json"
 }

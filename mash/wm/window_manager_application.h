@@ -17,7 +17,7 @@
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mash/session/public/interfaces/session.mojom.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -79,8 +79,8 @@ class WindowManagerApplication
   void AddRootWindowsObserver(RootWindowsObserver* observer);
   void RemoveRootWindowsObserver(RootWindowsObserver* observer);
 
-  mash::shell::mojom::Shell* mash_shell() {
-    return mash_shell_.get();
+  session::mojom::Session* session() {
+    return session_.get();
   }
 
  private:
@@ -129,7 +129,7 @@ class WindowManagerApplication
   mojo::Binding<mus::mojom::WindowManagerFactory>
       window_manager_factory_binding_;
 
-  mash::shell::mojom::ShellPtr mash_shell_;
+  mash::session::mojom::SessionPtr session_;
 
   base::ObserverList<RootWindowsObserver> root_windows_observers_;
 

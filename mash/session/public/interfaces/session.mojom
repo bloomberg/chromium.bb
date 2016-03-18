@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mash.shell.mojom;
+module mash.session.mojom;
 
 interface ScreenlockStateListener {
   // This method is called when the listener is initially added with the current
@@ -10,7 +10,7 @@ interface ScreenlockStateListener {
   ScreenlockStateChanged(bool locked);
 };
 
-interface Shell {
+interface Session {
   Logout();
   SwitchUser();
   LockScreen();

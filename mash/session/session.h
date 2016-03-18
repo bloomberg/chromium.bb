@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_SHELL_SHELL_APPLICATION_DELEGATE_H_
-#define MASH_SHELL_SHELL_APPLICATION_DELEGATE_H_
+#ifndef MASH_SESSION_SESSION_H_
+#define MASH_SESSION_SESSION_H_
 
 #include <map>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -21,15 +21,14 @@ class Connection;
 }
 
 namespace mash {
-namespace shell {
+namespace session {
 
-class ShellApplicationDelegate
-    : public mojo::ShellClient,
-      public mash::shell::mojom::Shell,
-      public mojo::InterfaceFactory<mash::shell::mojom::Shell> {
+class Session : public mojo::ShellClient,
+                public mojom::Session,
+                public mojo::InterfaceFactory<mojom::Session> {
  public:
-  ShellApplicationDelegate();
-  ~ShellApplicationDelegate() override;
+  Session();
+  ~Session() override;
 
  private:
   // mojo::ShellClient:
@@ -38,7 +37,7 @@ class ShellApplicationDelegate
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
-  // mash::shell::mojom::Shell:
+  // mojom::Session:
   void Logout() override;
   void SwitchUser() override;
   void AddScreenlockStateListener(
@@ -46,9 +45,9 @@ class ShellApplicationDelegate
   void LockScreen() override;
   void UnlockScreen() override;
 
-  // mojo::InterfaceFactory<mash::shell::mojom::Shell>:
+  // mojo::InterfaceFactory<mojom::Session>:
   void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<mash::shell::mojom::Shell> r) override;
+              mojom::SessionRequest request) override;
 
   void StartWindowManager();
   void StartSystemUI();
@@ -66,13 +65,13 @@ class ShellApplicationDelegate
   mojo::Connector* connector_;
   std::map<std::string, scoped_ptr<mojo::Connection>> connections_;
   bool screen_locked_;
-  mojo::BindingSet<mash::shell::mojom::Shell> bindings_;
+  mojo::BindingSet<mojom::Session> bindings_;
   mojo::InterfacePtrSet<mojom::ScreenlockStateListener> screenlock_listeners_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellApplicationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(Session);
 };
 
-}  // namespace shell
+}  // namespace session
 }  // namespace mash
 
-#endif  // MASH_SHELL_SHELL_APPLICATION_DELEGATE_H_
+#endif  // MASH_SESSION_SESSION_H_

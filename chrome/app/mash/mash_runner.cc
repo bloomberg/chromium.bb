@@ -17,7 +17,7 @@
 #include "components/resource_provider/resource_provider_app.h"
 #include "content/public/common/content_switches.h"
 #include "mash/quick_launch/quick_launch_application.h"
-#include "mash/shell/shell_application_delegate.h"
+#include "mash/session/session.h"
 #include "mash/wm/window_manager_application.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/background/background_shell.h"
@@ -85,8 +85,8 @@ class DefaultShellClient : public mojo::ShellClient,
       return make_scoped_ptr(new ash::sysui::SysUIApplication);
     if (name == "mojo:desktop_wm")
       return make_scoped_ptr(new mash::wm::WindowManagerApplication);
-    if (name == "mojo:mash_shell")
-      return make_scoped_ptr(new mash::shell::ShellApplicationDelegate);
+    if (name == "mojo:mash_session")
+      return make_scoped_ptr(new mash::session::Session);
     if (name == "mojo:mus")
       return make_scoped_ptr(new mus::MandolineUIServicesApp);
     if (name == "mojo:quick_launch")
@@ -187,7 +187,7 @@ void MashRunner::RunMain() {
   shell_connection_.reset(new mojo::ShellConnection(
       shell_client_.get(),
       background_shell.CreateShellClientRequest("exe:chrome_mash")));
-  shell_connection_->connector()->Connect("mojo:mash_shell");
+  shell_connection_->connector()->Connect("mojo:mash_session");
   base::MessageLoop::current()->Run();
 }
 

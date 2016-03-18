@@ -12,7 +12,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
-#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mash/session/public/interfaces/session.mojom.h"
 #include "mash/wm/background_layout.h"
 #include "mash/wm/fill_layout.h"
 #include "mash/wm/screenlock_layout.h"
@@ -132,7 +132,7 @@ void RootWindowController::OnEmbed(mus::Window* root) {
 
   AddAccelerators();
 
-  window_manager_->Initialize(this, app_->mash_shell());
+  window_manager_->Initialize(this, app_->session());
 
   shadow_controller_.reset(new ShadowController(root->connection()));
 

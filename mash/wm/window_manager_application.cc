@@ -122,8 +122,8 @@ void WindowManagerApplication::Initialize(mojo::Connector* connector,
 bool WindowManagerApplication::AcceptConnection(mojo::Connection* connection) {
   connection->AddInterface<mash::wm::mojom::UserWindowController>(this);
   connection->AddInterface<mus::mojom::AcceleratorRegistrar>(this);
-  if (connection->GetRemoteIdentity().name() == "mojo:mash_shell")
-    connection->GetInterface(&mash_shell_);
+  if (connection->GetRemoteIdentity().name() == "mojo:mash_session")
+    connection->GetInterface(&session_);
   return true;
 }
 

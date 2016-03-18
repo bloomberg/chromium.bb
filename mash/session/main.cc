@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/shell/shell_application_delegate.h"
+#include "mash/session/session.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new mash::shell::ShellApplicationDelegate);
+  mojo::ApplicationRunner runner(new mash::session::Session);
   return runner.Run(shell_handle);
 }

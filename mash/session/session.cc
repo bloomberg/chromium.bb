@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/shell/shell_application_delegate.h"
+#include "mash/session/session.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -12,16 +12,14 @@
 #include "mojo/shell/public/cpp/connector.h"
 
 namespace mash {
-namespace shell {
+namespace session {
 
-ShellApplicationDelegate::ShellApplicationDelegate()
-    : connector_(nullptr), screen_locked_(false) {}
+Session::Session() : connector_(nullptr), screen_locked_(false) {}
+Session::~Session() {}
 
-ShellApplicationDelegate::~ShellApplicationDelegate() {}
-
-void ShellApplicationDelegate::Initialize(mojo::Connector* connector,
-                                          const mojo::Identity& identity,
-                                          uint32_t id) {
+void Session::Initialize(mojo::Connector* connector,
+                         const mojo::Identity& identity,
+                         uint32_t id) {
   connector_ = connector;
   StartBrowserDriver();
   StartWindowManager();
@@ -29,12 +27,12 @@ void ShellApplicationDelegate::Initialize(mojo::Connector* connector,
   StartQuickLaunch();
 }
 
-bool ShellApplicationDelegate::AcceptConnection(mojo::Connection* connection) {
-  connection->AddInterface<mojom::Shell>(this);
+bool Session::AcceptConnection(mojo::Connection* connection) {
+  connection->AddInterface<mojom::Session>(this);
   return true;
 }
 
-void ShellApplicationDelegate::Logout() {
+void Session::Logout() {
   // TODO(beng): Notify connected listeners that login is happening, potentially
   // give them the option to stop it.
   mash::login::mojom::LoginPtr login;
@@ -44,19 +42,19 @@ void ShellApplicationDelegate::Logout() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void ShellApplicationDelegate::SwitchUser() {
+void Session::SwitchUser() {
   mash::login::mojom::LoginPtr login;
   connector_->ConnectToInterface("mojo:login", &login);
   login->SwitchUser();
 }
 
-void ShellApplicationDelegate::AddScreenlockStateListener(
+void Session::AddScreenlockStateListener(
     mojom::ScreenlockStateListenerPtr listener) {
   listener->ScreenlockStateChanged(screen_locked_);
   screenlock_listeners_.AddInterfacePtr(std::move(listener));
 }
 
-void ShellApplicationDelegate::LockScreen() {
+void Session::LockScreen() {
   if (screen_locked_)
     return;
   screen_locked_ = true;
@@ -66,7 +64,7 @@ void ShellApplicationDelegate::LockScreen() {
       });
   StartScreenlock();
 }
-void ShellApplicationDelegate::UnlockScreen() {
+void Session::UnlockScreen() {
   if (!screen_locked_)
     return;
   screen_locked_ = false;
@@ -77,53 +75,52 @@ void ShellApplicationDelegate::UnlockScreen() {
   StopScreenlock();
 }
 
-void ShellApplicationDelegate::Create(
-    mojo::Connection* connection,
-    mojom::ShellRequest request) {
+void Session::Create(mojo::Connection* connection,
+                     mojom::SessionRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void ShellApplicationDelegate::StartWindowManager() {
+void Session::StartWindowManager() {
   StartRestartableService(
       "mojo:desktop_wm",
-      base::Bind(&ShellApplicationDelegate::StartWindowManager,
+      base::Bind(&Session::StartWindowManager,
                  base::Unretained(this)));
 }
 
-void ShellApplicationDelegate::StartSystemUI() {
+void Session::StartSystemUI() {
   StartRestartableService("mojo:ash_sysui",
-                          base::Bind(&ShellApplicationDelegate::StartSystemUI,
+                          base::Bind(&Session::StartSystemUI,
                                      base::Unretained(this)));
 }
 
-void ShellApplicationDelegate::StartBrowserDriver() {
+void Session::StartBrowserDriver() {
   StartRestartableService(
       "mojo:browser_driver",
-      base::Bind(&ShellApplicationDelegate::StartBrowserDriver,
+      base::Bind(&Session::StartBrowserDriver,
                  base::Unretained(this)));
 }
 
-void ShellApplicationDelegate::StartQuickLaunch() {
+void Session::StartQuickLaunch() {
   StartRestartableService(
       "mojo:quick_launch",
-      base::Bind(&ShellApplicationDelegate::StartQuickLaunch,
+      base::Bind(&Session::StartQuickLaunch,
                  base::Unretained(this)));
 }
 
-void ShellApplicationDelegate::StartScreenlock() {
+void Session::StartScreenlock() {
   StartRestartableService(
       "mojo:screenlock",
-      base::Bind(&ShellApplicationDelegate::StartScreenlock,
+      base::Bind(&Session::StartScreenlock,
                  base::Unretained(this)));
 }
 
-void ShellApplicationDelegate::StopScreenlock() {
+void Session::StopScreenlock() {
   auto connection = connections_.find("mojo:screenlock");
   DCHECK(connections_.end() != connection);
   connections_.erase(connection);
 }
 
-void ShellApplicationDelegate::StartRestartableService(
+void Session::StartRestartableService(
     const std::string& url,
     const base::Closure& restart_callback) {
   // TODO(beng): This would be the place to insert logic that counted restarts
@@ -132,10 +129,10 @@ void ShellApplicationDelegate::StartRestartableService(
   // Note: |connection| may be null if we've lost our connection to the shell.
   if (connection) {
     connection->SetConnectionLostClosure(restart_callback);
-    connection->AddInterface<mojom::Shell>(this);
+    connection->AddInterface<mojom::Session>(this);
     connections_[url] = std::move(connection);
   }
 }
 
-}  // namespace shell
+}  // namespace session
 }  // namespace main

@@ -139,7 +139,7 @@ class Login : public mojo::ShellClient,
     user_access_manager_->SetActiveUser(user_id);
     mash::init::mojom::InitPtr init;
     connector_->ConnectToInterface("mojo:mash_init", &init);
-    init->StartService("mojo:mash_shell", user_id);
+    init->StartService("mojo:mash_session", user_id);
   }
 
  private:

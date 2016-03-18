@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mash/session/public/interfaces/session.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/public/cpp/connector.h"
@@ -59,9 +59,9 @@ class ScreenlockView : public views::WidgetDelegateView,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, unlock_button_);
-    mash::shell::mojom::ShellPtr shell;
-    connector_->ConnectToInterface("mojo:mash_shell", &shell);
-    shell->UnlockScreen();
+    mash::session::mojom::SessionPtr session;
+    connector_->ConnectToInterface("mojo:mash_session", &session);
+    session->UnlockScreen();
   }
 
   mojo::Connector* connector_;
@@ -80,9 +80,9 @@ void Screenlock::Initialize(mojo::Connector* connector,
                             uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 
-  mash::shell::mojom::ShellPtr mash_shell;
-  connector->ConnectToInterface("mojo:mash_shell", &mash_shell);
-  mash_shell->AddScreenlockStateListener(
+  mash::session::mojom::SessionPtr session;
+  connector->ConnectToInterface("mojo:mash_session", &session);
+  session->AddScreenlockStateListener(
       bindings_.CreateInterfacePtrAndBind(this));
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));

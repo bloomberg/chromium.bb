@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -22,7 +22,7 @@ namespace mash {
 namespace screenlock {
 
 class Screenlock : public mojo::ShellClient,
-                   public shell::mojom::ScreenlockStateListener {
+                   public session::mojom::ScreenlockStateListener {
  public:
   Screenlock();
   ~Screenlock() override;
@@ -38,7 +38,7 @@ class Screenlock : public mojo::ShellClient,
 
   mojo::TracingImpl tracing_;
   scoped_ptr<views::AuraInit> aura_init_;
-  mojo::BindingSet<mash::shell::mojom::ScreenlockStateListener> bindings_;
+  mojo::BindingSet<session::mojom::ScreenlockStateListener> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Screenlock);
 };

@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
@@ -279,17 +279,17 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     } else if (sender == bubble_button_) {
       NOTIMPLEMENTED();
     } else if (sender == lock_button_) {
-      mash::shell::mojom::ShellPtr shell;
-      connector_->ConnectToInterface("mojo:mash_shell", &shell);
-      shell->LockScreen();
+      mash::session::mojom::SessionPtr session;
+      connector_->ConnectToInterface("mojo:mash_session", &session);
+      session->LockScreen();
     } else if (sender == logout_button_) {
-      mash::shell::mojom::ShellPtr shell;
-      connector_->ConnectToInterface("mojo:mash_shell", &shell);
-      shell->Logout();
+      mash::session::mojom::SessionPtr session;
+      connector_->ConnectToInterface("mojo:mash_session", &session);
+      session->Logout();
     } else if (sender == switch_user_button_) {
-      mash::shell::mojom::ShellPtr shell;
-      connector_->ConnectToInterface("mojo:mash_shell", &shell);
-      shell->SwitchUser();
+      mash::session::mojom::SessionPtr session;
+      connector_->ConnectToInterface("mojo:mash_session", &session);
+      session->SwitchUser();
     } else if (sender == widgets_button_) {
       NOTIMPLEMENTED();
     }
