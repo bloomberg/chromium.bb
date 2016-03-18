@@ -252,6 +252,31 @@ size_t GetEnabledAppCount(Profile* profile) {
 
 #endif  // ENABLE_EXTENSIONS
 
+// Once a profile is loaded through LoadProfile this method is executed.
+// It will then run |client_callback| with the right profile or null if it was
+// unable to load it.
+// It might get called more than once with different values of
+// |status| but only once the profile is fully initialized will
+// |client_callback| be run.
+void OnProfileLoaded(
+    const ProfileManager::ProfileLoadedCallback& client_callback,
+    bool incognito,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_CREATED) {
+    // This is an intermediate state where the profile has been created, but is
+    // not yet initialized. Ignore this and wait for the next state change.
+    return;
+  }
+  if (status != Profile::CREATE_STATUS_INITIALIZED) {
+    LOG(WARNING) << "Profile not loaded correctly";
+    client_callback.Run(nullptr);
+    return;
+  }
+  DCHECK(profile);
+  client_callback.Run(incognito ? profile->GetOffTheRecordProfile() : profile);
+}
+
 }  // namespace
 
 ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
@@ -402,6 +427,25 @@ Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
 
 size_t ProfileManager::GetNumberOfProfiles() {
   return GetProfileInfoCache().GetNumberOfProfiles();
+}
+
+bool ProfileManager::LoadProfile(const std::string& profile_name,
+                                 bool incognito,
+                                 const ProfileLoadedCallback& callback) {
+  const base::FilePath profile_path = user_data_dir().AppendASCII(profile_name);
+
+  ProfileAttributesEntry* entry = nullptr;
+  if (!GetProfileAttributesStorage().GetProfileAttributesWithPath(profile_path,
+                                                                  &entry)) {
+    callback.Run(nullptr);
+    LOG(ERROR) << "Loading a profile path that does not exist";
+    return false;
+  }
+  CreateProfileAsync(profile_path,
+                     base::Bind(&OnProfileLoaded, callback, incognito),
+                     base::string16() /* name */, std::string() /* icon_url */,
+                     std::string() /* supervided_user_id */);
+  return true;
 }
 
 void ProfileManager::CreateProfileAsync(

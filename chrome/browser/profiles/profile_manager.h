@@ -35,6 +35,7 @@ class ProfileManager : public base::NonThreadSafe,
                        public Profile::Delegate {
  public:
   typedef base::Callback<void(Profile*, Profile::CreateStatus)> CreateCallback;
+  typedef base::Callback<void(Profile*)> ProfileLoadedCallback;
 
   explicit ProfileManager(const base::FilePath& user_data_dir);
   ~ProfileManager() override;
@@ -86,6 +87,18 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Returns total number of profiles available on this machine.
   size_t GetNumberOfProfiles();
+
+  // Asynchronously loads an existing profile given its |profile_name| within
+  // the user data directory, optionally in |incognito| mode. The |callback|
+  // will be called with the Profile when it has been loaded, or with a nullptr
+  // otherwise. Should be called on the UI thread.
+  // Unlike CreateProfileAsync this will not create a profile if one doesn't
+  // already exist on disk
+  // Returns true if the profile exists, but the final loaded profile will come
+  // as part of the callback.
+  bool LoadProfile(const std::string& profile_name,
+                   bool incognito,
+                   const ProfileLoadedCallback& callback);
 
   // Explicit asynchronous creation of a profile located at |profile_path|.
   // If the profile has already been created then callback is called
