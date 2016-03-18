@@ -109,9 +109,18 @@ LayoutSize calculateFillTileSize(const LayoutBoxModelObject& obj, const FillLaye
             ? positioningAreaSize.width().toFloat() / imageIntrinsicSize.width() : 1.0f;
         float verticalScaleFactor = imageIntrinsicSize.height()
             ? positioningAreaSize.height().toFloat() / imageIntrinsicSize.height() : 1.0f;
-        float scaleFactor = type == Contain ? std::min(horizontalScaleFactor, verticalScaleFactor) : std::max(horizontalScaleFactor, verticalScaleFactor);
-        return LayoutSize(std::max(1.0f, imageIntrinsicSize.width() * scaleFactor),
-            std::max(1.0f, imageIntrinsicSize.height() * scaleFactor));
+        // Force the dimension that determines the size to exactly match the
+        // positioningAreaSize in that dimension, so that rounding of floating point
+        // approximation to LayoutUnit do not shrink the image to smaller than the
+        // positioningAreaSize.
+        if (type == Contain) {
+            if (horizontalScaleFactor < verticalScaleFactor)
+                return LayoutSize(positioningAreaSize.width(), LayoutUnit(std::max(1.0f, imageIntrinsicSize.height() * horizontalScaleFactor)));
+            return LayoutSize(LayoutUnit(std::max(1.0f, imageIntrinsicSize.width() * verticalScaleFactor)), positioningAreaSize.height());
+        }
+        if (horizontalScaleFactor > verticalScaleFactor)
+            return LayoutSize(positioningAreaSize.width(), LayoutUnit(std::max(1.0f, imageIntrinsicSize.height() * horizontalScaleFactor)));
+        return LayoutSize(LayoutUnit(std::max(1.0f, imageIntrinsicSize.width() * verticalScaleFactor)), positioningAreaSize.height());
     }
     }
 
