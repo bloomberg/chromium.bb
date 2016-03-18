@@ -4,15 +4,18 @@
 
 #include "components/ntp_snippets/ntp_snippets_service.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -21,15 +24,45 @@ using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
 using suggestions::SuggestionsService;
 
+namespace ntp_snippets {
+
 namespace {
 
-// TODO(crbug.com/587857): This is an extremely small value, for development.
-// Replace it by something sensible and add a command line param to control it.
-const int kFetchingIntervalWifiChargingMins = 1;
-const int kFetchingIntervalWifiMins = 2 * 60;
-const int kFetchingIntervalFallbackMins = 24 * 60;
+const int kFetchingIntervalWifiChargingSeconds = 30 * 60;
+const int kFetchingIntervalWifiSeconds = 2 * 60 * 60;
+const int kFetchingIntervalFallbackSeconds = 24 * 60 * 60;
 
 const int kDefaultExpiryTimeMins = 4 * 60;
+
+base::TimeDelta GetFetchingInterval(const char* switch_name,
+                                    int default_value_seconds) {
+  int value_seconds = default_value_seconds;
+  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
+  if (cmdline.HasSwitch(switch_name)) {
+    std::string str = cmdline.GetSwitchValueASCII(switch_name);
+    int switch_value_seconds = 0;
+    if (base::StringToInt(str, &switch_value_seconds))
+      value_seconds = switch_value_seconds;
+    else
+      LOG(WARNING) << "Invalid value for switch " << switch_name;
+  }
+  return base::TimeDelta::FromSeconds(value_seconds);
+}
+
+base::TimeDelta GetFetchingIntervalWifiCharging() {
+  return GetFetchingInterval(switches::kFetchingIntervalWifiChargingSeconds,
+                             kFetchingIntervalWifiChargingSeconds);
+}
+
+base::TimeDelta GetFetchingIntervalWifi() {
+  return GetFetchingInterval(switches::kFetchingIntervalWifiSeconds,
+                             kFetchingIntervalWifiSeconds);
+}
+
+base::TimeDelta GetFetchingIntervalFallback() {
+  return GetFetchingInterval(switches::kFetchingIntervalFallbackSeconds,
+                             kFetchingIntervalFallbackSeconds);
+}
 
 bool ReadFileToString(const base::FilePath& path, std::string* data) {
   DCHECK(data);
@@ -53,8 +86,6 @@ std::vector<std::string> GetSuggestionsHosts(
 const char kContentInfo[] = "contentInfo";
 
 }  // namespace
-
-namespace ntp_snippets {
 
 NTPSnippetsService::NTPSnippetsService(
     PrefService* pref_service,
@@ -105,10 +136,9 @@ void NTPSnippetsService::Init(bool enabled) {
     return;
 
   if (enabled) {
-    scheduler_->Schedule(
-        base::TimeDelta::FromMinutes(kFetchingIntervalWifiChargingMins),
-        base::TimeDelta::FromMinutes(kFetchingIntervalWifiMins),
-        base::TimeDelta::FromMinutes(kFetchingIntervalFallbackMins));
+    scheduler_->Schedule(GetFetchingIntervalWifiCharging(),
+                         GetFetchingIntervalWifi(),
+                         GetFetchingIntervalFallback());
   } else {
     scheduler_->Unschedule();
   }

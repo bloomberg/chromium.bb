@@ -15,6 +15,8 @@ source_set("ntp_snippets") {
     "ntp_snippets_service.h",
     "pref_names.cc",
     "pref_names.h",
+    "switches.cc",
+    "switches.h",
   ]
 
   public_deps = [
