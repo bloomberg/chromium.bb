@@ -199,7 +199,6 @@ extern const wchar_t kChromeFrameHelperDll[];
 extern const wchar_t kChromeFrameHelperExe[];
 extern const wchar_t kChromeFrameHelperWndClass[];
 extern const wchar_t kChromeLauncherExe[];
-extern const wchar_t kChromeMetroDll[];
 extern const wchar_t kChromeNewExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kCmdOnOsUpgrade[];
