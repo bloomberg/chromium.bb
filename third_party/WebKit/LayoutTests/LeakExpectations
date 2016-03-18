@@ -93,6 +93,8 @@ crbug.com/571534 virtual/threaded/animations/svg-element-css-animation-crash.htm
 
 crbug.com/588598 web-animations-api/player-cancel-event.html [ Leak ]
 
+crbug.com/596002 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Leak ]
+
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (fast).
 # -----------------------------------------------------------------
