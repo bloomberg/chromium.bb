@@ -17,7 +17,7 @@ import("//build/config/ios/ios_sdk.gni")
 #
 # Arguments
 #
-#   app_name:
+#   output_name:
 #       (optional) string, name of the generated application, if omitted,
 #       defaults to the target_name.
 #
@@ -35,10 +35,10 @@ template("app") {
   assert(defined(invoker.info_plist),
          "info_plist must be specified for target $target_name")
 
-  _app_name = target_name
+  _output_name = target_name
   _target_name = target_name
-  if (defined(invoker.app_name)) {
-    _app_name = invoker.app_name
+  if (defined(invoker.output_name)) {
+    _output_name = invoker.output_name
   }
 
   _generate_info_plist = target_name + "_generate_info_plist"
@@ -63,7 +63,7 @@ template("app") {
     response_file_contents =
         extra_args + [
           "-s=BUILD_MACHINE_OS_BUILD=$machine_os_build",
-          "-s=EXECUTABLE_NAME=$_app_name",
+          "-s=EXECUTABLE_NAME=$_output_name",
           "-s=GCC_VERSION=com.apple.compilers.llvm.clang.1_0",
           "-s=IOS_DEPLOYMENT_TARGET=$ios_deployment_target",
           "-s=IOS_PLATFORM_BUILD=$ios_platform_build",
@@ -72,7 +72,7 @@ template("app") {
           "-s=IOS_SDK_BUILD=$ios_sdk_build",
           "-s=IOS_SDK_NAME=$ios_sdk_name$ios_sdk_version",
           "-s=IOS_SUPPORTED_PLATFORM=$ios_sdk_platform",
-          "-s=PRODUCT_NAME=$_app_name",
+          "-s=PRODUCT_NAME=$_output_name",
           "-s=XCODE_BUILD=$xcode_build",
           "-s=XCODE_VERSION=$xcode_version",
           "-o=" + rebase_path(outputs[0], root_build_dir),
@@ -100,7 +100,7 @@ template("app") {
     forward_variables_from(invoker,
                            "*",
                            [
-                             "app_name",
+                             "output_name",
                              "code_signing_identity",
                              "data_deps",
                              "entitlements_path",
@@ -108,7 +108,7 @@ template("app") {
                              "visibility",
                            ])
 
-    output_name = rebase_path("$target_gen_dir/$_app_name", root_build_dir)
+    output_name = rebase_path("$target_gen_dir/$_output_name", root_build_dir)
     if (!defined(libs)) {
       libs = []
     }
@@ -119,10 +119,10 @@ template("app") {
     forward_variables_from(invoker, [ "testonly" ])
     visibility = [ ":$_target_name" ]
     sources = [
-      "$target_gen_dir/$_app_name",
+      "$target_gen_dir/$_output_name",
     ]
     outputs = [
-      "{{bundle_executable_dir}}/$_app_name",
+      "{{bundle_executable_dir}}/$_output_name",
     ]
     public_deps = [
       ":$_generate_executable",
@@ -154,7 +154,7 @@ template("app") {
       data_deps += [ "//testing/iossim(${host_toolchain})" ]
     }
 
-    bundle_root_dir = "$root_out_dir/$_app_name.app"
+    bundle_root_dir = "$root_out_dir/$_output_name.app"
     bundle_resources_dir = bundle_root_dir
     bundle_executable_dir = bundle_root_dir
     bundle_plugins_dir = "$bundle_root_dir/Plugins"
