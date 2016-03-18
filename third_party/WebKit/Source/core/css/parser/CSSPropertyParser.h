@@ -23,7 +23,6 @@
 #ifndef CSSPropertyParser_h
 #define CSSPropertyParser_h
 
-#include "core/css/CSSColorValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/StyleRule.h"
 #include "core/css/parser/CSSParserTokenRange.h"
@@ -74,6 +73,7 @@ public:
     // Parses a non-shorthand CSS property
     static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID, const CSSParserTokenRange&, const CSSParserContext&);
 
+    // TODO(timloh): This doesn't seem like the right place for these
     static bool isSystemColor(CSSValueID);
     static bool isColorKeyword(CSSValueID);
     static bool isValidNumericValue(double);

@@ -14,6 +14,7 @@
 namespace blink {
 
 class CSSStringValue;
+class CSSValuePair;
 
 // When these functions are successful, they will consume all the relevant
 // tokens from the range and also consume any whitespace which follows. When
@@ -51,7 +52,13 @@ PassRefPtrWillBeRawPtr<CSSCustomIdentValue> consumeCustomIdent(CSSParserTokenRan
 PassRefPtrWillBeRawPtr<CSSStringValue> consumeString(CSSParserTokenRange&);
 String consumeUrl(CSSParserTokenRange&);
 
-// TODO(timloh): Move across consumeColor, consumeImage and consumePosition
+PassRefPtrWillBeRawPtr<CSSValue> consumeColor(CSSParserTokenRange&, CSSParserMode, bool acceptQuirkyColors = false);
+
+PassRefPtrWillBeRawPtr<CSSValuePair> consumePosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk);
+bool consumePosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY);
+bool consumeOneOrTwoValuedPosition(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY);
+
+// TODO(timloh): Move across consumeImage
 
 // Template implementations are at the bottom of the file for readability.
 

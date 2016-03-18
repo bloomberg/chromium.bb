@@ -5,6 +5,7 @@
 #include "core/animation/CSSColorInterpolationType.h"
 
 #include "core/animation/ColorPropertyFunctions.h"
+#include "core/css/CSSColorValue.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/layout/LayoutTheme.h"
