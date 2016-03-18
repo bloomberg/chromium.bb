@@ -571,17 +571,6 @@ name=https://github.com/DynamoRIO/drmemory/issues/1582
 *!v8::internal::Execution::Call
 *!v8::Function::Call
 
-HANDLE LEAK
-name=http://crbug.com/387394
-system call NtCreateTimer
-KERNELBASE.dll!CreateWaitableTimerExW
-KERNEL32.dll!CreateWaitableTimerW
-*!rtc::Timing::Timing
-...
-*!content::RenderProcessHostImpl::CreateMessageFilters
-*!content::RenderProcessHostImpl::Init
-*!content::RenderViewHostImpl::CreateRenderView
-
 UNADDRESSABLE ACCESS
 name=https://github.com/DynamoRIO/dynamorio/issues/1443
 dynamorio.dll!*

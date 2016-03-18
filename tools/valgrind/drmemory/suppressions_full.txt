@@ -1769,18 +1769,6 @@ blink_web.dll!blink::WorkerScriptController::WorkerScriptController
 blink_web.dll!blink::WorkerGlobalScope::WorkerGlobalScope
 blink_web.dll!blink::ServiceWorkerGlobalScope::ServiceWorkerGlobalScope
 
-
-HANDLE LEAK
-name=bug_403681
-system call NtCreateTimer
-KERNELBASE.dll!CreateWaitableTimerExW
-KERNEL32.dll!CreateWaitableTimerW
-content.dll!rtc::Timing::Timing
-content.dll!content::RenderProcessHostImpl::CreateMessageFilters
-content.dll!content::RenderProcessHostImpl::Init
-...
-content.dll!content::NavigationControllerImpl::LoadEntry
-
 UNINITIALIZED READ
 name=bug_414268
 pdf.dll!chrome_pdf::PDFiumEngine::OnMouseMove
