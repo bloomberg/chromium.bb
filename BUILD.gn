@@ -27,6 +27,11 @@ config("icu_config") {
     # We don't use ICU plugins and dyload is only necessary for them.
     # NaCl-related builds also fail looking for dlfcn.h when it's enabled.
     "U_ENABLE_DYLOAD=0",
+
+    # With exception disabled, MSVC emits C4577 warning on coming across
+    # 'noexcept'. See http://bugs.icu-project.org/trac/ticket/12406
+    # TODO(jshin): Remove this when updating to a newer version with this fixed.
+    "U_NOEXCEPT=",
   ]
 
   if (!is_component_build) {
