@@ -560,6 +560,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void DidEnsureLiveRegistrationForStartWorker(
       ServiceWorkerMetrics::EventType purpose,
+      Status prestart_status,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
@@ -591,6 +592,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // RecordStartWorkerResult is added as a start callback by StartTimeoutTimer
   // and records metrics about startup.
   void RecordStartWorkerResult(ServiceWorkerMetrics::EventType purpose,
+                               Status prestart_status,
+                               int trace_id,
                                ServiceWorkerStatusCode status);
 
   bool MaybeTimeOutRequest(const RequestInfo& info);
@@ -660,7 +663,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeTicks idle_time_;
   // Holds the time that the outstanding StartWorker() request started.
   base::TimeTicks start_time_;
-  // Holds the time the worker entered STOPPING status.
+  // Holds the time the worker entered STOPPING status. This is also used as a
+  // trace event id.
   base::TimeTicks stop_time_;
   // Holds the time the worker was detected as stale and needs updating. We try
   // to update once the worker stops, but will also update if it stays alive too
@@ -684,8 +688,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<int> pending_skip_waiting_requests_;
   scoped_ptr<net::HttpResponseInfo> main_script_http_info_;
 
-  // The status when StartWorker was invoked. Used for UMA.
-  Status prestart_status_ = NEW;
   // If not OK, the reason that StartWorker failed. Used for
   // running |start_callbacks_|.
   ServiceWorkerStatusCode start_worker_status_ = SERVICE_WORKER_OK;
