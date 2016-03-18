@@ -636,7 +636,8 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
       // Special case for the state to support abbreviations. Currently only the
       // US states are supported.
       if (field_type == ADDRESS_HOME_STATE) {
-        base::string16 full, abbreviation;
+        base::string16 full;
+        base::string16 abbreviation;
         state_names::GetNameAndAbbreviation(GetRawInfo(ADDRESS_HOME_STATE),
                                             &full, &abbreviation);
         if (compare.StringsEqual(profile.GetRawInfo(ADDRESS_HOME_STATE),

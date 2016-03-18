@@ -3326,7 +3326,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   profile.set_guid("00000000-0000-0000-0000-000000000001");
   profiles.push_back(profile);
   test::SetProfileInfo(&profile, "Charles", "", "Holley", "buddy@gmail.com",
-                       "Decca", "123 Apple St.", "unit 6", "Lubbock", "Texas",
+                       "Decca", "123 Apple St.", "unit 6", "Lubbock", "TX",
                        "79401", "US", "5142821292");
   profile.set_guid("00000000-0000-0000-0000-000000000002");
   profiles.push_back(profile);
@@ -3413,6 +3413,10 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
       {"3734 Elvis Presley Blvd", ADDRESS_HOME_LINE1},
       {"3734, Elvis    Presley Blvd.", ADDRESS_HOME_LINE1},
 
+      // Make sure that a state's full name and abbreviation match.
+      {"TN", ADDRESS_HOME_STATE},     // Saved as "Tennessee" in profile.
+      {"Texas", ADDRESS_HOME_STATE},  // Saved as "TX" in profile.
+
       // Special phone number case. A profile with no country code should only
       // match PHONE_HOME_CITY_AND_NUMBER.
       {"5142821292", PHONE_HOME_CITY_AND_NUMBER},
@@ -3421,7 +3425,6 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
       {"Elvis Aaron", UNKNOWN_TYPE},
       {"Mr. Presley", UNKNOWN_TYPE},
       {"3734 Elvis Presley", UNKNOWN_TYPE},
-      {"TN", UNKNOWN_TYPE},
       {"38116-1023", UNKNOWN_TYPE},
       {"5", UNKNOWN_TYPE},
       {"56", UNKNOWN_TYPE},

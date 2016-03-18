@@ -140,7 +140,8 @@ bool FillNumericSelectControl(int value,
 
 bool FillStateSelectControl(const base::string16& value,
                             FormFieldData* field) {
-  base::string16 full, abbreviation;
+  base::string16 full;
+  base::string16 abbreviation;
   state_names::GetNameAndAbbreviation(value, &full, &abbreviation);
 
   // Try an exact match of the abbreviation first.
