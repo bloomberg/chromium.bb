@@ -92,8 +92,8 @@ class MockSCM(object):
     def timestamp_of_revision(self, path, revision):
         return '2013-02-01 08:48:05 +0000'
 
-    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True):
-        self._local_commits.append([message, commit_all_working_directory_changes])
+    def commit_locally_with_message(self, message):
+        self._local_commits.append([message])
         pass
 
     def local_commits(self):
