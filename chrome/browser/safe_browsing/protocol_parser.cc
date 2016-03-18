@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/metadata.pb.h"
 
 namespace safe_browsing {
 
@@ -137,6 +138,38 @@ class BufferReader {
   DISALLOW_COPY_AND_ASSIGN(BufferReader);
 };
 
+// Parse the |raw_metadata| string based on the |list_type| and populate
+// the appropriate field of |metadata|.  For Pver3 (which this file implements),
+// we only fill in threat_pattern_type.  Others are populated for Pver4.
+void InterpretMetadataString(const std::string& raw_metadata,
+                             ListType list_type,
+                             ThreatMetadata* metadata) {
+  if (list_type != UNWANTEDURL && list_type != MALWARE)
+    return;
+
+  if (raw_metadata.empty())
+    return;
+
+  MalwarePatternType proto;
+  if (!proto.ParseFromString(raw_metadata)) {
+    DCHECK(false) << "Bad MalwarePatternType";
+    return;
+  }
+
+  // Convert proto enum to internal enum (we'll move away from this
+  // proto in Pver4).
+  switch (proto.pattern_type()) {
+    case MalwarePatternType::LANDING:
+      metadata->threat_pattern_type = ThreatPatternType::LANDING;
+      break;
+    case MalwarePatternType::DISTRIBUTION:
+      metadata->threat_pattern_type = ThreatPatternType::DISTRIBUTION;
+      break;
+    default:
+      metadata->threat_pattern_type = ThreatPatternType::NONE;
+  }
+}
+
 bool ParseGetHashMetadata(
     size_t hash_count,
     BufferReader* reader,
@@ -155,9 +188,14 @@ bool ParseGetHashMetadata(
       return false;
 
     if (full_hashes) {
-      (*full_hashes)[full_hashes->size() - hash_count + i]
-          .metadata.raw_metadata.assign(
-              reinterpret_cast<const char*>(meta_data), meta_data_len);
+      const std::string raw_metadata(reinterpret_cast<const char*>(meta_data),
+                                     meta_data_len);
+      // Update the i'th entry in the last hash_count elements of the list.
+      SBFullHashResult* full_hash =
+          &((*full_hashes)[full_hashes->size() - hash_count + i]);
+      InterpretMetadataString(raw_metadata,
+                              static_cast<ListType>(full_hash->list_id),
+                              &full_hash->metadata);
     }
   }
   return true;

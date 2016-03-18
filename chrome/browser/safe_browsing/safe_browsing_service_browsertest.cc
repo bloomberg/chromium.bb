@@ -686,36 +686,17 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTest);
 };
 
-enum MalwareMetadataTestType {
-  METADATA_NONE,
-  METADATA_LANDING,
-  METADATA_DISTRIBUTION,
-};
-
 class SafeBrowsingServiceMetadataTest
     : public SafeBrowsingServiceTest,
-      public ::testing::WithParamInterface<MalwareMetadataTestType> {
+      public ::testing::WithParamInterface<ThreatPatternType> {
  public:
   SafeBrowsingServiceMetadataTest() {}
 
   void GenUrlFullhashResultWithMetadata(const GURL& url,
                                         SBFullHashResult* full_hash) {
     GenUrlFullhashResult(url, MALWARE, full_hash);
-
-    MalwarePatternType proto;
-    switch (GetParam()) {
-      case METADATA_NONE:
-        full_hash->metadata.raw_metadata = std::string();
-        break;
-      case METADATA_LANDING:
-        proto.set_pattern_type(MalwarePatternType::LANDING);
-        full_hash->metadata.raw_metadata = proto.SerializeAsString();
-        break;
-      case METADATA_DISTRIBUTION:
-        proto.set_pattern_type(MalwarePatternType::DISTRIBUTION);
-        full_hash->metadata.raw_metadata = proto.SerializeAsString();
-        break;
-    }
+    // We test with different threat_pattern_types.
+    full_hash->metadata.threat_pattern_type = GetParam();
   }
 
  private:
@@ -771,12 +752,12 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
   SBFullHashResult malware_full_hash;
   GenUrlFullhashResultWithMetadata(img_url, &malware_full_hash);
   switch (GetParam()) {
-    case METADATA_NONE:  // Falls through.
-    case METADATA_DISTRIBUTION:
+    case ThreatPatternType::NONE:  // Falls through.
+    case ThreatPatternType::DISTRIBUTION:
       EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(img_url)))
           .Times(1);
       break;
-    case METADATA_LANDING:
+    case ThreatPatternType::LANDING:
       // No interstitial shown, so no notifications expected.
       break;
   }
@@ -785,8 +766,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
   // Subresource which is tagged as a landing page should not show an
   // interstitial, the other types should.
   switch (GetParam()) {
-    case METADATA_NONE:
-    case METADATA_DISTRIBUTION:
+    case ThreatPatternType::NONE:  // Falls through.
+    case ThreatPatternType::DISTRIBUTION:
       EXPECT_TRUE(ShowingInterstitialPage());
       EXPECT_TRUE(got_hit_report());
       EXPECT_EQ(img_url, hit_report().malicious_url);
@@ -794,7 +775,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
       EXPECT_EQ(GURL(), hit_report().referrer_url);
       EXPECT_TRUE(hit_report().is_subresource);
       break;
-    case METADATA_LANDING:
+    case ThreatPatternType::LANDING:
       EXPECT_FALSE(ShowingInterstitialPage());
       EXPECT_FALSE(got_hit_report());
       break;
@@ -803,9 +784,9 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
 
 INSTANTIATE_TEST_CASE_P(MaybeSetMetadata,
                         SafeBrowsingServiceMetadataTest,
-                        testing::Values(METADATA_NONE,
-                                        METADATA_LANDING,
-                                        METADATA_DISTRIBUTION));
+                        testing::Values(ThreatPatternType::NONE,
+                                        ThreatPatternType::LANDING,
+                                        ThreatPatternType::DISTRIBUTION));
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnwantedImgIgnored) {
   GURL main_url = embedded_test_server()->GetURL(kMalwarePage);

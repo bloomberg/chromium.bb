@@ -192,6 +192,7 @@ class DownloadSBClient
     hit_report.threat_type = threat_type;
     // TODO(nparker) Replace this with database_manager_->GetThreatSource();
     hit_report.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
+    // TODO(nparker) Populate hit_report.population_id once Pver4 is used here.
     hit_report.post_data = post_data;
     hit_report.is_extended_reporting = is_extended_reporting_;
     hit_report.is_metrics_reporting_active =

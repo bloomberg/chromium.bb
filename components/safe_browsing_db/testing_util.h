@@ -16,8 +16,7 @@ namespace safe_browsing {
 inline bool operator==(const ThreatMetadata& lhs, const ThreatMetadata& rhs) {
   return lhs.threat_pattern_type == rhs.threat_pattern_type &&
          lhs.api_permissions == rhs.api_permissions &&
-         lhs.population_id == rhs.population_id &&
-         lhs.raw_metadata == rhs.raw_metadata;
+         lhs.population_id == rhs.population_id;
 }
 
 inline bool operator!=(const ThreatMetadata& lhs, const ThreatMetadata& rhs) {
@@ -29,8 +28,7 @@ inline std::ostream& operator<<(std::ostream& os, const ThreatMetadata& meta) {
      << ", api_permissions=[";
   for (auto p : meta.api_permissions)
     os << p << ",";
-  return os << "], population_id=" << meta.population_id
-            << ", raw_metadata=" << meta.raw_metadata << "}";
+  return os << "], population_id=" << meta.population_id;
 }
 
 }  // namespace safe_browsing

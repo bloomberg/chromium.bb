@@ -137,6 +137,26 @@ TEST_F(SafeBrowsingPingManagerTest, TestSafeBrowsingHitUrl) {
             "url.com%2F&evtb=1&src=l4&m=0",
         pm.SafeBrowsingHitUrl(hp).spec());
   }
+
+  // Same as above, but add population_id
+  {
+    HitReport hp(base_hp);
+    hp.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+    hp.threat_source = ThreatSource::LOCAL_PVER4;
+    hp.is_extended_reporting = false;
+    hp.is_metrics_reporting_active = false;
+    hp.is_subresource = true;
+    hp.population_id = "foo bar";
+    EXPECT_EQ(
+        "https://prefix.com/foo/report?client=unittest&appver=1.0&"
+        "pver=3.0" +
+            key_param_ +
+            "&ext=0&evts=malcsdhit&"
+            "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
+            "url.com%2F&evtb=1&src=l4&m=0&up=foo+bar",
+        pm.SafeBrowsingHitUrl(hp).spec());
+  }
 }
 
 TEST_F(SafeBrowsingPingManagerTest, TestThreatDetailsUrl) {

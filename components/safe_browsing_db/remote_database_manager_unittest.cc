@@ -18,7 +18,7 @@ namespace {
 
 class TestSafeBrowsingApiHandler : public SafeBrowsingApiHandler {
  public:
-  void StartURLCheck(const URLCheckCallback& callback,
+  void StartURLCheck(const URLCheckCallbackMeta& callback,
                      const GURL& url,
                      const std::vector<SBThreatType>& threat_types) override {}
 };

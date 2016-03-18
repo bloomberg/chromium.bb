@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/metadata.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
@@ -432,16 +433,31 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[2].list_id);
 
-  // Test metadata parsing.
+  // Test metadata parsing. Make some metadata protos to fill in the message.
+  MalwarePatternType proto;
+
+  proto.set_pattern_type(MalwarePatternType::LANDING);
+  std::string metadata_pb_landing;
+  ASSERT_TRUE(proto.SerializeToString(&metadata_pb_landing));
+
+  proto.set_pattern_type(MalwarePatternType::DISTRIBUTION);
+  std::string metadata_pb_distribution;
+  ASSERT_TRUE(proto.SerializeToString(&metadata_pb_distribution));
+
   const std::string get_hash3(base::StringPrintf(
       "45\n"
       "%s:32:2:m\n"
       "zzzzyyyyxxxxwwwwvvvvuuuuttttssss"
       "00112233445566778899aabbccddeeff"
-      "2\nab2\nxy"
+      "%zu\n%s"  // meta 1
+      "%zu\n%s"  // meta 2
       "%s:32:1\n"
       "cafebeefcafebeefdeaddeaddeaddead",
       kDefaultMalwareList,
+      metadata_pb_landing.size(),
+      metadata_pb_landing.c_str(),
+      metadata_pb_distribution.size(),
+      metadata_pb_distribution.c_str(),
       kDefaultPhishList));
   EXPECT_TRUE(ParseGetHash(get_hash3.data(), get_hash3.length(),
                            &cache_lifetime, &full_hashes));
@@ -451,17 +467,22 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
                    "zzzzyyyyxxxxwwwwvvvvuuuuttttssss",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[0].list_id);
-  EXPECT_EQ(std::string("ab"), full_hashes[0].metadata.raw_metadata);
+  EXPECT_EQ(ThreatPatternType::LANDING,
+            full_hashes[0].metadata.threat_pattern_type);
+
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[1].list_id);
-  EXPECT_EQ(std::string("xy"), full_hashes[1].metadata.raw_metadata);
+  EXPECT_EQ(ThreatPatternType::DISTRIBUTION,
+            full_hashes[1].metadata.threat_pattern_type);
+
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "cafebeefcafebeefdeaddeaddeaddead",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(PHISH, full_hashes[2].list_id);
-  EXPECT_EQ(std::string(), full_hashes[2].metadata.raw_metadata);
+  EXPECT_EQ(ThreatPatternType::NONE,
+            full_hashes[2].metadata.threat_pattern_type);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
@@ -508,7 +529,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownListAndMetadata) {
       "600\n"
       "BADLISTNAME:32:1:m\n"
       "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-      "8\nMETADATA"
+      "8\nMETADATA"  // not even parsed (lest the parser DCHECK's).
       "%s:32:1\n"
       "0123456789hashhashhashhashhashha",
       kDefaultMalwareList));
@@ -519,7 +540,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownListAndMetadata) {
                    "0123456789hashhashhashhashhashha",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[0].list_id);
-  EXPECT_EQ(std::string(), full_hashes[0].metadata.raw_metadata);
+  EXPECT_EQ(ThreatPatternType::NONE,
+            full_hashes[0].metadata.threat_pattern_type);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestFormatHash) {

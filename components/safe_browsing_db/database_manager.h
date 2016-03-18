@@ -55,7 +55,7 @@ class SafeBrowsingDatabaseManager
 
     // Called when the result of checking the API blacklist is known.
     virtual void OnCheckApiBlacklistUrlResult(const GURL& url,
-                                              const std::string& metadata) {}
+                                              const ThreatMetadata& metadata) {}
 
     // Called when the result of checking the resource blacklist is known.
     virtual void OnCheckResourceUrlResult(const GURL& url,

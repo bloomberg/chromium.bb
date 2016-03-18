@@ -37,6 +37,10 @@ struct HitReport {
   bool is_subresource;
   SBThreatType threat_type;
   ThreatSource threat_source;
+
+  // Opaque string used for tracking Pver4-based experiments
+  std::string population_id;
+
   bool is_extended_reporting;
   bool is_metrics_reporting_active;
 

@@ -76,29 +76,6 @@ ThreatPatternType ParseThreatSubType(
   }
 }
 
-// DEPRECATED
-// TODO(nparker): Remove this as part of crbug/589610
-// Convert back to PB for compatibility with clank, until we land
-// a CL there to use ParseJson().
-const std::string ParseExtraMetadataToPB(const base::DictionaryValue* match,
-                                         SBThreatType threat_type) {
-  ThreatPatternType pattern_type = ParseThreatSubType(match, threat_type);
-
-  MalwarePatternType pb;
-  switch (pattern_type) {
-    case ThreatPatternType::LANDING:
-      pb.set_pattern_type(MalwarePatternType::LANDING);
-      break;
-    case ThreatPatternType::DISTRIBUTION:
-      pb.set_pattern_type(MalwarePatternType::DISTRIBUTION);
-      break;
-    default:
-      return std::string();
-  }
-
-  return pb.SerializeAsString();
-}
-
 // Parse the optional "UserPopulation" key from the metadata.
 // Returns empty string if none was found.
 std::string ParseUserPopulation(const base::DictionaryValue* match) {
@@ -191,56 +168,6 @@ UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
   metadata->threat_pattern_type =
       ParseThreatSubType(worst_match, *worst_threat);
   metadata->population_id = ParseUserPopulation(worst_match);
-
-  return UMA_STATUS_UNSAFE;  // success
-}
-
-// DEPRECATED
-// TODO(nparker): Remove this as part of crbug/589610
-UmaRemoteCallResult ParseJsonToThreatAndPB(const std::string& metadata_str,
-                                           SBThreatType* worst_threat,
-                                           std::string* metadata_pb_str) {
-  *worst_threat = SB_THREAT_TYPE_SAFE;  // Default to safe.
-  *metadata_pb_str = std::string();
-
-  if (metadata_str.empty())
-    return UMA_STATUS_JSON_EMPTY;
-
-  // Pick out the "matches" list.
-  scoped_ptr<base::Value> value = base::JSONReader::Read(metadata_str);
-  const base::ListValue* matches = nullptr;
-  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY) ||
-      !(static_cast<base::DictionaryValue*>(value.get()))
-           ->GetList(kJsonKeyMatches, &matches) ||
-      !matches) {
-    return UMA_STATUS_JSON_FAILED_TO_PARSE;
-  }
-
-  // Go through each matched threat type and pick the most severe.
-  int worst_threat_num = -1;
-  const base::DictionaryValue* worst_match = nullptr;
-  for (size_t i = 0; i < matches->GetSize(); i++) {
-    // Get the threat number
-    const base::DictionaryValue* match;
-    std::string threat_num_str;
-    int java_threat_num = -1;
-    if (!matches->GetDictionary(i, &match) ||
-        !match->GetString(kJsonKeyThreatType, &threat_num_str) ||
-        !base::StringToInt(threat_num_str, &java_threat_num)) {
-      continue;  // Skip malformed list entries
-    }
-
-    if (GetThreatSeverity(java_threat_num) >
-        GetThreatSeverity(worst_threat_num)) {
-      worst_threat_num = java_threat_num;
-      worst_match = match;
-    }
-  }
-
-  *worst_threat = JavaToSBThreatType(worst_threat_num);
-  if (*worst_threat == SB_THREAT_TYPE_SAFE || !worst_match)
-    return UMA_STATUS_JSON_UNKNOWN_THREAT;
-  *metadata_pb_str = ParseExtraMetadataToPB(worst_match, *worst_threat);
 
   return UMA_STATUS_UNSAFE;  // success
 }

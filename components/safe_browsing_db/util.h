@@ -78,11 +78,6 @@ struct ThreatMetadata {
   // Opaque base64 string used for user-population experiments in pver4.
   // This will be empty if it wasn't present in the response.
   std::string population_id;
-
-  // This is the only field currently populated, and it'll be removed
-  // when the others are used.
-  // TODO(nparker): Remove this as part of crbug/589610.
-  std::string raw_metadata;
 };
 
 // A truncated hash's type.
