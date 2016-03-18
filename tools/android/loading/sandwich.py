@@ -33,6 +33,7 @@ import devil_chromium
 
 import chrome_cache
 import chrome_setup
+import controller
 import device_setup
 import devtools_monitor
 import frame_load_lens
@@ -151,8 +152,7 @@ class SandwichRunner(object):
     # Configures whether the WPR archive should be read or generated.
     self.wpr_record = False
 
-    self._device = None
-    self._chrome_additional_flags = []
+    self._chrome_ctl = None
     self._local_cache_directory_path = None
 
   def PullConfigFromArgs(self, args):
@@ -200,35 +200,27 @@ class SandwichRunner(object):
     return None
 
   def _RunNavigation(self, url, clear_cache, trace_id=None):
-    with device_setup.DeviceConnection(
-        device=self._device,
-        additional_flags=self._chrome_additional_flags) as connection:
-      additional_metadata = {}
-      if self._GetEmulatorNetworkCondition('browser'):
-        additional_metadata = chrome_setup.SetUpEmulationAndReturnMetadata(
-            connection=connection,
-            emulated_device_name=None,
-            emulated_network_name=self._GetEmulatorNetworkCondition('browser'))
-      trace = trace_recorder.MonitorUrl(
-          connection, url,
-          clear_cache=clear_cache,
-          categories=pull_sandwich_metrics.CATEGORIES,
-          timeout=_DEVTOOLS_TIMEOUT)
-      trace.metadata.update(additional_metadata)
-      if trace_id != None and self.trace_output_directory:
-        trace_path = os.path.join(
-            self.trace_output_directory, str(trace_id), 'trace.json')
-        os.makedirs(os.path.dirname(trace_path))
-        trace.ToJsonFile(trace_path)
+    self._chrome_ctl.SetClearCache(clear_cache)
+    self._chrome_ctl.SetNetworkEmulation(
+        self._GetEmulatorNetworkCondition('browser'))
+    # TODO(gabadie): add a way to avoid recording a trace.
+    trace = loading_trace.LoadingTrace.FromUrlAndController(
+        url=url,
+        controller=self._chrome_ctl,
+        categories=pull_sandwich_metrics.CATEGORIES,
+        timeout_seconds=_DEVTOOLS_TIMEOUT)
+    if trace_id != None and self.trace_output_directory:
+      trace_path = os.path.join(
+          self.trace_output_directory, str(trace_id), 'trace.json')
+      os.makedirs(os.path.dirname(trace_path))
+      trace.ToJsonFile(trace_path)
 
   def _RunUrl(self, url, trace_id=0):
     clear_cache = False
     if self.cache_operation == 'clear':
       clear_cache = True
     elif self.cache_operation == 'push':
-      self._device.KillAll(OPTIONS.chrome_package_name, quiet=True)
-      chrome_cache.PushBrowserCache(self._device,
-                                    self._local_cache_directory_path)
+      self._chrome_ctl.PushBrowserCache(self._local_cache_directory_path)
     elif self.cache_operation == 'reload':
       self._RunNavigation(url, clear_cache=True)
     elif self.cache_operation == 'save':
@@ -239,27 +231,24 @@ class SandwichRunner(object):
     assert self.cache_operation == 'save'
     assert self.cache_archive_path, 'Need to specify where to save the cache'
 
-    # Move Chrome to background to allow it to flush the index.
-    self._device.adb.Shell('am start com.google.android.launcher')
-    time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
-    self._device.KillAll(OPTIONS.chrome_package_name, quiet=True)
-    time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
-
-    cache_directory_path = chrome_cache.PullBrowserCache(self._device)
+    cache_directory_path = self._chrome_ctl.PullBrowserCache()
     chrome_cache.ZipDirectoryContent(
         cache_directory_path, self.cache_archive_path)
     shutil.rmtree(cache_directory_path)
 
   def Run(self):
-    """SandwichRunner main entry point meant to be called once configured.
-    """
+    """SandwichRunner main entry point meant to be called once configured."""
+    assert self._chrome_ctl == None
+    assert self._local_cache_directory_path == None
     if self.trace_output_directory:
       self._CleanTraceOutputDirectory()
 
-    self._device = device_utils.DeviceUtils.HealthyDevices()[0]
-    self._chrome_additional_flags = []
+    # TODO(gabadie): Make sandwich working on desktop.
+    device = device_utils.DeviceUtils.HealthyDevices()[0]
+    self._chrome_ctl = controller.RemoteChromeController(device)
+    if self.cache_operation == 'save':
+      self._chrome_ctl.SetSlowDeath()
 
-    assert self._local_cache_directory_path == None
     if self.cache_operation == 'push':
       assert os.path.isfile(self.cache_archive_path)
       self._local_cache_directory_path = tempfile.mkdtemp(suffix='.cache')
@@ -267,12 +256,11 @@ class SandwichRunner(object):
           self.cache_archive_path, self._local_cache_directory_path)
 
     ran_urls = []
-    with device_setup.WprHost(self._device, self.wpr_archive_path,
+    with self._chrome_ctl.OpenWprHost(self.wpr_archive_path,
         record=self.wpr_record,
         network_condition_name=self._GetEmulatorNetworkCondition('wpr'),
         disable_script_injection=self.disable_wpr_script_injection
-        ) as additional_flags:
-      self._chrome_additional_flags.extend(additional_flags)
+        ):
       for _ in xrange(self.job_repeat):
         for url in self.urls:
           self._RunUrl(url, trace_id=len(ran_urls))
@@ -285,6 +273,8 @@ class SandwichRunner(object):
       self._PullCacheFromDevice()
     if self.trace_output_directory:
       self._SaveRunInfos(ran_urls)
+
+    self._chrome_ctl = None
 
 
 def _ArgumentParser():

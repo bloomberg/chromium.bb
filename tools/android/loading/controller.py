@@ -49,6 +49,7 @@ class ChromeControllerBase(object):
         '--enable-test-events',
         '--remote-debugging-port=%d' % OPTIONS.devtools_port,
     ]
+    self._chrome_wpr_specific_args = []
     self._metadata = {}
     self._emulated_device = None
     self._emulated_network = None
@@ -98,7 +99,10 @@ class ChromeControllerBase(object):
     Args:
       network_name: (str) Key from emulation.NETWORK_CONDITIONS.
     """
-    self._emulated_network = emulation.NETWORK_CONDITIONS[network_name]
+    if network_name:
+      self._emulated_network = emulation.NETWORK_CONDITIONS[network_name]
+    else:
+      self._emulated_network = None
 
   def _StartConnection(self, connection):
     """This should be called after opening an appropriate connection."""
@@ -113,6 +117,10 @@ class ChromeControllerBase(object):
                           seconds_since_epoch=time.time())
     if self._clear_cache:
       connection.AddHook(connection.ClearCache)
+
+  def _GetChromeArguments(self):
+    """Get command-line arguments for the chrome execution."""
+    return self._chrome_args + self._chrome_wpr_specific_args
 
 
 class RemoteChromeController(ChromeControllerBase):
@@ -141,7 +149,7 @@ class RemoteChromeController(ChromeControllerBase):
     self._device.KillAll(package_info.package, quiet=True)
 
     with device_setup.FlagReplacer(
-        self._device, command_line_path, self._chrome_args):
+        self._device, command_line_path, self._GetChromeArguments()):
       start_intent = intent.Intent(
           package=package_info.package, activity=package_info.activity,
           data='about:blank')
@@ -189,6 +197,20 @@ class RemoteChromeController(ChromeControllerBase):
     """
     self._slow_death = slow_death
 
+  @contextlib.contextmanager
+  def OpenWprHost(self, wpr_archive_path, record=False,
+                  network_condition_name=None,
+                  disable_script_injection=False):
+    """Starts a WPR host, overrides Chrome flags until contextmanager exit."""
+    assert not self._chrome_wpr_specific_args, 'WPR is already running.'
+    with device_setup.WprHost(self._device, wpr_archive_path,
+        record=record,
+        network_condition_name=network_condition_name,
+        disable_script_injection=disable_script_injection) as additional_flags:
+      self._chrome_wpr_specific_args = additional_flags
+      yield
+    self._chrome_wpr_specific_args = []
+
 
 class LocalChromeController(ChromeControllerBase):
   """Controller for a local (desktop) chrome instance.
@@ -206,7 +228,7 @@ class LocalChromeController(ChromeControllerBase):
     binary_filename = OPTIONS.local_binary
     profile_dir = OPTIONS.local_profile_dir
     using_temp_profile_dir = profile_dir is None
-    flags = self._chrome_args
+    flags = self._GetChromeArguments()
     if using_temp_profile_dir:
       profile_dir = tempfile.mkdtemp()
     flags = ['--user-data-dir=%s' % profile_dir] + flags
