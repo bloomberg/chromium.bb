@@ -34,8 +34,8 @@ static const int kClientViewIndex = 1;
 // NonClientView, public:
 
 NonClientView::NonClientView()
-    : client_view_(NULL),
-      overlay_view_(NULL) {
+    : client_view_(nullptr),
+      overlay_view_(nullptr) {
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
@@ -241,7 +241,9 @@ NonClientFrameView::~NonClientFrameView() {
 }
 
 bool NonClientFrameView::ShouldPaintAsActive() const {
-  return GetWidget()->IsAlwaysRenderAsActive() || GetWidget()->IsActive();
+  return  GetWidget()->IsAlwaysRenderAsActive() ||
+         (active_state_override_ ? *active_state_override_
+                                 : GetWidget()->IsActive());
 }
 
 int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
@@ -293,6 +295,9 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
   return can_resize ? component : HTBORDER;
 }
 
+void NonClientFrameView::ActivationChanged(bool active) {
+}
+
 void NonClientFrameView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_CLIENT;
 }
@@ -304,7 +309,8 @@ const char* NonClientFrameView::GetClassName() const {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
-NonClientFrameView::NonClientFrameView() {
+NonClientFrameView::NonClientFrameView()
+    : active_state_override_(nullptr) {
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }

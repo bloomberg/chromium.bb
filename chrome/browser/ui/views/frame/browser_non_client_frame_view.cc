@@ -31,10 +31,6 @@
 #include "ui/views/background.h"
 #include "ui/views/resources/grit/views_resources.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
@@ -59,14 +55,8 @@ void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {}
 gfx::ImageSkia BrowserNonClientFrameView::GetOTRAvatarIcon() const {
   if (!ui::MaterialDesignController::IsModeMaterial())
     return *GetThemeProviderForProfile()->GetImageSkiaNamed(IDR_OTR_ICON);
-  SkColor icon_color = SK_ColorWHITE;
-#if defined(OS_WIN)
-  // On Windows 10+, we assume the native frame color is white.
-  // TODO(pkasting): Read the correct frame color from the registry or APIs.
-  if (GetWidget() && GetWidget()->ShouldUseNativeFrame() &&
-      (base::win::GetVersion() >= base::win::VERSION_WIN10))
-    icon_color = gfx::kChromeIconGrey;
-#endif
+  const SkColor icon_color = color_utils::PickContrastingColor(
+      SK_ColorWHITE, gfx::kChromeIconGrey, GetFrameColor());
   return gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, 24, icon_color);
 }
 
@@ -99,9 +89,10 @@ SkColor BrowserNonClientFrameView::GetFrameColor(bool active) const {
   ThemeProperties::OverwritableByUserThemeProperty color_id =
       active ? ThemeProperties::COLOR_FRAME
              : ThemeProperties::COLOR_FRAME_INACTIVE;
-  return ShouldPaintAsThemed() ? GetThemeProvider()->GetColor(color_id)
-                               : ThemeProperties::GetDefaultColor(
-                                     color_id, browser_view_->IsOffTheRecord());
+  return ShouldPaintAsThemed() ?
+      GetThemeProviderForProfile()->GetColor(color_id) :
+      ThemeProperties::GetDefaultColor(color_id,
+                                       browser_view_->IsOffTheRecord());
 }
 
 gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(bool active) const {
@@ -193,6 +184,18 @@ void BrowserNonClientFrameView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)
     UpdateAvatar();
+}
+
+void BrowserNonClientFrameView::ActivationChanged(bool active) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // On Windows, while deactivating the widget, this is called before the
+    // active HWND has actually been changed.  Since we want the avatar state to
+    // reflect that the window is inactive, we force NonClientFrameView to see
+    // the "correct" state as an override.
+    set_active_state_override(&active);
+    UpdateAvatar();
+    set_active_state_override(nullptr);
+  }
 }
 
 void BrowserNonClientFrameView::OnProfileAdded(

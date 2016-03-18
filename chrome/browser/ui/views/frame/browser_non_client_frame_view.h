@@ -89,6 +89,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // views::NonClientFrameView:
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+  void ActivationChanged(bool active) override;
 
   // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;

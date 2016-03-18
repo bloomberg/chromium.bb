@@ -84,6 +84,9 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   // Whether the widget can be resized or maximized has changed.
   virtual void SizeConstraintsChanged() = 0;
 
+  // The widget's activation state has changed to |active|.
+  virtual void ActivationChanged(bool active);
+
   // View:
   void GetAccessibleState(ui::AXViewState* state) override;
   const char* GetClassName() const override;
@@ -97,6 +100,18 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 
   // View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
+  void set_active_state_override(bool* active_state_override) {
+    active_state_override_ = active_state_override;
+  }
+
+ private:
+  // Used to force ShouldPaintAsActive() to treat the active state a particular
+  // way.  This is normally null; when non-null, its value will override the
+  // normal "active" value computed by the function.
+  bool* active_state_override_;
+
+  DISALLOW_COPY_AND_ASSIGN(NonClientFrameView);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
