@@ -93,6 +93,7 @@ void StyleEngine::detachFromDocument()
     m_fontSelector.clear();
     m_resolver.clear();
     m_styleSheetCollectionMap.clear();
+    m_dirtyTreeScopes.clear();
     m_activeTreeScopes.clear();
 }
 #endif
@@ -271,7 +272,6 @@ void StyleEngine::clearMediaQueryRuleSetStyleSheets()
 {
     documentStyleSheetCollection()->clearMediaQueryRuleSetStyleSheets();
     clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_activeTreeScopes);
-    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes);
 }
 
 void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector)
