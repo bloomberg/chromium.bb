@@ -390,7 +390,7 @@ sign \x2229 46-236 ∩ set intersection
 sign \x222a 46-235 ∪ set union
 sign \x222b 2346 ∫ integral
 sign \x222e 4-2346 contour integral
-sign \x2234 6-16 ∴ therefore
+#sign \x2234 6-16 ∴ therefore   conlicts with Child
 sign \x2235 4-34 ∵ because
 sign \x2237 25-25 ∷ proportion
 sign \x2243 456-35 ≃ asymptotically equal to
