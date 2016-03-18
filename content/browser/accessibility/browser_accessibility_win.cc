@@ -3798,7 +3798,7 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::NewReference() {
 BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
     const VARIANT& var_id) {
   if (var_id.vt != VT_I4)
-    return NULL;
+    return nullptr;
 
   LONG child_id = var_id.lVal;
   if (child_id == CHILDID_SELF)
@@ -3807,8 +3807,12 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
   if (child_id >= 1 && child_id <= static_cast<LONG>(PlatformChildCount()))
     return ToBrowserAccessibilityWin(PlatformGetChild(child_id - 1));
 
-  return ToBrowserAccessibilityWin(
+  BrowserAccessibilityWin* child = ToBrowserAccessibilityWin(
       BrowserAccessibility::GetFromUniqueID(-child_id));
+  if (child && child->IsDescendantOf(this))
+    return child;
+
+  return nullptr;
 }
 
 HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(

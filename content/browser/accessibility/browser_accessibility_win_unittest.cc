@@ -1977,4 +1977,32 @@ TEST_F(BrowserAccessibilityTest, UniqueIdWinInvalidAfterDeletingTree) {
   EXPECT_EQ(S_OK, hr);
 }
 
+TEST_F(BrowserAccessibilityTest, AccChildOnlyReturnsDescendants) {
+  ui::AXNodeData root_node;
+  root_node.id = 1;
+  root_node.role = ui::AX_ROLE_ROOT_WEB_AREA;
+
+  ui::AXNodeData child_node;
+  child_node.id = 2;
+  root_node.child_ids.push_back(2);
+
+  scoped_ptr<BrowserAccessibilityManagerWin> manager(
+      new BrowserAccessibilityManagerWin(
+          MakeAXTreeUpdate(root_node, child_node),
+          nullptr,
+          new CountedBrowserAccessibilityFactory()));
+
+  BrowserAccessibility* root = manager->GetRoot();
+  BrowserAccessibility* child = root->PlatformGetChild(0);
+
+  base::win::ScopedVariant root_unique_id_variant(-root->unique_id());
+  base::win::ScopedComPtr<IDispatch> result;
+  EXPECT_EQ(E_INVALIDARG, ToBrowserAccessibilityWin(child)->get_accChild(
+      root_unique_id_variant, result.Receive()));
+
+  base::win::ScopedVariant child_unique_id_variant(-child->unique_id());
+  EXPECT_EQ(S_OK, ToBrowserAccessibilityWin(root)->get_accChild(
+      child_unique_id_variant, result.Receive()));
+}
+
 }  // namespace content

@@ -333,17 +333,20 @@ STDMETHODIMP AXPlatformNodeWin::get_accChild(VARIANT var_child,
     // that want to enumerate all immediate children.
     *disp_child = delegate_->ChildAtIndex(child_id - 1);
     if (!(*disp_child))
-      return E_FAIL;
+      return E_INVALIDARG;
     (*disp_child)->AddRef();
     return S_OK;
   }
 
   if (child_id >= 0)
-    return E_FAIL;
+    return E_INVALIDARG;
 
   // Negative child ids can be used to map to any descendant.
   AXPlatformNodeWin* child = static_cast<AXPlatformNodeWin*>(
       GetFromUniqueId(-child_id));
+  if (child && !IsDescendant(child))
+    child = nullptr;
+
   if (child) {
     *disp_child = child;
     (*disp_child)->AddRef();
@@ -351,7 +354,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accChild(VARIANT var_child,
   }
 
   *disp_child = nullptr;
-  return E_FAIL;
+  return E_INVALIDARG;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accChildCount(LONG* child_count) {
