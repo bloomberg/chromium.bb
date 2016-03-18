@@ -73,8 +73,8 @@ InstallerState::InstallerState()
       package_type_(UNKNOWN_PACKAGE_TYPE),
       root_key_(NULL),
       msi_(false),
-      verbose_logging_(false) {
-}
+      background_mode_(false),
+      verbose_logging_(false) {}
 
 InstallerState::InstallerState(Level level)
     : operation_(UNINITIALIZED),
@@ -84,6 +84,7 @@ InstallerState::InstallerState(Level level)
       package_type_(UNKNOWN_PACKAGE_TYPE),
       root_key_(NULL),
       msi_(false),
+      background_mode_(false),
       verbose_logging_(false) {
   // Use set_level() so that root_key_ is updated properly.
   set_level(level);

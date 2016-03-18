@@ -123,6 +123,12 @@ class InstallerState {
   // flag is set is to be operated on.
   bool is_msi() const { return msi_; }
 
+  // True if the process is running at a reduced "background" priority.
+  bool is_background_mode() const { return background_mode_; }
+
+  // Indicate that the process is or is not running in the background.
+  void set_background_mode(bool bg) { background_mode_ = bg; }
+
   // True if the --verbose-logging command-line flag is set or if the
   // verbose_logging master preferences option is true.
   bool verbose_logging() const { return verbose_logging_; }
@@ -268,6 +274,7 @@ class InstallerState {
   HKEY root_key_;
 #endif
   bool msi_;
+  bool background_mode_;
   bool verbose_logging_;
 
  private:
