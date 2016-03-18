@@ -66,6 +66,7 @@ void PrintToplevelHelp() {
   PrintShortHelp(
       "input_conversion: Processing input from exec_script and read_file.");
   PrintShortHelp("label_pattern: Matching more than one label.");
+  PrintShortHelp("nogncheck: Annotating includes for checking.");
   PrintShortHelp("runtime_deps: How runtime dependency computation works.");
   PrintShortHelp("source_expansion: Map sources to outputs for scripts.");
   PrintShortHelp("switches: Show available command-line switches.");
@@ -126,6 +127,7 @@ void PrintAllHelp() {
   PrintLongHelp(kGrammar_Help);
   PrintLongHelp(kInputConversion_Help);
   PrintLongHelp(kLabelPattern_Help);
+  PrintLongHelp(kNoGnCheck_Help);
   PrintLongHelp(kRuntimeDeps_Help);
   PrintLongHelp(kSourceExpansion_Help);
   PrintSwitchHelp();
@@ -231,6 +233,7 @@ int RunHelp(const std::vector<std::string>& args) {
     PrintLongHelp(kInputConversion_Help);
   };
   random_topics["label_pattern"] = []() { PrintLongHelp(kLabelPattern_Help); };
+  random_topics["nogncheck"] = []() { PrintLongHelp(kNoGnCheck_Help); };
   random_topics["runtime_deps"] = []() { PrintLongHelp(kRuntimeDeps_Help); };
   random_topics["source_expansion"] = []() {
     PrintLongHelp(kSourceExpansion_Help);

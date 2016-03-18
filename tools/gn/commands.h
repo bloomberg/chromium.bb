@@ -176,6 +176,9 @@ void FilterAndPrintTargets(bool indent, std::vector<const Target*>* targets);
 void FilterAndPrintTargetSet(bool indent,
                              const std::set<const Target*>& targets);
 
+// Extra help from command_check.cc
+extern const char kNoGnCheck_Help[];
+
 }  // namespace commands
 
 #endif  // TOOLS_GN_COMMANDS_H_

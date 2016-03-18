@@ -281,6 +281,9 @@
 ## **gn check <out_dir> [<label_pattern>] [\--force]**
 
 ```
+  GN's include header checker validates that the includes for C-like
+  source files match the build dependency graph.
+
   "gn check" is the same thing as "gn gen" with the "--check" flag
   except that this command does not write out any build files. It's
   intended to be an easy way to manually trigger include file checking.
@@ -290,11 +293,6 @@
   only those matching targets will be checked. See
   "gn help label_pattern" for details.
 
-  The .gn file may specify a list of targets to be checked. Only these
-  targets will be checked if no label_pattern is specified on the
-  command line. Otherwise, the command-line list is used instead. See
-  "gn help dotfile".
-
 ```
 
 ### **Command-specific switches**
@@ -303,6 +301,94 @@
   --force
       Ignores specifications of "check_includes = false" and checks
       all target's files that match the target label.
+
+```
+
+### **What gets checked**
+
+```
+  The .gn file may specify a list of targets to be checked. Only these
+  targets will be checked if no label_pattern is specified on the
+  command line. Otherwise, the command-line list is used instead. See
+  "gn help dotfile".
+
+  Targets can opt-out from checking with "check_includes = false"
+  (see "gn help check_includes").
+
+  For targets being checked:
+
+    - GN opens all C-like source files in the targets to be checked and
+      scans the top for includes.
+
+    - Includes with a "nogncheck" annotation are skipped (see
+      "gn help nogncheck").
+
+    - Only includes using "quotes" are checked. <brackets> are assumed
+      to be system includes.
+
+    - Include paths are assumed to be relative to either the source root
+      or the "root_gen_dir" and must include all the path components.
+      (It might be nice in the future to incorporate GN's knowledge of
+      the include path to handle other include styles.)
+
+    - GN does not run the preprocessor so will not understand
+      conditional includes.
+
+    - Only includes matching known files in the build are checked:
+      includes matching unknown paths are ignored.
+
+  For an include to be valid:
+
+    - The included file must be in the current target, or there must
+      be a path following only public dependencies to a target with the
+      file in it ("gn path" is a good way to diagnose problems).
+
+    - There can be multiple targets with an included file: only one
+      needs to be valid for the include to be allowed.
+
+    - If there are only "sources" in a target, all are considered to
+      be public and can be included by other targets with a valid public
+      dependency path.
+
+    - If a target lists files as "public", only those files are
+      able to be included by other targets. Anything in the sources
+      will be considered private and will not be includable regardless
+      of dependency paths.
+
+    - Ouptuts from actions are treated like public sources on that
+      target.
+
+    - A target can include headers from a target that depends on it
+      if the other target is annotated accordingly. See
+      "gn help allow_circular_includes_from".
+
+```
+
+### **Advice on fixing problems**
+
+```
+  If you have a third party project that uses relative includes,
+  it's generally best to exclude that target from checking altogether
+  via "check_includes = false".
+
+  If you have conditional includes, make sure the build conditions
+  and the preprocessor conditions match, and annotate the line with
+  "nogncheck" (see "gn help nogncheck" for an example).
+
+  If two targets are hopelessly intertwined, use the
+  "allow_circular_includes_from" annotation. Ideally each should have
+  identical dependencies so configs inherited from those dependencies
+  are consistent (see "gn help allow_circular_includes_from").
+
+  If you have a standalone header file or files that need to be shared
+  between a few targets, you can consider making a source_set listing
+  only those headers as public sources. With only header files, the
+  source set will be a no-op from a build perspective, but will give a
+  central place to refer to those headers. That source set's files
+  will still need to pass "gn check" in isolation.
+
+  In rare cases it makes sense to list a header in more than one
+  target if it could be considered conceptually a member of both.
 
 ```
 
@@ -493,6 +579,16 @@
 
 ```
   Formats .gn file to a standard format.
+
+  The contents of some lists ('sources', 'deps', etc.) will be sorted to
+  a canonical order. To suppress this, you can add a comment of the form
+  "# NOSORT" immediately preceeding the assignment. e.g.
+
+  # NOSORT
+  sources = [
+    "z.cc",
+    "a.cc",
+  ]
 
 ```
 
@@ -3503,25 +3599,57 @@
   These targets will be permitted to include headers from the current
   target despite the dependency going in the opposite direction.
 
+  When you use this, both targets must be included in a final binary
+  for it to link. To keep linker errors from happening, it is good
+  practice to have all external dependencies depend only on one of
+  the two targets, and to set the visibility on the other to enforce
+  this. Thus the targets will always be linked together in any output.
+
 ```
 
-### **Tedious exposition**
+### **Details**
 
 ```
   Normally, for a file in target A to include a file from target B,
   A must list B as a dependency. This invariant is enforced by the
-  "gn check" command (and the --check flag to "gn gen").
+  "gn check" command (and the --check flag to "gn gen" -- see
+  "gn help check").
 
   Sometimes, two targets might be the same unit for linking purposes
   (two source sets or static libraries that would always be linked
-  together in a final executable or shared library). In this case,
-  you want A to be able to include B's headers, and B to include A's
-  headers.
+  together in a final executable or shared library) and they each
+  include headers from the other: you want A to be able to include B's
+  headers, and B to include A's headers. This is not an ideal situation
+  but is sometimes unavoidable.
 
   This list, if specified, lists which of the dependencies of the
   current target can include header files from the current target.
   That is, if A depends on B, B can only include headers from A if it is
-  in A's allow_circular_includes_from list.
+  in A's allow_circular_includes_from list. Normally includes must
+  follow the direction of dependencies, this flag allows them to go
+  in the opposite direction.
+
+```
+
+### **Danger**
+
+```
+  In the above example, A's headers are likely to include headers from
+  A's dependencies. Those dependencies may have public_configs that
+  apply flags, defines, and include paths that make those headers work
+  properly.
+
+  With allow_circular_includes_from, B can include A's headers, and
+  transitively from A's dependencies, without having the dependencies
+  that would bring in the public_configs those headers need. The result
+  may be errors or inconsistent builds.
+
+  So when you use allow_circular_includes_from, make sure that any
+  compiler settings, flags, and include directories are the same between
+  both targets (consider putting such things in a shared config they can
+  both reference). Make sure the dependencies are also the same (you
+  might consider a group to collect such dependencies they both
+  depend on).
 
 ```
 
@@ -3529,9 +3657,19 @@
 
 ```
   source_set("a") {
-    deps = [ ":b", ":c" ]
+    deps = [ ":b", ":a_b_shared_deps" ]
     allow_circular_includes_from = [ ":b" ]
     ...
+  }
+
+  source_set("b") {
+    deps = [ ":a_b_shared_deps" ]
+    # Sources here can include headers from a despite lack of deps.
+    ...
+  }
+
+  group("a_b_shared_deps") {
+    public_deps = [ ":c" ]
   }
 
 
@@ -3880,29 +4018,12 @@
   This does not affect other targets that depend on the current target,
   it just skips checking the includes of the current target's files.
 
-```
+  If there are a few conditionally included headers that trip up
+  checking, you can exclude headers individually by annotating them with
+  "nogncheck" (see "gn help nogncheck").
 
-### **Controlling includes individually**
-
-```
-  If only certain includes are problematic, you can annotate them
-  individually rather than disabling header checking on an entire
-  target. Add the string "nogncheck" to the include line:
-
-    #include "foo/something_weird.h"  // nogncheck (bug 12345)
-
-  It is good form to include a reference to a bug (if the include is
-  improper, or some other comment expressing why the header checker
-  doesn't work for this particular case.
-
-  The most common reason to need "nogncheck" is conditional includes.
-  The header checker does not understand the preprocessor, so may flag
-  some includes as improper even if the dependencies and #defines are
-  always matched correctly:
-
-    #if defined(ENABLE_DOOM_MELON)
-    #include "doom_melon/beam_controller.h"  // nogncheck
-    #endif
+  The topic "gn help check" has general information on how checking
+  works and advice on how to pass a check in problematic cases.
 
 ```
 
@@ -3933,6 +4054,9 @@
   for all dependencies in one complete package. Since GN does not unpack
   static libraries to forward their contents up the dependency chain,
   it is an error for complete static libraries to depend on other static
+
+  In rare cases it makes sense to list a header in more than one
+  target if it could be considered conceptually a member of both.
   libraries.
 
 ```
@@ -5368,6 +5492,47 @@
     "//foo/*(//build/toolchain:win)"
         All targets in //foo and any subdirectory using the Windows
         toolchain.
+
+
+```
+## **nogncheck**: Skip an include line from checking.
+
+```
+  GN's header checker helps validate that the includes match the build
+  dependency graph. Sometimes an include might be conditional or
+  otherwise problematic, but you want to specifically allow it. In this
+  case, it can be whitelisted.
+
+  Include lines containing the substring "nogncheck" will be excluded
+  from header checking. The most common case is a conditional include:
+
+    #if defined(ENABLE_DOOM_MELON)
+    #include "tools/doom_melon/doom_melon.h"  // nogncheck
+    #endif
+
+  If the build file has a conditional dependency on the corresponding
+  target that matches the conditional include, everything will always
+  link correctly:
+
+    source_set("mytarget") {
+      ...
+      if (enable_doom_melon) {
+        defines = [ "ENABLE_DOOM_MELON" ]
+        deps += [ "//tools/doom_melon" ]
+      }
+
+  But GN's header checker does not understand preprocessor directives,
+  won't know it matches the build dependencies, and will flag this
+  include as incorrect when the condition is false.
+
+```
+
+### **More information**
+
+```
+  The topic "gn help check" has general information on how checking
+  works and advice on fixing problems. Targets can also opt-out of
+  checking, see "gn help check_includes".
 
 
 ```

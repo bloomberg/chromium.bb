@@ -298,14 +298,11 @@ bool HeaderChecker::CheckFile(const Target* from_target,
 }
 
 // If the file exists:
-//  - It must be in one or more dependencies of the given target.
-//  - Those dependencies must have visibility from the source file.
-//  - The header must be in the public section of those dependeices.
-//  - Those dependencies must either have no direct dependent configs with
-//    flags that affect the compiler, or those direct dependent configs apply
-//    to the "from_target" (it's one "hop" away). This ensures that if the
-//    include file needs needs compiler settings to compile it, that those
-//    settings are applied to the file including it.
+//  - The header must be in the public section of a target, or it must
+//    be in the sources with no public list (everything is implicitly public).
+//  - The dependency path to the included target must follow only public_deps.
+//  - If there are multiple targets with the header in it, only one need be
+//    valid for the check to pass.
 bool HeaderChecker::CheckInclude(const Target* from_target,
                                  const InputFile& source_file,
                                  const SourceFile& include_file,
