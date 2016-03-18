@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "crypto/random.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -143,8 +144,11 @@ void NodeController::ConnectToParent(ScopedPlatformHandle platform_handle) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // On posix, use the bootstrap channel for the broker and receive the node's
   // channel synchronously as the first message from the broker.
+  base::ElapsedTimer timer;
   broker_.reset(new Broker(std::move(platform_handle)));
   platform_handle = broker_->GetParentPlatformHandle();
+  UMA_HISTOGRAM_TIMES("Mojo.System.GetParentPlatformHandleSyncTime",
+                      timer.Elapsed());
 #endif
 
   io_task_runner_->PostTask(

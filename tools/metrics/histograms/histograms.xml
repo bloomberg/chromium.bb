@@ -22237,6 +22237,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Mojo.System.GetParentPlatformHandleSyncTime" units="ms">
+  <owner>rockot@chromium.org</owner>
+  <summary>
+    Measures the time it takes for a child to receive its parent platform handle
+    synchronously from the broker on startup. This only applies to the subset of
+    platforms on which the sync broker is used.
+  </summary>
+</histogram>
+
 <histogram name="Mojo.System.Node.ConnectedPeers">
   <owner>rockot@chromium.org</owner>
   <summary>
