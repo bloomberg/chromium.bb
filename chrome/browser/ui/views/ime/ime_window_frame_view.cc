@@ -28,7 +28,6 @@ namespace {
 const int kButtonSize = 24;
 const int kBorderThickness = 1;
 const int kIconSize = 16;
-const int kTitleAndButtonPadding = 11;
 const int kTitlebarHeight = 32;
 const int kTitlebarLeftPadding = 8;
 const int kTitlebarRightPadding = 6;
@@ -36,7 +35,6 @@ const int kTitlebarRightPadding = 6;
 // Colors used to draw border, titlebar background and title text.
 const SkColor kBackgroundColor = SkColorSetRGB(0xec, 0xef, 0xf1);
 const SkColor kBorderColor = SkColorSetRGB(0xda, 0xdf, 0xe1);
-const SkColor kTitleTextColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 
 }  // namespace
 
@@ -47,8 +45,7 @@ ImeWindowFrameView::ImeWindowFrameView(ImeWindowView* ime_window_view,
     : ime_window_view_(ime_window_view),
       mode_(mode),
       close_button_(nullptr),
-      title_icon_(nullptr),
-      title_label_(nullptr) {}
+      title_icon_(nullptr) {}
 
 ImeWindowFrameView::~ImeWindowFrameView() {}
 
@@ -70,16 +67,6 @@ void ImeWindowFrameView::Init() {
   title_icon_->SetImage(ime_window_view_->GetWindowIcon());
   title_icon_->SetTooltipText(ime_window_view_->GetWindowTitle());
   AddChildView(title_icon_);
-
-  title_label_ = new views::Label(ime_window_view_->GetWindowTitle(),
-                                  rb.GetFontList(ui::ResourceBundle::BoldFont));
-  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->SetAutoColorReadabilityEnabled(false);
-  AddChildView(title_label_);
-}
-
-void ImeWindowFrameView::UpdateTitle() {
-  UpdateWindowTitle();
 }
 
 void ImeWindowFrameView::UpdateIcon() {
@@ -145,9 +132,7 @@ void ImeWindowFrameView::UpdateWindowIcon() {
   title_icon_->SchedulePaint();
 }
 
-void ImeWindowFrameView::UpdateWindowTitle() {
-  title_label_->SetText(ime_window_view_->GetWindowTitle());
-}
+void ImeWindowFrameView::UpdateWindowTitle() {}
 
 void ImeWindowFrameView::SizeConstraintsChanged() {}
 
@@ -180,26 +165,15 @@ void ImeWindowFrameView::Layout() {
 
   if (follow_cursor) {
     close_button_->SetVisible(false);
-    title_label_->SetVisible(false);
   } else {
     // Layout the close button.
-    int right = width();
     close_button_->SetBounds(width() - kTitlebarRightPadding - kButtonSize,
                              (kTitlebarHeight - kButtonSize) / 2, kButtonSize,
                              kButtonSize);
-    right = close_button_->x();
-
-    // Layout the title.
-    int title_x = title_icon_->bounds().right() + kTitleAndButtonPadding;
-    int title_height = title_label_->font_list().GetHeight();
-    title_label_->SetBounds(
-        title_x, icon_y + ((kIconSize - title_height - 1) / 2),
-        std::max(0, right - kTitleAndButtonPadding - title_x), title_height);
   }
 }
 
 void ImeWindowFrameView::OnPaint(gfx::Canvas* canvas) {
-  UpdateControlStyles();
   PaintFrameBackground(canvas);
 }
 
@@ -265,10 +239,6 @@ void ImeWindowFrameView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == close_button_)
     ime_window_view_->Close();
-}
-
-void ImeWindowFrameView::UpdateControlStyles() {
-  title_label_->SetEnabledColor(kTitleTextColor);
 }
 
 void ImeWindowFrameView::PaintFrameBackground(gfx::Canvas* canvas) {

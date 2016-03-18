@@ -98,13 +98,6 @@ void InputMethodEngine::CloseImeWindows() {
   normal_windows_.clear();
 }
 
-void InputMethodEngine::FocusIn(
-    const ui::IMEEngineHandlerInterface::InputContext& input_context) {
-  InputMethodEngineBase::FocusIn(input_context);
-  if (follow_cursor_window_)
-    follow_cursor_window_->Show();
-}
-
 void InputMethodEngine::FocusOut() {
   InputMethodEngineBase::FocusOut();
   if (follow_cursor_window_)

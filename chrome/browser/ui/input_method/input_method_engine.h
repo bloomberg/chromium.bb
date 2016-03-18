@@ -43,8 +43,6 @@ class InputMethodEngine : public InputMethodEngineBase,
 
  private:
   // input_method::InputMethodEngineBase:
-  void FocusIn(const ui::IMEEngineHandlerInterface::InputContext& input_context)
-      override;
   void FocusOut() override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
   void UpdateComposition(const ui::CompositionText& composition_text,

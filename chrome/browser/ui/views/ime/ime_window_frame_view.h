@@ -32,7 +32,6 @@ class ImeWindowFrameView : public views::NonClientFrameView,
   ~ImeWindowFrameView() override;
 
   void Init();
-  void UpdateTitle();
   void UpdateIcon();
 
  private:
@@ -76,7 +75,6 @@ class ImeWindowFrameView : public views::NonClientFrameView,
   ImeWindow::Mode mode_;
   views::ImageButton* close_button_;
   views::ImageView* title_icon_;
-  views::Label* title_label_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeWindowFrameView);
 };
