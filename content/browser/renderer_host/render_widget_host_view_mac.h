@@ -333,7 +333,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                              scoped_ptr<cc::CompositorFrame> frame) override;
   void ClearCompositorFrame() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate) override;
+      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) override;
   bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) override;

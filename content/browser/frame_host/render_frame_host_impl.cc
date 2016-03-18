@@ -2410,8 +2410,9 @@ BrowserAccessibilityManager*
   if (view &&
       !browser_accessibility_manager_ &&
       !no_create_browser_accessibility_manager_for_testing_) {
+    bool is_root_frame = !frame_tree_node()->parent();
     browser_accessibility_manager_.reset(
-        view->CreateBrowserAccessibilityManager(this));
+        view->CreateBrowserAccessibilityManager(this, is_root_frame));
     if (browser_accessibility_manager_)
       UMA_HISTOGRAM_COUNTS("Accessibility.FrameEnabledCount", 1);
     else

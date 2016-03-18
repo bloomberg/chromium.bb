@@ -172,9 +172,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // be used to inject synthetic input events.
   virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget();
 
-  // Create a BrowserAccessibilityManager for this view.
+  // Create a BrowserAccessibilityManager for a frame in this view.
+  // If |for_root_frame| is true, creates a BrowserAccessibilityManager
+  // suitable for the root frame, which may be linked to its native
+  // window container.
   virtual BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate);
+      BrowserAccessibilityDelegate* delegate, bool for_root_frame);
 
   virtual void AccessibilityShowMenu(const gfx::Point& point);
   virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds);

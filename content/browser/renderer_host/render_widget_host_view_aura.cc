@@ -1419,7 +1419,7 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewAura::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate) {
+    BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
   BrowserAccessibilityManager* manager = NULL;
 #if defined(OS_WIN)
   manager = new BrowserAccessibilityManagerWin(

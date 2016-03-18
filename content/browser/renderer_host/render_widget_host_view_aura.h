@@ -180,7 +180,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate) override;
+      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,

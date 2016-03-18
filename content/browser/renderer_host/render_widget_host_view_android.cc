@@ -1600,15 +1600,12 @@ void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
 
 BrowserAccessibilityManager*
     RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
-        BrowserAccessibilityDelegate* delegate) {
-  base::android::ScopedJavaLocalRef<jobject> obj;
-  if (host_ &&
-      host_->GetRootBrowserAccessibilityManager() &&
-      content_view_core_) {
-    obj = content_view_core_->GetJavaObject();
-  }
+        BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
+  base::android::ScopedJavaLocalRef<jobject> content_view_core_obj;
+  if (for_root_frame && host_ && content_view_core_)
+    content_view_core_obj = content_view_core_->GetJavaObject();
   return new BrowserAccessibilityManagerAndroid(
-      obj,
+      content_view_core_obj,
       BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
       delegate);
 }

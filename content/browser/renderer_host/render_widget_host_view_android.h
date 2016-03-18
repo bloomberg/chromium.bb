@@ -149,7 +149,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate) override;
+      BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   bool LockMouse() override;
   void UnlockMouse() override;
   void OnSwapCompositorFrame(uint32_t output_surface_id,

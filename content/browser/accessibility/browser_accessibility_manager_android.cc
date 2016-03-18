@@ -370,7 +370,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
   }
   for (unsigned i = 0; i < node->PlatformChildCount(); ++i) {
     Java_BrowserAccessibilityManager_addAccessibilityNodeInfoChild(
-        env, obj, info, node->InternalGetChild(i)->unique_id());
+        env, obj, info, node->PlatformGetChild(i)->unique_id());
   }
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoBooleanAttributes(
       env, obj, info,

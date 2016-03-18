@@ -570,7 +570,7 @@ void RenderWidgetHostViewChildFrame::SetBeginFrameSource(
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate) {
+    BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
   return BrowserAccessibilityManager::Create(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 }
