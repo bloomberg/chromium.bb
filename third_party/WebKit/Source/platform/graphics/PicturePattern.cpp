@@ -18,7 +18,7 @@ PassRefPtr<PicturePattern> PicturePattern::create(PassRefPtr<SkPicture> picture,
 
 PicturePattern::PicturePattern(PassRefPtr<SkPicture> picture, RepeatMode mode)
     : Pattern(mode)
-    , m_tilePicture(picture)
+    , m_tilePicture(toSkSp(picture))
 {
     // All current clients use RepeatModeXY, so we only support this mode for now.
     ASSERT(isRepeatXY());
@@ -30,13 +30,13 @@ PicturePattern::~PicturePattern()
 {
 }
 
-PassRefPtr<SkShader> PicturePattern::createShader()
+sk_sp<SkShader> PicturePattern::createShader() const
 {
     SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
     SkRect tileBounds = m_tilePicture->cullRect();
 
-    return fromSkSp(SkShader::MakePictureShader(toSkSp(m_tilePicture),
-        SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix, &tileBounds));
+    return SkShader::MakePictureShader(m_tilePicture,
+        SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix, &tileBounds);
 }
 
 } // namespace blink

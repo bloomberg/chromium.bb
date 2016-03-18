@@ -62,11 +62,10 @@ Pattern::~Pattern()
 
 void Pattern::applyToPaint(SkPaint& paint)
 {
-    if (!m_pattern) {
+    if (!m_pattern)
         m_pattern = createShader();
-    }
 
-    paint.setShader(toSkSp(m_pattern));
+    paint.setShader(m_pattern);
 }
 
 void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation)
@@ -75,7 +74,7 @@ void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransf
         return;
 
     m_patternSpaceTransformation = patternSpaceTransformation;
-    m_pattern.clear();
+    m_pattern.reset();
 }
 
 void Pattern::adjustExternalMemoryAllocated(int64_t delta)
