@@ -43,6 +43,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/UnicodeRangeSet.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
@@ -114,13 +115,13 @@ struct HarfBuzzFontData {
     USING_FAST_MALLOC(HarfBuzzFontData);
     WTF_MAKE_NONCOPYABLE(HarfBuzzFontData);
 public:
-    HarfBuzzFontData(WTF::HashMap<uint32_t, uint16_t>* glyphCacheForFaceCacheEntry, hb_face_t* face, unsigned rangeFrom, unsigned rangeTo)
+    HarfBuzzFontData(WTF::HashMap<uint32_t, uint16_t>* glyphCacheForFaceCacheEntry, hb_face_t* face, PassRefPtr<UnicodeRangeSet> rangeSet)
         : m_glyphCacheForFaceCacheEntry(glyphCacheForFaceCacheEntry)
         , m_face(face)
         , m_hbOpenTypeFont(nullptr)
-        , m_rangeFrom(rangeFrom)
-        , m_rangeTo(rangeTo)
-    { }
+        , m_rangeSet(rangeSet)
+    {
+    }
 
     ~HarfBuzzFontData()
     {
@@ -133,8 +134,7 @@ public:
     WTF::HashMap<uint32_t, uint16_t>* m_glyphCacheForFaceCacheEntry;
     hb_face_t* m_face;
     hb_font_t* m_hbOpenTypeFont;
-    unsigned m_rangeFrom;
-    unsigned m_rangeTo;
+    RefPtr<UnicodeRangeSet> m_rangeSet;
 };
 
 static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value)
@@ -184,7 +184,7 @@ static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoin
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
 
     RELEASE_ASSERT(hbFontData);
-    if (unicode < hbFontData->m_rangeFrom || unicode > hbFontData->m_rangeTo)
+    if (hbFontData->m_rangeSet && !hbFontData->m_rangeSet->contains(unicode))
         return false;
 
     if (variationSelector) {
@@ -350,9 +350,9 @@ hb_face_t* HarfBuzzFace::createFace()
     return face;
 }
 
-hb_font_t* HarfBuzzFace::createFont(unsigned rangeFrom, unsigned rangeTo) const
+hb_font_t* HarfBuzzFace::createFont(PassRefPtr<UnicodeRangeSet> rangeSet) const
 {
-    HarfBuzzFontData* hbFontData = new HarfBuzzFontData(m_glyphCacheForFaceCacheEntry, m_face, rangeFrom, rangeTo);
+    HarfBuzzFontData* hbFontData = new HarfBuzzFontData(m_glyphCacheForFaceCacheEntry, m_face, rangeSet);
     m_platformData->setupPaint(&hbFontData->m_paint);
     hbFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData);
     ASSERT(hbFontData->m_simpleFontData);

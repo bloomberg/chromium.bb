@@ -133,8 +133,8 @@ const SimpleFontData* FontFallbackList::determinePrimarySimpleFontData(const Fon
 
         if (fontData->isSegmented()) {
             const SegmentedFontData* segmented = toSegmentedFontData(fontData);
-            for (unsigned i = 0; i < segmented->numRanges(); i++) {
-                const SimpleFontData* rangeFontData = segmented->rangeAt(i).fontData().get();
+            for (unsigned i = 0; i < segmented->numFaces(); i++) {
+                const SimpleFontData* rangeFontData = segmented->faceAt(i).fontData().get();
                 if (!rangeFontData->isLoadingFallback())
                     return rangeFontData;
             }

@@ -106,19 +106,6 @@ void CSSSegmentedFontFace::removeFontFace(PassRefPtrWillBeRawPtr<FontFace> prpFo
     fontFace->cssFontFace()->clearSegmentedFontFace();
 }
 
-static void appendFontData(SegmentedFontData* newFontData, PassRefPtr<SimpleFontData> prpFaceFontData, const UnicodeRangeSet& ranges)
-{
-    RefPtr<SimpleFontData> faceFontData = prpFaceFontData;
-    unsigned numRanges = ranges.size();
-    if (!numRanges) {
-        newFontData->appendRange(FontDataRange(0, 0x7FFFFFFF, faceFontData));
-        return;
-    }
-
-    for (unsigned j = 0; j < numRanges; ++j)
-        newFontData->appendRange(FontDataRange(ranges.rangeAt(j).from(), ranges.rangeAt(j).to(), faceFontData));
-}
-
 PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fontDescription)
 {
     if (!isValid())
@@ -128,7 +115,7 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     FontCacheKey key = fontDescription.cacheKey(FontFaceCreationParams(), desiredTraits);
 
     RefPtr<SegmentedFontData>& fontData = m_fontDataTable.add(key.hash(), nullptr).storedValue->value;
-    if (fontData && fontData->numRanges())
+    if (fontData && fontData->numFaces())
         return fontData; // No release, we have a reference to an object in the cache which should retain the ref count it has.
 
     if (!fontData)
@@ -144,10 +131,10 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
             continue;
         if (RefPtr<SimpleFontData> faceFontData = (*it)->cssFontFace()->getFontData(requestedFontDescription)) {
             ASSERT(!faceFontData->isSegmented());
-            appendFontData(fontData.get(), faceFontData.release(), (*it)->cssFontFace()->ranges());
+            fontData->appendFace(FontDataForRangeSet(faceFontData.release(), (*it)->cssFontFace()->ranges()));
         }
     }
-    if (fontData->numRanges())
+    if (fontData->numFaces())
         return fontData; // No release, we have a reference to an object in the cache which should retain the ref count it has.
 
     return nullptr;
@@ -163,14 +150,14 @@ void CSSSegmentedFontFace::willUseFontData(const FontDescription& fontDescriptio
     }
 }
 
-void CSSSegmentedFontFace::willUseRange(const blink::FontDescription& fontDescription, const blink::FontDataRange& range)
+void CSSSegmentedFontFace::willUseRange(const blink::FontDescription& fontDescription, const blink::FontDataForRangeSet& rangeSet)
 {
     // Iterating backwards since later defined unicode-range faces override
     // previously defined ones, according to the CSS3 fonts module.
     // https://drafts.csswg.org/css-fonts/#composite-fonts
     for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin(); it != m_fontFaces.rend(); ++it) {
         CSSFontFace* cssFontFace = (*it)->cssFontFace();
-        if (cssFontFace->maybeScheduleFontLoad(fontDescription, range))
+        if (cssFontFace->maybeScheduleFontLoad(fontDescription, rangeSet))
             break;
     }
 }
@@ -178,7 +165,7 @@ void CSSSegmentedFontFace::willUseRange(const blink::FontDescription& fontDescri
 bool CSSSegmentedFontFace::checkFont(const String& text) const
 {
     for (const auto& fontFace : m_fontFaces) {
-        if (fontFace->loadStatus() != FontFace::Loaded && fontFace->cssFontFace()->ranges().intersectsWith(text))
+        if (fontFace->loadStatus() != FontFace::Loaded && fontFace->cssFontFace()->ranges()->intersectsWith(text))
             return false;
     }
     return true;
@@ -187,7 +174,7 @@ bool CSSSegmentedFontFace::checkFont(const String& text) const
 void CSSSegmentedFontFace::match(const String& text, WillBeHeapVector<RefPtrWillBeMember<FontFace>>& faces) const
 {
     for (const auto& fontFace : m_fontFaces) {
-        if (fontFace->cssFontFace()->ranges().intersectsWith(text))
+        if (fontFace->cssFontFace()->ranges()->intersectsWith(text))
             faces.append(fontFace);
     }
 }

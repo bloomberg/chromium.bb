@@ -27,13 +27,16 @@
 #define UnicodeRangeSet_h
 
 #include "platform/PlatformExport.h"
-#include "platform/fonts/FontDataRange.h"
 #include "wtf/Allocator.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-struct PLATFORM_EXPORT UnicodeRange {
+struct PLATFORM_EXPORT UnicodeRange final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     UnicodeRange(UChar32 from, UChar32 to)
         : m_from(from)
@@ -49,10 +52,9 @@ struct PLATFORM_EXPORT UnicodeRange {
         return m_from < other.m_from;
     }
     bool operator<(UChar32 c) const { return m_to < c; }
-    bool operator==(const FontDataRange& fontDataRange) const
+    bool operator==(const UnicodeRange& other) const
     {
-        return fontDataRange.from() == m_from
-            && fontDataRange.to() == m_to;
+        return other.m_from == m_from && other.m_to == m_to;
     };
 
 private:
@@ -60,17 +62,17 @@ private:
     UChar32 m_to;
 };
 
-class PLATFORM_EXPORT UnicodeRangeSet {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
+class PLATFORM_EXPORT UnicodeRangeSet : public RefCounted<UnicodeRangeSet> {
 public:
     explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
+    UnicodeRangeSet() { };
     bool contains(UChar32) const;
-    bool contains(const FontDataRange&) const;
     bool intersectsWith(const String&) const;
     bool isEntireRange() const { return m_ranges.isEmpty(); }
     size_t size() const { return m_ranges.size(); }
     const UnicodeRange& rangeAt(size_t i) const { return m_ranges[i]; }
+    bool operator==(const UnicodeRangeSet& other) const;
+
 private:
     Vector<UnicodeRange> m_ranges; // If empty, represents the whole code space.
 };

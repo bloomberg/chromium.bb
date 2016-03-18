@@ -45,7 +45,7 @@ public:
 
     // TODO crbug.com/542629 - The UChar32 variant of this method should go away after switching to complex text.
     virtual void willUseFontData(const FontDescription&, const AtomicString& familyName, UChar32) = 0;
-    virtual void willUseRange(const FontDescription&, const AtomicString& familyName, const FontDataRange&) = 0;
+    virtual void willUseRange(const FontDescription&, const AtomicString& familyName, const FontDataForRangeSet&) = 0;
 
     virtual unsigned version() const = 0;
 };

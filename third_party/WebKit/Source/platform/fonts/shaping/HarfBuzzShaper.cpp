@@ -275,8 +275,7 @@ inline bool HarfBuzzShaper::shapeRange(hb_buffer_t* harfBuzzBuffer,
     unsigned startIndex,
     unsigned numCharacters,
     const SimpleFontData* currentFont,
-    unsigned currentFontRangeFrom,
-    unsigned currentFontRangeTo,
+    PassRefPtr<UnicodeRangeSet> currentFontRangeSet,
     UScriptCode currentRunScript,
     hb_language_t language)
 {
@@ -296,7 +295,7 @@ inline bool HarfBuzzShaper::shapeRange(hb_buffer_t* harfBuzzBuffer,
         m_font->getFontDescription(), m_normalizedBuffer.get(), m_normalizedBufferLength,
         startIndex, numCharacters);
 
-    HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(currentFontRangeFrom, currentFontRangeTo), hb_font_destroy);
+    HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(currentFontRangeSet), hb_font_destroy);
     hb_shape(harfBuzzFont.get(), harfBuzzBuffer, m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
 
     return true;
@@ -512,8 +511,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
         appendToHolesQueue(HolesQueueRange, segmentRange.start, segmentRange.end - segmentRange.start);
 
         const SimpleFontData* currentFont = nullptr;
-        unsigned currentFontRangeFrom = 0;
-        unsigned currentFontRangeTo = 0;
+        RefPtr<UnicodeRangeSet> currentFontRangeSet;
 
         bool fontCycleQueued = false;
         while (m_holesQueue.size()) {
@@ -533,10 +531,10 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                     break;
                 }
 
-                FontDataRange nextFontDataRange = fallbackIterator->next(fallbackCharsHint);
-                currentFont = nextFontDataRange.fontData().get();
-                currentFontRangeFrom = nextFontDataRange.from();
-                currentFontRangeTo = nextFontDataRange.to();
+                FontDataForRangeSet nextFontDataForRangeSet = fallbackIterator->next(fallbackCharsHint);
+                currentFont = nextFontDataForRangeSet.fontData().get();
+                currentFontRangeSet = nextFontDataForRangeSet.ranges();
+
                 if (!currentFont) {
                     ASSERT(!m_holesQueue.size());
                     break;
@@ -564,8 +562,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 currentQueueItem.m_startIndex,
                 currentQueueItem.m_numCharacters,
                 directionAndSmallCapsAdjustedFont,
-                currentFontRangeFrom,
-                currentFontRangeTo,
+                currentFontRangeSet,
                 segmentRange.script,
                 language))
                 WTF_LOG_ERROR("Shaping range failed.");

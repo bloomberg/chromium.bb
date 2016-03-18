@@ -23,11 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontDataRange_h
-#define FontDataRange_h
+#ifndef FontDataForRangeSet_h
+#define FontDataForRangeSet_h
 
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/UnicodeRangeSet.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/CharacterNames.h"
 
@@ -35,40 +36,44 @@ namespace blink {
 
 class SimpleFontData;
 
-struct FontDataRange {
+class FontDataForRangeSet final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    explicit FontDataRange(PassRefPtr<SimpleFontData> fontData)
-        : m_from(0)
-        , m_to(kMaxCodepoint)
-        , m_fontData(fontData)
+    explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData)
+        : m_fontData(fontData)
     {
     }
 
-    FontDataRange()
-        : m_from(0)
-        , m_to(kMaxCodepoint)
-        , m_fontData(nullptr)
+    FontDataForRangeSet()
+        : m_fontData(nullptr)
     {
     }
 
-    explicit FontDataRange(UChar32 from, UChar32 to, PassRefPtr<SimpleFontData> fontData)
-        : m_from(from)
-        , m_to(to)
-        , m_fontData(fontData)
+    explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData, PassRefPtr<UnicodeRangeSet> rangeSet)
+        : m_fontData(fontData)
+        , m_rangeSet(rangeSet)
     {
     }
 
-    UChar32 from() const { return m_from; }
-    UChar32 to() const { return m_to; }
-    bool contains(UChar32 testChar) { return testChar >= m_from && testChar <= m_to; }
-    bool isEntireRange() const { return !m_from && m_to >= kMaxCodepoint; }
+    // Shorthand for GlyphPageTreeNode tests.
+    explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData, UChar32 from, UChar32 to)
+        : m_fontData(fontData)
+    {
+        UnicodeRange range(from, to);
+        Vector<UnicodeRange> rangeVector;
+        rangeVector.append(range);
+        m_rangeSet = adoptRef(new UnicodeRangeSet(rangeVector));
+    }
+
+
+    bool contains(UChar32 testChar) const { return m_rangeSet->contains(testChar); }
+    bool isEntireRange() const { return m_rangeSet->isEntireRange(); }
+    PassRefPtr<UnicodeRangeSet> ranges() const { return m_rangeSet; }
     bool hasFontData() const { return fontData(); }
     PassRefPtr<SimpleFontData> fontData() const { return m_fontData; }
 
 private:
-    UChar32 m_from;
-    UChar32 m_to;
     RefPtr<SimpleFontData> m_fontData;
+    RefPtr<UnicodeRangeSet> m_rangeSet;
 };
 
 } // namespace blink
