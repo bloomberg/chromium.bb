@@ -259,8 +259,9 @@ MojoShellContext::MojoShellContext() {
       make_scoped_ptr(new StaticLoader(profile_callback)), "mojo:profile");
 
   if (!IsRunningInMojoShell()) {
-    MojoShellConnectionImpl::Create(
-        shell_->InitInstanceForEmbedder(kBrowserAppName));
+    const bool is_external = false;
+    MojoShellConnection::Create(
+        shell_->InitInstanceForEmbedder(kBrowserAppName), is_external);
   }
 }
 

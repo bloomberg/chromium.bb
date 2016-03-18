@@ -23,13 +23,13 @@ bool IsRunningInMojoShell();
 class MojoShellConnectionImpl : public MojoShellConnection,
                                 public mojo::ShellClient {
  public:
+  // Creates the MojoShellConnection using MojoShellConnection::Factory. Returns
+  // true if a factory was set and the connection was created, false otherwise.
+  static bool CreateUsingFactory();
+
   // Creates an instance of this class and stuffs it in TLS on the calling
   // thread. Retrieve it using MojoShellConnection::Get().
   static void Create();
-
-  // Like above but for initializing a connection to an embedded in-process
-  // shell implementation. Binds to |request|.
-  static void Create(mojo::shell::mojom::ShellClientRequest request);
 
   // Will return null if no connection has been established (either because it
   // hasn't happened yet or the application was not spawned from the external
@@ -41,8 +41,12 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   void BindToRequestFromCommandLine();
 
  private:
+  friend class MojoShellConnection;
+
   explicit MojoShellConnectionImpl(bool external);
   ~MojoShellConnectionImpl() override;
+
+  void WaitForShellIfNecessary();
 
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector,
@@ -57,7 +61,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
 
-  bool external_;
+  const bool external_;
   scoped_ptr<mojo::ShellConnection> shell_connection_;
   std::vector<Listener*> listeners_;
 

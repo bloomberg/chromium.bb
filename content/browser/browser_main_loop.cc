@@ -922,9 +922,11 @@ int BrowserMainLoop::CreateThreads() {
 
 int BrowserMainLoop::PreMainMessageLoopRun() {
   if (IsRunningInMojoShell()) {
-    mojo::edk::SetParentPipeHandleFromCommandLine();
-    MojoShellConnectionImpl::Create();
-    MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
+    if (!MojoShellConnectionImpl::CreateUsingFactory()) {
+      mojo::edk::SetParentPipeHandleFromCommandLine();
+      MojoShellConnectionImpl::Create();
+      MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
+    }
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     if (MojoShellConnection::Get()) {
       views::WindowManagerConnection::Create(

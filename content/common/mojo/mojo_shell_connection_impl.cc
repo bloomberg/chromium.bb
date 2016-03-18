@@ -29,17 +29,32 @@ using MojoShellConnectionPtr =
 base::LazyInstance<MojoShellConnectionPtr>::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
 
+MojoShellConnection::Factory* mojo_shell_connection_factory = nullptr;
+
 }  // namespace
 
 bool IsRunningInMojoShell() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch);
+  return mojo_shell_connection_factory ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch);
 }
 
 bool ShouldWaitForShell() {
-  return IsRunningInMojoShell() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWaitForMojoShell);
+  return mojo_shell_connection_factory ||
+         (IsRunningInMojoShell() &&
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kWaitForMojoShell));
+}
+
+// static
+bool MojoShellConnectionImpl::CreateUsingFactory() {
+  if (mojo_shell_connection_factory) {
+    DCHECK(!lazy_tls_ptr.Pointer()->Get());
+    mojo_shell_connection_factory->Run();
+    DCHECK(lazy_tls_ptr.Pointer()->Get());
+    return true;
+  }
+  return false;
 }
 
 // static
@@ -51,18 +66,28 @@ void MojoShellConnectionImpl::Create() {
 }
 
 // static
-void MojoShellConnectionImpl::Create(
-    mojo::shell::mojom::ShellClientRequest request) {
+void MojoShellConnection::Create(mojo::shell::mojom::ShellClientRequest request,
+                                 bool is_external) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
   MojoShellConnectionImpl* connection =
-      new MojoShellConnectionImpl(false /* external */);
+      new MojoShellConnectionImpl(is_external);
   lazy_tls_ptr.Pointer()->Set(connection);
   connection->shell_connection_.reset(
       new mojo::ShellConnection(connection, std::move(request)));
+  if (is_external)
+    connection->WaitForShellIfNecessary();
+}
+
+// static
+void MojoShellConnection::SetFactoryForTest(Factory* factory) {
+  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+  mojo_shell_connection_factory = factory;
 }
 
 // static
 MojoShellConnectionImpl* MojoShellConnectionImpl::Get() {
+  // Assume that if a mojo_shell_connection_factory was set that it did not
+  // create a MojoShellConnectionImpl.
   return static_cast<MojoShellConnectionImpl*>(MojoShellConnection::Get());
 }
 
@@ -70,20 +95,23 @@ void MojoShellConnectionImpl::BindToRequestFromCommandLine() {
   DCHECK(!shell_connection_);
   shell_connection_.reset(new mojo::ShellConnection(
       this, mojo::shell::GetShellClientRequestFromCommandLine()));
+  WaitForShellIfNecessary();
+}
 
+MojoShellConnectionImpl::MojoShellConnectionImpl(bool external)
+    : external_(external) {}
+
+MojoShellConnectionImpl::~MojoShellConnectionImpl() {
+  STLDeleteElements(&listeners_);
+}
+
+void MojoShellConnectionImpl::WaitForShellIfNecessary() {
   // TODO(rockot): Remove this. http://crbug.com/594852.
   if (ShouldWaitForShell()) {
     base::RunLoop wait_loop;
     shell_connection_->set_initialize_handler(wait_loop.QuitClosure());
     wait_loop.Run();
   }
-}
-
-MojoShellConnectionImpl::MojoShellConnectionImpl(bool external) :
-    external_(external) {}
-
-MojoShellConnectionImpl::~MojoShellConnectionImpl() {
-  STLDeleteElements(&listeners_);
 }
 
 void MojoShellConnectionImpl::Initialize(mojo::Connector* connector,
