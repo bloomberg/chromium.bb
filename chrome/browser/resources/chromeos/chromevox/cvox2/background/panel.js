@@ -550,3 +550,12 @@ Panel.closeMenusAndRestoreFocus = function() {
 window.addEventListener('load', function() {
   Panel.init();
 }, false);
+
+window.addEventListener('hashchange', function() {
+  if (location.hash == '#fullscreen' || location.hash == '#focus') {
+    this.originalStickyState_ = cvox.ChromeVox.isStickyPrefOn;
+    cvox.ChromeVox.isStickyPrefOn = false;
+  } else {
+    cvox.ChromeVox.isStickyPrefOn = this.originalStickyState_;
+  }
+}, false);
