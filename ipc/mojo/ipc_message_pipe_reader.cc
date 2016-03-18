@@ -58,33 +58,33 @@ bool MessagePipeReader::Send(scoped_ptr<Message> message) {
                          "MessagePipeReader::Send",
                          message->flags(),
                          TRACE_EVENT_FLAG_FLOW_OUT);
-  mojom::MessagePtr ipc_message = mojom::Message::New();
+  mojo::Array<mojom::SerializedHandlePtr> handles(nullptr);
   MojoResult result = MOJO_RESULT_OK;
-  result = ChannelMojo::ReadFromMessageAttachmentSet(message.get(),
-                                                     &ipc_message->handles);
+  result = ChannelMojo::ReadFromMessageAttachmentSet(message.get(), &handles);
   if (result != MOJO_RESULT_OK) {
     CloseWithError(result);
     return false;
   }
-  ipc_message->data.resize(message->size());
+  mojo::Array<uint8_t> data(message->size());
   std::copy(reinterpret_cast<const uint8_t*>(message->data()),
             reinterpret_cast<const uint8_t*>(message->data()) + message->size(),
-            &ipc_message->data[0]);
-  sender_->Receive(std::move(ipc_message));
+            &data[0]);
+  sender_->Receive(std::move(data), std::move(handles));
   DVLOG(4) << "Send " << message->type() << ": " << message->size();
   return true;
 }
 
-void MessagePipeReader::Receive(mojom::MessagePtr ipc_message) {
-  Message message(ipc_message->data.size() == 0
-                      ? ""
-                      : reinterpret_cast<const char*>(&ipc_message->data[0]),
-                  static_cast<uint32_t>(ipc_message->data.size()));
+void MessagePipeReader::Receive(
+    mojo::Array<uint8_t> data,
+    mojo::Array<mojom::SerializedHandlePtr> handles) {
+  Message message(
+      data.size() == 0 ? "" : reinterpret_cast<const char*>(&data[0]),
+      static_cast<uint32_t>(data.size()));
   message.set_sender_pid(peer_pid_);
 
   DVLOG(4) << "Receive " << message.type() << ": " << message.size();
-  MojoResult write_result = ChannelMojo::WriteToMessageAttachmentSet(
-      std::move(ipc_message->handles), &message);
+  MojoResult write_result =
+      ChannelMojo::WriteToMessageAttachmentSet(std::move(handles), &message);
   if (write_result != MOJO_RESULT_OK) {
     CloseWithError(write_result);
     return;

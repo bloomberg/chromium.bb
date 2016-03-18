@@ -92,7 +92,8 @@ class MessagePipeReader : public mojom::Channel {
   void OnPipeError(MojoResult error);
 
  private:
-  void Receive(mojom::MessagePtr message) override;
+  void Receive(mojo::Array<uint8_t> data,
+               mojo::Array<mojom::SerializedHandlePtr> handles) override;
 
   // |delegate_| is null once the message pipe is closed.
   Delegate* delegate_;

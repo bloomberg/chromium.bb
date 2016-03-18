@@ -16,13 +16,8 @@ struct SerializedHandle {
   Type type;
 };
 
-struct Message {
-  array<uint8> data;
-  array<SerializedHandle>? handles;
-};
-
 interface Channel {
-  Receive(Message message);
+  Receive(array<uint8> data, array<SerializedHandle>? handles);
 };
 
 // An interface for connecting a pair of Channel interfaces representing a
