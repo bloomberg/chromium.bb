@@ -85,8 +85,12 @@ class ArcNotificationManagerTest : public testing::Test {
   MockMessageCenter* message_center() { return message_center_.get(); }
 
   std::string CreateNotification() {
+    return CreateNotificationWithKey(kDummyNotificationKey);
+  }
+
+  std::string CreateNotificationWithKey(const std::string& key) {
     auto data = ArcNotificationData::New();
-    data->key = kDummyNotificationKey;
+    data->key = key;
     data->title = "TITLE";
     data->message = "MESSAGE";
 
@@ -95,7 +99,7 @@ class ArcNotificationManagerTest : public testing::Test {
 
     arc_notification_manager()->OnNotificationPosted(std::move(data));
 
-    return std::string(kDummyNotificationKey);
+    return key;
   }
 
  private:
@@ -165,6 +169,19 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByChrome) {
   EXPECT_EQ(key, arc_notifications_instance()->events().at(0).first);
   EXPECT_EQ(ArcNotificationEvent::CLOSED,
             arc_notifications_instance()->events().at(0).second);
+}
+
+TEST_F(ArcNotificationManagerTest, NotificationRemovedByConnectionClose) {
+  service()->SetReady();
+  EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
+  CreateNotificationWithKey("notification1");
+  CreateNotificationWithKey("notification2");
+  CreateNotificationWithKey("notification3");
+  EXPECT_EQ(3u, message_center()->GetVisibleNotifications().size());
+
+  arc_notification_manager()->OnNotificationsInstanceClosed();
+
+  EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
 }
 
 }  // namespace arc

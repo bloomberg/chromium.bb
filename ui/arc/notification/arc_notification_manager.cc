@@ -47,8 +47,9 @@ void ArcNotificationManager::OnNotificationsInstanceClosed() {
   DCHECK(ready_);
   while (!items_.empty()) {
     auto it = items_.begin();
+    scoped_ptr<ArcNotificationItem> item = std::move(it->second);
     items_.erase(it);
-    it->second->OnClosedFromAndroid(false /* by_user */);
+    item->OnClosedFromAndroid(false /* by_user */);
   }
   ready_ = false;
 }
