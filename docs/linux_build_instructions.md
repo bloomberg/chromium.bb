@@ -133,7 +133,7 @@ page.
 ## Advanced Features
 
 *   Want to use the (in development) GN build workflow? See
-    [GN Quick Start](../tools/gn/docs/quick_start.md)
+    [GN Quick Start](../tools/gn/docs/quick_start.md).
 *   Building frequently? See [LinuxFasterBuilds](linux_faster_builds.md).
 *   Cross-compiling for ARM? See [LinuxChromiumArm](linux_chromium_arm.md).
 *   Want to use Eclipse as your IDE? See
