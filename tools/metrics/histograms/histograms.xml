@@ -52148,6 +52148,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Syzyasan.DeferredFreeWasEnabled" enum="BooleanEnabled">
+  <owner>georgesak@chromium.org</owner>
+  <summary>
+    Record whether the deferred free mechanism was successfully enabled or not.
+    This is only recorded in syzyasan builds with the feature enabled.
+  </summary>
+</histogram>
+
 <histogram name="Tab.AgeUponRestoreFromColdStart" units="minutes">
   <owner>lliabraa@chromium.org</owner>
   <summary>

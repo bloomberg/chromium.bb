@@ -48,4 +48,12 @@ const base::Feature kSimplifiedFullscreenUI{
 #endif
 };
 
+#if defined(SYZYASAN)
+// Enable the deferred free mechanism in the syzyasan module, which helps the
+// performance by deferring some work on the critical path to a background
+// thread.
+const base::Feature kSyzyasanDeferredFree{"SyzyasanDeferredFree",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features

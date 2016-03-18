@@ -93,6 +93,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -1203,6 +1204,28 @@ void ChromeBrowserMainParts::PreBrowserStart() {
     chrome_extra_parts_[i]->PreBrowserStart();
 
   three_d_observer_.reset(new ThreeDAPIObserver());
+
+#if defined(SYZYASAN)
+  // Enable the deferred free mechanism in the syzyasan module, which helps the
+  // performance by deferring some work on the critical path to a background
+  // thread.
+  if (base::FeatureList::IsEnabled(features::kSyzyasanDeferredFree)) {
+    typedef VOID(WINAPI * SyzyasanEnableDeferredFreeThreadFunc)(VOID);
+    HMODULE syzyasan_handle = ::GetModuleHandle(L"syzyasan_rtl.dll");
+    bool success = false;
+    if (syzyasan_handle) {
+      SyzyasanEnableDeferredFreeThreadFunc syzyasan_enable_deferred_free =
+          reinterpret_cast<SyzyasanEnableDeferredFreeThreadFunc>(
+              ::GetProcAddress(syzyasan_handle,
+                               "asan_EnableDeferredFreeThread"));
+      if (syzyasan_enable_deferred_free) {
+        syzyasan_enable_deferred_free();
+        success = true;
+      }
+    }
+    UMA_HISTOGRAM_BOOLEAN("Syzyasan.DeferredFreeWasEnabled", success);
+  }
+#endif
 
 // Start the tab manager here so that we give the most amount of time for the
 // other services to start up before we start adjusting the oom priority.
