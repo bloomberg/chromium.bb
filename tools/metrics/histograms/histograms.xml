@@ -28722,6 +28722,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLProtocolErrorCipher" enum="SSLCipherSuite">
+  <obsolete>
+    Removed in March 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     The cipher suite used when the corresponding operation on an SSLClientSocket
@@ -28731,6 +28734,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLProtocolErrorReason" enum="BoringSSLReasonCode">
+  <obsolete>
+    Removed in March 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     The internal, version-specific BoringSSL error reason reported when the
@@ -60970,6 +60976,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="BoringSSLReasonCode" type="int">
+  <obsolete>
+    Removed in March 2016.
+  </obsolete>
   <details>
     See include/openssl/ssl.h at the corresponding BoringSSL revision for the
     corresponding values.

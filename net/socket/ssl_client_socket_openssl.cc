@@ -1080,13 +1080,6 @@ bool SSLClientSocketOpenSSL::DoTransportIO() {
   return network_moved;
 }
 
-uint16_t SSLClientSocketOpenSSL::GetCipherSuite() {
-  const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
-  if (!cipher)
-    return 0;
-  return static_cast<uint16_t>(SSL_CIPHER_get_id(cipher));
-}
-
 // TODO(cbentzel): Remove including "base/threading/thread_local.h" and
 // g_first_run_completed once crbug.com/424386 is fixed.
 base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_first_run_completed =
@@ -1172,14 +1165,6 @@ int SSLClientSocketOpenSSL::DoHandshake() {
       ssl_failure_state_ = SSL_FAILURE_NEXT_PROTO;
     } else {
       ssl_failure_state_ = SSL_FAILURE_UNKNOWN;
-    }
-
-    // TODO(davidben): Remove this once https://crbug.com/593963 is resolved.
-    if (net_error == ERR_SSL_PROTOCOL_ERROR) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLProtocolErrorCipher.Connect",
-                                  GetCipherSuite());
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLProtocolErrorReason.Connect",
-                                  ERR_GET_REASON(error_info.error_code));
     }
   }
 
@@ -1659,15 +1644,6 @@ int SSLClientSocketOpenSSL::DoPayloadRead() {
     net_log_.AddByteTransferEvent(NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
                                   user_read_buf_->data());
   } else if (rv != ERR_IO_PENDING) {
-    // TODO(davidben): Remove this once https://crbug.com/593963 is resolved.
-    if (rv == ERR_SSL_PROTOCOL_ERROR) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLProtocolErrorCipher.Read",
-                                  GetCipherSuite());
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
-          "Net.SSLProtocolErrorReason.Read",
-          ERR_GET_REASON(pending_read_error_info_.error_code));
-    }
-
     net_log_.AddEvent(
         NetLog::TYPE_SSL_READ_ERROR,
         CreateNetLogOpenSSLErrorCallback(rv, pending_read_ssl_error_,
@@ -1696,14 +1672,6 @@ int SSLClientSocketOpenSSL::DoPayloadWrite() {
                                              &error_info);
 
   if (net_error != ERR_IO_PENDING) {
-    // TODO(davidben): Remove this once https://crbug.com/593963 is resolved.
-    if (net_error == ERR_SSL_PROTOCOL_ERROR) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLProtocolErrorCipher.Write",
-                                  GetCipherSuite());
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLProtocolErrorReason.Write",
-                                  ERR_GET_REASON(error_info.error_code));
-    }
-
     net_log_.AddEvent(
         NetLog::TYPE_SSL_WRITE_ERROR,
         CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
