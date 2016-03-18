@@ -51,7 +51,7 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/media_stream_api.h"
+#include "content/public/renderer/media_stream_utils.h"
 #include "content/renderer/cache_storage/webserviceworkercachestorage_impl.h"
 #include "content/renderer/device_sensors/device_light_event_pump.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"

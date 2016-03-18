@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "content/public/renderer/media_stream_api.h"
+#include "content/public/renderer/media_stream_utils.h"
 
 namespace extensions {
 

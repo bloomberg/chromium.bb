@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/renderer/media_stream_api.h"
+#include "content/public/renderer/media_stream_utils.h"
 
 #include <utility>
 
@@ -16,11 +16,11 @@
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/audio_capturer_source.h"
+#include "media/base/video_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
-#include "url/gurl.h"
 
 namespace content {
 

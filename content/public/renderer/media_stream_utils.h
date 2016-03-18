@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_API_H_
-#define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_API_H_
+#ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_UTILS_H_
+#define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_UTILS_H_
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "media/base/audio_capturer_source.h"
 #include "media/base/channel_layout.h"
 #include "media/base/video_capture_types.h"
-#include "media/base/video_capturer_source.h"
 
 namespace blink {
 class WebMediaStream;
 class WebMediaStreamTrack;
+}
+
+namespace media {
+class AudioCapturerSource;
+class VideoCapturerSource;
 }
 
 namespace content {
@@ -51,4 +56,4 @@ CONTENT_EXPORT const media::VideoCaptureFormat* GetCurrentVideoTrackFormat(
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_API_H_
+#endif  // CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_UTILS_H_
