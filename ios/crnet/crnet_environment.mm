@@ -153,11 +153,15 @@ void CrNetEnvironment::Initialize() {
   CHECK(base::i18n::InitializeICU());
   url::Initialize();
   base::CommandLine::Init(0, nullptr);
+
+#if defined(USE_NSS_VERIFIER)
   // This needs to happen on the main thread. NSPR's initialization sets up its
   // memory allocator; if this is not done before other threads are created,
   // this initialization can race to cause accidental free/allocation
   // mismatches.
   crypto::EnsureNSPRInit();
+#endif
+
   // Without doing this, StatisticsRecorder::FactoryGet() leaks one histogram
   // per call after the first for a given name.
   base::StatisticsRecorder::Initialize();
@@ -288,7 +292,9 @@ void CrNetEnvironment::Install() {
   proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
       network_io_thread_->task_runner(), nullptr);
 
+#if defined(USE_NSS_VERIFIER)
   net::SetURLRequestContextForNSSHttpIO(main_context_.get());
+#endif
   main_context_getter_ = new CrNetURLRequestContextGetter(
       main_context_.get(), network_io_thread_->task_runner());
   base::subtle::MemoryBarrier();
@@ -306,7 +312,9 @@ void CrNetEnvironment::InstallIntoSessionConfiguration(
 
 CrNetEnvironment::~CrNetEnvironment() {
   net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
+#if defined(USE_NSS_VERIFIER)
   net::SetURLRequestContextForNSSHttpIO(nullptr);
+#endif
 }
 
 net::URLRequestContextGetter* CrNetEnvironment::GetMainContextGetter() {

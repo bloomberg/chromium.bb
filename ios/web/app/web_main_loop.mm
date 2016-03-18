@@ -54,8 +54,10 @@ void WebMainLoop::EarlyInitialization() {
     parts_->PreEarlyInitialization();
   }
 
+#if defined(USE_NSS_VERIFIER)
   // We want to be sure to init NSPR on the main thread.
   crypto::EnsureNSPRInit();
+#endif
 
   if (parts_) {
     parts_->PostEarlyInitialization();

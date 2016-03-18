@@ -192,7 +192,7 @@
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
         }],
-        [ 'use_nss_certs == 1 or OS == "ios" or use_openssl == 0', {
+        [ 'use_nss_verifier == 1', {
           'conditions': [
             [ 'desktop_linux == 1 or chromeos == 1', {
               'dependencies': [
@@ -226,11 +226,18 @@
             'http/http_auth_handler_negotiate_unittest.cc',
           ],
         }],
-        [ 'use_nss_certs == 0 and OS != "ios"', {
-          # Only include this test when using system NSS for cert verification
-          # or on iOS (which also uses NSS for certs).
+        [ 'use_nss_verifier == 0', {
+          # Only include this test when using NSS for cert verification.
           'sources!': [
             'cert_net/nss_ocsp_unittest.cc',
+          ],
+        }],
+        [ 'use_nss_verifier == 0 and OS == "ios"', {
+          # Only include these files on iOS when using NSS for cert 
+          # verification.
+          'sources!': [
+           'cert/x509_util_ios.cc',
+           'cert/x509_util_ios.h',
           ],
         }],
         [ 'use_openssl==1', {
@@ -262,7 +269,7 @@
           'sources!': [
             'base/directory_lister_unittest.cc',
             'base/directory_listing_unittest.cc',
-	    'url_request/url_request_file_dir_job_unittest.cc',
+            'url_request/url_request_file_dir_job_unittest.cc',
             'url_request/url_request_file_job_unittest.cc',
           ],
         }],
@@ -356,6 +363,7 @@
                     'data/url_request_unittest/',
                     'data/verify_certificate_chain_unittest/',
                     'data/verify_name_match_unittest/names/',
+                    'data/verify_signed_data_unittest/',
                   ],
                   'test_data_prefix': 'net',
                 },
@@ -605,7 +613,7 @@
             'test/spawned_test_server/spawned_test_server.h',
           ],
         }],
-        ['use_nss_certs == 1 or OS == "ios"', {
+        ['use_nss_verifier == 1', {
           'conditions': [
             [ 'desktop_linux == 1 or chromeos == 1', {
               'dependencies': [

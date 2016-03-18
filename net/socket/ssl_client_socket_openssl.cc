@@ -58,7 +58,7 @@
 #include "net/ssl/ssl_key_logger.h"
 #endif
 
-#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+#if defined(USE_NSS_VERIFIER)
 #include "net/cert_net/nss_ocsp.h"
 #endif
 
@@ -884,7 +884,7 @@ int SSLClientSocketOpenSSL::Init() {
   DCHECK(!ssl_);
   DCHECK(!transport_bio_);
 
-#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+#if defined(USE_NSS_VERIFIER)
   if (ssl_config_.cert_io_enabled) {
     // TODO(davidben): Move this out of SSLClientSocket. See
     // https://crbug.com/539520.

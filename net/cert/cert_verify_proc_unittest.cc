@@ -245,7 +245,7 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-#if defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(USE_NSS_VERIFIER) || defined(OS_ANDROID)
   EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
 #else
   // TOOD(bulach): investigate why macosx and win aren't returning
@@ -255,7 +255,7 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
   // Either the system crypto library should correctly report a certificate
   // name mismatch, or our certificate blacklist should cause us to report an
   // invalid certificate.
-#if defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_IOS)
+#if defined(USE_NSS_VERIFIER) || defined(OS_WIN)
   EXPECT_TRUE(verify_result.cert_status &
               (CERT_STATUS_COMMON_NAME_INVALID | CERT_STATUS_INVALID));
 #endif

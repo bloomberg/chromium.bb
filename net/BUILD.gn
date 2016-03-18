@@ -178,14 +178,10 @@ if (!is_nacl) {
       "ssl/token_binding_nss.cc",
     ]
     if (is_ios) {
-      # Always removed for !ios below.
       net_shared_sources -= [
-        "cert/cert_verify_proc_nss.cc",
-        "cert/cert_verify_proc_nss.h",
+        "cert/x509_util_ios.cc",
+        "cert/x509_util_ios.h",
       ]
-    }
-    if (!use_nss_certs && !is_ios) {
-      net_shared_sources -= [ "cert/x509_util_nss.h" ]
     }
   } else {
     net_shared_sources -= [
@@ -290,18 +286,6 @@ if (!is_nacl) {
       "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
       "third_party/mozilla_security_manager/nsPKCS12Blob.h",
     ]
-    if (!is_ios) {
-      # These files are part of the partial implementation of NSS on iOS so
-      # keep them in that case (even though use_nss_certs is not set).
-      net_shared_sources -= [
-        "cert/cert_verify_proc_nss.cc",
-        "cert/cert_verify_proc_nss.h",
-        "cert/test_root_certs_nss.cc",
-        "cert/x509_util_nss_certs.cc",
-        "cert_net/nss_ocsp.cc",
-        "cert_net/nss_ocsp.h",
-      ]
-    }
     if (is_chromeos) {
       # These were already removed on non-ChromeOS.
       net_shared_sources -= [
@@ -321,6 +305,19 @@ if (!is_nacl) {
     # libssl, but our bundled copy is not built in OpenSSL ports. Pull that file
     # in directly.
     net_shared_sources += [ "third_party/nss/ssl/cmpcert.c" ]
+  }
+
+  if (!use_nss_verifier) {
+    # These files are part of the partial implementation of NSS for
+    # cert verification, so keep them in that case.
+    net_shared_sources -= [
+      "cert/cert_verify_proc_nss.cc",
+      "cert/cert_verify_proc_nss.h",
+      "cert/test_root_certs_nss.cc",
+      "cert/x509_util_nss_certs.cc",
+      "cert_net/nss_ocsp.cc",
+      "cert_net/nss_ocsp.h",
+    ]
   }
 
   if (is_chromecast && use_nss_certs) {
@@ -718,7 +715,7 @@ source_set("test_support") {
     public_deps += [ "//third_party/protobuf:py_proto" ]
   }
 
-  if (use_nss_certs || is_ios) {
+  if (use_nss_verifier) {
     public_deps += [ "//crypto:platform" ]
   }
 
@@ -1526,9 +1523,8 @@ test("net_unittests") {
     sources -= [ "http/http_auth_handler_negotiate_unittest.cc" ]
   }
 
-  if (!use_nss_certs && !is_ios) {
-    # Only include this test when on Posix and using NSS for
-    # cert verification or on iOS (which also uses NSS for certs).
+  if (!use_nss_verifier) {
+    # Only include this test when using NSS for cert verification.
     sources -= [ "cert_net/nss_ocsp_unittest.cc" ]
   }
 

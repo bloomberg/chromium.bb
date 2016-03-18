@@ -128,6 +128,9 @@ config("feature_flags") {
   if (use_nss_certs) {
     defines += [ "USE_NSS_CERTS=1" ]
   }
+  if (use_nss_verifier) {
+    defines += [ "USE_NSS_VERIFIER=1" ]
+  }
   if (use_ozone) {
     defines += [ "USE_OZONE=1" ]
   }

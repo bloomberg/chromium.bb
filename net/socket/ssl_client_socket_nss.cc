@@ -2667,7 +2667,7 @@ int SSLClientSocketNSS::Init() {
   EnsureNSSSSLInit();
   if (!NSS_IsInitialized())
     return ERR_UNEXPECTED;
-#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+#if defined(USE_NSS_VERIFIER)
   if (ssl_config_.cert_io_enabled) {
     // We must call EnsureNSSHttpIOInit() here, on the IO thread, to get the IO
     // loop by MessageLoopForIO::current().

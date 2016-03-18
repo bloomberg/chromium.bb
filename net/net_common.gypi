@@ -113,6 +113,7 @@
           'cert/ct_objects_extractor_nss.cc',
           'cert/jwk_serializer_nss.cc',
           'cert/scoped_nss_types.h',
+          'cert/x509_certificate_ios.cc',
           'cert/x509_util_nss.cc',
           'quic/crypto/aead_base_decrypter_nss.cc',
           'quic/crypto/aead_base_encrypter_nss.cc',
@@ -191,7 +192,7 @@
         ],
       },
     ],
-    [ 'use_nss_certs == 1 or OS == "ios" or use_openssl == 0', {
+    [ 'use_nss_verifier == 1', {
         'conditions': [
           # Pull in the bundled or system NSS as appropriate.
           [ 'desktop_linux == 1 or chromeos == 1', {
@@ -262,19 +263,13 @@
           'base/crypto_module_nss.cc',
           'base/keygen_handler_nss.cc',
           'cert/cert_database_nss.cc',
-          'cert/cert_verify_proc_nss.cc',
-          'cert/cert_verify_proc_nss.h',
           'cert/nss_cert_database.cc',
           'cert/nss_cert_database.h',
           'cert/nss_cert_database_chromeos.cc',
           'cert/nss_cert_database_chromeos.h',
           'cert/nss_profile_filter_chromeos.cc',
           'cert/nss_profile_filter_chromeos.h',
-          'cert/test_root_certs_nss.cc',
           'cert/x509_certificate_nss.cc',
-          'cert/x509_util_nss_certs.cc',
-          'cert_net/nss_ocsp.cc',
-          'cert_net/nss_ocsp.h',
           'ssl/client_cert_store_nss.cc',
           'ssl/client_cert_store_nss.h',
           'ssl/client_key_store.cc',
@@ -289,12 +284,29 @@
         ],
       },
     ],
+    [ 'use_nss_verifier != 1', {
+        'sources!': [
+          'cert/cert_verify_proc_nss.cc',
+          'cert/cert_verify_proc_nss.h',
+          'cert/test_root_certs_nss.cc',
+          'cert/x509_util_nss_certs.cc',
+          'cert_net/nss_ocsp.cc',
+          'cert_net/nss_ocsp.h',
+        ],
+      },
+    ],
     # client_cert_store_nss.c requires NSS_CmpCertChainWCANames from NSS's
     # libssl, but our bundled copy is not built in OpenSSL ports. Pull that
     # file in directly.
     [ 'use_nss_certs == 1 and use_openssl == 1', {
         'sources': [
           'third_party/nss/ssl/cmpcert.c',
+        ],
+    }],
+    [ 'OS == "ios" and use_nss_verifier == 0', {
+        'sources!': [
+          'cert/x509_util_ios.cc',
+          'cert/x509_util_ios.h',
         ],
     }],
     [ 'enable_websockets == 1', {
@@ -410,16 +422,6 @@
         ['include', '^base/network_interfaces_mac\\.cc$'],
         ['include', '^base/network_interfaces_mac\\.h$'],
         ['include', '^base/platform_mime_util_mac\\.mm$'],
-        # The iOS implementation only partially uses NSS and thus does not
-        # defines |use_nss_certs|. In particular the |USE_NSS_CERTS|
-        # preprocessor definition is not used. The following files are needed
-        # though:
-        ['include', '^cert/cert_verify_proc_nss\\.cc$'],
-        ['include', '^cert/cert_verify_proc_nss\\.h$'],
-        ['include', '^cert/test_root_certs_nss\\.cc$'],
-        ['include', '^cert/x509_util_nss_certs\\.cc$'],
-        ['include', '^cert_net/nss_ocsp\\.cc$'],
-        ['include', '^cert_net/nss_ocsp\\.h$'],
         ['include', '^proxy/proxy_resolver_mac\\.cc$'],
         ['include', '^proxy/proxy_server_mac\\.cc$'],
       ],
