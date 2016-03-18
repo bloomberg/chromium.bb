@@ -1692,8 +1692,8 @@ markSyllables ()
 	  syllableMarker++;
 	  if (syllableMarker > 3)
 	    syllableMarker = 1;
-	  currentMark = syllableMarker << 13;
-	  /*The syllable marker is bits 13 and 14 of typebuf. */
+	  currentMark = syllableMarker << 14;
+	  /*The syllable marker is bits 14 and 15 of typebuf. */
 	  if ((src + transCharslen) > srcmax)
 	    return 0;
 	  for (k = 0; k < transCharslen; k++)
@@ -2927,8 +2927,10 @@ translateString ()
         break;
 
 		//insertEmphases();
+		if(!dontContract)
+			dontContract = typebuf[src] & no_contract;
+		for_selectRule ();
 
-      for_selectRule ();
       if (transOpcode != CTO_Context)
 	if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
 	  appliedRules[appliedRulesCount++] = transRule;
