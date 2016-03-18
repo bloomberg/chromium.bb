@@ -119,7 +119,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     double platformTimeStamp,
     PlatformMouseEvent::SyntheticEventType syntheticEventType,
     const String& region)
-    : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
+    : MouseRelatedEvent(eventType, canBubble, cancelable, relatedTarget.get(), view, detail, IntPoint(screenX, screenY),
         IntPoint(windowX, windowY), IntPoint(movementX, movementY), modifiers,
         platformTimeStamp,
         syntheticEventType == PlatformMouseEvent::Positionless ? PositionType::Positionless : PositionType::Position,

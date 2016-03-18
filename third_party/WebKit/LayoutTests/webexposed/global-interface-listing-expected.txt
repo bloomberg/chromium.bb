@@ -1513,6 +1513,7 @@ interface Event
     getter defaultPrevented
     getter eventPhase
     getter path
+    getter relatedTargetScoped
     getter returnValue
     getter scoped
     getter srcElement

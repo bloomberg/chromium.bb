@@ -115,7 +115,7 @@ GestureEvent::GestureEvent()
 }
 
 GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double platformTimeStamp, int resendingPluginId, GestureSource source)
-    : MouseRelatedEvent(type, true, true, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, platformTimeStamp, PositionType::Position)
+    : MouseRelatedEvent(type, true, true, nullptr, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, platformTimeStamp, PositionType::Position)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)
     , m_velocityX(velocityX)

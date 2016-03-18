@@ -40,8 +40,24 @@ UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelab
 {
 }
 
+UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, PassRefPtrWillBeRawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
+    : Event(eventType, canBubbleArg, cancelableArg, relatedTarget)
+    , m_view(viewArg)
+    , m_detail(detailArg)
+    , m_sourceCapabilities(sourceCapabilitiesArg)
+{
+}
+
 UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, double platformTimeStamp, PassRefPtrWillBeRawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
     : Event(eventType, canBubbleArg, cancelableArg, platformTimeStamp)
+    , m_view(viewArg)
+    , m_detail(detailArg)
+    , m_sourceCapabilities(sourceCapabilitiesArg)
+{
+}
+
+UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, double platformTimeStamp, PassRefPtrWillBeRawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
+    : Event(eventType, canBubbleArg, cancelableArg, relatedTarget, platformTimeStamp)
     , m_view(viewArg)
     , m_detail(detailArg)
     , m_sourceCapabilities(sourceCapabilitiesArg)

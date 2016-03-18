@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../fast/dom/shadow/resources/shadow-dom.js"></script>
+
+<div id="log"></div>
+<div id="sandbox">
+  <div id = "host">
+      <template>
+          <input id="target1"></input>
+          <input id="target2"></input>
+          <input id="target3"></input>
+          <input id="target4"></input>
+          <input id="target5"></input>
+      </template>
+  </div>
+</div>
+
+<script>
+
+function moveMouseOver(element)
+{
+  if (!window.eventSender || !window.internals)
+      return;
+
+  var x = element.offsetLeft + element.offsetWidth / 2;
+  var y;
+  if (element.hasChildNodes() || window.internals.shadowRoot(element))
+      y = element.offsetTop;
+  else
+      y = element.offsetTop + element.offsetHeight / 2;
+  eventSender.mouseMoveTo(x, y);
+}
+
+var sandbox = document.getElementById('sandbox');
+convertTemplatesToShadowRootsWithin(sandbox);
+var target1 = getNodeInComposedTree('host/target1');
+var target2 = getNodeInComposedTree('host/target2');
+var target3 = getNodeInComposedTree('host/target3');
+var target4 = getNodeInComposedTree('host/target4');
+var target5 = getNodeInComposedTree('host/target5');
+
+async_test(function(t) {
+  target1.onfocus = function(e) {
+    t.step(function() {
+      assert_equals(e.relatedTarget, null);
+      assert_false(e.relatedTargetScoped);
+      t.done();
+    });
+  };
+}, 'Trusted events should have relatedTargetScoped set to false by default.');
+
+async_test(function(t) {
+  target3.onfocus = function(e) {
+    t.step(function() {
+      assert_equals(e.relatedTarget, target2);
+      assert_true(e.relatedTargetScoped);
+      t.done();
+    });
+  };
+}, 'Trusted focus events with a related target should have relatedTargetScoped true.');
+
+async_test(function(t) {
+  target1.onmouseenter = function(e) {
+    t.step(function() {
+      assert_equals(e.relatedTarget, null);
+      assert_false(e.relatedTargetScoped);
+      t.done();
+    });
+  };
+}, 'Trusted mouse events without a related target should have relatedTargetScoped set to false.');
+
+async_test(function(t) {
+  target3.onmouseenter = function(e) {
+    t.step(function() {
+      assert_equals(e.relatedTarget, target2);
+      assert_true(e.relatedTargetScoped);
+      t.done();
+    });
+  };
+}, 'Trusted mouse events with a related target should have relatedTargetScoped true.');
+
+async_test(function(t) {
+  target4.onfocus = function(e) {
+    t.step(function() {
+      assert_equals(e.relatedTarget, target5);
+      assert_false(e.relatedTargetScoped);
+      t.done();
+    });
+  };
+}, 'Untrusted events should have relatedTargetScoped set to false by default.');
+
+async_test(function(t) {
+  target5.onfocus = function(e) {
+    t.step(function() {
+      assert_equals(e.relatedTarget, target4);
+      assert_true(e.relatedTargetScoped);
+      t.done();
+    });
+  };
+}, 'Trusted focus events with a related target should have relatedTargetScoped true.');
+
+target1.focus();
+target2.focus();
+target3.focus();
+moveMouseOver(target1);
+moveMouseOver(target2);
+moveMouseOver(target3);
+var userFocus1 = new FocusEvent('focus', { relatedTarget: target5 });
+target4.dispatchEvent(userFocus1);
+var userFocus2 = new FocusEvent('focus', { relatedTarget: target4, relatedTargetScoped: true });
+target5.dispatchEvent(userFocus2);
+
+</script>
