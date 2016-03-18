@@ -126,8 +126,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void OnWindowHidingAnimationCompleted() override;
 
   // Overridden from HWNDMessageHandlerDelegate:
-  bool IsWidgetWindow() const override;
-  bool IsUsingCustomFrame() const override;
+  bool HasNonClientView() const override;
+  FrameMode GetFrameMode() const override;
+  bool HasFrame() const override;
   void SchedulePaint() override;
   void SetAlwaysRenderAsActive(bool always_render_as_active) override;
   bool IsAlwaysRenderAsActive() override;
@@ -243,6 +244,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // rather than asking the Widget for the non_client_view so that we know at
   // Init time, before the Widget has created the NonClientView.
   bool has_non_client_view_;
+
+  // True if the window should have the frame removed.
+  bool remove_standard_frame_;
 
   // Owned by TooltipController, but we need to forward events to it so we keep
   // a reference.

@@ -204,19 +204,21 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
   }
 }
 
-
-bool BrowserDesktopWindowTreeHostWin::IsUsingCustomFrame() const {
+views::FrameMode BrowserDesktopWindowTreeHostWin::GetFrameMode() const {
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
   if (!browser_view_->IsBrowserTypeNormal() &&
-      !DesktopWindowTreeHostWin::IsUsingCustomFrame()) {
-    return false;
+      DesktopWindowTreeHostWin::GetFrameMode() ==
+          views::FrameMode::SYSTEM_DRAWN) {
+    return views::FrameMode::SYSTEM_DRAWN;
   }
 
   // Otherwise, we use the native frame when we're told we should by the theme
   // provider (e.g. no custom theme is active).
-  return !GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
+  return GetWidget()->GetThemeProvider()->ShouldUseNativeFrame()
+             ? views::FrameMode::SYSTEM_DRAWN
+             : views::FrameMode::CUSTOM_DRAWN;
 }
 
 bool BrowserDesktopWindowTreeHostWin::ShouldUseNativeFrame() const {

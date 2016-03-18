@@ -51,7 +51,7 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
                     LPARAM l_param,
                     LRESULT* result) override;
   void PostHandleMSG(UINT message, WPARAM w_param, LPARAM l_param) override;
-  bool IsUsingCustomFrame() const override;
+  views::FrameMode GetFrameMode() const override;
   bool ShouldUseNativeFrame() const override;
   void FrameTypeChanged() override;
 

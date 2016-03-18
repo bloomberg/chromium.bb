@@ -163,6 +163,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   bool IsActive() const;
   bool IsMinimized() const;
   bool IsMaximized() const;
+  bool IsFullscreen() const;
   bool IsAlwaysOnTop() const;
 
   bool RunMoveLoop(const gfx::Vector2d& drag_offset, bool hide_on_escape);
@@ -192,10 +193,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon);
-
-  void set_remove_standard_frame(bool remove_standard_frame) {
-    remove_standard_frame_ = remove_standard_frame;
-  }
 
   void set_use_system_default_icon(bool use_system_default_icon) {
     use_system_default_icon_ = use_system_default_icon;
@@ -312,6 +309,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Attempts to force the window to be redrawn, ensuring that it gets
   // onscreen.
   void ForceRedrawWindow(int attempts);
+
+  bool HasSystemFrame() const;
 
   // Message Handlers ----------------------------------------------------------
 
@@ -520,8 +519,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Set to true in Close() and false is CloseNow().
   bool waiting_for_close_now_;
-
-  bool remove_standard_frame_;
 
   bool use_system_default_icon_;
 

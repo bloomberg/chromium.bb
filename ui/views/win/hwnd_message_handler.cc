@@ -152,13 +152,10 @@ LRESULT CALLBACK MoveLoopMouseWatcher::KeyHook(int n_code,
                                                WPARAM w_param,
                                                LPARAM l_param) {
   if (n_code == HC_ACTION && w_param == VK_ESCAPE) {
-    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-      int value = TRUE;
-      DwmSetWindowAttribute(instance_->host_->hwnd(),
-                            DWMWA_TRANSITIONS_FORCEDISABLED,
-                            &value,
-                            sizeof(value));
-    }
+    int value = TRUE;
+    DwmSetWindowAttribute(instance_->host_->hwnd(),
+                          DWMWA_TRANSITIONS_FORCEDISABLED, &value,
+                          sizeof(value));
     if (instance_->hide_on_escape_)
       instance_->host_->Hide();
   }
@@ -316,7 +313,6 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       delegate_(delegate),
       fullscreen_handler_(new FullscreenHandler),
       waiting_for_close_now_(false),
-      remove_standard_frame_(false),
       use_system_default_icon_(false),
       restored_enabled_(false),
       current_cursor_(NULL),
@@ -389,11 +385,9 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
     direct_manipulation_helper_->Initialize(hwnd());
 
   // Disable pen flicks (http://crbug.com/506977)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    ::SetProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY,
-        reinterpret_cast<HANDLE>(TABLET_DISABLE_FLICKS |
-            TABLET_DISABLE_FLICKFALLBACKKEYS));
-  }
+  ::SetProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY,
+            reinterpret_cast<HANDLE>(TABLET_DISABLE_FLICKS |
+                                     TABLET_DISABLE_FLICKFALLBACKKEYS));
 }
 
 void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
@@ -422,8 +416,7 @@ void HWNDMessageHandler::Close() {
 
   // Remove the property which disables pen flicks (http://crbug.com/506977)
   // for this window.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    ::RemoveProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY);
+  ::RemoveProp(hwnd(), MICROSOFT_TABLETPENSERVICE_PROPERTY);
 
   if (!waiting_for_close_now_) {
     // And we delay the close so that if we are called from an ATL callback,
@@ -464,7 +457,7 @@ gfx::Rect HWNDMessageHandler::GetClientAreaBoundsInScreen() const {
 gfx::Rect HWNDMessageHandler::GetRestoredBounds() const {
   // If we're in fullscreen mode, we've changed the normal bounds to the monitor
   // rect, so return the saved bounds instead.
-  if (fullscreen_handler_->fullscreen())
+  if (IsFullscreen())
     return fullscreen_handler_->GetRestoreBounds();
 
   gfx::Rect bounds;
@@ -697,6 +690,10 @@ bool HWNDMessageHandler::IsMaximized() const {
   return !!::IsZoomed(hwnd());
 }
 
+bool HWNDMessageHandler::IsFullscreen() const {
+  return fullscreen_handler_->fullscreen();
+}
+
 bool HWNDMessageHandler::IsAlwaysOnTop() const {
   return (GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TOPMOST) != 0;
 }
@@ -761,11 +758,9 @@ bool HWNDMessageHandler::HasCapture() const {
 }
 
 void HWNDMessageHandler::SetVisibilityChangedAnimationsEnabled(bool enabled) {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    int dwm_value = enabled ? FALSE : TRUE;
-    DwmSetWindowAttribute(
-        hwnd(), DWMWA_TRANSITIONS_FORCEDISABLED, &dwm_value, sizeof(dwm_value));
-  }
+  int dwm_value = enabled ? FALSE : TRUE;
+  DwmSetWindowAttribute(hwnd(), DWMWA_TRANSITIONS_FORCEDISABLED, &dwm_value,
+                        sizeof(dwm_value));
 }
 
 bool HWNDMessageHandler::SetTitle(const base::string16& title) {
@@ -794,18 +789,11 @@ void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
 }
 
 void HWNDMessageHandler::FrameTypeChanged() {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    // Don't redraw the window here, because we invalidate the window later.
-    ResetWindowRegion(true, false);
-    // The non-client view needs to update too.
-    delegate_->HandleFrameChanged();
-    InvalidateRect(hwnd(), NULL, FALSE);
-  } else {
-    if (!custom_window_region_.is_valid() && !delegate_->IsUsingCustomFrame())
-      dwm_transition_desired_ = true;
-    if (!dwm_transition_desired_ || !fullscreen_handler_->fullscreen())
-      PerformDwmTransition();
-  }
+  if (!custom_window_region_.is_valid() &&
+      delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN)
+    dwm_transition_desired_ = true;
+  if (!dwm_transition_desired_ || !IsFullscreen())
+    PerformDwmTransition();
 }
 
 void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
@@ -1041,8 +1029,7 @@ void HWNDMessageHandler::PostProcessActivateMessage(
   // thread. This in turn ensures that maximized windows on the same thread
   /// don't obscure the taskbar, etc.
   if (!active) {
-    if (fullscreen_handler_->fullscreen() &&
-        ::IsWindow(window_gaining_or_losing_activation)) {
+    if (IsFullscreen() && ::IsWindow(window_gaining_or_losing_activation)) {
       // Reduce the bounds of the window by 1px to ensure that Windows does
       // not treat this like a fullscreen window.
       MONITORINFO monitor_info = {sizeof(monitor_info)};
@@ -1055,7 +1042,7 @@ void HWNDMessageHandler::PostProcessActivateMessage(
     }
   } else if (background_fullscreen_hack_) {
     // Restore the bounds of the window to fullscreen.
-    DCHECK(fullscreen_handler_->fullscreen());
+    DCHECK(IsFullscreen());
     background_fullscreen_hack_ = false;
     MONITORINFO monitor_info = {sizeof(monitor_info)};
     GetMonitorInfo(MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY),
@@ -1121,16 +1108,14 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
 
   // Returning false causes the default handling in OnNCCalcSize() to
   // be invoked.
-  if (!delegate_->IsWidgetWindow() ||
-      (!delegate_->IsUsingCustomFrame() && !remove_standard_frame_)) {
+  if (!delegate_->HasNonClientView() || HasSystemFrame())
     return false;
-  }
 
   if (IsMaximized()) {
     // Windows automatically adds a standard width border to all sides when a
     // window is maximized.
     int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
-    if (remove_standard_frame_)
+    if (!delegate_->HasFrame())
       border_thickness -= 1;
     *insets = gfx::Insets(
         border_thickness, border_thickness, border_thickness, border_thickness);
@@ -1150,7 +1135,8 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   // the delegate to allow for a custom hit mask.
   if ((window_ex_style() & WS_EX_COMPOSITED) == 0 &&
       !custom_window_region_.is_valid() &&
-      (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow())) {
+      (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN ||
+       !delegate_->HasNonClientView())) {
     if (force)
       SetWindowRgn(hwnd(), NULL, redraw);
     return;
@@ -1194,14 +1180,12 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
 }
 
 void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-
-  if (fullscreen_handler_->fullscreen())
+  if (IsFullscreen())
     return;
 
   DWMNCRENDERINGPOLICY policy =
-      custom_window_region_.is_valid() || delegate_->IsUsingCustomFrame()
+      custom_window_region_.is_valid() ||
+              delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN
           ? DWMNCRP_DISABLED
           : DWMNCRP_ENABLED;
 
@@ -1260,14 +1244,19 @@ void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
   InvalidateRect(hwnd(), NULL, FALSE);
 }
 
+bool HWNDMessageHandler::HasSystemFrame() const {
+  return delegate_->HasFrame() &&
+         delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN;
+}
+
 // Message handlers ------------------------------------------------------------
 
 void HWNDMessageHandler::OnActivateApp(BOOL active, DWORD thread_id) {
-  if (delegate_->IsWidgetWindow() && !active &&
+  if (delegate_->HasNonClientView() && !active &&
       thread_id != GetCurrentThreadId()) {
     delegate_->HandleAppDeactivated();
     // Also update the native frame if it is rendering the non-client area.
-    if (!remove_standard_frame_ && !delegate_->IsUsingCustomFrame())
+    if (HasSystemFrame())
       DefWindowProcWithRedrawLock(WM_NCACTIVATE, FALSE, 0);
   }
 }
@@ -1309,12 +1298,10 @@ void HWNDMessageHandler::OnCommand(UINT notification_code,
 
 LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   if (window_ex_style() &  WS_EX_COMPOSITED) {
-    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-      // This is part of the magic to emulate layered windows with Aura
-      // see the explanation elsewere when we set WS_EX_COMPOSITED style.
-      MARGINS margins = {-1,-1,-1,-1};
-      DwmExtendFrameIntoClientArea(hwnd(), &margins);
-    }
+    // This is part of the magic to emulate layered windows with Aura
+    // see the explanation elsewere when we set WS_EX_COMPOSITED style.
+    MARGINS margins = {-1, -1, -1, -1};
+    DwmExtendFrameIntoClientArea(hwnd(), &margins);
   }
 
   fullscreen_handler_->set_hwnd(hwnd());
@@ -1326,7 +1313,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
               MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
               0);
 
-  if (remove_standard_frame_) {
+  if (!delegate_->HasFrame()) {
     SetWindowLong(hwnd(), GWL_STYLE,
                   GetWindowLong(hwnd(), GWL_STYLE) & ~WS_CAPTION);
     SendFrameChanged();
@@ -1335,8 +1322,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // Get access to a modifiable copy of the system menu.
   GetSystemMenu(hwnd(), false);
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      ui::AreTouchEventsEnabled())
+  if (ui::AreTouchEventsEnabled())
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
   // We need to allow the delegate to size its contents since the window may not
@@ -1370,7 +1356,7 @@ void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
 LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
                                                     WPARAM w_param,
                                                     LPARAM l_param) {
-  if (!delegate_->IsWidgetWindow()) {
+  if (!delegate_->HasNonClientView()) {
     SetMsgHandled(FALSE);
     return 0;
   }
@@ -1491,7 +1477,7 @@ LRESULT HWNDMessageHandler::OnImeMessages(UINT message,
 }
 
 void HWNDMessageHandler::OnInitMenu(HMENU menu) {
-  bool is_fullscreen = fullscreen_handler_->fullscreen();
+  bool is_fullscreen = IsFullscreen();
   bool is_minimized = IsMinimized();
   bool is_maximized = IsMaximized();
   bool is_restored = !is_fullscreen && !is_minimized && !is_maximized;
@@ -1559,7 +1545,7 @@ LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
 
   // TODO(beng): resolve this with the GetWindowLong() check on the subsequent
   //             line.
-  if (delegate_->IsWidgetWindow()) {
+  if (delegate_->HasNonClientView()) {
     if (delegate_->CanActivate())
       return MA_ACTIVATE;
     if (delegate_->WantsMouseEventsWhenInactive())
@@ -1600,7 +1586,7 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
 
   bool render_as_active = delegate_->IsAlwaysRenderAsActive();
 
-  if (!delegate_->IsWidgetWindow()) {
+  if (!delegate_->HasNonClientView()) {
     SetMsgHandled(FALSE);
     return 0;
   }
@@ -1612,7 +1598,7 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   if (active && render_as_active)
     delegate_->SetAlwaysRenderAsActive(false);
 
-  if (delegate_->IsUsingCustomFrame()) {
+  if (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
     // TODO(beng, et al): Hack to redraw this window and child windows
     //     synchronously upon activation. Not all child windows are redrawing
     //     themselves leading to issues like http://crbug.com/74604
@@ -1629,10 +1615,7 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   if (IsVisible())
     delegate_->SchedulePaint();
 
-  // Avoid DefWindowProc non-client rendering over our custom frame on newer
-  // Windows versions only (breaks taskbar activation indication on XP/Vista).
-  if (delegate_->IsUsingCustomFrame() &&
-      base::win::GetVersion() > base::win::VERSION_VISTA) {
+  if (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
     SetMsgHandled(TRUE);
     return TRUE;
   }
@@ -1661,8 +1644,7 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
 
   gfx::Insets insets;
   bool got_insets = GetClientAreaInsets(&insets);
-  if (!got_insets && !fullscreen_handler_->fullscreen() &&
-      !(mode && remove_standard_frame_)) {
+  if (!got_insets && !IsFullscreen() && !(mode && !delegate_->HasFrame())) {
     SetMsgHandled(FALSE);
     return 0;
   }
@@ -1701,7 +1683,7 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
     if (autohide_edges & ViewsDelegate::EDGE_LEFT)
       client_rect->left += kAutoHideTaskbarThicknessPx;
     if (autohide_edges & ViewsDelegate::EDGE_TOP) {
-      if (!delegate_->IsUsingCustomFrame()) {
+      if (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
         // caption buttons to draw onscreen but not respond to mouse
@@ -1740,14 +1722,14 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
 }
 
 LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
-  if (!delegate_->IsWidgetWindow()) {
+  if (!delegate_->HasNonClientView()) {
     SetMsgHandled(FALSE);
     return 0;
   }
 
   // If the DWM is rendering the window controls, we need to give the DWM's
   // default window procedure first chance to handle hit testing.
-  if (!remove_standard_frame_ && !delegate_->IsUsingCustomFrame()) {
+  if (HasSystemFrame()) {
     LRESULT result;
     if (DwmDefWindowProc(hwnd(), WM_NCHITTEST, 0,
                          MAKELPARAM(point.x(), point.y()), &result)) {
@@ -1814,10 +1796,11 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
 }
 
 void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
-  // We only do non-client painting if we're not using the native frame.
+  // We only do non-client painting if we're not using the system frame.
   // It's required to avoid some native painting artifacts from appearing when
   // the window is resized.
-  if (!delegate_->IsWidgetWindow() || !delegate_->IsUsingCustomFrame()) {
+  if (!delegate_->HasNonClientView() ||
+      delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
     SetMsgHandled(FALSE);
     return;
   }
@@ -1861,7 +1844,7 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
 
   // When using a custom frame, we want to avoid calling DefWindowProc() since
   // that may render artifacts.
-  SetMsgHandled(delegate_->IsUsingCustomFrame());
+  SetMsgHandled(delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN);
 }
 
 LRESULT HWNDMessageHandler::OnNCUAHDrawCaption(UINT message,
@@ -1869,7 +1852,7 @@ LRESULT HWNDMessageHandler::OnNCUAHDrawCaption(UINT message,
                                                LPARAM l_param) {
   // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
   // an explanation about why we need to handle this message.
-  SetMsgHandled(delegate_->IsUsingCustomFrame());
+  SetMsgHandled(delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN);
   return 0;
 }
 
@@ -1878,7 +1861,7 @@ LRESULT HWNDMessageHandler::OnNCUAHDrawFrame(UINT message,
                                              LPARAM l_param) {
   // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
   // an explanation about why we need to handle this message.
-  SetMsgHandled(delegate_->IsUsingCustomFrame());
+  SetMsgHandled(delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN);
   return 0;
 }
 
@@ -2059,12 +2042,11 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
   // specific information so we must exclude this when comparing.
   static const int sc_mask = 0xFFF0;
   // Ignore size/move/maximize in fullscreen mode.
-  if (fullscreen_handler_->fullscreen() &&
-      (((notification_code & sc_mask) == SC_SIZE) ||
-       ((notification_code & sc_mask) == SC_MOVE) ||
-       ((notification_code & sc_mask) == SC_MAXIMIZE)))
+  if (IsFullscreen() && (((notification_code & sc_mask) == SC_SIZE) ||
+                         ((notification_code & sc_mask) == SC_MOVE) ||
+                         ((notification_code & sc_mask) == SC_MAXIMIZE)))
     return;
-  if (delegate_->IsUsingCustomFrame()) {
+  if (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
     if ((notification_code & sc_mask) == SC_MINIMIZE ||
         (notification_code & sc_mask) == SC_MAXIMIZE ||
         (notification_code & sc_mask) == SC_RESTORE) {
@@ -2218,9 +2200,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
           background_fullscreen_hack_ = false;
       }
       if (monitor && (monitor == last_monitor_) &&
-          ((fullscreen_handler_->fullscreen() &&
-            !background_fullscreen_hack_) ||
-            work_area_changed)) {
+          ((IsFullscreen() && !background_fullscreen_hack_) ||
+           work_area_changed)) {
         // A rect for the monitor we're on changed.  Normally Windows notifies
         // us about this (and thus we're reaching here due to the SetWindowPos()
         // call in OnSettingChange() above), but with some software (e.g.
@@ -2230,7 +2211,7 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         // response is to throw away the existing position/size information in
         // |window_pos| and recalculate it based on the new work rect.
         gfx::Rect new_window_rect;
-        if (fullscreen_handler_->fullscreen()) {
+        if (IsFullscreen()) {
           new_window_rect = monitor_rect;
         } else if (IsMaximized()) {
           new_window_rect = work_area;
@@ -2292,7 +2273,7 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
 void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
   if (DidClientAreaSizeChange(window_pos))
     ClientAreaSizeChanged();
-  if (remove_standard_frame_ && window_pos->flags & SWP_FRAMECHANGED &&
+  if (!delegate_->HasFrame() && window_pos->flags & SWP_FRAMECHANGED &&
       ui::win::IsAeroGlassEnabled() &&
       (window_ex_style() & WS_EX_COMPOSITED) == 0) {
     MARGINS m = {10, 10, 10, 10};
@@ -2382,7 +2363,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
       gfx::ShowSystemMenuAtPoint(hwnd(), gfx::Point(screen_point));
       return 0;
     }
-  } else if (message == WM_NCLBUTTONDOWN && delegate_->IsUsingCustomFrame()) {
+  } else if (message == WM_NCLBUTTONDOWN &&
+             delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
     switch (w_param) {
       case HTCLOSE:
       case HTMINBUTTON:
@@ -2453,7 +2435,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   }
 
   if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
-      w_param != HTCAPTION && delegate_->IsUsingCustomFrame()) {
+      w_param != HTCAPTION &&
+      delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
     // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
     // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting, so we
     // need to call it inside a ScopedRedrawLock. This may cause other negative
@@ -2505,7 +2488,7 @@ void HWNDMessageHandler::PerformDwmTransition() {
   // The non-client view needs to update too.
   delegate_->HandleFrameChanged();
 
-  if (IsVisible() && !delegate_->IsUsingCustomFrame()) {
+  if (IsVisible() && delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
     // For some reason, we need to hide the window after we change from a custom
     // frame to a native frame.  If we don't, the client area will be filled
     // with black.  This seems to be related to an interaction between DWM and
@@ -2608,7 +2591,7 @@ bool HWNDMessageHandler::HandleMouseInputForCaption(unsigned int message,
         // any member variables after the DefWindowProc call.
         left_button_down_on_caption_ = false;
 
-        if (delegate_->IsUsingCustomFrame()) {
+        if (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
           DefWindowProcWithRedrawLock(WM_NCLBUTTONDOWN, HTCAPTION, l_param);
         } else {
           DefWindowProc(hwnd(), WM_NCLBUTTONDOWN, HTCAPTION, l_param);

@@ -137,8 +137,7 @@ void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
   if (params.parent && params.parent->GetHost())
     parent_hwnd = params.parent->GetHost()->GetAcceleratedWidget();
 
-  message_handler_->set_remove_standard_frame(params.remove_standard_frame);
-
+  remove_standard_frame_ = params.remove_standard_frame;
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
 
   gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(params.bounds);
@@ -588,12 +587,17 @@ void DesktopWindowTreeHostWin::OnWindowHidingAnimationCompleted() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, HWNDMessageHandlerDelegate implementation:
 
-bool DesktopWindowTreeHostWin::IsWidgetWindow() const {
+bool DesktopWindowTreeHostWin::HasNonClientView() const {
   return has_non_client_view_;
 }
 
-bool DesktopWindowTreeHostWin::IsUsingCustomFrame() const {
-  return !GetWidget()->ShouldUseNativeFrame();
+FrameMode DesktopWindowTreeHostWin::GetFrameMode() const {
+  return GetWidget()->ShouldUseNativeFrame() ? FrameMode::SYSTEM_DRAWN
+                                             : FrameMode::CUSTOM_DRAWN;
+}
+
+bool DesktopWindowTreeHostWin::HasFrame() const {
+  return !remove_standard_frame_;
 }
 
 void DesktopWindowTreeHostWin::SchedulePaint() {

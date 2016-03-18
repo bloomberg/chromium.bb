@@ -24,17 +24,29 @@ class TouchEvent;
 
 namespace views {
 
+enum class FrameMode {
+  SYSTEM_DRAWN,  // "glass" frame
+  CUSTOM_DRAWN   // "opaque" frame
+};
+
 class InputMethod;
 
 // Implemented by the object that uses the HWNDMessageHandler to handle
 // notifications from the underlying HWND and service requests for data.
 class VIEWS_EXPORT HWNDMessageHandlerDelegate {
  public:
-  virtual bool IsWidgetWindow() const = 0;
+  // True if the widget associated with this window has a non-client view.
+  virtual bool HasNonClientView() const = 0;
 
-  // TODO(beng): resolve this more satisfactorily vis-a-vis ShouldUseNativeFrame
-  //             to avoid confusion.
-  virtual bool IsUsingCustomFrame() const = 0;
+  // Returns who we want to be drawing the frame. Either the system (Windows)
+  // will handle it or Chrome will custom draw it.
+  virtual FrameMode GetFrameMode() const = 0;
+
+  // True if a frame should be drawn. This will return true for some windows
+  // that don't have a visible frame. Those usually have the WS_POPUP style, for
+  // which Windows will remove the frame automatically if the frame mode is
+  // SYSTEM_DRAWN.
+  virtual bool HasFrame() const = 0;
 
   virtual void SchedulePaint() = 0;
   virtual void SetAlwaysRenderAsActive(bool always_render_as_active) = 0;
