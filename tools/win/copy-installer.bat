@@ -50,7 +50,7 @@ SET FROM=%FROM%\%OUTPUT%\%BUILDTYPE%%ARCH%
 SET TO=\%OUTPUT%\%BUILDTYPE%%ARCH%
 
 SET TOCOPY=mini_installer.exe *.dll.pdb chrome.exe.pdb mini_installer.exe.pdb^
-           setup.exe.pdb delegate_execute.exe.pdb
+           setup.exe.pdb
 
 CALL :_copyfiles
 
