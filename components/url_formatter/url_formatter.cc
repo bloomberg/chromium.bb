@@ -5,24 +5,23 @@
 #include "components/url_formatter/url_formatter.h"
 
 #include <algorithm>
-#include <map>
 #include <utility>
 
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
-#include "base/stl_util.h"
-#include "base/strings/string_tokenizer.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
+#include "base/threading/thread_local_storage.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
 #include "third_party/icu/source/common/unicode/uniset.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
+#include "third_party/icu/source/common/unicode/uvernum.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
-#include "third_party/icu/source/i18n/unicode/ulocdata.h"
+#include "third_party/icu/source/i18n/unicode/uspoof.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -32,11 +31,9 @@ namespace {
 
 base::string16 IDNToUnicodeWithAdjustments(
     const std::string& host,
-    const std::string& languages,
     base::OffsetAdjuster::Adjustments* adjustments);
 bool IDNToUnicodeOneComponent(const base::char16* comp,
                               size_t comp_len,
-                              const std::string& languages,
                               base::string16* out);
 
 class AppendComponentTransform {
@@ -55,17 +52,14 @@ class AppendComponentTransform {
 
 class HostComponentTransform : public AppendComponentTransform {
  public:
-  explicit HostComponentTransform(const std::string& languages)
-      : languages_(languages) {}
+  HostComponentTransform() {}
 
  private:
   base::string16 Execute(
       const std::string& component_text,
       base::OffsetAdjuster::Adjustments* adjustments) const override {
-    return IDNToUnicodeWithAdjustments(component_text, languages_, adjustments);
+    return IDNToUnicodeWithAdjustments(component_text, adjustments);
   }
-
-  const std::string& languages_;
 };
 
 class NonHostComponentTransform : public AppendComponentTransform {
@@ -157,7 +151,6 @@ void AdjustAllComponentsButScheme(int delta, url::Parsed* parsed) {
 // Helper for FormatUrlWithOffsets().
 base::string16 FormatViewSourceUrl(
     const GURL& url,
-    const std::string& languages,
     FormatUrlTypes format_types,
     net::UnescapeRule::Type unescape_rules,
     url::Parsed* new_parsed,
@@ -173,7 +166,7 @@ base::string16 FormatViewSourceUrl(
   base::string16 result(
       base::ASCIIToUTF16(kViewSource) +
       FormatUrlWithAdjustments(GURL(url_str.substr(kViewSourceLength)),
-                               languages, format_types, unescape_rules,
+                               std::string(), format_types, unescape_rules,
                                new_parsed, prefix_end, adjustments));
   // Revise |adjustments| by shifting to the offsets to prefix that the above
   // call to FormatUrl didn't get to see.
@@ -197,16 +190,10 @@ base::string16 FormatViewSourceUrl(
   return result;
 }
 
-// TODO(brettw) bug 734373: check the scripts for each host component and
-// don't un-IDN-ize if there is more than one. Alternatively, only IDN for
-// scripts that the user has installed. For now, just put the entire
-// path through IDN. Maybe this feature can be implemented in ICU itself?
-//
-// We may want to skip this step in the case of file URLs to allow unicode
-// UNC hostnames regardless of encodings.
+// TODO(brettw): We may want to skip this step in the case of file URLs to
+// allow unicode UNC hostnames regardless of encodings.
 base::string16 IDNToUnicodeWithAdjustments(
     const std::string& host,
-    const std::string& languages,
     base::OffsetAdjuster::Adjustments* adjustments) {
   if (adjustments)
     adjustments->clear();
@@ -232,7 +219,7 @@ base::string16 IDNToUnicodeWithAdjustments(
       // Add the substring that we just found.
       converted_idn =
           IDNToUnicodeOneComponent(input16.data() + component_start,
-                                   component_length, languages, &out16);
+                                   component_length, &out16);
     }
     size_t new_component_length = out16.length() - new_component_start;
 
@@ -248,256 +235,258 @@ base::string16 IDNToUnicodeWithAdjustments(
   return out16;
 }
 
-// Does some simple normalization of scripts so we can allow certain scripts
-// to exist together.
-// TODO(brettw) bug 880223: we should allow some other languages to be
-// oombined such as Chinese and Latin. We will probably need a more
-// complicated system of language pairs to have more fine-grained control.
-UScriptCode NormalizeScript(UScriptCode code) {
-  switch (code) {
-    case USCRIPT_KATAKANA:
-    case USCRIPT_HIRAGANA:
-    case USCRIPT_KATAKANA_OR_HIRAGANA:
-    case USCRIPT_HANGUL:  // This one is arguable.
-      return USCRIPT_HAN;
-    default:
-      return code;
-  }
-}
-
-bool IsIDNComponentInSingleScript(const base::char16* str, int str_len) {
-  UScriptCode first_script = USCRIPT_INVALID_CODE;
-  bool is_first = true;
-
-  int i = 0;
-  while (i < str_len) {
-    unsigned code_point;
-    U16_NEXT(str, i, str_len, code_point);
-
-    UErrorCode err = U_ZERO_ERROR;
-    UScriptCode cur_script = uscript_getScript(code_point, &err);
-    if (err != U_ZERO_ERROR)
-      return false;  // Report mixed on error.
-    cur_script = NormalizeScript(cur_script);
-
-    // TODO(brettw) We may have to check for USCRIPT_INHERENT as well.
-    if (is_first && cur_script != USCRIPT_COMMON) {
-      first_script = cur_script;
-      is_first = false;
-    } else {
-      if (cur_script != USCRIPT_COMMON && cur_script != first_script)
-        return false;
-    }
-  }
-  return true;
-}
-
-// Check if the script of a language can be 'safely' mixed with
-// Latin letters in the ASCII range.
-bool IsCompatibleWithASCIILetters(const std::string& lang) {
-  // For now, just list Chinese, Japanese and Korean (positive list).
-  // An alternative is negative-listing (languages using Greek and
-  // Cyrillic letters), but it can be more dangerous.
-  return !lang.substr(0, 2).compare("zh") || !lang.substr(0, 2).compare("ja") ||
-         !lang.substr(0, 2).compare("ko");
-}
-
-typedef std::map<std::string, icu::UnicodeSet*> LangToExemplarSetMap;
-
-class LangToExemplarSet {
+// A helper class for IDN Spoof checking, used to ensure that no IDN input is
+// spoofable per Chromium's standard of spoofability. For a more thorough
+// explanation of how spoof checking works in Chromium, see
+// http://dev.chromium.org/developers/design-documents/idn-in-google-chrome .
+class IDNSpoofChecker {
  public:
-  static LangToExemplarSet* GetInstance() {
-    return base::Singleton<LangToExemplarSet>::get();
-  }
+  IDNSpoofChecker();
+
+  // Returns true if |label| is safe to display as Unicode. In the event of
+  // library failure, all IDN inputs will be treated as unsafe.
+  bool Check(base::StringPiece16 label);
 
  private:
-  LangToExemplarSetMap map;
-  LangToExemplarSet() {}
-  ~LangToExemplarSet() {
-    STLDeleteContainerPairSecondPointers(map.begin(), map.end());
-  }
+  void SetAllowedUnicodeSet(UErrorCode* status);
 
-  friend class base::Singleton<LangToExemplarSet>;
-  friend struct base::DefaultSingletonTraits<LangToExemplarSet>;
-  friend bool GetExemplarSetForLang(const std::string&, icu::UnicodeSet**);
-  friend void SetExemplarSetForLang(const std::string&, icu::UnicodeSet*);
+  USpoofChecker* checker_;
+  icu::UnicodeSet deviation_characters_;
+  icu::UnicodeSet latin_letters_;
+  icu::UnicodeSet non_ascii_latin_letters_;
 
-  DISALLOW_COPY_AND_ASSIGN(LangToExemplarSet);
+  DISALLOW_COPY_AND_ASSIGN(IDNSpoofChecker);
 };
 
-bool GetExemplarSetForLang(const std::string& lang,
-                           icu::UnicodeSet** lang_set) {
-  const LangToExemplarSetMap& map = LangToExemplarSet::GetInstance()->map;
-  LangToExemplarSetMap::const_iterator pos = map.find(lang);
-  if (pos != map.end()) {
-    *lang_set = pos->second;
-    return true;
-  }
-  return false;
-}
-
-void SetExemplarSetForLang(const std::string& lang, icu::UnicodeSet* lang_set) {
-  LangToExemplarSetMap& map = LangToExemplarSet::GetInstance()->map;
-  map.insert(std::make_pair(lang, lang_set));
-}
-
-static base::LazyInstance<base::Lock>::Leaky g_lang_set_lock =
+base::LazyInstance<IDNSpoofChecker>::Leaky g_idn_spoof_checker =
     LAZY_INSTANCE_INITIALIZER;
+base::ThreadLocalStorage::StaticSlot tls_index = TLS_INITIALIZER;
 
-// Returns true if all the characters in component_characters are used by
-// the language |lang|.
-bool IsComponentCoveredByLang(const icu::UnicodeSet& component_characters,
-                              const std::string& lang) {
-  CR_DEFINE_STATIC_LOCAL(const icu::UnicodeSet, kASCIILetters, ('a', 'z'));
-  icu::UnicodeSet* lang_set = nullptr;
-  // We're called from both the UI thread and the history thread.
-  {
-    base::AutoLock lock(g_lang_set_lock.Get());
-    if (!GetExemplarSetForLang(lang, &lang_set)) {
-      UErrorCode status = U_ZERO_ERROR;
-      ULocaleData* uld = ulocdata_open(lang.c_str(), &status);
-      // TODO(jungshik) Turn this check on when the ICU data file is
-      // rebuilt with the minimal subset of locale data for languages
-      // to which Chrome is not localized but which we offer in the list
-      // of languages selectable for Accept-Languages. With the rebuilt ICU
-      // data, ulocdata_open never should fall back to the default locale.
-      // (issue 2078)
-      // DCHECK(U_SUCCESS(status) && status != U_USING_DEFAULT_WARNING);
-      if (U_SUCCESS(status) && status != U_USING_DEFAULT_WARNING) {
-        lang_set = reinterpret_cast<icu::UnicodeSet*>(ulocdata_getExemplarSet(
-            uld, nullptr, 0, ULOCDATA_ES_STANDARD, &status));
-        // On success, if |lang| is compatible with ASCII Latin letters, add
-        // them.
-        if (lang_set && IsCompatibleWithASCIILetters(lang))
-          lang_set->addAll(kASCIILetters);
-      }
+void OnThreadTermination(void* regex_matcher) {
+  delete reinterpret_cast<icu::RegexMatcher*>(regex_matcher);
+}
 
-      if (!lang_set)
-        lang_set = new icu::UnicodeSet(1, 0);
-
-      lang_set->freeze();
-      SetExemplarSetForLang(lang, lang_set);
-      ulocdata_close(uld);
-    }
+IDNSpoofChecker::IDNSpoofChecker() {
+  UErrorCode status = U_ZERO_ERROR;
+  checker_ = uspoof_open(&status);
+  if (U_FAILURE(status)) {
+    checker_ = nullptr;
+    return;
   }
-  return !lang_set->isEmpty() && lang_set->containsAll(component_characters);
+
+  // At this point, USpoofChecker has all the checks enabled except
+  // for USPOOF_CHAR_LIMIT (USPOOF_{RESTRICTION_LEVEL, INVISIBLE,
+  // MIXED_SCRIPT_CONFUSABLE, WHOLE_SCRIPT_CONFUSABLE, MIXED_NUMBERS, ANY_CASE})
+  // This default configuration is adjusted below as necessary.
+
+  // Set the restriction level to moderate. It allows mixing Latin with another
+  // script (+ COMMON and INHERITED). Except for Chinese(Han + Bopomofo),
+  // Japanese(Hiragana + Katakana + Han), and Korean(Hangul + Han), only one
+  // script other than Common and Inherited can be mixed with Latin. Cyrillic
+  // and Greek are not allowed to mix with Latin.
+  // See http://www.unicode.org/reports/tr39/#Restriction_Level_Detection
+  uspoof_setRestrictionLevel(checker_, USPOOF_MODERATELY_RESTRICTIVE);
+
+  // Restrict allowed characters in IDN labels and turn on USPOOF_CHAR_LIMIT.
+  SetAllowedUnicodeSet(&status);
+
+  // Enable the return of auxillary (non-error) information.
+  int32_t checks = uspoof_getChecks(checker_, &status) | USPOOF_AUX_INFO;
+
+  // Disable WHOLE_SCRIPT_CONFUSABLE check. The check has a marginal value when
+  // used against a single string as opposed to comparing a pair of strings. In
+  // addition, it would also flag a number of common labels including the IDN
+  // TLD for Russian.
+  // A possible alternative would be to turn on the check and block a label
+  // only under the following conditions, but it'd better be done on the
+  // server-side (e.g. SafeBrowsing):
+  // 1. The label is whole-script confusable.
+  // 2. And the skeleton of the label matches the skeleton of one of top
+  // domain labels. See http://unicode.org/reports/tr39/#Confusable_Detection
+  // for the definition of skeleton.
+  // 3. And the label is different from the matched top domain label in #2.
+  checks &= ~USPOOF_WHOLE_SCRIPT_CONFUSABLE;
+
+  uspoof_setChecks(checker_, checks, &status);
+
+  // Four characters handled differently by IDNA 2003 and IDNA 2008. UTS46
+  // transitional processing treats them as IDNA 2003 does; maps U+00DF and
+  // U+03C2 and drops U+200[CD].
+  deviation_characters_ =
+      icu::UnicodeSet(UNICODE_STRING_SIMPLE("[\\u00df\\u03c2\\u200c\\u200d]"),
+                      status);
+  deviation_characters_.freeze();
+
+  latin_letters_ =
+      icu::UnicodeSet(UNICODE_STRING_SIMPLE("[:Latin:]"), status);
+  latin_letters_.freeze();
+
+  // Latin letters outside ASCII. 'Script_Extensions=Latin' is not necessary
+  // because additional characters pulled in with scx=Latn are not included in
+  // the allowed set.
+  non_ascii_latin_letters_ = icu::UnicodeSet(
+      UNICODE_STRING_SIMPLE("[[:Latin:] - [a-zA-Z]]"), status);
+  non_ascii_latin_letters_.freeze();
+
+  DCHECK(U_SUCCESS(status));
+}
+
+bool IDNSpoofChecker::Check(base::StringPiece16 label) {
+  UErrorCode status = U_ZERO_ERROR;
+  int32_t result = uspoof_check(checker_, label.data(),
+                                base::checked_cast<int32_t>(label.size()),
+                                NULL, &status);
+  // If uspoof_check fails (due to library failure), or if any of the checks
+  // fail, treat the IDN as unsafe.
+  if (U_FAILURE(status) || (result & USPOOF_ALL_CHECKS))
+    return false;
+
+  icu::UnicodeString label_string(FALSE, label.data(),
+                                  base::checked_cast<int32_t>(label.size()));
+
+  // A punycode label with 'xn--' prefix is not subject to the URL
+  // canonicalization and is stored as it is in GURL. If it encodes a deviation
+  // character (UTS 46; e.g. U+00DF/sharp-s), it should be still shown in
+  // punycode instead of Unicode. Without this check, xn--fu-hia for
+  // 'fu<sharp-s>' would be converted to 'fu<sharp-s>' for display because
+  // "UTS 46 section 4 Processing step 4" applies validity criteria for
+  // non-transitional processing (i.e. do not map deviation characters) to any
+  // punycode labels regardless of whether transitional or non-transitional is
+  // chosen. On the other hand, 'fu<sharp-s>' typed or copy and pasted
+  // as Unicode would be canonicalized to 'fuss' by GURL and is displayed as
+  // such. See http://crbug.com/595263 .
+  if (deviation_characters_.containsSome(label_string))
+    return false;
+
+  // If there's no script mixing, the input is regarded as safe without any
+  // extra check.
+  result &= USPOOF_RESTRICTION_LEVEL_MASK;
+  if (result == USPOOF_ASCII || result == USPOOF_SINGLE_SCRIPT_RESTRICTIVE)
+    return true;
+
+  // When check is passed at 'highly restrictive' level, |label| is
+  // made up of one of the following script sets optionally mixed with Latin.
+  //  - Chinese: Han, Bopomofo, Common
+  //  - Japanese: Han, Hiragana, Katakana, Common
+  //  - Korean: Hangul, Han, Common
+  // Treat this case as a 'logical' single script unless Latin is mixed.
+  if (result == USPOOF_HIGHLY_RESTRICTIVE &&
+      latin_letters_.containsNone(label_string))
+    return true;
+
+  // Additional checks for |label| with multiple scripts, one of which is Latin.
+  // Disallow non-ASCII Latin letters to mix with a non-Latin script.
+  if (non_ascii_latin_letters_.containsSome(label_string))
+    return false;
+
+  if (!tls_index.initialized())
+    tls_index.Initialize(&OnThreadTermination);
+  icu::RegexMatcher* dangerous_pattern =
+      reinterpret_cast<icu::RegexMatcher*>(tls_index.Get());
+  if (!dangerous_pattern) {
+    // Disallow the katakana no, so, zo, or n, as they may be mistaken for
+    // slashes when they're surrounded by non-Japanese scripts (i.e. scripts
+    // other than Katakana, Hiragana or Han). If {no, so, zo, n} next to a
+    // non-Japanese script on either side is disallowed, legitimate cases like
+    // '{vitamin in Katakana}b6' are blocked. Note that trying to block those
+    // characters when used alone as a label is futile because those cases
+    // would not reach here.
+    dangerous_pattern = new icu::RegexMatcher(
+        icu::UnicodeString(
+            "[^\\p{scx=kana}\\p{scx=hira}\\p{scx=hani}]"
+            "[\\u30ce\\u30f3\\u30bd\\u30be]"
+            "[^\\p{scx=kana}\\p{scx=hira}\\p{scx=hani}]", -1, US_INV),
+        0, status);
+    tls_index.Set(dangerous_pattern);
+  }
+  dangerous_pattern->reset(label_string);
+  return !dangerous_pattern->find();
+}
+
+void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
+  if (U_FAILURE(*status))
+    return;
+
+  // The recommended set is a set of characters for identifiers in a
+  // security-sensitive environment taken from UTR 39
+  // (http://unicode.org/reports/tr39/) and
+  // http://www.unicode.org/Public/security/latest/xidmodifications.txt .
+  // The inclusion set comes from "Candidate Characters for Inclusion
+  // in idenfiers" of UTR 31 (http://www.unicode.org/reports/tr31). The list
+  // may change over the time and will be updated whenever the version of ICU
+  // used in Chromium is updated.
+  const icu::UnicodeSet* recommended_set =
+      uspoof_getRecommendedUnicodeSet(status);
+  icu::UnicodeSet allowed_set;
+  allowed_set.addAll(*recommended_set);
+  const icu::UnicodeSet* inclusion_set = uspoof_getInclusionUnicodeSet(status);
+  allowed_set.addAll(*inclusion_set);
+
+  // Five aspirational scripts are taken from UTR 31 Table 6 at
+  // http://www.unicode.org/reports/tr31/#Aspirational_Use_Scripts .
+  // Not all the characters of aspirational scripts are suitable for
+  // identifiers. Therefore, only characters belonging to
+  // [:Identifier_Type=Aspirational:] (listed in 'Status/Type=Aspirational'
+  // section at
+  // http://www.unicode.org/Public/security/latest/xidmodifications.txt) are
+  // are added to the allowed set. The list has to be updated when a new
+  // version of Unicode is released. The current version is 8.0.0 and ICU 58
+  // will have Unicode 9.0 data.
+#if U_ICU_VERSION_MAJOR_NUM < 58
+  const icu::UnicodeSet aspirational_scripts(
+      icu::UnicodeString(
+          // Unified Canadian Syllabics
+          "[\\u1401-\\u166C\\u166F-\\u167F"
+          // Mongolian
+          "\\u1810-\\u1819\\u1820-\\u1877\\u1880-\\u18AA"
+          // Unified Canadian Syllabics
+          "\\u18B0-\\u18F5"
+          // Tifinagh
+          "\\u2D30-\\u2D67\\u2D7F"
+          // Yi
+          "\\uA000-\\uA48C"
+          // Miao
+          "\\U00016F00-\\U00016F44\\U00016F50-\\U00016F7F"
+          "\\U00016F8F-\\U00016F9F]",
+          -1, US_INV),
+      *status);
+  allowed_set.addAll(aspirational_scripts);
+#else
+#error "Update aspirational_scripts per Unicode 9.0"
+#endif
+
+  // U+0338 is included in the recommended set, while U+05F4 and U+2027 are in
+  // the inclusion set. However, they are blacklisted as a part of Mozilla's
+  // IDN blacklist (http://kb.mozillazine.org/Network.IDN.blacklist_chars).
+  // U+0338 and U+2027 are dropped; the former can look like a slash when
+  // rendered with a broken font, and the latter can be confused with U+30FB
+  // (Katakana Middle Dot). U+05F4 (Hebrew Punctuation Gershayim) is kept,
+  // even though it can look like a double quotation mark. Using it in Hebrew
+  // should be safe. When used with a non-Hebrew script, it'd be filtered by
+  // other checks in place.
+  allowed_set.remove(0x338u);   // Combining Long Solidus Overlay
+  allowed_set.remove(0x2027u);  // Hyphenation Point
+
+  uspoof_setAllowedUnicodeSet(checker_, &allowed_set, status);
 }
 
 // Returns true if the given Unicode host component is safe to display to the
-// user.
-bool IsIDNComponentSafe(const base::char16* str,
-                        int str_len,
-                        const std::string& languages) {
-  // Most common cases (non-IDN) do not reach here so that we don't
-  // need a fast return path.
-  // TODO(jungshik) : Check if there's any character inappropriate
-  // (although allowed) for domain names.
-  // See http://www.unicode.org/reports/tr39/#IDN_Security_Profiles and
-  // http://www.unicode.org/reports/tr39/data/xidmodifications.txt
-  // For now, we borrow the list from Mozilla and tweaked it slightly.
-  // (e.g. Characters like U+00A0, U+3000, U+3002 are omitted because
-  //  they're gonna be canonicalized to U+0020 and full stop before
-  //  reaching here.)
-  // The original list is available at
-  // http://kb.mozillazine.org/Network.IDN.blacklist_chars and
-  // at
-  // http://mxr.mozilla.org/seamonkey/source/modules/libpref/src/init/all.js#703
-
-  UErrorCode status = U_ZERO_ERROR;
-#ifdef U_WCHAR_IS_UTF16
-  icu::UnicodeSet dangerous_characters(
-      icu::UnicodeString(
-          L"[[\\ \u00ad\u00bc\u00bd\u01c3\u0337\u0338"
-          L"\u05c3\u05f4\u06d4\u0702\u115f\u1160][\u2000-\u200b]"
-          L"[\u2024\u2027\u2028\u2029\u2039\u203a\u2044\u205f]"
-          L"[\u2154-\u2156][\u2159-\u215b][\u215f\u2215\u23ae"
-          L"\u29f6\u29f8\u2afb\u2afd][\u2ff0-\u2ffb][\u3014"
-          L"\u3015\u3033\u3164\u321d\u321e\u33ae\u33af\u33c6\u33df\ufe14"
-          L"\ufe15\ufe3f\ufe5d\ufe5e\ufeff\uff0e\uff06\uff61\uffa0\ufff9]"
-          L"[\ufffa-\ufffd]\U0001f50f\U0001f510\U0001f512\U0001f513]"),
-      status);
-  DCHECK(U_SUCCESS(status));
-  icu::RegexMatcher dangerous_patterns(
-      icu::UnicodeString(
-          // Lone katakana no, so, or n
-          L"[^\\p{Katakana}][\u30ce\u30f3\u30bd][^\\p{Katakana}]"
-          // Repeating Japanese accent characters
-          L"|[\u3099\u309a\u309b\u309c][\u3099\u309a\u309b\u309c]"),
-      0, status);
-#else
-  icu::UnicodeSet dangerous_characters(
-      icu::UnicodeString(
-          "[[\\u0020\\u00ad\\u00bc\\u00bd\\u01c3\\u0337\\u0338"
-          "\\u05c3\\u05f4\\u06d4\\u0702\\u115f\\u1160][\\u2000-\\u200b]"
-          "[\\u2024\\u2027\\u2028\\u2029\\u2039\\u203a\\u2044\\u205f]"
-          "[\\u2154-\\u2156][\\u2159-\\u215b][\\u215f\\u2215\\u23ae"
-          "\\u29f6\\u29f8\\u2afb\\u2afd][\\u2ff0-\\u2ffb][\\u3014"
-          "\\u3015\\u3033\\u3164\\u321d\\u321e\\u33ae\\u33af\\u33c6\\u33df\\ufe"
-          "14"
-          "\\ufe15\\ufe3f\\ufe5d\\ufe5e\\ufeff\\uff0e\\uff06\\uff61\\uffa0\\uff"
-          "f9]"
-          "[\\ufffa-\\ufffd]\\U0001f50f\\U0001f510\\U0001f512\\U0001f513]",
-          -1, US_INV),
-      status);
-  DCHECK(U_SUCCESS(status));
-  icu::RegexMatcher dangerous_patterns(
-      icu::UnicodeString(
-          // Lone katakana no, so, or n
-          "[^\\p{Katakana}][\\u30ce\\u30f3\\u30bd][^\\p{Katakana}]"
-          // Repeating Japanese accent characters
-          "|[\\u3099\\u309a\\u309b\\u309c][\\u3099\\u309a\\u309b\\u309c]"),
-      0, status);
-#endif
-  DCHECK(U_SUCCESS(status));
-  icu::UnicodeSet component_characters;
-  icu::UnicodeString component_string(str, str_len);
-  component_characters.addAll(component_string);
-  if (dangerous_characters.containsSome(component_characters))
-    return false;
-
-  DCHECK(U_SUCCESS(status));
-  dangerous_patterns.reset(component_string);
-  if (dangerous_patterns.find())
-    return false;
-
-  // If the language list is empty, the result is completely determined
-  // by whether a component is a single script or not. This will block
-  // even "safe" script mixing cases like <Chinese, Latin-ASCII> that are
-  // allowed with |languages| (while it blocks Chinese + Latin letters with
-  // an accent as should be the case), but we want to err on the safe side
-  // when |languages| is empty.
-  if (languages.empty())
-    return IsIDNComponentInSingleScript(str, str_len);
-
-  // |common_characters| is made up of  ASCII numbers, hyphen, plus and
-  // underscore that are used across scripts and allowed in domain names.
-  // (sync'd with characters allowed in url_canon_host with square
-  // brackets excluded.) See kHostCharLookup[] array in url_canon_host.cc.
-  icu::UnicodeSet common_characters(UNICODE_STRING_SIMPLE("[[0-9]\\-_+\\ ]"),
-                                    status);
-  DCHECK(U_SUCCESS(status));
-  // Subtract common characters because they're always allowed so that
-  // we just have to check if a language-specific set contains
-  // the remainder.
-  component_characters.removeAll(common_characters);
-
-  base::StringTokenizer t(languages, ",");
-  while (t.GetNext()) {
-    if (IsComponentCoveredByLang(component_characters, t.token()))
-      return true;
-  }
-  return false;
+// user. Note that this function does not deal with pure ASCII domain labels at
+// all even though it's possible to make up look-alike labels with ASCII
+// characters alone.
+bool IsIDNComponentSafe(base::StringPiece16 label) {
+  return g_idn_spoof_checker.Get().Check(label);
 }
 
 // A wrapper to use LazyInstance<>::Leaky with ICU's UIDNA, a C pointer to
 // a UTS46/IDNA 2008 handling object opened with uidna_openUTS46().
 //
-// We use UTS46 with BiDiCheck to migrate from IDNA 2003 to IDNA 2008 with
-// the backward compatibility in mind. What it does:
+// We use UTS46 with BiDiCheck to migrate from IDNA 2003 to IDNA 2008 with the
+// backward compatibility in mind. What it does:
 //
 // 1. Use the up-to-date Unicode data.
-// 2. Define a case folding/mapping with the up-to-date Unicode data as
-//    in IDNA 2003.
+// 2. Define a case folding/mapping with the up-to-date Unicode data as in
+//    IDNA 2003.
 // 3. Use transitional mechanism for 4 deviation characters (sharp-s,
 //    final sigma, ZWJ and ZWNJ) for now.
 // 4. Continue to allow symbols and punctuations.
@@ -507,8 +496,8 @@ bool IsIDNComponentSafe(const base::char16* str,
 //
 // It also closely matches what IE 10 does except for the BiDi check (
 // http://goo.gl/3XBhqw ).
-// See http://http://unicode.org/reports/tr46/ and references therein
-// for more details.
+// See http://http://unicode.org/reports/tr46/ and references therein/ for more
+// details.
 struct UIDNAWrapper {
   UIDNAWrapper() {
     UErrorCode err = U_ZERO_ERROR;
@@ -522,16 +511,15 @@ struct UIDNAWrapper {
   UIDNA* value;
 };
 
-static base::LazyInstance<UIDNAWrapper>::Leaky g_uidna =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<UIDNAWrapper>::Leaky g_uidna = LAZY_INSTANCE_INITIALIZER;
 
-// Converts one component of a host (between dots) to IDN if safe. The result
-// will be APPENDED to the given output string and will be the same as the input
-// if it is not IDN or the IDN is unsafe to display.  Returns whether any
-// conversion was performed.
+// Converts one component (label) of a host (between dots) to Unicode if safe.
+// The result will be APPENDED to the given output string and will be the
+// same as the input if it is not IDN in ACE/punycode or the IDN is unsafe to
+// display.
+// Returns whether any conversion was performed.
 bool IDNToUnicodeOneComponent(const base::char16* comp,
                               size_t comp_len,
-                              const std::string& languages,
                               base::string16* out) {
   DCHECK(out);
   if (comp_len == 0)
@@ -544,7 +532,7 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
     UIDNA* uidna = g_uidna.Get().value;
     DCHECK(uidna != NULL);
     size_t original_length = out->length();
-    int output_length = 64;
+    int32_t output_length = 64;
     UIDNAInfo info = UIDNA_INFO_INITIALIZER;
     UErrorCode status;
     do {
@@ -562,8 +550,9 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
       // Converted successfully. Ensure that the converted component
       // can be safely displayed to the user.
       out->resize(original_length + output_length);
-      if (IsIDNComponentSafe(out->data() + original_length, output_length,
-                             languages))
+      if (IsIDNComponentSafe(
+          base::StringPiece16(out->data() + original_length,
+                              base::checked_cast<size_t>(output_length))))
         return true;
     }
 
@@ -598,7 +587,7 @@ base::string16 FormatUrl(const GURL& url,
   if (offset_for_adjustment)
     offsets.push_back(*offset_for_adjustment);
   base::string16 result =
-      FormatUrlWithOffsets(url, languages, format_types, unescape_rules,
+      FormatUrlWithOffsets(url, std::string(), format_types, unescape_rules,
                            new_parsed, prefix_end, &offsets);
   if (offset_for_adjustment)
     *offset_for_adjustment = offsets[0];
@@ -615,7 +604,7 @@ base::string16 FormatUrlWithOffsets(
     std::vector<size_t>* offsets_for_adjustment) {
   base::OffsetAdjuster::Adjustments adjustments;
   const base::string16& format_url_return_value =
-      FormatUrlWithAdjustments(url, languages, format_types, unescape_rules,
+      FormatUrlWithAdjustments(url, std::string(), format_types, unescape_rules,
                                new_parsed, prefix_end, &adjustments);
   base::OffsetAdjuster::AdjustOffsets(adjustments, offsets_for_adjustment);
   if (offsets_for_adjustment) {
@@ -650,7 +639,7 @@ base::string16 FormatUrlWithAdjustments(
   if (url.SchemeIs(kViewSource) &&
       !base::StartsWith(url.possibly_invalid_spec(), kViewSourceTwice,
                         base::CompareCase::INSENSITIVE_ASCII)) {
-    return FormatViewSourceUrl(url, languages, format_types, unescape_rules,
+    return FormatViewSourceUrl(url, format_types, unescape_rules,
                                new_parsed, prefix_end, adjustments);
   }
 
@@ -720,7 +709,7 @@ base::string16 FormatUrlWithAdjustments(
     *prefix_end = static_cast<size_t>(url_string.length());
 
   // Host.
-  AppendFormattedComponent(spec, parsed.host, HostComponentTransform(languages),
+  AppendFormattedComponent(spec, parsed.host, HostComponentTransform(),
                            &url_string, &new_parsed->host, adjustments);
 
   // Port.
@@ -796,12 +785,12 @@ void AppendFormattedHost(const GURL& url,
                          base::string16* output) {
   AppendFormattedComponent(
       url.possibly_invalid_spec(), url.parsed_for_possibly_invalid_spec().host,
-      HostComponentTransform(languages), output, NULL, NULL);
+      HostComponentTransform(), output, NULL, NULL);
 }
 
 base::string16 IDNToUnicode(const std::string& host,
                             const std::string& languages) {
-  return IDNToUnicodeWithAdjustments(host, languages, NULL);
+  return IDNToUnicodeWithAdjustments(host, NULL);
 }
 
 base::string16 StripWWW(const base::string16& text) {

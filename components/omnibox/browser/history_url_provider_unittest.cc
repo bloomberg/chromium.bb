@@ -142,7 +142,9 @@ struct TestURLInfo {
   {"http://x.com/three", "Internet three", 2, 2, 80},
 
   // For punycode tests.
-  {"http://puny.xn--1lq90ic7f1rc.cn/", "Punycode", 2, 2, 5 },
+  {"http://puny.xn--h2by8byc123p.in/", "Punycode", 2, 2, 5 },
+  {"http://two_puny.xn--1lq90ic7f1rc.cn/",
+    "Punycode to be rendered in Unicode", 2, 2, 5 },
 
   // For experimental HUP scoring test.
   {"http://7.com/1a", "One", 8, 4, 4},
@@ -851,53 +853,53 @@ TEST_F(HistoryURLProviderTest, DoesNotProvideMatchesOnFocus) {
 }
 
 TEST_F(HistoryURLProviderTest, DoesNotInlinePunycodeMatches) {
-  // A URL that matches due to a match in the punycode URL are allowed to be the
-  // default match if the URL doesn't get rendered as international characters
-  // in the given locale.
-  const UrlAndLegalDefault expected_true[] = {
-    { "http://puny.xn--1lq90ic7f1rc.cn/", true },
+  // A URL that matches due to a match in the punycode URL is allowed to be the
+  // default match if the URL doesn't get rendered as international characters.
+  const UrlAndLegalDefault expected1_true[] = {
+    { "http://puny.xn--h2by8byc123p.in/", true },
   };
-  UrlAndLegalDefault expected_false[] = {
-    { "http://puny.xn--1lq90ic7f1rc.cn/", false },
+  RunTest(ASCIIToUTF16("pun"), std::string(), false, expected1_true,
+          arraysize(expected1_true));
+  RunTest(ASCIIToUTF16("puny."), std::string(), false, expected1_true,
+          arraysize(expected1_true));
+  RunTest(ASCIIToUTF16("puny.x"), std::string(), false, expected1_true,
+          arraysize(expected1_true));
+  RunTest(ASCIIToUTF16("puny.xn"), std::string(), false, expected1_true,
+          arraysize(expected1_true));
+  RunTest(ASCIIToUTF16("puny.xn--"), std::string(), false, expected1_true,
+          arraysize(expected1_true));
+  RunTest(ASCIIToUTF16("puny.xn--h2"), std::string(), false, expected1_true,
+          arraysize(expected1_true));
+  RunTest(ASCIIToUTF16("puny.xn--h2by8byc123p"), std::string(), false,
+          expected1_true, arraysize(expected1_true));
+  RunTest(ASCIIToUTF16("puny.xn--h2by8byc123p."), std::string(), false,
+          expected1_true, arraysize(expected1_true));
+
+  // When the punycode part of the URL is rendered as international characters,
+  // this match should not be allowed to be the default match if the inline
+  // autocomplete text starts in the middle of the international characters.
+  const UrlAndLegalDefault expected2_true[] = {
+    { "http://two_puny.xn--1lq90ic7f1rc.cn/", true },
   };
-  RunTest(ASCIIToUTF16("pun"), std::string(), false, expected_true,
-          arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny."), std::string(), false, expected_true,
-          arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny.x"), std::string(), false, expected_true,
-          arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny.xn"), std::string(), false, expected_true,
-          arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny.xn--"), std::string(), false, expected_true,
-          arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny.xn--1l"), std::string(), false, expected_true,
-          arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny.xn--1lq90ic7f1rc"), std::string(), false,
-          expected_true, arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny.xn--1lq90ic7f1rc."), std::string(), false,
-          expected_true, arraysize(expected_true));
-  // Set the language so the punycode part of the URL is rendered as
-  // international characters.  Then this match should not be allowed to be
-  // the default match if the inline autocomplete text starts in the middle
-  // of the international characters.
-  EXPECT_CALL(*client_, GetAcceptLanguages())
-      .WillRepeatedly(testing::Return("zh-CN"));
-  RunTest(ASCIIToUTF16("pun"), std::string(), false, expected_true,
-          arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny."), std::string(), false, expected_true,
-          arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny.x"), std::string(), false, expected_false,
-          arraysize(expected_false));
-  RunTest(ASCIIToUTF16("puny.xn"), std::string(), false, expected_false,
-          arraysize(expected_false));
-  RunTest(ASCIIToUTF16("puny.xn--"), std::string(), false, expected_false,
-          arraysize(expected_false));
-  RunTest(ASCIIToUTF16("puny.xn--1l"), std::string(), false, expected_false,
-          arraysize(expected_false));
-  RunTest(ASCIIToUTF16("puny.xn--1lq90ic7f1rc"), std::string(), false,
-          expected_true, arraysize(expected_true));
-  RunTest(ASCIIToUTF16("puny.xn--1lq90ic7f1rc."), std::string(), false,
-          expected_true, arraysize(expected_true));
+  const UrlAndLegalDefault expected2_false[] = {
+    { "http://two_puny.xn--1lq90ic7f1rc.cn/", false },
+  };
+  RunTest(ASCIIToUTF16("two"), std::string(), false, expected2_true,
+          arraysize(expected2_true));
+  RunTest(ASCIIToUTF16("two_puny."), std::string(), false, expected2_true,
+          arraysize(expected2_true));
+  RunTest(ASCIIToUTF16("two_puny.x"), std::string(), false, expected2_false,
+          arraysize(expected2_false));
+  RunTest(ASCIIToUTF16("two_puny.xn"), std::string(), false, expected2_false,
+          arraysize(expected2_false));
+  RunTest(ASCIIToUTF16("two_puny.xn--"), std::string(), false, expected2_false,
+          arraysize(expected2_false));
+  RunTest(ASCIIToUTF16("two_puny.xn--1l"), std::string(), false,
+          expected2_false, arraysize(expected2_false));
+  RunTest(ASCIIToUTF16("two_puny.xn--1lq90ic7f1rc"), std::string(), false,
+          expected2_true, arraysize(expected2_true));
+  RunTest(ASCIIToUTF16("two_puny.xn--1lq90ic7f1rc."), std::string(), false,
+          expected2_true, arraysize(expected2_true));
 }
 
 TEST_F(HistoryURLProviderTest, CullSearchResults) {
