@@ -9,7 +9,6 @@
 
 #include <map>
 #include <set>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -79,8 +78,8 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void MaybeReleasePowerSaveBlockers();
 
   // Helper methods for adding or removing player entries in |player_map|.
-  using PlayerList = std::vector<int>;
-  using ActiveMediaPlayerMap = std::map<RenderFrameHost*, PlayerList>;
+  using PlayerSet = std::set<int>;
+  using ActiveMediaPlayerMap = std::map<RenderFrameHost*, PlayerSet>;
   void AddMediaPlayerEntry(const MediaPlayerId& id,
                            ActiveMediaPlayerMap* player_map);
   // Returns true if an entry is actually removed.

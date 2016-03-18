@@ -213,10 +213,7 @@ void MediaWebContentsObserver::MaybeReleasePowerSaveBlockers() {
 void MediaWebContentsObserver::AddMediaPlayerEntry(
     const MediaPlayerId& id,
     ActiveMediaPlayerMap* player_map) {
-  DCHECK(std::find((*player_map)[id.first].begin(),
-                   (*player_map)[id.first].end(),
-                   id.second) == (*player_map)[id.first].end());
-  (*player_map)[id.first].push_back(id.second);
+  (*player_map)[id.first].insert(id.second);
 }
 
 bool MediaWebContentsObserver::RemoveMediaPlayerEntry(
@@ -227,11 +224,9 @@ bool MediaWebContentsObserver::RemoveMediaPlayerEntry(
     return false;
 
   // Remove the player.
-  auto player_for_removal =
-      std::remove(it->second.begin(), it->second.end(), id.second);
-  if (player_for_removal == it->second.end())
+  bool did_remove = it->second.erase(id.second) == 1;
+  if (!did_remove)
     return false;
-  it->second.erase(player_for_removal);
 
   // If there are no players left, remove the map entry.
   if (it->second.empty())
