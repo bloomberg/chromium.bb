@@ -1524,46 +1524,45 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
     m_frame = frame;
 
     // FIXME: we shouldn't add overhead to every frame by registering these objects when they're not used.
-    if (m_frame) {
-        if (m_client)
-            providePushControllerTo(*m_frame, m_client->pushClient());
+    if (!m_frame)
+        return;
 
-        provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
-        provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
-        provideGeolocationTo(*m_frame, m_geolocationClientProxy.get());
-        m_geolocationClientProxy->setController(GeolocationController::from(m_frame.get()));
-        provideMIDITo(*m_frame, MIDIClientProxy::create(m_client ? m_client->webMIDIClient() : nullptr));
-        provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
-        provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));
+    if (m_client)
+        providePushControllerTo(*m_frame, m_client->pushClient());
 
-        bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
+    provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
+    provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
+    provideGeolocationTo(*m_frame, m_geolocationClientProxy.get());
+    m_geolocationClientProxy->setController(GeolocationController::from(m_frame.get()));
+    provideMIDITo(*m_frame, MIDIClientProxy::create(m_client ? m_client->webMIDIClient() : nullptr));
+    provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
+    provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));
+
+    bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
 #if OS(CHROMEOS) || OS(ANDROID)
 // TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
 // enableWebBluetooth = true;
 #endif
 
-        if (enableWebBluetooth) {
-            BluetoothSupplement::provideTo(*m_frame, m_client ? m_client->bluetooth() : nullptr);
-        }
+    if (enableWebBluetooth)
+        BluetoothSupplement::provideTo(*m_frame, m_client ? m_client->bluetooth() : nullptr);
 
-        if (RuntimeEnabledFeatures::screenOrientationEnabled())
-            ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : nullptr);
-        if (RuntimeEnabledFeatures::presentationEnabled())
-            PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
-        if (RuntimeEnabledFeatures::permissionsEnabled())
-            PermissionController::provideTo(*m_frame, m_client ? m_client->permissionClient() : nullptr);
-        if (RuntimeEnabledFeatures::webUSBEnabled())
-            USBController::provideTo(*m_frame, m_client ? m_client->usbClient() : nullptr);
-        if (RuntimeEnabledFeatures::webVREnabled())
-            VRController::provideTo(*m_frame, m_client ? m_client->webVRClient() : nullptr);
-        if (RuntimeEnabledFeatures::wakeLockEnabled())
-            ScreenWakeLock::provideTo(*m_frame, m_client ? m_client->wakeLockClient() : nullptr);
-        if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
-            provideAudioOutputDeviceClientTo(*m_frame, AudioOutputDeviceClientImpl::create());
-        if (RuntimeEnabledFeatures::installedAppEnabled()) {
-            InstalledAppController::provideTo(*m_frame, m_client ? m_client->installedAppClient() : nullptr);
-        }
-    }
+    if (RuntimeEnabledFeatures::screenOrientationEnabled())
+        ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : nullptr);
+    if (RuntimeEnabledFeatures::presentationEnabled())
+        PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
+    if (RuntimeEnabledFeatures::permissionsEnabled())
+        PermissionController::provideTo(*m_frame, m_client ? m_client->permissionClient() : nullptr);
+    if (RuntimeEnabledFeatures::webUSBEnabled())
+        USBController::provideTo(*m_frame, m_client ? m_client->usbClient() : nullptr);
+    if (RuntimeEnabledFeatures::webVREnabled())
+        VRController::provideTo(*m_frame, m_client ? m_client->webVRClient() : nullptr);
+    if (RuntimeEnabledFeatures::wakeLockEnabled())
+        ScreenWakeLock::provideTo(*m_frame, m_client ? m_client->wakeLockClient() : nullptr);
+    if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
+        provideAudioOutputDeviceClientTo(*m_frame, AudioOutputDeviceClientImpl::create());
+    if (RuntimeEnabledFeatures::installedAppEnabled())
+        InstalledAppController::provideTo(*m_frame, m_client ? m_client->installedAppClient() : nullptr);
 }
 
 void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& uniqueName)
