@@ -105,6 +105,7 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
     }
 
     @DisableHardwareAccelerationForTest
+    @SuppressFBWarnings("UC_USELESS_OBJECT")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testHoldKeyboardResultReceiver() throws Throwable {
