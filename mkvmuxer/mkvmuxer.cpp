@@ -6,9 +6,7 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "mkvmuxer.hpp"
-
-#include <stdint.h>
+#include "mkvmuxer/mkvmuxer.hpp"
 
 #include <cfloat>
 #include <climits>
@@ -19,9 +17,9 @@
 #include <new>
 #include <vector>
 
-#include "mkvmuxerutil.hpp"
+#include "mkvmuxer/mkvmuxerutil.hpp"
+#include "mkvmuxer/mkvwriter.hpp"
 #include "mkvparser/mkvparser.hpp"
-#include "mkvwriter.hpp"
 #include "webmids.hpp"
 
 #ifdef _MSC_VER

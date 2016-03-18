@@ -40,6 +40,18 @@ endif ()
 set(CMAKE_CXX_FLAGS "-D__STDC_CONSTANT_MACROS ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "-D__STDC_LIMIT_MACROS ${CMAKE_CXX_FLAGS}")
 
+# mkvmuxer section.
+# TODO(tomfinegan): move to mkvmuxer/CMakeLists.txt
+add_library(mkvmuxer STATIC
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxer.cpp"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxer.hpp"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxertypes.hpp"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxerutil.cpp"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxerutil.hpp"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvwriter.cpp"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvwriter.hpp"
+            "${LIBWEBM_SRC_DIR}/webmids.hpp")
+
 # mkvparser section.
 # TODO(tomfinegan): move to mkvparser/CMakeLists.txt.
 add_library(mkvparser STATIC
@@ -55,15 +67,8 @@ add_library(webm STATIC
             "${LIBWEBM_SRC_DIR}/common/file_util.h"
             "${LIBWEBM_SRC_DIR}/common/hdr_util.cc"
             "${LIBWEBM_SRC_DIR}/common/hdr_util.h"
-            "${LIBWEBM_SRC_DIR}/mkvmuxer.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxer.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxertypes.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxerutil.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxerutil.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvwriter.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvwriter.hpp"
             "${LIBWEBM_SRC_DIR}/webmids.hpp")
-target_link_libraries(webm LINK_PUBLIC mkvparser)
+target_link_libraries(webm LINK_PUBLIC mkvmuxer mkvparser)
 
 if (WIN32)
   # Use libwebm and libwebm.lib for project and library name on Windows (instead

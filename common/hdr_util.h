@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "../mkvmuxer.hpp"
+#include "mkvmuxer/mkvmuxer.hpp"
 
 namespace libwebm {
 

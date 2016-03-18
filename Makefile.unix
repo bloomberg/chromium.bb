@@ -4,7 +4,7 @@ INCLUDES  := -I.
 CXXFLAGS  := -W -Wall -g -MMD -MP $(DEFINES) $(INCLUDES)
 LIBWEBMA  := libwebm.a
 LIBWEBMSO := libwebm.so
-WEBMOBJS  := mkvmuxer.o mkvmuxerutil.o mkvwriter.o
+WEBMOBJS  := mkvmuxer/mkvmuxer.o mkvmuxer/mkvmuxerutil.o mkvmuxer/mkvwriter.o
 WEBMOBJS  += mkvparser/mkvparser.o mkvparser/mkvreader.o
 WEBMOBJS  += common/file_util.o common/hdr_util.o
 OBJSA     := $(WEBMOBJS:.o=_a.o)

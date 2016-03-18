@@ -23,9 +23,9 @@
 #include "mkvparser/mkvreader.hpp"
 
 // libwebm mkvmuxer includes
-#include "mkvmuxer.hpp"
-#include "mkvmuxertypes.hpp"
-#include "mkvwriter.hpp"
+#include "mkvmuxer/mkvmuxer.hpp"
+#include "mkvmuxer/mkvmuxertypes.hpp"
+#include "mkvmuxer/mkvwriter.hpp"
 
 #include "sample_muxer_metadata.h"
 

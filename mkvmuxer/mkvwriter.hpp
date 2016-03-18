@@ -6,13 +6,13 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#ifndef MKVWRITER_HPP
-#define MKVWRITER_HPP
+#ifndef MKVMUXER_MKVWRITER_HPP_
+#define MKVMUXER_MKVWRITER_HPP_
 
 #include <stdio.h>
 
-#include "mkvmuxer.hpp"
-#include "mkvmuxertypes.hpp"
+#include "mkvmuxer/mkvmuxer.hpp"
+#include "mkvmuxer/mkvmuxertypes.hpp"
 
 namespace libwebm {
 namespace mkvmuxer {
@@ -50,4 +50,4 @@ class MkvWriter : public IMkvWriter {
 }  // namespace mkvmuxer
 }  // namespace libwebm
 
-#endif  // MKVWRITER_HPP
+#endif  // MKVMUXER_MKVWRITER_HPP_

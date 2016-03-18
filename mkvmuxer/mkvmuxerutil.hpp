@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef MKVMUXERUTIL_HPP
-#define MKVMUXERUTIL_HPP
+#ifndef MKVMUXER_MKVMUXERUTIL_HPP_
+#define MKVMUXER_MKVMUXERUTIL_HPP_
 
 #include <stdint.h>
 
@@ -82,4 +82,4 @@ uint64_t MakeUID(unsigned int* seed);
 }  // namespace mkvmuxer
 }  // namespace libwebm
 
-#endif  // MKVMUXERUTIL_HPP
+#endif  // MKVMUXER_MKVMUXERUTIL_HPP_
