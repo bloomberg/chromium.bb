@@ -90,20 +90,29 @@ off_t H264BitReader::NumBitsLeft() {
 }
 
 bool H264BitReader::HasMoreRBSPData() {
-  // Make sure we have more bits, if we are at 0 bits in current byte
-  // and updating current byte fails, we don't have more data anyway.
+  // Make sure we have more bits, if we are at 0 bits in current byte and
+  // updating current byte fails, we don't have more data anyway.
   if (num_remaining_bits_in_curr_byte_ == 0 && !UpdateCurrByte())
     return false;
 
-  // On last byte?
-  if (bytes_left_)
+  // If there is no more RBSP data, then |curr_byte_| contains the stop bit and
+  // zero padding. Check to see if there is other data instead.
+  // (We don't actually check for the stop bit itself, instead treating the
+  // invalid case of all trailing zeros identically).
+  if ((curr_byte_ & ((1 << (num_remaining_bits_in_curr_byte_ - 1)) - 1)) != 0)
     return true;
 
-  // Last byte, look for stop bit;
-  // We have more RBSP data if the last non-zero bit we find is not the
-  // first available bit.
-  return (curr_byte_ &
-          ((1 << (num_remaining_bits_in_curr_byte_ - 1)) - 1)) != 0;
+  // While the spec disallows it (7.4.1: "The last byte of the NAL unit shall
+  // not be equal to 0x00"), some streams have trailing null bytes anyway. We
+  // don't handle emulation prevention sequences because HasMoreRBSPData() is
+  // not used when parsing slices (where cabac_zero_word elements are legal).
+  for (off_t i = 0; i < bytes_left_; i++) {
+    if (data_[i] != 0)
+      return true;
+  }
+
+  bytes_left_ = 0;
+  return false;
 }
 
 size_t H264BitReader::NumEmulationPreventionBytesRead() {

@@ -265,9 +265,17 @@ bool H264ToAnnexBBitstreamConverter::WriteParamSet(
     const std::vector<uint8_t>& param_set,
     uint8_t** out,
     uint32_t* out_size) const {
+  // Strip trailing null bytes.
+  size_t size = param_set.size();
+  while (size && param_set[size - 1] == 0)
+    size--;
+  if (!size)
+    return false;
+
+  // Verify space.
   uint32_t bytes_left = *out_size;
   if (bytes_left < kParamSetStartCodeSize ||
-      bytes_left - kParamSetStartCodeSize < param_set.size()) {
+      bytes_left - kParamSetStartCodeSize < size) {
     return false;
   }
 
@@ -279,8 +287,9 @@ bool H264ToAnnexBBitstreamConverter::WriteParamSet(
   memcpy(buf, kStartCodePrefix, sizeof(kStartCodePrefix));
   buf += sizeof(kStartCodePrefix);
 
-  memcpy(buf, &param_set[0], param_set.size());
-  buf += param_set.size();
+  // Copy the data.
+  memcpy(buf, &param_set[0], size);
+  buf += size;
 
   *out = buf;
   *out_size -= buf - start;
