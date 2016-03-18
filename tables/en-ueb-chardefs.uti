@@ -287,7 +287,7 @@ punctuation \x00ad 36 - soft hyphen
 sign \x00ae 45-1235 ® registered
 sign \x00af 4-36 ¯
 #sign \x00ba 0 º
-sign \x00b4 45-34 ´ acute accent
+sign \x00b4 45-56-12 ´ acute accent
 sign \x00b6 45-1234 ¶ pilcrow 
 sign \x00b8 45-12346 ¸ cedilla 
 punctuation \x00bb 456-356 »
