@@ -115,7 +115,7 @@ private:
     enum TrackSizeRestriction { FixedSizeOnly, AllowAll };
     PassRefPtrWillBeRawPtr<CSSValue> parseGridPosition();
     bool parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSCustomIdentValue>& gridLineName);
-    bool parseGridItemPositionShorthand(CSSPropertyID, bool important);
+    bool consumeGridItemPositionShorthand(CSSPropertyID, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTemplateColumns(bool important);
     bool parseGridTemplateRowsAndAreasAndColumns(bool important);
     bool parseGridTemplateShorthand(bool important);

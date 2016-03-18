@@ -4189,6 +4189,30 @@ bool CSSPropertyParser::consumeBackgroundShorthand(const StylePropertyShorthand&
     return true;
 }
 
+bool CSSPropertyParser::consumeGridItemPositionShorthand(CSSPropertyID shorthandId, bool important)
+{
+    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+    const StylePropertyShorthand& shorthand = shorthandForProperty(shorthandId);
+    ASSERT(shorthand.length() == 2);
+    RefPtrWillBeRawPtr<CSSValue> startValue = consumeGridLine(m_range);
+    if (!startValue)
+        return false;
+
+    RefPtrWillBeRawPtr<CSSValue> endValue = nullptr;
+    if (consumeSlashIncludingWhitespace(m_range)) {
+        endValue = consumeGridLine(m_range);
+        if (!endValue)
+            return false;
+    } else {
+        endValue = startValue->isCustomIdentValue() ? startValue : cssValuePool().createIdentifierValue(CSSValueAuto);
+    }
+    if (!m_range.atEnd())
+        return false;
+    addProperty(shorthand.properties()[0], startValue, important);
+    addProperty(shorthand.properties()[1], endValue, important);
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -4366,6 +4390,9 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         addProperty(CSSPropertyGridColumnGap, columnGap.release(), important);
         return true;
     }
+    case CSSPropertyGridColumn:
+    case CSSPropertyGridRow:
+        return consumeGridItemPositionShorthand(property, important);
     default:
         m_currentShorthand = oldShorthand;
         CSSParserValueList valueList(m_range);

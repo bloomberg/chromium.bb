@@ -297,11 +297,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
 bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool important)
 {
     switch (propertyID) {
-    case CSSPropertyGridColumn:
-    case CSSPropertyGridRow:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridItemPositionShorthand(propertyID, important);
-
     case CSSPropertyGridArea:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridAreaShorthand(important);
@@ -420,36 +415,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> gridMissingGridPositionValue(CSSValue* v
         return value;
 
     return cssValuePool().createIdentifierValue(CSSValueAuto);
-}
-
-bool CSSPropertyParser::parseGridItemPositionShorthand(CSSPropertyID shorthandId, bool important)
-{
-    ShorthandScope scope(this, shorthandId);
-    const StylePropertyShorthand& shorthand = shorthandForProperty(shorthandId);
-    ASSERT(shorthand.length() == 2);
-
-    RefPtrWillBeRawPtr<CSSValue> startValue = parseGridPosition();
-    if (!startValue)
-        return false;
-
-    RefPtrWillBeRawPtr<CSSValue> endValue = nullptr;
-    if (m_valueList->current()) {
-        if (!isForwardSlashOperator(m_valueList->current()))
-            return false;
-
-        if (!m_valueList->next())
-            return false;
-
-        endValue = parseGridPosition();
-        if (!endValue || m_valueList->current())
-            return false;
-    } else {
-        endValue = gridMissingGridPositionValue(startValue.get());
-    }
-
-    addProperty(shorthand.properties()[0], startValue, important);
-    addProperty(shorthand.properties()[1], endValue, important);
-    return true;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTemplateColumns(bool important)
