@@ -166,6 +166,12 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_STATUS_COLUMN_LABEL" desc="Status column label.  This column reflects the cloud import status of files.  The status is an icon depicting whether a file has been imported, and if so, where to - for example, a Drive icon if a file has been imported to Google Drive.  For unimported files, this column is blank. ">
     Status
   </message>
+  <message name="IDS_FILE_BROWSER_TOTAL_FILE_COUNT_LABEL" desc="Total count of files that user selects in Files app">
+    Total file count
+  </message>
+  <message name="IDS_FILE_BROWSER_TOTAL_FILE_SIZE_LABEL" desc="Total size of files that user selects in Files app">
+    Total file size
+  </message>
   <message name="IDS_FILE_BROWSER_TYPE_COLUMN_LABEL" desc="Type column label.">
     Type
   </message>

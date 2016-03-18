@@ -339,10 +339,11 @@ function FileManagerUI(providersModel, element, launchParam) {
  * @param {!FileTable} table
  * @param {!FileGrid} grid
  * @param {!SingleFileDetailsPanel} singlePanel
+ * @param {!MultiFileDetailsPanel} multiPanel
  * @param {!LocationLine} locationLine
  */
 FileManagerUI.prototype.initAdditionalUI = function(
-    table, grid, singlePanel, locationLine) {
+    table, grid, singlePanel, multiPanel, locationLine) {
   // List container.
   this.listContainer = new ListContainer(
       queryRequiredElement('#list-container', this.element), table, grid);
@@ -358,6 +359,7 @@ FileManagerUI.prototype.initAdditionalUI = function(
   this.detailsContainer = new DetailsContainer(
       queryRequiredElement('#details-container', this.element),
       singlePanel,
+      multiPanel,
       listDetailsSplitter,
       this.detailsButton,
       this.detailsButtonToggleRipple_);

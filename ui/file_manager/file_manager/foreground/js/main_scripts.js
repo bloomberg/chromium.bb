@@ -158,6 +158,7 @@
 //<include src="ui/gear_menu.js">
 //<include src="ui/list_container.js">
 //<include src="ui/location_line.js">
+//<include src="ui/multi_file_details.js">
 //<include src="ui/multi_profile_share_dialog.js">
 //<include src="ui/progress_center_panel.js">
 //<include src="ui/providers_menu.js">

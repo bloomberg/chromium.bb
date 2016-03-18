@@ -839,12 +839,18 @@ FileManager.prototype = /** @struct */ {
         assertInstanceof(singlePanel, HTMLDivElement),
         this.metadataModel_);
 
+    var multiPanel = queryRequiredElement('#multi-file-details', dom);
+    MultiFileDetailsPanel.decorate(
+        assertInstanceof(multiPanel, HTMLDivElement),
+        this.metadataModel_);
+
     this.addHistoryObserver_();
 
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable),
         assertInstanceof(grid, FileGrid),
         assertInstanceof(singlePanel, SingleFileDetailsPanel),
+        assertInstanceof(multiPanel, MultiFileDetailsPanel),
         new LocationLine(
             queryRequiredElement('#location-breadcrumbs', dom),
             this.volumeManager_));

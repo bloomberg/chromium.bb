@@ -142,6 +142,7 @@
           './ui/gear_menu.js',
           './ui/list_container.js',
           './ui/location_line.js',
+          './ui/multi_file_details.js',
           './ui/multi_profile_share_dialog.js',
           './ui/progress_center_panel.js',
           './ui/providers_menu.js',

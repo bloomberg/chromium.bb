@@ -241,6 +241,13 @@ SingleFileDetailsPanel.prototype = {
         this.preview_.pause();
       }
     }
+  },
+
+  /**
+   * Cancel loading task.
+   */
+  cancelLoading: function() {
+    this.ticket_++;
   }
 };
 

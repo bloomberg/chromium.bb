@@ -148,19 +148,61 @@ a:focus {
   display: none !important;
 }
 
+/* Filetype icons in details panel */
+
+.details-container .thumbnail-container {
+  box-sizing: border-box;
+  padding: 6px;
+  position: relative;
+  width: 100%;
+}
+
+.details-container .thumbnail-container:before {
+  content: "";
+  display: block;
+  padding-top: 100%;
+}
+
+.details-container .thumbnail-container > .thumbnail {
+  background-color: rgb(230, 230, 230);
+  background-position: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+/* File thumbnails/quick previews in details panel */
+
+.details-container .thumbnail > img {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.details-container .thumbnail > video {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.details-container .thumbnail > audio {
+  bottom: 0px;
+  left: 0px;
+  height: auto;
+  position: absolute;
+  width: 100%;
+}
+
+/* Details panel for single file */
+
 .details-container > #single-file-details {
   display: flex;
   flex: auto;
   flex-direction: column;
   width: 100%;
 }
-
-#single-file-details > .details-list {
-  flex: auto;
-  width: 100%;
-}
-
-/* Filename header of details panel for single file */
 
 #single-file-details > .filename-container {
   align-items: center;
@@ -171,64 +213,38 @@ a:focus {
   width: 100%;
 }
 
-.filename-container > .filename {
+#single-file-details > .filename-container > .filename {
   -webkit-padding-end: 6px;
   flex: auto;
   font-weight: 500;
   overflow: hidden;
 }
 
-/* Filetype icon of details panel for single file */
-
-#single-file-details > .thumbnail-container {
-  box-sizing: border-box;
-  padding: 6px;
-  position: relative;
-  width: 100%;
-}
-
-#single-file-details > .thumbnail-container:before {
-  content: "";
-  display: block;
-  padding-top: 100%;
-}
-
-.thumbnail-container > .thumbnail {
-  background-color: rgb(230, 230, 230);
-  background-position: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-
-.thumbnail-container > .thumbnail.loaded {
+#single-file-details > .thumbnail-container > .thumbnail.loaded {
   background-image: none;
 }
 
-.thumbnail > img {
-  height: 100%;
-  object-fit: contain;
+#single-file-details > .details-list {
+  flex: auto;
   width: 100%;
 }
 
-.thumbnail > video {
-  height: 100%;
-  object-fit: contain;
-  width: 100%;
-}
-
-.thumbnail > audio {
-  bottom: 0px;
-  left: 0px;
-  height: auto;
-  position: absolute;
-  width: 100%;
-}
-
-.details-list > li:not(.available) {
+#single-file-details > .details-list > li:not(.available) {
   display: none;
+}
+
+/* Filetype icon of details panel for multiple files */
+
+.details-container > #multi-file-details {
+  display: flex;
+  flex: auto;
+  flex-direction: column;
+  width: 100%;
+}
+
+#multi-file-details > .details-list {
+  flex: auto;
+  width: 100%;
 }
 
 /* Directory tree at the left. */
