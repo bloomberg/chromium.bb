@@ -116,9 +116,6 @@ class ArcAuthService : public ArcService,
   void GetIsAccountManaged(
       const GetIsAccountManagedCallback& callback) override;
 
-  // Called from Arc support platform app when user clicks 'Get Started'.
-  void GetStarted();
-
   // Called from Arc support platform app to check auth code.
   void CheckAuthCode();
 
