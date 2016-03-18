@@ -449,7 +449,6 @@ bool DWriteFontFamilyProxy::LoadFamily() {
   if (family_count == 0) {
     // This is really strange, we successfully loaded no fonts?!
     LogLoadFamilyResult(LOAD_FAMILY_ERROR_NO_FAMILIES);
-    CHECK(false);
     return false;
   }
 
