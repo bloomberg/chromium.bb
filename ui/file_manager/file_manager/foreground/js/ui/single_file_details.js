@@ -135,7 +135,7 @@ SingleFileDetailsPanel.prototype = {
             video.poster = result.data;
           }.bind(this));
         }
-      }else if (thumbnailUrl) {
+      } else if (thumbnailUrl) {
         video.poster = thumbnailUrl;
       }
       this.preview_ = video;
@@ -169,7 +169,7 @@ SingleFileDetailsPanel.prototype = {
           }
           var img = document.createElement('img');
           this.thumbnail_.appendChild(img);
-          img.src = item.externalFileUrl;
+          img.src = item.contentThumbnailUrl;
           this.thumbnail_.classList.toggle('loaded', true);
         }.bind(this));
       }
