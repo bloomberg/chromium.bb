@@ -21,7 +21,6 @@
 #include "remoting/protocol/webrtc_video_capturer_adapter.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"
-#include "third_party/webrtc/api/videosourceinterface.h"
 
 namespace remoting {
 
