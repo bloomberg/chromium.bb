@@ -2612,6 +2612,7 @@ interface HTMLMediaElement : HTMLElement
     getter played
     getter preload
     getter readyState
+    getter remote
     getter seekable
     getter seeking
     getter sinkId
@@ -4410,6 +4411,10 @@ interface RelatedApplication
 interface RelatedEvent : Event
     attribute @@toStringTag
     getter relatedTarget
+    method constructor
+interface RemotePlayback : EventTarget
+    attribute @@toStringTag
+    getter state
     method constructor
 interface Request
     attribute @@toStringTag

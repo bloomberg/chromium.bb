@@ -285,6 +285,7 @@
       "platform/modules/push_messaging/WebPushProvider.h",
       "platform/modules/push_messaging/WebPushSubscription.h",
       "platform/modules/push_messaging/WebPushSubscriptionOptions.h",
+      "platform/modules/remoteplayback/WebRemotePlaybackState.h",
       "platform/modules/screen_orientation/WebLockOrientationCallback.h",
       "platform/modules/screen_orientation/WebLockOrientationError.h",
       "platform/modules/screen_orientation/WebScreenOrientationClient.h",

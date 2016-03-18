@@ -30,6 +30,7 @@ modules/presentation/PresentationAvailability
 modules/presentation/PresentationConnection
 modules/presentation/PresentationReceiver
 modules/presentation/PresentationRequest
+modules/remoteplayback/RemotePlayback
 modules/screen_orientation/ScreenOrientation
 modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerContainer

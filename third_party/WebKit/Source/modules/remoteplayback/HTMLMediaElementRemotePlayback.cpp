@@ -4,8 +4,10 @@
 
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/html/HTMLMediaElement.h"
+#include "modules/remoteplayback/RemotePlayback.h"
 
 namespace blink {
 
@@ -21,6 +23,43 @@ void HTMLMediaElementRemotePlayback::setBooleanAttribute(const QualifiedName& na
 {
     ASSERT(name == HTMLNames::disableremoteplaybackAttr);
     element.setBooleanAttribute(name, value);
+}
+
+// static
+HTMLMediaElementRemotePlayback& HTMLMediaElementRemotePlayback::from(HTMLMediaElement& element)
+{
+    HTMLMediaElementRemotePlayback* supplement = static_cast<HTMLMediaElementRemotePlayback*>(WillBeHeapSupplement<HTMLMediaElement>::from(element, supplementName()));
+    if (!supplement) {
+        supplement = new HTMLMediaElementRemotePlayback();
+        provideTo(element, supplementName(), adoptPtrWillBeNoop(supplement));
+    }
+    return *supplement;
+}
+
+// static
+RemotePlayback* HTMLMediaElementRemotePlayback::remote(HTMLMediaElement& element)
+{
+    HTMLMediaElementRemotePlayback& self = HTMLMediaElementRemotePlayback::from(element);
+    Document& document = element.document();
+    if (!document.frame())
+        return nullptr;
+
+    if (!self.m_remote)
+        self.m_remote = RemotePlayback::create(document.frame());
+
+    return self.m_remote;
+}
+
+// static
+const char* HTMLMediaElementRemotePlayback::supplementName()
+{
+    return "HTMLMediaElementRemotePlayback";
+}
+
+DEFINE_TRACE(HTMLMediaElementRemotePlayback)
+{
+    visitor->trace(m_remote);
+    WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);
 }
 
 } // namespace blink

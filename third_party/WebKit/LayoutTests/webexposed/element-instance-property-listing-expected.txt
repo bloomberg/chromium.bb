@@ -317,6 +317,7 @@ html element audio
     property played
     property preload
     property readyState
+    property remote
     property seekable
     property seeking
     property setMediaKeys
@@ -1060,6 +1061,7 @@ html element video
     property poster
     property preload
     property readyState
+    property remote
     property seekable
     property seeking
     property setMediaKeys
