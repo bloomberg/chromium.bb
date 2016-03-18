@@ -38,6 +38,7 @@
 #include "ui/views/mouse_constants.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -689,7 +690,7 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 void Combobox::UpdateBorder() {
-  scoped_ptr<FocusableBorder> border(new FocusableBorder());
+  scoped_ptr<FocusableBorder> border(PlatformStyle::CreateComboboxBorder());
   if (style_ == STYLE_ACTION)
     border->SetInsets(5, 10, 5, 10);
   if (invalid_)

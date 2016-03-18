@@ -103,6 +103,8 @@
       'controls/combobox/combobox_listener.h',
       'controls/focusable_border.cc',
       'controls/focusable_border.h',
+      'controls/focusable_rounded_border_mac.cc',
+      'controls/focusable_rounded_border_mac.h',
       'controls/glow_hover_controller.cc',
       'controls/glow_hover_controller.h',
       'controls/image_view.cc',

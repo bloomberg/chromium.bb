@@ -41,7 +41,8 @@ class VIEWS_EXAMPLES_EXPORT ComboboxExample : public ExampleBase,
   void OnPerformAction(Combobox* combobox) override;
 
   ComboboxModelExample combobox_model_;
-  Combobox* combobox_;
+  Combobox* combobox_ = nullptr;
+  Combobox* action_combobox_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ComboboxExample);
 };

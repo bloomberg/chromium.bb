@@ -6,10 +6,16 @@
 
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/focusable_rounded_border_mac.h"
 #import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
 #include "ui/views/style/mac/dialog_button_border_mac.h"
 
 namespace views {
+
+// static
+scoped_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
+  return make_scoped_ptr(new FocusableRoundedBorder);
+}
 
 // static
 scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(

@@ -36,6 +36,9 @@ class VIEWS_EXPORT FocusableBorder : public Border {
   gfx::Insets GetInsets() const override;
   gfx::Size GetMinimumSize() const override;
 
+ protected:
+  SkColor GetCurrentColor(const View& view) const;
+
  private:
   gfx::Insets insets_;
 
