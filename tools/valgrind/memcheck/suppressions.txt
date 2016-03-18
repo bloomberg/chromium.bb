@@ -3285,17 +3285,12 @@
    bug_576259_a
    Memcheck:Uninitialized
    fun:_ZN7GrGLGpu11bindTextureEiRK15GrTextureParamsP11GrGLTexture
-   fun:_ZN7GrGLGpu12flushGLStateERKN5GrGpu8DrawArgsE
-   fun:_ZN7GrGLGpu6onDrawERKN5GrGpu8DrawArgsERK22GrNonInstancedVertices
-   fun:_ZN5GrGpu4drawERKNS_8DrawArgsERK10GrVertices
+   fun:_ZN7GrGLGpu12flushGLStateERK10GrPipelineRK20GrPrimitiveProcessor
+   fun:_ZN7GrGLGpu6onDrawERK10GrPipelineRK20GrPrimitiveProcessorPK6GrMeshi
+   fun:_ZN5GrGpu4drawERK10GrPipelineRK20GrPrimitiveProcessorPK6GrMeshi
    fun:_ZN13GrVertexBatch6onDrawEP17GrBatchFlushState
-   fun:_ZN7GrBatch4drawEP17GrBatchFlushState
-   fun:_ZN12GrDrawTarget11drawBatchesEP17GrBatchFlushState
-   fun:_ZN16GrDrawingManager5flushEv
-   fun:_ZN9GrContext5flushEi
    ...
-   fun:_ZN2cc10GLRenderer18DrawRenderPassQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_18RenderPassDrawQuadEPKN3gfx5QuadFE
-   fun:_ZN2cc10GLRenderer10DoDrawQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_8DrawQuadEPKN3gfx5QuadFE
+   fun:_ZN8SkCanvas5flushEv
 }
 {
    bug_576259_b
@@ -3448,15 +3443,4 @@
    Memcheck:Leak
    ...
    fun:_ZN4base4BindIMN7content21ChromeAppCacheServiceEFvRKNS_8FilePathEPNS1_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN7storage20SpecialStoragePolicyEEEJPS2_S3_S7_SB_IS9_ESE_EEENS_8CallbackINS_8internal22MakeUnboundRunTypeImplIT_JDpT0_EE4TypeEEESM_DpOSN_
-}
-{
-   bug_595951
-   Memcheck:Uninitialized
-   fun:_ZN7GrGLGpu11bindTextureEiRK15GrTextureParamsP11GrGLTexture
-   fun:_ZN7GrGLGpu12flushGLStateERK10GrPipelineRK20GrPrimitiveProcessor
-   fun:_ZN7GrGLGpu6onDrawERK10GrPipelineRK20GrPrimitiveProcessorPK6GrMeshi
-   fun:_ZN5GrGpu4drawERK10GrPipelineRK20GrPrimitiveProcessorPK6GrMeshi
-   fun:_ZN13GrVertexBatch6onDrawEP17GrBatchFlushState
-   ...
-   fun:_ZN8SkCanvas5flushEv
 }
