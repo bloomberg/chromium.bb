@@ -238,7 +238,9 @@ class TestScheduler : public Scheduler {
     return state_machine_.main_thread_missed_last_deadline();
   }
 
-  bool begin_frames_expected() const { return observing_begin_frame_source_; }
+  bool begin_frames_expected() const {
+    return begin_frame_source_ && observing_begin_frame_source_;
+  }
 
   ~TestScheduler() override;
 

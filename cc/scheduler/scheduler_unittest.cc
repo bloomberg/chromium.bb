@@ -3169,6 +3169,57 @@ TEST_F(SchedulerTest, SwitchFrameSourceToThrottled) {
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
 }
 
+TEST_F(SchedulerTest, SwitchFrameSourceToNullInsideDeadline) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
+  client_->Reset();
+
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
+  client_->Reset();
+
+  // Switch to a null frame source.
+  scheduler_->SetBeginFrameSource(nullptr);
+  EXPECT_SINGLE_ACTION("RemoveObserver(this)", client_);
+  client_->Reset();
+
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_FALSE(scheduler_->begin_frames_expected());
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // AdvanceFrame helper can't be used here because there's no deadline posted.
+  scheduler_->SetNeedsRedraw();
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_NO_ACTION(client_);
+  client_->Reset();
+
+  scheduler_->SetNeedsBeginMainFrame();
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_NO_ACTION(client_);
+  client_->Reset();
+
+  // Switch back to the same source, make sure frames continue to be produced.
+  scheduler_->SetBeginFrameSource(fake_external_begin_frame_source_.get());
+  EXPECT_SINGLE_ACTION("AddObserver(this)", client_);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  task_runner().RunPendingTasks();
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+}
+
 // This test maskes sure that switching a frame source when not observing
 // such as when not visible also works.
 TEST_F(SchedulerTest, SwitchFrameSourceWhenNotObserving) {

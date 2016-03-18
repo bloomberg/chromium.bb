@@ -162,7 +162,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   int layer_tree_host_id_;
   base::SingleThreadTaskRunner* task_runner_;
 
-  // Not owned.
+  // Not owned.  May be null.
   BeginFrameSource* begin_frame_source_;
   bool observing_begin_frame_source_;
 

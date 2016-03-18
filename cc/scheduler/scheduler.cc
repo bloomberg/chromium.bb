@@ -73,8 +73,7 @@ Scheduler::Scheduler(
 }
 
 Scheduler::~Scheduler() {
-  if (observing_begin_frame_source_)
-    begin_frame_source_->RemoveObserver(this);
+  SetBeginFrameSource(nullptr);
 }
 
 base::TimeTicks Scheduler::Now() const {
@@ -115,12 +114,13 @@ void Scheduler::NotifyReadyToDraw() {
 }
 
 void Scheduler::SetBeginFrameSource(BeginFrameSource* source) {
-  DCHECK(source);
   if (source == begin_frame_source_)
     return;
   if (begin_frame_source_ && observing_begin_frame_source_)
     begin_frame_source_->RemoveObserver(this);
   begin_frame_source_ = source;
+  if (!begin_frame_source_)
+    return;
   if (observing_begin_frame_source_)
     begin_frame_source_->AddObserver(this);
 }
@@ -245,14 +245,16 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
     if (state_machine_.BeginFrameNeeded()) {
       // Call AddObserver as soon as possible.
       observing_begin_frame_source_ = true;
-      begin_frame_source_->AddObserver(this);
+      if (begin_frame_source_)
+        begin_frame_source_->AddObserver(this);
       devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                        true);
     } else if (state_machine_.begin_impl_frame_state() ==
                SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE) {
       // Call RemoveObserver in between frames only.
       observing_begin_frame_source_ = false;
-      begin_frame_source_->RemoveObserver(this);
+      if (begin_frame_source_)
+        begin_frame_source_->RemoveObserver(this);
       BeginImplFrameNotExpectedSoon();
       devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                        false);
@@ -381,7 +383,8 @@ void Scheduler::BeginRetroFrame() {
         "expiration_time - now", (expiration_time - now).InMillisecondsF(),
         "BeginFrameArgs", begin_retro_frame_args_.front().AsValue());
     begin_retro_frame_args_.pop_front();
-    begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
+    if (begin_frame_source_)
+      begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
   }
 
   if (begin_retro_frame_args_.empty()) {
@@ -474,7 +477,8 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
                                       can_activate_before_deadline)) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginImplFrameToReduceLatency",
                          TRACE_EVENT_SCOPE_THREAD);
-    begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
+    if (begin_frame_source_)
+      begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
     return;
   }
 
@@ -506,7 +510,8 @@ void Scheduler::FinishImplFrame() {
   ProcessScheduledActions();
 
   client_->DidFinishImplFrame();
-  begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
   begin_impl_frame_tracker_.Finish();
 }
 
