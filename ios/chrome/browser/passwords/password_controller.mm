@@ -339,12 +339,18 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   if (!GetPageURLAndCheckTrustLevel(webState, &pageURL))
     return;
 
-  if (!web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML())
+  if (!web::UrlHasWebScheme(pageURL))
     return;
 
   // Notify the password manager that the page loaded so it can clear its own
   // per-page state.
   passwordManager_->DidNavigateMainFrame();
+
+  if (!webState->ContentIsHTML()) {
+    // If the current page is not HTML, it does not contain any HTML forms.
+    [self
+        didFinishPasswordFormExtraction:std::vector<autofill::PasswordForm>()];
+  }
 
   // Read all password forms from the page and send them to the password
   // manager.
