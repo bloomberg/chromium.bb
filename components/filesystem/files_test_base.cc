@@ -13,14 +13,14 @@
 
 namespace filesystem {
 
-FilesTestBase::FilesTestBase() {
+FilesTestBase::FilesTestBase() : ShellTest("exe:filesystem_service_unittests") {
 }
 
 FilesTestBase::~FilesTestBase() {
 }
 
 void FilesTestBase::SetUp() {
-  ApplicationTestBase::SetUp();
+  ShellTest::SetUp();
   connector()->ConnectToInterface("mojo:filesystem", &files_);
 }
 

@@ -589,7 +589,6 @@ group("mojo_apptests") {
 
   if (is_win || is_linux) {
     deps += [
-      "//components/filesystem:apptests",
       "//components/leveldb:apptests",
       "//components/resource_provider:apptests",
       "//components/resource_provider:resource_provider_unittests",
@@ -639,6 +638,7 @@ group("gn_only") {
       "//chrome/installer/util:strings",
       "//chrome/tools/convert_dict",
       "//components/constrained_window:unit_tests",
+      "//components/filesystem:unittests",
       "//components/metrics:serialization",
       "//components/password_manager/content/renderer:browser_tests",
       "//components/rappor:unit_tests",

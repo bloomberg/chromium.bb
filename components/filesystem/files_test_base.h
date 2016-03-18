@@ -8,16 +8,16 @@
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell_test.h"
 
 namespace filesystem {
 
-class FilesTestBase : public mojo::test::ApplicationTestBase {
+class FilesTestBase : public mojo::test::ShellTest {
  public:
   FilesTestBase();
   ~FilesTestBase() override;
 
-  // Overridden from mojo::test::ApplicationTestBase:
+  // Overridden from mojo::test::ShellTest:
   void SetUp() override;
 
  protected:

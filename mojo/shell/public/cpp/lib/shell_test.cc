@@ -5,6 +5,7 @@
 #include "mojo/shell/public/cpp/shell_test.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/shell/background/background_shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
@@ -44,6 +45,7 @@ void ShellTest::InitializeCalled(Connector* connector,
   initialize_name_ = name;
   initialize_instance_id_ = id;
   initialize_userid_ = user_id;
+  initialize_called_.Run();
 }
 
 void ShellTest::SetUp() {
@@ -51,10 +53,20 @@ void ShellTest::SetUp() {
   message_loop_ = CreateMessageLoop();
   background_shell_.reset(new shell::BackgroundShell);
   background_shell_->Init(nullptr);
+
+  // Create the shell connection. We don't proceed until we get our
+  // ShellClient's Initialize() method is called.
+  base::RunLoop run_loop;
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  initialize_called_ = run_loop.QuitClosure();
+
   shell_connection_.reset(new ShellConnection(
       shell_client_.get(),
       background_shell_->CreateShellClientRequest(test_name_)));
   connector_ = shell_connection_->connector();
+
+  run_loop.Run();
 }
 
 void ShellTest::TearDown() {

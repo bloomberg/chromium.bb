@@ -1,0 +1,5 @@
+{
+  "name": "exe:filesystem_service_unittests",
+  "display_name": "Filesystem Service Unittests",
+  "capabilities": { "*": [ "*" ] }
+}

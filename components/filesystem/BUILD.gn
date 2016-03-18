@@ -4,6 +4,7 @@
 
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
+import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
@@ -60,10 +61,8 @@ mojo_application_manifest("manifest") {
   source = "manifest.json"
 }
 
-mojo_native_application("apptests") {
-  output_name = "filesystem_apptests"
-
-  testonly = true
+test("unittests") {
+  output_name = "filesystem_service_unittests"
 
   sources = [
     "directory_impl_unittest.cc",
@@ -76,18 +75,21 @@ mojo_native_application("apptests") {
     "//base",
     "//components/filesystem/public/interfaces",
     "//mojo/common",
-    "//mojo/platform_handle:for_shared_library",
+    "//mojo/platform_handle",
     "//mojo/public/cpp/bindings",
-    "//mojo/shell/public/cpp:test_support",
+    "//mojo/shell/public/cpp:shell_test_support",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/cpp/test:run_all_shelltests",
   ]
 
   data_deps = [
-    ":apptest_manifest",
+    ":test_manifest",
     ":filesystem",
   ]
 }
 
-mojo_application_manifest("apptest_manifest") {
-  application_name = "filesystem_apptests"
-  source = "apptest_manifest.json"
+mojo_application_manifest("test_manifest") {
+  type = "exe"
+  application_name = "filesystem_service_unittests"
+  source = "test_manifest.json"
 }
