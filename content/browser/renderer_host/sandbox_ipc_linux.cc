@@ -34,7 +34,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
 
-using blink::WebCString;
 using blink::WebFontInfo;
 using blink::WebUChar;
 using blink::WebUChar32;

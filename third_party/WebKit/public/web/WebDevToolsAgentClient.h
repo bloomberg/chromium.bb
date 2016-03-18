@@ -31,7 +31,6 @@
 #ifndef WebDevToolsAgentClient_h
 #define WebDevToolsAgentClient_h
 
-#include "../platform/WebCString.h"
 #include "../platform/WebCommon.h"
 #include "../platform/WebString.h"
 

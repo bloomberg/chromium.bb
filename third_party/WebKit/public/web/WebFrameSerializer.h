@@ -31,7 +31,6 @@
 #ifndef WebFrameSerializer_h
 #define WebFrameSerializer_h
 
-#include "../platform/WebCString.h"
 #include "../platform/WebCommon.h"
 #include "../platform/WebData.h"
 #include "../platform/WebString.h"

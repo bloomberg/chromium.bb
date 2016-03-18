@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "net/http/http_util.h"
 #include "net/http/http_version.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 

@@ -23,7 +23,6 @@
 // test it by making sure the conversion routines actually work at the same
 // time.
 
-using blink::WebCString;
 using blink::WebFrameClient;
 using blink::WebString;
 using blink::WebView;
@@ -31,15 +30,6 @@ using blink::WebURL;
 using blink::WebURLRequest;
 
 namespace {
-
-bool IsExpected(const WebCString& web_string, const char* expected) {
-  const char* result = web_string.data();
-  return strcmp(result, expected) == 0;
-}
-
-bool IsExpected(const WebString& web_string, const char* expected) {
-  return IsExpected(web_string.utf8(), expected);
-}
 
 // The base class destructor is protected, so derive.
 class TestWebFrameClient : public WebFrameClient {};
@@ -79,12 +69,12 @@ class URLRequestInfoTest : public RenderViewTest {
     return web_request.downloadToFile();
   }
 
-  std::string GetURL() {
+  WebString GetURL() {
     WebURLRequest web_request;
     URLRequestInfoData data = info_->GetData();
     if (!CreateWebURLRequest(pp_instance_, &data, GetMainFrame(), &web_request))
-      return WebCString();
-    return web_request.url().string().utf8();
+      return WebString();
+    return web_request.url().string();
   }
 
   WebString GetMethod() {
@@ -208,7 +198,7 @@ TEST_F(URLRequestInfoTest, AllowCredentials) {
 TEST_F(URLRequestInfoTest, SetURL) {
   const char* url = "http://www.google.com/";
   EXPECT_TRUE(SetStringProperty(PP_URLREQUESTPROPERTY_URL, url));
-  EXPECT_TRUE(IsExpected(GetURL(), url));
+  EXPECT_STREQ(url, GetURL().utf8().data());
 }
 
 TEST_F(URLRequestInfoTest, JavascriptURL) {
@@ -220,22 +210,22 @@ TEST_F(URLRequestInfoTest, JavascriptURL) {
 
 TEST_F(URLRequestInfoTest, SetMethod) {
   // Test default method is "GET".
-  EXPECT_TRUE(IsExpected(GetMethod(), "GET"));
+  EXPECT_STREQ("GET", GetMethod().utf8().data());
   EXPECT_TRUE(SetStringProperty(PP_URLREQUESTPROPERTY_METHOD, "POST"));
-  EXPECT_TRUE(IsExpected(GetMethod(), "POST"));
+  EXPECT_STREQ("POST", GetMethod().utf8().data());
 }
 
 TEST_F(URLRequestInfoTest, SetHeaders) {
   // Test default header field.
-  EXPECT_TRUE(IsExpected(GetHeaderValue("foo"), ""));
+  EXPECT_STREQ("", GetHeaderValue("foo").utf8().data());
   // Test that we can set a header field.
   EXPECT_TRUE(SetStringProperty(PP_URLREQUESTPROPERTY_HEADERS, "foo: bar"));
-  EXPECT_TRUE(IsExpected(GetHeaderValue("foo"), "bar"));
+  EXPECT_STREQ("bar", GetHeaderValue("foo").utf8().data());
   // Test that we can set multiple header fields using \n delimiter.
   EXPECT_TRUE(
       SetStringProperty(PP_URLREQUESTPROPERTY_HEADERS, "foo: bar\nbar: baz"));
-  EXPECT_TRUE(IsExpected(GetHeaderValue("foo"), "bar"));
-  EXPECT_TRUE(IsExpected(GetHeaderValue("bar"), "baz"));
+  EXPECT_STREQ("bar", GetHeaderValue("foo").utf8().data());
+  EXPECT_STREQ("baz", GetHeaderValue("bar").utf8().data());
 }
 
 // TODO(bbudge) Unit tests for AppendDataToBody, AppendFileToBody.

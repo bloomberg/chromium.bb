@@ -8,7 +8,6 @@
 #include "base/strings/string_util.h"
 #include "content/renderer/npapi/webplugin_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 

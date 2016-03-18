@@ -92,6 +92,7 @@
 #include "core/html/HTMLMetaElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "public/platform/WebCString.h"
 #include "public/platform/WebVector.h"
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/text/TextEncoding.h"

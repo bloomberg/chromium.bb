@@ -31,7 +31,6 @@
 #ifndef WebURL_h
 #define WebURL_h
 
-#include "WebCString.h"
 #include "WebString.h"
 #include "url/third_party/mozilla/url_parse.h"
 

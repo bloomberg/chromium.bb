@@ -9,7 +9,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/common/devtools_messages.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
 

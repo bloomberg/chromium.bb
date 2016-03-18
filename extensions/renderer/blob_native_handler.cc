@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebBlob.h"
 

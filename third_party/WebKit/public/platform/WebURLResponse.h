@@ -31,6 +31,7 @@
 #ifndef WebURLResponse_h
 #define WebURLResponse_h
 
+#include "public/platform/WebCString.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivateOwnPtr.h"
 #include "public/platform/WebString.h"
@@ -39,10 +40,8 @@
 namespace blink {
 
 class ResourceResponse;
-class WebCString;
 class WebHTTPHeaderVisitor;
 class WebHTTPLoadInfo;
-class WebString;
 class WebURL;
 class WebURLLoadTiming;
 class WebURLResponsePrivate;

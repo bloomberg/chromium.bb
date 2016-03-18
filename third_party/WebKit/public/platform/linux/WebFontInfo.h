@@ -31,7 +31,6 @@
 #ifndef WebFontInfo_h
 #define WebFontInfo_h
 
-#include "../WebCString.h"
 #include "WebFallbackFont.h"
 
 #include <string.h>

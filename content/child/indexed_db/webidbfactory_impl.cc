@@ -7,7 +7,6 @@
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

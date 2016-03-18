@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/database_messages.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/sqlite/sqlite3.h"
 

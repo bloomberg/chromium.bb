@@ -6,7 +6,6 @@
 
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_test_delegate.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace test_runner {

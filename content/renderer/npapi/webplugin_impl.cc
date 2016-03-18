@@ -37,7 +37,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebCookieJar.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -60,7 +59,6 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 
-using blink::WebCString;
 using blink::WebCanvas;
 using blink::WebConsoleMessage;
 using blink::WebCookieJar;

@@ -37,7 +37,6 @@
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebLayoutAndPaintAsyncCallback.h"
@@ -986,16 +985,14 @@ void WebTestProxyBase::DidCommitProvisionalLoad(
 void WebTestProxyBase::DidReceiveTitle(blink::WebLocalFrame* frame,
                                        const blink::WebString& title,
                                        blink::WebTextDirection direction) {
-  blink::WebCString title8 = title.utf8();
-
   if (test_interfaces_->GetTestRunner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
-    delegate_->PrintMessage(std::string(" - didReceiveTitle: ") +
-                            title8.data() + "\n");
+    delegate_->PrintMessage(std::string(" - didReceiveTitle: ") + title.utf8() +
+                            "\n");
   }
 
   if (test_interfaces_->GetTestRunner()->shouldDumpTitleChanges())
-    delegate_->PrintMessage(std::string("TITLE CHANGED: '") + title8.data() +
+    delegate_->PrintMessage(std::string("TITLE CHANGED: '") + title.utf8() +
                             "'\n");
 }
 
