@@ -128,9 +128,6 @@ class GpuVideoDecodeAccelerator
                  scoped_refptr<gl::GLImage> image);
 #endif
 
-  // Helper function to call NotifyError in the |child_task_runner_| thread.
-  void CallOrPostNotifyError(media::VideoDecodeAccelerator::Error error);
-
   // Route ID to communicate with the host.
   const int32_t host_route_id_;
 
