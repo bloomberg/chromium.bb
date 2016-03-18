@@ -59,7 +59,11 @@ source_set("client_sources") {
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
+    "//base",
     "//gpu/command_buffer/common:common_sources",
+    "//gpu/command_buffer/common:gles2_utils",
+    "//ui/gfx:memory_buffer",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -79,6 +83,8 @@ source_set("gles2_cmd_helper_sources") {
 
   deps = [
     ":client_sources",
+    "//base",
+    "//gpu/command_buffer/common:common_sources",
   ]
 }
 
@@ -145,6 +151,8 @@ component("gles2_implementation") {
     ":gles2_cmd_helper",
     ":gles2_interface",
     "//base",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_utils",
     "//ui/gfx/geometry",
   ]
@@ -163,8 +171,11 @@ component("gles2_implementation_no_check") {
   ]
 
   deps = [
+    ":client",
     ":gles2_cmd_helper",
+    ":gles2_interface",
     "//base",
+    "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_utils",
     "//ui/gfx",
     "//ui/gfx/geometry",

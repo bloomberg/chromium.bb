@@ -145,6 +145,8 @@ source_set("service_sources") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//crypto",
+    "//gpu/command_buffer/client:client_sources",
+    "//gpu/command_buffer/common:gles2_utils",
     "//gpu/config:config_sources",
     "//third_party/angle:commit_id",
     "//third_party/angle:translator",

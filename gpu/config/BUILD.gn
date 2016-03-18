@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 
 declare_args() {
   # Use the PCI lib to collect GPU information on Linux.
-  use_libpci = !is_chromecast
+  use_libpci = is_linux && !is_chromecast && (use_x11 || use_ozone)
 }
 
 group("config") {
@@ -95,8 +95,6 @@ source_set("config_sources") {
   }
   if (use_libpci) {
     defines = [ "USE_LIBPCI=1" ]
-  }
-  if (is_linux && use_libpci && (use_x11 || use_ozone)) {
     deps += [ "//build/linux:libpci" ]
   }
   if (is_linux && use_x11) {

@@ -49,9 +49,7 @@ check_targets = [
   "//gin/*",
   "//google_apis/*",
   "//google_update/*",
-
-  #"//gpu/*",  # Lots of errors.
-  "//gpu:*",
+  "//gpu/*",
 
   #"//ios/*",
   "//ipc/*",
@@ -71,7 +69,8 @@ check_targets = [
   "//printing/*",
 
   #"//remoting/*",  # Medium-hard.
-  #"//rlz/*",  # Needs checking on Windows.
+  "//rlz/*",
+
   #"//sandbox/*",  # Medium-hard.
   "//sdch/*",
   "//skia/*",

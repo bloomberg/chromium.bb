@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "ui/gfx/gfx_export.h"
 
 #if defined(OS_ANDROID)
 #include <jni.h>

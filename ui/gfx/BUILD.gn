@@ -55,8 +55,6 @@ component("gfx") {
     "animation/tween.cc",
     "animation/tween.h",
     "break_list.h",
-    "buffer_format_util.cc",
-    "buffer_format_util.h",
     "codec/jpeg_codec.cc",
     "codec/jpeg_codec.h",
     "codec/png_codec.cc",
@@ -99,8 +97,6 @@ component("gfx") {
     "font_render_params_win.cc",
     "gdi_util.cc",
     "gdi_util.h",
-    "generic_shared_memory_id.cc",
-    "generic_shared_memory_id.h",
     "gfx_paths.cc",
     "gfx_paths.h",
     "icon_util.cc",
@@ -135,12 +131,9 @@ component("gfx") {
     "linux_font_delegate.h",
     "mac/coordinate_conversion.h",
     "mac/coordinate_conversion.mm",
-    "mac/io_surface.cc",
-    "mac/io_surface.h",
     "mac/nswindow_frame_controls.h",
     "mac/nswindow_frame_controls.mm",
     "mac/scoped_cocoa_disable_screen_updates.h",
-    "native_widget_types.h",
     "nine_image_painter.cc",
     "nine_image_painter.h",
     "path.cc",
@@ -247,8 +240,6 @@ component("gfx") {
       "canvas_paint_mac.mm",
       "canvas_skia.cc",
       "canvas_skia_paint.h",
-      "gpu_memory_buffer.cc",
-      "gpu_memory_buffer.h",
       "image/canvas_image_source.cc",
       "image/canvas_image_source.h",
       "image/image_skia_operations.cc",
@@ -265,6 +256,7 @@ component("gfx") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
+  # This is part of the gfx component in the component build.
   defines = [ "GFX_IMPLEMENTATION" ]
 
   deps = [
@@ -280,6 +272,8 @@ component("gfx") {
     "//ui/gfx/geometry",
   ]
   public_deps = [
+    ":memory_buffer_sources",
+    ":native_widget_types",
     "//base",
     "//skia",
     "//third_party/icu",
@@ -426,10 +420,6 @@ component("gfx") {
     configs += [ "//build/config/linux:x11" ]
   } else {
     sources -= [ "path_x11.cc" ]
-  }
-
-  if (use_ozone) {
-    sources += [ "native_pixmap_handle_ozone.h" ]
   }
 
   if (use_cairo) {
@@ -593,6 +583,69 @@ action("aggregate_vector_icons") {
 }
 
 # Looking for gfx_geometry? It's //ui/gfx/geometry:geometry
+
+# Depend on this to use native_widget_types.h without pulling in all of gfx.
+source_set("native_widget_types") {
+  public = [
+    "native_widget_types.h",
+  ]
+
+  public_deps = [
+    "//base",
+  ]
+}
+
+# The GPU memory buffer stuff is separate from "gfx" to allow GPU-related
+# things to use these files without pulling in all of gfx, which includes large
+# things like Skia.
+#
+# The structure here allows the memory buffer to be part of the gfx component
+# in the component build, but be a separate source set in a static build.
+group("memory_buffer") {
+  if (is_component_build) {
+    public_deps = [
+      ":gfx",
+    ]
+  } else {
+    public_deps = [
+      ":memory_buffer_sources",
+    ]
+  }
+}
+source_set("memory_buffer_sources") {
+  visibility = [ ":*" ]  # Depend on through ":memory_buffer".
+
+  # TODO(brettw) refactor this so these sources are in a coherent directory
+  # structure rather than random samplings of ui/gfx and ui/gfx/mac.
+  sources = [
+    "buffer_format_util.cc",
+    "buffer_format_util.h",
+    "buffer_types.h",
+    "generic_shared_memory_id.cc",
+    "generic_shared_memory_id.h",
+    "gfx_export.h",
+    "mac/io_surface.cc",
+    "mac/io_surface.h",
+  ]
+
+  if (!is_ios) {
+    sources += [
+      "gpu_memory_buffer.cc",
+      "gpu_memory_buffer.h",
+    ]
+  }
+
+  if (use_ozone) {
+    sources += [ "native_pixmap_handle_ozone.h" ]
+  }
+
+  defines = [ "GFX_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//ui/gfx/geometry",
+  ]
+}
 
 source_set("test_support") {
   testonly = true

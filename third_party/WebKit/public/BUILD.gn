@@ -47,6 +47,7 @@ group("blink_for_unittests") {
 # GYP version: WebKit/public/blink.gyp:blink_minimal
 group("blink_minimal") {
   public_deps = [
+    ":blink_headers",
     "//third_party/WebKit/Source/platform:blink_common",
   ]
 }

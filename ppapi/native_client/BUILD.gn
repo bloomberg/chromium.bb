@@ -32,6 +32,13 @@ if (is_nacl) {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
     ]
+
+    assert_no_deps = [
+      # Skia is one of the easiest dependencies to accidentally add since a
+      # bunch of graphics and GPU code uses it.
+      "//skia/*",
+      "//third_party/WebKit/*",
+    ]
   }
 
   # TODO(phosek): We can remove this ugliness if we change the

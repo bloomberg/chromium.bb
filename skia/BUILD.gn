@@ -444,7 +444,7 @@ component("skia") {
     sources += [ "ext/bitmap_platform_device_skia.cc" ]
   }
 
-  if (is_clang) {
+  if (is_clang && !is_nacl) {
     # Skia won't compile with some of the more strict clang warnings.
     # e.g. it does:
     #  SkASSERT(!"sk_out_of_memory");

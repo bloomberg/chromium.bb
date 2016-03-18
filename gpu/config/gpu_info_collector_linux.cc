@@ -27,7 +27,7 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(USE_LIBPCI)
-#include "library_loaders/libpci.h"
+#include "library_loaders/libpci.h"  // nogncheck
 #endif
 
 namespace gpu {

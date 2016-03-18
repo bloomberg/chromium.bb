@@ -8,6 +8,7 @@ source_set("skia_bindings") {
     "gl_bindings_skia_cmd_buffer.h",
   ]
   deps = [
+    "//base",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//skia",
   ]

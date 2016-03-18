@@ -12,7 +12,6 @@
 #include <GLES3/gl3.h>
 
 #include "base/numerics/safe_math.h"
-#include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 namespace gpu {
