@@ -93,7 +93,6 @@ class Lockfile(object):
     """Acquire the lock.
 
     This will block with a deadline of self.timeout seconds.
-    If self.timeout is zero, this is a NON-BLOCKING FAIL-FAST operation.
     """
     elapsed = 0
     while True:
@@ -102,7 +101,7 @@ class Lockfile(object):
         return
       except OSError as e:
         if elapsed < self.timeout:
-          sleep_time = min(3, self.timeout - elapsed)
+          sleep_time = max(10, min(3, self.timeout - elapsed))
           logging.info('Could not create git cache lockfile; '
                        'will retry after sleep(%d).', sleep_time);
           elapsed += sleep_time
