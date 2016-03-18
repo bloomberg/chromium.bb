@@ -26,6 +26,8 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
         content::Source<FullscreenController>(
             browser->exclusive_access_manager()->fullscreen_controller()));
   }
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_view_insets(gfx::Insets(5, 0));
 }
 
 LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {}

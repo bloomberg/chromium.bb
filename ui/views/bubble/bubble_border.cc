@@ -164,8 +164,14 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   int h = anchor_rect.height();
   const gfx::Size size(GetSizeForContentsSize(contents_size));
   const int arrow_offset = GetArrowOffset(size);
-  const int arrow_size =
+  // |arrow_shift| is necessary to visually align the tip of the bubble arrow
+  // with the anchor point. This shift is an inverse of the shadow thickness.
+  int arrow_shift =
       images_->arrow_interior_thickness + kStroke - images_->arrow_thickness;
+  // When arrow is painted transparently the visible border of the bubble needs
+  // to be positioned at the same bounds as when the arrow is shown.
+  if (arrow_paint_type_ == PAINT_TRANSPARENT)
+    arrow_shift += images_->arrow_interior_thickness;
   const bool mid_anchor = alignment_ == ALIGN_ARROW_TO_MID_ANCHOR;
 
   // Calculate the bubble coordinates based on the border and arrow settings.
@@ -178,9 +184,11 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
       x += mid_anchor ? w / 2 + arrow_offset - size.width() :
                         w - size.width() + GetBorderThickness() - kStroke;
     }
-    y += is_arrow_on_top(arrow_) ? h + arrow_size : -arrow_size - size.height();
+    y += is_arrow_on_top(arrow_) ? h + arrow_shift
+                                 : -arrow_shift - size.height();
   } else if (has_arrow(arrow_)) {
-    x += is_arrow_on_left(arrow_) ? w + arrow_size : -arrow_size - size.width();
+    x += is_arrow_on_left(arrow_) ? w + arrow_shift
+                                  : -arrow_shift - size.width();
     if (is_arrow_on_top(arrow_)) {
       y += mid_anchor ? h / 2 - arrow_offset : kStroke - GetBorderThickness();
     } else if (is_arrow_at_center(arrow_)) {
@@ -253,7 +261,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 gfx::Insets BubbleBorder::GetInsets() const {
   // The insets contain the stroke and shadow pixels outside the bubble fill.
   const int inset = GetBorderThickness();
-  if ((arrow_paint_type_ == PAINT_NONE) || !has_arrow(arrow_))
+  if (arrow_paint_type_ != PAINT_NORMAL || !has_arrow(arrow_))
     return gfx::Insets(inset);
 
   int first_inset = inset;
@@ -279,14 +287,16 @@ gfx::Size BubbleBorder::GetSizeForContentsSize(
 
   // Ensure the bubble is large enough to not overlap border and arrow images.
   const int min = 2 * images_->border_thickness;
+  // Only take arrow image sizes into account when the bubble tip is shown.
+  if (arrow_paint_type_ != PAINT_NORMAL || !has_arrow(arrow_)) {
+    size.SetToMax(gfx::Size(min, min));
+    return size;
+  }
   const int min_with_arrow_width = min + images_->arrow_width;
   const int min_with_arrow_thickness = images_->border_thickness +
       std::max(images_->arrow_thickness + images_->border_interior_thickness,
                images_->border_thickness);
-  // Only take arrow image sizes into account when the bubble tip is shown.
-  if (arrow_paint_type_ == PAINT_NONE || !has_arrow(arrow_))
-    size.SetToMax(gfx::Size(min, min));
-  else if (is_arrow_on_horizontal(arrow_))
+  if (is_arrow_on_horizontal(arrow_))
     size.SetToMax(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
   else
     size.SetToMax(gfx::Size(min_with_arrow_thickness, min_with_arrow_width));

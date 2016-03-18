@@ -116,8 +116,6 @@ ZoomBubbleView::ZoomBubbleView(
       web_contents_(web_contents),
       auto_close_(reason == AUTOMATIC),
       immersive_mode_controller_(immersive_mode_controller) {
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_notify_enter_exit_on_child(true);
   immersive_mode_controller_->AddObserver(this);
   UseCompactMargins();

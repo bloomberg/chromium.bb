@@ -89,7 +89,7 @@ views::Widget* BookmarkBubbleView::ShowBubble(
   bubble_widget->Show();
   // Select the entire title textfield contents when the bubble is first shown.
   bookmark_bubble_->title_tf_->SelectAll(true);
-  bookmark_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+  bookmark_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
 
   if (bookmark_bubble_->observer_) {
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
@@ -273,8 +273,6 @@ BookmarkBubbleView::BookmarkBubbleView(
       parent_combobox_(NULL),
       remove_bookmark_(false),
       apply_edits_(true) {
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
 }
 
 base::string16 BookmarkBubbleView::GetTitle() {

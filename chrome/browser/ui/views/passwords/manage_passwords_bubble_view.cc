@@ -778,9 +778,6 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
                                  : ManagePasswordsBubbleModel::USER_ACTION),
       initially_focused_view_(nullptr) {
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
-
   mouse_handler_.reset(new WebContentMouseHandler(this));
 }
 
