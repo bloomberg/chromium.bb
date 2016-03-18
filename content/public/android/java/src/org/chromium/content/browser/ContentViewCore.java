@@ -362,6 +362,29 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     /**
+     * {@ResultReceiver} passed in InputMethodManager#showSoftInput}. We need this to scroll to the
+     * editable node at the right timing, which is after input method window shows up.
+     */
+    private static class ShowKeyboardResultReceiver extends ResultReceiver {
+
+        // Unfortunately, ResultReceiver used in showSoftInput() will be leaked. We minimize
+        // the leak by weak referencing CVC and therefore WebView object.
+        private final WeakReference<ContentViewCore> mContentViewCore;
+
+        public ShowKeyboardResultReceiver(ContentViewCore contentViewCore, Handler handler) {
+            super(handler);
+            mContentViewCore = new WeakReference<>(contentViewCore);
+        }
+
+        @Override
+        public void onReceiveResult(int resultCode, Bundle resultData) {
+            ContentViewCore contentViewCore = mContentViewCore.get();
+            if (contentViewCore == null) return;
+            contentViewCore.onShowKeyboardReceiveResult(resultCode);
+        }
+    }
+
+    /**
      * Interface that consumers of {@link ContentViewCore} must implement to allow the proper
      * dispatching of view methods through the containing view.
      *
@@ -585,6 +608,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     // The client that implements Contextual Search functionality, or null if none exists.
     private ContextualSearchClient mContextualSearchClient;
 
+    // NOTE: This object will not be released by Android framework until the matching
+    // ResultReceiver in the InputMethodService (IME app) gets gc'ed.
+    private ShowKeyboardResultReceiver mShowKeyboardResultReceiver;
+
     /**
      * @param webContents The {@link WebContents} to find a {@link ContentViewCore} of.
      * @return            A {@link ContentViewCore} that is connected to {@code webContents} or
@@ -739,26 +766,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
                     @Override
                     public ResultReceiver getNewShowKeyboardReceiver() {
-                        return new ResultReceiver(new Handler()) {
-                            @Override
-                            public void onReceiveResult(int resultCode, Bundle resultData) {
-                                if (resultCode == InputMethodManager.RESULT_SHOWN) {
-                                    // If OSK is newly shown, delay the form focus until
-                                    // the onSizeChanged (in order to adjust relative to the
-                                    // new size).
-                                    // TODO(jdduke): We should not assume that onSizeChanged will
-                                    // always be called, crbug.com/294908.
-                                    getContainerView().getWindowVisibleDisplayFrame(
-                                            mFocusPreOSKViewportRect);
-                                } else if (hasFocus() && resultCode
-                                        == InputMethodManager.RESULT_UNCHANGED_SHOWN) {
-                                    // If the OSK was already there, focus the form immediately.
-                                    if (mWebContents != null) {
-                                        mWebContents.scrollFocusedEditableNodeIntoView();
-                                    }
-                                }
-                            }
-                        };
+                        return ContentViewCore.this.getNewShowKeyboardReceiver();
                     }
                 });
     }
@@ -3305,6 +3313,36 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      */
     public void setContextualSearchClient(ContextualSearchClient contextualSearchClient) {
         mContextualSearchClient = contextualSearchClient;
+    }
+
+    /**
+     * Call this when we get result from ResultReceiver passed in calling showSoftInput().
+     * @param resultCode The result of showSoftInput() as defined in InputMethodManager.
+     */
+    public void onShowKeyboardReceiveResult(int resultCode) {
+        if (resultCode == InputMethodManager.RESULT_SHOWN) {
+            // If OSK is newly shown, delay the form focus until
+            // the onSizeChanged (in order to adjust relative to the
+            // new size).
+            // TODO(jdduke): We should not assume that onSizeChanged will
+            // always be called, crbug.com/294908.
+            getContainerView().getWindowVisibleDisplayFrame(
+                    mFocusPreOSKViewportRect);
+        } else if (hasFocus() && resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN) {
+            // If the OSK was already there, focus the form immediately.
+            if (mWebContents != null) {
+                mWebContents.scrollFocusedEditableNodeIntoView();
+            }
+        }
+    }
+
+    @VisibleForTesting
+    public ResultReceiver getNewShowKeyboardReceiver() {
+        if (mShowKeyboardResultReceiver == null) {
+            // Note: the returned object will get leaked by Android framework.
+            mShowKeyboardResultReceiver = new ShowKeyboardResultReceiver(this, new Handler());
+        }
+        return mShowKeyboardResultReceiver;
     }
 
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
