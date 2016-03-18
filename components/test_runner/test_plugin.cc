@@ -175,7 +175,7 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
   blink::WebGraphicsContext3D::Attributes attrs;
   context_ =
       blink::Platform::current()->createOffscreenGraphicsContext3D(attrs);
-  gl_ = context_->getGLES2Interface();
+  gl_ = context_ ? context_->getGLES2Interface() : nullptr;
 
   if (!InitScene())
     return false;
