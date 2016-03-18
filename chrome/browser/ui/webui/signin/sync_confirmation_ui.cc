@@ -19,7 +19,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
 
 SyncConfirmationUI::SyncConfirmationUI(
     content::WebUI* web_ui, SyncConfirmationHandler* handler)
-    : WebDialogUI(web_ui){
+    : WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);
@@ -30,8 +30,16 @@ SyncConfirmationUI::SyncConfirmationUI(
 
   source->AddLocalizedString("syncConfirmationTitle",
       IDS_SYNC_CONFIRMATION_TITLE);
-  source->AddLocalizedString("syncConfirmationBody",
-      IDS_SYNC_CONFIRMATION_BODY);
+  source->AddLocalizedString("syncConfirmationChromeSyncTitle",
+      IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE);
+  source->AddLocalizedString("syncConfirmationChromeSyncBody",
+      IDS_SYNC_CONFIRMATION_CHROME_SYNC_BODY);
+  source->AddLocalizedString("syncConfirmationActivityControlsTitle",
+      IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_TITLE);
+  source->AddLocalizedString("syncConfirmationActivityControlsBody",
+      IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_BODY);
+  source->AddLocalizedString("syncConfirmationActivityControlsCheckboxLabel",
+      IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_CHECKBOX_LABEL);
   source->AddLocalizedString("syncConfirmationConfirmLabel",
       IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL);
   source->AddLocalizedString("syncConfirmationUndoLabel",

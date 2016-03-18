@@ -10731,8 +10731,20 @@ I don't think this site should be blocked!
       <message name="IDS_SYNC_CONFIRMATION_TITLE" desc="Title of the sync confirmation dialog in the tab modal signin flow">
         You're now signed in to Chrome
       </message>
-      <message name="IDS_SYNC_CONFIRMATION_BODY" desc="Body of the sync confirmation dialog in the tab modal signin flow">
-        Your bookmarks, history, passwords and other settings will be synced to your Google Account so you can use them on all your devices. You can change this in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
+      <message name="IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE" desc="Title of the chrome sync section of the sync confirmation dialog in the tab modal signin flow">
+        Chrome Sync
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_CHROME_SYNC_BODY" desc="Body of the chrome sync section of the sync confirmation dialog in the tab modal signin flow">
+        Your bookmarks, history, passwords and other settings will be synced to your Google Account so you can use them on all your devices. Control what to sync in <ph name="BEGIN_LINK">&lt;a id="settingsLink" href="#"&gt;Settings&lt;/a&gt;.</ph>
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_TITLE" desc="Title of the activity controls section of the sync confirmation dialog in the tab modal signin flow">
+        Personalize Google services
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_BODY" desc="Body of the activity controls section of the sync confirmation dialog in the tab modal signin flow">
+        Google may use your browsing history to personalize Search and other Google services. You can control this at myaccount.google.com.
+      </message>
+      <message name="IDS_SYNC_CONFIRMATION_ACTIVITY_CONTROLS_CHECKBOX_LABEL" desc="Label of the checkbox for managing user's privacy settings.">
+        Open myaccount.google.com after signing in
       </message>
       <message name="IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the sync confirmation dialog of the tab modal signin flow">
         Ok, got it
