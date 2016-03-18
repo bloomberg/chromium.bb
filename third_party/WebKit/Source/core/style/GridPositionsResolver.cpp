@@ -150,7 +150,7 @@ static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(const Comput
     return definiteGridSpanWithNamedSpanAgainstOpposite(oppositeLine, position, side, gridLines, lastLine);
 }
 
-static GridSpan definiteGridSpanWithSpanAgainstOpposite(size_t oppositeLine, const GridPosition& position, GridPositionSide side)
+static GridSpan definiteGridSpanWithSpanAgainstOpposite(int oppositeLine, const GridPosition& position, GridPositionSide side)
 {
     size_t positionOffset = position.spanPosition();
     if (side == ColumnStartSide || side == RowStartSide)
