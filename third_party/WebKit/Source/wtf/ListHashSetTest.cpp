@@ -696,6 +696,135 @@ TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveAssignmentShouldNotMakeACopy)
     EXPECT_EQ(0, counter);
 }
 
+class MoveOnly {
+public:
+    // kEmpty and kDeleted have special meanings when MoveOnly is used as the key of a hash table.
+    enum {
+        kEmpty = 0,
+        kDeleted = -1,
+        kMovedOut = -2
+    };
+
+    explicit MoveOnly(int value = kEmpty, int id = 0) : m_value(value), m_id(id) { }
+    MoveOnly(MoveOnly&& other)
+        : m_value(other.m_value)
+        , m_id(other.m_id)
+    {
+        other.m_value = kMovedOut;
+        other.m_id = 0;
+    }
+    MoveOnly& operator=(MoveOnly&& other)
+    {
+        m_value = other.m_value;
+        m_id = other.m_id;
+        other.m_value = kMovedOut;
+        other.m_id = 0;
+        return *this;
+    }
+
+    int value() const { return m_value; }
+    // id() is used for distinguishing MoveOnlys with the same value().
+    int id() const { return m_id; }
+
+private:
+    MoveOnly(const MoveOnly&) = delete;
+    MoveOnly& operator=(const MoveOnly&) = delete;
+
+    int m_value;
+    int m_id;
+};
+
+struct MoveOnlyHash {
+    static unsigned hash(const MoveOnly& value) { return DefaultHash<int>::Hash::hash(value.value()); }
+    static bool equal(const MoveOnly& left, const MoveOnly& right)
+    {
+        return DefaultHash<int>::Hash::equal(left.value(), right.value());
+    }
+};
+
+} // anonymous namespace
+
+template <>
+struct DefaultHash<MoveOnly> {
+    using Hash = MoveOnlyHash;
+};
+
+namespace {
+
+template <typename Set>
+class ListOrLinkedHashSetMoveOnlyTest : public ::testing::Test { };
+
+using MoveOnlySetTypes = ::testing::Types<ListHashSet<MoveOnly>, ListHashSet<MoveOnly, 1>, LinkedHashSet<MoveOnly>>;
+TYPED_TEST_CASE(ListOrLinkedHashSetMoveOnlyTest, MoveOnlySetTypes);
+
+TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue)
+{
+    using Set = TypeParam;
+    using AddResult = typename Set::AddResult;
+    Set set;
+    {
+        AddResult addResult = set.add(MoveOnly(1, 1));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(1, addResult.storedValue->value());
+        EXPECT_EQ(1, addResult.storedValue->id());
+    }
+    {
+        AddResult addResult = set.add(MoveOnly(1, 111));
+        EXPECT_FALSE(addResult.isNewEntry);
+        EXPECT_EQ(1, addResult.storedValue->value());
+        EXPECT_EQ(1, addResult.storedValue->id());
+    }
+    auto iter = set.find(MoveOnly(1));
+    ASSERT_TRUE(iter != set.end());
+    EXPECT_EQ(1, iter->value());
+    EXPECT_EQ(1, iter->id());
+
+    iter = set.find(MoveOnly(2));
+    EXPECT_TRUE(iter == set.end());
+
+    // ListHashSet and LinkedHashSet have several flavors of add().
+    iter = set.addReturnIterator(MoveOnly(2, 2));
+    EXPECT_EQ(2, iter->value());
+    EXPECT_EQ(2, iter->id());
+
+    iter = set.addReturnIterator(MoveOnly(2, 222));
+    EXPECT_EQ(2, iter->value());
+    EXPECT_EQ(2, iter->id());
+
+    {
+        AddResult addResult = set.appendOrMoveToLast(MoveOnly(3, 3));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(3, addResult.storedValue->value());
+        EXPECT_EQ(3, addResult.storedValue->id());
+    }
+    {
+        AddResult addResult = set.prependOrMoveToFirst(MoveOnly(4, 4));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(4, addResult.storedValue->value());
+        EXPECT_EQ(4, addResult.storedValue->id());
+    }
+    {
+        AddResult addResult = set.insertBefore(MoveOnly(4), MoveOnly(5, 5));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(5, addResult.storedValue->value());
+        EXPECT_EQ(5, addResult.storedValue->id());
+    }
+    {
+        iter = set.find(MoveOnly(5));
+        ASSERT_TRUE(iter != set.end());
+        AddResult addResult = set.insertBefore(iter, MoveOnly(6, 6));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(6, addResult.storedValue->value());
+        EXPECT_EQ(6, addResult.storedValue->id());
+    }
+
+    // ... but they don't have any pass-out (like take()) methods.
+
+    set.remove(MoveOnly(3));
+    set.clear();
+}
+
+
 } // anonymous namespace
 
 } // namespace WTF

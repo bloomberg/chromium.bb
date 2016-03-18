@@ -74,7 +74,6 @@ public:
     typedef ValueArg ValueType;
     typedef HashTraits<ValueType> ValueTraits;
     typedef typename ValueTraits::PeekInType ValuePeekInType;
-    typedef typename ValueTraits::PassInType ValuePassInType;
     typedef typename ValueTraits::PassOutType ValuePassOutType;
 
     typedef ListHashSetIterator<ListHashSet> iterator;
@@ -144,23 +143,29 @@ public:
 
     // The return value of add is a pair of a pointer to the stored value, and a
     // bool that is true if an new entry was added.
-    AddResult add(ValuePassInType);
+    template <typename IncomingValueType>
+    AddResult add(IncomingValueType&&);
 
     // Same as add() except that the return value is an iterator. Useful in
     // cases where it's needed to have the same return value as find() and where
     // it's not possible to use a pointer to the storedValue.
-    iterator addReturnIterator(ValuePassInType);
+    template <typename IncomingValueType>
+    iterator addReturnIterator(IncomingValueType&&);
 
     // Add the value to the end of the collection. If the value was already in
     // the list, it is moved to the end.
-    AddResult appendOrMoveToLast(ValuePassInType);
+    template <typename IncomingValueType>
+    AddResult appendOrMoveToLast(IncomingValueType&&);
 
     // Add the value to the beginning of the collection. If the value was
     // already in the list, it is moved to the beginning.
-    AddResult prependOrMoveToFirst(ValuePassInType);
+    template <typename IncomingValueType>
+    AddResult prependOrMoveToFirst(IncomingValueType&&);
 
-    AddResult insertBefore(ValuePeekInType beforeValue, ValuePassInType newValue);
-    AddResult insertBefore(iterator, ValuePassInType);
+    template <typename IncomingValueType>
+    AddResult insertBefore(ValuePeekInType beforeValue, IncomingValueType&& newValue);
+    template <typename IncomingValueType>
+    AddResult insertBefore(iterator, IncomingValueType&&);
 
     void remove(ValuePeekInType value) { return remove(find(value)); }
     void remove(iterator);
@@ -203,19 +208,9 @@ private:
 template <typename ValueArg> class ListHashSetNodeBase {
     DISALLOW_NEW();
 protected:
-    ListHashSetNodeBase(const ValueArg& value)
-        : m_value(value)
-        , m_prev(nullptr)
-        , m_next(nullptr)
-#if ENABLE(ASSERT)
-        , m_isAllocated(true)
-#endif
-    {
-    }
-
     template <typename U>
-    ListHashSetNodeBase(const U& value)
-        : m_value(value)
+    explicit ListHashSetNodeBase(U&& value)
+        : m_value(std::forward<U>(value))
         , m_prev(nullptr)
         , m_next(nullptr)
 #if ENABLE(ASSERT)
@@ -356,8 +351,8 @@ public:
     typedef ValueArg Value;
 
     template <typename U>
-    ListHashSetNode(U value)
-        : ListHashSetNodeBase<ValueArg>(value) {}
+    ListHashSetNode(U&& value)
+        : ListHashSetNodeBase<ValueArg>(std::forward<U>(value)) {}
 
     void* operator new(size_t, NodeAllocator* allocator)
     {
@@ -664,9 +659,9 @@ struct ListHashSetTranslator {
     STATIC_ONLY(ListHashSetTranslator);
     template <typename T> static unsigned hash(const T& key) { return HashFunctions::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return HashFunctions::equal(a->m_value, b); }
-    template <typename T, typename U, typename V> static void translate(T*& location, const U& key, const V& allocator)
+    template <typename T, typename U, typename V> static void translate(T*& location, U&& key, const V& allocator)
     {
-        location = new (const_cast<V*>(&allocator)) T(key);
+        location = new (const_cast<V*>(&allocator)) T(std::forward<U>(key));
     }
 };
 
@@ -830,30 +825,33 @@ inline bool ListHashSet<T, inlineCapacity, U, V>::contains(ValuePeekInType value
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::add(ValuePassInType value)
+template <typename IncomingValueType>
+typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::add(IncomingValueType&& value)
 {
     createAllocatorIfNeeded();
     // The second argument is a const ref. This is useful for the HashTable
     // because it lets it take lvalues by reference, but for our purposes it's
     // inconvenient, since it constrains us to be const, whereas the allocator
     // actually changes when it does allocations.
-    auto result = m_impl.template add<BaseTranslator>(value, *this->allocator());
+    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->allocator());
     if (result.isNewEntry)
         appendNode(*result.storedValue);
     return AddResult(*result.storedValue, result.isNewEntry);
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::iterator ListHashSet<T, inlineCapacity, U, V>::addReturnIterator(ValuePassInType value)
+template <typename IncomingValueType>
+typename ListHashSet<T, inlineCapacity, U, V>::iterator ListHashSet<T, inlineCapacity, U, V>::addReturnIterator(IncomingValueType&& value)
 {
-    return makeIterator(add(value).m_node);
+    return makeIterator(add(std::forward<IncomingValueType>(value)).m_node);
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::appendOrMoveToLast(ValuePassInType value)
+template <typename IncomingValueType>
+typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::appendOrMoveToLast(IncomingValueType&& value)
 {
     createAllocatorIfNeeded();
-    auto result = m_impl.template add<BaseTranslator>(value, *this->allocator());
+    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->allocator());
     Node* node = *result.storedValue;
     if (!result.isNewEntry)
         unlink(node);
@@ -862,10 +860,11 @@ typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCa
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::prependOrMoveToFirst(ValuePassInType value)
+template <typename IncomingValueType>
+typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::prependOrMoveToFirst(IncomingValueType&& value)
 {
     createAllocatorIfNeeded();
-    auto result = m_impl.template add<BaseTranslator>(value, *this->allocator());
+    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->allocator());
     Node* node = *result.storedValue;
     if (!result.isNewEntry)
         unlink(node);
@@ -874,20 +873,22 @@ typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCa
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(iterator it, ValuePassInType newValue)
+template <typename IncomingValueType>
+typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(iterator it, IncomingValueType&& newValue)
 {
     createAllocatorIfNeeded();
-    auto result = m_impl.template add<BaseTranslator>(newValue, *this->allocator());
+    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(newValue), *this->allocator());
     if (result.isNewEntry)
         insertNodeBefore(it.node(), *result.storedValue);
     return AddResult(*result.storedValue, result.isNewEntry);
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(ValuePeekInType beforeValue, ValuePassInType newValue)
+template <typename IncomingValueType>
+typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(ValuePeekInType beforeValue, IncomingValueType&& newValue)
 {
     createAllocatorIfNeeded();
-    return insertBefore(find(beforeValue), newValue);
+    return insertBefore(find(beforeValue), std::forward<IncomingValueType>(newValue));
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>

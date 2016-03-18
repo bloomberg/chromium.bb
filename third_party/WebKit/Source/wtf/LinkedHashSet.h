@@ -245,24 +245,30 @@ public:
 
     // The return value of add is a pair of a pointer to the stored value,
     // and a bool that is true if an new entry was added.
-    AddResult add(ValuePeekInType);
+    template <typename IncomingValueType>
+    AddResult add(IncomingValueType&&);
 
     // Same as add() except that the return value is an
     // iterator. Useful in cases where it's needed to have the
     // same return value as find() and where it's not possible to
     // use a pointer to the storedValue.
-    iterator addReturnIterator(ValuePeekInType);
+    template <typename IncomingValueType>
+    iterator addReturnIterator(IncomingValueType&&);
 
     // Add the value to the end of the collection. If the value was already in
     // the list, it is moved to the end.
-    AddResult appendOrMoveToLast(ValuePeekInType);
+    template <typename IncomingValueType>
+    AddResult appendOrMoveToLast(IncomingValueType&&);
 
     // Add the value to the beginning of the collection. If the value was already in
     // the list, it is moved to the beginning.
-    AddResult prependOrMoveToFirst(ValuePeekInType);
+    template <typename IncomingValueType>
+    AddResult prependOrMoveToFirst(IncomingValueType&&);
 
-    AddResult insertBefore(ValuePeekInType beforeValue, ValuePeekInType newValue);
-    AddResult insertBefore(iterator it, ValuePeekInType newValue) { return m_impl.template add<NodeHashFunctions>(newValue, it.node()); }
+    template <typename IncomingValueType>
+    AddResult insertBefore(ValuePeekInType beforeValue, IncomingValueType&& newValue);
+    template <typename IncomingValueType>
+    AddResult insertBefore(iterator it, IncomingValueType&& newValue) { return m_impl.template add<NodeHashFunctions>(std::forward<IncomingValueType>(newValue), it.node()); }
 
     void remove(ValuePeekInType);
     void remove(iterator);
@@ -303,10 +309,11 @@ struct LinkedHashSetTranslator {
     static unsigned hash(const ValuePeekInType& key) { return HashFunctions::hash(key); }
     static bool equal(const Node& a, const ValuePeekInType& b) { return HashFunctions::equal(a.m_value, b); }
     static bool equal(const Node& a, const Node& b) { return HashFunctions::equal(a.m_value, b.m_value); }
-    static void translate(Node& location, ValuePeekInType key, NodeBase* anchor)
+    template <typename IncomingValueType>
+    static void translate(Node& location, IncomingValueType&& key, NodeBase* anchor)
     {
         anchor->insertBefore(location);
-        location.m_value = key;
+        location.m_value = std::forward<IncomingValueType>(key);
     }
 
     // Empty (or deleted) slots have the m_next pointer set to null, but we
@@ -654,22 +661,25 @@ inline bool LinkedHashSet<T, U, V, W>::contains(ValuePeekInType value) const
 }
 
 template<typename Value, typename HashFunctions, typename Traits, typename Allocator>
-typename LinkedHashSet<Value, HashFunctions, Traits, Allocator>::AddResult LinkedHashSet<Value, HashFunctions, Traits, Allocator>::add(ValuePeekInType value)
+template<typename IncomingValueType>
+typename LinkedHashSet<Value, HashFunctions, Traits, Allocator>::AddResult LinkedHashSet<Value, HashFunctions, Traits, Allocator>::add(IncomingValueType&& value)
 {
-    return m_impl.template add<NodeHashFunctions>(value, &m_anchor);
+    return m_impl.template add<NodeHashFunctions>(std::forward<IncomingValueType>(value), &m_anchor);
 }
 
 template<typename T, typename U, typename V, typename W>
-typename LinkedHashSet<T, U, V, W>::iterator LinkedHashSet<T, U, V, W>::addReturnIterator(ValuePeekInType value)
+template<typename IncomingValueType>
+typename LinkedHashSet<T, U, V, W>::iterator LinkedHashSet<T, U, V, W>::addReturnIterator(IncomingValueType&& value)
 {
-    typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(value, &m_anchor);
+    typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(std::forward<IncomingValueType>(value), &m_anchor);
     return makeIterator(result.storedValue);
 }
 
 template<typename T, typename U, typename V, typename W>
-typename LinkedHashSet<T, U, V, W>::AddResult LinkedHashSet<T, U, V, W>::appendOrMoveToLast(ValuePeekInType value)
+template<typename IncomingValueType>
+typename LinkedHashSet<T, U, V, W>::AddResult LinkedHashSet<T, U, V, W>::appendOrMoveToLast(IncomingValueType&& value)
 {
-    typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(value, &m_anchor);
+    typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(std::forward<IncomingValueType>(value), &m_anchor);
     Node* node = result.storedValue;
     if (!result.isNewEntry) {
         node->unlink();
@@ -679,9 +689,10 @@ typename LinkedHashSet<T, U, V, W>::AddResult LinkedHashSet<T, U, V, W>::appendO
 }
 
 template<typename T, typename U, typename V, typename W>
-typename LinkedHashSet<T, U, V, W>::AddResult LinkedHashSet<T, U, V, W>::prependOrMoveToFirst(ValuePeekInType value)
+template<typename IncomingValueType>
+typename LinkedHashSet<T, U, V, W>::AddResult LinkedHashSet<T, U, V, W>::prependOrMoveToFirst(IncomingValueType&& value)
 {
-    typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(value, m_anchor.m_next);
+    typename ImplType::AddResult result = m_impl.template add<NodeHashFunctions>(std::forward<IncomingValueType>(value), m_anchor.m_next);
     Node* node = result.storedValue;
     if (!result.isNewEntry) {
         node->unlink();
@@ -691,9 +702,10 @@ typename LinkedHashSet<T, U, V, W>::AddResult LinkedHashSet<T, U, V, W>::prepend
 }
 
 template<typename T, typename U, typename V, typename W>
-typename LinkedHashSet<T, U, V, W>::AddResult LinkedHashSet<T, U, V, W>::insertBefore(ValuePeekInType beforeValue, ValuePeekInType newValue)
+template<typename IncomingValueType>
+typename LinkedHashSet<T, U, V, W>::AddResult LinkedHashSet<T, U, V, W>::insertBefore(ValuePeekInType beforeValue, IncomingValueType&& newValue)
 {
-    return insertBefore(find(beforeValue), newValue);
+    return insertBefore(find(beforeValue), std::forward<IncomingValueType>(newValue));
 }
 
 template<typename T, typename U, typename V, typename W>
