@@ -102,6 +102,12 @@ bool SaveCardBubbleViews::Cancel() {
   return true;
 }
 
+bool SaveCardBubbleViews::Close() {
+  // Override to prevent Cancel from being called when the bubble is hidden.
+  // Return true to indicate that the bubble can be closed.
+  return true;
+}
+
 int SaveCardBubbleViews::GetDialogButtons() const {
   // This is the default for BubbleDialogDelegateView, but it's not the default
   // for LocationBarBubbleDelegateView.

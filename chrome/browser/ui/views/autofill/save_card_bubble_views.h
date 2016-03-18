@@ -46,6 +46,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   views::View* CreateFootnoteView() override;
   bool Accept() override;
   bool Cancel() override;
+  bool Close() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool ShouldDefaultButtonBeBlue() const override;
