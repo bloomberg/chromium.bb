@@ -255,6 +255,11 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_TAB_SWITCHER_IN_DOCUMENT_MODE =
             "enable-tab-switcher-in-document-mode";
 
+    /**
+     * Set the partner-defined homepage URL, for testing.
+     */
+    public static final String PARTNER_HOMEPAGE_FOR_TESTING = "partner-homepage-for-testing";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }
