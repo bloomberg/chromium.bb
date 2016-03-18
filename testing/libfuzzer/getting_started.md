@@ -96,7 +96,7 @@ INFO: PreferSmall: 1
 The `... NEW ...` line appears when libfuzzer finds new and interesting input. The 
 efficient fuzzer should be able to finds lots of them rather quickly.
 
-The '... pulse ...' line will appear periodically to show the current status.
+The `... pulse ...` line will appear periodically to show the current status.
 
 
 ## Submitting Fuzzer to ClusterFuzz
@@ -115,5 +115,5 @@ performance and for optimization hints.
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
 [url_parser_fuzzer.cc]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzers/url_parse_fuzzer.cc
-[ClusterFuzz status]: ./clusterfuzz.md#Fuzzer-Status
-[Efficient Fuzzer Guide]: ./efficient_fuzzer.md
+[ClusterFuzz status]: clusterfuzz.md#Fuzzer-Status
+[Efficient Fuzzer Guide]: efficient_fuzzer.md

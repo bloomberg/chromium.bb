@@ -27,6 +27,6 @@ libfuzzer.
 
 [LibFuzzer]: http://llvm.org/docs/LibFuzzer.html
 [crbug.com/539572]: https://bugs.chromium.org/p/chromium/issues/detail?id=539572
-[Getting Started Guide]: ./getting_started.md
-[Efficient Fuzzer Guide]: ./efficient_fuzzer.md
+[Getting Started Guide]: getting_started.md
+[Efficient Fuzzer Guide]: efficient_fuzzer.md
 
