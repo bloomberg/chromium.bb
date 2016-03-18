@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "ui/gfx/color_palette.h"
 
 class AppMenuButtonIconPainterDelegateMac :
     public AppMenuIconPainter::Delegate {
@@ -53,25 +54,18 @@ class AppMenuButtonIconPainterDelegateMac :
 }
 
 - (SkColor)vectorIconColor:(BOOL)themeIsDark {
-  const SkColor normalColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
-  const SkColor normalIncognitoColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
-  const SkColor severityMedColor = SkColorSetRGB(0xF0, 0x93, 0x00);
-  const SkColor severityMedIncognitoColor = SkColorSetRGB(0xF7, 0xCB, 0x4D);
-  const SkColor severityHighColor = SkColorSetRGB(0xC5, 0x39, 0x29);
-  const SkColor severityHighIncognitoColor = SkColorSetRGB(0xE6, 0x73, 0x7C);
-
   switch (severity_) {
     case AppMenuIconPainter::Severity::SEVERITY_NONE:
     case AppMenuIconPainter::Severity::SEVERITY_LOW:
-      return themeIsDark ? normalIncognitoColor : normalColor;
+      return themeIsDark ? SK_ColorWHITE : gfx::kChromeIconGrey;
       break;
 
     case AppMenuIconPainter::Severity::SEVERITY_MEDIUM:
-      return themeIsDark ? severityMedIncognitoColor : severityMedColor;
+      return themeIsDark ? gfx::kGoogleYellow300 : gfx::kGoogleYellow700;
       break;
 
     case AppMenuIconPainter::Severity::SEVERITY_HIGH:
-      return themeIsDark ? severityHighIncognitoColor : severityHighColor;
+      return themeIsDark ? gfx::kGoogleRed300 : gfx::kGoogleRed700;
       break;
 
     default:
