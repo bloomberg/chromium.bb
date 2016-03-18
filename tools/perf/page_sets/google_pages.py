@@ -59,6 +59,7 @@ class GoogleDocPage(GooglePages):
         'document.getElementsByClassName("kix-appview-editor").length')
 
 
+INTERACTION_NAME = 'Interaction.AppLoad'
 class AdwordCampaignDesktopPage(page_module.Page):
   def __init__(self, page_set):
     super(AdwordCampaignDesktopPage, self).__init__(
@@ -66,6 +67,8 @@ class AdwordCampaignDesktopPage(page_module.Page):
         page_set=page_set, name='AdwordsCampaign',
         credentials_path='data/credentials.json',
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
+    self.script_to_evaluate_on_commit = (
+        'console.time("%s");' % INTERACTION_NAME)
 
   def RunNavigateSteps(self, action_runner):
     google_login.LoginGoogleAccount(action_runner, 'google3',
@@ -74,3 +77,4 @@ class AdwordCampaignDesktopPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     action_runner.WaitForElement(text='Welcome to AdWords!')
+    action_runner.ExecuteJavaScript('console.timeEnd("%s");' % INTERACTION_NAME)

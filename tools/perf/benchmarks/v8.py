@@ -202,14 +202,14 @@ class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
     return 'v8.mobile_infinite_scroll'
 
 
-# Currently, this does not output any metrics
-# TODO(cbruni): adjust the metrics so that this output v8 metrics.
-@benchmark.Disabled('all')
 class V8Adword(perf_benchmark.PerfBenchmark):
   """Measures V8 Execution metrics on the Adword page."""
 
   def CreateTimelineBasedMeasurementOptions(self):
-    category_filter = tracing_category_filter.TracingCategoryFilter('v8')
+
+    category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
+    category_filter.AddIncludedCategory('v8')
+    category_filter.AddIncludedCategory('blink.console')
     options = timeline_based_measurement.Options(category_filter)
     options.SetLegacyTimelineBasedMetrics([v8_execution.V8ExecutionMetric()])
     return options
@@ -219,7 +219,6 @@ class V8Adword(perf_benchmark.PerfBenchmark):
 
     Can be overridden by subclasses.
     """
-    del options  # unused
     story_set = story.StorySet(
         archive_data_file=os.path.join(
             path_util.GetPerfStorySetsDir(), 'data', 'v8_pages.json'),
@@ -229,4 +228,8 @@ class V8Adword(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'v8.adwords'
+    return 'v8.google'
+
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
