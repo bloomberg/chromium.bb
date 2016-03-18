@@ -139,6 +139,9 @@ void SVGTextPathElement::buildPendingResource()
         // that leads to relayout/repainting now informs us, so we can react to it.
         addReferenceTo(toSVGElement((target)));
     }
+
+    if (LayoutObject* layoutObject = this->layoutObject())
+        markForLayoutAndParentResourceInvalidation(layoutObject);
 }
 
 Node::InsertionNotificationRequest SVGTextPathElement::insertedInto(ContainerNode* rootParent)
