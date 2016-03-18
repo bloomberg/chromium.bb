@@ -50,13 +50,13 @@ static String stringForPosition(const NamedGridAreaMap& gridAreaMap, size_t row,
 
     for (const auto& item : gridAreaMap) {
         const GridArea& area = item.value;
-        if (row >= area.rows.resolvedInitialPosition() && row < area.rows.resolvedFinalPosition())
+        if (row >= area.rows.startLine() && row < area.rows.endLine())
             candidates.append(item.key);
     }
 
     for (const auto& item : gridAreaMap) {
         const GridArea& area = item.value;
-        if (column >= area.columns.resolvedInitialPosition() && column < area.columns.resolvedFinalPosition() && candidates.contains(item.key))
+        if (column >= area.columns.startLine() && column < area.columns.endLine() && candidates.contains(item.key))
             return item.key;
     }
 
