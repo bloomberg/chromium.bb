@@ -4359,13 +4359,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   // Set the origin of the frame.  This will be replicated to the corresponding
   // RenderFrameProxies in other processes.
-  // TODO(alexmos): Origins for URLs with non-standard schemes are excluded due
-  // to https://crbug.com/439608 and will be replicated as unique origins.
-  std::string scheme = frame->document().getSecurityOrigin().protocol().utf8();
-  if (url::IsStandard(scheme.c_str(),
-                      url::Component(0, static_cast<int>(scheme.length())))) {
-    params.origin = frame->document().getSecurityOrigin();
-  }
+  params.origin = frame->document().getSecurityOrigin();
 
   params.should_enforce_strict_mixed_content_checking =
       frame->shouldEnforceStrictMixedContentChecking();
