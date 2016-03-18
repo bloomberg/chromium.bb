@@ -365,9 +365,6 @@ const char kEnableFeatures[] = "enable-features";
 // Enable Web Bluetooth.
 const char kEnableWebBluetooth[] = "enable-web-bluetooth";
 
-// Enables TRACE for GL calls in the renderer.
-const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
-
 // Specify that all compositor resources should be backed by GPU memory buffers.
 const char kEnableGpuMemoryBufferCompositorResources[] =
     "enable-gpu-memory-buffer-compositor-resources";

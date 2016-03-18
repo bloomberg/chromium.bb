@@ -9,4 +9,7 @@ namespace switches {
 // Enable GPU client logging.
 const char kEnableGPUClientLogging[]        = "enable-gpu-client-logging";
 
+// Enables TRACE for GL calls in the renderer.
+const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
+
 }  // namespace switches

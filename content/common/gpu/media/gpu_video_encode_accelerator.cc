@@ -16,7 +16,6 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/gpu/media/media_messages.h"
-#include "content/public/common/content_switches.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"

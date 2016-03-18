@@ -11,6 +11,7 @@
 
 namespace switches {
 
+GLES2_IMPL_EXPORT extern const char kEnableGpuClientTracing[];
 GLES2_IMPL_EXPORT extern const char kEnableGPUClientLogging[];
 
 }  // namespace switches

@@ -49,7 +49,6 @@
 #include "content/common/gpu/media/fake_video_decode_accelerator.h"
 #include "content/common/gpu/media/rendering_helper.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
-#include "content/public/common/content_switches.h"
 #include "media/filters/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -521,9 +520,7 @@ GLRenderingVDAClient::CreateDXVAVDA() {
   scoped_ptr<media::VideoDecodeAccelerator> decoder;
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    const bool enable_accelerated_vpx_decode =
-        cmd_line->HasSwitch(switches::kEnableAcceleratedVpxDecode);
+    const bool enable_accelerated_vpx_decode = false;
     decoder.reset(new DXVAVideoDecodeAccelerator(
         base::Bind(&DoNothingReturnTrue),
         rendering_helper_->GetGLContext().get(),
