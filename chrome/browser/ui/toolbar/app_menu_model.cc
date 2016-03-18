@@ -812,10 +812,8 @@ void AppMenuModel::Build() {
 
   CreateZoomMenu();
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-  if (!browser()->profile()->IsOffTheRecord() &&
-      media_router::MediaRouterEnabled(browser()->profile())) {
+  if (media_router::MediaRouterEnabled(browser()->profile()))
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
-  }
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

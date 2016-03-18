@@ -901,13 +901,10 @@ bool CanBasicPrint(Browser* browser) {
 #endif  // ENABLE_BASIC_PRINTING
 
 bool CanRouteMedia(Browser* browser) {
-  Profile* profile = browser->profile();
-  if (profile->IsOffTheRecord() || !media_router::MediaRouterEnabled(profile))
-    return false;
-
   // Do not allow user to open Media Router dialog when there is already an
   // active modal dialog. This avoids overlapping dialogs.
-  return !IsShowingWebContentsModalDialog(browser);
+  return media_router::MediaRouterEnabled(browser->profile()) &&
+         !IsShowingWebContentsModalDialog(browser);
 }
 
 void RouteMedia(Browser* browser) {

@@ -2849,8 +2849,7 @@ content::PresentationServiceDelegate*
 ChromeContentBrowserClient::GetPresentationServiceDelegate(
       content::WebContents* web_contents) {
 #if defined(ENABLE_MEDIA_ROUTER)
-  content::BrowserContext* context = web_contents->GetBrowserContext();
-  if (!context->IsOffTheRecord() && media_router::MediaRouterEnabled(context)) {
+  if (media_router::MediaRouterEnabled(web_contents->GetBrowserContext())) {
     return media_router::PresentationServiceDelegateImpl::
         GetOrCreateForWebContents(web_contents);
   }

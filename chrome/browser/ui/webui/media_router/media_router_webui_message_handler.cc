@@ -809,10 +809,11 @@ AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {
 #if defined(GOOGLE_CHROME_BUILD)
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  return signin_manager->GetAuthenticatedAccountInfo();
-#else
-  return AccountInfo();
+  if (signin_manager)
+    return signin_manager->GetAuthenticatedAccountInfo();
 #endif  // defined(GOOGLE_CHROME_BUILD)
+
+  return AccountInfo();
 }
 
 void MediaRouterWebUIMessageHandler::SetWebUIForTest(content::WebUI* web_ui) {

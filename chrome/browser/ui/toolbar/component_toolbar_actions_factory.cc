@@ -87,7 +87,7 @@ void ComponentToolbarActionsFactory::RegisterComponentMigrations(
 void ComponentToolbarActionsFactory::HandleComponentMigrations(
     extensions::ComponentMigrationHelper* helper,
     Profile* profile) const {
-  if (media_router::MediaRouterEnabled(profile) && !profile->IsOffTheRecord()) {
+  if (media_router::MediaRouterEnabled(profile)) {
     helper->OnFeatureEnabled(kMediaRouterActionId);
   } else {
     helper->OnFeatureDisabled(kMediaRouterActionId);

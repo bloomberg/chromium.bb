@@ -1117,8 +1117,7 @@ void RenderViewContextMenu::AppendPrintItem() {
 }
 
 void RenderViewContextMenu::AppendMediaRouterItem() {
-  if (!browser_context_->IsOffTheRecord() &&
-      media_router::MediaRouterEnabled(browser_context_)) {
+  if (media_router::MediaRouterEnabled(browser_context_)) {
     menu_model_.AddItemWithStringId(IDC_ROUTE_MEDIA,
                                     IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   }
@@ -1604,7 +1603,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
       Browser* browser =
           chrome::FindBrowserWithWebContents(source_web_contents_);
-      if (!browser || browser->profile()->IsOffTheRecord())
+      if (!browser)
         return false;
 
       // Disable the command if there is an active modal dialog.
@@ -1936,7 +1935,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
       Browser* browser =
           chrome::FindBrowserWithWebContents(source_web_contents_);
-      DCHECK(browser && !browser->profile()->IsOffTheRecord());
+      DCHECK(browser);
 
       media_router::MediaRouterDialogController* dialog_controller =
           media_router::MediaRouterDialogController::GetOrCreateForWebContents(
