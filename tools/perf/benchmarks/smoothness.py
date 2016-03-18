@@ -1,6 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import multiprocessing
 
 from core import perf_benchmark
 
@@ -138,6 +139,12 @@ class SmoothnessToughAnimationCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_animation_cases'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/595737
+    # This test is flaky on low-end windows machine.
+    return (possible_browser.platform.GetOSName() == 'win' and
+            multiprocessing.cpu_count() <= 2)
 
 
 @benchmark.Enabled('android')
