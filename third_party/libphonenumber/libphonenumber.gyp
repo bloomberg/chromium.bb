@@ -128,9 +128,11 @@
       'dist/cpp/test/phonenumbers/phonenumbermatcher_test.cc',
       'dist/cpp/test/phonenumbers/phonenumberutil_test.cc',
       'dist/cpp/test/phonenumbers/regexp_adapter_test.cc',
+      'dist/cpp/test/phonenumbers/regexp_cache_test.cc',
       'dist/cpp/test/phonenumbers/stringutil_test.cc',
       'dist/cpp/test/phonenumbers/test_util.cc',
       'dist/cpp/test/phonenumbers/unicodestring_test.cc',
+      'dist/cpp/test/phonenumbers/utf/unicodetext_test.cc',
     ],
     'dependencies': [
       '../icu/icu.gyp:icui18n',
@@ -160,5 +162,25 @@
         ],
       }],
     ],
-  }]
+  }],
+  'conditions': [
+      ['test_isolation_mode != "noop"', {
+        'targets': [
+          {
+            'target_name': 'libphonenumber_unittests_run',
+            'type': 'none',
+            'dependencies': [
+              'libphonenumber_unittests',
+            ],
+            'includes': [
+              '../../build/isolate.gypi',
+            ],
+            'sources': [
+              'libphonenumber_unittests.isolate',
+            ],
+          },
+        ],
+      }, {
+      }],
+    ],
 }
