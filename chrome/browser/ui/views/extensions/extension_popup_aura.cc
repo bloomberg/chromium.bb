@@ -16,7 +16,7 @@ ExtensionPopup* ExtensionPopup::Create(extensions::ExtensionViewHost* host,
                                        views::BubbleBorder::Arrow arrow,
                                        ShowAction show_action) {
   auto popup = new ExtensionPopupAura(host, anchor_view, arrow, show_action);
-  views::Widget* widget = views::BubbleDelegateView::CreateBubble(popup);
+  views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(popup);
   gfx::NativeView native_view = widget->GetNativeView();
 
   wm::SetWindowVisibilityAnimationType(

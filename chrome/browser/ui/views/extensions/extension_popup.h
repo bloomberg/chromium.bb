@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "url/gurl.h"
 
 
@@ -30,7 +30,7 @@ class ExtensionViewHost;
 }
 
 // The bubble used for hosting a browser-action popup provided by an extension.
-class ExtensionPopup : public views::BubbleDelegateView,
+class ExtensionPopup : public views::BubbleDialogDelegateView,
                        public ExtensionViewViews::Container,
                        public content::NotificationObserver,
                        public TabStripModelObserver {
@@ -56,8 +56,10 @@ class ExtensionPopup : public views::BubbleDelegateView,
       views::BubbleBorder::Arrow arrow,
       ShowAction show_action);
 
-
   extensions::ExtensionViewHost* host() const { return host_.get(); }
+
+  // views::BubbleDialogDelegateView overrides.
+  int GetDialogButtons() const override;
 
   // content::NotificationObserver overrides.
   void Observe(int type,
