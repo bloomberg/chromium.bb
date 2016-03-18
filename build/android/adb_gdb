@@ -115,6 +115,9 @@ for opt; do
     --adb=*)
       ADB=$optarg
       ;;
+    --device=*)
+      export ANDROID_SERIAL=$optarg
+      ;;
     --activity=*)
       ACTIVITY=$optarg
       ;;
@@ -274,7 +277,7 @@ the path to the host target-specific cross-toolchain.
 
 You will also need the 'adb' tool in your path. Otherwise, use the --adb
 option. The script will complain if there is more than one device connected
-and ANDROID_SERIAL is not defined.
+and a device is not specified with either --device or ANDROID_SERIAL).
 
 The first time you use it on a device, the script will pull many system
 libraries required by the process into a temporary directory. This
@@ -321,6 +324,7 @@ Valid options:
   --gdb=<file>          Specify host gdb client binary.
   --target-arch=<name>  Specify NDK target arch.
   --adb=<file>          Specify host ADB binary.
+  --device=<file>       ADB device serial to use (-s flag).
   --port=<port>         Specify the tcp port to use.
 
   --su-prefix=<prefix>  Prepend <prefix> to 'adb shell' commands that are
@@ -390,7 +394,7 @@ fi
 # If there are more than one device connected, and ANDROID_SERIAL is not
 # defined, print an error message.
 NUM_DEVICES_PLUS2=$($ADB devices 2>/dev/null | wc -l)
-if [ "$NUM_DEVICES_PLUS2" -lt 3 -a -z "$ANDROID_SERIAL" ]; then
+if [ "$NUM_DEVICES_PLUS2" -gt 3 -a -z "$ANDROID_SERIAL" ]; then
   echo "ERROR: There is more than one Android device connected to ADB."
   echo "Please define ANDROID_SERIAL to specify which one to use."
   exit 1
