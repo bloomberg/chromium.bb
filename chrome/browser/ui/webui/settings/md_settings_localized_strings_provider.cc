@@ -256,6 +256,8 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CERTIFICATE_MANAGER_PASSWORD},
       {"certificateManagerConfirmPassword",
        IDS_SETTINGS_CERTIFICATE_MANAGER_CONFIRM_PASSWORD},
+      {"certificateImportErrorFormat",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_ERROR_FORMAT},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

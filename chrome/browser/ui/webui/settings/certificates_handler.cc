@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/grit/settings_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/components_strings.h"
@@ -84,11 +84,9 @@ std::string OrgNameToId(const std::string& org) {
 
 struct DictionaryIdComparator {
   explicit DictionaryIdComparator(icu::Collator* collator)
-      : collator_(collator) {
-  }
+      : collator_(collator) {}
 
-  bool operator()(const base::Value* a,
-                  const base::Value* b) const {
+  bool operator()(const base::Value* a, const base::Value* b) const {
     DCHECK(a->GetType() == base::Value::TYPE_DICTIONARY);
     DCHECK(b->GetType() == base::Value::TYPE_DICTIONARY);
     const base::DictionaryValue* a_dict =
@@ -112,12 +110,14 @@ std::string NetErrorToString(int net_error) {
   switch (net_error) {
     // TODO(mattm): handle more cases.
     case net::ERR_IMPORT_CA_CERT_NOT_CA:
-      return l10n_util::GetStringUTF8(IDS_CERT_MANAGER_ERROR_NOT_CA);
+      return l10n_util::GetStringUTF8(
+          IDS_SETTINGS_CERTIFICATE_MANAGER_ERROR_NOT_CA);
     case net::ERR_IMPORT_CERT_ALREADY_EXISTS:
       return l10n_util::GetStringUTF8(
-          IDS_CERT_MANAGER_ERROR_CERT_ALREADY_EXISTS);
+          IDS_SETTINGS_CERTIFICATE_MANAGER_ERROR_CERT_ALREADY_EXISTS);
     default:
-      return l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR);
+      return l10n_util::GetStringUTF8(
+          IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR);
   }
 }
 
@@ -131,9 +131,8 @@ struct CertEquals {
 };
 
 // Determine whether a certificate was stored with web trust by a policy.
-bool IsPolicyInstalledWithWebTrust(
-    const net::CertificateList& web_trust_certs,
-    net::X509Certificate* cert) {
+bool IsPolicyInstalledWithWebTrust(const net::CertificateList& web_trust_certs,
+                                   net::X509Certificate* cert) {
   return std::find_if(web_trust_certs.begin(), web_trust_certs.end(),
                       CertEquals(cert)) != web_trust_certs.end();
 }
@@ -205,7 +204,7 @@ class CertIdMap {
   typedef std::map<net::X509Certificate*, int32_t> CertMap;
 
   // Creates an ID for cert and looks up the cert for an ID.
-  IDMap<net::X509Certificate>id_map_;
+  IDMap<net::X509Certificate> id_map_;
 
   // Finds the ID for a cert.
   CertMap cert_map_;
@@ -277,9 +276,7 @@ class FileAccessProvider
 
   // Reads file at |path|. |saved_errno| is 0 on success or errno on failure.
   // When success, |data| has file content.
-  void DoRead(const base::FilePath& path,
-              int* saved_errno,
-              std::string* data);
+  void DoRead(const base::FilePath& path, int* saved_errno, std::string* data);
   // Writes data to file at |path|. |saved_errno| is 0 on success or errno on
   // failure. When success, |bytes_written| has number of bytes written.
   void DoWrite(const base::FilePath& path,
@@ -316,15 +313,10 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
   // Post task to file thread to write file.
   return tracker->PostTaskAndReply(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
-      FROM_HERE,
-      base::Bind(&FileAccessProvider::DoWrite,
-                 this,
-                 path,
-                 data,
-                 saved_errno,
-                 bytes_written),
-      base::Bind(
-          callback, base::Owned(saved_errno), base::Owned(bytes_written)));
+      FROM_HERE, base::Bind(&FileAccessProvider::DoWrite, this, path, data,
+                            saved_errno, bytes_written),
+      base::Bind(callback, base::Owned(saved_errno),
+                 base::Owned(bytes_written)));
 }
 
 void FileAccessProvider::DoRead(const base::FilePath& path,
@@ -345,8 +337,7 @@ void FileAccessProvider::DoWrite(const base::FilePath& path,
 ///////////////////////////////////////////////////////////////////////////////
 //  CertificatesHandler
 
-CertificatesHandler::CertificatesHandler(
-    bool show_certs_in_modal_dialog)
+CertificatesHandler::CertificatesHandler(bool show_certs_in_modal_dialog)
     : show_certs_in_modal_dialog_(show_certs_in_modal_dialog),
       requested_certificate_manager_model_(false),
       use_hardware_backed_(false),
@@ -354,14 +345,12 @@ CertificatesHandler::CertificatesHandler(
       cert_id_map_(new CertIdMap),
       weak_ptr_factory_(this) {}
 
-CertificatesHandler::~CertificatesHandler() {
-}
+CertificatesHandler::~CertificatesHandler() {}
 
 void CertificatesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "viewCertificate",
-      base::Bind(&CertificatesHandler::HandleViewCertificate,
-                 base::Unretained(this)));
+      "viewCertificate", base::Bind(&CertificatesHandler::HandleViewCertificate,
+                                    base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "getCaCertificateTrust",
@@ -397,8 +386,7 @@ void CertificatesHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       "importCaCertificate",
-      base::Bind(&CertificatesHandler::HandleImportCA,
-                 base::Unretained(this)));
+      base::Bind(&CertificatesHandler::HandleImportCA, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "importCaCertificateTrustSelected",
       base::Bind(&CertificatesHandler::HandleImportCATrustSelected,
@@ -441,8 +429,8 @@ void CertificatesHandler::CertificatesRefreshed() {
 }
 
 void CertificatesHandler::FileSelected(const base::FilePath& path,
-                                             int index,
-                                             void* params) {
+                                       int index,
+                                       void* params) {
   switch (reinterpret_cast<intptr_t>(params)) {
     case EXPORT_PERSONAL_FILE_SELECTED:
       ExportPersonalFileSelected(path);
@@ -482,8 +470,7 @@ void CertificatesHandler::HandleViewCertificate(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
   if (show_certs_in_modal_dialog_) {
     ShowCertificateViewerModalDialog(web_ui()->GetWebContents(),
-                                     GetParentWindow(),
-                                     cert);
+                                     GetParentWindow(), cert);
     return;
   }
 #endif
@@ -537,16 +524,17 @@ void CertificatesHandler::HandleEditCATrust(const base::ListValue* args) {
   CHECK(args->GetBoolean(4, &trust_obj_sign));
 
   bool result = certificate_manager_model_->SetCertTrust(
-      cert,
-      net::CA_CERT,
+      cert, net::CA_CERT,
       trust_ssl * net::NSSCertDatabase::TRUSTED_SSL +
           trust_email * net::NSSCertDatabase::TRUSTED_EMAIL +
           trust_obj_sign * net::NSSCertDatabase::TRUSTED_OBJ_SIGN);
   if (!result) {
     // TODO(mattm): better error messages?
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SET_TRUST_ERROR_TITLE),
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_SET_TRUST_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR));
   } else {
     ResolveCallback(*base::Value::CreateNullValue());
   }
@@ -566,7 +554,7 @@ void CertificatesHandler::HandleExportPersonal(const base::ListValue* args) {
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("p12"));
   file_type_info.extension_description_overrides.push_back(
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PKCS12_FILES));
+      l10n_util::GetStringUTF16(IDS_SETTINGS_CERTIFICATE_MANAGER_PKCS12_FILES));
   file_type_info.include_all_files = true;
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
@@ -596,8 +584,7 @@ void CertificatesHandler::HandleExportPersonalPasswordSelected(
 
   // TODO(mattm): do something smarter about non-extractable keys
   chrome::UnlockCertSlotIfNecessary(
-      selected_cert_list_[0].get(),
-      chrome::kCryptoModulePasswordCertExport,
+      selected_cert_list_[0].get(), chrome::kCryptoModulePasswordCertExport,
       net::HostPortPair(),  // unused.
       GetParentWindow(),
       base::Bind(&CertificatesHandler::ExportPersonalSlotsUnlocked,
@@ -607,33 +594,33 @@ void CertificatesHandler::HandleExportPersonalPasswordSelected(
 void CertificatesHandler::ExportPersonalSlotsUnlocked() {
   std::string output;
   int num_exported = certificate_manager_model_->cert_db()->ExportToPKCS12(
-      selected_cert_list_,
-      password_,
-      &output);
+      selected_cert_list_, password_, &output);
   if (!num_exported) {
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR));
     ImportExportCleanup();
     return;
   }
   file_access_provider_->StartWrite(
-      file_path_,
-      output,
+      file_path_, output,
       base::Bind(&CertificatesHandler::ExportPersonalFileWritten,
                  base::Unretained(this)),
       &tracker_);
 }
 
-void CertificatesHandler::ExportPersonalFileWritten(
-    const int* write_errno, const int* bytes_written) {
+void CertificatesHandler::ExportPersonalFileWritten(const int* write_errno,
+                                                    const int* bytes_written) {
   ImportExportCleanup();
   if (*write_errno) {
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
-        l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_WRITE_ERROR_FORMAT,
-                                  UTF8ToUTF16(
-                                      base::safe_strerror(*write_errno))));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
+        l10n_util::GetStringFUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_WRITE_ERROR_FORMAT,
+            UTF8ToUTF16(base::safe_strerror(*write_errno))));
   } else {
     ResolveCallback(*base::Value::CreateNullValue());
   }
@@ -650,7 +637,8 @@ void CertificatesHandler::HandleImportPersonal(const base::ListValue* args) {
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pfx"));
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("crt"));
   file_type_info.extension_description_overrides.push_back(
-      l10n_util::GetStringUTF16(IDS_CERT_USAGE_SSL_CLIENT));
+      l10n_util::GetStringUTF16(
+          IDS_SETTINGS_CERTIFICATE_MANAGER_USAGE_SSL_CLIENT));
   file_type_info.include_all_files = true;
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
@@ -669,15 +657,16 @@ void CertificatesHandler::ImportPersonalFileSelected(
       &tracker_);
 }
 
-void CertificatesHandler::ImportPersonalFileRead(
-    const int* read_errno, const std::string* data) {
+void CertificatesHandler::ImportPersonalFileRead(const int* read_errno,
+                                                 const std::string* data) {
   if (*read_errno) {
     ImportExportCleanup();
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ERROR_TITLE),
-        l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(
-                                      base::safe_strerror(*read_errno))));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringFUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_READ_ERROR_FORMAT,
+            UTF8ToUTF16(base::safe_strerror(*read_errno))));
     return;
   }
 
@@ -700,17 +689,18 @@ void CertificatesHandler::ImportPersonalFileRead(
       ResolveCallback(base::FundamentalValue(false));
       return;
     case net::ERR_NO_PRIVATE_KEY_FOR_CERT:
-      string_id = IDS_CERT_MANAGER_IMPORT_MISSING_KEY;
+      string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_MISSING_KEY;
       break;
     case net::ERR_CERT_INVALID:
-      string_id = IDS_CERT_MANAGER_IMPORT_INVALID_FILE;
+      string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_INVALID_FILE;
       break;
     default:
-      string_id = IDS_CERT_MANAGER_UNKNOWN_ERROR;
+      string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR;
       break;
   }
   RejectCallbackWithError(
-      l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ERROR_TITLE),
+      l10n_util::GetStringUTF8(
+          IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_ERROR_TITLE),
       l10n_util::GetStringUTF8(string_id));
 }
 
@@ -729,8 +719,7 @@ void CertificatesHandler::HandleImportPersonalPasswordSelected(
   net::CryptoModuleList modules;
   modules.push_back(module_);
   chrome::UnlockSlotsIfNecessary(
-      modules,
-      chrome::kCryptoModulePasswordCertImport,
+      modules, chrome::kCryptoModulePasswordCertImport,
       net::HostPortPair(),  // unused.
       GetParentWindow(),
       base::Bind(&CertificatesHandler::ImportPersonalSlotUnlocked,
@@ -754,23 +743,24 @@ void CertificatesHandler::ImportPersonalSlotUnlocked() {
     case net::ERR_PKCS12_IMPORT_BAD_PASSWORD:
       // TODO(mattm): if the error was a bad password, we should reshow the
       // password dialog after the user dismisses the error dialog.
-      string_id = IDS_CERT_MANAGER_BAD_PASSWORD;
+      string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_BAD_PASSWORD;
       break;
     case net::ERR_PKCS12_IMPORT_INVALID_MAC:
-      string_id = IDS_CERT_MANAGER_IMPORT_INVALID_MAC;
+      string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_INVALID_MAC;
       break;
     case net::ERR_PKCS12_IMPORT_INVALID_FILE:
-      string_id = IDS_CERT_MANAGER_IMPORT_INVALID_FILE;
+      string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_INVALID_FILE;
       break;
     case net::ERR_PKCS12_IMPORT_UNSUPPORTED:
-      string_id = IDS_CERT_MANAGER_IMPORT_UNSUPPORTED;
+      string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_UNSUPPORTED;
       break;
     default:
-      string_id = IDS_CERT_MANAGER_UNKNOWN_ERROR;
+      string_id = IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR;
       break;
   }
   RejectCallbackWithError(
-      l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ERROR_TITLE),
+      l10n_util::GetStringUTF8(
+          IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_ERROR_TITLE),
       l10n_util::GetStringUTF8(string_id));
 }
 
@@ -802,15 +792,12 @@ void CertificatesHandler::HandleImportServer(const base::ListValue* args) {
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   ShowCertSelectFileDialog(
-      select_file_dialog_.get(),
-      ui::SelectFileDialog::SELECT_OPEN_FILE,
-      base::FilePath(),
-      GetParentWindow(),
+      select_file_dialog_.get(), ui::SelectFileDialog::SELECT_OPEN_FILE,
+      base::FilePath(), GetParentWindow(),
       reinterpret_cast<void*>(IMPORT_SERVER_FILE_SELECTED));
 }
 
-void CertificatesHandler::ImportServerFileSelected(
-    const base::FilePath& path) {
+void CertificatesHandler::ImportServerFileSelected(const base::FilePath& path) {
   file_access_provider_->StartRead(
       path, base::Bind(&CertificatesHandler::ImportServerFileRead,
                        base::Unretained(this)),
@@ -822,36 +809,40 @@ void CertificatesHandler::ImportServerFileRead(const int* read_errno,
   if (*read_errno) {
     ImportExportCleanup();
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
-        l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(
-                                      base::safe_strerror(*read_errno))));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_SERVER_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringFUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_READ_ERROR_FORMAT,
+            UTF8ToUTF16(base::safe_strerror(*read_errno))));
     return;
   }
 
   selected_cert_list_ = net::X509Certificate::CreateCertificateListFromBytes(
-          data->data(), data->size(), net::X509Certificate::FORMAT_AUTO);
+      data->data(), data->size(), net::X509Certificate::FORMAT_AUTO);
   if (selected_cert_list_.empty()) {
     ImportExportCleanup();
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CERT_PARSE_ERROR));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_SERVER_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_CERT_PARSE_ERROR));
     return;
   }
 
   net::NSSCertDatabase::ImportCertFailureList not_imported;
   // TODO(mattm): Add UI for trust. http://crbug.com/76274
   bool result = certificate_manager_model_->ImportServerCert(
-      selected_cert_list_,
-      net::NSSCertDatabase::TRUST_DEFAULT,
-      &not_imported);
+      selected_cert_list_, net::NSSCertDatabase::TRUST_DEFAULT, &not_imported);
   if (!result) {
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_SERVER_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR));
   } else if (!not_imported.empty()) {
     RejectCallbackWithImportError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_SERVER_IMPORT_ERROR_TITLE),
         not_imported);
   } else {
     ResolveCallback(*base::Value::CreateNullValue());
@@ -867,13 +858,11 @@ void CertificatesHandler::HandleImportCA(const base::ListValue* args) {
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            ui::SelectFileDialog::SELECT_OPEN_FILE,
-                           base::FilePath(),
-                           GetParentWindow(),
+                           base::FilePath(), GetParentWindow(),
                            reinterpret_cast<void*>(IMPORT_CA_FILE_SELECTED));
 }
 
-void CertificatesHandler::ImportCAFileSelected(
-    const base::FilePath& path) {
+void CertificatesHandler::ImportCAFileSelected(const base::FilePath& path) {
   file_access_provider_->StartRead(
       path, base::Bind(&CertificatesHandler::ImportCAFileRead,
                        base::Unretained(this)),
@@ -885,20 +874,23 @@ void CertificatesHandler::ImportCAFileRead(const int* read_errno,
   if (*read_errno) {
     ImportExportCleanup();
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
-        l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(
-                                      base::safe_strerror(*read_errno))));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_CA_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringFUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_READ_ERROR_FORMAT,
+            UTF8ToUTF16(base::safe_strerror(*read_errno))));
     return;
   }
 
   selected_cert_list_ = net::X509Certificate::CreateCertificateListFromBytes(
-          data->data(), data->size(), net::X509Certificate::FORMAT_AUTO);
+      data->data(), data->size(), net::X509Certificate::FORMAT_AUTO);
   if (selected_cert_list_.empty()) {
     ImportExportCleanup();
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CERT_PARSE_ERROR));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_CA_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_CERT_PARSE_ERROR));
     return;
   }
 
@@ -935,11 +927,14 @@ void CertificatesHandler::HandleImportCATrustSelected(
       &not_imported);
   if (!result) {
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_CA_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR));
   } else if (!not_imported.empty()) {
     RejectCallbackWithImportError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_CA_IMPORT_ERROR_TITLE),
         not_imported);
   } else {
     ResolveCallback(*base::Value::CreateNullValue());
@@ -967,8 +962,10 @@ void CertificatesHandler::HandleDeleteCertificate(const base::ListValue* args) {
   if (!result) {
     // TODO(mattm): better error messages?
     RejectCallbackWithError(
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_DELETE_CERT_ERROR_TITLE),
-        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_CERT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR));
   } else {
     ResolveCallback(*base::Value::CreateNullValue());
   }
@@ -986,10 +983,8 @@ void CertificatesHandler::CertificateManagerModelReady() {
   base::FundamentalValue tpm_available_value(
       certificate_manager_model_->is_tpm_available());
   web_ui()->CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("certificates-model-ready"),
-      user_db_available_value,
-      tpm_available_value);
+      "cr.webUIListenerCallback", base::StringValue("certificates-model-ready"),
+      user_db_available_value, tpm_available_value);
   certificate_manager_model_->Refresh();
 }
 
@@ -1005,8 +1000,7 @@ void CertificatesHandler::HandleRefreshCertificates(
   if (!requested_certificate_manager_model_) {
     // Request that a model be created.
     CertificateManagerModel::Create(
-        Profile::FromWebUI(web_ui()),
-        this,
+        Profile::FromWebUI(web_ui()), this,
         base::Bind(&CertificatesHandler::OnCertificateManagerModelCreated,
                    weak_ptr_factory_.GetWeakPtr()));
     requested_certificate_manager_model_ = true;
@@ -1023,10 +1017,8 @@ void CertificatesHandler::PopulateTree(
     const net::CertificateList& web_trust_certs) {
   scoped_ptr<icu::Collator> collator;
   UErrorCode error = U_ZERO_ERROR;
-  collator.reset(
-      icu::Collator::createInstance(
-          icu::Locale(g_browser_process->GetApplicationLocale().c_str()),
-          error));
+  collator.reset(icu::Collator::createInstance(
+      icu::Locale(g_browser_process->GetApplicationLocale().c_str()), error));
   if (U_FAILURE(error))
     collator.reset(NULL);
   DictionaryIdComparator comparator(collator.get());
@@ -1052,7 +1044,7 @@ void CertificatesHandler::PopulateTree(
         cert_dict->SetString(kKeyField, cert_id_map_->CertToId(cert));
         cert_dict->SetString(
             kNameField, certificate_manager_model_->GetColumnText(
-                *cert, CertificateManagerModel::COL_SUBJECT_NAME));
+                            *cert, CertificateManagerModel::COL_SUBJECT_NAME));
         cert_dict->SetBoolean(
             kReadonlyField,
             certificate_manager_model_->cert_db()->IsReadOnly(cert));
@@ -1082,8 +1074,7 @@ void CertificatesHandler::PopulateTree(
 
     web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
                                      base::StringValue("certificates-changed"),
-                                     base::StringValue(tab_name),
-                                     *nodes);
+                                     base::StringValue(tab_name), *nodes);
   }
 }
 
@@ -1099,9 +1090,8 @@ void CertificatesHandler::RejectCallback(const base::Value& response) {
   webui_callback_id_.clear();
 }
 
-void CertificatesHandler::RejectCallbackWithError(
-    const std::string& title,
-    const std::string& error) {
+void CertificatesHandler::RejectCallbackWithError(const std::string& title,
+                                                  const std::string& error) {
   scoped_ptr<base::DictionaryValue> error_info(new base::DictionaryValue);
   error_info->SetString(kErrorTitle, title);
   error_info->SetString(kErrorDescription, error);
@@ -1114,19 +1104,21 @@ void CertificatesHandler::RejectCallbackWithImportError(
   std::string error;
   if (selected_cert_list_.size() == 1)
     error = l10n_util::GetStringUTF8(
-        IDS_CERT_MANAGER_IMPORT_SINGLE_NOT_IMPORTED);
+        IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_SINGLE_NOT_IMPORTED);
   else if (not_imported.size() == selected_cert_list_.size())
-    error = l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ALL_NOT_IMPORTED);
+    error = l10n_util::GetStringUTF8(
+        IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_ALL_NOT_IMPORTED);
   else
-    error = l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_SOME_NOT_IMPORTED);
+    error = l10n_util::GetStringUTF8(
+        IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_SOME_NOT_IMPORTED);
 
   scoped_ptr<base::ListValue> cert_error_list =
       make_scoped_ptr(new base::ListValue());
   for (size_t i = 0; i < not_imported.size(); ++i) {
     const net::NSSCertDatabase::ImportCertFailure& failure = not_imported[i];
     base::DictionaryValue* dict = new base::DictionaryValue;
-    dict->SetString(
-        kNameField, failure.certificate->subject().GetDisplayName());
+    dict->SetString(kNameField,
+                    failure.certificate->subject().GetDisplayName());
     dict->SetString(kErrorField, NetErrorToString(failure.net_error));
     cert_error_list->Append(dict);
   }
@@ -1134,8 +1126,8 @@ void CertificatesHandler::RejectCallbackWithImportError(
   scoped_ptr<base::DictionaryValue> error_info(new base::DictionaryValue);
   error_info->SetString(kErrorTitle, title);
   error_info->SetString(kErrorDescription, error);
-  error_info->Set(
-      kCertificateErrors, make_scoped_ptr(cert_error_list.release()));
+  error_info->Set(kCertificateErrors,
+                  make_scoped_ptr(cert_error_list.release()));
   RejectCallback(*error_info);
 }
 

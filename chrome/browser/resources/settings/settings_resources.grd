@@ -203,6 +203,12 @@
       <structure name="IDR_SETTINGS_CERTIFICATE_PASSWORD_DECRYPTION_DIALOG_HTML"
                  file="certificate_manager_page/certificate_password_decryption_dialog.html"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATES_ERROR_DIALOG_JS"
+                 file="certificate_manager_page/certificates_error_dialog.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATES_ERROR_DIALOG_HTML"
+                 file="certificate_manager_page/certificates_error_dialog.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_HTML"
                  file="clear_browsing_data_dialog/clear_browsing_data_dialog.html"
                  type="chrome_html" />
