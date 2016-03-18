@@ -4,8 +4,11 @@
 
 #include "platform/network/HTTPParsers.h"
 
+#include "platform/heap/Handle.h"
+#include "platform/weborigin/Suborigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/MathExtras.h"
+#include "wtf/dtoa/utils.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -163,6 +166,108 @@ TEST(HTTPParsersTest, ExtractMIMETypeFromMediaType)
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text\r\n/\nhtml")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text\n/\nhtml")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("t e x t / h t m l")));
+}
+
+void expectParseNamePass(const char* message, String header, String expectedName)
+{
+    SCOPED_TRACE(message);
+
+    Vector<String> messages;
+    Suborigin suborigin;
+    EXPECT_TRUE(parseSuboriginHeader(header, &suborigin, messages));
+    EXPECT_EQ(expectedName, suborigin.name());
+}
+
+void expectParseNameFail(const char* message, String header)
+{
+    SCOPED_TRACE(message);
+
+    Vector<String> messages;
+    Suborigin suborigin;
+    EXPECT_FALSE(parseSuboriginHeader(header, &suborigin, messages));
+    EXPECT_EQ(String(), suborigin.name());
+}
+
+void expectParsePolicyPass(const char* message, String header, const Suborigin::SuboriginPolicyOptions expectedPolicy[], size_t numPolicies)
+{
+    SCOPED_TRACE(message);
+
+    Vector<String> messages;
+    Suborigin suborigin;
+    EXPECT_TRUE(parseSuboriginHeader(header, &suborigin, messages));
+    unsigned policiesMask = 0;
+    for (size_t i = 0; i < numPolicies; i++)
+        policiesMask |= static_cast<unsigned>(expectedPolicy[i]);
+    EXPECT_EQ(policiesMask, suborigin.optionsMask());
+}
+
+void expectParsePolicyFail(const char* message, String header)
+{
+    SCOPED_TRACE(message);
+
+    Vector<String> messages;
+    Suborigin suborigin;
+    EXPECT_FALSE(parseSuboriginHeader(header, &suborigin, messages));
+    EXPECT_EQ(String(), suborigin.name());
+}
+
+TEST(HTTPParsersTest, SuboriginParseValidNames)
+{
+    // Single headers
+    expectParseNamePass("Alpha", "foo", "foo");
+    expectParseNamePass("Whitespace alpha", "  foo  ", "foo");
+    expectParseNamePass("Alphanumeric", "f0o", "f0o");
+    expectParseNamePass("Numeric", "42", "42");
+    expectParseNamePass("Hyphen middle", "foo-bar", "foo-bar");
+    expectParseNamePass("Hyphen start", "-foobar", "-foobar");
+    expectParseNamePass("Hyphen end", "foobar-", "foobar-");
+
+    // Mulitple headers should only give the first name
+    expectParseNamePass("Multiple headers, no whitespace", "foo,bar", "foo");
+    expectParseNamePass("Multiple headers, whitespace before second", "foo, bar", "foo");
+    expectParseNamePass("Multiple headers, whitespace after first and before second", "foo, bar", "foo");
+    expectParseNamePass("Multiple headers, empty second ignored", "foo, bar", "foo");
+    expectParseNamePass("Multiple headers, invalid second ignored", "foo, bar", "foo");
+}
+
+TEST(HTTPParsersTest, SuboriginParseInvalidNames)
+{
+    // Single header, invalid value
+    expectParseNameFail("Empty header", "");
+    expectParseNameFail("Whitespace in middle", "foo bar");
+    expectParseNameFail("Invalid character at end of name", "foobar'");
+    expectParseNameFail("Invalid character at start of name", "'foobar");
+    expectParseNameFail("Invalid character in middle of name", "foo'bar");
+    expectParseNameFail("Alternate invalid character in middle of name", "foob@r");
+    expectParseNameFail("First cap", "Foo");
+    expectParseNameFail("All cap", "FOO");
+
+    // Multiple headers, invalid value(s)
+    expectParseNameFail("Multple headers, empty first header", ", bar");
+    expectParseNameFail("Multple headers, both empty headers", ",");
+    expectParseNameFail("Multple headers, invalid character in first header", "f@oo, bar");
+    expectParseNameFail("Multple headers, invalid character in both headers", "f@oo, b@r");
+}
+
+TEST(HTTPParsersTest, SuboriginParseValidPolicy)
+{
+    const Suborigin::SuboriginPolicyOptions unsafePostmessageSend[] = { Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend };
+
+    expectParsePolicyPass("One policy", "foobar 'unsafe-postmessage-send';", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
+    expectParsePolicyPass("One policy, whitespace all around", "foobar      'unsafe-postmessage-send'     ;     ", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
+    expectParsePolicyPass("Multiple, same policies", "foobar 'unsafe-postmessage-send'; 'unsafe-postmessage-send';", unsafePostmessageSend, ARRAY_SIZE(unsafePostmessageSend));
+    expectParsePolicyPass("One policy, unknown option", "foobar 'unknown-option';", {}, 0);
+}
+
+TEST(HTTPParsersTest, SuboriginParseInvalidPolicy)
+{
+    expectParsePolicyFail("One policy, no suborigin name", "'unsafe-postmessage-send';");
+    expectParsePolicyFail("One policy, invalid characters", "foobar 'un$afe-postmessage-send';");
+    expectParsePolicyFail("One policy, caps", "foobar 'UNSAFE-POSTMESSAGE-SEND';");
+    expectParsePolicyFail("One policy, missing first quote", "foobar unsafe-postmessage-send';");
+    expectParsePolicyFail("One policy, missing last quote", "foobar 'unsafe-postmessage-send;");
+    expectParsePolicyFail("One policy, missing semicolon at end", "foobar 'unsafe-postmessage-send'");
+    expectParsePolicyFail("One policy, missing semicolon between options", "foobar 'unsafe-postmessage-send' 'unsafe-postmessage-send';");
 }
 
 } // namespace blink

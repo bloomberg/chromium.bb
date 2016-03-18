@@ -30,7 +30,9 @@
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebAddressSpace.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -83,9 +85,7 @@ public:
     void setShouldEnforceStrictMixedContentChecking(bool shouldEnforce) { m_enforceStrictMixedContentChecking = shouldEnforce; }
     bool shouldEnforceStrictMixedContentChecking() { return m_enforceStrictMixedContentChecking; }
 
-    void enforceSuborigin(const String& name);
-    bool hasSuborigin();
-    String suboriginName();
+    void enforceSuborigin(const Suborigin&);
 
 protected:
     SecurityContext();

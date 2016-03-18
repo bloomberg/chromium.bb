@@ -44,7 +44,7 @@ struct SecurityOriginHash {
             origin->protocol().impl() ? origin->protocol().impl()->hash() : 0,
             origin->host().impl() ? origin->host().impl()->hash() : 0,
             origin->port(),
-            origin->suboriginName().impl() ? origin->suboriginName().impl()->hash() : 0
+            (origin->suborigin()->name().impl()) ? origin->suborigin()->name().impl()->hash() : 0
         };
         return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
     }

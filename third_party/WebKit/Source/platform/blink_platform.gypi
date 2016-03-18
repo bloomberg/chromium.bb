@@ -1115,6 +1115,8 @@
       'weborigin/SecurityOriginHash.h',
       'weborigin/SecurityPolicy.cpp',
       'weborigin/SecurityPolicy.h',
+      'weborigin/Suborigin.cpp',
+      'weborigin/Suborigin.h',
     ],
     'platform_test_files': [
       'DecimalTest.cpp',

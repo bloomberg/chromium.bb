@@ -90,34 +90,20 @@ String SecurityContext::addressSpaceForBindings() const
     return "public";
 }
 
-bool SecurityContext::hasSuborigin()
-{
-    ASSERT(m_securityOrigin.get());
-    return m_securityOrigin->hasSuborigin();
-}
-
-String SecurityContext::suboriginName()
-{
-    ASSERT(m_securityOrigin.get());
-    return m_securityOrigin->suboriginName();
-}
-
 // Enforces the given suborigin as part of the security origin for this
 // security context. |name| must not be empty, although it may be null. A null
 // name represents a lack of a suborigin.
 // See: https://w3c.github.io/webappsec-suborigins/index.html
-void SecurityContext::enforceSuborigin(const String& name)
+void SecurityContext::enforceSuborigin(const Suborigin& suborigin)
 {
     if (!RuntimeEnabledFeatures::suboriginsEnabled())
         return;
 
-    if (name.isNull())
-        return;
-    ASSERT(!name.isEmpty());
+    ASSERT(!suborigin.name().isEmpty());
     ASSERT(RuntimeEnabledFeatures::suboriginsEnabled());
     ASSERT(m_securityOrigin.get());
-    ASSERT(!m_securityOrigin->hasSuborigin() || m_securityOrigin->suboriginName() == name);
-    m_securityOrigin->addSuborigin(name);
+    ASSERT(!m_securityOrigin->hasSuborigin() || m_securityOrigin->suborigin()->name() == suborigin.name());
+    m_securityOrigin->addSuborigin(suborigin);
     didUpdateSecurityOrigin();
 }
 

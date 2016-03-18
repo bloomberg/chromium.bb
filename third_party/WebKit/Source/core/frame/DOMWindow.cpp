@@ -28,6 +28,7 @@
 #include "core/page/Page.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/Suborigin.h"
 
 namespace blink {
 
@@ -199,8 +200,13 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     // in order to capture the source of the message correctly.
     if (!sourceDocument)
         return;
-    String sourceOrigin = sourceDocument->getSecurityOrigin()->toString();
-    String sourceSuborigin = sourceDocument->getSecurityOrigin()->suboriginName();
+
+    const SecurityOrigin* securityOrigin = sourceDocument->getSecurityOrigin();
+    bool hasSuborigin = sourceDocument->getSecurityOrigin()->hasSuborigin();
+    Suborigin::SuboriginPolicyOptions unsafeSendOpt = Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend;
+
+    String sourceOrigin = (hasSuborigin && securityOrigin->suborigin()->policyContains(unsafeSendOpt)) ? securityOrigin->toPhysicalOriginString() : securityOrigin->toString();
+    String sourceSuborigin = hasSuborigin ? securityOrigin->suborigin()->name() : String();
 
     KURL targetUrl = isLocalDOMWindow() ? document()->url() : KURL(KURL(), frame()->securityContext()->getSecurityOrigin()->toString());
     if (MixedContentChecker::isMixedContent(sourceDocument->getSecurityOrigin(), targetUrl))

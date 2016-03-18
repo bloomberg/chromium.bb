@@ -6,7 +6,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
-#include "core/dom/Suborigin.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -42,7 +41,7 @@ void HttpEquiv::process(Document& document, const AtomicString& equiv, const Ato
         else
             document.contentSecurityPolicy()->reportMetaOutsideHead(content);
     } else if (equalIgnoringCase(equiv, "suborigin")) {
-        SuboriginPolicy::logSuboriginHeaderError(document, "Suborigin header with value '" + content + "' was delivered via a <meta> element and not an HTTP header, which is disallowed. The Suborigin has been ignored.");
+        document.addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Error with Suborigin header: Suborigin header with value '" + content + "' was delivered via a <meta> element and not an HTTP header, which is disallowed. The Suborigin has been ignored."));
     }
 }
 

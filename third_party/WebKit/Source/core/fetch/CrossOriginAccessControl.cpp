@@ -146,7 +146,7 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
     // which implies that all Suborigins are okay as well.
     if (securityOrigin->hasSuborigin() && allowOriginHeaderValue != starAtom) {
         const AtomicString& allowSuboriginHeaderValue = response.httpHeaderField(allowSuboriginHeaderName);
-        AtomicString atomicSuboriginName(securityOrigin->suboriginName());
+        AtomicString atomicSuboriginName(securityOrigin->suborigin()->name());
         if (allowSuboriginHeaderValue != starAtom && allowSuboriginHeaderValue != atomicSuboriginName) {
             errorDescription = buildAccessControlFailureMessage("The 'Access-Control-Allow-Suborigin' header has a value '" + allowSuboriginHeaderValue + "' that is not equal to the supplied suborigin.", securityOrigin);
             return false;

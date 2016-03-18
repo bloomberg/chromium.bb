@@ -327,7 +327,7 @@ public:
     void setHasXMLDeclaration(bool hasXMLDeclaration) { m_hasXMLDeclaration = hasXMLDeclaration ? 1 : 0; }
 
     String origin() const { return getSecurityOrigin()->toString(); }
-    String suborigin() const { return getSecurityOrigin()->suboriginName(); }
+    String suborigin() const { return getSecurityOrigin()->hasSuborigin() ? getSecurityOrigin()->suborigin()->name() : String(); }
 
     String visibilityState() const;
     PageVisibilityState pageVisibilityState() const;

@@ -5005,7 +5005,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     }
 
     if (getSecurityOrigin()->hasSuborigin())
-        enforceSuborigin(getSecurityOrigin()->suboriginName());
+        enforceSuborigin(*getSecurityOrigin()->suborigin());
 
     if (Settings* settings = initializer.settings()) {
         if (!settings->webSecurityEnabled()) {
@@ -5030,6 +5030,9 @@ void Document::initSecurityContext(const DocumentInit& initializer)
 
     if (getSecurityOrigin()->isUnique() && SecurityOrigin::create(m_url)->isPotentiallyTrustworthy())
         getSecurityOrigin()->setUniqueOriginIsPotentiallyTrustworthy(true);
+
+    if (getSecurityOrigin()->hasSuborigin())
+        enforceSuborigin(*getSecurityOrigin()->suborigin());
 }
 
 void Document::initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> csp)

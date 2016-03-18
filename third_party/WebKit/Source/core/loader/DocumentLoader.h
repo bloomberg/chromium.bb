@@ -142,8 +142,6 @@ public:
     void setWasBlockedAfterXFrameOptionsOrCSP() { m_wasBlockedAfterXFrameOptionsOrCSP = true; }
     bool wasBlockedAfterXFrameOptionsOrCSP() { return m_wasBlockedAfterXFrameOptionsOrCSP; }
 
-    String suboriginName() const { return m_suboriginName; }
-
     Resource* startPreload(Resource::Type, FetchRequest&);
 
     DECLARE_VIRTUAL_TRACE();
@@ -220,7 +218,6 @@ private:
     RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
     ClientHintsPreferences m_clientHintsPreferences;
     InitialScrollState m_initialScrollState;
-    String m_suboriginName;
 
     bool m_wasBlockedAfterXFrameOptionsOrCSP;
 

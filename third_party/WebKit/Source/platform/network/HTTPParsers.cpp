@@ -32,6 +32,8 @@
 
 #include "platform/network/HTTPParsers.h"
 
+#include "platform/ParsingUtilities.h"
+#include "platform/weborigin/Suborigin.h"
 #include "wtf/DateMath.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"
@@ -105,6 +107,72 @@ static inline bool skipValue(const String& str, unsigned& pos)
     }
     return pos != start;
 }
+
+template<typename CharType> static inline bool isASCIILowerAlphaOrDigitOrHyphen(CharType c)
+{
+    return isASCIILower(c) || isASCIIDigit(c) || c == '-';
+}
+
+static Suborigin::SuboriginPolicyOptions getSuboriginPolicyOptionFromString(const String& policyOptionName)
+{
+    if (policyOptionName == "'unsafe-postmessage-send'")
+        return Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend;
+
+    return Suborigin::SuboriginPolicyOptions::None;
+}
+
+
+static const UChar* parseSuboriginName(const UChar* begin, const UChar* end, String& name, WTF::Vector<String>& messages)
+{
+    // Parse the name of the suborigin (no spaces, single string)
+    skipWhile<UChar, isASCIISpace>(begin, end);
+    if (begin == end) {
+        messages.append(String("No Suborigin name specified."));
+        return nullptr;
+    }
+
+    const UChar* position = begin;
+
+    skipWhile<UChar, isASCIILowerAlphaOrDigitOrHyphen>(position, end);
+    if (position != end && !isASCIISpace(*position)) {
+        messages.append("Invalid character \'" + String(position, 1) + "\' in suborigin.");
+        return nullptr;
+    }
+    size_t length = position - begin;
+    skipWhile<UChar, isASCIISpace>(position, end);
+
+    name = String(begin, length).lower();
+    return position;
+}
+
+static const UChar* parseSuboriginPolicyOption(const UChar* begin, const UChar* end, String& option, WTF::Vector<String>& messages)
+{
+    const UChar* position = begin;
+
+    if (*position != '\'') {
+        messages.append("Invalid character \'" + String(position, 1) + "\' in suborigin policy. Suborigin policy options must start and end with a single quote.");
+        return nullptr;
+    }
+    position = position + 1;
+
+    skipWhile<UChar, isASCIILowerAlphaOrDigitOrHyphen>(position, end);
+    if (position == end || isASCIISpace(*position)) {
+        messages.append(String("Expected \' to end policy option."));
+        return nullptr;
+    }
+
+    if (*position != '\'') {
+        messages.append("Invalid character \'" + String(position, 1) + "\' in suborigin policy.");
+        return nullptr;
+    }
+
+    ASSERT(position > begin);
+    size_t length = (position + 1) - begin;
+
+    option = String(begin, length);
+    return position + 1;
+}
+
 
 bool isValidHTTPHeaderValue(const String& name)
 {
@@ -626,6 +694,62 @@ void parseCommaDelimitedHeader(const String& headerValue, CommaDelimitedHeaderSe
     headerValue.split(",", results);
     for (auto& value : results)
         headerSet.add(value.stripWhiteSpace(isWhitespace));
+}
+
+bool parseSuboriginHeader(const String& header, Suborigin* suborigin, WTF::Vector<String>& messages)
+{
+    Vector<String> headers;
+    header.split(',', true, headers);
+
+    if (headers.size() > 1)
+        messages.append("Multiple Suborigin headers found. Ignoring all but the first.");
+
+    Vector<UChar> characters;
+    headers[0].appendTo(characters);
+
+    const UChar* position = characters.data();
+    const UChar* end = position + characters.size();
+
+    skipWhile<UChar, isASCIISpace>(position, end);
+
+    String name;
+    position = parseSuboriginName(position, end, name, messages);
+    if (!position)
+        return false;
+
+    suborigin->setName(name);
+
+    while (position < end) {
+        skipWhile<UChar, isASCIISpace>(position, end);
+        if (position == end)
+            return true;
+
+        String optionName;
+        position = parseSuboriginPolicyOption(position, end, optionName, messages);
+
+        if (!position) {
+            suborigin->clear();
+            return false;
+        }
+
+        Suborigin::SuboriginPolicyOptions option = getSuboriginPolicyOptionFromString(optionName);
+        if (option == Suborigin::SuboriginPolicyOptions::None)
+            messages.append("Ignoring unknown suborigin policy option " + optionName + ".");
+        else
+            suborigin->addPolicyOption(option);
+
+        skipWhile<UChar, isASCIISpace>(position, end);
+        if (position == end || *position != ';') {
+            String found = (position == end) ? "end of string" : String(position, 1);
+            messages.append("Invalid suborigin policy Expected ';' at end of policy option. Found \'"  + found + "\' instead.");
+            suborigin->clear();
+            return false;
+        }
+
+        position++;
+    }
+
+    return true;
 }
 
 } // namespace blink

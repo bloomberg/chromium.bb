@@ -40,6 +40,8 @@
 
 namespace blink {
 
+class Suborigin;
+
 typedef enum {
     ContentDispositionNone,
     ContentDispositionInline,
@@ -110,6 +112,11 @@ PLATFORM_EXPORT ReflectedXSSDisposition parseXSSProtectionHeader(const String& h
 PLATFORM_EXPORT XFrameOptionsDisposition parseXFrameOptionsHeader(const String&);
 PLATFORM_EXPORT CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlHeader, const AtomicString& pragmaHeader);
 PLATFORM_EXPORT void parseCommaDelimitedHeader(const String& headerValue, CommaDelimitedHeaderSet&);
+// Returns true on success, otherwise false. The Suborigin argument must be a
+// non-null return argument. |messages| is a list of messages based on any
+// parse warnings or errors. Even if parseSuboriginHeader returns true, there
+// may be Strings in |messages|.
+PLATFORM_EXPORT bool parseSuboriginHeader(const String& header, Suborigin*, WTF::Vector<String>& messages);
 
 PLATFORM_EXPORT ContentTypeOptionsDisposition parseContentTypeOptionsHeader(const String& header);
 

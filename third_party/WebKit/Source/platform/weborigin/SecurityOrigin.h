@@ -31,6 +31,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
+#include "platform/weborigin/Suborigin.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -202,9 +203,9 @@ public:
     // only ever be called once per SecurityOrigin(). If it is called on a
     // SecurityOrigin that has already had a suborigin assigned, it will hit a
     // RELEASE_ASSERT().
-    void addSuborigin(const String&);
-    bool hasSuborigin() const { return !m_suboriginName.isNull(); }
-    const String& suboriginName() const { return m_suboriginName; }
+    bool hasSuborigin() const { return !m_suborigin.name().isNull(); }
+    const Suborigin* suborigin() const { return &m_suborigin; }
+    void addSuborigin(const Suborigin&);
 
     // By default 'file:' URLs may access other 'file:' URLs. This method
     // denies access. If either SecurityOrigin sets this flag, the access
@@ -223,6 +224,9 @@ public:
     // we shouldTreatURLSchemeAsNoAccess.
     String toString() const;
     AtomicString toAtomicString() const;
+    // Same as toString above, but ignores Suborigin, if present. This is
+    // generally not what you want.
+    String toPhysicalOriginString() const;
 
     // Similar to toString(), but does not take into account any factors that
     // could make the string return "null".
@@ -264,14 +268,15 @@ private:
 
     // FIXME: Rename this function to something more semantic.
     bool passesFileCheck(const SecurityOrigin*) const;
-    void buildRawString(StringBuilder&) const;
+    void buildRawString(StringBuilder&, bool includeSuborigin) const;
 
+    String toRawStringIgnoreSuborigin() const;
     static bool deserializeSuboriginAndHost(const String&, String&, String&);
 
     String m_protocol;
     String m_host;
     String m_domain;
-    String m_suboriginName;
+    Suborigin m_suborigin;
     unsigned short m_port;
     unsigned short m_effectivePort;
     bool m_isUnique;

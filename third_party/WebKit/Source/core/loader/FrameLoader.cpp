@@ -90,6 +90,7 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
@@ -447,8 +448,20 @@ void FrameLoader::didBeginDocument(bool dispatch)
         dispatchDidClearDocumentOfWindowObject();
 
     m_frame->document()->initContentSecurityPolicy(m_documentLoader ? m_documentLoader->releaseContentSecurityPolicy() : ContentSecurityPolicy::create());
-    if (m_documentLoader && !m_documentLoader->suboriginName().isNull())
-        m_frame->document()->enforceSuborigin(m_documentLoader->suboriginName());
+
+    if (m_documentLoader) {
+        String suboriginHeader = m_documentLoader->response().httpHeaderField(HTTPNames::Suborigin);
+        if (!suboriginHeader.isNull()) {
+            Vector<String> messages;
+            Suborigin suborigin;
+            if (parseSuboriginHeader(suboriginHeader, &suborigin, messages))
+                m_frame->document()->enforceSuborigin(suborigin);
+
+            for (auto& message : messages)
+                m_frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Error with Suborigin header: " + message));
+        }
+    }
+
     if (m_documentLoader) {
         m_frame->document()->clientHintsPreferences().updateFrom(m_documentLoader->clientHintsPreferences());
         LinkLoader::loadLinksFromHeader(m_documentLoader->response().httpHeaderField(HTTPNames::Link), m_documentLoader->response().url(),

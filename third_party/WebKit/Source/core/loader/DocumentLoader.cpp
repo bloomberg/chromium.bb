@@ -31,7 +31,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
-#include "core/dom/Suborigin.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -66,6 +65,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
+#include "platform/network/HTTPParsers.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -436,9 +436,6 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
             }
         }
     }
-    HTTPHeaderMap::const_iterator it = response.httpHeaderFields().find(HTTPNames::Suborigin);
-    if (it != response.httpHeaderFields().end())
-        m_suboriginName = SuboriginPolicy::parseSuboriginName(*frame()->document(), it->value);
 
     ASSERT(!m_frame->page()->defersLoading());
 

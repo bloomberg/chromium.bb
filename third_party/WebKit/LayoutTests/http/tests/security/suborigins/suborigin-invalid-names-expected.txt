@@ -9,6 +9,10 @@ CONSOLE ERROR: Error with Suborigin header: Invalid character ''' in suborigin.
 ALERT: I am a secret
 CONSOLE ERROR: Error with Suborigin header: Invalid character '@' in suborigin.
 ALERT: I am a secret
-CONSOLE ERROR: Error with Suborigin header: Whitespace is not allowed in suborigin names.
+CONSOLE ERROR: Error with Suborigin header: Invalid character 'b' in suborigin policy. Suborigin policy options must start and end with a single quote.
+ALERT: I am a secret
+CONSOLE ERROR: Error with Suborigin header: Invalid character 'F' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error with Suborigin header: Invalid character 'F' in suborigin.
 ALERT: I am a secret
 

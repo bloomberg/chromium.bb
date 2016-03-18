@@ -232,7 +232,7 @@ void ResourceRequest::setHTTPOrigin(PassRefPtr<SecurityOrigin> origin)
 {
     setHTTPHeaderField(HTTPNames::Origin, origin->toAtomicString());
     if (origin->hasSuborigin())
-        setHTTPHeaderField(HTTPNames::Suborigin, AtomicString(origin->suboriginName()));
+        setHTTPHeaderField(HTTPNames::Suborigin, AtomicString(origin->suborigin()->name()));
 }
 
 void ResourceRequest::clearHTTPOrigin()

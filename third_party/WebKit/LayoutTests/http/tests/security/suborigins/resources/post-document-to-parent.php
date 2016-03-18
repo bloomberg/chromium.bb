@@ -1,6 +1,9 @@
 <?php
+$suborigin = $_GET["suborigin"];
+$suboriginPolicy = $_GET["suboriginpolicy"];
+
 if ($_GET["suborigin"]) {
-    header("Suborigin: ". $_GET["suborigin"]);
+    header("Suborigin: " . $suborigin . " " . $suboriginPolicy);
 }
 ?>
 <!DOCTYPE html>
