@@ -649,7 +649,7 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
   certificateId_ = identityInfo.cert_id;
 
-  if (identityInfo.show_ssl_decision_revoke_button) {
+  if (certificateId_ &&  identityInfo.show_ssl_decision_revoke_button) {
     NSString* text = l10n_util::GetNSString(
         IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON);
     resetDecisionsButton_ =
