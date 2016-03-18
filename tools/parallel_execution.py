@@ -7,6 +7,7 @@
 import getpass
 import json
 import os
+import optparse
 import subprocess
 import sys
 import tempfile
@@ -155,7 +156,7 @@ def run_swarming_tasks_parallel(
 class OptionParser(logging_utils.OptionParserWithLogging):
   def __init__(self, **kwargs):
     logging_utils.OptionParserWithLogging.__init__(self, **kwargs)
-    self.server_group = tools.optparse.OptionGroup(self, 'Server')
+    self.server_group = optparse.OptionGroup(self, 'Server')
     self.server_group.add_option(
         '-S', '--swarming',
         metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
