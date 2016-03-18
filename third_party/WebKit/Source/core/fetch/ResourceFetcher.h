@@ -113,9 +113,11 @@ public:
     void didReceiveResponse(const Resource*, const ResourceResponse&);
     void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength);
     void didDownloadData(const Resource*, int dataLength, int encodedDataLength);
-    void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*);
     void willStartLoadingResource(Resource*, ResourceLoader*, ResourceRequest&);
     bool defersLoading() const;
+
+    void moveResourceLoaderToNonBlocking(ResourceLoader*);
+    void removeResourceLoader(ResourceLoader*);
 
     enum AccessControlLoggingDecision {
         ShouldLogAccessControlErrors,
@@ -175,8 +177,6 @@ private:
     void resourceTimingReportTimerFired(Timer<ResourceFetcher>*);
 
     void reloadImagesIfNotDeferred();
-
-    void willTerminateResourceLoader(ResourceLoader*);
 
     void updateMemoryCacheStats(Resource*, RevalidationPolicy, const FetchRequest&,  const ResourceFactory&, bool isStaticData) const;
 

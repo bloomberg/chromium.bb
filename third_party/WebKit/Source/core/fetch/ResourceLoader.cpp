@@ -129,14 +129,17 @@ void ResourceLoader::didDownloadData(WebURLLoader*, int length, int encodedDataL
 void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength)
 {
     ASSERT(m_state != ConnectionStateReleased);
-    if (!isFinishing()) {
+    if (isFinishing()) {
+        m_fetcher->removeResourceLoader(this);
+    } else {
         // When loading a multipart resource, make the loader non-block when
         // finishing loading the first part.
-        m_fetcher->subresourceLoaderFinishedLoadingOnePart(this);
-    }
+        m_fetcher->moveResourceLoaderToNonBlocking(this);
 
-    if (m_state == ConnectionStateReleased)
-        return;
+        m_fetcher->didLoadResource(m_resource.get());
+        if (m_state == ConnectionStateReleased)
+            return;
+    }
 
     if (m_notifiedLoadComplete)
         return;

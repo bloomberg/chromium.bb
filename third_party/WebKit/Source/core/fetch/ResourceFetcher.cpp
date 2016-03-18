@@ -927,7 +927,8 @@ bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequ
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
-    willTerminateResourceLoader(resource->loader());
+    // The ResourceLoader might be in |m_nonBlockingLoaders| for multipart responses.
+    ASSERT(!(m_loaders && m_loaders->contains(resource->loader())));
 
     if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
         ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
@@ -946,7 +947,7 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
 void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error)
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
-    willTerminateResourceLoader(resource->loader());
+    removeResourceLoader(resource->loader());
     bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
     context().dispatchDidFail(resource->identifier(), error, isInternalRequest);
 }
@@ -983,13 +984,12 @@ void ResourceFetcher::acceptDataFromThreadedReceiver(unsigned long identifier, c
     context().dispatchDidReceiveData(identifier, data, dataLength, encodedDataLength);
 }
 
-void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
+void ResourceFetcher::moveResourceLoaderToNonBlocking(ResourceLoader* loader)
 {
     if (!m_nonBlockingLoaders)
         m_nonBlockingLoaders = ResourceLoaderSet::create();
     m_nonBlockingLoaders->add(loader);
     m_loaders->remove(loader);
-    didLoadResource(loader->cachedResource());
 }
 
 void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceLoader* loader, ResourceRequest& request)
@@ -1011,7 +1011,7 @@ void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceLoade
     context().dispatchWillSendRequest(resource->identifier(), request, ResourceResponse(), resource->options().initiatorInfo);
 }
 
-void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
+void ResourceFetcher::removeResourceLoader(ResourceLoader* loader)
 {
     if (m_loaders && m_loaders->contains(loader))
         m_loaders->remove(loader);
