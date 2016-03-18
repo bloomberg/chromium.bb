@@ -500,15 +500,20 @@ void NodeController::AcceptIncomingMessages() {
 void NodeController::DropAllPeers() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
+  std::vector<scoped_refptr<NodeChannel>> all_peers;
   {
     base::AutoLock lock(parent_lock_);
     if (bootstrap_parent_channel_) {
-      bootstrap_parent_channel_->ShutDown();
-      bootstrap_parent_channel_ = nullptr;
+      // |bootstrap_parent_channel_| isn't null'd here becuase we rely on its
+      // existence to determine whether or not this is the root node. Once
+      // bootstrap_parent_channel_->ShutDown() has been called,
+      // |bootstrap_parent_channel_| is essentially a dead object and it doesn't
+      // matter if it's deleted now or when |this| is deleted.
+      // Note: |bootstrap_parent_channel_| is only modified on the IO thread.
+      all_peers.push_back(bootstrap_parent_channel_);
     }
   }
 
-  std::vector<scoped_refptr<NodeChannel>> all_peers;
   {
     base::AutoLock lock(peers_lock_);
     for (const auto& peer : peers_)
