@@ -461,7 +461,6 @@ class CONTENT_EXPORT RenderViewImpl
   void CloseForFrame() override;
   void Close() override;
   void OnResize(const ResizeParams& params) override;
-  gfx::Vector2d GetScrollOffset() override;
   void OnSetFocus(bool enable) override;
   void OnWasHidden() override;
   void OnWasShown(bool needs_repainting,

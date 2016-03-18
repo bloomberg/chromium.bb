@@ -2738,23 +2738,6 @@ void RenderViewImpl::RenderWidgetDidFlushPaint() {
   }
 }
 
-gfx::Vector2d RenderViewImpl::GetScrollOffset() {
-  WebFrame* main_frame = webview()->mainFrame();
-  for (WebFrame* frame = main_frame; frame;
-       frame = frame->traverseNext(false)) {
-    // TODO(nasko): This is a hack for the case in which the top-level
-    // frame is being rendered in another process. It will not
-    // behave correctly for out of process iframes.
-    if (frame->isWebLocalFrame()) {
-      main_frame = frame;
-      break;
-    }
-  }
-
-  WebSize scroll_offset = main_frame->scrollOffset();
-  return gfx::Vector2d(scroll_offset.width, scroll_offset.height);
-}
-
 void RenderViewImpl::OnClearFocusedElement() {
   if (webview())
     webview()->clearFocusedElement();

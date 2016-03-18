@@ -1729,11 +1729,6 @@ void RenderWidget::DidFlushPaint() {
     owner_delegate_->RenderWidgetDidFlushPaint();
 }
 
-gfx::Vector2d RenderWidget::GetScrollOffset() {
-  // Bare RenderWidgets don't support scroll offset.
-  return gfx::Vector2d();
-}
-
 void RenderWidget::SetHidden(bool hidden) {
   if (is_hidden_ == hidden)
     return;

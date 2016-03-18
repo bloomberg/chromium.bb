@@ -45,7 +45,6 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
@@ -508,10 +507,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void DidFlushPaint();
 
   virtual GURL GetURLForGraphicsContext3D();
-
-  // Gets the scroll offset of this widget, if this widget has a notion of
-  // scroll offset.
-  virtual gfx::Vector2d GetScrollOffset();
 
   // Sets the "hidden" state of this widget.  All accesses to is_hidden_ should
   // use this method so that we can properly inform the RenderThread of our
