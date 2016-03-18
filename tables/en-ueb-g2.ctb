@@ -234,6 +234,7 @@ always with 23456
 
 # ar
 always ar 345
+match (%[^_~]%<*) ar ('([DSTdst]|ll|[rv]e|LL|[RV]E))?(%>*%[^_~]) =
 
 sufword aright 1-5-1235
 sufword infrared 35-124-1235-1-1235-1246
@@ -285,6 +286,7 @@ sufword castlereagh 14-1-34-123-15-1235-2-126
 
 # gh
 always gh 126
+match (%[^_~]%<*) gh ('([DSTdst]|ll|[rv]e|LL|[RV]E))?(%>*%[^_~]) =
 
 sufword bighearted 12-24-1245-125-15-345-2345-1246
 sufword bighorn 12-24-1245-125-135-1235-1345
