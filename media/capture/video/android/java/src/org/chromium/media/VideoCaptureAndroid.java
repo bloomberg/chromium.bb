@@ -27,7 +27,7 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
         private static final String[] COLORSPACE_BUGGY_DEVICE_LIST = {
                 "SAMSUNG-SGH-I747", "ODROID-U2",
                 // See https://crbug.com/577435 for more info.
-                "XT1092", "XT1095", "XT1096",
+                "XT1092", "XT1095", "XT1096", "XT1097",
         };
 
         static int getImageFormat() {
