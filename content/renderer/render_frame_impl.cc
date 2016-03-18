@@ -4586,7 +4586,6 @@ void RenderFrameImpl::OnFailedNavigation(
     int error_code) {
   DCHECK(IsBrowserSideNavigationEnabled());
   bool is_reload = IsReload(common_params.navigation_type);
-  bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
   RenderFrameImpl::PrepareRenderViewForNavigation(
@@ -4626,13 +4625,14 @@ void RenderFrameImpl::OnFailedNavigation(
   // Make sure errors are not shown in view source mode.
   frame_->enableViewSourceMode(false);
 
-  // Replace the current history entry in reloads, history navigations and loads
-  // of the same url. This corresponds to Blink's notion of a standard
-  // commit.
+  // Replace the current history entry in reloads, and loads of the same url.
+  // This corresponds to Blink's notion of a standard commit.
+  // Also replace the current history entry if the browser asked for it
+  // specifically.
   // TODO(clamy): see if initial commits in subframes should be handled
   // separately.
-  bool replace = is_reload || is_history_navigation ||
-                 common_params.url == GetLoadingUrl();
+  bool replace = is_reload || common_params.url == GetLoadingUrl() ||
+                 common_params.should_replace_current_entry;
   LoadNavigationErrorPage(failed_request, error, replace);
 }
 
