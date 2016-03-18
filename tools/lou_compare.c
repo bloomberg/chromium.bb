@@ -350,12 +350,6 @@ int main(int argn, char **args)
 		else
 			return 1;
 		
-		if(!strncmp("~trans_note", inputLine, 11))
-		if(inputEmphasis(trans_note, tnoteLine, tnoteText, &tnoteLen))
-			continue;
-		else
-			return 1;
-		
 		if(!strncmp("~trans_note_1", inputLine, 13))
 		if(inputEmphasis(trans_note_1, tnote1Line, tnote1Text, &tnote1Len))
 			continue;
@@ -382,6 +376,12 @@ int main(int argn, char **args)
 		else
 			return 1;
 		
+		if(!strncmp("~trans_note", inputLine, 11))
+		if(inputEmphasis(trans_note, tnoteLine, tnoteText, &tnoteLen))
+			continue;
+		else
+			return 1;
+
 		memcpy(emp1, emphasis, BUF_MAX * sizeof(formtype));
 		memcpy(emp2, emphasis, BUF_MAX * sizeof(formtype));
 		

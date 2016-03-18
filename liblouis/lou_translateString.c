@@ -2348,6 +2348,15 @@ markEmphases()
 			emphasisBuffer[tnote_start] |= TNOTE_BEGIN;
 			emphasisBuffer[srcmax] |= TNOTE_END;
 		}
+		trans_bit = trans_note_1;
+		for(i = 0; i < 5; i++)
+		{
+			if(trans_start[i] >= 0)
+			{
+				transNoteBuffer[trans_start[i]] |= (TRANSNOTE_BEGIN << (i * 4));
+				transNoteBuffer[srcmax] |= (TRANSNOTE_END << (i * 4));
+			}
+		}
 	}
 
 	if(table->emphRules[capsRule][wordOffset]) {
