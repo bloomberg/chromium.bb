@@ -105,7 +105,7 @@
             </div>
             <div class="secondary-action">
               <template is="dom-if" if=[[!easyUnlockEnabled_]]>
-                <paper-button class="secondary-button"
+                <paper-button id="easyUnlockSetup" class="secondary-button"
                     on-tap="onEasyUnlockSetupTap_">
                   [[i18n('easyUnlockSetupButton')]]
                 </paper-button>
