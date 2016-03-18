@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/task_runner_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -24,7 +25,11 @@ namespace {
 
 // TODO(crbug.com/587857): This is an extremely small value, for development.
 // Replace it by something sensible and add a command line param to control it.
-const int kDefaultFetchingIntervalSeconds = 60;
+const int kFetchingIntervalWifiChargingMins = 1;
+const int kFetchingIntervalWifiMins = 2 * 60;
+const int kFetchingIntervalFallbackMins = 24 * 60;
+
+const int kDefaultExpiryTimeMins = 4 * 60;
 
 bool ReadFileToString(const base::FilePath& path, std::string* data) {
   DCHECK(data);
@@ -99,10 +104,14 @@ void NTPSnippetsService::Init(bool enabled) {
   if (!scheduler_)
     return;
 
-  if (enabled)
-    scheduler_->Schedule(kDefaultFetchingIntervalSeconds);
-  else
+  if (enabled) {
+    scheduler_->Schedule(
+        base::TimeDelta::FromMinutes(kFetchingIntervalWifiChargingMins),
+        base::TimeDelta::FromMinutes(kFetchingIntervalWifiMins),
+        base::TimeDelta::FromMinutes(kFetchingIntervalFallbackMins));
+  } else {
     scheduler_->Unschedule();
+  }
 }
 
 void NTPSnippetsService::Shutdown() {
@@ -205,7 +214,7 @@ bool NTPSnippetsService::LoadFromJSONList(const base::ListValue& list) {
     if (snippet->expiry_date().is_null()) {
       snippet->set_expiry_date(
           snippet->publish_date() +
-          base::TimeDelta::FromSeconds(2 * kDefaultFetchingIntervalSeconds));
+          base::TimeDelta::FromMinutes(kDefaultExpiryTimeMins));
     }
 
     // Check if we already have a snippet with the same URL. If so, replace it

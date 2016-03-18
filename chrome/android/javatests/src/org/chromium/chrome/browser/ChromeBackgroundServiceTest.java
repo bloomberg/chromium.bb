@@ -115,13 +115,17 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsNoLaunchBrowserWhenInstanceExists() {
-        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG, false, true);
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI_CHARGING, false, true);
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, false, true);
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_FALLBACK, false, true);
     }
 
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsLaunchBrowserWhenInstanceDoesNotExist() {
         deleteSnippetsLauncherInstance();
-        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG, true, true);
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI_CHARGING, true, true);
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, true, true);
+        startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_FALLBACK, true, true);
     }
 }

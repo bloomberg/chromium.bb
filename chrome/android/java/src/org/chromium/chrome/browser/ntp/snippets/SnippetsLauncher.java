@@ -26,7 +26,9 @@ import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 public class SnippetsLauncher {
     private static final String TAG = "SnippetsLauncher";
 
-    public static final String TASK_TAG = "FetchSnippets";
+    public static final String TASK_TAG_WIFI_CHARGING = "FetchSnippetsWifiCharging";
+    public static final String TASK_TAG_WIFI = "FetchSnippetsWifi";
+    public static final String TASK_TAG_FALLBACK = "FetchSnippetsFallback";
 
     // The instance of SnippetsLauncher currently owned by a C++ SnippetsLauncherAndroid, if any.
     // If it is non-null then the browser is running.
@@ -88,22 +90,34 @@ public class SnippetsLauncher {
         }
     }
 
+    private static PeriodicTask buildTask(
+            String tag, long periodSeconds, int requiredNetwork, boolean requiresCharging) {
+        return new PeriodicTask.Builder()
+                .setService(ChromeBackgroundService.class)
+                .setTag(tag)
+                .setPeriod(periodSeconds)
+                .setRequiredNetwork(requiredNetwork)
+                .setRequiresCharging(requiresCharging)
+                .setPersisted(true)
+                .setUpdateCurrent(true)
+                .build();
+    }
+
     @CalledByNative
-    private boolean schedule(int periodSeconds) {
+    private boolean schedule(
+            long periodWifiChargingSeconds, long periodWifiSeconds, long periodFallbackSeconds) {
         if (!mGCMEnabled) return false;
-        Log.i(TAG, "Scheduling: " + periodSeconds);
+        Log.d(TAG, "Scheduling: " + periodWifiChargingSeconds + " " + periodWifiSeconds + " "
+                        + periodFallbackSeconds);
         // Google Play Services may not be up to date, if the application was not installed through
         // the Play Store. In this case, scheduling the task will fail silently.
-        PeriodicTask task = new PeriodicTask.Builder()
-                                    .setService(ChromeBackgroundService.class)
-                                    .setTag(TASK_TAG)
-                                    .setPeriod(periodSeconds)
-                                    .setRequiredNetwork(Task.NETWORK_STATE_UNMETERED)
-                                    .setPersisted(true)
-                                    .setUpdateCurrent(true)
-                                    .build();
         try {
-            mScheduler.schedule(task);
+            mScheduler.schedule(buildTask(TASK_TAG_WIFI_CHARGING, periodWifiChargingSeconds,
+                    Task.NETWORK_STATE_UNMETERED, true));
+            mScheduler.schedule(buildTask(
+                    TASK_TAG_WIFI, periodWifiSeconds, Task.NETWORK_STATE_UNMETERED, false));
+            mScheduler.schedule(buildTask(
+                    TASK_TAG_FALLBACK, periodFallbackSeconds, Task.NETWORK_STATE_CONNECTED, false));
         } catch (IllegalArgumentException e) {
             // Disable GCM for the remainder of this session.
             mGCMEnabled = false;
@@ -118,7 +132,9 @@ public class SnippetsLauncher {
         if (!mGCMEnabled) return false;
         Log.i(TAG, "Unscheduling");
         try {
-            mScheduler.cancelTask("SnippetsLauncher", ChromeBackgroundService.class);
+            mScheduler.cancelTask(TASK_TAG_WIFI_CHARGING, ChromeBackgroundService.class);
+            mScheduler.cancelTask(TASK_TAG_WIFI, ChromeBackgroundService.class);
+            mScheduler.cancelTask(TASK_TAG_FALLBACK, ChromeBackgroundService.class);
         } catch (IllegalArgumentException e) {
             // This occurs when SnippetsLauncherService is not found in the application
             // manifest. Disable GCM for the remainder of this session.

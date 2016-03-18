@@ -42,7 +42,9 @@ public class ChromeBackgroundService extends GcmTaskService {
                         handleBackgroundSyncEvent(context);
                         break;
 
-                    case SnippetsLauncher.TASK_TAG:
+                    case SnippetsLauncher.TASK_TAG_WIFI_CHARGING:
+                    case SnippetsLauncher.TASK_TAG_WIFI:
+                    case SnippetsLauncher.TASK_TAG_FALLBACK:
                         handleFetchSnippets(context);
                         break;
 

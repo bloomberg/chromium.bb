@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 
 // Android implementation of ntp_snippets::NTPSnippetsScheduler.
@@ -20,7 +21,9 @@ class NTPSnippetsLauncher : public ntp_snippets::NTPSnippetsScheduler {
   static bool Register(JNIEnv* env);
 
   // ntp_snippets::NTPSnippetsScheduler implementation.
-  bool Schedule(int period_seconds) override;
+  bool Schedule(base::TimeDelta period_wifi_charging,
+                base::TimeDelta period_wifi,
+                base::TimeDelta period_fallback) override;
   bool Unschedule() override;
 
  private:
