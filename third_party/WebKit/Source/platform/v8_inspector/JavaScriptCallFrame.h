@@ -70,8 +70,6 @@ public:
     v8::MaybeLocal<v8::Value> restart();
     v8::MaybeLocal<v8::Value> setVariableValue(int scopeNumber, v8::Local<v8::Value> variableName, v8::Local<v8::Value> newValue);
 
-    static v8::Local<v8::Object> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
-
     // FIXME: store this template in per isolate data
     void setWrapperTemplate(v8::Local<v8::FunctionTemplate> wrapperTemplate, v8::Isolate* isolate) { m_wrapperTemplate.Reset(isolate, wrapperTemplate); }
     v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }

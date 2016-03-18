@@ -55,7 +55,7 @@ public:
     V8DebuggerImpl* debugger() { return m_debugger; }
 
     InjectedScript* injectedScriptFor(v8::Local<v8::Context>);
-    InjectedScript* findInjectedScript(int) const;
+    InjectedScript* findInjectedScript(ErrorString*, int) const;
     InjectedScript* findInjectedScript(ErrorString*, RemoteObjectIdBase*) const;
     void discardInjectedScripts();
     int discardInjectedScriptFor(v8::Local<v8::Context>);

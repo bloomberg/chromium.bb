@@ -56,62 +56,6 @@ using blink::protocol::Maybe;
 
 namespace blink {
 
-static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(protocol::DictionaryValue* object)
-{
-    String16 text;
-    if (!object->getString("text", &text))
-        return nullptr;
-
-    OwnPtr<protocol::Runtime::ExceptionDetails> exceptionDetails = protocol::Runtime::ExceptionDetails::create().setText(text).build();
-    String16 url;
-    if (object->getString("url", &url))
-        exceptionDetails->setUrl(url);
-    int line = 0;
-    if (object->getNumber("line", &line))
-        exceptionDetails->setLine(line);
-    int column = 0;
-    if (object->getNumber("column", &column))
-        exceptionDetails->setColumn(column);
-    int originScriptId = 0;
-    object->getNumber("scriptId", &originScriptId);
-
-    protocol::ListValue* stackTrace = object->getArray("stackTrace");
-    if (stackTrace && stackTrace->size() > 0) {
-        OwnPtr<protocol::Array<protocol::Runtime::CallFrame>> frames = protocol::Array<protocol::Runtime::CallFrame>::create();
-        for (unsigned i = 0; i < stackTrace->size(); ++i) {
-            protocol::DictionaryValue* stackFrame = protocol::DictionaryValue::cast(stackTrace->at(i));
-            int lineNumber = 0;
-            stackFrame->getNumber("lineNumber", &lineNumber);
-            int column = 0;
-            stackFrame->getNumber("column", &column);
-            int scriptId = 0;
-            stackFrame->getNumber("scriptId", &scriptId);
-            if (i == 0 && scriptId == originScriptId)
-                originScriptId = 0;
-
-            String16 sourceURL;
-            stackFrame->getString("scriptNameOrSourceURL", &sourceURL);
-            String16 functionName;
-            stackFrame->getString("functionName", &functionName);
-
-            OwnPtr<protocol::Runtime::CallFrame> callFrame = protocol::Runtime::CallFrame::create()
-                .setFunctionName(functionName)
-                .setScriptId(String16::number(scriptId))
-                .setUrl(sourceURL)
-                .setLineNumber(lineNumber)
-                .setColumnNumber(column).build();
-
-            frames->addItem(callFrame.release());
-        }
-        OwnPtr<protocol::Runtime::StackTrace> stack = protocol::Runtime::StackTrace::create()
-            .setCallFrames(frames.release()).build();
-        exceptionDetails->setStack(stack.release());
-    }
-    if (originScriptId)
-        exceptionDetails->setScriptId(String16::number(originScriptId));
-    return exceptionDetails.release();
-}
-
 static void weakCallback(const v8::WeakCallbackInfo<InjectedScript>& data)
 {
     data.GetParameter()->dispose();
@@ -130,18 +74,6 @@ InjectedScript::InjectedScript(InjectedScriptManager* manager, v8::Local<v8::Con
 
 InjectedScript::~InjectedScript()
 {
-}
-
-void InjectedScript::evaluate(ErrorString* errorString, const String16& expression, const String16& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "evaluate");
-    function.appendArgument(expression);
-    function.appendArgument(objectGroup);
-    function.appendArgument(includeCommandLineAPI);
-    function.appendArgument(returnByValue);
-    function.appendArgument(generatePreview);
-    *result = makeEvalCall(errorString, function, wasThrown, exceptionDetails);
 }
 
 void InjectedScript::callFunctionOn(ErrorString* errorString, const String16& objectId, const String16& expression, const String16& arguments, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown)
@@ -390,7 +322,7 @@ PassOwnPtr<protocol::Value> InjectedScript::makeCall(V8FunctionCall& function)
     return result.release();
 }
 
-PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& function, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& function, Maybe<bool>* wasThrown)
 {
     OwnPtr<protocol::Value> result = makeCall(function);
     if (!result) {
@@ -412,11 +344,6 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::makeEvalCall(ErrorSt
     if (!resultObj || !resultPair->getBoolean("wasThrown", &wasThrownVal)) {
         *errorString = "Internal error: result is not a pair of value and wasThrown flag";
         return nullptr;
-    }
-    if (wasThrownVal) {
-        protocol::DictionaryValue* objectExceptionDetails = resultPair->getObject("exceptionDetails");
-        if (objectExceptionDetails)
-            *exceptionDetails = toExceptionDetails(objectExceptionDetails);
     }
     protocol::ErrorSupport errors(errorString);
     *wasThrown = wasThrownVal;
@@ -535,7 +462,8 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
         if (objectGroup == "console" && !setLastEvaluationResult(errorString, resultValue))
             return;
         *result = remoteObject.release();
-        *wasThrown = false;
+        if (wasThrown)
+            *wasThrown = false;
     } else {
         v8::Local<v8::Value> exception = tryCatch.Exception();
         OwnPtr<RemoteObject> remoteObject = wrapObject(errorString, exception, objectGroup, false, generatePreview && !exception->IsNativeError());
@@ -543,7 +471,8 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
             return;
         *result = remoteObject.release();
         *exceptionDetails = createExceptionDetails(tryCatch.Message());
-        *wasThrown = true;
+        if (wasThrown)
+            *wasThrown = true;
     }
 }
 

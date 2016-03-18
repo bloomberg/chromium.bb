@@ -88,13 +88,44 @@ void V8RuntimeAgentImpl::evaluate(
         *errorString = "Cannot find default execution context";
         return;
     }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId.fromJust());
-    if (!injectedScript) {
-        *errorString = "Cannot find execution context with given id";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, executionContextId.fromJust());
+    if (!injectedScript)
+        return;
+
+    v8::HandleScope scope(injectedScript->isolate());
+    v8::Local<v8::Context> localContext = injectedScript->context();
+    v8::Context::Scope contextScope(localContext);
+
+    if (!injectedScript->canAccessInspectedWindow()) {
+        *errorString = "Can not access given context";
         return;
     }
+
+    v8::MaybeLocal<v8::Object> commandLineAPI = includeCommandLineAPI.fromMaybe(false) ? injectedScript->commandLineAPI(errorString) : v8::MaybeLocal<v8::Object>();
+    if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
+        return;
+
+    InjectedScriptManager::ScopedGlobalObjectExtension scopeExtension(injectedScript, nullptr, commandLineAPI);
+
     IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    injectedScript->evaluate(errorString, expression, objectGroup.fromMaybe(""), includeCommandLineAPI.fromMaybe(false), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, exceptionDetails);
+
+    v8::TryCatch tryCatch(injectedScript->isolate());
+    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->compileAndRunInternalScript(localContext, toV8String(injectedScript->isolate(), expression));
+
+    // InjectedScript may be gone after any evaluate call - find it again.
+    injectedScript = m_injectedScriptManager->findInjectedScript(errorString, executionContextId.fromJust());
+    if (!injectedScript)
+        return;
+
+    injectedScript->wrapEvaluateResult(errorString,
+        maybeResultValue,
+        tryCatch,
+        objectGroup.fromMaybe(""),
+        returnByValue.fromMaybe(false),
+        generatePreview.fromMaybe(false),
+        result,
+        wasThrown,
+        exceptionDetails);
 }
 
 void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
@@ -196,11 +227,9 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
         *errorString = "Runtime agent is not enabled";
         return;
     }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, executionContextId);
+    if (!injectedScript)
         return;
-    }
 
     v8::Isolate* isolate = injectedScript->isolate();
     v8::HandleScope handles(isolate);
@@ -238,11 +267,9 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         *errorString = "Runtime agent is not enabled";
         return;
     }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, executionContextId);
+    if (!injectedScript)
         return;
-    }
 
     IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
 
@@ -262,7 +289,6 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         *errorString = "Script execution failed";
         return;
     }
-    v8::TryCatch tryCatch(isolate);
 
     v8::MaybeLocal<v8::Object> commandLineAPI = includeCommandLineAPI.fromMaybe(false) ? injectedScript->commandLineAPI(errorString) : v8::MaybeLocal<v8::Object>();
     if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
@@ -270,30 +296,15 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
 
     InjectedScriptManager::ScopedGlobalObjectExtension scopeExtension(injectedScript, nullptr, commandLineAPI);
 
-    v8::Local<v8::Value> value;
-    v8::MaybeLocal<v8::Value> maybeValue = m_debugger->runCompiledScript(context, script);
-    if (maybeValue.IsEmpty()) {
-        value = tryCatch.Exception();
-        v8::Local<v8::Message> message = tryCatch.Message();
-        if (!message.IsEmpty())
-            *exceptionDetails = injectedScript->createExceptionDetails(message);
-    } else {
-        value = maybeValue.ToLocalChecked();
-    }
-
-    if (value.IsEmpty()) {
-        *errorString = "Script execution failed";
-        return;
-    }
+    v8::TryCatch tryCatch(isolate);
+    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->runCompiledScript(context, script);
 
     // InjectedScript may be gone after any evaluate call - find it again.
-    injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone during script running";
+    injectedScript = m_injectedScriptManager->findInjectedScript(errorString, executionContextId);
+    if (!injectedScript)
         return;
-    }
 
-    *result = injectedScript->wrapObject(errorString, value, objectGroup.fromMaybe(""));
+    injectedScript->wrapEvaluateResult(errorString, maybeResultValue, tryCatch, objectGroup.fromMaybe(""), false, false, result, nullptr, exceptionDetails);
 }
 
 void V8RuntimeAgentImpl::setInspectorState(protocol::DictionaryValue* state)

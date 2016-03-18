@@ -65,23 +65,18 @@ InjectedScriptHost* InjectedScriptManager::injectedScriptHost()
     return m_injectedScriptHost.get();
 }
 
-InjectedScript* InjectedScriptManager::findInjectedScript(int id) const
+InjectedScript* InjectedScriptManager::findInjectedScript(ErrorString* errorString, int id) const
 {
     IdToInjectedScriptMap::const_iterator it = m_idToInjectedScript.find(id);
     if (it != m_idToInjectedScript.end())
         return it->second;
+    *errorString = "Inspected frame has gone";
     return nullptr;
 }
 
 InjectedScript* InjectedScriptManager::findInjectedScript(ErrorString* errorString, RemoteObjectIdBase* objectId) const
 {
-    InjectedScript* injectedScript = nullptr;
-    if (objectId) {
-        injectedScript = findInjectedScript(objectId->contextId());
-        if (!injectedScript)
-            *errorString = "Inspected frame has gone";
-    }
-    return injectedScript;
+    return objectId ? findInjectedScript(errorString, objectId->contextId()) : nullptr;
 }
 
 void InjectedScriptManager::discardInjectedScripts()

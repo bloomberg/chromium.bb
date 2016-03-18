@@ -78,13 +78,6 @@ InjectedScriptHostClass.prototype.getEventListeners = function(target) {}
 InjectedScriptHostClass.prototype.eval = function(text) {}
 
 /**
- * @param {string} text
- * @param {!Object=} commandLineAPI
- * @return {*}
- */
-InjectedScriptHostClass.prototype.evaluateWithExceptionDetails = function(text, commandLineAPI) {}
-
-/**
  * @param {*} fn
  */
 InjectedScriptHostClass.prototype.debugFunction = function(fn) {}

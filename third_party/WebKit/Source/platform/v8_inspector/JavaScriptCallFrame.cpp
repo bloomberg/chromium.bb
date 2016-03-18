@@ -223,19 +223,4 @@ v8::MaybeLocal<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber,
     return setVariableValueFunction->Call(m_isolate->GetCurrentContext(), callFrame, WTF_ARRAY_LENGTH(argv), argv);
 }
 
-v8::Local<v8::Object> JavaScriptCallFrame::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
-{
-    v8::Local<v8::Object> exceptionDetails = v8::Object::New(isolate);
-    exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "text"), message->Get());
-    exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "url"), message->GetScriptOrigin().ResourceName());
-    exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "scriptId"), v8::Integer::New(isolate, message->GetScriptOrigin().ScriptID()->Value()));
-    exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "line"), v8::Integer::New(isolate, message->GetLineNumber()));
-    exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "column"), v8::Integer::New(isolate, message->GetStartColumn()));
-    if (!message->GetStackTrace().IsEmpty())
-        exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "stackTrace"), message->GetStackTrace()->AsArray());
-    else
-        exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "stackTrace"), v8::Undefined(isolate));
-    return exceptionDetails;
-}
-
 } // namespace blink

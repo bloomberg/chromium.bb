@@ -646,28 +646,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} expression
-     * @param {string} objectGroup
-     * @param {boolean} injectCommandLineAPI
-     * @param {boolean} returnByValue
-     * @param {boolean} generatePreview
-     * @return {*}
-     */
-    evaluate: function(expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
-    {
-        var scopeExtensionForEval = injectCommandLineAPI ? new CommandLineAPI(this._commandLineAPIImpl) : undefined;
-        var wrappedResult = InjectedScriptHost.evaluateWithExceptionDetails(expression, scopeExtensionForEval);
-        if (objectGroup === "console" && !wrappedResult.exceptionDetails)
-            this._lastResult = wrappedResult.result;
-        if (!wrappedResult.exceptionDetails) {
-            return { wasThrown: false,
-                     result: this._wrapObject(wrappedResult.result, objectGroup, returnByValue, generatePreview),
-                     __proto__: null };
-        }
-        return this._createThrownValue(wrappedResult.result, objectGroup, generatePreview, wrappedResult.exceptionDetails);
-    },
-
-    /**
      * @param {string} objectId
      * @param {string} expression
      * @param {string} args
@@ -839,21 +817,6 @@ InjectedScript.prototype = {
     commandLineAPI: function()
     {
         return new CommandLineAPI(this._commandLineAPIImpl);
-    },
-
-    /**
-     * @param {!JavaScriptCallFrame} topCallFrame
-     * @param {string} callFrameId
-     * @return {?JavaScriptCallFrame}
-     */
-    _callFrameForId: function(topCallFrame, callFrameId)
-    {
-        var parsedCallFrameId = nullifyObjectProto(/** @type {!Object} */ (InjectedScriptHost.eval("(" + callFrameId + ")")));
-        var ordinal = parsedCallFrameId["ordinal"];
-        var callFrame = topCallFrame;
-        while (--ordinal >= 0 && callFrame)
-            callFrame = callFrame.caller;
-        return callFrame;
     },
 
     /**

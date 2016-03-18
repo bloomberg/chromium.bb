@@ -53,16 +53,6 @@ class InjectedScript final {
 public:
     ~InjectedScript();
 
-    void evaluate(
-        ErrorString*,
-        const String16& expression,
-        const String16& objectGroup,
-        bool includeCommandLineAPI,
-        bool returnByValue,
-        bool generatePreview,
-        OwnPtr<protocol::Runtime::RemoteObject>* result,
-        Maybe<bool>* wasThrown,
-        Maybe<protocol::Runtime::ExceptionDetails>*);
     void callFunctionOn(
         ErrorString*,
         const String16& objectId,
@@ -120,7 +110,7 @@ private:
     v8::Local<v8::Value> v8Value() const;
     v8::Local<v8::Value> callFunctionWithEvalEnabled(V8FunctionCall&, bool& hadException) const;
     PassOwnPtr<protocol::Value> makeCall(V8FunctionCall&);
-    PassOwnPtr<protocol::Runtime::RemoteObject> makeEvalCall(ErrorString*, V8FunctionCall&, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* = 0);
+    PassOwnPtr<protocol::Runtime::RemoteObject> makeEvalCall(ErrorString*, V8FunctionCall&, Maybe<bool>* wasThrown);
     PassOwnPtr<protocol::Value> makeCallWithExceptionDetails(V8FunctionCall&, Maybe<protocol::Runtime::ExceptionDetails>*);
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
 
