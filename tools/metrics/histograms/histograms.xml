@@ -15892,9 +15892,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="GPU.GPUProcessLaunchCause" enum="GPUProcessLaunchCauses">
-  <owner>vangelis@chromium.org</owner>
+  <owner>piman@chromium.org</owner>
   <summary>
     Counts enumerating the initial cause for the GPU Process to be launched.
+  </summary>
+</histogram>
+
+<histogram name="GPU.GPUProcessLaunchTime" units="ms">
+  <owner>piman@chromium.org</owner>
+  <summary>
+    Startup time of the GPU process as measured by the GPU process host.
   </summary>
 </histogram>
 
