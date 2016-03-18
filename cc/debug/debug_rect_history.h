@@ -87,6 +87,7 @@ class DebugRectHistory {
   void SaveTouchEventHandlerRects(LayerImpl* layer);
   void SaveTouchEventHandlerRectsCallback(LayerImpl* layer);
   void SaveWheelEventHandlerRects(LayerImpl* layer);
+  void SaveWheelEventHandlerRectsCallback(LayerImpl* layer);
   void SaveScrollEventHandlerRects(LayerImpl* layer);
   void SaveScrollEventHandlerRectsCallback(LayerImpl* layer);
   void SaveNonFastScrollableRects(LayerImpl* layer);
