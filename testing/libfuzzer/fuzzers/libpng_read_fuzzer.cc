@@ -37,7 +37,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   std::vector<unsigned char> v(data, data + size);
-  if (!png_sig_cmp(v.data(), 0, kPngHeaderSize)) {
+  if (png_sig_cmp(v.data(), 0, kPngHeaderSize)) {
     // not a PNG.
     return 0;
   }
