@@ -137,7 +137,7 @@ OrientationEvent
 ForceOverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
-PassiveEventListeners status=experimental
+PassiveEventListeners status=stable
 PassPaintVisualRectToCompositor
 PathOpsSVGClipping status=stable
 PaymentRequest status=experimental
