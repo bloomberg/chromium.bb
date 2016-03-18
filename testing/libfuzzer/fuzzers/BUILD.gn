@@ -59,6 +59,8 @@ if (proprietary_codecs) {
       "//base",
       "//media",
     ]
+    libfuzzer_options = "mp4_box_reader_fuzzer.options"
+    dict = "dicts/mp4.dict"
   }
 }
 
