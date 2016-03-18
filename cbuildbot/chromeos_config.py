@@ -122,6 +122,8 @@ class HWTestList(object):
 
     au_kwargs = kwargs.copy()
     au_kwargs.update(au_dict)
+    # Force au suite to run first.
+    au_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
 
     async_kwargs = kwargs.copy()
     async_kwargs.update(async_dict)
@@ -131,7 +133,8 @@ class HWTestList(object):
     async_kwargs['timeout'] = config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT
 
     # BVT + AU suite.
-    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE, **kwargs),
+    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                    timeout=120*60, **kwargs),
             config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                     blocking=True, **au_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
