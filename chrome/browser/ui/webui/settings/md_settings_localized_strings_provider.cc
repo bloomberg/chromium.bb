@@ -245,9 +245,11 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_CA_DESCRIPTION},
       {"certificateManagerDeleteOtherTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_OTHER_TITLE},
-       // Encrypt password dialog
+       // Encrypt/decrypt password dialogs.
       {"certificateManagerEncryptPasswordTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_TITLE},
+      {"certificateManagerDecryptPasswordTitle",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_DECRYPT_PASSWORD_TITLE},
       {"certificateManagerEncryptPasswordDescription",
        IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_DESCRIPTION},
       {"certificateManagerPassword",

@@ -285,9 +285,12 @@
     Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph>"?
   </message>
 
-  <!-- Certificate Manager Page, encrypt password dialog-->
+  <!-- Certificate Manager Page, encrypt/decrypt password dialogs -->
   <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_TITLE" desc="Description of password prompt in certificate manager for exporting a personal certificate">
     Please enter a password to encrypt this certificate file
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DECRYPT_PASSWORD_TITLE" desc="Description of password prompt in certificate manager for restoring a personal certificate">
+    Please enter the password that was used to encrypt this certificate file
   </message>
   <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_DESCRIPTION" desc="Text in password prompt of certificate manager for exporting a personal certificate, reminding user that if they forget the password they're screwed.">
     The password you choose will be required to restore this file later. Please record it in a safe location.

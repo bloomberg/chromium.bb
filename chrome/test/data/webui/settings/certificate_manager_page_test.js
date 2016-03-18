@@ -18,6 +18,7 @@ cr.define('certificate_manager_page', function() {
       'editCaCertificateTrust',
       'exportPersonalCertificatePasswordSelected',
       'getCaCertificateTrust',
+      'importPersonalCertificatePasswordSelected',
     ]);
 
     /** @private {!CaTrustInfo} */
@@ -60,10 +61,17 @@ cr.define('certificate_manager_page', function() {
           'exportPersonalCertificatePasswordSelected').resolve(password);
       return Promise.resolve();
     },
+
+    /** @override */
+    importPersonalCertificatePasswordSelected: function(password) {
+      this.resolverMap_.get(
+          'importPersonalCertificatePasswordSelected').resolve(password);
+      return Promise.resolve();
+    },
   };
 
   /** @return {!CertificateSubnode} */
-  var createSampleCertificateSubnode = function() {
+  function createSampleCertificateSubnode() {
     return {
       extractable: false,
       id: 'dummyId',
@@ -73,7 +81,18 @@ cr.define('certificate_manager_page', function() {
       untrusted: false,
       urlLocked: false,
     };
-  };
+  }
+
+  /**
+   * Triggers an 'input' event on the given text input field (which triggers
+   * validation to occur for password fields being tested in this file).
+   * @param {!PaperInputElement} element
+   */
+  function triggerInputEvent(element) {
+    // The actual key code is irrelevant for tests.
+    var kSpaceBar = 32;
+    MockInteractions.keyEventOn(element, 'input', kSpaceBar);
+  }
 
   function registerCaTrustEditDialogTests() {
     /** @type {?SettingsCaTrustEditDialogElement} */
@@ -209,26 +228,18 @@ cr.define('certificate_manager_page', function() {
         assertTrue(dialog.$.dialog.opened);
         assertTrue(dialog.$.ok.disabled);
 
-        var triggerValidation = function(element) {
-          // Simulating an 'input' event on the given password input field,
-          // which triggers validation to occur. The actual key code is
-          // irrelevant for this test.
-          var kSpaceBar = 32;
-          MockInteractions.keyEventOn(element, 'input', kSpaceBar);
-        };
-
         // Test that the 'OK' button is disabled when the password fields are
         // empty (even though they both have the same value).
-        triggerValidation(passwordInputElement);
+        triggerInputEvent(passwordInputElement);
         assertTrue(dialog.$.ok.disabled);
 
         // Test that the 'OK' button is disabled until the two password fields
         // match.
         passwordInputElement.value = 'foopassword';
-        triggerValidation(passwordInputElement);
+        triggerInputEvent(passwordInputElement);
         assertTrue(dialog.$.ok.disabled);
         confirmPasswordInputElement.value = passwordInputElement.value;
-        triggerValidation(confirmPasswordInputElement);
+        triggerInputEvent(confirmPasswordInputElement);
         assertFalse(dialog.$.ok.disabled);
 
         // Simulate clicking 'OK'.
@@ -244,9 +255,58 @@ cr.define('certificate_manager_page', function() {
     });
   }
 
+  function registerPasswordDecryptDialogTests() {
+    /** @type {?SettingsCertificatePasswordDecryptionDialogElement} */
+    var dialog = null;
+
+    /** @type {?TestCertificatesBrowserProxy} */
+    var browserProxy = null;
+
+    suite('CertificatePasswordDecryptionDialogTests', function() {
+      setup(function() {
+        browserProxy = new TestCertificatesBrowserProxy();
+        settings.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+        dialog = document.createElement(
+            'settings-certificate-password-decryption-dialog');
+        document.body.appendChild(dialog);
+      });
+
+      teardown(function() { dialog.remove(); });
+
+      test('DecryptSuccess', function() {
+        var passwordInputElement =
+            Polymer.dom(dialog.$.dialog).querySelector('paper-input');
+        assertTrue(dialog.$.dialog.opened);
+        assertTrue(dialog.$.ok.disabled);
+
+        // Test that the 'OK' button is disabled when the password field is
+        // empty.
+        triggerInputEvent(passwordInputElement);
+        assertTrue(dialog.$.ok.disabled);
+        passwordInputElement.value = 'foopassword';
+        triggerInputEvent(passwordInputElement);
+        assertFalse(dialog.$.ok.disabled);
+
+        // Simulate clicking 'OK'.
+        MockInteractions.tap(dialog.$.ok);
+
+        var methodName = 'importPersonalCertificatePasswordSelected';
+        return browserProxy.whenCalled(methodName).then(function(password) {
+          assertEquals(passwordInputElement.value, password);
+          // Check that the dialog is closed.
+          assertFalse(dialog.$.dialog.opened);
+        });
+      });
+    });
+  }
+
   return {
-    registerCaTrustEditDialogTests: registerCaTrustEditDialogTests,
-    registerDeleteDialogTests: registerDeleteDialogTests,
-    registerPasswordEncryptDialogTests: registerPasswordEncryptDialogTests,
+    registerTests: function() {
+      registerCaTrustEditDialogTests();
+      registerDeleteDialogTests();
+      registerPasswordEncryptDialogTests();
+      registerPasswordDecryptDialogTests();
+    },
   };
 });

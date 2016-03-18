@@ -3,27 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview A dialog prompting the user to encrypt a personal certificate
- * before it is exported to disk.
+ * @fileoverview A dialog prompting the user for a decryption password such that
+ * a previously exported personal certificate can be imported.
  */
 Polymer({
-  is: 'settings-certificate-password-encryption-dialog',
+  is: 'settings-certificate-password-decryption-dialog',
 
   properties: {
     /** @private {!settings.CertificatesBrowserProxy} */
     browserProxy_: Object,
 
-    /** @type {!CertificateSubnode} */
-    model: Object,
-
     /** @private */
     password_: {
-      type: String,
-      value: '',
-    },
-
-    /** @private */
-    confirmPassword_: {
       type: String,
       value: '',
     },
@@ -46,7 +37,7 @@ Polymer({
 
   /** @private */
   onOkTap_: function() {
-    this.browserProxy_.exportPersonalCertificatePasswordSelected(
+    this.browserProxy_.importPersonalCertificatePasswordSelected(
         this.password_).then(function() {
       this.$.dialog.close();
     }.bind(this),
@@ -54,12 +45,5 @@ Polymer({
     function(error) {
       // TODO(dpapad): Display error here.
     });
-  },
-
-  /** @private */
-  validate_: function() {
-    var isValid = this.password_ != '' &&
-        this.password_ == this.confirmPassword_;
-    this.$.ok.disabled = !isValid;
   },
 });

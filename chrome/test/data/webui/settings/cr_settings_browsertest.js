@@ -159,9 +159,7 @@ CrSettingsCertificateManagerTest.prototype = {
 };
 
 TEST_F('CrSettingsCertificateManagerTest', 'CertificateManager', function() {
-  certificate_manager_page.registerCaTrustEditDialogTests();
-  certificate_manager_page.registerDeleteDialogTests();
-  certificate_manager_page.registerPasswordEncryptDialogTests();
+  certificate_manager_page.registerTests();
   mocha.run();
 });
 
