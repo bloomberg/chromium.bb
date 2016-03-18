@@ -1,8 +1,5 @@
 {
   "Android GN": {
-    "additional_compile_targets": [
-      "all"
-    ],
     "gtest_tests": [
       {
         "test": "android_webview_unittests"

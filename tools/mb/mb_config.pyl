@@ -56,7 +56,7 @@
       'Android Builder': 'swarming_android_gyp_release_bot_minimal_symbols',
       'Android Clang Builder (dbg)': 'android_clang_asan_gyp_debug_bot',
       'Android GN (dbg)': 'android_gn_debug_bot',
-      'Android GN': 'android_gn_release_bot',
+      'Android GN': 'android_gn_release_bot_minimal_symbols',
       'Android Tests (dbg)': 'swarming_android_gyp_debug_static_bot',
       'Android Tests': 'swarming_android_gyp_release_bot_minimal_symbols',
       'Cast Android (dbg)': 'android_cast_gyp_debug_static_bot',
@@ -446,6 +446,10 @@
 
     'android_gn_release_bot': [
       'android', 'gn', 'release_bot',
+    ],
+
+    'android_gn_release_bot_minimal_symbols': [
+      'android', 'gn', 'release_bot_minimal_symbols',
     ],
 
     'android_gn_release_trybot': [
