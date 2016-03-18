@@ -242,13 +242,8 @@ class BookmarkButtonBase : public views::LabelButton {
   }
 
   SkColor GetInkDropBaseColor() const override {
-    // TODO(bruthig): Inject the color instead of assuming a ThemeProvider is
-    // always available. Fall back on LabelButton::GetInkDropBaseColor() so as
-    // to avoid difficult to track down crashes.
-    return GetThemeProvider()
-               ? GetThemeProvider()->GetColor(
-                     ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
-               : views::LabelButton::GetInkDropBaseColor();
+    return GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   }
 
  private:
@@ -345,10 +340,8 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   }
 
   SkColor GetInkDropBaseColor() const override {
-    return GetThemeProvider()
-               ? GetThemeProvider()->GetColor(
-                     ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
-               : views::LabelButton::GetInkDropBaseColor();
+    return GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   }
 
  private:

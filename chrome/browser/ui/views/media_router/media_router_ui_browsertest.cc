@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "ui/views/widget/widget.h"
 
 namespace media_router {
 
@@ -43,14 +44,20 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     media_router_action_.reset(new MediaRouterAction(browser(),
         browser_action_test_util_->GetToolbarActionsBar()));
 
+    toolbar_action_view_widget_ = new views::Widget();
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    toolbar_action_view_widget_->Init(params);
+    toolbar_action_view_widget_->Show();
+
     // Sets delegate on |media_router_action_|.
-    toolbar_action_view_.reset(
-        new ToolbarActionView(media_router_action_.get(),
-                              browser_actions_container));
+    toolbar_action_view_ = new ToolbarActionView(media_router_action_.get(),
+                                                 browser_actions_container);
+    toolbar_action_view_widget_->SetContentsView(toolbar_action_view_);
   }
 
   void TearDownOnMainThread() override {
-    toolbar_action_view_.reset();
+    toolbar_action_view_widget_->Close();
     media_router_action_.reset();
     browser_action_test_util_.reset();
     InProcessBrowserTest::TearDownOnMainThread();
@@ -90,8 +97,12 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
   scoped_ptr<MediaRouterAction> media_router_action_;
 
-  // ToolbarActionView constructed to set the delegate on |mr_action|.
-  scoped_ptr<ToolbarActionView> toolbar_action_view_;
+  // ToolbarActionView constructed to set the delegate on
+  // |media_router_action_|.
+  ToolbarActionView* toolbar_action_view_;
+
+  // Hosts the |toolbar_action_view_|.
+  views::Widget* toolbar_action_view_widget_;
 };
 
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,

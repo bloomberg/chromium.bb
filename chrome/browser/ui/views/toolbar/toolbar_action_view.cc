@@ -119,10 +119,8 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
         ui::NativeTheme::kColorId_HoverMenuItemBackgroundColor);
   }
 
-  return GetThemeProvider()
-             ? GetThemeProvider()->GetColor(
-                   ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
-             : CustomButton::GetInkDropBaseColor();
+  return GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 }
 
 bool ToolbarActionView::ShouldShowInkDropHover() const {
