@@ -1380,7 +1380,14 @@ void DesktopAuraTestValidPaintWidget::InitForTest(InitParams init_params) {
   Activate();
 }
 
-TEST_F(WidgetTest, DesktopNativeWidgetNoPaintAfterCloseTest) {
+#if defined(OS_LINUX)
+// Flaky on Linux rel ng: https://crbug.com/596039.
+#define MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest DISABLED_DesktopNativeWidgetNoPaintAfterCloseTest
+#else
+#define MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest DesktopNativeWidgetNoPaintAfterCloseTest
+#endif
+
+TEST_F(WidgetTest, MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest) {
   DesktopAuraTestValidPaintWidget widget;
   widget.InitForTest(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
   RunPendingMessages();
