@@ -47,4 +47,9 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* 
     return effect.release();
 }
 
+bool SVGFEMergeElement::taintsOrigin(bool inputsTaintOrigin) const
+{
+    return inputsTaintOrigin;
+}
+
 } // namespace blink

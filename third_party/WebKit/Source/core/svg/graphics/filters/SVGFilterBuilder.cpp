@@ -178,6 +178,8 @@ void SVGFilterBuilder::buildGraph(Filter* filter, SVGFilterElement& filterElemen
         effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement.primitiveUnits()->currentValue()->enumValue(), referenceBox));
         EColorInterpolation colorInterpolation = colorInterpolationForElement(*effectElement, filterColorInterpolation);
         effect->setOperatingColorSpace(colorInterpolation == CI_LINEARRGB ? ColorSpaceLinearRGB : ColorSpaceDeviceRGB);
+        if (effectElement->taintsOrigin(effect->inputsTaintOrigin()))
+            effect->setOriginTainted();
 
         add(AtomicString(effectElement->result()->currentValue()->value()), effect);
     }

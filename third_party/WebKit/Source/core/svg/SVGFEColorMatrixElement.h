@@ -48,6 +48,7 @@ private:
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     void svgAttributeChanged(const QualifiedName&) override;
     PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    bool taintsOrigin(bool inputsTaintOrigin) const override;
 
     RefPtrWillBeMember<SVGAnimatedNumberList> m_values;
     RefPtrWillBeMember<SVGAnimatedString> m_in1;

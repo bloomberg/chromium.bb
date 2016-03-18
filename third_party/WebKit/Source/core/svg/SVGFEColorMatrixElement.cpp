@@ -100,4 +100,9 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBui
     return effect.release();
 }
 
+bool SVGFEColorMatrixElement::taintsOrigin(bool inputsTaintOrigin) const
+{
+    return inputsTaintOrigin;
+}
+
 } // namespace blink

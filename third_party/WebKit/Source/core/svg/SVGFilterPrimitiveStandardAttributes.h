@@ -45,6 +45,8 @@ public:
     // Returns true, if the new value is different from the old one.
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&);
 
+    virtual bool taintsOrigin(bool inputsTaintOrigin) const { return true; }
+
     // JS API
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }

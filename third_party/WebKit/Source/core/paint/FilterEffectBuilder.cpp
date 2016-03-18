@@ -239,6 +239,8 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
                 effect->setOperatingColorSpace(ColorSpaceDeviceRGB);
                 effect->inputEffects().append(previousEffect);
             }
+            if (previousEffect->originTainted())
+                effect->setOriginTainted();
             previousEffect = effect.release();
         }
     }

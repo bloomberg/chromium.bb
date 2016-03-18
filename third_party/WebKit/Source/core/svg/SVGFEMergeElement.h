@@ -35,6 +35,7 @@ private:
     explicit SVGFEMergeElement(Document&);
 
     PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    bool taintsOrigin(bool inputsTaintOrigin) const override;
 };
 
 } // namespace blink

@@ -38,6 +38,7 @@ FilterEffect::FilterEffect(Filter* filter)
     , m_hasWidth(false)
     , m_hasHeight(false)
     , m_clipsToBounds(true)
+    , m_originTainted(false)
     , m_operatingColorSpace(ColorSpaceLinearRGB)
 {
     ASSERT(m_filter);
@@ -196,6 +197,15 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder
 PassRefPtr<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaImageFilterBuilder& builder)
 {
     return createImageFilter(builder);
+}
+
+bool FilterEffect::inputsTaintOrigin() const
+{
+    for (const RefPtrWillBeMember<FilterEffect>& effect : m_inputEffects) {
+        if (effect->originTainted())
+            return true;
+    }
+    return false;
 }
 
 PassRefPtr<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBuilder& builder) const

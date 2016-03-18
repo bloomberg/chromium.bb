@@ -149,6 +149,11 @@ public:
     SkImageFilter* getImageFilter(ColorSpace, bool requiresPMColorValidation) const;
     void setImageFilter(ColorSpace, bool requiresPMColorValidation, PassRefPtr<SkImageFilter>);
 
+    bool originTainted() const { return m_originTainted; }
+    void setOriginTainted() { m_originTainted = true; }
+
+    bool inputsTaintOrigin() const;
+
 protected:
     FilterEffect(Filter*);
 
@@ -189,6 +194,8 @@ private:
 
     // Should the effect clip to its primitive region, or expand to use the combined region of its inputs.
     bool m_clipsToBounds;
+
+    bool m_originTainted;
 
     ColorSpace m_operatingColorSpace;
 
