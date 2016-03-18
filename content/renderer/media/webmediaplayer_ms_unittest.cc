@@ -706,19 +706,19 @@ TEST_F(WebMediaPlayerMSTest, BackgroudRendering) {
 
 #if defined(OS_ANDROID)
 TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
-  delegate_.set_hidden(true);
   LoadAndGetFrameProvider(true);
 
-  // A hidden player shouldn't automatically start rendering after play().
+  // Hidden status should not affect playback.
+  delegate_.set_hidden(true);
   player_.play();
-  EXPECT_TRUE(player_.paused());
+  EXPECT_FALSE(player_.paused());
 
-  // A pause delivered via the delegate should not undo automatic resume when
-  // OnShown() occurs.
+  // A pause delivered via the delegate should not pause the video since these
+  // calls are currently ignored.
   player_.OnPause();
-  EXPECT_TRUE(player_.paused());
+  EXPECT_FALSE(player_.paused());
 
-  // A hidden player should start playing after being shown again.
+  // A hidden player should start still be playing upon shown.
   delegate_.set_hidden(false);
   player_.OnShown();
   EXPECT_FALSE(player_.paused());
@@ -727,10 +727,6 @@ TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
   delegate_.set_hidden(true);
   player_.OnHidden();
   EXPECT_FALSE(player_.paused());
-
-  // OnPause() should pause the player.
-  player_.OnPause();
-  EXPECT_TRUE(player_.paused());
 
   // A user generated pause() should clear the automatic resumption.
   player_.pause();
