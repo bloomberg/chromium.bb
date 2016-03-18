@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -35,7 +36,7 @@ void DataUseUITabModel::ReportBrowserNavigation(
   DataUseTabModel::TransitionType transition_type;
 
   if (data_use_tab_model_ &&
-      ConvertTransitionType(page_transition, &transition_type)) {
+      ConvertTransitionType(page_transition, gurl, &transition_type)) {
     data_use_tab_model_->OnNavigationEvent(tab_id, transition_type, gurl,
                                            std::string());
   }
@@ -149,7 +150,7 @@ bool DataUseUITabModel::WouldDataUseTrackingEnd(
   DataUseTabModel::TransitionType transition_type;
 
   if (!ConvertTransitionType(ui::PageTransitionFromInt(page_transition),
-                             &transition_type)) {
+                             GURL(url), &transition_type)) {
     return false;
   }
 
@@ -204,6 +205,7 @@ bool DataUseUITabModel::RemoveTabEvent(SessionID::id_type tab_id,
 
 bool DataUseUITabModel::ConvertTransitionType(
     ui::PageTransition page_transition,
+    const GURL& gurl,
     DataUseTabModel::TransitionType* transition_type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -232,9 +234,13 @@ bool DataUseUITabModel::ConvertTransitionType(
       *transition_type = DataUseTabModel::TRANSITION_BOOKMARK;
       return true;
     case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
-      // History menu.
-      *transition_type = DataUseTabModel::TRANSITION_HISTORY_ITEM;
-      return true;
+      if (gurl == GURL(kChromeUIHistoryFrameURL) ||
+          gurl == GURL(kChromeUIHistoryURL)) {
+        // History menu.
+        *transition_type = DataUseTabModel::TRANSITION_HISTORY_ITEM;
+        return true;
+      }
+      return false;
     case ui::PAGE_TRANSITION_GENERATED:
       // Omnibox search (e.g., searching for "tacos").
       *transition_type = DataUseTabModel::TRANSITION_OMNIBOX_SEARCH;

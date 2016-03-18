@@ -15,6 +15,7 @@
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/common/url_constants.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
@@ -355,84 +356,77 @@ TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
 
 // Checks if page transition type is converted correctly.
 TEST_F(DataUseUITabModelTest, ConvertTransitionType) {
-  DataUseTabModel::TransitionType transition_type;
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_TYPED), &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_TYPED | 0xFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_TYPED | 0xFFFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_TYPED | 0x12FFFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, transition_type);
+  const struct {
+    ui::PageTransition page_transition;
+    const std::string url;
+    bool expected_return;
+    DataUseTabModel::TransitionType expected_transition_type;
+  } tests[] = {
+      {ui::PageTransition(ui::PAGE_TRANSITION_TYPED), std::string(), true,
+       DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION},
+      {ui::PageTransition(ui::PAGE_TRANSITION_TYPED | 0xFF00), std::string(),
+       true, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION},
+      {ui::PageTransition(ui::PAGE_TRANSITION_TYPED | 0xFFFF00), std::string(),
+       true, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION},
+      {ui::PageTransition(ui::PAGE_TRANSITION_TYPED | 0x12FFFF00),
+       std::string(), true, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION},
+      {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_BOOKMARK), std::string(),
+       true, DataUseTabModel::TRANSITION_BOOKMARK},
+      {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_BOOKMARK | 0xFF00),
+       std::string(), true, DataUseTabModel::TRANSITION_BOOKMARK},
+      {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_BOOKMARK | 0xFFFF00),
+       std::string(), true, DataUseTabModel::TRANSITION_BOOKMARK},
+      {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_BOOKMARK | 0x12FFFF00),
+       std::string(), true, DataUseTabModel::TRANSITION_BOOKMARK},
+      {ui::PageTransition(ui::PAGE_TRANSITION_GENERATED), std::string(), true,
+       DataUseTabModel::TRANSITION_OMNIBOX_SEARCH},
+      {ui::PageTransition(ui::PAGE_TRANSITION_GENERATED | 0xFF00),
+       std::string(), true, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH},
+      {ui::PageTransition(ui::PAGE_TRANSITION_GENERATED | 0xFFFF00),
+       std::string(), true, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH},
+      {ui::PageTransition(ui::PAGE_TRANSITION_GENERATED | 0x12FFFF00),
+       std::string(), true, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH},
+      {ui::PageTransition(ui::PAGE_TRANSITION_RELOAD), std::string(), true,
+       DataUseTabModel::TRANSITION_RELOAD},
+      {ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0xFF00), std::string(),
+       true, DataUseTabModel::TRANSITION_RELOAD},
+      {ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0xFFFF00), std::string(),
+       true, DataUseTabModel::TRANSITION_RELOAD},
+      {ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0x12FFFF00),
+       std::string(), true, DataUseTabModel::TRANSITION_RELOAD},
 
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_AUTO_BOOKMARK), &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_BOOKMARK, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_AUTO_BOOKMARK | 0xFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_BOOKMARK, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_AUTO_BOOKMARK | 0xFFFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_BOOKMARK, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_AUTO_BOOKMARK | 0x12FFFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_BOOKMARK, transition_type);
+      // Navigating back or forward.
+      {ui::PageTransition(ui::PAGE_TRANSITION_RELOAD |
+                          ui::PAGE_TRANSITION_FORWARD_BACK),
+       std::string(), false},
+      {ui::PageTransition(ui::PAGE_TRANSITION_RELOAD |
+                          ui::PAGE_TRANSITION_AUTO_SUBFRAME),
+       std::string(), false},
+      {ui::PageTransition(ui::PAGE_TRANSITION_RELOAD |
+                          ui::PAGE_TRANSITION_MANUAL_SUBFRAME),
+       std::string(), false},
+      {ui::PageTransition(ui::PAGE_TRANSITION_RELOAD |
+                          ui::PAGE_TRANSITION_FORM_SUBMIT),
+       std::string(), false},
 
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_GENERATED), &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_GENERATED | 0xFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_GENERATED | 0xFFFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_GENERATED | 0x12FFFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, transition_type);
+      // Navigating history.
+      {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_TOPLEVEL),
+       kChromeUIHistoryFrameURL, true,
+       DataUseTabModel::TRANSITION_HISTORY_ITEM},
+      {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_TOPLEVEL),
+       kChromeUIHistoryURL, true, DataUseTabModel::TRANSITION_HISTORY_ITEM},
+      {ui::PageTransition(ui::PAGE_TRANSITION_AUTO_TOPLEVEL), std::string(),
+       false},
+  };
 
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD), &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_RELOAD, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0xFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_RELOAD, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0xFFFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_RELOAD, transition_type);
-  EXPECT_TRUE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD | 0x12FFFF00),
-      &transition_type));
-  EXPECT_EQ(DataUseTabModel::TRANSITION_RELOAD, transition_type);
-
-  // Navigating back or forward.
-  EXPECT_FALSE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_RELOAD |
-                         ui::PAGE_TRANSITION_FORWARD_BACK),
-      &transition_type));
-
-  EXPECT_FALSE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_AUTO_SUBFRAME), &transition_type));
-  EXPECT_FALSE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_MANUAL_SUBFRAME),
-      &transition_type));
-  EXPECT_FALSE(data_use_ui_tab_model()->ConvertTransitionType(
-      ui::PageTransition(ui::PAGE_TRANSITION_FORM_SUBMIT), &transition_type));
+  for (const auto& test : tests) {
+    DataUseTabModel::TransitionType transition_type;
+    EXPECT_EQ(test.expected_return,
+              data_use_ui_tab_model()->ConvertTransitionType(
+                  test.page_transition, GURL(test.url), &transition_type));
+    if (test.expected_return)
+      EXPECT_EQ(test.expected_transition_type, transition_type);
+  }
 }
 
 }  // namespace android
