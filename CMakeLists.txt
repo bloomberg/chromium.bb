@@ -50,7 +50,7 @@ add_library(mkvmuxer STATIC
             "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxerutil.hpp"
             "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvwriter.cpp"
             "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvwriter.hpp"
-            "${LIBWEBM_SRC_DIR}/webmids.hpp")
+            "${LIBWEBM_SRC_DIR}/common/webmids.hpp")
 
 # mkvparser section.
 # TODO(tomfinegan): move to mkvparser/CMakeLists.txt.
@@ -59,7 +59,7 @@ add_library(mkvparser STATIC
             "${LIBWEBM_SRC_DIR}/mkvparser/mkvparser.hpp"
             "${LIBWEBM_SRC_DIR}/mkvparser/mkvreader.cpp"
             "${LIBWEBM_SRC_DIR}/mkvparser/mkvreader.hpp"
-            "${LIBWEBM_SRC_DIR}/webmids.hpp")
+            "${LIBWEBM_SRC_DIR}/common/webmids.hpp")
 
 # Libwebm section.
 add_library(webm STATIC
@@ -67,7 +67,7 @@ add_library(webm STATIC
             "${LIBWEBM_SRC_DIR}/common/file_util.h"
             "${LIBWEBM_SRC_DIR}/common/hdr_util.cc"
             "${LIBWEBM_SRC_DIR}/common/hdr_util.h"
-            "${LIBWEBM_SRC_DIR}/webmids.hpp")
+            "${LIBWEBM_SRC_DIR}/common/webmids.hpp")
 target_link_libraries(webm LINK_PUBLIC mkvmuxer mkvparser)
 
 if (WIN32)

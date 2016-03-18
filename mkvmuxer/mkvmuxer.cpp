@@ -17,10 +17,10 @@
 #include <new>
 #include <vector>
 
+#include "common/webmids.hpp"
 #include "mkvmuxer/mkvmuxerutil.hpp"
 #include "mkvmuxer/mkvwriter.hpp"
 #include "mkvparser/mkvparser.hpp"
-#include "webmids.hpp"
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
