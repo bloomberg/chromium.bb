@@ -60,6 +60,10 @@ class ASH_EXPORT Shelf {
   ShelfAlignment alignment() const { return alignment_; }
   bool IsHorizontalAlignment() const;
 
+  // Sets the ShelfAutoHideBehavior. See enum description for details.
+  void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
+  ShelfAutoHideBehavior GetAutoHideBehavior() const;
+
   // A helper functions that chooses values specific to a shelf alignment.
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right, T top) const {

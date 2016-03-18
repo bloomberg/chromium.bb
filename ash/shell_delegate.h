@@ -42,6 +42,7 @@ class ShelfDelegate;
 class ShelfModel;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
+class Shelf;
 struct ShelfItem;
 
 class ASH_EXPORT VirtualKeyboardStateObserver {
@@ -132,9 +133,9 @@ class ASH_EXPORT ShellDelegate {
   // Creates a media delegate. Shell takes ownership of the delegate.
   virtual MediaDelegate* CreateMediaDelegate() = 0;
 
-  // Creates a menu model for the |root_window| and optional shelf |item|.
+  // Creates a menu model for the |shelf| and optional shelf |item|.
   // If |item| is null, this creates a context menu for the desktop or shelf.
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window,
+  virtual ui::MenuModel* CreateContextMenu(ash::Shelf* shelf,
                                            const ash::ShelfItem* item) = 0;
 
   // Creates a GPU support object. Shell takes ownership of the object.

@@ -90,16 +90,11 @@ class ASH_EXPORT ShelfLayoutManager
     return auto_hide_behavior_;
   }
 
-  // Sets the alignment. Returns true if the alignment got changed. If nothing
-  // has visually be changed, false will be returned. This can happen if either
-  // the alignment was already set, or the shelf is currently locked and cannot
-  // be changed at this time. In the latter case the change will be performed
-  // once the shelf gets unlocked.
-  bool SetAlignment(ShelfAlignment alignment);
+  // Sets the alignment; changes are delayed if the screen is locked.
+  void SetAlignment(ShelfAlignment alignment);
 
   // Returns the desired alignment for the current state, either the user's
-  // set alignment (alignment_) or SHELF_ALIGNMENT_BOTTOM when the screen
-  // is locked.
+  // selected alignment or SHELF_ALIGNMENT_BOTTOM when the screen is locked.
   ShelfAlignment GetAlignment() const;
 
   void set_workspace_controller(WorkspaceController* controller) {
@@ -127,8 +122,7 @@ class ASH_EXPORT ShelfLayoutManager
     return user_work_area_bounds_;
   }
 
-  // Stops any animations and sets the bounds of the shelf and status
-  // widgets.
+  // Stops any animations and sets the bounds of the shelf and status widgets.
   void LayoutShelf();
 
   // Returns shelf visibility state based on current value of auto hide

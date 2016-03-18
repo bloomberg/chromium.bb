@@ -249,18 +249,6 @@ class ChromeLauncherController
   // cases this might change over time.
   Profile* profile();
 
-  // Gets the shelf auto-hide behavior on |root_window|.
-  ash::ShelfAutoHideBehavior GetShelfAutoHideBehavior(
-      aura::Window* root_window) const;
-
-  // Returns |true| if the user is allowed to modify the shelf auto-hide
-  // behavior on |root_window|.
-  bool CanUserModifyShelfAutoHideBehavior(aura::Window* root_window) const;
-
-  // Toggles the shelf auto-hide behavior on |root_window|. Does nothing if the
-  // user is not allowed to modify the auto-hide behavior.
-  void ToggleShelfAutoHideBehavior(aura::Window* root_window);
-
   // Notify the controller that the state of an non platform app's tabs
   // have changed,
   void UpdateAppState(content::WebContents* contents, AppState app_state);

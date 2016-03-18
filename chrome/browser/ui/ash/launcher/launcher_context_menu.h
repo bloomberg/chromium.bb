@@ -14,29 +14,20 @@
 
 class ChromeLauncherController;
 
-namespace aura {
-class Window;
-}
-
 namespace extensions {
 class ContextMenuMatcher;
 }
 
-// Context menu shown for a launcher item.
+// Context menu shown for the ash shell desktop, or for an item in the shelf.
 class LauncherContextMenu : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
-  // Creates a context menu for the desktop, or shelf |item|, in |root_window|.
   LauncherContextMenu(ChromeLauncherController* controller,
                       const ash::ShelfItem* item,
-                      aura::Window* root_window);
-
+                      ash::Shelf* shelf);
   ~LauncherContextMenu() override;
 
   void Init();
-
-  // ID of the item we're showing the context menu for.
-  ash::ShelfID id() const { return item_.id; }
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsItemForCommandIdDynamic(int command_id) const override;
@@ -74,10 +65,6 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_ITEM_COUNT
   };
 
-  // Does |item_| represent a valid item? See description of constructor for
-  // details on why it may not be valid.
-  bool is_valid_item() const { return item_.id != 0; }
-
   ChromeLauncherController* controller_;
 
   ash::ShelfItem item_;
@@ -86,7 +73,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
 
   scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
 
-  aura::Window* root_window_;
+  ash::Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

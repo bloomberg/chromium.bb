@@ -1794,8 +1794,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
   }
 
   context_menu_model_.reset(Shell::GetInstance()->delegate()->CreateContextMenu(
-      source->GetWidget()->GetNativeView()->GetRootWindow(),
-      &model_->items()[view_index]));
+      shelf_, &model_->items()[view_index]));
   if (!context_menu_model_)
     return;
 

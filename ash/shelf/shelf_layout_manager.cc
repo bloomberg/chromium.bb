@@ -247,21 +247,20 @@ bool ShelfLayoutManager::IsVisible() const {
         state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN));
 }
 
-bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
+void ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
   if (alignment_ == alignment)
-    return false;
+    return;
 
   alignment_ = alignment;
   // The shelf will itself move to the bottom while locked or obscured by user
   // login. If a request is sent to move while being obscured, we postpone the
   // move until the user session is resumed.
-  if (IsAlignmentLocked())
-    return false;
-
-  // This should not be called during the lock screen transitions.
-  shelf_->SetAlignment(alignment);
-  LayoutShelf();
-  return true;
+  if (!IsAlignmentLocked()) {
+    shelf_->SetAlignment(alignment);
+    LayoutShelf();
+    Shell::GetInstance()->OnShelfAlignmentChanged(
+        shelf_->GetNativeWindow()->GetRootWindow());
+  }
 }
 
 ShelfAlignment ShelfLayoutManager::GetAlignment() const {
@@ -296,11 +295,6 @@ void ShelfLayoutManager::LayoutShelf() {
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
   switch(auto_hide_behavior_) {
     case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
-#if defined(OS_WIN)
-      // Disable shelf auto-hide behavior on screen sides in Metro mode.
-      if (GetAlignment() != SHELF_ALIGNMENT_BOTTOM)
-        return SHELF_VISIBLE;
-#endif
       return SHELF_AUTO_HIDE;
     case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
       return SHELF_VISIBLE;
@@ -1149,6 +1143,8 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
   shelf_->SetAlignment(GetAlignment());
   UpdateVisibilityState();
   LayoutShelf();
+  Shell::GetInstance()->OnShelfAlignmentChanged(
+      shelf_->GetNativeWindow()->GetRootWindow());
 }
 
 bool ShelfLayoutManager::IsAlignmentLocked() const {

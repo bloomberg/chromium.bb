@@ -46,7 +46,7 @@ class ShellDelegateMus : public ash::ShellDelegate {
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ash::NewWindowDelegate* CreateNewWindowDelegate() override;
   ash::MediaDelegate* CreateMediaDelegate() override;
-  ui::MenuModel* CreateContextMenu(aura::Window* root_window,
+  ui::MenuModel* CreateContextMenu(ash::Shelf* shelf,
                                    const ash::ShelfItem* item) override;
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;

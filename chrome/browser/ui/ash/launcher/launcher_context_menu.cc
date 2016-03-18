@@ -8,8 +8,8 @@
 
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/context_menu_params.h"
@@ -35,24 +36,30 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
 
+// Returns true if the user can modify the |shelf|'s auto-hide behavior.
+bool CanUserModifyShelfAutoHideBehavior(const Profile* profile) {
+  const std::string& pref = prefs::kShelfAutoHideBehaviorLocal;
+  return profile->GetPrefs()->FindPreference(pref)->IsUserModifiable();
+}
+
 }  // namespace
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          const ash::ShelfItem* item,
-                                         aura::Window* root_window)
+                                         ash::Shelf* shelf)
     : ui::SimpleMenuModel(nullptr),
       controller_(controller),
       item_(item ? *item : ash::ShelfItem()),
-      shelf_alignment_menu_(root_window),
-      root_window_(root_window) {
-  DCHECK(root_window_);
+      shelf_alignment_menu_(shelf),
+      shelf_(shelf) {
+  DCHECK(shelf_);
   Init();
 }
 
 void LauncherContextMenu::Init() {
   set_delegate(this);
 
-  if (is_valid_item()) {
+  if (item_.id != 0) {
     extension_items_.reset(new extensions::ContextMenuMatcher(
         controller_->profile(), this, this,
         base::Bind(MenuItemHasLauncherContext)));
@@ -150,7 +157,7 @@ void LauncherContextMenu::Init() {
   // type of fullscreen. Do not show the auto-hide menu item while in fullscreen
   // because it is confusing when the preference appears not to apply.
   if (!IsFullScreenMode() &&
-      controller_->CanUserModifyShelfAutoHideBehavior(root_window_)) {
+      CanUserModifyShelfAutoHideBehavior(controller_->profile())) {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }
@@ -211,8 +218,8 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
       return controller_->GetLaunchType(item_.id) ==
           extensions::LAUNCH_TYPE_FULLSCREEN;
     case MENU_AUTO_HIDE:
-      return controller_->GetShelfAutoHideBehavior(root_window_) ==
-          ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+      return shelf_->GetAutoHideBehavior() ==
+             ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
     default:
       if (command_id < MENU_ITEM_COUNT)
         return false;
@@ -233,7 +240,7 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
       return IncognitoModePrefs::GetAvailability(
           controller_->profile()->GetPrefs()) != IncognitoModePrefs::FORCED;
     case MENU_AUTO_HIDE:
-      return controller_->CanUserModifyShelfAutoHideBehavior(root_window_);
+      return CanUserModifyShelfAutoHideBehavior(controller_->profile());
     case MENU_NEW_INCOGNITO_WINDOW:
       // Incognito windows are not allowed when incognito is disabled.
       return IncognitoModePrefs::GetAvailability(
@@ -298,7 +305,10 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       controller_->SetLaunchType(item_.id, extensions::LAUNCH_TYPE_FULLSCREEN);
       break;
     case MENU_AUTO_HIDE:
-      controller_->ToggleShelfAutoHideBehavior(root_window_);
+      shelf_->SetAutoHideBehavior(shelf_->GetAutoHideBehavior() ==
+                                          ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
+                                      ? ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER
+                                      : ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
       break;
     case MENU_NEW_WINDOW:
       controller_->CreateNewWindow();

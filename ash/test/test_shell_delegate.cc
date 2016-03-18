@@ -175,7 +175,7 @@ MediaDelegate* TestShellDelegate::CreateMediaDelegate() {
 }
 
 ui::MenuModel* TestShellDelegate::CreateContextMenu(
-    aura::Window* root_window,
+    ash::Shelf* shelf,
     const ash::ShelfItem* item) {
   return nullptr;
 }

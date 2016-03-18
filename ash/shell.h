@@ -463,9 +463,11 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       aura::Window* root_window) const;
 
   // Sets/gets shelf's alignment on |root_window|.
-  void SetShelfAlignment(ShelfAlignment alignment,
-                         aura::Window* root_window);
-  ShelfAlignment GetShelfAlignment(const aura::Window* root_window);
+  void SetShelfAlignment(ShelfAlignment alignment, aura::Window* root_window);
+  ShelfAlignment GetShelfAlignment(const aura::Window* root_window) const;
+
+  // Called when the alignment for a shelf changes.
+  void OnShelfAlignmentChanged(aura::Window* root_window);
 
   // Notifies |observers_| when entering or exiting fullscreen mode in
   // |root_window|.

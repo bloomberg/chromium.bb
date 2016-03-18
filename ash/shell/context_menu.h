@@ -6,22 +6,20 @@
 #define ASH_SHELL_CONTEXT_MENU_H_
 
 #include "ash/shelf/shelf_alignment_menu.h"
-#include "ash/shelf/shelf_types.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
-namespace aura {
-class RootWindow;
-}
-
 namespace ash {
+
+class Shelf;
+
 namespace shell {
 
-// Context menu for the ash_shell.
+// Context menu for the ash shell.
 class ContextMenu : public ui::SimpleMenuModel,
                     public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ContextMenu(aura::Window* root);
+  explicit ContextMenu(Shelf* shelf);
   ~ContextMenu() override;
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -37,8 +35,7 @@ class ContextMenu : public ui::SimpleMenuModel,
     MENU_ALIGNMENT_MENU,
   };
 
-  aura::Window* root_window_;
-
+  Shelf* shelf_;
   ShelfAlignmentMenu alignment_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenu);

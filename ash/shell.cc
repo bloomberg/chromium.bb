@@ -523,15 +523,17 @@ ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
 void Shell::SetShelfAlignment(ShelfAlignment alignment,
                               aura::Window* root_window) {
   ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
-  if (shelf_widget->shelf_layout_manager()->SetAlignment(alignment)) {
-    FOR_EACH_OBSERVER(
-        ShellObserver, observers_, OnShelfAlignmentChanged(root_window));
-  }
+  shelf_widget->shelf_layout_manager()->SetAlignment(alignment);
 }
 
-ShelfAlignment Shell::GetShelfAlignment(const aura::Window* root_window) {
+ShelfAlignment Shell::GetShelfAlignment(const aura::Window* root_window) const {
   ShelfWidget* shelf_widget = GetRootWindowController(root_window)->shelf();
   return shelf_widget->shelf_layout_manager()->GetAlignment();
+}
+
+void Shell::OnShelfAlignmentChanged(aura::Window* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver, observers_,
+                    OnShelfAlignmentChanged(root_window));
 }
 
 void Shell::NotifyFullscreenStateChange(bool is_fullscreen,

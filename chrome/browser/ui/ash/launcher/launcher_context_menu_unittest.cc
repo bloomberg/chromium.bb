@@ -18,33 +18,21 @@
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window_event_dispatcher.h"
 
-class TestChromeLauncherController : public ChromeLauncherController {
- public:
-  TestChromeLauncherController(Profile* profile, ash::ShelfModel* model)
-      : ChromeLauncherController(profile, model) {}
-  bool IsLoggedInAsGuest() override { return false; }
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherController);
-};
-
 class LauncherContextMenuTest : public ash::test::AshTestBase {
  protected:
   static bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {
-    DCHECK(menu);
     return menu->GetIndexOfCommandId(command_id) != -1;
   }
 
-  LauncherContextMenuTest()
-      : profile_(new TestingProfile()) {}
+  LauncherContextMenuTest() : profile_(new TestingProfile()) {}
 
   void SetUp() override {
     ash::test::AshTestBase::SetUp();
-    controller_.reset(
-        new TestChromeLauncherController(profile(), &shelf_model_));
+    controller_.reset(new ChromeLauncherController(profile(), &shelf_model_));
   }
 
   void TearDown() override {
-    controller_.reset(NULL);
+    controller_.reset(nullptr);
     ash::test::AshTestBase::TearDown();
   }
 
@@ -53,7 +41,8 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     ash::ShelfItem item;
     item.id = 1;  // dummy id
     item.type = shelf_item_type;
-    return new LauncherContextMenu(controller_.get(), &item, CurrentContext());
+    ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
+    return new LauncherContextMenu(controller_.get(), &item, shelf);
   }
 
   Profile* profile() { return profile_.get(); }

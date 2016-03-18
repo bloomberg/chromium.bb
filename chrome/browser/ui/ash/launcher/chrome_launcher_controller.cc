@@ -1031,34 +1031,6 @@ Profile* ChromeLauncherController::profile() {
   return profile_;
 }
 
-ash::ShelfAutoHideBehavior ChromeLauncherController::GetShelfAutoHideBehavior(
-    aura::Window* root_window) const {
-  return GetShelfAutoHideBehaviorFromPrefs(profile_, root_window);
-}
-
-bool ChromeLauncherController::CanUserModifyShelfAutoHideBehavior(
-    aura::Window* root_window) const {
-#if defined(OS_WIN)
-  // Disable shelf auto-hide behavior on screen sides in Metro mode.
-  if (ash::Shell::GetInstance()->GetShelfAlignment(root_window) !=
-      ash::SHELF_ALIGNMENT_BOTTOM) {
-    return false;
-  }
-#endif
-  return profile_->GetPrefs()->
-      FindPreference(prefs::kShelfAutoHideBehaviorLocal)->IsUserModifiable();
-}
-
-void ChromeLauncherController::ToggleShelfAutoHideBehavior(
-    aura::Window* root_window) {
-  ash::ShelfAutoHideBehavior behavior = GetShelfAutoHideBehavior(root_window) ==
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
-          ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER :
-          ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-  SetShelfAutoHideBehaviorPrefs(behavior, root_window);
-  return;
-}
-
 void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
                                               AppState app_state) {
   std::string app_id = app_tab_helper_->GetAppID(contents);
@@ -1840,11 +1812,9 @@ void ChromeLauncherController::SetShelfAutoHideBehaviorPrefs(
 
 void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
-
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
+  for (auto i = root_windows.begin(); i != root_windows.end(); ++i) {
     ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
-        GetShelfAutoHideBehavior(*iter), *iter);
+        GetShelfAutoHideBehaviorFromPrefs(profile_, *i), *i);
   }
 }
 
@@ -1853,11 +1823,9 @@ void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
     return;
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
-
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
+  for (auto i = root_windows.begin(); i != root_windows.end(); ++i) {
     ash::Shell::GetInstance()->SetShelfAlignment(
-        GetShelfAlignmentFromPrefs(profile_, *iter), *iter);
+        GetShelfAlignmentFromPrefs(profile_, *i), *i);
   }
 }
 

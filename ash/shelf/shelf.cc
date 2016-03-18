@@ -79,6 +79,14 @@ bool Shelf::IsHorizontalAlignment() const {
          alignment_ == SHELF_ALIGNMENT_TOP;
 }
 
+void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
+  shelf_widget_->shelf_layout_manager()->SetAutoHideBehavior(behavior);
+}
+
+ShelfAutoHideBehavior Shelf::GetAutoHideBehavior() const {
+  return shelf_widget_->shelf_layout_manager()->auto_hide_behavior();
+}
+
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(
     const aura::Window* window) {
   ShelfID id = GetShelfIDForWindow(window);

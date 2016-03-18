@@ -9,17 +9,15 @@
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
-namespace aura {
-class RootWindow;
-}
-
 namespace ash {
+
+class Shelf;
 
 // Submenu for choosing the alignment of the launcher.
 class ASH_EXPORT ShelfAlignmentMenu : public ui::SimpleMenuModel,
                                       public ui::SimpleMenuModel::Delegate {
  public:
-  explicit ShelfAlignmentMenu(aura::Window* root);
+  explicit ShelfAlignmentMenu(Shelf* shelf);
   ~ShelfAlignmentMenu() override;
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -37,7 +35,7 @@ class ASH_EXPORT ShelfAlignmentMenu : public ui::SimpleMenuModel,
     MENU_ALIGN_BOTTOM,
   };
 
-  aura::Window* root_window_;
+  Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfAlignmentMenu);
 };

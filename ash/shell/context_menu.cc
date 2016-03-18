@@ -4,20 +4,16 @@
 
 #include "ash/shell/context_menu.h"
 
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
-#include "ash/shell.h"
 #include "grit/ash_strings.h"
 
 namespace ash {
 namespace shell {
 
-ContextMenu::ContextMenu(aura::Window* root)
-    : ui::SimpleMenuModel(NULL),
-      root_window_(root),
-      alignment_menu_(root) {
-  DCHECK(root_window_);
+ContextMenu::ContextMenu(ash::Shelf* shelf)
+    : ui::SimpleMenuModel(nullptr), shelf_(shelf), alignment_menu_(shelf) {
+  DCHECK(shelf_);
   set_delegate(this);
   AddCheckItemWithStringId(MENU_AUTO_HIDE,
                            IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
@@ -30,38 +26,26 @@ ContextMenu::~ContextMenu() {
 }
 
 bool ContextMenu::IsCommandIdChecked(int command_id) const {
-  switch (command_id) {
-    case MENU_AUTO_HIDE:
-      return Shell::GetInstance()->GetShelfAutoHideBehavior(root_window_) ==
-          ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-    default:
-      return false;
-  }
+  if (command_id == MENU_AUTO_HIDE)
+    return shelf_->GetAutoHideBehavior() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  return false;
 }
 
 bool ContextMenu::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool ContextMenu::GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) {
+bool ContextMenu::GetAcceleratorForCommandId(int command_id,
+                                             ui::Accelerator* accelerator) {
   return false;
 }
 
 void ContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  Shell* shell = Shell::GetInstance();
-  switch (static_cast<MenuItem>(command_id)) {
-    case MENU_AUTO_HIDE:
-      shell->SetShelfAutoHideBehavior(
-          shell->GetShelfAutoHideBehavior(root_window_) ==
-              SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
-                  SHELF_AUTO_HIDE_BEHAVIOR_NEVER :
-                  SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-          root_window_);
-      break;
-    case MENU_ALIGNMENT_MENU:
-      break;
+  if (command_id == MENU_AUTO_HIDE) {
+    shelf_->SetAutoHideBehavior(shelf_->GetAutoHideBehavior() ==
+                                        SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
+                                    ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
+                                    : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   }
 }
 
