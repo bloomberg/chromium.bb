@@ -270,6 +270,7 @@ void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScop
 
 void StyleEngine::clearMediaQueryRuleSetStyleSheets()
 {
+    resolverChanged(FullStyleUpdate);
     documentStyleSheetCollection()->clearMediaQueryRuleSetStyleSheets();
     clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_activeTreeScopes);
 }
