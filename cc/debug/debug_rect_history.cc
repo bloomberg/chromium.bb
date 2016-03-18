@@ -174,26 +174,26 @@ void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
   }
 }
 
-void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* layer) {
-  LayerTreeHostCommon::CallFunctionForSubtree(layer, [this](LayerImpl* layer) {
-    SaveWheelEventHandlerRectsCallback(layer);
-  });
-}
-
-void DebugRectHistory::SaveWheelEventHandlerRectsCallback(LayerImpl* layer) {
+void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* root_layer) {
   EventListenerProperties event_properties =
-      layer->layer_tree_impl()->event_listener_properties(
+      root_layer->layer_tree_impl()->event_listener_properties(
           EventListenerClass::kMouseWheel);
   if (event_properties == EventListenerProperties::kNone ||
-      (layer->layer_tree_impl()->settings().use_mouse_wheel_gestures &&
+      (root_layer->layer_tree_impl()->settings().use_mouse_wheel_gestures &&
        event_properties == EventListenerProperties::kPassive)) {
     return;
   }
 
-  debug_rects_.push_back(
-      DebugRect(WHEEL_EVENT_HANDLER_RECT_TYPE,
-                MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
-                                                  gfx::Rect(layer->bounds()))));
+  // Since the wheel event handlers property is on the entire layer tree just
+  // mark inner viewport if have listeners.
+  LayerImpl* inner_viewport =
+      root_layer->layer_tree_impl()->InnerViewportScrollLayer();
+  if (!inner_viewport)
+    return;
+  debug_rects_.push_back(DebugRect(
+      WHEEL_EVENT_HANDLER_RECT_TYPE,
+      MathUtil::MapEnclosingClippedRect(inner_viewport->ScreenSpaceTransform(),
+                                        gfx::Rect(inner_viewport->bounds()))));
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRects(LayerImpl* layer) {
