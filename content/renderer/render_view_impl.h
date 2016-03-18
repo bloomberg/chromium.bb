@@ -746,12 +746,6 @@ class CONTENT_EXPORT RenderViewImpl
   // this object.
   base::ObserverList<RenderViewObserver>& observers() { return observers_; }
 
-  // TODO(nasko): Remove this method when we move to frame proxy objects, since
-  // the concept of swapped out will be eliminated.
-  void set_is_swapped_out(bool swapped_out) {
-    is_swapped_out_ = swapped_out;
-  }
-
   NavigationGesture navigation_gesture() {
     return navigation_gesture_;
   }
