@@ -68,7 +68,8 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   }
 
   void Rerecord() {
-    Region invalidation = recorded_viewport_;
+    SetNeedsDisplayRect(recorded_viewport_);
+    Region invalidation;
     UpdateAndExpandInvalidation(&client_, &invalidation, size_,
                                 recorded_viewport_, 0, RECORD_NORMALLY);
   }

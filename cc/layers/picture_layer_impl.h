@@ -50,7 +50,7 @@ class CC_EXPORT PictureLayerImpl
   void ReleaseResources() override;
   void RecreateResources() override;
   skia::RefPtr<SkPicture> GetPicture() override;
-  Region GetInvalidationRegion() override;
+  Region GetInvalidationRegionForDebugging() override;
 
   // PictureLayerTilingClient overrides.
   ScopedTilePtr CreateTile(const Tile::CreateInfo& info) override;

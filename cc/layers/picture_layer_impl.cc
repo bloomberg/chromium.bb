@@ -653,7 +653,7 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
   return raster_source_->GetFlattenedPicture();
 }
 
-Region PictureLayerImpl::GetInvalidationRegion() {
+Region PictureLayerImpl::GetInvalidationRegionForDebugging() {
   // |invalidation_| gives the invalidation contained in the source frame, but
   // is not cleared after drawing from the layer. However, update_rect() is
   // cleared once the invalidation is drawn, which is useful for debugging

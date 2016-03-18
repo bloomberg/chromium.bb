@@ -45,7 +45,7 @@ class TestSerializationPictureLayer : public PictureLayer {
   }
 
   void set_invalidation(const Region& invalidation) {
-    *invalidation_.region() = invalidation;
+    last_updated_invalidation_ = invalidation;
   }
 
   void set_last_updated_visible_layer_rect(const gfx::Rect& rect) {
@@ -218,6 +218,90 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   EXPECT_TRUE(layer_impl->bounds() == gfx::Size(0, 0));
   EXPECT_EQ(gfx::Size(), layer_impl->raster_source()->GetSize());
   EXPECT_FALSE(layer_impl->raster_source()->HasRecordings());
+}
+
+TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
+  gfx::Size layer_size(50, 50);
+  FakeContentLayerClient client;
+  client.set_bounds(layer_size);
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+  layer->SetBounds(gfx::Size(50, 50));
+
+  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+  host->SetRootLayer(layer);
+  layer->SetIsDrawable(true);
+  layer->SavePaintProperties();
+
+  gfx::Rect invalidation_bounds(layer_size);
+
+  // The important two lines are the following:
+  layer->SetNeedsDisplayRect(invalidation_bounds);
+  layer->Update();
+
+  host->CommitComplete();
+  FakeImplTaskRunnerProvider impl_task_runner_provider;
+  TestSharedBitmapManager shared_bitmap_manager;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  LayerTreeSettings layer_tree_settings = LayerTreeSettings();
+  layer_tree_settings.image_decode_tasks_enabled = true;
+  FakeLayerTreeHostImpl host_impl(layer_tree_settings,
+                                  &impl_task_runner_provider,
+                                  &shared_bitmap_manager, &task_graph_runner);
+  host_impl.SetVisible(true);
+  host_impl.InitializeRenderer(output_surface.get());
+  host_impl.CreatePendingTree();
+  host_impl.pending_tree()->SetRootLayer(
+      FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
+  FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
+      host_impl.pending_tree()->root_layer());
+  layer->PushPropertiesTo(layer_impl);
+
+  EXPECT_EQ(invalidation_bounds,
+            layer_impl->GetPendingInvalidation()->bounds());
+}
+
+TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
+  gfx::Size layer_size(50, 50);
+  FakeContentLayerClient client;
+  client.set_bounds(layer_size);
+  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+  layer->SetBounds(gfx::Size(50, 50));
+
+  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
+  host->SetRootLayer(layer);
+  layer->SetIsDrawable(true);
+  layer->SavePaintProperties();
+
+  gfx::Rect invalidation_bounds(layer_size);
+
+  // The important line is the following (note that we do not call Update):
+  layer->SetNeedsDisplayRect(invalidation_bounds);
+
+  host->CommitComplete();
+  FakeImplTaskRunnerProvider impl_task_runner_provider;
+  TestSharedBitmapManager shared_bitmap_manager;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  LayerTreeSettings layer_tree_settings = LayerTreeSettings();
+  layer_tree_settings.image_decode_tasks_enabled = true;
+  FakeLayerTreeHostImpl host_impl(layer_tree_settings,
+                                  &impl_task_runner_provider,
+                                  &shared_bitmap_manager, &task_graph_runner);
+  host_impl.SetVisible(true);
+  host_impl.InitializeRenderer(output_surface.get());
+  host_impl.CreatePendingTree();
+  host_impl.pending_tree()->SetRootLayer(
+      FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
+  FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
+      host_impl.pending_tree()->root_layer());
+  layer->PushPropertiesTo(layer_impl);
+
+  EXPECT_EQ(gfx::Rect(), layer_impl->GetPendingInvalidation()->bounds());
 }
 
 TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {

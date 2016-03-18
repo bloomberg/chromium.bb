@@ -117,6 +117,14 @@ void DisplayListRecordingSource::FinishDisplayItemListUpdate() {
     display_list_->GenerateDiscardableImagesMetadata();
 }
 
+void DisplayListRecordingSource::SetNeedsDisplayRect(
+    const gfx::Rect& layer_rect) {
+  if (!layer_rect.IsEmpty()) {
+    // Clamp invalidation to the layer bounds.
+    invalidation_.Union(gfx::IntersectRects(layer_rect, gfx::Rect(size_)));
+  }
+}
+
 bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     ContentLayerClient* painter,
     Region* invalidation,
@@ -133,6 +141,9 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     updated = true;
   }
 
+  invalidation_.Swap(invalidation);
+  invalidation_.Clear();
+
   gfx::Rect new_recorded_viewport = painter->PaintableRegion();
   if (new_recorded_viewport != recorded_viewport_) {
     UpdateInvalidationForNewViewport(recorded_viewport_, new_recorded_viewport,
@@ -148,6 +159,9 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     timer.AddArea(it.rect().size().GetCheckedArea());
 
   if (!updated && !invalidation->Intersects(recorded_viewport_))
+    return false;
+
+  if (invalidation->IsEmpty())
     return false;
 
   ContentLayerClient::PaintingControlSetting painting_control =

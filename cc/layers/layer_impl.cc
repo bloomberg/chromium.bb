@@ -1545,7 +1545,7 @@ void LayerImpl::SetForceRenderSurface(bool force_render_surface) {
   NoteLayerPropertyChanged();
 }
 
-Region LayerImpl::GetInvalidationRegion() {
+Region LayerImpl::GetInvalidationRegionForDebugging() {
   return Region(update_rect_);
 }
 

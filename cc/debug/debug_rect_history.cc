@@ -72,7 +72,7 @@ void DebugRectHistory::SavePaintRects(LayerImpl* root_layer) {
   // not. Therefore we traverse over all layers, not just the render surface
   // list.
   for (auto* layer : *root_layer->layer_tree_impl()) {
-    Region invalidation_region = layer->GetInvalidationRegion();
+    Region invalidation_region = layer->GetInvalidationRegionForDebugging();
     if (invalidation_region.IsEmpty() || !layer->DrawsContent())
       continue;
 

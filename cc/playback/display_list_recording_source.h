@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/invalidation_region.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -63,6 +64,8 @@ class CC_EXPORT DisplayListRecordingSource {
   void SetBackgroundColor(SkColor background_color);
   void SetRequiresClear(bool requires_clear);
 
+  void SetNeedsDisplayRect(const gfx::Rect& layer_rect);
+
   // These functions are virtual for testing.
   virtual scoped_refptr<DisplayListRasterSource> CreateRasterSource(
       bool can_use_lcd_text) const;
@@ -95,6 +98,8 @@ class CC_EXPORT DisplayListRecordingSource {
   friend class DisplayListRasterSource;
 
   void DetermineIfSolidColor();
+
+  InvalidationRegion invalidation_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayListRecordingSource);
 };

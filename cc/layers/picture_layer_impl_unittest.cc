@@ -4459,7 +4459,8 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
 
   client.set_fill_with_nonsolid_color(true);
 
-  Region invalidation1(layer_rect);
+  recording_source->SetNeedsDisplayRect(layer_rect);
+  Region invalidation1;
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation1, layer_bounds, layer_rect, frame_number++,
       DisplayListRecordingSource::RECORD_NORMALLY);
@@ -4478,7 +4479,8 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
 
   client.set_fill_with_nonsolid_color(false);
 
-  Region invalidation2(layer_rect);
+  recording_source->SetNeedsDisplayRect(layer_rect);
+  Region invalidation2;
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation2, layer_bounds, layer_rect, frame_number++,
       DisplayListRecordingSource::RECORD_NORMALLY);
