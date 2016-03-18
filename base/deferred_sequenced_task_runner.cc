@@ -20,10 +20,8 @@ DeferredSequencedTaskRunner::DeferredTask::~DeferredTask() {
 }
 
 DeferredSequencedTaskRunner::DeferredSequencedTaskRunner(
-    const scoped_refptr<SequencedTaskRunner>& target_task_runner)
-    : started_(false),
-      target_task_runner_(target_task_runner) {
-}
+    scoped_refptr<SequencedTaskRunner> target_task_runner)
+    : started_(false), target_task_runner_(std::move(target_task_runner)) {}
 
 DeferredSequencedTaskRunner::~DeferredSequencedTaskRunner() {
 }

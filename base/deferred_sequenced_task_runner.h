@@ -24,7 +24,7 @@ namespace base {
 class BASE_EXPORT DeferredSequencedTaskRunner : public SequencedTaskRunner {
  public:
   explicit DeferredSequencedTaskRunner(
-      const scoped_refptr<SequencedTaskRunner>& target_runner);
+      scoped_refptr<SequencedTaskRunner> target_runner);
 
   // TaskRunner implementation
   bool PostDelayedTask(const tracked_objects::Location& from_here,

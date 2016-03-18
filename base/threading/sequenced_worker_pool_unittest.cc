@@ -75,9 +75,8 @@ class ThreadBlocker {
 class DestructionDeadlockChecker
     : public base::RefCountedThreadSafe<DestructionDeadlockChecker> {
  public:
-  explicit DestructionDeadlockChecker(
-      const scoped_refptr<SequencedWorkerPool>& pool)
-      : pool_(pool) {}
+  explicit DestructionDeadlockChecker(scoped_refptr<SequencedWorkerPool> pool)
+      : pool_(std::move(pool)) {}
 
  protected:
   virtual ~DestructionDeadlockChecker() {

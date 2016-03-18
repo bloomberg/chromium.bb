@@ -175,9 +175,8 @@ namespace test {
 
 // Calls RunsTasksOnCurrentThread() on |task_runner| and expects it to
 // equal |expected_value|.
-void ExpectRunsTasksOnCurrentThread(
-    bool expected_value,
-    const scoped_refptr<TaskRunner>& task_runner);
+void ExpectRunsTasksOnCurrentThread(bool expected_value,
+                                    TaskRunner* task_runner);
 
 }  // namespace test
 

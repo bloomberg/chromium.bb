@@ -66,7 +66,7 @@ class BASE_EXPORT ProcessMemoryDump {
   static size_t CountResidentBytes(void* start_address, size_t mapped_size);
 #endif
 
-  ProcessMemoryDump(const scoped_refptr<MemoryDumpSessionState>& session_state);
+  ProcessMemoryDump(scoped_refptr<MemoryDumpSessionState> session_state);
   ~ProcessMemoryDump();
 
   // Creates a new MemoryAllocatorDump with the given name and returns the

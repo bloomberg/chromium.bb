@@ -19,10 +19,8 @@ namespace base {
 // Sample usage:
 // class Foo : public RefCountedDeleteOnMessageLoop<Foo> {
 //
-//   Foo(const scoped_refptr<SingleThreadTaskRunner>& loop)
-//       : RefCountedDeleteOnMessageLoop<Foo>(loop) {
-//     ...
-//   }
+//   Foo(scoped_refptr<SingleThreadTaskRunner> loop)
+//       : RefCountedDeleteOnMessageLoop<Foo>(std::move(loop)) {}
 //   ...
 //  private:
 //   friend class RefCountedDeleteOnMessageLoop<Foo>;
@@ -40,8 +38,8 @@ class RefCountedDeleteOnMessageLoop : public subtle::RefCountedThreadSafeBase {
   // MessageLoop on the current thread can be acquired by calling
   // MessageLoop::current()->task_runner().
   RefCountedDeleteOnMessageLoop(
-      const scoped_refptr<SingleThreadTaskRunner>& task_runner)
-      : task_runner_(task_runner) {
+      scoped_refptr<SingleThreadTaskRunner> task_runner)
+      : task_runner_(std::move(task_runner)) {
     DCHECK(task_runner_);
   }
 

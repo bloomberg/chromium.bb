@@ -23,7 +23,7 @@ SequencedTaskTracker::SequencedTaskTracker()
 }
 
 void SequencedTaskTracker::PostWrappedNonNestableTask(
-    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    SequencedTaskRunner* task_runner,
     const Closure& task) {
   AutoLock event_lock(lock_);
   const int post_i = next_post_i_++;
@@ -34,7 +34,7 @@ void SequencedTaskTracker::PostWrappedNonNestableTask(
 }
 
 void SequencedTaskTracker::PostWrappedNestableTask(
-    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    SequencedTaskRunner* task_runner,
     const Closure& task) {
   AutoLock event_lock(lock_);
   const int post_i = next_post_i_++;
@@ -45,7 +45,7 @@ void SequencedTaskTracker::PostWrappedNestableTask(
 }
 
 void SequencedTaskTracker::PostWrappedDelayedNonNestableTask(
-    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    SequencedTaskRunner* task_runner,
     const Closure& task,
     TimeDelta delay) {
   AutoLock event_lock(lock_);
@@ -57,7 +57,7 @@ void SequencedTaskTracker::PostWrappedDelayedNonNestableTask(
 }
 
 void SequencedTaskTracker::PostNonNestableTasks(
-    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    SequencedTaskRunner* task_runner,
     int task_count) {
   for (int i = 0; i < task_count; ++i) {
     PostWrappedNonNestableTask(task_runner, Closure());

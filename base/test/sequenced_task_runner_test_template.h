@@ -41,25 +41,20 @@ class SequencedTaskTracker : public RefCountedThreadSafe<SequencedTaskTracker> {
   SequencedTaskTracker();
 
   // Posts the non-nestable task |task|, and records its post event.
-  void PostWrappedNonNestableTask(
-      const scoped_refptr<SequencedTaskRunner>& task_runner,
-      const Closure& task);
+  void PostWrappedNonNestableTask(SequencedTaskRunner* task_runner,
+                                  const Closure& task);
 
   // Posts the nestable task |task|, and records its post event.
-  void PostWrappedNestableTask(
-      const scoped_refptr<SequencedTaskRunner>& task_runner,
-      const Closure& task);
+  void PostWrappedNestableTask(SequencedTaskRunner* task_runner,
+                               const Closure& task);
 
   // Posts the delayed non-nestable task |task|, and records its post event.
-  void PostWrappedDelayedNonNestableTask(
-      const scoped_refptr<SequencedTaskRunner>& task_runner,
-      const Closure& task,
-      TimeDelta delay);
+  void PostWrappedDelayedNonNestableTask(SequencedTaskRunner* task_runner,
+                                         const Closure& task,
+                                         TimeDelta delay);
 
   // Posts |task_count| non-nestable tasks.
-  void PostNonNestableTasks(
-      const scoped_refptr<SequencedTaskRunner>& task_runner,
-      int task_count);
+  void PostNonNestableTasks(SequencedTaskRunner* task_runner, int task_count);
 
   const std::vector<TaskEvent>& GetTaskEvents() const;
 
@@ -141,9 +136,11 @@ TYPED_TEST_P(SequencedTaskRunnerTest, SequentialNonNestable) {
       this->delegate_.GetTaskRunner();
 
   this->task_tracker_->PostWrappedNonNestableTask(
-      task_runner, Bind(&PlatformThread::Sleep, TimeDelta::FromSeconds(1)));
+      task_runner.get(),
+      Bind(&PlatformThread::Sleep, TimeDelta::FromSeconds(1)));
   for (int i = 1; i < kTaskCount; ++i) {
-    this->task_tracker_->PostWrappedNonNestableTask(task_runner, Closure());
+    this->task_tracker_->PostWrappedNonNestableTask(task_runner.get(),
+                                                    Closure());
   }
 
   this->delegate_.StopTaskRunner();
@@ -163,10 +160,10 @@ TYPED_TEST_P(SequencedTaskRunnerTest, SequentialNestable) {
       this->delegate_.GetTaskRunner();
 
   this->task_tracker_->PostWrappedNestableTask(
-      task_runner,
+      task_runner.get(),
       Bind(&PlatformThread::Sleep, TimeDelta::FromSeconds(1)));
   for (int i = 1; i < kTaskCount; ++i) {
-    this->task_tracker_->PostWrappedNestableTask(task_runner, Closure());
+    this->task_tracker_->PostWrappedNestableTask(task_runner.get(), Closure());
   }
 
   this->delegate_.StopTaskRunner();
@@ -188,8 +185,7 @@ TYPED_TEST_P(SequencedTaskRunnerTest, SequentialDelayedNonNestable) {
 
   for (int i = 0; i < kTaskCount; ++i) {
     this->task_tracker_->PostWrappedDelayedNonNestableTask(
-        task_runner,
-        Closure(),
+        task_runner.get(), Closure(),
         TimeDelta::FromMilliseconds(kDelayIncrementMs * i));
   }
 
@@ -217,7 +213,7 @@ TYPED_TEST_P(SequencedTaskRunnerTest, NonNestablePostFromNonNestableTask) {
         this->task_tracker_,
         task_runner,
         kChildrenPerParent);
-    this->task_tracker_->PostWrappedNonNestableTask(task_runner, task);
+    this->task_tracker_->PostWrappedNonNestableTask(task_runner.get(), task);
   }
 
   this->delegate_.StopTaskRunner();
@@ -242,10 +238,10 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTasksSameDelay) {
   const scoped_refptr<SequencedTaskRunner> task_runner =
       this->delegate_.GetTaskRunner();
 
-  this->task_tracker_->PostWrappedDelayedNonNestableTask(
-      task_runner, Closure(), kDelay);
-  this->task_tracker_->PostWrappedDelayedNonNestableTask(
-      task_runner, Closure(), kDelay);
+  this->task_tracker_->PostWrappedDelayedNonNestableTask(task_runner.get(),
+                                                         Closure(), kDelay);
+  this->task_tracker_->PostWrappedDelayedNonNestableTask(task_runner.get(),
+                                                         Closure(), kDelay);
   this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
 
@@ -264,10 +260,10 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterLongTask) {
       this->delegate_.GetTaskRunner();
 
   this->task_tracker_->PostWrappedNonNestableTask(
-      task_runner, base::Bind(&PlatformThread::Sleep,
-                              TimeDelta::FromMilliseconds(50)));
+      task_runner.get(),
+      base::Bind(&PlatformThread::Sleep, TimeDelta::FromMilliseconds(50)));
   this->task_tracker_->PostWrappedDelayedNonNestableTask(
-      task_runner, Closure(), TimeDelta::FromMilliseconds(10));
+      task_runner.get(), Closure(), TimeDelta::FromMilliseconds(10));
   this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
 
@@ -286,11 +282,11 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterManyLongTasks) {
 
   for (int i = 0; i < kTaskCount - 1; i++) {
     this->task_tracker_->PostWrappedNonNestableTask(
-        task_runner, base::Bind(&PlatformThread::Sleep,
-                                TimeDelta::FromMilliseconds(50)));
+        task_runner.get(),
+        base::Bind(&PlatformThread::Sleep, TimeDelta::FromMilliseconds(50)));
   }
   this->task_tracker_->PostWrappedDelayedNonNestableTask(
-      task_runner, Closure(), TimeDelta::FromMilliseconds(10));
+      task_runner.get(), Closure(), TimeDelta::FromMilliseconds(10));
   this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
 
@@ -333,8 +329,8 @@ TYPED_TEST_P(SequencedTaskRunnerDelayedTest, DelayedTaskBasic) {
       this->delegate_.GetTaskRunner();
 
   Time time_before_run = Time::Now();
-  this->task_tracker_->PostWrappedDelayedNonNestableTask(task_runner, Closure(),
-                                                         kDelay);
+  this->task_tracker_->PostWrappedDelayedNonNestableTask(task_runner.get(),
+                                                         Closure(), kDelay);
   this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
   Time time_after_run = Time::Now();

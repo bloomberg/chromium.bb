@@ -73,19 +73,17 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   //      the calls to |mdp| will be run on the given |task_runner|. If passed
   //      null |mdp| should be able to handle calls on arbitrary threads.
   //  - options: extra optional arguments. See memory_dump_provider.h.
-  void RegisterDumpProvider(
-      MemoryDumpProvider* mdp,
-      const char* name,
-      const scoped_refptr<SingleThreadTaskRunner>& task_runner);
-  void RegisterDumpProvider(
-      MemoryDumpProvider* mdp,
-      const char* name,
-      const scoped_refptr<SingleThreadTaskRunner>& task_runner,
-      MemoryDumpProvider::Options options);
+  void RegisterDumpProvider(MemoryDumpProvider* mdp,
+                            const char* name,
+                            scoped_refptr<SingleThreadTaskRunner> task_runner);
+  void RegisterDumpProvider(MemoryDumpProvider* mdp,
+                            const char* name,
+                            scoped_refptr<SingleThreadTaskRunner> task_runner,
+                            MemoryDumpProvider::Options options);
   void RegisterDumpProviderWithSequencedTaskRunner(
       MemoryDumpProvider* mdp,
       const char* name,
-      const scoped_refptr<SequencedTaskRunner>& task_runner,
+      scoped_refptr<SequencedTaskRunner> task_runner,
       MemoryDumpProvider::Options options);
   void UnregisterDumpProvider(MemoryDumpProvider* mdp);
 
@@ -174,11 +172,10 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     using OrderedSet =
         std::set<scoped_refptr<MemoryDumpProviderInfo>, Comparator>;
 
-    MemoryDumpProviderInfo(
-        MemoryDumpProvider* dump_provider,
-        const char* name,
-        const scoped_refptr<SequencedTaskRunner>& task_runner,
-        const MemoryDumpProvider::Options& options);
+    MemoryDumpProviderInfo(MemoryDumpProvider* dump_provider,
+                           const char* name,
+                           scoped_refptr<SequencedTaskRunner> task_runner,
+                           const MemoryDumpProvider::Options& options);
 
     MemoryDumpProvider* const dump_provider;
 
@@ -217,9 +214,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     ProcessMemoryDumpAsyncState(
         MemoryDumpRequestArgs req_args,
         const MemoryDumpProviderInfo::OrderedSet& dump_providers,
-        const scoped_refptr<MemoryDumpSessionState>& session_state,
+        scoped_refptr<MemoryDumpSessionState> session_state,
         MemoryDumpCallback callback,
-        const scoped_refptr<SingleThreadTaskRunner>& dump_thread_task_runner);
+        scoped_refptr<SingleThreadTaskRunner> dump_thread_task_runner);
     ~ProcessMemoryDumpAsyncState();
 
     // Gets or creates the memory dump container for the given target process.
@@ -299,7 +296,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void RegisterDumpProviderInternal(
       MemoryDumpProvider* mdp,
       const char* name,
-      const scoped_refptr<SequencedTaskRunner>& task_runner,
+      scoped_refptr<SequencedTaskRunner> task_runner,
       const MemoryDumpProvider::Options& options);
 
   // Helper for the public UnregisterDumpProvider* functions.

@@ -126,19 +126,18 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
 
 ImportantFileWriter::ImportantFileWriter(
     const FilePath& path,
-    const scoped_refptr<SequencedTaskRunner>& task_runner)
+    scoped_refptr<SequencedTaskRunner> task_runner)
     : ImportantFileWriter(
-        path,
-        task_runner,
-        TimeDelta::FromMilliseconds(kDefaultCommitIntervalMs)) {
-}
+          path,
+          std::move(task_runner),
+          TimeDelta::FromMilliseconds(kDefaultCommitIntervalMs)) {}
 
 ImportantFileWriter::ImportantFileWriter(
     const FilePath& path,
-    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    scoped_refptr<SequencedTaskRunner> task_runner,
     TimeDelta interval)
     : path_(path),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       serializer_(nullptr),
       commit_interval_(interval),
       weak_factory_(this) {

@@ -144,10 +144,10 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
 #endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 
 ProcessMemoryDump::ProcessMemoryDump(
-    const scoped_refptr<MemoryDumpSessionState>& session_state)
+    scoped_refptr<MemoryDumpSessionState> session_state)
     : has_process_totals_(false),
       has_process_mmaps_(false),
-      session_state_(session_state) {}
+      session_state_(std::move(session_state)) {}
 
 ProcessMemoryDump::~ProcessMemoryDump() {}
 

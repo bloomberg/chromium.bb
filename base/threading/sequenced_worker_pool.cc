@@ -98,7 +98,7 @@ struct SequencedTaskLessThan {
 class SequencedWorkerPoolTaskRunner : public TaskRunner {
  public:
   SequencedWorkerPoolTaskRunner(
-      const scoped_refptr<SequencedWorkerPool>& pool,
+      scoped_refptr<SequencedWorkerPool> pool,
       SequencedWorkerPool::WorkerShutdown shutdown_behavior);
 
   // TaskRunner implementation
@@ -118,11 +118,9 @@ class SequencedWorkerPoolTaskRunner : public TaskRunner {
 };
 
 SequencedWorkerPoolTaskRunner::SequencedWorkerPoolTaskRunner(
-    const scoped_refptr<SequencedWorkerPool>& pool,
+    scoped_refptr<SequencedWorkerPool> pool,
     SequencedWorkerPool::WorkerShutdown shutdown_behavior)
-    : pool_(pool),
-      shutdown_behavior_(shutdown_behavior) {
-}
+    : pool_(std::move(pool)), shutdown_behavior_(shutdown_behavior) {}
 
 SequencedWorkerPoolTaskRunner::~SequencedWorkerPoolTaskRunner() {
 }
@@ -150,7 +148,7 @@ bool SequencedWorkerPoolTaskRunner::RunsTasksOnCurrentThread() const {
 class SequencedWorkerPoolSequencedTaskRunner : public SequencedTaskRunner {
  public:
   SequencedWorkerPoolSequencedTaskRunner(
-      const scoped_refptr<SequencedWorkerPool>& pool,
+      scoped_refptr<SequencedWorkerPool> pool,
       SequencedWorkerPool::SequenceToken token,
       SequencedWorkerPool::WorkerShutdown shutdown_behavior);
 
@@ -178,13 +176,12 @@ class SequencedWorkerPoolSequencedTaskRunner : public SequencedTaskRunner {
 };
 
 SequencedWorkerPoolSequencedTaskRunner::SequencedWorkerPoolSequencedTaskRunner(
-    const scoped_refptr<SequencedWorkerPool>& pool,
+    scoped_refptr<SequencedWorkerPool> pool,
     SequencedWorkerPool::SequenceToken token,
     SequencedWorkerPool::WorkerShutdown shutdown_behavior)
-    : pool_(pool),
+    : pool_(std::move(pool)),
       token_(token),
-      shutdown_behavior_(shutdown_behavior) {
-}
+      shutdown_behavior_(shutdown_behavior) {}
 
 SequencedWorkerPoolSequencedTaskRunner::
 ~SequencedWorkerPoolSequencedTaskRunner() {
@@ -230,7 +227,7 @@ class SequencedWorkerPool::Worker : public SimpleThread {
  public:
   // Hold a (cyclic) ref to |worker_pool|, since we want to keep it
   // around as long as we are running.
-  Worker(const scoped_refptr<SequencedWorkerPool>& worker_pool,
+  Worker(scoped_refptr<SequencedWorkerPool> worker_pool,
          int thread_number,
          const std::string& thread_name_prefix);
   ~Worker() override;
@@ -504,11 +501,11 @@ class SequencedWorkerPool::Inner {
 // Worker definitions ---------------------------------------------------------
 
 SequencedWorkerPool::Worker::Worker(
-    const scoped_refptr<SequencedWorkerPool>& worker_pool,
+    scoped_refptr<SequencedWorkerPool> worker_pool,
     int thread_number,
     const std::string& prefix)
     : SimpleThread(prefix + StringPrintf("Worker%d", thread_number)),
-      worker_pool_(worker_pool),
+      worker_pool_(std::move(worker_pool)),
       task_shutdown_behavior_(BLOCK_SHUTDOWN),
       is_processing_task_(false) {
   Start();

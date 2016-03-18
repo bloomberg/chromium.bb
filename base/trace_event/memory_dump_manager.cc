@@ -211,43 +211,43 @@ void MemoryDumpManager::Initialize(MemoryDumpManagerDelegate* delegate,
 void MemoryDumpManager::RegisterDumpProvider(
     MemoryDumpProvider* mdp,
     const char* name,
-    const scoped_refptr<SingleThreadTaskRunner>& task_runner,
+    scoped_refptr<SingleThreadTaskRunner> task_runner,
     MemoryDumpProvider::Options options) {
   options.dumps_on_single_thread_task_runner = true;
-  RegisterDumpProviderInternal(mdp, name, task_runner, options);
+  RegisterDumpProviderInternal(mdp, name, std::move(task_runner), options);
 }
 
 void MemoryDumpManager::RegisterDumpProvider(
     MemoryDumpProvider* mdp,
     const char* name,
-    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
+    scoped_refptr<SingleThreadTaskRunner> task_runner) {
   // Set |dumps_on_single_thread_task_runner| to true because all providers
   // without task runner are run on dump thread.
   MemoryDumpProvider::Options options;
   options.dumps_on_single_thread_task_runner = true;
-  RegisterDumpProviderInternal(mdp, name, task_runner, options);
+  RegisterDumpProviderInternal(mdp, name, std::move(task_runner), options);
 }
 
 void MemoryDumpManager::RegisterDumpProviderWithSequencedTaskRunner(
     MemoryDumpProvider* mdp,
     const char* name,
-    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    scoped_refptr<SequencedTaskRunner> task_runner,
     MemoryDumpProvider::Options options) {
   DCHECK(task_runner);
   options.dumps_on_single_thread_task_runner = false;
-  RegisterDumpProviderInternal(mdp, name, task_runner, options);
+  RegisterDumpProviderInternal(mdp, name, std::move(task_runner), options);
 }
 
 void MemoryDumpManager::RegisterDumpProviderInternal(
     MemoryDumpProvider* mdp,
     const char* name,
-    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    scoped_refptr<SequencedTaskRunner> task_runner,
     const MemoryDumpProvider::Options& options) {
   if (dumper_registrations_ignored_for_testing_)
     return;
 
   scoped_refptr<MemoryDumpProviderInfo> mdpinfo =
-      new MemoryDumpProviderInfo(mdp, name, task_runner, options);
+      new MemoryDumpProviderInfo(mdp, name, std::move(task_runner), options);
 
   {
     AutoLock lock(lock_);
@@ -703,11 +703,11 @@ uint64_t MemoryDumpManager::GetTracingProcessId() const {
 MemoryDumpManager::MemoryDumpProviderInfo::MemoryDumpProviderInfo(
     MemoryDumpProvider* dump_provider,
     const char* name,
-    const scoped_refptr<SequencedTaskRunner>& task_runner,
+    scoped_refptr<SequencedTaskRunner> task_runner,
     const MemoryDumpProvider::Options& options)
     : dump_provider(dump_provider),
       name(name),
-      task_runner(task_runner),
+      task_runner(std::move(task_runner)),
       options(options),
       consecutive_failures(0),
       disabled(false) {}
@@ -729,15 +729,15 @@ bool MemoryDumpManager::MemoryDumpProviderInfo::Comparator::operator()(
 MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
     MemoryDumpRequestArgs req_args,
     const MemoryDumpProviderInfo::OrderedSet& dump_providers,
-    const scoped_refptr<MemoryDumpSessionState>& session_state,
+    scoped_refptr<MemoryDumpSessionState> session_state,
     MemoryDumpCallback callback,
-    const scoped_refptr<SingleThreadTaskRunner>& dump_thread_task_runner)
+    scoped_refptr<SingleThreadTaskRunner> dump_thread_task_runner)
     : req_args(req_args),
-      session_state(session_state),
+      session_state(std::move(session_state)),
       callback(callback),
       dump_successful(true),
       callback_task_runner(MessageLoop::current()->task_runner()),
-      dump_thread_task_runner(dump_thread_task_runner) {
+      dump_thread_task_runner(std::move(dump_thread_task_runner)) {
   pending_dump_providers.reserve(dump_providers.size());
   pending_dump_providers.assign(dump_providers.rbegin(), dump_providers.rend());
 }

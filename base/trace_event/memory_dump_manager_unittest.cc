@@ -51,30 +51,13 @@ namespace {
 
 void RegisterDumpProvider(
     MemoryDumpProvider* mdp,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const MemoryDumpProvider::Options& options,
-    bool dumps_on_single_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const MemoryDumpProvider::Options& options) {
   MemoryDumpManager* mdm = MemoryDumpManager::GetInstance();
   mdm->set_dumper_registrations_ignored_for_testing(false);
   const char* kMDPName = "TestDumpProvider";
-  if (dumps_on_single_thread_task_runner) {
-    scoped_refptr<base::SingleThreadTaskRunner> single_thread_task_runner =
-        static_cast<base::SingleThreadTaskRunner*>(task_runner.get());
-    mdm->RegisterDumpProvider(mdp, kMDPName,
-                              std::move(single_thread_task_runner), options);
-  } else {
-    mdm->RegisterDumpProviderWithSequencedTaskRunner(mdp, kMDPName, task_runner,
-                                                     options);
-  }
+  mdm->RegisterDumpProvider(mdp, kMDPName, std::move(task_runner), options);
   mdm->set_dumper_registrations_ignored_for_testing(true);
-}
-
-void RegisterDumpProvider(
-    MemoryDumpProvider* mdp,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const MemoryDumpProvider::Options& options) {
-  RegisterDumpProvider(mdp, task_runner, options,
-                       true /* dumps_on_single_thread_task_runner */);
 }
 
 void RegisterDumpProvider(MemoryDumpProvider* mdp) {
@@ -83,10 +66,14 @@ void RegisterDumpProvider(MemoryDumpProvider* mdp) {
 
 void RegisterDumpProviderWithSequencedTaskRunner(
     MemoryDumpProvider* mdp,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const MemoryDumpProvider::Options& options) {
-  RegisterDumpProvider(mdp, task_runner, options,
-                       false /* dumps_on_single_thread_task_runner */);
+  MemoryDumpManager* mdm = MemoryDumpManager::GetInstance();
+  mdm->set_dumper_registrations_ignored_for_testing(false);
+  const char* kMDPName = "TestDumpProvider";
+  mdm->RegisterDumpProviderWithSequencedTaskRunner(mdp, kMDPName, task_runner,
+                                                   options);
+  mdm->set_dumper_registrations_ignored_for_testing(true);
 }
 
 void OnTraceDataCollected(Closure quit_closure,
