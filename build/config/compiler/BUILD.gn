@@ -594,7 +594,7 @@ config("compiler_codegen") {
         ]
       }
     } else if (current_cpu == "arm") {
-      if (!is_clang) {
+      if (is_android && !is_clang) {
         # Clang doesn't support these flags.
         cflags += [
           # The tree-sra optimization (scalar replacement for
