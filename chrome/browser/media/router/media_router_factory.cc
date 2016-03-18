@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #if defined(OS_ANDROID)
@@ -35,6 +36,17 @@ MediaRouter* MediaRouterFactory::GetApiForBrowserContext(
   // to return a pointer to MediaRouter.
   return static_cast<MediaRouter*>(
       service_factory.Get().GetServiceForBrowserContext(context, true));
+}
+
+void MediaRouterFactory::BrowserContextShutdown(
+    content::BrowserContext* context) {
+  if (context->IsOffTheRecord()) {
+    MediaRouter* router =
+        static_cast<MediaRouter*>(GetServiceForBrowserContext(context, false));
+    if (router)
+      router->OnOffTheRecordProfileShutdown();
+  }
+  BrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }
 
 MediaRouterFactory::MediaRouterFactory()

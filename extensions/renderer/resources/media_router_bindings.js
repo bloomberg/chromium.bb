@@ -624,15 +624,18 @@ define('media_router_bindings', [
    * @param {!number} timeoutMillis If positive, the timeout duration for the
    *     request, measured in seconds. Otherwise, the default duration will be
    *     used.
+   * @param {!boolean} offTheRecord If true, the route is being requested by
+   *     an off the record (incognito) profile.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.connectRouteByRouteId =
       function(sourceUrn, routeId, presentationId, origin, tabId,
-          timeoutMillis) {
+               timeoutMillis, offTheRecord) {
     return this.handlers_.connectRouteByRouteId(
-        sourceUrn, routeId, presentationId, origin, tabId, timeoutMillis)
+        sourceUrn, routeId, presentationId, origin, tabId, timeoutMillis,
+        offTheRecord)
         .then(function(route) {
           return toSuccessRouteResponse_(route);
         },

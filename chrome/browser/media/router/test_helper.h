@@ -114,13 +114,14 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                     int64_t timeout_secs,
                     bool off_the_record,
                     const JoinRouteCallback& callback));
-  MOCK_METHOD7(ConnectRouteByRouteId,
+  MOCK_METHOD8(ConnectRouteByRouteId,
                void(const mojo::String& source_urn,
                     const mojo::String& route_id,
                     const mojo::String& presentation_id,
                     const mojo::String& origin,
                     int tab_id,
                     int64_t timeout_secs,
+                    bool off_the_record,
                     const JoinRouteCallback& callback));
   MOCK_METHOD1(DetachRoute, void(const mojo::String& route_id));
   MOCK_METHOD1(TerminateRoute, void(const mojo::String& route_id));

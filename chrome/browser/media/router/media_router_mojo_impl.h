@@ -84,7 +84,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
-      base::TimeDelta timeout) override;
+      base::TimeDelta timeout,
+      bool off_the_record) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
@@ -233,7 +234,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& origin,
       int tab_id,
       const std::vector<MediaRouteResponseCallback>& callbacks,
-      base::TimeDelta timeout);
+      base::TimeDelta timeout,
+      bool off_the_record);
   void DoTerminateRoute(const MediaRoute::Id& route_id);
   void DoDetachRoute(const MediaRoute::Id& route_id);
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
@@ -287,6 +289,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // into a local callback.
   void RouteResponseReceived(
       const std::string& presentation_id,
+      bool off_the_record,
       const std::vector<MediaRouteResponseCallback>& callbacks,
       interfaces::MediaRoutePtr media_route,
       const mojo::String& error_text,

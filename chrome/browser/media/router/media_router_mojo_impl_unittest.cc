@@ -256,6 +256,82 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
   run_loop.Run();
 }
 
+TEST_F(MediaRouterMojoImplTest, CreateRouteOffTheRecordMismatchFails) {
+  EXPECT_CALL(mock_media_route_provider_,
+              CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
+                          mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis,
+                          true, _))
+      .WillOnce(Invoke(
+          [](const mojo::String& source, const mojo::String& sink,
+             const mojo::String& presentation_id, const mojo::String& origin,
+             int tab_id, int64_t timeout_millis, bool off_the_record,
+             const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
+            interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
+            route->media_source = kSource;
+            route->media_sink_id = kSinkId;
+            route->media_route_id = kRouteId;
+            route->description = kDescription;
+            route->is_local = true;
+            route->for_display = true;
+            route->off_the_record = false;
+            cb.Run(std::move(route), mojo::String(),
+                   interfaces::RouteRequestResultCode::OK);
+          }));
+
+  RouteResponseCallbackHandler handler;
+  base::RunLoop run_loop;
+  std::string error(
+      "Mismatch in off the record status: request = 1, response = 0");
+  EXPECT_CALL(handler, DoInvoke(nullptr, "", error,
+                                RouteRequestResult::OFF_THE_RECORD_MISMATCH))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
+  router()->CreateRoute(
+      kSource, kSinkId, GURL(kOrigin), nullptr, route_response_callbacks,
+      base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
+  run_loop.Run();
+}
+
+TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
+  EXPECT_CALL(mock_media_route_provider_,
+              CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
+                          mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis,
+                          true, _))
+      .WillOnce(Invoke(
+          [](const mojo::String& source, const mojo::String& sink,
+             const mojo::String& presentation_id, const mojo::String& origin,
+             int tab_id, int64_t timeout_millis, bool off_the_record,
+             const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
+            interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
+            route->media_source = kSource;
+            route->media_sink_id = kSinkId;
+            route->media_route_id = kRouteId;
+            route->description = kDescription;
+            route->is_local = true;
+            route->for_display = true;
+            route->off_the_record = true;
+            cb.Run(std::move(route), mojo::String(),
+                   interfaces::RouteRequestResultCode::OK);
+          }));
+  base::RunLoop run_loop;
+  router()->CreateRoute(kSource, kSinkId, GURL(kOrigin), nullptr,
+                        std::vector<MediaRouteResponseCallback>(),
+                        base::TimeDelta::FromMilliseconds(kTimeoutMillis),
+                        true);
+
+  // TODO(mfoltz): Where possible, convert other tests to use RunUntilIdle
+  // instead of manually calling Run/Quit on the run loop.
+  run_loop.RunUntilIdle();
+
+  EXPECT_CALL(mock_media_route_provider_,
+              TerminateRoute(mojo::String(kRouteId)));
+  base::RunLoop run_loop2;
+  router()->OnOffTheRecordProfileShutdown();
+  run_loop2.RunUntilIdle();
+}
+
 TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   MediaSource media_source(kSource);
   MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
@@ -327,11 +403,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteFails) {
   run_loop.Run();
 }
 
-TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
-  MediaSource media_source(kSource);
-  MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
-                            false);
-  expected_route.set_off_the_record(true);
+TEST_F(MediaRouterMojoImplTest, JoinRouteOffTheRecordMismatchFails) {
   interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
   route->media_source = kSource;
   route->media_sink_id = kSinkId;
@@ -339,19 +411,66 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
   route->description = kDescription;
   route->is_local = true;
   route->for_display = true;
-  route->off_the_record = true;
+  route->off_the_record = false;
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
   // in runnable parameter lists.
-  EXPECT_CALL(mock_media_route_provider_,
-              ConnectRouteByRouteId(
-                  mojo::String(kSource), mojo::String(kRouteId), _,
-                  mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis, _))
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      JoinRoute(mojo::String(kSource), mojo::String(kPresentationId),
+                mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis, true, _))
+      .WillOnce(Invoke([&route](
+          const mojo::String& source, const mojo::String& presentation_id,
+          const mojo::String& origin, int tab_id, int64_t timeout_millis,
+          bool off_the_record,
+          const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
+        cb.Run(std::move(route), mojo::String(),
+               interfaces::RouteRequestResultCode::OK);
+      }));
+
+  RouteResponseCallbackHandler handler;
+  base::RunLoop run_loop;
+  std::string error(
+      "Mismatch in off the record status: request = 1, response = 0");
+  EXPECT_CALL(handler, DoInvoke(nullptr, "", error,
+                                RouteRequestResult::OFF_THE_RECORD_MISMATCH))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
+  router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), nullptr,
+                      route_response_callbacks,
+                      base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
+  run_loop.Run();
+}
+
+TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
+  MediaSource media_source(kSource);
+  MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
+                            false);
+  expected_route.set_off_the_record(false);
+  interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
+  route->media_source = kSource;
+  route->media_sink_id = kSinkId;
+  route->media_route_id = kRouteId;
+  route->description = kDescription;
+  route->is_local = true;
+  route->for_display = true;
+  route->off_the_record = false;
+
+  // Use a lambda function as an invocation target here to work around
+  // a limitation with GMock::Invoke that prevents it from using move-only types
+  // in runnable parameter lists.
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      ConnectRouteByRouteId(mojo::String(kSource), mojo::String(kRouteId), _,
+                            mojo::String(kOrigin), kInvalidTabId,
+                            kTimeoutMillis, false, _))
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& route_id,
           const mojo::String& presentation_id, const mojo::String& origin,
-          int tab_id, int64_t timeout_millis,
+          int tab_id, int64_t timeout_millis, bool off_the_record,
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
         cb.Run(std::move(route), mojo::String(),
                interfaces::RouteRequestResultCode::OK);
@@ -367,19 +486,20 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->ConnectRouteByRouteId(
       kSource, kRouteId, GURL(kOrigin), nullptr, route_response_callbacks,
-      base::TimeDelta::FromMilliseconds(kTimeoutMillis));
+      base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
   run_loop.Run();
 }
 
 TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
-  EXPECT_CALL(mock_media_route_provider_,
-              ConnectRouteByRouteId(
-                  mojo::String(kSource), mojo::String(kRouteId), _,
-                  mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis, _))
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      ConnectRouteByRouteId(mojo::String(kSource), mojo::String(kRouteId), _,
+                            mojo::String(kOrigin), kInvalidTabId,
+                            kTimeoutMillis, true, _))
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& route_id,
              const mojo::String& presentation_id, const mojo::String& origin,
-             int tab_id, int64_t timeout_millis,
+             int tab_id, int64_t timeout_millis, bool off_the_record,
              const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
             cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError),
                    interfaces::RouteRequestResultCode::TIMED_OUT);
@@ -395,7 +515,50 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->ConnectRouteByRouteId(
       kSource, kRouteId, GURL(kOrigin), nullptr, route_response_callbacks,
-      base::TimeDelta::FromMilliseconds(kTimeoutMillis));
+      base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
+  run_loop.Run();
+}
+
+TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdOffTheRecordMismatchFails) {
+  interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
+  route->media_source = kSource;
+  route->media_sink_id = kSinkId;
+  route->media_route_id = kRouteId;
+  route->description = kDescription;
+  route->is_local = true;
+  route->for_display = true;
+  route->off_the_record = false;
+
+  // Use a lambda function as an invocation target here to work around
+  // a limitation with GMock::Invoke that prevents it from using move-only types
+  // in runnable parameter lists.
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      ConnectRouteByRouteId(mojo::String(kSource), mojo::String(kRouteId), _,
+                            mojo::String(kOrigin), kInvalidTabId,
+                            kTimeoutMillis, true, _))
+      .WillOnce(Invoke([&route](
+          const mojo::String& source, const mojo::String& route_id,
+          const mojo::String& presentation_id, const mojo::String& origin,
+          int tab_id, int64_t timeout_millis, bool off_the_record,
+          const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
+        cb.Run(std::move(route), mojo::String(),
+               interfaces::RouteRequestResultCode::OK);
+      }));
+
+  RouteResponseCallbackHandler handler;
+  base::RunLoop run_loop;
+  std::string error(
+      "Mismatch in off the record status: request = 1, response = 0");
+  EXPECT_CALL(handler, DoInvoke(nullptr, "", error,
+                                RouteRequestResult::OFF_THE_RECORD_MISMATCH))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
+  router()->ConnectRouteByRouteId(
+      kSource, kRouteId, GURL(kOrigin), nullptr, route_response_callbacks,
+      base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
   run_loop.Run();
 }
 

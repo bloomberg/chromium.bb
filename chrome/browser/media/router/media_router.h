@@ -22,6 +22,8 @@
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/presentation_session_message.h"
 
+class Profile;
+
 namespace content {
 class WebContents;
 }
@@ -95,13 +97,16 @@ class MediaRouter : public KeyedService {
   // success or failure, in the order they are listed.
   // If |timeout| is positive, then any un-invoked |callbacks| will be invoked
   // with a timeout error after the timeout expires.
+  // If |off_the_record| is true, the request was made by an off the record
+  // (incognito) profile.
   virtual void ConnectRouteByRouteId(
       const MediaSource::Id& source_id,
       const MediaRoute::Id& route_id,
       const GURL& origin,
       content::WebContents* web_contents,
       const std::vector<MediaRouteResponseCallback>& callbacks,
-      base::TimeDelta timeout) = 0;
+      base::TimeDelta timeout,
+      bool off_the_record) = 0;
 
   // Joins an existing route identified by |presentation_id|.
   // |source|: The source to route to the existing route.
@@ -157,6 +162,10 @@ class MediaRouter : public KeyedService {
   AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback) = 0;
+
+  // Called when the off the record (incognito) profile for this instance is
+  // being shut down.  This will terminate all off the record media routes.
+  virtual void OnOffTheRecordProfileShutdown() = 0;
 
  private:
   friend class IssuesObserver;

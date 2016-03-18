@@ -30,7 +30,13 @@ class MediaRoute;
 // |result_code|: A value from RouteRequestResult describing the error.
 class RouteRequestResult {
  public:
-  enum ResultCode { UNKNOWN_ERROR, OK, TIMED_OUT, INVALID_ORIGIN };
+  enum ResultCode {
+    UNKNOWN_ERROR,
+    OK,
+    TIMED_OUT,
+    INVALID_ORIGIN,
+    OFF_THE_RECORD_MISMATCH
+  };
 
   static scoped_ptr<RouteRequestResult> FromSuccess(
       scoped_ptr<MediaRoute> route,

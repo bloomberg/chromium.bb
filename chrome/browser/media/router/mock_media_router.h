@@ -41,13 +41,14 @@ class MockMediaRouter : public MediaRouter {
                     const std::vector<MediaRouteResponseCallback>& callbacks,
                     base::TimeDelta timeout,
                     bool off_the_record));
-  MOCK_METHOD6(ConnectRouteByRouteId,
+  MOCK_METHOD7(ConnectRouteByRouteId,
                void(const MediaSource::Id& source,
                     const MediaRoute::Id& route_id,
                     const GURL& origin,
                     content::WebContents* web_contents,
                     const std::vector<MediaRouteResponseCallback>& callbacks,
-                    base::TimeDelta timeout));
+                    base::TimeDelta timeout,
+                    bool off_the_record));
   MOCK_METHOD1(DetachRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD1(TerminateRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD3(SendRouteMessage,
@@ -76,6 +77,8 @@ class MockMediaRouter : public MediaRouter {
     OnAddPresentationConnectionStateChangedCallbackInvoked(callback);
     return connection_state_callbacks_.Add(callback);
   }
+
+  MOCK_METHOD0(OnOffTheRecordProfileShutdown, void());
   MOCK_METHOD1(OnAddPresentationConnectionStateChangedCallbackInvoked,
                void(const content::PresentationConnectionStateChangedCallback&
                         callback));
