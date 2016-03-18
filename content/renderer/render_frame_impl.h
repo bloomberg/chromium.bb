@@ -225,10 +225,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   ~RenderFrameImpl() override;
 
-  bool is_swapped_out() const {
-    return is_swapped_out_;
-  }
-
   // TODO(nasko): This can be removed once we don't have a swapped out state on
   // RenderFrames. See https://crbug.com/357747.
   void set_render_frame_proxy(RenderFrameProxy* proxy) {
@@ -626,10 +622,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrameSerializerClient::FrameSerializationStatus status)
       override;
 
-  // Make this frame show an empty, unscriptable page.
-  // TODO(nasko): Remove this method once swapped out state is no longer used.
-  void NavigateToSwappedOutURL();
-
   // Binds this render frame's service registry.
   void BindServiceRegistry(
       mojo::shell::mojom::InterfaceProviderRequest services,
@@ -1015,9 +1007,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
-  bool is_swapped_out_;
 
-  // RenderFrameProxy exists only when is_swapped_out_ is true.
   // TODO(nasko): This can be removed once we don't have a swapped out state on
   // RenderFrame. See https://crbug.com/357747.
   RenderFrameProxy* render_frame_proxy_;

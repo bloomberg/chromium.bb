@@ -807,11 +807,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     webview()->mainFrame()->toWebLocalFrame()->forceSandboxFlags(
         params.replicated_frame_state.sandbox_flags);
   }
-
-  // If we are initially swapped out, navigate to kSwappedOutURL.
-  // This ensures we are in a unique origin that others cannot script.
-  if (is_swapped_out_ && webview()->mainFrame()->isWebLocalFrame())
-    main_render_frame_->NavigateToSwappedOutURL();
 }
 
 RenderViewImpl::~RenderViewImpl() {

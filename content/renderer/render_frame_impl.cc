@@ -978,7 +978,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       in_frame_tree_(false),
       render_view_(params.render_view->AsWeakPtr()),
       routing_id_(params.routing_id),
-      is_swapped_out_(false),
       render_frame_proxy_(NULL),
       is_detaching_(false),
       proxy_routing_id_(MSG_ROUTING_NONE),
@@ -1097,7 +1096,7 @@ void RenderFrameImpl::Initialize() {
 #endif
   new SharedWorkerRepository(this);
 
-  if (IsLocalRoot() && !is_swapped_out_) {
+  if (IsLocalRoot()) {
     // DevToolsAgent is a RenderFrameObserver, and will destruct itself
     // when |this| is deleted.
     devtools_agent_ = new DevToolsAgent(this);
@@ -1312,12 +1311,6 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
     delete message;
     return false;
   }
-  if (is_swapped_out_) {
-    if (!SwappedOutMessages::CanSendWhileSwappedOut(message)) {
-      delete message;
-      return false;
-    }
-  }
 
   return RenderThread::Get()->Send(message);
 }
@@ -1471,19 +1464,6 @@ void RenderFrameImpl::OnNavigate(
                    scoped_ptr<StreamOverrideParameters>());
 }
 
-void RenderFrameImpl::NavigateToSwappedOutURL() {
-  // We use loadRequest instead of loadHTMLString because the former commits
-  // synchronously.  Otherwise a new navigation can interrupt the navigation
-  // to kSwappedOutURL. If that happens to be to the page we had been
-  // showing, then WebKit will never send a commit and we'll be left spinning.
-  // Set the is_swapped_out_ bit to true, so IPC filtering is in effect and
-  // the navigation to swappedout:// is not announced to the browser side.
-  is_swapped_out_ = true;
-  GURL swappedOutURL(kSwappedOutURL);
-  WebURLRequest request(swappedOutURL);
-  frame_->loadRequest(request);
-}
-
 void RenderFrameImpl::BindServiceRegistry(
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtr exposed_services) {
@@ -1526,55 +1506,51 @@ void RenderFrameImpl::OnSwapOut(
   // This codepath should only be hit for subframes when in --site-per-process.
   CHECK(is_main_frame_ || SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
-  // Only run unload if we're not swapped out yet, but send the ack either way.
-  if (!is_swapped_out_) {
-    // Swap this RenderFrame out so the frame can navigate to a page rendered by
-    // a different process.  This involves running the unload handler and
-    // clearing the page.  We also allow this process to exit if there are no
-    // other active RenderFrames in it.
+  // Swap this RenderFrame out so the frame can navigate to a page rendered by
+  // a different process.  This involves running the unload handler and
+  // clearing the page.  We also allow this process to exit if there are no
+  // other active RenderFrames in it.
 
-    // Send an UpdateState message before we get swapped out.
-    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-      SendUpdateState();
-    else
-      render_view_->SendUpdateState();
+  // Send an UpdateState message before we get deleted.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+    SendUpdateState();
+  else
+    render_view_->SendUpdateState();
 
-    // If we need a proxy to replace this, create it now so its routing id is
-    // registered for receiving IPC messages.
-    if (proxy_routing_id != MSG_ROUTING_NONE) {
-      proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-          this, proxy_routing_id, replicated_frame_state.scope);
-    }
+  // If we need a proxy to replace this, create it now so its routing id is
+  // registered for receiving IPC messages.
+  if (proxy_routing_id != MSG_ROUTING_NONE) {
+    proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
+        this, proxy_routing_id, replicated_frame_state.scope);
+  }
 
-    // Synchronously run the unload handler before sending the ACK.
-    // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
-    // unload on subframes as well.
-    if (is_main_frame_)
-      frame_->dispatchUnloadEvent();
+  // Synchronously run the unload handler before sending the ACK.
+  // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
+  // unload on subframes as well.
+  if (is_main_frame_)
+    frame_->dispatchUnloadEvent();
 
-    // Swap out and stop sending any IPC messages that are not ACKs.
-    if (is_main_frame_)
-      render_view_->SetSwappedOut(true);
-    is_swapped_out_ = true;
+  // Swap out and stop sending any IPC messages that are not ACKs.
+  if (is_main_frame_)
+    render_view_->SetSwappedOut(true);
 
-    // Set the proxy here, since OnStop() below could cause an onload event
-    // handler to execute, which could trigger code such as
-    // willCheckAndDispatchMessageEvent() that needs the proxy.
-    if (proxy)
-      set_render_frame_proxy(proxy);
+  // Set the proxy here, since OnStop() below could cause an onload event
+  // handler to execute, which could trigger code such as
+  // willCheckAndDispatchMessageEvent() that needs the proxy.
+  if (proxy)
+    set_render_frame_proxy(proxy);
 
-    // Transfer settings such as initial drawing parameters to the remote frame,
-    // if one is created, that will replace this frame.
-    if (!is_main_frame_ && proxy)
-      proxy->web_frame()->initializeFromFrame(frame_);
+  // Transfer settings such as initial drawing parameters to the remote frame,
+  // if one is created, that will replace this frame.
+  if (!is_main_frame_ && proxy)
+    proxy->web_frame()->initializeFromFrame(frame_);
 
-    // Let WebKit know that this view is hidden so it can drop resources and
-    // stop compositing.
-    // TODO(creis): Support this for subframes as well.
-    if (is_main_frame_) {
-      render_view_->webview()->setVisibilityState(
-          blink::WebPageVisibilityStateHidden, false);
-    }
+  // Let WebKit know that this view is hidden so it can drop resources and
+  // stop compositing.
+  // TODO(creis): Support this for subframes as well.
+  if (is_main_frame_) {
+    render_view_->webview()->setVisibilityState(
+        blink::WebPageVisibilityStateHidden, false);
   }
 
   // It is now safe to show modal dialogs again.
@@ -2600,8 +2576,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   Send(new FrameHostMsg_CreateChildFrame(params, &child_routing_id));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
-  // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
-  // out state or synchronous IPC message above has failed.
+  // happen if the synchronous IPC message above has failed.
   if (child_routing_id == MSG_ROUTING_NONE) {
     NOTREACHED() << "Failed to allocate routing id for child frame.";
     return nullptr;
@@ -2631,10 +2606,6 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
 }
 
 void RenderFrameImpl::didChangeOpener(blink::WebFrame* opener) {
-  // Only active frames are able to disown their opener.
-  if (!opener && is_swapped_out_)
-    return;
-
   // Only a local frame should be able to update another frame's opener.
   DCHECK(!opener || opener->isWebLocalFrame());
 
@@ -2987,9 +2958,8 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
                "url", ds->request().url().string().utf8());
   DocumentState* document_state = DocumentState::FromDataSource(ds);
 
-  // We should only navigate to swappedout:// when is_swapped_out_ is true.
-  CHECK(ds->request().url() != GURL(kSwappedOutURL) || is_swapped_out_)
-      << "Heard swappedout:// when not swapped out.";
+  // We should never navigate to swappedout://.
+  CHECK(ds->request().url() != GURL(kSwappedOutURL)) << "Heard swappedout://.";
 
   // Update the request time if WebKit has better knowledge of it.
   if (document_state->request_time().is_null() &&
@@ -3459,10 +3429,6 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
                     DidFinishLoad(frame));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidFinishLoad());
 
-  // Don't send this message while the frame is swapped out.
-  if (is_swapped_out())
-    return;
-
   Send(new FrameHostMsg_DidFinishLoad(routing_id_,
                                       ds->request().url()));
 }
@@ -3580,12 +3546,6 @@ bool RenderFrameImpl::runModalPromptDialog(
 }
 
 bool RenderFrameImpl::runModalBeforeUnloadDialog(bool is_reload) {
-  // If we are swapping out, we have already run the beforeunload handler.
-  // TODO(creis): Fix OnSwapOut to clear the frame without running beforeunload
-  // at all, to avoid running it twice.
-  if (is_swapped_out_)
-    return true;
-
   // Don't allow further dialogs if we are waiting to swap out, since the
   // PageGroupLoadDeferrer in our stack prevents it.
   if (render_view()->suppress_dialogs_until_swap_out_)
@@ -4093,19 +4053,9 @@ bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
     blink::WebDOMMessageEvent event) {
   DCHECK(!frame_ || frame_ == target_frame);
 
-  // Currently, a postMessage that targets a cross-process frame can be plumbed
-  // either through this function or RenderFrameProxy::postMessageEvent. This
-  // function is used when the target cross-process frame is a top-level frame
-  // which has been swapped out.  In that case, the corresponding WebLocalFrame
-  // currently remains in the frame tree even in site-per-process mode (see
-  // OnSwapOut). RenderFrameProxy::postMessageEvent is used in
-  // --site-per-process mode for all other cases.
-  //
   // TODO(alexmos, nasko): When swapped-out:// disappears, this should be
   // cleaned up so that RenderFrameProxy::postMessageEvent is the only path for
   // cross-process postMessages.
-  if (!is_swapped_out_)
-    return false;
 
   // It is possible to get here on a swapped-out frame without a
   // |render_frame_proxy_|. This happens when:
@@ -4411,13 +4361,10 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // RenderFrameProxies in other processes.
   // TODO(alexmos): Origins for URLs with non-standard schemes are excluded due
   // to https://crbug.com/439608 and will be replicated as unique origins.
-  if (!is_swapped_out_) {
-    std::string scheme =
-        frame->document().getSecurityOrigin().protocol().utf8();
-    if (url::IsStandard(scheme.c_str(),
-                        url::Component(0, static_cast<int>(scheme.length())))) {
-      params.origin = frame->document().getSecurityOrigin();
-    }
+  std::string scheme = frame->document().getSecurityOrigin().protocol().utf8();
+  if (url::IsStandard(scheme.c_str(),
+                      url::Component(0, static_cast<int>(scheme.length())))) {
+    params.origin = frame->document().getSecurityOrigin();
   }
 
   params.should_enforce_strict_mixed_content_checking =
@@ -4429,8 +4376,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   // Set the URL to be displayed in the browser UI to the user.
   params.url = GetLoadingUrl();
-  DCHECK(!is_swapped_out_ || params.url == GURL(kSwappedOutURL));
-
   if (frame->document().baseURL() != params.url)
     params.base_url = frame->document().baseURL();
 
@@ -4552,12 +4497,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
         frame->dataSource()->request().inputPerfMetricReportPolicy());
     params.ui_timestamp = base::TimeTicks() + base::TimeDelta::FromSecondsD(
         frame->dataSource()->request().uiStartTime());
-
-    // This message needs to be sent before any of allowScripts(),
-    // allowImages(), allowPlugins() is called for the new page, so that when
-    // these functions send a ViewHostMsg_ContentBlocked message, it arrives
-    // after the FrameHostMsg_DidCommitProvisionalLoad message.
-    Send(new FrameHostMsg_DidCommitProvisionalLoad(routing_id_, params));
   } else {
     // Subframe navigation: the type depends on whether this navigation
     // generated a new session history entry. When they do generate a session
@@ -4571,11 +4510,13 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     DCHECK(!navigation_state->request_params().should_clear_history_list);
     params.history_list_was_cleared = false;
     params.report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
-
-    // Don't send this message while the subframe is swapped out.
-    if (!is_swapped_out())
-      Send(new FrameHostMsg_DidCommitProvisionalLoad(routing_id_, params));
   }
+
+  // This message needs to be sent before any of allowScripts(),
+  // allowImages(), allowPlugins() is called for the new page, so that when
+  // these functions send a ViewHostMsg_ContentBlocked message, it arrives
+  // after the FrameHostMsg_DidCommitProvisionalLoad message.
+  Send(new FrameHostMsg_DidCommitProvisionalLoad(routing_id_, params));
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
@@ -4727,31 +4668,6 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 
   Referrer referrer(
       RenderViewImpl::GetReferrerFromRequest(frame_, info.urlRequest));
-
-  // TODO(nick): Is consulting |is_main_frame| here correct?
-  if (is_main_frame_ && is_swapped_out_) {
-    if (info.urlRequest.url() != GURL(kSwappedOutURL)) {
-      // Targeted links may try to navigate a swapped out frame.  Allow the
-      // browser process to navigate the tab instead.  Note that it is also
-      // possible for non-targeted navigations (from this view) to arrive
-      // here just after we are swapped out.  It's ok to send them to the
-      // browser, as long as they're for the top level frame.
-      // TODO(creis): Ensure this supports targeted form submissions when
-      // fixing http://crbug.com/101395.
-      if (frame_->parent() == NULL) {
-        OpenURL(info.urlRequest.url(), referrer, info.defaultPolicy,
-                info.replacesCurrentHistoryItem, false);
-        return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
-      }
-
-      // We should otherwise ignore in-process iframe navigations, if they
-      // arrive just after we are swapped out.
-      return blink::WebNavigationPolicyIgnore;
-    }
-
-    // Allow kSwappedOutURL to complete.
-    return info.defaultPolicy;
-  }
 
   // Webkit is asking whether to navigate to a new URL.
   // This is fine normally, except if we're showing UI from one security
@@ -5620,31 +5536,6 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
     CHECK_EQ(-1, render_view_->history_list_offset_);
     CHECK_EQ(0, render_view_->history_list_length_);
   }
-
-  if (!is_swapped_out_ || frame_->parent())
-    return;
-
-  // This is a swapped out main frame, so swap the renderer back in.
-  // We marked the view as hidden when swapping the view out, so be sure to
-  // reset the visibility state before navigating to the new URL.
-  render_view_->webview()->setVisibilityState(
-      render_view_->visibilityState(), false);
-
-  // If this is an attempt to reload while we are swapped out, we should not
-  // reload swappedout://, but the previous page, which is stored in
-  // params.state.  Setting is_reload to false will treat this like a back
-  // navigation to accomplish that.
-  *is_reload = false;
-  *cache_policy = WebURLRequest::ReloadIgnoringCacheData;
-
-  // We refresh timezone when a view is swapped in since timezone
-  // can get out of sync when the system timezone is updated while
-  // the view is swapped out.
-  RenderThreadImpl::NotifyTimezoneChange();
-
-  render_view_->SetSwappedOut(false);
-  is_swapped_out_ = false;
-  return;
 }
 
 void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,

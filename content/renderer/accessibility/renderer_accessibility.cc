@@ -238,9 +238,6 @@ void RendererAccessibility::SendPendingAccessibilityEvents() {
   if (pending_events_.empty())
     return;
 
-  if (render_frame_->is_swapped_out())
-    return;
-
   ack_pending_ = true;
 
   // Make a copy of the events, because it's possible that
