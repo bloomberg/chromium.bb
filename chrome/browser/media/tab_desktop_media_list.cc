@@ -25,7 +25,7 @@ using content::DesktopMediaID;
 
 namespace {
 
-gfx::ImageSkia CreateEnlargedFaviconImage(gfx::Size size,
+gfx::ImageSkia CreateEnclosedFaviconImage(gfx::Size size,
                                           const gfx::ImageSkia& favicon) {
   DCHECK_GE(size.width(), 20);
   DCHECK_GE(size.height(), 20);
@@ -50,14 +50,18 @@ gfx::ImageSkia CreateEnlargedFaviconImage(gfx::Size size,
                         result.height() - thickness,  // bottom
                         paint);
 
-  // Draw a scaled favicon image into the center of result image to take up to
-  // a fraction of result image.
+  // Draw the favicon image into the center of result image. If the favicon is
+  // too big, scale it down.
+  gfx::Size fill_size = favicon.size();
   const double fraction = 0.75;
-  gfx::Size target_size(result.width() * fraction, result.height() * fraction);
-  gfx::Size scaled_favicon_size =
-      media::ScaleSizeToFitWithinTarget(favicon.size(), target_size);
+  if (result.width() * fraction < favicon.width() ||
+      result.height() * fraction < favicon.height()) {
+    gfx::Size target_size(result.width() * fraction,
+                          result.height() * fraction);
+    fill_size = media::ScaleSizeToFitWithinTarget(favicon.size(), target_size);
+  }
   gfx::Rect center_rect(result.width(), result.height());
-  center_rect.ClampToCenteredSize(scaled_favicon_size);
+  center_rect.ClampToCenteredSize(fill_size);
   SkRect dest_rect =
       SkRect::MakeLTRB(center_rect.x(), center_rect.y(), center_rect.right(),
                        center_rect.bottom());
@@ -157,7 +161,7 @@ void TabDesktopMediaList::Refresh() {
     // current thread.
     base::PostTaskAndReplyWithResult(
         thumbnail_task_runner_.get(), FROM_HERE,
-        base::Bind(&CreateEnlargedFaviconImage, thumbnail_size_, it.second),
+        base::Bind(&CreateEnclosedFaviconImage, thumbnail_size_, it.second),
         base::Bind(&TabDesktopMediaList::UpdateSourceThumbnail,
                    weak_factory_.GetWeakPtr(), it.first));
   }
