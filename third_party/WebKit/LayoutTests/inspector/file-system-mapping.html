@@ -7,6 +7,7 @@ function test()
     var paths = {
         FOO: "file:///home/username/projects/foo",
         BAR: "file:///home/username/projects/bar",
+        BUILD: "file:///home/username/project/build",
         SITE1: "file:///www/site1"
     };
 
@@ -95,6 +96,7 @@ function test()
     checkAndDumpFileSystemMapping(fileSystemMapping);
     addFileSystem(fileSystemMapping, paths.FOO)
     addFileSystem(fileSystemMapping, paths.BAR)
+    addFileSystem(fileSystemMapping, paths.BUILD)
     addFileSystem(fileSystemMapping, paths.SITE1)
 
     // Now fill it with file mappings.
@@ -102,6 +104,7 @@ function test()
     addFileMapping(fileSystemMapping, paths.SITE1, "http://www.foo.com/", "/foo/");
     addFileMapping(fileSystemMapping, paths.FOO, "http://www.example.com/bar/", "/foo/");
     addMappingForResource(fileSystemMapping, "http://www.bar.com/foo/folder/42.js", paths.FOO, paths.FOO + "/baz/folder/42.js");
+    addMappingForResource(fileSystemMapping, "http://localhost:3333/build/layout.css", paths.BUILD, paths.BUILD + "/layout.css");
 
     InspectorTest.addResult("Testing mappings for url:");
     dumpFileForURL(fileSystemMapping, "http://www.bar.com/foo/folder/42.js");
@@ -110,6 +113,7 @@ function test()
     dumpFileForURL(fileSystemMapping, "https://localhost/index.html");
     dumpFileForURL(fileSystemMapping, "http://localhost:8080/index.html");
     dumpFileForURL(fileSystemMapping, "http://localhost/");
+    dumpFileForURL(fileSystemMapping, "http://localhost:3333/build/main.css");
     InspectorTest.addResult("");
 
     InspectorTest.addResult("Testing mappings for path:");
