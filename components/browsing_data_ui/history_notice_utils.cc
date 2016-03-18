@@ -13,7 +13,8 @@ bool ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
     const ProfileSyncService* sync_service,
     const history::WebHistoryService* history_service) {
   return sync_service &&
-         sync_service->IsUsingSecondaryPassphrase() &&
+         sync_service->IsSyncActive() &&
+         !sync_service->IsUsingSecondaryPassphrase() &&
          history_service &&
          history_service->HasOtherFormsOfBrowsingHistory();
 }
