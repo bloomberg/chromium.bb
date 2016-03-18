@@ -58,8 +58,7 @@ ShelfItemDelegate* ShelfItemDelegateManager::GetShelfItemDelegate(ShelfID id) {
   return NULL;
 }
 
-void ShelfItemDelegateManager::ShelfItemAdded(int index) {
-}
+void ShelfItemDelegateManager::ShelfItemAdded(int index) {}
 
 void ShelfItemDelegateManager::ShelfItemRemoved(int index, ShelfID id) {
   RemoveShelfItemDelegate(id);
@@ -69,15 +68,10 @@ void ShelfItemDelegateManager::ShelfItemRemoved(int index, ShelfID id) {
 }
 
 void ShelfItemDelegateManager::ShelfItemMoved(int start_index,
-                                              int target_index) {
-}
+                                              int target_index) {}
 
 void ShelfItemDelegateManager::ShelfItemChanged(int index,
-                                                const ShelfItem& old_item) {
-}
-
-void ShelfItemDelegateManager::ShelfStatusChanged() {
-}
+                                                const ShelfItem& old_item) {}
 
 void ShelfItemDelegateManager::RemoveShelfItemDelegate(ShelfID id) {
   if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end()) {

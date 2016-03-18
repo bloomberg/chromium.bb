@@ -61,7 +61,6 @@ class ASH_EXPORT ShelfItemDelegateManager : public ShelfModelObserver {
   void ShelfItemRemoved(int index, ShelfID id) override;
   void ShelfItemMoved(int start_index, int targetindex) override;
   void ShelfItemChanged(int index, const ShelfItem& old_item) override;
-  void ShelfStatusChanged() override;
 
  private:
   friend class test::ShelfItemDelegateManagerTestAPI;

@@ -1586,10 +1586,6 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
-void ShelfView::ShelfStatusChanged() {
-  // Nothing to do here.
-}
-
 void ShelfView::PointerPressedOnButton(views::View* view,
                                        Pointer pointer,
                                        const ui::LocatedEvent& event) {

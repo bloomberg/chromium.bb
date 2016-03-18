@@ -304,7 +304,6 @@ class ChromeLauncherController
   void ShelfItemRemoved(int index, ash::ShelfID id) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
-  void ShelfStatusChanged() override;
 
   // ash::ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;

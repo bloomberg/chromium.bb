@@ -74,7 +74,7 @@ class ASH_EXPORT ShelfModel {
   const ShelfItems& items() const { return items_; }
   int item_count() const { return static_cast<int>(items_.size()); }
 
-  void SetStatus(Status status);
+  void set_status(Status status) { status_ = status; }
   Status status() const { return status_; }
 
   void AddObserver(ShelfModelObserver* observer);

@@ -136,8 +136,6 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
     last_index_ = target_index;
   }
 
-  void ShelfStatusChanged() override {}
-
   void clear_counts() {
     added_ = 0;
     removed_ = 0;

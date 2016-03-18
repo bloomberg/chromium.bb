@@ -29,9 +29,6 @@ class ASH_EXPORT ShelfModelObserver {
   // before the change.
   virtual void ShelfItemChanged(int index, const ShelfItem& old_item) = 0;
 
-  // Invoked when shelf status is changed.
-  virtual void ShelfStatusChanged() = 0;
-
  protected:
   virtual ~ShelfModelObserver() {}
 };

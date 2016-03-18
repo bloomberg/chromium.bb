@@ -1217,11 +1217,7 @@ void ChromeLauncherController::ShelfItemMoved(int start_index,
 
 void ChromeLauncherController::ShelfItemChanged(
     int index,
-    const ash::ShelfItem& old_item) {
-}
-
-void ChromeLauncherController::ShelfStatusChanged() {
-}
+    const ash::ShelfItem& old_item) {}
 
 void ChromeLauncherController::ActiveUserChanged(
     const std::string& user_email) {
@@ -1347,9 +1343,9 @@ void ChromeLauncherController::OnIsSyncingChanged() {
 
 void ChromeLauncherController::OnAppSyncUIStatusChanged() {
   if (app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING)
-    model_->SetStatus(ash::ShelfModel::STATUS_LOADING);
+    model_->set_status(ash::ShelfModel::STATUS_LOADING);
   else
-    model_->SetStatus(ash::ShelfModel::STATUS_NORMAL);
+    model_->set_status(ash::ShelfModel::STATUS_NORMAL);
 }
 
 void ChromeLauncherController::ExtensionEnableFlowFinished() {

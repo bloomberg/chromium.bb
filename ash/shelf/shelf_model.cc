@@ -150,14 +150,6 @@ int ShelfModel::FirstPanelIndex() const {
                           CompareByWeight) - items_.begin();
 }
 
-void ShelfModel::SetStatus(Status status) {
-  if (status_ == status)
-    return;
-
-  status_ = status;
-  FOR_EACH_OBSERVER(ShelfModelObserver, observers_, ShelfStatusChanged());
-}
-
 void ShelfModel::AddObserver(ShelfModelObserver* observer) {
   observers_.AddObserver(observer);
 }
