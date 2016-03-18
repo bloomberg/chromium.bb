@@ -159,14 +159,6 @@ bool PdfMetafileSkia::FinishDocument() {
   SkDynamicMemoryWStream pdf_stream;
   skia::RefPtr<SkDocument> pdf_doc =
       skia::AdoptRef(SkDocument::CreatePDF(&pdf_stream));
-  for (const auto& page : data_->pages_) {
-    SkCanvas* canvas = pdf_doc->beginPage(
-        page.page_size_.width(), page.page_size_.height(), &page.content_area_);
-    // No need to save/restore, since this canvas is not reused after endPage()
-    canvas->scale(page.scale_factor_, page.scale_factor_);
-    canvas->drawPicture(page.content_.get());
-    pdf_doc->endPage();
-  }
   const std::string& user_agent = GetAgent();
   SkDocument::Attribute info[] = {
       SkDocument::Attribute(SkString("Creator"),
@@ -176,6 +168,14 @@ bool PdfMetafileSkia::FinishDocument() {
   };
   SkTime::DateTime now = TimeToSkTime(base::Time::Now());
   pdf_doc->setMetadata(info, SK_ARRAY_COUNT(info), &now, &now);
+  for (const auto& page : data_->pages_) {
+    SkCanvas* canvas = pdf_doc->beginPage(
+        page.page_size_.width(), page.page_size_.height(), &page.content_area_);
+    // No need to save/restore, since this canvas is not reused after endPage()
+    canvas->scale(page.scale_factor_, page.scale_factor_);
+    canvas->drawPicture(page.content_.get());
+    pdf_doc->endPage();
+  }
   if (!pdf_doc->close())
     return false;
 
