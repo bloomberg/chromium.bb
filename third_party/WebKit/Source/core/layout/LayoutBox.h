@@ -932,8 +932,8 @@ protected:
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer) const override;
     void incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer) override;
 
-    PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer) override;
-    void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState) override;
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
+    void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState) override;
 
     bool hasStretchedLogicalWidth() const;
 

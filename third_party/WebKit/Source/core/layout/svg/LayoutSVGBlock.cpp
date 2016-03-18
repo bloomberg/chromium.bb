@@ -117,7 +117,7 @@ bool LayoutSVGBlock::nodeAtPoint(HitTestResult&, const HitTestLocation&, const L
     return false;
 }
 
-void LayoutSVGBlock::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+void LayoutSVGBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;

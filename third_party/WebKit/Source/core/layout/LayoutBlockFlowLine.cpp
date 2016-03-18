@@ -2098,9 +2098,9 @@ void LayoutBlockFlow::invalidateDisplayItemClientsOfFirstLine()
         firstRootBox->invalidateDisplayItemClientsRecursively();
 }
 
-PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    PaintInvalidationReason reason = LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
+    PaintInvalidationReason reason = LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
     if (reason == PaintInvalidationNone)
         return reason;
     RootInlineBox* line = firstRootBox();

@@ -43,7 +43,7 @@ protected:
     LayoutUnit maxPreferredLogicalWidth() const override;
     void layout() override;
     void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
-    void invalidateTreeIfNeeded(PaintInvalidationState&) override;
+    void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
     void paint(const PaintInfo&, const LayoutPoint& paintOffset) const override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 

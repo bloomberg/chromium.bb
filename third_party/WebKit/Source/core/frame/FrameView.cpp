@@ -1101,7 +1101,7 @@ void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidation
 
     if (!m_frame->settings() || !m_frame->settings()->rootLayerScrolls()) {
         paintInvalidationState.setViewClippingAndScrollOffsetDisabled(true);
-        invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
+        invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
         paintInvalidationState.setViewClippingAndScrollOffsetDisabled(false);
     }
 

@@ -63,7 +63,7 @@ protected:
     CursorDirective getCursor(const LayoutPoint&, Cursor&) const final;
 
     // Overridden to invalidate the child frame if any.
-    void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
+    void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&) override;
 
 private:
     bool updateWidgetGeometryInternal();

@@ -281,7 +281,7 @@ public:
     // The query rect is given in local coordinate system.
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const { return false; }
 
-    void invalidateTreeIfNeeded(PaintInvalidationState&) override;
+    void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
     // Indicate that the contents of this layoutObject need to be repainted. Only has an effect if compositing is being used,
     void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this layout object

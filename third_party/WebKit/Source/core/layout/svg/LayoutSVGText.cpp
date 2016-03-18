@@ -502,24 +502,26 @@ void LayoutSVGText::removeChild(LayoutObject* child)
     subtreeChildWasRemoved(affectedAttributes);
 }
 
-void LayoutSVGText::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+void LayoutSVGText::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
-    clearPaintInvalidationState(paintInvalidationState);
+    PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
+    clearPaintInvalidationFlags(newPaintInvalidationState);
 
     if (reason == PaintInvalidationDelayedFull)
         paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
 
-    ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
-    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, paintInvalidationState.paintInvalidationContainer());
+    ForceHorriblySlowRectMapping slowRectMapping(&newPaintInvalidationState);
     if (reason == PaintInvalidationSVGResourceChange)
-        childTreeWalkState.setForceSubtreeInvalidationWithinContainer();
-    invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
+        newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
+
+    newPaintInvalidationState.updatePaintOffsetAndClipForChildren();
+    invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
 } // namespace blink

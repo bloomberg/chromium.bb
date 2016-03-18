@@ -188,7 +188,7 @@ public:
 
     void pushLayoutState(LayoutState& layoutState) { m_layoutState = &layoutState; }
     void popLayoutState() { ASSERT(m_layoutState); m_layoutState = m_layoutState->next(); }
-    void invalidateTreeIfNeeded(PaintInvalidationState&) final;
+    void invalidateTreeIfNeeded(const PaintInvalidationState&) final;
 
     LayoutRect visualOverflowRect() const override;
 
@@ -284,32 +284,6 @@ private:
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());
-
-// Suspends the PaintInvalidationState cached offset and clipRect optimization. Used under transforms
-// that cannot be represented by PaintInvalidationState (common in SVG) and when paint invalidation
-// containers don't follow the common tree-walk algorithm (e.g. when an absolute positioned descendant
-// is nested under a relatively positioned inline-block child).
-class ForceHorriblySlowRectMapping {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ForceHorriblySlowRectMapping);
-public:
-    ForceHorriblySlowRectMapping(const PaintInvalidationState* paintInvalidationState)
-        : m_paintInvalidationState(paintInvalidationState)
-        , m_didDisable(m_paintInvalidationState && m_paintInvalidationState->cachedOffsetsEnabled())
-    {
-        if (m_paintInvalidationState)
-            m_paintInvalidationState->m_cachedOffsetsEnabled = false;
-    }
-
-    ~ForceHorriblySlowRectMapping()
-    {
-        if (m_didDisable)
-            m_paintInvalidationState->m_cachedOffsetsEnabled = true;
-    }
-private:
-    const PaintInvalidationState* m_paintInvalidationState;
-    bool m_didDisable;
-};
 
 } // namespace blink
 

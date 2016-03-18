@@ -12,8 +12,9 @@
 
 namespace blink {
 
-PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vector<LayoutObject*>& pendingDelayedPaintInvalidations, PaintInvalidationState* ownerPaintInvalidationState)
-    : m_clipped(false)
+PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vector<LayoutObject*>& pendingDelayedPaintInvalidations, const PaintInvalidationState* ownerPaintInvalidationState)
+    : m_currentObject(layoutView)
+    , m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forcedSubtreeInvalidationWithinContainer(false)
     , m_forcedSubtreeInvalidationRectUpdateWithinContainer(false)
@@ -21,7 +22,12 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
     , m_paintInvalidationContainer(layoutView.containerForPaintInvalidation())
     , m_pendingDelayedPaintInvalidations(pendingDelayedPaintInvalidations)
     , m_enclosingSelfPaintingLayer(*layoutView.layer())
+#if ENABLE(ASSERT)
+    , m_didUpdatePaintOffsetAndClipForChildren(true)
+#endif
 {
+    ASSERT(!ownerPaintInvalidationState || ownerPaintInvalidationState->m_didUpdatePaintOffsetAndClipForChildren);
+
     bool establishesPaintInvalidationContainer = layoutView == m_paintInvalidationContainer;
     if (!establishesPaintInvalidationContainer) {
         if ((ownerPaintInvalidationState && !ownerPaintInvalidationState->m_cachedOffsetsEnabled)
@@ -39,21 +45,70 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
     m_clipped = true;
 }
 
-PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer)
-    : m_clipped(false)
-    , m_cachedOffsetsEnabled(true)
-    , m_forcedSubtreeInvalidationWithinContainer(next.m_forcedSubtreeInvalidationWithinContainer)
-    , m_forcedSubtreeInvalidationRectUpdateWithinContainer(next.m_forcedSubtreeInvalidationRectUpdateWithinContainer)
+// TODO(wangxianzhu): This is temporary for positioned object whose paintInvalidationContainer is different from
+// the one we find during tree walk. Remove this after we fix the issue with tree walk in DOM-order.
+PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& parentState, const LayoutBoxModelObject& currentObject, const LayoutBoxModelObject& paintInvalidationContainer)
+    : m_currentObject(currentObject)
+    , m_clipped(parentState.m_clipped)
+    , m_cachedOffsetsEnabled(parentState.m_cachedOffsetsEnabled)
+    , m_forcedSubtreeInvalidationWithinContainer(parentState.m_forcedSubtreeInvalidationWithinContainer)
+    , m_forcedSubtreeInvalidationRectUpdateWithinContainer(parentState.m_forcedSubtreeInvalidationRectUpdateWithinContainer)
     , m_viewClippingAndScrollOffsetDisabled(false)
+    , m_clipRect(parentState.m_clipRect)
+    , m_paintOffset(parentState.m_paintOffset)
     , m_paintInvalidationContainer(paintInvalidationContainer)
-    , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
-    , m_enclosingSelfPaintingLayer(next.enclosingSelfPaintingLayer(layoutObject))
+    , m_svgTransform(parentState.m_svgTransform)
+    , m_pendingDelayedPaintInvalidations(parentState.pendingDelayedPaintInvalidationTargets())
+    , m_enclosingSelfPaintingLayer(parentState.enclosingSelfPaintingLayer(currentObject))
+#if ENABLE(ASSERT)
+    , m_didUpdatePaintOffsetAndClipForChildren(true)
+#endif
 {
-    // FIXME: SVG could probably benefit from a stack-based optimization like html does. crbug.com/391054
-    bool establishesPaintInvalidationContainer = layoutObject == m_paintInvalidationContainer;
-    bool fixed = layoutObject.style()->position() == FixedPosition;
+    ASSERT(parentState.m_didUpdatePaintOffsetAndClipForChildren);
+    ASSERT(!m_cachedOffsetsEnabled);
+}
 
-    if (!layoutObject.supportsPaintInvalidationStateCachedOffsets() || !next.m_cachedOffsetsEnabled)
+PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& parentState, const LayoutObject& currentObject)
+    : m_currentObject(currentObject)
+    , m_clipped(parentState.m_clipped)
+    , m_cachedOffsetsEnabled(parentState.m_cachedOffsetsEnabled)
+    , m_forcedSubtreeInvalidationWithinContainer(parentState.m_forcedSubtreeInvalidationWithinContainer)
+    , m_forcedSubtreeInvalidationRectUpdateWithinContainer(parentState.m_forcedSubtreeInvalidationRectUpdateWithinContainer)
+    , m_viewClippingAndScrollOffsetDisabled(false)
+    , m_clipRect(parentState.m_clipRect)
+    , m_paintOffset(parentState.m_paintOffset)
+    , m_paintInvalidationContainer(currentObject.isPaintInvalidationContainer() ? toLayoutBoxModelObject(currentObject) : parentState.m_paintInvalidationContainer)
+    , m_svgTransform(parentState.m_svgTransform)
+    , m_pendingDelayedPaintInvalidations(parentState.pendingDelayedPaintInvalidationTargets())
+    , m_enclosingSelfPaintingLayer(parentState.enclosingSelfPaintingLayer(currentObject))
+#if ENABLE(ASSERT)
+    , m_didUpdatePaintOffsetAndClipForChildren(false)
+#endif
+{
+    ASSERT(parentState.m_didUpdatePaintOffsetAndClipForChildren);
+}
+
+void PaintInvalidationState::updatePaintOffsetAndClipForChildren()
+{
+#if ENABLE(ASSERT)
+    ASSERT(!m_didUpdatePaintOffsetAndClipForChildren);
+    m_didUpdatePaintOffsetAndClipForChildren = true;
+#endif
+
+    bool establishesPaintInvalidationContainer = m_currentObject == m_paintInvalidationContainer;
+
+    if (!m_currentObject.isBoxModelObject()) {
+        // TODO(wangxianzhu): SVG could probably benefit from a stack-based optimization like html does. crbug.com/391054.
+        ASSERT(m_currentObject.isSVG());
+        ASSERT(!establishesPaintInvalidationContainer);
+        if (m_cachedOffsetsEnabled)
+            m_svgTransform = AffineTransform(m_svgTransform * m_currentObject.localToParentTransform());
+        return;
+    }
+
+    bool fixed = m_currentObject.style()->position() == FixedPosition;
+
+    if (!m_currentObject.supportsPaintInvalidationStateCachedOffsets())
         m_cachedOffsetsEnabled = false;
     if (establishesPaintInvalidationContainer) {
         // When we hit a new paint invalidation container, we don't need to
@@ -61,60 +116,44 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
         // descending into a different invalidation container. (For instance if
         // our parents were moved, the entire container will just move.)
         m_forcedSubtreeInvalidationWithinContainer = false;
+        m_forcedSubtreeInvalidationRectUpdateWithinContainer = false;
+
+        m_clipped = false; // Will be updated in applyClipIfNeeded().
+        m_paintOffset = LayoutSize();
     } else {
         if (m_cachedOffsetsEnabled) {
             if (fixed) {
-                FloatPoint fixedOffset = layoutObject.localToAncestorPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
+                FloatPoint fixedOffset = m_currentObject.localToAncestorPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
                 m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
-            } else {
-                LayoutSize offset = layoutObject.isBox() && !layoutObject.isTableRow() ? toLayoutBox(layoutObject).locationOffset() : LayoutSize();
-                m_paintOffset = next.m_paintOffset + offset;
+            } else if (m_currentObject.isBox() && !m_currentObject.isTableRow()) {
+                // We don't add locationOffset of table row because the child cells' location offsets include the row's location offset.
+                m_paintOffset += toLayoutBox(m_currentObject).locationOffset();
             }
 
-            if (layoutObject.isOutOfFlowPositioned() && !fixed) {
-                if (LayoutObject* container = layoutObject.container()) {
+            if (m_currentObject.isOutOfFlowPositioned() && !fixed) {
+                if (LayoutObject* container = m_currentObject.container()) {
                     if (container->isInFlowPositioned() && container->isLayoutInline())
-                        m_paintOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(toLayoutBox(layoutObject));
+                        m_paintOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(toLayoutBox(m_currentObject));
                 }
             }
 
-            if (layoutObject.isInFlowPositioned() && layoutObject.hasLayer())
-                m_paintOffset += layoutObject.layer()->offsetForInFlowPosition();
+            if (m_currentObject.isInFlowPositioned() && m_currentObject.hasLayer())
+                m_paintOffset += toLayoutBoxModelObject(m_currentObject).layer()->offsetForInFlowPosition();
         }
 
-        m_clipped = !fixed && next.m_clipped;
-        if (m_clipped)
-            m_clipRect = next.m_clipRect;
+        m_clipped = !fixed && m_clipped;
     }
 
-    if (m_cachedOffsetsEnabled && layoutObject.isSVGRoot()) {
-        const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(layoutObject);
+    if (m_cachedOffsetsEnabled && m_currentObject.isSVGRoot()) {
+        const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(m_currentObject);
         m_svgTransform = AffineTransform(svgRoot.localToBorderBoxTransform());
         if (svgRoot.shouldApplyViewportClip())
             addClipRectRelativeToPaintOffset(LayoutSize(svgRoot.pixelSnappedSize()));
     }
 
-    applyClipIfNeeded(layoutObject);
+    applyClipIfNeeded();
 
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
-}
-
-PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, const LayoutSVGModelObject& layoutObject)
-    : m_clipped(next.m_clipped)
-    , m_cachedOffsetsEnabled(next.m_cachedOffsetsEnabled)
-    , m_forcedSubtreeInvalidationWithinContainer(next.m_forcedSubtreeInvalidationWithinContainer)
-    , m_forcedSubtreeInvalidationRectUpdateWithinContainer(next.m_forcedSubtreeInvalidationRectUpdateWithinContainer)
-    , m_viewClippingAndScrollOffsetDisabled(false)
-    , m_clipRect(next.m_clipRect)
-    , m_paintOffset(next.m_paintOffset)
-    , m_paintInvalidationContainer(next.m_paintInvalidationContainer)
-    , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
-    , m_enclosingSelfPaintingLayer(next.enclosingSelfPaintingLayer(layoutObject))
-{
-    ASSERT(layoutObject != m_paintInvalidationContainer);
-
-    if (m_cachedOffsetsEnabled)
-        m_svgTransform = AffineTransform(next.svgTransform() * layoutObject.localToParentTransform());
 }
 
 void PaintInvalidationState::mapObjectRectToAncestor(const LayoutObject& object, const LayoutBoxModelObject* ancestor, LayoutRect& rect) const
@@ -155,12 +194,12 @@ void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutSize& 
     }
 }
 
-void PaintInvalidationState::applyClipIfNeeded(const LayoutObject& layoutObject)
+void PaintInvalidationState::applyClipIfNeeded()
 {
-    if (!layoutObject.hasOverflowClip())
+    if (!m_currentObject.hasOverflowClip())
         return;
 
-    const LayoutBox& box = toLayoutBox(layoutObject);
+    const LayoutBox& box = toLayoutBox(m_currentObject);
 
     // Do not clip scroll layer contents because the compositor expects the whole layer
     // to be always invalidated in-time.

@@ -78,9 +78,9 @@ void LayoutHTMLCanvas::canvasSizeChanged()
         setNeedsLayout(LayoutInvalidationReason::SizeChanged);
 }
 
-PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    PaintInvalidationReason reason = LayoutBox::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
+    PaintInvalidationReason reason = LayoutBox::invalidatePaintIfNeeded(paintInvalidationState);
     HTMLCanvasElement* element = toHTMLCanvasElement(node());
     if (element->isDirty()) {
         element->doDeferredPaintInvalidation();

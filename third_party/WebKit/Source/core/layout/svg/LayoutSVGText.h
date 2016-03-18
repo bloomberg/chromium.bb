@@ -76,7 +76,7 @@ private:
     void removeChild(LayoutObject*) override;
     void willBeDestroyed() override;
 
-    void invalidateTreeIfNeeded(PaintInvalidationState&) override;
+    void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
     RootInlineBox* createRootInlineBox() override;
 

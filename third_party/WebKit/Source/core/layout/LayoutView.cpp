@@ -435,7 +435,7 @@ void LayoutView::paintBoxDecorationBackground(const PaintInfo& paintInfo, const 
     ViewPainter(*this).paintBoxDecorationBackground(paintInfo);
 }
 
-void LayoutView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+void LayoutView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 

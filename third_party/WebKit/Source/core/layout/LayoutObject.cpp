@@ -1330,7 +1330,7 @@ void LayoutObject::invalidatePaintRectangleNotInvalidatingDisplayItemClients(con
     invalidatePaintRectangleInternal(r);
 }
 
-void LayoutObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 
@@ -1339,8 +1339,8 @@ void LayoutObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidat
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
-    clearPaintInvalidationState(paintInvalidationState);
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState);
+    clearPaintInvalidationFlags(paintInvalidationState);
 
     if (reason == PaintInvalidationDelayedFull)
         paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
@@ -1348,7 +1348,7 @@ void LayoutObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidat
     invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
 }
 
-void LayoutObject::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
+void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
@@ -1423,7 +1423,7 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
     fullyInvalidatePaint(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, newSelectionRect);
 }
 
-PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     if (styleRef().hasOutline()) {
         PaintLayer& layer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
@@ -1434,6 +1434,10 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
     LayoutView* v = view();
     if (v->document().printing())
         return PaintInvalidationNone; // Don't invalidate paints if we're printing.
+
+    const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
+    // TODO(wangxianzhu): Enable this assert after we fix all paintInvalidationContainer mismatch issues. crbug.com/360286
+    // ASSERT(paintInvalidationContainer == containerForPaintInvalidation());
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
     const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
@@ -3490,7 +3494,7 @@ void LayoutObject::setMayNeedPaintInvalidation()
     frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
-void LayoutObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
+void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& paintInvalidationState)
 {
     // paintInvalidationStateIsDirty should be kept in sync with the
     // booleans that are cleared below.

@@ -139,11 +139,9 @@ void LayoutEmbeddedObject::layout()
     clearNeedsLayout();
 }
 
-PaintInvalidationReason LayoutEmbeddedObject::invalidatePaintIfNeeded(
-    PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& newPaintInvalidationContainer)
+PaintInvalidationReason LayoutEmbeddedObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    PaintInvalidationReason reason =
-        LayoutPart::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+    PaintInvalidationReason reason = LayoutPart::invalidatePaintIfNeeded(paintInvalidationState);
 
     Widget* widget = this->widget();
     if (widget && widget->isPluginView())

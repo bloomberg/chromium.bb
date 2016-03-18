@@ -379,7 +379,7 @@ bool LayoutBlock::allowsOverflowClip() const
     return node() != document().viewportDefiningElement();
 }
 
-void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
+void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
     LayoutBox::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 
@@ -394,10 +394,7 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
             // If it's a new paint invalidation container, we won't have properly accumulated the offset into the
             // PaintInvalidationState.
             // FIXME: Teach PaintInvalidationState to handle this case. crbug.com/371485
-            // Note: when the box itself establishes a paint invalidation container, the second part of the condition below
-            // will be true because childPaintInvalidationState.paintInvalidationContainer() is the parent paintInvalidationContainer.
-            // We need the first part of the condition to exclude the case from using ForceHorriblySlowRectMapping.
-            if (&paintInvalidationContainerForChild != box && paintInvalidationContainerForChild != childPaintInvalidationState.paintInvalidationContainer()) {
+            if (paintInvalidationContainerForChild != childPaintInvalidationState.paintInvalidationContainer()) {
                 ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
                 PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, paintInvalidationContainerForChild);
                 box->invalidateTreeIfNeeded(disabledPaintInvalidationState);

@@ -130,7 +130,7 @@ IntRect LayoutSVGModelObject::absoluteElementBoundingBoxRect() const
     return localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalCoordinates())).enclosingBoundingBox();
 }
 
-void LayoutSVGModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+void LayoutSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 
@@ -139,11 +139,12 @@ void LayoutSVGModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
-    clearPaintInvalidationState(paintInvalidationState);
+    PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
+    invalidatePaintIfNeeded(newPaintInvalidationState);
+    clearPaintInvalidationFlags(newPaintInvalidationState);
 
-    PaintInvalidationState childPaintInvalidationState(paintInvalidationState, *this);
-    invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
+    newPaintInvalidationState.updatePaintOffsetAndClipForChildren();
+    invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
 } // namespace blink

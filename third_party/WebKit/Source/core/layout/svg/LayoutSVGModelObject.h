@@ -77,7 +77,7 @@ private:
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;
     IntRect absoluteElementBoundingBoxRect() const final;
 
-    void invalidateTreeIfNeeded(PaintInvalidationState&) final;
+    void invalidateTreeIfNeeded(const PaintInvalidationState&) final;
 
 protected:
     FloatRect m_paintInvalidationBoundingBox;

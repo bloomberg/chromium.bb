@@ -1478,7 +1478,7 @@ bool LayoutBox::intersectsVisibleViewport()
     return rect.intersects(LayoutRect(layoutView->frameView()->getScrollableArea()->visibleContentRectDouble()));
 }
 
-PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     PaintLayer& enclosingSelfPaintingLayer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
     if (enclosingSelfPaintingLayer.layoutObject() != this) {
@@ -1503,20 +1503,20 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
         setShouldDoFullPaintInvalidation(PaintInvalidationFull);
     }
 
-    PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
+    PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState);
 
     if (!view()->doingFullPaintInvalidation() && !isFullPaintInvalidationReason(reason))
         invalidatePaintForOverflowIfNeeded();
 
     if (PaintLayerScrollableArea* area = getScrollableArea())
-        area->invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState, paintInvalidationContainer);
+        area->invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
 
     // This is for the next invalidatePaintIfNeeded so must be at the end.
     savePreviousBoxSizesIfNeeded();
     return reason;
 }
 
-void LayoutBox::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
+void LayoutBox::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
     LayoutBoxModelObject::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 

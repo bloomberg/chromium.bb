@@ -356,33 +356,31 @@ static bool hasPercentageTransform(const ComputedStyle& style)
         || (style.transformOriginY() != Length(50, Percent) && style.transformOriginY().hasPercent());
 }
 
-void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
+void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
-    const LayoutBoxModelObject& newPaintInvalidationContainer = establishesNewPaintInvalidationContainer ? *this : paintInvalidationState.paintInvalidationContainer();
-    // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
-    // ASSERT(&newPaintInvalidationContainer == &containerForPaintInvalidation());
-
     LayoutRect previousPaintInvalidationRect = this->previousPaintInvalidationRect();
 
-    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
-    clearPaintInvalidationState(paintInvalidationState);
+    PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
+    // TODO(wangxianzhu): Enable this assert after we fix all paintInvalidationContainer mismatch issues. crbug.com/360286
+    // ASSERT(&newPaintInvalidationState.paintInvalidationContainer() == &containerForPaintInvalidation());
+
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
+    clearPaintInvalidationFlags(newPaintInvalidationState);
 
     if (reason == PaintInvalidationDelayedFull)
         paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
 
-    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
     if (reason == PaintInvalidationLocationChange)
-        childTreeWalkState.setForceSubtreeInvalidationWithinContainer();
+        newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
 
     // TODO(wangxianzhu): This is a workaround for crbug.com/533277. Will remove when we enable paint offset caching.
     if (reason != PaintInvalidationNone && hasPercentageTransform(styleRef()))
-        childTreeWalkState.setForceSubtreeInvalidationWithinContainer();
+        newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
 
     // TODO(wangxianzhu): This is a workaround for crbug.com/490725. We don't have enough saved information to do accurate check
     // of clipping change. Will remove when we remove rect-based paint invalidation.
@@ -390,9 +388,10 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
         && previousPaintInvalidationRect != this->previousPaintInvalidationRect()
         && !usesCompositedScrolling()
         && hasOverflowClip())
-        childTreeWalkState.setForceSubtreeInvalidationRectUpdateWithinContainer();
+        newPaintInvalidationState.setForceSubtreeInvalidationRectUpdateWithinContainer();
 
-    invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
+    newPaintInvalidationState.updatePaintOffsetAndClipForChildren();
+    invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
 void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason) const

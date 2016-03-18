@@ -313,7 +313,7 @@ protected:
     void setLogicalTopForChild(LayoutBox& child, LayoutUnit logicalTop);
     void determineLogicalLeftPositionForChild(LayoutBox& child);
 
-    PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer) override;
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
 
 private:
     bool layoutBlockFlow(bool relayoutChildren, LayoutUnit& pageLogicalHeight, SubtreeLayoutScope&);

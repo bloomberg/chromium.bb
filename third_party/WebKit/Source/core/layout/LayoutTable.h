@@ -401,8 +401,8 @@ public:
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void simplifiedNormalFlowLayout() override;
-    PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer) override;
-    void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
+    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
+    void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&) override;
 
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }

@@ -1396,15 +1396,15 @@ const BorderValue& LayoutTable::tableEndBorderAdjoiningCell(const LayoutTableCel
     return style()->borderStart();
 }
 
-PaintInvalidationReason LayoutTable::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+PaintInvalidationReason LayoutTable::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     // Information of collapsed borders doesn't affect layout and are for painting only.
     // Do it now instead of during painting to invalidate table cells if needed.
     recalcCollapsedBordersIfNeeded();
-    return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
+    return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
 }
 
-void LayoutTable::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState)
+void LayoutTable::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
     // Table cells paint background from the containing column group, column, section and row.
     // If background of any of them changed, we need to invalidate all affected cells.

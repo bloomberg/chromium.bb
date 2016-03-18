@@ -1126,7 +1126,7 @@ public:
     void invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect&) const;
 
     // Walk the tree after layout issuing paint invalidations for layoutObjects that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
-    virtual void invalidateTreeIfNeeded(PaintInvalidationState&);
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
 
     // This function only invalidates the visual overflow.
     //
@@ -1341,7 +1341,7 @@ public:
 
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
-    virtual void clearPaintInvalidationState(const PaintInvalidationState&);
+    virtual void clearPaintInvalidationFlags(const PaintInvalidationState&);
 
     bool mayNeedPaintInvalidation() const { return m_bitfields.mayNeedPaintInvalidation(); }
     void setMayNeedPaintInvalidation();
@@ -1542,12 +1542,12 @@ protected:
     //
     // The function is overridden to handle special children
     // (e.g. percentage height descendants or reflections).
-    virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState);
+    virtual void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState);
 
     // This function generates the invalidation for this object only.
     // It doesn't recurse into other object, as this is handled
     // by invalidatePaintOfSubtreesIfNeeded.
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer);
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&);
 
     // When this object is invalidated for paint, this method is called to invalidate any DisplayItemClients
     // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,

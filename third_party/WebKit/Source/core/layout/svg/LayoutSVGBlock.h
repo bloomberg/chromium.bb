@@ -40,7 +40,7 @@ public:
 
     PaintLayerType layerTypeRequired() const final { return NoPaintLayer; }
 
-    void invalidateTreeIfNeeded(PaintInvalidationState&) override;
+    void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
 protected:
     void willBeDestroyed() override;

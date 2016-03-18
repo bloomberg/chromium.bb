@@ -52,7 +52,7 @@ public:
 private:
     InlineFlowBox* createInlineFlowBox() final;
 
-    void invalidateTreeIfNeeded(PaintInvalidationState&) final;
+    void invalidateTreeIfNeeded(const PaintInvalidationState&) final;
 
     void willBeDestroyed() final;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
