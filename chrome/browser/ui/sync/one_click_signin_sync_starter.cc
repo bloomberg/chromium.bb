@@ -392,6 +392,13 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
 
 void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
     LoginUIService::SyncConfirmationUIClosedResults results) {
+
+  if (switches::UsePasswordSeparatedSigninFlow()) {
+    // We didn't run this callback in AccountAddedToCookie so do it now.
+    if (!sync_setup_completed_callback_.is_null())
+      sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
+  }
+
   switch (results) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
       content::RecordAction(
@@ -454,6 +461,14 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
 
+  if (switches::UsePasswordSeparatedSigninFlow()) {
+    // Under the new signin flow, the sync confirmation dialog should always be
+    // shown regardless of |start_mode_|. |sync_setup_completed_callback_| will
+    // be run after the modal is closed.
+    DisplayModalSyncConfirmationWindow();
+    return;
+  }
+
   if (!sync_setup_completed_callback_.is_null())
     sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
 
@@ -476,12 +491,8 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
       break;
     }
     case CONFIRM_SYNC_SETTINGS_FIRST:
-      if (switches::UsePasswordSeparatedSigninFlow()) {
-        DisplayModalSyncConfirmationWindow();
-      } else {
-        // Blocks sync until the sync settings confirmation UI is closed.
-        DisplayFinalConfirmationBubble(base::string16());
-      }
+      // Blocks sync until the sync settings confirmation UI is closed.
+      DisplayFinalConfirmationBubble(base::string16());
       return;
     case CONFIGURE_SYNC_FIRST:
       ShowSettingsPage(true);  // Show sync config UI.
