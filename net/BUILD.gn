@@ -595,6 +595,17 @@ if (!is_ios) {
   }
 }
 
+bundle_data("test_support_bundle_data") {
+  testonly = true
+  sources = [
+    "data/ssl/certificates",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("test_support") {
   testonly = true
   sources = [
@@ -698,6 +709,10 @@ source_set("test_support") {
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+
+  deps = [
+    ":test_support_bundle_data",
   ]
 
   public_deps = [
@@ -1372,6 +1387,23 @@ if (!is_ios) {
   }
 }
 
+bundle_data("net_unittests_bundle_data") {
+  testonly = true
+  sources = [
+    "data/certificate_policies_unittest",
+    "data/name_constraints_unittest",
+    "data/parse_certificate_unittest",
+    "data/test.html",
+    "data/url_request_unittest",
+    "data/verify_certificate_chain_unittest",
+    "data/verify_name_match_unittest/names",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 test("net_unittests") {
   sources = gypi_values.net_test_sources
 
@@ -1396,6 +1428,7 @@ test("net_unittests") {
     ":extras",
     ":http_server",
     ":net",
+    ":net_unittests_bundle_data",
     ":simple_quic_tools",
     ":stale_while_revalidate_experiment_domains",
     ":test_support",
@@ -1618,26 +1651,6 @@ test("net_unittests") {
   }
 
   if (is_ios) {
-    # TODO(GYP)
-    #  'actions': [
-    #    {
-    #      'action_name': 'copy_test_data',
-    #      'variables': {
-    #        'test_data_files': [
-    #          'data/certificate_policies_unittest/',
-    #          'data/name_constraints_unittest/',
-    #          'data/parse_certificate_unittest/',
-    #          'data/ssl/certificates/',
-    #          'data/test.html',
-    #          'data/url_request_unittest/',
-    #          'data/verify_certificate_chain_unittest/',
-    #          'data/verify_name_match_unittest/names/',
-    #        ],
-    #        'test_data_prefix': 'net',
-    #      },
-    #      'includes': [ '../build/copy_test_data_ios.gypi' ],
-    #    },
-    #  ],
     sources -= [
       # TODO(droger): The following tests are disabled because the
       # implementation is missing or incomplete.
