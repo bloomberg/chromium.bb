@@ -728,7 +728,7 @@ public:
     virtual void wordBoundaries(Vector<AXRange>& words) const { }
 
     // Properties of interactive elements.
-    virtual String actionVerb() const;
+    String actionVerb() const;
     virtual AccessibilityButtonState checkboxOrRadioValue() const;
     virtual InvalidState getInvalidState() const { return InvalidStateUndefined; }
     // Only used when invalidState() returns InvalidStateOther.

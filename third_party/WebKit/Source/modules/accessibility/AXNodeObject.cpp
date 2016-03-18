@@ -685,16 +685,19 @@ Element* AXNodeObject::mouseButtonListener() const
     if (!node)
         return 0;
 
-    // check if our parent is a mouse button listener
     if (!node->isElementNode())
         node = node->parentElement();
 
     if (!node)
         return 0;
 
-    // FIXME: Do the continuation search like anchorElement does
     for (Element* element = toElement(node); element; element = element->parentElement()) {
-        if (element->getAttributeEventListener(EventTypeNames::click) || element->getAttributeEventListener(EventTypeNames::mousedown) || element->getAttributeEventListener(EventTypeNames::mouseup))
+        // It's a pretty common practice to put click listeners on the body or document, but that's
+        // almost never what the user wants when clicking on an accessible element.
+        if (isHTMLBodyElement(element))
+            break;
+
+        if (element->hasEventListeners(EventTypeNames::click) || element->hasEventListeners(EventTypeNames::mousedown) || element->hasEventListeners(EventTypeNames::mouseup) || element->hasEventListeners(EventTypeNames::DOMActivate))
             return element;
     }
 

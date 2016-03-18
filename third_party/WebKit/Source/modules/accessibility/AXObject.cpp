@@ -917,7 +917,8 @@ static String queryString(WebLocalizedString::Name name)
 
 String AXObject::actionVerb() const
 {
-    // FIXME: Need to add verbs for select elements.
+    if (!actionElement())
+        return emptyString();
 
     switch (roleValue()) {
     case ButtonRole:
@@ -933,13 +934,9 @@ String AXObject::actionVerb() const
     case LinkRole:
         return queryString(WebLocalizedString::AXLinkActionVerb);
     case PopUpButtonRole:
-        // FIXME: Implement.
-        return String();
-    case MenuListPopupRole:
-        // FIXME: Implement.
-        return String();
+        return queryString(WebLocalizedString::AXPopUpButtonActionVerb);
     default:
-        return emptyString();
+        return queryString(WebLocalizedString::AXDefaultActionVerb);
     }
 }
 

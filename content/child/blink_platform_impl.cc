@@ -106,6 +106,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_DATE_TIME_FIELD_EMPTY_VALUE_TEXT;
     case WebLocalizedString::AXDayOfMonthFieldText:
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
+    case WebLocalizedString::AXDefaultActionVerb:
+      return IDS_AX_DEFAULT_ACTION_VERB;
     case WebLocalizedString::AXHeadingText:
       return IDS_AX_ROLE_HEADING;
     case WebLocalizedString::AXHourFieldText:
@@ -196,6 +198,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MINUTE_FIELD_TEXT;
     case WebLocalizedString::AXMonthFieldText:
       return IDS_AX_MONTH_FIELD_TEXT;
+    case WebLocalizedString::AXPopUpButtonActionVerb:
+      return IDS_AX_POP_UP_BUTTON_ACTION_VERB;
     case WebLocalizedString::AXRadioButtonActionVerb:
       return IDS_AX_RADIO_BUTTON_ACTION_VERB;
     case WebLocalizedString::AXSecondFieldText:

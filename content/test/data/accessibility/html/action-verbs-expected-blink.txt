@@ -1,0 +1,24 @@
+rootWebArea name='Action verbs'
+++div
+++++staticText name='Generic div'
+++++++inlineTextBox name='Generic div'
+++heading name='Heading'
+++++staticText name='Heading'
+++++++inlineTextBox name='Heading'
+++group
+++++button action='press' name='Button'
+++++link action='jump' name='Link'
+++++++staticText action='click' name='Link'
+++++++++inlineTextBox name='Link'
+++++textField
+++++checkBox action='check'
+++++checkBox action='uncheck'
+++++radioButton action='select'
+++switch action='check' name='ARIA Switch'
+++group
+++++popUpButton action='open'
+++++++menuListPopup
+++++++++menuListOption action='click' name='Pop-up button'
+++div action='click'
+++++staticText action='click' name='Div with click handler'
+++++++inlineTextBox name='Div with click handler'

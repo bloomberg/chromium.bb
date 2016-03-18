@@ -116,7 +116,6 @@ protected:
     AXObject* previousOnLine() const override;
 
     // Properties of interactive elements.
-    String actionVerb() const override;
     String stringValue() const override;
 
     // ARIA attributes.

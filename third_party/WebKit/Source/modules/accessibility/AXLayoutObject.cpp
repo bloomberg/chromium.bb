@@ -1069,31 +1069,6 @@ AXObject* AXLayoutObject::previousOnLine() const
 // Properties of interactive elements.
 //
 
-static String queryString(WebLocalizedString::Name name)
-{
-    return Locale::defaultLocale().queryString(name);
-}
-
-String AXLayoutObject::actionVerb() const
-{
-    switch (roleValue()) {
-    case ButtonRole:
-    case ToggleButtonRole:
-        return queryString(WebLocalizedString::AXButtonActionVerb);
-    case TextFieldRole:
-        return queryString(WebLocalizedString::AXTextFieldActionVerb);
-    case RadioButtonRole:
-        return queryString(WebLocalizedString::AXRadioButtonActionVerb);
-    case CheckBoxRole:
-    case SwitchRole:
-        return queryString(isChecked() ? WebLocalizedString::AXCheckedCheckBoxActionVerb : WebLocalizedString::AXUncheckedCheckBoxActionVerb);
-    case LinkRole:
-        return queryString(WebLocalizedString::AXLinkActionVerb);
-    default:
-        return emptyString();
-    }
-}
-
 String AXLayoutObject::stringValue() const
 {
     if (!m_layoutObject)

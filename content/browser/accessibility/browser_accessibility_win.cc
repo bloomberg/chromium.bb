@@ -229,6 +229,10 @@ HRESULT BrowserAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
   if (!target)
     return E_INVALIDARG;
 
+  // Return an error if it's not clickable.
+  if (!target->HasStringAttribute(ui::AX_ATTR_ACTION))
+    return DISP_E_MEMBERNOTFOUND;
+
   manager()->DoDefaultAction(*target);
   return S_OK;
 }
