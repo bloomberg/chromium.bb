@@ -80,7 +80,8 @@ NSURL* ShareExtensionItemsFolder() {
   NSURL* groupURL = [[NSFileManager defaultManager]
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
   NSURL* readingListURL =
-      [groupURL URLByAppendingPathComponent:@"ShareExtensionItems"];
+      [groupURL URLByAppendingPathComponent:@"ShareExtensionItems"
+                                isDirectory:YES];
   return readingListURL;
 }
 

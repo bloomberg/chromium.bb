@@ -20,8 +20,9 @@ void ProcessPendingLogs(
   NSFileManager* file_manager = [NSFileManager defaultManager];
   NSURL* store_url = [file_manager
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
-  NSURL* log_dir_url = [store_url
-      URLByAppendingPathComponent:app_group::kPendingLogFileDirectory];
+  NSURL* log_dir_url =
+      [store_url URLByAppendingPathComponent:app_group::kPendingLogFileDirectory
+                                 isDirectory:YES];
 
   NSArray* pending_logs =
       [file_manager contentsOfDirectoryAtPath:[log_dir_url path] error:nil];
@@ -29,7 +30,8 @@ void ProcessPendingLogs(
     return;
   for (NSString* pending_log : pending_logs) {
     if ([pending_log hasSuffix:app_group::kPendingLogFileSuffix]) {
-      NSURL* file_url = [log_dir_url URLByAppendingPathComponent:pending_log];
+      NSURL* file_url =
+          [log_dir_url URLByAppendingPathComponent:pending_log isDirectory:NO];
       if (callback) {
         NSData* log_content = [file_manager contentsAtPath:[file_url path]];
         callback.get()(log_content);

@@ -25,8 +25,9 @@ void AddPendingLog(NSData* log, AppGroupApplications application) {
   NSURL* store_url = [file_manager
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
 
-  NSURL* log_dir_url = [store_url
-      URLByAppendingPathComponent:app_group::kPendingLogFileDirectory];
+  NSURL* log_dir_url =
+      [store_url URLByAppendingPathComponent:app_group::kPendingLogFileDirectory
+                                 isDirectory:YES];
   [file_manager createDirectoryAtURL:log_dir_url
          withIntermediateDirectories:YES
                           attributes:nil
@@ -39,7 +40,8 @@ void AddPendingLog(NSData* log, AppGroupApplications application) {
                        static_cast<long>([[NSDate date] timeIntervalSince1970]),
                        ApplicationName(application),
                        app_group::kPendingLogFileSuffix];
-  NSURL* ready_log_url = [log_dir_url URLByAppendingPathComponent:file_name];
+  NSURL* ready_log_url =
+      [log_dir_url URLByAppendingPathComponent:file_name isDirectory:NO];
 
   [file_manager createFileAtPath:[ready_log_url path]
                         contents:log
@@ -50,8 +52,9 @@ void CleanOldPendingLogs() {
   NSFileManager* file_manager = [NSFileManager defaultManager];
   NSURL* store_url = [file_manager
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
-  NSURL* log_dir_url = [store_url
-      URLByAppendingPathComponent:app_group::kPendingLogFileDirectory];
+  NSURL* log_dir_url =
+      [store_url URLByAppendingPathComponent:app_group::kPendingLogFileDirectory
+                                 isDirectory:YES];
 
   NSArray* pending_logs =
       [file_manager contentsOfDirectoryAtPath:[log_dir_url path] error:nil];
@@ -64,7 +67,8 @@ void CleanOldPendingLogs() {
   for (NSString* file : pending_logs) {
     if (![file hasSuffix:app_group::kPendingLogFileSuffix])
       continue;
-    NSURL* file_url = [log_dir_url URLByAppendingPathComponent:file];
+    NSURL* file_url =
+        [log_dir_url URLByAppendingPathComponent:file isDirectory:NO];
 
     NSDictionary* properties =
         [file_manager attributesOfItemAtPath:[file_url path] error:nil];
@@ -89,7 +93,8 @@ void CleanOldPendingLogs() {
        file_index++) {
     NSString* path =
         [[sorted_files objectAtIndex:file_index] objectForKey:@"path"];
-    NSURL* file_url = [log_dir_url URLByAppendingPathComponent:path];
+    NSURL* file_url =
+        [log_dir_url URLByAppendingPathComponent:path isDirectory:NO];
     [file_manager removeItemAtURL:file_url error:nil];
   }
 }
