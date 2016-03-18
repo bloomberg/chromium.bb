@@ -155,9 +155,6 @@
       <structure name="IDR_SETTINGS_TRANSITION_BEHAVIOR_JS"
                  file="settings_page/transition_behavior.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_UI_CSS"
-                 file="settings_ui/settings_ui.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_HTML"
                  file="settings_ui/settings_ui.html"
                  type="chrome_html" />

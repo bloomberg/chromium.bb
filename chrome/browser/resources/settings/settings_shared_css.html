@@ -20,8 +20,12 @@
           font-weight: 400;
         }
         --settings-side-nav-color: var(--google-grey-600);
-        /* TODO(dschuyler): replace this rgb with a --paper color */
-        --settings-title-bar-color: rgb(52, 73, 94);
+
+        /* The title-bar colors use non-MD colors.  These custom colors are
+         * specified by UX design (bettes@).
+         */
+        --settings-title-bar-background-color: rgb(52, 73, 94);
+        --settings-title-bar-color: rgb(255, 255, 255);
       }
 
       h2 {
