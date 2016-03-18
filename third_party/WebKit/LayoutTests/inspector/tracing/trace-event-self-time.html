@@ -285,7 +285,7 @@ function test()
     };
 
     var timelineController = InspectorTest.timelineController();
-    timelineController._addCpuProfile(WebInspector.targetManager.mainTarget().id(), cpuProfile);
+    timelineController._addCpuProfile(WebInspector.targetManager.mainTarget().id(), null, cpuProfile);
     timelineController.traceEventsCollected(rawTraceEvents);
     timelineController.tracingComplete();
     var events = InspectorTest.timelineModel().inspectedTargetEvents();

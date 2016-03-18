@@ -128,7 +128,9 @@ InspectorTest.createTimelineModelWithEvents = function(events)
 
 InspectorTest.timelineController = function()
 {
-    return WebInspector.panels.timeline._controller;
+    var mainTarget = WebInspector.targetManager.mainTarget();
+    var timelinePanel =  WebInspector.panels.timeline;
+    return new WebInspector.TimelineController(mainTarget, timelinePanel, timelinePanel._tracingModel);
 }
 
 InspectorTest.startTimeline = function(callback)

@@ -48,7 +48,7 @@ function test()
         __proto__: WebInspector.TimelineLifecycleDelegate
     };
 
-    var controller = new WebInspector.TimelineController(new WebInspector.TestTimelineLifecycleDelegate(), InspectorTest.createTracingModel());
+    var controller = new WebInspector.TimelineController(WebInspector.targetManager.mainTarget(), new WebInspector.TestTimelineLifecycleDelegate(), InspectorTest.createTracingModel());
     controller.startRecording();
 }
 
