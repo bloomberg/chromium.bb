@@ -2454,6 +2454,13 @@
         ],
       }],
 
+      ['OS=="win" and clang==1', {
+        # TODO(thakis): Remove this again once building with clang/win and
+        # debug info doesn't make link.exe run for hours.
+        'fastbuild': 1,
+      }],
+
+
       ['host_clang==1', {
         'host_cc': '<(make_clang_dir)/bin/clang',
         'host_cxx': '<(make_clang_dir)/bin/clang++',
