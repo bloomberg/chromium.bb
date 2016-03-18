@@ -392,6 +392,7 @@
       'browser/device_sensors/sensor_manager_android_unittest.cc',
       'browser/device_sensors/sensor_manager_chromeos_unittest.cc',
       'browser/devtools/devtools_manager_unittest.cc',
+      'browser/devtools/protocol/tracing_handler_unittest.cc',
       'browser/devtools/shared_worker_devtools_manager_unittest.cc',
       'browser/dom_storage/dom_storage_area_unittest.cc',
       'browser/dom_storage/dom_storage_context_impl_unittest.cc',

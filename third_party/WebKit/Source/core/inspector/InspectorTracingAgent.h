@@ -42,7 +42,7 @@ public:
     void disable(ErrorString*) override;
 
     // Protocol method implementations.
-    void start(ErrorString*, const Maybe<String>& categories, const Maybe<String>& options, const Maybe<double>& bufferUsageReportingInterval, const Maybe<String>& transferMode, PassOwnPtr<StartCallback>) override;
+    void start(ErrorString*, const Maybe<String>& categories, const Maybe<String>& options, const Maybe<double>& bufferUsageReportingInterval, const Maybe<String>& transferMode, const Maybe<protocol::Tracing::TraceConfig>&, PassOwnPtr<StartCallback>) override;
     void end(ErrorString*, PassOwnPtr<EndCallback>) override;
 
     // Methods for other agents to use.

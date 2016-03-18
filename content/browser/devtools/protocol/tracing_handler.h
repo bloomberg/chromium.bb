@@ -11,10 +11,12 @@
 #include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
 
 namespace base {
@@ -51,7 +53,8 @@ class TracingHandler {
                  const std::string* categories,
                  const std::string* options,
                  const double* buffer_usage_reporting_interval,
-                 const std::string* transfer_mode);
+                 const std::string* transfer_mode,
+                 const scoped_ptr<base::DictionaryValue>& config);
   Response End(DevToolsCommandId command_id);
   Response GetCategories(DevToolsCommandId command);
   Response RequestMemoryDump(DevToolsCommandId command_id);
@@ -73,6 +76,9 @@ class TracingHandler {
       const scoped_refptr<TracingController::TraceDataSink>& trace_data_sink);
   bool IsTracing() const;
   static bool IsStartupTracingActive();
+  CONTENT_EXPORT static base::trace_event::TraceConfig
+      GetTraceConfigFromDevToolsConfig(
+          const base::DictionaryValue& devtools_config);
 
   scoped_ptr<base::Timer> buffer_usage_poll_timer_;
   Target target_;
@@ -84,6 +90,8 @@ class TracingHandler {
   bool return_as_stream_;
   base::WeakPtrFactory<TracingHandler> weak_factory_;
 
+  FRIEND_TEST_ALL_PREFIXES(TracingHandlerTest,
+                           GetTraceConfigFromDevToolsConfig);
   DISALLOW_COPY_AND_ASSIGN(TracingHandler);
 };
 
