@@ -60,6 +60,8 @@
         'browser/chromeos/arc/arc_intent_helper_bridge.h',
         'browser/chromeos/arc/arc_service_launcher.cc',
         'browser/chromeos/arc/arc_service_launcher.h',
+        'browser/chromeos/arc/arc_policy_bridge.cc',
+        'browser/chromeos/arc/arc_policy_bridge.h',
         'browser/chromeos/arc/arc_process.h',
         'browser/chromeos/arc/arc_process_service.cc',
         'browser/chromeos/arc/arc_process_service.h',

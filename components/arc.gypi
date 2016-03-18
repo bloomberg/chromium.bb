@@ -115,6 +115,7 @@
         'arc/common/intent_helper.mojom',
         'arc/common/net.mojom',
         'arc/common/notifications.mojom',
+        'arc/common/policy.mojom',
         'arc/common/power.mojom',
         'arc/common/process.mojom',
         'arc/common/video.mojom',

@@ -109,6 +109,10 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual void OnNetInstanceReady() {}
     virtual void OnNetInstanceClosed() {}
 
+    // Called whenever the ARC policy interface state changes.
+    virtual void OnPolicyInstanceReady() {}
+    virtual void OnPolicyInstanceClosed() {}
+
     // Called whenever the ARC power interface state changes.
     virtual void OnPowerInstanceReady() {}
     virtual void OnPowerInstanceClosed() {}
@@ -173,6 +177,7 @@ class ArcBridgeService : public ArcBridgeHost {
   NotificationsInstance* notifications_instance() {
     return notifications_ptr_.get();
   }
+  PolicyInstance* policy_instance() { return policy_ptr_.get(); }
   PowerInstance* power_instance() { return power_ptr_.get(); }
   ProcessInstance* process_instance() { return process_ptr_.get(); }
   VideoInstance* video_instance() { return video_ptr_.get(); }
@@ -188,6 +193,7 @@ class ArcBridgeService : public ArcBridgeHost {
   int32_t intent_helper_version() const { return intent_helper_ptr_.version(); }
   int32_t net_version() const { return net_ptr_.version(); }
   int32_t notifications_version() const { return notifications_ptr_.version(); }
+  int32_t policy_version() const { return policy_ptr_.version(); }
   int32_t power_version() const { return power_ptr_.version(); }
   int32_t process_version() const { return process_ptr_.version(); }
   int32_t video_version() const { return video_ptr_.version(); }
@@ -205,6 +211,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnNetInstanceReady(NetInstancePtr net_ptr) override;
   void OnNotificationsInstanceReady(
       NotificationsInstancePtr notifications_ptr) override;
+  void OnPolicyInstanceReady(PolicyInstancePtr policy_ptr) override;
   void OnPowerInstanceReady(PowerInstancePtr power_ptr) override;
   void OnProcessInstanceReady(ProcessInstancePtr process_ptr) override;
   void OnVideoInstanceReady(VideoInstancePtr video_ptr) override;
@@ -248,6 +255,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void CloseIntentHelperChannel();
   void CloseNetChannel();
   void CloseNotificationsChannel();
+  void ClosePolicyChannel();
   void ClosePowerChannel();
   void CloseProcessChannel();
   void CloseVideoChannel();
@@ -262,6 +270,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnIntentHelperVersionReady(int32_t version);
   void OnNetVersionReady(int32_t version);
   void OnNotificationsVersionReady(int32_t version);
+  void OnPolicyVersionReady(int32_t version);
   void OnPowerVersionReady(int32_t version);
   void OnProcessVersionReady(int32_t version);
   void OnVideoVersionReady(int32_t version);
@@ -276,6 +285,7 @@ class ArcBridgeService : public ArcBridgeHost {
   IntentHelperInstancePtr intent_helper_ptr_;
   NetInstancePtr net_ptr_;
   NotificationsInstancePtr notifications_ptr_;
+  PolicyInstancePtr policy_ptr_;
   PowerInstancePtr power_ptr_;
   ProcessInstancePtr process_ptr_;
   VideoInstancePtr video_ptr_;
@@ -295,6 +305,7 @@ class ArcBridgeService : public ArcBridgeHost {
   IntentHelperInstancePtr temporary_intent_helper_ptr_;
   NetInstancePtr temporary_net_ptr_;
   NotificationsInstancePtr temporary_notifications_ptr_;
+  PolicyInstancePtr temporary_policy_ptr_;
   PowerInstancePtr temporary_power_ptr_;
   ProcessInstancePtr temporary_process_ptr_;
   VideoInstancePtr temporary_video_ptr_;

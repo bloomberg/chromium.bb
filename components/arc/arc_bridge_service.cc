@@ -74,6 +74,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnNetInstanceReady();
   if (notifications_instance())
     observer->OnNotificationsInstanceReady();
+  if (policy_instance())
+    observer->OnPolicyInstanceReady();
   if (power_instance())
     observer->OnPowerInstanceReady();
   if (process_instance())
@@ -313,6 +315,30 @@ void ArcBridgeService::CloseNotificationsChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnNotificationsInstanceClosed());
 }
 
+void ArcBridgeService::OnPolicyInstanceReady(PolicyInstancePtr policy_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_policy_ptr_ = std::move(policy_ptr);
+  temporary_policy_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnPolicyVersionReady, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnPolicyVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  policy_ptr_ = std::move(temporary_policy_ptr_);
+  policy_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::ClosePolicyChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnPolicyInstanceReady());
+}
+
+void ArcBridgeService::ClosePolicyChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!policy_ptr_)
+    return;
+
+  policy_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnPolicyInstanceClosed());
+}
+
 void ArcBridgeService::OnPowerInstanceReady(PowerInstancePtr power_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_power_ptr_ = std::move(power_ptr);
@@ -416,6 +442,7 @@ void ArcBridgeService::CloseAllChannels() {
   CloseIntentHelperChannel();
   CloseNetChannel();
   CloseNotificationsChannel();
+  ClosePolicyChannel();
   ClosePowerChannel();
   CloseProcessChannel();
   CloseVideoChannel();

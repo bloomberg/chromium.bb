@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_intent_helper_bridge.h"
+#include "chrome/browser/chromeos/arc/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -25,6 +26,8 @@ void ArcServiceLauncher::Initialize() {
       new ArcAuthService(arc_service_manager_->arc_bridge_service())));
   arc_service_manager_->AddService(make_scoped_ptr(
       new ArcIntentHelperBridge(arc_service_manager_->arc_bridge_service())));
+  arc_service_manager_->AddService(make_scoped_ptr(
+      new ArcPolicyBridge(arc_service_manager_->arc_bridge_service())));
   arc_service_manager_->AddService(make_scoped_ptr(
       new ArcProcessService(arc_service_manager_->arc_bridge_service())));
 

@@ -111,6 +111,10 @@ class ArcAuthService : public ArcService,
   void GetAuthCode(const GetAuthCodeCallback& callback) override;
   void OnSignInComplete() override;
   void OnSignInFailed(arc::ArcSignInFailureReason reason) override;
+  // Callback is called with a bool that indicates the management status of the
+  // user.
+  void GetIsAccountManaged(
+      const GetIsAccountManagedCallback& callback) override;
 
   // Called from Arc support platform app when user clicks 'Get Started'.
   void GetStarted();

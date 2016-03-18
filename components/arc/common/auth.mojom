@@ -20,6 +20,8 @@ interface AuthHost {
   // Returns an authorization code in case is_enforced is set, which can be used
   // to sign in.
   [MinVersion=1] GetAuthCode@1() => (string auth_code, bool is_enforced);
+  // Gets whether the account is managed from Chrome OS.
+  [MinVersion=3] GetIsAccountManaged@4() => (bool is_managed);
   // Notifies Chrome that the sign-in is completed successfully.
   [MinVersion=2] OnSignInComplete@2();
   // Notifies Chrome that the sign-in fails to complete and provides failure

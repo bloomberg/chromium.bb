@@ -167,6 +167,13 @@ void ArcAuthService::OnSignInFailed(arc::ArcSignInFailureReason reason) {
                           l10n_util::GetStringUTF16(error_message_id));
 }
 
+void ArcAuthService::GetIsAccountManaged(
+    const GetIsAccountManagedCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Stub for testing. TODO(phweiss): Implement correct behaviour.
+  callback.Run(true);
+}
+
 void ArcAuthService::SetState(State state) {
   if (state_ == state)
     return;

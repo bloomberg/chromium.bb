@@ -74,6 +74,7 @@ mojom("arc_bindings") {
     "common/intent_helper.mojom",
     "common/net.mojom",
     "common/notifications.mojom",
+    "common/policy.mojom",
     "common/power.mojom",
     "common/process.mojom",
     "common/video.mojom",

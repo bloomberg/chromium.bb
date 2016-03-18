@@ -13,6 +13,7 @@ import "input.mojom";
 import "intent_helper.mojom";
 import "net.mojom";
 import "notifications.mojom";
+import "policy.mojom";
 import "power.mojom";
 import "process.mojom";
 import "video.mojom";
@@ -50,6 +51,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the NotificationsInstance interface is ready.
   OnNotificationsInstanceReady@102(NotificationsInstance instance_ptr);
+
+  // Notifies Chrome that the PolicyInstance interface is ready.
+  [MinVersion=7] OnPolicyInstanceReady@114(PolicyInstance instance_ptr);
 
   // Notifies Chrome that the PowerInstance interface is ready.
   OnPowerInstanceReady@103(PowerInstance instance_ptr);
