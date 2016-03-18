@@ -379,6 +379,8 @@ class NinjaWriter(object):
     # should be used for linking.
     self.uses_cpp = False
 
+    self.target_rpath = generator_flags.get('target_rpath', r'\$$ORIGIN/lib/')
+
     self.is_mac_bundle = gyp.xcode_emulation.IsMacBundle(self.flavor, spec)
     self.xcode_settings = self.msvs_settings = None
     if self.flavor == 'mac':
@@ -1193,7 +1195,9 @@ class NinjaWriter(object):
         rpath = 'lib/'
         if self.toolset != 'target':
           rpath += self.toolset
-        ldflags.append(r'-Wl,-rpath=\$$ORIGIN/%s' % rpath)
+          ldflags.append(r'-Wl,-rpath=\$$ORIGIN/%s' % rpath)
+        else:
+          ldflags.append('-Wl,-rpath=%s' % self.target_rpath)
         ldflags.append('-Wl,-rpath-link=%s' % rpath)
     self.WriteVariableList(ninja_file, 'ldflags',
                            map(self.ExpandSpecial, ldflags))
