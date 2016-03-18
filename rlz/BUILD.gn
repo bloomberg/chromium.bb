@@ -120,14 +120,16 @@ test("rlz_unittests") {
   ]
 }
 
-executable("rlz_id") {
-  sources = [
-    "examples/rlz_id.cc",
-  ]
-  deps = [
-    ":rlz_lib",
-    "//build/config/sanitizers:deps",
-  ]
+if (!is_ios) {
+  executable("rlz_id") {
+    sources = [
+      "examples/rlz_id.cc",
+    ]
+    deps = [
+      ":rlz_lib",
+      "//build/config/sanitizers:deps",
+    ]
+  }
 }
 
 if (is_win) {
