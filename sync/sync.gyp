@@ -31,6 +31,7 @@
         'sync_proto',
       ],
       'export_dependent_settings': [
+        'sync_core',
         'sync_proto',
       ],
     },
@@ -63,6 +64,7 @@
         'sync_proto',
       ],
       'export_dependent_settings': [
+        '../net/net.gyp:net',
         'sync_proto',
       ],
       'sources': [

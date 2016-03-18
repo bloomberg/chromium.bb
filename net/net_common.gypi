@@ -27,6 +27,7 @@
   ],
   'export_dependent_settings': [
     '../base/base.gyp:base',
+    'net_features',
   ],
   'conditions': [
     ['chromeos==1', {

@@ -428,6 +428,7 @@ source_set("sync_core") {
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
+    "//net",
     "//sync/internal_api/attachments/proto",
   ]
   deps = [
@@ -436,7 +437,6 @@ source_set("sync_core") {
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//google_apis",
-    "//net",
     "//sql",
     "//sync/protocol",
     "//third_party/leveldatabase",
