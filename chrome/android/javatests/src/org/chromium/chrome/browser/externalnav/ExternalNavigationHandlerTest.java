@@ -1149,7 +1149,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    public void testSms_DispatchIntentsToDefaultSmsApp() {
+    public void testSms_DispatchIntentToDefaultSmsApp() {
         final String referer = "https://www.google.com/";
         mDelegate.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
 
@@ -1188,6 +1188,27 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         assertNotNull(mDelegate.startActivityIntent);
         assertNull(mDelegate.startActivityIntent.getPackage());
     }
+
+    @SmallTest
+    public void testSms_DispatchIntentSchemedUrlToDefaultSmsApp() {
+        final String referer = "https://www.google.com/";
+        mDelegate.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
+
+        check("intent://012345678?body=hello%20there/#Intent;scheme=sms;end",
+                referer,
+                NORMAL_PROFILE,
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                START_ACTIVITY);
+
+        assertNotNull(mDelegate.startActivityIntent);
+        assertEquals(TEXT_APP_2_PACKAGE_NAME, mDelegate.startActivityIntent.getPackage());
+    }
+
 
     private static ResolveInfo newResolveInfo(String packageName, String name) {
         ActivityInfo ai = new ActivityInfo();
