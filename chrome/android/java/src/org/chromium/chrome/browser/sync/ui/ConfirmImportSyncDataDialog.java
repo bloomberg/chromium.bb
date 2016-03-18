@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
@@ -53,7 +54,8 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
      */
     public enum ImportSyncType { SWITCHING_SYNC_ACCOUNTS, PREVIOUS_DATA_FOUND }
 
-    private static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG =
+    @VisibleForTesting
+    public static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG =
             "sync_account_switch_import_data_tag";
 
     private static final int[] SYNC_DATA_TYPES = {
