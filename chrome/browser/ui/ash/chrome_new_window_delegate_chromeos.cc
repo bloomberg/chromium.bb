@@ -45,8 +45,7 @@ void ChromeNewWindowDelegateChromeos::OpenFileManager() {
 
 void ChromeNewWindowDelegateChromeos::OpenGetHelp() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  chrome::ShowHelpForProfile(profile, chrome::HOST_DESKTOP_TYPE_ASH,
-                             chrome::HELP_SOURCE_KEYBOARD);
+  chrome::ShowHelpForProfile(profile, chrome::HELP_SOURCE_KEYBOARD);
 }
 
 void ChromeNewWindowDelegateChromeos::OpenCrosh() {

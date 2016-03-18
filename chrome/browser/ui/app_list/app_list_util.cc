@@ -13,14 +13,9 @@
 bool IsAppLauncherEnabled() {
 #if !defined(ENABLE_APP_LIST)
   return false;
-
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || defined(USE_ASH)
   return true;
-
-#else  // defined(ENABLE_APP_LIST) && !defined(OS_CHROMEOS)
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return true;
-
+#else
   PrefService* prefs = g_browser_process->local_state();
   // In some tests, the prefs aren't initialised.
   return prefs && prefs->GetBoolean(prefs::kAppLauncherHasBeenEnabled);

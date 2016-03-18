@@ -32,13 +32,6 @@ DefaultAshEventGeneratorDelegate::GetScreenPositionClient(
 void DefaultAshEventGeneratorDelegate::DispatchKeyEventToIME(
     ui::EventTarget* target,
     ui::KeyEvent* event) {
-  // In Ash environment, the key event will be processed by event rewriters
-  // first and event will not be hanlded.
-  // Otherwise, use EventGeneratorDelegateAura::DispatchKeyEventToIME() to
-  // dispatch |event| to the input method.
-  if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH) {
-    EventGeneratorDelegateAura::DispatchKeyEventToIME(target, event);
-  }
 }
 
 DefaultAshEventGeneratorDelegate::DefaultAshEventGeneratorDelegate()

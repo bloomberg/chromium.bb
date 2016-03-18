@@ -990,16 +990,13 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   if (window_closed_)
     return;
 
-  bool focused = active;
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
-    // The panel window is in focus (actually accepting keystrokes) if it is
-    // active and belongs to a foreground application.
-    focused = active &&
-        views::HWNDForWidget(widget) == ::GetForegroundWindow();
-  }
+  // The panel window is in focus (actually accepting keystrokes) if it is
+  // active and belongs to a foreground application.
+  bool focused =
+      active && views::HWNDForWidget(widget) == ::GetForegroundWindow();
 #else
   bool focused = active;
-#endif
+#endif  // OS_WIN
 
   if (focused_ == focused)
     return;

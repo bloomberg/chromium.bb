@@ -90,11 +90,10 @@ void AppListServiceLinux::MoveNearCursor(app_list::AppListView* view) {
 // static
 AppListService* AppListService::Get() {
 #if defined(USE_ASH)
-  if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
-    return AppListServiceAsh::GetInstance();
-#endif
-
+  return AppListServiceAsh::GetInstance();
+#else
   return AppListServiceLinux::GetInstance();
+#endif
 }
 
 // static
@@ -102,6 +101,7 @@ void AppListService::InitAll(Profile* initial_profile,
                              const base::FilePath& profile_path) {
 #if defined(USE_ASH)
   AppListServiceAsh::GetInstance()->Init(initial_profile);
-#endif
+#else
   AppListServiceLinux::GetInstance()->Init(initial_profile);
+#endif
 }

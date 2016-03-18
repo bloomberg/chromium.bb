@@ -80,10 +80,7 @@ void NavigateToSingletonTab(Browser* browser, const GURL& url) {
 // |browser| is NULL and the help page is used (vs the app), the help page is
 // shown in the last active browser. If there is no such browser, a new browser
 // is created.
-void ShowHelpImpl(Browser* browser,
-                  Profile* profile,
-                  HostDesktopType host_desktop_type,
-                  HelpSource source) {
+void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
   content::RecordAction(UserMetricsAction("ShowHelpTab"));
 #if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
   const extensions::Extension* extension =
@@ -201,13 +198,11 @@ void ShowConflicts(Browser* browser) {
 }
 
 void ShowHelp(Browser* browser, HelpSource source) {
-  ShowHelpImpl(browser, browser->profile(), HOST_DESKTOP_TYPE_NATIVE, source);
+  ShowHelpImpl(browser, browser->profile(), source);
 }
 
-void ShowHelpForProfile(Profile* profile,
-                        HostDesktopType host_desktop_type,
-                        HelpSource source) {
-  ShowHelpImpl(NULL, profile, host_desktop_type, source);
+void ShowHelpForProfile(Profile* profile, HelpSource source) {
+  ShowHelpImpl(NULL, profile, source);
 }
 
 void ShowPolicy(Browser* browser) {

@@ -54,9 +54,7 @@ void ShowFeedbackPage(Browser* browser,
                       const std::string& category_tag);
 
 void ShowHelp(Browser* browser, HelpSource source);
-void ShowHelpForProfile(Profile* profile,
-                        HostDesktopType host_desktop_type,
-                        HelpSource source);
+void ShowHelpForProfile(Profile* profile, HelpSource source);
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);
 void ShowMemory(Browser* browser);

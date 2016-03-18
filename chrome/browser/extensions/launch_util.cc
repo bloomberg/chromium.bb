@@ -118,8 +118,7 @@ LaunchContainer GetLaunchContainer(const ExtensionPrefs* prefs,
       // window opening is the default), make the container a window.
       result = LAUNCH_CONTAINER_WINDOW;
 #if defined(USE_ASH)
-    } else if (prefs_launch_type == LAUNCH_TYPE_FULLSCREEN &&
-               chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
+    } else if (prefs_launch_type == LAUNCH_TYPE_FULLSCREEN) {
       // LAUNCH_TYPE_FULLSCREEN launches in a maximized app window in ash.
       // For desktop chrome AURA on all platforms we should open the
       // application in full screen mode in the current tab, on the same

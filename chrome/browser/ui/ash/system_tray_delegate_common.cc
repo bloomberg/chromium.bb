@@ -89,7 +89,6 @@ void SystemTrayDelegateCommon::ShowChromeSlow() {
 
 void SystemTrayDelegateCommon::ShowHelp() {
   chrome::ShowHelpForProfile(ProfileManager::GetLastUsedProfile(),
-                             chrome::HOST_DESKTOP_TYPE_ASH,
                              chrome::HELP_SOURCE_MENU);
 }
 

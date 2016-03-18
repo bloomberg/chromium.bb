@@ -619,8 +619,8 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
     std::vector<GURL> adjusted_urls(urls_to_open);
     AddSpecialURLs(&adjusted_urls);
 
-    // The startup code only executes for browsers launched in desktop mode.
-    // i.e. HOST_DESKTOP_TYPE_NATIVE. Ash should never get here.
+    // The startup code only executes for browsers launched in desktop mode. Ash
+    // should never get here.
     Browser* browser = SessionRestore::RestoreSession(
         profile_, NULL, restore_behavior, adjusted_urls);
 

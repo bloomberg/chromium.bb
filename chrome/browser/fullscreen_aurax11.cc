@@ -14,13 +14,10 @@
 
 bool IsFullScreenMode() {
 #if defined(USE_ASH)
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
-    ash::RootWindowController* controller =
-        ash::RootWindowController::ForTargetRootWindow();
-    return controller && controller->GetWindowForFullscreenMode();
-  }
-#endif
-
+  ash::RootWindowController* controller =
+      ash::RootWindowController::ForTargetRootWindow();
+  return controller && controller->GetWindowForFullscreenMode();
+#else
   std::vector<aura::Window*> all_windows =
       views::DesktopWindowTreeHostX11::GetAllOpenWindows();
   // Only the topmost window is checked. This works fine in the most cases, but
@@ -32,4 +29,5 @@ bool IsFullScreenMode() {
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(all_windows[0]);
   return widget && widget->IsFullscreen();
+#endif  // USE_ASH
 }

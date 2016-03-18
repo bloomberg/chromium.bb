@@ -121,7 +121,7 @@ void NewTabUI::RegisterProfilePrefs(
 bool NewTabUI::ShouldShowApps() {
 // Ash shows apps in app list thus should not show apps page in NTP4.
 #if defined(USE_ASH)
-  return chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH;
+  return false;
 #else
   return true;
 #endif

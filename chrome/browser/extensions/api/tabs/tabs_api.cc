@@ -517,11 +517,12 @@ bool WindowsCreateFunction::RunSync() {
         bool use_panels = PanelManager::ShouldUsePanels(extension_id);
         if (use_panels) {
           create_panel = true;
+#if !defined(USE_ASH)
           // Non-ash supports both docked and detached panel types.
-          if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH &&
-              create_data->type == windows::CREATE_TYPE_DETACHED_PANEL) {
+          if (create_data->type == windows::CREATE_TYPE_DETACHED_PANEL) {
             panel_create_mode = PanelManager::CREATE_AS_DETACHED;
           }
+#endif  // USE_ASH
         } else {
           window_type = Browser::TYPE_POPUP;
         }
@@ -583,26 +584,24 @@ bool WindowsCreateFunction::RunSync() {
       urls.push_back(GURL(chrome::kChromeUINewTabURL));
 
 #if defined(USE_ASH)
-    if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
-      AppWindow::CreateParams create_params;
-      create_params.window_type = AppWindow::WINDOW_TYPE_V1_PANEL;
-      create_params.window_key = extension_id;
-      create_params.window_spec.bounds = window_bounds;
-      create_params.focused = saw_focus_key && focused;
-      AppWindow* app_window = new AppWindow(
-          window_profile, new ChromeAppDelegate(true), extension());
-      AshPanelContents* ash_panel_contents = new AshPanelContents(app_window);
-      app_window->Init(urls[0], ash_panel_contents, render_frame_host(),
-                       create_params);
-      WindowController* window_controller =
-          WindowControllerList::GetInstance()->FindWindowById(
-              app_window->session_id().id());
-      if (!window_controller)
-        return false;
-      SetResult(window_controller->CreateWindowValueWithTabs(extension()));
-      return true;
-    }
-#endif
+    AppWindow::CreateParams create_params;
+    create_params.window_type = AppWindow::WINDOW_TYPE_V1_PANEL;
+    create_params.window_key = extension_id;
+    create_params.window_spec.bounds = window_bounds;
+    create_params.focused = saw_focus_key && focused;
+    AppWindow* app_window =
+        new AppWindow(window_profile, new ChromeAppDelegate(true), extension());
+    AshPanelContents* ash_panel_contents = new AshPanelContents(app_window);
+    app_window->Init(urls[0], ash_panel_contents, render_frame_host(),
+                     create_params);
+    WindowController* window_controller =
+        WindowControllerList::GetInstance()->FindWindowById(
+            app_window->session_id().id());
+    if (!window_controller)
+      return false;
+    SetResult(window_controller->CreateWindowValueWithTabs(extension()));
+    return true;
+#else
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
     content::SiteInstance* source_site_instance =
@@ -621,6 +620,7 @@ bool WindowsCreateFunction::RunSync() {
     SetResult(panel->extension_window_controller()->CreateWindowValueWithTabs(
         extension()));
     return true;
+#endif
   }
 
   // Create a new BrowserWindow.
