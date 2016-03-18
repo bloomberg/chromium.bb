@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -208,6 +209,7 @@ AutocompleteMatch KeywordProvider::CreateVerbatimMatch(
 
 void KeywordProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
+  TRACE_EVENT0("omnibox", "KeywordProvider::Start");
   // This object ensures we end keyword mode if we exit the function without
   // toggling keyword mode to on.
   ScopedEndExtensionKeywordMode keyword_mode_toggle(extensions_delegate_.get());

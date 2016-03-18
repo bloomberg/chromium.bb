@@ -20,6 +20,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
@@ -219,6 +220,7 @@ ACMatches::iterator SearchProvider::FindTopMatch(ACMatches* matches) {
 
 void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
+  TRACE_EVENT0("omnibox", "SearchProvider::Start");
   // Do our best to load the model as early as possible.  This will reduce
   // odds of having the model not ready when really needed (a non-empty input).
   TemplateURLService* model = client()->GetTemplateURLService();
@@ -387,6 +389,7 @@ void SearchProvider::OnTemplateURLServiceChanged() {
 }
 
 void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
+  TRACE_EVENT0("omnibox", "SearchProvider::OnURLFetchComplete");
   DCHECK(!done_);
   const bool is_keyword = source == keyword_fetcher_.get();
 
