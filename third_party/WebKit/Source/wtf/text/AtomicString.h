@@ -24,7 +24,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
-#include "wtf/testing/WTFUnitTestHelpersExport.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 #include <iosfwd>
@@ -249,8 +248,8 @@ template<> struct DefaultHash<AtomicString> {
     typedef AtomicStringHash Hash;
 };
 
-// Pretty printer for gtest.
-WTF_UNITTEST_HELPERS_EXPORT std::ostream& operator<<(std::ostream&, const AtomicString&);
+// Pretty printer for gtest and base/logging.*.
+WTF_EXPORT std::ostream& operator<<(std::ostream&, const AtomicString&);
 
 } // namespace WTF
 

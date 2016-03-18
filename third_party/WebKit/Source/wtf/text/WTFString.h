@@ -28,7 +28,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
-#include "wtf/testing/WTFUnitTestHelpersExport.h"
 #include "wtf/text/ASCIIFastPath.h"
 #include "wtf/text/StringImpl.h"
 #include "wtf/text/StringView.h"
@@ -678,8 +677,8 @@ WTF_EXPORT const String& emptyString();
 WTF_EXPORT const String& emptyString16Bit();
 WTF_EXPORT extern const String& xmlnsWithColon;
 
-// Pretty printer for gtest. Declared here to avoid ODR violations.
-WTF_UNITTEST_HELPERS_EXPORT std::ostream& operator<<(std::ostream&, const String&);
+// Pretty printer for gtest and base/logging.*.
+WTF_EXPORT std::ostream& operator<<(std::ostream&, const String&);
 
 } // namespace WTF
 

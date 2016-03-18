@@ -90,7 +90,6 @@
                         '../platform/blink_platform.gyp:blink_common',
                         '../platform/blink_platform.gyp:blink_platform',
                         '../wtf/wtf.gyp:wtf',
-                        '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
                         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',

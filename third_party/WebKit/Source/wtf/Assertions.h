@@ -40,6 +40,7 @@
 
 */
 
+#include "base/logging.h"
 #include "wtf/Compiler.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
@@ -136,11 +137,13 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 #define NO_RETURN_DUE_TO_CRASH
 #endif
 
-/* ASSERT, ASSERT_NOT_REACHED, ASSERT_UNUSED
-
-  These macros are compiled out of release builds.
-  Expressions inside them are evaluated in debug builds only.
-*/
+// ASSERT, ASSERT_NOT_REACHED, ASSERT_UNUSED
+//  These macros are compiled out of release builds.
+//  Expressions inside them are evaluated in debug builds only.
+//  They are deprecated. We should use:
+//    - DCHECK() for ASSERT()
+//    - NOTREACHED() for ASSERT_NOT_REACHED()
+//    - DCHECK() and ALLOW_UNUSED_LOCAL() for ASSERT_UNUSED().
 #if OS(WIN)
 /* FIXME: Change to use something other than ASSERT to avoid this conflict with the underlying platform */
 #undef ASSERT
@@ -212,8 +215,8 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 #define ENABLE_SECURITY_ASSERT 0
 #endif
 
-/* ASSERT_WITH_MESSAGE */
-
+// ASSERT_WITH_MESSAGE
+// This is deprecated.  We should use DCHECK() << "message".
 #if ASSERT_MSG_DISABLED
 #define ASSERT_WITH_MESSAGE(assertion, ...) ((void)0)
 #else
@@ -225,8 +228,9 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 while (0)
 #endif
 
-/* ASSERT_WITH_MESSAGE_UNUSED */
-
+// ASSERT_WITH_MESSAGE_UNUSED
+// This is deprecated.  We should use DCHECK() << "message" and
+// ALLOW_UNUSED_LOCAL().
 #if ASSERT_MSG_DISABLED
 #define ASSERT_WITH_MESSAGE_UNUSED(variable, assertion, ...) ((void)variable)
 #else
@@ -255,8 +259,8 @@ while (0)
 
 #endif
 
-/* FATAL */
-
+// FATAL
+// This is deprecated.  We should use DLOG(FATAL) << ...
 #if FATAL_DISABLED
 #define FATAL(...) ((void)0)
 #else
@@ -266,16 +270,17 @@ while (0)
 } while (0)
 #endif
 
-/* WTF_LOG_ERROR */
-
+// WTF_LOG_ERROR
+// This is deprecated.  We should use DLOG(ERROR) << ...
 #if ERROR_DISABLED
 #define WTF_LOG_ERROR(...) ((void)0)
 #else
 #define WTF_LOG_ERROR(...) WTFReportError(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, __VA_ARGS__)
 #endif
 
-/* WTF_LOG */
-
+// WTF_LOG
+// This is deprecated.  Should be replaced with DVLOG(verboselevel), which works
+// only in debug build, or VLOG(verboselevel), which works in release build too.
 #if LOG_DISABLED
 #define WTF_LOG(channel, ...) ((void)0)
 #else
@@ -291,7 +296,10 @@ while (0)
    Please sure to file bugs for these failures using the security template:
       http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
 */
-
+// RELEASE_ASSERT* are deprecated.  We should use:
+//  - CHECK() for RELEASE_ASSERT()
+//  - CHECK() << message for RELEASE_ASSERT_WITH_MESSAGE()
+//  - RELEASE_NOTREACHED() for RELEASE_ASSERT_NOT_REACHED().
 #if ENABLE(ASSERT)
 #define RELEASE_ASSERT(assertion) ASSERT(assertion)
 #define RELEASE_ASSERT_WITH_MESSAGE(assertion, ...) ASSERT_WITH_MESSAGE(assertion, __VA_ARGS__)
@@ -301,6 +309,8 @@ while (0)
 #define RELEASE_ASSERT_WITH_MESSAGE(assertion, ...) RELEASE_ASSERT(assertion)
 #define RELEASE_ASSERT_NOT_REACHED() IMMEDIATE_CRASH()
 #endif
+// TODO(tkent): Move this to base/logging.h?
+#define RELEASE_NOTREACHED() LOG(FATAL)
 
 /* DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES */
 

@@ -37,9 +37,6 @@ void RefCountedLeakCounter::decrement() { }
 
 #else
 
-#define LOG_CHANNEL_PREFIX Log
-static WTFLogChannel LogRefCountedLeaks = { WTFLogChannelOn };
-
 RefCountedLeakCounter::RefCountedLeakCounter(const char* description)
     : m_description(description)
 {
@@ -50,7 +47,7 @@ RefCountedLeakCounter::~RefCountedLeakCounter()
     if (!m_count)
         return;
 
-    WTF_LOG(RefCountedLeaks, "LEAK: %u %s", m_count, m_description);
+    VLOG(0) << "LEAK: " << m_count << " " << m_description;
 }
 
 void RefCountedLeakCounter::increment()

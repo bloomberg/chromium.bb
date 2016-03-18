@@ -40,7 +40,6 @@
       'dependencies': [
         '../config.gyp:unittest_config',
         '../wtf/wtf.gyp:wtf',
-        '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
         'blink_platform.gyp:blink_platform',
@@ -70,7 +69,6 @@
         'blink_platform_test_support',
         '../config.gyp:unittest_config',
         '../wtf/wtf.gyp:wtf',
-        '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/cc/cc_tests.gyp:cc_test_support',

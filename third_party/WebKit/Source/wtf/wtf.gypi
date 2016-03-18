@@ -222,7 +222,6 @@
             'TypeTraitsTest.cpp',
             'VectorTest.cpp',
             'dtoa_test.cpp',
-            'testing/WTFTestPrintersTest.cpp',
             'text/AtomicStringTest.cpp',
             'text/CStringTest.cpp',
             'text/StringBufferTest.cpp',
@@ -232,9 +231,6 @@
             'text/TextCodecReplacementTest.cpp',
             'text/TextCodecUTF8Test.cpp',
             'text/WTFStringTest.cpp',
-        ],
-        'wtf_unittest_helper_files': [
-            'testing/WTFTestPrinters.cpp',
         ],
     },
 }

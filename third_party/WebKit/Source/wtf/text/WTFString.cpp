@@ -1198,6 +1198,49 @@ const String& emptyString16Bit()
     return emptyString;
 }
 
+std::ostream& operator<<(std::ostream& out, const String& string)
+{
+    if (string.isNull())
+        return out << "<null>";
+
+    out << '"';
+    for (unsigned index = 0; index < string.length(); ++index) {
+        // Print shorthands for select cases.
+        UChar character = string[index];
+        switch (character) {
+        case '\t':
+            out << "\\t";
+            break;
+        case '\n':
+            out << "\\n";
+            break;
+        case '\r':
+            out << "\\r";
+            break;
+        case '"':
+            out << "\\\"";
+            break;
+        case '\\':
+            out << "\\\\";
+            break;
+        default:
+            if (isASCIIPrintable(character)) {
+                out << static_cast<char>(character);
+            } else {
+                // Print "\uXXXX" for control or non-ASCII characters.
+                out << "\\u";
+                out.width(4);
+                out.fill('0');
+                out.setf(std::ios_base::hex, std::ios_base::basefield);
+                out.setf(std::ios::uppercase);
+                out << character;
+            }
+            break;
+        }
+    }
+    return out << '"';
+}
+
 } // namespace WTF
 
 #ifndef NDEBUG

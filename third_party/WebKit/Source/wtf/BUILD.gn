@@ -122,30 +122,10 @@ test("wtf_unittests") {
   configs += [ "//third_party/WebKit/Source:config" ]
 
   deps = [
-    ":test_support",
     ":wtf",
     "//base",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-component("test_support") {
-  output_name = "wtf_test_support"
-  sources = gypi_values.wtf_unittest_helper_files
-  defines = [ "WTF_UNITTEST_HELPERS_IMPLEMENTATION=1" ]
-
-  configs += [
-    ":wtf_config",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:non_test_config",
-  ]
-
-  deps = [
-    ":wtf",
   ]
 }

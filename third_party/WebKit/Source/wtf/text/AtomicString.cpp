@@ -530,6 +530,11 @@ AtomicString AtomicString::number(double number, unsigned precision, TrailingZer
     return AtomicString(numberToFixedPrecisionString(number, precision, buffer, trailingZerosTruncatingPolicy == TruncateTrailingZeros));
 }
 
+std::ostream& operator<<(std::ostream& out, const AtomicString& s)
+{
+    return out << s.string();
+}
+
 #ifndef NDEBUG
 void AtomicString::show() const
 {

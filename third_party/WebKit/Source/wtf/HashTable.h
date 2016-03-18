@@ -287,7 +287,8 @@ template <typename HashTableType, typename ValueType> struct HashTableAddResult 
         , m_containerModifications(container->modifications())
 #endif
     {
-        ASSERT_UNUSED(container, container);
+        ALLOW_UNUSED_LOCAL(container);
+        DCHECK(container);
     }
 
     ValueType* storedValue;

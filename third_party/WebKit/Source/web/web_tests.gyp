@@ -51,7 +51,6 @@
                 '../modules/modules.gyp:modules',
                 '../platform/blink_platform_tests.gyp:blink_platform_test_support',
                 '../wtf/wtf.gyp:wtf',
-                '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                 'web.gyp:blink_web_test_support',
                 '<(DEPTH)/base/base.gyp:base',
                 '<(DEPTH)/base/base.gyp:base_i18n',

@@ -207,7 +207,7 @@ public:
         if (!m_string.isNull())
             return AtomicString(m_string);
 
-        ASSERT(m_buffer);
+        DCHECK(m_buffer);
         return AtomicString(m_buffer.get(), 0, m_length);
     }
 
@@ -241,23 +241,23 @@ public:
 
     const LChar* characters8() const
     {
-        ASSERT(m_is8Bit);
+        DCHECK(m_is8Bit);
         if (!m_length)
             return 0;
         if (!m_string.isNull())
             return m_string.characters8();
-        ASSERT(m_buffer);
+        DCHECK(m_buffer);
         return m_buffer->characters8();
     }
 
     const UChar* characters16() const
     {
-        ASSERT(!m_is8Bit);
+        DCHECK(!m_is8Bit);
         if (!m_length)
             return 0;
         if (!m_string.isNull())
             return m_string.characters16();
-        ASSERT(m_buffer);
+        DCHECK(m_buffer);
         return m_buffer->characters16();
     }
 
@@ -309,14 +309,14 @@ private:
 template <>
 ALWAYS_INLINE LChar* StringBuilder::getBufferCharacters<LChar>()
 {
-    ASSERT(m_is8Bit);
+    DCHECK(m_is8Bit);
     return m_bufferCharacters8;
 }
 
 template <>
 ALWAYS_INLINE UChar* StringBuilder::getBufferCharacters<UChar>()
 {
-    ASSERT(!m_is8Bit);
+    DCHECK(!m_is8Bit);
     return m_bufferCharacters16;
 }
 

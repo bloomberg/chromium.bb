@@ -301,7 +301,6 @@ source_set("testing") {
   deps = [
     ":core",
     ":generated_testing_idls",
-    "//third_party/WebKit/Source/wtf:test_support",
   ]
 
   sources = generated_core_testing_dictionary_files + webcore_testing_files
