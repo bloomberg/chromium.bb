@@ -31,7 +31,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         set_always_translate_called_count_(0),
         translate_called_(false),
         revert_translation_called_(false),
-        translation_declined_called_(false),
+        translation_declined_(false),
         original_language_index_on_translation_(-1),
         target_language_index_on_translation_(-1) {}
 
@@ -71,6 +71,8 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     target_language_index_ = index;
   }
 
+  void DeclineTranslation() override { translation_declined_ = true; }
+
   void SetNeverTranslateLanguage(bool value) override {
     never_translate_language_ = value;
   }
@@ -96,9 +98,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
 
   void RevertTranslation() override { revert_translation_called_ = true; }
 
-  void TranslationDeclined(bool explicitly_closed) override {
-    translation_declined_called_ = true;
-  }
+  void OnBubbleClosing() override {}
 
   bool IsPageTranslatedInCurrentLanguages() const override {
     return original_language_index_on_translation_ ==
@@ -116,7 +116,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   int set_always_translate_called_count_;
   bool translate_called_;
   bool revert_translation_called_;
-  bool translation_declined_called_;
+  bool translation_declined_;
   int original_language_index_on_translation_;
   int target_language_index_on_translation_;
 };
@@ -158,7 +158,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
   }
 
   views::Combobox* denial_combobox() { return bubble_->denial_combobox_; }
-  bool denial_button_clicked() { return bubble_->denial_button_clicked_; }
+  bool denial_button_clicked() { return mock_model_->translation_declined_; }
 
   scoped_ptr<views::Widget> anchor_widget_;
   MockTranslateBubbleModel* mock_model_;

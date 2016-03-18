@@ -110,6 +110,8 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 
 @implementation TranslateBubbleController
 
+@synthesize webContents = webContents_;
+
 - (id)initWithParentWindow:(BrowserWindowController*)controller
                      model:(scoped_ptr<TranslateBubbleModel>)model
                webContents:(content::WebContents*)webContents {
@@ -151,7 +153,10 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
   return self;
 }
 
-@synthesize webContents = webContents_;
+- (void)windowWillClose:(NSNotification*)notification {
+  model_->OnBubbleClosing();
+  [super windowWillClose:notification];
+}
 
 - (NSView*)currentView {
   NSNumber* key = @(model_->GetViewState());
@@ -592,6 +597,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 }
 
 - (void)handleNopeButtonPressed {
+  model_->DeclineTranslation();
   [self close];
 }
 
@@ -625,15 +631,18 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 }
 
 - (void)handleDenialPopUpButtonNopeSelected {
+  model_->DeclineTranslation();
   [self close];
 }
 
 - (void)handleDenialPopUpButtonNeverTranslateLanguageSelected {
+  model_->DeclineTranslation();
   model_->SetNeverTranslateLanguage(true);
   [self close];
 }
 
 - (void)handleDenialPopUpButtonNeverTranslateSiteSelected {
+  model_->DeclineTranslation();
   model_->SetNeverTranslateSite(true);
   [self close];
 }

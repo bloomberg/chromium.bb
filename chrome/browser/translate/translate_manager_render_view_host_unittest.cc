@@ -97,10 +97,11 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
     model_.reset(new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
   }
 
-  bool DismissBubble(bool explicitly_closed) {
+  bool DismissBubble() {
     if (!model_)
       return false;
-    model_->TranslationDeclined(explicitly_closed);
+    model_->DeclineTranslation();
+    model_->OnBubbleClosing();
     model_.reset();
     return true;
   }
@@ -177,7 +178,7 @@ class TranslateManagerRenderViewHostTest
 
   bool CloseTranslateUi() {
     if (bubble_factory_) {
-      return bubble_factory_->DismissBubble(true);
+      return bubble_factory_->DismissBubble();
     } else {
       return CloseTranslateInfoBar();
     }
@@ -314,7 +315,7 @@ class TranslateManagerRenderViewHostTest
   // returns true.  Returns false otherwise.
   bool DenyTranslation() {
     if (bubble_factory_.get()) {
-      return bubble_factory_->DismissBubble(true);
+      return bubble_factory_->DismissBubble();
     } else {
       translate::TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
       if (!infobar)

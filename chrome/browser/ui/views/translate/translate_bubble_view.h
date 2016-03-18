@@ -214,9 +214,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Whether the translation is acutually executed.
   bool translate_executed_;
 
-  // Whether one of denial buttons is clicked.
-  bool denial_button_clicked_;
-
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleView);
 };
 

@@ -14,7 +14,12 @@ TranslateBubbleModelImpl::TranslateBubbleModelImpl(
     translate::TranslateStep step,
     scoped_ptr<translate::TranslateUIDelegate> ui_delegate)
     : ui_delegate_(std::move(ui_delegate)),
-      view_state_transition_(TranslateStepToViewState(step)) {}
+      view_state_transition_(TranslateStepToViewState(step)),
+      translation_declined_(false),
+      translate_executed_(false) {
+  if (GetViewState() != TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE)
+    translate_executed_ = true;
+}
 
 TranslateBubbleModelImpl::~TranslateBubbleModelImpl() {
 }
@@ -80,6 +85,10 @@ void TranslateBubbleModelImpl::UpdateTargetLanguageIndex(int index) {
   ui_delegate_->UpdateTargetLanguageIndex(index);
 }
 
+void TranslateBubbleModelImpl::DeclineTranslation() {
+  translation_declined_ = true;
+}
+
 void TranslateBubbleModelImpl::SetNeverTranslateLanguage(bool value) {
   ui_delegate_->SetLanguageBlocked(value);
 }
@@ -97,6 +106,7 @@ void TranslateBubbleModelImpl::SetAlwaysTranslate(bool value) {
 }
 
 void TranslateBubbleModelImpl::Translate() {
+  translate_executed_ = true;
   ui_delegate_->Translate();
 }
 
@@ -104,8 +114,9 @@ void TranslateBubbleModelImpl::RevertTranslation() {
   ui_delegate_->RevertTranslation();
 }
 
-void TranslateBubbleModelImpl::TranslationDeclined(bool explicitly_closed) {
-  ui_delegate_->TranslationDeclined(explicitly_closed);
+void TranslateBubbleModelImpl::OnBubbleClosing() {
+  if (!translate_executed_)
+    ui_delegate_->TranslationDeclined(translation_declined_);
 }
 
 bool TranslateBubbleModelImpl::IsPageTranslatedInCurrentLanguages() const {

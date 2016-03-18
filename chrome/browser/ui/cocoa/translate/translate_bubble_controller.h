@@ -72,4 +72,5 @@ class WebContents;
 // only exposed for testing purposes. DO NOT USE OTHERWISE.
 @interface TranslateBubbleController (ExposedForTesting)
 - (void)handleTranslateButtonPressed;
+- (void)handleDenialPopUpButtonNopeSelected;
 @end

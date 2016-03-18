@@ -173,8 +173,8 @@ void TranslateBubbleView::WindowClosing() {
   // while the TranslateBubbleViewModel(Impl) is still alive. Instead,
   // TranslateBubbleViewModel should take a reference of a WebContents at each
   // method. (crbug/320497)
-  if (!translate_executed_ && web_contents())
-    model_->TranslationDeclined(denial_button_clicked_);
+  if (web_contents())
+    model_->OnBubbleClosing();
 
   // We have to reset |translate_bubble_view_| here, not in our destructor,
   // because we'll be destroyed asynchronously and the shown state will be
@@ -262,15 +262,7 @@ TranslateBubbleView::TranslateBubbleView(
       model_(std::move(model)),
       error_type_(error_type),
       is_in_incognito_window_(
-          web_contents ? web_contents->GetBrowserContext()->IsOffTheRecord()
-                       : false),
-      translate_executed_(false),
-      denial_button_clicked_(false) {
-  if (model_->GetViewState() !=
-      TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) {
-    translate_executed_ = true;
-  }
-
+          web_contents && web_contents->GetBrowserContext()->IsOffTheRecord()) {
   translate_bubble_view_ = this;
 }
 
@@ -295,7 +287,6 @@ void TranslateBubbleView::HandleButtonPressed(
     TranslateBubbleView::ButtonID sender_id) {
   switch (sender_id) {
     case BUTTON_ID_TRANSLATE: {
-      translate_executed_ = true;
       model_->Translate();
       break;
     }
@@ -307,7 +298,6 @@ void TranslateBubbleView::HandleButtonPressed(
         UpdateChildVisibilities();
         SizeToContents();
       } else {
-        translate_executed_ = true;
         model_->Translate();
         SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
       }
@@ -320,7 +310,6 @@ void TranslateBubbleView::HandleButtonPressed(
       break;
     }
     case BUTTON_ID_TRY_AGAIN: {
-      translate_executed_ = true;
       model_->Translate();
       break;
     }
@@ -361,7 +350,7 @@ void TranslateBubbleView::HandleComboboxPerformAction(
     TranslateBubbleView::ComboboxID sender_id) {
   switch (sender_id) {
     case COMBOBOX_ID_DENIAL: {
-      denial_button_clicked_ = true;
+      model_->DeclineTranslation();
       DenialComboboxIndex index =
           static_cast<DenialComboboxIndex>(denial_combobox_->selected_index());
       switch (index) {
