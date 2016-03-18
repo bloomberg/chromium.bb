@@ -15,37 +15,6 @@ SVN_MASTERS = (
 )
 
 
-def jsonish_to_python(spec, is_top=False):
-  """Turn a json spec into a python parsable object.
-
-  This exists because Gclient specs, while resembling json, is actually
-  ingested using a python "eval()".  Therefore a bit of plumming is required
-  to turn our newly constructed Gclient spec into a gclient-readable spec.
-  """
-  ret = ''
-  if is_top:  # We're the 'top' level, so treat this dict as a suite.
-    ret = '\n'.join(
-      '%s = %s' % (k, jsonish_to_python(spec[k])) for k in sorted(spec)
-    )
-  else:
-    if isinstance(spec, dict):
-      ret += '{'
-      ret += ', '.join(
-        "%s: %s" % (repr(str(k)), jsonish_to_python(spec[k]))
-        for k in sorted(spec)
-      )
-      ret += '}'
-    elif isinstance(spec, list):
-      ret += '['
-      ret += ', '.join(jsonish_to_python(x) for x in spec)
-      ret += ']'
-    elif isinstance(spec, basestring):
-      ret = repr(str(spec))
-    else:
-      ret = repr(spec)
-  return ret
-
-
 class BotUpdateApi(recipe_api.RecipeApi):
 
   def __init__(self, mastername, buildername, slavename, issue, patchset,
@@ -107,7 +76,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # We can re-use the gclient spec from the gclient module, since all the
     # data bot_update needs is already configured into the gclient spec.
     cfg = gclient_config or self.m.gclient.c
-    spec_string = jsonish_to_python(cfg.as_jsonish(), True)
 
     # Used by bot_update to determine if we want to run or not.
     master = self._mastername
@@ -169,7 +137,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--slave', slave],
 
         # 2. What do we want to check out (spec/root/rev/rev_map).
-        ['--spec', spec_string],
+        ['--spec', self.m.gclient.config_to_pythonish(cfg)],
         ['--root', root],
         ['--revision_mapping_file', self.m.json.input(rev_map)],
         ['--git-cache-dir', cfg.cache_dir],

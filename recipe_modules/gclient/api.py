@@ -50,6 +50,12 @@ class ProjectRevisionResolver(RevisionResolver):
 
 
 def jsonish_to_python(spec, is_top=False):
+  """Turn a json spec into a python parsable object.
+
+  This exists because Gclient specs, while resembling json, is actually
+  ingested using a python "eval()".  Therefore a bit of plumming is required
+  to turn our newly constructed Gclient spec into a gclient-readable spec.
+  """
   ret = ''
   if is_top:  # We're the 'top' level, so treat this dict as a suite.
     ret = '\n'.join(
@@ -130,6 +136,10 @@ class GclientApi(recipe_api.RecipeApi):
       'USE_MIRROR': self.use_mirror,
       'CACHE_DIR': self.m.path['git_cache'],
     }
+
+  @staticmethod
+  def config_to_pythonish(cfg):
+    return jsonish_to_python(cfg.as_jsonish(), True)
 
   def resolve_revision(self, revision):
     if hasattr(revision, 'resolve'):
@@ -241,9 +251,7 @@ class GclientApi(recipe_api.RecipeApi):
     if inject_parent_got_revision:
       self.inject_parent_got_revision(cfg, override=True)
 
-    spec_string = jsonish_to_python(cfg.as_jsonish(), True)
-
-    self('setup', ['config', '--spec', spec_string], **kwargs)
+    self('setup', ['config', '--spec', self.config_to_pythonish(cfg)], **kwargs)
 
     sync_step = None
     try:
