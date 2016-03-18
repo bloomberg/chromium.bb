@@ -30,7 +30,6 @@ namespace iapps {
 
 #if defined(OS_MACOSX)
 
-extern NSString* const kIPhotoRecentDatabasesKey;
 extern NSString* const kITunesRecentDatabasePathsKey;
 
 // Set the mac preferences to use for testing. The caller continues to own

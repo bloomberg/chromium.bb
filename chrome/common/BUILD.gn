@@ -188,8 +188,6 @@ static_library("common") {
     public_deps += [ "//third_party/boringssl" ]
   }
   if (is_mac) {
-    sources +=
-        rebase_path(gypi_values.chrome_common_mac_sources, ".", "//chrome")
     public_deps += [ ":app_mode_app_support" ]
   }
   if (is_chromeos) {

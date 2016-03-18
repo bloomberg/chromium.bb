@@ -234,106 +234,6 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_MACOSX)
-  void PopulateIPhotoTestData(const base::FilePath& iphoto_data_root) {
-    std::string xml_contents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-    "<plist version=\"1.0\">"
-    "<dict>\n"
-
-    "    <key>List of Albums</key>"
-    "    <array>\n"
-
-    "    <dict>\n"
-    "      <key>AlbumId</key>"
-    "      <integer>1</integer>"
-    "      <key>AlbumName</key>"
-    "      <string>Album1</string>"
-    "      <key>KeyList</key>\n"
-    "      <array>"
-    "      <string>1</string>"
-    "      <string>2</string>"
-    "      </array>\n"
-    "    </dict>\n"
-
-    "    <dict>\n"
-    "      <key>AlbumId</key>"
-    "      <integer>2</integer>"
-    "      <key>AlbumName</key>"
-    "      <string>Album2</string>"
-    "      <key>KeyList</key>\n"
-    "      <array>"
-    "      <string>2</string>"
-    "      </array>\n"
-    "    </dict>\n"
-
-    "    </array>\n"
-
-    "   <key>Master Image List</key>\n"
-    "   <dict>\n"
-
-    "  <key>1</key>"
-    "  <dict>\n"
-    "    <key>MediaType</key>"
-    "    <string>Image</string>"
-    "    <key>Caption</key>"
-    "    <string>caption 1</string>"
-    "    <key>GUID</key>"
-    "    <string>1</string>"
-    "    <key>ModDateAsTimerInterval</key>"
-    "    <string>386221543.0000</string>"
-    "    <key>DateAsTimerInterval</key>"
-    "    <string>386221543.0000</string>"
-    "    <key>DateAsTimerIntervalGMT</key>"
-    "    <string>385123456.00</string>"
-    "    <key>ImagePath</key>"
-    "    <string>$path1</string>"
-    "    <key>ThumbPath</key>"
-    "    <string>/thumb/path</string>\n"
-    "  </dict>\n"
-
-    "  <key>2</key>\n"
-    "  <dict>\n"
-    "    <key>MediaType</key>"
-    "    <string>Image</string>"
-    "    <key>Caption</key>"
-    "    <string>caption 2</string>"
-    "    <key>GUID</key>"
-    "    <string>2</string>"
-    "    <key>ModDateAsTimerInterval</key>"
-    "    <string>386221543.0000</string>"
-    "    <key>DateAsTimerInterval</key>"
-    "    <string>386221543.0000</string>"
-    "    <key>DateAsTimerIntervalGMT</key>"
-    "    <string>385123456.00</string>"
-    "    <key>ImagePath</key>"
-    "    <string>$path2</string>"
-    "    <key>ThumbPath</key>"
-    "    <string>/thumb/path2</string>\n"
-    "  </dict>\n"
-
-    "   </dict>\n"  // Master Image List
-
-    "</dict>\n"
-    "</plist>";
-
-    base::FilePath test_jpg_path = GetCommonDataDir().AppendASCII("test.jpg");
-    ASSERT_TRUE(base::CreateDirectory(iphoto_data_root));
-    base::FilePath first_only_jpg =
-        iphoto_data_root.AppendASCII("InFirstAlbumOnly.jpg");
-    base::FilePath in_both_jpg = iphoto_data_root.AppendASCII("InBoth.jpg");
-    ASSERT_TRUE(base::CopyFile(test_jpg_path, first_only_jpg));
-    ASSERT_TRUE(base::CopyFile(test_jpg_path, in_both_jpg));
-    base::ReplaceFirstSubstringAfterOffset(
-        &xml_contents, 0, "$path1", first_only_jpg.value());
-    base::ReplaceFirstSubstringAfterOffset(
-        &xml_contents, 0, "$path2", in_both_jpg.value());
-
-    base::FilePath album_xml = iphoto_data_root.AppendASCII("AlbumData.xml");
-    ASSERT_NE(-1, base::WriteFile(album_xml,
-                                  xml_contents.c_str(), xml_contents.size()));
-  }
-#endif  // defined(OS_MACOSX)
-
   base::FilePath GetCommonDataDir() const {
     return test_data_dir_.AppendASCII("api_test")
                          .AppendASCII("media_galleries")
@@ -533,20 +433,6 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   ASSERT_TRUE(RunMediaGalleriesTestWithArg("picasa", custom_args)) << message_;
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       IPhotoTest) {
-  PopulateIPhotoTestData(
-      ensure_media_directories_exists()->GetFakeIPhotoRootPath());
-
-  base::ListValue custom_args;
-  custom_args.AppendInteger(test_jpg_size());
-  ASSERT_TRUE(RunMediaGalleriesTestWithArg("iphoto", custom_args)) << message_;
-
-  iapps::SetMacPreferencesForTesting(NULL);
-}
-#endif  // defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, ToURL) {
   RemoveAllGalleries();

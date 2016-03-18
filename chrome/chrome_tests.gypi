@@ -2517,7 +2517,6 @@
             '../third_party/ocmock/ocmock.gyp:ocmock',
           ],
           'sources': [
-            'browser/media_galleries/fileapi/iphoto_data_provider_browsertest.cc',
             'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm',
             'browser/spellchecker/spellcheck_message_filter_platform_mac_browsertest.cc',
           ],

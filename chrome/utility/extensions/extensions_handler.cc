@@ -35,10 +35,6 @@
 #include "components/wifi/wifi_service.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
-#include "chrome/utility/media_galleries/iphoto_library_parser.h"
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/utility/media_galleries/iapps_xml_utils.h"
 #include "chrome/utility/media_galleries/itunes_library_parser.h"
@@ -95,11 +91,6 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
                         OnParseITunesPrefXml)
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseIPhotoLibraryXmlFile,
-                        OnParseIPhotoLibraryXmlFile)
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesLibraryXmlFile,
                         OnParseITunesLibraryXmlFile)
@@ -155,17 +146,6 @@ void ExtensionsHandler::OnParseITunesPrefXml(
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-void ExtensionsHandler::OnParseIPhotoLibraryXmlFile(
-    const IPC::PlatformFileForTransit& iphoto_library_file) {
-  iphoto::IPhotoLibraryParser parser;
-  base::File file = IPC::PlatformFileForTransitToFile(iphoto_library_file);
-  bool result = parser.Parse(iapps::ReadFileAsString(std::move(file)));
-  Send(new ChromeUtilityHostMsg_GotIPhotoLibrary(result, parser.library()));
-  ReleaseProcessIfNeeded();
-}
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void ExtensionsHandler::OnParseITunesLibraryXmlFile(

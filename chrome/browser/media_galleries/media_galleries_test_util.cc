@@ -172,11 +172,6 @@ base::FilePath EnsureMediaDirectoriesExists::GetFakeITunesRootPath() const {
   DCHECK(fake_dir_.IsValid());
   return fake_dir_.path().AppendASCII("itunes");
 }
-
-base::FilePath EnsureMediaDirectoriesExists::GetFakeIPhotoRootPath() const {
-  DCHECK(fake_dir_.IsValid());
-  return fake_dir_.path().AppendASCII("iphoto");
-}
 #endif  // OS_MACOSX
 
 void EnsureMediaDirectoriesExists::Init() {
@@ -210,14 +205,6 @@ void EnsureMediaDirectoriesExists::Init() {
   mac_preferences_->AddTestItem(
       base::mac::NSToCFCast(iapps::kITunesRecentDatabasePathsKey),
       base::mac::NSToCFCast(iapps::NSArrayFromFilePath(itunes_xml)),
-      false);
-
-  // iPhoto override.
-  base::FilePath iphoto_xml =
-      GetFakeIPhotoRootPath().AppendASCII("AlbumData.xml");
-  mac_preferences_->AddTestItem(
-      base::mac::NSToCFCast(iapps::kIPhotoRecentDatabasesKey),
-      base::mac::NSToCFCast(iapps::NSArrayFromFilePath(iphoto_xml)),
       false);
 
   iapps::SetMacPreferencesForTesting(mac_preferences_.get());

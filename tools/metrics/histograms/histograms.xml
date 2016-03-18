@@ -74315,7 +74315,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="24" label="RemoveAllGalleryWatch API invocations (obsolete)"/>
   <int value="25" label="iTunes file system used this session"/>
   <int value="26" label="Picasa file system used this session"/>
-  <int value="27" label="iPhoto file system used this session"/>
+  <int value="27" label="iPhoto file system used this session (obsolete)"/>
 </enum>
 
 <enum name="MediaKeyError" type="int">

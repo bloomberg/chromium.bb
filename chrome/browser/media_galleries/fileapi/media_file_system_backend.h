@@ -116,12 +116,6 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
   bool picasa_file_util_used_;
   bool itunes_file_util_used_;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-#if defined(OS_MACOSX)
-  scoped_ptr<storage::AsyncFileUtil> iphoto_file_util_;
-
-  // Used for usage UMA tracking.
-  bool iphoto_file_util_used_;
-#endif  // defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemBackend);
 };

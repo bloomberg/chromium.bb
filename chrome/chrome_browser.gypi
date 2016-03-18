@@ -1081,10 +1081,6 @@
       'browser/web_applications/web_app_linux.cc',
     ],
     'chrome_browser_mac_sources': [
-      'browser/media_galleries/fileapi/iphoto_data_provider.cc',
-      'browser/media_galleries/fileapi/iphoto_data_provider.h',
-      'browser/media_galleries/fileapi/iphoto_file_util.cc',
-      'browser/media_galleries/fileapi/iphoto_file_util.h',
       'browser/password_manager/password_manager_util_mac.h',
       'browser/password_manager/password_manager_util_mac.mm',
     ],

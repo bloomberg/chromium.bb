@@ -50,10 +50,6 @@
 #include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/media_galleries/fileapi/iphoto_file_util.h"
-#endif  // defined(OS_MACOSX)
-
 using storage::FileSystemContext;
 using storage::FileSystemURL;
 
@@ -147,11 +143,6 @@ MediaFileSystemBackend::MediaFileSystemBackend(
       picasa_file_util_used_(false),
       itunes_file_util_used_(false)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-#if defined(OS_MACOSX)
-      ,
-      iphoto_file_util_(new iphoto::IPhotoFileUtil(media_path_filter_.get())),
-      iphoto_file_util_used_(false)
-#endif  // defined(OS_MACOSX)
 {
 }
 
@@ -236,9 +227,6 @@ bool MediaFileSystemBackend::CanHandleType(storage::FileSystemType type) const {
     case storage::kFileSystemTypePicasa:
     case storage::kFileSystemTypeItunes:
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-#if defined(OS_MACOSX)
-    case storage::kFileSystemTypeIphoto:
-#endif  // defined(OS_MACOSX)
       return true;
     default:
       return false;
@@ -284,14 +272,6 @@ storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
       }
       return picasa_file_util_.get();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-#if defined(OS_MACOSX)
-    case storage::kFileSystemTypeIphoto:
-      if (!iphoto_file_util_used_) {
-        media_galleries::UsageCount(media_galleries::IPHOTO_FILE_SYSTEM_USED);
-        iphoto_file_util_used_ = true;
-      }
-      return iphoto_file_util_.get();
-#endif  // defined(OS_MACOSX)
     default:
       NOTREACHED();
   }
@@ -312,7 +292,6 @@ MediaFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
   switch (type) {
     case storage::kFileSystemTypeNativeMedia:
     case storage::kFileSystemTypeDeviceMedia:
-    case storage::kFileSystemTypeIphoto:
     case storage::kFileSystemTypeItunes:
       if (!media_copy_or_move_file_validator_factory_) {
         *error_code = base::File::FILE_ERROR_SECURITY;
@@ -351,8 +330,7 @@ bool MediaFileSystemBackend::HasInplaceCopyImplementation(
   DCHECK(type == storage::kFileSystemTypeNativeMedia ||
          type == storage::kFileSystemTypeDeviceMedia ||
          type == storage::kFileSystemTypeItunes ||
-         type == storage::kFileSystemTypePicasa ||
-         type == storage::kFileSystemTypeIphoto);
+         type == storage::kFileSystemTypePicasa);
   return true;
 }
 

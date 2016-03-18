@@ -1158,7 +1158,6 @@ if (!is_android) {
         "//third_party/ocmock",
       ]
       sources += [
-        "../browser/media_galleries/fileapi/iphoto_data_provider_browsertest.cc",
         "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm",
         "../browser/spellchecker/spellcheck_message_filter_platform_mac_browsertest.cc",
       ]
@@ -1929,10 +1928,6 @@ test("unit_tests") {
     ldflags = [ "-Wl,--strip-debug" ]
   }
   if (is_mac) {
-    sources +=
-        rebase_path(chrome_tests_unit_gypi_values.chrome_unit_tests_mac_sources,
-                    ".",
-                    "//chrome")
     sources -= [
       # This tests the function GetSpellCheckLanguages which is not used on
       # Mac.

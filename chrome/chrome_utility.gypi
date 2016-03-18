@@ -90,10 +90,6 @@
       'utility/media_galleries/media_metadata_parser.cc',
       'utility/media_galleries/media_metadata_parser.h',
     ],
-    'chrome_utility_mac_media_gallery_sources': [
-      'utility/media_galleries/iphoto_library_parser.cc',
-      'utility/media_galleries/iphoto_library_parser.h',
-    ],
     'chrome_utility_win_mac_media_gallery_sources': [
       'utility/media_galleries/iapps_xml_utils.cc',
       'utility/media_galleries/iapps_xml_utils.h',
@@ -196,11 +192,6 @@
               'sources': [
                 'utility/image_writer/image_writer_stub.cc',
               ]
-            }],
-            ['OS=="mac"', {
-              'sources': [
-                '<@(chrome_utility_mac_media_gallery_sources)',
-              ],
             }],
           ],
         }],

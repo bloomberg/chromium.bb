@@ -85,13 +85,6 @@ static_library("utility") {
     } else {
       sources += [ "image_writer/image_writer_stub.cc" ]
     }
-
-    if (is_mac) {
-      sources +=
-          rebase_path(gypi_values.chrome_utility_mac_media_gallery_sources,
-                      ".",
-                      "..")
-    }
   }
 
   if (use_nss_certs) {

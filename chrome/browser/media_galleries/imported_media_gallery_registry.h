@@ -14,11 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
-namespace iphoto {
-class IPhotoDataProvider;
-class IPhotoDataProviderTest;
-}
-
 namespace itunes {
 class ITunesDataProvider;
 class ITunesDataProviderTest;
@@ -48,10 +43,6 @@ class ImportedMediaGalleryRegistry {
       const std::string& fs_name,
       const base::FilePath& xml_library_path);
 
-  bool RegisterIPhotoFilesystemOnUIThread(
-      const std::string& fs_name,
-      const base::FilePath& xml_library_path);
-
   bool RevokeImportedFilesystemOnUIThread(const std::string& fs_name);
 
   // Path where all virtual file systems are "mounted."
@@ -63,13 +54,8 @@ class ImportedMediaGalleryRegistry {
   static itunes::ITunesDataProvider* ITunesDataProvider();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_MACOSX)
-  static iphoto::IPhotoDataProvider* IPhotoDataProvider();
-#endif  // defined(OS_MACOSX)
-
  private:
   friend struct base::DefaultLazyInstanceTraits<ImportedMediaGalleryRegistry>;
-  friend class iphoto::IPhotoDataProviderTest;
   friend class itunes::ITunesDataProviderTest;
   friend class picasa::PicasaDataProviderTest;
 
@@ -83,11 +69,6 @@ class ImportedMediaGalleryRegistry {
   void RegisterITunesFileSystem(const base::FilePath& xml_library_path);
   void RevokeITunesFileSystem();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#if defined(OS_MACOSX)
-  void RegisterIPhotoFileSystem(const base::FilePath& xml_library_path);
-  void RevokeIPhotoFileSystem();
-#endif  // defined(OS_MACOSX)
 
   base::FilePath imported_root_;
 
@@ -105,16 +86,6 @@ class ImportedMediaGalleryRegistry {
   base::FilePath itunes_xml_library_path_;
 #endif
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#if defined(OS_MACOSX)
-  scoped_ptr<iphoto::IPhotoDataProvider> iphoto_data_provider_;
-
-  std::set<std::string> iphoto_fs_names_;
-
-#ifndef NDEBUG
-  base::FilePath iphoto_xml_library_path_;
-#endif
-#endif  // defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(ImportedMediaGalleryRegistry);
 };

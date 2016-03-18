@@ -287,10 +287,6 @@
       'common/extensions/api/networking_private/networking_private_crypto.cc',
       'common/extensions/api/networking_private/networking_private_crypto.h',
     ],
-    'chrome_common_mac_sources': [
-      'common/media_galleries/iphoto_library.cc',
-      'common/media_galleries/iphoto_library.h',
-    ]
   },
   'targets': [
     {
@@ -403,10 +399,6 @@
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
-        }],
-        ['OS=="mac"', {
-          'sources': [ '<@(chrome_common_mac_sources)' ],
-          'dependencies': [ 'app_mode_app_support' ],
         }],
         ['OS != "ios"', {
           'dependencies': [

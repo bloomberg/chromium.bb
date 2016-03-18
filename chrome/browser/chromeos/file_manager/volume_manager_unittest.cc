@@ -851,7 +851,7 @@ TEST_F(VolumeManagerTest, MTPPlugAndUnplug) {
 
   storage_monitor::StorageInfo non_mtp_info(
       storage_monitor::StorageInfo::MakeDeviceId(
-          storage_monitor::StorageInfo::IPHOTO, "dummy-device-id2"),
+          storage_monitor::StorageInfo::FIXED_MASS_STORAGE, "dummy-device-id2"),
       FILE_PATH_LITERAL("/dummy/device/location2"),
       base::UTF8ToUTF16("label2"),
       base::UTF8ToUTF16("vendor2"),

@@ -198,7 +198,6 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
         case storage::kFileSystemTypeDeviceMedia:
         case storage::kFileSystemTypePicasa:
         case storage::kFileSystemTypeItunes:
-        case storage::kFileSystemTypeIphoto:
           break;
         default:
           return PP_ERROR_NOACCESS;

@@ -51,11 +51,6 @@ class ExtensionsHandler : public UtilityMessageHandler {
   void OnParseITunesPrefXml(const std::string& itunes_xml_data);
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
-  void OnParseIPhotoLibraryXmlFile(
-      const IPC::PlatformFileForTransit& iphoto_library_file);
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void OnParseITunesLibraryXmlFile(
       const IPC::PlatformFileForTransit& itunes_library_file);

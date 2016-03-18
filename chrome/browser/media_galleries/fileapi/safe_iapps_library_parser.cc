@@ -24,14 +24,6 @@ namespace iapps {
 SafeIAppsLibraryParser::SafeIAppsLibraryParser()
     : parser_state_(INITIAL_STATE) {}
 
-void SafeIAppsLibraryParser::ParseIPhotoLibrary(
-    const base::FilePath& library_file,
-    const IPhotoParserCallback& callback) {
-  library_file_path_ = library_file;
-  iphoto_callback_ = callback;
-  Start();
-}
-
 void SafeIAppsLibraryParser::ParseITunesLibrary(
     const base::FilePath& library_file,
     const ITunesParserCallback& callback) {
@@ -95,33 +87,10 @@ void SafeIAppsLibraryParser::OnUtilityProcessStarted() {
         IPC::TakeFileHandleForProcess(
             std::move(library_file_),
             utility_process_host_->GetData().handle)));
-  } else if (!iphoto_callback_.is_null()) {
-#if defined(OS_MACOSX)
-    utility_process_host_->Send(new ChromeUtilityMsg_ParseIPhotoLibraryXmlFile(
-        IPC::TakeFileHandleForProcess(
-            std::move(library_file_),
-            utility_process_host_->GetData().handle)));
-#endif
   }
 
   parser_state_ = STARTED_PARSING_STATE;
 }
-
-#if defined(OS_MACOSX)
-void SafeIAppsLibraryParser::OnGotIPhotoLibrary(
-    bool result, const iphoto::parser::Library& library) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!iphoto_callback_.is_null());
-
-  if (parser_state_ != STARTED_PARSING_STATE)
-    return;
-
-  MediaFileSystemBackend::MediaTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(iphoto_callback_, result, library));
-  parser_state_ = FINISHED_PARSING_STATE;
-}
-#endif
 
 void SafeIAppsLibraryParser::OnGotITunesLibrary(
     bool result, const itunes::parser::Library& library) {
@@ -150,11 +119,6 @@ void SafeIAppsLibraryParser::OnError() {
   parser_state_ = FINISHED_PARSING_STATE;
   if (!itunes_callback_.is_null())
     OnGotITunesLibrary(false /* failed */, itunes::parser::Library());
-
-#if defined(OS_MACOSX)
-  if (!iphoto_callback_.is_null())
-    OnGotIPhotoLibrary(false /* failed */, iphoto::parser::Library());
-#endif
 }
 
 bool SafeIAppsLibraryParser::OnMessageReceived(
@@ -163,10 +127,6 @@ bool SafeIAppsLibraryParser::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(SafeIAppsLibraryParser, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ProcessStarted,
                         OnUtilityProcessStarted)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GotIPhotoLibrary,
-                        OnGotIPhotoLibrary)
-#endif
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GotITunesLibrary,
                         OnGotITunesLibrary)
     IPC_MESSAGE_UNHANDLED(handled = false)

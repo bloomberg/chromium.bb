@@ -84,7 +84,6 @@ const char kMediaGalleriesDefaultGalleryTypeMusicDefaultValue[] = "music";
 const char kMediaGalleriesDefaultGalleryTypePicturesDefaultValue[] = "pictures";
 const char kMediaGalleriesDefaultGalleryTypeVideosDefaultValue[] = "videos";
 
-const char kIPhotoGalleryName[] = "iPhoto";
 const char kITunesGalleryName[] = "iTunes";
 const char kPicasaGalleryName[] = "Picasa";
 
@@ -487,7 +486,7 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   // It cannot be incremented inline with each callback, as some may return
   // synchronously, decrement the counter to 0, and prematurely trigger
   // FinishInitialization.
-  pre_initialization_callbacks_waiting_ = 4;
+  pre_initialization_callbacks_waiting_ = 3;
 
   // Check whether we should be initializing -- are there any extensions that
   // are using media galleries?
@@ -510,10 +509,6 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
                  weak_factory_.GetWeakPtr()));
 
   picasa::FindPicasaDatabase(
-      base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
-                 weak_factory_.GetWeakPtr()));
-
-  iapps::FindIPhotoLibrary(
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
 }
@@ -664,9 +659,7 @@ void MediaGalleriesPreferences::OnStorageMonitorInit(
 void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
   if (!device_id.empty()) {
     std::string gallery_name;
-    if (StorageInfo::IsIPhotoDevice(device_id))
-      gallery_name = kIPhotoGalleryName;
-    else if (StorageInfo::IsITunesDevice(device_id))
+    if (StorageInfo::IsITunesDevice(device_id))
       gallery_name = kITunesGalleryName;
     else if (StorageInfo::IsPicasaDevice(device_id))
       gallery_name = kPicasaGalleryName;
@@ -763,8 +756,7 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
   for (MediaGalleriesPrefInfoMap::const_iterator it =
            known_galleries_.begin(); it != known_galleries_.end(); ++it) {
     const std::string& device_id = it->second.device_id;
-    if (iapps::PathIndicatesIPhotoLibrary(device_id, path) ||
-        iapps::PathIndicatesITunesLibrary(device_id, path)) {
+    if (iapps::PathIndicatesITunesLibrary(device_id, path)) {
       *gallery_info = it->second;
       return true;
     }

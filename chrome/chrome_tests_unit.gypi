@@ -1393,10 +1393,6 @@
       'app/chrome_dll.rc',
       'test/data/resource.rc',
     ],
-    'chrome_unit_tests_mac_sources': [
-      'browser/media_galleries/fileapi/iphoto_file_util_unittest.cc',
-      'utility/media_galleries/iphoto_library_parser_unittest.cc',
-    ],
     'chrome_unit_tests_win_mac_sources': [
       'browser/media_galleries/fileapi/itunes_file_util_unittest.cc',
       'browser/media_galleries/fileapi/picasa_file_util_unittest.cc',
@@ -2603,7 +2599,6 @@
             '../third_party/ocmock/ocmock.gyp:ocmock',
             'chrome',
           ],
-          'sources': [ '<@(chrome_unit_tests_mac_sources)' ],
           'sources!': [
             # This tests the function GetSpellCheckLanguages which is not used
             # on Mac.

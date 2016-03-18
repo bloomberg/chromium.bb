@@ -29,8 +29,6 @@ class StorageInfo {
     ITUNES,
     // A Picasa database.
     PICASA,
-    // An iPhoto library.
-    IPHOTO,
   };
 
   StorageInfo();
@@ -69,8 +67,6 @@ class StorageInfo {
   static bool IsITunesDevice(const std::string& device_id);
 
   static bool IsPicasaDevice(const std::string& device_id);
-
-  static bool IsIPhotoDevice(const std::string& device_id);
 
   static bool IsMTPDevice(const std::string& device_id);
 

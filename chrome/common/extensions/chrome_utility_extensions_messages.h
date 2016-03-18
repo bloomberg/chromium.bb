@@ -11,7 +11,6 @@
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"
-#include "chrome/common/media_galleries/iphoto_library.h"
 #include "chrome/common/media_galleries/itunes_library.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/common/media_galleries/picasa_types.h"
@@ -23,19 +22,6 @@
 #endif
 
 #define IPC_MESSAGE_START ChromeUtilityExtensionsMsgStart
-
-#if defined(OS_MACOSX)
-IPC_STRUCT_TRAITS_BEGIN(iphoto::parser::Photo)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(location)
-  IPC_STRUCT_TRAITS_MEMBER(original_location)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(iphoto::parser::Library)
-  IPC_STRUCT_TRAITS_MEMBER(albums)
-  IPC_STRUCT_TRAITS_MEMBER(all_photos)
-IPC_STRUCT_TRAITS_END()
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 IPC_STRUCT_TRAITS_BEGIN(itunes::parser::Track)
@@ -84,13 +70,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseITunesPrefXml,
                      std::string /* XML to parse */)
 #endif  // defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-// Tell the utility process to parse the iPhoto library XML file and
-// return the parse result as well as the iPhoto library as an iphoto::Library.
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseIPhotoLibraryXmlFile,
-                     IPC::PlatformFileForTransit /* XML file to parse */)
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Tell the utility process to parse the iTunes library XML file and
@@ -154,14 +133,6 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_ImageWriter_Cancel)
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GotITunesDirectory,
                      base::FilePath /* Path to iTunes library */)
 #endif  // defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-// Reply after parsing the iPhoto library XML file with the parser result and
-// an iphoto::Library data structure.
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GotIPhotoLibrary,
-                     bool /* Parser result */,
-                     iphoto::parser::Library /* iPhoto library */)
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Reply after parsing the iTunes library XML file with the parser result and
