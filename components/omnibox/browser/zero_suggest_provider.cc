@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
@@ -86,7 +85,6 @@ void ZeroSuggestProvider::RegisterProfilePrefs(
 
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,
                                 bool minimal_changes) {
-  TRACE_EVENT0("omnibox", "ZeroSuggestProvider::Start");
   matches_.clear();
   if (!input.from_omnibox_focus() ||
       input.type() == metrics::OmniboxInputType::INVALID)

@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
@@ -457,7 +456,6 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderClient* client,
 
 void HistoryURLProvider::Start(const AutocompleteInput& input,
                                bool minimal_changes) {
-  TRACE_EVENT0("omnibox", "HistoryURLProvider::Start");
   // NOTE: We could try hard to do less work in the |minimal_changes| case
   // here; some clever caching would let us reuse the raw matches from the
   // history DB without re-querying.  However, we'd still have to go back to
@@ -843,7 +841,6 @@ void HistoryURLProvider::PromoteMatchesIfNecessary(
 
 void HistoryURLProvider::QueryComplete(
     HistoryURLProviderParams* params_gets_deleted) {
-  TRACE_EVENT0("omnibox", "HistoryURLProvider::QueryComplete");
   // Ensure |params_gets_deleted| gets deleted on exit.
   scoped_ptr<HistoryURLProviderParams> params(params_gets_deleted);
 

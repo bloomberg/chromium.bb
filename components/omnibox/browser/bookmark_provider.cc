@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -66,7 +65,6 @@ BookmarkProvider::BookmarkProvider(AutocompleteProviderClient* client)
 
 void BookmarkProvider::Start(const AutocompleteInput& input,
                              bool minimal_changes) {
-  TRACE_EVENT0("omnibox", "BookmarkProvider::Start");
   if (minimal_changes)
     return;
   matches_.clear();

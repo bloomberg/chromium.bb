@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
@@ -44,7 +43,6 @@ HistoryQuickProvider::HistoryQuickProvider(AutocompleteProviderClient* client)
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
-  TRACE_EVENT0("omnibox", "HistoryQuickProvider::Start");
   matches_.clear();
   if (disabled_ || input.from_omnibox_focus())
     return;
