@@ -35,10 +35,6 @@
 #include "chrome/browser/ui/webui/theme_handler.h"
 #endif
 
-#if defined(USE_ASH)
-#include "chrome/browser/ui/host_desktop.h"
-#endif
-
 using content::BrowserThread;
 using content::WebUIController;
 

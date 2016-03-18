@@ -4,8 +4,6 @@
 
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
 
-#include "chrome/browser/ui/host_desktop.h"
-
 DefaultAshEventGeneratorDelegate*
 DefaultAshEventGeneratorDelegate::GetInstance() {
   return base::Singleton<DefaultAshEventGeneratorDelegate>::get();

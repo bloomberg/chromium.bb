@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/resource_provider.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 

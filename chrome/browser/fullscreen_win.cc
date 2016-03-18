@@ -13,7 +13,6 @@
 
 #if defined(USE_ASH)
 #include "ash/root_window_controller.h"
-#include "chrome/browser/ui/host_desktop.h"
 #endif
 
 static bool IsPlatformFullScreenMode() {

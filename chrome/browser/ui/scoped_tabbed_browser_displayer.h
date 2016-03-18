@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_SCOPED_TABBED_BROWSER_DISPLAYER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/host_desktop.h"
 
 class Browser;
 class Profile;

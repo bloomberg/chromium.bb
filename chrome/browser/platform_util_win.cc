@@ -25,7 +25,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/platform_util_internal.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"

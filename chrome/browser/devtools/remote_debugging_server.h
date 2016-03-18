@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/host_desktop.h"
 
 namespace devtools_http_handler {
 class DevToolsHttpHandler;

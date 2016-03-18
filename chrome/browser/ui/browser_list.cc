@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 

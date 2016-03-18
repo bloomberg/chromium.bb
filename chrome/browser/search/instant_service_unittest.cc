@@ -16,7 +16,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/common/render_messages.h"
 #include "components/variations/entropy_provider.h"

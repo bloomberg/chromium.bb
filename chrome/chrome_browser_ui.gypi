@@ -91,8 +91,6 @@
       'browser/ui/find_bar/find_notification_details.h',
       'browser/ui/find_bar/find_tab_helper.cc',
       'browser/ui/find_bar/find_tab_helper.h',
-      'browser/ui/host_desktop.cc',
-      'browser/ui/host_desktop.h',
       'browser/ui/login/login_interstitial_delegate.cc',
       'browser/ui/login/login_interstitial_delegate.h',
       'browser/ui/login/login_prompt.cc',

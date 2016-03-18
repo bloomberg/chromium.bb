@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/gfx/image/image.h"

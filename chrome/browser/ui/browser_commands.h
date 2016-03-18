@@ -9,7 +9,6 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "components/security_state/security_state_model.h"
 #include "content/public/common/page_zoom.h"

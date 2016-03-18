@@ -10,7 +10,6 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
 

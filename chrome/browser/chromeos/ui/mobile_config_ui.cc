@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 

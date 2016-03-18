@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"

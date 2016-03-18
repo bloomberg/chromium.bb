@@ -24,7 +24,6 @@
 #else
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/host_desktop.h"
 #endif
 
 #if defined(OS_CHROMEOS)

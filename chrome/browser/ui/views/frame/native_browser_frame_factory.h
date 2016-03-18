@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_BROWSER_FRAME_FACTORY_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/host_desktop.h"
 
 class BrowserFrame;
 class BrowserView;

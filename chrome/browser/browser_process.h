@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/host_desktop.h"
 
 class BackgroundModeManager;
 class CRLSetFetcher;

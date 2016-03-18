@@ -7,7 +7,6 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/ui/autofill/new_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"

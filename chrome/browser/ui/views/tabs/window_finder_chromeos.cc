@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
-#include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/window.h"
 
 gfx::NativeWindow GetLocalProcessWindowAtPointAsh(

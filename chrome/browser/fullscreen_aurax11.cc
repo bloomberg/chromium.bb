@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/root_window_controller.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #include "ui/views/widget/widget.h"
