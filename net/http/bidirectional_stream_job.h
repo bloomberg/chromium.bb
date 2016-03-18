@@ -10,12 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
-#include "net/net_features.h"
 #include "net/socket/next_proto.h"
-
-#if !BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-#error Only include this if ENABLE_BIDIRECTIONAL_STREAM is defined
-#endif
 
 namespace base {
 class Timer;

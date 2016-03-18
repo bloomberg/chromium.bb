@@ -13,11 +13,6 @@
 #include "net/http/bidirectional_stream_job.h"
 #include "net/http/http_stream_factory.h"
 #include "net/log/net_log.h"
-#include "net/net_features.h"
-
-#if !BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-#error Only include this if ENABLE_BIDIRECTIONAL_STREAM is defined
-#endif
 
 class GURL;
 

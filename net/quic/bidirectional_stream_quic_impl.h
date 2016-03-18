@@ -11,13 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/bidirectional_stream_job.h"
-#include "net/net_features.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_client_stream.h"
-
-#if !BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-#error Only include this if ENABLE_BIDIRECTIONAL_STREAM is defined
-#endif
 
 namespace base {
 class Timer;

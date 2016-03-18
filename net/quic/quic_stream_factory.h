@@ -26,7 +26,6 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
 #include "net/log/net_log.h"
-#include "net/net_features.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/network_connection.h"
 #include "net/quic/quic_chromium_client_session.h"
@@ -92,9 +91,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 
   scoped_ptr<QuicHttpStream> CreateStream();
 
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   scoped_ptr<BidirectionalStreamJob> CreateBidirectionalStreamJob();
-#endif
 
   // Sets |session_|.
   void SetSession(QuicChromiumClientSession* session);

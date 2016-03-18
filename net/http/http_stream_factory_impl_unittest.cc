@@ -17,6 +17,8 @@
 #include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/bidirectional_stream_job.h"
+#include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
@@ -27,7 +29,6 @@
 #include "net/http/http_stream.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
-#include "net/net_features.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/quic/quic_http_utils.h"
@@ -54,11 +55,6 @@
 // introduce any link dependency to net/websockets.
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-#include "net/http/bidirectional_stream_job.h"
-#include "net/http/bidirectional_stream_request_info.h"
-#endif
 
 namespace net {
 
@@ -197,11 +193,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->QuitWhenIdle();
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
     bidirectional_stream_job_.reset(stream);
-#else
-    DCHECK(!stream);
-#endif
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
   }
@@ -259,11 +251,9 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     return static_cast<MockWebSocketHandshakeStream*>(websocket_stream_.get());
   }
 
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   BidirectionalStreamJob* bidirectional_stream_job() {
     return bidirectional_stream_job_.get();
   }
-#endif
 
   bool stream_done() const { return stream_done_; }
   int error_status() const { return error_status_; }
@@ -273,9 +263,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   bool stream_done_;
   scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job_;
-#endif
   SSLConfig used_ssl_config_;
   ProxyInfo used_proxy_info_;
   int error_status_;
@@ -749,7 +737,6 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
   }
 }
 
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 // BidirectionalStreamJob::Delegate to wait until response headers are
 // received.
 class TestBidirectionalDelegate : public BidirectionalStreamJob::Delegate {
@@ -813,7 +800,6 @@ class MockQuicData {
   size_t packet_number_;
   scoped_ptr<SequencedSocketData> socket_data_;
 };
-#endif
 
 }  // namespace
 
@@ -1470,7 +1456,6 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJob) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
@@ -1723,7 +1708,6 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJobFailure) {
             static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory())
                 ->num_orphaned_jobs());
 }
-#endif
 
 // TODO(ricea): This test can be removed once the new WebSocket stack supports
 // SPDY. Currently, even if we connect to a SPDY-supporting server, we need to

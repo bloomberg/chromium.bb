@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'enable_bidirectional_stream%': 0,
-  },
   'conditions': [
     ['OS=="android"', {
       'targets': [
@@ -220,17 +217,6 @@
             ],
           ],
           'includes': [ 'cronet/cronet_static.gypi' ],
-        },
-        {
-          # GN version: //cronet:features
-          'target_name': 'cronet_features',
-          'includes': [ '../build/buildflag_header.gypi' ],
-          'variables': {
-             'buildflag_header_path': 'components/cronet/cronet_features.h',
-             'buildflag_flags': [
-               'ENABLE_BIDIRECTIONAL_STREAM=<(enable_bidirectional_stream)',
-            ],
-          },
         },
         {
           'target_name': 'libcronet',
@@ -513,16 +499,6 @@
             'is_test_apk': 1,
             'run_findbugs': 1,
           },
-          'conditions': [
-            ['enable_bidirectional_stream==0', {
-              'variables' : {
-                'jar_excluded_classes': [
-                  '**/BidirectionalStreamTest*',
-                  '**/TestBidirectionalStreamCallback*',
-                ],
-              },
-            },],
-          ],
           'includes': [ '../build/java_apk.gypi' ],
         },
         {

@@ -17,7 +17,6 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/log/net_log.h"
-#include "net/net_features.h"
 #include "net/proxy/proxy_service.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/client_socket_handle.h"
@@ -390,9 +389,7 @@ class HttpStreamFactoryImpl::Job {
 
   scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
   scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job_;
-#endif
 
   // True if we negotiated NPN.
   bool was_npn_negotiated_;

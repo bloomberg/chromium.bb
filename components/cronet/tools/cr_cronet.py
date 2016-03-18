@@ -70,10 +70,10 @@ def main():
   print extra_options_list
   gyp_defines = 'GYP_DEFINES="OS=android enable_websockets=0 '+ \
       'disable_file_support=1 disable_ftp_support=1 '+ \
-      'enable_bidirectional_stream=1 enable_errorprone=1"'
+      'enable_errorprone=1"'
   gn_args = 'target_os="android" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
-      'enable_bidirectional_stream=false use_errorprone_java_compiler=true'
+      'use_errorprone_java_compiler=true'
   out_dir = 'out/Debug'
   release_arg = ''
   extra_options = ' '.join(extra_options_list)

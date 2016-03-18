@@ -15,14 +15,10 @@
 #include "net/http/http_stream_factory_impl_request.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
-#include "net/net_features.h"
 #include "net/quic/quic_server_id.h"
+#include "net/spdy/bidirectional_stream_spdy_job.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-#include "net/spdy/bidirectional_stream_spdy_job.h"
-#endif
 
 namespace net {
 
@@ -318,13 +314,9 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
       NOTREACHED();
     } else if (request->stream_type() ==
                HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
       request->OnBidirectionalStreamJobReady(
           nullptr, used_ssl_config, used_proxy_info,
           new BidirectionalStreamSpdyJob(spdy_session));
-#else
-      DCHECK(false);
-#endif
     } else {
       bool use_relative_url = direct || request->url().SchemeIs("https");
       request->OnStreamReady(

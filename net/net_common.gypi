@@ -14,7 +14,6 @@
     '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/zlib/zlib.gyp:zlib',
     'net_derived_sources',
-    'net_features',
     'net_quic_proto',
     'net_resources',
   ],
@@ -27,7 +26,6 @@
   ],
   'export_dependent_settings': [
     '../base/base.gyp:base',
-    'net_features',
   ],
   'conditions': [
     ['chromeos==1', {
@@ -95,9 +93,6 @@
     }],
     ['disable_ftp_support!=1', {
       'sources': ['<@(net_ftp_support_sources)']
-    }],
-    ['enable_bidirectional_stream==1', {
-      'sources': ['<@(net_bidirectional_stream_sources)']
     }],
     ['enable_built_in_dns==1', {
       'defines': [

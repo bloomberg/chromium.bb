@@ -28,6 +28,8 @@
 #include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
+#include "net/http/bidirectional_stream_job.h"
+#include "net/quic/bidirectional_stream_quic_impl.h"
 #include "net/quic/crypto/channel_id_chromium.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/properties_based_quic_server_info.h"
@@ -59,11 +61,6 @@
 #include "crypto/openssl_util.h"
 #else
 #include "base/cpu.h"
-#endif
-
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
-#include "net/http/bidirectional_stream_job.h"
-#include "net/quic/bidirectional_stream_quic_impl.h"
 #endif
 
 using std::min;
@@ -560,14 +557,12 @@ scoped_ptr<QuicHttpStream> QuicStreamRequest::CreateStream() {
   return make_scoped_ptr(new QuicHttpStream(session_));
 }
 
-#if BUILDFLAG(ENABLE_BIDIRECTIONAL_STREAM)
 scoped_ptr<BidirectionalStreamJob>
 QuicStreamRequest::CreateBidirectionalStreamJob() {
   if (!session_)
     return nullptr;
   return make_scoped_ptr(new BidirectionalStreamQuicImpl(session_));
 }
-#endif
 
 QuicStreamFactory::QuicStreamFactory(
     HostResolver* host_resolver,
