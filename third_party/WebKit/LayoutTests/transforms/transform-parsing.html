@@ -32,6 +32,7 @@ expect('translate(20%, 10%)').parsesAs('translate(20%, 10%)').isComputedTo('matr
 expect('translate()').isInvalid();
 expect('translate(1)').isInvalid();
 expect('translate(1, 2)').isInvalid();
+expect('translate(1px,)').isInvalid();
 expect('translate(1px, 2px, 3px)').isInvalid();
 
 // translateX()
@@ -54,6 +55,7 @@ expect('translateY(1px, 2px)').isInvalid();
 expect('scale(1)').parsesAs('scale(1)');
 expect('scale(2, 3)').parsesAs('scale(2, 3)').isComputedTo('matrix(2, 0, 0, 3, 0, 0)');
 expect('scale()').isInvalid();
+expect('scale(1,)').isInvalid();
 expect('scale(1, 2, 3)').isInvalid();
 expect('scale(1px, 2px)').isInvalid();
 expect('scale(20%, 50%)').isInvalid();
@@ -92,6 +94,7 @@ expect('skew(0, 0)').parsesAs('skew(0deg, 0deg)');
 expect('skew(1)').isInvalid();
 expect('skew(2%)').isInvalid();
 expect('skew()').isInvalid();
+expect('skew(45deg,)').isInvalid();
 expect('skew(1deg, 2deg, 3deg)').isInvalid();
 
 // skewX()
@@ -162,6 +165,7 @@ expect('rotate3d(1, 2, 3, 4deg)').parsesAs('rotate3d(1, 2, 3, 4deg)');
 expect('rotate3d()').isInvalid();
 expect('rotate3d(1, 2, 3)').isInvalid();
 expect('rotate3d(1, 2, 3, 4deg, 0)').isInvalid();
+expect('rotate3d(1, 2, 3, )').isInvalid();
 
 // rotateX()
 expect('rotateX(0)').parsesAs('rotateX(0deg)');

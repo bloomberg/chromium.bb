@@ -1807,6 +1807,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransformValue(CSSParserTokenRang
         if (functionId == CSSValueSkew && consumeCommaIncludingWhitespace(args)) {
             transformValue->append(parsedValue);
             parsedValue = consumeAngle(args);
+            if (!parsedValue)
+                return nullptr;
         }
         break;
     case CSSValueScaleX:
@@ -1819,6 +1821,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransformValue(CSSParserTokenRang
         if (functionId == CSSValueScale && consumeCommaIncludingWhitespace(args)) {
             transformValue->append(parsedValue);
             parsedValue = consumeNumber(args, ValueRangeAll);
+            if (!parsedValue)
+                return nullptr;
         }
         break;
     case CSSValuePerspective:
@@ -1834,6 +1838,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransformValue(CSSParserTokenRang
         if (functionId == CSSValueTranslate && consumeCommaIncludingWhitespace(args)) {
             transformValue->append(parsedValue);
             parsedValue = consumeLengthOrPercent(args, cssParserMode, ValueRangeAll);
+            if (!parsedValue)
+                return nullptr;
         }
         break;
     case CSSValueTranslateZ:
@@ -1852,6 +1858,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransformValue(CSSParserTokenRang
         if (!consumeNumbers(args, transformValue, 3) || !consumeCommaIncludingWhitespace(args))
             return nullptr;
         parsedValue = consumeAngle(args);
+        if (!parsedValue)
+            return nullptr;
         break;
     case CSSValueTranslate3d:
         if (!consumeTranslate3d(args, cssParserMode, transformValue))
