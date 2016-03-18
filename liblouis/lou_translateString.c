@@ -2930,6 +2930,15 @@ translateString ()
 		//insertEmphases();
 		if(!dontContract)
 			dontContract = typebuf[src] & no_contract;
+		if(typebuf[src] & computer_braille)
+		{
+			if(currentInput[src] < 32 || currentInput[src] > 126)
+				goto failure;
+			if(!putCharacter(currentInput[src]))
+				goto failure;
+			src++;
+			continue;
+		}
 		for_selectRule ();
 
       if (transOpcode != CTO_Context)
