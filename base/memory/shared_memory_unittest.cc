@@ -589,8 +589,8 @@ TEST(SharedMemoryTest, UnsafeImageSection) {
   EXPECT_GT(::GetModuleFileName(nullptr, path, arraysize(path)), 0U);
 
   // Map the current executable image to save us creating a new PE file on disk.
-  base::win::ScopedHandle file_handle(
-      ::CreateFile(path, GENERIC_READ, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+  base::win::ScopedHandle file_handle(::CreateFile(
+      path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr));
   EXPECT_TRUE(file_handle.IsValid());
   base::win::ScopedHandle section_handle(
       ::CreateFileMappingA(file_handle.Get(), nullptr,
