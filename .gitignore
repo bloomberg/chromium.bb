@@ -56,3 +56,6 @@
 # Ignore recipe working directory.
 /.recipe_deps
 /infra/.recipe_deps
+
+# Ignore google AE downloaded for running testing only.
+testing_support/google_appengine
