@@ -62,6 +62,7 @@ class NET_EXPORT HostResolverImpl
     : public HostResolver,
       NON_EXPORTED_BASE(public base::NonThreadSafe),
       public NetworkChangeNotifier::IPAddressObserver,
+      public NetworkChangeNotifier::ConnectionTypeObserver,
       public NetworkChangeNotifier::DNSObserver {
  public:
   // Parameters for ProcTask which resolves hostnames using HostResolveProc.
@@ -239,6 +240,10 @@ class NET_EXPORT HostResolverImpl
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
+
+  // NetworkChangeNotifier::ConnectionTypeObserver:
+  void OnConnectionTypeChanged(
+      NetworkChangeNotifier::ConnectionType type) override;
 
   // NetworkChangeNotifier::DNSObserver:
   void OnDNSChanged() override;

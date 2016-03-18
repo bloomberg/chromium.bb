@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sample_vector.h"
 #include "base/rand_util.h"
@@ -20,21 +21,28 @@
 #include "net/base/net_errors.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_socket_pool.h"
+#include "net/dns/dns_util.h"
 #include "net/socket/stream_socket.h"
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {
 
 namespace {
-// Never exceed max timeout.
-const unsigned kMaxTimeoutMs = 5000;
+
 // Set min timeout, in case we are talking to a local DNS proxy.
 const unsigned kMinTimeoutMs = 10;
 
+// Default maximum timeout between queries, even with exponential backoff.
+// (Can be overridden by field trial.)
+const unsigned kDefaultMaxTimeoutMs = 5000;
+
+// Maximum RTT that will fit in the RTT histograms.
+const int32_t kRTTMaxMs = 30000;
 // Number of buckets in the histogram of observed RTTs.
-const size_t kRTTBucketCount = 100;
+const size_t kRTTBucketCount = 350;
 // Target percentile in the RTT histogram used for retransmission timeout.
 const unsigned kRTOPercentile = 99;
+
 }  // namespace
 
 // Runtime statistics of DNS server.
@@ -72,7 +80,7 @@ base::LazyInstance<DnsSession::RttBuckets>::Leaky DnsSession::rtt_buckets_ =
     LAZY_INSTANCE_INITIALIZER;
 
 DnsSession::RttBuckets::RttBuckets() : base::BucketRanges(kRTTBucketCount + 1) {
-  base::Histogram::InitializeBucketRanges(1, 5000, this);
+  base::Histogram::InitializeBucketRanges(1, kRTTMaxMs, this);
 }
 
 DnsSession::SocketLease::SocketLease(scoped_refptr<DnsSession> session,
@@ -100,14 +108,40 @@ DnsSession::DnsSession(const DnsConfig& config,
   socket_pool_->Initialize(&config_.nameservers, net_log);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "AsyncDNS.ServerCount", config_.nameservers.size(), 0, 10, 11);
-  for (size_t i = 0; i < config_.nameservers.size(); ++i) {
-    server_stats_.push_back(make_scoped_ptr(
-        new ServerStats(config_.timeout, rtt_buckets_.Pointer())));
-  }
+  UpdateTimeouts(NetworkChangeNotifier::GetConnectionType());
+  InitializeServerStats();
+  NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
 
 DnsSession::~DnsSession() {
   RecordServerStats();
+  NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+}
+
+void DnsSession::UpdateTimeouts(NetworkChangeNotifier::ConnectionType type) {
+  initial_timeout_ = GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
+      "AsyncDnsInitialTimeoutMsByConnectionType", config_.timeout, type);
+  max_timeout_ = GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
+      "AsyncDnsMaxTimeoutMsByConnectionType",
+      base::TimeDelta::FromMilliseconds(kDefaultMaxTimeoutMs), type);
+}
+
+void DnsSession::InitializeServerStats() {
+  server_stats_.clear();
+  for (size_t i = 0; i < config_.nameservers.size(); ++i) {
+    server_stats_.push_back(make_scoped_ptr(
+        new ServerStats(initial_timeout_, rtt_buckets_.Pointer())));
+  }
+}
+
+void DnsSession::OnConnectionTypeChanged(
+    NetworkChangeNotifier::ConnectionType type) {
+  UpdateTimeouts(type);
+  const char* kTrialName = "AsyncDnsFlushServerStatsOnConnectionTypeChange";
+  if (base::FieldTrialList::FindFullName(kTrialName) == "enable") {
+    RecordServerStats();
+    InitializeServerStats();
+  }
 }
 
 uint16_t DnsSession::NextQueryId() const {
@@ -223,9 +257,9 @@ void DnsSession::RecordServerStats() {
 
 
 base::TimeDelta DnsSession::NextTimeout(unsigned server_index, int attempt) {
-  // Respect config timeout if it exceeds |kMaxTimeoutMs|.
-  if (config_.timeout.InMilliseconds() >= kMaxTimeoutMs)
-    return config_.timeout;
+  // Respect initial timeout (from config or field trial) if it exceeds max.
+  if (initial_timeout_ > max_timeout_)
+    return initial_timeout_;
   return NextTimeoutFromHistogram(server_index, attempt);
 }
 
@@ -272,8 +306,7 @@ base::TimeDelta DnsSession::NextTimeoutFromJacobson(unsigned server_index,
   // The timeout doubles every full round.
   unsigned num_backoffs = attempt / config_.nameservers.size();
 
-  return std::min(timeout * (1 << num_backoffs),
-                  base::TimeDelta::FromMilliseconds(kMaxTimeoutMs));
+  return std::min(timeout * (1 << num_backoffs), max_timeout_);
 }
 
 base::TimeDelta DnsSession::NextTimeoutFromHistogram(unsigned server_index,
@@ -303,8 +336,7 @@ base::TimeDelta DnsSession::NextTimeoutFromHistogram(unsigned server_index,
   // The timeout still doubles every full round.
   unsigned num_backoffs = attempt / config_.nameservers.size();
 
-  return std::min(timeout * (1 << num_backoffs),
-                  base::TimeDelta::FromMilliseconds(kMaxTimeoutMs));
+  return std::min(timeout * (1 << num_backoffs), max_timeout_);
 }
 
 }  // namespace net

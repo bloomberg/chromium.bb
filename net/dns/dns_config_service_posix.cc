@@ -150,7 +150,7 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* config) {
   }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   // Override timeout value to match default setting on Windows.
-  config->timeout = base::TimeDelta::FromSeconds(kDnsTimeoutSeconds);
+  config->timeout = base::TimeDelta::FromMilliseconds(kDnsDefaultTimeoutMs);
   return result;
 }
 #else  // defined(OS_ANDROID)

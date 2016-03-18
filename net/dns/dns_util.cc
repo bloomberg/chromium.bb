@@ -9,6 +9,9 @@
 
 #include <cstring>
 
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
@@ -151,5 +154,42 @@ bool HaveOnlyLoopbackAddresses() {
   return false;
 #endif  // defined(various platforms)
 }
+
+#if !defined(OS_NACL)
+namespace {
+
+bool GetTimeDeltaForConnectionTypeFromFieldTrial(
+    const char* field_trial,
+    NetworkChangeNotifier::ConnectionType type,
+    base::TimeDelta* out) {
+  std::string group = base::FieldTrialList::FindFullName(field_trial);
+  if (group.empty())
+    return false;
+  std::vector<base::StringPiece> group_parts = base::SplitStringPiece(
+      group, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (type < 0)
+    return false;
+  size_t type_size = static_cast<size_t>(type);
+  if (type_size >= group_parts.size())
+    return false;
+  int64_t ms;
+  if (!base::StringToInt64(group_parts[type_size], &ms))
+    return false;
+  *out = base::TimeDelta::FromMilliseconds(ms);
+  return true;
+}
+
+}  // namespace
+
+base::TimeDelta GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
+    const char* field_trial,
+    base::TimeDelta default_delta,
+    NetworkChangeNotifier::ConnectionType type) {
+  base::TimeDelta out;
+  if (!GetTimeDeltaForConnectionTypeFromFieldTrial(field_trial, type, &out))
+    out = default_delta;
+  return out;
+}
+#endif  // !defined(OS_NACL)
 
 }  // namespace net

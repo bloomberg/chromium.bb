@@ -94,13 +94,13 @@ NameServerClassifier::MergeNameServersTypes(NameServersType a,
 }
 
 // Default values are taken from glibc resolv.h except timeout which is set to
-// |kDnsTimeoutSeconds|.
+// |kDnsDefaultTimeoutMs|.
 DnsConfig::DnsConfig()
     : unhandled_options(false),
       append_to_multi_label_name(true),
       randomize_ports(false),
       ndots(1),
-      timeout(base::TimeDelta::FromSeconds(kDnsTimeoutSeconds)),
+      timeout(base::TimeDelta::FromMilliseconds(kDnsDefaultTimeoutMs)),
       attempts(2),
       rotate(false),
       edns0(false),

@@ -219,27 +219,29 @@ TEST_F(DnsSessionTest, AllocateFree) {
   EXPECT_TRUE(NoMoreEvents());
 }
 
-// Expect default calculated timeout to be within 10ms of in DnsConfig.
+// Expect default calculated timeout to be within 10ms of one in DnsConfig.
 TEST_F(DnsSessionTest, HistogramTimeoutNormal) {
   Initialize(2);
-  base::TimeDelta timeoutDelta = session_->NextTimeout(0, 0) - config_.timeout;
-  EXPECT_LT(timeoutDelta.InMilliseconds(), 10);
+  base::TimeDelta delta = session_->NextTimeout(0, 0) - config_.timeout;
+  EXPECT_LE(delta.InMilliseconds(), 10);
 }
 
-// Expect short calculated timeout to be within 10ms of in DnsConfig.
+// Expect short calculated timeout to be within 10ms of one in DnsConfig.
 TEST_F(DnsSessionTest, HistogramTimeoutShort) {
   config_.timeout = base::TimeDelta::FromMilliseconds(15);
   Initialize(2);
-  base::TimeDelta timeoutDelta = session_->NextTimeout(0, 0) - config_.timeout;
-  EXPECT_LT(timeoutDelta.InMilliseconds(), 10);
+  base::TimeDelta delta = session_->NextTimeout(0, 0) - config_.timeout;
+  EXPECT_LE(delta.InMilliseconds(), 10);
 }
 
 // Expect long calculated timeout to be equal to one in DnsConfig.
+// (Default max timeout is 5 seconds, so NextTimeout should return exactly
+// the config timeout.)
 TEST_F(DnsSessionTest, HistogramTimeoutLong) {
   config_.timeout = base::TimeDelta::FromSeconds(15);
   Initialize(2);
   base::TimeDelta timeout = session_->NextTimeout(0, 0);
-  EXPECT_EQ(config_.timeout.InMilliseconds(), timeout.InMilliseconds());
+  EXPECT_EQ(timeout.InMilliseconds(), config_.timeout.InMilliseconds());
 }
 
 }  // namespace

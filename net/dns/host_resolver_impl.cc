@@ -65,6 +65,10 @@ namespace net {
 
 namespace {
 
+// Default delay between calls to the system resolver for the same hostname.
+// (Can be overridden by field trial.)
+const int64_t kDnsDefaultUnresponsiveDelayMs = 6000;
+
 // Limit the size of hostnames that will be resolved to combat issues in
 // some platform's resolvers.
 const size_t kMaxHostLength = 4096;
@@ -1836,7 +1840,8 @@ HostResolverImpl::ProcTaskParams::ProcTaskParams(
     size_t max_retry_attempts)
     : resolver_proc(resolver_proc),
       max_retry_attempts(max_retry_attempts),
-      unresponsive_delay(base::TimeDelta::FromMilliseconds(6000)),
+      unresponsive_delay(
+          base::TimeDelta::FromMilliseconds(kDnsDefaultUnresponsiveDelayMs)),
       retry_factor(2) {
   // Maximum of 4 retry attempts for host resolution.
   static const size_t kDefaultMaxRetryAttempts = 4u;
@@ -1878,11 +1883,14 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
   new LoopbackProbeJob(weak_ptr_factory_.GetWeakPtr());
 #endif
   NetworkChangeNotifier::AddIPAddressObserver(this);
+  NetworkChangeNotifier::AddConnectionTypeObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
     !defined(OS_ANDROID)
   EnsureDnsReloaderInit();
 #endif
+
+  OnConnectionTypeChanged(NetworkChangeNotifier::GetConnectionType());
 
   {
     DnsConfig dns_config;
@@ -1903,6 +1911,7 @@ HostResolverImpl::~HostResolverImpl() {
   STLDeleteValues(&jobs_);
 
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   NetworkChangeNotifier::RemoveDNSObserver(this);
 }
 
@@ -2339,6 +2348,15 @@ void HostResolverImpl::OnIPAddressChanged() {
 #endif
   AbortAllInProgressJobs();
   // |this| may be deleted inside AbortAllInProgressJobs().
+}
+
+void HostResolverImpl::OnConnectionTypeChanged(
+    NetworkChangeNotifier::ConnectionType type) {
+  proc_params_.unresponsive_delay =
+      GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
+          "DnsUnresponsiveDelayMsByConnectionType",
+          base::TimeDelta::FromMilliseconds(kDnsDefaultUnresponsiveDelayMs),
+          type);
 }
 
 void HostResolverImpl::OnInitialDNSConfigRead() {

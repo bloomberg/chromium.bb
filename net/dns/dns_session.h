@@ -16,6 +16,7 @@
 #include "base/metrics/bucket_ranges.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_socket_pool.h"
@@ -36,7 +37,8 @@ class StreamSocket;
 // Ref-counted so that DnsClient::Request can keep working in absence of
 // DnsClient. A DnsSession must be recreated when DnsConfig changes.
 class NET_EXPORT_PRIVATE DnsSession
-    : NON_EXPORTED_BASE(public base::RefCounted<DnsSession>) {
+    : NON_EXPORTED_BASE(public base::RefCounted<DnsSession>),
+      public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   typedef base::Callback<int()> RandCallback;
 
@@ -110,7 +112,10 @@ class NET_EXPORT_PRIVATE DnsSession
 
  private:
   friend class base::RefCounted<DnsSession>;
-  ~DnsSession();
+  ~DnsSession() override;
+
+  void UpdateTimeouts(NetworkChangeNotifier::ConnectionType type);
+  void InitializeServerStats();
 
   // Release a socket.
   void FreeSocket(unsigned server_index,
@@ -122,6 +127,10 @@ class NET_EXPORT_PRIVATE DnsSession
   // Compute the timeout using the histogram method.
   base::TimeDelta NextTimeoutFromHistogram(unsigned server_index, int attempt);
 
+  // NetworkChangeNotifier::ConnectionTypeObserver:
+  void OnConnectionTypeChanged(
+      NetworkChangeNotifier::ConnectionType type) override;
+
   const DnsConfig config_;
   scoped_ptr<DnsSocketPool> socket_pool_;
   RandCallback rand_callback_;
@@ -129,6 +138,9 @@ class NET_EXPORT_PRIVATE DnsSession
 
   // Current index into |config_.nameservers| to begin resolution with.
   int server_index_;
+
+  base::TimeDelta initial_timeout_;
+  base::TimeDelta max_timeout_;
 
   struct ServerStats;
 

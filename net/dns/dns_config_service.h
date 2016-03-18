@@ -30,9 +30,8 @@ namespace net {
 
 class IPAddress;
 
-// Always use 1 second timeout (followed by binary exponential backoff).
-// TODO(szym): Remove code which reads timeout from system.
-const unsigned kDnsTimeoutSeconds = 1;
+// Default to 1 second timeout (before exponential backoff).
+const int64_t kDnsDefaultTimeoutMs = 1000;
 
 // Classifies nameserver address lists for histograms.
 class NET_EXPORT_PRIVATE NameServerClassifier {
