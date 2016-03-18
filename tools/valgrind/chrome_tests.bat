@@ -3,7 +3,8 @@
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
-:: TODO(timurrrr): batch files 'export' all the variables to the parent shell
+setlocal
+
 set THISDIR=%~dp0
 set TOOL_NAME="unknown"
 
@@ -32,7 +33,6 @@ echo "Unknown tool: `%TOOL_NAME%`! Only tsan and drmemory are supported right no
 exit /B 1
 
 :SETUP_DRMEMORY
-if NOT "%DRMEMORY_COMMAND%"=="" GOTO :RUN_TESTS
 :: Set up DRMEMORY_COMMAND to invoke Dr. Memory {{{1
 set DRMEMORY_PATH=%THISDIR%..\..\third_party\drmemory
 set DRMEMORY_SFX=%DRMEMORY_PATH%\drmemory-windows-sfx.exe
