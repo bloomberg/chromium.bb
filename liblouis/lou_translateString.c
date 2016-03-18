@@ -2597,7 +2597,7 @@ insertEmphasesAt(const int at)
 	EmphRuleNumber emphRule;
 	int mask;
 	int type_counts[11];
-	int i, j, max;
+	int i, j, min, max;
 	
 	/*   simple case   */
 	if(!haveEmphasis)
@@ -2664,14 +2664,15 @@ insertEmphasesAt(const int at)
 
 	for(i = 0; i < 10; i++)
 	{
-		max = 0;
+		min = -1;
 		for(j = 0; j < 10; j++)
-		if(type_counts[max] < type_counts[j])
-			max = j;
-		if(!type_counts[max])
+		if(type_counts[j] > 0)
+		if(min < 0 || (min >= 0 && type_counts[j] < type_counts[min]))
+			min = j;
+		if(min < 0)
 			break;
-		type_counts[max] = 0;
-		switch(max)
+		type_counts[min] = 0;
+		switch(min)
 		{
 		case ITALIC_COUNT:
 			insertEmphasisEnd(
