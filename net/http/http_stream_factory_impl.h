@@ -89,7 +89,8 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
 
   AlternativeService GetAlternativeServiceFor(
       const HttpRequestInfo& request_info,
-      HttpStreamRequest::Delegate* delegate);
+      HttpStreamRequest::Delegate* delegate,
+      HttpStreamRequest::StreamType stream_type);
 
   // Detaches |job| from |request|.
   void OrphanJob(Job* job, const Request* request);

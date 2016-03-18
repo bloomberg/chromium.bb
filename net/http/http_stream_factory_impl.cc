@@ -106,7 +106,7 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
   request->AttachJob(job);
 
   const AlternativeService alternative_service =
-      GetAlternativeServiceFor(request_info, delegate);
+      GetAlternativeServiceFor(request_info, delegate, stream_type);
 
   if (alternative_service.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
     // Never share connection with other jobs for FTP requests.
@@ -144,8 +144,8 @@ void HttpStreamFactoryImpl::PreconnectStreams(
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config) {
   DCHECK(!for_websockets_);
-  AlternativeService alternative_service =
-      GetAlternativeServiceFor(request_info, nullptr);
+  AlternativeService alternative_service = GetAlternativeServiceFor(
+      request_info, nullptr, HttpStreamRequest::HTTP_STREAM);
   HostPortPair server;
   if (alternative_service.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
     server = alternative_service.host_port_pair();
@@ -176,7 +176,8 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
 
 AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
     const HttpRequestInfo& request_info,
-    HttpStreamRequest::Delegate* delegate) {
+    HttpStreamRequest::Delegate* delegate,
+    HttpStreamRequest::StreamType stream_type) {
   GURL original_url = request_info.url;
 
   if (original_url.SchemeIs("ftp"))
@@ -242,6 +243,11 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
     quic_all_broken = false;
     if (!session_->params().enable_quic)
       continue;
+
+    if (stream_type == HttpStreamRequest::BIDIRECTIONAL_STREAM &&
+        session_->params().quic_disable_bidirectional_streams) {
+      continue;
+    }
 
     if (session_->quic_stream_factory()->IsQuicDisabled(origin.port()))
       continue;

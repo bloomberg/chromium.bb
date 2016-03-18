@@ -129,6 +129,7 @@ HttpNetworkSession::Params::Params()
       quic_disable_preconnect_if_0rtt(false),
       quic_migrate_sessions_on_network_change(false),
       quic_migrate_sessions_early(false),
+      quic_disable_bidirectional_streams(false),
       proxy_delegate(NULL),
       enable_token_binding(false) {
   quic_supported_versions.push_back(QUIC_VERSION_30);

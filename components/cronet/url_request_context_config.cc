@@ -44,6 +44,8 @@ const char kQuicMigrateSessionsOnNetworkChange[] =
 const char kQuicPreferAes[] = "prefer_aes";
 const char kQuicUserAgentId[] = "user_agent_id";
 const char kQuicMigrateSessionsEarly[] = "migrate_sessions_early";
+const char kQuicDisableBidirectionalStreams[] =
+    "quic_disable_bidirectional_streams";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -167,6 +169,13 @@ void ParseAndSetExperimentalOptions(
                               &quic_migrate_sessions_early)) {
       context_builder->set_quic_migrate_sessions_early(
           quic_migrate_sessions_early);
+    }
+
+    bool quic_disable_bidirectional_streams = false;
+    if (quic_args->GetBoolean(kQuicDisableBidirectionalStreams,
+                              &quic_disable_bidirectional_streams)) {
+      context_builder->set_quic_disable_bidirectional_streams(
+          quic_disable_bidirectional_streams);
     }
   }
 

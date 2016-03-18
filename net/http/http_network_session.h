@@ -180,6 +180,9 @@ class NET_EXPORT HttpNetworkSession
     // If true, active QUIC sessions experiencing poor connectivity may be
     // migrated onto a new network.
     bool quic_migrate_sessions_early;
+    // If true, bidirectional streams over QUIC will be disabled.
+    bool quic_disable_bidirectional_streams;
+
     ProxyDelegate* proxy_delegate;
     // Enable support for Token Binding.
     bool enable_token_binding;

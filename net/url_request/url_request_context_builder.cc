@@ -431,6 +431,8 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_prefer_aes;
   network_session_params.quic_migrate_sessions_early =
       http_network_session_params_.quic_migrate_sessions_early;
+  network_session_params.quic_disable_bidirectional_streams =
+      http_network_session_params_.quic_disable_bidirectional_streams;
   if (proxy_delegate_) {
     network_session_params.proxy_delegate = proxy_delegate_.get();
     storage->set_proxy_delegate(std::move(proxy_delegate_));

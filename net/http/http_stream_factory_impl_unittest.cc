@@ -1517,6 +1517,12 @@ class HttpStreamFactoryBidirectionalQuicTest
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
 
+  // Disable bidirectional stream over QUIC. This should be invoked before
+  // Initialize().
+  void DisableQuicBidirectionalStream() {
+    params_.quic_disable_bidirectional_streams = true;
+  }
+
   void Initialize() {
     params_.enable_quic = true;
     params_.http_server_properties = http_server_properties_.GetWeakPtr();
@@ -1647,10 +1653,138 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 
   scoped_refptr<IOBuffer> buffer = new net::IOBuffer(1);
   EXPECT_EQ(OK, job->ReadData(buffer.get(), 1));
+  EXPECT_EQ(kProtoQUIC1SPDY3, job->GetProtocol());
   EXPECT_EQ("200", delegate.response_headers().find(":status")->second);
   EXPECT_EQ(1, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(session()->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_TRUE(waiter.used_proxy_info().is_direct());
+}
+
+// Tests that when QUIC is not enabled for bidirectional streaming, HTTP/2 is
+// used instead.
+TEST_P(HttpStreamFactoryBidirectionalQuicTest,
+       RequestBidirectionalStreamJobQuicNotEnabled) {
+  GURL url = GURL("https://www.example.org");
+
+  // Make the http job fail.
+  scoped_ptr<StaticSocketDataProvider> http_job_data;
+  http_job_data.reset(new StaticSocketDataProvider());
+  MockConnect failed_connect(ASYNC, ERR_CONNECTION_REFUSED);
+  http_job_data->set_connect_data(failed_connect);
+  socket_factory().AddSocketDataProvider(http_job_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  socket_factory().AddSSLSocketDataProvider(&ssl_data);
+
+  // Set up QUIC as alternative_service.
+  AddQuicAlternativeService();
+  DisableQuicBidirectionalStream();
+  Initialize();
+
+  // Now request a stream.
+  SSLConfig ssl_config;
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org");
+  request_info.load_flags = 0;
+
+  StreamRequestWaiter waiter;
+  scoped_ptr<HttpStreamRequest> request(
+      session()->http_stream_factory()->RequestBidirectionalStreamJob(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          BoundNetLog()));
+
+  waiter.WaitForStream();
+  EXPECT_TRUE(waiter.stream_done());
+  EXPECT_FALSE(waiter.websocket_stream());
+  ASSERT_FALSE(waiter.stream());
+  ASSERT_FALSE(waiter.bidirectional_stream_job());
+  // Since the alternative service job is not started, we will get the error
+  // from the http job.
+  ASSERT_EQ(ERR_CONNECTION_REFUSED, waiter.error_status());
+}
+
+// Tests that if Http job fails, but Quic job succeeds, we return
+// BidirectionalStreamQuicImpl.
+TEST_P(HttpStreamFactoryBidirectionalQuicTest,
+       RequestBidirectionalStreamJobHttpJobFailsQuicJobSucceeds) {
+  GURL url = GURL("https://www.example.org");
+
+  // Set up Quic data.
+  MockQuicData mock_quic_data;
+  SpdyPriority priority =
+      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+  size_t spdy_headers_frame_length;
+  mock_quic_data.AddWrite(packet_maker().MakeRequestHeadersPacket(
+      1, test::kClientDataStreamId1, /*should_include_version=*/true,
+      /*fin=*/true, priority,
+      packet_maker().GetRequestHeaders("GET", "https", "/"),
+      &spdy_headers_frame_length));
+  size_t spdy_response_headers_frame_length;
+  mock_quic_data.AddRead(packet_maker().MakeResponseHeadersPacket(
+      1, test::kClientDataStreamId1, /*should_include_version=*/false,
+      /*fin=*/true, packet_maker().GetResponseHeaders("200"),
+      &spdy_response_headers_frame_length));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
+  mock_quic_data.AddSocketDataToFactory(&socket_factory());
+
+  // Make the http job fail.
+  scoped_ptr<StaticSocketDataProvider> http_job_data;
+  http_job_data.reset(new StaticSocketDataProvider());
+  MockConnect failed_connect(ASYNC, ERR_CONNECTION_REFUSED);
+  http_job_data->set_connect_data(failed_connect);
+  socket_factory().AddSocketDataProvider(http_job_data.get());
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  socket_factory().AddSSLSocketDataProvider(&ssl_data);
+
+  // Set up QUIC as alternative_service.
+  AddQuicAlternativeService();
+  Initialize();
+
+  // Now request a stream.
+  SSLConfig ssl_config;
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org");
+  request_info.load_flags = 0;
+
+  StreamRequestWaiter waiter;
+  scoped_ptr<HttpStreamRequest> request(
+      session()->http_stream_factory()->RequestBidirectionalStreamJob(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          BoundNetLog()));
+
+  waiter.WaitForStream();
+  EXPECT_TRUE(waiter.stream_done());
+  EXPECT_FALSE(waiter.websocket_stream());
+  ASSERT_FALSE(waiter.stream());
+  ASSERT_TRUE(waiter.bidirectional_stream_job());
+  BidirectionalStreamJob* job = waiter.bidirectional_stream_job();
+
+  BidirectionalStreamRequestInfo bidi_request_info;
+  bidi_request_info.method = "GET";
+  bidi_request_info.url = GURL("https://www.example.org/");
+  bidi_request_info.end_stream_on_headers = true;
+  bidi_request_info.priority = LOWEST;
+
+  TestBidirectionalDelegate delegate;
+  job->Start(&bidi_request_info, BoundNetLog(), &delegate, nullptr);
+  delegate.WaitUntilDone();
+
+  // Make sure the BidirectionalStream negotiated goes through QUIC.
+  scoped_refptr<IOBuffer> buffer = new net::IOBuffer(1);
+  EXPECT_EQ(OK, job->ReadData(buffer.get(), 1));
+  EXPECT_EQ(kProtoQUIC1SPDY3, job->GetProtocol());
+  EXPECT_EQ("200", delegate.response_headers().find(":status")->second);
+  // There is no Http2 socket pool.
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetSSLSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));

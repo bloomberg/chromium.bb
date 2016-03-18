@@ -105,6 +105,7 @@ class NET_EXPORT URLRequestContextBuilder {
     bool quic_close_sessions_on_ip_change;
     bool quic_migrate_sessions_on_network_change;
     bool quic_migrate_sessions_early;
+    bool quic_disable_bidirectional_streams;
   };
 
   URLRequestContextBuilder();
@@ -274,6 +275,12 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_quic_migrate_sessions_early(bool quic_migrate_sessions_early) {
     http_network_session_params_.quic_migrate_sessions_early =
         quic_migrate_sessions_early;
+  }
+
+  void set_quic_disable_bidirectional_streams(
+      bool quic_disable_bidirectional_streams) {
+    http_network_session_params_.quic_disable_bidirectional_streams =
+        quic_disable_bidirectional_streams;
   }
 
   void set_throttling_enabled(bool throttling_enabled) {
