@@ -20,11 +20,13 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils.StubAutocompleteController;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -48,12 +50,17 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     private void stubLocationBarAutocomplete() {
+        setAutocompleteController(new StubAutocompleteController());
+    }
+
+    private void setAutocompleteController(final AutocompleteController controller) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 LocationBarLayout locationBar =
                         (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
-                locationBar.setAutocompleteController(new StubAutocompleteController());
+                locationBar.cancelPendingAutocompleteStart();
+                locationBar.setAutocompleteController(controller);
             }
         });
     }
@@ -187,90 +194,102 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertEquals("testing no fun", state.textWithAutocomplete);
     }
 
+    private void verifySelectionState(
+            String text, String inlineAutocomplete, int selectionStart, int selectionEnd,
+            boolean expectedHasAutocomplete, String expectedTextWithoutAutocomplete,
+            String expectedTextWithAutocomplete, boolean expectedPreventInline,
+            String expectedRequestedAutocompleteText)
+                    throws InterruptedException, TimeoutException {
+        final UrlBar urlBar = getUrlBar();
+
+        stubLocationBarAutocomplete();
+        setTextAndVerifyNoAutocomplete(urlBar, text);
+        setAutocomplete(urlBar, text, inlineAutocomplete);
+
+        final CallbackHelper autocompleteHelper = new CallbackHelper();
+        final AtomicReference<String> requestedAutocompleteText = new AtomicReference<String>();
+        final AtomicBoolean didPreventInlineAutocomplete = new AtomicBoolean();
+        final StubAutocompleteController controller = new StubAutocompleteController() {
+            @Override
+            public void start(Profile profile, String url, String text, int cursorPosition,
+                    boolean preventInlineAutocomplete) {
+                if (autocompleteHelper.getCallCount() != 0) return;
+
+                requestedAutocompleteText.set(text);
+                didPreventInlineAutocomplete.set(preventInlineAutocomplete);
+                autocompleteHelper.notifyCalled();
+            }
+        };
+        setAutocompleteController(controller);
+
+        AutocompleteState state = setSelection(urlBar, selectionStart, selectionEnd);
+        assertEquals("Has autocomplete", expectedHasAutocomplete, state.hasAutocomplete);
+        assertEquals("Text w/o Autocomplete",
+                expectedTextWithoutAutocomplete, state.textWithoutAutocomplete);
+        assertEquals("Text w/ Autocomplete",
+                expectedTextWithAutocomplete, state.textWithAutocomplete);
+
+        autocompleteHelper.waitForCallback(0);
+        assertEquals("Prevent inline autocomplete",
+                expectedPreventInline, didPreventInlineAutocomplete.get());
+        assertEquals("Requested autocomplete text",
+                expectedRequestedAutocompleteText, requestedAutocompleteText.get());
+    }
+
     @SmallTest
     @Feature({"Omnibox"})
-    public void testAutocompleteUpdatedOnSelection() throws InterruptedException {
+    public void testAutocompleteUpdatedOnSelection()
+            throws InterruptedException, TimeoutException {
         startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();
+
         final UrlBar urlBar = getUrlBar();
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
 
         // Verify that setting a selection before the autocomplete clears it.
-        setTextAndVerifyNoAutocomplete(urlBar, "test");
-        setAutocomplete(urlBar, "test", "ing is fun");
-        AutocompleteState state = setSelection(urlBar, 1, 1);
-        assertFalse(state.hasAutocomplete);
-        assertEquals("test", state.textWithoutAutocomplete);
-        assertEquals("test", state.textWithAutocomplete);
+        verifySelectionState("test", "ing is fun", 1, 1, false, "test", "test", true, "test");
 
         // Verify that setting a selection range before the autocomplete clears it.
-        setTextAndVerifyNoAutocomplete(urlBar, "test");
-        setAutocomplete(urlBar, "test", "ing is fun");
-        state = setSelection(urlBar, 0, 4);
-        assertFalse(state.hasAutocomplete);
-        assertEquals("test", state.textWithoutAutocomplete);
-        assertEquals("test", state.textWithAutocomplete);
+        verifySelectionState("test", "ing is fun", 0, 4, false, "test", "test", true, "test");
 
         // Verify that setting a selection at the start of the autocomplete clears it.
-        setTextAndVerifyNoAutocomplete(urlBar, "test");
-        setAutocomplete(urlBar, "test", "ing is fun");
-        state = setSelection(urlBar, 4, 4);
-        assertFalse(state.hasAutocomplete);
-        assertEquals("test", state.textWithoutAutocomplete);
-        assertEquals("test", state.textWithAutocomplete);
+        verifySelectionState("test", "ing is fun", 4, 4, false, "test", "test", true, "test");
 
         // Verify that setting a selection range that covers a portion of the non-autocomplete
         // and autocomplete text does not delete the autocomplete text.
-        setTextAndVerifyNoAutocomplete(urlBar, "test");
-        setAutocomplete(urlBar, "test", "ing is fun");
-        state = setSelection(urlBar, 2, 5);
-        assertFalse(state.hasAutocomplete);
-        assertEquals("testing is fun", state.textWithoutAutocomplete);
-        assertEquals("testing is fun", state.textWithAutocomplete);
+        verifySelectionState("test", "ing is fun", 2, 5,
+                false, "testing is fun", "testing is fun", true, "testing is fun");
 
         // Verify that setting a selection range that over the entire string does not delete
         // the autocomplete text.
-        setTextAndVerifyNoAutocomplete(urlBar, "test");
-        setAutocomplete(urlBar, "test", "ing is fun");
-        state = setSelection(urlBar, 0, 14);
-        assertFalse(state.hasAutocomplete);
-        assertEquals("testing is fun", state.textWithoutAutocomplete);
-        assertEquals("testing is fun", state.textWithAutocomplete);
+        verifySelectionState("test", "ing is fun", 0, 14,
+                false, "testing is fun", "testing is fun", true, "testing is fun");
 
         // Verify that setting a selection at the end of the text does not delete the autocomplete
         // text.
-        setTextAndVerifyNoAutocomplete(urlBar, "test");
-        setAutocomplete(urlBar, "test", "ing is fun");
-        state = setSelection(urlBar, 14, 14);
-        assertFalse(state.hasAutocomplete);
-        assertEquals("testing is fun", state.textWithoutAutocomplete);
-        assertEquals("testing is fun", state.textWithAutocomplete);
+        verifySelectionState("test", "ing is fun", 14, 14,
+                false, "testing is fun", "testing is fun", false, "testing is fun");
 
         // Verify that setting a selection in the middle of the autocomplete text does not delete
         // the autocomplete text.
-        setTextAndVerifyNoAutocomplete(urlBar, "test");
-        setAutocomplete(urlBar, "test", "ing is fun");
-        state = setSelection(urlBar, 9, 9);
-        assertFalse(state.hasAutocomplete);
-        assertEquals("testing is fun", state.textWithoutAutocomplete);
-        assertEquals("testing is fun", state.textWithAutocomplete);
+        verifySelectionState("test", "ing is fun", 9, 9,
+                false, "testing is fun", "testing is fun", true, "testing is fun");
 
         // Verify that setting a selection range in the middle of the autocomplete text does not
         // delete the autocomplete text.
-        setTextAndVerifyNoAutocomplete(urlBar, "test");
-        setAutocomplete(urlBar, "test", "ing is fun");
-        state = setSelection(urlBar, 8, 11);
-        assertFalse(state.hasAutocomplete);
-        assertEquals("testing is fun", state.textWithoutAutocomplete);
-        assertEquals("testing is fun", state.textWithAutocomplete);
+        verifySelectionState("test", "ing is fun", 8, 11,
+                false, "testing is fun", "testing is fun", true, "testing is fun");
 
         // Verify that setting the same selection does not clear the autocomplete text.
+        // As we do not expect the suggestions to be refreshed, we test this slightly differently
+        // than the other cases.
+        stubLocationBarAutocomplete();
         setTextAndVerifyNoAutocomplete(urlBar, "test");
         setAutocomplete(urlBar, "test", "ing is fun");
-        state = setSelection(urlBar, 4, 14);
-        assertTrue(state.hasAutocomplete);
-        assertEquals("test", state.textWithoutAutocomplete);
-        assertEquals("testing is fun", state.textWithAutocomplete);
+        AutocompleteState state = setSelection(urlBar, 4, 14);
+        assertEquals("Has autocomplete", true, state.hasAutocomplete);
+        assertEquals("Text w/o Autocomplete", "test", state.textWithoutAutocomplete);
+        assertEquals("Text w/ Autocomplete", "testing is fun", state.textWithAutocomplete);
     }
 
     @SmallTest
@@ -318,26 +337,13 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         final AtomicReference<String> requestedAutocompleteText = new AtomicReference<String>();
         final StubAutocompleteController controller = new StubAutocompleteController() {
             @Override
-            public void start(Profile profile, String url, String text,
-                    boolean preventInlineAutocomplete) {
-                requestedAutocompleteText.set(text);
-            }
-
-            @Override
             public void start(Profile profile, String url, String text, int cursorPosition,
                     boolean preventInlineAutocomplete) {
                 requestedAutocompleteText.set(text);
             }
         };
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                LocationBarLayout locationBar =
-                        (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
-                locationBar.setAutocompleteController(controller);
-            }
-        });
+        setAutocompleteController(controller);
 
         final UrlBar urlBar = getUrlBar();
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);

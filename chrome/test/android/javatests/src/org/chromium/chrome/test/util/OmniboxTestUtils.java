@@ -203,9 +203,16 @@ public class OmniboxTestUtils {
         }
 
         @Override
-        public void start(
-                Profile profile, String url ,
-                final String text, boolean preventInlineAutocomplete) {}
+        public void start(Profile profile, String url, String text, int cursorPosition,
+                boolean preventInlineAutocomplete) {
+        }
+
+        @Override
+        public final void start(
+                Profile profile, String url,
+                final String text, boolean preventInlineAutocomplete) {
+            start(profile, url, text, -1, preventInlineAutocomplete);
+        }
 
         @Override
         public void startZeroSuggest(Profile profile, String omniboxText, String url,

@@ -596,20 +596,22 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     // Toolbar and LocationBar calls that are not relevant here.
 
     @Override
-    public void setToolbarDataProvider(ToolbarDataProvider model) { }
+    public void setToolbarDataProvider(ToolbarDataProvider model) {}
 
     @Override
-    public void onUrlPreFocusChanged(boolean gainFocus) {
-    }
+    public void onUrlPreFocusChanged(boolean gainFocus) {}
 
     @Override
-    public void setUrlFocusChangeListener(UrlFocusChangeListener listener) { }
+    public void onTextChangedForAutocomplete(boolean canInlineAutocomplete) {}
 
     @Override
-    public void setUrlBarFocus(boolean shouldBeFocused) { }
+    public void setUrlFocusChangeListener(UrlFocusChangeListener listener) {}
 
     @Override
-    public void revertChanges() { }
+    public void setUrlBarFocus(boolean shouldBeFocused) {}
+
+    @Override
+    public void revertChanges() {}
 
     @Override
     public long getFirstUrlBarFocusTime() {
@@ -617,31 +619,22 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public void setIgnoreURLBarModification(boolean ignore) {
-    }
+    public void hideSuggestions() {}
 
     @Override
-    public void hideSuggestions() {
-    }
+    public void updateMicButtonState() {}
 
     @Override
-    public void updateMicButtonState() {
-    }
+    public void onTabLoadingNTP(NewTabPage ntp) {}
 
     @Override
-    public void onTabLoadingNTP(NewTabPage ntp) {
-    }
+    public void setAutocompleteProfile(Profile profile) {}
 
     @Override
-    public void setAutocompleteProfile(Profile profile) {
-    }
+    public void backKeyPressed() {}
 
     @Override
-    public void backKeyPressed() { }
-
-    @Override
-    public void showAppMenuUpdateBadge() {
-    }
+    public void showAppMenuUpdateBadge() {}
 
     @Override
     public boolean isShowingAppMenuUpdateBadge() {
@@ -649,12 +642,10 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public void removeAppMenuUpdateBadge(boolean animate) {
-    }
+    public void removeAppMenuUpdateBadge(boolean animate) {}
 
     @Override
-    protected void setAppMenuUpdateBadgeToVisible(boolean animate) {
-    }
+    protected void setAppMenuUpdateBadgeToVisible(boolean animate) {}
 
     @Override
     public View getMenuButtonWrapper() {

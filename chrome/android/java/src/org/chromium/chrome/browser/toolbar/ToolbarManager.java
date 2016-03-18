@@ -222,7 +222,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 new WindowDelegate(activity.getWindow()),
                 mActionModeController.getActionBarDelegate(),
                 activity.getWindowAndroid());
-        mLocationBar.setIgnoreURLBarModification(false);
 
         setMenuHandler(menuHandler);
         mToolbar.initialize(mToolbarModel, this, mAppMenuButtonHelper);
