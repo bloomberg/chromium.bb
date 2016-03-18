@@ -156,7 +156,6 @@ enum {
   ID_PROPERTY_RETURN_NEGATIVE_ONE_FROM_WRITE,
   ID_PROPERTY_THROW_EXCEPTION_PROPERTY,
   ID_LAST_SET_WINDOW_ARGUMENTS,
-  ID_PROPERTY_WINDOWED_PLUGIN,
   ID_PROPERTY_TEST_OBJECT_COUNT,
   ID_PROPERTY_DELETE_IN_GET_PROPERTY,
   ID_PROPERTY_DELETE_IN_HAS_PROPERTY_RETURN_TRUE,
@@ -166,13 +165,19 @@ enum {
 
 static NPIdentifier pluginPropertyIdentifiers[NUM_PROPERTY_IDENTIFIERS];
 static const NPUTF8* pluginPropertyIdentifierNames[NUM_PROPERTY_IDENTIFIERS] = {
-    "property",                            "eventLoggingEnabled",
-    "hasStream",                           "testObject",
-    "logDestroy",                          "returnErrorFromNewStream",
-    "returnNegativeOneFromWrite",          "testThrowExceptionProperty",
-    "lastSetWindowArguments",              "windowedPlugin",
-    "testObjectCount",                     "deletePluginInGetProperty",
-    "deletePluginInHasPropertyReturnTrue", "deletePluginInSetProperty"};
+    "property",
+    "eventLoggingEnabled",
+    "hasStream",
+    "testObject",
+    "logDestroy",
+    "returnErrorFromNewStream",
+    "returnNegativeOneFromWrite",
+    "testThrowExceptionProperty",
+    "lastSetWindowArguments",
+    "testObjectCount",
+    "deletePluginInGetProperty",
+    "deletePluginInHasPropertyReturnTrue",
+    "deletePluginInSetProperty"};
 
 enum {
   ID_TEST_CALLBACK_METHOD = 0,
@@ -424,12 +429,6 @@ static bool pluginSetProperty(NPObject* obj,
   if (name == pluginPropertyIdentifiers[ID_PROPERTY_THROW_EXCEPTION_PROPERTY]) {
     browser->setexception(obj,
                           "plugin object testThrowExceptionProperty SUCCESS");
-    return true;
-  }
-  if (name == pluginPropertyIdentifiers[ID_PROPERTY_WINDOWED_PLUGIN]) {
-    browser->setvalue(plugin->npp,
-                      NPPVpluginWindowBool,
-                      (void*)NPVARIANT_TO_BOOLEAN(*variant));
     return true;
   }
 

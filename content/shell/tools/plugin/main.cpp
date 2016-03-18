@@ -264,19 +264,12 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
             // When testing evaluate script on mouse-down or key-down, allow event logging to handle events.
             if (obj->evaluateScriptOnMouseDownOrKeyDown)
                 obj->eventLogging = true;
-        } else if (!strcasecmp(argn[i], "windowedPlugin")) {
-            void* windowed = 0;
-            if (!strcasecmp(argv[i], "false") || !strcasecmp(argv[i], "0"))
-                windowed = 0;
-            else if (!strcasecmp(argv[i], "true") || !strcasecmp(argv[i], "1"))
-                windowed = reinterpret_cast<void*>(1);
-            else
-                assert(false);
-            browser->setvalue(instance, NPPVpluginWindowBool, windowed);
         } else if (!strcasecmp(argn[i], "alwaysFilterEvents")) {
             obj->alwaysFilterEvents = true;
         }
     }
+    void* windowed = 0;
+    browser->setvalue(instance, NPPVpluginWindowBool, windowed);
 
 #ifdef XP_MACOSX
     browser->setvalue(instance, NPPVpluginDrawingModel, (void *)NPDrawingModelCoreGraphics);
