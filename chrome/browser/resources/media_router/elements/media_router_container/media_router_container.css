@@ -176,10 +176,18 @@ paper-menu {
   /* TODO(crbug/589697): Handle overflow of very long domain names. */
 }
 
+#sink-list {
+  padding-bottom: 0;
+}
+
 .sink-name {
   min-width: 10%;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+#sink-search.bottom {
+  padding-bottom: 16px;
 }
 
 /* Separate icon class is a consequence of box-sizing: border-box set by

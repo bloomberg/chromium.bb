@@ -1018,6 +1018,19 @@ Polymer({
   },
 
   /**
+   * Computes the CSS class for #sink-search depending on whether it is the
+   * first or last item in the list, as indicated by |currentView|.
+   * @param {?media_router.MediaRouterView} currentView The current view of the
+   *     dialog.
+   * @return {string} The CSS that correctly sets the padding of #sink-search
+   *     for the current view.
+   * @private
+   */
+  computeSinkSearchClass_: function(currentView) {
+    return (currentView == media_router.MediaRouterView.FILTER) ? '' : 'bottom';
+  },
+
+  /**
    * Returns the subtext to be shown for |sink|. Only called if
    * |computeSinkSubtextHidden_| returns false for the same |sink| and
    * |sinkToRouteMap|.
