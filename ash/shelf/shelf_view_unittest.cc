@@ -996,6 +996,31 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   }
 }
 
+// Making sure the overflow bubble arrow correctly tracks with shelf position.
+TEST_F(ShelfViewTest, OverflowArrowForShelfPosition) {
+  const ShelfAlignment kAlignments[] = {
+      SHELF_ALIGNMENT_BOTTOM, SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT,
+      SHELF_ALIGNMENT_TOP};
+
+  // These must match what is expected for each alignment above.
+  const views::BubbleBorder::Arrow kArrows[] = {
+      views::BubbleBorder::BOTTOM_LEFT, views::BubbleBorder::LEFT_TOP,
+      views::BubbleBorder::RIGHT_TOP, views::BubbleBorder::TOP_LEFT};
+
+  for (int i = 0; i < 4; i++) {
+    shelf_view_->shelf()->SetAlignment(kAlignments[i]);
+
+    // Make sure there are enough icons to trigger the overflow in new
+    // orientation.
+    AddButtonsUntilOverflow();
+    test_api_->ShowOverflowBubble();
+    ASSERT_TRUE(test_api_->overflow_bubble() &&
+                test_api_->overflow_bubble()->IsShowing());
+
+    EXPECT_EQ(test_api_->overflow_bubble()->bubble_view()->arrow(), kArrows[i]);
+  }
+}
+
 // Adds button until overflow then removes first added one. Verifies that
 // the last added one changes from invisible to visible and overflow
 // chevron is gone.
@@ -1658,8 +1683,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   ASSERT_TRUE(test_api_->overflow_bubble() &&
               test_api_->overflow_bubble()->IsShowing());
 
-  int item_width = test_api_->GetButtonSize() +
-      test_api_->GetButtonSpacing();
+  int item_width = test_api_->GetButtonSize() + test_api_->GetButtonSpacing();
   OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
   test::OverflowBubbleViewTestAPI bubble_view_api(bubble_view);
 
