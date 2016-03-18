@@ -98,7 +98,7 @@ static CompositingQueryMode gCompositingQueryMode =
     CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases;
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
-    uint32_t bitFields1, bitFields2;
+    int bitFields;
     void* pointers[9];
     LayoutUnit layoutUnits[4];
     IntSize size;
@@ -160,11 +160,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject, PaintLayerType type)
     , m_needsRepaint(false)
     , m_previousPaintResult(PaintLayerPainter::FullyPainted)
     , m_needsPaintPhaseDescendantOutlines(false)
-    , m_previousPaintPhaseDescendantOutlinesWasEmpty(false)
     , m_needsPaintPhaseFloat(false)
-    , m_previousPaintPhaseFloatWasEmpty(false)
     , m_needsPaintPhaseDescendantBlockBackgrounds(false)
-    , m_previousPaintPhaseDescendantBlockBackgroundsWasEmpty(false)
     , m_hasDescendantWithClipPath(false)
     , m_hasNonIsolatedDescendantWithBlendMode(false)
     , m_hasAncestorWithClipPath(false)

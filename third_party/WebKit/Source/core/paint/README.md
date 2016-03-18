@@ -143,28 +143,3 @@ There are many conditions affecting
 *   whether we can use cached subsequence for a PaintLayer.
 See `shouldCreateSubsequence()` and `shouldRepaintSubsequence()` in `PaintLayerPainter.cpp` for
 the conditions.
-
-## Optimization for empty paint phases
-
-During painting, we walk the layout tree multiple times for multiple paint phases. Sometimes
-a layer contain nothing needing a certain paint phase and we can skip tree walk for such
-empty phases. Now we have optimized `PaintPhaseDescendantBlockBackgroundsOnly`,
-`PaintPhaseDescendantOutlinesOnly` and `PaintPhaseFloat` for empty paint phases.
-
-During paint invaliidation, we set the containing self-painting layer's `needsPaintPhaseXXX`
-flag if the object has something needing to be painted in the paint phase.
-
-During painting, we check the flag before painting a paint phase and skip the tree walk if
-the flag is not set.
-
-It's hard to clear a `needsPaintPhaseXXX` flag when a layer no longer needs the paint phase,
-so we never clear the flags. Instead, we use another set of flags (`previousPaintPhaseXXXWasEmpty`)
-to record if a painting of a phase actually produced nothing. We'll skip the next
-painting of the phase if the flag is set, regardless of the corresponding
-`needsPaintPhaseXXX` flag. We will clear the `previousPaintPhaseXXXWasEmpty` flags when
-we paint with different clipping, scroll offset or interest rect from the previous paint.
-
-We don't clear the `previousPaintPhaseXXXWasEmpty` flags when the layer is marked `needsRepaint`.
-Instead we clear the flag when the corresponding `needsPaintPhaseXXX` is set. This ensures that
-we won't clear `previousPaintPhaseXXXWasEmpty` flags when unrelated things changed which won't
-cause the paint phases to become non-empty.
