@@ -1508,6 +1508,7 @@ def GetConfig():
       board_replace=True,
       chrome_binhost_only=True,
       chrome_sdk=False,
+      compilecheck=True,
       cpe_export=False,
       debug_symbols=False,
       prebuilts=False,
