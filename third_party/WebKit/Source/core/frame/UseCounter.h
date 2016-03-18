@@ -1083,6 +1083,12 @@ public:
         PatternAttributeUnicodeFlagIsIncompatible = 1264,
         HTMLMediaElementLoadNetworkEmptyNotPaused = 1265,
         EventRelatedTargetScoped = 1266,
+        V8Window_WebkitSpeechGrammar_ConstructorGetter = 1267,
+        V8Window_WebkitSpeechGrammarList_ConstructorGetter = 1268,
+        V8Window_WebkitSpeechRecognition_ConstructorGetter = 1269,
+        V8Window_WebkitSpeechRecognitionError_ConstructorGetter = 1270,
+        V8Window_WebkitSpeechRecognitionEvent_ConstructorGetter = 1271,
+        V8Window_SpeechSynthesis_AttributeGetter = 1272,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

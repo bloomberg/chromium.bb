@@ -68610,6 +68610,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1264" label="PatternAttributeUnicodeFlagIsIncompatible"/>
   <int value="1265" label="HTMLMediaElementLoadNetworkEmptyNotPaused"/>
   <int value="1266" label="EventRelatedTargetScoped"/>
+  <int value="1267" label="V8Window_WebkitSpeechGrammar_ConstructorGetter"/>
+  <int value="1268" label="V8Window_WebkitSpeechGrammarList_ConstructorGetter"/>
+  <int value="1269" label="V8Window_WebkitSpeechRecognition_ConstructorGetter"/>
+  <int value="1270"
+      label="V8Window_WebkitSpeechRecognitionError_ConstructorGetter"/>
+  <int value="1271"
+      label="V8Window_WebkitSpeechRecognitionEvent_ConstructorGetter"/>
+  <int value="1272" label="V8Window_SpeechSynthesis_AttributeGetter"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
