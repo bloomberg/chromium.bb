@@ -8,13 +8,12 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "native_client/src/shared/platform/nacl_check.h"
+#include "chrome/test/data/nacl/ppapi_test_lib/test_interface.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 int32_t PPP_InitializeModule(PP_Module module_id,
                              PPB_GetInterface get_browser_interface) {

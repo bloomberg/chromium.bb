@@ -5,8 +5,8 @@
 #include <setjmp.h>
 #include <stdio.h>
 
+#include "chrome/test/data/nacl/ppapi_test_lib/test_interface.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
 

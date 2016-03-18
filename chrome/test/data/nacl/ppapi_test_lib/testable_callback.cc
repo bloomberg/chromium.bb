@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/data/nacl/ppapi_test_lib/testable_callback.h"
+
+#include "chrome/test/data/nacl/ppapi_test_lib/get_browser_interface.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_testing_private.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/testable_callback.h"
 
 TestableCallback::TestableCallback(PP_Instance instance, bool force_async)
     : have_result_(false),

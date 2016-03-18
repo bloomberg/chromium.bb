@@ -8,6 +8,7 @@
 #ifndef PPAPI_NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
 #define PPAPI_NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
 
+#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
@@ -28,7 +29,6 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_view.h"
-#include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/private/ppb_testing_private.h"
 
 // Looks up the interface and returns its pointer or NULL.

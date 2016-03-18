@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/shared/platform/nacl_check.h"
-
+#include "chrome/test/data/nacl/ppapi_test_lib/get_browser_interface.h"
+#include "chrome/test/data/nacl/ppapi_test_lib/test_interface.h"
 #include "ppapi/c/pp_size.h"
+#include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppb_graphics_2d.h"
-
-#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
 

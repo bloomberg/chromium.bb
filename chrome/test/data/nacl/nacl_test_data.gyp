@@ -156,12 +156,11 @@
         'build_pnacl_newlib': 1,
         'nexe_destination_dir': 'nacl_test_data',
         'sources': [
-          # TODO(ncbray) move these files once SCons no longer depends on them.
-          '../../../../ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.cc',
-          '../../../../ppapi/native_client/tests/ppapi_test_lib/internal_utils.cc',
-          '../../../../ppapi/native_client/tests/ppapi_test_lib/module_instance.cc',
-          '../../../../ppapi/native_client/tests/ppapi_test_lib/test_interface.cc',
-          '../../../../ppapi/native_client/tests/ppapi_test_lib/testable_callback.cc',
+          'ppapi_test_lib/get_browser_interface.cc',
+          'ppapi_test_lib/internal_utils.cc',
+          'ppapi_test_lib/module_instance.cc',
+          'ppapi_test_lib/test_interface.cc',
+          'ppapi_test_lib/testable_callback.cc',
         ]
       },
     },

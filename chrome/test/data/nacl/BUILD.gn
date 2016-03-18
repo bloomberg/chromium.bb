@@ -122,16 +122,15 @@ if (is_nacl) {
 
   source_set("ppapi_test_lib") {
     sources = [
-      # TODO(ncbray) move these files once SCons no longer depends on them.
-      "//ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h",
-      "//ppapi/native_client/tests/ppapi_test_lib/internal_utils.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/internal_utils.h",
-      "//ppapi/native_client/tests/ppapi_test_lib/module_instance.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/test_interface.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/test_interface.h",
-      "//ppapi/native_client/tests/ppapi_test_lib/testable_callback.cc",
-      "//ppapi/native_client/tests/ppapi_test_lib/testable_callback.h",
+      "ppapi_test_lib/get_browser_interface.cc",
+      "ppapi_test_lib/get_browser_interface.h",
+      "ppapi_test_lib/internal_utils.cc",
+      "ppapi_test_lib/internal_utils.h",
+      "ppapi_test_lib/module_instance.cc",
+      "ppapi_test_lib/test_interface.cc",
+      "ppapi_test_lib/test_interface.h",
+      "ppapi_test_lib/testable_callback.cc",
+      "ppapi_test_lib/testable_callback.h",
     ]
     deps = [
       "//native_client/src/shared/gio",

@@ -13,9 +13,11 @@
 
 #include <map>
 
+#include "chrome/test/data/nacl/ppapi_test_lib/get_browser_interface.h"
+#include "chrome/test/data/nacl/ppapi_test_lib/internal_utils.h"
+#include "chrome/test/data/nacl/ppapi_test_lib/test_interface.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
@@ -26,10 +28,6 @@
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
-
-#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/internal_utils.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin interface registration

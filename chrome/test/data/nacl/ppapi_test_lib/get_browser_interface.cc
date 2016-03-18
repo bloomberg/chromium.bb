@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/shared/platform/nacl_check.h"
+#include "chrome/test/data/nacl/ppapi_test_lib/get_browser_interface.h"
 
+#include "chrome/test/data/nacl/ppapi_test_lib/internal_utils.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_audio.h"
@@ -27,9 +29,6 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/private/ppb_testing_private.h"
-
-#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/internal_utils.h"
 
 // Use for dev interfaces that might not be present.
 const void* GetBrowserInterface(const char* interface_name) {

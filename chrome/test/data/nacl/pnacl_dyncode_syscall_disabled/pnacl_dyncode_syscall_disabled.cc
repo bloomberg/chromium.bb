@@ -9,11 +9,9 @@
 #include <string.h>
 #include <unistd.h>
 
-
-#include "native_client/src/shared/platform/nacl_check.h"
+#include "chrome/test/data/nacl/ppapi_test_lib/get_browser_interface.h"
+#include "chrome/test/data/nacl/ppapi_test_lib/test_interface.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
 
