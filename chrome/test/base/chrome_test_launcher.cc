@@ -48,68 +48,63 @@
 #include "chrome/app/chrome_crash_reporter_client.h"
 #endif
 
-namespace {
+ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}
+ChromeTestSuiteRunner::~ChromeTestSuiteRunner() {}
 
-class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
- public:
-  explicit ChromeTestLauncherDelegate(ChromeTestSuiteRunner* runner)
-      : runner_(runner) {}
-  ~ChromeTestLauncherDelegate() override {}
+int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
+  return ChromeTestSuite(argc, argv).Run();
+}
 
-  int RunTestSuite(int argc, char** argv) override {
-    return runner_->RunTestSuite(argc, argv);
+ChromeTestLauncherDelegate::ChromeTestLauncherDelegate(
+    ChromeTestSuiteRunner* runner)
+    : runner_(runner) {}
+ChromeTestLauncherDelegate::~ChromeTestLauncherDelegate() {}
+
+int ChromeTestLauncherDelegate::RunTestSuite(int argc, char** argv) {
+  return runner_->RunTestSuite(argc, argv);
+}
+
+bool ChromeTestLauncherDelegate::AdjustChildProcessCommandLine(
+    base::CommandLine* command_line,
+    const base::FilePath& temp_data_dir) {
+  base::CommandLine new_command_line(command_line->GetProgram());
+  base::CommandLine::SwitchMap switches = command_line->GetSwitches();
+
+  // Strip out user-data-dir if present.  We will add it back in again later.
+  switches.erase(switches::kUserDataDir);
+
+  for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();
+       iter != switches.end(); ++iter) {
+    new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
   }
 
-  bool AdjustChildProcessCommandLine(
-      base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) override {
-    base::CommandLine new_command_line(command_line->GetProgram());
-    base::CommandLine::SwitchMap switches = command_line->GetSwitches();
+  new_command_line.AppendSwitchPath(switches::kUserDataDir, temp_data_dir);
 
-    // Strip out user-data-dir if present.  We will add it back in again later.
-    switches.erase(switches::kUserDataDir);
+  // file:// access for ChromeOS.
+  new_command_line.AppendSwitch(switches::kAllowFileAccess);
 
-    for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();
-         iter != switches.end(); ++iter) {
-      new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
-    }
+  *command_line = new_command_line;
+  return true;
+}
 
-    new_command_line.AppendSwitchPath(switches::kUserDataDir, temp_data_dir);
+content::ContentMainDelegate*
+ChromeTestLauncherDelegate::CreateContentMainDelegate() {
+  return new ChromeMainDelegate();
+}
 
-    // file:// access for ChromeOS.
-    new_command_line.AppendSwitch(switches::kAllowFileAccess);
-
-    *command_line = new_command_line;
-    return true;
-  }
-
- protected:
-  content::ContentMainDelegate* CreateContentMainDelegate() override {
-    return new ChromeMainDelegate();
-  }
-
-  void AdjustDefaultParallelJobs(int* default_jobs) override {
+void ChromeTestLauncherDelegate::AdjustDefaultParallelJobs(int* default_jobs) {
 #if defined(OS_WIN)
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAshBrowserTests)) {
-      *default_jobs = 1;
-      fprintf(stdout,
-              "Disabling test parallelization for --ash-browsertests.\n");
-      fflush(stdout);
-    }
-#endif  // defined(OS_WIN)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests)) {
+    *default_jobs = 1;
+    fprintf(stdout, "Disabling test parallelization for --ash-browsertests.\n");
+    fflush(stdout);
   }
-
- private:
-  ChromeTestSuiteRunner* runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeTestLauncherDelegate);
-};
-
-}  // namespace
+#endif  // defined(OS_WIN)
+}
 
 int LaunchChromeTests(int default_jobs,
-                      ChromeTestSuiteRunner* runner,
+                      content::TestLauncherDelegate* delegate,
                       int argc,
                       char** argv) {
 #if defined(OS_MACOSX)
@@ -124,6 +119,5 @@ int LaunchChromeTests(int default_jobs,
   crash_reporter::SetCrashReporterClient(crash_client);
 #endif
 
-  ChromeTestLauncherDelegate launcher_delegate(runner);
-  return content::LaunchTests(&launcher_delegate, default_jobs, argc, argv);
+  return content::LaunchTests(delegate, default_jobs, argc, argv);
 }

@@ -82,7 +82,8 @@ int main(int argc, char** argv) {
   // Run interactive_ui_tests serially, they do not support running in parallel.
   int default_jobs = 1;
   InteractiveUITestSuiteRunner runner;
-  const int result = LaunchChromeTests(default_jobs, &runner, argc, argv);
+  ChromeTestLauncherDelegate delegate(&runner);
+  const int result = LaunchChromeTests(default_jobs, &delegate, argc, argv);
 #if defined(OS_WIN)
   KillAlwaysOnTopWindows(RunType::AFTER_TEST);
 #endif

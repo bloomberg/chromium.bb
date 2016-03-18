@@ -5,16 +5,10 @@
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 
-class ChromeBrowserTestSuiteRunner : public ChromeTestSuiteRunner {
- public:
-  int RunTestSuite(int argc, char** argv) override {
-    return ChromeTestSuite(argc, argv).Run();
-  }
-};
-
 int main(int argc, char** argv) {
   // Always run browser perf tests serially - parallel running would be less
   // deterministic and distort perf measurements.
-  ChromeBrowserTestSuiteRunner runner;
-  return LaunchChromeTests(1, &runner, argc, argv);
+  ChromeTestSuiteRunner runner;
+  ChromeTestLauncherDelegate delegate(&runner);
+  return LaunchChromeTests(1, &delegate, argc, argv);
 }
