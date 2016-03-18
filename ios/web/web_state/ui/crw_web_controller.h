@@ -236,9 +236,6 @@ class WebStateImpl;
 // TODO(stuartmorgan): When revisiting the methods above, revisit this as well.
 - (void)requirePageReload;
 
-// Sets the closed property to true for the child window with the given name.
-- (void)childWindowClosed:(NSString*)windowName;
-
 // Show overlay, don't reload web page. Used when the view will be
 // visible only briefly (e.g., tablet side swipe).
 - (void)setOverlayPreviewMode:(BOOL)overlayPreviewMode;

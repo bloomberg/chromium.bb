@@ -771,10 +771,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)childWindowClosed:(NSString*)windowName {
-  // Subclasses can override this method to be informed about a closed window.
-}
-
 - (BOOL)isViewAlive {
   return [self.containerView isViewAlive];
 }
