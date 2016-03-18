@@ -443,6 +443,9 @@
       <message desc="An option to enable the page focus following the mouse.  Focus represents the current HTML element or group of elements that are being spoken and can be acted upon.  There is also a visual UI which highlights the focused elements. * This key's action allows the user to change focus with the mouse.  Focus can also be changed using the ChromeVox navigation keys and an API." name="IDS_CHROMEVOX_OPTIONS_MOUSE_FOCUS_FOLLOWS">
         Use the mouse to change focus.
       </message>
+      <message desc="An option to have an item's context placed at the beginning of its description. For example, reload button, toolbar would become, toolbar, reload button" name="IDS_CHROMEVOX_OPTIONS_OUTPUT_CONTEXT_FIRST">
+        Display an item's context before other information (such as its name).
+      </message>
       <message desc="An option to enhance the experience of specific sites such as Google Search." name="IDS_CHROMEVOX_OPTIONS_SITE_SPECIFIC_ENHANCEMENTS">
         Enhance specific sites (like Google Search).
       </message>

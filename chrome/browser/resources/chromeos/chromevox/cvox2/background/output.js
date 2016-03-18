@@ -423,8 +423,8 @@ Output.RULES = {
     },
     heading: {
       enter: '@tag_h+$hierarchicalLevel',
-      speak: '@tag_h+$hierarchicalLevel !relativePitch(hierarchicalLevel)' +
-          ' $nameOrDescendants='
+      speak: '!relativePitch(hierarchicalLevel)' +
+          ' $nameOrDescendants= @tag_h+$hierarchicalLevel'
     },
     inlineTextBox: {
       speak: '$name='
@@ -1236,8 +1236,12 @@ Output.prototype = {
 
     var formatNodeAndAncestors = function(node, prevNode) {
       var buff = [];
-      this.ancestry_(node, prevNode, type, buff);
+      var outputContextFirst = localStorage['outputContextFirst'] == 'true';
+      if (outputContextFirst)
+        this.ancestry_(node, prevNode, type, buff);
       this.node_(node, prevNode, type, buff);
+      if (!outputContextFirst)
+        this.ancestry_(node, prevNode, type, buff);
       if (node.location)
         this.locations_.push(node.location);
       return buff;
@@ -1377,9 +1381,13 @@ Output.prototype = {
             startIndex));
       }
     }
-    this.ancestry_(node, prevNode, type, buff);
+    var outputContextFirst = localStorage['outputContextFirst'] == 'true';
+    if (outputContextFirst)
+      this.ancestry_(node, prevNode, type, buff);
     this.append_(buff, range.start.getText().substring(startIndex, endIndex),
         options);
+    if (!outputContextFirst)
+      this.ancestry_(node, prevNode, type, buff);
 
     var loc =
         range.start.node.boundsForRange(startIndex, endIndex);
