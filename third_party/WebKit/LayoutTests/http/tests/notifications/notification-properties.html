@@ -22,6 +22,7 @@
                 body: "Hallo, wereld!",
                 tag: "notification",
                 icon: "http://localhost/my_icon.png",
+                badge: "http://localhost/badge.png",
                 timestamp: 621046800000,
                 silent: true,
                 requireInteraction: true,
@@ -37,6 +38,7 @@
             assert_equals(notification.body, options.body);
             assert_equals(notification.tag, options.tag);
             assert_equals(notification.icon, options.icon);
+            assert_equals(notification.badge, options.badge);
             assert_equals(notification.timestamp, options.timestamp);
             assert_true(notification.silent);
             assert_true(notification.requireInteraction);
@@ -51,6 +53,7 @@
             assert_equals(emptyNotification.body, "");
             assert_equals(emptyNotification.tag, "");
             assert_equals(emptyNotification.icon, "");
+            assert_equals(emptyNotification.badge, "");
             assert_equals(notification.vibrate, null);
             assert_false(emptyNotification.silent);
             assert_false(emptyNotification.requireInteraction);
@@ -72,11 +75,13 @@
             //assert_true(equalNotification.vibrate === equalNotification.vibrate, '`vibrate` object equality');
 
             var serializedUrlNotification = new Notification("My Notification", {
-                icon: "http://example.com"
+                icon: "https://example.com/icon.png",
+                badge: "https://example.com/badge.png"
             });
 
             // Icon URLs should be returned in serialized form.
-            assert_equals(serializedUrlNotification.icon, "http://example.com/");
+            assert_equals(serializedUrlNotification.icon, "https://example.com/icon.png");
+            assert_equals(serializedUrlNotification.badge, "https://example.com/badge.png");
 
             var noTagNotification = new Notification("My Notification"),
                 emptyTagNotification = new Notification("My Notification", { tag: "" });

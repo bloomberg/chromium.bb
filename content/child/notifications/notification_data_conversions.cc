@@ -41,6 +41,7 @@ PlatformNotificationData ToPlatformNotificationData(
   platform_data.body = web_data.body;
   platform_data.tag = base::UTF16ToUTF8(base::StringPiece16(web_data.tag));
   platform_data.icon = blink::WebStringToGURL(web_data.icon.string());
+  platform_data.badge = blink::WebStringToGURL(web_data.badge.string());
   platform_data.vibration_pattern.assign(web_data.vibrate.begin(),
                                          web_data.vibrate.end());
   platform_data.timestamp = base::Time::FromJsTime(web_data.timestamp);
@@ -81,6 +82,7 @@ WebNotificationData ToWebNotificationData(
   web_data.body = platform_data.body;
   web_data.tag = blink::WebString::fromUTF8(platform_data.tag);
   web_data.icon = blink::WebURL(platform_data.icon);
+  web_data.badge = blink::WebURL(platform_data.badge);
   web_data.vibrate = platform_data.vibration_pattern;
   web_data.timestamp = platform_data.timestamp.ToJsTime();
   web_data.renotify = platform_data.renotify;

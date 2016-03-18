@@ -53,6 +53,10 @@ bool ValidateNotificationResources(const NotificationResources& resources) {
           kPlatformNotificationMaxIconSizePx) {
     return false;
   }
+  if (resources.badge.width() > kPlatformNotificationMaxBadgeSizePx ||
+      resources.badge.height() > kPlatformNotificationMaxBadgeSizePx) {
+    return false;
+  }
   for (const auto& action_icon : resources.action_icons) {
     if (action_icon.width() > kPlatformNotificationMaxActionIconSizePx ||
         action_icon.height() > kPlatformNotificationMaxActionIconSizePx) {

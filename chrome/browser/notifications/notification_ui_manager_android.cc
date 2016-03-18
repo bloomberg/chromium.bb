@@ -165,6 +165,11 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   if (!notification_icon_bitmap.drawsNothing())
     notification_icon = gfx::ConvertToJavaBitmap(&notification_icon_bitmap);
 
+  ScopedJavaLocalRef<jobject> badge;
+  SkBitmap badge_bitmap = notification.small_image().AsBitmap();
+  if (!badge_bitmap.drawsNothing())
+    badge = gfx::ConvertToJavaBitmap(&badge_bitmap);
+
   std::vector<base::string16> action_titles_vector;
   for (const message_center::ButtonInfo& button : notification.buttons())
     action_titles_vector.push_back(button.title);
@@ -183,7 +188,7 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   Java_NotificationUIManager_displayNotification(
       env, java_object_.obj(), persistent_notification_id, origin.obj(),
       profile_id.obj(), profile->IsOffTheRecord(), tag.obj(), title.obj(),
-      body.obj(), notification_icon.obj(), vibration_pattern.obj(),
+      body.obj(), notification_icon.obj(), badge.obj(), vibration_pattern.obj(),
       notification.timestamp().ToJavaTime(), notification.renotify(),
       notification.silent(), action_titles.obj(), action_icons.obj());
 

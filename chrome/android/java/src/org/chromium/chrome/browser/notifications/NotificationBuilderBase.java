@@ -67,6 +67,7 @@ public abstract class NotificationBuilderBase {
     protected CharSequence mTickerText;
     protected Bitmap mLargeIcon;
     protected int mSmallIconId;
+    protected Bitmap mSmallIconBitmap;
     protected PendingIntent mContentIntent;
     protected PendingIntent mDeleteIntent;
     protected List<Action> mActions = new ArrayList<>(MAX_AUTHOR_PROVIDED_ACTION_BUTTONS);
@@ -122,10 +123,25 @@ public abstract class NotificationBuilderBase {
     }
 
     /**
-     * Sets the the small icon that is shown in the notification and in the status bar.
+     * Sets the small icon that is shown in the notification and in the status bar. Wherever the
+     * platform supports using a small icon bitmap, and a non-null {@code Bitmap} is provided, it
+     * will take precedence over one specified as a resource id.
      */
     public NotificationBuilderBase setSmallIcon(int iconId) {
         mSmallIconId = iconId;
+        return this;
+    }
+
+    /**
+     * Sets the small icon that is shown in the notification and in the status bar. Wherever the
+     * platform supports using a small icon bitmap, and a non-null {@code Bitmap} is provided, it
+     * will take precedence over one specified as a resource id.
+     */
+    public NotificationBuilderBase setSmallIcon(@Nullable Bitmap iconBitmap) {
+        if (iconBitmap != null) {
+            applyWhiteOverlayToBitmap(iconBitmap);
+        }
+        mSmallIconBitmap = iconBitmap;
         return this;
     }
 
@@ -220,6 +236,20 @@ public abstract class NotificationBuilderBase {
             return input.subSequence(0, MAX_CHARSEQUENCE_LENGTH);
         }
         return input;
+    }
+
+    /**
+     * Sets the small icon on {@code builder} using a {@code Bitmap} if a non-null bitmap is
+     * provided and the API level is high enough, otherwise the resource id is used.
+     */
+    @TargetApi(Build.VERSION_CODES.M) // For the Icon class.
+    protected static void setSmallIconOnBuilder(
+            Notification.Builder builder, int iconId, @Nullable Bitmap iconBitmap) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && iconBitmap != null) {
+            builder.setSmallIcon(Icon.createWithBitmap(iconBitmap));
+        } else {
+            builder.setSmallIcon(iconId);
+        }
     }
 
     /**

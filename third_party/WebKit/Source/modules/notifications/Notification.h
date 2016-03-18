@@ -91,6 +91,7 @@ public:
     String body() const;
     String tag() const;
     String icon() const;
+    String badge() const;
     NavigatorVibration::VibrationPattern vibrate(bool& isNull) const;
     DOMTimeStamp timestamp() const;
     bool renotify() const;

@@ -130,6 +130,7 @@ NewMediaPlaybackUi
 NotificationConstructor status=stable
 NotificationExperimental status=test
 NotificationActionIcons status=stable
+NotificationBadge status=experimental
 Notifications status=stable
 OrientationEvent
 // For simulating Android's overlay fullscreen video in layout tests on Linux.

@@ -437,6 +437,8 @@ public class NotificationUIManager {
      *             text by the Android notification system.
      * @param icon Icon to be displayed in the notification. Valid Bitmap icons will be scaled to
      *             the platforms, whereas a default icon will be generated for invalid Bitmaps.
+     * @param badge An image to represent the notification in the status bar. It is also displayed
+     *              inside the notification.
      * @param vibrationPattern Vibration pattern following the Web Vibration syntax.
      * @param timestamp The timestamp of the event for which the notification is being shown.
      * @param renotify Whether the sound, vibration, and lights should be replayed if the
@@ -448,7 +450,7 @@ public class NotificationUIManager {
      */
     @CalledByNative
     private void displayNotification(long persistentNotificationId, String origin, String profileId,
-            boolean incognito, String tag, String title, String body, Bitmap icon,
+            boolean incognito, String tag, String title, String body, Bitmap icon, Bitmap badge,
             int[] vibrationPattern, long timestamp, boolean renotify, boolean silent,
             String[] actionTitles, Bitmap[] actionIcons) {
         if (actionTitles.length != actionIcons.length) {
@@ -487,6 +489,7 @@ public class NotificationUIManager {
                         .setBody(body)
                         .setLargeIcon(ensureNormalizedIcon(icon, origin))
                         .setSmallIcon(R.drawable.ic_chrome)
+                        .setSmallIcon(badge)
                         .setContentIntent(clickIntent)
                         .setDeleteIntent(closeIntent)
                         .setTicker(createTickerText(title, body))

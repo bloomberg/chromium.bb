@@ -107,23 +107,22 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             view.setViewPadding(R.id.title, 0, scaledPadding, 0, 0);
             view.setViewPadding(R.id.body_container, 0, scaledPadding, 0, scaledPadding);
             addWorkProfileBadge(view);
+
+            int smallIconId = useMaterial() ? R.id.small_icon_overlay : R.id.small_icon_footer;
+            view.setViewVisibility(smallIconId, View.VISIBLE);
+            if (mSmallIconBitmap != null) {
+                view.setImageViewBitmap(smallIconId, mSmallIconBitmap);
+            } else {
+                view.setImageViewResource(smallIconId, mSmallIconId);
+            }
         }
         addActionButtons(bigView);
         configureSettingsButton(bigView);
-
-        if (useMaterial()) {
-            compactView.setViewVisibility(R.id.small_icon_overlay, View.VISIBLE);
-            bigView.setViewVisibility(R.id.small_icon_overlay, View.VISIBLE);
-        } else {
-            compactView.setViewVisibility(R.id.small_icon_footer, View.VISIBLE);
-            bigView.setViewVisibility(R.id.small_icon_footer, View.VISIBLE);
-        }
 
         // Note: this is not a NotificationCompat builder so be mindful of the
         // API level of methods you call on the builder.
         Notification.Builder builder = new Notification.Builder(mContext);
         builder.setTicker(mTickerText);
-        builder.setSmallIcon(mSmallIconId);
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);
         builder.setDefaults(mDefaults);
@@ -138,6 +137,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         builder.setContentText(mBody);
         builder.setSubText(mOrigin);
         builder.setLargeIcon(mLargeIcon);
+        setSmallIconOnBuilder(builder, mSmallIconId, mSmallIconBitmap);
         for (Action action : mActions) {
             addActionToBuilder(builder, action);
         }
@@ -171,8 +171,6 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
 
             // If there is an icon then set it and add some padding.
             if (action.iconBitmap != null || action.iconId != 0) {
-                // TODO(mvanouwerkerk): Scale down the bitmaps - crbug.com/586082.
-                // TODO(mvanouwerkerk): Paint bitmaps white for Holo - crbug.com/585840.
                 if (useMaterial()) {
                     view.setInt(R.id.button_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
                 }
@@ -297,7 +295,8 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
     /**
      * Whether to use the Material look and feel or fall back to Holo.
      */
-    private static boolean useMaterial() {
+    @VisibleForTesting
+    static boolean useMaterial() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 }

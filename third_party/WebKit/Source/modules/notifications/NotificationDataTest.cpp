@@ -26,6 +26,7 @@ const char kNotificationTag[] = "my_tag";
 const char kNotificationEmptyTag[] = "";
 const char kNotificationIcon[] = "https://example.com/icon.png";
 const char kNotificationIconInvalid[] = "https://invalid:icon:url";
+const char kNotificationBadge[] = "https://example.com/badge.png";
 const unsigned kNotificationVibration[] = { 42, 10, 20, 30, 40 };
 const unsigned long long kNotificationTimestamp = 621046800ull;
 const bool kNotificationRenotify = true;
@@ -77,6 +78,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
     options.setBody(kNotificationBody);
     options.setTag(kNotificationTag);
     options.setIcon(kNotificationIcon);
+    options.setBadge(kNotificationBadge);
     options.setVibrate(vibrationSequence);
     options.setTimestamp(kNotificationTimestamp);
     options.setRenotify(kNotificationRenotify);
@@ -97,7 +99,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
     EXPECT_EQ(kNotificationBody, notificationData.body);
     EXPECT_EQ(kNotificationTag, notificationData.tag);
 
-    // TODO(peter): Test WebNotificationData.icon and WebNotificationAction.icon when ExecutionContext::completeURL() works in this test.
+    // TODO(peter): Test the various icon properties when ExecutionContext::completeURL() works in this test.
 
     ASSERT_EQ(vibrationPattern.size(), notificationData.vibrate.size());
     for (size_t i = 0; i < vibrationPattern.size(); ++i)
@@ -160,6 +162,7 @@ TEST_F(NotificationDataTest, InvalidIconUrls)
 
     NotificationOptions options;
     options.setIcon(kNotificationIconInvalid);
+    options.setBadge(kNotificationIconInvalid);
     options.setActions(actions);
 
     TrackExceptionState exceptionState;
@@ -167,6 +170,7 @@ TEST_F(NotificationDataTest, InvalidIconUrls)
     ASSERT_FALSE(exceptionState.hadException());
 
     EXPECT_TRUE(notificationData.icon.isEmpty());
+    EXPECT_TRUE(notificationData.badge.isEmpty());
     for (const auto& action : notificationData.actions)
         EXPECT_TRUE(action.icon.isEmpty());
 }

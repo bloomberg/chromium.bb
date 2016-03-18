@@ -8,5 +8,4 @@
     android:layout_height="16dp"
     android:scaleType="centerInside"
     android:contentDescription="@null"
-    android:src="@drawable/ic_chrome"
     style="@style/WebNotificationSmallIcon"/>

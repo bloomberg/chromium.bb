@@ -48,14 +48,19 @@ class PendingNotification {
 
   // To be called on the worker thread when the notification icon has been
   // fetched.
-  void DidFetchNotificationIcon(const SkBitmap& notification_icon);
+  void DidFetchNotificationIcon(const SkBitmap& bitmap);
+
+  // To be called on the worker thread when the badge has been fetched.
+  void DidFetchBadge(const SkBitmap& bitmap);
 
   // To be called on the worker thread when an action icon has been fetched.
-  void DidFetchActionIcon(size_t action_index, const SkBitmap& action_icon);
+  void DidFetchActionIcon(size_t action_index, const SkBitmap& bitmap);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   SkBitmap notification_icon_;
+
+  SkBitmap badge_;
 
   std::vector<SkBitmap> action_icons_;
 

@@ -3952,6 +3952,7 @@ interface Notification : EventTarget
     static method requestPermission
     attribute @@toStringTag
     getter actions
+    getter badge
     getter body
     getter data
     getter dir

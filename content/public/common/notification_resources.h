@@ -22,6 +22,10 @@ struct CONTENT_EXPORT NotificationResources {
   // did not provide an icon, or fetching of the icon failed.
   SkBitmap notification_icon;
 
+  // Badge for the notification. The bitmap may be empty if the developer
+  // did not provide a badge, or fetching of the badge failed.
+  SkBitmap badge;
+
   // Icons for the actions. A bitmap may be empty if the developer did not
   // provide an icon, or fetching of the icon failed.
   std::vector<SkBitmap> action_icons;

@@ -26,6 +26,7 @@ struct WebNotificationData {
     WebString body;
     WebString tag;
     WebURL icon;
+    WebURL badge;
     WebVector<int> vibrate;
     double timestamp = 0;
     bool renotify = false;

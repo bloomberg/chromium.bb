@@ -51,12 +51,15 @@ void PendingNotification::FetchResources(
   size_t num_actions = notification_data.actions.size();
   action_icons_.resize(num_actions);
 
-  size_t num_closures = 1 /* notification icon */ + num_actions;
+  size_t num_closures = 2 /* notification icon and badge */ + num_actions;
   fetches_finished_barrier_closure_ =
       base::BarrierClosure(num_closures, fetches_finished_callback);
 
   FetchImageResource(notification_data.icon,
                      base::Bind(&PendingNotification::DidFetchNotificationIcon,
+                                weak_factory_.GetWeakPtr()));
+  FetchImageResource(notification_data.badge,
+                     base::Bind(&PendingNotification::DidFetchBadge,
                                 weak_factory_.GetWeakPtr()));
   for (size_t i = 0; i < num_actions; i++) {
     FetchImageResource(notification_data.actions[i].icon,
@@ -68,6 +71,7 @@ void PendingNotification::FetchResources(
 NotificationResources PendingNotification::GetResources() const {
   NotificationResources resources;
   resources.notification_icon = notification_icon_;
+  resources.badge = badge_;
   resources.action_icons = action_icons_;
   return resources;
 }
@@ -96,18 +100,23 @@ void PendingNotification::FetchImageResource(
                             image_loader, image_gurl));
 }
 
-void PendingNotification::DidFetchNotificationIcon(const SkBitmap& icon) {
+void PendingNotification::DidFetchNotificationIcon(const SkBitmap& bitmap) {
   notification_icon_ =
-      ScaleDownIfNeeded(icon, kPlatformNotificationMaxIconSizePx);
+      ScaleDownIfNeeded(bitmap, kPlatformNotificationMaxIconSizePx);
+  fetches_finished_barrier_closure_.Run();
+}
+
+void PendingNotification::DidFetchBadge(const SkBitmap& bitmap) {
+  badge_ = ScaleDownIfNeeded(bitmap, kPlatformNotificationMaxBadgeSizePx);
   fetches_finished_barrier_closure_.Run();
 }
 
 void PendingNotification::DidFetchActionIcon(size_t action_index,
-                                             const SkBitmap& icon) {
+                                             const SkBitmap& bitmap) {
   DCHECK_LT(action_index, action_icons_.size());
 
   action_icons_[action_index] =
-      ScaleDownIfNeeded(icon, kPlatformNotificationMaxActionIconSizePx);
+      ScaleDownIfNeeded(bitmap, kPlatformNotificationMaxActionIconSizePx);
   fetches_finished_barrier_closure_.Run();
 }
 

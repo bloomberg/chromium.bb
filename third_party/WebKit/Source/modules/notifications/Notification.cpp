@@ -242,6 +242,11 @@ String Notification::icon() const
     return m_data.icon.string();
 }
 
+String Notification::badge() const
+{
+    return m_data.badge.string();
+}
+
 NavigatorVibration::VibrationPattern Notification::vibrate(bool& isNull) const
 {
     NavigatorVibration::VibrationPattern pattern;

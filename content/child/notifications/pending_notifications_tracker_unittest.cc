@@ -37,6 +37,7 @@ namespace content {
 namespace {
 
 const char kBaseUrl[] = "http://test.com/";
+const char kIcon48x48[] = "48x48.png";
 const char kIcon100x100[] = "100x100.png";
 const char kIcon110x110[] = "110x110.png";
 const char kIcon120x120[] = "120x120.png";
@@ -141,6 +142,7 @@ class PendingNotificationsTrackerTest : public testing::Test {
 TEST_F(PendingNotificationsTrackerTest, OneNotificationMultipleResources) {
   blink::WebNotificationData notification_data;
   notification_data.icon = RegisterMockedURL(kIcon100x100);
+  notification_data.badge = RegisterMockedURL(kIcon48x48);
   notification_data.actions =
       blink::WebVector<blink::WebNotificationAction>(static_cast<size_t>(2));
   notification_data.actions[0].icon = RegisterMockedURL(kIcon110x110);
@@ -160,19 +162,25 @@ TEST_F(PendingNotificationsTrackerTest, OneNotificationMultipleResources) {
   ASSERT_EQ(0u, CountPendingNotifications());
   ASSERT_EQ(1u, CountResources());
 
-  ASSERT_FALSE(GetResources(0u)->notification_icon.drawsNothing());
-  ASSERT_EQ(100, GetResources(0u)->notification_icon.width());
+  NotificationResources* resources = GetResources(0u);
 
-  ASSERT_EQ(2u, GetResources(0u)->action_icons.size());
-  ASSERT_FALSE(GetResources(0u)->action_icons[0].drawsNothing());
-  ASSERT_EQ(110, GetResources(0u)->action_icons[0].width());
-  ASSERT_FALSE(GetResources(0u)->action_icons[1].drawsNothing());
-  ASSERT_EQ(120, GetResources(0u)->action_icons[1].width());
+  ASSERT_FALSE(resources->notification_icon.drawsNothing());
+  ASSERT_EQ(100, resources->notification_icon.width());
+
+  ASSERT_FALSE(resources->badge.drawsNothing());
+  ASSERT_EQ(48, resources->badge.width());
+
+  ASSERT_EQ(2u, resources->action_icons.size());
+  ASSERT_FALSE(resources->action_icons[0].drawsNothing());
+  ASSERT_EQ(110, resources->action_icons[0].width());
+  ASSERT_FALSE(resources->action_icons[1].drawsNothing());
+  ASSERT_EQ(120, resources->action_icons[1].width());
 }
 
 TEST_F(PendingNotificationsTrackerTest, LargeIconsAreScaledDown) {
   blink::WebNotificationData notification_data;
   notification_data.icon = RegisterMockedURL(kIcon500x500);
+  notification_data.badge = notification_data.icon;
   notification_data.actions =
       blink::WebVector<blink::WebNotificationAction>(static_cast<size_t>(1));
   notification_data.actions[0].icon = notification_data.icon;
@@ -191,18 +199,24 @@ TEST_F(PendingNotificationsTrackerTest, LargeIconsAreScaledDown) {
   ASSERT_EQ(0u, CountPendingNotifications());
   ASSERT_EQ(1u, CountResources());
 
-  ASSERT_FALSE(GetResources(0u)->notification_icon.drawsNothing());
-  ASSERT_EQ(kPlatformNotificationMaxIconSizePx,
-            GetResources(0u)->notification_icon.width());
-  ASSERT_EQ(kPlatformNotificationMaxIconSizePx,
-            GetResources(0u)->notification_icon.height());
+  NotificationResources* resources = GetResources(0u);
 
-  ASSERT_EQ(1u, GetResources(0u)->action_icons.size());
-  ASSERT_FALSE(GetResources(0u)->action_icons[0].drawsNothing());
+  ASSERT_FALSE(resources->notification_icon.drawsNothing());
+  ASSERT_EQ(kPlatformNotificationMaxIconSizePx,
+            resources->notification_icon.width());
+  ASSERT_EQ(kPlatformNotificationMaxIconSizePx,
+            resources->notification_icon.height());
+
+  ASSERT_FALSE(resources->badge.drawsNothing());
+  ASSERT_EQ(kPlatformNotificationMaxBadgeSizePx, resources->badge.width());
+  ASSERT_EQ(kPlatformNotificationMaxBadgeSizePx, resources->badge.height());
+
+  ASSERT_EQ(1u, resources->action_icons.size());
+  ASSERT_FALSE(resources->action_icons[0].drawsNothing());
   ASSERT_EQ(kPlatformNotificationMaxActionIconSizePx,
-            GetResources(0u)->action_icons[0].width());
+            resources->action_icons[0].width());
   ASSERT_EQ(kPlatformNotificationMaxActionIconSizePx,
-            GetResources(0u)->action_icons[0].height());
+            resources->action_icons[0].height());
 }
 
 TEST_F(PendingNotificationsTrackerTest, TwoNotifications) {

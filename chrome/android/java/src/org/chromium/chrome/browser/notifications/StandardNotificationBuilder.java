@@ -27,7 +27,7 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         builder.setSubText(mOrigin);
         builder.setTicker(mTickerText);
         builder.setLargeIcon(mLargeIcon);
-        builder.setSmallIcon(mSmallIconId);
+        setSmallIconOnBuilder(builder, mSmallIconId, mSmallIconBitmap);
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);
         for (Action action : mActions) {

@@ -23,6 +23,7 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
+const char kNotificationBadgeUrl[] = "https://example.com/badge.png";
 const int kNotificationVibrationPattern[] = {100, 200, 300};
 const double kNotificationTimestamp = 621046800.;
 const unsigned char kNotificationData[] = {0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf};
@@ -41,6 +42,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   web_data.body = blink::WebString::fromUTF8(kNotificationBody);
   web_data.tag = blink::WebString::fromUTF8(kNotificationTag);
   web_data.icon = blink::WebURL(GURL(kNotificationIconUrl));
+  web_data.badge = blink::WebURL(GURL(kNotificationBadgeUrl));
   web_data.vibrate = blink::WebVector<int>(
       kNotificationVibrationPattern, arraysize(kNotificationVibrationPattern));
   web_data.timestamp = kNotificationTimestamp;
@@ -67,6 +69,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationBody), platform_data.body);
   EXPECT_EQ(kNotificationTag, platform_data.tag);
   EXPECT_EQ(kNotificationIconUrl, platform_data.icon.spec());
+  EXPECT_EQ(kNotificationBadgeUrl, platform_data.badge.spec());
   EXPECT_TRUE(platform_data.renotify);
   EXPECT_TRUE(platform_data.silent);
   EXPECT_TRUE(platform_data.require_interaction);
@@ -102,6 +105,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.body = base::ASCIIToUTF16(kNotificationBody);
   platform_data.tag = kNotificationTag;
   platform_data.icon = GURL(kNotificationIconUrl);
+  platform_data.badge = GURL(kNotificationBadgeUrl);
   platform_data.vibration_pattern = vibration_pattern;
   platform_data.timestamp = base::Time::FromJsTime(kNotificationTimestamp);
   platform_data.renotify = true;
@@ -124,6 +128,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   EXPECT_EQ(kNotificationBody, web_data.body);
   EXPECT_EQ(kNotificationTag, web_data.tag);
   EXPECT_EQ(kNotificationIconUrl, web_data.icon.string());
+  EXPECT_EQ(kNotificationBadgeUrl, web_data.badge.string());
 
   ASSERT_EQ(vibration_pattern.size(), web_data.vibrate.size());
   for (size_t i = 0; i < vibration_pattern.size(); ++i)

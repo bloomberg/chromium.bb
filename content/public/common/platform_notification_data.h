@@ -71,6 +71,10 @@ struct CONTENT_EXPORT PlatformNotificationData {
   // URL of the icon which is to be displayed with the notification.
   GURL icon;
 
+  // URL of the badge for representing the notification. May be empty if no url
+  // was specified.
+  GURL badge;
+
   // Vibration pattern for the notification, following the syntax of the
   // Vibration API. https://www.w3.org/TR/vibration/
   std::vector<int> vibration_pattern;

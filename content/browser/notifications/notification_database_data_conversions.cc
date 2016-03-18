@@ -51,6 +51,7 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   notification_data->body = base::UTF8ToUTF16(payload.body());
   notification_data->tag = payload.tag();
   notification_data->icon = GURL(payload.icon());
+  notification_data->badge = GURL(payload.badge());
 
   if (payload.vibration_pattern().size() > 0) {
     notification_data->vibration_pattern.assign(
@@ -109,6 +110,7 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   payload->set_body(base::UTF16ToUTF8(notification_data.body));
   payload->set_tag(notification_data.tag);
   payload->set_icon(notification_data.icon.spec());
+  payload->set_badge(notification_data.badge.spec());
 
   for (size_t i = 0; i < notification_data.vibration_pattern.size(); ++i)
     payload->add_vibration_pattern(notification_data.vibration_pattern[i]);

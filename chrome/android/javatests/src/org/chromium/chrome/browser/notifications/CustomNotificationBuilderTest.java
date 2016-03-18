@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.DisplayMetrics;
@@ -144,6 +145,10 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
         largeIcon = largeIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
+        Bitmap smallIcon = Bitmap.createBitmap(
+                new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
+        smallIcon = smallIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
+
         Bitmap actionIcon = Bitmap.createBitmap(
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
         actionIcon = actionIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
@@ -151,6 +156,7 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         Notification notification =
                 new CustomNotificationBuilder(context)
                         .setLargeIcon(largeIcon)
+                        .setSmallIcon(smallIcon)
                         .addAction(actionIcon, "button", createIntent(context, "ActionButton"))
                         .build();
 
@@ -158,9 +164,24 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         assertNotNull(notification.largeIcon);
         assertEquals(Color.RED, notification.largeIcon.getPixel(0, 0));
 
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
+
+        // Small icons should be painted white.
+        int smallIconId = CustomNotificationBuilder.useMaterial() ? R.id.small_icon_overlay
+                                                                  : R.id.small_icon_footer;
+        ImageView smallIconView = (ImageView) bigView.findViewById(smallIconId);
+        Bitmap smallIconBitmap = ((BitmapDrawable) smallIconView.getDrawable()).getBitmap();
+        assertEquals(Color.WHITE, smallIconBitmap.getPixel(0, 0));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            assertEquals(Color.WHITE,
+                    ((BitmapDrawable) notification.getSmallIcon().loadDrawable(context))
+                            .getBitmap()
+                            .getPixel(0, 0));
+        }
+
         // Action icons should be painted white.
         assertEquals(1, notification.actions.length);
-        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         ImageView actionIconView = (ImageView) bigView.findViewById(R.id.button_icon);
         Bitmap actionIconBitmap = ((BitmapDrawable) actionIconView.getDrawable()).getBitmap();
         assertEquals(Color.WHITE, actionIconBitmap.getPixel(0, 0));

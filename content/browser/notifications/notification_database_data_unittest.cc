@@ -27,6 +27,7 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
+const char kNotificationBadgeUrl[] = "https://example.com/badge.png";
 const char kNotificationActionIconUrl[] = "https://example.com/action_icon.png";
 const int kNotificationVibrationPattern[] = {100, 200, 300};
 const double kNotificationTimestamp = 621046800.;
@@ -48,6 +49,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.body = base::ASCIIToUTF16(kNotificationBody);
   notification_data.tag = kNotificationTag;
   notification_data.icon = GURL(kNotificationIconUrl);
+  notification_data.badge = GURL(kNotificationBadgeUrl);
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.timestamp = base::Time::FromJsTime(kNotificationTimestamp);
   notification_data.renotify = true;
@@ -94,6 +96,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   EXPECT_EQ(notification_data.body, copied_notification_data.body);
   EXPECT_EQ(notification_data.tag, copied_notification_data.tag);
   EXPECT_EQ(notification_data.icon, copied_notification_data.icon);
+  EXPECT_EQ(notification_data.badge, copied_notification_data.badge);
 
   EXPECT_THAT(copied_notification_data.vibration_pattern,
               testing::ElementsAreArray(kNotificationVibrationPattern));

@@ -11,7 +11,7 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/vibration/NavigatorVibration.h"
-#include "platform/weborigin/KURL.h"
+#include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -25,6 +25,14 @@ WebNotificationData::Direction toDirectionEnumValue(const String& direction)
         return WebNotificationData::DirectionRightToLeft;
 
     return WebNotificationData::DirectionAuto;
+}
+
+WebURL completeURL(ExecutionContext* executionContext, const String& stringUrl)
+{
+    WebURL url = executionContext->completeURL(stringUrl);
+    if (url.isValid())
+        return url;
+    return WebURL();
 }
 
 } // namespace
@@ -51,15 +59,12 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
     webData.body = options.body();
     webData.tag = options.tag();
 
-    KURL iconUrl;
+    if (options.hasIcon() && !options.icon().isEmpty())
+        webData.icon = completeURL(executionContext, options.icon());
 
-    if (options.hasIcon() && !options.icon().isEmpty()) {
-        iconUrl = executionContext->completeURL(options.icon());
-        if (!iconUrl.isValid())
-            iconUrl = KURL();
-    }
+    if (options.hasBadge() && !options.badge().isEmpty())
+        webData.badge = completeURL(executionContext, options.badge());
 
-    webData.icon = iconUrl;
     webData.vibrate = NavigatorVibration::sanitizeVibrationPattern(options.vibrate());
     webData.timestamp = options.hasTimestamp() ? static_cast<double>(options.timestamp()) : WTF::currentTimeMS();
     webData.renotify = options.renotify();
@@ -88,13 +93,8 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
         webAction.action = action.action();
         webAction.title = action.title();
 
-        KURL iconUrl;
-        if (action.hasIcon() && !action.icon().isEmpty()) {
-            iconUrl = executionContext->completeURL(action.icon());
-            if (!iconUrl.isValid())
-                iconUrl = KURL();
-        }
-        webAction.icon = iconUrl;
+        if (action.hasIcon() && !action.icon().isEmpty())
+            webAction.icon = completeURL(executionContext, action.icon());
 
         actions.append(webAction);
     }

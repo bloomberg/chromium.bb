@@ -446,6 +446,7 @@ interface Notification : EventTarget
     static getter maxActions
     static getter permission
     getter actions
+    getter badge
     getter body
     getter data
     getter dir

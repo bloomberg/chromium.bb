@@ -36,6 +36,8 @@ int CurrentWorkerId() {
 bool HasResourcesToFetch(const blink::WebNotificationData& notification_data) {
   if (!notification_data.icon.isEmpty())
     return true;
+  if (!notification_data.badge.isEmpty())
+    return true;
   for (const auto& action : notification_data.actions) {
     if (!action.icon.isEmpty())
       return true;
