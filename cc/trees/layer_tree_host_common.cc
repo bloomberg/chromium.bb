@@ -677,10 +677,10 @@ enum PropertyTreeOption {
   DONT_BUILD_PROPERTY_TREES
 };
 
-void CalculateRenderTargetInternal(LayerImpl* layer,
-                                   PropertyTrees* property_trees,
-                                   bool subtree_visible_from_ancestor,
-                                   bool can_render_to_separate_surface) {
+void CalculateRenderTarget(LayerImpl* layer,
+                           PropertyTrees* property_trees,
+                           bool subtree_visible_from_ancestor,
+                           bool can_render_to_separate_surface) {
   bool layer_is_drawn;
   DCHECK_GE(layer->effect_tree_index(), 0);
   layer_is_drawn = property_trees->effect_tree.Node(layer->effect_tree_index())
@@ -715,13 +715,13 @@ void CalculateRenderTargetInternal(LayerImpl* layer,
   }
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    CalculateRenderTargetInternal(
+    CalculateRenderTarget(
         LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i),
         property_trees, layer_is_drawn, can_render_to_separate_surface);
   }
 }
 
-void CalculateRenderSurfaceLayerListInternal(
+void CalculateRenderSurfaceLayerList(
     LayerImpl* layer,
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
@@ -825,7 +825,7 @@ void CalculateRenderSurfaceLayerListInternal(
     layer->render_surface()->SetAccumulatedContentRect(gfx::Rect());
 
   for (const auto& child_layer : layer->children()) {
-    CalculateRenderSurfaceLayerListInternal(
+    CalculateRenderSurfaceLayerList(
         child_layer.get(), property_trees, render_surface_layer_list,
         descendants, nearest_occlusion_immune_ancestor, layer_is_drawn,
         can_render_to_separate_surface, current_render_surface_layer_list_id,
@@ -930,25 +930,6 @@ void CalculateRenderSurfaceLayerListInternal(
   }
 }
 
-void CalculateRenderTarget(
-    LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
-  CalculateRenderTargetInternal(inputs->root_layer, inputs->property_trees,
-                                true, inputs->can_render_to_separate_surface);
-}
-
-void CalculateRenderSurfaceLayerList(
-    LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
-  const bool subtree_visible_from_ancestor = true;
-  DCHECK_EQ(
-      inputs->current_render_surface_layer_list_id,
-      inputs->root_layer->layer_tree_impl()->current_render_surface_list_id());
-  CalculateRenderSurfaceLayerListInternal(
-      inputs->root_layer, inputs->property_trees,
-      inputs->render_surface_layer_list, nullptr, nullptr,
-      subtree_visible_from_ancestor, inputs->can_render_to_separate_surface,
-      inputs->current_render_surface_layer_list_id, inputs->max_texture_size);
-}
-
 static void ComputeMaskLayerDrawProperties(const LayerImpl* layer,
                                            LayerImpl* mask_layer) {
   DrawProperties& mask_layer_draw_properties = mask_layer->draw_properties();
@@ -1048,7 +1029,10 @@ void CalculateDrawPropertiesInternal(
 
   DCHECK(inputs->can_render_to_separate_surface ==
          inputs->property_trees->non_root_surfaces_enabled);
-  CalculateRenderTarget(inputs);
+  const bool subtree_visible_from_ancestor = true;
+  CalculateRenderTarget(inputs->root_layer, inputs->property_trees,
+                        subtree_visible_from_ancestor,
+                        inputs->can_render_to_separate_surface);
   for (LayerImpl* layer : visible_layer_list) {
     draw_property_utils::ComputeLayerDrawProperties(
         layer, inputs->property_trees, inputs->layers_always_allowed_lcd_text,
@@ -1061,7 +1045,14 @@ void CalculateDrawPropertiesInternal(
       ComputeMaskLayerDrawProperties(layer, replica_mask_layer);
   }
 
-  CalculateRenderSurfaceLayerList(inputs);
+  DCHECK_EQ(
+      inputs->current_render_surface_layer_list_id,
+      inputs->root_layer->layer_tree_impl()->current_render_surface_list_id());
+  CalculateRenderSurfaceLayerList(
+      inputs->root_layer, inputs->property_trees,
+      inputs->render_surface_layer_list, nullptr, nullptr,
+      subtree_visible_from_ancestor, inputs->can_render_to_separate_surface,
+      inputs->current_render_surface_layer_list_id, inputs->max_texture_size);
 
   if (should_measure_property_tree_performance) {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
