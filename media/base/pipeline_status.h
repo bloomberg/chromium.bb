@@ -15,10 +15,9 @@ namespace media {
 
 // Status states for pipeline.  All codes except PIPELINE_OK indicate errors.
 // Logged to UMA, so never reuse a value, always add new/greater ones!
-// TODO(vrk/scherkus): Trim the unused status codes. (crbug.com/126070)
 enum PipelineStatus {
   PIPELINE_OK = 0,
-  PIPELINE_ERROR_URL_NOT_FOUND = 1,
+  // Deprecated: PIPELINE_ERROR_URL_NOT_FOUND = 1,
   PIPELINE_ERROR_NETWORK = 2,
   PIPELINE_ERROR_DECODE = 3,
   // Deprecated: PIPELINE_ERROR_DECRYPT = 4,
@@ -26,23 +25,35 @@ enum PipelineStatus {
   PIPELINE_ERROR_INITIALIZATION_FAILED = 6,
   PIPELINE_ERROR_COULD_NOT_RENDER = 8,
   PIPELINE_ERROR_READ = 9,
-  PIPELINE_ERROR_OPERATION_PENDING = 10,
+  // Deprecated: PIPELINE_ERROR_OPERATION_PENDING = 10,
   PIPELINE_ERROR_INVALID_STATE = 11,
+
   // Demuxer related errors.
   DEMUXER_ERROR_COULD_NOT_OPEN = 12,
   DEMUXER_ERROR_COULD_NOT_PARSE = 13,
   DEMUXER_ERROR_NO_SUPPORTED_STREAMS = 14,
+
   // Decoder related errors.
   DECODER_ERROR_NOT_SUPPORTED = 15,
+
+  // ChunkDemuxer related errors.
+  CHUNK_DEMUXER_ERROR_APPEND_FAILED = 16,
+  CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR = 17,
+  CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR = 18,
+
+  // Audio rendering errors.
+  AUDIO_RENDERER_ERROR = 19,
+  AUDIO_RENDERER_ERROR_SPLICE_FAILED = 20,
+
   // Must be equal to the largest value ever logged.
-  PIPELINE_STATUS_MAX = DECODER_ERROR_NOT_SUPPORTED,
+  PIPELINE_STATUS_MAX = AUDIO_RENDERER_ERROR_SPLICE_FAILED,
 };
 
 typedef base::Callback<void(PipelineStatus)> PipelineStatusCB;
 
 struct PipelineStatistics {
-  uint64_t audio_bytes_decoded = 0;  // Should be uint64_t?
-  uint32_t video_bytes_decoded = 0;  // Should be uint64_t?
+  uint64_t audio_bytes_decoded = 0;
+  uint64_t video_bytes_decoded = 0;
   uint32_t video_frames_decoded = 0;
   uint32_t video_frames_dropped = 0;
   int64_t audio_memory_usage = 0;

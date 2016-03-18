@@ -637,7 +637,7 @@ void ChunkDemuxer::AppendData(const std::string& id,
         if (!source_state_map_[id]->Append(data, length, append_window_start,
                                            append_window_end,
                                            timestamp_offset)) {
-          ReportError_Locked(PIPELINE_ERROR_DECODE);
+          ReportError_Locked(CHUNK_DEMUXER_ERROR_APPEND_FAILED);
           return;
         }
         break;
@@ -827,6 +827,8 @@ void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
 
   // Give a chance to resume the pending seek process.
   if (status != PIPELINE_OK) {
+    DCHECK(status == CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR ||
+           status == CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR);
     ReportError_Locked(status);
     return;
   }

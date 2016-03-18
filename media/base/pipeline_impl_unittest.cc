@@ -465,14 +465,6 @@ TEST_F(PipelineImplTest, DemuxerErrorDuringStop) {
   message_loop_.RunUntilIdle();
 }
 
-TEST_F(PipelineImplTest, URLNotFound) {
-  EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-      .WillOnce(PostCallback<1>(PIPELINE_ERROR_URL_NOT_FOUND));
-  EXPECT_CALL(*demuxer_, Stop());
-
-  StartPipelineAndExpect(PIPELINE_ERROR_URL_NOT_FOUND);
-}
-
 TEST_F(PipelineImplTest, NoStreams) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
       .WillOnce(PostCallback<1>(PIPELINE_OK));

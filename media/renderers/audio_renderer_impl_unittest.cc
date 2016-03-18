@@ -785,7 +785,7 @@ TEST_F(AudioRendererImplTest, OnRenderErrorCausesDecodeError) {
   Preroll();
   StartTicking();
 
-  EXPECT_CALL(*this, OnError(PIPELINE_ERROR_DECODE));
+  EXPECT_CALL(*this, OnError(AUDIO_RENDERER_ERROR));
   sink_->OnRenderError();
   base::RunLoop().RunUntilIdle();
 }

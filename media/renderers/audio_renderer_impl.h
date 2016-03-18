@@ -130,7 +130,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Helper functions for AudioDecoder::Status values passed to
   // DecodedAudioReady().
-  void HandleAbortedReadOrDecodeError(bool is_decode_error);
+  void HandleAbortedReadOrDecodeError(PipelineStatus status);
 
   void StartRendering_Locked();
   void StopRendering_Locked();

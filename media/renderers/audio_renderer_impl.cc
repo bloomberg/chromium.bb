@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
@@ -29,21 +28,6 @@
 #include "media/filters/decrypting_demuxer_stream.h"
 
 namespace media {
-
-namespace {
-
-enum AudioRendererEvent {
-  INITIALIZED,
-  RENDER_ERROR,
-  RENDER_EVENT_MAX = RENDER_ERROR,
-};
-
-void HistogramRendererEvent(AudioRendererEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.AudioRendererEvents", event, RENDER_EVENT_MAX + 1);
-}
-
-}  // namespace
 
 AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -436,8 +420,6 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
 
   ChangeState_Locked(kFlushed);
 
-  HistogramRendererEvent(INITIALIZED);
-
   {
     base::AutoUnlock auto_unlock(lock_);
     sink_->Initialize(audio_parameters_, this);
@@ -471,12 +453,12 @@ void AudioRendererImpl::DecodedAudioReady(
 
   if (status == AudioBufferStream::ABORTED ||
       status == AudioBufferStream::DEMUXER_READ_ABORTED) {
-    HandleAbortedReadOrDecodeError(false);
+    HandleAbortedReadOrDecodeError(PIPELINE_OK);
     return;
   }
 
   if (status == AudioBufferStream::DECODE_ERROR) {
-    HandleAbortedReadOrDecodeError(true);
+    HandleAbortedReadOrDecodeError(PIPELINE_ERROR_DECODE);
     return;
   }
 
@@ -494,13 +476,13 @@ void AudioRendererImpl::DecodedAudioReady(
     buffer_converter_->AddInput(buffer);
     while (buffer_converter_->HasNextBuffer()) {
       if (!splicer_->AddInput(buffer_converter_->GetNextBuffer())) {
-        HandleAbortedReadOrDecodeError(true);
+        HandleAbortedReadOrDecodeError(AUDIO_RENDERER_ERROR_SPLICE_FAILED);
         return;
       }
     }
   } else {
     if (!splicer_->AddInput(buffer)) {
-      HandleAbortedReadOrDecodeError(true);
+      HandleAbortedReadOrDecodeError(AUDIO_RENDERER_ERROR_SPLICE_FAILED);
       return;
     }
   }
@@ -776,24 +758,17 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
 }
 
 void AudioRendererImpl::OnRenderError() {
-  // UMA data tells us this happens ~0.01% of the time. Trigger an error instead
-  // of trying to gracefully fall back to a fake sink. It's very likely
-  // OnRenderError() should be removed and the audio stack handle errors without
-  // notifying clients. See http://crbug.com/234708 for details.
-  HistogramRendererEvent(RENDER_ERROR);
-
   MEDIA_LOG(ERROR, media_log_) << "audio render error";
 
   // Post to |task_runner_| as this is called on the audio callback thread.
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(error_cb_, PIPELINE_ERROR_DECODE));
+                         base::Bind(error_cb_, AUDIO_RENDERER_ERROR));
 }
 
-void AudioRendererImpl::HandleAbortedReadOrDecodeError(bool is_decode_error) {
+void AudioRendererImpl::HandleAbortedReadOrDecodeError(PipelineStatus status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
-  PipelineStatus status = is_decode_error ? PIPELINE_ERROR_DECODE : PIPELINE_OK;
   switch (state_) {
     case kUninitialized:
     case kInitializing:
@@ -806,7 +781,8 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(bool is_decode_error) {
         return;
       }
 
-      MEDIA_LOG(ERROR, media_log_) << "audio decode error during flushing";
+      MEDIA_LOG(ERROR, media_log_) << "audio error during flushing, status: "
+                                   << MediaLog::PipelineStatusToString(status);
       error_cb_.Run(status);
       base::ResetAndReturn(&flush_cb_).Run();
       return;
@@ -814,7 +790,9 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(bool is_decode_error) {
     case kFlushed:
     case kPlaying:
       if (status != PIPELINE_OK) {
-        MEDIA_LOG(ERROR, media_log_) << "audio decode error during playing";
+        MEDIA_LOG(ERROR, media_log_)
+            << "audio error during playing, status: "
+            << MediaLog::PipelineStatusToString(status);
         error_cb_.Run(status);
       }
       return;

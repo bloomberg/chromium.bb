@@ -818,9 +818,8 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   bool InitDemuxerWithEncryptionInfo(
       int stream_flags, bool is_audio_encrypted, bool is_video_encrypted) {
-
     PipelineStatus expected_status =
-        (stream_flags != 0) ? PIPELINE_OK : PIPELINE_ERROR_DECODE;
+        (stream_flags != 0) ? PIPELINE_OK : CHUNK_DEMUXER_ERROR_APPEND_FAILED;
 
     base::TimeDelta expected_duration = kNoTimestamp();
     if (expected_status == PIPELINE_OK)
@@ -1713,7 +1712,7 @@ TEST_F(ChunkDemuxerTest, ErrorWhileParsingClusterAfterInit) {
   AppendCluster(kDefaultFirstCluster());
 
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
+  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
   AppendGarbage();
 }
 
@@ -1816,7 +1815,7 @@ TEST_F(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
 
   EXPECT_MEDIA_LOG(WebMOutOfOrderTimecode());
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
+  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
   AppendCluster(cb.Finish());
 
   // Verify that AppendData() ignores data after the error.
@@ -1843,7 +1842,7 @@ TEST_F(ChunkDemuxerTest, BackwardsAndBeforeClusterTimecode) {
 
   EXPECT_MEDIA_LOG(WebMNegativeTimecodeOffset("-2"));
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
+  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
   AppendCluster(cb.Finish());
 
   // Verify that AppendData() ignores data after the error.
@@ -1871,7 +1870,7 @@ TEST_F(ChunkDemuxerTest, PerStreamMonotonicallyIncreasingTimestamps) {
 
   EXPECT_MEDIA_LOG(WebMOutOfOrderTimecode());
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
+  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
   AppendCluster(cb.Finish());
 }
 
@@ -1880,7 +1879,7 @@ TEST_F(ChunkDemuxerTest, PerStreamMonotonicallyIncreasingTimestamps) {
 TEST_F(ChunkDemuxerTest, ClusterBeforeInitSegment) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_, NewExpectedStatusCB(PIPELINE_ERROR_DECODE), true);
+      &host_, NewExpectedStatusCB(CHUNK_DEMUXER_ERROR_APPEND_FAILED), true);
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
@@ -1926,8 +1925,9 @@ TEST_F(ChunkDemuxerTest, DecodeErrorEndOfStream) {
   AppendCluster(kDefaultFirstCluster());
   CheckExpectedRanges(kDefaultFirstClusterRange);
 
-  EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
-  MarkEndOfStream(PIPELINE_ERROR_DECODE);
+  EXPECT_CALL(host_,
+              OnDemuxerError(CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR));
+  MarkEndOfStream(CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR);
   CheckExpectedRanges(kDefaultFirstClusterRange);
 }
 
@@ -1937,8 +1937,9 @@ TEST_F(ChunkDemuxerTest, NetworkErrorEndOfStream) {
   AppendCluster(kDefaultFirstCluster());
   CheckExpectedRanges(kDefaultFirstClusterRange);
 
-  EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_NETWORK));
-  MarkEndOfStream(PIPELINE_ERROR_NETWORK);
+  EXPECT_CALL(host_,
+              OnDemuxerError(CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR));
+  MarkEndOfStream(CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR);
 }
 
 // Helper class to reduce duplicate code when testing end of stream
@@ -2333,8 +2334,9 @@ TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
 TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_, CreateInitDoneCB(
-          kNoTimestamp(), PIPELINE_ERROR_DECODE), true);
+      &host_,
+      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      true);
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
@@ -2348,8 +2350,9 @@ TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
 TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_, CreateInitDoneCB(kNoTimestamp(),
-                               PIPELINE_ERROR_DECODE), true);
+      &host_,
+      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      true);
 
   std::vector<std::string> codecs(1);
   codecs[0] = "vorbis";
@@ -2368,8 +2371,9 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
 TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_, CreateInitDoneCB(kNoTimestamp(),
-                               PIPELINE_ERROR_DECODE), true);
+      &host_,
+      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      true);
 
   std::vector<std::string> codecs(1);
   codecs[0] = "vp8";
@@ -2388,7 +2392,9 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
 TEST_F(ChunkDemuxerTest, AudioOnlyHeaderWithAVType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_, CreateInitDoneCB(kNoTimestamp(), PIPELINE_ERROR_DECODE), true);
+      &host_,
+      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      true);
 
   std::vector<std::string> codecs(2);
   codecs[0] = "vorbis";
@@ -2408,7 +2414,9 @@ TEST_F(ChunkDemuxerTest, AudioOnlyHeaderWithAVType) {
 TEST_F(ChunkDemuxerTest, VideoOnlyHeaderWithAVType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
-      &host_, CreateInitDoneCB(kNoTimestamp(), PIPELINE_ERROR_DECODE), true);
+      &host_,
+      CreateInitDoneCB(kNoTimestamp(), CHUNK_DEMUXER_ERROR_APPEND_FAILED),
+      true);
 
   std::vector<std::string> codecs(2);
   codecs[0] = "vorbis";
@@ -4179,7 +4187,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
 TEST_F(ChunkDemuxerTest, StartWaitingForSeekAfterParseError) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   EXPECT_MEDIA_LOG(StreamParsingFailed());
-  EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
+  EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
   AppendGarbage();
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(50);
   demuxer_->StartWaitingForSeek(seek_time);

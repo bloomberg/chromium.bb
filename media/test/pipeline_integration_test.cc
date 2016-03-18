@@ -1201,7 +1201,7 @@ TEST_F(PipelineIntegrationTest,
   source.EndOfStream();
 
   message_loop_.Run();
-  EXPECT_EQ(PIPELINE_ERROR_DECODE, pipeline_status_);
+  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, pipeline_status_);
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
@@ -1211,7 +1211,7 @@ TEST_F(PipelineIntegrationTest,
 
   Play();
 
-  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, WaitUntilEndedOrError());
   source.Shutdown();
 }
 
@@ -1239,7 +1239,7 @@ TEST_F(PipelineIntegrationTest,
 
   Play();
 
-  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, WaitUntilEndedOrError());
   source.Shutdown();
 }
 
@@ -1534,7 +1534,7 @@ TEST_F(PipelineIntegrationTest,
   source.EndOfStream();
 
   message_loop_.Run();
-  EXPECT_EQ(PIPELINE_ERROR_DECODE, pipeline_status_);
+  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, pipeline_status_);
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
@@ -1544,7 +1544,7 @@ TEST_F(PipelineIntegrationTest,
 
   Play();
 
-  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, WaitUntilEndedOrError());
   source.Shutdown();
 }
 
@@ -1572,7 +1572,7 @@ TEST_F(PipelineIntegrationTest,
 
   Play();
 
-  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+  EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED, WaitUntilEndedOrError());
   source.Shutdown();
 }
 

@@ -68,7 +68,7 @@ class RendererImplTest : public ::testing::Test {
                              scoped_ptr<AudioRenderer>(audio_renderer_),
                              scoped_ptr<VideoRenderer>(video_renderer_))),
         cdm_context_(new StrictMock<MockCdmContext>()),
-        initialization_status_(PIPELINE_ERROR_OPERATION_PENDING) {
+        initialization_status_(PIPELINE_OK) {
     // SetDemuxerExpectations() adds overriding expectations for expected
     // non-NULL streams.
     DemuxerStream* null_pointer = NULL;
@@ -306,7 +306,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitialize) {
               Initialize(video_stream_.get(), _, _, _, _, _, _, _, _));
 
   InitializeAndExpect(PIPELINE_ERROR_ABORT);
-  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+  EXPECT_EQ(PIPELINE_OK, initialization_status_);
 
   Destroy();
 }
@@ -320,7 +320,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitializeWithoutCdm) {
   // VideoRenderer::Initialize() should not be called. The InitCB will be
   // aborted when |renderer_impl_| is destructed.
   InitializeAndExpect(PIPELINE_ERROR_ABORT);
-  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+  EXPECT_EQ(PIPELINE_OK, initialization_status_);
 
   Destroy();
 }
@@ -332,7 +332,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitializeAfterSetCdm) {
   // Audio is clear and video is encrypted. Initialization will not start
   // because no CDM is set.
   InitializeAndExpect(PIPELINE_ERROR_ABORT);
-  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+  EXPECT_EQ(PIPELINE_OK, initialization_status_);
 
   SetAudioRendererInitializeExpectations(PIPELINE_OK);
   // Not returning the video initialization callback. So initialization will
@@ -343,7 +343,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitializeAfterSetCdm) {
   // SetCdm() will trigger the initialization to start. But it will not complete
   // because the |video_renderer_| is not returning the initialization callback.
   SetCdmAndExpect(false);
-  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+  EXPECT_EQ(PIPELINE_OK, initialization_status_);
 
   Destroy();
 }
@@ -409,7 +409,7 @@ TEST_F(RendererImplTest, SetCdmAfterInitialize_EncryptedStream_Success) {
   SetVideoRendererInitializeExpectations(PIPELINE_OK);
   InitializeAndExpect(PIPELINE_OK);
   // Initialization is pending until CDM is set.
-  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+  EXPECT_EQ(PIPELINE_OK, initialization_status_);
 
   SetCdmAndExpect(true);
   EXPECT_EQ(PIPELINE_OK, initialization_status_);
@@ -423,7 +423,7 @@ TEST_F(RendererImplTest, SetCdmAfterInitialize_EncryptedStream_Failure) {
   SetVideoRendererInitializeExpectations(PIPELINE_ERROR_INITIALIZATION_FAILED);
   InitializeAndExpect(PIPELINE_ERROR_INITIALIZATION_FAILED);
   // Initialization is pending until CDM is set.
-  EXPECT_EQ(PIPELINE_ERROR_OPERATION_PENDING, initialization_status_);
+  EXPECT_EQ(PIPELINE_OK, initialization_status_);
 
   SetCdmAndExpect(false);
   EXPECT_EQ(PIPELINE_ERROR_INITIALIZATION_FAILED, initialization_status_);

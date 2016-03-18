@@ -19595,6 +19595,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.AudioRendererEvents" enum="AudioRendererEvents">
+  <obsolete>
+    Deprecated Mar 2016 in favor of a new PipelineStatus code.
+  </obsolete>
   <owner>scherkus@chromium.org</owner>
   <summary>Captures statistics for various AudioRendererImpl events.</summary>
 </histogram>
@@ -77419,6 +77422,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="13" label="DEMUXER_ERROR_COULD_NOT_PARSE"/>
   <int value="14" label="DEMUXER_ERROR_NO_SUPPORTED_STREAMS"/>
   <int value="15" label="DECODER_ERROR_NOT_SUPPORTED"/>
+  <int value="16" label="CHUNK_DEMUXER_ERROR_APPEND_FAILED"/>
+  <int value="17" label="CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR"/>
+  <int value="18" label="CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR"/>
+  <int value="19" label="AUDIO_RENDERER_ERROR"/>
+  <int value="20" label="AUDIO_RENDERER_ERROR_SPLICE_FAILED"/>
 </enum>
 
 <enum name="PlatformFileError" type="int">
