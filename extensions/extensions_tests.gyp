@@ -61,6 +61,11 @@
             'browser/api/webcam_private/visca_webcam_unittest.cc',
           ],
         }],
+        ['enable_wifi_display==1', {
+          'sources': [
+            '<@(extensions_unittests_sources_wifi_display)',
+          ],
+        }],
       ],
     },
     {

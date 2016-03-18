@@ -99,6 +99,7 @@ declare_args() {
   use_cups = (is_desktop_linux || is_mac) && !is_chromecast && !is_headless
 
   # Enables Wi-Fi Display functionality
+  # WARNING: This enables MPEG Transport Stream (MPEG-TS) encoding!
   enable_wifi_display = false
 }
 

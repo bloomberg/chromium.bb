@@ -1034,10 +1034,13 @@
       'renderer/worker_script_context_set.h',
     ],
     'extensions_renderer_sources_wifi_display': [
+      'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.cc',
+      'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.h',
       'renderer/api/display_source/wifi_display/wifi_display_media_manager.cc',
       'renderer/api/display_source/wifi_display/wifi_display_media_manager.h',
       'renderer/api/display_source/wifi_display/wifi_display_session.cc',
       'renderer/api/display_source/wifi_display/wifi_display_session.h',
+      'renderer/api/display_source/wifi_display/wifi_display_stream_packet_part.h',
     ],
     'extensions_utility_sources': [
       'utility/unpacker.cc',

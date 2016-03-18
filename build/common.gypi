@@ -89,6 +89,7 @@
           'enable_wayland_server%' : 0,
 
           # Enable Wi-Fi Display support.
+          # WARNING: This enables MPEG Transport Stream (MPEG-TS) encoding!
           'enable_wifi_display%' : 0,
 
           # By default we build against a stable sysroot image to avoid
