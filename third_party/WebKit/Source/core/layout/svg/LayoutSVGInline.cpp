@@ -75,10 +75,10 @@ FloatRect LayoutSVGInline::strokeBoundingBox() const
     return FloatRect();
 }
 
-FloatRect LayoutSVGInline::paintInvalidationRectInLocalCoordinates() const
+FloatRect LayoutSVGInline::paintInvalidationRectInLocalSVGCoordinates() const
 {
     if (const LayoutSVGText* textRoot = LayoutSVGText::locateLayoutSVGTextAncestor(this))
-        return textRoot->paintInvalidationRectInLocalCoordinates();
+        return textRoot->paintInvalidationRectInLocalSVGCoordinates();
 
     return FloatRect();
 }

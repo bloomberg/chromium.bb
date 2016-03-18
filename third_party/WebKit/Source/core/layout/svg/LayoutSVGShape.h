@@ -78,7 +78,7 @@ public:
     bool hasNonScalingStroke() const { return style()->svgStyle().vectorEffect() == VE_NON_SCALING_STROKE; }
     Path* nonScalingStrokePath(const Path*, const AffineTransform&) const;
     AffineTransform nonScalingStrokeTransform() const;
-    AffineTransform localTransform() const final { return m_localTransform; }
+    AffineTransform localSVGTransform() const final { return m_localTransform; }
 
     virtual const Vector<MarkerPosition>* markerPositions() const { return nullptr; }
 
@@ -112,7 +112,7 @@ private:
     bool fillContains(const FloatPoint&, bool requiresFill = true, const WindRule fillRule = RULE_NONZERO);
     bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
-    const AffineTransform& localToParentTransform() const final { return m_localTransform; }
+    const AffineTransform& localToSVGParentTransform() const final { return m_localTransform; }
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*,
         const PaintInvalidationState* = nullptr) const override;
 

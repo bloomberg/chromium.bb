@@ -49,7 +49,7 @@ public:
 
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
 
-    FloatRect paintInvalidationRectInLocalCoordinates() const final { return m_paintInvalidationBoundingBox; }
+    FloatRect paintInvalidationRectInLocalSVGCoordinates() const final { return m_paintInvalidationBoundingBox; }
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
     void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;

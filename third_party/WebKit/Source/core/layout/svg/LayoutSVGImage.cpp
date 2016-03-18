@@ -122,7 +122,7 @@ bool LayoutSVGImage::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& p
     bool isVisible = (style()->visibility() == VISIBLE);
     if (isVisible || !hitRules.requireVisible) {
         FloatPoint localPoint;
-        if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
+        if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToSVGParentTransform(), pointInParent, localPoint))
             return false;
 
         if (hitRules.canHitFill || hitRules.canHitBoundingBox) {
@@ -153,7 +153,7 @@ void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
 void LayoutSVGImage::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&, IncludeBlockVisualOverflowOrNot) const
 {
     // this is called from paint() after the localTransform has already been applied
-    rects.append(LayoutRect(paintInvalidationRectInLocalCoordinates()));
+    rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
 }
 
 } // namespace blink

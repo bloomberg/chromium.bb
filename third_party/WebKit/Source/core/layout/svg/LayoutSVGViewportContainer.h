@@ -48,7 +48,7 @@ private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || LayoutSVGContainer::isOfType(type); }
 
     AffineTransform viewportTransform() const;
-    const AffineTransform& localToParentTransform() const override { return m_localToParentTransform; }
+    const AffineTransform& localToSVGParentTransform() const override { return m_localToParentTransform; }
 
     void calcViewport() override;
     bool calculateLocalTransform() override;

@@ -214,7 +214,7 @@ void LayoutSVGShape::paint(const PaintInfo& paintInfo, const LayoutPoint&) const
 // while transformed to our coord system, return local coords
 void LayoutSVGShape::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&, IncludeBlockVisualOverflowOrNot) const
 {
-    rects.append(LayoutRect(paintInvalidationRectInLocalCoordinates()));
+    rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
 }
 
 bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
@@ -224,7 +224,7 @@ bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& p
         return false;
 
     FloatPoint localPoint;
-    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
+    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToSVGParentTransform(), pointInParent, localPoint))
         return false;
 
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, result.hitTestRequest(), style()->pointerEvents());

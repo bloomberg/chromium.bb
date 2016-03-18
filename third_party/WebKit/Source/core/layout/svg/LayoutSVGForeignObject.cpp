@@ -51,9 +51,9 @@ void LayoutSVGForeignObject::paint(const PaintInfo& paintInfo, const LayoutPoint
     SVGForeignObjectPainter(*this).paint(paintInfo);
 }
 
-const AffineTransform& LayoutSVGForeignObject::localToParentTransform() const
+const AffineTransform& LayoutSVGForeignObject::localToSVGParentTransform() const
 {
-    m_localToParentTransform = localTransform();
+    m_localToParentTransform = localSVGTransform();
     m_localToParentTransform.translate(m_viewport.x(), m_viewport.y());
     return m_localToParentTransform;
 }
@@ -126,7 +126,7 @@ bool LayoutSVGForeignObject::nodeAtFloatPoint(HitTestResult& result, const Float
     if (hitTestAction != HitTestForeground)
         return false;
 
-    AffineTransform localTransform = this->localTransform();
+    AffineTransform localTransform = this->localSVGTransform();
     if (!localTransform.isInvertible())
         return false;
 

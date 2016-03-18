@@ -46,7 +46,7 @@ public:
     void layout() override;
     void calcViewport() override;
 
-    const AffineTransform& localToParentTransform() const override;
+    const AffineTransform& localToSVGParentTransform() const override;
     AffineTransform markerTransformation(const FloatPoint& origin, float angle, float strokeWidth) const;
 
     FloatPoint referencePoint() const;

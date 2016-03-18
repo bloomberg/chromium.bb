@@ -54,7 +54,7 @@ public:
 
     FloatRect objectBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
     FloatRect strokeBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
-    FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
+    FloatRect paintInvalidationRectInLocalSVGCoordinates() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
 
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGForeignObject || LayoutSVGBlock::isOfType(type); }
@@ -67,7 +67,7 @@ private:
     void updateLogicalWidth() override;
     void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    const AffineTransform& localToParentTransform() const override;
+    const AffineTransform& localToSVGParentTransform() const override;
 
     bool m_needsTransformUpdate : 1;
     FloatRect m_viewport;

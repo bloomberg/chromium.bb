@@ -78,8 +78,8 @@ PassRefPtrWillBeRawPtr<FEImage> FEImage::createWithIRIReference(Filter* filter, 
 
 static FloatRect getLayoutObjectRepaintRect(LayoutObject* layoutObject)
 {
-    return layoutObject->localToParentTransform().mapRect(
-        layoutObject->paintInvalidationRectInLocalCoordinates());
+    return layoutObject->localToSVGParentTransform().mapRect(
+        layoutObject->paintInvalidationRectInLocalSVGCoordinates());
 }
 
 AffineTransform makeMapBetweenRects(const FloatRect& source, const FloatRect& dest)

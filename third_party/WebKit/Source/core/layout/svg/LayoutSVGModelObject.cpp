@@ -127,7 +127,7 @@ bool LayoutSVGModelObject::nodeAtPoint(HitTestResult&, const HitTestLocation&, c
 // returns incorrect values for SVG objects. Overriding this method provides access to the absolute bounds.
 IntRect LayoutSVGModelObject::absoluteElementBoundingBoxRect() const
 {
-    return localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalCoordinates())).enclosingBoundingBox();
+    return localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalSVGCoordinates())).enclosingBoundingBox();
 }
 
 void LayoutSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)

@@ -102,7 +102,7 @@ void PaintInvalidationState::updatePaintOffsetAndClipForChildren()
         ASSERT(m_currentObject.isSVG());
         ASSERT(!establishesPaintInvalidationContainer);
         if (m_cachedOffsetsEnabled)
-            m_svgTransform = AffineTransform(m_svgTransform * m_currentObject.localToParentTransform());
+            m_svgTransform = AffineTransform(m_svgTransform * m_currentObject.localToSVGParentTransform());
         return;
     }
 

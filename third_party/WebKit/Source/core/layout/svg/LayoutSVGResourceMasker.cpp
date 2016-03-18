@@ -100,7 +100,7 @@ void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
         const ComputedStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
-        m_maskContentBoundaries.unite(layoutObject->localToParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalCoordinates()));
+        m_maskContentBoundaries.unite(layoutObject->localToSVGParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalSVGCoordinates()));
     }
 }
 

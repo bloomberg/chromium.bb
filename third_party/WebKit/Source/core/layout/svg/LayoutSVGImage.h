@@ -44,7 +44,7 @@ public:
     LayoutImageResource* imageResource() { return m_imageResource.get(); }
     const LayoutImageResource* imageResource() const { return m_imageResource.get(); }
 
-    const AffineTransform& localToParentTransform() const override { return m_localTransform; }
+    const AffineTransform& localToSVGParentTransform() const override { return m_localTransform; }
     RefPtr<const SkPicture>& bufferedForeground() { return m_bufferedForeground; }
 
     FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
@@ -69,7 +69,7 @@ private:
 
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
-    AffineTransform localTransform() const override { return m_localTransform; }
+    AffineTransform localSVGTransform() const override { return m_localTransform; }
 
     bool m_needsBoundariesUpdate : 1;
     bool m_needsTransformUpdate : 1;

@@ -409,7 +409,7 @@ bool LayoutSVGText::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& po
             || (hitRules.canHitStroke && (style()->svgStyle().hasStroke() || !hitRules.requireStroke))
             || (hitRules.canHitFill && (style()->svgStyle().hasFill() || !hitRules.requireFill))) {
             FloatPoint localPoint;
-            if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
+            if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToSVGParentTransform(), pointInParent, localPoint))
                 return false;
 
             if (hitRules.canHitBoundingBox && !objectBoundingBox().contains(localPoint))
@@ -466,7 +466,7 @@ FloatRect LayoutSVGText::strokeBoundingBox() const
     return strokeBoundaries;
 }
 
-FloatRect LayoutSVGText::paintInvalidationRectInLocalCoordinates() const
+FloatRect LayoutSVGText::paintInvalidationRectInLocalSVGCoordinates() const
 {
     FloatRect paintInvalidationRect = strokeBoundingBox();
     SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, paintInvalidationRect);

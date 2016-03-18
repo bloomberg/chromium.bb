@@ -3405,21 +3405,19 @@ FloatRect LayoutObject::strokeBoundingBox() const
     return FloatRect();
 }
 
-// Returns the smallest rectangle enclosing all of the painted content
-// respecting clipping, masking, filters, opacity, stroke-width and markers
-FloatRect LayoutObject::paintInvalidationRectInLocalCoordinates() const
+FloatRect LayoutObject::paintInvalidationRectInLocalSVGCoordinates() const
 {
     ASSERT_NOT_REACHED();
     return FloatRect();
 }
 
-AffineTransform LayoutObject::localTransform() const
+AffineTransform LayoutObject::localSVGTransform() const
 {
     static const AffineTransform identity;
     return identity;
 }
 
-const AffineTransform& LayoutObject::localToParentTransform() const
+const AffineTransform& LayoutObject::localToSVGParentTransform() const
 {
     static const AffineTransform identity;
     return identity;

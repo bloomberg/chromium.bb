@@ -45,7 +45,7 @@ public:
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*, const PaintInvalidationState* = nullptr) const override { return LayoutRect(); }
     FloatRect objectBoundingBox() const override { return FloatRect(); }
     FloatRect strokeBoundingBox() const override { return FloatRect(); }
-    FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(); }
+    FloatRect paintInvalidationRectInLocalSVGCoordinates() const override { return FloatRect(); }
 
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

@@ -42,7 +42,7 @@ public:
     // this element, since we need it for filters.
     FloatRect objectBoundingBox() const final;
     FloatRect strokeBoundingBox() const final;
-    FloatRect paintInvalidationRectInLocalCoordinates() const final;
+    FloatRect paintInvalidationRectInLocalSVGCoordinates() const final;
 
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const final;
     void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const final;

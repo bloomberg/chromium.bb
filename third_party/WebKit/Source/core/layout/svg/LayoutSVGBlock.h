@@ -36,7 +36,7 @@ public:
     void mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const final;
     const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const final;
 
-    AffineTransform localTransform() const final { return m_localTransform; }
+    AffineTransform localSVGTransform() const final { return m_localTransform; }
 
     PaintLayerType layerTypeRequired() const final { return NoPaintLayer; }
 

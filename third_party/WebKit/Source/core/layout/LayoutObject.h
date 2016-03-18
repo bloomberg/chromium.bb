@@ -613,20 +613,22 @@ public:
 
     // Returns the smallest rectangle enclosing all of the painted content
     // respecting clipping, masking, filters, opacity, stroke-width and markers
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const;
+    virtual FloatRect paintInvalidationRectInLocalSVGCoordinates() const;
 
-    // This only returns the transform="" value from the element
-    // most callsites want localToParentTransform() instead.
-    virtual AffineTransform localTransform() const;
+    // This only returns the transform="" value from the SVG element.
+    // Most callsites want localToParentTransform() instead.
+    virtual AffineTransform localSVGTransform() const;
 
     // Returns the full transform mapping from local coordinates to local coords for the parent SVG layoutObject
     // This includes any viewport transforms and x/y offsets as well as the transform="" value off the element.
-    virtual const AffineTransform& localToParentTransform() const;
+    virtual const AffineTransform& localToSVGParentTransform() const;
 
     // SVG uses FloatPoint precise hit testing, and passes the point in parent
-    // coordinates instead of in paint invalidaiton container coordinates. Eventually the
+    // coordinates instead of in paint invalidation container coordinates. Eventually the
     // rest of the layout tree will move to a similar model.
     virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
+
+    // End of SVG-specific methods.
 
     bool isAnonymous() const { return m_bitfields.isAnonymous(); }
     bool isAnonymousBlock() const

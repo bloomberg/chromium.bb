@@ -273,8 +273,8 @@ static void writeStyle(TextStream& ts, const LayoutObject& object)
     const ComputedStyle& style = object.styleRef();
     const SVGComputedStyle& svgStyle = style.svgStyle();
 
-    if (!object.localTransform().isIdentity())
-        writeNameValuePair(ts, "transform", object.localTransform());
+    if (!object.localSVGTransform().isIdentity())
+        writeNameValuePair(ts, "transform", object.localSVGTransform());
     writeIfNotDefault(ts, "image rendering", style.imageRendering(), ComputedStyle::initialImageRendering());
     writeIfNotDefault(ts, "opacity", style.opacity(), ComputedStyle::initialOpacity());
     if (object.isSVGShape()) {

@@ -41,7 +41,7 @@ public:
     void setNeedsPositioningValuesUpdate() { m_needsPositioningValuesUpdate = true; }
     void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
     void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
-    FloatRect paintInvalidationRectInLocalCoordinates() const override;
+    FloatRect paintInvalidationRectInLocalSVGCoordinates() const override;
     FloatRect objectBoundingBox() const override { return FloatRect(frameRect()); }
     FloatRect strokeBoundingBox() const override;
     bool isObjectBoundingBoxValid() const;
@@ -57,7 +57,7 @@ public:
     void subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
     void subtreeTextDidChange(LayoutSVGInlineText*);
 
-    const AffineTransform& localToParentTransform() const override { return m_localTransform; }
+    const AffineTransform& localToSVGParentTransform() const override { return m_localTransform; }
 
     const char* name() const override { return "LayoutSVGText"; }
 

@@ -178,7 +178,7 @@ static FloatPoint3D transformOrigin(const LayoutBox& box)
 static PassRefPtr<TransformPaintPropertyNode> createTransformIfNeeded(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
     if (object.isSVG() && !object.isSVGRoot()) {
-        const AffineTransform& transform = object.localToParentTransform();
+        const AffineTransform& transform = object.localToSVGParentTransform();
         if (transform.isIdentity())
             return nullptr;
 

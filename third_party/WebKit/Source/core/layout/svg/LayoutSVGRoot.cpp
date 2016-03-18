@@ -162,7 +162,7 @@ void LayoutSVGRoot::layout()
     addVisualEffectOverflow();
 
     if (!shouldApplyViewportClip()) {
-        FloatRect contentPaintInvalidationRect = paintInvalidationRectInLocalCoordinates();
+        FloatRect contentPaintInvalidationRect = paintInvalidationRectInLocalSVGCoordinates();
         contentPaintInvalidationRect = m_localToBorderBoxTransform.mapRect(contentPaintInvalidationRect);
         addVisualOverflow(enclosingLayoutRect(contentPaintInvalidationRect));
     }
@@ -278,13 +278,13 @@ PositionWithAffinity LayoutSVGRoot::positionForPoint(const LayoutPoint& point)
         return LayoutReplaced::positionForPoint(point);
 
     LayoutObject* layoutObject = closestDescendant;
-    AffineTransform transform = layoutObject->localToParentTransform();
+    AffineTransform transform = layoutObject->localToSVGParentTransform();
     transform.translate(toLayoutSVGText(layoutObject)->location().x(), toLayoutSVGText(layoutObject)->location().y());
     while (layoutObject) {
         layoutObject = layoutObject->parent();
         if (layoutObject->isSVGRoot())
             break;
-        transform = layoutObject->localToParentTransform() * transform;
+        transform = layoutObject->localToSVGParentTransform() * transform;
     }
 
     absolutePoint = transform.inverse().mapPoint(absolutePoint);
@@ -307,7 +307,7 @@ void LayoutSVGRoot::buildLocalToBorderBoxTransform()
     m_localToBorderBoxTransform.preMultiply(viewToBorderBoxTransform);
 }
 
-const AffineTransform& LayoutSVGRoot::localToParentTransform() const
+const AffineTransform& LayoutSVGRoot::localToSVGParentTransform() const
 {
     // Slightly optimized version of m_localToParentTransform = AffineTransform::translation(x(), y()) * m_localToBorderBoxTransform;
     m_localToParentTransform = m_localToBorderBoxTransform;
@@ -330,7 +330,7 @@ LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBo
         return LayoutRect();
 
     // Compute the paint invalidation rect of the content of the SVG in the border-box coordinate space.
-    FloatRect contentPaintInvalidationRect = paintInvalidationRectInLocalCoordinates();
+    FloatRect contentPaintInvalidationRect = paintInvalidationRectInLocalSVGCoordinates();
     contentPaintInvalidationRect = m_localToBorderBoxTransform.mapRect(contentPaintInvalidationRect);
 
     // Apply initial viewport clip, overflow:visible content is added to visualOverflow
@@ -394,7 +394,7 @@ bool LayoutSVGRoot::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     // don't clip to the viewport, the visual overflow rect.
     // FIXME: This should be an intersection when rect-based hit tests are supported by nodeAtFloatPoint.
     if (contentBoxRect().contains(pointInBorderBox) || (!shouldApplyViewportClip() && visualOverflowRect().contains(pointInBorderBox))) {
-        const AffineTransform& localToParentTransform = this->localToParentTransform();
+        const AffineTransform& localToParentTransform = this->localToSVGParentTransform();
         if (localToParentTransform.isInvertible()) {
             FloatPoint localPoint = localToParentTransform.inverse().mapPoint(FloatPoint(pointInParent));
 

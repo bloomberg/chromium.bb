@@ -93,11 +93,11 @@ private:
     void insertedIntoTree() override;
     void willBeRemovedFromTree() override;
 
-    const AffineTransform& localToParentTransform() const override;
+    const AffineTransform& localToSVGParentTransform() const override;
 
     FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
     FloatRect strokeBoundingBox() const override { return m_strokeBoundingBox; }
-    FloatRect paintInvalidationRectInLocalCoordinates() const override { return m_paintInvalidationBoundingBox; }
+    FloatRect paintInvalidationRectInLocalSVGCoordinates() const override { return m_paintInvalidationBoundingBox; }
 
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 

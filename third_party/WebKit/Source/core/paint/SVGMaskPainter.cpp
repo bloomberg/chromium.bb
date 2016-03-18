@@ -22,7 +22,7 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext& 
 
     m_mask.clearInvalidationMask();
 
-    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalCoordinates();
+    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalSVGCoordinates();
     if (paintInvalidationRect.isEmpty() || !m_mask.element()->hasChildren())
         return false;
 
@@ -35,7 +35,7 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext& c
     ASSERT(m_mask.style());
     ASSERT_WITH_SECURITY_IMPLICATION(!m_mask.needsLayout());
 
-    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalCoordinates();
+    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalSVGCoordinates();
     {
         ColorFilter maskLayerFilter = m_mask.style()->svgStyle().maskType() == MT_LUMINANCE
             ? ColorFilterLuminanceToAlpha : ColorFilterNone;

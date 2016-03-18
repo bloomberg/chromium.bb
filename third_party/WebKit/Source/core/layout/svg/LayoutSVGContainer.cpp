@@ -151,7 +151,7 @@ void LayoutSVGContainer::paint(const PaintInfo& paintInfo, const LayoutPoint&) c
 
 void LayoutSVGContainer::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&, IncludeBlockVisualOverflowOrNot) const
 {
-    rects.append(LayoutRect(paintInvalidationRectInLocalCoordinates()));
+    rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
 }
 
 void LayoutSVGContainer::updateCachedBoundaries()
@@ -167,7 +167,7 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoin
         return false;
 
     FloatPoint localPoint;
-    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
+    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToSVGParentTransform(), pointInParent, localPoint))
         return false;
 
     for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {

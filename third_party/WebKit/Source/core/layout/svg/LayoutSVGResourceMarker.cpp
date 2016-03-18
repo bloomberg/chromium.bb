@@ -65,15 +65,15 @@ void LayoutSVGResourceMarker::removeClientFromCache(LayoutObject* client, bool m
 
 FloatRect LayoutSVGResourceMarker::markerBoundaries(const AffineTransform& markerTransformation) const
 {
-    FloatRect coordinates = LayoutSVGContainer::paintInvalidationRectInLocalCoordinates();
+    FloatRect coordinates = LayoutSVGContainer::paintInvalidationRectInLocalSVGCoordinates();
 
     // Map paint invalidation rect into parent coordinate space, in which the marker boundaries have to be evaluated
-    coordinates = localToParentTransform().mapRect(coordinates);
+    coordinates = localToSVGParentTransform().mapRect(coordinates);
 
     return markerTransformation.mapRect(coordinates);
 }
 
-const AffineTransform& LayoutSVGResourceMarker::localToParentTransform() const
+const AffineTransform& LayoutSVGResourceMarker::localToSVGParentTransform() const
 {
     m_localToParentTransform = AffineTransform::translation(m_viewport.x(), m_viewport.y()) * viewportTransform();
     return m_localToParentTransform;

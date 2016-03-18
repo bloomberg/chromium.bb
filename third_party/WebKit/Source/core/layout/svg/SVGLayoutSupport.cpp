@@ -91,13 +91,13 @@ LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const Layou
     if (object.styleRef().visibility() != VISIBLE && !object.enclosingLayer()->hasVisibleContent())
         return LayoutRect();
 
-    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalCoordinates();
+    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalSVGCoordinates();
     if (int outlineOutset = object.styleRef().outlineOutsetExtent())
         paintInvalidationRect.inflate(outlineOutset);
 
     if (paintInvalidationState && paintInvalidationState->canMapToAncestor(paintInvalidationContainer)) {
         // Compute accumulated SVG transform and apply to local paint rect.
-        AffineTransform transform = paintInvalidationState->svgTransform() * object.localToParentTransform();
+        AffineTransform transform = paintInvalidationState->svgTransform() * object.localToSVGParentTransform();
 
         // FIXME: These are quirks carried forward from the old paint invalidation infrastructure.
         LayoutRect rect = adjustedEnclosingIntRect(transform.mapRect(paintInvalidationRect),
@@ -122,7 +122,7 @@ static const LayoutSVGRoot& computeTransformToSVGRoot(const LayoutObject& object
 
     const LayoutObject* parent;
     for (parent = &object; !parent->isSVGRoot(); parent = parent->parent())
-        rootBorderBoxTransform.preMultiply(parent->localToParentTransform());
+        rootBorderBoxTransform.preMultiply(parent->localToSVGParentTransform());
 
     const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(*parent);
     rootBorderBoxTransform.preMultiply(svgRoot.localToBorderBoxTransform());
@@ -142,7 +142,7 @@ const LayoutSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(cons
 
 void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object, const LayoutBoxModelObject* ancestor, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
 {
-    transformState.applyTransform(object->localToParentTransform());
+    transformState.applyTransform(object->localToSVGParentTransform());
 
     if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor)) {
         // |svgTransform| contains localToBorderBoxTransform mentioned below.
@@ -190,11 +190,11 @@ const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject*
     // to map an element from SVG viewport coordinates to CSS box coordinates.
     // LayoutSVGRoot's mapLocalToAncestor method expects CSS box coordinates.
     if (parent->isSVGRoot()) {
-        TransformationMatrix matrix(object->localToParentTransform());
+        TransformationMatrix matrix(object->localToSVGParentTransform());
         matrix.multiply(toLayoutSVGRoot(parent)->localToBorderBoxTransform());
         geometryMap.push(object, matrix);
     } else {
-        geometryMap.push(object, object->localToParentTransform());
+        geometryMap.push(object, object->localToSVGParentTransform());
     }
 
     return parent;
@@ -236,10 +236,10 @@ void SVGLayoutSupport::computeContainerBoundingBoxes(const LayoutObject* contain
         if (current->isSVGText() && !toLayoutSVGText(current)->isObjectBoundingBoxValid())
             continue;
 
-        const AffineTransform& transform = current->localToParentTransform();
+        const AffineTransform& transform = current->localToSVGParentTransform();
         updateObjectBoundingBox(objectBoundingBox, objectBoundingBoxValid, current,
             transform.mapRect(current->objectBoundingBox()));
-        strokeBoundingBox.unite(transform.mapRect(current->paintInvalidationRectInLocalCoordinates()));
+        strokeBoundingBox.unite(transform.mapRect(current->paintInvalidationRectInLocalSVGCoordinates()));
     }
 
     paintInvalidationBoundingBox = strokeBoundingBox;
@@ -493,7 +493,7 @@ AffineTransform SVGLayoutSupport::deprecatedCalculateTransformToLayer(const Layo
 {
     AffineTransform transform;
     while (layoutObject) {
-        transform = layoutObject->localToParentTransform() * transform;
+        transform = layoutObject->localToSVGParentTransform() * transform;
         if (layoutObject->isSVGRoot())
             break;
         layoutObject = layoutObject->parent();
@@ -540,7 +540,7 @@ static inline bool compareCandidateDistance(const SearchCandidate& r1, const Sea
 
 static inline float distanceToChildLayoutObject(LayoutObject* child, const FloatPoint& point)
 {
-    const AffineTransform& localToParentTransform = child->localToParentTransform();
+    const AffineTransform& localToParentTransform = child->localToSVGParentTransform();
     if (!localToParentTransform.isInvertible())
         return std::numeric_limits<float>::max();
     FloatPoint childLocalPoint = localToParentTransform.inverse().mapPoint(point);
@@ -587,7 +587,7 @@ static SearchCandidate searchTreeForFindClosestLayoutSVGText(LayoutObject* layou
         if (closestText.candidateDistance < searchCandidate.candidateDistance)
             break;
         LayoutObject* candidateLayoutObject = searchCandidate.candidateLayoutObject;
-        FloatPoint candidateLocalPoint = candidateLayoutObject->localToParentTransform().inverse().mapPoint(point);
+        FloatPoint candidateLocalPoint = candidateLayoutObject->localToSVGParentTransform().inverse().mapPoint(point);
 
         SearchCandidate candidateText = searchTreeForFindClosestLayoutSVGText(candidateLayoutObject, candidateLocalPoint);
 

@@ -232,7 +232,7 @@ void LayoutSVGResourceClipper::calculateClipContentPaintInvalidationRect()
         const ComputedStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
-        m_clipBoundaries.unite(layoutObject->localToParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalCoordinates()));
+        m_clipBoundaries.unite(layoutObject->localToSVGParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalSVGCoordinates()));
     }
     m_clipBoundaries = toSVGClipPathElement(element())->calculateAnimatedLocalTransform().mapRect(m_clipBoundaries);
 }
