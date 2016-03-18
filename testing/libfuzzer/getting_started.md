@@ -115,5 +115,5 @@ performance and for optimization hints.
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
 [url_parser_fuzzer.cc]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzers/url_parse_fuzzer.cc
-[ClusterFuzz status]: clusterfuzz.md#Fuzzer-Status
+[ClusterFuzz status]: clusterfuzz.md#Status-Links
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
