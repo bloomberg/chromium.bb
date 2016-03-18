@@ -1026,15 +1026,16 @@ TEST_F(TransportClientSocketPoolTest, IPv4HasNoFallback) {
 // Test that if TCP FastOpen is enabled, it is set on the socket
 // when we have only an IPv4 address.
 TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv4WithNoFallback) {
+  SequencedSocketData socket_data(nullptr, 0, nullptr, 0);
+  MockClientSocketFactory factory;
+  factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
                                  host_resolver_.get(),
-                                 &client_socket_factory_,
+                                 &factory,
                                  NULL);
-  client_socket_factory_.set_default_client_socket_type(
-      MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
   // Resolve an AddressList with only IPv4 addresses.
   host_resolver_->rules()->AddIPLiteralRule("*", "1.1.1.1", std::string());
 
@@ -1045,18 +1046,21 @@ TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv4WithNoFallback) {
   handle.Init("a", params, LOW, ClientSocketPool::RespectLimits::ENABLED,
               callback.callback(), &pool, BoundNetLog());
   EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_TRUE(handle.socket()->UsingTCPFastOpen());
+  EXPECT_TRUE(socket_data.IsUsingTCPFastOpen());
 }
 
 // Test that if TCP FastOpen is enabled, it is set on the socket
 // when we have only IPv6 addresses.
 TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv6WithNoFallback) {
+  SequencedSocketData socket_data(nullptr, 0, nullptr, 0);
+  MockClientSocketFactory factory;
+  factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
                                  host_resolver_.get(),
-                                 &client_socket_factory_,
+                                 &factory,
                                  NULL);
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
@@ -1071,29 +1075,28 @@ TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv6WithNoFallback) {
   handle.Init("a", params, LOW, ClientSocketPool::RespectLimits::ENABLED,
               callback.callback(), &pool, BoundNetLog());
   EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_TRUE(handle.socket()->UsingTCPFastOpen());
+  EXPECT_TRUE(socket_data.IsUsingTCPFastOpen());
 }
 
 // Test that if TCP FastOpen is enabled, it does not do anything when there
 // is a IPv6 address with fallback to an IPv4 address. This test tests the case
 // when the IPv6 connect fails and the IPv4 one succeeds.
 TEST_F(TransportClientSocketPoolTest,
-           NoTCPFastOpenOnIPv6FailureWithIPv4Fallback) {
+       NoTCPFastOpenOnIPv6FailureWithIPv4Fallback) {
+  SequencedSocketData socket_data_1(nullptr, 0, nullptr, 0);
+  socket_data_1.set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+  SequencedSocketData socket_data_2(nullptr, 0, nullptr, 0);
+  MockClientSocketFactory factory;
+  factory.AddSocketDataProvider(&socket_data_1);
+  factory.AddSocketDataProvider(&socket_data_2);
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
                                  host_resolver_.get(),
-                                 &client_socket_factory_,
+                                 &factory,
                                  NULL);
 
-  MockTransportClientSocketFactory::ClientSocketType case_types[] = {
-    // This is the IPv6 socket.
-    MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET,
-    // This is the IPv4 socket.
-    MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET
-  };
-  client_socket_factory_.set_client_socket_types(case_types, 2);
   // Resolve an AddressList with a IPv6 address first and then a IPv4 address.
   host_resolver_->rules()
       ->AddIPLiteralRule("*", "2:abcd::3:4:ff,2.2.2.2", std::string());
@@ -1107,33 +1110,28 @@ TEST_F(TransportClientSocketPoolTest,
   EXPECT_EQ(OK, callback.WaitForResult());
   // Verify that the socket used is connected to the fallback IPv4 address.
   IPEndPoint endpoint;
-  handle.socket()->GetLocalAddress(&endpoint);
+  handle.socket()->GetPeerAddress(&endpoint);
   EXPECT_EQ(kIPv4AddressSize, endpoint.address().size());
-  EXPECT_EQ(2, client_socket_factory_.allocation_count());
   // Verify that TCP FastOpen was not turned on for the socket.
-  EXPECT_FALSE(handle.socket()->UsingTCPFastOpen());
+  EXPECT_FALSE(socket_data_1.IsUsingTCPFastOpen());
 }
 
 // Test that if TCP FastOpen is enabled, it does not do anything when there
 // is a IPv6 address with fallback to an IPv4 address. This test tests the case
 // when the IPv6 connect succeeds.
 TEST_F(TransportClientSocketPoolTest,
-           NoTCPFastOpenOnIPv6SuccessWithIPv4Fallback) {
+       NoTCPFastOpenOnIPv6SuccessWithIPv4Fallback) {
+  SequencedSocketData socket_data(nullptr, 0, nullptr, 0);
+  MockClientSocketFactory factory;
+  factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
   TransportClientSocketPool pool(kMaxSockets,
                                  kMaxSocketsPerGroup,
                                  host_resolver_.get(),
-                                 &client_socket_factory_,
+                                 &factory,
                                  NULL);
 
-  MockTransportClientSocketFactory::ClientSocketType case_types[] = {
-    // This is the IPv6 socket.
-    MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET,
-    // This is the IPv4 socket.
-    MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET
-  };
-  client_socket_factory_.set_client_socket_types(case_types, 2);
   // Resolve an AddressList with a IPv6 address first and then a IPv4 address.
   host_resolver_->rules()
       ->AddIPLiteralRule("*", "2:abcd::3:4:ff,2.2.2.2", std::string());
@@ -1145,13 +1143,12 @@ TEST_F(TransportClientSocketPoolTest,
   handle.Init("a", params, LOW, ClientSocketPool::RespectLimits::ENABLED,
               callback.callback(), &pool, BoundNetLog());
   EXPECT_EQ(OK, callback.WaitForResult());
-  // Verify that the socket used is connected to the IPv6 address.
   IPEndPoint endpoint;
-  handle.socket()->GetLocalAddress(&endpoint);
+  handle.socket()->GetPeerAddress(&endpoint);
+  // Verify that the socket used is connected to the IPv6 address.
   EXPECT_EQ(kIPv6AddressSize, endpoint.address().size());
-  EXPECT_EQ(1, client_socket_factory_.allocation_count());
   // Verify that TCP FastOpen was not turned on for the socket.
-  EXPECT_FALSE(handle.socket()->UsingTCPFastOpen());
+  EXPECT_FALSE(socket_data.IsUsingTCPFastOpen());
 }
 
 }  // namespace

@@ -139,6 +139,8 @@ MockConnect::MockConnect(IoMode io_mode, int r, IPEndPoint addr) :
 
 MockConnect::~MockConnect() {}
 
+void SocketDataProvider::OnEnableTCPFastOpenIfSupported() {}
+
 bool SocketDataProvider::IsIdle() const {
   return true;
 }
@@ -309,6 +311,7 @@ SequencedSocketData::SequencedSocketData(MockRead* reads,
       read_state_(IDLE),
       write_state_(IDLE),
       busy_before_sync_reads_(false),
+      is_using_tcp_fast_open_(false),
       weak_factory_(this) {
   // Check that reads and writes have a contiguous set of sequence numbers
   // starting from 0 and working their way up, with no repeats and skipping
@@ -487,6 +490,10 @@ bool SequencedSocketData::AllWriteDataConsumed() const {
   return helper_.AllWriteDataConsumed();
 }
 
+void SequencedSocketData::OnEnableTCPFastOpenIfSupported() {
+  is_using_tcp_fast_open_ = true;
+}
+
 bool SequencedSocketData::IsIdle() const {
   // If |busy_before_sync_reads_| is not set, always considered idle.  If
   // no reads left, or the next operation is a write, also consider it idle.
@@ -582,6 +589,10 @@ void SequencedSocketData::MaybePostReadCompleteTask() {
   read_state_ = COMPLETING;
 }
 
+bool SequencedSocketData::IsUsingTCPFastOpen() const {
+  return is_using_tcp_fast_open_;
+}
+
 void SequencedSocketData::MaybePostWriteCompleteTask() {
   NET_TRACE(1, " ****** ") << " current: " << sequence_number_;
   // Only trigger the next write to complete if there is already a write pending
@@ -614,6 +625,7 @@ void SequencedSocketData::Reset() {
   sequence_number_ = 0;
   read_state_ = IDLE;
   write_state_ = IDLE;
+  is_using_tcp_fast_open_ = false;
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -1012,6 +1024,12 @@ bool MockTCPClientSocket::WasEverUsed() const {
 
 bool MockTCPClientSocket::UsingTCPFastOpen() const {
   return false;
+}
+
+void MockTCPClientSocket::EnableTCPFastOpenIfSupported() {
+  EXPECT_FALSE(IsConnected()) << "Can't enable fast open after connect.";
+
+  data_->OnEnableTCPFastOpenIfSupported();
 }
 
 bool MockTCPClientSocket::WasNpnNegotiated() const {

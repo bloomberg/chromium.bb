@@ -212,6 +212,8 @@ class SocketDataProvider {
   virtual bool AllReadDataConsumed() const = 0;
   virtual bool AllWriteDataConsumed() const = 0;
 
+  virtual void OnEnableTCPFastOpenIfSupported();
+
   // Returns true if the request should be considered idle, for the purposes of
   // IsConnectedAndIdle.
   virtual bool IsIdle() const;
@@ -392,6 +394,7 @@ class SequencedSocketData : public SocketDataProvider {
   MockWriteResult OnWrite(const std::string& data) override;
   bool AllReadDataConsumed() const override;
   bool AllWriteDataConsumed() const override;
+  void OnEnableTCPFastOpenIfSupported() override;
   bool IsIdle() const override;
 
   // An ASYNC read event with a return value of ERR_IO_PENDING will cause the
@@ -408,6 +411,8 @@ class SequencedSocketData : public SocketDataProvider {
   // occur synchronously with the call if it can.
   void Resume();
   void RunUntilPaused();
+
+  bool IsUsingTCPFastOpen() const;
 
   // When true, IsConnectedAndIdle() will return false if the next event in the
   // sequence is a synchronous.  Otherwise, the socket claims to be idle as
@@ -444,6 +449,7 @@ class SequencedSocketData : public SocketDataProvider {
   IoState write_state_;
 
   bool busy_before_sync_reads_;
+  bool is_using_tcp_fast_open_;
 
   // Used by RunUntilPaused.  NULL at all other times.
   scoped_ptr<base::RunLoop> run_until_paused_run_loop_;
@@ -624,6 +630,7 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   bool WasEverUsed() const override;
   bool UsingTCPFastOpen() const override;
+  void EnableTCPFastOpenIfSupported() override;
   bool WasNpnNegotiated() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
