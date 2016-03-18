@@ -39,6 +39,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
@@ -240,14 +241,12 @@ class FakeSocket : public StreamSocket {
   bool IsConnectedAndIdle() const override { return true; }
 
   int GetPeerAddress(IPEndPoint* address) const override {
-    IPAddressNumber ip_address(kIPv4AddressSize);
-    *address = IPEndPoint(ip_address, 0 /*port*/);
+    *address = IPEndPoint(IPAddress::IPv4AllZeros(), 0 /*port*/);
     return OK;
   }
 
   int GetLocalAddress(IPEndPoint* address) const override {
-    IPAddressNumber ip_address(4);
-    *address = IPEndPoint(ip_address, 0);
+    *address = IPEndPoint(IPAddress::IPv4AllZeros(), 0 /*port*/);
     return OK;
   }
 

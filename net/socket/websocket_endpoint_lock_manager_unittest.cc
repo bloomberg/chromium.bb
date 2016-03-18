@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
@@ -138,9 +139,7 @@ class WebSocketEndpointLockManagerTest : public ::testing::Test {
   WebSocketEndpointLockManager* instance() const { return instance_; }
 
   IPEndPoint DummyEndpoint() {
-    IPAddressNumber ip_address_number;
-    CHECK(ParseIPLiteralToNumber("127.0.0.1", &ip_address_number));
-    return IPEndPoint(ip_address_number, 80);
+    return IPEndPoint(IPAddress::IPv4Localhost(), 80);
   }
 
   void UnlockDummyEndpoint(int times) {

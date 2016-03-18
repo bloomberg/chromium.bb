@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
@@ -97,9 +98,7 @@ void TransportClientSocketTest::SetUp() {
 
   // Open a server socket on an ephemeral port.
   listen_sock_.reset(new TCPServerSocket(NULL, NetLog::Source()));
-  IPAddressNumber address;
-  ParseIPLiteralToNumber("127.0.0.1", &address);
-  IPEndPoint local_address(address, 0);
+  IPEndPoint local_address(IPAddress::IPv4Localhost(), 0);
   ASSERT_EQ(OK, listen_sock_->Listen(local_address, 1));
   // Get the server's address (including the actual port number).
   ASSERT_EQ(OK, listen_sock_->GetLocalAddress(&local_address));

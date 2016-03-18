@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -31,16 +32,14 @@ class TCPServerSocketTest : public PlatformTest {
   }
 
   void SetUpIPv4() {
-    IPEndPoint address;
-    ParseAddress("127.0.0.1", 0, &address);
+    IPEndPoint address(IPAddress::IPv4Localhost(), 0);
     ASSERT_EQ(OK, socket_.Listen(address, kListenBacklog));
     ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
   }
 
   void SetUpIPv6(bool* success) {
     *success = false;
-    IPEndPoint address;
-    ParseAddress("::1", 0, &address);
+    IPEndPoint address(IPAddress::IPv6Localhost(), 0);
     if (socket_.Listen(address, kListenBacklog) != 0) {
       LOG(ERROR) << "Failed to listen on ::1 - probably because IPv6 is "
           "disabled. Skipping the test";
@@ -48,16 +47,6 @@ class TCPServerSocketTest : public PlatformTest {
     }
     ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
     *success = true;
-  }
-
-  void ParseAddress(const std::string& ip_str,
-                    uint16_t port,
-                    IPEndPoint* address) {
-    IPAddressNumber ip_number;
-    bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
-    if (!rv)
-      return;
-    *address = IPEndPoint(ip_number, port);
   }
 
   static IPEndPoint GetPeerAddress(StreamSocket* socket) {

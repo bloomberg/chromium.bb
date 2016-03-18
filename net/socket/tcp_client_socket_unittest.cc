@@ -8,6 +8,7 @@
 
 #include "net/socket/tcp_client_socket.h"
 
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -21,8 +22,7 @@ namespace {
 // Try binding a socket to loopback interface and verify that we can
 // still connect to a server on the same interface.
 TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
-  IPAddressNumber lo_address;
-  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &lo_address));
+  IPAddress lo_address = IPAddress::IPv4Localhost();
 
   TCPServerSocket server(NULL, NetLog::Source());
   ASSERT_EQ(OK, server.Listen(IPEndPoint(lo_address, 0), 1));
@@ -35,7 +35,7 @@ TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
 
   IPEndPoint local_address_result;
   EXPECT_EQ(OK, socket.GetLocalAddress(&local_address_result));
-  EXPECT_EQ(lo_address, local_address_result.address().bytes());
+  EXPECT_EQ(lo_address, local_address_result.address());
 
   TestCompletionCallback connect_callback;
   EXPECT_EQ(ERR_IO_PENDING, socket.Connect(connect_callback.callback()));
@@ -59,14 +59,11 @@ TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
 // Try to bind socket to the loopback interface and connect to an
 // external address, verify that connection fails.
 TEST(TCPClientSocketTest, BindLoopbackToExternal) {
-  IPAddressNumber external_ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber("72.14.213.105", &external_ip));
+  IPAddress external_ip(72, 14, 213, 105);
   TCPClientSocket socket(AddressList::CreateFromIPAddress(external_ip, 80),
                          NULL, NetLog::Source());
 
-  IPAddressNumber lo_address;
-  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &lo_address));
-  EXPECT_EQ(OK, socket.Bind(IPEndPoint(lo_address, 0)));
+  EXPECT_EQ(OK, socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
 
   TestCompletionCallback connect_callback;
   int result = socket.Connect(connect_callback.callback());
@@ -81,10 +78,9 @@ TEST(TCPClientSocketTest, BindLoopbackToExternal) {
 // Bind a socket to the IPv4 loopback interface and try to connect to
 // the IPv6 loopback interface, verify that connection fails.
 TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
-  IPAddressNumber ipv6_lo_ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber("::1", &ipv6_lo_ip));
   TCPServerSocket server(NULL, NetLog::Source());
-  int listen_result = server.Listen(IPEndPoint(ipv6_lo_ip, 0), 1);
+  int listen_result =
+      server.Listen(IPEndPoint(IPAddress::IPv6Localhost(), 0), 1);
   if (listen_result != OK) {
     LOG(ERROR) << "Failed to listen on ::1 - probably because IPv6 is disabled."
         " Skipping the test";
@@ -95,9 +91,7 @@ TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
   ASSERT_EQ(OK, server.GetLocalAddress(&server_address));
   TCPClientSocket socket(AddressList(server_address), NULL, NetLog::Source());
 
-  IPAddressNumber ipv4_lo_ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &ipv4_lo_ip));
-  EXPECT_EQ(OK, socket.Bind(IPEndPoint(ipv4_lo_ip, 0)));
+  EXPECT_EQ(OK, socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
 
   TestCompletionCallback connect_callback;
   int result = socket.Connect(connect_callback.callback());

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -103,15 +104,13 @@ class TransportClientSocketPoolTest : public testing::Test {
 };
 
 TEST(TransportConnectJobTest, MakeAddrListStartWithIPv4) {
-  IPAddressNumber ip_number;
-  ASSERT_TRUE(ParseIPLiteralToNumber("192.168.1.1", &ip_number));
-  IPEndPoint addrlist_v4_1(ip_number, 80);
-  ASSERT_TRUE(ParseIPLiteralToNumber("192.168.1.2", &ip_number));
-  IPEndPoint addrlist_v4_2(ip_number, 80);
-  ASSERT_TRUE(ParseIPLiteralToNumber("2001:4860:b006::64", &ip_number));
-  IPEndPoint addrlist_v6_1(ip_number, 80);
-  ASSERT_TRUE(ParseIPLiteralToNumber("2001:4860:b006::66", &ip_number));
-  IPEndPoint addrlist_v6_2(ip_number, 80);
+  IPEndPoint addrlist_v4_1(IPAddress(192, 168, 1, 1), 80);
+  IPEndPoint addrlist_v4_2(IPAddress(192, 168, 1, 2), 80);
+  IPAddress ip_address;
+  ASSERT_TRUE(ip_address.AssignFromIPLiteral("2001:4860:b006::64"));
+  IPEndPoint addrlist_v6_1(ip_address, 80);
+  ASSERT_TRUE(ip_address.AssignFromIPLiteral("2001:4860:b006::66"));
+  IPEndPoint addrlist_v6_2(ip_address, 80);
 
   AddressList addrlist;
 

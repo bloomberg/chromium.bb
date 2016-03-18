@@ -14,6 +14,7 @@
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/sockaddr_storage.h"
 #include "net/base/test_completion_callback.h"
@@ -32,22 +33,17 @@ class TCPSocketTest : public PlatformTest {
   }
 
   void SetUpListenIPv4() {
-    IPEndPoint address;
-    ParseAddress("127.0.0.1", 0, &address);
-
     ASSERT_EQ(OK, socket_.Open(ADDRESS_FAMILY_IPV4));
-    ASSERT_EQ(OK, socket_.Bind(address));
+    ASSERT_EQ(OK, socket_.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
     ASSERT_EQ(OK, socket_.Listen(kListenBacklog));
     ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
   }
 
   void SetUpListenIPv6(bool* success) {
     *success = false;
-    IPEndPoint address;
-    ParseAddress("::1", 0, &address);
 
     if (socket_.Open(ADDRESS_FAMILY_IPV6) != OK ||
-        socket_.Bind(address) != OK ||
+        socket_.Bind(IPEndPoint(IPAddress::IPv6Localhost(), 0)) != OK ||
         socket_.Listen(kListenBacklog) != OK) {
       LOG(ERROR) << "Failed to listen on ::1 - probably because IPv6 is "
           "disabled. Skipping the test";
@@ -55,16 +51,6 @@ class TCPSocketTest : public PlatformTest {
     }
     ASSERT_EQ(OK, socket_.GetLocalAddress(&local_address_));
     *success = true;
-  }
-
-  void ParseAddress(const std::string& ip_str,
-                    uint16_t port,
-                    IPEndPoint* address) {
-    IPAddressNumber ip_number;
-    bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
-    if (!rv)
-      return;
-    *address = IPEndPoint(ip_number, port);
   }
 
   void TestAcceptAsync() {
@@ -138,8 +124,7 @@ TEST_F(TCPSocketTest, AcceptForAdoptedListenSocket) {
   SOCKET existing_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   ASSERT_EQ(OK, socket_.AdoptListenSocket(existing_socket));
 
-  IPEndPoint address;
-  ParseAddress("127.0.0.1", 0, &address);
+  IPEndPoint address(IPAddress::IPv4Localhost(), 0);
   SockaddrStorage storage;
   ASSERT_TRUE(address.ToSockAddr(storage.addr, &storage.addr_len));
   ASSERT_EQ(0, bind(existing_socket, storage.addr, storage.addr_len));

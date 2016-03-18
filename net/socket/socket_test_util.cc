@@ -20,6 +20,7 @@
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
+#include "net/base/ip_address.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
@@ -123,15 +124,11 @@ void DumpMockReadWrite(const MockReadWrite<type>& r) {
 }  // namespace
 
 MockConnect::MockConnect() : mode(ASYNC), result(OK) {
-  IPAddressNumber ip;
-  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
-  peer_addr = IPEndPoint(ip, 0);
+  peer_addr = IPEndPoint(IPAddress(192, 0, 2, 33), 0);
 }
 
 MockConnect::MockConnect(IoMode io_mode, int r) : mode(io_mode), result(r) {
-  IPAddressNumber ip;
-  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
-  peer_addr = IPEndPoint(ip, 0);
+  peer_addr = IPEndPoint(IPAddress(192, 0, 2, 33), 0);
 }
 
 MockConnect::MockConnect(IoMode io_mode, int r, IPEndPoint addr) :
@@ -749,9 +746,7 @@ MockClientSocket::MockClientSocket(const BoundNetLog& net_log)
     : connected_(false),
       net_log_(net_log),
       weak_factory_(this) {
-  IPAddressNumber ip;
-  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
-  peer_addr_ = IPEndPoint(ip, 0);
+  peer_addr_ = IPEndPoint(IPAddress(192, 0, 2, 33), 0);
 }
 
 int MockClientSocket::SetReceiveBufferSize(int32_t size) {
@@ -782,10 +777,7 @@ int MockClientSocket::GetPeerAddress(IPEndPoint* address) const {
 }
 
 int MockClientSocket::GetLocalAddress(IPEndPoint* address) const {
-  IPAddressNumber ip;
-  bool rv = ParseIPLiteralToNumber("192.0.2.33", &ip);
-  CHECK(rv);
-  *address = IPEndPoint(ip, 123);
+  *address = IPEndPoint(IPAddress(192, 0, 2, 33), 123);
   return OK;
 }
 
@@ -1344,10 +1336,7 @@ int MockUDPClientSocket::GetPeerAddress(IPEndPoint* address) const {
 }
 
 int MockUDPClientSocket::GetLocalAddress(IPEndPoint* address) const {
-  IPAddressNumber ip;
-  bool rv = ParseIPLiteralToNumber("192.0.2.33", &ip);
-  CHECK(rv);
-  *address = IPEndPoint(ip, source_port_);
+  *address = IPEndPoint(IPAddress(192, 0, 2, 33), source_port_);
   return OK;
 }
 

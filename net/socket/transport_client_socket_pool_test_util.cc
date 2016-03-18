@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -27,10 +28,10 @@ namespace net {
 
 namespace {
 
-IPAddressNumber ParseIP(const std::string& ip) {
-  IPAddressNumber number;
-  CHECK(ParseIPLiteralToNumber(ip, &number));
-  return number;
+IPAddress ParseIP(const std::string& ip) {
+  IPAddress address;
+  CHECK(address.AssignFromIPLiteral(ip));
+  return address;
 }
 
 // A StreamSocket which connects synchronously and successfully.
