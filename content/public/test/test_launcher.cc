@@ -364,17 +364,16 @@ void WrapperTestLauncherDelegate::DoRunTests(
 
   char* browser_wrapper = getenv("BROWSER_WRAPPER");
 
+  base::TestLauncher::LaunchOptions test_launch_options;
+  test_launch_options.flags = base::TestLauncher::USE_JOB_OBJECTS |
+                              base::TestLauncher::ALLOW_BREAKAWAY_FROM_JOB;
   test_launcher->LaunchChildGTestProcess(
-      new_cmd_line,
-      browser_wrapper ? browser_wrapper : std::string(),
-      TestTimeouts::action_max_timeout(),
-      base::TestLauncher::USE_JOB_OBJECTS |
-          base::TestLauncher::ALLOW_BREAKAWAY_FROM_JOB,
+      new_cmd_line, browser_wrapper ? browser_wrapper : std::string(),
+      TestTimeouts::action_max_timeout(), test_launch_options,
       base::Bind(&WrapperTestLauncherDelegate::GTestCallback,
-                 base::Unretained(this),
-                 test_launcher,
-                 test_names_copy,
-                 test_name));
+                 base::Unretained(this), test_launcher, test_names_copy,
+                 test_name),
+      base::TestLauncher::GTestProcessLaunchedCallback());
 }
 
 void WrapperTestLauncherDelegate::RunDependentTest(

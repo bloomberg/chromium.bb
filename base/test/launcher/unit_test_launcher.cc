@@ -524,12 +524,13 @@ void RunUnitTestsSerially(
   callback_state.launch_flags = launch_flags;
   callback_state.output_file = output_file;
 
+  TestLauncher::LaunchOptions launch_options;
+  launch_options.flags = launch_flags;
   test_launcher->LaunchChildGTestProcess(
-      cmd_line,
-      platform_delegate->GetWrapperForChildGTestProcess(),
-      TestTimeouts::test_launcher_timeout(),
-      launch_flags,
-      Bind(&SerialGTestCallback, callback_state, new_test_names));
+      cmd_line, platform_delegate->GetWrapperForChildGTestProcess(),
+      TestTimeouts::test_launcher_timeout(), launch_options,
+      Bind(&SerialGTestCallback, callback_state, new_test_names),
+      TestLauncher::GTestProcessLaunchedCallback());
 }
 
 void RunUnitTestsBatch(
@@ -565,12 +566,12 @@ void RunUnitTestsBatch(
   callback_state.launch_flags = launch_flags;
   callback_state.output_file = output_file;
 
+  TestLauncher::LaunchOptions options;
+  options.flags = launch_flags;
   test_launcher->LaunchChildGTestProcess(
-      cmd_line,
-      platform_delegate->GetWrapperForChildGTestProcess(),
-      timeout,
-      launch_flags,
-      Bind(&GTestCallback, callback_state));
+      cmd_line, platform_delegate->GetWrapperForChildGTestProcess(), timeout,
+      options, Bind(&GTestCallback, callback_state),
+      TestLauncher::GTestProcessLaunchedCallback());
 }
 
 UnitTestLauncherDelegate::UnitTestLauncherDelegate(

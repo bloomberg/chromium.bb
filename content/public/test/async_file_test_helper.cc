@@ -269,4 +269,4 @@ storage::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
   return status;
 }
 
-}  // namespace storage
+}  // namespace content

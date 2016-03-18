@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/process/launch.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_result.h"
 #include "base/test/launcher/test_results_tracker.h"
@@ -90,6 +91,17 @@ class TestLauncher {
     ALLOW_BREAKAWAY_FROM_JOB = (1 << 1),
   };
 
+  struct LaunchOptions {
+    int flags = 0;
+#if defined(OS_WIN)
+    // These mirror values in base::LaunchOptions, see it for details.
+    HandlesToInheritVector* handles_to_inherit = nullptr;
+    bool inherit_handles = false;
+#elif defined(OS_POSIX)
+    const FileHandleMappingVector* fds_to_remap = nullptr;
+#endif
+  };
+
   // Constructor. |parallel_jobs| is the limit of simultaneous parallel test
   // jobs.
   TestLauncher(TestLauncherDelegate* launcher_delegate, size_t parallel_jobs);
@@ -102,19 +114,28 @@ class TestLauncher {
   // code, second one is child process elapsed time, third one is true if
   // the child process was terminated because of a timeout, and fourth one
   // contains output of the child (stdout and stderr together).
-  typedef Callback<void(int, const TimeDelta&, bool, const std::string&)>
-      LaunchChildGTestProcessCallback;
+  // NOTE: this callback happens on the originating thread.
+  using GTestProcessCompletedCallback =
+      Callback<void(int, const TimeDelta&, bool, const std::string&)>;
+
+  // Once the test process is started this callback is run with the handle and
+  // pid of the process. This callback is run on the thread the process is
+  // launched on and immediately after the process is launched. The caller
+  // owns the ProcessHandle.
+  using GTestProcessLaunchedCallback = Callback<void(ProcessHandle, ProcessId)>;
 
   // Launches a child process (assumed to be gtest-based binary) using
   // |command_line|. If |wrapper| is not empty, it is prepended to the final
   // command line. If the child process is still running after |timeout|, it
   // is terminated. After the child process finishes |callback| is called
   // on the same thread this method was called.
-  void LaunchChildGTestProcess(const CommandLine& command_line,
-                               const std::string& wrapper,
-                               base::TimeDelta timeout,
-                               int flags,
-                               const LaunchChildGTestProcessCallback& callback);
+  void LaunchChildGTestProcess(
+      const CommandLine& command_line,
+      const std::string& wrapper,
+      base::TimeDelta timeout,
+      const LaunchOptions& options,
+      const GTestProcessCompletedCallback& completed_callback,
+      const GTestProcessLaunchedCallback& launched_callback);
 
   // Called when a test has finished running.
   void OnTestFinished(const TestResult& result);
@@ -132,7 +153,7 @@ class TestLauncher {
 
   // Called on a worker thread after a child process finishes.
   void OnLaunchTestProcessFinished(
-      const LaunchChildGTestProcessCallback& callback,
+      const GTestProcessCompletedCallback& callback,
       int exit_code,
       const TimeDelta& elapsed_time,
       bool was_timeout,
