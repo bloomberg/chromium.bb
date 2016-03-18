@@ -69,6 +69,17 @@ source_set("redirection_header") {
   ]
 }
 
+bundle_data("sql_unittests_bundle_data") {
+  testonly = true
+  sources = [
+    "test/data",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 test("sql_unittests") {
   sources = [
     "connection_unittest.cc",
@@ -97,6 +108,7 @@ test("sql_unittests") {
   deps = [
     ":redirection_header",
     ":sql",
+    ":sql_unittests_bundle_data",
     ":test_support",
     "//base/test:test_support",
     "//testing/gtest",
@@ -113,8 +125,6 @@ test("sql_unittests") {
   #    '../testing/android/native_test.gyp:native_test_native_code',
   #  ],
   #}],
-
-  # TODO(GYP): dep on copy_test_data_ios action.
 }
 
 if (is_android) {
