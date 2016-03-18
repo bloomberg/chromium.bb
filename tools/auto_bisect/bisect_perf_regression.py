@@ -54,6 +54,7 @@ import shutil
 import StringIO
 import sys
 import time
+import urllib
 import urllib2
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..',
@@ -2151,11 +2152,11 @@ class BisectPerformanceMetrics(object):
 
     results = bisect_results_json.Get(
         bisect_results, self.opts, self.depot_registry)
-    data = {'data': results}
+    results_json = json.dumps(results)
+    data = urllib.urlencode({'data': results_json})
     request = urllib2.Request(PERF_DASH_RESULTS_URL)
-    request.add_header('Content-Type', 'application/json')
     try:
-      urllib2.urlopen(request, json.dumps(data))
+      urllib2.urlopen(request, data)
     except urllib2.URLError as e:
       print 'Failed to post bisect results. Error: %s.' % e
       bisect_utils.OutputAnnotationStepWarning()
