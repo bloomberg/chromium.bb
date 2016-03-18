@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_NTP_SNIPPETS_BRIDGE_H_
-#define CHROME_BROWSER_ANDROID_NTP_SNIPPETS_BRIDGE_H_
+#ifndef CHROME_BROWSER_ANDROID_NTP_NTP_SNIPPETS_BRIDGE_H_
+#define CHROME_BROWSER_ANDROID_NTP_NTP_SNIPPETS_BRIDGE_H_
 
 #include <jni.h>
 
@@ -44,4 +44,4 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsBridge);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_NTP_SNIPPETS_BRIDGE_H_
+#endif  // CHROME_BROWSER_ANDROID_NTP_NTP_SNIPPETS_BRIDGE_H_

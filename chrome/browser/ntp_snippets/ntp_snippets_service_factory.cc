@@ -21,7 +21,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/ntp_snippets_launcher.h"
+#include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 #endif  // OS_ANDROID
 
 using content::BrowserThread;

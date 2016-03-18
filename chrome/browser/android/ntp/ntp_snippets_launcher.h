@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_NTP_SNIPPETS_LAUNCHER_H_
-#define CHROME_BROWSER_ANDROID_NTP_SNIPPETS_LAUNCHER_H_
+#ifndef CHROME_BROWSER_ANDROID_NTP_NTP_SNIPPETS_LAUNCHER_H_
+#define CHROME_BROWSER_ANDROID_NTP_NTP_SNIPPETS_LAUNCHER_H_
 
 #include "base/android/jni_android.h"
 #include "base/lazy_instance.h"
@@ -38,4 +38,4 @@ class NTPSnippetsLauncher : public ntp_snippets::NTPSnippetsScheduler {
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsLauncher);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_NTP_SNIPPETS_LAUNCHER_H_
+#endif  // CHROME_BROWSER_ANDROID_NTP_NTP_SNIPPETS_LAUNCHER_H_

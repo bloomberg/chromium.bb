@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/ntp_snippets_launcher.h"
+#include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 
 #include "base/android/context_utils.h"
 #include "content/public/browser/browser_thread.h"
