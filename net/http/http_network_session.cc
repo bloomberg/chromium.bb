@@ -81,7 +81,6 @@ HttpNetworkSession::Params::Params()
       proxy_service(NULL),
       ssl_config_service(NULL),
       http_auth_handler_factory(NULL),
-      network_delegate(NULL),
       net_log(NULL),
       host_mapping_rules(NULL),
       socket_performance_watcher_factory(NULL),
@@ -142,7 +141,6 @@ HttpNetworkSession::Params::~Params() {}
 // TODO(mbelshe): Move the socket factories into HttpStreamFactory.
 HttpNetworkSession::HttpNetworkSession(const Params& params)
     : net_log_(params.net_log),
-      network_delegate_(params.network_delegate),
       http_server_properties_(params.http_server_properties),
       cert_verifier_(params.cert_verifier),
       http_auth_handler_factory_(params.http_auth_handler_factory),

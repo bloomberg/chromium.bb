@@ -45,7 +45,6 @@ class HttpProxyClientSocketPool;
 class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
-class NetworkDelegate;
 class ProxyDelegate;
 class ProxyService;
 class QuicClock;
@@ -77,7 +76,6 @@ class NET_EXPORT HttpNetworkSession
     ProxyService* proxy_service;
     SSLConfigService* ssl_config_service;
     HttpAuthHandlerFactory* http_auth_handler_factory;
-    NetworkDelegate* network_delegate;
     base::WeakPtr<HttpServerProperties> http_server_properties;
     NetLog* net_log;
     HostMappingRules* host_mapping_rules;
@@ -225,9 +223,6 @@ class NET_EXPORT HttpNetworkSession
   HttpAuthHandlerFactory* http_auth_handler_factory() {
     return http_auth_handler_factory_;
   }
-  NetworkDelegate* network_delegate() {
-    return network_delegate_;
-  }
   base::WeakPtr<HttpServerProperties> http_server_properties() {
     return http_server_properties_;
   }
@@ -271,7 +266,6 @@ class NET_EXPORT HttpNetworkSession
   ClientSocketPoolManager* GetSocketPoolManager(SocketPoolType pool_type);
 
   NetLog* const net_log_;
-  NetworkDelegate* const network_delegate_;
   const base::WeakPtr<HttpServerProperties> http_server_properties_;
   CertVerifier* const cert_verifier_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;

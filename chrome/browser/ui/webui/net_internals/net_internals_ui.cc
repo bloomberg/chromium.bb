@@ -867,14 +867,18 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(
 void NetInternalsMessageHandler::IOThreadImpl::OnGetSessionNetworkStats(
     const base::ListValue* list) {
   DCHECK(!list);
+  net::URLRequestContext* context =
+      main_context_getter_->GetURLRequestContext();
   net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(main_context_getter_->GetURLRequestContext());
+      GetHttpNetworkSession(context);
 
   base::Value* network_info = NULL;
   if (http_network_session) {
+    // TODO(mmenke):  This cast is ugly.  Can we get rid of it, or, better,
+    // remove DRP data from net-internals entirely?
     data_reduction_proxy::DataReductionProxyNetworkDelegate* net_delegate =
         static_cast<data_reduction_proxy::DataReductionProxyNetworkDelegate*>(
-            http_network_session->network_delegate());
+            context->network_delegate());
     if (net_delegate) {
       network_info = net_delegate->SessionNetworkStatsInfoToValue();
     }

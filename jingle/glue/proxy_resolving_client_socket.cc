@@ -67,7 +67,6 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   session_params.ssl_config_service = request_context->ssl_config_service();
   session_params.http_auth_handler_factory =
       request_context->http_auth_handler_factory();
-  session_params.network_delegate = request_context->network_delegate();
   session_params.http_server_properties =
       request_context->http_server_properties();
   session_params.net_log = request_context->net_log();

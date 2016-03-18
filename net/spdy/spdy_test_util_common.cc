@@ -461,7 +461,6 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   params.proxy_service = proxy_service();
   params.ssl_config_service = ssl_config_service();
   params.http_auth_handler_factory = http_auth_handler_factory();
-  params.network_delegate = network_delegate();
   params.enable_spdy_ping_based_connection_checking = false;
   params.spdy_default_protocol = protocol;
   params.http_server_properties = http_server_properties();

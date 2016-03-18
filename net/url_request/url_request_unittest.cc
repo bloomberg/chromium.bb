@@ -8691,7 +8691,6 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   params.ssl_config_service = default_context_.ssl_config_service();
   params.http_auth_handler_factory =
       default_context_.http_auth_handler_factory();
-  params.network_delegate = &default_network_delegate_;
   params.http_server_properties = default_context_.http_server_properties();
 
   HttpNetworkSession network_session(params);

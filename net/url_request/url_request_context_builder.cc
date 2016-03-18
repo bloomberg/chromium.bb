@@ -223,7 +223,6 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   params->proxy_service = context->proxy_service();
   params->ssl_config_service = context->ssl_config_service();
   params->http_auth_handler_factory = context->http_auth_handler_factory();
-  params->network_delegate = context->network_delegate();
   params->http_server_properties = context->http_server_properties();
   params->net_log = context->net_log();
   params->channel_id_service = context->channel_id_service();

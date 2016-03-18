@@ -438,7 +438,6 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   params.proxy_service = main_context_->proxy_service();
   params.ssl_config_service = main_context_->ssl_config_service();
   params.http_auth_handler_factory = main_context_->http_auth_handler_factory();
-  params.network_delegate = main_context_->network_delegate();
   params.http_server_properties = main_context_->http_server_properties();
   params.net_log = main_context_->net_log();
   params.enable_spdy31 = spdy_enabled();

@@ -418,7 +418,6 @@ void MCSProbe::BuildNetworkSession() {
   session_params.http_auth_handler_factory = http_auth_handler_factory_.get();
   session_params.http_server_properties =
       http_server_properties_->GetWeakPtr();
-  session_params.network_delegate = NULL;  // TODO(zea): implement?
   session_params.host_mapping_rules = host_mapping_rules_.get();
   session_params.ignore_certificate_errors = true;
   session_params.testing_fixed_http_port = 0;
