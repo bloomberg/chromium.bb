@@ -57,10 +57,6 @@
 #endif /* defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON) */
 #endif
 
-#ifndef BACKTRACE_DISABLED
-#define BACKTRACE_DISABLED !ENABLE(ASSERT)
-#endif
-
 #ifndef ASSERT_MSG_DISABLED
 #define ASSERT_MSG_DISABLED !ENABLE(ASSERT)
 #endif
@@ -108,63 +104,6 @@ WTF_EXPORT void WTFGetBacktrace(void** stack, int* size);
 WTF_EXPORT void WTFReportBacktrace(int framesToShow = 31);
 WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 
-namespace WTF {
-
-class WTF_EXPORT FrameToNameScope {
-public:
-    explicit FrameToNameScope(void*);
-    ~FrameToNameScope();
-    const char* nullableName() { return m_name; }
-
-private:
-    const char* m_name;
-    char* m_cxaDemangled;
-};
-
-// ScopedLogger wraps log messages in parentheses, with indentation proportional
-// to the number of instances. This makes it easy to see the flow of control in
-// the output, particularly when instrumenting recursive functions.
-class WTF_EXPORT ScopedLogger {
-    WTF_MAKE_NONCOPYABLE(ScopedLogger);
-public:
-    // The first message is passed to the constructor.  Additional messages for
-    // the same scope can be added with log(). If condition is false, produce no
-    // output and do not create a scope.
-    ScopedLogger(bool condition, const char* format, ...) WTF_ATTRIBUTE_PRINTF(3, 4);
-    ~ScopedLogger();
-    void log(const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
-
-private:
-    friend class AssertionsTest;
-    using PrintFunctionPtr = void (*)(const char* format, va_list args);
-    static void setPrintFuncForTests(PrintFunctionPtr p) { m_printFunc = p; } // Note: not thread safe.
-
-    void init(const char* format, va_list args);
-    void writeNewlineIfNeeded();
-    void indent();
-    void print(const char* format, ...);
-    static ScopedLogger*& current();
-
-    ScopedLogger* const m_parent;
-    bool m_multiline; // The ')' will go on the same line if there is only one entry.
-    static PrintFunctionPtr m_printFunc;
-};
-
-#if LOG_DISABLED
-#define WTF_CREATE_SCOPED_LOGGER(...) ((void) 0)
-#define WTF_CREATE_SCOPED_LOGGER_IF(...) ((void) 0)
-#define WTF_APPEND_SCOPED_LOGGER(...) ((void) 0)
-#else
-#define WTF_CREATE_SCOPED_LOGGER(name, ...) ScopedLogger name(true, __VA_ARGS__)
-#define WTF_CREATE_SCOPED_LOGGER_IF(name, condition, ...) ScopedLogger name(condition, __VA_ARGS__)
-#define WTF_APPEND_SCOPED_LOGGER(name, ...) (name.log(__VA_ARGS__))
-#endif
-
-} // namespace WTF
-
-using WTF::FrameToNameScope;
-using WTF::ScopedLogger;
-
 /* IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest possible way with no attempt at logging. */
 #ifndef IMMEDIATE_CRASH
 #if COMPILER(GCC) || COMPILER(CLANG)
@@ -195,22 +134,6 @@ using WTF::ScopedLogger;
 #define NO_RETURN_DUE_TO_CRASH NO_RETURN
 #else
 #define NO_RETURN_DUE_TO_CRASH
-#endif
-
-/* BACKTRACE
-
-  Print a backtrace to the same location as ASSERT messages.
-*/
-#if BACKTRACE_DISABLED
-
-#define BACKTRACE() ((void)0)
-
-#else
-
-#define BACKTRACE() do { \
-    WTFReportBacktrace(); \
-} while (false)
-
 #endif
 
 /* ASSERT, ASSERT_NOT_REACHED, ASSERT_UNUSED
@@ -359,22 +282,6 @@ while (0)
 #define WTF_LOG(channel, ...) WTFLog(&JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
 #define JOIN_LOG_CHANNEL_WITH_PREFIX(prefix, channel) JOIN_LOG_CHANNEL_WITH_PREFIX_LEVEL_2(prefix, channel)
 #define JOIN_LOG_CHANNEL_WITH_PREFIX_LEVEL_2(prefix, channel) prefix ## channel
-#endif
-
-/* UNREACHABLE_FOR_PLATFORM */
-
-#if COMPILER(CLANG)
-/* This would be a macro except that its use of #pragma works best around
-   a function. Hence it uses macro naming convention. */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-noreturn"
-static inline void UNREACHABLE_FOR_PLATFORM()
-{
-    ASSERT_NOT_REACHED();
-}
-#pragma clang diagnostic pop
-#else
-#define UNREACHABLE_FOR_PLATFORM() ASSERT_NOT_REACHED()
 #endif
 
 /* RELEASE_ASSERT
