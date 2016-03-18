@@ -1799,9 +1799,6 @@ void FrameView::scheduleRelayout()
 
     if (!shouldThrottleRendering())
         page()->animator().scheduleVisualUpdate(m_frame.get());
-    // TODO(chrishtr): this is dangerous and probably incorrect, since layout can be rescheduled during
-    // the lifecycle in cases such as change of containing block chain. Remove it.
-    lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
 }
 
 void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
