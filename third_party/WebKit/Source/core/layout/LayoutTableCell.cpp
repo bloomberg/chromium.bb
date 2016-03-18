@@ -976,6 +976,7 @@ bool LayoutTableCell::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoida
 
 void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged, bool verticalScrollbarChanged)
 {
+    LayoutBlock::scrollbarsChanged(horizontalScrollbarChanged, verticalScrollbarChanged);
     int scrollbarHeight = scrollbarLogicalHeight();
     if (!scrollbarHeight)
         return; // Not sure if we should be doing something when a scrollbar goes away or not.

@@ -681,6 +681,8 @@ bool PaintLayerScrollableArea::updateAfterLayout(SubtreeLayoutScope* delayedLayo
             if (!m_inOverflowRelayout) {
                 m_inOverflowRelayout = true;
                 if (delayedLayoutScope) {
+                    if (box().isLayoutBlock())
+                        toLayoutBlock(box()).scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
                     delayedLayoutScope->setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
                     didMarkForDelayedLayout = true;
                 } else {

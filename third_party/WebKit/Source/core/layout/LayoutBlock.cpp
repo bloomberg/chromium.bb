@@ -1925,6 +1925,12 @@ int LayoutBlock::columnGap() const
     return static_cast<int>(style()->columnGap());
 }
 
+void LayoutBlock::scrollbarsChanged(bool horizontalScrollbarChanged, bool verticalScrollbarChanged)
+{
+    m_widthAvailableToChildrenChanged |= horizontalScrollbarChanged;
+    m_heightAvailableToChildrenChanged |= verticalScrollbarChanged;
+}
+
 void LayoutBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     // Layout-contained elements don't consider their contents for preferred sizing.
