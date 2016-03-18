@@ -5,7 +5,9 @@
 #include "ui/views/win/fullscreen_handler.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/win_util.h"
+#include "ui/base/win/shell.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 
@@ -34,7 +36,13 @@ gfx::Rect FullscreenHandler::GetRestoreBounds() const {
 // FullscreenHandler, private:
 
 void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
-  ScopedFullscreenVisibility visibility(hwnd_);
+  scoped_ptr<ScopedFullscreenVisibility> visibility;
+
+  // With Aero enabled disabling the visibility causes the window to disappear
+  // for several frames, which looks worse than doing other updates
+  // non-atomically.
+  if (!ui::win::IsAeroGlassEnabled())
+    visibility.reset(new ScopedFullscreenVisibility(hwnd_));
 
   // Save current window state if not already fullscreen.
   if (!fullscreen_) {
