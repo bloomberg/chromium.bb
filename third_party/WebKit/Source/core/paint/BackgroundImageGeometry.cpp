@@ -310,7 +310,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
         setPhaseX(tileSize().width() ? LayoutUnit(tileSize().width() - fmodf((xOffset + left), tileSize().width()))
             : LayoutUnit());
         setSpaceSize(LayoutSize());
-    } else if (backgroundRepeatX == SpaceFill && fillTileSize.width() > LayoutUnit()) {
+    } else if (backgroundRepeatX == SpaceFill && tileSize().width() > LayoutUnit()) {
         LayoutUnit space = getSpaceBetweenImageTiles(positioningAreaSize.width(), tileSize().width());
         LayoutUnit actualWidth = tileSize().width() + space;
 
@@ -333,7 +333,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
         setPhaseY(tileSize().height() ? LayoutUnit(tileSize().height() - fmodf((yOffset + top), tileSize().height()))
             : LayoutUnit());
         setSpaceSize(LayoutSize(spaceSize().width(), LayoutUnit()));
-    } else if (backgroundRepeatY == SpaceFill && fillTileSize.height() > LayoutUnit()) {
+    } else if (backgroundRepeatY == SpaceFill && tileSize().height() > LayoutUnit()) {
         LayoutUnit space = getSpaceBetweenImageTiles(positioningAreaSize.height(), tileSize().height());
         LayoutUnit actualHeight = tileSize().height() + space;
 
