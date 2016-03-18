@@ -212,7 +212,7 @@
 #endif
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-#include "chrome/browser/android/new_tab_page_url_handler.h"
+#include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 #endif

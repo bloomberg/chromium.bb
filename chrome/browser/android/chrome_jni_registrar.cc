@@ -59,7 +59,7 @@
 #include "chrome/browser/android/metrics/variations_session.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
-#include "chrome/browser/android/new_tab_page_prefs.h"
+#include "chrome/browser/android/ntp/new_tab_page_prefs.h"
 #include "chrome/browser/android/ntp/ntp_snippets_bridge.h"
 #include "chrome/browser/android/ntp/ntp_snippets_controller.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
