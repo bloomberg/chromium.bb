@@ -244,6 +244,8 @@ protected:
 
     void testTextInputType(WebTextInputType expectedType, const std::string& htmlFile);
     void testInputMode(const WebString& expectedInputMode, const std::string& htmlFile);
+    bool tapElement(WebInputEvent::Type, const PassRefPtrWillBeRawPtr<Element>&);
+    bool tapElementById(WebInputEvent::Type, const WebString& id);
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -1435,15 +1437,17 @@ private:
     WebContentDetectionResult m_contentDetectionResult;
 };
 
-static bool tapElement(WebView* webView, WebInputEvent::Type type, const PassRefPtrWillBeRawPtr<Element>& element)
+bool WebViewTest::tapElement(WebInputEvent::Type type, const PassRefPtrWillBeRawPtr<Element>& element)
 {
-    if (!element)
+    if (!element || !element->layoutObject())
         return false;
 
+    ASSERT(m_webViewHelper.webView());
     element->scrollIntoViewIfNeeded();
 
     // TODO(bokan): Technically incorrect, event positions should be in viewport space. crbug.com/371902.
-    IntPoint center = element->screenRect().center();
+    IntPoint center = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsToScreen(
+        element->layoutObject()->absoluteBoundingBoxRect()).center();
 
     WebGestureEvent event;
     event.type = type;
@@ -1451,17 +1455,16 @@ static bool tapElement(WebView* webView, WebInputEvent::Type type, const PassRef
     event.x = center.x();
     event.y = center.y();
 
-    ASSERT(webView);
-    webView->handleInputEvent(event);
+    m_webViewHelper.webView()->handleInputEvent(event);
     runPendingTasks();
     return true;
 }
 
-static bool tapElementById(WebView* webView, WebInputEvent::Type type, const WebString& id)
+bool WebViewTest::tapElementById(WebInputEvent::Type type, const WebString& id)
 {
-    ASSERT(webView);
-    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webView->mainFrame()->document().getElementById(id));
-    return tapElement(webView, type, element);
+    ASSERT(m_webViewHelper.webView());
+    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(m_webViewHelper.webView()->mainFrame()->document().getElementById(id));
+    return tapElement(type, element);
 }
 
 TEST_F(WebViewTest, DetectContentAroundPosition)
@@ -1482,27 +1485,27 @@ TEST_F(WebViewTest, DetectContentAroundPosition)
 
     // Ensure content detection is not requested for nodes listening to click,
     // mouse or touch events when we do simple taps.
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, clickListener));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, clickListener));
     EXPECT_FALSE(client.contentDetectionRequested());
     client.reset();
 
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, touchstartListener));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, touchstartListener));
     EXPECT_FALSE(client.contentDetectionRequested());
     client.reset();
 
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, mousedownListener));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, mousedownListener));
     EXPECT_FALSE(client.contentDetectionRequested());
     client.reset();
 
     // Content detection should work normally without these event listeners.
     // The click listener in the body should be ignored as a special case.
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, noListener));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, noListener));
     EXPECT_TRUE(client.contentDetectionRequested());
     EXPECT_FALSE(client.scheduledIntentURL().isValid());
 
     WebURL intentURL = toKURL(m_baseURL);
     client.setContentDetectionResult(WebContentDetectionResult(WebRange(), WebString(), intentURL));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, noListener));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, noListener));
     EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
     EXPECT_TRUE(client.wasInMainFrame());
 
@@ -1533,7 +1536,7 @@ TEST_F(WebViewTest, ContentDetectionInIframe)
     WebURL intentURL = toKURL(m_baseURL);
     client.setContentDetectionResult(WebContentDetectionResult(WebRange(), WebString(), intentURL));
     RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webView->findFrameByName(frameName)->document().getElementById(noListener));
-    EXPECT_TRUE(tapElement(webView, WebInputEvent::GestureTap, element));
+    EXPECT_TRUE(tapElement(WebInputEvent::GestureTap, element));
     EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
     EXPECT_FALSE(client.wasInMainFrame());
 
@@ -1596,9 +1599,9 @@ TEST_F(WebViewTest, LongPressSelection)
     WebString onselectstartfalse = WebString::fromUTF8("onselectstartfalse");
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
 
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, onselectstartfalse));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, onselectstartfalse));
     EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, target));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, target));
     EXPECT_EQ("testword", std::string(frame->selectionAsText().utf8().data()));
 }
 
@@ -1614,7 +1617,7 @@ TEST_F(WebViewTest, LongPressEmptyTextarea)
     WebString blanklinestextbox = WebString::fromUTF8("blanklinestextbox");
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
 
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, blanklinestextbox));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, blanklinestextbox));
     EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
 }
 
@@ -1630,7 +1633,7 @@ TEST_F(WebViewTest, BlinkCaretOnTypingAfterLongPress)
     WebString target = WebString::fromUTF8("target");
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webView->mainFrame());
 
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, target));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureLongPress, target));
     EXPECT_TRUE(mainFrame->frame()->selection().isCaretBlinkingSuspended());
 
     WebKeyboardEvent keyEvent;
@@ -2668,7 +2671,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedGestureTap)
 
     EXPECT_EQ(0, client.getUserGestureNotificationsCount());
 
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target")));
 
     EXPECT_EQ(1, client.getUserGestureNotificationsCount());
     frame->setAutofillClient(0);
@@ -2818,7 +2821,7 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
     runPendingTasks();
 
     // Scroll the bottom into view so we can distinguish window coordinates from document coordinates.
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("bottom")));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("bottom")));
     EXPECT_TRUE(client.getWasCalled());
     EXPECT_EQ(64, client.getTappedXPos());
     EXPECT_EQ(278, client.getTappedYPos());
@@ -2827,7 +2830,7 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
 
     // Test basic tap handling and notification.
     client.reset();
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target")));
     EXPECT_TRUE(client.getWasCalled());
     EXPECT_EQ(144, client.getTappedXPos());
     EXPECT_EQ(82, client.getTappedYPos());
@@ -2840,7 +2843,7 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
     webView->setPageScaleFactor(2);
     webView->setVisualViewportOffset(WebFloatPoint(50, 20));
     client.reset();
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target")));
     EXPECT_TRUE(client.getWasCalled());
     EXPECT_EQ(188, client.getTappedXPos());
     EXPECT_EQ(124, client.getTappedYPos());
@@ -2850,19 +2853,19 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
 
 #define TEST_EACH_MOUSEEVENT(handler, EXPECT) \
 frame->executeScript(WebScriptSource("setTest('mousedown-" handler "');")); \
-EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
+EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
 EXPECT_##EXPECT(client.getPageChanged()); \
 client.reset(); \
 frame->executeScript(WebScriptSource("setTest('mouseup-" handler "');")); \
-EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
+EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
 EXPECT_##EXPECT(client.getPageChanged()); \
 client.reset(); \
 frame->executeScript(WebScriptSource("setTest('mousemove-" handler "');")); \
-EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
+EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
 EXPECT_##EXPECT(client.getPageChanged()); \
 client.reset(); \
 frame->executeScript(WebScriptSource("setTest('click-" handler "');")); \
-EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
+EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target"))); \
 EXPECT_##EXPECT(client.getPageChanged());
 
 TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom)
@@ -2883,7 +2886,7 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom)
     // Test without any DOM mutation.
     client.reset();
     frame->executeScript(WebScriptSource("setTest('none');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target")));
     EXPECT_FALSE(client.getPageChanged());
 
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.
@@ -2909,13 +2912,13 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateStyle)
 
     // Test click div with :active style but it is not covered for now.
     client.reset();
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("style_active")));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("style_active")));
     EXPECT_FALSE(client.getPageChanged());
 
     // Test without any style mutation.
     client.reset();
     frame->executeScript(WebScriptSource("setTest('none');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target")));
     EXPECT_FALSE(client.getPageChanged());
 
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.
@@ -2939,7 +2942,7 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithPreventDefault)
     // Test without any preventDefault.
     client.reset();
     frame->executeScript(WebScriptSource("setTest('none');"));
-    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+    EXPECT_TRUE(tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("target")));
     EXPECT_TRUE(client.getWasCalled());
 
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.

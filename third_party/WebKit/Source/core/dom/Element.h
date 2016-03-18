@@ -224,9 +224,6 @@ public:
     const AtomicString& computedRole();
     String computedName();
 
-    // Returns the absolute bounding box translated into screen coordinates:
-    IntRect screenRect() const;
-
     void didMoveToNewDocument(Document&) override;
 
     void removeAttribute(const AtomicString& name);

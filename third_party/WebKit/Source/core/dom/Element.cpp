@@ -1043,14 +1043,6 @@ ClientRect* Element::getBoundingClientRect()
     return ClientRect::create(result);
 }
 
-IntRect Element::screenRect() const
-{
-    if (!layoutObject())
-        return IntRect();
-    // FIXME: this should probably respect transforms
-    return document().view()->contentsToScreen(layoutObject()->absoluteBoundingBoxRectIgnoringTransforms());
-}
-
 const AtomicString& Element::computedRole()
 {
     document().updateLayoutIgnorePendingStylesheets();
