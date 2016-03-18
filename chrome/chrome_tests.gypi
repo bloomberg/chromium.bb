@@ -991,7 +991,6 @@
       'test/data/webui/net_internals/net_internals_test.js',
       'test/data/webui/net_internals/prerender_view.js',
       'test/data/webui/net_internals/timeline_view.js',
-      'test/data/webui/net_internals/waterfall_view.js',
       'test/data/webui/net_internals/sdch_view.js',
       'test/data/webui/ntp4.js',
       'test/data/webui/polymer_browser_test_base.js',

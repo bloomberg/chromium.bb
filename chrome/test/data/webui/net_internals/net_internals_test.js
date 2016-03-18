@@ -309,7 +309,6 @@ var NetInternalsTest = (function() {
       import: ImportView.TAB_ID,
       proxy: ProxyView.TAB_ID,
       events: EventsView.TAB_ID,
-      waterfall: WaterfallView.TAB_ID,
       timeline: TimelineView.TAB_ID,
       dns: DnsView.TAB_ID,
       sockets: SocketsView.TAB_ID,
