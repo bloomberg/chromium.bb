@@ -464,17 +464,6 @@ void NPN_InvalidateRect(NPP id, NPRect *invalidRect) {
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
   if (plugin.get() && plugin->webplugin()) {
     if (invalidRect) {
-#if defined(OS_WIN)
-      if (!plugin->windowless()) {
-        RECT rect = {0};
-        rect.left = invalidRect->left;
-        rect.right = invalidRect->right;
-        rect.top = invalidRect->top;
-        rect.bottom = invalidRect->bottom;
-        ::InvalidateRect(plugin->window_handle(), &rect, false);
-        return;
-      }
-#endif
       gfx::Rect rect(invalidRect->left,
                      invalidRect->top,
                      invalidRect->right - invalidRect->left,
@@ -669,15 +658,6 @@ NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
   switch(variable) {
-    case NPPVpluginWindowBool: {
-      // Sets windowless mode for display of the plugin
-      // Note: the documentation at
-      // http://developer.mozilla.org/en/docs/NPN_SetValue is wrong.  When
-      // value is NULL, the mode is set to true.  This is the same way Mozilla
-      // works.
-      plugin->set_windowless(value == 0);
-      return NPERR_NO_ERROR;
-    }
     case NPPVpluginTransparentBool: {
       // Sets transparent mode for display of the plugin
       //

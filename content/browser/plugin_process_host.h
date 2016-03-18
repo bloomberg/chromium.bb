@@ -138,10 +138,6 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   void OnChannelCreated(const IPC::ChannelHandle& channel_handle);
   void OnChannelDestroyed(int renderer_id);
 
-#if defined(OS_WIN)
-  void OnPluginWindowDestroyed(HWND window, HWND parent);
-#endif
-
 #if defined(OS_MACOSX)
   void OnPluginShowWindow(uint32_t window_id,
                           gfx::Rect window_rect,
@@ -175,10 +171,6 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   // The pid of the plugin process.
   int pid_;
 
-#if defined(OS_WIN)
-  // Tracks plugin parent windows created on the UI thread.
-  std::set<HWND> plugin_parent_windows_set_;
-#endif
 #if defined(OS_MACOSX)
   // Tracks plugin windows currently visible.
   std::set<uint32_t> plugin_visible_windows_set_;

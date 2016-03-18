@@ -36,7 +36,6 @@ PluginInstance::PluginInstance(PluginLib* plugin, const std::string& mime_type)
       host_(PluginHost::Singleton()),
       npp_functions_(plugin->functions()),
       window_handle_(0),
-      windowless_(false),
       transparent_(true),
       webplugin_(0),
       mime_type_(mime_type),

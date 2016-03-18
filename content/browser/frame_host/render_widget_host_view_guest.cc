@@ -327,11 +327,6 @@ gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
   return rwhv->GetNativeViewAccessible();
 }
 
-void RenderWidgetHostViewGuest::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& moves) {
-  platform_view_->MovePluginWindows(moves);
-}
-
 void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
   // InterstitialPages are not WebContents so we cannot intercept
   // ViewHostMsg_SetCursor for interstitial pages in BrowserPluginGuest.

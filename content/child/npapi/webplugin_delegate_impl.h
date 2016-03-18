@@ -98,8 +98,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   int GetProcessId() override;
   // End of WebPluginDelegate implementation.
 
-  gfx::PluginWindowHandle windowed_handle() const { return windowed_handle_; }
-  bool IsWindowless() const { return windowless_; }
   PluginInstance* instance() { return instance_.get(); }
   gfx::Rect GetRect() const { return window_rect_; }
   gfx::Rect GetClipRect() const { return clip_rect_; }
@@ -177,36 +175,8 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Called by DestroyInstance(), used for platform-specific destruction.
   void PlatformDestroyInstance();
 
-  //--------------------------
-  // used for windowed plugins
-  void WindowedUpdateGeometry(const gfx::Rect& window_rect,
-                              const gfx::Rect& clip_rect);
-  // Create the native window.
-  // Returns true if the window is created (or already exists).
-  // Returns false if unable to create the window.
-  bool WindowedCreatePlugin();
-
-  // Destroy the native window.
-  void WindowedDestroyWindow();
-
-  // Reposition the native window to be in sync with the given geometry.
-  // Returns true if the native window has moved or been clipped differently.
-  bool WindowedReposition(const gfx::Rect& window_rect,
-                          const gfx::Rect& clip_rect);
-
-  // Tells the plugin about the current state of the window.
-  // See NPAPI NPP_SetWindow for more information.
-  void WindowedSetWindow();
-
 #if defined(OS_WIN)
-  // Registers the window class for our window
-  ATOM RegisterNativeWindowClass();
-
   // Our WndProc functions.
-  static LRESULT CALLBACK WrapperWindowProc(
-      HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-  static LRESULT CALLBACK NativeWndProc(
-      HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
   static LRESULT CALLBACK FlashWindowlessWndProc(
       HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
   static LRESULT CALLBACK DummyWindowProc(
@@ -249,30 +219,15 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   void DestroyInstance();
 
 
-  // used for windowed plugins
   // Note: on Mac OS X, the only time the windowed handle is non-zero
   // is the case of accelerated rendering, which uses a fake window handle to
   // identify itself back to the browser. It still performs all of its
   // work offscreen.
-  gfx::PluginWindowHandle windowed_handle_;
-  gfx::Rect windowed_last_pos_;
-
-  bool windowed_did_set_window_;
-
-  // used by windowed and windowless plugins
-  bool windowless_;
 
   WebPlugin* plugin_;
   scoped_refptr<PluginInstance> instance_;
 
 #if defined(OS_WIN)
-  // Original wndproc before we subclassed.
-  WNDPROC plugin_wnd_proc_;
-
-  // Used to throttle WM_USER+1 messages in Flash.
-  uint32_t last_message_;
-  bool is_calling_wndproc;
-
   // An IME emulator used by a windowless plugin to retrieve IME data through
   // IMM32 functions.
   scoped_ptr<WebPluginIMEWin> plugin_ime_;
@@ -332,13 +287,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // window for Aura to ensure that these conversions occur correctly.
   static HWND WINAPI WindowFromPointPatch(POINT point);
 
-  // The mouse hook proc which handles mouse capture in windowed plugins.
-  static LRESULT CALLBACK MouseHookProc(int code, WPARAM wParam,
-                                        LPARAM lParam);
-
-  // Calls SetCapture/ReleaseCapture based on the message type.
-  static void HandleCaptureForMessage(HWND window, UINT message);
-
 #elif defined(OS_MACOSX) && !defined(USE_AURA)
   // Sets window_rect_ to |rect|
   void SetPluginRect(const gfx::Rect& rect);
@@ -393,22 +341,12 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   std::string plugin_url_;
 
 #if defined(OS_WIN)
-  // Indicates the end of a user gesture period.
-  void OnUserGestureEnd();
-
   // Handle to the message filter hook
   HHOOK handle_event_message_filter_hook_;
 
   // Event which is set when the plugin enters a modal loop in the course
   // of a NPP_HandleEvent call.
   HANDLE handle_event_pump_messages_event_;
-
-  // This flag indicates whether we started tracking a user gesture message.
-  bool user_gesture_message_posted_;
-
-  // Handle to the mouse hook installed for certain windowed plugins like
-  // flash.
-  HHOOK mouse_hook_;
 #endif
 
   // Holds the depth of the HandleEvent callstack.

@@ -76,24 +76,6 @@ bool WebPluginProxy::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-void WebPluginProxy::SetWindow(gfx::PluginWindowHandle window) {
-  Send(new PluginHostMsg_SetWindow(route_id_, window));
-}
-
-void WebPluginProxy::SetAcceptsInputEvents(bool accepts) {
-  NOTREACHED();
-}
-
-void WebPluginProxy::WillDestroyWindow(gfx::PluginWindowHandle window) {
-#if defined(OS_WIN)
-  PluginThread::current()->Send(
-      new PluginProcessHostMsg_PluginWindowDestroyed(
-          window, ::GetParent(window)));
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
 #if defined(OS_WIN)
 void WebPluginProxy::SetWindowlessData(
     HANDLE pump_messages_event, gfx::NativeViewId dummy_activation_window) {
@@ -341,8 +323,7 @@ void WebPluginProxy::UpdateGeometry(
 
   // Send over any pending invalidates which occured when the plugin was
   // off screen.
-  if (delegate_->IsWindowless() && !clip_rect.IsEmpty() &&
-      !damaged_rect_.IsEmpty()) {
+  if (!clip_rect.IsEmpty() && !damaged_rect_.IsEmpty()) {
     InvalidateRect(damaged_rect_);
   }
 }

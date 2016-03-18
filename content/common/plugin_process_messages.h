@@ -56,13 +56,6 @@ IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ChannelDestroyed,
 IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ClearSiteDataResult,
                      bool /* success */)
 
-#if defined(OS_WIN)
-// Destroys the given window's parent on the UI thread.
-IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
-                     HWND /* window */,
-                     HWND /* parent */)
-#endif
-
 #if defined(OS_MACOSX)
 // On Mac OS X, we need the browser to keep track of plugin windows so
 // that it can add and remove them from stacking groups, hide and show the

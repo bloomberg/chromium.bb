@@ -285,15 +285,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(default_font_size)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::WebPluginGeometry)
-  IPC_STRUCT_TRAITS_MEMBER(window)
-  IPC_STRUCT_TRAITS_MEMBER(window_rect)
-  IPC_STRUCT_TRAITS_MEMBER(clip_rect)
-  IPC_STRUCT_TRAITS_MEMBER(cutout_rects)
-  IPC_STRUCT_TRAITS_MEMBER(rects_valid)
-  IPC_STRUCT_TRAITS_MEMBER(visible)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(type)
@@ -468,10 +459,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // progress. If auto-resize is enabled, this should update the corresponding
   // view size.
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
-
-  // New window locations for plugin child windows.
-  IPC_STRUCT_MEMBER(std::vector<content::WebPluginGeometry>,
-                    plugin_window_moves)
 
   // The following describes the various bits that may be set in flags:
   //

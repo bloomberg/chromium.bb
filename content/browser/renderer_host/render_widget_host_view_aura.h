@@ -133,7 +133,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& pos) override;
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
-  void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override;
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
@@ -291,11 +290,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                    const gfx::Point& new_origin) override;
 
 #if defined(OS_WIN)
-  // Sets the cutout rects from constrained windows. These are rectangles that
-  // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout
-  // rects.
-  void UpdateConstrainedWindowRects(const std::vector<gfx::Rect>& rects);
-
   // Updates the cursor clip region. Used for mouse locking.
   void UpdateMouseLockRegion();
 
@@ -638,17 +632,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   CursorVisibilityState cursor_visibility_state_in_renderer_;
 
 #if defined(OS_WIN)
-  // The list of rectangles from constrained windows over this view. Windowed
-  // NPAPI plugins shouldn't draw over them.
-  std::vector<gfx::Rect> constrained_rects_;
-
-  typedef std::map<HWND, WebPluginGeometry> PluginWindowMoves;
-  // Contains information about each windowed plugin's clip and cutout rects (
-  // from the renderer). This is needed because when the transient windows
-  // over this view changes, we need this information in order to create a new
-  // region for the HWND.
-  PluginWindowMoves plugin_window_moves_;
-
   // The LegacyRenderWidgetHostHWND class provides a dummy HWND which is used
   // for accessibility, as the container for windowless plugins like
   // Flash/Silverlight, etc and for legacy drivers for trackpoints/trackpads,

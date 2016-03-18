@@ -141,97 +141,6 @@ const int kMouseLockBorderPercentage = 15;
 const int kResizeLockTimeoutMs = 67;
 
 #if defined(OS_WIN)
-// Used to associate a plugin HWND with its RenderWidgetHostViewAura instance.
-const wchar_t kWidgetOwnerProperty[] = L"RenderWidgetHostViewAuraOwner";
-
-BOOL CALLBACK WindowDestroyingCallback(HWND window, LPARAM param) {
-  RenderWidgetHostViewAura* widget =
-      reinterpret_cast<RenderWidgetHostViewAura*>(param);
-  if (GetProp(window, kWidgetOwnerProperty) == widget) {
-    // Properties set on HWNDs must be removed to avoid leaks.
-    RemoveProp(window, kWidgetOwnerProperty);
-    RenderWidgetHostViewBase::DetachPluginWindowsCallback(window);
-  }
-  return TRUE;
-}
-
-BOOL CALLBACK HideWindowsCallback(HWND window, LPARAM param) {
-  RenderWidgetHostViewAura* widget =
-      reinterpret_cast<RenderWidgetHostViewAura*>(param);
-  if (GetProp(window, kWidgetOwnerProperty) == widget)
-    SetParent(window, ui::GetHiddenWindow());
-  return TRUE;
-}
-
-BOOL CALLBACK ShowWindowsCallback(HWND window, LPARAM param) {
-  RenderWidgetHostViewAura* widget =
-      reinterpret_cast<RenderWidgetHostViewAura*>(param);
-
-  if (GetProp(window, kWidgetOwnerProperty) == widget &&
-      widget->GetNativeView()->GetHost()) {
-    HWND parent = widget->GetNativeView()->GetHost()->GetAcceleratedWidget();
-    SetParent(window, parent);
-  }
-  return TRUE;
-}
-
-struct CutoutRectsParams {
-  RenderWidgetHostViewAura* widget;
-  std::vector<gfx::Rect> cutout_rects;
-  std::map<HWND, WebPluginGeometry>* geometry;
-};
-
-// Used to update the region for the windowed plugin to draw in. We start with
-// the clip rect from the renderer, then remove the cutout rects from the
-// renderer, and then remove the transient windows from the root window and the
-// constrained windows from the parent window.
-BOOL CALLBACK SetCutoutRectsCallback(HWND window, LPARAM param) {
-  CutoutRectsParams* params = reinterpret_cast<CutoutRectsParams*>(param);
-
-  if (GetProp(window, kWidgetOwnerProperty) == params->widget) {
-    // First calculate the offset of this plugin from the root window, since
-    // the cutouts are relative to the root window.
-    HWND parent =
-        params->widget->GetNativeView()->GetHost()->GetAcceleratedWidget();
-    POINT offset;
-    offset.x = offset.y = 0;
-    MapWindowPoints(window, parent, &offset, 1);
-
-    // Now get the cached clip rect and cutouts for this plugin window that came
-    // from the renderer.
-    std::map<HWND, WebPluginGeometry>::iterator i = params->geometry->begin();
-    while (i != params->geometry->end() &&
-           i->second.window != window &&
-           GetParent(i->second.window) != window) {
-      ++i;
-    }
-
-    if (i == params->geometry->end()) {
-      NOTREACHED();
-      return TRUE;
-    }
-
-    HRGN hrgn = CreateRectRgn(i->second.clip_rect.x(),
-                              i->second.clip_rect.y(),
-                              i->second.clip_rect.right(),
-                              i->second.clip_rect.bottom());
-    // We start with the cutout rects that came from the renderer, then add the
-    // ones that came from transient and constrained windows.
-    std::vector<gfx::Rect> cutout_rects = i->second.cutout_rects;
-    for (size_t i = 0; i < params->cutout_rects.size(); ++i) {
-      gfx::Rect offset_cutout = params->cutout_rects[i];
-      offset_cutout.Offset(-offset.x, -offset.y);
-      cutout_rects.push_back(offset_cutout);
-    }
-    gfx::SubtractRectanglesFromRegion(hrgn, cutout_rects);
-    // If we don't have any cutout rects then no point in messing with the
-    // window region.
-    if (cutout_rects.size())
-      SetWindowRgn(window, hrgn, TRUE);
-  }
-  return TRUE;
-}
-
 // A callback function for EnumThreadWindows to enumerate and dismiss
 // any owned popup windows.
 BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
@@ -659,12 +568,8 @@ void RenderWidgetHostViewAura::Show() {
         GetNativeView()->GetHost()->GetAcceleratedWidget());
     legacy_render_widget_host_HWND_->SetBounds(
         window_->GetBoundsInRootWindow());
-  }
-  LPARAM lparam = reinterpret_cast<LPARAM>(this);
-  EnumChildWindows(ui::GetHiddenWindow(), ShowWindowsCallback, lparam);
-
-  if (legacy_render_widget_host_HWND_)
     legacy_render_widget_host_HWND_->Show();
+  }
 #endif
 }
 
@@ -677,12 +582,8 @@ void RenderWidgetHostViewAura::Hide() {
     delegated_frame_host_->WasHidden();
 
 #if defined(OS_WIN)
-    constrained_rects_.clear();
     aura::WindowTreeHost* host = window_->GetHost();
     if (host) {
-      HWND parent = host->GetAcceleratedWidget();
-      LPARAM lparam = reinterpret_cast<LPARAM>(this);
-      EnumChildWindows(parent, HideWindowsCallback, lparam);
       // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
       // hidden window on the same lines as Windowed plugin windows.
       if (legacy_render_widget_host_HWND_)
@@ -899,58 +800,6 @@ void RenderWidgetHostViewAura::ParentHierarchyChanged() {
   ancestor_window_observer_.reset(new WindowAncestorObserver(this));
   // Snap when we receive a hierarchy changed. http://crbug.com/388908.
   HandleParentBoundsChanged();
-}
-
-void RenderWidgetHostViewAura::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& plugin_window_moves) {
-#if defined(OS_WIN)
-  // We need to clip the rectangle to the tab's viewport, otherwise we will draw
-  // over the browser UI.
-  if (!window_->GetRootWindow()) {
-    DCHECK(plugin_window_moves.empty());
-    return;
-  }
-  HWND parent = window_->GetHost()->GetAcceleratedWidget();
-  gfx::Rect view_bounds = window_->GetBoundsInRootWindow();
-  std::vector<WebPluginGeometry> moves = plugin_window_moves;
-
-  gfx::Rect view_port(view_bounds.size());
-
-  for (size_t i = 0; i < moves.size(); ++i) {
-    gfx::Rect clip(moves[i].clip_rect);
-    gfx::Vector2d view_port_offset(
-        moves[i].window_rect.OffsetFromOrigin());
-    clip.Offset(view_port_offset);
-    clip.Intersect(view_port);
-    clip.Offset(-view_port_offset);
-    moves[i].clip_rect = clip;
-
-    moves[i].window_rect.Offset(view_bounds.OffsetFromOrigin());
-
-    plugin_window_moves_[moves[i].window] = moves[i];
-
-    // constrained_rects_ are relative to the root window. We want to convert
-    // them to be relative to the plugin window.
-    for (size_t j = 0; j < constrained_rects_.size(); ++j) {
-      gfx::Rect offset_cutout = constrained_rects_[j];
-      offset_cutout -= moves[i].window_rect.OffsetFromOrigin();
-      moves[i].cutout_rects.push_back(offset_cutout);
-    }
-  }
-
-  MovePluginWindowsHelper(parent, moves);
-
-  // Make sure each plugin window (or its wrapper if it exists) has a pointer to
-  // |this|.
-  for (size_t i = 0; i < moves.size(); ++i) {
-    HWND window = moves[i].window;
-    if (GetParent(window) != parent) {
-      window = GetParent(window);
-    }
-    if (!GetProp(window, kWidgetOwnerProperty))
-      SetProp(window, kWidgetOwnerProperty, this);
-  }
-#endif  // defined(OS_WIN)
 }
 
 void RenderWidgetHostViewAura::Focus() {
@@ -1175,27 +1024,6 @@ void RenderWidgetHostViewAura::EndFrameSubscription() {
 #if defined(OS_WIN)
 bool RenderWidgetHostViewAura::UsesNativeWindowFrame() const {
   return (legacy_render_widget_host_HWND_ != NULL);
-}
-
-void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
-    const std::vector<gfx::Rect>& rects) {
-  // Check this before setting constrained_rects_, so that next time they're set
-  // and we have a root window we don't early return.
-  if (!window_->GetHost())
-    return;
-
-  if (rects == constrained_rects_)
-    return;
-
-  constrained_rects_ = rects;
-
-  HWND parent = window_->GetHost()->GetAcceleratedWidget();
-  CutoutRectsParams params;
-  params.widget = this;
-  params.cutout_rects = constrained_rects_;
-  params.geometry = &plugin_window_moves_;
-  LPARAM lparam = reinterpret_cast<LPARAM>(&params);
-  EnumChildWindows(parent, SetCutoutRectsCallback, lparam);
 }
 
 void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
@@ -1951,17 +1779,6 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
 
 void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
 #if defined(OS_WIN)
-  HWND parent = NULL;
-  // If the tab was hidden and it's closed, host_->is_hidden would have been
-  // reset to false in RenderWidgetHostImpl::RendererExited.
-  if (!window_->GetRootWindow() || host_->is_hidden()) {
-    parent = ui::GetHiddenWindow();
-  } else {
-    parent = window_->GetHost()->GetAcceleratedWidget();
-  }
-  LPARAM lparam = reinterpret_cast<LPARAM>(this);
-  EnumChildWindows(parent, WindowDestroyingCallback, lparam);
-
   // The LegacyRenderWidgetHostHWND instance is destroyed when its window is
   // destroyed. Normally we control when that happens via the Destroy call
   // in the dtor. However there may be cases where the window is destroyed
@@ -2771,11 +2588,6 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   // Create the legacy dummy window which corresponds to the bounds of the
   // webcontents. This will be passed as the container window for windowless
   // plugins.
-  // Plugins like Flash assume the container window which is returned via the
-  // NPNVnetscapeWindow property corresponds to the bounds of the webpage.
-  // This is not true in Aura where we have only HWND which is the main Aura
-  // window. If we return this window to plugins like Flash then it causes the
-  // coordinate translations done by these plugins to break.
   // Additonally the legacy dummy window is needed for accessibility and for
   // scrolling to work in legacy drivers for trackpoints/trackpads, etc.
   if (!legacy_window_destroyed_ && GetNativeViewId()) {

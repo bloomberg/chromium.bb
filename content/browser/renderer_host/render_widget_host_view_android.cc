@@ -468,13 +468,6 @@ RenderWidgetHostViewAndroid::GetNativeViewAccessible() {
   return NULL;
 }
 
-void RenderWidgetHostViewAndroid::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& moves) {
-  // We don't have plugin windows on Android. Do nothing. Note: this is called
-  // from RenderWidgetHost::OnUpdateRect which is itself invoked while
-  // processing the corresponding message from Renderer.
-}
-
 void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
   if (overscroll_controller_)

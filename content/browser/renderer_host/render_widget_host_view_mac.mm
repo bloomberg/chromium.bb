@@ -967,14 +967,6 @@ gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
   return cocoa_view_;
 }
 
-void RenderWidgetHostViewMac::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& moves) {
-  // Must be overridden, but unused on this platform. Core Animation
-  // plugins are drawn by the GPU process (through the compositor),
-  // and Core Graphics plugins are drawn by the renderer process.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
 void RenderWidgetHostViewMac::Focus() {
   [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
 }

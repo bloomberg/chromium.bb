@@ -267,19 +267,6 @@ LONG WINAPI WebPluginIMEWin::ImmGetCompositionStringW(HIMC context,
 
 // static
 HIMC WINAPI WebPluginIMEWin::ImmGetContext(HWND window) {
-  // Call the original ImmGetContext() function if the given window is the one
-  // created in WebPluginDelegateImpl::WindowedCreatePlugin(). (We attached IME
-  // context only with the windows created in this function.) On the other hand,
-  // some windowless plugins (such as Flash) call this function with a dummy
-  // window handle. We return our dummy IME context for these plugins so they
-  // can use our IME emulator.
-  if (IsWindow(window)) {
-    wchar_t name[128];
-    GetClassName(window, &name[0], arraysize(name));
-    if (!wcscmp(&name[0], kNativeWindowClassName))
-      return ::ImmGetContext(window);
-  }
-
   WebPluginIMEWin* instance = instance_;
   if (instance)
     instance->support_ime_messages_ = true;

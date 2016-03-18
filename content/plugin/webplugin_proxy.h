@@ -53,9 +53,6 @@ class WebPluginProxy : public WebPlugin,
   void set_delegate(WebPluginDelegateImpl* d) { delegate_ = d; }
 
   // WebPlugin overrides
-  void SetWindow(gfx::PluginWindowHandle window) override;
-  void SetAcceptsInputEvents(bool accepts) override;
-  void WillDestroyWindow(gfx::PluginWindowHandle window) override;
   void Invalidate() override;
   void InvalidateRect(const gfx::Rect& rect) override;
   NPObject* GetWindowScriptNPObject() override;

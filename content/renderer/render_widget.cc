@@ -824,14 +824,12 @@ void RenderWidget::DidCompleteSwapBuffers() {
   // Notify subclasses threaded composited rendering was flushed to the screen.
   DidFlushPaint();
 
-  if (!next_paint_flags_ && !need_update_rect_for_auto_resize_ &&
-      !plugin_window_moves_.size()) {
+  if (!next_paint_flags_ && !need_update_rect_for_auto_resize_) {
     return;
   }
 
   ViewHostMsg_UpdateRect_Params params;
   params.view_size = size_;
-  params.plugin_window_moves.swap(plugin_window_moves_);
   params.flags = next_paint_flags_;
 
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
@@ -2002,34 +2000,6 @@ void RenderWidget::StartCompositor() {
   if (!is_hidden())
     compositor_->setVisible(true);
 }
-
-void RenderWidget::SchedulePluginMove(const WebPluginGeometry& move) {
-  size_t i = 0;
-  for (; i < plugin_window_moves_.size(); ++i) {
-    if (plugin_window_moves_[i].window == move.window) {
-      if (move.rects_valid) {
-        plugin_window_moves_[i] = move;
-      } else {
-        plugin_window_moves_[i].visible = move.visible;
-      }
-      break;
-    }
-  }
-
-  if (i == plugin_window_moves_.size())
-    plugin_window_moves_.push_back(move);
-}
-
-void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
-  for (WebPluginGeometryVector::iterator i = plugin_window_moves_.begin();
-       i != plugin_window_moves_.end(); ++i) {
-    if (i->window == window) {
-      plugin_window_moves_.erase(i);
-      break;
-    }
-  }
-}
-
 
 RenderWidgetCompositor* RenderWidget::compositor() const {
   return compositor_.get();

@@ -96,9 +96,6 @@ class WebPluginImpl : public WebPlugin,
   bool isPlaceholder() override;
 
   // WebPlugin implementation:
-  void SetWindow(gfx::PluginWindowHandle window) override;
-  void SetAcceptsInputEvents(bool accepts) override;
-  void WillDestroyWindow(gfx::PluginWindowHandle window) override;
   void Invalidate() override;
   void InvalidateRect(const gfx::Rect& rect) override;
   NPObject* GetWindowScriptNPObject() override;
@@ -185,8 +182,6 @@ class WebPluginImpl : public WebPlugin,
   // Check for invalid chars like @, ;, \ before the first / (in path).
   bool IsValidUrl(const GURL& url, ReferrerValue referrer_flag);
 
-  bool windowless_;
-  gfx::PluginWindowHandle window_;
 #if defined(OS_MACOSX)
   bool next_io_surface_allocated_;
   int32_t next_io_surface_width_;
@@ -195,7 +190,6 @@ class WebPluginImpl : public WebPlugin,
   scoped_refptr<cc::IOSurfaceLayer> io_surface_layer_;
   scoped_ptr<blink::WebLayer> web_layer_;
 #endif
-  bool accepts_input_events_;
   RenderFrameImpl* render_frame_;
   base::WeakPtr<RenderViewImpl> render_view_;
   blink::WebFrame* webframe_;

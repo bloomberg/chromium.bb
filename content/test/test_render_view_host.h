@@ -98,8 +98,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& bounds) override {}
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override {}
-  void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override {
-  }
   void Focus() override {}
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override {}

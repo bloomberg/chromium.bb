@@ -190,25 +190,12 @@ void WebPluginImpl::updateGeometry(const WebRect& window_rect,
                                    const WebVector<WebRect>& cut_outs_rects,
                                    bool is_visible) {
   WebPluginGeometry new_geometry;
-  new_geometry.window = window_;
   new_geometry.window_rect = window_rect;
   new_geometry.clip_rect = clip_rect;
   new_geometry.visible = is_visible;
   new_geometry.rects_valid = true;
   for (size_t i = 0; i < cut_outs_rects.size(); ++i)
     new_geometry.cutout_rects.push_back(cut_outs_rects[i]);
-
-  // Only send DidMovePlugin if the geometry changed in some way.
-  if (window_ && (first_geometry_update_ || !new_geometry.Equals(geometry_))) {
-    render_frame_->GetRenderWidget()->SchedulePluginMove(new_geometry);
-    // We invalidate windowed plugins during the first geometry update to
-    // ensure that they get reparented to the wrapper window in the browser.
-    // This ensures that they become visible and are painted by the OS. This is
-    // required as some pages don't invalidate when the plugin is added.
-    if (first_geometry_update_ && window_) {
-      InvalidateRect(window_rect);
-    }
-  }
 
   // Only UpdateGeometry if either the window or clip rects have changed.
   if (delegate_ && (first_geometry_update_ ||
@@ -236,26 +223,14 @@ void WebPluginImpl::updateGeometry(const WebRect& window_rect,
 }
 
 void WebPluginImpl::updateFocus(bool focused, blink::WebFocusType focus_type) {
-  if (accepts_input_events_)
-    delegate_->SetFocus(focused);
+  delegate_->SetFocus(focused);
 }
 
 void WebPluginImpl::updateVisibility(bool visible) {
-  if (!window_)
-    return;
-
-  WebPluginGeometry move;
-  move.window = window_;
-  move.window_rect = gfx::Rect();
-  move.clip_rect = gfx::Rect();
-  move.rects_valid = false;
-  move.visible = visible;
-
-  render_frame_->GetRenderWidget()->SchedulePluginMove(move);
 }
 
 bool WebPluginImpl::acceptsInputEvents() {
-  return accepts_input_events_;
+  return true;
 }
 
 WebInputEventResult WebPluginImpl::handleInputEvent(
@@ -290,10 +265,7 @@ WebPluginImpl::WebPluginImpl(
     const base::FilePath& file_path,
     const base::WeakPtr<RenderViewImpl>& render_view,
     RenderFrameImpl* render_frame)
-    : windowless_(false),
-      window_(gfx::kNullPluginWindow),
-      accepts_input_events_(false),
-      render_frame_(render_frame),
+    : render_frame_(render_frame),
       render_view_(render_view),
       webframe_(webframe),
       delegate_(NULL),
@@ -318,41 +290,6 @@ WebPluginImpl::WebPluginImpl(
 }
 
 WebPluginImpl::~WebPluginImpl() {
-}
-
-void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
-  if (window) {
-    DCHECK(!windowless_);
-    window_ = window;
-#if defined(OS_MACOSX)
-    // TODO(kbr): remove. http://crbug.com/105344
-
-    // Lie to ourselves about being windowless even if we got a fake
-    // plugin window handle, so we continue to get input events.
-    windowless_ = true;
-    accepts_input_events_ = true;
-    // We do not really need to notify the page delegate that a plugin
-    // window was created -- so don't.
-#else
-    accepts_input_events_ = false;
-
-#endif  // OS_MACOSX
-  } else {
-    DCHECK(!window_);  // Make sure not called twice.
-    windowless_ = true;
-    accepts_input_events_ = true;
-  }
-}
-
-void WebPluginImpl::SetAcceptsInputEvents(bool accepts) {
-  accepts_input_events_ = accepts;
-}
-
-void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
-  DCHECK_EQ(window, window_);
-  window_ = gfx::kNullPluginWindow;
-  if (render_view_.get())
-    render_frame_->GetRenderWidget()->CleanupWindowInPluginMoves(window);
 }
 
 GURL WebPluginImpl::CompleteURL(const char* url) {

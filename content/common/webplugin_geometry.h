@@ -20,19 +20,6 @@ struct WebPluginGeometry {
 
   bool Equals(const WebPluginGeometry& rhs) const;
 
-  // On Windows, this is the plugin window in the plugin process.
-  // On X11, this is the XID of the plugin-side GtkPlug containing the
-  // GtkSocket hosting the actual plugin window.
-  //
-  // On Mac OS X, all of the plugin types are currently "windowless"
-  // (window == 0) except for the special case of the GPU plugin,
-  // which currently performs rendering on behalf of the Pepper 3D API
-  // and WebGL. The GPU plugin uses a simple integer for the
-  // PluginWindowHandle which is used to map to a side data structure
-  // containing information about the plugin. Soon this plugin will be
-  // generalized, at which point this mechanism will be rethought or
-  // removed.
-  gfx::PluginWindowHandle window;
   gfx::Rect window_rect;
   // Clip rect (include) and cutouts (excludes), relative to
   // window_rect origin.

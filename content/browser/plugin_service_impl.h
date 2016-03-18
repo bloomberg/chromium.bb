@@ -109,13 +109,6 @@ class CONTENT_EXPORT PluginServiceImpl
   void DisablePluginsDiscoveryForTesting() override;
 #if defined(OS_MACOSX)
   void AppActivated() override;
-#elif defined(OS_WIN)
-  bool GetPluginInfoFromWindow(HWND window,
-                               base::string16* plugin_name,
-                               base::string16* plugin_version) override;
-
-  // Returns true iff the given HWND is a plugin.
-  bool IsPluginWindow(HWND window);
 #endif
   bool PpapiDevChannelSupported(BrowserContext* browser_context,
                                 const GURL& document_url) override;

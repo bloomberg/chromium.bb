@@ -826,46 +826,6 @@ void PluginServiceImpl::AppActivated() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&NotifyPluginsOfActivation));
 }
-#elif defined(OS_WIN)
-
-bool GetPluginPropertyFromWindow(
-    HWND window, const wchar_t* plugin_atom_property,
-    base::string16* plugin_property) {
-  ATOM plugin_atom = static_cast<ATOM>(
-      reinterpret_cast<uintptr_t>(GetPropW(window, plugin_atom_property)));
-  if (plugin_atom != 0) {
-    WCHAR plugin_property_local[MAX_PATH] = {0};
-    GlobalGetAtomNameW(plugin_atom,
-                       plugin_property_local,
-                       ARRAYSIZE(plugin_property_local));
-    *plugin_property = plugin_property_local;
-    return true;
-  }
-  return false;
-}
-
-bool PluginServiceImpl::GetPluginInfoFromWindow(
-    HWND window,
-    base::string16* plugin_name,
-    base::string16* plugin_version) {
-  if (!IsPluginWindow(window))
-    return false;
-
-
-  DWORD process_id = 0;
-  GetWindowThreadProcessId(window, &process_id);
-  WebPluginInfo info;
-  if (!PluginProcessHost::GetWebPluginInfoFromPluginPid(process_id, &info))
-    return false;
-
-  *plugin_name = info.name;
-  *plugin_version = info.version;
-  return true;
-}
-
-bool PluginServiceImpl::IsPluginWindow(HWND window) {
-  return gfx::GetClassName(window) == base::string16(kNativeWindowClassName);
-}
 #endif
 
 bool PluginServiceImpl::PpapiDevChannelSupported(

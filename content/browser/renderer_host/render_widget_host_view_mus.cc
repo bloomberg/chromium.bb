@@ -179,10 +179,6 @@ gfx::NativeViewAccessible RenderWidgetHostViewMus::GetNativeViewAccessible() {
   return gfx::NativeViewAccessible();
 }
 
-void RenderWidgetHostViewMus::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& moves) {
-}
-
 void RenderWidgetHostViewMus::UpdateCursor(const WebCursor& cursor) {
   // TODO(fsamuel): Implement cursors in Mus.
   NOTIMPLEMENTED();

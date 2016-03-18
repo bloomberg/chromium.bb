@@ -82,11 +82,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
     window_handle_ = value;
   }
 
-  // Get/Set whether this instance is in Windowless mode.
-  // Default is false.
-  bool windowless() { return windowless_; }
-  void set_windowless(bool value) { windowless_ = value; }
-
   // Get/Set whether this instance is transparent. This only applies to
   // windowless plugins.  Transparent plugins require that webkit paint the
   // background.
@@ -233,7 +228,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   scoped_refptr<PluginHost>                host_;
   NPPluginFuncs*                           npp_functions_;
   gfx::PluginWindowHandle                  window_handle_;
-  bool                                     windowless_;
   bool                                     transparent_;
   WebPlugin*                               webplugin_;
   std::string                              mime_type_;

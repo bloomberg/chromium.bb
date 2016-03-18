@@ -113,8 +113,6 @@ class WebPluginDelegateProxy
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
 
-  gfx::PluginWindowHandle GetPluginWindowHandle();
-
  protected:
   friend class base::DeleteHelper<WebPluginDelegateProxy>;
   ~WebPluginDelegateProxy() override;
@@ -130,7 +128,6 @@ class WebPluginDelegateProxy
 
   // Message handlers for messages that proxy WebPlugin methods, which
   // we translate into calls to the real WebPlugin.
-  void OnSetWindow(gfx::PluginWindowHandle window);
   void OnCompleteURL(const std::string& url_in, std::string* url_out,
                      bool* result);
   void OnHandleURLRequest(const PluginHostMsg_URLRequest_Params& params);
@@ -233,7 +230,6 @@ class WebPluginDelegateProxy
   // Used for windowless plugins so that keyboard activation works.
   gfx::NativeViewId dummy_activation_window_;
 #endif
-  gfx::PluginWindowHandle window_;
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;
   int instance_id_;

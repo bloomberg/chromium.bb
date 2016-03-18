@@ -258,11 +258,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // helps to position the full screen widget on the correct monitor.
   virtual void InitAsFullscreen(RenderWidgetHostView* reference_host_view) = 0;
 
-  // Moves all plugin windows as described in the given list.
-  // |scroll_offset| is the scroll offset of the render view.
-  virtual void MovePluginWindows(
-      const std::vector<WebPluginGeometry>& moves) = 0;
-
   // Sets the cursor to the one associated with the specified cursor_type
   virtual void UpdateCursor(const WebCursor& cursor) = 0;
 
@@ -390,10 +385,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Returns an HWND that's given as the parent window for windowless Flash to
   // workaround crbug.com/301548.
   virtual gfx::NativeViewId GetParentForWindowlessPlugin() const = 0;
-
-  // The callback that DetachPluginsHelper calls for each child window. Call
-  // this directly if you want to do custom filtering on plugin windows first.
-  static void DetachPluginWindowsCallback(HWND window);
 #endif
 
   // Add and remove observers for lifetime event notifications. The order in
@@ -410,21 +401,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   RenderWidgetHostViewBase();
 
   void NotifyObserversAboutShutdown();
-
-#if defined(OS_WIN)
-  // Shared implementation of MovePluginWindows for use by win and aura/wina.
-  static void MovePluginWindowsHelper(
-      HWND parent,
-      const std::vector<WebPluginGeometry>& moves);
-
-  static void PaintPluginWindowsHelper(
-      HWND parent,
-      const gfx::Rect& damaged_screen_rect);
-
-  // Needs to be called before the HWND backing the view goes away to avoid
-  // crashes in Windowed plugins.
-  static void DetachPluginsHelper(HWND parent);
-#endif
 
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).

@@ -152,13 +152,6 @@ class PluginService {
   // Called when the application is made active so that modal plugin windows can
   // be made forward too.
   virtual void AppActivated() = 0;
-#elif defined(OS_WIN)
-  // Returns the name and version of a plugin HWND. If the HWND isn't a valid
-  // plugin, returns false.
-  // This can be called from any thread.
-  virtual bool GetPluginInfoFromWindow(HWND window,
-                                       base::string16* plugin_name,
-                                       base::string16* plugin_version) = 0;
 #endif
 
   // Returns true iff PPAPI "dev channel" methods are supported.

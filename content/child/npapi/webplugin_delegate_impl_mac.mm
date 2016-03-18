@@ -149,10 +149,7 @@ int ExternalDragTracker::WebEventButtonModifierMask() {
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     WebPlugin* plugin,
     PluginInstance* instance)
-    : windowed_handle_(gfx::kNullPluginWindow),
-      // all Mac plugins are "windowless" in the Windows/X11 sense
-      windowless_(true),
-      plugin_(plugin),
+    : plugin_(plugin),
       instance_(instance),
       quirks_(0),
       use_buffer_context_(true),
@@ -174,7 +171,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       containing_view_has_focus_(true),
       creation_succeeded_(false) {
   memset(&window_, 0, sizeof(window_));
-  instance->set_windowless(true);
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
@@ -251,13 +247,6 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
       NOTREACHED();
       break;
   }
-
-  // Let the WebPlugin know that we are windowless, unless this is a Core
-  // Animation plugin, in which case AcceleratedPluginEnabledRendering
-  // calls SetWindow. Rendering breaks if SetWindow is called before
-  // accelerated rendering is enabled.
-  if (!layer_)
-    plugin_->SetWindow(gfx::kNullPluginWindow);
 
   return true;
 }
@@ -507,25 +496,6 @@ void WebPluginDelegateImpl::WindowlessSetWindow() {
 }
 
 #pragma mark -
-
-bool WebPluginDelegateImpl::WindowedCreatePlugin() {
-  NOTREACHED();
-  return false;
-}
-
-void WebPluginDelegateImpl::WindowedDestroyWindow() {
-  NOTREACHED();
-}
-
-bool WebPluginDelegateImpl::WindowedReposition(const gfx::Rect& window_rect,
-                                               const gfx::Rect& clip_rect) {
-  NOTREACHED();
-  return false;
-}
-
-void WebPluginDelegateImpl::WindowedSetWindow() {
-  NOTREACHED();
-}
 
 #pragma mark -
 #pragma mark Mac Extensions

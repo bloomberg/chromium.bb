@@ -36,19 +36,6 @@ class WebPlugin {
  public:
   virtual ~WebPlugin() {}
 
-  // Called by the plugin delegate to let the WebPlugin know if the plugin is
-  // windowed (i.e. handle is not NULL) or windowless (handle is NULL).  This
-  // tells the WebPlugin to send mouse/keyboard events to the plugin delegate,
-  // as well as the information about the HDC for paint operations.
-  virtual void SetWindow(gfx::PluginWindowHandle window) = 0;
-
-  // Whether input events should be sent to the delegate.
-  virtual void SetAcceptsInputEvents(bool accepts) = 0;
-
-  // Called by the plugin delegate to let it know that the window is being
-  // destroyed.
-  virtual void WillDestroyWindow(gfx::PluginWindowHandle window) = 0;
-
   virtual void Invalidate() = 0;
   virtual void InvalidateRect(const gfx::Rect& rect) = 0;
 

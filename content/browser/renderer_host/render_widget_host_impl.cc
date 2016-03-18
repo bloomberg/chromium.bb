@@ -1679,14 +1679,6 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::DidUpdateBackingStore");
   TimeTicks update_start = TimeTicks::Now();
 
-  // Move the plugins if the view hasn't already been destroyed.  Plugin moves
-  // will not be re-issued, so must move them now, regardless of whether we
-  // paint or not.  MovePluginWindows attempts to move the plugin windows and
-  // in the process could dispatch other window messages which could cause the
-  // view to be destroyed.
-  if (view_)
-    view_->MovePluginWindows(params.plugin_window_moves);
-
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
       Source<RenderWidgetHost>(this),

@@ -86,14 +86,6 @@ bool WebPluginDelegateImpl::Initialize(
     return false;
   }
 
-  windowless_ = instance_->windowless();
-  if (!windowless_) {
-    if (!WindowedCreatePlugin()) {
-      VLOG(1) << "Couldn't create windowed plugin";
-      return false;
-    }
-  }
-
   bool should_load = PlatformInitialize();
 
   plugin_url_ = url.spec();
@@ -133,15 +125,10 @@ void WebPluginDelegateImpl::UpdateGeometry(
       return;
   }
 
-  if (windowless_) {
-    WindowlessUpdateGeometry(window_rect, clip_rect);
-  } else {
-    WindowedUpdateGeometry(window_rect, clip_rect);
-  }
+  WindowlessUpdateGeometry(window_rect, clip_rect);
 }
 
 void WebPluginDelegateImpl::SetFocus(bool focused) {
-  DCHECK(windowless_);
   // This is called when internal WebKit focus (the focused element on the page)
   // changes, but plugins need to know about OS-level focus, so we have an extra
   // layer of focus tracking.
@@ -169,8 +156,6 @@ void WebPluginDelegateImpl::SetPluginHasFocus(bool focused) {
 
 void WebPluginDelegateImpl::SetContentAreaHasFocus(bool has_focus) {
   containing_view_has_focus_ = has_focus;
-  if (!windowless_)
-    return;
 #if !defined(OS_WIN)  // See SetFocus above.
   SetPluginHasFocus(containing_view_has_focus_ && has_webkit_focus_);
 #endif
@@ -197,21 +182,9 @@ base::FilePath WebPluginDelegateImpl::GetPluginPath() {
   return instance()->plugin_lib()->plugin_info().path;
 }
 
-void WebPluginDelegateImpl::WindowedUpdateGeometry(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  if (WindowedReposition(window_rect, clip_rect) ||
-      !windowed_did_set_window_) {
-    // Let the plugin know that it has been moved
-    WindowedSetWindow();
-  }
-}
-
 bool WebPluginDelegateImpl::HandleInputEvent(
     const WebInputEvent& event,
     WebCursor::CursorInfo* cursor_info) {
-  DCHECK(windowless_) << "events should only be received in windowless mode";
-
   bool pop_user_gesture = false;
   if (IsUserGesture(event)) {
     pop_user_gesture = true;

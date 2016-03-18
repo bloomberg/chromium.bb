@@ -92,7 +92,6 @@ class ResizingModeSelector;
 struct ContextMenuParams;
 struct DidOverscrollParams;
 struct ResizeParams;
-struct WebPluginGeometry;
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
@@ -284,14 +283,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Stop compositing.
   void WillCloseLayerTreeView();
-
-  // Called when a plugin is moved.  These events are queued up and sent with
-  // the next paint or scroll message to the host.
-  void SchedulePluginMove(const WebPluginGeometry& move);
-
-  // Called when a plugin window has been destroyed, to make sure the currently
-  // pending moves don't try to reference it.
-  void CleanupWindowInPluginMoves(gfx::PluginWindowHandle window);
 
   RenderWidgetCompositor* compositor() const;
 
@@ -702,10 +693,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The kind of popup this widget represents, NONE if not a popup.
   blink::WebPopupType popup_type_;
-
-  // Holds all the needed plugin window moves for a scroll.
-  typedef std::vector<WebPluginGeometry> WebPluginGeometryVector;
-  WebPluginGeometryVector plugin_window_moves_;
 
   // While we are waiting for the browser to update window sizes, we track the
   // pending size temporarily.

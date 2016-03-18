@@ -108,13 +108,6 @@ void FakePluginService::DisablePluginsDiscoveryForTesting() {
 #if defined(OS_MACOSX)
 void FakePluginService::AppActivated() {
 }
-#elif defined(OS_WIN)
-bool FakePluginService::GetPluginInfoFromWindow(
-    HWND window,
-    base::string16* plugin_name,
-    base::string16* plugin_version) {
-  return false;
-}
 #endif
 
 bool FakePluginService::PpapiDevChannelSupported(

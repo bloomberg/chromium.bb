@@ -79,24 +79,6 @@ bool PluginProcessHost::GetWebPluginInfoFromPluginPid(base::ProcessId pid,
   return true;
 }
 
-#if defined(OS_WIN)
-void PluginProcessHost::OnPluginWindowDestroyed(HWND window, HWND parent) {
-  // The window is destroyed at this point, we just care about its parent, which
-  // is the intermediate window we created.
-  std::set<HWND>::iterator window_index =
-      plugin_parent_windows_set_.find(parent);
-  if (window_index == plugin_parent_windows_set_.end())
-    return;
-
-  plugin_parent_windows_set_.erase(window_index);
-  PostMessage(parent, WM_CLOSE, 0, 0);
-}
-
-void PluginProcessHost::AddWindow(HWND window) {
-  plugin_parent_windows_set_.insert(window);
-}
-#endif  // defined(OS_WIN)
-
 // NOTE: changes to this class need to be reviewed by the security team.
 class PluginSandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
@@ -136,20 +118,7 @@ PluginProcessHost::PluginProcessHost()
 }
 
 PluginProcessHost::~PluginProcessHost() {
-#if defined(OS_WIN)
-  // We erase HWNDs from the plugin_parent_windows_set_ when we receive a
-  // notification that the window is being destroyed. If we don't receive this
-  // notification and the PluginProcessHost instance is being destroyed, it
-  // means that the plugin process crashed. We paint a sad face in this case in
-  // the renderer process. To ensure that the sad face shows up, and we don't
-  // leak HWNDs, we should destroy existing plugin parent windows.
-  std::set<HWND>::iterator window_index;
-  for (window_index = plugin_parent_windows_set_.begin();
-       window_index != plugin_parent_windows_set_.end();
-       ++window_index) {
-    PostMessage(*window_index, WM_CLOSE, 0, 0);
-  }
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // If the plugin process crashed but had fullscreen windows open at the time,
   // make sure that the menu bar is visible.
@@ -289,10 +258,6 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ChannelCreated, OnChannelCreated)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ChannelDestroyed,
                         OnChannelDestroyed)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginWindowDestroyed,
-                        OnPluginWindowDestroyed)
-#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginShowWindow,
                         OnPluginShowWindow)

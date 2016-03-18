@@ -29,22 +29,6 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 void WebPluginDelegateImpl::Paint(SkCanvas* canvas, const gfx::Rect& rect) {
 }
 
-bool WebPluginDelegateImpl::WindowedCreatePlugin() {
-  return true;
-}
-
-void WebPluginDelegateImpl::WindowedDestroyWindow() {
-}
-
-bool WebPluginDelegateImpl::WindowedReposition(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  return true;
-}
-
-void WebPluginDelegateImpl::WindowedSetWindow() {
-}
-
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {

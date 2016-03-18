@@ -18,10 +18,7 @@ namespace content {
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     WebPlugin* plugin,
     PluginInstance* instance)
-    : windowed_handle_(0),
-      windowed_did_set_window_(false),
-      windowless_(false),
-      plugin_(plugin),
+    : plugin_(plugin),
       instance_(instance),
       quirks_(0),
       handle_event_depth_(0),
@@ -41,22 +38,6 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 }
 
 void WebPluginDelegateImpl::Paint(SkCanvas* canvas, const gfx::Rect& rect) {
-}
-
-bool WebPluginDelegateImpl::WindowedCreatePlugin() {
-  return false;
-}
-
-void WebPluginDelegateImpl::WindowedDestroyWindow() {
-}
-
-bool WebPluginDelegateImpl::WindowedReposition(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  return false;
-}
-
-void WebPluginDelegateImpl::WindowedSetWindow() {
 }
 
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(

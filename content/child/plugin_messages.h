@@ -145,11 +145,6 @@ IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
 // PluginHost messages
 // These are messages sent from the plugin process to the renderer process.
 // They all map to the corresponding WebPlugin methods.
-// Sends the plugin window information to the renderer.
-// The window parameter is a handle to the window if the plugin is a windowed
-// plugin. It is NULL for windowless plugins.
-IPC_SYNC_MESSAGE_ROUTED1_0(PluginHostMsg_SetWindow,
-                           gfx::PluginWindowHandle /* window */)
 
 IPC_MESSAGE_ROUTED1(PluginHostMsg_InvalidateRect,
                     gfx::Rect /* rect */)

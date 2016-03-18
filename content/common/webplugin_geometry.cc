@@ -7,8 +7,7 @@
 namespace content {
 
 WebPluginGeometry::WebPluginGeometry()
-    : window(gfx::kNullPluginWindow),
-      rects_valid(false),
+    : rects_valid(false),
       visible(false) {
 }
 
@@ -18,8 +17,7 @@ WebPluginGeometry::~WebPluginGeometry() {
 }
 
 bool WebPluginGeometry::Equals(const WebPluginGeometry& rhs) const {
-  return window == rhs.window &&
-         window_rect == rhs.window_rect &&
+  return window_rect == rhs.window_rect &&
          clip_rect == rhs.clip_rect &&
          cutout_rects == rhs.cutout_rects &&
          rects_valid == rhs.rects_valid &&

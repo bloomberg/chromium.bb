@@ -172,10 +172,6 @@ void RenderWidgetHostViewChildFrame::ImeCompositionRangeChanged(
   // TODO(kenrb): Fix OOPIF Ime.
 }
 
-void RenderWidgetHostViewChildFrame::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& moves) {
-}
-
 void RenderWidgetHostViewChildFrame::UpdateCursor(const WebCursor& cursor) {
   if (frame_connector_)
     frame_connector_->UpdateCursor(cursor);

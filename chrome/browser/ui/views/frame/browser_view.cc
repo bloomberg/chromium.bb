@@ -464,6 +464,7 @@ BrowserView::BrowserView()
       handling_theme_changed_(false),
       in_process_fullscreen_(false),
 #if defined(OS_WIN)
+      // TODO(piman): is this still useful now that windowed plugins are gone?
       ticker_(0),
       hung_window_detector_(&hung_plugin_action_),
 #endif

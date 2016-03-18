@@ -268,8 +268,6 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
             obj->alwaysFilterEvents = true;
         }
     }
-    void* windowed = 0;
-    browser->setvalue(instance, NPPVpluginWindowBool, windowed);
 
 #ifdef XP_MACOSX
     browser->setvalue(instance, NPPVpluginDrawingModel, (void *)NPDrawingModelCoreGraphics);

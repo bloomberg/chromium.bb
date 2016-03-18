@@ -17,46 +17,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/win/hwnd_util.h"
 
-namespace {
-
-const wchar_t kGTalkPluginName[] = L"Google Talk Plugin";
-const int kGTalkPluginLogMinVersion = 26;  // For version 2.6 and below.
-
-enum GTalkPluginLogVersion {
-  GTALK_PLUGIN_VERSION_MIN = 0,
-  GTALK_PLUGIN_VERSION_27,
-  GTALK_PLUGIN_VERSION_28,
-  GTALK_PLUGIN_VERSION_29,
-  GTALK_PLUGIN_VERSION_30,
-  GTALK_PLUGIN_VERSION_31,
-  GTALK_PLUGIN_VERSION_32,
-  GTALK_PLUGIN_VERSION_33,
-  GTALK_PLUGIN_VERSION_34,
-  GTALK_PLUGIN_VERSION_MAX
-};
-
-// Converts the version string of Google Talk Plugin to a version enum. The
-// version format is "major(1 digit).minor(1 digit).sub(1 or 2 digits)",
-// for example, "2.7.10" and "2.8.1". Converts the string to a number as
-// 10 * major + minor - kGTalkPluginLogMinVersion.
-GTalkPluginLogVersion GetGTalkPluginVersion(const base::string16& version) {
-  int gtalk_plugin_version = GTALK_PLUGIN_VERSION_MIN;
-  Version plugin_version;
-  content::WebPluginInfo::CreateVersionFromString(version, &plugin_version);
-  if (plugin_version.IsValid() && plugin_version.components().size() >= 2) {
-    gtalk_plugin_version = 10 * plugin_version.components()[0] +
-        plugin_version.components()[1] - kGTalkPluginLogMinVersion;
-  }
-
-  if (gtalk_plugin_version < GTALK_PLUGIN_VERSION_MIN)
-    return GTALK_PLUGIN_VERSION_MIN;
-  if (gtalk_plugin_version > GTALK_PLUGIN_VERSION_MAX)
-    return GTALK_PLUGIN_VERSION_MAX;
-  return static_cast<GTalkPluginLogVersion>(gtalk_plugin_version);
-}
-
-}  // namespace
-
 HungPluginAction::HungPluginAction() : current_hung_plugin_window_(NULL) {
 }
 
@@ -82,18 +42,8 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
 
   *action = HungWindowNotification::HUNG_WINDOW_IGNORE;
   if (top_level_window_process_id != hung_window_process_id) {
-    base::string16 plugin_name;
-    base::string16 plugin_version;
-
-    content::PluginService::GetInstance()->GetPluginInfoFromWindow(
-        hung_window, &plugin_name, &plugin_version);
-    if (plugin_name.empty()) {
-      plugin_name = l10n_util::GetStringUTF16(IDS_UNKNOWN_PLUGIN_NAME);
-    } else if (kGTalkPluginName == plugin_name) {
-      UMA_HISTOGRAM_ENUMERATION("GTalkPlugin.Hung",
-          GetGTalkPluginVersion(plugin_version),
-          GTALK_PLUGIN_VERSION_MAX + 1);
-    }
+    base::string16 plugin_name =
+        l10n_util::GetStringUTF16(IDS_UNKNOWN_PLUGIN_NAME);
 
     if (logging::DialogsAreSuppressed()) {
       NOTREACHED() << "Terminated a hung plugin process.";

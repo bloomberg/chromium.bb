@@ -105,13 +105,12 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
     : render_view_(render_view),
       render_frame_(render_frame),
       plugin_(plugin),
-      uses_shared_bitmaps_(false),
+      uses_shared_bitmaps_(true),
 #if defined(OS_MACOSX)
       uses_compositor_(false),
 #elif defined(OS_WIN)
       dummy_activation_window_(NULL),
 #endif
-      window_(gfx::kNullPluginWindow),
       mime_type_(mime_type),
       instance_id_(MSG_ROUTING_NONE),
       npobject_(NULL),
@@ -146,9 +145,6 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   }
   dummy_activation_window_ = NULL;
 #endif
-
-  if (window_)
-    WillDestroyWindow();
 
   if (render_view_.get())
     render_view_->UnregisterPluginDelegate(this);
@@ -298,7 +294,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateProxy, msg)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindow, OnSetWindow)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InvalidateRect, OnInvalidateRect)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetWindowScriptNPObject,
                         OnGetWindowScriptNPObject)
@@ -333,11 +328,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 
 void WebPluginDelegateProxy::OnChannelError() {
   if (plugin_) {
-    if (window_) {
-      // The actual WebPluginDelegate never got a chance to tell the WebPlugin
-      // its window was going away. Do it on its behalf.
-      WillDestroyWindow();
-    }
     plugin_->Invalidate();
   }
   if (channel_host_.get() && !channel_host_->expecting_shutdown()) {
@@ -716,23 +706,6 @@ void WebPluginDelegateProxy::ImeCompositionCompleted(const base::string16& text,
 }
 #endif  // OS_MACOSX
 
-void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
-#if defined(OS_MACOSX)
-  uses_shared_bitmaps_ = !window && !uses_compositor_;
-#else
-  uses_shared_bitmaps_ = !window;
-#endif
-  window_ = window;
-  if (plugin_)
-    plugin_->SetWindow(window);
-}
-
-void WebPluginDelegateProxy::WillDestroyWindow() {
-  DCHECK(window_);
-  plugin_->WillDestroyWindow(window_);
-  window_ = gfx::kNullPluginWindow;
-}
-
 #if defined(OS_WIN)
 void WebPluginDelegateProxy::OnSetWindowlessData(
       HANDLE modal_loop_pump_messages_event_handle,
@@ -916,10 +889,6 @@ void WebPluginDelegateProxy::OnStartIme() {
 }
 #endif
 
-gfx::PluginWindowHandle WebPluginDelegateProxy::GetPluginWindowHandle() {
-  return window_;
-}
-
 void WebPluginDelegateProxy::OnCancelDocumentLoad() {
   plugin_->CancelDocumentLoad();
 }
@@ -935,7 +904,7 @@ void WebPluginDelegateProxy::OnDidStopLoading() {
 #if defined(OS_MACOSX)
 void WebPluginDelegateProxy::OnAcceleratedPluginEnabledRendering() {
   uses_compositor_ = true;
-  OnSetWindow(gfx::kNullPluginWindow);
+  uses_shared_bitmaps_ = false;
 }
 
 void WebPluginDelegateProxy::OnAcceleratedPluginAllocatedIOSurface(
