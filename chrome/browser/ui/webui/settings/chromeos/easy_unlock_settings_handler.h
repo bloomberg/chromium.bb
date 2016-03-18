@@ -48,6 +48,7 @@ class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
 
   // JS callbacks.
   void HandleGetEnabledStatus(const base::ListValue* args);
+  void HandleLaunchSetup(const base::ListValue* args);
   void HandleGetTurnOffFlowStatus(const base::ListValue* args);
   void HandleRequestTurnOff(const base::ListValue* args);
   void HandlePageDismissed(const base::ListValue* args);

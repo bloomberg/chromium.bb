@@ -14,6 +14,7 @@
 
 <if expr="chromeos">
 <link rel="import" href="chrome://md-settings/people_page/change_picture.html">
+<link rel="import" href="chrome://md-settings/people_page/easy_unlock_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/people_page/users_page.html">
 </if>
 <if expr="not chromeos">
@@ -103,14 +104,15 @@
               </div>
             </div>
             <div class="secondary-action">
-              <!-- TODO(tommycli): Hook up these buttons to actions. -->
               <template is="dom-if" if=[[!easyUnlockEnabled_]]>
-                <paper-button class="secondary-button">
+                <paper-button class="secondary-button"
+                    on-tap="onEasyUnlockSetupTap_">
                   [[i18n('easyUnlockSetupButton')]]
                 </paper-button>
               </template>
               <template is="dom-if" if=[[easyUnlockEnabled_]]>
-                <paper-button class="secondary-button">
+                <paper-button class="secondary-button"
+                    on-tap="onEasyUnlockTurnOffTap_">
                   [[i18n('easyUnlockTurnOffButton')]]
                 </paper-button>
               </template>

@@ -57,6 +57,14 @@ Polymer({
     profileName_: String,
 
 <if expr="chromeos">
+    /** @private {!settings.EasyUnlockBrowserProxyImpl} */
+    browserProxy_: {
+      type: Object,
+      value: function() {
+        return settings.EasyUnlockBrowserProxyImpl.getInstance();
+      },
+    },
+
     /**
      * True if Easy Unlock is allowed on this machine.
      * @private {boolean}
@@ -92,6 +100,8 @@ Polymer({
     if (this.easyUnlockAllowed_) {
       this.addWebUIListener(
           'easy-unlock-enabled-status',
+          this.handleEasyUnlockEnabledStatusChanged_.bind(this));
+      this.browserProxy_.getEnabledStatus().then(
           this.handleEasyUnlockEnabledStatusChanged_.bind(this));
     }
 </if>
@@ -174,6 +184,18 @@ Polymer({
   onSyncTap_: function() {
     this.$.pages.setSubpageChain(['sync']);
   },
+
+<if expr="chromeos">
+  /** @private */
+  onEasyUnlockSetupTap_: function() {
+    this.browserProxy_.launchSetup();
+  },
+
+  /** @private */
+  onEasyUnlockTurnOffTap_: function() {
+    // TODO(tommycli): Implement Easy Unlock turn off functionality.
+  },
+</if>
 
   /** @private */
   onManageOtherPeople_: function() {
