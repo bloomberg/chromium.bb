@@ -342,7 +342,7 @@ void DownloadDangerPrompt::SendSafeBrowsingDownloadRecoveryReport(
 
   std::string serialized_report;
   if (report.SerializeToString(&serialized_report))
-    sb_service->SendDownloadRecoveryReport(serialized_report);
+    sb_service->SendSerializedDownloadReport(serialized_report);
   else
     DLOG(ERROR) << "Unable to serialize the threat report.";
 }

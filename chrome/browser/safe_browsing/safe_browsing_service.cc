@@ -268,8 +268,8 @@ void SafeBrowsingService::Initialize() {
   }
 #endif  // defined(SAFE_BROWSING_CSD)
 
-  download_service_.reset(new DownloadProtectionService(
-      this, url_request_context_getter_.get()));
+  download_service_.reset(CreateDownloadProtectionService(
+      url_request_context_getter_.get()));
 
   incident_service_.reset(CreateIncidentReportingService());
   resource_request_detector_.reset(new ResourceRequestDetector(
@@ -434,6 +434,11 @@ SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
 }
 
 #if defined(FULL_SAFE_BROWSING)
+DownloadProtectionService* SafeBrowsingService::CreateDownloadProtectionService(
+      net::URLRequestContextGetter* request_context_getter) {
+  return new DownloadProtectionService(this, request_context_getter);
+}
+
 IncidentReportingService*
 SafeBrowsingService::CreateIncidentReportingService() {
   return new IncidentReportingService(
@@ -678,16 +683,16 @@ void SafeBrowsingService::RefreshState() {
 #endif
 }
 
-void SafeBrowsingService::SendDownloadRecoveryReport(
+void SafeBrowsingService::SendSerializedDownloadReport(
     const std::string& report) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::OnSendDownloadRecoveryReport, this,
+      base::Bind(&SafeBrowsingService::OnSendSerializedDownloadReport, this,
                  report));
 }
 
-void SafeBrowsingService::OnSendDownloadRecoveryReport(
+void SafeBrowsingService::OnSendSerializedDownloadReport(
     const std::string& report) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (ping_manager())

@@ -38,7 +38,7 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
  public:
   FakeSafeBrowsingService() {}
 
-  void SendDownloadRecoveryReport(const std::string& report) override {
+  void SendSerializedDownloadReport(const std::string& report) override {
     report_ = report;
   }
 

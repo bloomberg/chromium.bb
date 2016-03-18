@@ -175,8 +175,8 @@ class SafeBrowsingService
   scoped_ptr<StateSubscription> RegisterStateCallback(
       const base::Callback<void(void)>& callback);
 
-  // Sends serialized download recovery report to backend.
-  virtual void SendDownloadRecoveryReport(const std::string& report);
+  // Sends serialized download report to backend.
+  virtual void SendSerializedDownloadReport(const std::string& report);
 
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
@@ -189,6 +189,9 @@ class SafeBrowsingService
   virtual SafeBrowsingUIManager* CreateUIManager();
 
 #if defined(FULL_SAFE_BROWSING)
+  virtual DownloadProtectionService* CreateDownloadProtectionService(
+      net::URLRequestContextGetter* request_context_getter);
+
   virtual IncidentReportingService* CreateIncidentReportingService();
 #endif
 
@@ -244,7 +247,7 @@ class SafeBrowsingService
   // starts or stops the service accordingly.
   void RefreshState();
 
-  void OnSendDownloadRecoveryReport(const std::string& report);
+  void OnSendSerializedDownloadReport(const std::string& report);
 
   // The factory used to instanciate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of

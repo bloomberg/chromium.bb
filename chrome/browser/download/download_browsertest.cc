@@ -32,6 +32,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -74,6 +75,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -1073,6 +1075,81 @@ class DownloadTest : public InProcessBrowserTest {
   base::ScopedTempDir downloads_directory_;
 
   scoped_ptr<DownloadTestFileActivityObserver> file_activity_observer_;
+};
+
+class FakeDownloadProtectionService
+    : public safe_browsing::DownloadProtectionService {
+ public:
+  FakeDownloadProtectionService()
+      : safe_browsing::DownloadProtectionService(nullptr, nullptr) {}
+
+  void CheckClientDownload(DownloadItem* download_item,
+      const CheckDownloadCallback& callback) override {
+    callback.Run(
+      safe_browsing::DownloadProtectionService::UNCOMMON);
+  }
+};
+
+class FakeSafeBrowsingService : public safe_browsing::SafeBrowsingService {
+ public:
+  FakeSafeBrowsingService() {}
+
+  safe_browsing::DownloadProtectionService* CreateDownloadProtectionService(
+      net::URLRequestContextGetter* not_used_request_context_getter) override {
+    return new FakeDownloadProtectionService();
+  }
+
+  std::string GetDownloadReport() const { return report_; }
+
+ protected:
+  ~FakeSafeBrowsingService() override {}
+
+  void SendSerializedDownloadReport(const std::string& report) override {
+    report_ = report;
+  }
+
+  std::string report_;
+};
+
+// Factory that creates FakeSafeBrowsingService instances.
+class TestSafeBrowsingServiceFactory
+    : public safe_browsing::SafeBrowsingServiceFactory {
+ public:
+  TestSafeBrowsingServiceFactory() : fake_safe_browsing_service_(nullptr) {}
+  ~TestSafeBrowsingServiceFactory() override {}
+
+  safe_browsing::SafeBrowsingService* CreateSafeBrowsingService() override {
+    DCHECK(!fake_safe_browsing_service_);
+    fake_safe_browsing_service_ = new FakeSafeBrowsingService();
+    return fake_safe_browsing_service_.get();
+  }
+
+  scoped_refptr<FakeSafeBrowsingService> fake_safe_browsing_service() {
+    return fake_safe_browsing_service_;
+  }
+
+ private:
+  scoped_refptr<FakeSafeBrowsingService> fake_safe_browsing_service_;
+};
+
+class DownloadTestWithFakeSafeBrowsing : public DownloadTest {
+ public:
+  DownloadTestWithFakeSafeBrowsing()
+      : test_safe_browsing_factory_(new TestSafeBrowsingServiceFactory()) {}
+
+  void SetUp() override {
+    safe_browsing::SafeBrowsingService::RegisterFactory(
+        test_safe_browsing_factory_.get());
+    DownloadTest::SetUp();
+  }
+
+  void TearDown() override {
+    safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
+    DownloadTest::TearDown();
+  }
+
+ protected:
+  scoped_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
 };
 
 // NOTES:
@@ -3268,6 +3345,68 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackService) {
   std::vector<DownloadItem*> updated_downloads;
   GetDownloads(browser(), &updated_downloads);
   ASSERT_TRUE(updated_downloads.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(
+     DownloadTestWithFakeSafeBrowsing,
+     SendUncommonDownloadReportIfUserProceed) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+                                               true);
+  // Make a dangerous file.
+  GURL download_url(
+      net::URLRequestMockHTTPJob::GetMockUrl(kDangerousMockFilePath));
+  scoped_ptr<content::DownloadTestObserver> dangerous_observer(
+      DangerousDownloadWaiter(
+          browser(), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT));
+  ui_test_utils::NavigateToURL(browser(), download_url);
+  dangerous_observer->WaitForFinished();
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  DownloadItem* download = downloads[0];
+  DownloadCommands(download).ExecuteCommand(DownloadCommands::KEEP);
+
+  safe_browsing::ClientSafeBrowsingReportRequest actual_report;
+  actual_report.ParseFromString(
+      test_safe_browsing_factory_->fake_safe_browsing_service()
+          ->GetDownloadReport());
+  EXPECT_EQ(safe_browsing::ClientSafeBrowsingReportRequest::
+                DANGEROUS_DOWNLOAD_WARNING,
+            actual_report.type());
+  EXPECT_EQ(safe_browsing::ClientDownloadResponse::UNCOMMON,
+            actual_report.download_verdict());
+  EXPECT_EQ(download_url.spec(), actual_report.url());
+  EXPECT_TRUE(actual_report.did_proceed());
+
+  download->Cancel(true);
+}
+
+IN_PROC_BROWSER_TEST_F(
+     DownloadTestWithFakeSafeBrowsing,
+     NoUncommonDownloadReportWithoutUserProceed) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+                                               true);
+  // Make a dangerous file.
+  GURL download_url(
+      net::URLRequestMockHTTPJob::GetMockUrl(kDangerousMockFilePath));
+  scoped_ptr<content::DownloadTestObserver> dangerous_observer(
+      DangerousDownloadWaiter(
+          browser(), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT));
+  ui_test_utils::NavigateToURL(browser(), download_url);
+  dangerous_observer->WaitForFinished();
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  DownloadItem* download = downloads[0];
+  DownloadCommands(download).ExecuteCommand(DownloadCommands::DISCARD);
+
+  EXPECT_TRUE(
+      test_safe_browsing_factory_->fake_safe_browsing_service()
+          ->GetDownloadReport().empty());
 }
 #endif  // FULL_SAFE_BROWSING
 
