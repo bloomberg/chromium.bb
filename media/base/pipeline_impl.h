@@ -191,6 +191,9 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   // will be set in |renderer_| later when |renderer_| is created.
   void SetCdmTask(CdmContext* cdm_context,
                   const CdmAttachedCB& cdm_attached_cb);
+  void OnCdmAttached(const CdmAttachedCB& cdm_attached_cb,
+                     CdmContext* cdm_context,
+                     bool success);
 
   // Callbacks executed when a renderer has ended.
   void OnRendererEnded();
@@ -316,14 +319,23 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
 
   scoped_ptr<SerialRunner> pending_callbacks_;
 
-  // CdmContext to be used to decrypt (and decode) encrypted stream in this
-  // pipeline. Non-null only when SetCdm() is called and the pipeline has not
-  // been started. Then during Start(), this value will be set on |renderer_|.
-  CdmContext* pending_cdm_context_;
+  // The CdmContext to be used to decrypt (and decode) encrypted stream in this
+  // pipeline. It is set when SetCdm() succeeds on the renderer (or when
+  // SetCdm() is called before Start()), after which it is guaranteed to outlive
+  // this pipeline. The saved value will be used to configure new renderers,
+  // when starting or resuming.
+  CdmContext* cdm_context_;
 
   base::ThreadChecker thread_checker_;
 
-  // NOTE: Weak pointers must be invalidated before all other member variables.
+  // A weak pointer that can be safely copied on the media thread.
+  base::WeakPtr<PipelineImpl> weak_this_;
+
+  // Weak pointers must be created on the main thread, and must be dereferenced
+  // on the media thread.
+  //
+  // Declared last so that weak pointers will be invalidated before all other
+  // member variables.
   base::WeakPtrFactory<PipelineImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PipelineImpl);

@@ -47,8 +47,9 @@ PipelineImpl::PipelineImpl(
       renderer_ended_(false),
       text_renderer_ended_(false),
       demuxer_(NULL),
-      pending_cdm_context_(nullptr),
+      cdm_context_(nullptr),
       weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
 }
 
@@ -91,15 +92,14 @@ void PipelineImpl::Start(Demuxer* demuxer,
   add_text_track_cb_ = add_text_track_cb;
   waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::StartTask,
-                                               weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&PipelineImpl::StartTask, weak_this_));
 }
 
 void PipelineImpl::Stop(const base::Closure& stop_cb) {
   DVLOG(2) << __FUNCTION__;
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PipelineImpl::StopTask, weak_factory_.GetWeakPtr(), stop_cb));
+      FROM_HERE, base::Bind(&PipelineImpl::StopTask, weak_this_, stop_cb));
 }
 
 void PipelineImpl::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
@@ -109,9 +109,8 @@ void PipelineImpl::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
     return;
   }
 
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::SeekTask, weak_factory_.GetWeakPtr(),
-                            time, seek_cb));
+  task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::SeekTask,
+                                               weak_this_, time, seek_cb));
 }
 
 bool PipelineImpl::IsRunning() const {
@@ -131,25 +130,23 @@ void PipelineImpl::SetPlaybackRate(double playback_rate) {
   base::AutoLock auto_lock(lock_);
   playback_rate_ = playback_rate;
   if (running_) {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PipelineImpl::PlaybackRateChangedTask,
-                              weak_factory_.GetWeakPtr(), playback_rate));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&PipelineImpl::PlaybackRateChangedTask,
+                                      weak_this_, playback_rate));
   }
 }
 
 void PipelineImpl::Suspend(const PipelineStatusCB& suspend_cb) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&PipelineImpl::SuspendTask,
-                                    weak_factory_.GetWeakPtr(), suspend_cb));
+  task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::SuspendTask,
+                                               weak_this_, suspend_cb));
 }
 
 void PipelineImpl::Resume(scoped_ptr<Renderer> renderer,
                           base::TimeDelta timestamp,
                           const PipelineStatusCB& seek_cb) {
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PipelineImpl::ResumeTask, weak_factory_.GetWeakPtr(),
-                 base::Passed(&renderer), timestamp, seek_cb));
+      FROM_HERE, base::Bind(&PipelineImpl::ResumeTask, weak_this_,
+                            base::Passed(&renderer), timestamp, seek_cb));
 }
 
 float PipelineImpl::GetVolume() const {
@@ -164,9 +161,9 @@ void PipelineImpl::SetVolume(float volume) {
   base::AutoLock auto_lock(lock_);
   volume_ = volume;
   if (running_) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&PipelineImpl::VolumeChangedTask,
-                                      weak_factory_.GetWeakPtr(), volume));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&PipelineImpl::VolumeChangedTask, weak_this_, volume));
   }
 }
 
@@ -202,9 +199,9 @@ PipelineStatistics PipelineImpl::GetStatistics() const {
 
 void PipelineImpl::SetCdm(CdmContext* cdm_context,
                           const CdmAttachedCB& cdm_attached_cb) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::SetCdmTask,
-                                               weak_factory_.GetWeakPtr(),
-                                               cdm_context, cdm_attached_cb));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PipelineImpl::SetCdmTask, weak_this_, cdm_context,
+                            cdm_attached_cb));
 }
 
 void PipelineImpl::SetErrorForTesting(PipelineStatus status) {
@@ -282,22 +279,21 @@ PipelineImpl::State PipelineImpl::GetNextState() const {
 }
 
 void PipelineImpl::OnDemuxerError(PipelineStatus error) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&PipelineImpl::ErrorChangedTask,
-                                    weak_factory_.GetWeakPtr(), error));
+  task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::ErrorChangedTask,
+                                               weak_this_, error));
 }
 
 void PipelineImpl::AddTextStream(DemuxerStream* text_stream,
                                  const TextTrackConfig& config) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::AddTextStreamTask,
-                            weak_factory_.GetWeakPtr(), text_stream, config));
+      FROM_HERE, base::Bind(&PipelineImpl::AddTextStreamTask, weak_this_,
+                            text_stream, config));
 }
 
 void PipelineImpl::RemoveTextStream(DemuxerStream* text_stream) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&PipelineImpl::RemoveTextStreamTask,
-                                    weak_factory_.GetWeakPtr(), text_stream));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PipelineImpl::RemoveTextStreamTask, weak_this_, text_stream));
 }
 
 void PipelineImpl::OnError(PipelineStatus error) {
@@ -306,9 +302,8 @@ void PipelineImpl::OnError(PipelineStatus error) {
   DCHECK_NE(PIPELINE_OK, error);
   VLOG(1) << "Media pipeline error: " << error;
 
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&PipelineImpl::ErrorChangedTask,
-                                    weak_factory_.GetWeakPtr(), error));
+  task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::ErrorChangedTask,
+                                               weak_this_, error));
 }
 
 void PipelineImpl::SetDuration(TimeDelta duration) {
@@ -346,8 +341,8 @@ void PipelineImpl::StateTransitionTask(PipelineStatus status) {
 
   pending_callbacks_.reset();
 
-  PipelineStatusCB done_cb = base::Bind(&PipelineImpl::StateTransitionTask,
-                                        weak_factory_.GetWeakPtr());
+  PipelineStatusCB done_cb =
+      base::Bind(&PipelineImpl::StateTransitionTask, weak_this_);
 
   // Switch states, performing any entrance actions for the new state as well.
   SetState(GetNextState());
@@ -529,14 +524,8 @@ void PipelineImpl::StartTask() {
 
   text_renderer_ = CreateTextRenderer();
   if (text_renderer_) {
-    text_renderer_->Initialize(base::Bind(&PipelineImpl::OnTextRendererEnded,
-                                          weak_factory_.GetWeakPtr()));
-  }
-
-  // Set CDM early to avoid unnecessary delay in Renderer::Initialize().
-  if (pending_cdm_context_) {
-    renderer_->SetCdm(pending_cdm_context_, base::Bind(&IgnoreCdmAttached));
-    pending_cdm_context_ = nullptr;
+    text_renderer_->Initialize(
+        base::Bind(&PipelineImpl::OnTextRendererEnded, weak_this_));
   }
 
   StateTransitionTask(PIPELINE_OK);
@@ -576,8 +565,7 @@ void PipelineImpl::StopTask(const base::Closure& stop_cb) {
 
   SetState(kStopping);
   pending_callbacks_.reset();
-  DoStop(
-      base::Bind(&PipelineImpl::OnStopCompleted, weak_factory_.GetWeakPtr()));
+  DoStop(base::Bind(&PipelineImpl::OnStopCompleted, weak_this_));
 }
 
 void PipelineImpl::ErrorChangedTask(PipelineStatus error) {
@@ -599,8 +587,7 @@ void PipelineImpl::ErrorChangedTask(PipelineStatus error) {
   pending_callbacks_.reset();
   status_ = error;
 
-  DoStop(
-      base::Bind(&PipelineImpl::OnStopCompleted, weak_factory_.GetWeakPtr()));
+  DoStop(base::Bind(&PipelineImpl::OnStopCompleted, weak_this_));
 }
 
 void PipelineImpl::PlaybackRateChangedTask(double playback_rate) {
@@ -646,8 +633,8 @@ void PipelineImpl::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   text_renderer_ended_ = false;
   start_timestamp_ = seek_timestamp;
 
-  DoSeek(seek_timestamp, base::Bind(&PipelineImpl::StateTransitionTask,
-                                    weak_factory_.GetWeakPtr()));
+  DoSeek(seek_timestamp,
+         base::Bind(&PipelineImpl::StateTransitionTask, weak_this_));
 }
 
 void PipelineImpl::SuspendTask(const PipelineStatusCB& suspend_cb) {
@@ -692,9 +679,8 @@ void PipelineImpl::SuspendTask(const PipelineStatusCB& suspend_cb) {
                         base::Unretained(text_renderer_.get())));
   }
 
-  pending_callbacks_ =
-      SerialRunner::Run(fns, base::Bind(&PipelineImpl::StateTransitionTask,
-                                        weak_factory_.GetWeakPtr()));
+  pending_callbacks_ = SerialRunner::Run(
+      fns, base::Bind(&PipelineImpl::StateTransitionTask, weak_this_));
 }
 
 void PipelineImpl::ResumeTask(scoped_ptr<Renderer> renderer,
@@ -727,27 +713,37 @@ void PipelineImpl::ResumeTask(scoped_ptr<Renderer> renderer,
   // kInitDemuxer, and even if we did the current code would seek to the start
   // instead of |timestamp|).
   SerialRunner::Queue fns;
-  base::WeakPtr<PipelineImpl> weak_this = weak_factory_.GetWeakPtr();
 
   fns.Push(
       base::Bind(&Demuxer::Seek, base::Unretained(demuxer_), start_timestamp_));
 
-  fns.Push(base::Bind(&PipelineImpl::InitializeRenderer, weak_this));
+  fns.Push(base::Bind(&PipelineImpl::InitializeRenderer, weak_this_));
 
   pending_callbacks_ = SerialRunner::Run(
-      fns, base::Bind(&PipelineImpl::StateTransitionTask, weak_this));
+      fns, base::Bind(&PipelineImpl::StateTransitionTask, weak_this_));
 }
 
 void PipelineImpl::SetCdmTask(CdmContext* cdm_context,
                               const CdmAttachedCB& cdm_attached_cb) {
   base::AutoLock auto_lock(lock_);
   if (!renderer_) {
-    pending_cdm_context_ = cdm_context;
+    cdm_context_ = cdm_context;
     cdm_attached_cb.Run(true);
     return;
   }
 
-  renderer_->SetCdm(cdm_context, cdm_attached_cb);
+  renderer_->SetCdm(cdm_context,
+                    base::Bind(&PipelineImpl::OnCdmAttached, weak_this_,
+                               cdm_attached_cb, cdm_context));
+}
+
+void PipelineImpl::OnCdmAttached(const CdmAttachedCB& cdm_attached_cb,
+                                 CdmContext* cdm_context,
+                                 bool success) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (success)
+    cdm_context_ = cdm_context;
+  cdm_attached_cb.Run(success);
 }
 
 void PipelineImpl::OnRendererEnded() {
@@ -797,8 +793,7 @@ scoped_ptr<TextRenderer> PipelineImpl::CreateTextRenderer() {
     return scoped_ptr<media::TextRenderer>();
 
   return scoped_ptr<media::TextRenderer>(new media::TextRenderer(
-      task_runner_,
-      base::Bind(&PipelineImpl::OnAddTextTrack, weak_factory_.GetWeakPtr())));
+      task_runner_, base::Bind(&PipelineImpl::OnAddTextTrack, weak_this_)));
 }
 
 void PipelineImpl::AddTextStreamTask(DemuxerStream* text_stream,
@@ -840,13 +835,15 @@ void PipelineImpl::InitializeRenderer(const PipelineStatusCB& done_cb) {
     return;
   }
 
-  base::WeakPtr<PipelineImpl> weak_this = weak_factory_.GetWeakPtr();
+  if (cdm_context_)
+    renderer_->SetCdm(cdm_context_, base::Bind(&IgnoreCdmAttached));
+
   renderer_->Initialize(
       demuxer_, done_cb,
-      base::Bind(&PipelineImpl::OnUpdateStatistics, weak_this),
-      base::Bind(&PipelineImpl::BufferingStateChanged, weak_this),
-      base::Bind(&PipelineImpl::OnRendererEnded, weak_this),
-      base::Bind(&PipelineImpl::OnError, weak_this),
+      base::Bind(&PipelineImpl::OnUpdateStatistics, weak_this_),
+      base::Bind(&PipelineImpl::BufferingStateChanged, weak_this_),
+      base::Bind(&PipelineImpl::OnRendererEnded, weak_this_),
+      base::Bind(&PipelineImpl::OnError, weak_this_),
       waiting_for_decryption_key_cb_);
 }
 
