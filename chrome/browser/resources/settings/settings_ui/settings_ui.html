@@ -10,7 +10,6 @@
 <link rel="import" href="chrome://md-settings/settings_main/settings_main.html">
 <link rel="import" href="chrome://md-settings/settings_menu/settings_menu.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_router.html">
-<link rel="import" href="chrome://md-settings/settings_ui/breadcrumb.html">
 
 <dom-module id="settings-ui">
   <link rel="import" type="css" href="settings_ui.css">
@@ -20,9 +19,6 @@
     </settings-router>
     <paper-toolbar>
       <div class="title" i18n-content="settings"></div>
-      <settings-breadcrumb current-route="{{currentRoute}}"
-          current-route-titles="[[currentRouteTitles]]">
-      </settings-breadcrumb>
     </paper-toolbar>
     <paper-drawer-panel drawer-width="256px" id="panel">
       <settings-menu drawer class="flex" current-route="{{currentRoute}}">

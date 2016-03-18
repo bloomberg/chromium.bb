@@ -58,7 +58,7 @@ Polymer({
     /**
      * Page titles for the currently active route. Updated by the currentRoute
      * property observer.
-     * @type {{pageTitle: string, subpageTitles: Array<string>}}
+     * @type {{pageTitle: string}}
      */
     currentRouteTitles: {
       notify: true,
@@ -66,7 +66,6 @@ Polymer({
       value: function() {
         return {
           pageTitle: '',
-          subpageTitles: [],
         };
       },
     },
@@ -83,14 +82,12 @@ Polymer({
       page: 'basic',
       section: '',
       subpage: [],
-      subpageTitles: [],
     },
     {
       url: '/advanced',
       page: 'advanced',
       section: '',
       subpage: [],
-      subpageTitles: [],
     },
 <if expr="chromeos">
     {
@@ -98,14 +95,12 @@ Polymer({
       page: 'basic',
       section: 'internet',
       subpage: ['network-detail'],
-      subpageTitles: ['internetDetailPageTitle'],
     },
     {
       url: '/knownNetworks',
       page: 'basic',
       section: 'internet',
       subpage: ['known-networks'],
-      subpageTitles: ['internetKnownNetworksPageTitle'],
     },
 </if>
     {
@@ -113,21 +108,18 @@ Polymer({
       page: 'basic',
       section: 'appearance',
       subpage: ['appearance-fonts'],
-      subpageTitles: ['customizeFonts'],
     },
     {
       url: '/searchEngines',
       page: 'basic',
       section: 'search',
       subpage: ['search-engines'],
-      subpageTitles: ['searchEnginesPageTitle'],
     },
     {
       url: '/searchEngines/advanced',
       page: 'basic',
       section: 'search',
       subpage: ['search-engines', 'search-engines-advanced'],
-      subpageTitles: ['searchEnginesPageTitle', 'advancedPageTitle'],
     },
 <if expr="chromeos">
     {
@@ -135,7 +127,6 @@ Polymer({
       page: 'basic',
       section: 'people',
       subpage: ['changePicture'],
-      subpageTitles: ['changePictureTitle'],
     },
 </if>
 <if expr="not chromeos">
@@ -144,7 +135,6 @@ Polymer({
       page: 'basic',
       section: 'people',
       subpage: ['manageProfile'],
-      subpageTitles: ['editPerson'],
     },
 </if>
     {
@@ -152,7 +142,6 @@ Polymer({
       page: 'basic',
       section: 'people',
       subpage: ['sync'],
-      subpageTitles: ['syncPageTitle'],
     },
 <if expr="chromeos">
     {
@@ -160,7 +149,6 @@ Polymer({
       page: 'basic',
       section: 'people',
       subpage: ['users'],
-      subpageTitles: ['usersPageTitle'],
     },
 </if>
     {
@@ -168,14 +156,12 @@ Polymer({
       page: 'advanced',
       section: 'privacy',
       subpage: ['manage-certificates'],
-      subpageTitles: ['manageCertificates'],
     },
     {
       url: '/siteSettings',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings'],
-      subpageTitles: ['siteSettings'],
     },
     // Site Category routes.
     {
@@ -183,70 +169,60 @@ Polymer({
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'all-sites'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryAllSites'],
     },
     {
       url: '/siteSettings/camera',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-camera'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryCamera'],
     },
     {
       url: '/siteSettings/cookies',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-cookies'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryCookies'],
     },
     {
       url: '/siteSettings/fullscreen',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-fullscreen'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryFullscreen'],
     },
     {
       url: '/siteSettings/images',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-images'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryImages'],
     },
     {
       url: '/siteSettings/location',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-location'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryLocation'],
     },
     {
       url: '/siteSettings/javascript',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-javascript'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryJavascript'],
     },
     {
       url: '/siteSettings/microphone',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-microphone'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryMicrophone'],
     },
     {
       url: '/siteSettings/notifications',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-notifications'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryNotifications'],
     },
     {
       url: '/siteSettings/popups',
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-popups'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryPopups'],
     },
     // Site details routes.
     {
@@ -254,8 +230,6 @@ Polymer({
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'all-sites', 'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryAllSites',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/camera/details',
@@ -263,8 +237,6 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-camera',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCamera',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/cookies/details',
@@ -272,8 +244,6 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-cookies',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryCookies',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/fullscreen/details',
@@ -281,8 +251,6 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-fullscreen',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryFullscreen',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/images/details',
@@ -290,8 +258,6 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-images',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryImages',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/location/details',
@@ -299,8 +265,6 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-location',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryLocation',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/javascript/details',
@@ -308,8 +272,6 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-javascript',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryJavascript',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/microphone/details',
@@ -317,8 +279,6 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-microphone',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryMicrophone',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/notifications/details',
@@ -326,8 +286,6 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-notifications',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryNotifications',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/siteSettings/popups/details',
@@ -335,15 +293,12 @@ Polymer({
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-popups',
           'site-details'],
-      subpageTitles: ['siteSettings', 'siteSettingsCategoryPopups',
-          'siteSettingsSiteDetailsPageTitle'],
     },
     {
       url: '/clearBrowserData',
       page: 'advanced',
       section: 'privacy',
       subpage: ['clear-browsing-data'],
-      subpageTitles: ['clearBrowsingData'],
     },
 <if expr="chromeos">
     {
@@ -351,15 +306,12 @@ Polymer({
       page: 'advanced',
       section: 'bluetooth',
       subpage: ['bluetooth-add-device'],
-      subpageTitles: ['bluetoothAddDevicePageTitle'],
     },
     {
       url: '/bluetoothAddDevice/bluetoothPairDevice',
       page: 'advanced',
       section: 'bluetooth',
       subpage: ['bluetooth-add-device', 'bluetooth-pair-device'],
-      subpageTitles: ['bluetoothAddDevicePageTitle',
-                      'bluetoothPairDevicePageTitle'],
     },
 </if>
     {
@@ -367,14 +319,12 @@ Polymer({
       page: 'advanced',
       section: 'languages',
       subpage: ['manage-languages'],
-      subpageTitles: ['manageLanguagesPageTitle'],
     },
     {
       url: '/languages/edit',
       page: 'advanced',
       section: 'languages',
       subpage: ['language-detail'],
-      subpageTitles: ['manageLanguagesPageTitle'],
     },
 <if expr="not is_macosx">
     {
@@ -382,7 +332,6 @@ Polymer({
       page: 'advanced',
       section: 'languages',
       subpage: ['edit-dictionary'],
-      subpageTitles: ['editDictionaryPageTitle'],
     },
 </if>
 <if expr="chromeos">
@@ -391,14 +340,12 @@ Polymer({
       page: 'basic',
       section: 'device',
       subpage: ['touchpad'],
-      subpageTitles: ['touchpadTitle'],
     },
     {
       url: '/keyboard-overlay',
       page: 'basic',
       section: 'device',
       subpage: ['keyboard'],
-      subpageTitles: ['keyboardTitle'],
     },
 </if>
   ],
@@ -431,9 +378,6 @@ Polymer({
         // Update the property containing the titles for the current route.
         this.currentRouteTitles = {
           pageTitle: loadTimeData.getString(route.page + 'PageTitle'),
-          subpageTitles: route.subpageTitles.map(function(titleCode) {
-            return loadTimeData.getString(titleCode);
-          }),
         };
 
         // If we are restoring a state from history, don't push it again.
