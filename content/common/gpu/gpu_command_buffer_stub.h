@@ -27,7 +27,6 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "media/video/video_decode_accelerator.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -53,8 +52,6 @@ struct GpuCommandBufferMsg_CreateImage_Params;
 namespace content {
 
 class GpuChannel;
-class GpuVideoDecodeAccelerator;
-class GpuVideoEncodeAccelerator;
 class GpuWatchdog;
 struct WaitForCommandState;
 
