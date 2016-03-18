@@ -227,7 +227,7 @@ void ImageDocument::createDocumentStructure()
     m_imageElement->setLoadingImageDocument();
     m_imageElement->setSrc(url().getString());
     body->appendChild(m_imageElement.get());
-    if (loader())
+    if (loader() && m_imageElement->cachedImage())
         m_imageElement->cachedImage()->responseReceived(loader()->response(), nullptr);
 
     if (shouldShrinkToFit()) {
