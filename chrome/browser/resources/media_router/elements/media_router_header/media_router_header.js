@@ -88,6 +88,14 @@ Polymer({
     'focus': 'onFocus_',
   },
 
+  ready: function() {
+    // If this is not on a Mac platform, remove the placeholder. See
+    // onFocus_() for more details. ready() is only called once, so no need
+    // to check if the placeholder exist before removing.
+    if (!cr.isMac)
+      this.$$('#focus-placeholder').remove();
+  },
+
   attached: function() {
     // isRTL() only works after i18n_template.js runs to set <html dir>.
     // Set the back button icon based on text direction.
@@ -163,10 +171,18 @@ Polymer({
    */
   onFocus_: function(event) {
     // If the focus event was not triggered by the user, remove focus from
-    // the element. This prevents unexpected focusing such as when the dialog
-    // is initially loaded.
-    if (!event.sourceCapabilities)
+    // the element. This prevents unexpected focusing when the dialog is
+    // initially loaded.
+    // This only happens on mac.
+    if (cr.isMac && !event.sourceCapabilities) {
       event.path[0].blur();
+      // Adding a focus placeholder element is part of the workaround for
+      // handling unexpected focusing, which only happens once on dialog open.
+      // Since #focus-placeholder initially is focus-enabled, as denoted by
+      // its tabindex value, the focus will not appear in other elements.
+      // Remove the placeholder since we have no more use for it.
+      this.$$('#focus-placeholder').remove();
+    }
   },
 
   /**

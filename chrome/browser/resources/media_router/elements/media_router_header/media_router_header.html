@@ -5,6 +5,7 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="media_router_header.css">
   <template>
+    <div id="focus-placeholder" tabindex="0"></div>
     <paper-toolbar id="header-toolbar" class$="[[view]]">
       <div id="back-button-container">
         <paper-icon-button id="back-button" icon="[[arrowDropIcon_]]"
@@ -13,7 +14,7 @@
         </paper-icon-button>
       </div>
       <div id="header-and-arrow-container" on-click="onHeaderOrArrowClick_">
-        <span id="header-text" title="[[tooltip]]" tabindex="0">
+        <span id="header-text" title="[[tooltip]]">
             [[headingText]]</span>
         <div id="arrow-drop-container">
           <paper-icon-button icon="[[computeArrowDropIcon_(view)]]"
