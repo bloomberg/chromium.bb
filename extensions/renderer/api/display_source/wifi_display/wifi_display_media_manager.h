@@ -57,6 +57,7 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
 
   std::pair<int, int> sink_rtp_ports_;
   wds::H264VideoFormat optimal_video_format_;
+  wds::AudioCodec optimal_audio_codec_;
 
   ErrorCallback error_callback_;
 

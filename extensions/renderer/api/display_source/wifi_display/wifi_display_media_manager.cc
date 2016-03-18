@@ -16,7 +16,8 @@ const char kErrorNoVideoFormatData[] =
     "Failed to get video format data from the given MediaStreamTrack object";
 const char kErrorSinkCannotPlayVideo[] =
     "The sink cannot play video from the given MediaStreamTrack object";
-
+const char kErrorSinkCannotPlayAudio[] =
+    "The sink cannot play audio from the given MediaStreamTrack object";
 }  // namespace
 
 WiFiDisplayMediaManager::WiFiDisplayMediaManager(
@@ -221,13 +222,26 @@ bool WiFiDisplayMediaManager::InitOptimalVideoFormat(
 
 bool WiFiDisplayMediaManager::InitOptimalAudioFormat(
     const std::vector<wds::AudioCodec>& sink_codecs) {
-  NOTIMPLEMENTED();
+  for (const wds::AudioCodec& codec : sink_codecs) {
+    // MediaStreamTrack contains LPCM audio.
+    if (codec.format == wds::LPCM) {
+      optimal_audio_codec_ = codec;
+      // Picking a single mode.
+      wds::AudioModes optimal_mode;
+      if (codec.modes.test(wds::LPCM_44_1K_16B_2CH))
+        optimal_mode.set(wds::LPCM_44_1K_16B_2CH);
+      else
+        optimal_mode.set(wds::LPCM_48K_16B_2CH);
+      optimal_audio_codec_.modes = optimal_mode;
+      return true;
+    }
+  }
+  error_callback_.Run(kErrorSinkCannotPlayAudio);
   return false;
 }
 
 wds::AudioCodec WiFiDisplayMediaManager::GetOptimalAudioFormat() const {
-  NOTIMPLEMENTED();
-  return wds::AudioCodec();
+  return optimal_audio_codec_;
 }
 
 }  // namespace extensions
