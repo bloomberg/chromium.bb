@@ -266,8 +266,8 @@ class NodeController : public ports::NodeDelegate,
   // Must only be accessed from the IO thread.
   bool destroy_on_io_thread_shutdown_ = false;
 
-#if defined(OS_POSIX)
-  // Broker for sync shared buffer creation (posix-only) in children.
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  // Broker for sync shared buffer creation (non-Mac posix-only) in children.
   scoped_ptr<Broker> broker_;
 #endif
 

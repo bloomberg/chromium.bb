@@ -140,7 +140,7 @@ void NodeController::ConnectToChild(base::ProcessHandle process_handle,
 
 void NodeController::ConnectToParent(ScopedPlatformHandle platform_handle) {
 // TODO(amistry): Consider the need for a broker on Windows.
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // On posix, use the bootstrap channel for the broker and receive the node's
   // channel synchronously as the first message from the broker.
   broker_.reset(new Broker(std::move(platform_handle)));
@@ -231,7 +231,6 @@ int NodeController::MergeLocalPorts(const ports::PortRef& port0,
 
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(
     size_t num_bytes) {
-  // TODO(amistry): Fix sync broker and re-enable on OSX.
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Shared buffer creation failure is fatal, so always use the broker when we
   // have one. This does mean that a non-root process that has children will use
@@ -258,7 +257,7 @@ void NodeController::ConnectToChildOnIOThread(
     ScopedPlatformHandle platform_handle) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   PlatformChannelPair node_channel;
   // BrokerHost owns itself.
   BrokerHost* broker_host = new BrokerHost(std::move(platform_handle));
