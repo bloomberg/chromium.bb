@@ -15,9 +15,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -129,7 +130,8 @@ class SessionRestoreTest : public InProcessBrowserTest {
     Profile* profile = browser->profile();
 
     // Close the browser.
-    g_browser_process->AddRefModule();
+    scoped_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+        KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
     CloseBrowserSynchronously(browser);
 
     // Create a new window, which should trigger session restore.
@@ -154,7 +156,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     if (no_memory_pressure)
       WaitForTabsToLoad(new_browser);
 
-    g_browser_process->ReleaseModule();
+    keep_alive.reset();
 
     return new_browser;
   }
@@ -1407,7 +1409,8 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
     browser()->tab_strip_model()->ActivateTabAt(i, true);
 
   // Close the browser.
-  g_browser_process->AddRefModule();
+  scoped_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+      KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
   CloseBrowserSynchronously(browser());
 
   StartObserving(kExpectedNumTabs);
@@ -1418,7 +1421,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
   ASSERT_TRUE(new_browser);
   WaitForAllTabsToStartLoading();
-  g_browser_process->ReleaseModule();
+  keep_alive.reset();
 
   ASSERT_EQ(kExpectedNumTabs, web_contents().size());
   // Test that we have observed the tabs being loaded in the inverse order of
@@ -1450,7 +1453,8 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
 
   // Close the browser that gets opened automatically so we can track the order
   // of loading of the tabs.
-  g_browser_process->AddRefModule();
+  scoped_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+      KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
   CloseBrowserSynchronously(browser());
   // We have an extra tab that is added when the test starts, which gets ignored
   // later when we test for proper order.
@@ -1462,7 +1466,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
   ASSERT_TRUE(new_browser);
   WaitForAllTabsToStartLoading();
-  g_browser_process->ReleaseModule();
+  keep_alive.reset();
 
   ASSERT_EQ(kExpectedNumTabs + 1, web_contents().size());
 

@@ -13,6 +13,8 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/views/views_delegate.h"
 
+class ScopedKeepAlive;
+
 class ChromeViewsDelegate : public views::ViewsDelegate {
  public:
   ChromeViewsDelegate();
@@ -75,6 +77,8 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   // and desktop context.
   views::Widget::InitParams::WindowOpacity GetOpacityForInitParams(
       const views::Widget::InitParams& params);
+
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 
 #if defined(OS_WIN)
   AppbarAutohideEdgeMap appbar_autohide_edge_map_;

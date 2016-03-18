@@ -25,6 +25,10 @@ bool KeepAliveRegistry::IsRestartAllowed() const {
   return registered_count_ == restart_allowed_count_;
 }
 
+bool KeepAliveRegistry::IsOriginRegistered(KeepAliveOrigin origin) const {
+  return registered_keep_alives_.find(origin) != registered_keep_alives_.end();
+}
+
 void KeepAliveRegistry::AddObserver(KeepAliveStateObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -59,7 +63,7 @@ void KeepAliveRegistry::Register(KeepAliveOrigin origin,
   bool new_restart_allowed = IsRestartAllowed();
 
   if (new_keeping_alive != old_keeping_alive)
-    OnKeepingAliveChanged(new_keeping_alive);
+    OnKeepAliveStateChanged(new_keeping_alive);
 
   if (new_restart_allowed != old_restart_allowed)
     OnRestartAllowedChanged(new_restart_allowed);
@@ -90,25 +94,16 @@ void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
     OnRestartAllowedChanged(new_restart_allowed);
 
   if (new_keeping_alive != old_keeping_alive)
-    OnKeepingAliveChanged(new_keeping_alive);
+    OnKeepAliveStateChanged(new_keeping_alive);
 
   DVLOG(1) << "New state of the KeepAliveRegistry: " << *this;
 }
 
-void KeepAliveRegistry::OnKeepingAliveChanged(bool new_keeping_alive) {
-  // Although we should have a browser process, if there is none,
-  // there is nothing to do.
-  if (!g_browser_process)
-    return;
-
-  if (new_keeping_alive) {
-    DVLOG(1) << "KeepAliveRegistry is now keeping the browser alive.";
-    g_browser_process->AddRefModule();
-  } else {
-    DVLOG(1) << "KeepAliveRegistry stopped keeping the browser alive.";
-    g_browser_process->ReleaseModule();
-    chrome::CloseAllBrowsersIfNeeded();
-  }
+void KeepAliveRegistry::OnKeepAliveStateChanged(bool new_keeping_alive) {
+  DVLOG(1) << "Notifying KeepAliveStateObservers: KeepingAlive changed to: "
+           << new_keeping_alive;
+  FOR_EACH_OBSERVER(KeepAliveStateObserver, observers_,
+                    OnKeepAliveStateChanged(new_keeping_alive));
 }
 
 void KeepAliveRegistry::OnRestartAllowedChanged(bool new_restart_allowed) {

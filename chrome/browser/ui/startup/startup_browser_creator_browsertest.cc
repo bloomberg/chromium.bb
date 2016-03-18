@@ -20,6 +20,8 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
@@ -270,7 +272,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   SessionStartupPref::SetStartupPref(profile, pref);
 
   // Keep the browser process running while browsers are closed.
-  g_browser_process->AddRefModule();
+  ScopedKeepAlive keep_alive(KeepAliveOrigin::BROWSER,
+                             KeepAliveRestartOption::DISABLED);
 
   // Close the browser.
   CloseBrowserAsynchronously(browser());
@@ -330,8 +333,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
     ASSERT_EQ(static_cast<int>(urls.size()),
               new_browser->tab_strip_model()->count());
   }
-
-  g_browser_process->ReleaseModule();
 }
 
 // Verify that startup URLs aren't used when the process already exists

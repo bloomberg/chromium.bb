@@ -10,8 +10,12 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
   switch (origin) {
     case KeepAliveOrigin::APP_CONTROLLER:
       return out << "APP_CONTROLLER";
+    case KeepAliveOrigin::BROWSER:
+      return out << "BROWSER";
     case KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS:
       return out << "BROWSER_PROCESS_CHROMEOS";
+    case KeepAliveOrigin::SESSION_RESTORE:
+      return out << "SESSION_RESTORE";
     case KeepAliveOrigin::BACKGROUND_MODE_MANAGER:
       return out << "BACKGROUND_MODE_MANAGER";
     case KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP:
@@ -24,6 +28,10 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "APP_LIST_SHOWER";
     case KeepAliveOrigin::CHROME_APP_DELEGATE:
       return out << "CHROME_APP_DELEGATE";
+    case KeepAliveOrigin::CHROME_VIEWS_DELEGATE:
+      return out << "CHROME_VIEWS_DELEGATE";
+    case KeepAliveOrigin::LEAKED_UNINSTALL_VIEW:
+      return out << "LEAKED_UNINSTALL_VIEW";
     case KeepAliveOrigin::PANEL:
       return out << "PANEL";
     case KeepAliveOrigin::PANEL_VIEW:

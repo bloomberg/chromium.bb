@@ -22,6 +22,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/common/features.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -64,7 +65,8 @@ class PromoResourceService;
 
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
-                           public base::NonThreadSafe {
+                           public base::NonThreadSafe,
+                           public KeepAliveStateObserver {
  public:
   // |local_state_task_runner| must be a shutdown-blocking task runner.
   BrowserProcessImpl(base::SequencedTaskRunner* local_state_task_runner,
@@ -114,8 +116,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateDevToolsHttpProtocolHandler(const std::string& ip,
                                          uint16_t port) override;
   void CreateDevToolsAutoOpener() override;
-  unsigned int AddRefModule() override;
-  unsigned int ReleaseModule() override;
   bool IsShuttingDown() override;
   printing::PrintJobManager* print_job_manager() override;
   printing::PrintPreviewDialogController* print_preview_dialog_controller()
@@ -159,6 +159,10 @@ class BrowserProcessImpl : public BrowserProcess,
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
+  // KeepAliveStateObserver implementation
+  void OnKeepAliveStateChanged(bool is_keeping_alive) override;
+  void OnKeepAliveRestartStateChanged(bool can_restart) override;
+
   void CreateWatchdogThread();
   void CreateProfileManager();
   void CreateLocalState();
@@ -180,6 +184,11 @@ class BrowserProcessImpl : public BrowserProcess,
   void ApplyMetricsReportingPolicy();
 
   void CacheDefaultWebClientState();
+
+  // Methods called to control our lifetime. The browser process can be "pinned"
+  // to make sure it keeps running.
+  void Pin();
+  void Unpin();
 
   scoped_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;
@@ -242,8 +251,7 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_safe_browsing_service_;
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
 
-  unsigned int module_ref_count_;
-  bool did_start_;
+  bool shutting_down_;
 
   bool tearing_down_;
 

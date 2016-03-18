@@ -9,7 +9,6 @@
 #include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class KeepAliveRegistryTest : public testing::Test,
@@ -18,6 +17,8 @@ class KeepAliveRegistryTest : public testing::Test,
   KeepAliveRegistryTest()
       : on_restart_allowed_call_count_(0),
         on_restart_forbidden_call_count_(0),
+        start_keep_alive_call_count_(0),
+        stop_keep_alive_call_count_(0),
         registry_(KeepAliveRegistry::GetInstance()) {
     registry_->AddObserver(this);
 
@@ -30,6 +31,13 @@ class KeepAliveRegistryTest : public testing::Test,
     EXPECT_FALSE(registry_->IsKeepingAlive());
   }
 
+  void OnKeepAliveStateChanged(bool is_keeping_alive) override {
+    if (is_keeping_alive)
+      ++start_keep_alive_call_count_;
+    else
+      ++stop_keep_alive_call_count_;
+  }
+
   void OnKeepAliveRestartStateChanged(bool can_restart) override {
     if (can_restart)
       ++on_restart_allowed_call_count_;
@@ -40,18 +48,16 @@ class KeepAliveRegistryTest : public testing::Test,
  protected:
   int on_restart_allowed_call_count_;
   int on_restart_forbidden_call_count_;
+  int start_keep_alive_call_count_;
+  int stop_keep_alive_call_count_;
   KeepAliveRegistry* registry_;
 };
 
 // Test the IsKeepingAlive state and when we interact with the browser with
 // a KeepAlive registered.
 TEST_F(KeepAliveRegistryTest, BasicKeepAliveTest) {
-  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
-  const unsigned int base_module_ref_count =
-      browser_process->module_ref_count();
-  KeepAliveRegistry* registry = KeepAliveRegistry::GetInstance();
-
-  EXPECT_FALSE(registry->IsKeepingAlive());
+  EXPECT_EQ(0, start_keep_alive_call_count_);
+  EXPECT_EQ(0, stop_keep_alive_call_count_);
 
   {
     // Arbitrarily chosen Origin
@@ -59,41 +65,44 @@ TEST_F(KeepAliveRegistryTest, BasicKeepAliveTest) {
                                     KeepAliveRestartOption::DISABLED);
 
     // We should require the browser to stay alive
-    EXPECT_EQ(base_module_ref_count + 1, browser_process->module_ref_count());
+    ASSERT_EQ(1, start_keep_alive_call_count_--);  // decrement to ack
     EXPECT_TRUE(registry_->IsKeepingAlive());
   }
 
-  // We should be back to normal now.
-  EXPECT_EQ(base_module_ref_count, browser_process->module_ref_count());
+  // We should be back to normal now, notifying of the state change.
+  ASSERT_EQ(1, stop_keep_alive_call_count_--);
   EXPECT_FALSE(registry_->IsKeepingAlive());
+
+  // This should not have changed.
+  ASSERT_EQ(0, start_keep_alive_call_count_);
 }
 
 // Test the IsKeepingAlive state and when we interact with the browser with
 // more than one KeepAlive registered.
 TEST_F(KeepAliveRegistryTest, DoubleKeepAliveTest) {
-  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
-  const unsigned int base_module_ref_count =
-      browser_process->module_ref_count();
+  EXPECT_EQ(0, start_keep_alive_call_count_);
+  EXPECT_EQ(0, stop_keep_alive_call_count_);
   scoped_ptr<ScopedKeepAlive> keep_alive_1, keep_alive_2;
 
   keep_alive_1.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
                                          KeepAliveRestartOption::DISABLED));
-  EXPECT_EQ(base_module_ref_count + 1, browser_process->module_ref_count());
+  ASSERT_EQ(1, start_keep_alive_call_count_--);  // decrement to ack
   EXPECT_TRUE(registry_->IsKeepingAlive());
 
   keep_alive_2.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
                                          KeepAliveRestartOption::DISABLED));
   // We should not increment the count twice
-  EXPECT_EQ(base_module_ref_count + 1, browser_process->module_ref_count());
+  EXPECT_EQ(0, start_keep_alive_call_count_);
   EXPECT_TRUE(registry_->IsKeepingAlive());
 
   keep_alive_1.reset();
   // We should not decrement the count before the last keep alive is released.
-  EXPECT_EQ(base_module_ref_count + 1, browser_process->module_ref_count());
+  EXPECT_EQ(0, stop_keep_alive_call_count_);
   EXPECT_TRUE(registry_->IsKeepingAlive());
 
   keep_alive_2.reset();
-  EXPECT_EQ(base_module_ref_count, browser_process->module_ref_count());
+  ASSERT_EQ(1, stop_keep_alive_call_count_--);
+  EXPECT_EQ(0, start_keep_alive_call_count_);
   EXPECT_FALSE(registry_->IsKeepingAlive());
 }
 

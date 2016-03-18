@@ -92,8 +92,6 @@ class TestingBrowserProcess : public BrowserProcess {
   void CreateDevToolsHttpProtocolHandler(const std::string& ip,
                                          uint16_t port) override;
   void CreateDevToolsAutoOpener() override;
-  unsigned int AddRefModule() override;
-  unsigned int ReleaseModule() override;
   bool IsShuttingDown() override;
   printing::PrintJobManager* print_job_manager() override;
   printing::PrintPreviewDialogController* print_preview_dialog_controller()
@@ -141,15 +139,12 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetRapporService(rappor::RapporService* rappor_service);
   void ShutdownBrowserPolicyConnector();
 
-  unsigned int module_ref_count() const { return module_ref_count_; }
-
  private:
   // See CreateInstance() and DestoryInstance() above.
   TestingBrowserProcess();
   ~TestingBrowserProcess() override;
 
   scoped_ptr<content::NotificationService> notification_service_;
-  unsigned int module_ref_count_;
   std::string app_locale_;
 
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;

@@ -203,15 +203,6 @@ class BackgroundModeManagerTest : public testing::Test {
     command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
     profile_manager_ = CreateTestingProfileManager();
     profile_ = profile_manager_->CreateTestingProfile("p1");
-    chrome::DisableShutdownForTesting(true);
-  }
-
-  void TearDown() override {
-    // Don't allow the browser to be closed because the shutdown procedure will
-    // attempt to access objects that we haven't created (e.g., MessageCenter).
-    browser_shutdown::SetTryingToQuit(true);
-    chrome::DisableShutdownForTesting(false);
-    browser_shutdown::SetTryingToQuit(false);
   }
 
  protected:

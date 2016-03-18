@@ -10,6 +10,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "components/prefs/pref_service.h"
@@ -311,11 +313,12 @@ views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
 #endif
 
 void ChromeViewsDelegate::AddRef() {
-  g_browser_process->AddRefModule();
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_VIEWS_DELEGATE,
+                                        KeepAliveRestartOption::DISABLED));
 }
 
 void ChromeViewsDelegate::ReleaseRef() {
-  g_browser_process->ReleaseModule();
+  keep_alive_.reset();
 }
 
 void ChromeViewsDelegate::OnBeforeWidgetInit(

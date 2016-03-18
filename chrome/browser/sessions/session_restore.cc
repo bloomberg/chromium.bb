@@ -27,6 +27,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore_delegate.h"
@@ -114,10 +116,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     active_session_restorers->insert(this);
 
-    // When asynchronous its possible for there to be no windows. To make sure
-    // Chrome doesn't prematurely exit AddRef the process. We'll release in the
-    // destructor when restore is done.
-    g_browser_process->AddRefModule();
+    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::SESSION_RESTORE,
+                                          KeepAliveRestartOption::DISABLED));
   }
 
   bool synchronous() const { return synchronous_; }
@@ -249,8 +249,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
       delete active_session_restorers;
       active_session_restorers = nullptr;
     }
-
-    g_browser_process->ReleaseModule();
   }
 
   void Observe(int type,
@@ -717,6 +715,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
   SessionID::id_type active_window_id_;
 
   content::NotificationRegistrar registrar_;
+
+  // When asynchronous it's possible for there to be no windows. To make sure
+  // Chrome doesn't prematurely exit we register a KeepAlive for the lifetime
+  // of this object.
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 
   // The time we started the restore.
   base::TimeTicks restore_started_;

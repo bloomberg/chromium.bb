@@ -46,7 +46,6 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -122,6 +121,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
@@ -190,8 +190,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       created_icon_manager_(false),
       created_notification_ui_manager_(false),
       created_safe_browsing_service_(false),
-      module_ref_count_(0),
-      did_start_(false),
+      shutting_down_(false),
       tearing_down_(false),
       download_status_updater_(new DownloadStatusUpdater),
       local_state_task_runner_(local_state_task_runner),
@@ -243,9 +242,17 @@ BrowserProcessImpl::BrowserProcessImpl(
 
   update_client::UpdateQueryParams::SetDelegate(
       ChromeUpdateQueryParamsDelegate::GetInstance());
+
+#if !defined(OS_ANDROID)
+  KeepAliveRegistry::GetInstance()->AddObserver(this);
+#endif  // !defined(OS_ANDROID)
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
+#if !defined(OS_ANDROID)
+  KeepAliveRegistry::GetInstance()->RemoveObserver(this);
+#endif  // !defined(OS_ANDROID)
+
   tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
 
   g_browser_process = NULL;
@@ -361,57 +368,6 @@ void BrowserProcessImpl::PostDestroyThreads() {
   io_thread_.reset();
 }
 #endif  // !defined(OS_ANDROID)
-
-unsigned int BrowserProcessImpl::AddRefModule() {
-  DCHECK(CalledOnValidThread());
-
-  // CHECK(!IsShuttingDown());
-  if (IsShuttingDown()) {
-    // Copy the stacktrace which released the final reference onto our stack so
-    // it will be available in the crash report for inspection.
-    base::debug::StackTrace callstack = release_last_reference_callstack_;
-    base::debug::Alias(&callstack);
-    CHECK(false);
-  }
-
-  did_start_ = true;
-  module_ref_count_++;
-  return module_ref_count_;
-}
-
-unsigned int BrowserProcessImpl::ReleaseModule() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_NE(0u, module_ref_count_);
-  module_ref_count_--;
-  if (0 == module_ref_count_) {
-    release_last_reference_callstack_ = base::debug::StackTrace();
-
-#if defined(ENABLE_PRINTING)
-    // Wait for the pending print jobs to finish. Don't do this later, since
-    // this might cause a nested message loop to run, and we don't want pending
-    // tasks to run once teardown has started.
-    print_job_manager_->Shutdown();
-#endif
-
-#if defined(LEAK_SANITIZER)
-    // Check for memory leaks now, before we start shutting down threads. Doing
-    // this early means we won't report any shutdown-only leaks (as they have
-    // not yet happened at this point).
-    // If leaks are found, this will make the process exit immediately.
-    __lsan_do_leak_check();
-#endif
-
-    CHECK(base::MessageLoop::current()->is_running());
-
-#if defined(OS_MACOSX)
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
-#endif
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-  return module_ref_count_;
-}
 
 namespace {
 
@@ -689,7 +645,7 @@ bool BrowserProcessImpl::IsShuttingDown() {
   DCHECK(CalledOnValidThread());
   // TODO(crbug.com/560486): Fix the tests that make the check of
   // |tearing_down_| necessary here.
-  return (did_start_ && 0 == module_ref_count_) || tearing_down_;
+  return shutting_down_ || tearing_down_;
 }
 
 printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
@@ -976,6 +932,16 @@ void BrowserProcessImpl::ResourceDispatcherHostCreated() {
   ApplyAllowCrossOriginAuthPromptPolicy();
 }
 
+void BrowserProcessImpl::OnKeepAliveStateChanged(bool is_keeping_alive) {
+  if (is_keeping_alive)
+    Pin();
+  else
+    Unpin();
+}
+
+void BrowserProcessImpl::OnKeepAliveRestartStateChanged(bool can_restart){
+}
+
 void BrowserProcessImpl::CreateWatchdogThread() {
   DCHECK(!created_watchdog_thread_ && watchdog_thread_.get() == NULL);
   created_watchdog_thread_ = true;
@@ -1235,6 +1201,52 @@ void BrowserProcessImpl::CacheDefaultWebClientState() {
 #elif !defined(OS_ANDROID)
   cached_default_web_client_state_ = shell_integration::GetDefaultBrowser();
 #endif
+}
+
+void BrowserProcessImpl::Pin() {
+  DCHECK(CalledOnValidThread());
+
+  // CHECK(!IsShuttingDown());
+  if (IsShuttingDown()) {
+    // Copy the stacktrace which released the final reference onto our stack so
+    // it will be available in the crash report for inspection.
+    base::debug::StackTrace callstack = release_last_reference_callstack_;
+    base::debug::Alias(&callstack);
+    CHECK(false);
+  }
+}
+
+void BrowserProcessImpl::Unpin() {
+  DCHECK(CalledOnValidThread());
+  release_last_reference_callstack_ = base::debug::StackTrace();
+
+  shutting_down_ = true;
+#if defined(ENABLE_PRINTING)
+  // Wait for the pending print jobs to finish. Don't do this later, since
+  // this might cause a nested message loop to run, and we don't want pending
+  // tasks to run once teardown has started.
+  print_job_manager_->Shutdown();
+#endif
+
+#if defined(LEAK_SANITIZER)
+  // Check for memory leaks now, before we start shutting down threads. Doing
+  // this early means we won't report any shutdown-only leaks (as they have
+  // not yet happened at this point).
+  // If leaks are found, this will make the process exit immediately.
+  __lsan_do_leak_check();
+#endif
+
+  CHECK(base::MessageLoop::current()->is_running());
+
+#if defined(OS_MACOSX)
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
+#endif
+  base::MessageLoop::current()->QuitWhenIdle();
+
+#if !defined(OS_ANDROID)
+  chrome::ShutdownIfNeeded();
+#endif  // !defined(OS_ANDROID)
 }
 
 // Mac is currently not supported.

@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -109,7 +111,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   SessionStartupPref::SetStartupPref(profile, pref);
 
   // Keep the browser process running while browsers are closed.
-  g_browser_process->AddRefModule();
+  ScopedKeepAlive keep_alive(KeepAliveOrigin::BROWSER,
+                             KeepAliveRestartOption::DISABLED);
 
   // Close the browser.
   CloseBrowserAsynchronously(browser());
@@ -138,8 +141,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   ASSERT_EQ(static_cast<int>(expected_urls.size()), tab_strip->count());
   for (size_t i = 0; i < expected_urls.size(); i++)
     EXPECT_EQ(expected_urls[i], tab_strip->GetWebContentsAt(i)->GetURL());
-
-  g_browser_process->ReleaseModule();
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
@@ -188,7 +189,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
   // Keep the browser process running while browsers are closed.
-  g_browser_process->AddRefModule();
+  ScopedKeepAlive keep_alive(KeepAliveOrigin::BROWSER,
+                             KeepAliveRestartOption::DISABLED);
 
   // Close the browser.
   CloseBrowserAsynchronously(browser());
@@ -248,5 +250,4 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   ASSERT_LT(0, other_tab_strip->count());
   EXPECT_EQ(internals::GetTriggeredResetSettingsURL(),
             other_tab_strip->GetActiveWebContents()->GetURL());
-  g_browser_process->ReleaseModule();
 }

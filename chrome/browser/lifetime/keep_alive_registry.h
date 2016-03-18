@@ -15,16 +15,23 @@ enum class KeepAliveOrigin;
 enum class KeepAliveRestartOption;
 class KeepAliveStateObserver;
 
+// Centralized registry that objects in the browser can use to
+// express their requirements wrt the lifetime of the browser.
+// Observers registered with it can then react as those requirements
+// change.
+// In particular, this is how the browser process knows when to stop
+// or stay alive.
+// Note: BrowserProcessImpl registers to react on changes.
+// TestingBrowserProcess does not do it, meaning that the shutdown
+// sequence does not happen during unit tests.
 class KeepAliveRegistry {
  public:
   static KeepAliveRegistry* GetInstance();
 
   // Methods to query the state of the registry.
-  // TODO(dgn): This currently does not give a complete picture. It has no
-  // information about the many places that rely on AddRefModule to keep the
-  // browser alive. Tracked by https://crbug.com/587926
   bool IsKeepingAlive() const;
   bool IsRestartAllowed() const;
+  bool IsOriginRegistered(KeepAliveOrigin origin) const;
 
   void AddObserver(KeepAliveStateObserver* observer);
   void RemoveObserver(KeepAliveStateObserver* observer);
@@ -44,7 +51,7 @@ class KeepAliveRegistry {
   void Unregister(KeepAliveOrigin origin, KeepAliveRestartOption restart);
 
   // Methods called when a specific aspect of the state of the registry changes.
-  void OnKeepingAliveChanged(bool new_keeping_alive);
+  void OnKeepAliveStateChanged(bool new_keeping_alive);
   void OnRestartAllowedChanged(bool new_restart_allowed);
 
   // Tracks the registered KeepAlives, storing the origin and the number of

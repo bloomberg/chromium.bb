@@ -66,6 +66,7 @@ class BrowserWindow;
 class FindBarController;
 class PrefService;
 class Profile;
+class ScopedKeepAlive;
 class SearchDelegate;
 class SearchModel;
 class StatusBubble;
@@ -413,6 +414,12 @@ class Browser : public TabStripModelObserver,
   // sync and gives them a chance to abort signin under the tab modal signin
   // flow.
   void ShowModalSyncConfirmationWindow();
+
+  // Used to register a KeepAlive to affect the Chrome lifetime. The KeepAlive
+  // is registered when the browser is added to the browser list, and unregisted
+  // when it is removed from it.
+  void RegisterKeepAlive();
+  void UnregisterKeepAlive();
 
   // Interface implementations ////////////////////////////////////////////////
 
@@ -992,6 +999,8 @@ class Browser : public TabStripModelObserver,
   scoped_ptr<ValidationMessageBubble> validation_message_bubble_;
 
   SigninViewController signin_view_controller_;
+
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_;

@@ -70,8 +70,6 @@ bool AreAllBrowsersCloseable() {
   }
   return true;
 }
-
-bool g_disable_shutdown_for_testing = false;
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -108,6 +106,24 @@ void CloseAllBrowsersAndQuit() {
   CloseAllBrowsers();
 }
 
+void ShutdownIfNoBrowsers() {
+  if (chrome::GetTotalBrowserCount() > 0)
+    return;
+
+  // Tell everyone that we are shutting down.
+  browser_shutdown::SetTryingToQuit(true);
+
+#if defined(ENABLE_SESSION_SERVICE)
+  // If ShuttingDownWithoutClosingBrowsers() returns true, the session
+  // services may not get a chance to shut down normally, so explicitly shut
+  // them down here to ensure they have a chance to persist their data.
+  ProfileManager::ShutdownSessionServices();
+#endif
+
+  chrome::NotifyAndTerminate(true);
+  chrome::OnAppExiting();
+}
+
 void CloseAllBrowsers() {
   // If there are no browsers and closing the last browser would quit the
   // application, send the APP_TERMINATING action here. Otherwise, it will be
@@ -115,18 +131,7 @@ void CloseAllBrowsers() {
   if (chrome::GetTotalBrowserCount() == 0 &&
       (browser_shutdown::IsTryingToQuit() ||
        !KeepAliveRegistry::GetInstance()->IsKeepingAlive())) {
-    // Tell everyone that we are shutting down.
-    browser_shutdown::SetTryingToQuit(true);
-
-#if defined(ENABLE_SESSION_SERVICE)
-    // If ShuttingDownWithoutClosingBrowsers() returns true, the session
-    // services may not get a chance to shut down normally, so explicitly shut
-    // them down here to ensure they have a chance to persist their data.
-    ProfileManager::ShutdownSessionServices();
-#endif
-
-    chrome::NotifyAndTerminate(true);
-    chrome::OnAppExiting();
+    ShutdownIfNoBrowsers();
     return;
   }
 
@@ -276,12 +281,11 @@ void SessionEnding() {
   base::Process::Current().Terminate(0, false);
 }
 
-void CloseAllBrowsersIfNeeded() {
-  if (chrome::GetTotalBrowserCount() == 0 &&
-      !browser_shutdown::IsTryingToQuit() && base::MessageLoop::current() &&
-      !g_disable_shutdown_for_testing) {
-    CloseAllBrowsers();
-  }
+void ShutdownIfNeeded() {
+  if (browser_shutdown::IsTryingToQuit())
+    return;
+
+  ShutdownIfNoBrowsers();
 }
 
 #endif  // !defined(OS_ANDROID)
@@ -342,13 +346,6 @@ void OnAppExiting() {
     return;
   notified = true;
   HandleAppExitingForPlatform();
-}
-
-void DisableShutdownForTesting(bool disable_shutdown_for_testing) {
-  g_disable_shutdown_for_testing = disable_shutdown_for_testing;
-  if (!g_disable_shutdown_for_testing &&
-      !KeepAliveRegistry::GetInstance()->IsKeepingAlive())
-    CloseAllBrowsersIfNeeded();
 }
 #endif  // !defined(OS_ANDROID)
 

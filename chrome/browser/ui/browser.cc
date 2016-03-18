@@ -62,6 +62,8 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/keep_alive_registry.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
@@ -936,6 +938,14 @@ void Browser::CloseModalSigninWindow() {
 
 void Browser::ShowModalSyncConfirmationWindow() {
   signin_view_controller_.ShowModalSyncConfirmationDialog(this);
+}
+
+void Browser::RegisterKeepAlive() {
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::BROWSER,
+                                        KeepAliveRestartOption::DISABLED));
+}
+void Browser::UnregisterKeepAlive() {
+  keep_alive_.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

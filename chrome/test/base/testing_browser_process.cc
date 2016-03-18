@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -62,7 +63,6 @@ void TestingBrowserProcess::DeleteInstance() {
 
 TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
-      module_ref_count_(0),
       app_locale_("en"),
       local_state_(nullptr),
       io_thread_(nullptr),
@@ -232,15 +232,6 @@ void TestingBrowserProcess::CreateDevToolsHttpProtocolHandler(
 }
 
 void TestingBrowserProcess::CreateDevToolsAutoOpener() {
-}
-
-unsigned int TestingBrowserProcess::AddRefModule() {
-  return ++module_ref_count_;
-}
-
-unsigned int TestingBrowserProcess::ReleaseModule() {
-  DCHECK_GT(module_ref_count_, 0U);
-  return --module_ref_count_;
 }
 
 bool TestingBrowserProcess::IsShuttingDown() {

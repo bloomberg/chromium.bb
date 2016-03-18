@@ -57,9 +57,8 @@ void CloseAllBrowsersAndQuit();
 void CloseAllBrowsers();
 
 // If there are no browsers open and we aren't already shutting down,
-// initiate a shutdown. Also skips shutdown if this is a unit test.
-// (MessageLoop::current() == null or explicitly disabled).
-void CloseAllBrowsersIfNeeded();
+// initiate a shutdown.
+void ShutdownIfNeeded();
 
 // Begins shutdown of the application when the desktop session is ending.
 void SessionEnding();
@@ -81,9 +80,6 @@ void OnAppExiting();
 // Called once the application is exiting to do any platform specific
 // processing required.
 void HandleAppExitingForPlatform();
-
-// Disable browser shutdown for unit tests.
-void DisableShutdownForTesting(bool disable_shutdown_for_testing);
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace chrome

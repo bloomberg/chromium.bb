@@ -186,9 +186,6 @@ class BrowserProcess {
                                                  uint16_t port) = 0;
   virtual void CreateDevToolsAutoOpener() = 0;
 
-  virtual unsigned int AddRefModule() = 0;
-  virtual unsigned int ReleaseModule() = 0;
-
   virtual bool IsShuttingDown() = 0;
 
   virtual printing::PrintJobManager* print_job_manager() = 0;
