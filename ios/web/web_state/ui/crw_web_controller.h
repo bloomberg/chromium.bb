@@ -124,7 +124,7 @@ class WebStateImpl;
 // YES if JavaScript dialogs, HTTP authentication dialogs and window.open
 // calls should be suppressed. Default is NO. When dialog is suppressed
 // |CRWWebDelegate webControllerDidSuppressDialog:| will be called.
-@property(nonatomic, assign) BOOL suppressDialogs;
+@property(nonatomic, assign) BOOL shouldSuppressDialogs;
 
 // Return an image to use as replacement of a missing snapshot.
 + (UIImage*)defaultSnapshotImage;

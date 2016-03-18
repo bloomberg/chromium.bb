@@ -238,9 +238,9 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   GURL _defaultURL;
   // Show overlay view, don't reload web page.
   BOOL _overlayPreviewMode;
-  // If |YES|, call setSuppressDialogs when core.js is injected into the web
-  // view.
-  BOOL _setSuppressDialogsLater;
+  // If |YES|, calls |setShouldSuppressDialogs:YES| when window id is injected
+  // into the web view.
+  BOOL _shouldSuppressDialogsOnWindowIDInjection;
   // The URL of an expected future recreation of the |webView|. Valid
   // only if the web view was discarded for non-user-visible reasons, such that
   // if the next load request is for that URL, it should be treated as a
@@ -518,7 +518,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 @synthesize webUsageEnabled = _webUsageEnabled;
 @synthesize usePlaceholderOverlay = _usePlaceholderOverlay;
 @synthesize loadPhase = _loadPhase;
-@synthesize suppressDialogs = _suppressDialogs;
+@synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
 
 // Implemented by subclasses.
 @dynamic keyboardDisplayRequiresUserAction;
@@ -940,15 +940,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return scrollView.contentOffset.y == -scrollView.contentInset.top;
 }
 
-- (void)setSuppressDialogs:(BOOL)suppressDialogs {
-  _suppressDialogs = suppressDialogs;
+- (void)setShouldSuppressDialogs:(BOOL)shouldSuppressDialogs {
+  _shouldSuppressDialogs = shouldSuppressDialogs;
   if (self.webView) {
     NSString* const kSetSuppressDialogs = [NSString
         stringWithFormat:@"__gCrWeb.setSuppressGeolocationDialogs(%d);",
-                         suppressDialogs];
+                         shouldSuppressDialogs];
     [self evaluateJavaScript:kSetSuppressDialogs stringResultHandler:nil];
   } else {
-    _setSuppressDialogsLater = suppressDialogs;
+    _shouldSuppressDialogsOnWindowIDInjection = shouldSuppressDialogs;
   }
 }
 
@@ -1062,11 +1062,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (![_windowIDJSManager hasBeenInjected]) {
     // If the window ID wasn't present, this is a new page.
     [self setPageChangeProbability:web::PAGE_CHANGE_PROBABILITY_LOW];
-    // Default values for suppressDialogs and notifyAboutDialogs are NO,
-    // so updating them only when necessary is a good optimization.
-    if (_setSuppressDialogsLater) {
-      [self setSuppressDialogs:YES];
-      _setSuppressDialogsLater = NO;
+    // Default value for shouldSuppressDialogs is NO, so updating them only
+    // when necessary is a good optimization.
+    if (_shouldSuppressDialogsOnWindowIDInjection) {
+      self.shouldSuppressDialogs = YES;
+      _shouldSuppressDialogsOnWindowIDInjection = NO;
     }
 
     [_windowIDJSManager inject];
@@ -3195,10 +3195,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)setPageDialogOpenPolicy:(web::PageDialogOpenPolicy)policy {
   switch (policy) {
     case web::DIALOG_POLICY_ALLOW:
-      [self setSuppressDialogs:NO];
+      self.shouldSuppressDialogs = NO;
       return;
     case web::DIALOG_POLICY_SUPPRESS:
-      [self setSuppressDialogs:YES];
+      self.shouldSuppressDialogs = YES;
       return;
   }
   NOTREACHED();

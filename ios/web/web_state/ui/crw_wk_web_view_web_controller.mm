@@ -1205,7 +1205,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
       [space.authenticationMethod isEqual:NSURLAuthenticationMethodNTLM] ||
       [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPDigest]);
 
-  if (self.suppressDialogs) {
+  if (self.shouldSuppressDialogs) {
     [self didSuppressDialog];
     completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
     return;
@@ -1977,7 +1977,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
                forNavigationAction:(WKNavigationAction*)navigationAction
                     windowFeatures:(WKWindowFeatures*)windowFeatures {
-  if (self.suppressDialogs) {
+  if (self.shouldSuppressDialogs) {
     [self didSuppressDialog];
     return nil;
   }
@@ -2017,7 +2017,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     runJavaScriptAlertPanelWithMessage:(NSString*)message
                       initiatedByFrame:(WKFrameInfo*)frame
                      completionHandler:(void(^)())completionHandler {
-  if (self.suppressDialogs) {
+  if (self.shouldSuppressDialogs) {
     [self didSuppressDialog];
     completionHandler();
     return;
@@ -2042,7 +2042,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                         initiatedByFrame:(WKFrameInfo*)frame
                        completionHandler:
         (void (^)(BOOL result))completionHandler {
-  if (self.suppressDialogs) {
+  if (self.shouldSuppressDialogs) {
     [self didSuppressDialog];
     completionHandler(NO);
     return;
@@ -2069,7 +2069,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                          initiatedByFrame:(WKFrameInfo*)frame
                         completionHandler:
         (void (^)(NSString *result))completionHandler {
-  if (self.suppressDialogs) {
+  if (self.shouldSuppressDialogs) {
     [self didSuppressDialog];
     completionHandler(nil);
     return;
