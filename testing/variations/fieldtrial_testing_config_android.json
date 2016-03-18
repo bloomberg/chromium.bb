@@ -203,6 +203,9 @@
     ],
     "OfflinePages": [
         {
+            "enable_features": [
+                "NTPOfflinePages"
+            ],
             "group_name": "EnabledAsBookmarks"
         }
     ],
