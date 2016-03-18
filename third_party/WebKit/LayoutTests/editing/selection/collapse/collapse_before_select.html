@@ -1,0 +1,18 @@
+<!doctype html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<div contenteditable id="anchor"><select><option>One</option></select>blaa</div>
+<div id="log"></div>
+<script>
+test(function() {
+    var selection = window.getSelection();
+    var select = document.querySelector('select');
+    selection.collapse(select, 0);
+
+    var anchor = document.getElementById('anchor');
+    assert_equals(selection.anchorNode, anchor, 'anchorNode');
+    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
+    assert_equals(selection.focusNode, anchor, 'focusNode');
+    assert_equals(selection.focusOffset, 0, 'focusOffset');
+}, 'can not place caret inside SELECT element');
+</script>

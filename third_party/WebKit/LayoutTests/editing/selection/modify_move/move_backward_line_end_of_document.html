@@ -1,22 +1,12 @@
-<html>
+<!doctype html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <style>
 blockquote {
     color: blue;
 }
 </style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript"></script>
-<script>
-function editingTest() {
-    selectAllCommand();
-    moveSelectionForwardByCharacterCommand();
-    moveSelectionBackwardByLineCommand();
-}
-</script>
-
-<body onload="runEditingTest();">
-
-<div id="test" contentEditable style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
-
+<div id="sample" contentEditable style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;">
 <DIV class=3D"AppleOriginalContents"><DIV>On Feb 1, 2006, at 7:37 PM, David Hyatt wrote:</DIV><BR class=3D"Apple-interchange-newline"><BLOCKQUOTE type=3D"cite"><DIV
 style=3D"margin-top: 0px; margin-right: 0px; margin-bottom: 0px;
 margin-left: 0px; ">While reworking images I ran into something that
@@ -42,8 +32,20 @@ margin-bottom: 0px; margin-left: 0px; min-height: 14px; "><BR></DIV><DIV
 style=3D"margin-top: 0px; margin-right: 0px; margin-bottom: 0px;
 margin-left: 0px; ">dave</DIV><DIV style=3D"margin-top: 0px;
 margin-right: 0px; margin-bottom: 0px; margin-left: 0px;
-">(hyatt@apple.com)</DIV><DIV style=3D"margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; min-height: 14px;"><BR></DIV> </BLOCKQUOTE></DIV><BR>
+">(hyatt@apple.com)</DIV><DIV id="anchor" style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; min-height: 14px;"><BR></DIV> </BLOCKQUOTE></DIV><BR>
 </div>
+<div id="log"></div>
+<script>
+test(function() {
+    var selection = window.getSelection();
+    var sample = document.getElementById('sample');
+    selection.collapse(sample, sample.childNodes.length);
+    selection.modify('move', 'backward', 'line');
 
-</body>
-</html>
+    var anchor = document.getElementById('anchor');
+    assert_equals(selection.anchorNode, anchor, 'anchorNode');
+    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
+    assert_equals(selection.focusNode, anchor, 'focusNode');
+    assert_equals(selection.focusOffset, 0, 'focusOffset');
+});
+</script>
