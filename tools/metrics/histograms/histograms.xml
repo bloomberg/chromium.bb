@@ -26220,7 +26220,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PreconnectedLinkNavigations" enum="PreconnectedNavigation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     Indicate whether a link navigation was preceded by a recent pre-connect
     trigger (within 10 seconds). There is a high chance that loading the page
@@ -26229,7 +26229,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PreconnectedNavigation" enum="PreconnectedNavigation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     Indicate whether a URLRequest was preceded by a recent pre-connect trigger
     (within 10 seconds). There is a high chance that loading the resource used a
@@ -26238,7 +26238,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PreconnectMotivation" enum="PreconnectMotivation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     When a preconnection is made, indicate what the motivation was.
   </summary>
@@ -26256,7 +26256,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PreconnectProxyStatus" enum="ProxyStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     Indicate whether there was a proxy to preclude preconnection.
   </summary>
@@ -26264,7 +26264,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.PreconnectSubresourceEval"
     enum="PreconnectSubresourceEval">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     What did we decide to do about a predicted resource, based on the historical
     expected number of connection that this subresource will require.
@@ -26278,7 +26278,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PreconnectSubresourceExpectation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     The expected number of connections, times 100, that we'll make to a given
     subresource, based on learned history.
@@ -26291,7 +26291,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PreconnectTriggerUsed" enum="PreconnectTriggerUsed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     Indicate whether if a preconnect trigger is followed by a resource request
     (from link navigations) to the host or not. This is to measure precision of
@@ -26315,7 +26315,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PreconnectUtilization2" enum="NetPreconnectUtilization">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     Indicate final utilization for each attempted socket connection.
   </summary>
