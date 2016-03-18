@@ -54,6 +54,11 @@ public:
         return m_layoutObject->isBox();
     }
 
+    bool isBR() const
+    {
+        return m_layoutObject->isBR();
+    }
+
     bool isLayoutBlock() const
     {
         return m_layoutObject->isLayoutBlock();

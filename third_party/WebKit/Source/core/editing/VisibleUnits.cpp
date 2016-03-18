@@ -55,6 +55,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutItem.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineIterator.h"
@@ -1510,20 +1511,21 @@ VisiblePositionTemplate<Strategy> startOfParagraphAlgorithm(const VisiblePositio
                 break;
         }
         LayoutObject* r = n->layoutObject();
-        if (!r) {
+        LayoutItem ri = LayoutItem(r);
+        if (ri.isNull()) {
             n = Strategy::previousPostOrder(*n, startBlock);
             continue;
         }
-        const ComputedStyle& style = r->styleRef();
+        const ComputedStyle& style = ri.styleRef();
         if (style.visibility() != VISIBLE) {
             n = Strategy::previousPostOrder(*n, startBlock);
             continue;
         }
 
-        if (r->isBR() || isEnclosingBlock(n))
+        if (ri.isBR() || isEnclosingBlock(n))
             break;
 
-        if (r->isText() && toLayoutText(r)->resolvedTextLength()) {
+        if (ri.isText() && toLayoutText(r)->resolvedTextLength()) {
             ASSERT_WITH_SECURITY_IMPLICATION(n->isTextNode());
             type = PositionAnchorType::OffsetInAnchor;
             if (style.preserveNewline()) {
