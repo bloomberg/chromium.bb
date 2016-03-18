@@ -29,11 +29,8 @@ class MockClient final : public NoBaseWillBeGarbageCollectedFinalized<MockClient
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockClient);
 
 public:
-    void onePartInMultipartReceived(const ResourceResponse& response, bool isFirstPart) override
+    void onePartInMultipartReceived(const ResourceResponse& response) override
     {
-        if (isFirstPart != m_responses.isEmpty())
-            FAIL() << "m_responses.size() = " << m_responses.size() << ", isFirstPart = " << isFirstPart;
-
         m_responses.append(response);
         m_data.append(Vector<char>());
     }
@@ -443,37 +440,6 @@ TEST(MultipartResponseTest, MultipleBoundaries)
     ASSERT_EQ(2u, client->m_data.size());
     EXPECT_EQ("", toString(client->m_data[0]));
     EXPECT_EQ("foofoo", toString(client->m_data[1]));
-}
-
-TEST(MultipartResponseTest, IsFirstPartSet)
-{
-    ResourceResponse response;
-    response.setMimeType("multipart/x-mixed-replace");
-    MockClient* client = new MockClient;
-    Vector<char> boundary;
-    boundary.append("bound", 5);
-
-    MultipartImageResourceParser* parser = new MultipartImageResourceParser(response, boundary, client);
-
-    // isFirstPart is checked at MockClient::didReceiveResponse.
-    const char data[] =
-        "--bound\n"
-        "Content-type: text/plain\n\n"
-        "response data\n"
-        "--bound\n";
-    parser->appendData(data, strlen(data));
-    ASSERT_EQ(1u, client->m_responses.size());
-    ASSERT_EQ(1u, client->m_data.size());
-    EXPECT_EQ("response data", toString(client->m_data[0]));
-
-    const char data2[] =
-        "Content-type: text/plain\n\n"
-        "response data2\n"
-        "--bound\n";
-    parser->appendData(data2, strlen(data2));
-    ASSERT_EQ(2u, client->m_responses.size());
-    ASSERT_EQ(2u, client->m_data.size());
-    EXPECT_EQ("response data2", toString(client->m_data[1]));
 }
 
 } // namespace

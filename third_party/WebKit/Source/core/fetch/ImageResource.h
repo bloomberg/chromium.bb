@@ -118,7 +118,7 @@ public:
     void changedInRect(const blink::Image*, const IntRect&) override;
 
     // MultipartImageResourceParser::Client
-    void onePartInMultipartReceived(const ResourceResponse&, bool isFirstPart) final;
+    void onePartInMultipartReceived(const ResourceResponse&) final;
     void multipartDataReceived(const char*, size_t) final;
 
     DECLARE_VIRTUAL_TRACE();
@@ -131,6 +131,12 @@ protected:
 private:
     explicit ImageResource(blink::Image*);
     ImageResource(const ResourceRequest&, blink::Image*);
+
+    enum class MultipartParsingState : uint8_t {
+        WaitingForFirstPart,
+        ParsingFirstPart,
+        FinishedParsingFirstPart,
+    };
 
     class ImageResourceFactory : public ResourceFactory {
     public:
@@ -157,6 +163,7 @@ private:
 
     PersistentWillBeMember<MultipartImageResourceParser> m_multipartParser;
     RefPtr<blink::Image> m_image;
+    MultipartParsingState m_multipartParsingState = MultipartParsingState::WaitingForFirstPart;
     bool m_hasDevicePixelRatioHeaderValue;
 };
 

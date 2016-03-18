@@ -162,12 +162,8 @@ bool MultipartImageResourceParser::parseHeaders()
     if (!Platform::current()->parseMultipartHeadersFromBody(m_data.data(), m_data.size(), &response, &end))
         return false;
     m_data.remove(0, end);
-
-    bool isFirstPart = m_isFirstPart;
-    m_isFirstPart = false;
     // Send the response!
-    m_client->onePartInMultipartReceived(response.toResourceResponse(), isFirstPart);
-
+    m_client->onePartInMultipartReceived(response.toResourceResponse());
     return true;
 }
 

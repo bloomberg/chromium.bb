@@ -465,19 +465,28 @@ void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect
     notifyObservers(&rect);
 }
 
-void ImageResource::onePartInMultipartReceived(const ResourceResponse& response, bool isFirstPart)
+void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
 {
     ASSERT(m_multipartParser);
+
     m_response = response;
-    if (m_data) {
-        clear();
-        updateImage(true);
-        m_data.clear();
+    if (m_multipartParsingState == MultipartParsingState::WaitingForFirstPart) {
+        // We have nothing to do because we don't have any data.
+        m_multipartParsingState = MultipartParsingState::ParsingFirstPart;
+        return;
+    }
+    clear();
+    updateImage(true);
+    m_data.clear();
+
+    if (m_multipartParsingState == MultipartParsingState::ParsingFirstPart) {
+        m_multipartParsingState = MultipartParsingState::FinishedParsingFirstPart;
+        // Notify finished when the first part ends.
         setLoading(false);
         checkNotify();
+        if (m_loader)
+            m_loader->didFinishLoadingOnePart(0, WebURLLoaderClient::kUnknownEncodedDataLength);
     }
-    if (!isFirstPart && m_loader)
-        m_loader->didFinishLoadingOnePart(0, WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
 void ImageResource::multipartDataReceived(const char* bytes, size_t size)

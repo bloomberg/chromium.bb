@@ -55,7 +55,7 @@ public:
     class CORE_EXPORT Client : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Client() = default;
-        virtual void onePartInMultipartReceived(const ResourceResponse&, bool isFirstPart) = 0;
+        virtual void onePartInMultipartReceived(const ResourceResponse&) = 0;
         virtual void multipartDataReceived(const char* bytes, size_t) = 0;
         DEFINE_INLINE_VIRTUAL_TRACE() {}
     };
@@ -85,7 +85,6 @@ private:
     bool m_isParsingTop = true;
     bool m_isParsingHeaders = false;
     bool m_sawLastBoundary = false;
-    bool m_isFirstPart = true;
     bool m_isCancelled = false;
 };
 
