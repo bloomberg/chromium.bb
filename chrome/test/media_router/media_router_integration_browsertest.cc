@@ -349,6 +349,18 @@ std::string MediaRouterIntegrationBrowserTest::GetIssueTitle() {
 }
 
 bool MediaRouterIntegrationBrowserTest::IsRouteClosedOnUI() {
+  // After execute js script to close route on UI, the dialog will dispear
+  // after 3s. But sometimes it takes more than 3s to close the route, so
+  // we need to re-open the dialog if it is closed.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  MediaRouterDialogControllerImpl* controller =
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(web_contents);
+  content::WebContents* dialog_contents = controller->GetMediaRouterDialog();
+  if (!dialog_contents) {
+    VLOG(0) << "Media router dialog was closed, reopen it again.";
+    OpenMRDialog(web_contents);
+  }
   return GetRouteId(receiver()).empty();
 }
 
@@ -444,7 +456,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_OnClose) {
 
   ExecuteJavaScriptAPI(
       web_contents,
-      base::StringPrintf(kSendMessageAndExpectConnectionCloseOnErrorScript));
+      base::StringPrintf("%s",
+                         kSendMessageAndExpectConnectionCloseOnErrorScript));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
