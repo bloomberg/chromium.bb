@@ -282,8 +282,8 @@
 
     <!-- Snackbars -->
     <dimen name="snackbar_min_height">48dp</dimen>
-    <dimen name="snackbar_width">0dp</dimen>
-    <dimen name="snackbar_margin">0dp</dimen>
+    <dimen name="snackbar_width_tablet">450dp</dimen>
+    <dimen name="snackbar_margin_tablet">24dp</dimen>
 
     <!-- Bookmarks widget dimensions -->
     <dimen name="widget_thumbnail_height">94dp</dimen>

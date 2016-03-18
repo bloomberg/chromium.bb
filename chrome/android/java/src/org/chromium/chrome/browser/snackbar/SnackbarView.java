@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.snackbar;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -118,12 +117,15 @@ class SnackbarView {
             int visibleHeight = Math.min(mCurrentVisibleRect.bottom, activityHeight);
             int keyboardHeight = activityHeight - visibleHeight;
 
-            int margin = mParent.getResources().getDimensionPixelSize(R.dimen.snackbar_margin);
             MarginLayoutParams lp = (MarginLayoutParams) mView.getLayoutParams();
             lp.bottomMargin = keyboardHeight;
             if (mIsTablet) {
+                int margin = mParent.getResources()
+                        .getDimensionPixelSize(R.dimen.snackbar_margin_tablet);
+                ApiCompatibilityUtils.setMarginStart(lp, margin);
                 lp.bottomMargin += margin;
-                int width = mParent.getResources().getDimensionPixelSize(R.dimen.snackbar_width);
+                int width = mParent.getResources()
+                        .getDimensionPixelSize(R.dimen.snackbar_width_tablet);
                 lp.width = Math.min(width, mParent.getWidth() - 2 * margin);
             }
             mView.setLayoutParams(lp);
@@ -168,8 +170,7 @@ class SnackbarView {
 
         if (mIsTablet) {
             // On tablet, snackbars have rounded corners.
-            mView.setBackgroundResource(R.drawable.snackbar_background);
-            ((GradientDrawable) mView.getBackground()).setColor(backgroundColor);
+            mView.setBackgroundResource(R.drawable.snackbar_background_tablet);
         } else {
             mView.setBackgroundColor(backgroundColor);
         }

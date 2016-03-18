@@ -56,8 +56,4 @@
     <!-- Web app dimensions -->
     <dimen name="webapp_splash_offset">48dp</dimen>
     <dimen name="webapp_splash_large_title_margin_bottom">8dp</dimen>
-
-    <!-- Snackbars -->
-    <dimen name="snackbar_width">450dp</dimen>
-    <dimen name="snackbar_margin">24dp</dimen>
 </resources>
