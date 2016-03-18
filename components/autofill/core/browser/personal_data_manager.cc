@@ -1425,8 +1425,12 @@ bool PersonalDataManager::ImportCreditCard(
   }
 
   // Also don't offer to save if we already have this stored as a server card.
+  // We only check the number because if the new card has the same number as the
+  // server card, upload is guaranteed to fail. There's no mechanism for entries
+  // with the same number but different names or expiration dates as there is
+  // for local cards.
   for (const CreditCard* card : server_credit_cards_) {
-    if (candidate_credit_card.IsLocalDuplicateOfServerCard(*card))
+    if (candidate_credit_card.HasSameNumberAs(*card))
       return false;
   }
 

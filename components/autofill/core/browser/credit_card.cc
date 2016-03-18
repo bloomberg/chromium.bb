@@ -606,11 +606,17 @@ bool CreditCard::IsLocalDuplicateOfServerCard(const CreditCard& other) const {
   if (number_.empty())
     return true;
 
-  if (other.record_type() == FULL_SERVER_CARD)
-    return StripSeparators(number_) == StripSeparators(other.number_);
+  return HasSameNumberAs(other);
+}
 
+bool CreditCard::HasSameNumberAs(const CreditCard& other) const {
   // For masked cards, this is the best we can do to compare card numbers.
-  return TypeAndLastFourDigits() == other.TypeAndLastFourDigits();
+  if (record_type() == MASKED_SERVER_CARD ||
+      other.record_type() == MASKED_SERVER_CARD) {
+    return TypeAndLastFourDigits() == other.TypeAndLastFourDigits();
+  }
+
+  return StripSeparators(number_) == StripSeparators(other.number_);
 }
 
 bool CreditCard::operator==(const CreditCard& credit_card) const {
