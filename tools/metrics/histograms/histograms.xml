@@ -34893,6 +34893,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PhysicalWeb.ActivityReferral"
+    enum="PhysicalWebActivityReferer">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>
+    Referer used by user to reach the main Physical Web Activity.
+  </summary>
+</histogram>
+
+<histogram name="PhysicalWeb.ReferralDelay.OptInNotification" units="ms">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>
+    Time between the most recent opt in notification update and when the user
+    arrives at the ListUrlsActivity.
+  </summary>
+</histogram>
+
+<histogram name="PhysicalWeb.ReferralDelay.StandardNotification" units="ms">
+  <owner>cco3@chromium.org</owner>
+  <owner>mattreynolds@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <summary>
+    Time between the most recent standard notification update and when the user
+    arrives at the ListUrlsActivity.
+  </summary>
+</histogram>
+
 <histogram name="PhysicalWeb.ResolveTime.Background" units="ms">
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
@@ -77395,6 +77425,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Rotate redo"/>
   <int value="7" label="Share"/>
   <int value="8" label="Other"/>
+</enum>
+
+<enum name="PhysicalWebActivityReferer" type="int">
+  <int value="0" label="REFERER_UNDEFINED"/>
+  <int value="1" label="REFERER_NOTIFICATION"/>
+  <int value="2" label="REFERER_OPTIN"/>
+  <int value="3" label="REFERER_PREFERENCE"/>
+  <int value="4" label="REFERER_DIAGNOSTICS"/>
 </enum>
 
 <enum name="PingResult" type="int">

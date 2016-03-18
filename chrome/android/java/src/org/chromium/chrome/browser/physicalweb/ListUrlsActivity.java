@@ -47,6 +47,8 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     public static final int NOTIFICATION_REFERER = 1;
     public static final int OPTIN_REFERER = 2;
     public static final int PREFERENCE_REFERER = 3;
+    public static final int DIAGNOSTICS_REFERER = 4;
+    public static final int REFERER_BOUNDARY = 5;
     private static final String TAG = "PhysicalWeb";
     private static final String PREFS_VERSION_KEY =
             "org.chromium.chrome.browser.physicalweb.VERSION";
@@ -113,9 +115,8 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
 
         mPwsClient = new PwsClientImpl();
         int referer = getIntent().getIntExtra(REFERER_KEY, 0);
-        if (savedInstanceState == null  // Ensure this is a newly-created activity.
-                && referer == NOTIFICATION_REFERER) {
-            PhysicalWebUma.onNotificationPressed(this);
+        if (savedInstanceState == null) {  // Ensure this is a newly-created activity.
+            PhysicalWebUma.onActivityReferral(this, referer);
         }
         mIsInitialDisplayRecorded = false;
         mIsRefreshing = false;

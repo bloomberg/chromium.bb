@@ -11451,6 +11451,7 @@ should be able to be added at any place in this file.
   <description>
     A notification advertising nearby Physical Web URLs was pressed.
   </description>
+  <obsolete>Replaced by the histogram PhysicalWeb.ActivityReferral</obsolete>
 </action>
 
 <action name="PhysicalWeb.OptIn.DeclineButtonPressed">

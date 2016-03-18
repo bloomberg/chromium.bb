@@ -26,7 +26,6 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public class PhysicalWebUma {
     private static final String TAG = "PhysicalWeb";
-    private static final String NOTIFICATION_PRESS_COUNT = "PhysicalWeb.NotificationPressed";
     private static final String OPT_IN_DECLINE_BUTTON_PRESS_COUNT =
             "PhysicalWeb.OptIn.DeclineButtonPressed";
     private static final String OPT_IN_ENABLE_BUTTON_PRESS_COUNT =
@@ -43,19 +42,17 @@ public class PhysicalWebUma {
     private static final String PREFS_LOCATION_GRANTED_COUNT = "PhysicalWeb.Prefs.LocationGranted";
     private static final String PWS_BACKGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Background";
     private static final String PWS_FOREGROUND_RESOLVE_TIMES = "PhysicalWeb.ResolveTime.Foreground";
+    private static final String OPT_IN_NOTIFICATION_PRESS_DELAYS =
+            "PhysicalWeb.ReferralDelay.OptInNotification";
+    private static final String STANDARD_NOTIFICATION_PRESS_DELAYS =
+            "PhysicalWeb.ReferralDelay.StandardNotification";
     private static final String URL_SELECTED_COUNT = "PhysicalWeb.UrlSelected";
     private static final String TOTAL_URLS_INITIAL_COUNTS =
             "PhysicalWeb.TotalUrls.OnInitialDisplay";
     private static final String TOTAL_URLS_REFRESH_COUNTS =
             "PhysicalWeb.TotalUrls.OnRefresh";
+    private static final String ACTIVITY_REFERRALS = "PhysicalWeb.ActivityReferral";
     private static boolean sUploadAllowed = false;
-
-    /**
-     * Records a notification press.
-     */
-    public static void onNotificationPressed(Context context) {
-        handleAction(context, NOTIFICATION_PRESS_COUNT);
-    }
 
     /**
      * Records a URL selection.
@@ -99,7 +96,7 @@ public class PhysicalWebUma {
         handleAction(context, OPT_IN_NOTIFICATION_PRESS_COUNT);
     }
 
-    /*
+    /**
      * Records when the user disables the Physical Web fetaure.
      */
     public static void onPrefsFeatureDisabled(Context context) {
@@ -170,6 +167,35 @@ public class PhysicalWebUma {
     }
 
     /**
+     * Records a ListUrlActivity referral.
+     * @param refer The type of referral.  This enum is listed as PhysicalWebActivityReferer in
+     *     histograms.xml.
+     */
+    public static void onActivityReferral(Context context, int referer) {
+        if (sUploadAllowed) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    ACTIVITY_REFERRALS, referer, ListUrlsActivity.REFERER_BOUNDARY);
+        } else {
+            storeValue(context, ACTIVITY_REFERRALS, referer);
+        }
+        long delay;
+        switch (referer) {
+            case ListUrlsActivity.NOTIFICATION_REFERER:
+                delay = UrlManager.getInstance(context).getTimeSinceNotificationUpdate();
+                handleTime(context, STANDARD_NOTIFICATION_PRESS_DELAYS, delay,
+                        TimeUnit.MILLISECONDS);
+                break;
+            case ListUrlsActivity.OPTIN_REFERER:
+                delay = UrlManager.getInstance(context).getTimeSinceNotificationUpdate();
+                handleTime(context, OPT_IN_NOTIFICATION_PRESS_DELAYS, delay,
+                        TimeUnit.MILLISECONDS);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * Uploads metrics that we have deferred for uploading.
      * Additionally, this method will cause future stat records not to be deferred and instead
      * uploaded immediately.
@@ -181,7 +207,6 @@ public class PhysicalWebUma {
         // Read the metrics.
         UmaUploader uploader = new UmaUploader();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        uploader.notificationPressCount = prefs.getInt(NOTIFICATION_PRESS_COUNT, 0);
         uploader.urlSelectedCount = prefs.getInt(URL_SELECTED_COUNT, 0);
         uploader.optInDeclineButtonTapCount = prefs.getInt(OPT_IN_DECLINE_BUTTON_PRESS_COUNT, 0);
         uploader.optInEnableButtonTapCount = prefs.getInt(OPT_IN_ENABLE_BUTTON_PRESS_COUNT, 0);
@@ -196,8 +221,13 @@ public class PhysicalWebUma {
         uploader.prefsLocationGrantedCount = prefs.getInt(PREFS_LOCATION_GRANTED_COUNT, 0);
         uploader.pwsBackgroundResolveTimes = prefs.getString(PWS_BACKGROUND_RESOLVE_TIMES, "[]");
         uploader.pwsForegroundResolveTimes = prefs.getString(PWS_FOREGROUND_RESOLVE_TIMES, "[]");
+        uploader.standardNotificationPressDelays =
+                prefs.getString(STANDARD_NOTIFICATION_PRESS_DELAYS, "[]");
+        uploader.optInNotificationPressDelays =
+                prefs.getString(OPT_IN_NOTIFICATION_PRESS_DELAYS, "[]");
         uploader.totalUrlsInitialCounts = prefs.getString(TOTAL_URLS_INITIAL_COUNTS, "[]");
         uploader.totalUrlsRefreshCounts = prefs.getString(TOTAL_URLS_REFRESH_COUNTS, "[]");
+        uploader.activityReferrals = prefs.getString(ACTIVITY_REFERRALS, "[]");
 
         // If the metrics are empty, we are done.
         if (uploader.isEmpty()) {
@@ -206,7 +236,6 @@ public class PhysicalWebUma {
 
         // Clear out the stored deferred metrics that we are about to upload.
         prefs.edit()
-                .remove(NOTIFICATION_PRESS_COUNT)
                 .remove(URL_SELECTED_COUNT)
                 .remove(OPT_IN_DECLINE_BUTTON_PRESS_COUNT)
                 .remove(OPT_IN_ENABLE_BUTTON_PRESS_COUNT)
@@ -219,8 +248,11 @@ public class PhysicalWebUma {
                 .remove(PREFS_LOCATION_GRANTED_COUNT)
                 .remove(PWS_BACKGROUND_RESOLVE_TIMES)
                 .remove(PWS_FOREGROUND_RESOLVE_TIMES)
+                .remove(STANDARD_NOTIFICATION_PRESS_DELAYS)
+                .remove(OPT_IN_NOTIFICATION_PRESS_DELAYS)
                 .remove(TOTAL_URLS_INITIAL_COUNTS)
                 .remove(TOTAL_URLS_REFRESH_COUNTS)
+                .remove(ACTIVITY_REFERRALS)
                 .apply();
 
         // Finally, upload the metrics.
@@ -266,7 +298,6 @@ public class PhysicalWebUma {
     }
 
     private static class UmaUploader implements Runnable {
-        public int notificationPressCount;
         public int urlSelectedCount;
         public int optInDeclineButtonTapCount;
         public int optInEnableButtonTapCount;
@@ -279,12 +310,14 @@ public class PhysicalWebUma {
         public int prefsLocationGrantedCount;
         public String pwsBackgroundResolveTimes;
         public String pwsForegroundResolveTimes;
+        public String standardNotificationPressDelays;
+        public String optInNotificationPressDelays;
         public String totalUrlsInitialCounts;
         public String totalUrlsRefreshCounts;
+        public String activityReferrals;
 
         public boolean isEmpty() {
-            return notificationPressCount == 0
-                    && urlSelectedCount == 0
+            return urlSelectedCount == 0
                     && optInDeclineButtonTapCount == 0
                     && optInEnableButtonTapCount == 0
                     && optInHighPriorityNotificationCount == 0
@@ -296,8 +329,11 @@ public class PhysicalWebUma {
                     && prefsLocationGrantedCount == 0
                     && pwsBackgroundResolveTimes.equals("[]")
                     && pwsForegroundResolveTimes.equals("[]")
+                    && standardNotificationPressDelays.equals("[]")
+                    && optInNotificationPressDelays.equals("[]")
                     && totalUrlsInitialCounts.equals("[]")
-                    && totalUrlsRefreshCounts.equals("[]");
+                    && totalUrlsRefreshCounts.equals("[]")
+                    && activityReferrals.equals("[]");
         }
 
         UmaUploader() {
@@ -305,7 +341,6 @@ public class PhysicalWebUma {
 
         @Override
         public void run() {
-            uploadActions(notificationPressCount, NOTIFICATION_PRESS_COUNT);
             uploadActions(urlSelectedCount, URL_SELECTED_COUNT);
             uploadActions(optInDeclineButtonTapCount, OPT_IN_DECLINE_BUTTON_PRESS_COUNT);
             uploadActions(optInEnableButtonTapCount, OPT_IN_ENABLE_BUTTON_PRESS_COUNT);
@@ -322,8 +357,13 @@ public class PhysicalWebUma {
                     TimeUnit.MILLISECONDS);
             uploadTimes(pwsForegroundResolveTimes, PWS_FOREGROUND_RESOLVE_TIMES,
                     TimeUnit.MILLISECONDS);
+            uploadTimes(standardNotificationPressDelays, STANDARD_NOTIFICATION_PRESS_DELAYS,
+                    TimeUnit.MILLISECONDS);
+            uploadTimes(optInNotificationPressDelays, OPT_IN_NOTIFICATION_PRESS_DELAYS,
+                    TimeUnit.MILLISECONDS);
             uploadCounts(totalUrlsInitialCounts, TOTAL_URLS_INITIAL_COUNTS);
             uploadCounts(totalUrlsRefreshCounts, TOTAL_URLS_REFRESH_COUNTS);
+            uploadEnums(activityReferrals, ACTIVITY_REFERRALS, ListUrlsActivity.REFERER_BOUNDARY);
         }
 
         private static void uploadActions(int count, String key) {
@@ -392,6 +432,17 @@ public class PhysicalWebUma {
             }
             for (Integer count: counts) {
                 RecordHistogram.recordCountHistogram(key, count);
+            }
+        }
+
+        private static void uploadEnums(String jsonEnumsStr, final String key, int boundary) {
+            Integer[] values = parseJsonIntegerArray(jsonEnumsStr);
+            if (values == null) {
+                Log.e(TAG, "Error reporting " + key + " with values: " + jsonEnumsStr);
+                return;
+            }
+            for (Integer value: values) {
+                RecordHistogram.recordEnumeratedHistogram(key, value, boundary);
             }
         }
     }

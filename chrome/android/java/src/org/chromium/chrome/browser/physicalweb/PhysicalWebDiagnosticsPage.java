@@ -234,7 +234,7 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
 
     private static Intent createListUrlsIntent(Context context) {
         Intent intent = new Intent(context, ListUrlsActivity.class);
-        intent.putExtra(ListUrlsActivity.REFERER_KEY, ListUrlsActivity.OPTIN_REFERER);
+        intent.putExtra(ListUrlsActivity.REFERER_KEY, ListUrlsActivity.DIAGNOSTICS_REFERER);
         return intent;
     }
 
