@@ -17,9 +17,13 @@ class MojoDecoderFactory : public DecoderFactory {
       mojo::shell::mojom::InterfaceProvider* interface_provider);
   ~MojoDecoderFactory() final;
 
-  void CreateAudioDecoders(ScopedVector<AudioDecoder>* audio_decoders) final;
+  void CreateAudioDecoders(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ScopedVector<AudioDecoder>* audio_decoders) final;
 
-  void CreateVideoDecoders(ScopedVector<VideoDecoder>* video_decoders) final;
+  void CreateVideoDecoders(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ScopedVector<VideoDecoder>* video_decoders) final;
 
  private:
   mojo::shell::mojom::InterfaceProvider* interface_provider_;

@@ -12,7 +12,10 @@
 
 namespace media {
 
-MojoAudioDecoder::MojoAudioDecoder() {
+MojoAudioDecoder::MojoAudioDecoder(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    interfaces::AudioDecoderPtr remote_decoder)
+    : task_runner_(task_runner), remote_decoder_(std::move(remote_decoder)) {
   DVLOG(1) << __FUNCTION__;
 }
 
@@ -29,17 +32,19 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                   const InitCB& init_cb,
                                   const OutputCB& output_cb) {
   DVLOG(1) << __FUNCTION__;
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   NOTIMPLEMENTED();
 
-  // Pretend to be able to decode anything.
-  task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, true));
+  // Fail initialization while not implemented.
+  task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
 }
 
 void MojoAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                               const DecodeCB& decode_cb) {
   DVLOG(3) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   NOTIMPLEMENTED();
 
   // Actually we can't decode anything.
@@ -48,11 +53,15 @@ void MojoAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
 void MojoAudioDecoder::Reset(const base::Closure& closure) {
   DVLOG(2) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   NOTIMPLEMENTED();
 }
 
 bool MojoAudioDecoder::NeedsBitstreamConversion() const {
   DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   NOTIMPLEMENTED();
   return false;
 }

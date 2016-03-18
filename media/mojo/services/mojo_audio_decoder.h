@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder.h"
+#include "media/mojo/interfaces/audio_decoder.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -18,7 +19,8 @@ namespace media {
 // An AudioDecoder that proxies to an interfaces::AudioDecoder.
 class MojoAudioDecoder : public AudioDecoder {
  public:
-  MojoAudioDecoder();
+  MojoAudioDecoder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                   interfaces::AudioDecoderPtr remote_decoder);
   ~MojoAudioDecoder() final;
 
   // AudioDecoder implementation.
@@ -34,6 +36,7 @@ class MojoAudioDecoder : public AudioDecoder {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  interfaces::AudioDecoderPtr remote_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioDecoder);
 };

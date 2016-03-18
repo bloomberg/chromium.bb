@@ -4,6 +4,8 @@
 
 #include "media/base/decoder_factory.h"
 
+#include "base/single_thread_task_runner.h"
+
 namespace media {
 
 DecoderFactory::DecoderFactory() {}
@@ -11,9 +13,11 @@ DecoderFactory::DecoderFactory() {}
 DecoderFactory::~DecoderFactory() {}
 
 void DecoderFactory::CreateAudioDecoders(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ScopedVector<AudioDecoder>* audio_decoders) {}
 
 void DecoderFactory::CreateVideoDecoders(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ScopedVector<VideoDecoder>* video_decoders) {}
 
 }  // namespace media

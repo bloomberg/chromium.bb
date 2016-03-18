@@ -6,8 +6,13 @@
 #define MEDIA_BASE_DECODER_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "media/base/media_export.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace media {
 
@@ -21,10 +26,16 @@ class MEDIA_EXPORT DecoderFactory {
   virtual ~DecoderFactory();
 
   // Creates audio decoders and append them to the end of |audio_decoders|.
-  virtual void CreateAudioDecoders(ScopedVector<AudioDecoder>* audio_decoders);
+  // Decoders are single-threaded, each decoder should run on |task_runner|.
+  virtual void CreateAudioDecoders(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ScopedVector<AudioDecoder>* audio_decoders);
 
   // Creates video decoders and append them to the end of |video_decoders|.
-  virtual void CreateVideoDecoders(ScopedVector<VideoDecoder>* video_decoders);
+  // Decoders are single-threaded, each decoder should run on |task_runner|.
+  virtual void CreateVideoDecoders(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ScopedVector<VideoDecoder>* video_decoders);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DecoderFactory);

@@ -4,8 +4,11 @@
 
 #include "media/mojo/services/mojo_decoder_factory.h"
 
+#include "base/single_thread_task_runner.h"
+#include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "media/mojo/services/mojo_audio_decoder.h"
 #include "media/mojo/services/mojo_video_decoder.h"
+#include "mojo/shell/public/cpp/connect.h"
 
 namespace media {
 
@@ -18,14 +21,20 @@ MojoDecoderFactory::MojoDecoderFactory(
 MojoDecoderFactory::~MojoDecoderFactory() {}
 
 void MojoDecoderFactory::CreateAudioDecoders(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ScopedVector<AudioDecoder>* audio_decoders) {
 #if defined(ENABLE_MOJO_AUDIO_DECODER)
-  // TODO(xhwang): Connect to mojo audio decoder service and pass it here.
-  audio_decoders->push_back(new media::MojoAudioDecoder());
+  interfaces::AudioDecoderPtr audio_decoder_ptr;
+  mojo::GetInterface<interfaces::AudioDecoder>(interface_provider_,
+                                               &audio_decoder_ptr);
+
+  audio_decoders->push_back(
+      new media::MojoAudioDecoder(task_runner, std::move(audio_decoder_ptr)));
 #endif
 }
 
 void MojoDecoderFactory::CreateVideoDecoders(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ScopedVector<VideoDecoder>* video_decoders) {
 #if defined(ENABLE_MOJO_VIDEO_DECODER)
   // TODO(sandersd): Connect to mojo video decoder service and pass it here.
