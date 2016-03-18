@@ -49,7 +49,7 @@ class TestWindowManagerDelegate : public WindowManagerDelegate {
       std::map<std::string, std::vector<uint8_t>>* properties) override {
     return nullptr;
   }
-  void OnAccelerator(uint32_t id, mojom::EventPtr event) override {}
+  void OnAccelerator(uint32_t id, const ui::Event& event) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWindowManagerDelegate);

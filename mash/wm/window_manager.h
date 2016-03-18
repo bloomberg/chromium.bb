@@ -53,7 +53,7 @@ class WindowManager : public mus::WindowObserver,
                        scoped_ptr<std::vector<uint8_t>>* new_data) override;
   mus::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
-  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
+  void OnAccelerator(uint32_t id, const ui::Event& event) override;
 
   // mash::shell::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;

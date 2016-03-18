@@ -20,22 +20,6 @@ using MoveLoopTest = testing::Test;
 namespace mash {
 namespace wm {
 
-namespace {
-
-mus::mojom::EventPtr CreatePointerDownEvent(const gfx::Point& location) {
-  const ui::TouchEvent event(ui::ET_TOUCH_PRESSED, location, 1,
-                             base::TimeDelta());
-  return mus::mojom::Event::From(static_cast<const ui::Event&>(event));
-}
-
-mus::mojom::EventPtr CreatePointerMove(const gfx::Point& location) {
-  const ui::TouchEvent event(ui::ET_TOUCH_MOVED, location, 1,
-                             base::TimeDelta());
-  return mus::mojom::Event::From(static_cast<const ui::Event&>(event));
-}
-
-}  // namespace
-
 TEST_F(MoveLoopTest, Move) {
   struct TestData {
     // One of the HitTestCompat values.
@@ -62,13 +46,18 @@ TEST_F(MoveLoopTest, Move) {
     mus::TestWindow window;
     window.SetBounds(gfx::Rect(100, 200, 300, 400));
     gfx::Point pointer_location(51, 52);
+    ui::PointerEvent pointer_down_event(
+        ui::ET_POINTER_DOWN, ui::EventPointerType::POINTER_TYPE_TOUCH,
+        pointer_location, pointer_location, ui::EF_NONE, 1, base::TimeDelta());
     scoped_ptr<MoveLoop> move_loop =
-        MoveLoop::Create(&window, data[i].ht_location,
-                         *CreatePointerDownEvent(pointer_location));
+        MoveLoop::Create(&window, data[i].ht_location, pointer_down_event);
     ASSERT_TRUE(move_loop.get()) << i;
     pointer_location.Offset(data[i].delta_x, data[i].delta_y);
+    ui::PointerEvent pointer_move_event(
+        ui::ET_POINTER_MOVED, ui::EventPointerType::POINTER_TYPE_TOUCH,
+        pointer_location, pointer_location, ui::EF_NONE, 1, base::TimeDelta());
     ASSERT_EQ(MoveLoop::MoveResult::CONTINUE,
-              move_loop->Move(*CreatePointerMove(pointer_location)))
+              move_loop->Move(pointer_move_event))
         << i;
     ASSERT_EQ(data[i].expected_bounds, window.bounds());
   }

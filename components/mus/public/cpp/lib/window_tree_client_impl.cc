@@ -947,7 +947,8 @@ void WindowTreeClientImpl::WmCreateTopLevelWindow(
 }
 
 void WindowTreeClientImpl::OnAccelerator(uint32_t id, mojom::EventPtr event) {
-  window_manager_delegate_->OnAccelerator(id, std::move(event));
+  window_manager_delegate_->OnAccelerator(
+      id, *event.To<scoped_ptr<ui::Event>>().get());
 }
 
 void WindowTreeClientImpl::SetFrameDecorationValues(

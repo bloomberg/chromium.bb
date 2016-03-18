@@ -161,7 +161,7 @@ mus::Window* WindowManager::OnWmCreateTopLevelWindow(
   return NewTopLevelWindow(properties);
 }
 
-void WindowManager::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
+void WindowManager::OnAccelerator(uint32_t id, const ui::Event& event) {
   root_controller_->OnAccelerator(id, std::move(event));
 }
 

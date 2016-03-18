@@ -14,6 +14,10 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace ui {
+class PointerEvent;
+}
+
 namespace mash {
 namespace wm {
 
@@ -48,10 +52,10 @@ class MoveLoop : public mus::WindowObserver {
   // HitTestCompat.
   static scoped_ptr<MoveLoop> Create(mus::Window* target,
                                      int ht_location,
-                                     const mus::mojom::Event& event);
+                                     const ui::PointerEvent& event);
 
   // Processes an event for a move/resize loop.
-  MoveResult Move(const mus::mojom::Event& event);
+  MoveResult Move(const ui::PointerEvent& event);
 
   // If possible reverts any changes made during the move loop.
   void Revert();
@@ -63,7 +67,7 @@ class MoveLoop : public mus::WindowObserver {
   };
 
   MoveLoop(mus::Window* target,
-           const mus::mojom::Event& event,
+           const ui::PointerEvent& event,
            Type type,
            HorizontalLocation h_loc,
            VerticalLocation v_loc);
@@ -76,7 +80,7 @@ class MoveLoop : public mus::WindowObserver {
                             VerticalLocation* v_loc);
 
   // Does the actual move/resize.
-  void MoveImpl(const mus::mojom::Event& event);
+  void MoveImpl(const ui::PointerEvent& event);
 
   // Cancels the loop. This sets |target_| to null and removes the observer.
   // After this the MoveLoop is still ongoing and won't stop until the

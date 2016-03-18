@@ -82,14 +82,13 @@ mus::WindowManagerClient* RootWindowController::window_manager_client() {
   return window_manager_->window_manager_client();
 }
 
-void RootWindowController::OnAccelerator(uint32_t id,
-                                         mus::mojom::EventPtr event) {
+void RootWindowController::OnAccelerator(uint32_t id, const ui::Event& event) {
   switch (id) {
     case kWindowSwitchAccelerator:
       window_manager_client()->ActivateNextWindow();
       break;
     default:
-      app_->OnAccelerator(id, std::move(event));
+      app_->OnAccelerator(id, event);
       break;
   }
 }

@@ -20,6 +20,10 @@ namespace mus {
 class WindowManagerClient;
 }
 
+namespace ui {
+class Event;
+}
+
 namespace mash {
 namespace wm {
 
@@ -58,7 +62,7 @@ class RootWindowController : public mus::WindowObserver,
 
   mus::WindowManagerClient* window_manager_client();
 
-  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event);
+  void OnAccelerator(uint32_t id, const ui::Event& event);
 
  private:
   explicit RootWindowController(WindowManagerApplication* app);

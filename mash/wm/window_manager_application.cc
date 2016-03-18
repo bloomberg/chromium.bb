@@ -14,9 +14,11 @@
 #include "mash/wm/root_window_controller.h"
 #include "mash/wm/root_windows_observer.h"
 #include "mash/wm/user_window_controller_impl.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
+#include "ui/events/event.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/display_converter.h"
@@ -79,10 +81,10 @@ void WindowManagerApplication::OnRootWindowDestroyed(
 }
 
 void WindowManagerApplication::OnAccelerator(uint32_t id,
-                                             mus::mojom::EventPtr event) {
+                                             const ui::Event& event) {
   for (auto* registrar : accelerator_registrars_) {
     if (registrar->OwnsAccelerator(id)) {
-      registrar->ProcessAccelerator(id, std::move(event));
+      registrar->ProcessAccelerator(id, mus::mojom::Event::From(event));
       break;
     }
   }

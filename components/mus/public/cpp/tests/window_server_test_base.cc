@@ -113,9 +113,9 @@ Window* WindowServerTestBase::OnWmCreateTopLevelWindow(
              : nullptr;
 }
 
-void WindowServerTestBase::OnAccelerator(uint32_t id, mojom::EventPtr event) {
+void WindowServerTestBase::OnAccelerator(uint32_t id, const ui::Event& event) {
   if (window_manager_delegate_)
-    window_manager_delegate_->OnAccelerator(id, std::move(event));
+    window_manager_delegate_->OnAccelerator(id, event);
 }
 
 void WindowServerTestBase::Create(

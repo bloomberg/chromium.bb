@@ -22,6 +22,10 @@ class Rect;
 class Vector2d;
 }
 
+namespace ui {
+class Event;
+}
+
 namespace mus {
 
 class Window;
@@ -81,7 +85,7 @@ class WindowManagerDelegate {
   virtual Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) = 0;
 
-  virtual void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) = 0;
+  virtual void OnAccelerator(uint32_t id, const ui::Event& event) = 0;
 
  protected:
   virtual ~WindowManagerDelegate() {}

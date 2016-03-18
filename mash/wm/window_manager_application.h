@@ -34,6 +34,10 @@ namespace views {
 class AuraInit;
 }
 
+namespace ui {
+class Event;
+}
+
 namespace mash {
 namespace wm {
 
@@ -70,7 +74,7 @@ class WindowManagerApplication
   void OnRootWindowDestroyed(RootWindowController* root_controller);
 
   // TODO(sky): figure out right place for this code.
-  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event);
+  void OnAccelerator(uint32_t id, const ui::Event& event);
 
   void AddRootWindowsObserver(RootWindowsObserver* observer);
   void RemoveRootWindowsObserver(RootWindowsObserver* observer);

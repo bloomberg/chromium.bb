@@ -56,20 +56,27 @@ MoveEventHandler::~MoveEventHandler() {
 
 void MoveEventHandler::ProcessLocatedEvent(ui::LocatedEvent* event) {
   const bool had_move_loop = move_loop_.get() != nullptr;
-  ui::Event* ui_event = static_cast<ui::Event*>(event);
+  DCHECK(event->IsMouseEvent() || event->IsTouchEvent());
+
+  // TODO(moshayedi): no need for this once MoveEventHandler directly receives
+  // pointer events.
+  scoped_ptr<ui::PointerEvent> pointer_event;
+  if (event->IsMouseEvent())
+    pointer_event.reset(new ui::PointerEvent(*event->AsMouseEvent()));
+  else
+    pointer_event.reset(new ui::PointerEvent(*event->AsTouchEvent()));
+
   if (move_loop_) {
-    if (move_loop_->Move(*mus::mojom::Event::From(*ui_event)) == MoveLoop::DONE)
+    if (move_loop_->Move(*pointer_event.get()) == MoveLoop::DONE)
       move_loop_.reset();
-  } else if (event->type() == ui::ET_MOUSE_PRESSED ||
-             event->type() == ui::ET_TOUCH_PRESSED) {
-    const int ht_location = GetNonClientComponentForEvent(event);
+  } else if (pointer_event->type() == ui::ET_POINTER_DOWN) {
+    const int ht_location = GetNonClientComponentForEvent(pointer_event.get());
     if (ht_location != HTNOWHERE) {
-      // TODO(sky): convert MoveLoop to take ui::Event.
-      move_loop_ = MoveLoop::Create(mus_window_, ht_location,
-                                    *mus::mojom::Event::From(*ui_event));
+      move_loop_ =
+          MoveLoop::Create(mus_window_, ht_location, *pointer_event.get());
     }
-  } else if (event->type() == ui::ET_MOUSE_MOVED) {
-    const int ht_location = GetNonClientComponentForEvent(event);
+  } else if (pointer_event->type() == ui::ET_POINTER_MOVED) {
+    const int ht_location = GetNonClientComponentForEvent(pointer_event.get());
     mus_window_->SetPredefinedCursor(CursorForWindowComponent(ht_location));
   }
   if (had_move_loop || move_loop_)

@@ -9,6 +9,7 @@
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "mash/wm/property_util.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -17,16 +18,9 @@ namespace wm {
 
 namespace {
 
-gfx::Point EventScreenLocationToPoint(const mus::mojom::Event& event) {
-  return gfx::ToFlooredPoint(
-      gfx::PointF(event.pointer_data->location->screen_x,
-                  event.pointer_data->location->screen_y));
-}
-
 int MouseOnlyEventFlags(int flags) {
-  return flags & (mus::mojom::kEventFlagLeftMouseButton |
-                  mus::mojom::kEventFlagMiddleMouseButton |
-                  mus::mojom::kEventFlagRightMouseButton);
+  return flags & (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
+                  ui::EF_RIGHT_MOUSE_BUTTON);
 }
 
 }  // namespace
@@ -39,12 +33,11 @@ MoveLoop::~MoveLoop() {
 // static
 scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
                                       int ht_location,
-                                      const mus::mojom::Event& event) {
-  DCHECK_EQ(event.action, mus::mojom::EventType::POINTER_DOWN);
+                                      const ui::PointerEvent& event) {
+  DCHECK_EQ(event.type(), ui::ET_POINTER_DOWN);
   // Start a move on left mouse, or any other type of pointer.
-  if (event.pointer_data->kind == mus::mojom::PointerKind::MOUSE &&
-      MouseOnlyEventFlags(event.flags) !=
-          mus::mojom::kEventFlagLeftMouseButton) {
+  if (event.IsMousePointerEvent() &&
+      MouseOnlyEventFlags(event.flags()) != ui::EF_LEFT_MOUSE_BUTTON) {
     return nullptr;
   }
 
@@ -57,23 +50,23 @@ scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
   return make_scoped_ptr(new MoveLoop(target, event, type, h_loc, v_loc));
 }
 
-MoveLoop::MoveResult MoveLoop::Move(const mus::mojom::Event& event) {
-  switch (event.action) {
-    case mus::mojom::EventType::POINTER_CANCEL:
-      if (event.pointer_data->pointer_id == pointer_id_) {
+MoveLoop::MoveResult MoveLoop::Move(const ui::PointerEvent& event) {
+  switch (event.type()) {
+    case ui::ET_POINTER_CANCELLED:
+      if (event.pointer_id() == pointer_id_) {
         if (target_)
           Revert();
         return MoveResult::DONE;
       }
       return MoveResult::CONTINUE;
 
-    case mus::mojom::EventType::POINTER_MOVE:
-      if (target_ && event.pointer_data->pointer_id == pointer_id_)
+    case ui::ET_POINTER_MOVED:
+      if (target_ && event.pointer_id() == pointer_id_)
         MoveImpl(event);
       return MoveResult::CONTINUE;
 
-    case mus::mojom::EventType::POINTER_UP:
-      if (event.pointer_data->pointer_id == pointer_id_) {
+    case ui::ET_POINTER_UP:
+      if (event.pointer_id() == pointer_id_) {
         // TODO(sky): need to support changed_flags.
         if (target_)
           MoveImpl(event);
@@ -98,7 +91,7 @@ void MoveLoop::Revert() {
 }
 
 MoveLoop::MoveLoop(mus::Window* target,
-                   const mus::mojom::Event& event,
+                   const ui::PointerEvent& event,
                    Type type,
                    HorizontalLocation h_loc,
                    VerticalLocation v_loc)
@@ -106,8 +99,8 @@ MoveLoop::MoveLoop(mus::Window* target,
       type_(type),
       h_loc_(h_loc),
       v_loc_(v_loc),
-      pointer_id_(event.pointer_data->pointer_id),
-      initial_event_screen_location_(EventScreenLocationToPoint(event)),
+      pointer_id_(event.pointer_id()),
+      initial_event_screen_location_(event.root_location()),
       initial_window_bounds_(target->bounds()),
       initial_user_set_bounds_(GetWindowUserSetBounds(target)),
       changing_bounds_(false) {
@@ -168,9 +161,9 @@ bool MoveLoop::DetermineType(int ht_location,
   return false;
 }
 
-void MoveLoop::MoveImpl(const mus::mojom::Event& event) {
+void MoveLoop::MoveImpl(const ui::PointerEvent& event) {
   const gfx::Vector2d delta =
-      EventScreenLocationToPoint(event) - initial_event_screen_location_;
+      event.root_location() - initial_event_screen_location_;
   const gfx::Rect new_bounds(DetermineBoundsFromDelta(delta));
   base::AutoReset<bool> resetter(&changing_bounds_, true);
   target_->SetBounds(new_bounds);
