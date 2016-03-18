@@ -12,6 +12,8 @@
 #include "base/base64.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -21,7 +23,6 @@
 #include "chrome/browser/mod_pagespeed/mod_pagespeed_metrics.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/prefetch/prefetch.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
@@ -297,8 +298,12 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
       return false;
 
     // If prefetch is disabled, kill the request.
-    if (!prefetch::IsPrefetchEnabled(resource_context))
+    std::string prefetch_experiment =
+        base::FieldTrialList::FindFullName("Prefetch");
+    if (base::StartsWith(prefetch_experiment, "ExperimentDisable",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       return false;
+    }
   }
 
   return true;
