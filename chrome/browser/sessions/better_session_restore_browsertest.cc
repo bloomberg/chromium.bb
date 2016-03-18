@@ -599,10 +599,6 @@ class RestartTest : public BetterSessionRestoreTest {
       content::BrowserContext::SaveSessionState(browser->profile());
     PrefService* pref_service = g_browser_process->local_state();
     pref_service->SetBoolean(prefs::kWasRestarted, true);
-#if defined(OS_WIN)
-    if (pref_service->HasPrefPath(prefs::kRelaunchMode))
-      pref_service->ClearPref(prefs::kRelaunchMode);
-#endif
   }
 
  private:

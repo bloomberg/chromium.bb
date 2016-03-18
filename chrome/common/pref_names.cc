@@ -1450,13 +1450,6 @@ const char kRestartLastSessionOnShutdown[] = "restart.last.session.on.shutdown";
 const char kWasRestarted[] = "was.restarted";
 #endif
 
-#if defined(OS_WIN)
-// Preference to be used while relaunching Chrome. This preference dictates if
-// Chrome should be launched in Metro or Desktop mode.
-// For more info take a look at ChromeRelaunchMode enum.
-const char kRelaunchMode[] = "relaunch.mode";
-#endif
-
 // Whether Extensions are enabled.
 const char kDisableExtensions[] = "extensions.disabled";
 

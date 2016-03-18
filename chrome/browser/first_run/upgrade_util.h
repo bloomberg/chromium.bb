@@ -25,30 +25,6 @@ namespace upgrade_util {
 // launched, returns false.
 bool RelaunchChromeBrowser(const base::CommandLine& command_line);
 
-#if defined(OS_WIN)
-
-extern const char kRelaunchModeMetro[];
-extern const char kRelaunchModeDesktop[];
-extern const char kRelaunchModeDefault[];
-
-enum RelaunchMode {
-  RELAUNCH_MODE_METRO = 0,
-  RELAUNCH_MODE_DESKTOP = 1,
-  // Default mode indicates caller is not sure which mode to launch.
-  RELAUNCH_MODE_DEFAULT = 2,
-};
-
-std::string RelaunchModeEnumToString(const RelaunchMode& relaunch_mode);
-
-RelaunchMode RelaunchModeStringToEnum(const std::string& relaunch_mode);
-
-// Like RelaunchChromeBrowser() but for Windows 8 it will read pref and restart
-// chrome accordingly in desktop or metro mode.
-bool RelaunchChromeWithMode(const base::CommandLine& command_line,
-                            const RelaunchMode& relaunch_mode);
-
-#endif  // defined(OS_WIN)
-
 #if !defined(OS_MACOSX)
 
 void SetNewCommandLine(base::CommandLine* new_command_line);

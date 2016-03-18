@@ -69,11 +69,6 @@ namespace {
 // Whether the browser is trying to quit (e.g., Quit chosen from menu).
 bool g_trying_to_quit = false;
 
-#if defined(OS_WIN)
-upgrade_util::RelaunchMode g_relaunch_mode =
-    upgrade_util::RELAUNCH_MODE_DEFAULT;
-#endif
-
 Time* g_shutdown_started = nullptr;
 ShutdownType g_shutdown_type = NOT_VALID;
 int g_shutdown_num_processes;
@@ -186,15 +181,6 @@ bool ShutdownPreThreadsStop() {
     restart_last_session =
         prefs->GetBoolean(prefs::kRestartLastSessionOnShutdown);
     prefs->ClearPref(prefs::kRestartLastSessionOnShutdown);
-#if defined(OS_WIN)
-    if (restart_last_session) {
-      if (prefs->HasPrefPath(prefs::kRelaunchMode)) {
-        g_relaunch_mode = upgrade_util::RelaunchModeStringToEnum(
-            prefs->GetString(prefs::kRelaunchMode));
-        prefs->ClearPref(prefs::kRelaunchMode);
-      }
-    }
-#endif
   }
 
   prefs->CommitPendingWrite();
@@ -254,9 +240,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
         new_cl->AppendSwitch(it.first);
     }
 
-#if defined(OS_WIN)
-    upgrade_util::RelaunchChromeWithMode(*new_cl.get(), g_relaunch_mode);
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_WIN)
     upgrade_util::RelaunchChromeBrowser(*new_cl.get());
 #endif  // defined(OS_WIN)
 

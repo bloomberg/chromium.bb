@@ -80,35 +80,7 @@ bool InvokeGoogleUpdateForRename() {
 
 namespace upgrade_util {
 
-const char kRelaunchModeMetro[] = "relaunch.mode.metro";
-const char kRelaunchModeDesktop[] = "relaunch.mode.desktop";
-const char kRelaunchModeDefault[] = "relaunch.mode.default";
-
-// TODO(shrikant): Have a map/array to quickly map enum to strings.
-std::string RelaunchModeEnumToString(const RelaunchMode relaunch_mode) {
-  if (relaunch_mode == RELAUNCH_MODE_METRO)
-    return kRelaunchModeMetro;
-
-  if (relaunch_mode == RELAUNCH_MODE_DESKTOP)
-    return kRelaunchModeDesktop;
-
-  // For the purpose of code flow, even in case of wrong value we will
-  // return default re-launch mode.
-  return kRelaunchModeDefault;
-}
-
-RelaunchMode RelaunchModeStringToEnum(const std::string& relaunch_mode) {
-  if (relaunch_mode == kRelaunchModeMetro)
-    return RELAUNCH_MODE_METRO;
-
-  if (relaunch_mode == kRelaunchModeDesktop)
-    return RELAUNCH_MODE_DESKTOP;
-
-  return RELAUNCH_MODE_DEFAULT;
-}
-
-bool RelaunchChromeHelper(const base::CommandLine& command_line,
-                          const RelaunchMode& relaunch_mode) {
+bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
@@ -123,15 +95,6 @@ bool RelaunchChromeHelper(const base::CommandLine& command_line,
 
   return base::LaunchProcess(chrome_exe_command_line, base::LaunchOptions())
       .IsValid();
-}
-
-bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
-  return RelaunchChromeHelper(command_line, RELAUNCH_MODE_DEFAULT);
-}
-
-bool RelaunchChromeWithMode(const base::CommandLine& command_line,
-                            const RelaunchMode& relaunch_mode) {
-  return RelaunchChromeHelper(command_line, relaunch_mode);
 }
 
 bool IsUpdatePendingRestart() {

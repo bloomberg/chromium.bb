@@ -774,12 +774,6 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kEulaAccepted, false);
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    registry->RegisterStringPref(prefs::kRelaunchMode,
-                                 upgrade_util::kRelaunchModeDefault);
-  }
-#endif
 
   // TODO(brettw,*): this comment about ResourceBundle was here since
   // initial commit.  This comment seems unrelated, bit-rotten and

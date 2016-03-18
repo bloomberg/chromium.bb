@@ -511,10 +511,6 @@ extern const char kRestartLastSessionOnShutdown[];
 extern const char kWasRestarted[];
 #endif
 
-#if defined(OS_WIN)
-extern const char kRelaunchMode[];
-#endif
-
 extern const char kDisableExtensions[];
 extern const char kDisablePluginFinder[];
 
