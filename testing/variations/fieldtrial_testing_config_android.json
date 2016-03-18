@@ -163,6 +163,11 @@
             }
         }
     ],
+    "ModerateBindingOnBackgroundTabCreation": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "NTPPopularSites": [
         {
             "group_name": "Enabled5",
