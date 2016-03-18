@@ -62,6 +62,7 @@ class WindowPrivate {
   void LocalRemoveTransientWindow(Window* child) {
     window_->LocalRemoveTransientWindow(child);
   }
+  void LocalUnsetModal() { window_->is_modal_ = false; }
   void LocalReorder(Window* relative, mojom::OrderDirection direction) {
     window_->LocalReorder(relative, direction);
   }

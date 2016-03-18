@@ -338,6 +338,20 @@ TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
   EXPECT_EQ(original_visible, root->visible());
 }
 
+// Verifies |is_modal| is reverted if the server replied that the change failed.
+TEST_F(WindowTreeClientImplTest, SetModalFailed) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  ASSERT_TRUE(root);
+  EXPECT_FALSE(root->is_modal());
+  root->SetModal();
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  EXPECT_TRUE(root->is_modal());
+  setup.window_tree_client()->OnChangeCompleted(change_id, false);
+  EXPECT_FALSE(root->is_modal());
+}
+
 TEST_F(WindowTreeClientImplTest, InputEventBasic) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();

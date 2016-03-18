@@ -177,6 +177,8 @@ InFlightVisibleChange::InFlightVisibleChange(Window* window,
     : InFlightChange(window, ChangeType::VISIBLE),
       revert_visible_(revert_value) {}
 
+InFlightVisibleChange::~InFlightVisibleChange() {}
+
 void InFlightVisibleChange::SetRevertValueFrom(const InFlightChange& change) {
   revert_visible_ =
       static_cast<const InFlightVisibleChange&>(change).revert_visible_;
@@ -184,6 +186,19 @@ void InFlightVisibleChange::SetRevertValueFrom(const InFlightChange& change) {
 
 void InFlightVisibleChange::Revert() {
   WindowPrivate(window()).LocalSetVisible(revert_visible_);
+}
+
+// InFlightSetModalChange ------------------------------------------------------
+
+InFlightSetModalChange::InFlightSetModalChange(Window* window)
+    : InFlightChange(window, ChangeType::SET_MODAL) {}
+
+InFlightSetModalChange::~InFlightSetModalChange() {}
+
+void InFlightSetModalChange::SetRevertValueFrom(const InFlightChange& change) {}
+
+void InFlightSetModalChange::Revert() {
+  WindowPrivate(window()).LocalUnsetModal();
 }
 
 }  // namespace mus

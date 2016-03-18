@@ -253,6 +253,7 @@ class InFlightPredefinedCursorChange : public InFlightChange {
 class InFlightVisibleChange : public InFlightChange {
  public:
   InFlightVisibleChange(Window* window, const bool revert_value);
+  ~InFlightVisibleChange() override;
 
   // InFlightChange:
   void SetRevertValueFrom(const InFlightChange& change) override;
@@ -262,6 +263,19 @@ class InFlightVisibleChange : public InFlightChange {
   bool revert_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightVisibleChange);
+};
+
+class InFlightSetModalChange : public InFlightChange {
+ public:
+  explicit InFlightSetModalChange(Window* window);
+  ~InFlightSetModalChange() override;
+
+  // InFlightChange:
+  void SetRevertValueFrom(const InFlightChange& change) override;
+  void Revert() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InFlightSetModalChange);
 };
 
 }  // namespace mus

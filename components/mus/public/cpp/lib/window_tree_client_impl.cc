@@ -221,7 +221,7 @@ void WindowTreeClientImpl::RemoveTransientWindowFromParent(Window* window) {
 void WindowTreeClientImpl::SetModal(Window* window) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
-      make_scoped_ptr(new CrashInFlightChange(window, ChangeType::SET_MODAL)));
+      make_scoped_ptr(new InFlightSetModalChange(window)));
   tree_->SetModal(change_id, window->id());
 }
 
