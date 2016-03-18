@@ -18,7 +18,7 @@
 #include "net/http/bidirectional_stream.h"
 
 namespace net {
-class BidirectionalStreamRequestInfo;
+struct BidirectionalStreamRequestInfo;
 class SpdyHeaderBlock;
 }  // namespace net
 
