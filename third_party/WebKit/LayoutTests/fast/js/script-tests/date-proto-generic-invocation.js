@@ -36,5 +36,5 @@ var o = new Object();
 for (var i = 0; i < functionNames.length; i++) {
     var testFunctionName = "o.__proto__." + functionNames[i].split('.')[2];
     eval(testFunctionName + " = " + functionNames[i]);
-    shouldThrow(testFunctionName + "()", '"TypeError: Type error"');
+    shouldThrow(testFunctionName + "()");
 }

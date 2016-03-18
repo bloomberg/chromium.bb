@@ -72,6 +72,6 @@ functionName:
 isGenerator: false
 scopeChain #0: catch; ex: <no string representation>
 scopeChain #1: with; __proto__: <no string representation>,e: 7,f: 5,u: <no value>,v: <no value>
-scopeChain #2: closure; arguments: <no string representation>,o: <no string representation>,p: <no string representation>
+scopeChain #2: closure; p: <no string representation>
 scopeChain #3: global; <global object properties omitted>
 

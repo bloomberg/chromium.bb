@@ -14,7 +14,7 @@ properties-special.html:11 anonymous(a, b)
     prototype: Object
     __proto__: ()
     <function scope>
-properties-special.html:12 bound ()
+properties-special.html:12 anonymous()
     arguments: (...)
     caller: (...)
     length: 1

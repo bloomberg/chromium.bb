@@ -361,8 +361,8 @@ console-format.html:7 Object {}
     toLocaleString: toLocaleString()
     toString: toString()
     valueOf: valueOf()
-    get __proto__: get __proto__()
-    set __proto__: set __proto__()
+    get __proto__: __proto__()
+    set __proto__: __proto__()
 console-format.html:8 [Object]
     0: Object
     length: 1
@@ -380,8 +380,8 @@ Object {}
     toLocaleString: toLocaleString()
     toString: toString()
     valueOf: valueOf()
-    get __proto__: get __proto__()
-    set __proto__: set __proto__()
+    get __proto__: __proto__()
+    set __proto__: __proto__()
 console-format.html:7 ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:8 [function]
@@ -432,7 +432,7 @@ console-format.html:7 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     [200 … 299]
     [300 … 399]
     foo: "bar"
-    __proto__: Object
+    __proto__: TypedArray
 console-format.html:8 [Uint8Array[400]]
     0: Uint8Array[400]
     length: 1
@@ -444,13 +444,13 @@ Uint8Array[400]
     [200 … 299]
     [300 … 399]
     foo: "bar"
-    __proto__: Object
+    __proto__: TypedArray
 console-format.html:7 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0…]
     [0 … 99999999]
     [100000000 … 199999999]
     [200000000 … 299999999]
     [300000000 … 399999999]
-    __proto__: Object
+    __proto__: TypedArray
 console-format.html:8 [Uint8Array[400000000]]
     0: Uint8Array[400000000]
     length: 1
@@ -461,5 +461,5 @@ Uint8Array[400000000]
     [100000000 … 199999999]
     [200000000 … 299999999]
     [300000000 … 399999999]
-    __proto__: Object
+    __proto__: TypedArray
 

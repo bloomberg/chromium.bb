@@ -18,11 +18,11 @@ console-dir.html:4 Array[2]
 console-dir.html:5 NodeList[1]
     0: html
     length: 1
-    __proto__: Object
+    __proto__: NodeList
 console-dir.html:6 XPathResult
     invalidIteratorState: false
     resultType: 4
-    __proto__: Object
+    __proto__: XPathResult
 console-dir.html:16 Object
     "": ""
     "  ": "  "
@@ -41,7 +41,7 @@ console-dir.html:19 anonymous()
     __proto__: ()
     <function scope>
         Global: Window
-console-dir.html:23 outer.inner
+console-dir.html:23 inner
     __proto__: Object
 console-dir.html:26 Object
     No Properties
@@ -62,5 +62,5 @@ console-dir.html:34 Uint8Array[400000000]
     [100000000 … 199999999]
     [200000000 … 299999999]
     [300000000 … 399999999]
-    __proto__: Object
+    __proto__: TypedArray
 

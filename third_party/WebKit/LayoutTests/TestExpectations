@@ -601,11 +601,6 @@ crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinat
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 
-crbug.com/576574 fast/js/date-proto-generic-invocation.html [ NeedsManualRebaseline ]
-
-crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
-crbug.com/535408 inspector/sources/debugger/properties-special.html [ NeedsManualRebaseline ]
-
 crbug.com/405389 imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ Failure ]
@@ -1287,27 +1282,15 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 
 crbug.com/543369 [ Linux ] fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure ]
 
-crbug.com/575917 fast/js/const.html [ NeedsManualRebaseline ]
-crbug.com/575917 fast/js/inc-const-valueOf.html [ NeedsManualRebaseline ]
-crbug.com/575917 fast/js/kde/const.html [ NeedsManualRebaseline ]
-
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
-crbug.com/570391 inspector/sources/debugger/promise-events.html [ NeedsManualRebaseline ]
-
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
-
-crbug.com/573287 inspector/console/console-dir.html [ NeedsManualRebaseline ]
-crbug.com/573287 inspector/console/console-big-array.html [ NeedsManualRebaseline ]
-crbug.com/573287 inspector/console/console-format.html [ NeedsManualRebaseline ]
 
 crbug.com/563694 [ Linux Mac Debug ] svg/hixie/perf/005.xml [ Failure ]
 
 crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display.html [ Pass Timeout Failure ]
 
 crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
-
-crbug.com/574196 fast/js/mozilla/strict/13.1.html [ NeedsManualRebaseline ]
 
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
@@ -1328,8 +1311,6 @@ crbug.com/571721 inspector/console/console-xpath.html [ Timeout Pass ]
 
 crbug.com/580378 [ Mac ] fast/replaced/width100percent-searchfield.html [ Failure Pass ]
 crbug.com/571765 [ Linux Trusty Mac10.9 ] inspector/console/worker-eval-contains-stack.html [ Timeout Crash Pass ]
-
-crbug.com/592353 inspector/sources/debugger-ui/function-details.html [ NeedsManualRebaseline ]
 
 crbug.com/571773 inspector/console/worker-exception-message-contains-stack.html [ Failure Timeout Crash Pass ]
 
