@@ -15,21 +15,20 @@
 namespace WTF {
 namespace {
 
-struct UTF8AdaptorWithPointer {
-  explicit UTF8AdaptorWithPointer(const WTF::String& input)
-      : utf8_adaptor(input) {
+struct UTF8AdaptorInfo {
+  explicit UTF8AdaptorInfo(const WTF::String& input) : utf8_adaptor(input) {
 #if DCHECK_IS_ON()
-    original_input = reinterpret_cast<uintptr_t>(&input);
+    original_size_in_bytes = static_cast<size_t>(input.sizeInBytes());
 #endif
   }
 
-  ~UTF8AdaptorWithPointer() {}
+  ~UTF8AdaptorInfo() {}
 
   WTF::StringUTF8Adaptor utf8_adaptor;
 
 #if DCHECK_IS_ON()
-  // For sanity check only. Never dereferenced.
-  uintptr_t original_input;
+  // For sanity check only.
+  size_t original_size_in_bytes;
 #endif
 };
 
@@ -38,7 +37,7 @@ class WTFStringContextImpl : public mojo::internal::WTFStringContext {
   WTFStringContextImpl() {}
   ~WTFStringContextImpl() override {}
 
-  std::queue<UTF8AdaptorWithPointer>& utf8_adaptors() { return utf8_adaptors_; }
+  std::queue<UTF8AdaptorInfo>& utf8_adaptors() { return utf8_adaptors_; }
 
  private:
   // When serializing an object, we call GetSerializedSize_() recursively on
@@ -47,7 +46,7 @@ class WTFStringContextImpl : public mojo::internal::WTFStringContext {
   // serialization. If some WTF::Strings need to be converted to UTF8, we don't
   // want to do that twice. Therefore, we store a WTF::StringUTF8Adaptor for
   // each in the first pass, and reuse it in the second pass.
-  std::queue<UTF8AdaptorWithPointer> utf8_adaptors_;
+  std::queue<UTF8AdaptorInfo> utf8_adaptors_;
 
   DISALLOW_COPY_AND_ASSIGN(WTFStringContextImpl);
 };
@@ -87,8 +86,8 @@ void Serialize_(const WTF::String& input,
 
   DCHECK(!utf8_adaptors.empty());
 #if DCHECK_IS_ON()
-  DCHECK_EQ(utf8_adaptors.front().original_input,
-            reinterpret_cast<uintptr_t>(&input));
+  DCHECK_EQ(utf8_adaptors.front().original_size_in_bytes,
+            static_cast<size_t>(input.sizeInBytes()));
 #endif
 
   const WTF::StringUTF8Adaptor& adaptor = utf8_adaptors.front().utf8_adaptor;
