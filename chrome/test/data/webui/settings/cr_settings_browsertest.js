@@ -37,10 +37,6 @@ CrSettingsBrowserTest.prototype = {
     'prefs_test_cases.js',
     'prefs_tests.js',
     'reset_page_test.js',
-    'site_details_tests.js',
-    'site_details_permission_tests.js',
-    'site_list_tests.js',
-    'site_settings_category_tests.js',
   ]),
 
   /** @override */
@@ -67,10 +63,6 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   settings_dropdown_menu.registerTests();
   settings_prefUtil.registerTests();
   settings_prefs.registerTests();
-  site_details.registerTests();
-  site_details_permission.registerTests();
-  site_list.registerTests();
-  site_settings_category.registerTests();
 
   // Run all registered tests.
   mocha.run();
@@ -160,6 +152,39 @@ CrSettingsCertificateManagerTest.prototype = {
 
 TEST_F('CrSettingsCertificateManagerTest', 'CertificateManager', function() {
   certificate_manager_page.registerTests();
+  mocha.run();
+});
+
+/**
+ * Test fixture for chrome/browser/resources/settings/site_settings/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsSiteSettingsTest() {}
+
+CrSettingsSiteSettingsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/prefs/prefs.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'site_details_tests.js',
+    'site_details_permission_tests.js',
+    'site_list_tests.js',
+    'site_settings_category_tests.js',
+    'test_browser_proxy.js',
+    'test_site_settings_prefs_browser_proxy.js',
+  ]),
+};
+
+TEST_F('CrSettingsSiteSettingsTest', 'SiteSettings', function() {
+  site_details.registerTests();
+  site_details_permission.registerTests();
+  site_list.registerTests();
+  site_settings_category.registerTests();
+
   mocha.run();
 });
 

@@ -250,18 +250,6 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   void RefreshFlashMediaSettings();
 
-  // Returns exceptions constructed from the policy-set allowed URLs
-  // for the content settings |type| mic or camera.
-  void GetPolicyAllowedUrls(
-      ContentSettingsType type,
-      std::vector<scoped_ptr<base::DictionaryValue>>* exceptions);
-
-  // Fills in |exceptions| with Values for the given |type| from |map|.
-  void GetExceptionsFromHostContentSettingsMap(
-      const HostContentSettingsMap* map,
-      ContentSettingsType type,
-      base::ListValue* exceptions);
-
   // Fills in |exceptions| with Values for the given |type| from |map|.
   void GetChooserExceptionsFromProfile(bool incognito,
                                        const ChooserTypeNameEntry& type,

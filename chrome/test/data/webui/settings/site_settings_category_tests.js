@@ -13,43 +13,41 @@ cr.define('site_settings_category', function() {
       var testElement;
 
       /**
+       * The mock proxy object to use during test.
+       * @type {TestSiteSettingsPrefsBrowserProxy}
+       */
+      var browserProxy = null;
+
+      /**
        * An example pref where the location category is disabled.
+       * @type {SiteSettingsPref}
        */
       var prefsLocationDisabled = {
-        profile: {
-          default_content_setting_values: {
-            geolocation: {
-              value: 2,
-            }
-          },
+        defaults: {
+          location: 'block',
+        },
+        exceptions: {
+          location: [],
         },
       };
 
       /**
        * An example pref where the location category is enabled.
+       * @type {SiteSettingsPref}
        */
       var prefsLocationEnabled = {
-        profile: {
-          default_content_setting_values: {
-            geolocation: {
-              value: 3,
-            }
-          }
+        defaults: {
+          location: 'allow',
+        },
+        exceptions: {
+          location: [],
         },
       };
 
       // Import necessary html before running suite.
       suiteSetup(function() {
-        cr.define('settings_test', function() {
-          var siteSettingsCategoryOptions = {
-            /**
-             * True if property changes should fire events for testing purposes.
-             * @type {boolean}
-             */
-            notifyPropertyChangesForTest: true,
-          };
-          return {siteSettingsCategoryOptions: siteSettingsCategoryOptions};
-        });
+        cr.exportPath('settings_test');
+        settings_test.siteCategoryNotifyForTest = true;
 
         return PolymerTest.importHtml(
            'chrome://md-settings/site_settings/site_settings_category.html');
@@ -57,6 +55,8 @@ cr.define('site_settings_category', function() {
 
       // Initialize a site-settings-category before each test.
       setup(function() {
+        browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+        settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         testElement = document.createElement('site-settings-category');
         document.body.appendChild(testElement);
@@ -79,11 +79,19 @@ cr.define('site_settings_category', function() {
         });
       }
 
-      test('categoryEnabled correctly represents prefs (enabled)', function() {
+      test('getDefaultValueForContentType API used', function() {
         testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
+        return browserProxy.whenCalled('getDefaultValueForContentType').then(
+            function(contentType) {
+              assertEquals(
+                  settings.ContentSettingsTypes.GEOLOCATION, contentType);
+            });
+      });
 
+      test('categoryEnabled correctly represents prefs (enabled)', function() {
         return runAndResolveWhenCategoryEnabledChanged(function() {
-          testElement.prefs = prefsLocationEnabled;
+          browserProxy.setPrefs(prefsLocationEnabled);
+          testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
         }).then(function() {
           assertTrue(testElement.categoryEnabled);
           MockInteractions.tap(testElement.$.toggle);
@@ -92,15 +100,14 @@ cr.define('site_settings_category', function() {
       });
 
       test('categoryEnabled correctly represents prefs (disabled)', function() {
-        testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
-
         // In order for the 'change' event to trigger, the value monitored needs
         // to actually change (the event is not sent otherwise). Therefore,
         // ensure the initial state of enabledness is opposite of what we expect
         // it to end at.
         testElement.categoryEnabled = true;
         return runAndResolveWhenCategoryEnabledChanged(function() {
-          testElement.prefs = prefsLocationDisabled;
+          browserProxy.setPrefs(prefsLocationDisabled);
+          testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
         }).then(function() {
           assertFalse(testElement.categoryEnabled);
           MockInteractions.tap(testElement.$.toggle);

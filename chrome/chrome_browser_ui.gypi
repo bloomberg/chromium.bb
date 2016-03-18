@@ -2055,6 +2055,8 @@
       'browser/ui/webui/signin/profile_signin_confirmation_dialog.h',
       'browser/ui/webui/signin/profile_signin_confirmation_ui.cc',
       'browser/ui/webui/signin/profile_signin_confirmation_ui.h',
+      'browser/ui/webui/site_settings_helper.cc',
+      'browser/ui/webui/site_settings_helper.h',
       'browser/ui/webui/sync_file_system_internals/dump_database_handler.cc',
       'browser/ui/webui/sync_file_system_internals/dump_database_handler.h',
       'browser/ui/webui/sync_file_system_internals/extension_statuses_handler.cc',

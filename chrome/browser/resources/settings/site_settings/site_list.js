@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Define a global boolean for notifications (only enabled in the test class).
+cr.exportPath('settings_test');
+
+/** @type {boolean} */
+settings_test.siteListNotifyForTest;
+
 /**
  * @fileoverview
  * 'settings-site-list' shows a list of Allowed and Blocked sites for a given
@@ -13,9 +19,10 @@
  *    </settings-site-list>
  */
 Polymer({
+
   is: 'settings-site-list',
 
-  behaviors: [PrefsBehavior, SiteSettingsBehavior],
+  behaviors: [PrefsBehavior, SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -45,10 +52,10 @@ Polymer({
     /**
      * Array of sites to display in the widget.
      */
-    sites_: {
+    sites: {
       type: Array,
       value: function() { return []; },
-      observer: 'onDataChanged_',
+      notify: settings_test.siteListNotifyForTest,
     },
 
     /**
@@ -66,7 +73,7 @@ Polymer({
       */
     categorySubtype: {
       type: Number,
-      value: -1,
+      value: settings.INVALID_CATEGORY_SUBTYPE,
     },
 
     /**
@@ -76,7 +83,6 @@ Polymer({
      */
     categoryEnabled: {
       type: Boolean,
-      observer: 'onDataChanged_',
       value: true,
     },
 
@@ -117,25 +123,37 @@ Polymer({
   },
 
   observers: [
-    'initialize_(prefs.profile.content_settings.exceptions.*,' +
-        'category, categorySubtype, allSites)'
+    'configureWidget_(category, categorySubtype, categoryEnabled, allSites)'
   ],
 
+  ready: function() {
+    this.addWebUIListener('contentSettingSitePermissionChanged',
+        this.siteWithinCategoryChanged_.bind(this));
+  },
+
   /**
-   * One-time initialization routines for this class.
+   * Called when a site changes permission.
+   * @param {number} category The category of the site that changed.
    * @private
    */
-  initialize_: function() {
-    CrSettingsPrefs.initialized.then(function() {
-      this.setUpActionMenu_();
-      this.ensureOpened_();
-    }.bind(this));
+  siteWithinCategoryChanged_: function(category) {
+    if (category == this.category)
+      this.configureWidget_();
+  },
 
+  /**
+   * Configures the action menu, visibility of the widget and shows the list.
+   * @private
+   */
+  configureWidget_: function() {
+    this.setUpActionMenu_();
+    this.ensureOpened_();
     this.populateList_();
   },
 
   /**
    * Ensures the widget is |opened| when needed when displayed initially.
+   * @private
    */
   ensureOpened_: function() {
     // Allowed list is always shown opened by default and All Sites is presented
@@ -148,26 +166,24 @@ Polymer({
 
     // Block list should only be shown opened if there is nothing to show in
     // the allowed list.
-    var pref = this.getPref(
-        this.computeCategoryExceptionsPrefName(this.category));
-    var sites = pref.value;
-    for (var origin in sites) {
-      var site = /** @type {{setting: number}} */(sites[origin]);
-      if (site.setting == settings.PermissionValues.ALLOW)
-        return;
-    }
-
-    this.$.category.opened = true;
+    var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+    prefsProxy.getExceptionList(this.category).then(function(exceptionList) {
+      for (var i = 0; i < exceptionList.length; ++i) {
+        if (exceptionList[i].setting == 'allow')
+          return;
+      }
+      this.$.category.opened = true;
+    }.bind(this));
   },
 
   /**
-   * Handles the data changing, for example when the category is flipped from
-   * ALLOW to BLOCK or sites are added to the list.
+   * Makes sure the visibility is correct for this widget (e.g. hidden if the
+   * block list is empty).
    * @private
    */
-  onDataChanged_: function(newValue, oldValue) {
+  updateCategoryVisibility_: function() {
     this.$.category.hidden =
-        !this.showSiteList_(this.sites_, this.categoryEnabled);
+        !this.showSiteList_(this.sites, this.categoryEnabled);
   },
 
   /**
@@ -187,50 +203,74 @@ Polymer({
    */
   populateList_: function() {
     if (this.allSites) {
-      this.sites_ = this.toSiteArray_(this.getAllSitesList_());
+      this.getAllSitesList_().then(function(lists) {
+        this.processExceptions_(lists);
+      }.bind(this));
     } else {
-      var sites = new Set();
-      this.sites_ = this.toSiteArray_(
-          this.appendSiteList(sites, this.category, this.categorySubtype));
+      var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+      prefsProxy.getExceptionList(this.category).then(function(exceptionList) {
+        this.processExceptions_([exceptionList]);
+      }.bind(this));
     }
+  },
+
+  /**
+   * Process the exception list returned from the native layer.
+   * @param {!Array<!Array<SiteException>>} data List of sites (exceptions) to
+   *     process.
+   * @private
+   */
+  processExceptions_: function(data) {
+    var sites = new Set();
+    for (var i = 0; i < data.length; ++i)
+      sites = this.appendSiteList_(sites, data[i]);
+    this.sites = this.toSiteArray_(sites);
+    this.updateCategoryVisibility_();
   },
 
   /**
    * Retrieves a set of all known sites (any category/setting).
+   * @return {!Promise}
    * @private
    */
   getAllSitesList_: function() {
     var sites = new Set();
+    var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+    var promiseList = [];
     for (var type in settings.ContentSettingsTypes) {
-      sites = this.appendSiteList(sites,
-                                  settings.ContentSettingsTypes[type],
-                                  settings.PermissionValues.ALLOW);
-      sites = this.appendSiteList(sites,
-                                  settings.ContentSettingsTypes[type],
-                                  settings.PermissionValues.BLOCK);
+      promiseList.push(
+          prefsProxy.getExceptionList(settings.ContentSettingsTypes[type]));
     }
-    return sites;
+
+    return Promise.all(promiseList);
   },
 
   /**
    * Appends to |list| the sites for a given category and subtype.
-   * @param {!Set<string>} list The site list to add to.
-   * @param {number} category The category to look up.
-   * @param {number} categorySubtype The category subtype to look up.
-   * @return {!Set<string>} The list of sites found.
+   * @param {!Set<string>} sites The site list to add to.
+   * @param {!Array<SiteException>} exceptionList List of sites (exceptions) to
+   *     add.
+   * @return {!Set<string>} The list of sites.
+   * @private
    */
-  appendSiteList: function(list, category, categorySubtype) {
-    var pref = this.getPref(
-        this.computeCategoryExceptionsPrefName(category));
-    var sites = pref.value;
-    for (var origin in sites) {
-      var site = /** @type {{setting: number}} */(sites[origin]);
-      if (site.setting == categorySubtype) {
-        var tokens = origin.split(',');
-        list.add(tokens[0]);
+  appendSiteList_: function(sites, exceptionList) {
+    for (var i = 0; i < exceptionList.length; ++i) {
+      if (this.category != settings.ALL_SITES) {
+        // Filter out 'Block' values if this list is handling 'Allow' items.
+        if (exceptionList[i].setting == 'block' &&
+            this.categorySubtype != settings.PermissionValues.BLOCK) {
+          continue;
+        }
+        // Filter out 'Allow' values if this list is handling 'Block' items.
+        if (exceptionList[i].setting == 'allow' &&
+            this.categorySubtype != settings.PermissionValues.ALLOW) {
+          continue;
+        }
       }
+
+      sites.add(exceptionList[i].origin);
     }
-    return list;
+    return sites;
   },
 
   /**
@@ -242,6 +282,8 @@ Polymer({
   toSiteArray_: function(sites) {
     var list = [...sites];
     list.sort(function(a, b) {
+      if (a.indexOf('://') == -1) a = 'http://' + a;
+      if (b.indexOf('://') == -1) b = 'http://' + b;
       var url1 = /** @type {{host: string}} */(new URL(a));
       var url2 = /** @type {{host: string}} */(new URL(b));
       var result = url1.host.localeCompare(url2.host);
@@ -342,6 +384,7 @@ Polymer({
   showSiteList_: function(siteList, toggleState) {
     if (siteList.length == 0)
       return false;
+
     // The Block list is only shown when the category is set to Allow since it
     // is redundant to also list all the sites that are blocked.
     if (this.isAllowList_())

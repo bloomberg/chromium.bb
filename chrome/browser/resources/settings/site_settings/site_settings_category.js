@@ -3,17 +3,10 @@
 // found in the LICENSE file.
 
 // Define a global boolean for notifications (only enabled in the test class).
-cr.define('settings_test', function() {
-  var siteSettingsCategoryOptions =
-      settings_test.siteSettingsCategoryOptions || {
-    /**
-     * True if property changes should fire events for testing purposes.
-     * @type {boolean}
-     */
-    notifyPropertyChangesForTest: false,
-  };
-  return {siteSettingsCategoryOptions: siteSettingsCategoryOptions};
-});
+cr.exportPath('settings_test');
+
+/** @type {boolean} */
+settings_test.siteCategoryNotifyForTest;
 
 /**
  * @fileoverview
@@ -29,7 +22,7 @@ cr.define('settings_test', function() {
 Polymer({
   is: 'site-settings-category',
 
-  behaviors: [SiteSettingsBehavior],
+  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -55,8 +48,7 @@ Polymer({
      */
     categoryEnabled: {
       type: Boolean,
-      notify: settings_test.siteSettingsCategoryOptions.
-          notifyPropertyChangesForTest,
+      notify: settings_test.siteCategoryNotifyForTest,
     },
 
     /**
@@ -77,13 +69,26 @@ Polymer({
   },
 
   observers: [
-    'onCategoryChanged_(prefs.profile.default_content_setting_values.*, ' +
-        'category)',
+    'onCategoryChanged_(category)',
   ],
 
   ready: function() {
     this.$.blockList.categorySubtype = settings.PermissionValues.BLOCK;
     this.$.allowList.categorySubtype = settings.PermissionValues.ALLOW;
+
+    this.prefsProxy_ = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+    this.addWebUIListener('contentSettingCategoryChanged',
+        this.defaultValueForCategoryChanged_.bind(this));
+  },
+
+  /**
+   * Called when the default value for a category has been changed.
+   * @param {number} category The category that changed.
+   * @private
+   */
+  defaultValueForCategoryChanged_: function(category) {
+    if (category == this.category)
+      this.onCategoryChanged_();
   },
 
   /**
@@ -91,13 +96,13 @@ Polymer({
    * @private
    */
   onToggleChange_: function(event) {
-    var prefsProxy = settings.SiteSettingsPrefsBrowserProxy.getInstance();
     switch (this.category) {
       case settings.ContentSettingsTypes.COOKIES:
+      case settings.ContentSettingsTypes.IMAGES:
       case settings.ContentSettingsTypes.JAVASCRIPT:
       case settings.ContentSettingsTypes.POPUPS:
         // "Allowed" vs "Blocked".
-        prefsProxy.setDefaultValueForContentType(
+        this.prefsProxy_.setDefaultValueForContentType(
             this.category,
             this.categoryEnabled ?
                 settings.PermissionValues.ALLOW :
@@ -108,7 +113,7 @@ Polymer({
       case settings.ContentSettingsTypes.CAMERA:
       case settings.ContentSettingsTypes.MIC:
         // "Ask" vs "Blocked".
-        prefsProxy.setDefaultValueForContentType(
+        this.prefsProxy_.setDefaultValueForContentType(
             this.category,
             this.categoryEnabled ?
                 settings.PermissionValues.ASK :
@@ -116,11 +121,11 @@ Polymer({
         break;
       case settings.ContentSettingsTypes.FULLSCREEN:
         // "Allowed" vs. "Ask first".
-        prefsProxy.setDefaultValueForContentType(
-          this.category,
-          this.categoryEnabled ?
-              settings.PermissionValues.ALLOW :
-              settings.PermissionValues.ASK);
+        this.prefsProxy_.setDefaultValueForContentType(
+            this.category,
+            this.categoryEnabled ?
+                settings.PermissionValues.ALLOW :
+                settings.PermissionValues.ASK);
         break;
       default:
         assertNotReached();
@@ -132,8 +137,7 @@ Polymer({
    * @private
    */
   onCategoryChanged_: function() {
-    var prefsProxy = settings.SiteSettingsPrefsBrowserProxy.getInstance();
-    prefsProxy.getDefaultValueForContentType(
+    this.prefsProxy_.getDefaultValueForContentType(
         this.category).then(function(enabled) {
           this.categoryEnabled = enabled;
         }.bind(this));

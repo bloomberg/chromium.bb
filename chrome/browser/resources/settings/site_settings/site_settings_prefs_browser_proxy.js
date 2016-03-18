@@ -7,13 +7,35 @@
  * interact with the content settings prefs.
  */
 
-cr.define('settings', function() {
-  /** @constructor */
-  function SiteSettingsPrefsBrowserProxy() {};
+/**
+ * @typedef {{embeddingOrigin: string,
+ *            origin: string,
+ *            setting: string,
+ *            source: string}}
+ */
+var SiteException;
 
-  // The singleton instance_ is replaced with a test version of this wrapper
-  // during testing.
-  cr.addSingletonGetter(SiteSettingsPrefsBrowserProxy);
+/**
+ * @typedef {{location: string,
+ *            notifications: string}}
+ */
+var CategoryDefaultsPref;
+
+/**
+ * @typedef {{location: Array<SiteException>,
+ *            notifications: Array<SiteException>}}
+ */
+var ExceptionListPref;
+
+/**
+ * @typedef {{defaults: CategoryDefaultsPref,
+ *            exceptions: ExceptionListPref}}
+ */
+var SiteSettingsPref;
+
+cr.define('settings', function() {
+  /** @interface */
+  function SiteSettingsPrefsBrowserProxy() {}
 
   SiteSettingsPrefsBrowserProxy.prototype = {
     /**
@@ -21,21 +43,51 @@ cr.define('settings', function() {
      * @param {number} contentType The category to change.
      * @param {number} defaultValue The value to set as default.
      */
-    setDefaultValueForContentType: function(contentType, defaultValue) {
-      chrome.send('setDefaultValueForContentType', [contentType, defaultValue]);
-    },
+    setDefaultValueForContentType: function(contentType, defaultValue) {},
 
     /**
      * Gets the default value for a site settings category.
      * @param {number} contentType The category to change.
-     * @return {Promise}
+     * @return {Promise<boolean>}
      */
+    getDefaultValueForContentType: function(contentType) {},
+
+    /**
+     * Gets the exceptions (site list) for a particular category.
+     * @param {number} contentType The category to change.
+     * @return {Promise<Array<SiteException>>}
+     */
+    getExceptionList: function(contentType) {},
+  };
+
+  /**
+   * @constructor
+   * @implements {SiteSettingsPrefsBrowserProxy}
+   */
+  function SiteSettingsPrefsBrowserProxyImpl() {}
+
+  // The singleton instance_ is replaced with a test version of this wrapper
+  // during testing.
+  cr.addSingletonGetter(SiteSettingsPrefsBrowserProxyImpl);
+
+  SiteSettingsPrefsBrowserProxyImpl.prototype = {
+    /** @override */
+    setDefaultValueForContentType: function(contentType, defaultValue) {
+      chrome.send('setDefaultValueForContentType', [contentType, defaultValue]);
+    },
+
+    /** @override */
     getDefaultValueForContentType: function(contentType) {
       return cr.sendWithPromise('getDefaultValueForContentType', contentType);
+    },
+
+    /** @override */
+    getExceptionList: function(contentType) {
+      return cr.sendWithPromise('getExceptionList', contentType);
     },
   };
 
   return {
-    SiteSettingsPrefsBrowserProxy: SiteSettingsPrefsBrowserProxy,
+    SiteSettingsPrefsBrowserProxyImpl: SiteSettingsPrefsBrowserProxyImpl,
   };
 });

@@ -57,11 +57,13 @@
       'target_name': 'site_list',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '<(EXTERNS_GYP):settings_private',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
         '../prefs/compiled_resources2.gyp:prefs_types',
         'constants',
         'site_settings_behavior',
+        'site_settings_prefs_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -81,6 +83,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '<(EXTERNS_GYP):settings_private',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
         '../prefs/compiled_resources2.gyp:prefs_types',

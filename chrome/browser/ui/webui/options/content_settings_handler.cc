@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <algorithm>
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -32,6 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -102,15 +102,6 @@ struct ContentSettingsTypeNameEntry {
   const char* name;
 };
 
-// Maps from a secondary pattern to a setting.
-typedef std::map<ContentSettingsPattern, ContentSetting>
-    OnePatternSettings;
-// Maps from a primary pattern/source pair to a OnePatternSettings. All the
-// mappings in OnePatternSettings share the given primary pattern and source.
-typedef std::map<std::pair<ContentSettingsPattern, std::string>,
-                 OnePatternSettings>
-    AllPatternsSettings;
-
 // Maps from the UI string to the object it represents (for sorting purposes).
 typedef std::multimap<std::string, const base::DictionaryValue*> SortedObjects;
 // Maps from a secondary URL to the set of objects it has permission to access.
@@ -128,14 +119,8 @@ typedef bool (*AppFilter)(const extensions::Extension& app,
 const char kExceptionsLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=settings_manage_exceptions";
 
-const char kSetting[] = "setting";
-const char kOrigin[] = "origin";
-const char kPolicyProviderId[] = "policy";
-const char kSource[] = "source";
 const char kAppName[] = "appName";
 const char kAppId[] = "appId";
-const char kEmbeddingOrigin[] = "embeddingOrigin";
-const char kPreferencesSource[] = "preference";
 const char kZoom[] = "zoom";
 const char kObject[] = "object";
 const char kObjectName[] = "objectName";
@@ -301,29 +286,6 @@ const ContentSettingsHandler::ChooserTypeNameEntry* ChooserTypeFromGroupName(
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row
-// in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
-scoped_ptr<base::DictionaryValue> GetExceptionForPage(
-    const ContentSettingsPattern& pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    const ContentSetting& setting,
-    const std::string& provider_name) {
-  base::DictionaryValue* exception = new base::DictionaryValue();
-  exception->SetString(kOrigin, pattern.ToString());
-  exception->SetString(kEmbeddingOrigin,
-                       secondary_pattern == ContentSettingsPattern::Wildcard() ?
-                           std::string() :
-                           secondary_pattern.ToString());
-
-  std::string setting_string =
-      content_settings::ContentSettingToString(setting);
-  DCHECK(!setting_string.empty());
-
-  exception->SetString(kSetting, setting_string);
-  exception->SetString(kSource, provider_name);
-  return make_scoped_ptr(exception);
-}
-
-// Create a DictionaryValue* that will act as a data source for a single row
 // in the Geolocation exceptions table.
 scoped_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
     const ContentSettingsPattern& origin,
@@ -335,9 +297,10 @@ scoped_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
       content_settings::ContentSettingToString(setting);
   DCHECK(!setting_string.empty());
 
-  exception->SetString(kSetting, setting_string);
-  exception->SetString(kOrigin, origin.ToString());
-  exception->SetString(kEmbeddingOrigin, embedding_origin.ToString());
+  exception->SetString(site_settings::kSetting, setting_string);
+  exception->SetString(site_settings::kOrigin, origin.ToString());
+  exception->SetString(
+      site_settings::kEmbeddingOrigin, embedding_origin.ToString());
   return make_scoped_ptr(exception);
 }
 
@@ -358,10 +321,10 @@ scoped_ptr<base::DictionaryValue> GetNotificationExceptionForPage(
       content_settings::ContentSettingToString(setting);
   DCHECK(!setting_string.empty());
 
-  exception->SetString(kSetting, setting_string);
-  exception->SetString(kOrigin, primary_pattern.ToString());
-  exception->SetString(kEmbeddingOrigin, embedding_origin);
-  exception->SetString(kSource, provider_name);
+  exception->SetString(site_settings::kSetting, setting_string);
+  exception->SetString(site_settings::kOrigin, primary_pattern.ToString());
+  exception->SetString(site_settings::kEmbeddingOrigin, embedding_origin);
+  exception->SetString(site_settings::kSource, provider_name);
   return make_scoped_ptr(exception);
 }
 
@@ -379,10 +342,11 @@ scoped_ptr<base::DictionaryValue> GetChooserExceptionForPage(
       content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT);
   DCHECK(!setting_string.empty());
 
-  exception->SetString(kSetting, setting_string);
-  exception->SetString(kOrigin, requesting_origin.spec());
-  exception->SetString(kEmbeddingOrigin, embedding_origin.spec());
-  exception->SetString(kSource, provider_name);
+  exception->SetString(site_settings::kSetting, setting_string);
+  exception->SetString(site_settings::kOrigin, requesting_origin.spec());
+  exception->SetString(
+      site_settings::kEmbeddingOrigin, embedding_origin.spec());
+  exception->SetString(site_settings::kSource, provider_name);
   if (object) {
     exception->SetString(kObjectName, name);
     exception->Set(kObject, object->CreateDeepCopy());
@@ -409,10 +373,10 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
       content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW);
   DCHECK(!setting_string.empty());
 
-  exception->SetString(kSetting, setting_string);
-  exception->SetString(kOrigin, url_pattern);
-  exception->SetString(kEmbeddingOrigin, url_pattern);
-  exception->SetString(kSource, "HostedApp");
+  exception->SetString(site_settings::kSetting, setting_string);
+  exception->SetString(site_settings::kOrigin, url_pattern);
+  exception->SetString(site_settings::kEmbeddingOrigin, url_pattern);
+  exception->SetString(site_settings::kSource, "HostedApp");
   exception->SetString(kAppName, app.name());
   exception->SetString(kAppId, app.id());
   exceptions->Append(exception);
@@ -881,7 +845,7 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     UpdateMediaSettingsFromPrefs(type);
     if (media_settings_->forType(type).policy_disable) {
       default_setting = CONTENT_SETTING_BLOCK;
-      provider_id = kPolicyProviderId;
+      provider_id = site_settings::kPolicyProviderId;
     }
   }
 
@@ -977,13 +941,14 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
       &all_settings);
 
   // Group geolocation settings by primary_pattern.
-  AllPatternsSettings all_patterns_settings;
+  site_settings::AllPatternsSettings all_patterns_settings;
   for (ContentSettingsForOneType::iterator i = all_settings.begin();
        i != all_settings.end(); ++i) {
     // Don't add default settings.
     if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
         i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i->source != kPreferencesSource) {
+        i
+          ->source != site_settings::kPreferencesSource) {
       continue;
     }
     all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]
@@ -996,12 +961,12 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
       HostedAppHasPermission<APIPermission::kGeolocation>,
       &exceptions);
 
-  for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
-       i != all_patterns_settings.end(); ++i) {
+  for (site_settings::AllPatternsSettings::iterator i =
+      all_patterns_settings.begin(); i != all_patterns_settings.end(); ++i) {
     const ContentSettingsPattern& primary_pattern = i->first.first;
-    const OnePatternSettings& one_settings = i->second;
+    const site_settings::OnePatternSettings& one_settings = i->second;
 
-    OnePatternSettings::const_iterator parent =
+    site_settings::OnePatternSettings::const_iterator parent =
         one_settings.find(primary_pattern);
 
     // Add the "parent" entry for the non-embedded setting.
@@ -1012,7 +977,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
                                                      parent_setting));
 
     // Add the "children" for any embedded settings.
-    for (OnePatternSettings::const_iterator j = one_settings.begin();
+    for (site_settings::OnePatternSettings::const_iterator j =
+            one_settings.begin();
          j != one_settings.end();
          ++j) {
       // Skip the non-embedded setting which we already added above.
@@ -1052,7 +1018,8 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
     // Don't add default settings.
     if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
         i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i->source != kPreferencesSource) {
+        i
+          ->source != site_settings::kPreferencesSource) {
       continue;
     }
 
@@ -1078,9 +1045,10 @@ void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
   MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
 
   base::ListValue exceptions;
-  GetExceptionsFromHostContentSettingsMap(
+  site_settings::GetExceptionsFromHostContentSettingsMap(
       GetContentSettingsMap(),
       type,
+      web_ui(),
       &exceptions);
 
   settings.exceptions.clear();
@@ -1092,8 +1060,8 @@ void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
 
     std::string origin;
     std::string setting;
-    dict->GetString(kOrigin, &origin);
-    dict->GetString(kSetting, &setting);
+    dict->GetString(site_settings::kOrigin, &origin);
+    dict->GetString(site_settings::kSetting, &setting);
 
     ContentSetting setting_type;
     bool result =
@@ -1175,13 +1143,13 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
     scoped_ptr<base::DictionaryValue> exception(new base::DictionaryValue);
     switch (i->mode) {
       case content::HostZoomMap::ZOOM_CHANGED_FOR_HOST: {
-        exception->SetString(kOrigin, i->host);
+        exception->SetString(site_settings::kOrigin, i->host);
         std::string host = i->host;
         if (host == content::kUnreachableWebDataURL) {
           host =
               l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL);
         }
-        exception->SetString(kOrigin, host);
+        exception->SetString(site_settings::kOrigin, host);
         break;
       }
       case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
@@ -1198,7 +1166,7 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
         content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT);
     DCHECK(!setting_string.empty());
 
-    exception->SetString(kSetting, setting_string);
+    exception->SetString(site_settings::kSetting, setting_string);
 
     // Calculate the zoom percent from the factor. Round up to the nearest whole
     // number.
@@ -1208,7 +1176,8 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
         kZoom,
         l10n_util::GetStringFUTF16(IDS_ZOOM_PERCENT,
                                    base::IntToString16(zoom_percent)));
-    exception->SetString(kSource, kPreferencesSource);
+    exception->SetString(
+        site_settings::kSource, site_settings::kPreferencesSource);
     // Append the new entry to the list and map.
     zoom_levels_exceptions.Append(exception.release());
   }
@@ -1221,8 +1190,8 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     ContentSettingsType type) {
   base::ListValue exceptions;
-  GetExceptionsFromHostContentSettingsMap(
-      GetContentSettingsMap(), type, &exceptions);
+  site_settings::GetExceptionsFromHostContentSettingsMap(
+      GetContentSettingsMap(), type, web_ui(), &exceptions);
   base::StringValue type_string(ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
                                    exceptions);
@@ -1251,140 +1220,11 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   if (!otr_settings_map)
     return;
   base::ListValue exceptions;
-  GetExceptionsFromHostContentSettingsMap(otr_settings_map, type, &exceptions);
+  site_settings::GetExceptionsFromHostContentSettingsMap(
+      otr_settings_map, type, web_ui(), &exceptions);
   base::StringValue type_string(ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
                                    type_string, exceptions);
-}
-
-void ContentSettingsHandler::GetPolicyAllowedUrls(
-    ContentSettingsType type,
-    std::vector<scoped_ptr<base::DictionaryValue>>* exceptions) {
-  DCHECK(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-         type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  const base::ListValue* policy_urls = prefs->GetList(
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-          ? prefs::kAudioCaptureAllowedUrls
-          : prefs::kVideoCaptureAllowedUrls);
-
-  // Convert the URLs to |ContentSettingsPattern|s. Ignore any invalid ones.
-  std::vector<ContentSettingsPattern> patterns;
-  for (const base::Value* entry : *policy_urls) {
-    std::string url;
-    bool valid_string = entry->GetAsString(&url);
-    if (!valid_string)
-      continue;
-
-    ContentSettingsPattern pattern = ContentSettingsPattern::FromString(url);
-    if (!pattern.IsValid())
-      continue;
-
-    patterns.push_back(pattern);
-  }
-
-  // The patterns are shown in the UI in a reverse order defined by
-  // |ContentSettingsPattern::operator<|.
-  std::sort(
-      patterns.begin(), patterns.end(), std::greater<ContentSettingsPattern>());
-
-  for (const ContentSettingsPattern& pattern : patterns) {
-    exceptions->push_back(GetExceptionForPage(pattern, ContentSettingsPattern(),
-                                              CONTENT_SETTING_ALLOW,
-                                              kPolicyProviderId));
-  }
-}
-
-void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
-    const HostContentSettingsMap* map,
-    ContentSettingsType type,
-    base::ListValue* exceptions) {
-  ContentSettingsForOneType entries;
-  map->GetSettingsForOneType(type, std::string(), &entries);
-  // Group settings by primary_pattern.
-  AllPatternsSettings all_patterns_settings;
-  for (ContentSettingsForOneType::iterator i = entries.begin();
-       i != entries.end(); ++i) {
-    // Don't add default settings.
-    if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
-        i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i->source != kPreferencesSource) {
-      continue;
-    }
-
-    // Off-the-record HostContentSettingsMap contains incognito content settings
-    // as well as normal content settings. Here, we use the incongnito settings
-    // only.
-    if (map->is_off_the_record() && !i->incognito)
-      continue;
-
-    all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]
-        [i->secondary_pattern] = i->setting;
-  }
-
-  // Keep the exceptions sorted by provider so they will be displayed in
-  // precedence order.
-  std::vector<scoped_ptr<base::DictionaryValue>>
-      all_provider_exceptions[HostContentSettingsMap::NUM_PROVIDER_TYPES];
-
-  // |all_patterns_settings| is sorted from the lowest precedence pattern to
-  // the highest (see operator< in ContentSettingsPattern), so traverse it in
-  // reverse to show the patterns with the highest precedence (the more specific
-  // ones) on the top.
-  for (AllPatternsSettings::reverse_iterator i = all_patterns_settings.rbegin();
-       i != all_patterns_settings.rend();
-       ++i) {
-    const ContentSettingsPattern& primary_pattern = i->first.first;
-    const OnePatternSettings& one_settings = i->second;
-
-    // The "parent" entry either has an identical primary and secondary pattern,
-    // or has a wildcard secondary. The two cases are indistinguishable in the
-    // UI.
-    OnePatternSettings::const_iterator parent =
-        one_settings.find(primary_pattern);
-    if (parent == one_settings.end())
-      parent = one_settings.find(ContentSettingsPattern::Wildcard());
-
-    const std::string& source = i->first.second;
-    auto& this_provider_exceptions = all_provider_exceptions
-        [HostContentSettingsMap::GetProviderTypeFromSource(source)];
-
-    // Add the "parent" entry for the non-embedded setting.
-    ContentSetting parent_setting =
-        parent == one_settings.end() ? CONTENT_SETTING_DEFAULT : parent->second;
-    const ContentSettingsPattern& secondary_pattern =
-        parent == one_settings.end() ? primary_pattern : parent->first;
-    this_provider_exceptions.push_back(GetExceptionForPage(
-        primary_pattern, secondary_pattern, parent_setting, source));
-
-    // Add the "children" for any embedded settings.
-    for (OnePatternSettings::const_iterator j = one_settings.begin();
-         j != one_settings.end(); ++j) {
-      // Skip the non-embedded setting which we already added above.
-      if (j == parent)
-        continue;
-
-      ContentSetting content_setting = j->second;
-      this_provider_exceptions.push_back(GetExceptionForPage(
-          primary_pattern, j->first, content_setting, source));
-    }
-  }
-
-  // For camera and microphone, we do not have policy exceptions, but we do have
-  // the policy-set allowed URLs, which should be displayed in the same manner.
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-    auto& policy_exceptions = all_provider_exceptions
-        [HostContentSettingsMap::GetProviderTypeFromSource(kPolicyProviderId)];
-    DCHECK(policy_exceptions.empty());
-    GetPolicyAllowedUrls(type, &policy_exceptions);
-  }
-
-  for (auto& one_provider_exceptions : all_provider_exceptions) {
-    for (auto& exception : one_provider_exceptions)
-      exceptions->Append(std::move(exception));
-  }
 }
 
 void ContentSettingsHandler::GetChooserExceptionsFromProfile(

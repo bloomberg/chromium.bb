@@ -78,7 +78,7 @@ Polymer({
   addCategory_: function(category) {
     var icon = this.computeIconForContentCategory(category);
     var title = this.computeTitleForContentCategory(category);
-    var prefsProxy = settings.SiteSettingsPrefsBrowserProxy.getInstance();
+    var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
     prefsProxy.getDefaultValueForContentType(
         category).then(function(enabled) {
           var description = this.computeCategoryDesc(category, enabled, false);

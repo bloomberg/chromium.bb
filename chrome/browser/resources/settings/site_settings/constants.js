@@ -33,8 +33,22 @@ cr.define('settings', function() {
     ASK: 3,
   };
 
+  /**
+   * A category value to use for the All Sites list.
+   * @const {number}
+   */
+  var ALL_SITES = -1;
+
+  /**
+   * An invalid subtype value.
+   * @const {number}
+   */
+  var INVALID_CATEGORY_SUBTYPE = -1;
+
   return {
     ContentSettingsTypes: ContentSettingsTypes,
     PermissionValues: PermissionValues,
+    ALL_SITES: ALL_SITES,
+    INVALID_CATEGORY_SUBTYPE: INVALID_CATEGORY_SUBTYPE,
   };
 });

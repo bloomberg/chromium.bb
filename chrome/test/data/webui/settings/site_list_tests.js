@@ -13,133 +13,155 @@ cr.define('site_list', function() {
       var testElement;
 
       /**
+       * The mock proxy object to use during test.
+       * @type {TestSiteSettingsPrefsBrowserProxy}
+       */
+      var browserProxy = null;
+
+      /**
        * An example pref with 2 blocked location items and 2 allowed.
+       * @type {SiteSettingsPref}
        */
       var prefs = {
-        profile: {
-          content_settings: {
-            exceptions: {
-              geolocation: {
-                value: {
-                  'https:\/\/foo-allow.com:443,https:\/\/foo-allow.com:443': {
-                    setting: 1,
-                  },
-                  'https:\/\/bar-allow.com:443,https:\/\/bar-allow.com:443': {
-                    setting: 1,
-                  },
-                  'https:\/\/foo-block.com:443,https:\/\/foo-block.com:443': {
-                    setting: 2,
-                  },
-                  'https:\/\/bar-block.com:443,https:\/\/bar-block.com:443': {
-                    setting: 2,
-                  }
-                },
-              },
+        exceptions: {
+          location: [
+            {
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
             },
-          },
-        },
+            {
+              embeddingOrigin: 'https://bar-allow.com:443',
+              origin: 'https://bar-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
+            },
+            {
+              embeddingOrigin: 'https://foo-block.com:443',
+              origin: 'https://foo-block.com:443',
+              setting: 'block',
+              source: 'preference',
+            },
+            {
+              embeddingOrigin: 'https://bar-block.com:443',
+              origin: 'https://bar-block.com:443',
+              setting: 'block',
+              source: 'preference',
+            },
+          ]
+        }
+      };
+
+      /**
+       * An example pref with mixed schemes (present and absent).
+       * @type {SiteSettingsPref}
+       */
+      var prefsMixedSchemes = {
+        exceptions: {
+          location: [
+            {
+              embeddingOrigin: 'https://foo-allow.com',
+              origin: 'https://foo-allow.com',
+              setting: 'allow',
+              source: 'preference',
+            },
+            {
+              embeddingOrigin: 'bar-allow.com',
+              origin: 'bar-allow.com',
+              setting: 'allow',
+              source: 'preference',
+            },
+          ]
+        }
       };
 
       /**
        * An example pref with multiple categories and multiple allow/block
        * state.
+       * @type {SiteSettingsPref}
        */
       var prefsVarious = {
-        profile: {
-          content_settings: {
-            exceptions: {
-              geolocation: {
-                value: {
-                  'https:\/\/foo.com,https:\/\/foo.com': {
-                    setting: 1,
-                  },
-                  'https:\/\/bar.com,https:\/\/bar.com': {
-                    setting: 2,
-                  },
-                },
-              },
-              notifications: {
-                value: {
-                  'https:\/\/google.com,https:\/\/google.com': {
-                    setting: 2,
-                  },
-                  'https:\/\/bar.com,https:\/\/bar.com': {
-                    setting: 2,
-                  },
-                  'https:\/\/foo.com,https:\/\/foo.com': {
-                    setting: 2,
-                  },
-                },
-              },
-              cookies: {},
-              images: {},
-              javascript: {},
-              popups: {},
-              fullscreen: {},
-              media_stream_mic: {},
-              media_stream_camera: {},
+        exceptions: {
+          location: [
+            {
+              embeddingOrigin: 'https://foo.com',
+              origin: 'https://foo.com',
+              setting: 'allow',
+              source: 'preference',
             },
-          },
-        },
+            {
+              embeddingOrigin: 'https://bar.com',
+              origin: 'https://bar.com',
+              setting: 'block',
+              source: 'preference',
+            },
+          ],
+          notifications: [
+            {
+              embeddingOrigin: 'https://google.com',
+              origin: 'https://google.com',
+              setting: 'block',
+              source: 'preference',
+            },
+            {
+              embeddingOrigin: 'https://bar.com',
+              origin: 'https://bar.com',
+              setting: 'block',
+              source: 'preference',
+            },
+            {
+              embeddingOrigin: 'https://foo.com',
+              origin: 'https://foo.com',
+              setting: 'block',
+              source: 'preference',
+            },
+          ]
+        }
       };
 
       /**
        * An example pref with 1 allowed location item.
+       * @type {SiteSettingsPref}
        */
       var prefsOneEnabled = {
-        'profile': {
-          'content_settings': {
-            'exceptions': {
-              'geolocation': {
-                'value': {
-                  'https:\/\/foo-allow.com:443,https:\/\/foo-allow.com:443': {
-                    'setting': 1,
-                  },
-                },
-              },
+        exceptions: {
+          location: [
+            {
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
             },
-          },
-        },
+          ]
+        }
       };
 
       /**
        * An example pref with 1 blocked location item.
+       * @type {SiteSettingsPref}
        */
       var prefsOneDisabled = {
-        'profile': {
-          'content_settings': {
-            'exceptions': {
-              'geolocation': {
-                'value': {
-                  'https:\/\/foo-block.com:443,https:\/\/foo-block.com:443': {
-                    'setting': 2,
-                  },
-                },
-              },
+        exceptions: {
+          location: [
+            {
+              embeddingOrigin: 'https://foo-block.com:443',
+              origin: 'https://foo-block.com:443',
+              setting: 'block',
+              source: 'preference',
             },
-          },
-        },
-      };
-
-      /**
-       * An example empty pref.
-       */
-      var prefsEmpty = {
-        profile: {
-          content_settings: {
-            exceptions: {
-              geolocation: {}
-            },
-          },
-        },
+          ]
+        }
       };
 
       // Import necessary html before running suite.
       suiteSetup(function() {
+        cr.exportPath('settings_test');
+        settings_test.siteListNotifyForTest = true;
+
         CrSettingsPrefs.setInitialized();
         return PolymerTest.importHtml(
-            'chrome://md-settings/site_settings/site_list.html'
-            );
+            'chrome://md-settings/site_settings/site_list.html');
       });
 
       suiteTeardown(function() {
@@ -148,10 +170,28 @@ cr.define('site_list', function() {
 
       // Initialize a site-list before each test.
       setup(function() {
+        browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+        settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         testElement = document.createElement('settings-site-list');
         document.body.appendChild(testElement);
       });
+
+      /**
+       * Returns a promise that resolves once the site list has been updated.
+       * @param {function()} action is executed after the listener is set up.
+       * @return {!Promise} a Promise fulfilled when the selected item changes.
+       */
+      function runAndResolveWhenSitesChanged(action) {
+        return new Promise(function(resolve, reject) {
+          var handler = function() {
+            testElement.removeEventListener('sites-changed', handler);
+            resolve();
+          };
+          testElement.addEventListener('sites-changed', handler);
+          action();
+        });
+      }
 
       /**
        * Asserts if a menu action is incorrectly hidden.
@@ -175,19 +215,19 @@ cr.define('site_list', function() {
        * Configures the test element as a location category.
        * @param {settings.PermissionValues} subtype Type of list to use: ALLOW
        *     or BLOCK.
-       * @param {dictionary} prefs The prefs to use.
+       * @param Array<dictionary> prefs The prefs to use.
        */
       function setupLocationCategory(subtype, prefs) {
-        testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
+        browserProxy.setPrefs(prefs);
         testElement.categorySubtype = subtype;
         testElement.categoryEnabled = true;
         testElement.allSites = false;
-        testElement.prefs = prefs;
         testElement.currentRoute = {
           page: 'dummy',
           section: 'privacy',
           subpage: ['site-settings', 'site-settings-category-location'],
         };
+        testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
       }
 
       /**
@@ -195,8 +235,8 @@ cr.define('site_list', function() {
        * @param {dictionary} prefs The prefs to use.
        */
       function setupAllSitesCategory(prefs) {
-        testElement.category = -1;
-        testElement.categorySubtype = -1;
+        browserProxy.setPrefs(prefs);
+        testElement.categorySubtype = settings.INVALID_CATEGORY_SUBTYPE;
         testElement.categoryEnabled = true;
         testElement.allSites = true;
         testElement.prefs = prefs;
@@ -205,65 +245,79 @@ cr.define('site_list', function() {
           section: 'privacy',
           subpage: ['site-settings', 'site-settings-category-location'],
         };
+        testElement.category = settings.ALL_SITES;
       }
 
-      test('Empty list', function() {
+      test('getExceptionList API used', function() {
         setupLocationCategory(settings.PermissionValues.ALLOW, prefsEmpty);
-        return CrSettingsPrefs.initialized.then(function() {
-          assertEquals(0, testElement.sites_.length);
+        return browserProxy.whenCalled('getExceptionList').then(
+            function(contentType) {
+              assertEquals(
+                  settings.ContentSettingsTypes.GEOLOCATION, contentType);
+            });
+      });
+
+      test('Empty list', function() {
+        return runAndResolveWhenSitesChanged(function() {
+          setupLocationCategory(settings.PermissionValues.ALLOW, prefsEmpty);
+        }).then(function() {
+          assertEquals(0, testElement.sites.length);
 
           assertTrue(testElement.isAllowList_());
-          assertFalse(testElement.showSiteList_(testElement.sites_, true));
-          assertFalse(testElement.showSiteList_(testElement.sites_, false));
+          assertFalse(testElement.showSiteList_(testElement.sites, true));
+          assertFalse(testElement.showSiteList_(testElement.sites, false));
           assertEquals('Allow - 0', testElement.computeSiteListHeader_(
-              testElement.sites_, true));
+              testElement.sites, true));
           assertEquals('Exceptions - 0', testElement.computeSiteListHeader_(
-              testElement.sites_, false));
+              testElement.sites, false));
         }.bind(this));
       });
 
       test('initial ALLOW state is correct', function() {
-        setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
-        return CrSettingsPrefs.initialized.then(function() {
-          assertEquals(2, testElement.sites_.length);
-          assertEquals('https://bar-allow.com:443', testElement.sites_[0]);
-
+        return runAndResolveWhenSitesChanged(function() {
+          setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
+        }).then(function() {
+          assertEquals(2, testElement.sites.length);
+          assertEquals('https://bar-allow.com:443', testElement.sites[0]);
           assertTrue(testElement.isAllowList_());
           assertMenuActionHidden(testElement, 'Allow');
           // Site list should show, no matter what category default is set to.
-          assertTrue(testElement.showSiteList_(testElement.sites_, true));
-          assertTrue(testElement.showSiteList_(testElement.sites_, false));
+          assertTrue(testElement.showSiteList_(testElement.sites, true));
+          assertTrue(testElement.showSiteList_(testElement.sites, false));
           assertEquals('Exceptions - 2', testElement.computeSiteListHeader_(
-              testElement.sites_, false));
+              testElement.sites, false));
           assertEquals('Allow - 2', testElement.computeSiteListHeader_(
-              testElement.sites_, true));
+              testElement.sites, true));
         }.bind(this));
       });
 
       test('initial BLOCK state is correct', function() {
-        setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
-        return CrSettingsPrefs.initialized.then(function() {
-          assertEquals(2, testElement.sites_.length);
-          assertEquals('https://bar-block.com:443', testElement.sites_[0]);
+        return runAndResolveWhenSitesChanged(function() {
+          setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
+        }).then(function() {
+          assertEquals(2, testElement.sites.length);
+          assertEquals('https://bar-block.com:443', testElement.sites[0]);
 
           assertFalse(testElement.isAllowList_());
           assertMenuActionHidden(testElement, 'Block');
           // Site list should only show when category default is enabled.
-          assertFalse(testElement.showSiteList_(testElement.sites_, false));
-          assertTrue(testElement.showSiteList_(testElement.sites_, true));
+          assertFalse(testElement.showSiteList_(testElement.sites, false));
+          assertTrue(testElement.showSiteList_(testElement.sites, true));
           assertEquals('Block - 2', testElement.computeSiteListHeader_(
-              testElement.sites_, true));
+              testElement.sites, true));
         }.bind(this));
       });
 
       test('list items shown and clickable when data is present', function() {
-        setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
-        // Required for firstItem to be found below.
-        Polymer.dom.flush();
-        return CrSettingsPrefs.initialized.then(function() {
-          // Validate that the sites_ gets populated from pre-canned prefs.
-          assertEquals(2, testElement.sites_.length);
-          assertEquals('https://bar-allow.com:443', testElement.sites_[0]);
+        return runAndResolveWhenSitesChanged(function() {
+          setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
+        }).then(function() {
+          // Required for firstItem to be found below.
+          Polymer.dom.flush();
+
+          // Validate that the sites gets populated from pre-canned prefs.
+          assertEquals(2, testElement.sites.length);
+          assertEquals('https://bar-allow.com:443', testElement.sites[0]);
           assertEquals(undefined, testElement.selectedOrigin);
 
           // Validate that the sites are shown in UI and can be selected.
@@ -276,10 +330,11 @@ cr.define('site_list', function() {
       });
 
       test('Block list open when Allow list is empty', function() {
-        // Prefs: One item in Block list, nothing in Allow list.
-        setupLocationCategory(settings.PermissionValues.BLOCK,
-                              prefsOneDisabled);
-        return CrSettingsPrefs.initialized.then(function() {
+        return runAndResolveWhenSitesChanged(function() {
+          // Prefs: One item in Block list, nothing in Allow list.
+          setupLocationCategory(settings.PermissionValues.BLOCK,
+                                prefsOneDisabled);
+        }).then(function() {
           assertFalse(testElement.$.category.hidden);
           assertTrue(testElement.$.category.opened);
           assertNotEquals(0, testElement.$.listContainer.offsetHeight);
@@ -287,9 +342,10 @@ cr.define('site_list', function() {
       });
 
       test('Block list closed when Allow list is not empty', function() {
-        // Prefs: Items in both Block and Allow list.
-        setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
-        return CrSettingsPrefs.initialized.then(function() {
+        return runAndResolveWhenSitesChanged(function() {
+          // Prefs: Items in both Block and Allow list.
+          setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
+        }).then(function() {
           assertFalse(testElement.$.category.hidden);
           assertFalse(testElement.$.category.opened);
           assertEquals(0, testElement.$.listContainer.offsetHeight);
@@ -297,9 +353,11 @@ cr.define('site_list', function() {
       });
 
       test('Allow list is always open (Block list empty)', function() {
-        // Prefs: One item in Allow list, nothing in Block list.
-        setupLocationCategory(settings.PermissionValues.ALLOW, prefsOneEnabled);
-        return CrSettingsPrefs.initialized.then(function() {
+        return runAndResolveWhenSitesChanged(function() {
+          // Prefs: One item in Allow list, nothing in Block list.
+          setupLocationCategory(
+              settings.PermissionValues.ALLOW, prefsOneEnabled);
+        }).then(function() {
           assertFalse(testElement.$.category.hidden);
           assertTrue(testElement.$.category.opened);
           assertNotEquals(0, testElement.$.listContainer.offsetHeight);
@@ -307,9 +365,10 @@ cr.define('site_list', function() {
       });
 
       test('Allow list is always open (Block list non-empty)', function() {
-        // Prefs: Items in both Block and Allow list.
-        setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
-        return CrSettingsPrefs.initialized.then(function() {
+        return runAndResolveWhenSitesChanged(function() {
+          // Prefs: Items in both Block and Allow list.
+          setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
+        }).then(function() {
           assertFalse(testElement.$.category.hidden);
           assertTrue(testElement.$.category.opened);
           assertNotEquals(0, testElement.$.listContainer.offsetHeight);
@@ -317,34 +376,39 @@ cr.define('site_list', function() {
       });
 
       test('Block list hidden when empty', function() {
-        // Prefs: One item in Allow list, nothing in Block list.
-        setupLocationCategory(settings.PermissionValues.BLOCK, prefsOneEnabled);
-        return CrSettingsPrefs.initialized.then(function() {
+        return runAndResolveWhenSitesChanged(function() {
+          // Prefs: One item in Allow list, nothing in Block list.
+          setupLocationCategory(
+              settings.PermissionValues.BLOCK, prefsOneEnabled);
+        }).then(function() {
           assertTrue(testElement.$.category.hidden);
         }.bind(this));
       });
 
       test('Allow list hidden when empty', function() {
-        // Prefs: One item in Block list, nothing in Allow list.
-        setupLocationCategory(settings.PermissionValues.ALLOW,
-                              prefsOneDisabled);
-        return CrSettingsPrefs.initialized.then(function() {
+        return runAndResolveWhenSitesChanged(function() {
+          // Prefs: One item in Block list, nothing in Allow list.
+          setupLocationCategory(settings.PermissionValues.ALLOW,
+                                prefsOneDisabled);
+        }).then(function() {
           assertTrue(testElement.$.category.hidden);
         }.bind(this));
       });
 
       test('All sites category', function() {
-        // Prefs: Multiple and overlapping sites.
-        setupAllSitesCategory(prefsVarious);
-        // Required for firstItem to be found below.
-        Polymer.dom.flush();
-        return CrSettingsPrefs.initialized.then(function() {
+        return runAndResolveWhenSitesChanged(function() {
+          // Prefs: Multiple and overlapping sites.
+          setupAllSitesCategory(prefsVarious);
+        }).then(function() {
+          // Required for firstItem to be found below.
+          Polymer.dom.flush();
+
           assertFalse(testElement.$.category.hidden);
-          // Validate that the sites_ gets populated from pre-canned prefs.
-          assertEquals(3, testElement.sites_.length);
-          assertEquals('https://bar.com', testElement.sites_[0]);
-          assertEquals('https://foo.com', testElement.sites_[1]);
-          assertEquals('https://google.com', testElement.sites_[2]);
+          // Validate that the sites gets populated from pre-canned prefs.
+          assertEquals(3, testElement.sites.length);
+          assertEquals('https://bar.com', testElement.sites[0]);
+          assertEquals('https://foo.com', testElement.sites[1]);
+          assertEquals('https://google.com', testElement.sites[2]);
           assertEquals(undefined, testElement.selectedOrigin);
 
           // Validate that the sites are shown in UI and can be selected.
@@ -353,6 +417,16 @@ cr.define('site_list', function() {
           assertNotEquals(undefined, clickable);
           MockInteractions.tap(clickable);
           assertEquals('https://foo.com', testElement.selectedOrigin);
+        }.bind(this));
+      });
+
+      test('Mixed schemes (present and absent)', function() {
+        return runAndResolveWhenSitesChanged(function() {
+          // Prefs: One item with scheme and one without.
+          setupLocationCategory(settings.PermissionValues.ALLOW,
+                                prefsMixedSchemes);
+        }).then(function() {
+          // No further checks needed. If this fails, it will hang the test.
         }.bind(this));
       });
     });
