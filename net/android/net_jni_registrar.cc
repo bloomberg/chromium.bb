@@ -16,7 +16,7 @@
 #include "net/proxy/proxy_config_service_android.h"
 
 #if defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
-#include "net/base/net_string_util_icu_alternatives_android.h"
+#include "net/base/net_string_util_icu_alternatives_android.h"  // nogncheck
 #endif
 
 namespace net {

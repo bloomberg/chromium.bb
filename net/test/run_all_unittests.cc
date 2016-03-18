@@ -21,11 +21,11 @@
 #endif
 
 #if defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
-#include "url/android/url_jni_registrar.h"
+#include "url/android/url_jni_registrar.h"  // nogncheck
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/embedder.h"  // nogncheck
 #endif
 
 using net::internal::ClientSocketPoolBaseHelper;

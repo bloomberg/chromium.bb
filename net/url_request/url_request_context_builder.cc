@@ -22,7 +22,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
-#include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
@@ -45,11 +44,12 @@
 #include "net/url_request/url_request_throttler_manager.h"
 
 #if !defined(DISABLE_FILE_SUPPORT)
-#include "net/url_request/file_protocol_handler.h"
+#include "net/url_request/file_protocol_handler.h"  // nogncheck
 #endif
 
 #if !defined(DISABLE_FTP_SUPPORT)
-#include "net/url_request/ftp_protocol_handler.h"
+#include "net/ftp/ftp_network_layer.h"             // nogncheck
+#include "net/url_request/ftp_protocol_handler.h"  // nogncheck
 #endif
 
 namespace net {

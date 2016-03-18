@@ -13,7 +13,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
-#include "net/ftp/ftp_transaction_factory.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"

@@ -1302,6 +1302,19 @@
       'url_request/view_cache_helper.h',
       'url_request/websocket_handshake_userdata_key.cc',
       'url_request/websocket_handshake_userdata_key.h',
+
+      # WebSockets headers are included net/http files. Since net/http can be
+      # built without linking net/websockets code, the uses of the websockets
+      # headers from url_request are carefully written not to introduce link-
+      # time dependencies.
+      #
+      # To make "gn check" validate the header usage properly, these are the
+      # websocket headers needed by the shared net code, which are duplicated
+      # unconditionally here from the conditional websockets list below.
+      'websockets/websocket_handshake_stream_base.h',
+      'websockets/websocket_stream.h',
+      'websockets/websocket_handshake_request_info.h',
+      'websockets/websocket_handshake_response_info.h',
     ],
     'net_extras_sources': [
       'extras/sqlite/cookie_crypto_delegate.h',

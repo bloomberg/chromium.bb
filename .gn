@@ -61,7 +61,7 @@ check_targets = [
   "mojo/*",
 
   #"//native_client/*",
-  #"//net/*",  # Needs GN binary changes to work on Android.
+  "//net/*",
 
   #"//pdf/*",  # Medium-hard.
   #"//ppapi/*",  # Lots of errors.
