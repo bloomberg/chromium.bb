@@ -2145,7 +2145,8 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
     image_decode_controller_ = make_scoped_ptr(new GpuImageDecodeController);
   } else {
     image_decode_controller_ =
-        make_scoped_ptr(new SoftwareImageDecodeController);
+        make_scoped_ptr(new SoftwareImageDecodeController(
+            settings_.renderer_settings.preferred_tile_format));
   }
 
   // TODO(vmpstr): Initialize tile task limit at ctor time.

@@ -107,12 +107,44 @@ SkFilterQuality GetDecodedFilterQuality(const ImageDecodeControllerKey& key) {
   return std::min(key.filter_quality(), kLow_SkFilterQuality);
 }
 
+SkColorType SkColorTypeForDecoding(ResourceFormat format) {
+  // Use kN32_SkColorType if there is no corresponding SkColorType.
+  switch (format) {
+    case RGBA_4444:
+      return kARGB_4444_SkColorType;
+    case RGBA_8888:
+    case BGRA_8888:
+      return kN32_SkColorType;
+    case ALPHA_8:
+      return kAlpha_8_SkColorType;
+    case RGB_565:
+      return kRGB_565_SkColorType;
+    case LUMINANCE_8:
+      return kGray_8_SkColorType;
+    case ETC1:
+    case RED_8:
+    case LUMINANCE_F16:
+      return kN32_SkColorType;
+  }
+  NOTREACHED();
+  return kN32_SkColorType;
+}
+
+SkImageInfo CreateImageInfo(size_t width,
+                            size_t height,
+                            ResourceFormat format) {
+  return SkImageInfo::Make(width, height, SkColorTypeForDecoding(format),
+                           kPremul_SkAlphaType);
+}
+
 }  // namespace
 
-SoftwareImageDecodeController::SoftwareImageDecodeController()
+SoftwareImageDecodeController::SoftwareImageDecodeController(
+    ResourceFormat format)
     : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
       at_raster_decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
-      locked_images_budget_(kLockedMemoryLimitBytes) {}
+      locked_images_budget_(kLockedMemoryLimitBytes),
+      format_(format) {}
 
 SoftwareImageDecodeController::~SoftwareImageDecodeController() {
   DCHECK_EQ(0u, decoded_images_ref_counts_.size());
@@ -345,7 +377,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
   // just read pixels into the final memory.
   if (key.can_use_original_decode()) {
     SkImageInfo decoded_info =
-        SkImageInfo::MakeN32Premul(image->width(), image->height());
+        CreateImageInfo(image->width(), image->height(), format_);
     scoped_ptr<base::DiscardableMemory> decoded_pixels;
     {
       TRACE_EVENT0(
@@ -414,8 +446,8 @@ SoftwareImageDecodeController::DecodeImageInternal(
   // Now we have a decoded_pixmap which represents the src_rect at the
   // original scale. All we need to do is scale it.
   DCHECK(!key.target_size().IsEmpty());
-  SkImageInfo scaled_info = SkImageInfo::MakeN32Premul(
-      key.target_size().width(), key.target_size().height());
+  SkImageInfo scaled_info = CreateImageInfo(
+      key.target_size().width(), key.target_size().height(), format_);
   scoped_ptr<base::DiscardableMemory> scaled_pixels;
   {
     TRACE_EVENT0(

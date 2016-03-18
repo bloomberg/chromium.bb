@@ -96,7 +96,7 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   using ImageKey = ImageDecodeControllerKey;
   using ImageKeyHash = ImageDecodeControllerKeyHash;
 
-  SoftwareImageDecodeController();
+  explicit SoftwareImageDecodeController(ResourceFormat format = RGBA_8888);
   ~SoftwareImageDecodeController() override;
 
   // ImageDecodeController overrides.
@@ -221,6 +221,8 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   // image the first time we see it. This mimics the previous behavior and
   // should over time change as the compositor starts to handle more cases.
   std::unordered_set<uint32_t> prerolled_images_;
+
+  ResourceFormat format_;
 };
 
 }  // namespace cc
