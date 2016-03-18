@@ -10,6 +10,13 @@ from test_utils import (MakeRequest,
 
 
 class ResourceSackTestCase(unittest.TestCase):
+  def SimpleGraph(self, node_names):
+    """Create a simple graph from a list of nodes."""
+    requests = [MakeRequest(node_names[0], 'null')]
+    for n in node_names[1:]:
+      requests.append(MakeRequest(n, node_names[0]))
+    return TestResourceGraph.FromRequestList(requests)
+
   def test_NodeMerge(self):
     g1 = TestResourceGraph.FromRequestList([
         MakeRequest(0, 'null'),
@@ -66,10 +73,8 @@ class ResourceSackTestCase(unittest.TestCase):
     shape1 = [MakeRequest(0, 'null'), MakeRequest(1, 0), MakeRequest(2, 0)]
     shape2 = [MakeRequest(0, 'null'), MakeRequest(1, 0),
               MakeRequest(3, 0), MakeRequest(4, 1)]
-    graphs = [TestResourceGraph.FromRequestList(shape1),
-              TestResourceGraph.FromRequestList(shape1),
-              TestResourceGraph.FromRequestList(shape1),
-              TestResourceGraph.FromRequestList(shape2)]
+    graphs = [TestResourceGraph.FromRequestList(s)
+              for s in (shape1, shape1,  shape1, shape2)]
     sack = resource_sack.GraphSack()
     for g in graphs:
       sack.ConsumeGraph(g)
@@ -88,6 +93,46 @@ class ResourceSackTestCase(unittest.TestCase):
     self.assertAlmostEqual(0.667, labels['2/'].GetOccurrence('test'), 3)
     self.assertAlmostEqual(1, labels['3/'].GetOccurrence('test'), 3)
     self.assertAlmostEqual(0, labels['4/'].GetOccurrence('test'), 3)
+
+  def test_Core(self):
+    # We will use a core threshold of 0.5 to make it easier to define
+    # graphs. Resources 0 and 1 are core and others are not.
+    graphs = [self.SimpleGraph([0, 1, 2]),
+              self.SimpleGraph([0, 1, 3]),
+              self.SimpleGraph([0, 1, 4]),
+              self.SimpleGraph([0, 5])]
+    sack = resource_sack.GraphSack()
+    sack.CORE_THRESHOLD = 0.5
+    for g in graphs:
+      sack.ConsumeGraph(g)
+    self.assertEqual(set(['0/', '1/']), sack.CoreSet())
+
+  def test_IntersectingCore(self):
+    # Graph set A has core set {0, 1} and B {0, 2} so the final core set should
+    # be {0}. Set C makes sure we restrict core computation to tags A and B.
+    set_A = [self.SimpleGraph([0, 1, 2]),
+             self.SimpleGraph([0, 1, 3])]
+    set_B = [self.SimpleGraph([0, 2, 3]),
+             self.SimpleGraph([0, 2, 1])]
+    set_C = [self.SimpleGraph([2 * i + 4, 2 * i + 5]) for i in xrange(5)]
+    sack = resource_sack.GraphSack()
+    sack.CORE_THRESHOLD = 0.5
+    for g in set_A + set_B + set_C:
+      sack.ConsumeGraph(g)
+    self.assertEqual(set(), sack.CoreSet())
+    self.assertEqual(set(['0/', '1/']), sack.CoreSet(set_A))
+    self.assertEqual(set(['0/', '2/']), sack.CoreSet(set_B))
+    self.assertEqual(set(), sack.CoreSet(set_C))
+    self.assertEqual(set(['0/']), sack.CoreSet(set_A, set_B))
+    self.assertEqual(set(), sack.CoreSet(set_A, set_B, set_C))
+
+  def test_Simililarity(self):
+    self.assertAlmostEqual(
+        0.5,
+        resource_sack.GraphSack.CoreSimilarity(
+            set([1, 2, 3]), set([1, 3, 4])))
+    self.assertEqual(
+        0, resource_sack.GraphSack.CoreSimilarity(set(), set()))
 
 
 if __name__ == '__main__':

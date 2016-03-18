@@ -32,6 +32,9 @@ class GraphSack(object):
   DAG. The edges are annotated with list of graphs and nodes that generated
   them.
   """
+  # See CoreSet().
+  CORE_THRESHOLD = 0.8
+
   _GraphInfo = collections.namedtuple('_GraphInfo', (
       'cost',   # The graph cost (aka critical path length).
       'total_costs',  # A vector by node index of total cost of each node.
@@ -84,6 +87,50 @@ class GraphSack(object):
     self._url_to_bag[node.Url()].AddNode(graph, node)
     return self._url_to_bag[node.Url()]
 
+  def CoreSet(self, *graph_sets):
+    """Compute the core set of this sack.
+
+    The core set of a sack is the set of resource that are common to most of the
+    graphs in the sack. A core set of a set of graphs are the resources that
+    appear with frequency at least CORE_THRESHOLD. For a collection of graph
+    sets, for instance pulling the same page under different network
+    connections, we intersect the core sets to produce a page core set that
+    describes the key resources used by the page. See https://goo.gl/F1BoEB for
+    context and discussion.
+
+    Args:
+      graph_sets: one or more collection of graphs to compute core sets. If one
+        graph set is given, its core set is computed. If more than one set is
+        given, the page core set of all sets is computed (the intersection of
+        core sets). If no graph set is given, the core of all graphs is
+        computed.
+
+    Returns:
+      A set of bag labels (as strings) in the core set.
+    """
+    if not graph_sets:
+      graph_sets = [self._graph_info.keys()]
+    return reduce(lambda a, b: a & b,
+                  (self._SingleCore(s) for s in graph_sets))
+
+  @classmethod
+  def CoreSimilarity(cls, a, b):
+    """Compute the similarity of two core sets.
+
+    We use the Jaccard index. See https://goo.gl/F1BoEB for discussion.
+
+    Args:
+      a: The first core set, as a set of strings.
+      b: The second core set, as a set of strings.
+
+    Returns:
+      A similarity score between zero and one. If both sets are empty the
+      similarity is zero.
+    """
+    if not a and not b:
+      return 0
+    return float(len(a & b)) / len(a | b)
+
   def FilterOccurrence(self, tag, filter_from_graph):
     """Accumulate filter occurrences for each bag in the graph.
 
@@ -101,12 +148,27 @@ class GraphSack(object):
       bag.MarkOccurrence(tag, filter_from_graph)
 
   @property
+  def num_graphs(self):
+    return len(self.graph_info)
+
+  @property
   def graph_info(self):
     return self._graph_info
 
   @property
   def bags(self):
     return self._bags
+
+  def _SingleCore(self, graph_set):
+    core = set()
+    graph_set = set(graph_set)
+    num_graphs = len(graph_set)
+    for b in self.bags:
+      count = sum([g in graph_set for g in b.graphs])
+      if float(count) / num_graphs > self.CORE_THRESHOLD:
+        core.add(b.label)
+    return core
+
 
 class Bag(dag.Node):
   def __init__(self, sack, index, url):
@@ -227,7 +289,10 @@ class Bag(dag.Node):
   def _MakeShortname(cls, url):
     parsed = urlparse.urlparse(url)
     if parsed.scheme == 'data':
-      kind, _ = parsed.path.split(';', 1)
+      if ';' in parsed.path:
+        kind, _ = parsed.path.split(';', 1)
+      else:
+        kind, _ = parsed.path.split(',', 1)
       return 'data:' + kind
     path = parsed.path[:10]
     hostname = parsed.hostname if parsed.hostname else '?.?.?'
