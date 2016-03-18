@@ -873,7 +873,6 @@ source_set("browser") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//third_party/wtl",
-      "//ui/metro_viewer",
     ]
 
     all_dependent_configs = [ ":browser_win_linker_flags" ]

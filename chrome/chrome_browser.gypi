@@ -3871,7 +3871,6 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             '../third_party/kasko/kasko.gyp:kasko',
-            '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
           ],

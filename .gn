@@ -103,7 +103,6 @@ check_targets = [
   "//ui/keyboard/*",
   "//ui/login/*",
   "//ui/message_center/*",
-  "//ui/metro_viewer/*",
   "//ui/mojo/*",
   "//ui/native_theme/*",
   "//ui/platform_window/*",
