@@ -123,14 +123,6 @@ const char* BubbleDialogDelegateView::GetClassName() const {
   return kViewClassName;
 }
 
-void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
-  DCHECK(GetBubbleFrameView());
-  if (widget == GetWidget() && close_reason_ == CloseReason::UNKNOWN &&
-      GetBubbleFrameView()->close_button_clicked()) {
-    close_reason_ = CloseReason::CLOSE_BUTTON;
-  }
-}
-
 void BubbleDialogDelegateView::OnWidgetDestroying(Widget* widget) {
   if (anchor_widget() == widget)
     SetAnchorView(NULL);
@@ -155,11 +147,8 @@ void BubbleDialogDelegateView::OnWidgetVisibilityChanged(Widget* widget,
 
 void BubbleDialogDelegateView::OnWidgetActivationChanged(Widget* widget,
                                                          bool active) {
-  if (close_on_deactivate() && widget == GetWidget() && !active) {
-    if (close_reason_ == CloseReason::UNKNOWN)
-      close_reason_ = CloseReason::DEACTIVATION;
+  if (close_on_deactivate() && widget == GetWidget() && !active)
     GetWidget()->Close();
-  }
 }
 
 void BubbleDialogDelegateView::OnWidgetBoundsChanged(
@@ -225,8 +214,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       accept_events_(true),
       border_accepts_events_(true),
       adjust_if_offscreen_(true),
-      parent_window_(NULL),
-      close_reason_(CloseReason::UNKNOWN) {
+      parent_window_(NULL) {
   if (anchor_view)
     SetAnchorView(anchor_view);
   UpdateColorsFromTheme(GetNativeTheme());

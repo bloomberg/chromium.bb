@@ -563,6 +563,7 @@
       'animation/square_ink_drop_animation_unittest.cc',
       'bubble/bubble_border_unittest.cc',
       'bubble/bubble_delegate_unittest.cc',
+      'bubble/bubble_dialog_delegate_unittest.cc',
       'bubble/bubble_frame_view_unittest.cc',
       'bubble/bubble_window_targeter_unittest.cc',
       'cocoa/bridged_native_widget_unittest.mm',

@@ -48,7 +48,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   const char* GetClassName() const override;
 
   // WidgetObserver overrides:
-  void OnWidgetClosing(Widget* widget) override;
   void OnWidgetDestroying(Widget* widget) override;
   void OnWidgetVisibilityChanging(Widget* widget, bool visible) override;
   void OnWidgetVisibilityChanged(Widget* widget, bool visible) override;
@@ -94,8 +93,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   bool adjust_if_offscreen() const { return adjust_if_offscreen_; }
   void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
-
-  CloseReason close_reason() const { return close_reason_; }
 
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect() const;
@@ -199,8 +196,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // Parent native window of the bubble.
   gfx::NativeView parent_window_;
-
-  CloseReason close_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleDialogDelegateView);
 };

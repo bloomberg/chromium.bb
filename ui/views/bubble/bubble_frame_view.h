@@ -92,6 +92,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, GetBoundsForClientView);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateTest, CloseMethods);
 
   // Mirrors the bubble's arrow location on the |vertical| or horizontal axis,
   // if the generated window bounds don't fit in the monitor bounds.

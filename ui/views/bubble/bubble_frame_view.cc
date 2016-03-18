@@ -141,7 +141,8 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTCLOSE;
 
   // Allow dialogs to show the system menu and be dragged.
-  if (GetWidget()->widget_delegate()->AsDialogDelegate()) {
+  if (GetWidget()->widget_delegate()->AsDialogDelegate() &&
+      !GetWidget()->widget_delegate()->AsBubbleDialogDelegate()) {
     gfx::Rect sys_rect(0, 0, title_->x(), title_->y());
     sys_rect.set_origin(gfx::Point(GetMirroredXForRect(sys_rect), 0));
     if (sys_rect.Contains(point))
