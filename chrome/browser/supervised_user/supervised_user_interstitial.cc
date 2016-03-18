@@ -53,17 +53,6 @@ using content::WebContents;
 
 namespace {
 
-static const int kAvatarSize1x = 45;
-static const int kAvatarSize2x = 90;
-
-std::string BuildAvatarImageUrl(const std::string& url, int size) {
-  std::string result = url;
-  size_t slash = result.rfind('/');
-  if (slash != std::string::npos)
-    result.insert(slash, "/s" + base::IntToString(size));
-  return result;
-}
-
 class TabCloser : public content::WebContentsUserData<TabCloser> {
  public:
   static void MaybeClose(WebContents* web_contents) {
@@ -124,7 +113,7 @@ content::InterstitialPageDelegate::TypeID
 void SupervisedUserInterstitial::Show(
     WebContents* web_contents,
     const GURL& url,
-    SupervisedUserURLFilter::FilteringBehaviorReason reason,
+    supervised_user_error_page::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback) {
   SupervisedUserInterstitial* interstitial =
       new SupervisedUserInterstitial(web_contents, url, reason, callback);
@@ -138,7 +127,7 @@ void SupervisedUserInterstitial::Show(
 SupervisedUserInterstitial::SupervisedUserInterstitial(
     WebContents* web_contents,
     const GURL& url,
-    SupervisedUserURLFilter::FilteringBehaviorReason reason,
+    supervised_user_error_page::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback)
     : web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
@@ -201,32 +190,11 @@ bool SupervisedUserInterstitial::Init() {
 // static
 std::string SupervisedUserInterstitial::GetHTMLContents(
     Profile* profile,
-    SupervisedUserURLFilter::FilteringBehaviorReason reason) {
-  base::DictionaryValue strings;
-  strings.SetString("blockPageTitle",
-                    l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_TITLE));
+    supervised_user_error_page::FilteringBehaviorReason reason) {
+  bool is_child_account = profile->IsChild();
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
-
-  bool allow_access_requests = supervised_user_service->AccessRequestsEnabled();
-  strings.SetBoolean("allowAccessRequests", allow_access_requests);
-
-  std::string profile_image_url = profile->GetPrefs()->GetString(
-      prefs::kSupervisedUserCustodianProfileImageURL);
-  strings.SetString("avatarURL1x", BuildAvatarImageUrl(profile_image_url,
-                                                       kAvatarSize1x));
-  strings.SetString("avatarURL2x", BuildAvatarImageUrl(profile_image_url,
-                                                       kAvatarSize2x));
-
-  std::string profile_image_url2 = profile->GetPrefs()->GetString(
-      prefs::kSupervisedUserSecondCustodianProfileImageURL);
-  strings.SetString("secondAvatarURL1x", BuildAvatarImageUrl(profile_image_url2,
-                                                             kAvatarSize1x));
-  strings.SetString("secondAvatarURL2x", BuildAvatarImageUrl(profile_image_url2,
-                                                             kAvatarSize2x));
-
-  bool is_child_account = profile->IsChild();
 
   base::string16 custodian =
       base::UTF8ToUTF16(supervised_user_service->GetCustodianName());
@@ -236,83 +204,17 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
       base::UTF8ToUTF16(supervised_user_service->GetCustodianEmailAddress());
   base::string16 second_custodian_email = base::UTF8ToUTF16(
       supervised_user_service->GetSecondCustodianEmailAddress());
-  strings.SetString("custodianName", custodian);
-  strings.SetString("custodianEmail", custodian_email);
-  strings.SetString("secondCustodianName", second_custodian);
-  strings.SetString("secondCustodianEmail", second_custodian_email);
+  std::string profile_image_url = profile->GetPrefs()->GetString(
+      prefs::kSupervisedUserCustodianProfileImageURL);
+  std::string profile_image_url2 = profile->GetPrefs()->GetString(
+      prefs::kSupervisedUserSecondCustodianProfileImageURL);
 
-  base::string16 block_message;
-  if (allow_access_requests) {
-    if (is_child_account) {
-      block_message = l10n_util::GetStringUTF16(
-          second_custodian.empty()
-              ? IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT
-              : IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT);
-    } else {
-      block_message = l10n_util::GetStringFUTF16(
-          IDS_BLOCK_INTERSTITIAL_MESSAGE, custodian);
-    }
-  } else {
-    block_message = l10n_util::GetStringUTF16(
-        IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED);
-  }
-  strings.SetString("blockPageMessage", block_message);
-  strings.SetString("blockReasonMessage", l10n_util::GetStringUTF16(
-      SupervisedUserURLFilter::GetBlockMessageID(
-          reason, is_child_account, second_custodian.empty())));
-  strings.SetString("blockReasonHeader", l10n_util::GetStringUTF16(
-      SupervisedUserURLFilter::GetBlockHeaderID(reason)));
-  bool show_feedback = false;
-#if defined(GOOGLE_CHROME_BUILD)
-  show_feedback =
-      is_child_account && SupervisedUserURLFilter::ReasonIsAutomatic(reason);
-#endif
-  strings.SetBoolean("showFeedbackLink", show_feedback);
-  strings.SetString("feedbackLink",
-      l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_SEND_FEEDBACK));
+  bool allow_access_requests = supervised_user_service->AccessRequestsEnabled();
 
-  strings.SetString("backButton", l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
-  strings.SetString("requestAccessButton", l10n_util::GetStringUTF16(
-      IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON));
-
-  strings.SetString("showDetailsLink", l10n_util::GetStringUTF16(
-      IDS_BLOCK_INTERSTITIAL_SHOW_DETAILS));
-  strings.SetString("hideDetailsLink", l10n_util::GetStringUTF16(
-        IDS_BLOCK_INTERSTITIAL_HIDE_DETAILS));
-
-  base::string16 request_sent_message;
-  base::string16 request_failed_message;
-  if (is_child_account) {
-    if (second_custodian.empty()) {
-      request_sent_message = l10n_util::GetStringUTF16(
-          IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT);
-      request_failed_message = l10n_util::GetStringUTF16(
-          IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_SINGLE_PARENT);
-    } else {
-      request_sent_message = l10n_util::GetStringUTF16(
-          IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT);
-      request_failed_message = l10n_util::GetStringUTF16(
-          IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE_MULTI_PARENT);
-    }
-  } else {
-    request_sent_message = l10n_util::GetStringFUTF16(
-        IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE, custodian);
-    request_failed_message = l10n_util::GetStringFUTF16(
-        IDS_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE, custodian);
-  }
-  strings.SetString("requestSentMessage", request_sent_message);
-  strings.SetString("requestFailedMessage", request_failed_message);
-
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, &strings);
-
-  std::string html =
-      ResourceBundle::GetSharedInstance()
-          .GetRawDataResource(IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML)
-          .as_string();
-  webui::AppendWebUiCssTextDefaults(&html);
-
-  return webui::GetI18nTemplateHtml(html, &strings);
+  return supervised_user_error_page::BuildHtml(
+      allow_access_requests, profile_image_url, profile_image_url2, custodian,
+      custodian_email, second_custodian, second_custodian_email,
+      is_child_account, reason, g_browser_process->GetApplicationLocale());
 }
 
 std::string SupervisedUserInterstitial::GetHTMLContents() {
@@ -363,8 +265,8 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
       base::UTF8ToUTF16(supervised_user_service->GetSecondCustodianName());
 
   if (command == "\"feedback\"") {
-    base::string16 reason = l10n_util::GetStringUTF16(
-        SupervisedUserURLFilter::GetBlockMessageID(
+    base::string16 reason =
+        l10n_util::GetStringUTF16(supervised_user_error_page::GetBlockMessageID(
             reason_, true, second_custodian.empty()));
     std::string message = l10n_util::GetStringFUTF8(
         IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT, reason);

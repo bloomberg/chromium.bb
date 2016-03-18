@@ -170,6 +170,7 @@ source_set("browser") {
     "//components/startup_metric_utils/common",
     "//components/strings",
     "//components/suggestions",
+    "//components/supervised_user_error_page",
     "//components/sync_bookmarks",
     "//components/sync_driver",
     "//components/sync_sessions",

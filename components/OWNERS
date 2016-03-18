@@ -185,6 +185,9 @@ per-file storage_monitor.gypi=file://components/storage_monitor/OWNERS
 
 per-file suggestions.gypi=file://components/suggestions/OWNERS
 
+per-file supervised_user_error_page.gypi=file://components/supervised_user_error_page/OWNERS
+per-file supervised_user_error_page_strings.grdp=file://components/supervised_user_error_page/OWNERS
+
 per-file sync_driver.gypi=file://components/sync_driver/OWNERS
 
 per-file sync_sessions.gypi=file://components/sync_sessions/OWNERS

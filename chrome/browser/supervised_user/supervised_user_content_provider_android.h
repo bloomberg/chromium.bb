@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#include "components/supervised_user_error_page/supervised_user_error_page.h"
 
 class SupervisedUserService;
 
@@ -39,7 +40,7 @@ class SupervisedUserContentProvider {
   void OnQueryComplete(
       base::android::ScopedJavaGlobalRef<jobject> query_reply_jobj,
       SupervisedUserURLFilter::FilteringBehavior behavior,
-      SupervisedUserURLFilter::FilteringBehaviorReason reason,
+      supervised_user_error_page::FilteringBehaviorReason reason,
       bool /* uncertain */);
   void OnInsertRequestSendComplete(
       base::android::ScopedJavaGlobalRef<jobject> insert_reply_jobj,

@@ -60,6 +60,7 @@ test("components_unittests") {
     "//components/security_state:unit_tests",
     "//components/sessions:unit_tests",
     "//components/suggestions:unit_tests",
+    "//components/supervised_user_error_page:unit_tests",
     "//components/syncable_prefs:unit_tests",
     "//components/translate/core/browser:unit_tests",
     "//components/translate/core/common:unit_tests",

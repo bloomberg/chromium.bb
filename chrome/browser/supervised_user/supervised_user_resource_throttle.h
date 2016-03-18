@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
+#include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "content/public/browser/resource_throttle.h"
 
 namespace net {
@@ -35,10 +36,10 @@ class SupervisedUserResourceThrottle : public content::ResourceThrottle {
   void ShowInterstitialIfNeeded(bool is_redirect, const GURL& url, bool* defer);
   void ShowInterstitial(
       const GURL& url,
-      SupervisedUserURLFilter::FilteringBehaviorReason reason);
+      supervised_user_error_page::FilteringBehaviorReason reason);
   void OnCheckDone(const GURL& url,
                    SupervisedUserURLFilter::FilteringBehavior behavior,
-                   SupervisedUserURLFilter::FilteringBehaviorReason reason,
+                   supervised_user_error_page::FilteringBehaviorReason reason,
                    bool uncertain);
   void OnInterstitialResult(bool continue_request);
 

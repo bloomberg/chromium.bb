@@ -13,6 +13,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -39,7 +40,7 @@ class SupervisedUserNavigationObserver
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter,
       const GURL& url,
-      SupervisedUserURLFilter::FilteringBehaviorReason reason,
+      supervised_user_error_page::FilteringBehaviorReason reason,
       const base::Callback<void(bool)>& callback);
 
   // SupervisedUserServiceObserver implementation.
@@ -48,7 +49,7 @@ class SupervisedUserNavigationObserver
   void URLFilterCheckCallback(
       const GURL& url,
       SupervisedUserURLFilter::FilteringBehavior behavior,
-      SupervisedUserURLFilter::FilteringBehaviorReason reason,
+      supervised_user_error_page::FilteringBehaviorReason reason,
       bool uncertain);
 
  private:

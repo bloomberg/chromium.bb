@@ -24,8 +24,8 @@ h1 {
   border: 3px solid rgb(251, 251, 251);
   border-radius: 50%;
   content: -webkit-image-set(
-      url(../../app/theme/default_100_percent/cros/logo_avatar_circle_blue_color.png) 1x,
-      url(../../app/theme/default_200_percent/cros/logo_avatar_circle_blue_color.png) 2x);
+      url(default_100_percent/logo_avatar_circle_blue_color.png) 1x,
+      url(default_200_percent/logo_avatar_circle_blue_color.png) 2x);
   margin-bottom: 5px;
   margin-right: 15px;
   margin-top: 5px;

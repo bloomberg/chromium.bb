@@ -207,57 +207,6 @@ SupervisedUserURLFilter::BehaviorFromInt(int behavior_value) {
 }
 
 // static
-int SupervisedUserURLFilter::GetBlockMessageID(
-    FilteringBehaviorReason reason, bool is_child_account, bool single_parent) {
-  switch (reason) {
-    case DEFAULT:
-      return is_child_account ?
-          (single_parent ?
-              IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT :
-              IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT) :
-          IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT;
-    case BLACKLIST:
-    case ASYNC_CHECKER:
-      return IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES;
-    case WHITELIST:
-      NOTREACHED();
-      break;
-    case MANUAL:
-      return is_child_account ?
-          (single_parent ?
-              IDS_CHILD_BLOCK_MESSAGE_MANUAL_SINGLE_PARENT :
-              IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT) :
-          IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL;
-  }
-  NOTREACHED();
-  return 0;
-}
-
-// static
-int SupervisedUserURLFilter::GetBlockHeaderID(FilteringBehaviorReason reason) {
-  switch (reason) {
-    case DEFAULT:
-      return IDS_SUPERVISED_USER_BLOCK_HEADER_DEFAULT;
-    case BLACKLIST:
-    case ASYNC_CHECKER:
-      return IDS_SUPERVISED_USER_BLOCK_HEADER_SAFE_SITES;
-    case WHITELIST:
-      NOTREACHED();
-      break;
-    case MANUAL:
-      return IDS_SUPERVISED_USER_BLOCK_HEADER_MANUAL;
-  }
-  NOTREACHED();
-  return 0;
-}
-
-// static
-bool SupervisedUserURLFilter::ReasonIsAutomatic(
-    FilteringBehaviorReason reason) {
-  return reason == ASYNC_CHECKER || reason == BLACKLIST;
-}
-
-// static
 GURL SupervisedUserURLFilter::Normalize(const GURL& url) {
   GURL normalized_url = url;
   GURL::Replacements replacements;
@@ -319,25 +268,25 @@ bool SupervisedUserURLFilter::HostMatchesPattern(const std::string& host,
 
 SupervisedUserURLFilter::FilteringBehavior
 SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
-  FilteringBehaviorReason reason;
+  supervised_user_error_page::FilteringBehaviorReason reason;
   return GetFilteringBehaviorForURL(url, false, &reason);
 }
 
 bool SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
     const GURL& url, FilteringBehavior* behavior) const {
-  FilteringBehaviorReason reason;
+  supervised_user_error_page::FilteringBehaviorReason reason;
   *behavior = GetFilteringBehaviorForURL(url, true, &reason);
-  return reason == MANUAL;
+  return reason == supervised_user_error_page::MANUAL;
 }
 
 SupervisedUserURLFilter::FilteringBehavior
 SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     const GURL& url,
     bool manual_only,
-    FilteringBehaviorReason* reason) const {
+    supervised_user_error_page::FilteringBehaviorReason* reason) const {
   DCHECK(CalledOnValidThread());
 
-  *reason = MANUAL;
+  *reason = supervised_user_error_page::MANUAL;
 
   // URLs with a non-standard scheme (e.g. chrome://) are always allowed.
   if (!HasFilteredScheme(url))
@@ -368,36 +317,38 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
       contents_->url_matcher.MatchURL(url);
 
   if (!matching_ids.empty()) {
-    *reason = WHITELIST;
+    *reason = supervised_user_error_page::WHITELIST;
     return ALLOW;
   }
 
   // Check the list of hostname hashes.
   if (contents_->hostname_hashes.count(HostnameHash(url.host()))) {
-    *reason = WHITELIST;
+    *reason = supervised_user_error_page::WHITELIST;
     return ALLOW;
   }
 
   // Check the static blacklist, unless the default is to block anyway.
   if (!manual_only && default_behavior_ != BLOCK &&
       blacklist_ && blacklist_->HasURL(url)) {
-    *reason = BLACKLIST;
+    *reason = supervised_user_error_page::BLACKLIST;
     return BLOCK;
   }
 
   // Fall back to the default behavior.
-  *reason = DEFAULT;
+  *reason = supervised_user_error_page::DEFAULT;
   return default_behavior_;
 }
 
 bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
     const GURL& url,
     const FilteringBehaviorCallback& callback) const {
-  FilteringBehaviorReason reason = DEFAULT;
+  supervised_user_error_page::FilteringBehaviorReason reason =
+      supervised_user_error_page::DEFAULT;
   FilteringBehavior behavior = GetFilteringBehaviorForURL(url, false, &reason);
   // Any non-default reason trumps the async checker.
   // Also, if we're blocking anyway, then there's no need to check it.
-  if (reason != DEFAULT || behavior == BLOCK || !async_url_checker_) {
+  if (reason != supervised_user_error_page::DEFAULT || behavior == BLOCK ||
+      !async_url_checker_) {
     callback.Run(behavior, reason, false);
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnURLChecked(url, behavior, reason, false));
@@ -546,7 +497,9 @@ void SupervisedUserURLFilter::CheckCallback(
     bool uncertain) const {
   DCHECK(default_behavior_ != BLOCK);
 
-  callback.Run(behavior, ASYNC_CHECKER, uncertain);
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnURLChecked(url, behavior, ASYNC_CHECKER, uncertain));
+  callback.Run(behavior, supervised_user_error_page::ASYNC_CHECKER, uncertain);
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      OnURLChecked(url, behavior, supervised_user_error_page::ASYNC_CHECKER,
+                   uncertain));
 }

@@ -103,7 +103,7 @@ void SupervisedUserContentProvider::RequestInsert(
 void SupervisedUserContentProvider::OnQueryComplete(
     ScopedJavaGlobalRef<jobject> query_reply_jobj,
     SupervisedUserURLFilter::FilteringBehavior behavior,
-    SupervisedUserURLFilter::FilteringBehaviorReason reason,
+    supervised_user_error_page::FilteringBehaviorReason reason,
     bool /* uncertain */) {
   if (behavior != SupervisedUserURLFilter::BLOCK) {
     Java_SupervisedUserQueryReply_onQueryComplete(

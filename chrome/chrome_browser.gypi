@@ -3215,6 +3215,7 @@
         # TODO(fdoray): Remove this once the PreRead field trial has expired.
         # crbug.com/577698
         '../components/components.gyp:startup_metric_utils_common',
+        '../components/components.gyp:supervised_user_error_page',
         '../components/components.gyp:sync_bookmarks',
         '../components/components.gyp:sync_driver',
         '../components/components.gyp:sync_sessions',

@@ -20,6 +20,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -90,17 +91,17 @@ std::string FilteringBehaviorToString(
 }
 
 std::string FilteringBehaviorReasonToString(
-    SupervisedUserURLFilter::FilteringBehaviorReason reason) {
+    supervised_user_error_page::FilteringBehaviorReason reason) {
   switch (reason) {
-    case SupervisedUserURLFilter::DEFAULT:
+    case supervised_user_error_page::DEFAULT:
       return "Default";
-    case SupervisedUserURLFilter::ASYNC_CHECKER:
+    case supervised_user_error_page::ASYNC_CHECKER:
       return "AsyncChecker";
-    case SupervisedUserURLFilter::BLACKLIST:
+    case supervised_user_error_page::BLACKLIST:
       return "Blacklist";
-    case SupervisedUserURLFilter::MANUAL:
+    case supervised_user_error_page::MANUAL:
       return "Manual";
-    case SupervisedUserURLFilter::WHITELIST:
+    case supervised_user_error_page::WHITELIST:
       return "Whitelist";
   }
   return "Unknown/invalid";
@@ -118,7 +119,7 @@ class SupervisedUserInternalsMessageHandler::IOThreadHelper
   using OnURLCheckedCallback =
       base::Callback<void(const GURL&,
                           SupervisedUserURLFilter::FilteringBehavior,
-                          SupervisedUserURLFilter::FilteringBehaviorReason,
+                          supervised_user_error_page::FilteringBehaviorReason,
                           bool uncertain)>;
 
   IOThreadHelper(scoped_refptr<const SupervisedUserURLFilter> filter,
@@ -141,7 +142,7 @@ class SupervisedUserInternalsMessageHandler::IOThreadHelper
   void OnSiteListUpdated() override {}
   void OnURLChecked(const GURL& url,
                     SupervisedUserURLFilter::FilteringBehavior behavior,
-                    SupervisedUserURLFilter::FilteringBehaviorReason reason,
+                    supervised_user_error_page::FilteringBehaviorReason reason,
                     bool uncertain) override {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
@@ -294,7 +295,7 @@ void SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings(
 void SupervisedUserInternalsMessageHandler::OnTryURLResult(
     const std::map<std::string, base::string16>& whitelists,
     SupervisedUserURLFilter::FilteringBehavior behavior,
-    SupervisedUserURLFilter::FilteringBehaviorReason reason,
+    supervised_user_error_page::FilteringBehaviorReason reason,
     bool uncertain) {
   std::vector<std::string> whitelists_list;
   for (const auto& whitelist : whitelists) {
@@ -306,7 +307,7 @@ void SupervisedUserInternalsMessageHandler::OnTryURLResult(
   base::DictionaryValue result;
   result.SetString("allowResult",
                    FilteringBehaviorToString(behavior, uncertain));
-  result.SetBoolean("manual", reason == SupervisedUserURLFilter::MANUAL &&
+  result.SetBoolean("manual", reason == supervised_user_error_page::MANUAL &&
                                   behavior == SupervisedUserURLFilter::ALLOW);
   result.SetString("whitelists", whitelists_str);
   web_ui()->CallJavascriptFunction(
@@ -316,7 +317,7 @@ void SupervisedUserInternalsMessageHandler::OnTryURLResult(
 void SupervisedUserInternalsMessageHandler::OnURLChecked(
     const GURL& url,
     SupervisedUserURLFilter::FilteringBehavior behavior,
-    SupervisedUserURLFilter::FilteringBehaviorReason reason,
+    supervised_user_error_page::FilteringBehaviorReason reason,
     bool uncertain) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::DictionaryValue result;

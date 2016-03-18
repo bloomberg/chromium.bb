@@ -740,6 +740,9 @@
       'suggestions/suggestions_service_unittest.cc',
       'suggestions/suggestions_store_unittest.cc',
     ],
+    'supervised_user_error_page_unittest_sources': [
+      'supervised_user_error_page/supervised_user_error_page_unittest.cc',
+    ],
     'sync_bookmarks_unittest_sources': [
       'sync_bookmarks/bookmark_data_type_controller_unittest.cc',
     ],
@@ -995,6 +998,7 @@
         '<@(ssl_config_unittest_sources)',
         '<@(ssl_errors_unittest_sources)',
         '<@(suggestions_unittest_sources)',
+        '<@(supervised_user_error_page_unittest_sources)',
         '<@(sync_bookmarks_unittest_sources)',
         '<@(sync_driver_unittest_sources)',
         '<@(sync_sessions_unittest_sources)',
@@ -1122,6 +1126,7 @@
         'components.gyp:ssl_config',
         'components.gyp:ssl_errors',
         'components.gyp:suggestions',
+        'components.gyp:supervised_user_error_page',
         'components.gyp:sync_bookmarks',
         'components.gyp:sync_driver',
         'components.gyp:sync_driver_test_support',
