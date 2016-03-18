@@ -86,7 +86,10 @@ InspectorTest.invokeWithTracing = function(functionName, callback, additionalCat
     var categories = "-*,disabled-by-default-devtools.timeline*,devtools.timeline," + WebInspector.TracingModel.TopLevelEventCategory;
     if (additionalCategories)
         categories += "," + additionalCategories;
-    InspectorTest.timelineController()._startRecordingWithCategories(categories, enableJSSampling, tracingStarted);
+    var timelinePanel = WebInspector.panels.timeline;
+    var timelineController = InspectorTest.timelineController();
+    timelinePanel._timelineController = timelineController;
+    timelineController._startRecordingWithCategories(categories, enableJSSampling, tracingStarted);
 
     function tracingStarted()
     {
@@ -96,7 +99,7 @@ InspectorTest.invokeWithTracing = function(functionName, callback, additionalCat
     function onPageActionsDone()
     {
         InspectorTest.addSniffer(WebInspector.panels.timeline, "loadingComplete", callback)
-        InspectorTest.timelineController().stopRecording();
+        timelineController.stopRecording();
     }
 }
 

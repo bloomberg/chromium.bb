@@ -288,9 +288,11 @@ function test()
     timelineController._addCpuProfile(WebInspector.targetManager.mainTarget().id(), null, cpuProfile);
     timelineController.traceEventsCollected(rawTraceEvents);
     timelineController.tracingComplete();
-    var events = InspectorTest.timelineModel().inspectedTargetEvents();
-    events.forEach(e => InspectorTest.addResult(e.name + ": " + e.startTime + " " + (e.selfTime || 0).toFixed(2) + "/" + (e.duration || 0).toFixed(2)));
-    InspectorTest.completeTest();
+    InspectorTest.addSniffer(WebInspector.panels.timeline, "loadingComplete", () => {
+        var events = InspectorTest.timelineModel().inspectedTargetEvents();
+        events.forEach(e => InspectorTest.addResult(e.name + ": " + e.startTime + " " + (e.selfTime || 0).toFixed(2) + "/" + (e.duration || 0).toFixed(2)));
+        InspectorTest.completeTest();
+    });
 }
 
 </script>
