@@ -47,14 +47,14 @@ void GeneratedImage::drawPattern(GraphicsContext& destContext, const FloatRect& 
     SkPictureBuilder builder(tileRect, nullptr, &destContext);
     builder.context().beginRecording(tileRect);
     drawTile(builder.context(), srcRect);
-    RefPtr<const SkPicture> tilePicture = builder.endRecording();
+    RefPtr<SkPicture> tilePicture = builder.endRecording();
 
     AffineTransform patternTransform;
     patternTransform.translate(phase.x(), phase.y());
     patternTransform.scale(scale.width(), scale.height());
     patternTransform.translate(tileRect.x(), tileRect.y());
 
-    RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(tilePicture);
+    RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(tilePicture.release());
     picturePattern->setPatternSpaceTransform(patternTransform);
 
     SkPaint fillPaint = destContext.fillPaint();

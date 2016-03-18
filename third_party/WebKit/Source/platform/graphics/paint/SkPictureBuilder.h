@@ -38,7 +38,7 @@ public:
 
     GraphicsContext& context() { return *m_context; }
 
-    PassRefPtr<const SkPicture> endRecording()
+    PassRefPtr<SkPicture> endRecording()
     {
         m_context->beginRecording(m_bounds);
         m_paintController->endSkippingCache();

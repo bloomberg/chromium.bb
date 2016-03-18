@@ -10,13 +10,13 @@
 
 namespace blink {
 
-PassRefPtr<PicturePattern> PicturePattern::create(PassRefPtr<const SkPicture> picture,
+PassRefPtr<PicturePattern> PicturePattern::create(PassRefPtr<SkPicture> picture,
     RepeatMode repeatMode)
 {
     return adoptRef(new PicturePattern(picture, repeatMode));
 }
 
-PicturePattern::PicturePattern(PassRefPtr<const SkPicture> picture, RepeatMode mode)
+PicturePattern::PicturePattern(PassRefPtr<SkPicture> picture, RepeatMode mode)
     : Pattern(mode)
     , m_tilePicture(picture)
 {
@@ -35,7 +35,7 @@ PassRefPtr<SkShader> PicturePattern::createShader()
     SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
     SkRect tileBounds = m_tilePicture->cullRect();
 
-    return adoptRef(SkShader::CreatePictureShader(m_tilePicture.get(),
+    return fromSkSp(SkShader::MakePictureShader(toSkSp(m_tilePicture),
         SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix, &tileBounds));
 }
 
