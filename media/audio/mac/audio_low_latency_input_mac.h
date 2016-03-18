@@ -39,11 +39,13 @@
 #include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/CoreAudio.h>
 #include <map>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -121,6 +123,10 @@ class MEDIA_EXPORT AUAudioInputStream
   OSStatus DevicePropertyChanged(AudioObjectID object_id,
                                  UInt32 num_addresses,
                                  const AudioObjectPropertyAddress addresses[]);
+
+  // Updates the |device_property_changes_map_| on the main browser thread,
+  // (CrBrowserMain) which is the same thread as this instance is created on.
+  void DevicePropertyChangedOnMainThread(const std::vector<UInt32>& properties);
 
   // Registers OnDevicePropertyChanged() to receive notifications when device
   // properties changes.
@@ -282,6 +288,11 @@ class MEDIA_EXPORT AUAudioInputStream
   UInt32 total_lost_frames_;
   UInt32 largest_glitch_frames_;
   int glitches_detected_;
+
+  // Used to ensure DevicePropertyChangedOnMainThread() is not called when
+  // this object is destroyed.
+  // Note that, all member variables should appear before the WeakPtrFactory.
+  base::WeakPtrFactory<AUAudioInputStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AUAudioInputStream);
 };

@@ -7,6 +7,7 @@
 #include <mach/mach.h>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -202,7 +203,8 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       last_number_of_frames_(0),
       total_lost_frames_(0),
       largest_glitch_frames_(0),
-      glitches_detected_(0) {
+      glitches_detected_(0),
+      weak_factory_(this) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -903,6 +905,19 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   return noErr;
 }
 
+void AUAudioInputStream::DevicePropertyChangedOnMainThread(
+    const std::vector<UInt32>& properties) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(device_listener_is_active_);
+  // Use property as key to a map and increase its value. We are not
+  // interested in all property changes but store all here anyhow.
+  // Filtering will be done later in AddDevicePropertyChangesToUMA();
+  for (auto property : properties) {
+    DVLOG(2) << "=> " << FourCharFormatCodeToString(property);
+    ++device_property_changes_map_[property];
+  }
+}
+
 OSStatus AUAudioInputStream::OnDevicePropertyChanged(
     AudioObjectID object_id,
     UInt32 num_addresses,
@@ -921,14 +936,18 @@ OSStatus AUAudioInputStream::DevicePropertyChanged(
 
   // Listeners will be called when possibly many properties have changed.
   // Consequently, the implementation of a listener must go through the array of
-  // addresses to see what exactly has changed.
+  // addresses to see what exactly has changed. Copy values into a local vector
+  // and update the |device_property_changes_map_| on the main thread to avoid
+  // potential race conditions.
+  std::vector<UInt32> properties;
+  properties.reserve(num_addresses);
   for (UInt32 i = 0; i < num_addresses; ++i) {
-    const UInt32 property = addresses[i].mSelector;
-    // Use selector as key to a map and increase its value. We are not
-    // interested in all property changes but store all here anyhow.
-    // Filtering will be done later in AddDevicePropertyChangesToUMA();
-    ++device_property_changes_map_[property];
+    properties.push_back(addresses[i].mSelector);
   }
+  manager_->GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&AUAudioInputStream::DevicePropertyChangedOnMainThread,
+                 weak_factory_.GetWeakPtr(), properties));
   return noErr;
 }
 
