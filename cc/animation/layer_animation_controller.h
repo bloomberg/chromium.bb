@@ -5,7 +5,7 @@
 #ifndef CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
 #define CC_ANIMATION_LAYER_ANIMATION_CONTROLLER_H_
 
-#include <unordered_set>
+#include <bitset>
 #include <vector>
 
 #include "base/macros.h"
@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/layer_animation_event_observer.h"
+#include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -175,7 +176,9 @@ class CC_EXPORT LayerAnimationController
   explicit LayerAnimationController(int id);
   ~LayerAnimationController();
 
-  using TargetProperties = std::unordered_set<int>;
+  // A set of target properties. TargetProperty must be 0-based enum.
+  using TargetProperties =
+      std::bitset<TargetProperty::LAST_TARGET_PROPERTY + 1>;
 
   void PushNewAnimationsToImplThread(
       LayerAnimationController* controller_impl) const;

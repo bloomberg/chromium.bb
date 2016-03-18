@@ -796,12 +796,13 @@ void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
     if (animations_[i]->run_state() == Animation::STARTING ||
         animations_[i]->run_state() == Animation::RUNNING) {
       if (animations_[i]->affects_active_observers()) {
-        blocked_properties_for_active_observers.insert(
-            animations_[i]->target_property());
+        blocked_properties_for_active_observers[animations_[i]
+                                                    ->target_property()] = true;
       }
       if (animations_[i]->affects_pending_observers()) {
-        blocked_properties_for_pending_observers.insert(
-            animations_[i]->target_property());
+        blocked_properties_for_pending_observers[animations_[i]
+                                                     ->target_property()] =
+            true;
       }
     } else if (animations_[i]->run_state() ==
                Animation::WAITING_FOR_TARGET_AVAILABILITY) {
@@ -825,11 +826,11 @@ void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
           animation_waiting_for_target->affects_active_observers();
       bool affects_pending_observers =
           animation_waiting_for_target->affects_pending_observers();
-      enqueued_properties.insert(
-          animation_waiting_for_target->target_property());
+      enqueued_properties[animation_waiting_for_target->target_property()] =
+          true;
       for (size_t j = animation_index + 1; j < animations_.size(); ++j) {
         if (animation_waiting_for_target->group() == animations_[j]->group()) {
-          enqueued_properties.insert(animations_[j]->target_property());
+          enqueued_properties[animations_[j]->target_property()] = true;
           affects_active_observers |=
               animations_[j]->affects_active_observers();
           affects_pending_observers |=
@@ -843,15 +844,24 @@ void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
       // case, the group's target properties need to be added to the lists of
       // blocked properties.
       bool null_intersection = true;
-      for (TargetProperties::iterator p_iter = enqueued_properties.begin();
-           p_iter != enqueued_properties.end();
-           ++p_iter) {
-        if (affects_active_observers &&
-            !blocked_properties_for_active_observers.insert(*p_iter).second)
-          null_intersection = false;
-        if (affects_pending_observers &&
-            !blocked_properties_for_pending_observers.insert(*p_iter).second)
-          null_intersection = false;
+      static_assert(TargetProperty::FIRST_TARGET_PROPERTY == 0,
+                    "TargetProperty must be 0-based enum");
+      for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
+           property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
+        if (enqueued_properties[property]) {
+          if (affects_active_observers) {
+            if (blocked_properties_for_active_observers[property])
+              null_intersection = false;
+            else
+              blocked_properties_for_active_observers[property] = true;
+          }
+          if (affects_pending_observers) {
+            if (blocked_properties_for_pending_observers[property])
+              null_intersection = false;
+            else
+              blocked_properties_for_pending_observers[property] = true;
+          }
+        }
       }
 
       // If the intersection is null, then we are free to start the animations
