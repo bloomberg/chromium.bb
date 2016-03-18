@@ -50,6 +50,11 @@ if (current_toolchain == bootstrap_toolchain) {
     compiler = "g++"
   }
 
+  if (target_os == "chromeos" && defined(cros_target_cxx) &&
+      cros_target_cxx != "") {
+    compiler = cros_target_cxx
+  }
+
   static_library("nacl_bootstrap_lib") {
     # This code has very specific requirements related to its static
     # linking and minimal libc use.  It cannot support the normal variety
