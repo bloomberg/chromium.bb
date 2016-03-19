@@ -271,7 +271,7 @@
         'swarming_android_gyp_debug_static_bot_arm64',
       'Android Builder (dbg)': 'swarming_android_gyp_debug_static_bot',
       'Android Builder': 'swarming_android_gyp_release_bot_minimal_symbols',
-      'Android Clang Builder (dbg)': 'android_clang_asan_gyp_debug_bot',
+      'Android Clang Builder (dbg)': 'android_clang_asan_findbugs_gyp_debug_bot',
       'Android GN (dbg)': 'android_gn_debug_bot',
       'Android GN': 'android_gn_release_bot_minimal_symbols',
       'Android Tests (dbg)': 'swarming_android_gyp_debug_static_bot',
@@ -637,7 +637,7 @@
       'android_chromium_gn_compile_dbg': 'android_gn_debug_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
       'android_chromium_gn_rel': 'android_gn_release_trybot',
-      'android_clang_dbg_recipe': 'android_clang_asan_gyp_debug_trybot',
+      'android_clang_dbg_recipe': 'android_clang_asan_findbugs_gyp_debug_trybot',
       'android_compile_dbg': 'swarming_android_gyp_debug_trybot',
       'android_compile_mips_dbg': 'android_gn_debug_trybot_mipsel',
       'android_compile_rel': 'swarming_android_gyp_release_trybot',
@@ -832,12 +832,12 @@
       'android', 'cast', 'gyp', 'debug_static_bot',
     ],
 
-    'android_clang_asan_gyp_debug_bot': [
-      'android', 'clang', 'asan', 'gyp', 'debug_bot',
+    'android_clang_asan_findbugs_gyp_debug_bot': [
+      'android', 'clang', 'asan', 'findbugs', 'gyp', 'debug_bot',
     ],
 
-    'android_clang_asan_gyp_debug_trybot': [
-      'android', 'clang', 'asan', 'gyp', 'debug_trybot',
+    'android_clang_asan_findbugs_gyp_debug_trybot': [
+      'android', 'clang', 'asan', 'findbugs', 'gyp', 'debug_trybot',
     ],
 
     'android_gn_debug_bot': [
@@ -1466,6 +1466,11 @@
     'error': {
       'gn_args': 'error',
       'gyp_defines': 'target_arch=unknown',
+    },
+
+    'findbugs': {
+      'gn_args': 'run_findbugs=true',
+      'gyp_defines': 'run_findbugs=1',
     },
 
     'gn_linux_upload': {
