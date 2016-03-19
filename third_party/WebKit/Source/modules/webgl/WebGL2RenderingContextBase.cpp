@@ -847,6 +847,10 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint in
         return;
     if (!validateTexture2DBinding("texImage2D", target))
         return;
+    if (!m_boundPixelUnpackBuffer) {
+        synthesizeGLError(GL_INVALID_OPERATION, "texImage2D", "no bound PIXEL_UNPACK_BUFFER");
+        return;
+    }
     if (!validateTexFunc("texImage2D", TexImage, SourceUnpackBuffer, target, level, internalformat, width, height, 1, border, format, type, 0, 0, 0))
         return;
     if (!validateValueFitNonNegInt32("texImage2D", "offset", offset))
@@ -861,6 +865,10 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint
         return;
     if (!validateTexture2DBinding("texSubImage2D", target))
         return;
+    if (!m_boundPixelUnpackBuffer) {
+        synthesizeGLError(GL_INVALID_OPERATION, "texSubImage2D", "no bound PIXEL_UNPACK_BUFFER");
+        return;
+    }
     if (!validateTexFunc("texSubImage2D", TexSubImage, SourceUnpackBuffer, target, level, 0, width, height, 1, 0, format, type, xoffset, yoffset, 0))
         return;
     if (!validateValueFitNonNegInt32("texSubImage2D", "offset", offset))
@@ -979,6 +987,10 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
         return;
     if (!validateTexture3DBinding("texImage3D", target))
         return;
+    if (!m_boundPixelUnpackBuffer) {
+        synthesizeGLError(GL_INVALID_OPERATION, "texImage3D", "no bound PIXEL_UNPACK_BUFFER");
+        return;
+    }
     if (!validateTexFunc("texImage3D", TexImage, SourceUnpackBuffer, target, level, internalformat, width, height, depth, border, format, type, 0, 0, 0))
         return;
     if (!validateValueFitNonNegInt32("texImage3D", "offset", offset))
@@ -1051,6 +1063,10 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
         return;
     if (!validateTexture3DBinding("texSubImage3D", target))
         return;
+    if (!m_boundPixelUnpackBuffer) {
+        synthesizeGLError(GL_INVALID_OPERATION, "texSubImage3D", "no bound PIXEL_UNPACK_BUFFER");
+        return;
+    }
     if (!validateTexFunc("texSubImage3D", TexSubImage, SourceUnpackBuffer, target, level, 0, width, height, depth, 0, format, type, xoffset, yoffset, zoffset))
         return;
     if (!validateValueFitNonNegInt32("texSubImage3D", "offset", offset))
