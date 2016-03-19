@@ -123,7 +123,11 @@ public class BrowserAccessibilityManager {
     }
 
     @CalledByNative
-    private void onNativeObjectDestroyed() {
+    private void onNativeObjectDestroyed(long nativeBrowserAccessibilityManagerAndroid) {
+        // There are multiple native objects, one for each frame, but we only have a pointer
+        // to the native object for the root frame.
+        if (nativeBrowserAccessibilityManagerAndroid != mNativeObj) return;
+
         if (mContentViewCore != null
                 && mContentViewCore.getBrowserAccessibilityManager() == this) {
             mContentViewCore.setBrowserAccessibilityManager(null);
@@ -418,6 +422,8 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     private void finishGranularityMove(String text, boolean extendSelection,
             int itemStartIndex, int itemEndIndex, boolean forwards) {
+        if (mNativeObj == 0) return;
+
         // Prepare to send both a selection and a traversal event in sequence.
         AccessibilityEvent selectionEvent = buildAccessibilityEvent(mAccessibilityFocusId,
                 AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED);
@@ -529,6 +535,8 @@ public class BrowserAccessibilityManager {
      */
     @CalledByNative
     private void sendDelayedWindowContentChangedEvent() {
+        if (mNativeObj == 0) return;
+
         if (mSendWindowContentChangedRunnable != null) return;
 
         mSendWindowContentChangedRunnable = new Runnable() {
@@ -653,6 +661,7 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void handlePageLoaded(int id) {
+        if (mNativeObj == 0) return;
         if (mUserHasTouchExplored) return;
 
         if (mContentViewCore.shouldSetAccessibilityFocusOnPageLoad()) {
@@ -662,37 +671,44 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void handleFocusChanged(int id) {
+        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_FOCUSED);
         moveAccessibilityFocusToId(id);
     }
 
     @CalledByNative
     private void handleCheckStateChanged(int id) {
+        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
     }
 
     @CalledByNative
     private void handleClicked(int id) {
+        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
     }
 
     @CalledByNative
     private void handleTextSelectionChanged(int id) {
+        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED);
     }
 
     @CalledByNative
     private void handleEditableTextChanged(int id) {
+        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
     }
 
     @CalledByNative
     private void handleSliderChanged(int id) {
+        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SCROLLED);
     }
 
     @CalledByNative
     private void handleContentChanged(int id) {
+        if (mNativeObj == 0) return;
         int rootId = nativeGetRootId(mNativeObj);
         if (rootId != mCurrentRootId) {
             mCurrentRootId = rootId;
@@ -704,6 +720,7 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void handleNavigate() {
+        if (mNativeObj == 0) return;
         mAccessibilityFocusId = View.NO_ID;
         mAccessibilityFocusRect = null;
         mUserHasTouchExplored = false;
@@ -713,16 +730,19 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void handleScrollPositionChanged(int id) {
+        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SCROLLED);
     }
 
     @CalledByNative
     private void handleScrolledToAnchor(int id) {
+        if (mNativeObj == 0) return;
         moveAccessibilityFocusToId(id);
     }
 
     @CalledByNative
     private void handleHover(int id) {
+        if (mNativeObj == 0) return;
         if (mLastHoverId == id) return;
         if (!mIsHovering) return;
 

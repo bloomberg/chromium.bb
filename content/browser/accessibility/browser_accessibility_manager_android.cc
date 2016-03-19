@@ -152,7 +152,8 @@ BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
   if (obj.is_null())
     return;
 
-  Java_BrowserAccessibilityManager_onNativeObjectDestroyed(env, obj.obj());
+  Java_BrowserAccessibilityManager_onNativeObjectDestroyed(
+      env, obj.obj(),reinterpret_cast<intptr_t>(this));
 }
 
 // static
