@@ -259,11 +259,12 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
   writer.folders_.reserve(targets.size());
 
   for (const Target* target : targets) {
-    // Skip actions and groups.
+    // Skip actions, groups and bundle targets.
     if (target->output_type() == Target::GROUP ||
         target->output_type() == Target::COPY_FILES ||
         target->output_type() == Target::ACTION ||
-        target->output_type() == Target::ACTION_FOREACH) {
+        target->output_type() == Target::ACTION_FOREACH ||
+        target->output_type() == Target::BUNDLE_DATA) {
       continue;
     }
 
