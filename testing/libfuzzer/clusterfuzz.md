@@ -1,7 +1,7 @@
 # Libfuzzer and ClusterFuzz Integration
 
 Clusterfuzz is a distributed fuzzing infrastructure 
-[go/clusterfuzz](https://goto.google.com/clusterfuzz) that automatically
+([go/clusterfuzz](https://goto.google.com/clusterfuzz)) that automatically
 executes libfuzzer tests on scale.
 
 ## Status Links

@@ -66,12 +66,15 @@ magic numbers etc. The easiest way to diagnose this problem is to generate a
 You can easily generate source-level coverage report for a given corpus:
 
 ```
-ASAN_OPTIONS=coverage=1:html_cov_report=1:sancov_path=./third_party/llvm-build/Release+Asserts/bin/sancov \
+ASAN_OPTIONS=html_cov_report=1:sancov_path=./third_party/llvm-build/Release+Asserts/bin/sancov \
   ./out/libfuzzer/my_fuzzer -runs=0 ~/tmp/my_fuzzer_corpus
 ```
 
 This will produce an .html file with colored source-code. It can be used to
-determine where your fuzzer is "stuck".
+determine where your fuzzer is "stuck". Replace `ASAN_OPTIONS` by corresponding
+option variable if your are using another sanitizer (e.g. `MSAN_OPTIONS`).
+`sancov_path` can be omitted by adding llvm bin directory to `PATH` environment
+variable.
 
 ## Fuzzer Dictionary
 
@@ -81,6 +84,7 @@ works especially well while fuzzing file format decoders.
 
 To add a dictionary, first create a dictionary file.
 Dictionary syntax is similar to that used by [AFL] for its -x option:
+
 ```
 # Lines starting with '#' and empty lines are ignored.
 
@@ -95,9 +99,11 @@ kw3="\xF7\xF8"
 ```
 
 Test your dictionary by running your fuzzer locally:
+
 ```bash
 ./out/libfuzzer/my_protocol_fuzzer -dict <path_to_dict> <path_to_corpus>
 ```
+
 You should see lots of new units discovered.
 
 Add `dict` attribute to fuzzer target:
@@ -111,8 +117,6 @@ fuzzer_test("my_protocol_fuzzer") {
 
 Make sure to submit dictionary file to git. The dictionary will be used
 automatically by ClusterFuzz once it picks up new fuzzer version (once a day).
-
-
 
 ## Corpus Seed
 
