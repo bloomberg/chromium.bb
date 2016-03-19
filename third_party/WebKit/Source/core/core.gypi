@@ -4037,6 +4037,7 @@
             'loader/LinkHeaderTest.cpp',
             'loader/LinkLoaderTest.cpp',
             'loader/MixedContentCheckerTest.cpp',
+            'loader/ThreadableLoaderTest.cpp',
             'origin_trials/OriginTrialContextTest.cpp',
             'page/ChromeClientTest.cpp',
             'page/ContextMenuControllerTest.cpp',
@@ -4067,6 +4068,7 @@
             'testing/PrivateScriptTestTest.cpp',
             'timing/MemoryInfoTest.cpp',
             'workers/WorkerThreadTest.cpp',
+            'workers/WorkerThreadTestHelper.h',
             'xml/parser/SharedBufferReaderTest.cpp',
         ],
     }
