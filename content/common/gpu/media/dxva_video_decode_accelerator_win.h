@@ -44,6 +44,41 @@ typedef HRESULT (WINAPI* CreateDXGIDeviceManager)(
 
 namespace content {
 
+// Provides functionality to detect H.264 stream configuration changes.
+// TODO(ananta)
+// Move this to a common place so that all VDA's can use this.
+class H264ConfigChangeDetector {
+ public:
+  H264ConfigChangeDetector();
+  ~H264ConfigChangeDetector();
+
+  // Detects stream configuration changes.
+  // Returns false on failure.
+  bool DetectConfig(const uint8_t* stream, unsigned int size);
+
+  bool config_changed() const {
+    return config_changed_;
+  }
+
+ private:
+  // These fields are used to track the SPS/PPS in the H.264 bitstream and
+  // are eventually compared against the SPS/PPS in the bitstream to detect
+  // a change.
+  int last_sps_id_;
+  std::vector<uint8_t> last_sps_;
+  int last_pps_id_;
+  std::vector<uint8_t> last_pps_;
+  // Set to true if we detect a stream configuration change.
+  bool config_changed_;
+  // We want to indicate configuration changes only after we see IDR slices.
+  // This flag tracks that we potentially have a configuration change which
+  // we want to honor after we see an IDR slice.
+  bool pending_config_changed_;
+
+  DISALLOW_COPY_AND_ASSIGN(H264ConfigChangeDetector);
+};
+
+
 // Class to provide a DXVA 2.0 based accelerator using the Microsoft Media
 // foundation APIs via the VideoDecodeAccelerator interface.
 // This class lives on a single thread and DCHECKs that it is never accessed
@@ -179,7 +214,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   typedef std::map<int32_t, linked_ptr<DXVAPictureBuffer>> OutputBuffers;
 
   // Tells the client to dismiss the stale picture buffers passed in.
-  void DismissStaleBuffers();
+  void DismissStaleBuffers(bool force);
 
   // Called after the client indicates we can recycle a stale picture buffer.
   void DeferredDismissStaleBuffer(int32_t picture_buffer_id);
@@ -191,10 +226,6 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Gets the state of the decoder. Can be called from the main thread and
   // the decoder thread. Thread safe.
   State GetState();
-
-  // Worker function for the Decoder Reset functionality. Executes on the
-  // decoder thread and queues tasks on the main thread as needed.
-  void ResetHelper();
 
   // Starts the thread used for decoding.
   void StartDecoderThread();
@@ -263,6 +294,19 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
                               const GUID& output_type,
                               int width,
                               int height);
+
+  // Checks if the resolution, bitrate etc of the stream changed. We do this
+  // by keeping track of the SPS/PPS frames and if they change we assume
+  // that the configuration changed.
+  // Returns S_OK or S_FALSE on succcess.
+  // The |config_changed| parameter is set to true if we detect a change in the
+  // stream.
+  HRESULT CheckConfigChanged(IMFSample* sample, bool* config_changed);
+
+  // Called when we detect a stream configuration change. We reinitialize the
+  // decoder here.
+  void ConfigChanged(const Config& config,
+                     const base::win::ScopedComPtr<IMFSample>& input_sample);
 
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
@@ -402,6 +446,16 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Function pointer for the MFCreateDXGIDeviceManager API.
   static CreateDXGIDeviceManager create_dxgi_device_manager_;
+
+  // The media foundation H.264 decoder has problems handling changes like
+  // resolution change, bitrate change etc. If we reinitialize the decoder
+  // when these changes occur then, the decoder works fine. The
+  // H264ConfigChangeDetector class provides functionality to check if the
+  // stream configuration changed.
+  H264ConfigChangeDetector config_change_detector_;
+
+  // Contains the initialization parameters for the video.
+  Config config_;
 
   DISALLOW_COPY_AND_ASSIGN(DXVAVideoDecodeAccelerator);
 };

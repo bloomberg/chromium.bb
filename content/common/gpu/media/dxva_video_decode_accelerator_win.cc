@@ -34,6 +34,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "media/base/win/mf_initializer.h"
+#include "media/filters/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -110,6 +111,41 @@ DEFINE_GUID(CLSID_VideoProcessorMFT,
 // regeneration (repaint).
 DEFINE_GUID(MF_XVP_PLAYBACK_MODE, 0x3c5d293f, 0xad67, 0x4e29, 0xaf, 0x12,
             0xcf, 0x3e, 0x23, 0x8a, 0xcc, 0xe9);
+
+// Provides scoped access to the underlying buffer in an IMFMediaBuffer
+// instance.
+class MediaBufferScopedPointer {
+ public:
+  MediaBufferScopedPointer(IMFMediaBuffer* media_buffer)
+      : media_buffer_(media_buffer),
+        buffer_(nullptr),
+        max_length_(0),
+        current_length_(0) {
+    HRESULT hr = media_buffer_->Lock(&buffer_, &max_length_, &current_length_);
+    CHECK(SUCCEEDED(hr));
+  }
+
+  ~MediaBufferScopedPointer() {
+    HRESULT hr = media_buffer_->Unlock();
+    CHECK(SUCCEEDED(hr));
+  }
+
+  uint8_t* get() {
+    return buffer_;
+  }
+
+  DWORD current_length() const {
+    return current_length_;
+  }
+
+ private:
+  base::win::ScopedComPtr<IMFMediaBuffer> media_buffer_;
+  uint8_t* buffer_;
+  DWORD max_length_;
+  DWORD current_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaBufferScopedPointer);
+};
 
 }  // namespace
 
@@ -331,6 +367,112 @@ base::win::ScopedComPtr<T> QueryDeviceObjectFromANGLE(int object_type) {
   return device_object;
 }
 
+H264ConfigChangeDetector::H264ConfigChangeDetector()
+    : last_sps_id_(0),
+      last_pps_id_(0),
+      config_changed_(false),
+      pending_config_changed_(false) {
+}
+
+H264ConfigChangeDetector::~H264ConfigChangeDetector() {
+}
+
+bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
+                                            unsigned int size) {
+  std::vector<uint8_t> sps;
+  std::vector<uint8_t> pps;
+  media::H264NALU nalu;
+  bool idr_seen = false;
+
+  media::H264Parser parser;
+  parser.SetStream(stream, size);
+  config_changed_ = false;
+
+  while (true) {
+    media::H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
+
+    if (result == media::H264Parser::kEOStream)
+      break;
+
+    if (result == media::H264Parser::kUnsupportedStream) {
+      DLOG(ERROR) << "Unsupported H.264 stream";
+      return false;
+    }
+
+    if (result != media::H264Parser::kOk) {
+      DLOG(ERROR) << "Failed to parse H.264 stream";
+      return false;
+    }
+
+    switch (nalu.nal_unit_type) {
+      case media::H264NALU::kSPS:
+        result = parser.ParseSPS(&last_sps_id_);
+        if (result == media::H264Parser::kUnsupportedStream) {
+          DLOG(ERROR) << "Unsupported SPS";
+          return false;
+        }
+
+        if (result != media::H264Parser::kOk) {
+          DLOG(ERROR) << "Could not parse SPS";
+          return false;
+        }
+
+        sps.assign(nalu.data, nalu.data + nalu.size);
+        break;
+
+      case media::H264NALU::kPPS:
+        result = parser.ParsePPS(&last_pps_id_);
+        if (result == media::H264Parser::kUnsupportedStream) {
+          DLOG(ERROR) << "Unsupported PPS";
+          return false;
+        }
+        if (result != media::H264Parser::kOk) {
+          DLOG(ERROR) << "Could not parse PPS";
+          return false;
+        }
+        pps.assign(nalu.data, nalu.data + nalu.size);
+        break;
+
+      case media::H264NALU::kIDRSlice:
+        idr_seen = true;
+        // If we previously detected a configuration change, and see an IDR
+        // slice next time around, we need to flag a configuration change.
+        if (pending_config_changed_) {
+          config_changed_ = true;
+          pending_config_changed_ = false;
+        }
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  if (!sps.empty() && sps != last_sps_) {
+    if (!last_sps_.empty()) {
+      // Flag configuration changes after we see an IDR slice.
+      if (idr_seen) {
+        config_changed_ = true;
+      } else {
+        pending_config_changed_ = true;
+      }
+    }
+    last_sps_.swap(sps);
+  }
+
+  if (!pps.empty() && pps != last_pps_) {
+    if (!last_pps_.empty()) {
+      // Flag configuration changes after we see an IDR slice.
+      if (idr_seen) {
+        config_changed_ = true;
+      } else {
+        pending_config_changed_ = true;
+      }
+    }
+    last_pps_.swap(pps);
+  }
+  return true;
+}
 
 // Maintains information about a DXVA picture buffer, i.e. whether it is
 // available for rendering, the texture information, etc.
@@ -788,6 +930,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed",
       PLATFORM_FAILURE, false);
 
+  config_ = config;
+
   SetState(kNormal);
 
   StartDecoderThread();
@@ -1040,13 +1184,15 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   // us that we can now recycle this picture buffer, so if we were waiting to
   // dispose of it we now can.
   if (it == output_picture_buffers_.end()) {
-    it = stale_output_picture_buffers_.find(picture_buffer_id);
-    RETURN_AND_NOTIFY_ON_FAILURE(it != stale_output_picture_buffers_.end(),
-        "Invalid picture id: " << picture_buffer_id, INVALID_ARGUMENT,);
-    main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer,
-                   weak_this_factory_.GetWeakPtr(), picture_buffer_id));
+    if (!stale_output_picture_buffers_.empty()) {
+      it = stale_output_picture_buffers_.find(picture_buffer_id);
+      RETURN_AND_NOTIFY_ON_FAILURE(it != stale_output_picture_buffers_.end(),
+          "Invalid picture id: " << picture_buffer_id, INVALID_ARGUMENT,);
+      main_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer,
+                     weak_this_factory_.GetWeakPtr(), picture_buffer_id));
+    }
     return;
   }
 
@@ -1679,6 +1825,7 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   pending_output_samples_.clear();
   pending_input_buffers_.clear();
   decoder_.Release();
+  pictures_requested_ = false;
 
   if (use_dx11_) {
     if (video_format_converter_mft_.get()) {
@@ -1691,6 +1838,7 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
     d3d11_device_manager_.Release();
     d3d11_query_.Release();
     dx11_video_format_converter_media_type_needs_init_ = true;
+    multi_threaded_.Release();
   } else {
     d3d9_.Release();
     d3d9_device_ex_.Release();
@@ -1845,13 +1993,31 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     return;
   }
 
+  // Check if the resolution, bit rate, etc changed in the stream. If yes we
+  // reinitialize the decoder to ensure that the stream decodes correctly.
+  bool config_changed = false;
+
+  HRESULT hr = CheckConfigChanged(sample.get(), &config_changed);
+  RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to check video stream config",
+      PLATFORM_FAILURE,);
+
+  if (config_changed) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::ConfigChanged,
+                   weak_this_factory_.GetWeakPtr(),
+                   config_,
+                   sample));
+    return;
+  }
+
   if (!inputs_before_decode_) {
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "DXVAVideoDecodeAccelerator.Decoding",
                              this);
   }
   inputs_before_decode_++;
 
-  HRESULT hr = decoder_->ProcessInput(0, sample.get(), 0);
+  hr = decoder_->ProcessInput(0, sample.get(), 0);
   // As per msdn if the decoder returns MF_E_NOTACCEPTING then it means that it
   // has enough data to produce one or more output samples. In this case the
   // recommended options are to
@@ -1929,7 +2095,7 @@ void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::DismissStaleBuffers,
-                 weak_this_factory_.GetWeakPtr()));
+                 weak_this_factory_.GetWeakPtr(), false));
 
   main_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -1939,13 +2105,13 @@ void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
                  height));
 }
 
-void DXVAVideoDecodeAccelerator::DismissStaleBuffers() {
+void DXVAVideoDecodeAccelerator::DismissStaleBuffers(bool force) {
   OutputBuffers::iterator index;
 
   for (index = output_picture_buffers_.begin();
        index != output_picture_buffers_.end();
        ++index) {
-    if (index->second->available()) {
+    if (force || index->second->available()) {
       DVLOG(1) << "Dismissing picture id: " << index->second->id();
       client_->DismissPictureBuffer(index->second->id());
     } else {
@@ -2452,6 +2618,40 @@ bool DXVAVideoDecodeAccelerator::SetTransformOutputType(
     media_type.Release();
   }
   return false;
+}
+
+HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(
+    IMFSample* sample, bool* config_changed) {
+  if (codec_ != media::kCodecH264)
+    return S_FALSE;
+
+  base::win::ScopedComPtr<IMFMediaBuffer> buffer;
+  HRESULT hr = sample->GetBufferByIndex(0, buffer.Receive());
+  RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from input sample", hr);
+
+  MediaBufferScopedPointer scoped_media_buffer(buffer.get());
+
+  if (!config_change_detector_.DetectConfig(
+          scoped_media_buffer.get(),
+          scoped_media_buffer.current_length())) {
+    RETURN_ON_HR_FAILURE(E_FAIL, "Failed to detect H.264 stream config",
+        E_FAIL);
+  }
+  *config_changed = config_change_detector_.config_changed();
+  return S_OK;
+}
+
+void DXVAVideoDecodeAccelerator::ConfigChanged(
+    const Config& config,
+    const base::win::ScopedComPtr<IMFSample>& input_sample) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  DismissStaleBuffers(true);
+  Invalidate();
+  Initialize(config_, client_);
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::DecodeInternal,
+                 base::Unretained(this), input_sample));
 }
 
 }  // namespace content
