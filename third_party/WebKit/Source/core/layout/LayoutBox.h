@@ -531,7 +531,7 @@ public:
     void setExtraBlockOffset(LayoutUnit blockOffest);
     void clearExtraInlineAndBlockOffests();
 
-    LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const override;
+    LayoutSize offsetFromContainer(const LayoutObject*) const override;
 
     LayoutUnit adjustBorderBoxLogicalWidthForBoxSizing(float width) const;
     LayoutUnit adjustBorderBoxLogicalHeightForBoxSizing(float height) const;

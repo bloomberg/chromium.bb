@@ -864,8 +864,14 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutBox
         adjustmentForSkippedAncestor = -ancestorToStopAt->offsetFromAncestorContainer(container);
     }
 
-    bool offsetDependsOnPoint = false;
-    LayoutSize containerOffset = offsetFromContainer(container, LayoutPoint(), &offsetDependsOnPoint);
+    LayoutSize containerOffset = offsetFromContainer(container);
+    bool offsetDependsOnPoint;
+    if (container->isLayoutFlowThread()) {
+        containerOffset += container->columnOffset(toLayoutPoint(containerOffset));
+        offsetDependsOnPoint = true;
+    } else {
+        offsetDependsOnPoint = container->style()->isFlippedBlocksWritingMode() && container->isBox();
+    }
 
     bool preserve3D = container->style()->preserves3D() || style()->preserves3D();
     GeometryInfoFlags flags = 0;

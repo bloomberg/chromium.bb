@@ -2267,7 +2267,14 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tran
         }
     }
 
-    LayoutSize containerOffset = offsetFromContainer(o, roundedLayoutPoint(transformState.mappedPoint()));
+    LayoutSize containerOffset = offsetFromContainer(o);
+    if (o->isLayoutFlowThread()) {
+        // So far the point has been in flow thread coordinates (i.e. as if everything in
+        // the fragmentation context lived in one tall single column). Convert it to a
+        // visual point now.
+        LayoutPoint pointInContainer = roundedLayoutPoint(transformState.mappedPoint()) + containerOffset;
+        containerOffset += o->columnOffset(pointInContainer);
+    }
 
     // Text objects just copy their parent's computed style, so we need to ignore them.
     bool preserve3D = mode & UseTransforms && ((o->style()->preserves3D() && !o->isText()) || (style()->preserves3D() && !isText()));
@@ -2319,17 +2326,11 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Tran
     if (!containerSkipped)
         o->mapAncestorToLocal(ancestor, transformState, mode);
 
-    LayoutSize containerOffset = offsetFromContainer(o, LayoutPoint());
+    LayoutSize containerOffset = offsetFromContainer(o);
     if (o->isLayoutFlowThread()) {
         // Descending into a flow thread. Convert to the local coordinate space, i.e. flow thread coordinates.
-        const LayoutFlowThread* flowThread = toLayoutFlowThread(o);
         LayoutPoint visualPoint = LayoutPoint(transformState.mappedPoint());
-        transformState.move(visualPoint - flowThread->visualPointToFlowThreadPoint(visualPoint));
-        // |containerOffset| is also in visual coordinates. Convert to flow thread coordinates.
-        // TODO(mstensho): Wouldn't it be better add a parameter to instruct offsetFromContainer()
-        // to return flowthread coordinates in the first place? We're effectively performing two
-        // conversions here, when in fact none is needed.
-        containerOffset = toLayoutSize(flowThread->visualPointToFlowThreadPoint(toLayoutPoint(containerOffset)));
+        transformState.move(visualPoint - toLayoutFlowThread(o)->visualPointToFlowThreadPoint(visualPoint));
     }
 
     bool preserve3D = mode & UseTransforms && (o->style()->preserves3D() || style()->preserves3D());
@@ -2442,19 +2443,10 @@ FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& loca
     return containerPoint;
 }
 
-LayoutSize LayoutObject::offsetFromContainer(const LayoutObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
+LayoutSize LayoutObject::offsetFromContainer(const LayoutObject* o) const
 {
     ASSERT(o == container());
-
-    LayoutSize offset = o->columnOffset(point);
-
-    if (o->hasOverflowClip())
-        offset -= toLayoutBox(o)->scrolledContentOffset();
-
-    if (offsetDependsOnPoint)
-        *offsetDependsOnPoint = o->isLayoutFlowThread();
-
-    return offset;
+    return o->hasOverflowClip() ? LayoutSize(-toLayoutBox(o)->scrolledContentOffset()) : LayoutSize();
 }
 
 LayoutSize LayoutObject::offsetFromAncestorContainer(const LayoutObject* ancestorContainer) const
@@ -2471,7 +2463,7 @@ LayoutSize LayoutObject::offsetFromAncestorContainer(const LayoutObject* ancesto
         if (!nextContainer)
             break;
         ASSERT(!currContainer->hasTransformRelatedProperty());
-        LayoutSize currentOffset = currContainer->offsetFromContainer(nextContainer, referencePoint);
+        LayoutSize currentOffset = currContainer->offsetFromContainer(nextContainer);
         offset += currentOffset;
         referencePoint.move(currentOffset);
         currContainer = nextContainer;

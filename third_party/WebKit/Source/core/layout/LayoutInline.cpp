@@ -1128,7 +1128,7 @@ void LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
     container->mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
 }
 
-LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container, const LayoutPoint& point, bool* offsetDependsOnPoint) const
+LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container) const
 {
     ASSERT(container == this->container());
 
@@ -1136,13 +1136,8 @@ LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container, cons
     if (isInFlowPositioned())
         offset += offsetForInFlowPosition();
 
-    offset += container->columnOffset(point);
-
     if (container->hasOverflowClip())
         offset -= toLayoutBox(container)->scrolledContentOffset();
-
-    if (offsetDependsOnPoint)
-        *offsetDependsOnPoint = (container->isBox() && container->style()->isFlippedBlocksWritingMode()) || container->isLayoutFlowThread();
 
     return offset;
 }

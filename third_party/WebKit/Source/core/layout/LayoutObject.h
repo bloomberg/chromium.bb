@@ -1008,9 +1008,8 @@ public:
     // Convert a local point into the coordinate system of backing coordinates. Also returns the backing layer if needed.
     FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, PaintLayer** backingLayer = nullptr);
 
-    // Return the offset from the container() layoutObject (excluding transforms). In multi-column layout,
-    // different offsets apply at different points, so return the offset that applies to the given point.
-    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const;
+    // Return the offset from the container() layoutObject (excluding transforms and multicol).
+    virtual LayoutSize offsetFromContainer(const LayoutObject*) const;
     // Return the offset from an object up the container() chain. Asserts that none of the intermediate objects have transforms.
     LayoutSize offsetFromAncestorContainer(const LayoutObject*) const;
 

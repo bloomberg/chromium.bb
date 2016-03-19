@@ -304,11 +304,11 @@ void LayoutTableCell::setOverrideLogicalContentHeightFromRowHeight(LayoutUnit ro
     setOverrideLogicalContentHeight((rowHeight - borderAndPaddingLogicalHeight()).clampNegativeToZero());
 }
 
-LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
+LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o) const
 {
     ASSERT(o == container());
 
-    LayoutSize offset = LayoutBlockFlow::offsetFromContainer(o, point, offsetDependsOnPoint);
+    LayoutSize offset = LayoutBlockFlow::offsetFromContainer(o);
     if (parent())
         offset -= parentBox()->locationOffset();
 

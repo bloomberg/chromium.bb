@@ -144,9 +144,14 @@ public:
         return m_layoutObject->styleRef();
     }
 
-    LayoutSize offsetFromContainer(const LayoutItem& item, const LayoutPoint& point, bool* offsetDependsOnPoint = nullptr) const
+    LayoutSize offsetFromContainer(const LayoutItem& item) const
     {
-        return m_layoutObject->offsetFromContainer(item.layoutObject(), point, offsetDependsOnPoint);
+        return m_layoutObject->offsetFromContainer(item.layoutObject());
+    }
+
+    LayoutSize columnOffset(const LayoutPoint& point) const
+    {
+        return m_layoutObject->columnOffset(point);
     }
 
     FrameView* frameView() const

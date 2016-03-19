@@ -1707,7 +1707,7 @@ void LayoutBox::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Transfo
     LayoutBoxModelObject::mapAncestorToLocal(ancestor, transformState, mode);
 }
 
-LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
+LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o) const
 {
     ASSERT(o == container());
 
@@ -1716,15 +1716,6 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
         offset += offsetForInFlowPosition();
 
     offset += topLeftLocationOffset();
-    if (o->isLayoutFlowThread()) {
-        // So far the point has been in flow thread coordinates (i.e. as if everything in
-        // the fragmentation context lived in one tall single column). Convert it to a
-        // visual point now.
-        LayoutPoint pointInContainer = point + offset;
-        offset += o->columnOffset(pointInContainer);
-        if (offsetDependsOnPoint)
-            *offsetDependsOnPoint = true;
-    }
 
     if (o->hasOverflowClip())
         offset -= toLayoutBox(o)->scrolledContentOffset();

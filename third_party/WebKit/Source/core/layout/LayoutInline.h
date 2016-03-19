@@ -140,7 +140,7 @@ public:
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
     void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
-    LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const final;
+    LayoutSize offsetFromContainer(const LayoutObject*) const final;
 
     IntRect linesBoundingBox() const;
     LayoutRect visualOverflowRect() const final;
