@@ -441,12 +441,6 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Enables experimental hardware acceleration for VP8/VP9 video decoding.
   const bool enable_accelerated_vpx_decode_;
 
-  // WeakPtrFactory for posting tasks back to |this|.
-  base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
-
-  // Function pointer for the MFCreateDXGIDeviceManager API.
-  static CreateDXGIDeviceManager create_dxgi_device_manager_;
-
   // The media foundation H.264 decoder has problems handling changes like
   // resolution change, bitrate change etc. If we reinitialize the decoder
   // when these changes occur then, the decoder works fine. The
@@ -456,6 +450,12 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Contains the initialization parameters for the video.
   Config config_;
+
+  // WeakPtrFactory for posting tasks back to |this|.
+  base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
+
+  // Function pointer for the MFCreateDXGIDeviceManager API.
+  static CreateDXGIDeviceManager create_dxgi_device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DXVAVideoDecodeAccelerator);
 };
