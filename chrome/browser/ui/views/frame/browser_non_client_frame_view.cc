@@ -60,6 +60,16 @@ gfx::ImageSkia BrowserNonClientFrameView::GetOTRAvatarIcon() const {
   return gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, 24, icon_color);
 }
 
+SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
+  const auto color_id =
+      ShouldPaintAsActive()
+          ? ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR
+          : ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE;
+  return ShouldPaintAsThemed() ? GetThemeProvider()->GetColor(color_id)
+                               : ThemeProperties::GetDefaultColor(
+                                     color_id, browser_view_->IsOffTheRecord());
+}
+
 void BrowserNonClientFrameView::UpdateToolbar() {
 }
 
@@ -195,7 +205,14 @@ void BrowserNonClientFrameView::ActivationChanged(bool active) {
     set_active_state_override(&active);
     UpdateAvatar();
     set_active_state_override(nullptr);
+
+    // Changing the activation state may change the toolbar top separator color
+    // that's used as the stroke around tabs/the new tab button.
+    browser_view_->tabstrip()->SchedulePaint();
   }
+
+  // Changing the activation state may change the visible frame color.
+  SchedulePaint();
 }
 
 void BrowserNonClientFrameView::OnProfileAdded(

@@ -95,8 +95,10 @@ class ThemeProperties {
 
     // The color of the line separating the top of the toolbar from the region
     // above. For a tabbed browser window, this is the line along the bottom
-    // edge of the tabstrip.
+    // edge of the tabstrip, the stroke around the tabs, and the new tab button
+    // stroke/shadow color.
     COLOR_TOOLBAR_TOP_SEPARATOR,
+    COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE,
 
     // The color of a background tab, as well as the new tab button.
     COLOR_BACKGROUND_TAB,

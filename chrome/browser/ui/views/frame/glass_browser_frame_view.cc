@@ -382,9 +382,8 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
     canvas->sk_canvas()->clipRect(gfx::RectToSkRect(tabstrip_bounds),
                                   SkRegion::kDifference_Op);
     separator_rect.set_y(tabstrip_bounds.bottom());
-    BrowserView::Paint1pxHorizontalLine(
-        canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
-        separator_rect, true);
+    BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
+                                        separator_rect, true);
 
     // Toolbar/content separator.
     toolbar_bounds.Inset(kClientEdgeThickness, 0);

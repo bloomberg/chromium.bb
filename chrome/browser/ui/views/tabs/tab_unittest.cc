@@ -69,6 +69,7 @@ class FakeTabController : public TabController {
   }
   bool IsIncognito() const override { return false; }
   bool IsImmersiveStyle() const override { return immersive_style_; }
+  SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   int GetBackgroundResourceId(bool* custom_image) const override {
     *custom_image = false;
     return IDR_THEME_TAB_BACKGROUND;

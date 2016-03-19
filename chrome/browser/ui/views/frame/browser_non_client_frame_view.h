@@ -45,6 +45,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Retrieves the icon to use in the frame to indicate an OTR window.
   gfx::ImageSkia GetOTRAvatarIcon() const;
 
+  // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
+  // state of the window.
+  SkColor GetToolbarTopSeparatorColor() const;
+
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 

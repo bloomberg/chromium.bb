@@ -424,6 +424,11 @@ void BrowserTabStripController::CheckFileSupported(const GURL& url) {
                  url));
 }
 
+SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
+  return BrowserView::GetBrowserViewForBrowser(browser_)->frame()
+      ->GetFrameView()->GetToolbarTopSeparatorColor();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 

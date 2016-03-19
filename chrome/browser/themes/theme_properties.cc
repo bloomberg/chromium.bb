@@ -349,6 +349,7 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
       return otr ? kDefaultDetachedBookmarkBarBackgroundIncognito[mode]
                  : kDefaultDetachedBookmarkBarBackground[mode];
     case COLOR_TOOLBAR_TOP_SEPARATOR:
+    case COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
       return kDefaultToolbarTopSeparator;
 #if defined(OS_MACOSX)
     case COLOR_FRAME_VIBRANCY_OVERLAY:

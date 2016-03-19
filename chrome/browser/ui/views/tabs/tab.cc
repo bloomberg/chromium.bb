@@ -1411,7 +1411,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
       canvas->sk_canvas()->clipRect(
           SkRect::MakeWH(width() * scale, height() * scale - 1));
     }
-    paint.setColor(tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR));
+    paint.setColor(controller_->GetToolbarTopSeparatorColor());
     canvas->DrawPath(stroke, paint);
   } else {
     if (draw_hover) {

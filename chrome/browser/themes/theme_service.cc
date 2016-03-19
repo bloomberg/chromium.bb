@@ -425,11 +425,14 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
           0x33);
-    case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR: {
+    case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
+    case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE: {
       const SkColor tab_color =
           GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
-      const SkColor frame_color =
-          GetColor(ThemeProperties::COLOR_FRAME, incognito);
+      const int frame_id = (id == ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR)
+                               ? ThemeProperties::COLOR_FRAME
+                               : ThemeProperties::COLOR_FRAME_INACTIVE;
+      const SkColor frame_color = GetColor(frame_id, incognito);
       const SeparatorColorKey key(tab_color, frame_color);
       auto i = separator_color_cache_.find(key);
       if (i != separator_color_cache_.end())

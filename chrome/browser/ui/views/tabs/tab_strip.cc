@@ -415,8 +415,7 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     // the shadow will be affected by the clip we set above.
     SkPaint paint;
     paint.setAntiAlias(true);
-    const SkColor stroke_color =
-        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR);
+    const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
     const float alpha = SkColorGetA(stroke_color);
     const SkAlpha shadow_alpha =
         base::saturated_cast<SkAlpha>(std::round(2.1875f * alpha));
@@ -569,8 +568,7 @@ void NewTabButton::PaintFill(bool pressed,
       } else {
         paint.setColor(tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
       }
-      const SkColor stroke_color = GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR);
+      const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
       const SkAlpha alpha = static_cast<SkAlpha>(
           std::round(SkColorGetA(stroke_color) * 0.59375f));
       skia::RefPtr<SkDrawLooper> looper =
@@ -1395,11 +1393,15 @@ bool TabStrip::CanPaintThrobberToLayer() const {
 }
 
 bool TabStrip::IsIncognito() const {
-  return controller()->IsIncognito();
+  return controller_->IsIncognito();
 }
 
 bool TabStrip::IsImmersiveStyle() const {
   return immersive_style_;
+}
+
+SkColor TabStrip::GetToolbarTopSeparatorColor() const {
+  return controller_->GetToolbarTopSeparatorColor();
 }
 
 int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
@@ -1417,7 +1419,7 @@ int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
   // the frame image.  Furthermore, since the theme provider will create the
   // incognito frame image from the normal frame image, in incognito mode we
   // need to look for a custom incognito _or_ regular frame image.
-  const bool incognito = controller()->IsIncognito();
+  const bool incognito = controller_->IsIncognito();
   const int id = incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
   *custom_image =
@@ -1549,9 +1551,8 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
           gfx::RectToSkRect(active_tab->GetMirroredBounds()),
           SkRegion::kDifference_Op);
     }
-    const SkColor color = GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR);
-    BrowserView::Paint1pxHorizontalLine(canvas, color, GetLocalBounds(), true);
+    BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
+                                        GetLocalBounds(), true);
   }
 }
 
@@ -1611,7 +1612,7 @@ void TabStrip::OnDragEntered(const DropTargetEvent& event) {
 
     // For file:// URLs, kick off a MIME type request in case they're dropped.
     if (url.SchemeIsFile())
-      controller()->CheckFileSupported(url);
+      controller_->CheckFileSupported(url);
   }
 }
 
@@ -1651,7 +1652,7 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
       !url.is_valid())
     return ui::DragDropTypes::DRAG_NONE;
 
-  controller()->PerformDrop(drop_before, drop_index, url);
+  controller_->PerformDrop(drop_before, drop_index, url);
 
   return GetDropEffect(event);
 }
@@ -2065,7 +2066,7 @@ void TabStrip::UpdateTabsClosingMap(int index, int delta) {
 
 void TabStrip::StartedDraggingTabs(const Tabs& tabs) {
   // Let the controller know that the user started dragging tabs.
-  controller()->OnStartedDraggingTabs();
+  controller_->OnStartedDraggingTabs();
 
   // Hide the new tab button immediately if we didn't originate the drag.
   if (!drag_controller_.get())
@@ -2098,7 +2099,7 @@ void TabStrip::StartedDraggingTabs(const Tabs& tabs) {
 void TabStrip::DraggedTabsDetached() {
   // Let the controller know that the user is not dragging this tabstrip's tabs
   // anymore.
-  controller()->OnStoppedDraggingTabs();
+  controller_->OnStoppedDraggingTabs();
   newtab_button_->SetVisible(true);
 }
 
@@ -2107,7 +2108,7 @@ void TabStrip::StoppedDraggingTabs(const Tabs& tabs,
                                    bool move_only,
                                    bool completed) {
   // Let the controller know that the user stopped dragging tabs.
-  controller()->OnStoppedDraggingTabs();
+  controller_->OnStoppedDraggingTabs();
 
   newtab_button_->SetVisible(true);
   if (move_only && touch_layout_) {
@@ -2392,7 +2393,7 @@ void TabStrip::UpdateDropIndex(const DropTargetEvent& event) {
 
 void TabStrip::SetDropIndex(int tab_data_index, bool drop_before) {
   // Let the controller know of the index update.
-  controller()->OnDropIndexUpdate(tab_data_index, drop_before);
+  controller_->OnDropIndexUpdate(tab_data_index, drop_before);
 
   if (tab_data_index == -1) {
     if (drop_info_.get())
@@ -2751,13 +2752,13 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
           base::string16 clipboard_text;
           clipboard->ReadText(ui::CLIPBOARD_TYPE_SELECTION, &clipboard_text);
           if (!clipboard_text.empty())
-            controller()->CreateNewTabWithLocation(clipboard_text);
+            controller_->CreateNewTabWithLocation(clipboard_text);
         }
         return;
       }
     }
 
-    controller()->CreateNewTab();
+    controller_->CreateNewTab();
     if (event.type() == ui::ET_GESTURE_TAP)
       TouchUMA::RecordGestureAction(TouchUMA::GESTURE_NEWTAB_TAP);
   }

@@ -81,7 +81,7 @@ class BrowserFrame
   views::View* GetLocationIconView() const;
 
   // Returns the NonClientFrameView of this frame.
-  views::View* GetFrameView() const;
+  BrowserNonClientFrameView* GetFrameView() const;
 
   // Returns |true| if we should use the custom frame.
   bool UseCustomFrame() const;

@@ -148,3 +148,7 @@ void FakeBaseTabStripController::OnStoppedDraggingTabs() {
 void FakeBaseTabStripController::CheckFileSupported(const GURL& url) {
   tab_strip_->FileSupported(url, true);
 }
+
+SkColor FakeBaseTabStripController::GetToolbarTopSeparatorColor() const {
+  return SK_ColorBLACK;
+}

@@ -661,9 +661,8 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) const {
     canvas->sk_canvas()->clipRect(gfx::RectToSkRect(tabstrip_bounds),
                                   SkRegion::kDifference_Op);
     separator_rect.set_y(tabstrip_bounds.bottom());
-    BrowserView::Paint1pxHorizontalLine(
-        canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
-        separator_rect, true);
+    BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
+                                        separator_rect, true);
 
     // Toolbar/content separator.
     toolbar_bounds.Inset(kClientEdgeThickness, 0);
@@ -756,10 +755,8 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
                           client_bounds.height());
 
       // Shadow.
-      BrowserView::Paint1pxHorizontalLine(
-          canvas, ThemeProperties::GetDefaultColor(
-                      ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR, incognito),
-          client_bounds, true);
+      BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
+                                          client_bounds, true);
     } else {
       // Ensure the client edge rects are drawn to the top of the location bar.
       img_y_offset = kClientEdgeThickness;

@@ -123,7 +123,7 @@ views::View* BrowserFrame::GetLocationIconView() const {
   return browser_frame_view_->GetLocationIconView();
 }
 
-views::View* BrowserFrame::GetFrameView() const {
+BrowserNonClientFrameView* BrowserFrame::GetFrameView() const {
   return browser_frame_view_;
 }
 

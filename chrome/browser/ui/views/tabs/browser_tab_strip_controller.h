@@ -75,6 +75,7 @@ class BrowserTabStripController : public TabStripController,
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
   void CheckFileSupported(const GURL& url) override;
+  SkColor GetToolbarTopSeparatorColor() const override;
 
   // TabStripModelObserver implementation:
   void TabInsertedAt(content::WebContents* contents,

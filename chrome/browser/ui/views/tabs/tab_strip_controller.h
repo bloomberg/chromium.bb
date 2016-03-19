@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
 class GURL;
@@ -119,6 +120,10 @@ class TabStripController {
   // Determines if the file type of the URL is supported. Should invoke
   // TabStrip::FileSupported to report the result.
   virtual void CheckFileSupported(const GURL& url) = 0;
+
+  // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
+  // state of the window.
+  virtual SkColor GetToolbarTopSeparatorColor() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
