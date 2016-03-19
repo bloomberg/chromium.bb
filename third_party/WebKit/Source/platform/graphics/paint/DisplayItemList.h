@@ -27,19 +27,21 @@ static const size_t kDisplayItemAlignment = WTF_ALIGN_OF(BeginTransform3DDisplay
 static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem);
 
 // A container for a list of display items.
-class DisplayItemList : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
+class PLATFORM_EXPORT DisplayItemList : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
 public:
     DisplayItemList(size_t initialSizeBytes)
         : ContiguousContainer(kMaximumDisplayItemSize, initialSizeBytes) {}
     DisplayItemList(DisplayItemList&& source)
         : ContiguousContainer(std::move(source))
         , m_visualRects(std::move(source.m_visualRects))
+        , m_beginItemIndices(std::move(source.m_beginItemIndices))
     {}
 
     DisplayItemList& operator=(DisplayItemList&& source)
     {
         ContiguousContainer::operator=(std::move(source));
         m_visualRects = std::move(source.m_visualRects);
+        m_beginItemIndices = std::move(source.m_beginItemIndices);
         return *this;
     }
 
@@ -58,7 +60,7 @@ public:
         // Save original debug string in the old item to help debugging.
         item.setClientDebugString(originalDebugString);
 #endif
-        m_visualRects.append(visualRect);
+        appendVisualRect(visualRect);
         return result;
     }
 
@@ -68,10 +70,7 @@ public:
         return m_visualRects[index];
     }
 
-    void appendVisualRect(const IntRect& visualRect)
-    {
-        m_visualRects.append(visualRect);
-    }
+    void appendVisualRect(const IntRect& visualRect);
 
 #if ENABLE(ASSERT)
     void assertDisplayItemClientsAreAlive() const
@@ -102,7 +101,12 @@ public:
     Range<const_iterator> itemsInPaintChunk(const PaintChunk&) const;
 
 private:
+    // If we're currently within a paired display item block, unions the
+    // given visual rect with the begin display item's visual rect.
+    void growCurrentBeginItemVisualRect(const IntRect& visualRect);
+
     Vector<IntRect> m_visualRects;
+    Vector<size_t> m_beginItemIndices;
 };
 
 } // namespace blink

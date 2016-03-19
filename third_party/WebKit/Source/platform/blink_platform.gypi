@@ -1187,6 +1187,7 @@
       'graphics/filters/ImageFilterBuilderTest.cpp',
       'graphics/gpu/DrawingBufferTest.cpp',
       'graphics/paint/DisplayItemClientTest.cpp',
+      'graphics/paint/DisplayItemListTest.cpp',
       'graphics/paint/DisplayItemTest.cpp',
       'graphics/paint/PaintArtifactToSkCanvasTest.cpp',
       'graphics/paint/PaintChunkerTest.cpp',
