@@ -117,7 +117,10 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         }
     }
 
-    private static class ReferrerCriteria extends Criteria {
+    /**
+     * Criteria checking that the page referrer has the expected value.
+     */
+    public static class ReferrerCriteria extends Criteria {
         private final Tab mTab;
         private final String mExpectedReferrer;
         private static final String GET_REFERRER_JS =

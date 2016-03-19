@@ -47,6 +47,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -829,30 +830,18 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             throws Exception {
         String testUrl = mTestServer.getURL(FRAGMENT_TEST_PAGE);
         String initialFragment = "#test";
-        final String initialUrl = testUrl + initialFragment;
+        String initialUrl = testUrl + initialFragment;
         String fragment = "#yeah";
         String urlWithFragment = testUrl + fragment;
 
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        final CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsConnection connection = warmUpAndWait();
         ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
         connection.newSession(cb);
         connection.setIgnoreUrlFragmentsForSession(cb.asBinder(), ignoreFragments);
         assertTrue(connection.mayLaunchUrl(cb, Uri.parse(initialUrl), null, null));
 
-        if (wait) {
-            // Check that there is a prerender.
-            CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
-                @Override
-                public boolean isSatisfied() {
-                    return connection.mPrerender != null
-                            && connection.mPrerender.mWebContents != null
-                            && ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
-                                    Profile.getLastUsedProfile(), initialUrl,
-                                    connection.mPrerender.mWebContents);
-                }
-            });
-        }
+        if (wait) ensureCompletedPrerenderForUrl(connection, initialUrl);
 
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -897,16 +886,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
         connection.newSession(cb);
         assertTrue(connection.mayLaunchUrl(cb, Uri.parse(mTestPage), null, null));
-
-        CriteriaHelper.pollUiThread(new Criteria("No prerender") {
-            @Override
-            public boolean isSatisfied() {
-                return connection.mPrerender.mWebContents != null
-                        && ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
-                                Profile.getLastUsedProfile(), mTestPage,
-                                connection.mPrerender.mWebContents);
-            }
-        });
+        ensureCompletedPrerenderForUrl(connection, mTestPage);
 
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -917,6 +897,92 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertEquals(Uri.parse(mTestPage).getHost() + ":" + Uri.parse(mTestPage).getPort(),
                 ((EditText) mActivity.findViewById(R.id.url_bar)).getText()
                         .toString());
+    }
+
+    /**
+     * Tests that prerendering accepts a referrer, and that this is not lost when launching the
+     * Custom Tab.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderingWithReferrer() throws Exception {
+        String referrer = "android-app://com.foo.me/";
+        maybePrerenderAndLaunchWithReferrers(
+                mTestServer.getURL(FRAGMENT_TEST_PAGE), true, referrer, referrer);
+
+        Tab tab = mActivity.getActivityTab();
+        // The tab hasn't been reloaded.
+        CriteriaHelper.pollInstrumentationThread(
+                new ElementContentCriteria(tab, "visibility", "prerender"), 2000, 200);
+        // The Referrer is correctly set.
+        CriteriaHelper.pollInstrumentationThread(
+                new TabsOpenedFromExternalAppTest.ReferrerCriteria(tab, referrer), 2000, 200);
+    }
+
+    /**
+     * Tests that prerendering accepts a referrer, and that the prerender is dropped when the tab
+     * is launched with a mismatched referrer.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderingWithMismatchedReferrers() throws Exception {
+        String prerenderReferrer = "android-app://com.foo.me/";
+        String launchReferrer = "android-app://com.foo.me.i.changed.my.mind/";
+        maybePrerenderAndLaunchWithReferrers(
+                mTestServer.getURL(FRAGMENT_TEST_PAGE), true, prerenderReferrer, launchReferrer);
+
+        Tab tab = mActivity.getActivityTab();
+        // Prerender has been dropped.
+        CriteriaHelper.pollInstrumentationThread(
+                new ElementContentCriteria(tab, "visibility", "visible"), 2000, 200);
+        // The Referrer is correctly set.
+        CriteriaHelper.pollInstrumentationThread(
+                new TabsOpenedFromExternalAppTest.ReferrerCriteria(tab, launchReferrer), 2000, 200);
+    }
+
+    /** Tests that a client can set a referrer, without prerendering. */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testClientCanSetReferrer() throws Exception {
+        String referrerUrl = "android-app://com.foo.me/";
+        maybePrerenderAndLaunchWithReferrers(mTestPage, false, null, referrerUrl);
+
+        Tab tab = mActivity.getActivityTab();
+        // The Referrer is correctly set.
+        CriteriaHelper.pollInstrumentationThread(
+                new TabsOpenedFromExternalAppTest.ReferrerCriteria(tab, referrerUrl), 2000, 200);
+    }
+
+    /** Maybe prerenders a URL with a referrer, then launch it with another one. */
+    private void maybePrerenderAndLaunchWithReferrers(String url, boolean prerender,
+            String prerenderReferrer, String launchReferrer) throws Exception {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        CustomTabsConnection connection = null;
+        ICustomTabsCallback cb = null;
+
+        if (prerender) {
+            connection = warmUpAndWait();
+            cb = new CustomTabsTestUtils.DummyCallback();
+            connection.newSession(cb);
+            Bundle extras = null;
+            if (prerenderReferrer != null) {
+                extras = new Bundle();
+                extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(prerenderReferrer));
+            }
+            assertTrue(connection.mayLaunchUrl(cb, Uri.parse(url), extras, null));
+            ensureCompletedPrerenderForUrl(connection, url);
+        }
+
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                context, url, cb != null ? cb.asBinder() : null);
+        if (launchReferrer != null) {
+            intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(launchReferrer));
+        }
+        try {
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
     }
 
     private void mayLaunchUrlWithoutWarmup(boolean noPrerendering) {
@@ -986,6 +1052,19 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     private IBinder warmUpAndLaunchUrlWithSession() throws InterruptedException {
         ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
         return warmUpAndLaunchUrlWithSession(cb);
+    }
+
+    private static void ensureCompletedPrerenderForUrl(
+            final CustomTabsConnection connection, final String url) throws Exception {
+        CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
+            @Override
+            public boolean isSatisfied() {
+                return connection.mPrerender != null && connection.mPrerender.mWebContents != null
+                        && ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
+                                   Profile.getLastUsedProfile(), url,
+                                   connection.mPrerender.mWebContents);
+            }
+        });
     }
 
     /**
