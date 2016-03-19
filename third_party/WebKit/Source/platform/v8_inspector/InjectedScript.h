@@ -53,7 +53,6 @@ class InjectedScript final {
 public:
     ~InjectedScript();
 
-    void getFunctionDetails(ErrorString*, const String16& functionId, OwnPtr<protocol::Debugger::FunctionDetails>* result);
     void getCollectionEntries(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::Debugger::CollectionEntry>>* result);
     void getProperties(ErrorString*, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
     void releaseObject(const String16& objectId);

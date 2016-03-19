@@ -48,6 +48,15 @@ DebuggerScript.getAfterCompileScript = function(eventData)
     return DebuggerScript._formatScript(eventData.script_.script_);
 }
 
+DebuggerScript._scopeTypeNames = { __proto__: null };
+DebuggerScript._scopeTypeNames[ScopeType.Global] = "global";
+DebuggerScript._scopeTypeNames[ScopeType.Local] = "local";
+DebuggerScript._scopeTypeNames[ScopeType.With] = "with";
+DebuggerScript._scopeTypeNames[ScopeType.Closure] = "closure";
+DebuggerScript._scopeTypeNames[ScopeType.Catch] = "catch";
+DebuggerScript._scopeTypeNames[ScopeType.Block] = "block";
+DebuggerScript._scopeTypeNames[ScopeType.Script] = "script";
+
 DebuggerScript.getFunctionScopes = function(fun)
 {
     var mirror = MakeMirror(fun);
@@ -63,9 +72,9 @@ DebuggerScript.getFunctionScopes = function(fun)
         if (!scopeObject)
             continue;
         result.push({
-            type: scopeDetails.type(),
+            type: DebuggerScript._scopeTypeNames[scopeDetails.type()],
             object: scopeObject,
-            name: scopeDetails.name()
+            name: scopeDetails.name() || ""
         });
     }
     return result;
@@ -432,7 +441,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
             for (var i = 0, j = 0; i < scopeObjects.length; ++i) {
                 var scopeObject = DebuggerScript._buildScopeObject(scopeTypes[i], scopeObjects[i]);
                 if (scopeObject) {
-                    scopeTypes[j] = scopeTypes[i];
+                    scopeTypes[j] = DebuggerScript._scopeTypeNames[scopeTypes[i]];
                     scopeNames[j] = scopeNames[i];
                     scopeChain[j] = scopeObject;
 

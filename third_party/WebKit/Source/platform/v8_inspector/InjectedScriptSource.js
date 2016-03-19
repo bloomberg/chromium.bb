@@ -450,29 +450,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} functionId
-     * @return {!DebuggerAgent.FunctionDetails|string}
-     */
-    getFunctionDetails: function(functionId)
-    {
-        var parsedFunctionId = this._parseObjectId(functionId);
-        var func = this._objectForId(parsedFunctionId);
-        if (typeof func !== "function")
-            return "Cannot resolve function by id.";
-        var details = nullifyObjectProto(/** @type {!DebuggerAgent.FunctionDetails} */ (InjectedScriptHost.functionDetails(func)));
-        if ("rawScopes" in details) {
-            var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedFunctionId.id);
-            var rawScopes = details["rawScopes"];
-            delete details["rawScopes"];
-            var scopes = [];
-            for (var i = 0; i < rawScopes.length; ++i)
-                scopes[i] = InjectedScript.CallFrameProxy._createScopeJson(rawScopes[i].type, rawScopes[i].name, rawScopes[i].object, objectGroupName);
-            details.scopeChain = scopes;
-        }
-        return details;
-    },
-
-    /**
      * @param {string} objectId
      * @return {!Array.<!Object>|string}
      */
@@ -1228,60 +1205,44 @@ InjectedScript.CallFrameProxy = function(ordinal, callFrame)
 InjectedScript.CallFrameProxy.prototype = {
     /**
      * @param {!JavaScriptCallFrame} callFrame
-     * @return {!Array.<!DebuggerAgent.Scope>}
+     * @return {!Array<!DebuggerAgent.Scope>}
      */
     _wrapScopeChain: function(callFrame)
     {
         var scopeChain = callFrame.scopeChain;
         var scopeChainProxy = [];
         for (var i = 0; i < scopeChain.length; ++i)
-            scopeChainProxy[i] = InjectedScript.CallFrameProxy._createScopeJson(callFrame.scopeType(i), callFrame.scopeName(i), scopeChain[i], "backtrace", callFrame.scopeStartLocation(i), callFrame.scopeEndLocation(i) );
+            scopeChainProxy[i] = this._createScopeJson(callFrame.scopeType(i), callFrame.scopeName(i), scopeChain[i], callFrame.scopeStartLocation(i), callFrame.scopeEndLocation(i) );
         return scopeChainProxy;
     },
 
+    /**
+     * @param {!DebuggerAgent.ScopeType<string>} scopeType
+     * @param {string} scopeName
+     * @param {*} scopeObject
+     * @param {?DebuggerAgent.Location} startLocation
+     * @param {?DebuggerAgent.Location} endLocation
+     * @return {!DebuggerAgent.Scope}
+     */
+    _createScopeJson: function(scopeType, scopeName, scopeObject, startLocation, endLocation)
+    {
+        var scope = {
+            object: injectedScript._wrapObject(scopeObject, "backtrace"),
+            type: scopeType,
+            __proto__: null
+        };
+        if (scopeName)
+            scope.name = scopeName;
+
+        if (startLocation)
+            scope.startLocation = startLocation;
+        if (endLocation)
+            scope.endLocation = endLocation;
+
+        return scope;
+    },
+
     __proto__: null
-}
-
-/**
- * @const
- * @type {!Object.<number, !DebuggerAgent.ScopeType>}
- */
-InjectedScript.CallFrameProxy._scopeTypeNames = {
-    0: "global",
-    1: "local",
-    2: "with",
-    3: "closure",
-    4: "catch",
-    5: "block",
-    6: "script",
-    __proto__: null
-};
-
-/**
- * @param {number} scopeTypeCode
- * @param {string} scopeName
- * @param {*} scopeObject
- * @param {string} groupId
- * @param {?DebuggerAgent.Location=} startLocation
- * @param {?DebuggerAgent.Location=} endLocation
- * @return {!DebuggerAgent.Scope}
- */
-InjectedScript.CallFrameProxy._createScopeJson = function(scopeTypeCode, scopeName, scopeObject, groupId, startLocation, endLocation)
-{
-    var scope = {
-        object: injectedScript._wrapObject(scopeObject, groupId),
-        type: InjectedScript.CallFrameProxy._scopeTypeNames[scopeTypeCode],
-        __proto__: null
-    };
-    if (scopeName)
-        scope.name = scopeName;
-
-    if (startLocation)
-        scope.startLocation = startLocation;
-    if (endLocation)
-        scope.endLocation = endLocation;
-
-    return scope;
 }
 
 /**

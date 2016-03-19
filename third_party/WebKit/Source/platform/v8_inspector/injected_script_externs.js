@@ -48,12 +48,6 @@ InjectedScriptHostClass.prototype.isTypedArray = function(obj) {}
 InjectedScriptHostClass.prototype.subtype = function(obj) {}
 
 /**
- * @param {!Function} obj
- * @return {*}
- */
-InjectedScriptHostClass.prototype.functionDetails = function(obj) {}
-
-/**
  * @param {!Object} obj
  * @return {?Array.<*>}
  */
@@ -173,7 +167,7 @@ function JavaScriptCallFrame()
 
 /**
  * @param {number} scopeIndex
- * @return {number}
+ * @return {!DebuggerAgent.ScopeType<string>}
  */
 JavaScriptCallFrame.prototype.scopeType = function(scopeIndex) {}
 

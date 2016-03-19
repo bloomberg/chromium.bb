@@ -25,7 +25,6 @@ public:
     static void formatAccessorsAsProperties(const v8::FunctionCallbackInfo<v8::Value>&);
     static void isTypedArrayCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void subtypeCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void functionDetailsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void generatorObjectDetailsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void collectionEntriesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void getInternalPropertiesCallback(const v8::FunctionCallbackInfo<v8::Value>&);

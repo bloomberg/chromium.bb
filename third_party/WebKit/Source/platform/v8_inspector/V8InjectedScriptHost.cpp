@@ -65,14 +65,6 @@ void V8InjectedScriptHost::inspectedObjectCallback(const v8::FunctionCallbackInf
     v8SetReturnValue(info, object ? object->get(context) : v8::Local<v8::Value>());
 }
 
-static v8::Local<v8::String> functionDisplayName(v8::Local<v8::Function> function)
-{
-    v8::Local<v8::Value> value = function->GetDebugName();
-    if (value->IsString() && v8::Local<v8::String>::Cast(value)->Length())
-        return v8::Local<v8::String>::Cast(value);
-    return v8::Local<v8::String>();
-}
-
 void V8InjectedScriptHost::internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1 || !info[0]->IsObject())
@@ -151,38 +143,6 @@ void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Va
         v8SetReturnValue(info, toV8String(isolate, subtype));
         return;
     }
-}
-
-void V8InjectedScriptHost::functionDetailsCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1 || !info[0]->IsFunction())
-        return;
-
-    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(info[0]);
-    int lineNumber = function->GetScriptLineNumber();
-    int columnNumber = function->GetScriptColumnNumber();
-
-    v8::Isolate* isolate = info.GetIsolate();
-    v8::Local<v8::Object> location = v8::Object::New(isolate);
-    location->Set(toV8StringInternalized(isolate, "lineNumber"), v8::Integer::New(isolate, lineNumber));
-    location->Set(toV8StringInternalized(isolate, "columnNumber"), v8::Integer::New(isolate, columnNumber));
-    location->Set(toV8StringInternalized(isolate, "scriptId"), v8::Integer::New(isolate, function->ScriptId())->ToString(isolate));
-
-    v8::Local<v8::Object> result = v8::Object::New(isolate);
-    result->Set(toV8StringInternalized(isolate, "location"), location);
-
-    v8::Local<v8::String> name = functionDisplayName(function);
-    result->Set(toV8StringInternalized(isolate, "functionName"), name.IsEmpty() ? toV8StringInternalized(isolate, "") : name);
-    result->Set(toV8StringInternalized(isolate, "isGenerator"), v8::Boolean::New(isolate, function->IsGeneratorFunction()));
-
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    if (!host->debugger())
-        return;
-    v8::MaybeLocal<v8::Value> scopes = host->debugger()->functionScopes(function);
-    if (!scopes.IsEmpty() && scopes.ToLocalChecked()->IsArray())
-        result->Set(toV8StringInternalized(isolate, "rawScopes"), scopes.ToLocalChecked());
-
-    v8SetReturnValue(info, result);
 }
 
 void V8InjectedScriptHost::collectionEntriesCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -493,7 +453,6 @@ const InjectedScriptHostWrapper::V8MethodConfiguration V8InjectedScriptHostMetho
     {"formatAccessorsAsProperties", V8InjectedScriptHost::formatAccessorsAsProperties},
     {"isTypedArray", V8InjectedScriptHost::isTypedArrayCallback},
     {"subtype", V8InjectedScriptHost::subtypeCallback},
-    {"functionDetails", V8InjectedScriptHost::functionDetailsCallback},
     {"collectionEntries", V8InjectedScriptHost::collectionEntriesCallback},
     {"getInternalProperties", V8InjectedScriptHost::getInternalPropertiesCallback},
     {"getEventListeners", V8InjectedScriptHost::getEventListenersCallback},

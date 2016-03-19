@@ -76,16 +76,6 @@ InjectedScript::~InjectedScript()
 {
 }
 
-void InjectedScript::getFunctionDetails(ErrorString* errorString, const String16& functionId, OwnPtr<FunctionDetails>* result)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getFunctionDetails");
-    function.appendArgument(functionId);
-    OwnPtr<protocol::Value> resultValue = makeCall(function);
-    protocol::ErrorSupport errors(errorString);
-    *result = FunctionDetails::parse(resultValue.get(), &errors);
-}
-
 void InjectedScript::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<Array<CollectionEntry>>* result)
 {
     v8::HandleScope handles(m_isolate);

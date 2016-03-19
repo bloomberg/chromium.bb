@@ -687,7 +687,57 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
     InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
-    injectedScript->getFunctionDetails(errorString, functionId, details);
+
+    v8::HandleScope scope(m_isolate);
+    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Context::Scope contextScope(context);
+
+    v8::Local<v8::Value> value;
+    if (!injectedScript->findObject(errorString, *remoteId, &value))
+        return;
+    if (!value->IsFunction()) {
+        *errorString = "Value with given id is not a function";
+        return;
+    }
+    v8::Local<v8::Function> function = value.As<v8::Function>();
+
+    v8::Local<v8::Value> scopesValue;
+    v8::Local<v8::Array> scopes;
+    String16 objectGroupName = injectedScript->objectGroupName(*remoteId);
+    if (m_debugger->functionScopes(function).ToLocal(&scopesValue) && scopesValue->IsArray()) {
+        scopes = scopesValue.As<v8::Array>();
+        for (size_t i = 0; i < scopes->Length(); ++i) {
+            v8::Local<v8::Value> scope;
+            if (!scopes->Get(injectedScript->context(), i).ToLocal(&scope) || !scope->IsObject()) {
+                *errorString = "Internal error";
+                return;
+            }
+            if (!injectedScript->wrapObjectProperty(errorString, scope.As<v8::Object>(), toV8String(injectedScript->isolate(), "object"), objectGroupName))
+                return;
+        }
+    }
+
+    OwnPtr<protocol::Debugger::Location> location = protocol::Debugger::Location::create()
+        .setScriptId(String16::number(function->ScriptId()))
+        .setLineNumber(function->GetScriptLineNumber())
+        .setColumnNumber(function->GetScriptColumnNumber()).build();
+
+    OwnPtr<FunctionDetails> functionDetails = FunctionDetails::create()
+        .setLocation(location.release())
+        .setFunctionName(toProtocolStringWithTypeCheck(function->GetDebugName()))
+        .setIsGenerator(function->IsGeneratorFunction()).build();
+
+    if (!scopes.IsEmpty()) {
+        protocol::ErrorSupport errorSupport;
+        OwnPtr<protocol::Array<protocol::Debugger::Scope>> scopeChain = protocol::Array<protocol::Debugger::Scope>::parse(toProtocolValue(injectedScript->context(), scopes).get(), &errorSupport);
+        if (errorSupport.hasErrors()) {
+            *errorString = "Internal error";
+            return;
+        }
+        functionDetails->setScopeChain(scopeChain.release());
+    }
+
+    *details = functionDetails.release();
 }
 
 void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, OwnPtr<GeneratorObjectDetails>* outDetails)
