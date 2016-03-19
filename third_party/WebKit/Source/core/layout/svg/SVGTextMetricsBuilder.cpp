@@ -199,6 +199,9 @@ static void measureTextLayoutObject(LayoutSVGInlineText* text, MeasureTextData* 
             textMetricsValues->clear();
     }
 
+    if (!text->textLength())
+        return;
+
     // TODO(pdr): This loop is too tightly coupled to SVGTextMetricsCalculator.
     // We should refactor SVGTextMetricsCalculator to be a simple bidi run
     // iterator and move all subrun logic to a single function.
