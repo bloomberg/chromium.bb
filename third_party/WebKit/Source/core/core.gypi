@@ -845,8 +845,8 @@
             'layout/svg/line/SVGRootInlineBox.h',
         ],
         'webcore_non_rendering_files': [
-            'Init.cpp',
-            'Init.h',
+            'CoreInitializer.cpp',
+            'CoreInitializer.h',
             'animation/KeyframeEffect.cpp',
             'animation/KeyframeEffect.h',
             'animation/AnimationClock.cpp',

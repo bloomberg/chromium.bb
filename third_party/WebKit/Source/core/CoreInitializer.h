@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Init_h
-#define Init_h
+#ifndef CoreInitializer_h
+#define CoreInitializer_h
 
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
@@ -44,7 +44,7 @@ public:
     virtual ~CoreInitializer() { }
 
     // Should be called by clients before trying to create Frames.
-    virtual void init();
+    virtual void initialize();
     virtual void shutdown();
 
 protected:
@@ -58,4 +58,4 @@ private:
 
 } // namespace blink
 
-#endif // Init_h
+#endif // CoreInitializer_h

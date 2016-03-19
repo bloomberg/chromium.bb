@@ -33,7 +33,7 @@ void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::C
 {% block partial_interface %}
 void {{v8_class_or_partial}}::initialize()
 {
-    // Should be invoked from initModules.
+    // Should be invoked from ModulesInitializer.
     {{v8_class}}::updateWrapperTypeInfo(
         &{{v8_class_or_partial}}::install{{v8_class}}Template,
         &{{v8_class_or_partial}}::preparePrototypeAndInterfaceObject);

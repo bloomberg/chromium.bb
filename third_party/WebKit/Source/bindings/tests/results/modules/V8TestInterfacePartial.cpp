@@ -348,7 +348,7 @@ void V8TestInterfacePartial::preparePrototypeAndInterfaceObject(v8::Local<v8::Co
 
 void V8TestInterfacePartial::initialize()
 {
-    // Should be invoked from initModules.
+    // Should be invoked from ModulesInitializer.
     V8TestInterface::updateWrapperTypeInfo(
         &V8TestInterfacePartial::installV8TestInterfaceTemplate,
         &V8TestInterfacePartial::preparePrototypeAndInterfaceObject);

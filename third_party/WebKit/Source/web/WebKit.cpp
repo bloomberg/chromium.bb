@@ -34,11 +34,10 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
-#include "core/Init.h"
 #include "core/animation/AnimationClock.h"
 #include "core/page/Page.h"
 #include "gin/public/v8_platform.h"
-#include "modules/InitModules.h"
+#include "modules/ModulesInitializer.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "platform/heap/Heap.h"
@@ -85,7 +84,7 @@ void initialize(Platform* platform)
 {
     Platform::initialize(platform);
 
-    modulesInitializer().init();
+    modulesInitializer().initialize();
     setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 
     V8Initializer::initializeMainThread();
@@ -96,11 +95,6 @@ void initialize(Platform* platform)
         s_endOfTaskRunner = new EndOfTaskRunner;
         currentThread->addTaskObserver(s_endOfTaskRunner);
     }
-}
-
-v8::Isolate* mainThreadIsolate()
-{
-    return V8PerIsolateData::mainThreadIsolate();
 }
 
 void shutdown()
@@ -121,6 +115,11 @@ void shutdown()
     modulesInitializer().shutdown();
 
     Platform::shutdown();
+}
+
+v8::Isolate* mainThreadIsolate()
+{
+    return V8PerIsolateData::mainThreadIsolate();
 }
 
 // TODO(tkent): The following functions to wrap LayoutTestSupport should be

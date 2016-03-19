@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Init.h"
+#include "core/CoreInitializer.h"
 
 #include "bindings/core/v8/ScriptStreamerThread.h"
 #include "core/EventNames.h"
@@ -73,7 +73,7 @@ void CoreInitializer::registerEventFactory()
     Document::registerEventFactory(EventFactory::create());
 }
 
-void CoreInitializer::init()
+void CoreInitializer::initialize()
 {
     ASSERT(!isInitialized());
     m_isInitialized = true;

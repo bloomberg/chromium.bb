@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "InitModules.h"
+#include "ModulesInitializer.h"
 
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
 #include "core/EventTypeNames.h"
@@ -24,7 +24,7 @@
 
 namespace blink {
 
-void ModulesInitializer::init()
+void ModulesInitializer::initialize()
 {
     ASSERT(!isInitialized());
 
@@ -42,7 +42,7 @@ void ModulesInitializer::init()
     AXObjectCache::init(AXObjectCacheImpl::create);
     DraggedIsolatedFileSystem::init(DraggedIsolatedFileSystemImpl::prepareForDataObject);
 
-    CoreInitializer::init();
+    CoreInitializer::initialize();
 
     // Canvas context types must be registered with the HTMLCanvasElement.
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new CanvasRenderingContext2D::Factory()));
@@ -61,7 +61,6 @@ void ModulesInitializer::shutdown()
     ASSERT(isInitialized());
     DatabaseManager::terminateDatabaseThread();
     CoreInitializer::shutdown();
-
 }
 
 } // namespace blink

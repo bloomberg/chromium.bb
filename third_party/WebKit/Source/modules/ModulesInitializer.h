@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InitModules_h
-#define InitModules_h
+#ifndef ModulesInitializer_h
+#define ModulesInitializer_h
 
-#include "core/Init.h"
+#include "core/CoreInitializer.h"
 #include "modules/ModulesExport.h"
 
 namespace blink {
 
 class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
 public:
-    void init() override;
+    void initialize() override;
     void shutdown() override;
 };
 
 } // namespace blink
 
-#endif // InitModules_h
+#endif // ModulesInitializer_h
