@@ -442,7 +442,7 @@ import java.util.UUID;
     public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
             ContentBitmapCallback callback) {
         nativeGetContentBitmap(mNativeWebContentsAndroid, callback, config, scale,
-                srcRect.top, srcRect.left, srcRect.width(), srcRect.height());
+                srcRect.left, srcRect.top, srcRect.width(), srcRect.height());
     }
 
     @Override
