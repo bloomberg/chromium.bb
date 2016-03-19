@@ -646,72 +646,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} objectId
-     * @param {string} expression
-     * @param {string} args
-     * @param {boolean} returnByValue
-     * @return {!Object|string}
-     */
-    callFunctionOn: function(objectId, expression, args, returnByValue)
-    {
-        var parsedObjectId = this._parseObjectId(objectId);
-        var object = this._objectForId(parsedObjectId);
-        if (!this._isDefined(object))
-            return "Could not find object with given id";
-
-        if (args) {
-            var resolvedArgs = [];
-            var callArgs = /** @type {!Array.<!RuntimeAgent.CallArgument>} */ (InjectedScriptHost.eval(args));
-            for (var i = 0; i < callArgs.length; ++i) {
-                try {
-                    resolvedArgs[i] = this._resolveCallArgument(callArgs[i]);
-                } catch (e) {
-                    return toString(e);
-                }
-            }
-        }
-
-        var objectGroup = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
-
-        /**
-         * @suppressReceiverCheck
-         * @param {*} object
-         * @param {boolean=} forceValueType
-         * @param {boolean=} generatePreview
-         * @param {?Array.<string>=} columnNames
-         * @param {boolean=} isTable
-         * @param {*=} customObjectConfig
-         * @return {!RuntimeAgent.RemoteObject}
-         * @this {InjectedScript}
-         */
-        function wrap(object, forceValueType, generatePreview, columnNames, isTable, customObjectConfig)
-        {
-            return this._wrapObject(object, objectGroup, forceValueType, generatePreview, columnNames, isTable, false, customObjectConfig);
-        }
-
-        try {
-
-            var remoteObjectAPI = { bindRemoteObject: bind(wrap, this), __proto__: null};
-            InjectedScriptHost.setNonEnumProperty(inspectedGlobalObject, "__remoteObjectAPI", remoteObjectAPI);
-
-            var func = InjectedScriptHost.eval("with (typeof __remoteObjectAPI !== 'undefined' ? __remoteObjectAPI : { __proto__: null }) {(" + expression + ")}");
-            if (typeof func !== "function")
-                return "Given expression does not evaluate to a function";
-
-            return { wasThrown: false,
-                     result: this._wrapObject(InjectedScriptHost.callFunction(func, object, resolvedArgs), objectGroup, returnByValue),
-                     __proto__: null };
-        } catch (e) {
-            return this._createThrownValue(e, objectGroup, false);
-        } finally {
-            try {
-                delete inspectedGlobalObject["__remoteObjectAPI"];
-            } catch(e) {
-            }
-        }
-    },
-
-    /**
      * @param {string|undefined} objectGroupName
      * @param {*} jsonMLObject
      * @throws {string} error message
@@ -746,53 +680,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * Resolves a value from CallArgument description.
-     * @param {!RuntimeAgent.CallArgument} callArgumentJson
-     * @return {*} resolved value
-     * @throws {string} error message
-     */
-    _resolveCallArgument: function(callArgumentJson)
-    {
-        callArgumentJson = nullifyObjectProto(callArgumentJson);
-        var objectId = callArgumentJson.objectId;
-        if (objectId) {
-            var parsedArgId = this._parseObjectId(objectId);
-            if (!parsedArgId || parsedArgId["injectedScriptId"] !== injectedScriptId)
-                throw "Arguments should belong to the same JavaScript world as the target object.";
-
-            var resolvedArg = this._objectForId(parsedArgId);
-            if (!this._isDefined(resolvedArg))
-                throw "Could not find object with given id";
-
-            return resolvedArg;
-        } else if ("value" in callArgumentJson) {
-            var value = callArgumentJson.value;
-            if (callArgumentJson.type === "number" && typeof value !== "number")
-                value = Number(value);
-            return value;
-        }
-        return undefined;
-    },
-
-    /**
-     * @param {*} value
-     * @param {string|undefined} objectGroup
-     * @param {boolean} generatePreview
-     * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
-     * @return {!Object}
-     */
-    _createThrownValue: function(value, objectGroup, generatePreview, exceptionDetails)
-    {
-        var remoteObject = this._wrapObject(value, objectGroup, false, generatePreview && InjectedScriptHost.subtype(value) !== "error");
-        if (!remoteObject.description){
-            try {
-                remoteObject.description = toStringDescription(value);
-            } catch (e) {}
-        }
-        return { wasThrown: true, result: remoteObject, exceptionDetails: exceptionDetails, __proto__: null };
-    },
-
-    /**
      * @param {?Object} callFrame
      * @return {!Array.<!InjectedScript.CallFrameProxy>|boolean}
      */
@@ -817,6 +704,30 @@ InjectedScript.prototype = {
     commandLineAPI: function()
     {
         return new CommandLineAPI(this._commandLineAPIImpl);
+    },
+
+    /**
+     * @param {string} objectGroup
+     * @return {!Object}
+     */
+    remoteObjectAPI: function(objectGroup)
+    {
+        /**
+         * @suppressReceiverCheck
+         * @param {*} object
+         * @param {boolean=} forceValueType
+         * @param {boolean=} generatePreview
+         * @param {?Array.<string>=} columnNames
+         * @param {boolean=} isTable
+         * @param {*=} customObjectConfig
+         * @return {!RuntimeAgent.RemoteObject}
+         * @this {InjectedScript}
+         */
+        function wrap(object, forceValueType, generatePreview, columnNames, isTable, customObjectConfig)
+        {
+            return this._wrapObject(object, objectGroup, forceValueType, generatePreview, columnNames, isTable, false, customObjectConfig);
+        }
+        return { bindRemoteObject: bind(wrap, this), __proto__: null};
     },
 
     /**

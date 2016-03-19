@@ -34,7 +34,6 @@ InspectorTest.evaluateInConsoleAndDump = function(code, callback)
     function mycallback(text)
     {
         text = text.replace(/\bVM\d+/g, "VM");
-        text = text.replace(/(?:InjectedScript\.)?_?evaluate\w* @ VM:\d+/g, "");
         InspectorTest.addResult(code + " = " + text);
         callback(text);
     }
@@ -46,12 +45,6 @@ InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessag
     var messageText = messageElement.deepTextContent().replace(/\u200b/g, "");
     // Replace scriptIds with generic scriptId string to avoid flakiness.
     messageText = messageText.replace(/VM\d+/g, "VM");
-    // Strip out InjectedScript line numbers from stack traces to avoid rebaselining each time InjectedScriptSource is edited.
-    messageText = messageText.replace(/(?:InjectedScript\.)?_?evaluate\w* @ VM:\d+/g, "");
-    // Strip out InjectedScript line numbers from console message anchor.
-    var functionName = consoleMessage && consoleMessage.stackTrace && consoleMessage.stackTrace.callFrames[0] && consoleMessage.stackTrace.callFrames[0].functionName || "";
-    if (functionName.indexOf("evaluate") !== -1)
-        messageText = messageText.replace(/\bVM:\d+/, ""); // Only first replace.
     if (messageText.startsWith("Navigated to")) {
         var fileName = messageText.split(" ").pop().split("/").pop();
         messageText = "Navigated to " + fileName;
@@ -133,7 +126,6 @@ InspectorTest.formatterIgnoreStackFrameUrls = function(messageFormatter, node)
     {
         var buffer = string.replace(/\u200b/g, "");
         buffer = buffer.replace(/VM\d+/g, "VM");
-        buffer = buffer.replace(/(?:InjectedScript\.)?_?evaluate\w* @ VM:\d+/g, "");
         return buffer.replace(/^\s+at [^\]]+(]?)$/, "$1");
     }
 

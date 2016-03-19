@@ -39,6 +39,7 @@ namespace blink {
 
 class InjectedScript;
 class InjectedScriptManager;
+class RemoteObjectIdBase;
 class V8DebuggerImpl;
 
 namespace protocol {
@@ -129,6 +130,8 @@ public:
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
     void clearInspectedObjects() override;
 private:
+    v8::MaybeLocal<v8::Value> evaluateInternal(InjectedScript*, bool doNotPauseOnExceptionsAndMuteConsole, const String& expression, v8::MaybeLocal<v8::Object> extension);
+
     int m_contextGroupId;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Runtime* m_frontend;

@@ -26,8 +26,7 @@ function test()
                 var data = record.traceEvent().args["data"];
                 var scriptName = data.scriptName;
                 var scriptNameShort = scriptName.substring(scriptName.lastIndexOf("/") + 1);
-                if (scriptNameShort !== "InjectedScript")
-                    InspectorTest.addResult(record.type() + " " + scriptNameShort + ":" + data.scriptLine);
+                InspectorTest.addResult(record.type() + " " + scriptNameShort + ":" + data.scriptLine);
             }
         }
         InspectorTest.printTimelineRecords(null, formatter);

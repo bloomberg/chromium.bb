@@ -53,15 +53,6 @@ class InjectedScript final {
 public:
     ~InjectedScript();
 
-    void callFunctionOn(
-        ErrorString*,
-        const String16& objectId,
-        const String16& expression,
-        const String16& arguments,
-        bool returnByValue,
-        bool generatePreview,
-        OwnPtr<protocol::Runtime::RemoteObject>* result,
-        Maybe<bool>* wasThrown);
     void getFunctionDetails(ErrorString*, const String16& functionId, OwnPtr<protocol::Debugger::FunctionDetails>* result);
     void getCollectionEntries(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::Debugger::CollectionEntry>>* result);
     void getProperties(ErrorString*, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
@@ -90,7 +81,8 @@ public:
     bool setLastEvaluationResult(ErrorString*, v8::Local<v8::Value>);
     v8::MaybeLocal<v8::Value> resolveCallArgument(ErrorString*, protocol::Runtime::CallArgument*);
 
-    v8::MaybeLocal<v8::Object> commandLineAPI(ErrorString*);
+    v8::MaybeLocal<v8::Object> commandLineAPI(ErrorString*) const;
+    v8::MaybeLocal<v8::Object> remoteObjectAPI(ErrorString*, const String16& groupName) const;
 
     PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Local<v8::Message>);
     void wrapEvaluateResult(ErrorString*,
@@ -110,9 +102,9 @@ private:
     v8::Local<v8::Value> v8Value() const;
     v8::Local<v8::Value> callFunctionWithEvalEnabled(V8FunctionCall&, bool& hadException) const;
     PassOwnPtr<protocol::Value> makeCall(V8FunctionCall&);
-    PassOwnPtr<protocol::Runtime::RemoteObject> makeEvalCall(ErrorString*, V8FunctionCall&, Maybe<bool>* wasThrown);
     PassOwnPtr<protocol::Value> makeCallWithExceptionDetails(V8FunctionCall&, Maybe<protocol::Runtime::ExceptionDetails>*);
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
+    v8::MaybeLocal<v8::Object> callFunctionReturnObject(ErrorString*, V8FunctionCall&) const;
 
     InjectedScriptManager* m_manager;
     v8::Isolate* m_isolate;

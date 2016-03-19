@@ -738,8 +738,7 @@ InspectorTest.clearSpecificInfoFromStackFrames = function(text)
     var buffer = text.replace(/\(file:\/\/\/(?:[^)]+\)|[\w\/:-]+)/g, "(...)");
     buffer = buffer.replace(/\(<anonymous>:[^)]+\)/g, "(...)");
     buffer = buffer.replace(/VM\d+/g, "VM");
-    buffer = buffer.replace(/\s*at[^()]+\(native\)/g, "");
-    return buffer.replace(/\s*at Object.InjectedScript.[^)]+\)/g, "");
+    return buffer.replace(/\s*at[^()]+\(native\)/g, "");
 }
 
 InspectorTest.hideInspectorView = function()

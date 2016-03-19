@@ -76,18 +76,6 @@ InjectedScript::~InjectedScript()
 {
 }
 
-void InjectedScript::callFunctionOn(ErrorString* errorString, const String16& objectId, const String16& expression, const String16& arguments, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "callFunctionOn");
-    function.appendArgument(objectId);
-    function.appendArgument(expression);
-    function.appendArgument(arguments);
-    function.appendArgument(returnByValue);
-    function.appendArgument(generatePreview);
-    *result = makeEvalCall(errorString, function, wasThrown);
-}
-
 void InjectedScript::getFunctionDetails(ErrorString* errorString, const String16& functionId, OwnPtr<FunctionDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
@@ -322,34 +310,6 @@ PassOwnPtr<protocol::Value> InjectedScript::makeCall(V8FunctionCall& function)
     return result.release();
 }
 
-PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::makeEvalCall(ErrorString* errorString, V8FunctionCall& function, Maybe<bool>* wasThrown)
-{
-    OwnPtr<protocol::Value> result = makeCall(function);
-    if (!result) {
-        *errorString = "Internal error: result value is empty";
-        return nullptr;
-    }
-    if (result->type() == protocol::Value::TypeString) {
-        result->asString(errorString);
-        ASSERT(errorString->length());
-        return nullptr;
-    }
-    protocol::DictionaryValue* resultPair = protocol::DictionaryValue::cast(result.get());
-    if (!resultPair) {
-        *errorString = "Internal error: result is not an Object";
-        return nullptr;
-    }
-    protocol::DictionaryValue* resultObj = resultPair->getObject("result");
-    bool wasThrownVal = false;
-    if (!resultObj || !resultPair->getBoolean("wasThrown", &wasThrownVal)) {
-        *errorString = "Internal error: result is not a pair of value and wasThrown flag";
-        return nullptr;
-    }
-    protocol::ErrorSupport errors(errorString);
-    *wasThrown = wasThrownVal;
-    return protocol::Runtime::RemoteObject::parse(resultObj, &errors);
-}
-
 PassOwnPtr<protocol::Value> InjectedScript::makeCallWithExceptionDetails(V8FunctionCall& function, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     OwnPtr<protocol::Value> result;
@@ -416,17 +376,29 @@ v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* error
     return v8::Undefined(m_isolate);
 }
 
-v8::MaybeLocal<v8::Object> InjectedScript::commandLineAPI(ErrorString* errorString)
+v8::MaybeLocal<v8::Object> InjectedScript::commandLineAPI(ErrorString* errorString) const
 {
     V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "commandLineAPI");
+    return callFunctionReturnObject(errorString, function);
+}
+
+v8::MaybeLocal<v8::Object> InjectedScript::remoteObjectAPI(ErrorString* errorString, const String16& groupName) const
+{
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "remoteObjectAPI");
+    function.appendArgument(groupName);
+    return callFunctionReturnObject(errorString, function);
+}
+
+v8::MaybeLocal<v8::Object> InjectedScript::callFunctionReturnObject(ErrorString* errorString, V8FunctionCall& function) const
+{
     bool hadException = false;
-    v8::Local<v8::Value> scopeExtensionValue = function.call(hadException, false);
-    v8::Local<v8::Object> scopeExtensionObject;
-    if (hadException || scopeExtensionValue.IsEmpty() || !scopeExtensionValue->ToObject(context()).ToLocal(&scopeExtensionObject)) {
+    v8::Local<v8::Value> result = function.call(hadException, false);
+    v8::Local<v8::Object> resultObject;
+    if (hadException || result.IsEmpty() || !result->ToObject(context()).ToLocal(&resultObject)) {
         *errorString = "Internal error";
         return v8::MaybeLocal<v8::Object>();
     }
-    return scopeExtensionObject;
+    return resultObject;
 }
 
 PassOwnPtr<protocol::Runtime::ExceptionDetails> InjectedScript::createExceptionDetails(v8::Local<v8::Message> message)
@@ -470,7 +442,8 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
         if (!remoteObject)
             return;
         *result = remoteObject.release();
-        *exceptionDetails = createExceptionDetails(tryCatch.Message());
+        if (exceptionDetails)
+            *exceptionDetails = createExceptionDetails(tryCatch.Message());
         if (wasThrown)
             *wasThrown = true;
     }
