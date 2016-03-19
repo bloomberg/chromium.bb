@@ -21,7 +21,7 @@
 // information about resources used by a child process. Currently, this is only
 // V8 memory and Blink resource cache usage, but could be expanded to include
 // other resources.  This is intended for status viewers such as the task
-// manager and about://memory-internals.
+// manager.
 //
 // To create:
 // 1. Create a ResourceUsageReporterPtr and obtain an InterfaceRequest<> using

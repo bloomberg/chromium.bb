@@ -176,10 +176,6 @@ class SortHelper {
   [self adjustSelectionAndEndProcessButton];
 }
 
-- (IBAction)statsLinkClicked:(id)sender {
-  TaskManager::GetInstance()->OpenAboutMemory();
-}
-
 - (IBAction)killSelectedProcesses:(id)sender {
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
   for (NSUInteger i = [selection lastIndex];

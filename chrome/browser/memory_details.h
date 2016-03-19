@@ -59,10 +59,6 @@ struct ProcessMemoryInformation {
   base::string16 product_name;
   // The number of processes which this memory represents.
   int num_processes;
-  // A process is a diagnostics process if it is rendering about:memory.
-  // Mark this specially so that it can avoid counting it in its own
-  // results.
-  bool is_diagnostics;
   // If this is a child process of Chrome, what type (i.e. plugin) it is.
   int process_type;
   // If this is a renderer process, what type it is.

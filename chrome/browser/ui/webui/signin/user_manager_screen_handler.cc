@@ -200,8 +200,6 @@ void UrlHashHelper::ExecuteUrlHash() {
     chrome::ShowAboutChrome(target_browser);
   else if (hash_ == profiles::kUserManagerSelectProfileChromeSettings)
     chrome::ShowSettings(target_browser);
-  else if (hash_ == profiles::kUserManagerSelectProfileChromeMemory)
-    chrome::ShowMemory(target_browser);
 }
 
 void HandleLogRemoveUserWarningShown(const base::ListValue* args) {

@@ -570,22 +570,6 @@ Chromium is unable to recover your settings.
         Google API keys are missing. Some functionality of Chromium will be disabled.
       </message>
 
-      <!-- about:memory -->
-      <if expr="not is_android">
-        <message name="IDS_MEMORY_USAGE_SUMMARY_DESC" desc="Describes the browser summary table in the about memory page, which shows memory usage for Chromium and any other active browsers." translateable="false">
-Summary of memory used by currently active browsers. For browsers which use multiple processes, memory reflects aggregate memory used across all browser processes.
-
-For Chromium, processes used to display diagnostics information (such as this "about:memory") are excluded.
-        </message>
-      </if>
-      <if expr="is_android">
-        <message name="IDS_MEMORY_USAGE_SUMMARY_DESC" desc="Describes the browser summary table in the about memory page, which shows memory usage for Chromium." translateable="false">
-Summary of memory used by Chromium. Since Chromium uses multiple processes, memory reflects aggregate memory used across all browser processes.
-
-For Chromium, processes used to display diagnostics information (such as this "about:memory") are excluded.
-        </message>
-      </if>
-
       <!-- About Chrome page -->
       <if expr="not chromeos">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium">

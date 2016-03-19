@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/strings/grit/components_strings.h"
@@ -91,7 +90,6 @@ std::string ProcessMemoryInformation::GetFullTypeNameInEnglish(
 ProcessMemoryInformation::ProcessMemoryInformation()
     : pid(0),
       num_processes(0),
-      is_diagnostics(false),
       process_type(content::PROCESS_TYPE_UNKNOWN),
       renderer_type(RENDERER_UNKNOWN) {
 }
@@ -334,35 +332,6 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       if (!title.length())
         title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
       process.titles.push_back(title);
-
-      // The presence of a single WebContents with a diagnostics page will make
-      // the whole process be considered a diagnostics process.
-      //
-      // We need to check the pending entry as well as the virtual_url to
-      // see if it's a chrome://memory URL (we don't want to count these in
-      // the total memory usage of the browser).
-      //
-      // When we reach here, chrome://memory will be the pending entry since
-      // we haven't responded with any data such that it would be committed.
-      // If you have another chrome://memory tab open (which would be
-      // committed), we don't want to count it either, so we also check the
-      // last committed entry.
-      //
-      // Either the pending or last committed entries can be NULL.
-      const NavigationEntry* pending_entry =
-          contents->GetController().GetPendingEntry();
-      const NavigationEntry* last_committed_entry =
-          contents->GetController().GetLastCommittedEntry();
-      if ((last_committed_entry &&
-           base::LowerCaseEqualsASCII(
-               last_committed_entry->GetVirtualURL().spec(),
-               chrome::kChromeUIMemoryURL)) ||
-          (pending_entry &&
-           base::LowerCaseEqualsASCII(
-               pending_entry->GetVirtualURL().spec(),
-               chrome::kChromeUIMemoryURL))) {
-        process.is_diagnostics = true;
-      }
     }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)

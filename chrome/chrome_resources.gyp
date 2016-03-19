@@ -22,14 +22,6 @@
       # it easier for us to reference them internally.
       'actions': [
         {
-          # GN version: //chrome/browser/resources:memory_internals_resources
-          'action_name': 'generate_memory_internals_resources',
-          'variables': {
-            'grit_grd_file': 'browser/resources/memory_internals_resources.grd',
-          },
-          'includes': [ 'chrome_grit_action.gypi' ],
-        },
-        {
           # GN version: //chrome/browser/resources:net_internals_resources
           'action_name': 'generate_net_internals_resources',
           'variables': {

@@ -31,7 +31,6 @@ enum UserManagerProfileSelected {
   USER_MANAGER_SELECT_PROFILE_TASK_MANAGER,
   USER_MANAGER_SELECT_PROFILE_ABOUT_CHROME,
   USER_MANAGER_SELECT_PROFILE_CHROME_SETTINGS,
-  USER_MANAGER_SELECT_PROFILE_CHROME_MEMORY,
   USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER,
 };
 
@@ -39,7 +38,6 @@ extern const char kUserManagerDisplayTutorial[];
 extern const char kUserManagerSelectProfileTaskManager[];
 extern const char kUserManagerSelectProfileAboutChrome[];
 extern const char kUserManagerSelectProfileChromeSettings[];
-extern const char kUserManagerSelectProfileChromeMemory[];
 extern const char kUserManagerSelectProfileAppLauncher[];
 
 // Returns the path of the profile connected to the given email.  If no profile

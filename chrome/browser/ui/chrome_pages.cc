@@ -215,10 +215,6 @@ void ShowSlow(Browser* browser) {
 #endif
 }
 
-void ShowMemory(Browser* browser) {
-  ShowSingletonTab(browser, GURL(kChromeUIMemoryURL));
-}
-
 GURL GetSettingsUrl(const std::string& sub_page) {
   std::string url = std::string(kChromeUISettingsURL) + sub_page;
 #if defined(OS_CHROMEOS)

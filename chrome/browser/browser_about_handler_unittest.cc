@@ -43,10 +43,6 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         GURL(url::kAboutBlankURL)
       },
       {
-        GURL(chrome_prefix + chrome::kChromeUIMemoryHost),
-        GURL(chrome_prefix + chrome::kChromeUIMemoryHost)
-      },
-      {
         GURL(chrome_prefix + chrome::kChromeUIDefaultHost),
         GURL(chrome_prefix + chrome::kChromeUIVersionHost)
       },

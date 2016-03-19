@@ -602,7 +602,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     if (base::LowerCaseEqualsASCII(url.spec(), url::kAboutBlankURL))
       return true;  // Every child process can request <about:blank>.
 
-    // URLs like <about:memory> and <about:crash> shouldn't be requestable by
+    // URLs like <about:version> and <about:crash> shouldn't be requestable by
     // any child process.  Also, this case covers <javascript:...>, which should
     // be handled internally by the process and not kicked up to the browser.
     return false;

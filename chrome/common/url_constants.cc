@@ -64,8 +64,6 @@ const char kChromeUIInvalidationsURL[] = "chrome://invalidations/";
 const char kChromeUILargeIconURL[] = "chrome://large-icon/";
 const char kChromeUIMdPolicyURL[] = "chrome://md-policy/";
 const char kChromeUIMdSettingsURL[] = "chrome://md-settings/";
-const char kChromeUIMemoryRedirectURL[] = "chrome://memory-redirect/";
-const char kChromeUIMemoryURL[] = "chrome://memory/";
 const char kChromeUINaClURL[] = "chrome://nacl/";
 const char kChromeUINetInternalsURL[] = "chrome://net-internals/";
 const char kChromeUINewProfileURL[] = "chrome://newprofile/";
@@ -208,9 +206,6 @@ const char kChromeUILargeIconHost[] = "large-icon";
 const char kChromeUILocalStateHost[] = "local-state";
 const char kChromeUIMdPolicyHost[] = "md-policy";
 const char kChromeUIMdSettingsHost[] = "md-settings";
-const char kChromeUIMemoryHost[] = "memory";
-const char kChromeUIMemoryInternalsHost[] = "memory-internals";
-const char kChromeUIMemoryRedirectHost[] = "memory-redirect";
 const char kChromeUINaClHost[] = "nacl";
 const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUINetInternalsHost[] = "net-internals";
@@ -610,8 +605,6 @@ const char* const kChromeHostURLs[] = {
   kChromeUIHistoryHost,
   kChromeUIInvalidationsHost,
   kChromeUILocalStateHost,
-  kChromeUIMemoryHost,
-  kChromeUIMemoryInternalsHost,
   kChromeUINetInternalsHost,
   kChromeUINewTabHost,
   kChromeUIOmniboxHost,

@@ -588,7 +588,6 @@ group("resources") {
 group("extra_resources") {
   public_deps = [
     "//chrome/browser/resources:invalidations_resources",
-    "//chrome/browser/resources:memory_internals_resources",
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
     "//chrome/browser/resources:policy_resources",
@@ -664,7 +663,6 @@ repack("packed_extra_resources") {
     "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
     "$root_gen_dir/chrome/common_resources.pak",
     "$root_gen_dir/chrome/invalidations_resources.pak",
-    "$root_gen_dir/chrome/memory_internals_resources.pak",
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/password_manager_internals_resources.pak",
     "$root_gen_dir/chrome/policy_resources.pak",
@@ -677,7 +675,6 @@ repack("packed_extra_resources") {
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/browser:resources",
     "//chrome/browser/resources:invalidations_resources",
-    "//chrome/browser/resources:memory_internals_resources",
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
     "//chrome/browser/resources:policy_resources",

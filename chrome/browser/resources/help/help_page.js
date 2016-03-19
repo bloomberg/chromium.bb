@@ -8,7 +8,7 @@ cr.define('help', function() {
 
   /**
    * Encapsulated handling of the About page. Called 'help' internally to avoid
-   * confusion with generic AboutUI (about:memory, about:sandbox, etc.).
+   * confusion with generic AboutUI (about:version, about:sandbox, etc.).
    */
   function HelpPage() {
     var id = loadTimeData.valueExists('aboutOverlayTabTitle') ?

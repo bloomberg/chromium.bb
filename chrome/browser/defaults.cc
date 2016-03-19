@@ -40,10 +40,8 @@ const bool kSizeTabButtonToTopOfTabStrip = false;
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 const bool kSyncAutoStarts = true;
-const bool kShowOtherBrowsersInAboutMemory = false;
 #else
 const bool kSyncAutoStarts = false;
-const bool kShowOtherBrowsersInAboutMemory = true;
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

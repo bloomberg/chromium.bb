@@ -5,16 +5,6 @@
 import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 
-grit("memory_internals_resources") {
-  source = "memory_internals_resources.grd"
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/memory_internals_resources.h",
-    "memory_internals_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
 grit("net_internals_resources") {
   source = "net_internals_resources.grd"
   defines = chrome_grit_defines

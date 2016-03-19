@@ -56,7 +56,6 @@ void ShowHelp(Browser* browser, HelpSource source);
 void ShowHelpForProfile(Profile* profile, HelpSource source);
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);
-void ShowMemory(Browser* browser);
 
 // Constructs a settings GURL for the specified |sub_page|.
 GURL GetSettingsUrl(const std::string& sub_page);

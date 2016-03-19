@@ -15,7 +15,7 @@ bool CanAddURLToHistory(const GURL& url) {
   // TODO: We should allow kChromeUIScheme URLs if they have been explicitly
   // typed.  Right now, however, these are marked as typed even when triggered
   // by a shortcut or menu action.
-  // Right now, URLs like about:memory are not registered in the history.
+  // Right now, URLs like about:version are not registered in the history.
   if (url.SchemeIs(url::kJavaScriptScheme) ||
       url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(content::kChromeUIScheme) ||

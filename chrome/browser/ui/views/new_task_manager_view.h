@@ -13,7 +13,6 @@
 #include "ui/base/models/table_model.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -39,7 +38,6 @@ class NewTaskManagerView
       public views::DialogDelegateView,
       public views::TableGrouper,
       public views::TableViewObserver,
-      public views::LinkListener,
       public views::ContextMenuController,
       public ui::SimpleMenuModel::Delegate {
  public:
@@ -87,9 +85,6 @@ class NewTaskManagerView
   void OnDoubleClick() override;
   void OnKeyDown(ui::KeyboardCode keycode) override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
   // views::ContextMenuController:
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
@@ -129,7 +124,6 @@ class NewTaskManagerView
   base::string16 always_on_top_menu_text_;
 
   views::LabelButton* kill_button_;
-  views::Link* about_memory_link_;
   views::TableView* tab_table_;
   views::View* tab_table_parent_;
 

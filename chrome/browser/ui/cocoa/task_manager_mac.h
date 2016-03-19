@@ -49,9 +49,6 @@ class ImageSkia;
 // Refreshes all data in the task manager table.
 - (void)reloadData;
 
-// Callback for "Stats for nerds" link.
-- (IBAction)statsLinkClicked:(id)sender;
-
 // Callback for "End process" button.
 - (IBAction)killSelectedProcesses:(id)sender;
 

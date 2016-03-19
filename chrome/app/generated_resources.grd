@@ -3429,9 +3429,6 @@ Even if you have downloaded files from this website before, the website might ha
             JavaScript Memory
           </message>
         </if>
-        <message name="IDS_TASK_MANAGER_ABOUT_MEMORY_LINK" desc="The caption of the Task Manager link to about:memory">
-          Stats for nerds
-        </message>
         <message name="IDS_TASK_MANAGER_MEM_CELL_TEXT" desc="The value displayed in the memory usage cells.">
           <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K
         </message>

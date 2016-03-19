@@ -12,7 +12,6 @@
       '<(grit_out_dir)/browser_resources.pak',
       '<(grit_out_dir)/common_resources.pak',
       '<(grit_out_dir)/invalidations_resources.pak',
-      '<(grit_out_dir)/memory_internals_resources.pak',
       '<(grit_out_dir)/net_internals_resources.pak',
       '<(grit_out_dir)/password_manager_internals_resources.pak',
       '<(grit_out_dir)/policy_resources.pak',

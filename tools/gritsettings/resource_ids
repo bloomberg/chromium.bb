@@ -243,9 +243,6 @@
   "extensions/shell/app_shell_resources.grd": {
     "includes": [26350],
   },
-  "chrome/browser/resources/memory_internals_resources.grd": {
-    "includes": [26450],
-  },
   "chrome/browser/resources/password_manager_internals_resources.grd": {
     "includes": [26650],
   },

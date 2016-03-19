@@ -222,9 +222,6 @@ void OnUserManagerSystemProfileCreated(
              profiles::USER_MANAGER_SELECT_PROFILE_CHROME_SETTINGS) {
     page += profiles::kUserManagerSelectProfileChromeSettings;
   } else if (profile_open_action ==
-             profiles::USER_MANAGER_SELECT_PROFILE_CHROME_MEMORY) {
-    page += profiles::kUserManagerSelectProfileChromeMemory;
-  } else if (profile_open_action ==
              profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER) {
     page += profiles::kUserManagerSelectProfileAppLauncher;
   }
@@ -249,7 +246,6 @@ const char kUserManagerDisplayTutorial[] = "#tutorial";
 const char kUserManagerSelectProfileTaskManager[] = "#task-manager";
 const char kUserManagerSelectProfileAboutChrome[] = "#about-chrome";
 const char kUserManagerSelectProfileChromeSettings[] = "#chrome-settings";
-const char kUserManagerSelectProfileChromeMemory[] = "#chrome-memory";
 const char kUserManagerSelectProfileAppLauncher[] = "#app-launcher";
 
 base::FilePath GetPathOfProfileWithEmail(ProfileManager* profile_manager,

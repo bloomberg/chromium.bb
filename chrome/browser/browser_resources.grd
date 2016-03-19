@@ -8,16 +8,6 @@
   </outputs>
   <release seq="1">
     <structures>
-      <if expr="not is_win and not is_macosx and not is_ios">
-        <structure name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="chrome_html" />
-      </if>
-      <if expr="is_macosx or is_ios">
-        <structure name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_mac.html" flattenhtml="true" type="chrome_html" />
-      </if>
-      <if expr="is_win">
-        <structure name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="chrome_html" />
-      </if>
-      <structure name="IDR_ABOUT_MEMORY_CSS" file="resources\about_memory.css" flattenhtml="true" type="chrome_html" />
       <if expr="enable_app_list">
         <structure name="IDR_APP_LIST_START_PAGE_CSS" file="resources\app_list\start_page.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LIST_START_PAGE_HTML" file="resources\app_list\start_page.html" flattenhtml="true" type="chrome_html" />
@@ -84,7 +74,6 @@
         <include name="IDR_ABOUT_FLASH_HTML" file="resources\about_flash.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ABOUT_FLASH_JS" file="resources\about_flash.js" type="BINDATA" />
       </if>
-      <include name="IDR_ABOUT_MEMORY_JS" file="resources\about_memory.js" flattenhtml="true" type="BINDATA" />
       <if expr="not disable_nacl">
         <include name="IDR_ABOUT_NACL_HTML" file="resources\about_nacl.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ABOUT_NACL_CSS" file="resources\about_nacl.css" flattenhtml="true" type="chrome_html" />

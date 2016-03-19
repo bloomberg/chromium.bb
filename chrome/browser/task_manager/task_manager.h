@@ -83,8 +83,6 @@ class TaskManager {
 
   TaskManagerModel* model() const { return model_.get(); }
 
-  void OpenAboutMemory();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Resources);

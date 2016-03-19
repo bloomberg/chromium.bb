@@ -3104,7 +3104,7 @@ TEST_F(HistoryBackendTest, TopHosts_IgnoreUnusualURLs) {
       GURL("chrome-extension://nghiiepjnjgjeolabmjjceablnkpkjde/options.html"));
   urls.push_back(GURL("file:///home/foobar/tmp/baz.html"));
   urls.push_back(GURL("data:text/plain,Hello%20world%21"));
-  urls.push_back(GURL("chrome://memory"));
+  urls.push_back(GURL("chrome://version"));
   urls.push_back(GURL("about:mammon"));
   for (const GURL& url : urls) {
     backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,

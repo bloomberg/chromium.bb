@@ -22,7 +22,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
@@ -45,25 +44,6 @@ namespace task_management {
 namespace {
 
 NewTaskManagerView* g_task_manager_view = nullptr;
-
-// Opens the "about:memory" for the "stats for nerds" link.
-void OpenAboutMemory() {
-  Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
-  if (profile->IsGuestSession() &&
-      !g_browser_process->local_state()->GetBoolean(
-          prefs::kBrowserGuestModeEnabled)) {
-    UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_NO_TUTORIAL,
-                      profiles::USER_MANAGER_SELECT_PROFILE_CHROME_MEMORY);
-    return;
-  }
-
-  chrome::NavigateParams params(profile,
-                                GURL(chrome::kChromeUIMemoryURL),
-                                ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
-}
 
 }  // namespace
 
@@ -164,12 +144,6 @@ void NewTaskManagerView::Layout() {
   int y_buttons = parent_bounds.bottom() - size.height() - vertical_margin;
   kill_button_->SetBounds(x, y_buttons, size.width(), size.height());
 
-  size = about_memory_link_->GetPreferredSize();
-  about_memory_link_->SetBounds(
-      horizontal_margin,
-      y_buttons + (kill_button_->height() - size.height()) / 2,
-      size.width(), size.height());
-
   gfx::Rect rect = GetLocalBounds();
   rect.Inset(horizontal_margin, views::kPanelVertMargin);
   rect.Inset(0, 0, 0,
@@ -192,20 +166,17 @@ bool NewTaskManagerView::AcceleratorPressed(
 void NewTaskManagerView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   views::DialogDelegateView::ViewHierarchyChanged(details);
-  // Since we want the Kill button and the Memory Details link to show up in
-  // the same visual row as the close button, which is provided by the
-  // framework, we must add the buttons to the non-client view, which is the
-  // parent of this view. Similarly, when we're removed from the view
-  // hierarchy, we must take care to clean up those items as well.
+  // Since we want the Kill button to show up in the same visual row as the
+  // close button, which is provided by the framework, we must add it to the
+  // non-client view, which is the parent of this view. Similarly, when we're
+  // removed from the view hierarchy, we must take care to clean up that item.
   if (details.child == this) {
     if (details.is_add) {
-      details.parent->AddChildView(about_memory_link_);
       details.parent->AddChildView(kill_button_);
       tab_table_parent_ = tab_table_->CreateParentIfNecessary();
       AddChildView(tab_table_parent_);
     } else {
       details.parent->RemoveChildView(kill_button_);
-      details.parent->RemoveChildView(about_memory_link_);
     }
   }
 }
@@ -296,11 +267,6 @@ void NewTaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
     ActivateFocusedTab();
 }
 
-void NewTaskManagerView::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK_EQ(about_memory_link_, source);
-  OpenAboutMemory();
-}
-
 void NewTaskManagerView::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,
@@ -344,7 +310,6 @@ void NewTaskManagerView::ExecuteCommand(int id, int event_flags) {
 
 NewTaskManagerView::NewTaskManagerView()
     : kill_button_(nullptr),
-      about_memory_link_(nullptr),
       tab_table_(nullptr),
       tab_table_parent_(nullptr),
       is_always_on_top_(false) {
@@ -385,10 +350,6 @@ void NewTaskManagerView::Init() {
   kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
   kill_button_->SetStyle(views::Button::STYLE_BUTTON);
-
-  about_memory_link_ = new views::Link(
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
-  about_memory_link_->set_listener(this);
 
   // Makes sure our state is consistent.
   OnSelectionChanged();

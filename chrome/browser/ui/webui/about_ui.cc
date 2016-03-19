@@ -37,7 +37,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_stats.h"
-#include "chrome/browser/memory_details.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -96,50 +95,8 @@ using content::WebContents;
 namespace {
 
 const char kCreditsJsPath[] = "credits.js";
-const char kMemoryJsPath[] = "memory.js";
-const char kMemoryCssPath[] = "about_memory.css";
 const char kStatsJsPath[] = "stats.js";
 const char kStringsJsPath[] = "strings.js";
-
-// When you type about:memory, it actually loads this intermediate URL that
-// redirects you to the final page. This avoids the problem where typing
-// "about:memory" on the new tab page or any other page where a process
-// transition would occur to the about URL will cause some confusion.
-//
-// The problem is that during the processing of the memory page, there are two
-// processes active, the original and the destination one. This can create the
-// impression that we're using more resources than we actually are. This
-// redirect solves the problem by eliminating the process transition during the
-// time that about memory is being computed.
-std::string GetAboutMemoryRedirectResponse(Profile* profile) {
-  return base::StringPrintf("<meta http-equiv='refresh' content='0;%s'>",
-                            chrome::kChromeUIMemoryRedirectURL);
-}
-
-// Handling about:memory is complicated enough to encapsulate its related
-// methods into a single class. The user should create it (on the heap) and call
-// its |StartFetch()| method.
-class AboutMemoryHandler : public MemoryDetails {
- public:
-  explicit AboutMemoryHandler(
-      const content::URLDataSource::GotDataCallback& callback)
-      : callback_(callback) {
-  }
-
-  void OnDetailsAvailable() override;
-
- private:
-  ~AboutMemoryHandler() override {}
-
-  void BindProcessMetrics(base::DictionaryValue* data,
-                          ProcessMemoryInformation* info);
-  void AppendProcess(base::ListValue* child_data,
-                     ProcessMemoryInformation* info);
-
-  content::URLDataSource::GotDataCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(AboutMemoryHandler);
-};
 
 #if defined(OS_CHROMEOS)
 
@@ -685,28 +642,6 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   DISALLOW_COPY_AND_ASSIGN(AboutDnsHandler);
 };
 
-void FinishMemoryDataRequest(
-    const std::string& path,
-    const content::URLDataSource::GotDataCallback& callback) {
-  if (path == kStringsJsPath) {
-    // The AboutMemoryHandler cleans itself up, but |StartFetch()| will want
-    // the refcount to be greater than 0.
-    scoped_refptr<AboutMemoryHandler> handler(new AboutMemoryHandler(callback));
-    handler->StartFetch(MemoryDetails::FROM_ALL_BROWSERS);
-  } else {
-    int id = IDR_ABOUT_MEMORY_HTML;
-    if (path == kMemoryJsPath) {
-      id = IDR_ABOUT_MEMORY_JS;
-    } else if (path == kMemoryCssPath) {
-      id = IDR_ABOUT_MEMORY_CSS;
-    }
-
-    std::string result =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(id).as_string();
-    callback.Run(base::RefCountedString::TakeString(&result));
-  }
-}
-
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 std::string AboutLinuxProxyConfig() {
   std::string data;
@@ -792,135 +727,6 @@ std::string AboutSandbox() {
 }
 #endif
 
-// AboutMemoryHandler ----------------------------------------------------------
-
-// Helper for AboutMemory to bind results from a ProcessMetrics object
-// to a DictionaryValue. Fills ws_usage and comm_usage so that the objects
-// can be used in caller's scope (e.g for appending to a net total).
-void AboutMemoryHandler::BindProcessMetrics(base::DictionaryValue* data,
-                                            ProcessMemoryInformation* info) {
-  DCHECK(data && info);
-
-  // Bind metrics to dictionary.
-  data->SetInteger("ws_priv", static_cast<int>(info->working_set.priv));
-  data->SetInteger("ws_shareable",
-    static_cast<int>(info->working_set.shareable));
-  data->SetInteger("ws_shared", static_cast<int>(info->working_set.shared));
-  data->SetInteger("comm_priv", static_cast<int>(info->committed.priv));
-  data->SetInteger("comm_map", static_cast<int>(info->committed.mapped));
-  data->SetInteger("comm_image", static_cast<int>(info->committed.image));
-  data->SetInteger("pid", info->pid);
-  data->SetString("version", info->version);
-  data->SetInteger("processes", info->num_processes);
-}
-
-// Helper for AboutMemory to append memory usage information for all
-// sub-processes (i.e. renderers, plugins) used by Chrome.
-void AboutMemoryHandler::AppendProcess(base::ListValue* child_data,
-                                       ProcessMemoryInformation* info) {
-  DCHECK(child_data && info);
-
-  // Append a new DictionaryValue for this renderer to our list.
-  base::DictionaryValue* child = new base::DictionaryValue();
-  child_data->Append(child);
-  BindProcessMetrics(child, info);
-
-  std::string child_label(
-      ProcessMemoryInformation::GetFullTypeNameInEnglish(info->process_type,
-                                                         info->renderer_type));
-  if (info->is_diagnostics)
-    child_label.append(" (diagnostics)");
-  child->SetString("child_name", child_label);
-  base::ListValue* titles = new base::ListValue();
-  child->Set("titles", titles);
-  for (size_t i = 0; i < info->titles.size(); ++i)
-    titles->Append(new base::StringValue(info->titles[i]));
-}
-
-void AboutMemoryHandler::OnDetailsAvailable() {
-  // the root of the JSON hierarchy for about:memory jstemplate
-  scoped_ptr<base::DictionaryValue> root(new base::DictionaryValue);
-  base::ListValue* browsers = new base::ListValue();
-  root->Set("browsers", browsers);
-
-  const std::vector<ProcessData>& browser_processes = processes();
-
-  // Aggregate per-process data into browser summary data.
-  base::string16 log_string;
-  for (size_t index = 0; index < browser_processes.size(); index++) {
-    if (browser_processes[index].processes.empty())
-      continue;
-
-    // Sum the information for the processes within this browser.
-    ProcessMemoryInformation aggregate;
-    ProcessMemoryInformationList::const_iterator iterator;
-    iterator = browser_processes[index].processes.begin();
-    aggregate.pid = iterator->pid;
-    aggregate.version = iterator->version;
-    while (iterator != browser_processes[index].processes.end()) {
-      if (!iterator->is_diagnostics ||
-          browser_processes[index].processes.size() == 1) {
-        aggregate.working_set.priv += iterator->working_set.priv;
-        aggregate.working_set.shared += iterator->working_set.shared;
-        aggregate.working_set.shareable += iterator->working_set.shareable;
-        aggregate.committed.priv += iterator->committed.priv;
-        aggregate.committed.mapped += iterator->committed.mapped;
-        aggregate.committed.image += iterator->committed.image;
-        aggregate.num_processes++;
-      }
-      ++iterator;
-    }
-    base::DictionaryValue* browser_data = new base::DictionaryValue();
-    browsers->Append(browser_data);
-    browser_data->SetString("name", browser_processes[index].name);
-
-    BindProcessMetrics(browser_data, &aggregate);
-
-    // We log memory info as we record it.
-    if (!log_string.empty())
-      log_string += base::ASCIIToUTF16(", ");
-    log_string += browser_processes[index].name + base::ASCIIToUTF16(", ") +
-                  base::SizeTToString16(aggregate.working_set.priv) +
-                  base::ASCIIToUTF16(", ") +
-                  base::SizeTToString16(aggregate.working_set.shared) +
-                  base::ASCIIToUTF16(", ") +
-                  base::SizeTToString16(aggregate.working_set.shareable);
-  }
-  if (!log_string.empty())
-    VLOG(1) << "memory: " << log_string;
-
-  // Set the browser & renderer detailed process data.
-  base::DictionaryValue* browser_data = new base::DictionaryValue();
-  root->Set("browzr_data", browser_data);
-  base::ListValue* child_data = new base::ListValue();
-  root->Set("child_data", child_data);
-
-  ProcessData process = browser_processes[0];  // Chrome is the first browser.
-  root->SetString("current_browser_name", process.name);
-
-  for (size_t index = 0; index < process.processes.size(); index++) {
-    if (process.processes[index].process_type == content::PROCESS_TYPE_BROWSER)
-      BindProcessMetrics(browser_data, &process.processes[index]);
-    else
-      AppendProcess(child_data, &process.processes[index]);
-  }
-
-  root->SetBoolean("show_other_browsers",
-      browser_defaults::kShowOtherBrowsersInAboutMemory);
-
-  base::DictionaryValue load_time_data;
-  load_time_data.SetString(
-      "summary_desc",
-      l10n_util::GetStringUTF16(IDS_MEMORY_USAGE_SUMMARY_DESC));
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, &load_time_data);
-  load_time_data.Set("jstemplateData", root.release());
-
-  std::string data;
-  webui::AppendJsonJS(&load_time_data, &data);
-  callback_.Run(base::RefCountedString::TakeString(&data));
-}
-
 }  // namespace
 
 // AboutUIHTMLSource ----------------------------------------------------------
@@ -967,11 +773,6 @@ void AboutUIHTMLSource::StartDataRequest(
   } else if (source_name_ == chrome::kChromeUILinuxProxyConfigHost) {
     response = AboutLinuxProxyConfig();
 #endif
-  } else if (source_name_ == chrome::kChromeUIMemoryHost) {
-    response = GetAboutMemoryRedirectResponse(profile());
-  } else if (source_name_ == chrome::kChromeUIMemoryRedirectHost) {
-    FinishMemoryDataRequest(path, callback);
-    return;
 #if defined(OS_CHROMEOS)
   } else if (source_name_ == chrome::kChromeUIOSCreditsHost) {
     ChromeOSCreditsHandler::Start(path, callback);
@@ -1008,8 +809,7 @@ std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
       path == kKeyboardUtilsPath ||
 #endif
       path == kStatsJsPath       ||
-      path == kStringsJsPath     ||
-      path == kMemoryJsPath) {
+      path == kStringsJsPath) {
     return "application/javascript";
   }
   return "text/html";

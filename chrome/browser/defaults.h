@@ -45,9 +45,6 @@ extern const bool kSizeTabButtonToTopOfTabStrip;
 // distinct signin flow.
 extern const bool kSyncAutoStarts;
 
-// Should other browsers be shown in about:memory page?
-extern const bool kShowOtherBrowsersInAboutMemory;
-
 // Should scroll events on the tabstrip change tabs?
 extern const bool kScrollEventChangesTab;
 

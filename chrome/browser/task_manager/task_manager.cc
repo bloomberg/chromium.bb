@@ -1563,22 +1563,6 @@ TaskManager* TaskManager::GetInstance() {
   return base::Singleton<TaskManager>::get();
 }
 
-void TaskManager::OpenAboutMemory() {
-  Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
-  if (profile->IsGuestSession() && !g_browser_process->local_state()->
-      GetBoolean(prefs::kBrowserGuestModeEnabled)) {
-    UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_NO_TUTORIAL,
-                      profiles::USER_MANAGER_SELECT_PROFILE_CHROME_MEMORY);
-    return;
-  }
-
-  chrome::NavigateParams params(
-      profile, GURL(chrome::kChromeUIMemoryURL), ui::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
-}
-
 TaskManager::TaskManager()
     : model_(new TaskManagerModel(this)) {
 }

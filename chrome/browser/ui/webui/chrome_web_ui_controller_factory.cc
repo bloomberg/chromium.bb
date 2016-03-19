@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/webui/invalidations_ui.h"
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
-#include "chrome/browser/ui/webui/memory_internals/memory_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -266,9 +265,7 @@ bool NeedsExtensionWebUI(Profile* profile, const GURL& url) {
 bool IsAboutUI(const GURL& url) {
   return (url.host() == chrome::kChromeUIChromeURLsHost ||
           url.host() == chrome::kChromeUICreditsHost ||
-          url.host() == chrome::kChromeUIDNSHost ||
-          url.host() == chrome::kChromeUIMemoryHost ||
-          url.host() == chrome::kChromeUIMemoryRedirectHost
+          url.host() == chrome::kChromeUIDNSHost
 #if !defined(OS_ANDROID)
           || url.host() == chrome::kChromeUITermsHost
 #endif
@@ -336,8 +333,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InvalidationsUI>;
   if (url.host() == chrome::kChromeUILocalStateHost)
     return &NewWebUI<LocalStateUI>;
-  if (url.host() == chrome::kChromeUIMemoryInternalsHost)
-    return &NewWebUI<MemoryInternalsUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIOmniboxHost)

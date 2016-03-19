@@ -33,8 +33,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view.h"
@@ -149,7 +147,6 @@ void TaskManagerTableModel::OnItemsRemoved(int start, int length) {
 class TaskManagerView : public views::ButtonListener,
                         public views::DialogDelegateView,
                         public views::TableViewObserver,
-                        public views::LinkListener,
                         public views::ContextMenuController,
                         public ui::SimpleMenuModel::Delegate {
  public:
@@ -188,9 +185,6 @@ class TaskManagerView : public views::ButtonListener,
   void OnDoubleClick() override;
   void OnKeyDown(ui::KeyboardCode keycode) override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
   // views::ContextMenuController:
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
@@ -217,7 +211,6 @@ class TaskManagerView : public views::ButtonListener,
   bool GetSavedAlwaysOnTopState(bool* always_on_top) const;
 
   views::LabelButton* kill_button_;
-  views::Link* about_memory_link_;
   views::TableView* tab_table_;
   views::View* tab_table_parent_;
 
@@ -250,7 +243,6 @@ TaskManagerView* TaskManagerView::instance_ = NULL;
 
 TaskManagerView::TaskManagerView()
     : kill_button_(NULL),
-      about_memory_link_(NULL),
       tab_table_(NULL),
       tab_table_parent_(NULL),
       task_manager_(TaskManager::GetInstance()),
@@ -378,9 +370,6 @@ void TaskManagerView::Init() {
   kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
   kill_button_->SetStyle(views::Button::STYLE_BUTTON);
-  about_memory_link_ = new views::Link(
-      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
-  about_memory_link_->set_listener(this);
 
   // Makes sure our state is consistent.
   OnSelectionChanged();
@@ -392,20 +381,17 @@ void TaskManagerView::Init() {
 void TaskManagerView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   views::DialogDelegateView::ViewHierarchyChanged(details);
-  // Since we want the Kill button and the Memory Details link to show up in
-  // the same visual row as the close button, which is provided by the
-  // framework, we must add the buttons to the non-client view, which is the
-  // parent of this view. Similarly, when we're removed from the view
-  // hierarchy, we must take care to clean up those items as well.
+  // Since we want the Kill button to show up in the same visual row as the
+  // close button, which is provided by the framework, we must add it to the
+  // non-client view, which is the parent of this view. Similarly, when we're
+  // removed from the view hierarchy, we must take care to clean up that item.
   if (details.child == this) {
     if (details.is_add) {
-      details.parent->AddChildView(about_memory_link_);
       details.parent->AddChildView(kill_button_);
       tab_table_parent_ = tab_table_->CreateParentIfNecessary();
       AddChildView(tab_table_parent_);
     } else {
       details.parent->RemoveChildView(kill_button_);
-      details.parent->RemoveChildView(about_memory_link_);
     }
   }
 }
@@ -418,12 +404,6 @@ void TaskManagerView::Layout() {
   int x = width() - size.width() - horizontal_margin;
   int y_buttons = parent_bounds.bottom() - size.height() - vertical_margin;
   kill_button_->SetBounds(x, y_buttons, size.width(), size.height());
-
-  size = about_memory_link_->GetPreferredSize();
-  about_memory_link_->SetBounds(
-      horizontal_margin,
-      y_buttons + (kill_button_->height() - size.height()) / 2,
-      size.width(), size.height());
 
   gfx::Rect rect = GetLocalBounds();
   rect.Inset(horizontal_margin, views::kPanelVertMargin);
@@ -567,11 +547,6 @@ void TaskManagerView::OnDoubleClick() {
 void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
   if (keycode == ui::VKEY_RETURN)
     ActivateFocusedTab();
-}
-
-void TaskManagerView::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK_EQ(about_memory_link_, source);
-  task_manager_->OpenAboutMemory();
 }
 
 void TaskManagerView::ShowContextMenuForView(views::View* source,

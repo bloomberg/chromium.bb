@@ -36,7 +36,7 @@ enum ProcessType {
 };
 
 // Returns an English name of the process type, should only be used for non
-// user-visible strings, or debugging pages like about:memory.
+// user-visible strings or debugging pages.
 CONTENT_EXPORT std::string GetProcessTypeNameInEnglish(int type);
 
 }  // namespace content
