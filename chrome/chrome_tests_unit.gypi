@@ -195,7 +195,6 @@
       'browser/profiles/profile_info_cache_unittest.h',
       'browser/profiles/profile_manager_unittest.cc',
       'browser/profiles/profile_shortcut_manager_unittest_win.cc',
-      'browser/profiles/profile_statistics_unittest.cc',
       'browser/push_messaging/push_messaging_app_identifier_unittest.cc',
       'browser/push_messaging/push_messaging_notification_manager_unittest.cc',
       'browser/push_messaging/push_messaging_permission_context_unittest.cc',
@@ -2420,6 +2419,7 @@
         ['OS!="android" and OS!="ios" and chromeos==0', {
           'sources': [
             'browser/profiles/profile_list_desktop_unittest.cc',
+            'browser/profiles/profile_statistics_unittest.cc',
           ],
         }],
         ['chromeos==0 and use_ozone==0 and OS=="linux"', {

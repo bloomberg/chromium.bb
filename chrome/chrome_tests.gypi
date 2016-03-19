@@ -383,6 +383,7 @@
       'browser/profiles/profile_browsertest.cc',
       'browser/profiles/profile_list_desktop_browsertest.cc',
       'browser/profiles/profile_manager_browsertest.cc',
+      'browser/profiles/profile_statistics_browsertest.cc',
       'browser/profiles/profile_window_browsertest.cc',
       'browser/push_messaging/push_messaging_browsertest.cc',
       'browser/referrer_policy_browsertest.cc',
@@ -2580,6 +2581,11 @@
           'sources': [
             'browser/extensions/api/networking_private/networking_private_apitest.cc',
             'browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc',
+          ],
+        }],
+        ['OS=="android" or OS=="ios" or chromeos == 1', {
+          'sources!': [
+            'browser/profiles/profile_statistics_browsertest.cc',
           ],
         }],
         ['toolkit_views==1', {

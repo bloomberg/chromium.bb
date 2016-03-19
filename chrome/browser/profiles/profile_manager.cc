@@ -42,7 +42,6 @@
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/profiles/profile_statistics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
@@ -121,6 +120,11 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+#include "chrome/browser/profiles/profile_statistics.h"
+#include "chrome/browser/profiles/profile_statistics_factory.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1109,14 +1113,16 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
       content::Source<Profile>(profile),
       content::NotificationService::NoDetails());
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
   // Record statistics to ProfileInfoCache if statistics were not recorded
   // during shutdown, i.e. the last shutdown was a system shutdown or a crash.
   if (!profile->IsGuestSession() && !profile->IsSystemProfile() &&
       !profile->IsNewProfile() && !go_off_the_record &&
       profile->GetLastSessionExitType() != Profile::EXIT_NORMAL) {
-    profiles::GatherProfileStatistics(
-        profile, profiles::ProfileStatisticsCallback(), nullptr);
+    ProfileStatisticsFactory::GetForProfile(profile)->GatherStatistics(
+        profiles::ProfileStatisticsCallback());
   }
+#endif
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
@@ -1548,12 +1554,16 @@ void ProfileManager::BrowserListObserver::OnBrowserRemoved(
     // Delete if the profile is an ephemeral profile.
     g_browser_process->profile_manager()->ScheduleProfileForDeletion(
         path, ProfileManager::CreateCallback());
-  } else if (!profile->IsSystemProfile()) {
+  } else {
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
     // Gather statistics and store into ProfileInfoCache. For incognito profile
     // we gather the statistics of its parent profile instead, because a window
     // of the parent profile was open.
-    profiles::GatherProfileStatistics(
-        original_profile, profiles::ProfileStatisticsCallback(), nullptr);
+    if (!profile->IsSystemProfile()) {
+      ProfileStatisticsFactory::GetForProfile(original_profile)->
+          GatherStatistics(profiles::ProfileStatisticsCallback());
+    }
+#endif
   }
 }
 

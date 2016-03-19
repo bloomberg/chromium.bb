@@ -1228,6 +1228,9 @@ if (!is_android) {
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
       ]
     }
+    if (is_android || is_ios || is_chromeos) {
+      sources -= [ "../browser/profiles/profile_statistics_browsertest.cc" ]
+    }
     if (!is_android && !is_ios) {
       sources +=
           [ "../browser/copresence/chrome_whispernet_client_browsertest.cc" ]
@@ -1756,7 +1759,10 @@ test("unit_tests") {
             "//chrome")
   }
   if (!is_android && !is_ios && !is_chromeos) {
-    sources += [ "//chrome/browser/profiles/profile_list_desktop_unittest.cc" ]
+    sources += [
+      "//chrome/browser/profiles/profile_list_desktop_unittest.cc",
+      "//chrome/browser/profiles/profile_statistics_unittest.cc",
+    ]
   }
   if (!is_chromeos && !use_ozone && is_linux) {
     deps += [

@@ -4,10 +4,12 @@
 
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile_statistics.h"
+#include "chrome/browser/profiles/profile_statistics_common.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -19,7 +21,8 @@ void VerifyStatisticsCache(const base::FilePath& profile_path,
     const std::map<std::string, int>& expected,
     const std::vector<std::string>& categories_to_check) {
   const profiles::ProfileCategoryStats actual =
-      profiles::GetProfileStatisticsFromCache(profile_path);
+      ProfileStatistics::GetProfileStatisticsFromAttributesStorage(
+          profile_path);
 
   EXPECT_EQ(categories_to_check.size(), actual.size());
 
@@ -53,25 +56,23 @@ class ProfileStatisticsTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_F(ProfileStatisticsTest, ProfileInfoCacheStorage) {
+TEST_F(ProfileStatisticsTest, ProfileAttributesStorage) {
   TestingProfile* profile = manager()->CreateTestingProfile("Test 1");
   ASSERT_TRUE(profile);
   base::FilePath profile_path = profile->GetPath();
 
-  std::vector<std::string> categories_to_check{
-      profiles::kProfileStatisticsBrowsingHistory,
-      profiles::kProfileStatisticsPasswords,
-      profiles::kProfileStatisticsBookmarks,
-      profiles::kProfileStatisticsSettings
-  };
+  std::vector<std::string> categories_to_check;
+  categories_to_check.push_back(profiles::kProfileStatisticsBrowsingHistory);
+  categories_to_check.push_back(profiles::kProfileStatisticsPasswords);
+  categories_to_check.push_back(profiles::kProfileStatisticsBookmarks);
+  categories_to_check.push_back(profiles::kProfileStatisticsSettings);
 
   std::vector<std::pair<std::string, int>> insertions;
   int num = 3;
   // Insert for the first round, overwrite for the second round.
   for (int i = 0; i < 2; i++) {
-    for (const auto& category : categories_to_check) {
+    for (const auto& category : categories_to_check)
       insertions.push_back(std::make_pair(category, num++));
-    }
   }
 
   std::map<std::string, int> expected;
@@ -79,8 +80,8 @@ TEST_F(ProfileStatisticsTest, ProfileInfoCacheStorage) {
   VerifyStatisticsCache(profile_path, expected, categories_to_check);
   // Insert items and test after each insert.
   for (const auto& item : insertions) {
-    profiles::SetProfileStatisticsInCache(profile_path, item.first,
-                                          item.second);
+    ProfileStatistics::SetProfileStatisticsToAttributesStorage(
+        profile_path, item.first, item.second);
     expected[item.first] = item.second;
     VerifyStatisticsCache(profile_path, expected, categories_to_check);
   }

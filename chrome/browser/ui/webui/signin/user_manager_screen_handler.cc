@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_statistics.h"
+#include "chrome/browser/profiles/profile_statistics_factory.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/local_auth.h"
@@ -564,7 +565,8 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
     // statistics are queried instead.
     base::DictionaryValue return_value;
     profiles::ProfileCategoryStats stats =
-        profiles::GetProfileStatisticsFromCache(profile_path);
+        ProfileStatistics::GetProfileStatisticsFromAttributesStorage(
+            profile_path);
     bool stats_success = true;
     for (const auto& item : stats) {
       scoped_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
@@ -581,12 +583,10 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
     }
   }
 
-  profiles::GatherProfileStatistics(
-      profile,
+  ProfileStatisticsFactory::GetForProfile(profile)->GatherStatistics(
       base::Bind(
           &UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback,
-          weak_ptr_factory_.GetWeakPtr(), profile_path),
-      &tracker_);
+          weak_ptr_factory_.GetWeakPtr(), profile_path));
 }
 
 void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
@@ -870,7 +870,8 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetString(kKeyAvatarUrl, GetAvatarImage(entry));
 
     profiles::ProfileCategoryStats stats =
-        profiles::GetProfileStatisticsFromCache(profile_path);
+        ProfileStatistics::GetProfileStatisticsFromAttributesStorage(
+            profile_path);
     scoped_ptr<base::DictionaryValue> stats_dict(new base::DictionaryValue);
     for (const auto& item : stats) {
       scoped_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
