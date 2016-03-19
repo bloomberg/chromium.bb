@@ -106,8 +106,6 @@
       'common/web_application_info.h',
       'common/widevine_cdm_constants.cc',
       'common/widevine_cdm_constants.h',
-      'common/worker_thread_ticker.cc',
-      'common/worker_thread_ticker.h',
     ],
     'chrome_common_extensions_sources': [
       'common/cast_messages.cc',

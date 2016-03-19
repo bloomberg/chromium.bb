@@ -463,11 +463,6 @@ BrowserView::BrowserView()
       initialized_(false),
       handling_theme_changed_(false),
       in_process_fullscreen_(false),
-#if defined(OS_WIN)
-      // TODO(piman): is this still useful now that windowed plugins are gone?
-      ticker_(0),
-      hung_window_detector_(&hung_plugin_action_),
-#endif
       force_location_bar_focus_(false),
       activate_modal_dialog_factory_(this) {
 }
@@ -483,10 +478,6 @@ BrowserView::~BrowserView() {
   browser_->tab_strip_model()->RemoveObserver(this);
 
 #if defined(OS_WIN)
-  // Stop hung plugin monitoring.
-  ticker_.Stop();
-  ticker_.UnregisterTickHandler(&hung_window_detector_);
-
   // Terminate the jumplist (must be called before browser_->profile() is
   // destroyed.
   if (jumplist_.get()) {
@@ -2071,13 +2062,6 @@ void BrowserView::InitViews() {
   GetWidget()->SetNativeWindowProperty(Profile::kProfileKey,
                                        browser_->profile());
 
-  // Start a hung plugin window detector for this browser object (as long as
-  // hang detection is not disabled).
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHangMonitor)) {
-    InitHangMonitor();
-  }
-
   LoadAccelerators();
 
   contents_web_view_ = new ContentsWebView(browser_->profile());
@@ -2458,33 +2442,6 @@ int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
 #else
   // App commands are Windows-specific so there's nothing to do here.
   return -1;
-#endif
-}
-
-void BrowserView::InitHangMonitor() {
-#if defined(OS_WIN)
-  PrefService* pref_service = g_browser_process->local_state();
-  if (!pref_service)
-    return;
-
-  int plugin_message_response_timeout =
-      pref_service->GetInteger(prefs::kPluginMessageResponseTimeout);
-  int hung_plugin_detect_freq =
-      pref_service->GetInteger(prefs::kHungPluginDetectFrequency);
-  HWND window = GetWidget()->GetNativeView()->GetHost()->
-      GetAcceleratedWidget();
-  if ((hung_plugin_detect_freq > 0) &&
-      hung_window_detector_.Initialize(window,
-                                       plugin_message_response_timeout)) {
-    ticker_.set_tick_interval(hung_plugin_detect_freq);
-    ticker_.RegisterTickHandler(&hung_window_detector_);
-    ticker_.Start();
-
-    pref_service->SetInteger(prefs::kPluginMessageResponseTimeout,
-                             plugin_message_response_timeout);
-    pref_service->SetInteger(prefs::kHungPluginDetectFrequency,
-                             hung_plugin_detect_freq);
-  }
 #endif
 }
 

@@ -42,11 +42,6 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/client_view.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/hang_monitor/hung_plugin_action.h"
-#include "chrome/browser/hang_monitor/hung_window_detector.h"
-#endif
-
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
@@ -563,9 +558,6 @@ class BrowserView : public BrowserWindow,
   // Retrieves the command id for the specified Windows app command.
   int GetCommandIDForAppCommandID(int app_command_id) const;
 
-  // Initialize the hung plugin detector.
-  void InitHangMonitor();
-
   // Possibly records a user metrics action corresponding to the passed-in
   // accelerator.  Only implemented for Chrome OS, where we're interested in
   // learning about how frequently the top-row keys are used.
@@ -686,19 +678,6 @@ class BrowserView : public BrowserWindow,
   scoped_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
 #if defined(OS_WIN)
-  // This object is used to perform periodic actions in a worker
-  // thread. It is currently used to monitor hung plugin windows.
-  WorkerThreadTicker ticker_;
-
-  // This object is initialized with the frame window HWND. This
-  // object is also passed as a tick handler with the ticker_ object.
-  // It is used to periodically monitor for hung plugin windows
-  HungWindowDetector hung_window_detector_;
-
-  // This object is invoked by hung_window_detector_ when it detects a hung
-  // plugin window.
-  HungPluginAction hung_plugin_action_;
-
   // Helper class to listen for completion of first page load.
   scoped_ptr<LoadCompleteListener> load_complete_listener_;
 

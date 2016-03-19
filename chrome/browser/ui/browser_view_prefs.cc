@@ -16,12 +16,6 @@
 
 namespace {
 
-// How long do we wait before we consider a window hung (in ms).
-const int kDefaultPluginMessageResponseTimeout = 25000;
-
-// How frequently we check for hung plugin windows.
-const int kDefaultHungPluginDetectFrequency = 2000;
-
 // DEPRECATED: this is replaced by kTabStripStackedLayout and exists for
 // backwards compatibility.
 // Old values: 0 = SHRINK (default), 1 = STACKED.
@@ -32,10 +26,6 @@ const char kTabStripLayoutType[] = "tab_strip_layout_type";
 namespace chrome {
 
 void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kPluginMessageResponseTimeout,
-                                kDefaultPluginMessageResponseTimeout);
-  registry->RegisterIntegerPref(prefs::kHungPluginDetectFrequency,
-                                kDefaultHungPluginDetectFrequency);
   registry->RegisterIntegerPref(kTabStripLayoutType, 0);
   registry->RegisterBooleanPref(prefs::kTabStripStackedLayout, false);
 }

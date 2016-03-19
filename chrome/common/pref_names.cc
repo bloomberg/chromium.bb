@@ -1399,15 +1399,6 @@ const char kDefaultTasksBySuffix[] =
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 
-// Integer which specifies the frequency in milliseconds for detecting whether
-// plugin windows are hung.
-const char kHungPluginDetectFrequency[] = "browser.hung_plugin_detect_freq";
-
-// Integer which specifies the timeout value to be used for SendMessageTimeout
-// to detect a hung plugin window.
-const char kPluginMessageResponseTimeout[] =
-    "browser.plugin_message_response_timeout";
-
 // String which represents the dictionary name for our spell-checker.
 // This is an old preference that is being migrated to kSpellCheckDictionaries.
 const char kSpellCheckDictionary[] = "spellcheck.dictionary";
