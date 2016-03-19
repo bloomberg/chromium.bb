@@ -13,7 +13,6 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "google_apis/google_api_keys.h"
 #include "jni/JniInterface_jni.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
@@ -38,36 +37,10 @@ bool RegisterChromotingJniRuntime(JNIEnv* env) {
 // points for JNI calls from Java into C++.
 
 static void LoadNative(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  // The google_apis functions check the command-line arguments to make sure no
-  // runtime API keys have been specified by the environment. Unfortunately, we
-  // neither launch Chromium nor have a command line, so we need to prevent
-  // them from DCHECKing out when they go looking.
   base::CommandLine::Init(0, nullptr);
 
   // Create the singleton now so that the Chromoting threads will be set up.
   remoting::ChromotingJniRuntime::GetInstance();
-}
-
-static ScopedJavaLocalRef<jstring> GetApiKey(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  return ConvertUTF8ToJavaString(env, google_apis::GetAPIKey().c_str());
-}
-
-static ScopedJavaLocalRef<jstring> GetClientId(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  return ConvertUTF8ToJavaString(
-      env,
-      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING).c_str());
-}
-
-static ScopedJavaLocalRef<jstring> GetClientSecret(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  return ConvertUTF8ToJavaString(
-      env,
-      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING).c_str());
 }
 
 static void Connect(JNIEnv* env,

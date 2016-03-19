@@ -42,13 +42,6 @@ public class JniInterface {
     /** Performs the native portion of the initialization. */
     private static native void nativeLoadNative();
 
-    /*
-     * API/OAuth2 keys access.
-     */
-    public static native String nativeGetApiKey();
-    public static native String nativeGetClientId();
-    public static native String nativeGetClientSecret();
-
     /** Performs the native portion of the connection. */
     static native void nativeConnect(String username, String authToken, String hostJid,
             String hostId, String hostPubkey, String pairId, String pairSecret,
