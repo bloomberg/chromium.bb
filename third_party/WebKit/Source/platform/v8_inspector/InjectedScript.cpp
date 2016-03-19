@@ -115,21 +115,6 @@ void InjectedScript::getProperties(ErrorString* errorString, const String16& obj
     *properties = Array<PropertyDescriptor>::parse(result.get(), &errors);
 }
 
-void InjectedScript::getInternalProperties(ErrorString* errorString, const String16& objectId, Maybe<Array<InternalPropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getInternalProperties");
-    function.appendArgument(objectId);
-
-    OwnPtr<protocol::Value> result = makeCallWithExceptionDetails(function, exceptionDetails);
-    if (exceptionDetails->isJust())
-        return;
-    protocol::ErrorSupport errors(errorString);
-    OwnPtr<Array<InternalPropertyDescriptor>> array = Array<InternalPropertyDescriptor>::parse(result.get(), &errors);
-    if (!errors.hasErrors() && array->length() > 0)
-        *properties = array.release();
-}
-
 void InjectedScript::releaseObject(const String16& objectId)
 {
     OwnPtr<protocol::Value> parsedObjectId = protocol::parseJSON(objectId);
@@ -226,9 +211,12 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<
     return protocol::Runtime::RemoteObject::parse(toProtocolValue(context(), r).get(), &errors);
 }
 
-v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) const
+bool InjectedScript::findObject(ErrorString* errorString, const RemoteObjectId& objectId, v8::Local<v8::Value>* outObject) const
 {
-    return m_native->objectForId(objectId.id());
+    *outObject = m_native->objectForId(objectId.id());
+    if (outObject->IsEmpty())
+        *errorString = "Could not find object with given id";
+    return !outObject->IsEmpty();
 }
 
 String16 InjectedScript::objectGroupName(const RemoteObjectId& objectId) const
@@ -355,11 +343,9 @@ v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* error
             *errorString = "Argument should belong to the same JavaScript world as target object";
             return v8::MaybeLocal<v8::Value>();
         }
-        v8::Local<v8::Value> object = findObject(*remoteObjectId);
-        if (object.IsEmpty()) {
-            *errorString = "Could not find object with given id";
+        v8::Local<v8::Value> object;
+        if (!findObject(errorString, *remoteObjectId, &object))
             return v8::MaybeLocal<v8::Value>();
-        }
         return object;
     }
     if (callArgument->hasValue()) {

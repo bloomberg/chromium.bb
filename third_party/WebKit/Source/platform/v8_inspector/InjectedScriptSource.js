@@ -450,33 +450,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} objectId
-     * @return {!Array.<!Object>|boolean}
-     */
-    getInternalProperties: function(objectId)
-    {
-        var parsedObjectId = this._parseObjectId(objectId);
-        var object = this._objectForId(parsedObjectId);
-        var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
-        if (!this._isDefined(object) || isSymbol(object))
-            return false;
-        object = /** @type {!Object} */ (object);
-        var descriptors = [];
-        var internalProperties = InjectedScriptHost.getInternalProperties(object);
-        if (internalProperties) {
-            for (var i = 0; i < internalProperties.length; i += 2) {
-                var descriptor = {
-                    name: internalProperties[i],
-                    value: this._wrapObject(internalProperties[i + 1], objectGroupName),
-                    __proto__: null
-                };
-                push(descriptors, descriptor);
-            }
-        }
-        return descriptors;
-    },
-
-    /**
      * @param {string} functionId
      * @return {!DebuggerAgent.FunctionDetails|string}
      */

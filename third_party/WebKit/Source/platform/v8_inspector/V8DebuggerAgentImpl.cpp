@@ -632,7 +632,7 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
     Maybe<StackTrace>* asyncStackTrace)
 {
     if (!isPaused() || m_currentCallStack.IsEmpty()) {
-        *errorString = "Attempt to access callframe when debugger is not on pause";
+        *errorString = "Attempt to access call frame when debugger is not on pause";
         return;
     }
     OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
@@ -706,9 +706,11 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Object> object;
-    v8::Local<v8::Value> value = injectedScript->findObject(*remoteId);
-    if (value.IsEmpty() || !value->IsObject() || !value->ToObject(context).ToLocal(&object)) {
-        *errorString = "Could not find object with given id";
+    v8::Local<v8::Value> value;
+    if (!injectedScript->findObject(errorString, *remoteId, &value))
+        return;
+    if (!value->IsObject() || !value->ToObject(context).ToLocal(&object)) {
+        *errorString = "Value with given id is not an Object";
         return;
     }
 

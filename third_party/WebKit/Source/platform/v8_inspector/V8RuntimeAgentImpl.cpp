@@ -49,6 +49,13 @@ static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled
 using protocol::Runtime::ExceptionDetails;
 using protocol::Runtime::RemoteObject;
 
+static bool checkInternalError(ErrorString* errorString, bool success)
+{
+    if (!success)
+        *errorString = "Internal error";
+    return success;
+}
+
 PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(V8Debugger* debugger, int contextGroupId)
 {
     return adoptPtr(new V8RuntimeAgentImpl(static_cast<V8DebuggerImpl*>(debugger), contextGroupId));
@@ -159,11 +166,9 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     }
 
     String16 objectGroupName = injectedScript->objectGroupName(*remoteId);
-    v8::Local<v8::Value> object = injectedScript->findObject(*remoteId);
-    if (object.IsEmpty()) {
-        *errorString = "Could not find object with given id";
+    v8::Local<v8::Value> object;
+    if (!injectedScript->findObject(errorString, *remoteId, &object))
         return;
-    }
     OwnPtr<v8::Local<v8::Value>[]> argv = nullptr;
     int argc = 0;
     if (optionalArguments.isJust()) {
@@ -221,6 +226,8 @@ void V8RuntimeAgentImpl::getProperties(
     Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
     Maybe<ExceptionDetails>* exceptionDetails)
 {
+    using protocol::Runtime::InternalPropertyDescriptor;
+
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
     if (!remoteId)
         return;
@@ -230,10 +237,39 @@ void V8RuntimeAgentImpl::getProperties(
 
     IgnoreExceptionsScope ignoreExceptionsScope(m_debugger);
 
-    injectedScript->getProperties(errorString, objectId, ownProperties.fromMaybe(false), accessorPropertiesOnly.fromMaybe(false), generatePreview.fromMaybe(false), result, exceptionDetails);
+    v8::HandleScope handles(injectedScript->isolate());
+    v8::Context::Scope scope(injectedScript->context());
+    v8::Local<v8::Value> object;
+    if (!injectedScript->findObject(errorString, *remoteId, &object))
+        return;
+    String16 objectGroupName = injectedScript->objectGroupName(*remoteId);
 
-    if (errorString->isEmpty() && !exceptionDetails->isJust() && !accessorPropertiesOnly.fromMaybe(false))
-        injectedScript->getInternalProperties(errorString, objectId, internalProperties, exceptionDetails);
+    injectedScript->getProperties(errorString, objectId, ownProperties.fromMaybe(false), accessorPropertiesOnly.fromMaybe(false), generatePreview.fromMaybe(false), result, exceptionDetails);
+    if (!errorString->isEmpty() || exceptionDetails->isJust() || accessorPropertiesOnly.fromMaybe(false))
+        return;
+    if (object->IsSymbol())
+        return;
+    v8::Local<v8::Array> propertiesArray;
+    if (!checkInternalError(errorString, v8::Debug::GetInternalProperties(injectedScript->isolate(), object).ToLocal(&propertiesArray)))
+        return;
+    OwnPtr<protocol::Array<InternalPropertyDescriptor>> propertiesProtocolArray = protocol::Array<InternalPropertyDescriptor>::create();
+    for (uint32_t i = 0; i < propertiesArray->Length(); i += 2) {
+        v8::Local<v8::Value> name;
+        if (!checkInternalError(errorString, propertiesArray->Get(injectedScript->context(), i).ToLocal(&name)) && name->IsString())
+            return;
+        v8::Local<v8::Value> value;
+        if (!checkInternalError(errorString, propertiesArray->Get(injectedScript->context(), i + 1).ToLocal(&value)))
+            return;
+        OwnPtr<RemoteObject> wrappedValue = injectedScript->wrapObject(errorString, value, objectGroupName);
+        if (!wrappedValue)
+            return;
+        propertiesProtocolArray->addItem(InternalPropertyDescriptor::create()
+            .setName(toProtocolString(name.As<v8::String>()))
+            .setValue(wrappedValue.release()).build());
+    }
+    if (!propertiesProtocolArray->length())
+        return;
+    *internalProperties = propertiesProtocolArray.release();
 }
 
 void V8RuntimeAgentImpl::releaseObject(ErrorString* errorString, const String16& objectId)
@@ -458,11 +494,15 @@ v8::Local<v8::Value> V8RuntimeAgentImpl::findObject(ErrorString* errorString, co
     InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return v8::Local<v8::Value>();
+    v8::Local<v8::Value> objectValue;
+    injectedScript->findObject(errorString, *remoteId, &objectValue);
+    if (objectValue.IsEmpty())
+        return v8::Local<v8::Value>();
     if (context)
         *context = injectedScript->context();
     if (groupName)
         *groupName = injectedScript->objectGroupName(*remoteId);
-    return injectedScript->findObject(*remoteId);
+    return objectValue;
 }
 
 void V8RuntimeAgentImpl::addInspectedObject(PassOwnPtr<Inspectable> inspectable)
