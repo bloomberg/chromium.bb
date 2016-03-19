@@ -60,6 +60,18 @@ class CONTENT_EXPORT ServiceRegistry {
   virtual void ConnectToRemoteService(const base::StringPiece& name,
                                       mojo::ScopedMessagePipeHandle handle) = 0;
 
+  // Registers a local service factory to intercept ConnectToRemoteService
+  // requests instead of actually connecting to the remote registry. Used only
+  // for testing.
+  virtual void AddServiceOverrideForTesting(
+      const std::string& service_name,
+      const base::Callback<void(mojo::ScopedMessagePipeHandle)>&
+          service_factory) = 0;
+
+  // Removes all local service factories registered
+  // by AddServiceOverrideForTesting. Used only for testing.
+  virtual void ClearServiceOverridesForTesting() = 0;
+
  private:
   template <typename Interface>
   static void ForwardToServiceFactory(

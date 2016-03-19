@@ -39,16 +39,6 @@ void ServiceRegistryImpl::BindRemoteServiceProvider(
   }
 }
 
-void ServiceRegistryImpl::AddServiceOverrideForTesting(
-    const std::string& service_name,
-    const ServiceFactory& factory) {
-  service_overrides_[service_name] = factory;
-}
-
-void ServiceRegistryImpl::ClearServiceOverridesForTesting() {
-  service_overrides_.clear();
-}
-
 void ServiceRegistryImpl::AddService(const std::string& service_name,
                                      const ServiceFactory service_factory) {
   service_factories_[service_name] = service_factory;
@@ -74,6 +64,16 @@ void ServiceRegistryImpl::ConnectToRemoteService(
   }
   remote_provider_->GetInterface(
       mojo::String::From(service_name.as_string()), std::move(handle));
+}
+
+void ServiceRegistryImpl::AddServiceOverrideForTesting(
+    const std::string& service_name,
+    const ServiceFactory& factory) {
+  service_overrides_[service_name] = factory;
+}
+
+void ServiceRegistryImpl::ClearServiceOverridesForTesting() {
+  service_overrides_.clear();
 }
 
 bool ServiceRegistryImpl::IsBound() const {

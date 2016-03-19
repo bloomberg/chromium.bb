@@ -39,19 +39,16 @@ class CONTENT_EXPORT ServiceRegistryImpl
   void BindRemoteServiceProvider(
       mojo::shell::mojom::InterfaceProviderPtr service_provider);
 
-  // Registers a local service factory to intercept ConnectToRemoteService
-  // requests instead of actually connecting to the remote registry. Used only
-  // for testing.
-  void AddServiceOverrideForTesting(const std::string& service_name,
-                                    const ServiceFactory& service_factory);
-  void ClearServiceOverridesForTesting();
-
   // ServiceRegistry overrides.
   void AddService(const std::string& service_name,
                   const ServiceFactory service_factory) override;
   void RemoveService(const std::string& service_name) override;
   void ConnectToRemoteService(const base::StringPiece& service_name,
                               mojo::ScopedMessagePipeHandle handle) override;
+  void AddServiceOverrideForTesting(
+      const std::string& service_name,
+      const ServiceFactory& service_factory) override;
+  void ClearServiceOverridesForTesting() override;
 
   bool IsBound() const;
 
