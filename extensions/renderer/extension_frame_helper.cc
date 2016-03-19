@@ -58,6 +58,22 @@ bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
   return true;
 }
 
+// Runs every callback in |callbacks_to_be_run_and_cleared| while |frame_helper|
+// is valid, and clears |callbacks_to_be_run_and_cleared|.
+void RunCallbacksWhileFrameIsValid(
+    base::WeakPtr<ExtensionFrameHelper> frame_helper,
+    std::vector<base::Closure>* callbacks_to_be_run_and_cleared) {
+  // The JavaScript code can cause re-entrancy. To avoid a deadlock, don't run
+  // callbacks that are added during the iteration.
+  std::vector<base::Closure> callbacks;
+  callbacks_to_be_run_and_cleared->swap(callbacks);
+  for (auto& callback : callbacks) {
+    callback.Run();
+    if (!frame_helper.get())
+      return;  // Frame and ExtensionFrameHelper invalidated by callback.
+  }
+}
+
 }  // namespace
 
 ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
@@ -68,7 +84,8 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
       tab_id_(-1),
       browser_window_id_(-1),
       extension_dispatcher_(extension_dispatcher),
-      did_create_current_document_element_(false) {
+      did_create_current_document_element_(false),
+      weak_ptr_factory_(this) {
   g_frame_helpers.Get().insert(this);
 }
 
@@ -121,6 +138,29 @@ void ExtensionFrameHelper::DidCreateDocumentElement() {
 
 void ExtensionFrameHelper::DidCreateNewDocument() {
   did_create_current_document_element_ = false;
+}
+
+void ExtensionFrameHelper::RunScriptsAtDocumentStart() {
+  DCHECK(did_create_current_document_element_);
+  RunCallbacksWhileFrameIsValid(weak_ptr_factory_.GetWeakPtr(),
+                                &document_element_created_callbacks_);
+  // |this| might be dead by now.
+}
+
+void ExtensionFrameHelper::RunScriptsAtDocumentEnd() {
+  RunCallbacksWhileFrameIsValid(weak_ptr_factory_.GetWeakPtr(),
+                                &document_load_finished_callbacks_);
+  // |this| might be dead by now.
+}
+
+void ExtensionFrameHelper::ScheduleAtDocumentStart(
+    const base::Closure& callback) {
+  document_element_created_callbacks_.push_back(callback);
+}
+
+void ExtensionFrameHelper::ScheduleAtDocumentEnd(
+    const base::Closure& callback) {
+  document_load_finished_callbacks_.push_back(callback);
 }
 
 void ExtensionFrameHelper::DidMatchCSS(

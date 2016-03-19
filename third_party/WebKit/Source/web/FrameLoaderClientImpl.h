@@ -60,6 +60,8 @@ public:
     // parsing begins.
     void dispatchDidClearWindowObjectInMainWorld() override;
     void documentElementAvailable() override;
+    void runScriptsAtDocumentElementAvailable() override;
+    void runScriptsAtDocumentReady() override;
 
     void didCreateScriptContext(v8::Local<v8::Context>, int extensionGroup, int worldId) override;
     void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override;

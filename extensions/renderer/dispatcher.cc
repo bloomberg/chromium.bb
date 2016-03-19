@@ -500,6 +500,24 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
   }
 }
 
+void Dispatcher::RunScriptsAtDocumentStart(content::RenderFrame* render_frame) {
+  ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
+  if (!frame_helper)
+    return;  // The frame is invisible to extensions.
+
+  frame_helper->RunScriptsAtDocumentStart();
+  // |frame_helper| and |render_frame| might be dead by now.
+}
+
+void Dispatcher::RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) {
+  ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
+  if (!frame_helper)
+    return;  // The frame is invisible to extensions.
+
+  frame_helper->RunScriptsAtDocumentEnd();
+  // |frame_helper| and |render_frame| might be dead by now.
+}
+
 void Dispatcher::OnExtensionResponse(int request_id,
                                      bool success,
                                      const base::ListValue& response,

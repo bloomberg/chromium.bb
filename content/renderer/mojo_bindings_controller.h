@@ -29,6 +29,8 @@ class MojoBindingsController
       public RenderFrameObserverTracker<MojoBindingsController> {
  public:
   MojoBindingsController(RenderFrame* render_frame, bool for_layout_tests);
+  void RunScriptsAtDocumentStart();
+  void RunScriptsAtDocumentReady();
 
  private:
   ~MojoBindingsController() override;
@@ -40,8 +42,6 @@ class MojoBindingsController
   // RenderFrameObserver overrides:
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
-  void DidFinishDocumentLoad() override;
-  void DidCreateDocumentElement() override;
   void DidClearWindowObject() override;
 
   const bool for_layout_tests_;

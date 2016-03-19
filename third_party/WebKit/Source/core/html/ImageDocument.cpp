@@ -146,9 +146,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length)
         document()->cachedImage()->appendData(data, length);
     }
 
-    // TODO(esprehn): These null checks on Document don't make sense, document()
-    // will ASSERT if it was null. Do these want to check isDetached() ?
-    if (document())
+    if (!isDetached())
         document()->imageUpdated();
 }
 
@@ -171,14 +169,14 @@ void ImageDocumentParser::finish()
             if (fileName.isEmpty())
                 fileName = document()->url().host();
             document()->setTitle(imageTitle(fileName, size));
+            if (isDetached())
+                return;
         }
 
         document()->imageUpdated();
     }
 
-    // TODO(esprehn): These null checks on Document don't make sense, document()
-    // will ASSERT if it was null. Do these want to check isDetached() ?
-    if (document())
+    if (!isDetached())
         document()->finishedParsing();
 }
 
@@ -207,8 +205,10 @@ void ImageDocument::createDocumentStructure()
     appendChild(rootElement);
     rootElement->insertedByParser();
 
-    if (frame())
-        frame()->loader().dispatchDocumentElementAvailable();
+    frame()->loader().dispatchDocumentElementAvailable();
+    frame()->loader().runScriptsAtDocumentElementAvailable();
+    if (isStopped())
+        return; // runScriptsAtDocumentElementAvailable can detach the frame.
 
     RefPtrWillBeRawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
     RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);
@@ -219,8 +219,7 @@ void ImageDocument::createDocumentStructure()
     RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
     body->setAttribute(styleAttr, "margin: 0px;");
 
-    if (frame())
-        frame()->loader().client()->dispatchWillInsertBody();
+    frame()->loader().client()->dispatchWillInsertBody();
 
     m_imageElement = HTMLImageElement::create(*this);
     m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");
@@ -405,8 +404,13 @@ void ImageDocument::windowSizeChanged(ScaleType type)
 
 ImageResource* ImageDocument::cachedImage()
 {
-    if (!m_imageElement)
+    if (!m_imageElement) {
         createDocumentStructure();
+        if (isStopped()) {
+            m_imageElement = nullptr;
+            return nullptr;
+        }
+    }
 
     return m_imageElement->cachedImage();
 }

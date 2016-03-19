@@ -145,6 +145,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void AddImageContextMenuProperties(
       const blink::WebURLResponse& response,
       std::map<std::string, std::string>* properties) override;
+  void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
+  void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
   void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       const GURL& url) override;

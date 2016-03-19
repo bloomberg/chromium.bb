@@ -84,6 +84,7 @@
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/Logging.h"
 #include "platform/PluginScriptForbiddenScope.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
@@ -507,8 +508,13 @@ void FrameLoader::finishedParsing()
 
     m_progressTracker->finishedParsing();
 
-    if (client())
+    if (client()) {
+        ScriptForbiddenScope forbidScripts;
         client()->dispatchDidFinishDocumentLoad(m_documentLoader ? m_documentLoader->isCommittedButEmpty() : true);
+    }
+
+    if (client())
+        client()->runScriptsAtDocumentReady();
 
     checkCompleted();
 
@@ -1511,7 +1517,14 @@ bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
 
 void FrameLoader::dispatchDocumentElementAvailable()
 {
+    ScriptForbiddenScope forbidScripts;
     client()->documentElementAvailable();
+}
+
+void FrameLoader::runScriptsAtDocumentElementAvailable()
+{
+    client()->runScriptsAtDocumentElementAvailable();
+    // The frame might be detached at this point.
 }
 
 void FrameLoader::dispatchDidClearDocumentOfWindowObject()

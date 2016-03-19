@@ -133,6 +133,16 @@ ShellContentRendererClient::CreateBrowserPluginDelegate(
   }
 }
 
+void ShellContentRendererClient::RunScriptsAtDocumentStart(
+    content::RenderFrame* render_frame) {
+  extension_dispatcher_->RunScriptsAtDocumentStart(render_frame);
+}
+
+void ShellContentRendererClient::RunScriptsAtDocumentEnd(
+    content::RenderFrame* render_frame) {
+  extension_dispatcher_->RunScriptsAtDocumentEnd(render_frame);
+}
+
 ExtensionsClient* ShellContentRendererClient::CreateExtensionsClient() {
   return new ShellExtensionsClient;
 }

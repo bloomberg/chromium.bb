@@ -383,8 +383,11 @@ PassRefPtrWillBeRawPtr<HTMLFormElement> HTMLConstructionSite::takeForm()
 void HTMLConstructionSite::dispatchDocumentElementAvailableIfNeeded()
 {
     ASSERT(m_document);
-    if (m_document->frame() && !m_isParsingFragment)
+    if (m_document->frame() && !m_isParsingFragment) {
         m_document->frame()->loader().dispatchDocumentElementAvailable();
+        m_document->frame()->loader().runScriptsAtDocumentElementAvailable();
+        // runScriptsAtDocumentElementAvailable might have invalidated m_document.
+    }
 }
 
 void HTMLConstructionSite::insertHTMLHtmlStartTagBeforeHTML(AtomicHTMLToken* token)

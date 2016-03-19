@@ -93,10 +93,15 @@ void PluginDocumentParser::createDocumentStructure()
     rootElement->insertedByParser();
     document()->appendChild(rootElement);
     frame->loader().dispatchDocumentElementAvailable();
+    frame->loader().runScriptsAtDocumentElementAvailable();
+    if (isStopped())
+        return; // runScriptsAtDocumentElementAvailable can detach the frame.
 
     RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38); height: 100%; width: 100%; overflow: hidden; margin: 0");
     rootElement->appendChild(body);
+    if (isStopped())
+        return; // Possibly detached by a mutation event listener installed in runScriptsAtDocumentElementAvailable.
 
     m_embedElement = HTMLEmbedElement::create(*document());
     m_embedElement->setAttribute(widthAttr, "100%");
@@ -106,6 +111,8 @@ void PluginDocumentParser::createDocumentStructure()
     m_embedElement->setAttribute(srcAttr, AtomicString(document()->url().getString()));
     m_embedElement->setAttribute(typeAttr, document()->loader()->mimeType());
     body->appendChild(m_embedElement);
+    if (isStopped())
+        return; // Possibly detached by a mutation event listener installed in runScriptsAtDocumentElementAvailable.
 
     toPluginDocument(document())->setPluginNode(m_embedElement.get());
 
@@ -115,8 +122,11 @@ void PluginDocumentParser::createDocumentStructure()
     // below so flush the layout tasks now instead of waiting on the timer.
     frame->view()->flushAnyPendingPostLayoutTasks();
     // Focus the plugin here, as the line above is where the plugin is created.
-    if (frame->isMainFrame())
+    if (frame->isMainFrame()) {
         m_embedElement->focus();
+        if (isStopped())
+            return; // Possibly detached by a focus event listener installed in runScriptsAtDocumentElementAvailable.
+    }
 
     if (PluginView* view = pluginView())
         view->didReceiveResponse(document()->loader()->response());
@@ -124,8 +134,11 @@ void PluginDocumentParser::createDocumentStructure()
 
 void PluginDocumentParser::appendBytes(const char* data, size_t length)
 {
-    if (!m_embedElement)
+    if (!m_embedElement) {
         createDocumentStructure();
+        if (isStopped())
+            return;
+    }
 
     if (!length)
         return;

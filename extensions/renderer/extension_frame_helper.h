@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -61,6 +62,24 @@ class ExtensionFrameHelper
     return did_create_current_document_element_;
   }
 
+  // Called when the document element has been inserted in this frame. This
+  // method may invoke untrusted JavaScript code that invalidate the frame and
+  // this ExtensionFrameHelper.
+  void RunScriptsAtDocumentStart();
+
+  // Called after the DOMContentLoaded event has fired.
+  void RunScriptsAtDocumentEnd();
+
+  // Schedule a callback, to be run at the next RunScriptsAtDocumentStart
+  // notification. Only call this when you are certain that there will be such a
+  // notification, e.g. from RenderFrameObserver::DidCreateDocumentElement.
+  // Otherwise the callback is never invoked, or invoked for a document that you
+  // were not expecting.
+  void ScheduleAtDocumentStart(const base::Closure& callback);
+
+  // Schedule a callback, to be run at the next RunScriptsAtDocumentEnd call.
+  void ScheduleAtDocumentEnd(const base::Closure& callback);
+
  private:
   // RenderFrameObserver implementation.
   void DidCreateDocumentElement() override;
@@ -112,6 +131,14 @@ class ExtensionFrameHelper
 
   // Whether or not the current document element has been created.
   bool did_create_current_document_element_;
+
+  // Callbacks to be run at the next RunScriptsAtDocumentStart notification.
+  std::vector<base::Closure> document_element_created_callbacks_;
+
+  // Callbacks to be run at the next RunScriptsAtDocumentEnd notification.
+  std::vector<base::Closure> document_load_finished_callbacks_;
+
+  base::WeakPtrFactory<ExtensionFrameHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFrameHelper);
 };

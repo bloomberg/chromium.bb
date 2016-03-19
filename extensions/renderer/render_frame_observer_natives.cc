@@ -24,12 +24,11 @@ class LoadWatcher : public content::RenderFrameObserver {
       : content::RenderFrameObserver(frame), callback_(callback) {}
 
   void DidCreateDocumentElement() override {
-    // The callback must be run as soon as the root element is available.
-    // Running the callback may trigger DidCreateDocumentElement or
-    // DidFailProvisionalLoad, so delete this before running the callback.
-    base::Callback<void(bool)> callback = callback_;
+    // Defer the callback instead of running it now to avoid re-entrancy caused
+    // by the JavaScript callback.
+    ExtensionFrameHelper::Get(render_frame())
+        ->ScheduleAtDocumentStart(base::Bind(callback_, true));
     delete this;
-    callback.Run(true);
   }
 
   void DidFailProvisionalLoad(const blink::WebURLError& error) override {

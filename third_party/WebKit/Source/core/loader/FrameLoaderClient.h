@@ -169,6 +169,8 @@ public:
     virtual void didCreateNewDocument() = 0;
     virtual void dispatchDidClearWindowObjectInMainWorld() = 0;
     virtual void documentElementAvailable() = 0;
+    virtual void runScriptsAtDocumentElementAvailable() = 0;
+    virtual void runScriptsAtDocumentReady() = 0;
 
     virtual v8::Local<v8::Value> createTestInterface(const AtomicString& name) = 0;
 

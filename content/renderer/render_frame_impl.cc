@@ -3293,6 +3293,23 @@ void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {
                     DidCreateDocumentElement(frame));
 }
 
+void RenderFrameImpl::runScriptsAtDocumentElementAvailable(
+    blink::WebLocalFrame* frame) {
+  DCHECK(!frame_ || frame_ == frame);
+  base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
+
+  MojoBindingsController* mojo_bindings_controller =
+      MojoBindingsController::Get(this);
+  if (mojo_bindings_controller)
+    mojo_bindings_controller->RunScriptsAtDocumentStart();
+
+  if (!weak_self.get())
+    return;
+
+  GetContentClient()->renderer()->RunScriptsAtDocumentStart(this);
+  // Do not use |this| or |frame|! ContentClient might have deleted them by now!
+}
+
 void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
                                       const blink::WebString& title,
                                       blink::WebTextDirection direction) {
@@ -3366,6 +3383,21 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame,
     error.reason = http_status_code;
     LoadNavigationErrorPage(frame->dataSource()->request(), error, true);
   }
+}
+
+void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame) {
+  base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
+
+  MojoBindingsController* mojo_bindings_controller =
+      MojoBindingsController::Get(this);
+  if (mojo_bindings_controller)
+    mojo_bindings_controller->RunScriptsAtDocumentReady();
+
+  if (!weak_self.get())
+    return;
+
+  GetContentClient()->renderer()->RunScriptsAtDocumentEnd(this);
+  // Do not use |this| or |frame|! ContentClient might have deleted them by now!
 }
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {

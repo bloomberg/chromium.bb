@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/common/content_client.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
@@ -311,6 +310,15 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void AddImageContextMenuProperties(
       const blink::WebURLResponse& response,
       std::map<std::string, std::string>* properties) {}
+
+  // Notifies that a document element has been inserted in the frame's document.
+  // This may be called multiple times for the same document. This method may
+  // invalidate the frame.
+  virtual void RunScriptsAtDocumentStart(RenderFrame* render_frame) {}
+
+  // Notifies that the DOM is ready in the frame's document.
+  // This method may invalidate the frame.
+  virtual void RunScriptsAtDocumentEnd(RenderFrame* render_frame) {}
 
   // Notifies that a service worker context has been created. This function
   // is called from the worker thread.

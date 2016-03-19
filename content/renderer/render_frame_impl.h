@@ -489,6 +489,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void didCreateNewDocument(blink::WebLocalFrame* frame) override;
   void didClearWindowObject(blink::WebLocalFrame* frame) override;
   void didCreateDocumentElement(blink::WebLocalFrame* frame) override;
+  void runScriptsAtDocumentElementAvailable(
+      blink::WebLocalFrame* frame) override;
   void didReceiveTitle(blink::WebLocalFrame* frame,
                        const blink::WebString& title,
                        blink::WebTextDirection direction) override;
@@ -496,6 +498,7 @@ class CONTENT_EXPORT RenderFrameImpl
                      blink::WebIconURL::Type icon_type) override;
   void didFinishDocumentLoad(blink::WebLocalFrame* frame,
                              bool document_is_empty) override;
+  void runScriptsAtDocumentReady(blink::WebLocalFrame* frame) override;
   void didHandleOnloadEvents(blink::WebLocalFrame* frame) override;
   void didFailLoad(blink::WebLocalFrame* frame,
                    const blink::WebURLError& error,

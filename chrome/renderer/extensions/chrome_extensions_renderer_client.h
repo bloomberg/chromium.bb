@@ -72,6 +72,9 @@ class ChromeExtensionsRendererClient
       const std::string& mime_type,
       const GURL& original_url);
 
+  void RunScriptsAtDocumentStart(content::RenderFrame* render_frame);
+  void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame);
+
   extensions::Dispatcher* extension_dispatcher() {
     return extension_dispatcher_.get();
   }

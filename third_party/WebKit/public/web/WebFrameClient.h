@@ -306,7 +306,12 @@ public:
     virtual void didClearWindowObject(WebLocalFrame* frame) { }
 
     // The document element has been created.
+    // This method may not invalidate the frame, nor execute JavaScript code.
     virtual void didCreateDocumentElement(WebLocalFrame*) { }
+
+    // Like |didCreateDocumentElement|, except this method may run JavaScript
+    // code (and possibly invalidate the frame).
+    virtual void runScriptsAtDocumentElementAvailable(WebLocalFrame*) { }
 
     // The page title is available.
     virtual void didReceiveTitle(WebLocalFrame* frame, const WebString& title, WebTextDirection direction) { }
@@ -315,7 +320,12 @@ public:
     virtual void didChangeIcon(WebLocalFrame*, WebIconURL::Type) { }
 
     // The frame's document finished loading.
+    // This method may not execute JavaScript code.
     virtual void didFinishDocumentLoad(WebLocalFrame*, bool documentIsEmpty) { }
+
+    // Like |didFinishDocumentLoad|, except this method may run JavaScript
+    // code (and possibly invalidate the frame).
+    virtual void runScriptsAtDocumentReady(WebLocalFrame*) { }
 
     // The 'load' event was dispatched.
     virtual void didHandleOnloadEvents(WebLocalFrame*) { }

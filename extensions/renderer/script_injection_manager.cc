@@ -88,6 +88,8 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
   // document_idle.
   void RunIdle();
 
+  void StartInjectScripts(UserScript::RunLocation run_location);
+
   // Indicate that the frame is no longer valid because it is starting
   // a new load or closing.
   void InvalidateAndResetFrame();
@@ -136,7 +138,10 @@ void ScriptInjectionManager::RFOHelper::DidCreateNewDocument() {
 }
 
 void ScriptInjectionManager::RFOHelper::DidCreateDocumentElement() {
-  manager_->StartInjectScripts(render_frame(), UserScript::DOCUMENT_START);
+  ExtensionFrameHelper::Get(render_frame())
+      ->ScheduleAtDocumentStart(
+          base::Bind(&ScriptInjectionManager::RFOHelper::StartInjectScripts,
+                     weak_factory_.GetWeakPtr(), UserScript::DOCUMENT_START));
 }
 
 void ScriptInjectionManager::RFOHelper::DidFailProvisionalLoad(
@@ -162,7 +167,11 @@ void ScriptInjectionManager::RFOHelper::DidFailProvisionalLoad(
 
 void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
   DCHECK(content::RenderThread::Get());
-  manager_->StartInjectScripts(render_frame(), UserScript::DOCUMENT_END);
+  ExtensionFrameHelper::Get(render_frame())
+      ->ScheduleAtDocumentEnd(
+          base::Bind(&ScriptInjectionManager::RFOHelper::StartInjectScripts,
+                     weak_factory_.GetWeakPtr(), UserScript::DOCUMENT_END));
+
   // We try to run idle in two places: here and DidFinishLoad.
   // DidFinishDocumentLoad() corresponds to completing the document's load,
   // whereas DidFinishLoad corresponds to completing the document and all
@@ -229,6 +238,11 @@ void ScriptInjectionManager::RFOHelper::RunIdle() {
     should_run_idle_ = false;
     manager_->StartInjectScripts(render_frame(), UserScript::DOCUMENT_IDLE);
   }
+}
+
+void ScriptInjectionManager::RFOHelper::StartInjectScripts(
+    UserScript::RunLocation run_location) {
+  manager_->StartInjectScripts(render_frame(), run_location);
 }
 
 void ScriptInjectionManager::RFOHelper::InvalidateAndResetFrame() {

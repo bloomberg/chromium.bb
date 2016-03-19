@@ -1071,8 +1071,11 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     if (isHTMLHtmlElement(*newElement))
         toHTMLHtmlElement(*newElement).insertedByParser();
 
-    if (!m_parsingFragment && isFirstElement && document()->frame())
+    if (!m_parsingFragment && isFirstElement && document()->frame()) {
         document()->frame()->loader().dispatchDocumentElementAvailable();
+        document()->frame()->loader().runScriptsAtDocumentElementAvailable();
+        // runScriptsAtDocumentElementAvailable might have invalidated the document.
+    }
 }
 
 void XMLDocumentParser::endElementNs()

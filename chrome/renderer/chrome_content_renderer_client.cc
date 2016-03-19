@@ -1392,6 +1392,24 @@ void ChromeContentRendererClient::AddImageContextMenuProperties(
   }
 }
 
+void ChromeContentRendererClient::RunScriptsAtDocumentStart(
+    content::RenderFrame* render_frame) {
+#if defined(ENABLE_EXTENSIONS)
+  ChromeExtensionsRendererClient::GetInstance()->RunScriptsAtDocumentStart(
+      render_frame);
+  // |render_frame| might be dead by now.
+#endif
+}
+
+void ChromeContentRendererClient::RunScriptsAtDocumentEnd(
+    content::RenderFrame* render_frame) {
+#if defined(ENABLE_EXTENSIONS)
+  ChromeExtensionsRendererClient::GetInstance()->RunScriptsAtDocumentEnd(
+      render_frame);
+  // |render_frame| might be dead by now.
+#endif
+}
+
 void
 ChromeContentRendererClient::DidInitializeServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context,

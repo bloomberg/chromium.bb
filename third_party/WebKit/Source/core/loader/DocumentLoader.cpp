@@ -319,6 +319,9 @@ void DocumentLoader::finishedLoading(double finishTime)
             commitData(0, 0);
     }
 
+    if (!m_frame)
+        return;
+
     m_applicationCacheHost->finishedLoadingMainResource();
     endWriting(m_writer.get());
     if (m_state < MainResourceDone)

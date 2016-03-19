@@ -187,6 +187,20 @@ void FrameLoaderClientImpl::documentElementAvailable()
         m_webFrame->viewImpl()->mainFrameDocumentElementAvailable();
 }
 
+void FrameLoaderClientImpl::runScriptsAtDocumentElementAvailable()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->runScriptsAtDocumentElementAvailable(m_webFrame);
+    // The callback might have deleted the frame, do not use |this|!
+}
+
+void FrameLoaderClientImpl::runScriptsAtDocumentReady()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->runScriptsAtDocumentReady(m_webFrame);
+    // The callback might have deleted the frame, do not use |this|!
+}
+
 void FrameLoaderClientImpl::didCreateScriptContext(v8::Local<v8::Context> context, int extensionGroup, int worldId)
 {
     if (m_webFrame->client())

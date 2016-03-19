@@ -75,8 +75,10 @@ void MediaDocumentParser::createDocumentStructure()
     rootElement->insertedByParser();
     document()->appendChild(rootElement);
 
-    if (document()->frame())
-        document()->frame()->loader().dispatchDocumentElementAvailable();
+    document()->frame()->loader().dispatchDocumentElementAvailable();
+    document()->frame()->loader().runScriptsAtDocumentElementAvailable();
+    if (isDetached())
+        return; // runScriptsAtDocumentElementAvailable can detach the frame.
 
     RefPtrWillBeRawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*document());
     RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*document());

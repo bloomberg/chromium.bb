@@ -47,6 +47,8 @@ class ShellContentRendererClient : public content::ContentRendererClient {
       content::RenderFrame* render_frame,
       const std::string& mime_type,
       const GURL& original_url) override;
+  void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
+  void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
 
  protected:
   // app_shell embedders may need custom extensions client interfaces.

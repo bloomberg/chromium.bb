@@ -304,3 +304,13 @@ ChromeExtensionsRendererClient::CreateBrowserPluginDelegate(
   return new extensions::MimeHandlerViewContainer(render_frame, mime_type,
                                                   original_url);
 }
+
+void ChromeExtensionsRendererClient::RunScriptsAtDocumentStart(
+    content::RenderFrame* render_frame) {
+  extension_dispatcher_->RunScriptsAtDocumentStart(render_frame);
+}
+
+void ChromeExtensionsRendererClient::RunScriptsAtDocumentEnd(
+    content::RenderFrame* render_frame) {
+  extension_dispatcher_->RunScriptsAtDocumentEnd(render_frame);
+}

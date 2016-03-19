@@ -108,7 +108,13 @@ class Dispatcher : public content::RenderProcessObserver,
       v8::Local<v8::Context> v8_context,
       const GURL& url);
 
+  // This method is not allowed to run JavaScript code in the frame.
   void DidCreateDocumentElement(blink::WebLocalFrame* frame);
+
+  // These methods may run (untrusted) JavaScript code in the frame, and
+  // cause |render_frame| to become invalid.
+  void RunScriptsAtDocumentStart(content::RenderFrame* render_frame);
+  void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame);
 
   void OnExtensionResponse(int request_id,
                            bool success,

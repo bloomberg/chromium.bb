@@ -136,6 +136,7 @@ public:
     void dispatchDidClearWindowObjectInMainWorld();
     void dispatchDidClearDocumentOfWindowObject();
     void dispatchDocumentElementAvailable();
+    void runScriptsAtDocumentElementAvailable();
 
     // The following sandbox flags will be forced, regardless of changes to
     // the sandbox attribute of any parent frames.

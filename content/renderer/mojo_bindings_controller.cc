@@ -71,15 +71,15 @@ void MojoBindingsController::WillReleaseScriptContext(
   DestroyContextState(context);
 }
 
-void MojoBindingsController::DidFinishDocumentLoad() {
+void MojoBindingsController::RunScriptsAtDocumentStart() {
+  CreateContextState();
+}
+
+void MojoBindingsController::RunScriptsAtDocumentReady() {
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
   MojoContextState* state = GetContextState();
   if (state)
     state->Run();
-}
-
-void MojoBindingsController::DidCreateDocumentElement() {
-  CreateContextState();
 }
 
 void MojoBindingsController::DidClearWindowObject() {

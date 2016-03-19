@@ -188,6 +188,11 @@ public:
         skipLeading<isNotHTMLSpace<UChar>>();
     }
 
+    void skipRemaining()
+    {
+        m_current = m_end;
+    }
+
     String takeRemaining()
     {
         ASSERT(!isEmpty());
@@ -2288,6 +2293,10 @@ ReprocessBuffer:
         if (buffer.isEmpty())
             return;
         defaultForBeforeHTML();
+        if (m_parser->isStopped()) {
+            buffer.skipRemaining();
+            return;
+        }
         // Fall through.
     }
     case BeforeHeadMode: {
