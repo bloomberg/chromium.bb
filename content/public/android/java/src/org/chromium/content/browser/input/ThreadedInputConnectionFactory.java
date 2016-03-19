@@ -116,32 +116,43 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
                 mInputMethodManagerWrapper.isActive(view);
 
                 // Step 3: Check that the above hack worked.
+                // Step 3-1: Wait until activation finishes inside InputMethodManager.
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // Some other view already took focus. Container view should be active
-                        // otherwise regardless of whether proxy view is registered or not.
-                        if (!mInputMethodManagerWrapper.isActive(view)) return;
-
-                        // Success.
-                        if (mInputMethodManagerWrapper.isActive(mProxyView)) {
-                            mInputMethodUma.recordProxyViewSuccess();
-                            return;
-                        }
-
-                        if (mThreadedInputConnection == null) {
-                            // First time and failed. It is highly likely that this does not work
-                            // systematically.
-                            mInputMethodUma.recordProxyViewFailure();
-                            onRegisterProxyViewFailed();
-                        } else {
-                            // Most likely that we already lost view focus.
-                            mInputMethodUma.recordProxyViewDetectionFailure();
-                        }
+                        // Step 3-2. Run the check on view's handler (mostly UI) thread.
+                        // This prevents other views from taking focus in the middle of detection.
+                        view.getHandler().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                assertRegisterProxyViewOnUiThread(view);
+                            }
+                        });
                     }
                 });
             }
         });
+    }
+
+    private void assertRegisterProxyViewOnUiThread(View view) {
+        // Success.
+        if (mInputMethodManagerWrapper.isActive(mProxyView)) {
+            mInputMethodUma.recordProxyViewSuccess();
+            return;
+        }
+
+        // Some other view already took focus. Container view should be active
+        // otherwise regardless of whether proxy view is registered or not.
+        if (!mInputMethodManagerWrapper.isActive(view)) return;
+
+        if (mThreadedInputConnection == null) {
+            // First time and failed. It is highly likely that this does not work systematically.
+            mInputMethodUma.recordProxyViewFailure();
+            onRegisterProxyViewFailed();
+        } else {
+            // Most likely that we already lost view focus.
+            mInputMethodUma.recordProxyViewDetectionFailure();
+        }
     }
 
     @VisibleForTesting

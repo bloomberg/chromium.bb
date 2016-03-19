@@ -122,7 +122,6 @@ public class ImeAdapter {
     public ImeAdapter(InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
         mInputMethodManagerWrapper = wrapper;
         mViewEmbedder = embedder;
-        resetInputConnectionFactory();
         // Deep copy newConfig so that we can notice the difference.
         mCurrentConfig = new Configuration(
                 mViewEmbedder.getAttachedView().getResources().getConfiguration());
@@ -161,11 +160,14 @@ public class ImeAdapter {
         return nativeIsImeThreadEnabled(mNativeImeAdapterAndroid);
     }
 
-    private void resetInputConnectionFactory() {
+    private void createInputConnectionFactory() {
+        if (mInputConnectionFactory != null) return;
         if (isImeThreadEnabled()) {
+            Log.i(TAG, "ImeThread is enabled.");
             mInputConnectionFactory =
                     new ThreadedInputConnectionFactory(mInputMethodManagerWrapper);
         } else {
+            Log.i(TAG, "ImeThread is not enabled.");
             mInputConnectionFactory = new ReplicaInputConnection.Factory();
         }
     }
@@ -189,6 +191,7 @@ public class ImeAdapter {
             if (DEBUG_LOGS) Log.w(TAG, "onCreateInputConnection returns null.");
             return null;
         }
+        if (mInputConnectionFactory == null) return null;
         mInputConnection = mInputConnectionFactory.initializeAndGet(
                 mViewEmbedder.getAttachedView(), this, mTextInputType, mTextInputFlags,
                 mLastSelectionStart, mLastSelectionEnd, outAttrs);
@@ -328,6 +331,9 @@ public class ImeAdapter {
             nativeAttachImeAdapter(nativeImeAdapter);
         }
         mNativeImeAdapterAndroid = nativeImeAdapter;
+        if (nativeImeAdapter != 0) {
+            createInputConnectionFactory();
+        }
     }
 
     /**
