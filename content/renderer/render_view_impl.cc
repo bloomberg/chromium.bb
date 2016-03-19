@@ -669,7 +669,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
-  g_routing_id_view_map.Get().insert(std::make_pair(routing_id(), this));
+  g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -679,7 +679,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   // Debug cases of https://crbug.com/575245.
   base::debug::SetCrashKeyValue("rvinit_view_id",
-                                base::IntToString(routing_id()));
+                                base::IntToString(GetRoutingID()));
   base::debug::SetCrashKeyValue("rvinit_proxy_id",
                                 base::IntToString(params.proxy_routing_id));
   base::debug::SetCrashKeyValue(
@@ -720,7 +720,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);
     RenderFrameProxy::CreateFrameProxy(
-        params.proxy_routing_id, routing_id(), params.opener_frame_route_id,
+        params.proxy_routing_id, GetRoutingID(), params.opener_frame_route_id,
         MSG_ROUTING_NONE, params.replicated_frame_state);
   }
 
@@ -738,7 +738,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   content_detectors_.push_back(make_scoped_ptr(new EmailDetector()));
 #endif
 
-  RenderThread::Get()->AddRoute(routing_id(), this);
+  RenderThread::Get()->AddRoute(GetRoutingID(), this);
   // Take a reference on behalf of the RenderThread.  This will be balanced
   // when we receive ViewMsg_Close in the RenderWidget (which RenderView
   // inherits from).
@@ -1222,7 +1222,7 @@ void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
 
 #if defined(OS_MACOSX)
 void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
-  Send(new ViewHostMsg_PluginFocusChanged(routing_id(), focused, plugin_id));
+  Send(new ViewHostMsg_PluginFocusChanged(GetRoutingID(), focused, plugin_id));
 }
 
 void RenderViewImpl::OnGetRenderedText() {
@@ -1246,11 +1246,11 @@ void RenderViewImpl::OnGetRenderedText() {
           webview()->mainFrame()->toWebLocalFrame(), kMaximumMessageSize)
           .utf8();
 
-  Send(new ViewMsg_GetRenderedTextCompleted(routing_id(), text));
+  Send(new ViewMsg_GetRenderedTextCompleted(GetRoutingID(), text));
 }
 
 void RenderViewImpl::StartPluginIme() {
-  IPC::Message* msg = new ViewHostMsg_StartPluginIme(routing_id());
+  IPC::Message* msg = new ViewHostMsg_StartPluginIme(GetRoutingID());
   // This message can be sent during event-handling, and needs to be delivered
   // within that context.
   msg->set_unblock(true);
@@ -1437,7 +1437,7 @@ void RenderViewImpl::OnSaveImageAt(int x, int y) {
 void RenderViewImpl::OnUpdateTargetURLAck() {
   // Check if there is a targeturl waiting to be sent.
   if (target_url_status_ == TARGET_PENDING)
-    Send(new ViewHostMsg_UpdateTargetURL(routing_id(), pending_target_url_));
+    Send(new ViewHostMsg_UpdateTargetURL(GetRoutingID(), pending_target_url_));
 
   target_url_status_ = TARGET_NONE;
 }
@@ -1455,7 +1455,7 @@ void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
   if (!webview())
     return;
 
-  Send(new InputHostMsg_MoveCaret_ACK(routing_id()));
+  Send(new InputHostMsg_MoveCaret_ACK(GetRoutingID()));
   webview()->focusedFrame()->moveCaretSelection(
       ConvertWindowPointToViewport(point));
 }
@@ -1518,7 +1518,7 @@ void RenderViewImpl::SendUpdateState() {
   if (entry->root().urlString() == kSwappedOutURL)
     return;
 
-  Send(new ViewHostMsg_UpdateState(routing_id(), page_id_,
+  Send(new ViewHostMsg_UpdateState(GetRoutingID(), page_id_,
                                    HistoryEntryToPageState(entry)));
 }
 
@@ -1585,7 +1585,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
                                     WebNavigationPolicy policy,
                                     bool suppress_opener) {
   ViewHostMsg_CreateWindow_Params params;
-  params.opener_id = routing_id();
+  params.opener_id = GetRoutingID();
   params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
@@ -1654,7 +1654,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
 
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   view_params.opener_frame_route_id = creator_frame->GetRoutingID();
-  DCHECK_EQ(routing_id(), creator_frame->render_view()->GetRoutingID());
+  DCHECK_EQ(GetRoutingID(), creator_frame->render_view()->GetRoutingID());
 
   view_params.window_was_created_with_opener = true;
   view_params.renderer_preferences = renderer_preferences_;
@@ -1683,7 +1683,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
 }
 
 WebWidget* RenderViewImpl::createPopupMenu(blink::WebPopupType popup_type) {
-  RenderWidget* widget = RenderWidget::Create(routing_id(), compositor_deps_,
+  RenderWidget* widget = RenderWidget::Create(GetRoutingID(), compositor_deps_,
                                               popup_type, screen_info_);
   if (!widget)
     return NULL;
@@ -1709,7 +1709,7 @@ void RenderViewImpl::saveImageFromDataURL(const blink::WebString& data_url) {
   // in order to send a larger data url to save a image for <canvas> or <img>.
   if (data_url.length() < kMaxLengthOfDataURLString)
     Send(new ViewHostMsg_SaveImageFromDataURL(
-        routing_id(), GetMainRenderFrame()->GetRoutingID(), data_url.utf8()));
+        GetRoutingID(), GetMainRenderFrame()->GetRoutingID(), data_url.utf8()));
 }
 
 bool RenderViewImpl::enumerateChosenDirectory(
@@ -1718,7 +1718,7 @@ bool RenderViewImpl::enumerateChosenDirectory(
   int id = enumeration_completion_id_++;
   enumeration_completions_[id] = chooser_completion;
   return Send(new ViewHostMsg_EnumerateDirectory(
-      routing_id(), id, blink::WebStringToFilePath(path)));
+      GetRoutingID(), id, blink::WebStringToFilePath(path)));
 }
 
 void RenderViewImpl::FrameDidStartLoading(WebFrame* frame) {
@@ -1752,7 +1752,7 @@ void RenderViewImpl::SetZoomLevel(double zoom_level) {
 }
 
 void RenderViewImpl::didCancelCompositionOnSelectionChange() {
-  Send(new InputHostMsg_ImeCancelComposition(routing_id()));
+  Send(new InputHostMsg_ImeCancelComposition(GetRoutingID()));
 }
 
 bool RenderViewImpl::handleCurrentKeyboardEvent() {
@@ -1847,18 +1847,18 @@ void RenderViewImpl::showValidationMessage(
       &wrapped_main_text, main_text_hint, &wrapped_sub_text, sub_text_hint);
 
   Send(new ViewHostMsg_ShowValidationMessage(
-      routing_id(), AdjustValidationMessageAnchor(anchor_in_viewport),
+      GetRoutingID(), AdjustValidationMessageAnchor(anchor_in_viewport),
       wrapped_main_text, wrapped_sub_text));
 }
 
 void RenderViewImpl::hideValidationMessage() {
-  Send(new ViewHostMsg_HideValidationMessage(routing_id()));
+  Send(new ViewHostMsg_HideValidationMessage(GetRoutingID()));
 }
 
 void RenderViewImpl::moveValidationMessage(
     const blink::WebRect& anchor_in_viewport) {
   Send(new ViewHostMsg_MoveValidationMessage(
-      routing_id(), AdjustValidationMessageAnchor(anchor_in_viewport)));
+      GetRoutingID(), AdjustValidationMessageAnchor(anchor_in_viewport)));
 }
 
 void RenderViewImpl::setStatusText(const WebString& text) {
@@ -1883,7 +1883,7 @@ void RenderViewImpl::UpdateTargetURL(const GURL& url,
     // see |ParamTraits<GURL>|.
     if (latest_url.possibly_invalid_spec().size() > url::kMaxURLChars)
       latest_url = GURL();
-    Send(new ViewHostMsg_UpdateTargetURL(routing_id(), latest_url));
+    Send(new ViewHostMsg_UpdateTargetURL(GetRoutingID(), latest_url));
     target_url_ = latest_url;
     target_url_status_ = TARGET_INFLIGHT;
   }
@@ -1949,7 +1949,7 @@ void RenderViewImpl::startDragging(WebLocalFrame* frame,
   DropData drop_data(DropDataBuilder::Build(data));
   drop_data.referrer_policy = frame->document().referrerPolicy();
   gfx::Vector2d imageOffset(offset_in_window.x, offset_in_window.y);
-  Send(new DragHostMsg_StartDragging(routing_id(), drop_data, mask,
+  Send(new DragHostMsg_StartDragging(GetRoutingID(), drop_data, mask,
                                      image.getSkBitmap(), imageOffset,
                                      possible_drag_event_info_));
 }
@@ -1959,11 +1959,11 @@ bool RenderViewImpl::acceptsLoadDrops() {
 }
 
 void RenderViewImpl::focusNext() {
-  Send(new ViewHostMsg_TakeFocus(routing_id(), false));
+  Send(new ViewHostMsg_TakeFocus(GetRoutingID(), false));
 }
 
 void RenderViewImpl::focusPrevious() {
-  Send(new ViewHostMsg_TakeFocus(routing_id(), true));
+  Send(new ViewHostMsg_TakeFocus(GetRoutingID(), true));
 }
 
 // TODO(esprehn): Blink only ever passes Elements, this should take WebElement.
@@ -1980,7 +1980,7 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
     node_bounds = gfx::Rect(rect);
     is_editable = element.isEditable();
   }
-  Send(new ViewHostMsg_FocusedNodeChanged(routing_id(), is_editable,
+  Send(new ViewHostMsg_FocusedNodeChanged(GetRoutingID(), is_editable,
                                           node_bounds));
 
   // TODO(estade): remove.
@@ -2020,7 +2020,7 @@ void RenderViewImpl::didUpdateLayout() {
 }
 
 void RenderViewImpl::navigateBackForwardSoon(int offset) {
-  Send(new ViewHostMsg_GoToEntryAtOffset(routing_id(), offset));
+  Send(new ViewHostMsg_GoToEntryAtOffset(GetRoutingID(), offset));
 }
 
 int RenderViewImpl::historyBackListCount() {
@@ -2039,7 +2039,7 @@ void RenderViewImpl::didFocus() {
   //                 move that code back to render_widget.cc
   if (WebUserGestureIndicator::isProcessingUserGesture() &&
       !RenderThreadImpl::current()->layout_test_mode()) {
-    Send(new ViewHostMsg_Focus(routing_id()));
+    Send(new ViewHostMsg_Focus(GetRoutingID()));
   }
 }
 
@@ -2065,7 +2065,7 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
   // NOTE: initial_rect_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if disposition is not NEW_POPUP, or the
   // browser process will impose a default position otherwise.
-  Send(new ViewHostMsg_ShowView(opener_id_, routing_id(),
+  Send(new ViewHostMsg_ShowView(opener_id_, GetRoutingID(),
                                 NavigationPolicyToDisposition(policy),
                                 initial_rect_, opened_by_user_gesture_));
   SetPendingWindowRect(initial_rect_);
@@ -2110,7 +2110,7 @@ void RenderViewImpl::didHandleGestureEvent(
   blink::WebTextInputType text_input_type = GetWebView()->textInputType();
 
   Send(new ViewHostMsg_FocusedNodeTouched(
-      routing_id(), text_input_type != blink::WebTextInputTypeNone));
+      GetRoutingID(), text_input_type != blink::WebTextInputTypeNone));
 #endif
 }
 
@@ -2136,7 +2136,7 @@ void RenderViewImpl::initializeLayerTreeView() {
         render_thread ? render_thread->input_handler_manager() : NULL;
     if (input_handler_manager) {
       input_handler_manager->AddInputHandler(
-          routing_id(), rwc->GetInputHandler(), AsWeakPtr(),
+          GetRoutingID(), rwc->GetInputHandler(), AsWeakPtr(),
           webkit_preferences_.enable_scroll_animator,
           UseGestureBasedWheelScrolling());
     }
@@ -2224,7 +2224,7 @@ void RenderViewImpl::CheckPreferredSize() {
     return;
 
   preferred_size_ = size;
-  Send(new ViewHostMsg_DidContentsPreferredSizeChange(routing_id(),
+  Send(new ViewHostMsg_DidContentsPreferredSizeChange(GetRoutingID(),
                                                       preferred_size_));
 }
 
@@ -2405,7 +2405,7 @@ void RenderViewImpl::OnDragTargetDragEnter(const DropData& drop_data,
       ops,
       key_modifiers);
 
-  Send(new DragHostMsg_UpdateDragCursor(routing_id(), operation));
+  Send(new DragHostMsg_UpdateDragCursor(GetRoutingID(), operation));
 }
 
 void RenderViewImpl::OnDragTargetDragOver(const gfx::Point& client_point,
@@ -2418,7 +2418,7 @@ void RenderViewImpl::OnDragTargetDragOver(const gfx::Point& client_point,
       ops,
       key_modifiers);
 
-  Send(new DragHostMsg_UpdateDragCursor(routing_id(), operation));
+  Send(new DragHostMsg_UpdateDragCursor(GetRoutingID(), operation));
 }
 
 void RenderViewImpl::OnDragTargetDragLeave() {
@@ -2494,7 +2494,7 @@ void RenderViewImpl::OnFileChooserResponse(
   // If there are more pending file chooser requests, schedule one now.
   if (!file_chooser_completions_.empty()) {
     Send(new ViewHostMsg_RunFileChooser(
-        routing_id(), file_chooser_completions_.front()->params));
+        GetRoutingID(), file_chooser_completions_.front()->params));
   }
 }
 
@@ -2628,12 +2628,12 @@ void RenderViewImpl::OnClosePage() {
   // http://b/issue?id=753080.
   webview()->mainFrame()->dispatchUnloadEvent();
 
-  Send(new ViewHostMsg_ClosePage_ACK(routing_id()));
+  Send(new ViewHostMsg_ClosePage_ACK(GetRoutingID()));
 }
 
 void RenderViewImpl::OnClose() {
   if (closing_)
-    RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(routing_id()));
+    RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));
   RenderWidget::OnClose();
 }
 
@@ -2810,8 +2810,8 @@ void RenderViewImpl::Close() {
   WebView* doomed = webview();
   RenderWidget::Close();
   g_view_map.Get().erase(doomed);
-  g_routing_id_view_map.Get().erase(routing_id());
-  RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(routing_id()));
+  g_routing_id_view_map.Get().erase(GetRoutingID());
+  RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));
 }
 
 void RenderViewImpl::OnWasHidden() {
@@ -3146,7 +3146,7 @@ bool RenderViewImpl::ScheduleFileChooser(
       make_scoped_ptr(new PendingFileChooser(params, completion)));
   if (file_chooser_completions_.size() == 1) {
     // Actually show the browse dialog when this is the first request.
-    Send(new ViewHostMsg_RunFileChooser(routing_id(), params));
+    Send(new ViewHostMsg_RunFileChooser(GetRoutingID(), params));
   }
   return true;
 }
@@ -3166,7 +3166,7 @@ void RenderViewImpl::zoomLimitsChanged(double minimum_level,
   int maximum_percent = round(
       ZoomLevelToZoomFactor(maximum_level) * 100);
 
-  Send(new ViewHostMsg_UpdateZoomLimits(routing_id(), minimum_percent,
+  Send(new ViewHostMsg_UpdateZoomLimits(GetRoutingID(), minimum_percent,
                                         maximum_percent));
 }
 
@@ -3179,7 +3179,7 @@ void RenderViewImpl::zoomLevelChanged() {
     // Tell the browser which url got zoomed so it can update the menu and the
     // saved values if necessary
     Send(new ViewHostMsg_DidZoomURL(
-        routing_id(), zoom_level,
+        GetRoutingID(), zoom_level,
         GURL(webview()->mainFrame()->document().url())));
   }
 }
@@ -3188,7 +3188,7 @@ void RenderViewImpl::pageScaleFactorChanged() {
   if (!webview())
     return;
 
-  Send(new ViewHostMsg_PageScaleFactorChanged(routing_id(),
+  Send(new ViewHostMsg_PageScaleFactorChanged(GetRoutingID(),
                                               webview()->pageScaleFactor()));
 }
 
@@ -3274,7 +3274,7 @@ void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
   ScheduleComposite();
 
   if (!intent.is_empty()) {
-    Send(new ViewHostMsg_StartContentIntent(routing_id(), intent,
+    Send(new ViewHostMsg_StartContentIntent(GetRoutingID(), intent,
                                             is_main_frame));
   }
 }
@@ -3387,7 +3387,7 @@ bool RenderViewImpl::didTapMultipleTargets(
           ClientRectToPhysicalWindowRect(gfx::RectF(zoom_rect_in_screen)));
 
       Send(new ViewHostMsg_ShowDisambiguationPopup(
-          routing_id(), physical_window_zoom_rect, canvas_size,
+          GetRoutingID(), physical_window_zoom_rect, canvas_size,
           shared_bitmap->id()));
       cc::SharedBitmapId id = shared_bitmap->id();
       disambiguation_bitmaps_[id] = shared_bitmap.release();
@@ -3472,7 +3472,7 @@ void RenderViewImpl::DidCommitCompositorFrame() {
 
 void RenderViewImpl::SendUpdateFaviconURL(const std::vector<FaviconURL>& urls) {
   if (!urls.empty())
-    Send(new ViewHostMsg_UpdateFaviconURL(routing_id(), urls));
+    Send(new ViewHostMsg_UpdateFaviconURL(GetRoutingID(), urls));
 }
 
 void RenderViewImpl::DidStopLoadingIcons() {
