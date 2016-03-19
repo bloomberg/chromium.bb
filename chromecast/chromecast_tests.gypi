@@ -187,6 +187,7 @@
               # --enable-local-file-accesses => to load sample media files
               # --test-launcher-jobs=1 => so internal code can bind to port
               'cast_shell_browser_test --no-sandbox --enable-local-file-accesses --enable-cma-media-pipeline --ozone-platform=cast --test-launcher-jobs=1',
+              'cast_media_unittests --test-launcher-jobs=1',
             ],
           },
           'conditions': [
