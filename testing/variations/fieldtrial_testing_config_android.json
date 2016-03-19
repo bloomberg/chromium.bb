@@ -389,7 +389,7 @@
             }
         }
     ],
-    "UnifiedMediaPipeline": [
+    "UnifiedMediaPipelineTrial": [
         {
             "group_name": "Enabled"
         }
