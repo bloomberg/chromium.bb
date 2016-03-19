@@ -159,6 +159,11 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
  protected:
   CastContentBrowserClient();
 
+  // Returns the task runner that must be used for media IO.
+  // TODO(alokp): We might need to make it public as we convert more callsites
+  // using MediaMessageLoop directly.
+  scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
+
 #if !defined(OS_ANDROID)
   virtual scoped_refptr<media::CmaMediaPipelineClient>
   CreateCmaMediaPipelineClient();

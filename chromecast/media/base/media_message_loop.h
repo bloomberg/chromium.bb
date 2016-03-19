@@ -17,6 +17,8 @@ class Thread;
 namespace chromecast {
 namespace media {
 
+// DEPRECATED: This is being deprecated.
+// Get the media task runner from CastContentBrowserClient::GetMediaTaskRunner.
 class MediaMessageLoop {
  public:
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();

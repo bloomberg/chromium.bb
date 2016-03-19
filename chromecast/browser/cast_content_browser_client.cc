@@ -117,8 +117,8 @@ CastContentBrowserClient::GetCmaMediaPipelineClient() {
 void CastContentBrowserClient::ProcessExiting() {
   // Finalize CastMediaShlib on media thread to ensure it's not accessed
   // after Finalize.
-  media::MediaMessageLoop::GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&media::CastMediaShlib::Finalize));
+  GetMediaTaskRunner()->PostTask(FROM_HERE,
+                                 base::Bind(&media::CastMediaShlib::Finalize));
 }
 
 void CastContentBrowserClient::SetMetricsClientId(
@@ -145,8 +145,8 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
 #if !defined(OS_ANDROID)
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
-      new media::CmaMessageFilterHost(host->GetID(),
-                                      GetCmaMediaPipelineClient()));
+      new media::CmaMessageFilterHost(
+          host->GetID(), GetCmaMediaPipelineClient(), GetMediaTaskRunner()));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
 
@@ -159,6 +159,12 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
                     url_request_context_factory_->GetSystemGetter())),
       base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
                  base::Unretained(this), host->GetID()));
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+CastContentBrowserClient::GetMediaTaskRunner() {
+  // TODO(alokp): Obtain task runner from a local thread or mojo media app.
+  return media::MediaMessageLoop::GetTaskRunner();
 }
 
 #if !defined(OS_ANDROID)
@@ -422,7 +428,8 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 scoped_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCmaMediaPipeline)) {
-    return make_scoped_ptr(new media::CastBrowserCdmFactory());
+    return make_scoped_ptr(
+        new media::CastBrowserCdmFactory(GetMediaTaskRunner()));
   }
 
   return nullptr;

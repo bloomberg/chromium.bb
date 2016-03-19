@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_config.h"
@@ -15,6 +14,13 @@
 
 namespace chromecast {
 namespace media {
+
+CastBrowserCdmFactory::CastBrowserCdmFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner) {
+  DCHECK(task_runner_);
+}
+CastBrowserCdmFactory::~CastBrowserCdmFactory() {}
 
 void CastBrowserCdmFactory::Create(
     const std::string& key_system,
@@ -48,7 +54,7 @@ void CastBrowserCdmFactory::Create(
     return;
   }
 
-  MediaMessageLoop::GetTaskRunner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BrowserCdmCast::Initialize,
                  base::Unretained(browser_cdm.get()),
@@ -58,8 +64,7 @@ void CastBrowserCdmFactory::Create(
                  ::media::BindToCurrentLoop(session_keys_change_cb),
                  ::media::BindToCurrentLoop(session_expiration_update_cb)));
 
-  bound_cdm_created_cb.Run(
-      new BrowserCdmCastUi(browser_cdm, MediaMessageLoop::GetTaskRunner()), "");
+  bound_cdm_created_cb.Run(new BrowserCdmCastUi(browser_cdm, task_runner_), "");
 }
 
 scoped_refptr<BrowserCdmCast> CastBrowserCdmFactory::CreatePlatformBrowserCdm(

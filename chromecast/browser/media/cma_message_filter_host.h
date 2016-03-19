@@ -38,6 +38,7 @@ class VideoDecoderConfig;
 namespace chromecast {
 namespace media {
 
+class BrowserCdmCast;
 class MediaPipelineBackend;
 struct MediaPipelineDeviceParams;
 class MediaPipelineHost;
@@ -51,7 +52,8 @@ class CmaMessageFilterHost
       const MediaPipelineDeviceParams&)> CreateBackendCB;
 
   CmaMessageFilterHost(int render_process_id,
-                       scoped_refptr<CmaMediaPipelineClient> client);
+                       scoped_refptr<CmaMediaPipelineClient> client,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // content::BrowserMessageFilter implementation:
   void OnChannelClosing() override;
