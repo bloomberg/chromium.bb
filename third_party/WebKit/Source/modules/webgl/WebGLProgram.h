@@ -31,12 +31,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}
-}
-
 namespace blink {
 
 class WebGLProgram final : public WebGLSharedPlatform3DObject {
@@ -74,7 +68,7 @@ public:
 protected:
     explicit WebGLProgram(WebGLRenderingContextBase*);
 
-    void deleteObjectImpl(WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) override;
 
 private:
     bool isProgram() const override { return true; }

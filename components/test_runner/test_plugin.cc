@@ -241,22 +241,15 @@ void TestPlugin::updateGeometry(
   if (rect_.isEmpty()) {
     texture_mailbox_ = cc::TextureMailbox();
   } else if (context_) {
-    context_->viewport(0, 0, rect_.width, rect_.height);
+    gl_->Viewport(0, 0, rect_.width, rect_.height);
 
     gl_->BindTexture(GL_TEXTURE_2D, color_texture_);
-    context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    context_->texImage2D(GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         rect_.width,
-                         rect_.height,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         0);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rect_.width, rect_.height, 0,
+                    GL_RGBA, GL_UNSIGNED_BYTE, 0);
     gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, color_texture_, 0);
@@ -375,7 +368,7 @@ bool TestPlugin::InitScene() {
   color_texture_ = context_->createTexture();
   framebuffer_ = context_->createFramebuffer();
 
-  context_->viewport(0, 0, rect_.width, rect_.height);
+  gl_->Viewport(0, 0, rect_.width, rect_.height);
   gl_->Disable(GL_DEPTH_TEST);
   gl_->Disable(GL_SCISSOR_TEST);
 
@@ -389,7 +382,7 @@ bool TestPlugin::InitScene() {
 }
 
 void TestPlugin::DrawSceneGL() {
-  context_->viewport(0, 0, rect_.width, rect_.height);
+  gl_->Viewport(0, 0, rect_.width, rect_.height);
   gl_->Clear(GL_COLOR_BUFFER_BIT);
 
   if (scene_.primitive != PrimitiveNone)
@@ -426,7 +419,7 @@ void TestPlugin::DrawSceneSoftware(void* memory) {
 
 void TestPlugin::DestroyScene() {
   if (scene_.program) {
-    context_->deleteProgram(scene_.program);
+    gl_->DeleteProgram(scene_.program);
     scene_.program = 0;
   }
   if (scene_.vbo) {
@@ -488,13 +481,12 @@ void TestPlugin::DrawPrimitive() {
   DCHECK(scene_.vbo);
   DCHECK(scene_.program);
 
-  context_->useProgram(scene_.program);
+  gl_->UseProgram(scene_.program);
 
   // Bind primitive color.
   float color[4];
   PremultiplyAlpha(scene_.primitive_color, scene_.opacity, color);
-  context_->uniform4f(
-      scene_.color_location, color[0], color[1], color[2], color[3]);
+  gl_->Uniform4f(scene_.color_location, color[0], color[1], color[2], color[3]);
 
   // Bind primitive vertices.
   gl_->BindBuffer(GL_ARRAY_BUFFER, scene_.vbo);
@@ -505,7 +497,7 @@ void TestPlugin::DrawPrimitive() {
 }
 
 unsigned TestPlugin::LoadShader(unsigned type, const std::string& source) {
-  unsigned shader = context_->createShader(type);
+  unsigned shader = gl_->CreateShader(type);
   if (shader) {
     context_->shaderSource(shader, source.data());
     gl_->CompileShader(shader);
@@ -513,7 +505,7 @@ unsigned TestPlugin::LoadShader(unsigned type, const std::string& source) {
     int compiled = 0;
     gl_->GetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
     if (!compiled) {
-      context_->deleteShader(shader);
+      gl_->DeleteShader(shader);
       shader = 0;
     }
   }
@@ -524,7 +516,7 @@ unsigned TestPlugin::LoadProgram(const std::string& vertex_source,
                                  const std::string& fragment_source) {
   unsigned vertex_shader = LoadShader(GL_VERTEX_SHADER, vertex_source);
   unsigned fragment_shader = LoadShader(GL_FRAGMENT_SHADER, fragment_source);
-  unsigned program = context_->createProgram();
+  unsigned program = gl_->CreateProgram();
   if (vertex_shader && fragment_shader && program) {
     gl_->AttachShader(program, vertex_shader);
     gl_->AttachShader(program, fragment_shader);
@@ -533,14 +525,14 @@ unsigned TestPlugin::LoadProgram(const std::string& vertex_source,
     int linked = 0;
     gl_->GetProgramiv(program, GL_LINK_STATUS, &linked);
     if (!linked) {
-      context_->deleteProgram(program);
+      gl_->DeleteProgram(program);
       program = 0;
     }
   }
   if (vertex_shader)
-    context_->deleteShader(vertex_shader);
+    gl_->DeleteShader(vertex_shader);
   if (fragment_shader)
-    context_->deleteShader(fragment_shader);
+    gl_->DeleteShader(fragment_shader);
 
   return program;
 }

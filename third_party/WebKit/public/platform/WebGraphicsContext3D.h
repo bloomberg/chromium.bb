@@ -171,48 +171,8 @@ public:
 
     virtual void shaderSource(WebGLId shader, const WGC3Dchar* string) = 0;
 
-    virtual void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels) = 0;
-
-    virtual void texParameterf(WGC3Denum target, WGC3Denum pname, WGC3Dfloat param) = 0;
-    virtual void texParameteri(WGC3Denum target, WGC3Denum pname, WGC3Dint param) = 0;
-
-    virtual void texSubImage2D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, const void* pixels) = 0;
-
-    virtual void uniform1f(WGC3Dint location, WGC3Dfloat x) = 0;
-    virtual void uniform1fv(WGC3Dint location, WGC3Dsizei count, const WGC3Dfloat* v) = 0;
-    virtual void uniform1i(WGC3Dint location, WGC3Dint x) = 0;
-    virtual void uniform1iv(WGC3Dint location, WGC3Dsizei count, const WGC3Dint* v) = 0;
-    virtual void uniform2f(WGC3Dint location, WGC3Dfloat x, WGC3Dfloat y) = 0;
-    virtual void uniform2fv(WGC3Dint location, WGC3Dsizei count, const WGC3Dfloat* v) = 0;
-    virtual void uniform2i(WGC3Dint location, WGC3Dint x, WGC3Dint y) = 0;
-    virtual void uniform2iv(WGC3Dint location, WGC3Dsizei count, const WGC3Dint* v) = 0;
-    virtual void uniform3f(WGC3Dint location, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z) = 0;
-    virtual void uniform3fv(WGC3Dint location, WGC3Dsizei count, const WGC3Dfloat* v) = 0;
-    virtual void uniform3i(WGC3Dint location, WGC3Dint x, WGC3Dint y, WGC3Dint z) = 0;
-    virtual void uniform3iv(WGC3Dint location, WGC3Dsizei count, const WGC3Dint* v) = 0;
-    virtual void uniform4f(WGC3Dint location, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z, WGC3Dfloat w) = 0;
-    virtual void uniform4fv(WGC3Dint location, WGC3Dsizei count, const WGC3Dfloat* v) = 0;
-    virtual void uniform4i(WGC3Dint location, WGC3Dint x, WGC3Dint y, WGC3Dint z, WGC3Dint w) = 0;
-    virtual void uniform4iv(WGC3Dint location, WGC3Dsizei count, const WGC3Dint* v) = 0;
-    virtual void uniformMatrix2fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) = 0;
-    virtual void uniformMatrix3fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) = 0;
-    virtual void uniformMatrix4fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) = 0;
-
-    virtual void useProgram(WebGLId program) = 0;
-    virtual void validateProgram(WebGLId program) = 0;
-
-    virtual void vertexAttrib1f(WGC3Duint index, WGC3Dfloat x) = 0;
-    virtual void vertexAttrib1fv(WGC3Duint index, const WGC3Dfloat* values) = 0;
-    virtual void vertexAttrib2f(WGC3Duint index, WGC3Dfloat x, WGC3Dfloat y) = 0;
-    virtual void vertexAttrib2fv(WGC3Duint index, const WGC3Dfloat* values) = 0;
-    virtual void vertexAttrib3f(WGC3Duint index, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z) = 0;
-    virtual void vertexAttrib3fv(WGC3Duint index, const WGC3Dfloat* values) = 0;
-    virtual void vertexAttrib4f(WGC3Duint index, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z, WGC3Dfloat w) = 0;
-    virtual void vertexAttrib4fv(WGC3Duint index, const WGC3Dfloat* values) = 0;
     virtual void vertexAttribPointer(WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dboolean normalized,
                                      WGC3Dsizei stride, WGC3Dintptr offset) = 0;
-
-    virtual void viewport(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) = 0;
 
     virtual WebGLId createBuffer() = 0;
     virtual WebGLId createFramebuffer() = 0;
@@ -224,20 +184,10 @@ public:
     virtual void deleteRenderbuffer(WebGLId) = 0;
     virtual void deleteTexture(WebGLId) = 0;
 
-    virtual WebGLId createProgram() = 0;
-    virtual WebGLId createShader(WGC3Denum) = 0;
-
-    virtual void deleteShader(WebGLId) = 0;
-    virtual void deleteProgram(WebGLId) = 0;
-
     virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback) { }
     virtual void setErrorMessageCallback(WebGraphicsErrorMessageCallback* callback) { }
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId shader) = 0;
-
-    // GL_EXT_texture_storage
-    virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
-                                 WGC3Dint width, WGC3Dint height) { }
 
     // GL_EXT_occlusion_query
     virtual WebGLId createQueryEXT() { return 0; }
@@ -245,12 +195,7 @@ public:
 
     // GL_CHROMIUM_subscribe_uniform
     virtual WebGLId createValuebufferCHROMIUM() { return 0; }
-    virtual void deleteValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids) { }
     virtual void deleteValuebufferCHROMIUM(WebGLId) { }
-    virtual void bindValuebufferCHROMIUM(WGC3Denum target, WebGLId valuebuffer) { }
-    virtual void subscribeValueCHROMIUM(WGC3Denum target, WGC3Denum subscription) { }
-    virtual void populateSubscribedValuesCHROMIUM(WGC3Denum target) { }
-    virtual void uniformValuebufferCHROMIUM(WGC3Dint location, WGC3Denum target, WGC3Denum subscription) { }
 
     // GL_EXT_debug_marker
     virtual void pushGroupMarkerEXT(const WGC3Dchar* marker) { }
@@ -258,30 +203,6 @@ public:
     // GL_OES_vertex_array_object
     virtual WebGLId createVertexArrayOES() { return 0; }
     virtual void deleteVertexArrayOES(WebGLId array) { }
-    virtual WGC3Dboolean isVertexArrayOES(WebGLId array) { return false; }
-    virtual void bindVertexArrayOES(WebGLId array) { }
-
-    // GL_CHROMIUM_texture_from_image
-    virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId) { }
-    virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId) { }
-
-    // GL_EXT_draw_buffers
-    virtual void drawBuffersEXT(WGC3Dsizei n, const WGC3Denum* bufs) { }
-
-    // GL_CHROMIUM_image
-    virtual void destroyImageCHROMIUM(WGC3Duint imageId) { }
-
-    // GL_CHROMIUM_gpu_memory_buffer_image
-    virtual WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) { return 0; }
-
-    // GL_ANGLE_instanced_arrays
-    virtual void drawArraysInstancedANGLE(WGC3Denum mode, WGC3Dint first, WGC3Dsizei count, WGC3Dsizei primcount) { }
-    virtual void drawElementsInstancedANGLE(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset, WGC3Dsizei primcount) { }
-    virtual void vertexAttribDivisorANGLE(WGC3Duint index, WGC3Duint divisor) { }
-
-    // GL_EXT_multisampled_render_to_texture
-    virtual void framebufferTexture2DMultisampleEXT(WGC3Denum target, WGC3Denum attachment, WGC3Denum textarget, WebGLId texture, WGC3Dint level, WGC3Dsizei samples) { }
-    virtual void renderbufferStorageMultisampleEXT(WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height) { };
 
     // OpenGL ES 3.0 functions not represented by pre-existing extensions
     virtual void beginTransformFeedback(WGC3Denum primitiveMode) { }
@@ -319,8 +240,6 @@ public:
     virtual WGC3Duint getUniformBlockIndex(WebGLId program, const WGC3Dchar *uniformBlockName) { return 0xFFFFFFFFu; /* GL_INVALID_INDEX */ }
     virtual void getUniformIndices(WebGLId program, WGC3Dsizei uniformCount, const WGC3Dchar *const*uniformNames, WGC3Duint *uniformIndices) { }
     virtual void getUniformuiv(WebGLId program, WGC3Dint location, WGC3Duint *params) { }
-    virtual void getVertexAttribIiv(WGC3Duint index, WGC3Denum pname, WGC3Dint *params) { }
-    virtual void getVertexAttribIuiv(WGC3Duint index, WGC3Denum pname, WGC3Duint *params) { }
     virtual void invalidateFramebuffer(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum *attachments) { }
     virtual void invalidateSubFramebuffer(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum *attachments, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
     virtual WGC3Dboolean isSampler(WebGLId sampler) { return false; }
@@ -335,31 +254,9 @@ public:
     virtual void samplerParameterfv(WebGLId sampler, WGC3Denum pname, const WGC3Dfloat *param) { }
     virtual void samplerParameteri(WebGLId sampler, WGC3Denum pname, WGC3Dint param) { }
     virtual void samplerParameteriv(WebGLId sampler, WGC3Denum pname, const WGC3Dint *param) { }
-    virtual void texImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void *pixels) { }
-    virtual void texStorage3D(WGC3Denum target, WGC3Dsizei levels, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth) { }
-    virtual void texSubImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Denum format, WGC3Denum type, const void *pixels) { }
     virtual void transformFeedbackVaryings(WebGLId program, WGC3Dsizei count, const WGC3Dchar *const*varyings, WGC3Denum bufferMode) { }
-    virtual void uniform1ui(WGC3Dint location, WGC3Duint x) { }
-    virtual void uniform1uiv(WGC3Dint location, WGC3Dsizei count, const WGC3Duint *value) { }
-    virtual void uniform2ui(WGC3Dint location, WGC3Duint x, WGC3Duint y) { }
-    virtual void uniform2uiv(WGC3Dint location, WGC3Dsizei count, const WGC3Duint *value) { }
-    virtual void uniform3ui(WGC3Dint location, WGC3Duint x, WGC3Duint y, WGC3Duint z) { }
-    virtual void uniform3uiv(WGC3Dint location, WGC3Dsizei count, const WGC3Duint *value) { }
-    virtual void uniform4ui(WGC3Dint location, WGC3Duint x, WGC3Duint y, WGC3Duint z, WGC3Duint w) { }
-    virtual void uniform4uiv(WGC3Dint location, WGC3Dsizei count, const WGC3Duint *value) { }
-    virtual void uniformBlockBinding(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Duint uniformBlockBinding) { }
-    virtual void uniformMatrix2x3fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
-    virtual void uniformMatrix2x4fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
-    virtual void uniformMatrix3x2fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
-    virtual void uniformMatrix3x4fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
-    virtual void uniformMatrix4x2fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
-    virtual void uniformMatrix4x3fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
     virtual WGC3Dboolean unmapBuffer(WGC3Denum target) { return false; }
 
-    virtual void vertexAttribI4i(WGC3Duint index, WGC3Dint x, WGC3Dint y, WGC3Dint z, WGC3Dint w) { }
-    virtual void vertexAttribI4iv(WGC3Duint index, const WGC3Dint *v) { }
-    virtual void vertexAttribI4ui(WGC3Duint index, WGC3Duint x, WGC3Duint y, WGC3Duint z, WGC3Duint w) { }
-    virtual void vertexAttribI4uiv(WGC3Duint index, const WGC3Duint *v) { }
     virtual void vertexAttribIPointer(WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dsizei stride, WGC3Dintptr pointer) { }
     virtual void waitSync(WGC3Dsync sync, WGC3Dbitfield flags, WGC3Duint64 timeout) { }
 

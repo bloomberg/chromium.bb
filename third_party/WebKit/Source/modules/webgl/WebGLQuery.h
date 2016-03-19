@@ -37,7 +37,7 @@ public:
 protected:
     explicit WebGLQuery(WebGL2RenderingContextBase*);
 
-    void deleteObjectImpl(WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) override;
 
 private:
     bool isQuery() const override { return true; }

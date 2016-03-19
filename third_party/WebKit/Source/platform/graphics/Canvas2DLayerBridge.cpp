@@ -253,23 +253,23 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
 
     WebGraphicsContext3D* webContext = context();
     gpu::gles2::GLES2Interface* gl = contextGL();
-    GLuint imageId = webContext->createGpuMemoryBufferImageCHROMIUM(m_size.width(), m_size.height(), GL_BGRA_EXT, GC3D_SCANOUT_CHROMIUM);
+    GLuint imageId = gl->CreateGpuMemoryBufferImageCHROMIUM(m_size.width(), m_size.height(), GL_BGRA_EXT, GC3D_SCANOUT_CHROMIUM);
     if (!imageId)
         return Canvas2DLayerBridge::ImageInfo();
 
     GLuint textureId= webContext->createTexture();
     if (!textureId) {
-        webContext->destroyImageCHROMIUM(imageId);
+        gl->DestroyImageCHROMIUM(imageId);
         return Canvas2DLayerBridge::ImageInfo();
     }
 
     GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
     gl->BindTexture(target, textureId);
-    webContext->texParameteri(target, GL_TEXTURE_MAG_FILTER, getGLFilter());
-    webContext->texParameteri(target, GL_TEXTURE_MIN_FILTER, getGLFilter());
-    webContext->texParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    webContext->texParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    webContext->bindTexImage2DCHROMIUM(target, imageId);
+    gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, getGLFilter());
+    gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, getGLFilter());
+    gl->TexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gl->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    gl->BindTexImage2DCHROMIUM(target, imageId);
 
     return Canvas2DLayerBridge::ImageInfo(imageId, textureId);
 }
@@ -283,8 +283,8 @@ void Canvas2DLayerBridge::deleteCHROMIUMImage(ImageInfo info)
 
     GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
     gl->BindTexture(target, info.m_textureId);
-    webContext->releaseTexImage2DCHROMIUM(target, info.m_imageId);
-    webContext->destroyImageCHROMIUM(info.m_imageId);
+    gl->ReleaseTexImage2DCHROMIUM(target, info.m_imageId);
+    gl->DestroyImageCHROMIUM(info.m_imageId);
     webContext->deleteTexture(info.m_textureId);
     gl->BindTexture(target, 0);
 
@@ -347,10 +347,10 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
     gpu::gles2::GLES2Interface* gl = contextGL();
     GLuint textureID = skia::GrBackendObjectToGrGLTextureInfo(mailboxInfo.m_image->getTextureHandle(true))->fID;
     gl->BindTexture(GL_TEXTURE_2D, textureID);
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getGLFilter());
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, getGLFilter());
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getGLFilter());
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, getGLFilter());
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // Re-use the texture's existing mailbox, if there is one.
     if (mailboxInfo.m_image->getTexture()->getCustomData()) {

@@ -23,7 +23,7 @@ public:
 protected:
     explicit CHROMIUMValuebuffer(WebGLRenderingContextBase*);
 
-    void deleteObjectImpl(WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) override;
 
 private:
 

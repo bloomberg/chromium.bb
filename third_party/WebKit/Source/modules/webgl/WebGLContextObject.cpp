@@ -47,7 +47,7 @@ void WebGLContextObject::detachContext()
 {
     detach();
     if (m_context) {
-        deleteObject(m_context->webContext());
+        deleteObject(m_context->webContext(), m_context->contextGL());
         m_context->removeContextObject(this);
         m_context = nullptr;
     }

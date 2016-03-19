@@ -46,7 +46,7 @@ void WebGLSharedObject::detachContextGroup()
 {
     detach();
     if (m_contextGroup) {
-        deleteObject(nullptr);
+        deleteObject(nullptr, nullptr);
         m_contextGroup->removeObject(this);
         m_contextGroup = nullptr;
     }

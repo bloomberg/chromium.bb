@@ -48,7 +48,7 @@ WebGLBuffer::~WebGLBuffer()
     detachAndDeleteObject();
 }
 
-void WebGLBuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLBuffer::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     context3d->deleteBuffer(m_object);
     m_object = 0;

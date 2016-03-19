@@ -57,7 +57,7 @@ void WebGLTexture::setTarget(GLenum target)
     m_target = target;
 }
 
-void WebGLTexture::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLTexture::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     context3d->deleteTexture(m_object);
     m_object = 0;

@@ -48,7 +48,7 @@ public:
 protected:
     explicit WebGLBuffer(WebGLRenderingContextBase*);
 
-    void deleteObjectImpl(WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) override;
 
 private:
     bool isBuffer() const override { return true; }

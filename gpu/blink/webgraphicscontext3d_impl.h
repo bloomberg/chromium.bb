@@ -70,131 +70,12 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void shaderSource(blink::WebGLId shader,
                     const blink::WGC3Dchar* string) override;
 
-  void texImage2D(blink::WGC3Denum target,
-                  blink::WGC3Dint level,
-                  blink::WGC3Denum internalformat,
-                  blink::WGC3Dsizei width,
-                  blink::WGC3Dsizei height,
-                  blink::WGC3Dint border,
-                  blink::WGC3Denum format,
-                  blink::WGC3Denum type,
-                  const void* pixels) override;
-
-  void texParameterf(blink::WGC3Denum target,
-                     blink::WGC3Denum pname,
-                     blink::WGC3Dfloat param) override;
-  void texParameteri(blink::WGC3Denum target,
-                     blink::WGC3Denum pname,
-                     blink::WGC3Dint param) override;
-
-  void texSubImage2D(blink::WGC3Denum target,
-                     blink::WGC3Dint level,
-                     blink::WGC3Dint xoffset,
-                     blink::WGC3Dint yoffset,
-                     blink::WGC3Dsizei width,
-                     blink::WGC3Dsizei height,
-                     blink::WGC3Denum format,
-                     blink::WGC3Denum type,
-                     const void* pixels) override;
-
-  void uniform1f(blink::WGC3Dint location, blink::WGC3Dfloat x) override;
-  void uniform1fv(blink::WGC3Dint location,
-                  blink::WGC3Dsizei count,
-                  const blink::WGC3Dfloat* v) override;
-  void uniform1i(blink::WGC3Dint location, blink::WGC3Dint x) override;
-  void uniform1iv(blink::WGC3Dint location,
-                  blink::WGC3Dsizei count,
-                  const blink::WGC3Dint* v) override;
-  void uniform2f(blink::WGC3Dint location,
-                 blink::WGC3Dfloat x,
-                 blink::WGC3Dfloat y) override;
-  void uniform2fv(blink::WGC3Dint location,
-                  blink::WGC3Dsizei count,
-                  const blink::WGC3Dfloat* v) override;
-  void uniform2i(blink::WGC3Dint location,
-                 blink::WGC3Dint x,
-                 blink::WGC3Dint y) override;
-  void uniform2iv(blink::WGC3Dint location,
-                  blink::WGC3Dsizei count,
-                  const blink::WGC3Dint* v) override;
-  void uniform3f(blink::WGC3Dint location,
-                 blink::WGC3Dfloat x,
-                 blink::WGC3Dfloat y,
-                 blink::WGC3Dfloat z) override;
-  void uniform3fv(blink::WGC3Dint location,
-                  blink::WGC3Dsizei count,
-                  const blink::WGC3Dfloat* v) override;
-  void uniform3i(blink::WGC3Dint location,
-                 blink::WGC3Dint x,
-                 blink::WGC3Dint y,
-                 blink::WGC3Dint z) override;
-  void uniform3iv(blink::WGC3Dint location,
-                  blink::WGC3Dsizei count,
-                  const blink::WGC3Dint* v) override;
-  void uniform4f(blink::WGC3Dint location,
-                 blink::WGC3Dfloat x,
-                 blink::WGC3Dfloat y,
-                 blink::WGC3Dfloat z,
-                 blink::WGC3Dfloat w) override;
-  void uniform4fv(blink::WGC3Dint location,
-                  blink::WGC3Dsizei count,
-                  const blink::WGC3Dfloat* v) override;
-  void uniform4i(blink::WGC3Dint location,
-                 blink::WGC3Dint x,
-                 blink::WGC3Dint y,
-                 blink::WGC3Dint z,
-                 blink::WGC3Dint w) override;
-  void uniform4iv(blink::WGC3Dint location,
-                  blink::WGC3Dsizei count,
-                  const blink::WGC3Dint* v) override;
-  void uniformMatrix2fv(blink::WGC3Dint location,
-                        blink::WGC3Dsizei count,
-                        blink::WGC3Dboolean transpose,
-                        const blink::WGC3Dfloat* value) override;
-  void uniformMatrix3fv(blink::WGC3Dint location,
-                        blink::WGC3Dsizei count,
-                        blink::WGC3Dboolean transpose,
-                        const blink::WGC3Dfloat* value) override;
-  void uniformMatrix4fv(blink::WGC3Dint location,
-                        blink::WGC3Dsizei count,
-                        blink::WGC3Dboolean transpose,
-                        const blink::WGC3Dfloat* value) override;
-
-  void useProgram(blink::WebGLId program) override;
-  void validateProgram(blink::WebGLId program) override;
-
-  void vertexAttrib1f(blink::WGC3Duint index, blink::WGC3Dfloat x) override;
-  void vertexAttrib1fv(blink::WGC3Duint index,
-                       const blink::WGC3Dfloat* values) override;
-  void vertexAttrib2f(blink::WGC3Duint index,
-                      blink::WGC3Dfloat x,
-                      blink::WGC3Dfloat y) override;
-  void vertexAttrib2fv(blink::WGC3Duint index,
-                       const blink::WGC3Dfloat* values) override;
-  void vertexAttrib3f(blink::WGC3Duint index,
-                      blink::WGC3Dfloat x,
-                      blink::WGC3Dfloat y,
-                      blink::WGC3Dfloat z) override;
-  void vertexAttrib3fv(blink::WGC3Duint index,
-                       const blink::WGC3Dfloat* values) override;
-  void vertexAttrib4f(blink::WGC3Duint index,
-                      blink::WGC3Dfloat x,
-                      blink::WGC3Dfloat y,
-                      blink::WGC3Dfloat z,
-                      blink::WGC3Dfloat w) override;
-  void vertexAttrib4fv(blink::WGC3Duint index,
-                       const blink::WGC3Dfloat* values) override;
   void vertexAttribPointer(blink::WGC3Duint index,
                            blink::WGC3Dint size,
                            blink::WGC3Denum type,
                            blink::WGC3Dboolean normalized,
                            blink::WGC3Dsizei stride,
                            blink::WGC3Dintptr offset) override;
-
-  void viewport(blink::WGC3Dint x,
-                blink::WGC3Dint y,
-                blink::WGC3Dsizei width,
-                blink::WGC3Dsizei height) override;
 
   blink::WebGLId createBuffer() override;
   blink::WebGLId createFramebuffer() override;
@@ -205,12 +86,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void deleteFramebuffer(blink::WebGLId) override;
   void deleteRenderbuffer(blink::WebGLId) override;
   void deleteTexture(blink::WebGLId) override;
-
-  blink::WebGLId createProgram() override;
-  blink::WebGLId createShader(blink::WGC3Denum) override;
-
-  void deleteProgram(blink::WebGLId) override;
-  void deleteShader(blink::WebGLId) override;
 
   void synthesizeGLError(blink::WGC3Denum) override;
 
@@ -235,79 +110,17 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void setErrorMessageCallback(
       WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback) override;
 
-  void texStorage2DEXT(blink::WGC3Denum target,
-                       blink::WGC3Dint levels,
-                       blink::WGC3Duint internalformat,
-                       blink::WGC3Dint width,
-                       blink::WGC3Dint height) override;
-
   blink::WebGLId createQueryEXT() override;
   void deleteQueryEXT(blink::WebGLId query) override;
 
   blink::WebGLId createValuebufferCHROMIUM() override;
-  void deleteValuebuffersCHROMIUM(blink::WGC3Dsizei count,
-                                  blink::WebGLId* ids) override;
   void deleteValuebufferCHROMIUM(blink::WebGLId) override;
-  void bindValuebufferCHROMIUM(blink::WGC3Denum target,
-                               blink::WebGLId valuebuffer) override;
-  void subscribeValueCHROMIUM(blink::WGC3Denum target,
-                              blink::WGC3Denum subscription) override;
-  void populateSubscribedValuesCHROMIUM(blink::WGC3Denum target) override;
-  void uniformValuebufferCHROMIUM(blink::WGC3Dint location,
-                                  blink::WGC3Denum target,
-                                  blink::WGC3Denum subscription) override;
 
   void pushGroupMarkerEXT(const blink::WGC3Dchar* marker) override;
 
   // GL_OES_vertex_array_object
   blink::WebGLId createVertexArrayOES() override;
   void deleteVertexArrayOES(blink::WebGLId array) override;
-  blink::WGC3Dboolean isVertexArrayOES(blink::WebGLId array) override;
-  void bindVertexArrayOES(blink::WebGLId array) override;
-
-  void bindTexImage2DCHROMIUM(blink::WGC3Denum target,
-                              blink::WGC3Dint image_id) override;
-  void releaseTexImage2DCHROMIUM(blink::WGC3Denum target,
-                                 blink::WGC3Dint image_id) override;
-
-  // GL_EXT_draw_buffers
-  void drawBuffersEXT(blink::WGC3Dsizei n,
-                      const blink::WGC3Denum* bufs) override;
-
-  // GL_ANGLE_instanced_arrays
-  void drawArraysInstancedANGLE(blink::WGC3Denum mode,
-                                blink::WGC3Dint first,
-                                blink::WGC3Dsizei count,
-                                blink::WGC3Dsizei primcount) override;
-  void drawElementsInstancedANGLE(blink::WGC3Denum mode,
-                                  blink::WGC3Dsizei count,
-                                  blink::WGC3Denum type,
-                                  blink::WGC3Dintptr offset,
-                                  blink::WGC3Dsizei primcount) override;
-  void vertexAttribDivisorANGLE(blink::WGC3Duint index,
-                                blink::WGC3Duint divisor) override;
-
-  // GL_CHROMIUM_gpu_memory_buffer_image
-  blink::WGC3Duint createGpuMemoryBufferImageCHROMIUM(
-      blink::WGC3Dsizei width,
-      blink::WGC3Dsizei height,
-      blink::WGC3Denum internalformat,
-      blink::WGC3Denum usage) override;
-  void destroyImageCHROMIUM(blink::WGC3Duint image_id) override;
-
-  // GL_EXT_multisampled_render_to_texture
-  void framebufferTexture2DMultisampleEXT(blink::WGC3Denum target,
-                                          blink::WGC3Denum attachment,
-                                          blink::WGC3Denum textarget,
-                                          blink::WebGLId texture,
-                                          blink::WGC3Dint level,
-                                          blink::WGC3Dsizei samples) override;
-  void renderbufferStorageMultisampleEXT(
-      blink::WGC3Denum target,
-      blink::WGC3Dsizei samples,
-      blink::WGC3Denum internalformat,
-      blink::WGC3Dsizei width,
-      blink::WGC3Dsizei height) override;
 
   // OpenGL ES 3.0 functions not represented by pre-existing extensions
   void beginTransformFeedback(blink::WGC3Denum primitiveMode) override;
@@ -430,12 +243,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void getUniformuiv(blink::WGC3Duint program,
                      blink::WGC3Dint location,
                      blink::WGC3Duint *params) override;
-  void getVertexAttribIiv(blink::WGC3Duint index,
-                          blink::WGC3Denum pname,
-                          blink::WGC3Dint *params) override;
-  void getVertexAttribIuiv(blink::WGC3Duint index,
-                           blink::WGC3Denum pname,
-                           blink::WGC3Duint *params) override;
   void invalidateFramebuffer(blink::WGC3Denum target,
                              blink::WGC3Dsizei numAttachments,
                              const blink::WGC3Denum* attachments) override;
@@ -471,105 +278,12 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void samplerParameteriv(blink::WGC3Duint sampler,
                           blink::WGC3Denum pname,
                           const blink::WGC3Dint* param) override;
-  void texImage3D(blink::WGC3Denum target,
-                  blink::WGC3Dint level,
-                  blink::WGC3Dint internalformat,
-                  blink::WGC3Dsizei width,
-                  blink::WGC3Dsizei height,
-                  blink::WGC3Dsizei depth,
-                  blink::WGC3Dint border,
-                  blink::WGC3Denum format,
-                  blink::WGC3Denum type,
-                  const void* pixels) override;
-  void texStorage3D(blink::WGC3Denum target,
-                    blink::WGC3Dsizei levels,
-                    blink::WGC3Denum internalformat,
-                    blink::WGC3Dsizei width,
-                    blink::WGC3Dsizei height,
-                    blink::WGC3Dsizei depth) override;
-  void texSubImage3D(blink::WGC3Denum target,
-                     blink::WGC3Dint level,
-                     blink::WGC3Dint xoffset,
-                     blink::WGC3Dint yoffset,
-                     blink::WGC3Dint zoffset,
-                     blink::WGC3Dsizei width,
-                     blink::WGC3Dsizei height,
-                     blink::WGC3Dsizei depth,
-                     blink::WGC3Denum format,
-                     blink::WGC3Denum type,
-                     const void* pixels) override;
   void transformFeedbackVaryings(
       blink::WGC3Duint program,
       blink::WGC3Dsizei count,
       const blink::WGC3Dchar* const* varyings,
       blink::WGC3Denum bufferMode) override;
-  void uniform1ui(blink::WGC3Dint location, blink::WGC3Duint x) override;
-  void uniform1uiv(blink::WGC3Dint location,
-                   blink::WGC3Dsizei count,
-                   const blink::WGC3Duint* value) override;
-  void uniform2ui(blink::WGC3Dint location,
-                  blink::WGC3Duint x,
-                  blink::WGC3Duint y) override;
-  void uniform2uiv(blink::WGC3Dint location,
-                   blink::WGC3Dsizei count,
-                   const blink::WGC3Duint* value) override;
-  void uniform3ui(blink::WGC3Dint location,
-                  blink::WGC3Duint x,
-                  blink::WGC3Duint y,
-                  blink::WGC3Duint z) override;
-  void uniform3uiv(blink::WGC3Dint location,
-                   blink::WGC3Dsizei count,
-                   const blink::WGC3Duint* value) override;
-  void uniform4ui(blink::WGC3Dint location,
-                  blink::WGC3Duint x,
-                  blink::WGC3Duint y,
-                  blink::WGC3Duint z,
-                  blink::WGC3Duint w) override;
-  void uniform4uiv(blink::WGC3Dint location,
-                   blink::WGC3Dsizei count,
-                   const blink::WGC3Duint* value) override;
-  void uniformBlockBinding(blink::WGC3Duint program,
-                           blink::WGC3Duint uniformBlockIndex,
-                           blink::WGC3Duint uniformBlockBinding) override;
-  void uniformMatrix2x3fv(blink::WGC3Dint location,
-                          blink::WGC3Dsizei count,
-                          blink::WGC3Dboolean transpose,
-                          const blink::WGC3Dfloat* value) override;
-  void uniformMatrix2x4fv(blink::WGC3Dint location,
-                          blink::WGC3Dsizei count,
-                          blink::WGC3Dboolean transpose,
-                          const blink::WGC3Dfloat* value) override;
-  void uniformMatrix3x2fv(blink::WGC3Dint location,
-                          blink::WGC3Dsizei count,
-                          blink::WGC3Dboolean transpose,
-                          const blink::WGC3Dfloat* value) override;
-  void uniformMatrix3x4fv(blink::WGC3Dint location,
-                          blink::WGC3Dsizei count,
-                          blink::WGC3Dboolean transpose,
-                          const blink::WGC3Dfloat* value) override;
-  void uniformMatrix4x2fv(blink::WGC3Dint location,
-                          blink::WGC3Dsizei count,
-                          blink::WGC3Dboolean transpose,
-                          const blink::WGC3Dfloat* value) override;
-  void uniformMatrix4x3fv(blink::WGC3Dint location,
-                          blink::WGC3Dsizei count,
-                          blink::WGC3Dboolean transpose,
-                          const blink::WGC3Dfloat* value) override;
   blink::WGC3Dboolean unmapBuffer(blink::WGC3Denum target) override;
-  void vertexAttribI4i(blink::WGC3Duint index,
-                       blink::WGC3Dint x,
-                       blink::WGC3Dint y,
-                       blink::WGC3Dint z,
-                       blink::WGC3Dint w) override;
-  void vertexAttribI4iv(blink::WGC3Duint index,
-                        const blink::WGC3Dint* v) override;
-  void vertexAttribI4ui(blink::WGC3Duint index,
-                        blink::WGC3Duint x,
-                        blink::WGC3Duint y,
-                        blink::WGC3Duint z,
-                        blink::WGC3Duint w) override;
-  void vertexAttribI4uiv(blink::WGC3Duint index,
-                         const blink::WGC3Duint* v) override;
   void vertexAttribIPointer(blink::WGC3Duint index,
                             blink::WGC3Dint size,
                             blink::WGC3Denum type,

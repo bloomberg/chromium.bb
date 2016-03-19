@@ -41,7 +41,7 @@ protected:
 
 private:
     bool hasObject() const override { return m_queryId != 0; }
-    void deleteObjectImpl(WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) override;
 
     void registerTaskObserver();
     void unregisterTaskObserver();

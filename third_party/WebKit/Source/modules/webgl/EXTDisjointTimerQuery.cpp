@@ -52,7 +52,7 @@ void EXTDisjointTimerQuery::deleteQueryEXT(WebGLTimerQueryEXT* query)
     WebGLExtensionScopedContext scoped(this);
     if (!query || scoped.isLost())
         return;
-    query->deleteObject(scoped.context()->webContext());
+    query->deleteObject(scoped.context()->webContext(), scoped.context()->contextGL());
 
     if (query == m_currentElapsedQuery)
         m_currentElapsedQuery.clear();

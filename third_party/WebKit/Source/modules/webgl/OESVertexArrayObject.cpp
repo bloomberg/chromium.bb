@@ -26,6 +26,7 @@
 #include "modules/webgl/OESVertexArrayObject.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "modules/webgl/WebGLVertexArrayObjectOES.h"
 
@@ -71,7 +72,7 @@ void OESVertexArrayObject::deleteVertexArrayOES(ScriptState* scriptState, WebGLV
     if (!arrayObject->isDefaultObject() && arrayObject == scoped.context()->m_boundVertexArrayObject)
         scoped.context()->setBoundVertexArrayObject(scriptState, nullptr);
 
-    arrayObject->deleteObject(scoped.context()->webContext());
+    arrayObject->deleteObject(scoped.context()->webContext(), scoped.context()->contextGL());
 }
 
 GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
@@ -83,7 +84,7 @@ GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arra
     if (!arrayObject->hasEverBeenBound())
         return 0;
 
-    return scoped.context()->webContext()->isVertexArrayOES(arrayObject->object());
+    return scoped.context()->contextGL()->IsVertexArrayOES(arrayObject->object());
 }
 
 void OESVertexArrayObject::bindVertexArrayOES(ScriptState* scriptState, WebGLVertexArrayObjectOES* arrayObject)
@@ -98,12 +99,12 @@ void OESVertexArrayObject::bindVertexArrayOES(ScriptState* scriptState, WebGLVer
     }
 
     if (arrayObject && !arrayObject->isDefaultObject() && arrayObject->object()) {
-        scoped.context()->webContext()->bindVertexArrayOES(arrayObject->object());
+        scoped.context()->contextGL()->BindVertexArrayOES(arrayObject->object());
 
         arrayObject->setHasEverBeenBound();
         scoped.context()->setBoundVertexArrayObject(scriptState, arrayObject);
     } else {
-        scoped.context()->webContext()->bindVertexArrayOES(0);
+        scoped.context()->contextGL()->BindVertexArrayOES(0);
         scoped.context()->setBoundVertexArrayObject(scriptState, nullptr);
     }
 }

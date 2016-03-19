@@ -118,13 +118,57 @@ public:
         m_mostRecentlyProducedSize = m_textureSizes.get(texture);
     }
 
+    void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels) override
+    {
+        if (target == GL_TEXTURE_2D && !level) {
+            m_textureSizes.set(m_boundTexture, IntSize(width, height));
+        }
+    }
+
+    WGC3Duint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width, GLsizei height, GLenum internalformat, GLenum usage) override
+    {
+        if (!m_allowImageChromium)
+            return false;
+        m_imageSizes.set(m_currentImageId, IntSize(width, height));
+        return m_currentImageId++;
+    }
+
+    MOCK_METHOD1(DestroyImageMock, void(GLuint imageId));
+    void DestroyImageCHROMIUM(GLuint imageId)
+    {
+        m_imageSizes.remove(imageId);
+        // No textures should be bound to this.
+        ASSERT(m_imageToTextureMap.find(imageId) == m_imageToTextureMap.end());
+        m_imageSizes.remove(imageId);
+        DestroyImageMock(imageId);
+    }
+
+    MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
+    void BindTexImage2DCHROMIUM(GLenum target, GLint imageId)
+    {
+        if (target == imageTextureTarget()) {
+            m_textureSizes.set(m_boundTexture, m_imageSizes.find(imageId)->value);
+            m_imageToTextureMap.set(imageId, m_boundTexture);
+            BindTexImage2DMock(imageId);
+        }
+    }
+
+    MOCK_METHOD1(ReleaseTexImage2DMock, void(GLint imageId));
+    void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId)
+    {
+        if (target == imageTextureTarget()) {
+            m_imageSizes.set(m_currentImageId, IntSize());
+            m_imageToTextureMap.remove(imageId);
+            ReleaseTexImage2DMock(imageId);
+        }
+    }
+
     uint32_t boundTexture() const { return m_boundTexture; }
     uint32_t boundTextureTarget() const { return m_boundTextureTarget; }
     uint32_t mostRecentlyWaitedSyncToken() const { return m_mostRecentlyWaitedSyncToken; }
+    uint32_t currentImageId() const { return m_currentImageId; }
     IntSize mostRecentlyProducedSize() const { return m_mostRecentlyProducedSize; }
     bool allowImageChromium() const { return m_allowImageChromium; }
-    HashMap<WebGLId, IntSize>& textureSizes() { return m_textureSizes; }
-    const HashMap<WebGLId, IntSize>& textureSizes() const { return m_textureSizes; }
 
     void setAllowImageChromium(bool allow) { m_allowImageChromium = allow; }
 
@@ -132,69 +176,26 @@ private:
     uint32_t m_boundTexture = 0;
     uint32_t m_boundTextureTarget = 0;
     uint32_t m_mostRecentlyWaitedSyncToken = 0;
-    HashMap<WebGLId, IntSize> m_textureSizes;
     WGC3Dbyte m_currentMailboxByte = 0;
     IntSize m_mostRecentlyProducedSize;
     bool m_allowImageChromium = true;
+    uint32_t m_currentImageId = 1;
+    HashMap<uint32_t, IntSize> m_textureSizes;
+    HashMap<uint32_t, IntSize> m_imageSizes;
+    HashMap<uint32_t, uint32_t> m_imageToTextureMap;
 };
 
 class WebGraphicsContext3DForTests : public MockWebGraphicsContext3D {
 public:
     WebGraphicsContext3DForTests(PassOwnPtr<GLES2InterfaceForTests> contextGL)
-        : m_currentImageId(1)
-        , m_contextGL(std::move(contextGL))
+        : m_contextGL(std::move(contextGL))
     {
-    }
-
-    void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels) override
-    {
-        if (target == GL_TEXTURE_2D && !level) {
-            m_contextGL->textureSizes().set(m_contextGL->boundTexture(), IntSize(width, height));
-        }
     }
 
     bool genSyncTokenCHROMIUM(WGC3Duint64 fenceSync, WGC3Dbyte* syncToken) override
     {
         memcpy(syncToken, &fenceSync, sizeof(fenceSync));
         return true;
-    }
-
-    WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) override
-    {
-        if (!m_contextGL->allowImageChromium())
-            return false;
-        m_imageSizes.set(m_currentImageId, IntSize(width, height));
-        return m_currentImageId++;
-    }
-
-    MOCK_METHOD1(destroyImageMock, void(WGC3Duint imageId));
-    void destroyImageCHROMIUM(WGC3Duint imageId)
-    {
-        m_imageSizes.remove(imageId);
-        // No textures should be bound to this.
-        ASSERT(m_imageToTextureMap.find(imageId) == m_imageToTextureMap.end());
-        m_imageSizes.remove(imageId);
-        destroyImageMock(imageId);
-    }
-
-    MOCK_METHOD1(bindTexImage2DMock, void(WGC3Dint imageId));
-    void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId)
-    {
-        if (target == imageTextureTarget()) {
-            m_contextGL->textureSizes().set(m_contextGL->boundTexture(), m_imageSizes.find(imageId)->value);
-            m_imageToTextureMap.set(imageId, m_contextGL->boundTexture());
-            bindTexImage2DMock(imageId);
-        }
-    }
-
-    MOCK_METHOD1(releaseTexImage2DMock, void(WGC3Dint imageId));
-    void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId)
-    {
-        if (target == imageTextureTarget()) {
-            m_imageSizes.set(m_currentImageId, IntSize());
-            m_imageToTextureMap.remove(imageId);
-            releaseTexImage2DMock(imageId);
-        }
     }
 
     WGC3Duint mostRecentlyWaitedSyncToken()
@@ -210,7 +211,7 @@ public:
 
     WGC3Duint nextImageIdToBeCreated()
     {
-        return m_currentImageId;
+        return m_contextGL->currentImageId();
     }
 
     gpu::gles2::GLES2Interface* getGLES2Interface() override
@@ -219,9 +220,6 @@ public:
     }
 
 private:
-    WGC3Duint m_currentImageId;
-    HashMap<WGC3Duint, IntSize> m_imageSizes;
-    HashMap<WGC3Duint, WebGLId> m_imageToTextureMap;
     OwnPtr<GLES2InterfaceForTests> m_contextGL;
 };
 
@@ -274,7 +272,7 @@ protected:
     }
 
     WebGraphicsContext3DForTests* m_context;
-    gpu::gles2::GLES2Interface* m_gl;
+    GLES2InterfaceForTests* m_gl;
     RefPtr<DrawingBufferForTests> m_drawingBuffer;
 };
 
@@ -495,7 +493,7 @@ protected:
         m_context = context.get();
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
         m_imageId0 = webContext()->nextImageIdToBeCreated();
-        EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId0)).Times(1);
+        EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId0)).Times(1);
         m_drawingBuffer = DrawingBufferForTests::create(context.release(), m_gl,
             IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
         testing::Mock::VerifyAndClearExpectations(webContext());
@@ -505,7 +503,8 @@ protected:
     {
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(false);
     }
-    WGC3Duint m_imageId0;
+
+    GLuint m_imageId0;
 };
 
 TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
@@ -516,7 +515,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     IntSize alternateSize(initialWidth, alternateHeight);
 
     WGC3Duint m_imageId1 = webContext()->nextImageIdToBeCreated();
-    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId1)).Times(1);
+    EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId1)).Times(1);
     // Produce one mailbox at size 100x100.
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
@@ -525,18 +524,18 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     testing::Mock::VerifyAndClearExpectations(webContext());
 
     WGC3Duint m_imageId2 = webContext()->nextImageIdToBeCreated();
-    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId2)).Times(1);
-    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId0)).Times(1);
-    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId0)).Times(1);
+    EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId2)).Times(1);
+    EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId0)).Times(1);
+    EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId0)).Times(1);
     // Resize to 100x50.
     m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight));
     m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
     WGC3Duint m_imageId3 = webContext()->nextImageIdToBeCreated();
-    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId3)).Times(1);
-    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId1)).Times(1);
-    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId1)).Times(1);
+    EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId3)).Times(1);
+    EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId1)).Times(1);
+    EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId1)).Times(1);
     // Produce a mailbox at this size.
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
@@ -545,18 +544,18 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     testing::Mock::VerifyAndClearExpectations(webContext());
 
     WGC3Duint m_imageId4 = webContext()->nextImageIdToBeCreated();
-    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId4)).Times(1);
-    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId2)).Times(1);
-    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId2)).Times(1);
+    EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId4)).Times(1);
+    EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId2)).Times(1);
+    EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId2)).Times(1);
     // Reset to initial size.
     m_drawingBuffer->reset(IntSize(initialWidth, initialHeight));
     m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
     WGC3Duint m_imageId5 = webContext()->nextImageIdToBeCreated();
-    EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId5)).Times(1);
-    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId3)).Times(1);
-    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId3)).Times(1);
+    EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId5)).Times(1);
+    EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId3)).Times(1);
+    EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId3)).Times(1);
     // Prepare another mailbox and verify that it's the correct size.
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
@@ -572,10 +571,10 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_TRUE(mailbox.allowOverlay);
     m_drawingBuffer->mailboxReleased(mailbox, false);
 
-    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId5)).Times(1);
-    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId5)).Times(1);
-    EXPECT_CALL(*webContext(), destroyImageMock(m_imageId4)).Times(1);
-    EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId4)).Times(1);
+    EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId5)).Times(1);
+    EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId5)).Times(1);
+    EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId4)).Times(1);
+    EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId4)).Times(1);
     m_drawingBuffer->beginDestruction();
     testing::Mock::VerifyAndClearExpectations(webContext());
 }

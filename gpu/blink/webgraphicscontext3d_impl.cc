@@ -406,95 +406,6 @@ void WebGraphicsContext3DImpl::shaderSource(
   gl_->ShaderSource(shader, 1, &string, &length);
 }
 
-DELEGATE_TO_GL_9(texImage2D, TexImage2D,
-                 WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dsizei, WGC3Dsizei,
-                 WGC3Dint, WGC3Denum, WGC3Denum, const void*)
-
-DELEGATE_TO_GL_3(texParameterf, TexParameterf,
-                 WGC3Denum, WGC3Denum, WGC3Dfloat);
-
-DELEGATE_TO_GL_3(texParameteri, TexParameteri,
-                 WGC3Denum, WGC3Denum, WGC3Dint);
-
-DELEGATE_TO_GL_9(texSubImage2D, TexSubImage2D,
-                 WGC3Denum, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dsizei,
-                 WGC3Dsizei, WGC3Denum, WGC3Denum, const void*)
-
-DELEGATE_TO_GL_2(uniform1f, Uniform1f, WGC3Dint, WGC3Dfloat)
-
-DELEGATE_TO_GL_3(uniform1fv, Uniform1fv, WGC3Dint, WGC3Dsizei,
-                 const WGC3Dfloat*)
-
-DELEGATE_TO_GL_2(uniform1i, Uniform1i, WGC3Dint, WGC3Dint)
-
-DELEGATE_TO_GL_3(uniform1iv, Uniform1iv, WGC3Dint, WGC3Dsizei, const WGC3Dint*)
-
-DELEGATE_TO_GL_3(uniform2f, Uniform2f, WGC3Dint, WGC3Dfloat, WGC3Dfloat)
-
-DELEGATE_TO_GL_3(uniform2fv, Uniform2fv, WGC3Dint, WGC3Dsizei,
-                 const WGC3Dfloat*)
-
-DELEGATE_TO_GL_3(uniform2i, Uniform2i, WGC3Dint, WGC3Dint, WGC3Dint)
-
-DELEGATE_TO_GL_3(uniform2iv, Uniform2iv, WGC3Dint, WGC3Dsizei, const WGC3Dint*)
-
-DELEGATE_TO_GL_4(uniform3f, Uniform3f, WGC3Dint,
-                 WGC3Dfloat, WGC3Dfloat, WGC3Dfloat)
-
-DELEGATE_TO_GL_3(uniform3fv, Uniform3fv, WGC3Dint, WGC3Dsizei,
-                 const WGC3Dfloat*)
-
-DELEGATE_TO_GL_4(uniform3i, Uniform3i, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint)
-
-DELEGATE_TO_GL_3(uniform3iv, Uniform3iv, WGC3Dint, WGC3Dsizei, const WGC3Dint*)
-
-DELEGATE_TO_GL_5(uniform4f, Uniform4f, WGC3Dint,
-                 WGC3Dfloat, WGC3Dfloat, WGC3Dfloat, WGC3Dfloat)
-
-DELEGATE_TO_GL_3(uniform4fv, Uniform4fv, WGC3Dint, WGC3Dsizei,
-                 const WGC3Dfloat*)
-
-DELEGATE_TO_GL_5(uniform4i, Uniform4i, WGC3Dint,
-                 WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint)
-
-DELEGATE_TO_GL_3(uniform4iv, Uniform4iv, WGC3Dint, WGC3Dsizei, const WGC3Dint*)
-
-DELEGATE_TO_GL_4(uniformMatrix2fv, UniformMatrix2fv,
-                 WGC3Dint, WGC3Dsizei, WGC3Dboolean, const WGC3Dfloat*)
-
-DELEGATE_TO_GL_4(uniformMatrix3fv, UniformMatrix3fv,
-                 WGC3Dint, WGC3Dsizei, WGC3Dboolean, const WGC3Dfloat*)
-
-DELEGATE_TO_GL_4(uniformMatrix4fv, UniformMatrix4fv,
-                 WGC3Dint, WGC3Dsizei, WGC3Dboolean, const WGC3Dfloat*)
-
-DELEGATE_TO_GL_1(useProgram, UseProgram, WebGLId)
-
-DELEGATE_TO_GL_1(validateProgram, ValidateProgram, WebGLId)
-
-DELEGATE_TO_GL_2(vertexAttrib1f, VertexAttrib1f, WGC3Duint, WGC3Dfloat)
-
-DELEGATE_TO_GL_2(vertexAttrib1fv, VertexAttrib1fv, WGC3Duint,
-                 const WGC3Dfloat*)
-
-DELEGATE_TO_GL_3(vertexAttrib2f, VertexAttrib2f, WGC3Duint,
-                 WGC3Dfloat, WGC3Dfloat)
-
-DELEGATE_TO_GL_2(vertexAttrib2fv, VertexAttrib2fv, WGC3Duint,
-                 const WGC3Dfloat*)
-
-DELEGATE_TO_GL_4(vertexAttrib3f, VertexAttrib3f, WGC3Duint,
-                 WGC3Dfloat, WGC3Dfloat, WGC3Dfloat)
-
-DELEGATE_TO_GL_2(vertexAttrib3fv, VertexAttrib3fv, WGC3Duint,
-                 const WGC3Dfloat*)
-
-DELEGATE_TO_GL_5(vertexAttrib4f, VertexAttrib4f, WGC3Duint,
-                 WGC3Dfloat, WGC3Dfloat, WGC3Dfloat, WGC3Dfloat)
-
-DELEGATE_TO_GL_2(vertexAttrib4fv, VertexAttrib4fv, WGC3Duint,
-                 const WGC3Dfloat*)
-
 void WebGraphicsContext3DImpl::vertexAttribPointer(
     WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dboolean normalized,
     WGC3Dsizei stride, WGC3Dintptr offset) {
@@ -502,9 +413,6 @@ void WebGraphicsContext3DImpl::vertexAttribPointer(
       index, size, type, normalized, stride,
       reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
 }
-
-DELEGATE_TO_GL_4(viewport, Viewport,
-                 WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei)
 
 WebGLId WebGraphicsContext3DImpl::createBuffer() {
   GLuint o;
@@ -548,14 +456,6 @@ void WebGraphicsContext3DImpl::deleteTexture(WebGLId texture) {
   gl_->DeleteTextures(1, &texture);
 }
 
-DELEGATE_TO_GL_R(createProgram, CreateProgram, WebGLId)
-
-DELEGATE_TO_GL_1R(createShader, CreateShader, WGC3Denum, WebGLId)
-
-DELEGATE_TO_GL_1(deleteProgram, DeleteProgram, WebGLId)
-
-DELEGATE_TO_GL_1(deleteShader, DeleteShader, WebGLId)
-
 void WebGraphicsContext3DImpl::setErrorMessageCallback(
     WebGraphicsContext3D::WebGraphicsErrorMessageCallback* cb) {
   error_message_callback_ = cb;
@@ -565,9 +465,6 @@ void WebGraphicsContext3DImpl::setContextLostCallback(
     WebGraphicsContext3D::WebGraphicsContextLostCallback* cb) {
   context_lost_callback_ = cb;
 }
-
-DELEGATE_TO_GL_5(texStorage2DEXT, TexStorage2DEXT,
-                 WGC3Denum, WGC3Dint, WGC3Duint, WGC3Dint, WGC3Dint)
 
 WebGLId WebGraphicsContext3DImpl::createQueryEXT() {
   GLuint o;
@@ -586,31 +483,9 @@ WebGLId WebGraphicsContext3DImpl::createValuebufferCHROMIUM() {
   return o;
 }
 
-DELEGATE_TO_GL_2(deleteValuebuffersCHROMIUM,
-                 DeleteValuebuffersCHROMIUM,
-                 WGC3Dsizei,
-                 WebGLId*);
-
 void WebGraphicsContext3DImpl::deleteValuebufferCHROMIUM(WebGLId valuebuffer) {
   gl_->DeleteValuebuffersCHROMIUM(1, &valuebuffer);
 }
-
-DELEGATE_TO_GL_2(bindValuebufferCHROMIUM,
-                 BindValuebufferCHROMIUM,
-                 WGC3Denum,
-                 WebGLId)
-DELEGATE_TO_GL_2(subscribeValueCHROMIUM,
-                 SubscribeValueCHROMIUM,
-                 WGC3Denum,
-                 WGC3Denum);
-DELEGATE_TO_GL_1(populateSubscribedValuesCHROMIUM,
-                 PopulateSubscribedValuesCHROMIUM,
-                 WGC3Denum);
-DELEGATE_TO_GL_3(uniformValuebufferCHROMIUM,
-                 UniformValuebufferCHROMIUM,
-                 WGC3Dint,
-                 WGC3Denum,
-                 WGC3Denum);
 
 void WebGraphicsContext3DImpl::pushGroupMarkerEXT(
     const WGC3Dchar* marker) {
@@ -627,51 +502,6 @@ void WebGraphicsContext3DImpl::deleteVertexArrayOES(
     WebGLId array) {
   gl_->DeleteVertexArraysOES(1, &array);
 }
-
-DELEGATE_TO_GL_1R(isVertexArrayOES, IsVertexArrayOES, WebGLId, WGC3Dboolean)
-DELEGATE_TO_GL_1(bindVertexArrayOES, BindVertexArrayOES, WebGLId)
-
-DELEGATE_TO_GL_2(bindTexImage2DCHROMIUM, BindTexImage2DCHROMIUM,
-                 WGC3Denum, WGC3Dint)
-DELEGATE_TO_GL_2(releaseTexImage2DCHROMIUM, ReleaseTexImage2DCHROMIUM,
-                 WGC3Denum, WGC3Dint)
-
-DELEGATE_TO_GL_2(drawBuffersEXT, DrawBuffersEXT, WGC3Dsizei, const WGC3Denum*)
-
-DELEGATE_TO_GL_4(drawArraysInstancedANGLE, DrawArraysInstancedANGLE, WGC3Denum,
-                 WGC3Dint, WGC3Dsizei, WGC3Dsizei)
-
-void WebGraphicsContext3DImpl::drawElementsInstancedANGLE(
-    WGC3Denum mode,
-    WGC3Dsizei count,
-    WGC3Denum type,
-    WGC3Dintptr offset,
-    WGC3Dsizei primcount) {
-  gl_->DrawElementsInstancedANGLE(
-      mode, count, type,
-      reinterpret_cast<void*>(static_cast<intptr_t>(offset)), primcount);
-}
-
-DELEGATE_TO_GL_2(vertexAttribDivisorANGLE, VertexAttribDivisorANGLE, WGC3Duint,
-                 WGC3Duint)
-
-DELEGATE_TO_GL_4R(createGpuMemoryBufferImageCHROMIUM,
-                  CreateGpuMemoryBufferImageCHROMIUM,
-                  WGC3Dsizei,
-                  WGC3Dsizei,
-                  WGC3Denum,
-                  WGC3Denum,
-                  WGC3Duint);
-
-DELEGATE_TO_GL_1(destroyImageCHROMIUM, DestroyImageCHROMIUM, WGC3Duint);
-
-DELEGATE_TO_GL_6(framebufferTexture2DMultisampleEXT,
-                 FramebufferTexture2DMultisampleEXT,
-                 WGC3Denum, WGC3Denum, WGC3Denum, WebGLId, WGC3Dint, WGC3Dsizei)
-
-DELEGATE_TO_GL_5(renderbufferStorageMultisampleEXT,
-                 RenderbufferStorageMultisampleEXT, WGC3Denum, WGC3Dsizei,
-                 WGC3Denum, WGC3Dsizei, WGC3Dsizei)
 
 DELEGATE_TO_GL_1(beginTransformFeedback, BeginTransformFeedback, WGC3Denum)
 DELEGATE_TO_GL_3(bindBufferBase, BindBufferBase, WGC3Denum, WGC3Duint,
@@ -758,10 +588,6 @@ DELEGATE_TO_GL_4(getUniformIndices, GetUniformIndices, WGC3Duint, WGC3Dsizei,
                  const WGC3Dchar *const*, WGC3Duint *)
 DELEGATE_TO_GL_3(getUniformuiv, GetUniformuiv, WGC3Duint, WGC3Dint,
                  WGC3Duint *)
-DELEGATE_TO_GL_3(getVertexAttribIiv, GetVertexAttribIiv, WGC3Duint,
-                 WGC3Denum, WGC3Dint *)
-DELEGATE_TO_GL_3(getVertexAttribIuiv, GetVertexAttribIuiv, WGC3Duint,
-                 WGC3Denum, WGC3Duint *)
 DELEGATE_TO_GL_3(invalidateFramebuffer, InvalidateFramebuffer, WGC3Denum,
                  WGC3Dsizei, const WGC3Denum *)
 DELEGATE_TO_GL_7(invalidateSubFramebuffer, InvalidateSubFramebuffer, WGC3Denum,
@@ -788,53 +614,9 @@ DELEGATE_TO_GL_3(samplerParameteri, SamplerParameteri, WGC3Duint, WGC3Denum,
                  WGC3Dint)
 DELEGATE_TO_GL_3(samplerParameteriv, SamplerParameteriv, WGC3Duint, WGC3Denum,
                  const WGC3Dint *)
-DELEGATE_TO_GL_10(texImage3D, TexImage3D, WGC3Denum, WGC3Dint, WGC3Dint,
-                  WGC3Dsizei, WGC3Dsizei, WGC3Dsizei, WGC3Dint, WGC3Denum,
-                  WGC3Denum, const void *)
-DELEGATE_TO_GL_6(texStorage3D, TexStorage3D, WGC3Denum, WGC3Dsizei, WGC3Denum,
-                 WGC3Dsizei, WGC3Dsizei, WGC3Dsizei)
-DELEGATE_TO_GL_11(texSubImage3D, TexSubImage3D, WGC3Denum, WGC3Dint, WGC3Dint,
-                  WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei, WGC3Dsizei,
-                  WGC3Denum, WGC3Denum, const void *)
 DELEGATE_TO_GL_4(transformFeedbackVaryings, TransformFeedbackVaryings,
                  WGC3Duint, WGC3Dsizei, const WGC3Dchar *const*, WGC3Denum)
-DELEGATE_TO_GL_2(uniform1ui, Uniform1ui, WGC3Dint, WGC3Duint)
-DELEGATE_TO_GL_3(uniform1uiv, Uniform1uiv, WGC3Dint, WGC3Dsizei,
-                 const WGC3Duint *)
-DELEGATE_TO_GL_3(uniform2ui, Uniform2ui, WGC3Dint, WGC3Duint, WGC3Duint)
-DELEGATE_TO_GL_3(uniform2uiv, Uniform2uiv, WGC3Dint, WGC3Dsizei,
-                 const WGC3Duint *)
-DELEGATE_TO_GL_4(uniform3ui, Uniform3ui, WGC3Dint, WGC3Duint, WGC3Duint,
-                 WGC3Duint)
-DELEGATE_TO_GL_3(uniform3uiv, Uniform3uiv, WGC3Dint, WGC3Dsizei,
-                 const WGC3Duint *)
-DELEGATE_TO_GL_5(uniform4ui, Uniform4ui, WGC3Dint, WGC3Duint, WGC3Duint,
-                 WGC3Duint, WGC3Duint)
-DELEGATE_TO_GL_3(uniform4uiv, Uniform4uiv, WGC3Dint, WGC3Dsizei,
-                 const WGC3Duint *)
-DELEGATE_TO_GL_3(uniformBlockBinding, UniformBlockBinding, WGC3Duint, WGC3Duint,
-                 WGC3Duint)
-DELEGATE_TO_GL_4(uniformMatrix2x3fv, UniformMatrix2x3fv, WGC3Dint, WGC3Dsizei,
-                 WGC3Dboolean, const WGC3Dfloat*)
-DELEGATE_TO_GL_4(uniformMatrix2x4fv, UniformMatrix2x4fv, WGC3Dint, WGC3Dsizei,
-                 WGC3Dboolean, const WGC3Dfloat*)
-DELEGATE_TO_GL_4(uniformMatrix3x2fv, UniformMatrix3x2fv, WGC3Dint, WGC3Dsizei,
-                 WGC3Dboolean, const WGC3Dfloat*)
-DELEGATE_TO_GL_4(uniformMatrix3x4fv, UniformMatrix3x4fv, WGC3Dint, WGC3Dsizei,
-                 WGC3Dboolean, const WGC3Dfloat*)
-DELEGATE_TO_GL_4(uniformMatrix4x2fv, UniformMatrix4x2fv, WGC3Dint, WGC3Dsizei,
-                 WGC3Dboolean, const WGC3Dfloat*)
-DELEGATE_TO_GL_4(uniformMatrix4x3fv, UniformMatrix4x3fv, WGC3Dint, WGC3Dsizei,
-                 WGC3Dboolean, const WGC3Dfloat*)
 DELEGATE_TO_GL_1R(unmapBuffer, UnmapBuffer, WGC3Denum, WGC3Dboolean);
-DELEGATE_TO_GL_5(vertexAttribI4i, VertexAttribI4i, WGC3Duint, WGC3Dint,
-                 WGC3Dint, WGC3Dint, WGC3Dint)
-DELEGATE_TO_GL_2(vertexAttribI4iv, VertexAttribI4iv, WGC3Duint,
-                 const WGC3Dint *)
-DELEGATE_TO_GL_5(vertexAttribI4ui, VertexAttribI4ui, WGC3Duint, WGC3Duint,
-                 WGC3Duint, WGC3Duint, WGC3Duint)
-DELEGATE_TO_GL_2(vertexAttribI4uiv, VertexAttribI4uiv, WGC3Duint,
-                 const WGC3Duint *)
 void WebGraphicsContext3DImpl::vertexAttribIPointer(
     WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dsizei stride,
     WGC3Dintptr offset) {

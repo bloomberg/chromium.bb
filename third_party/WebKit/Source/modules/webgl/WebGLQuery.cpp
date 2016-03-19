@@ -41,7 +41,7 @@ void WebGLQuery::setTarget(GLenum target)
     m_target = target;
 }
 
-void WebGLQuery::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLQuery::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     context3d->deleteQueryEXT(m_object);
     m_object = 0;

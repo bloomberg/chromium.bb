@@ -25,7 +25,7 @@ WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)
     setObject(ctx->webContext()->createSampler());
 }
 
-void WebGLSampler::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLSampler::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     context3d->deleteSampler(m_object);
     m_object = 0;

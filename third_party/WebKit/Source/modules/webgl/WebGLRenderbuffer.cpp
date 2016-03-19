@@ -50,7 +50,7 @@ WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)
     setObject(ctx->webContext()->createRenderbuffer());
 }
 
-void WebGLRenderbuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLRenderbuffer::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     context3d->deleteRenderbuffer(m_object);
     m_object = 0;

@@ -25,6 +25,7 @@
 
 #include "modules/webgl/WebGLShader.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 
 namespace blink {
@@ -39,7 +40,7 @@ WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
     , m_type(type)
     , m_source("")
 {
-    setObject(ctx->webContext()->createShader(type));
+    setObject(ctx->contextGL()->CreateShader(type));
 }
 
 WebGLShader::~WebGLShader()
@@ -48,9 +49,9 @@ WebGLShader::~WebGLShader()
     detachAndDeleteObject();
 }
 
-void WebGLShader::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLShader::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    context3d->deleteShader(m_object);
+    gl->DeleteShader(m_object);
     m_object = 0;
 }
 

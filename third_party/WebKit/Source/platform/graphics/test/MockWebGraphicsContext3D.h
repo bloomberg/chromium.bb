@@ -61,47 +61,7 @@ public:
 
     virtual void shaderSource(WebGLId shader, const WGC3Dchar* string) { }
 
-    virtual void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels) { }
-
-    virtual void texParameterf(WGC3Denum target, WGC3Denum pname, WGC3Dfloat param) { }
-    virtual void texParameteri(WGC3Denum target, WGC3Denum pname, WGC3Dint param) { }
-
-    virtual void texSubImage2D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, const void* pixels) { }
-
-    virtual void uniform1f(WGC3Dint location, WGC3Dfloat x) { }
-    virtual void uniform1fv(WGC3Dint location, WGC3Dsizei count, const WGC3Dfloat* v) { }
-    virtual void uniform1i(WGC3Dint location, WGC3Dint x) { }
-    virtual void uniform1iv(WGC3Dint location, WGC3Dsizei count, const WGC3Dint* v) { }
-    virtual void uniform2f(WGC3Dint location, WGC3Dfloat x, WGC3Dfloat y) { }
-    virtual void uniform2fv(WGC3Dint location, WGC3Dsizei count, const WGC3Dfloat* v) { }
-    virtual void uniform2i(WGC3Dint location, WGC3Dint x, WGC3Dint y) { }
-    virtual void uniform2iv(WGC3Dint location, WGC3Dsizei count, const WGC3Dint* v) { }
-    virtual void uniform3f(WGC3Dint location, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z) { }
-    virtual void uniform3fv(WGC3Dint location, WGC3Dsizei count, const WGC3Dfloat* v) { }
-    virtual void uniform3i(WGC3Dint location, WGC3Dint x, WGC3Dint y, WGC3Dint z) { }
-    virtual void uniform3iv(WGC3Dint location, WGC3Dsizei count, const WGC3Dint* v) { }
-    virtual void uniform4f(WGC3Dint location, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z, WGC3Dfloat w) { }
-    virtual void uniform4fv(WGC3Dint location, WGC3Dsizei count, const WGC3Dfloat* v) { }
-    virtual void uniform4i(WGC3Dint location, WGC3Dint x, WGC3Dint y, WGC3Dint z, WGC3Dint w) { }
-    virtual void uniform4iv(WGC3Dint location, WGC3Dsizei count, const WGC3Dint* v) { }
-    virtual void uniformMatrix2fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
-    virtual void uniformMatrix3fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
-    virtual void uniformMatrix4fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
-
-    virtual void useProgram(WebGLId program) { }
-    virtual void validateProgram(WebGLId program) { }
-
-    virtual void vertexAttrib1f(WGC3Duint index, WGC3Dfloat x) { }
-    virtual void vertexAttrib1fv(WGC3Duint index, const WGC3Dfloat* values) { }
-    virtual void vertexAttrib2f(WGC3Duint index, WGC3Dfloat x, WGC3Dfloat y) { }
-    virtual void vertexAttrib2fv(WGC3Duint index, const WGC3Dfloat* values) { }
-    virtual void vertexAttrib3f(WGC3Duint index, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z) { }
-    virtual void vertexAttrib3fv(WGC3Duint index, const WGC3Dfloat* values) { }
-    virtual void vertexAttrib4f(WGC3Duint index, WGC3Dfloat x, WGC3Dfloat y, WGC3Dfloat z, WGC3Dfloat w) { }
-    virtual void vertexAttrib4fv(WGC3Duint index, const WGC3Dfloat* values) { }
     virtual void vertexAttribPointer(WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dboolean normalized, WGC3Dsizei stride, WGC3Dintptr offset) { }
-
-    virtual void viewport(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
 
     virtual void genBuffers(WGC3Dsizei count, WebGLId* ids)
     {
@@ -138,14 +98,6 @@ public:
     virtual void deleteFramebuffer(WebGLId) { }
     virtual void deleteRenderbuffer(WebGLId) { }
     virtual void deleteTexture(WebGLId) { }
-
-    virtual WebGLId createProgram() { return 1; }
-    virtual WebGLId createShader(WGC3Denum) { return 1; }
-
-    virtual void deleteProgram(WebGLId) { }
-    virtual void deleteShader(WebGLId) { }
-
-    virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat, WGC3Dint width, WGC3Dint height) { }
 
     virtual WebGLId createQueryEXT() { return 1; }
     virtual void deleteQueryEXT(WebGLId) { }

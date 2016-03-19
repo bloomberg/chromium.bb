@@ -38,18 +38,18 @@ WebGLVertexArrayObjectBase::~WebGLVertexArrayObjectBase()
     detachAndDeleteObject();
 }
 
-void WebGLVertexArrayObjectBase::dispatchDetached(WebGraphicsContext3D* context3d)
+void WebGLVertexArrayObjectBase::dispatchDetached(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     if (m_boundElementArrayBuffer)
-        m_boundElementArrayBuffer->onDetached(context3d);
+        m_boundElementArrayBuffer->onDetached(context3d, gl);
 
     for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
         if (m_arrayBufferList[i])
-            m_arrayBufferList[i]->onDetached(context3d);
+            m_arrayBufferList[i]->onDetached(context3d, gl);
     }
 }
 
-void WebGLVertexArrayObjectBase::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLVertexArrayObjectBase::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     switch (m_type) {
     case VaoTypeDefault:
@@ -65,7 +65,7 @@ void WebGLVertexArrayObjectBase::deleteObjectImpl(WebGraphicsContext3D* context3
     // The finalizers of these objects will handle their detachment
     // by themselves.
     if (!m_destructionInProgress)
-        dispatchDetached(context3d);
+        dispatchDetached(context3d, gl);
 }
 
 void WebGLVertexArrayObjectBase::setElementArrayBuffer(WebGLBuffer* buffer)
@@ -73,7 +73,7 @@ void WebGLVertexArrayObjectBase::setElementArrayBuffer(WebGLBuffer* buffer)
     if (buffer)
         buffer->onAttached();
     if (m_boundElementArrayBuffer)
-        m_boundElementArrayBuffer->onDetached(context()->webContext());
+        m_boundElementArrayBuffer->onDetached(context()->webContext(), context()->contextGL());
     m_boundElementArrayBuffer = buffer;
 }
 
@@ -88,7 +88,7 @@ void WebGLVertexArrayObjectBase::setArrayBufferForAttrib(GLuint index, WebGLBuff
     if (buffer)
         buffer->onAttached();
     if (m_arrayBufferList[index])
-        m_arrayBufferList[index]->onDetached(context()->webContext());
+        m_arrayBufferList[index]->onDetached(context()->webContext(), context()->contextGL());
 
     m_arrayBufferList[index] = buffer;
 }
@@ -96,13 +96,13 @@ void WebGLVertexArrayObjectBase::setArrayBufferForAttrib(GLuint index, WebGLBuff
 void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
 {
     if (m_boundElementArrayBuffer == buffer) {
-        m_boundElementArrayBuffer->onDetached(context()->webContext());
+        m_boundElementArrayBuffer->onDetached(context()->webContext(), context()->contextGL());
         m_boundElementArrayBuffer = nullptr;
     }
 
     for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
         if (m_arrayBufferList[i] == buffer) {
-            m_arrayBufferList[i]->onDetached(context()->webContext());
+            m_arrayBufferList[i]->onDetached(context()->webContext(), context()->contextGL());
             m_arrayBufferList[i] = nullptr;
         }
     }

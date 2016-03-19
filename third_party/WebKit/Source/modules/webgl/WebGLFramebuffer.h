@@ -50,7 +50,7 @@ public:
         virtual WebGLSharedObject* object() const = 0;
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
         virtual bool valid() const = 0;
-        virtual void onDetached(WebGraphicsContext3D*) = 0;
+        virtual void onDetached(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) = 0;
         virtual void attach(gpu::gles2::GLES2Interface*, GLenum target, GLenum attachment) = 0;
         virtual void unattach(gpu::gles2::GLES2Interface*, GLenum target, GLenum attachment) = 0;
 
@@ -100,7 +100,7 @@ protected:
     explicit WebGLFramebuffer(WebGLRenderingContextBase*);
 
     bool hasObject() const override { return m_object != 0; }
-    void deleteObjectImpl(WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) override;
 
 private:
     WebGLAttachment* getAttachment(GLenum attachment) const;

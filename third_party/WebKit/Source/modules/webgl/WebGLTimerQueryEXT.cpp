@@ -80,7 +80,7 @@ GLuint64 WebGLTimerQueryEXT::getQueryResult()
     return m_queryResult;
 }
 
-void WebGLTimerQueryEXT::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLTimerQueryEXT::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     context3d->deleteQueryEXT(m_queryId);
     m_queryId = 0;

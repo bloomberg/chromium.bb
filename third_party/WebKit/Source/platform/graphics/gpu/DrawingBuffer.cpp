@@ -635,10 +635,10 @@ WebGLId DrawingBuffer::createColorTexture(const TextureParameters& parameters)
         return 0;
 
     m_gl->BindTexture(parameters.target, offscreenColorTexture);
-    m_context->texParameteri(parameters.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    m_context->texParameteri(parameters.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    m_context->texParameteri(parameters.target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_context->texParameteri(parameters.target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_gl->TexParameteri(parameters.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_gl->TexParameteri(parameters.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    m_gl->TexParameteri(parameters.target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    m_gl->TexParameteri(parameters.target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     return offscreenColorTexture;
 }
@@ -693,7 +693,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         m_depthStencilBuffer = m_context->createRenderbuffer();
     m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
     if (m_antiAliasingMode == MSAAImplicitResolve)
-        m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
+        m_gl->RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
     else if (m_antiAliasingMode == MSAAExplicitResolve)
         m_gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
     else
@@ -948,15 +948,15 @@ void DrawingBuffer::flipVertically(uint8_t* framebuffer, int width, int height)
 void DrawingBuffer::texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint unpackAlignment)
 {
     ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 4 || unpackAlignment == 8);
-    m_context->texImage2D(target, level, internalformat, width, height, border, format, type, 0);
+    m_gl->TexImage2D(target, level, internalformat, width, height, border, format, type, 0);
 }
 
 void DrawingBuffer::deleteChromiumImageForTexture(TextureInfo* info)
 {
     if (info->imageId) {
         m_gl->BindTexture(info->parameters.target, info->textureId);
-        m_context->releaseTexImage2DCHROMIUM(info->parameters.target, info->imageId);
-        m_context->destroyImageCHROMIUM(info->imageId);
+        m_gl->ReleaseTexImage2DCHROMIUM(info->parameters.target, info->imageId);
+        m_gl->DestroyImageCHROMIUM(info->imageId);
         info->imageId = 0;
     }
 }
@@ -975,17 +975,17 @@ DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const I
     // First, try to allocate a CHROMIUM_image. This always has the potential to
     // fail.
     TextureParameters parameters = chromiumImageTextureParameters();
-    WGC3Duint imageId = m_context->createGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), parameters.internalColorFormat, GC3D_SCANOUT_CHROMIUM);
+    WGC3Duint imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), parameters.internalColorFormat, GC3D_SCANOUT_CHROMIUM);
     if (!imageId)
         return createDefaultTextureAndAllocateMemory(size);
 
     WebGLId textureId = createColorTexture(parameters);
     if (!textureId) {
-        m_context->destroyImageCHROMIUM(imageId);
+        m_gl->DestroyImageCHROMIUM(imageId);
         return createDefaultTextureAndAllocateMemory(size);
     }
 
-    m_context->bindTexImage2DCHROMIUM(parameters.target, imageId);
+    m_gl->BindTexImage2DCHROMIUM(parameters.target, imageId);
 
     TextureInfo info;
     info.textureId = textureId;
@@ -1011,10 +1011,10 @@ void DrawingBuffer::resizeTextureMemory(TextureInfo* info, const IntSize& size)
     ASSERT(info->textureId);
     if (info->imageId) {
         deleteChromiumImageForTexture(info);
-        info->imageId = m_context->createGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), info->parameters.internalColorFormat, GC3D_SCANOUT_CHROMIUM);
+        info->imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), info->parameters.internalColorFormat, GC3D_SCANOUT_CHROMIUM);
         if (info->imageId) {
             m_gl->BindTexture(info->parameters.target, info->textureId);
-            m_context->bindTexImage2DCHROMIUM(info->parameters.target, info->imageId);
+            m_gl->BindTexImage2DCHROMIUM(info->parameters.target, info->imageId);
             return;
         }
 
@@ -1035,7 +1035,7 @@ void DrawingBuffer::attachColorBufferToCurrentFBO()
     m_gl->BindTexture(target, m_colorBuffer.textureId);
 
     if (m_antiAliasingMode == MSAAImplicitResolve)
-        m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_colorBuffer.textureId, 0, m_sampleCount);
+        m_gl->FramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_colorBuffer.textureId, 0, m_sampleCount);
     else
         m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, m_colorBuffer.textureId, 0);
 

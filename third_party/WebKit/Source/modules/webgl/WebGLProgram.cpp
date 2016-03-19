@@ -43,7 +43,7 @@ WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
     , m_activeTransformFeedbackCount(0)
     , m_infoValid(true)
 {
-    setObject(ctx->webContext()->createProgram());
+    setObject(ctx->contextGL()->CreateProgram());
 }
 
 WebGLProgram::~WebGLProgram()
@@ -59,16 +59,16 @@ WebGLProgram::~WebGLProgram()
     detachAndDeleteObject();
 }
 
-void WebGLProgram::deleteObjectImpl(WebGraphicsContext3D* context3d)
+void WebGLProgram::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    context3d->deleteProgram(m_object);
+    gl->DeleteProgram(m_object);
     m_object = 0;
     if (m_vertexShader) {
-        m_vertexShader->onDetached(context3d);
+        m_vertexShader->onDetached(context3d, gl);
         m_vertexShader = nullptr;
     }
     if (m_fragmentShader) {
-        m_fragmentShader->onDetached(context3d);
+        m_fragmentShader->onDetached(context3d, gl);
         m_fragmentShader = nullptr;
     }
 }
