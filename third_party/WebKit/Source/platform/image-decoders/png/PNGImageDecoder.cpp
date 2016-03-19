@@ -94,7 +94,6 @@ public:
         , m_decodingSizeOnly(false)
         , m_hasAlpha(false)
 #if USE(QCMSLIB)
-        , m_transform(0)
         , m_rowBuffer()
 #endif
     {
@@ -105,9 +104,6 @@ public:
 
     ~PNGImageReader()
     {
-#if USE(QCMSLIB)
-        clearColorTransform();
-#endif
         png_destroy_read_struct(m_png ? &m_png : 0, m_info ? &m_info : 0, 0);
         ASSERT(!m_png && !m_info);
 
@@ -148,46 +144,6 @@ public:
 #if USE(QCMSLIB)
     png_bytep rowBuffer() const { return m_rowBuffer.get(); }
     void createRowBuffer(int size) { m_rowBuffer = adoptArrayPtr(new png_byte[size]); }
-    qcms_transform* colorTransform() const { return m_transform; }
-
-    void clearColorTransform()
-    {
-        if (m_transform)
-            qcms_transform_release(m_transform);
-        m_transform = 0;
-    }
-
-    void createColorTransform(const ColorProfile& colorProfile, bool hasAlpha, bool sRGB)
-    {
-        clearColorTransform();
-
-        if (colorProfile.isEmpty() && !sRGB)
-            return;
-        qcms_profile* deviceProfile = ImageDecoder::qcmsOutputDeviceProfile();
-        if (!deviceProfile)
-            return;
-        qcms_profile* inputProfile = 0;
-        if (!colorProfile.isEmpty())
-            inputProfile = qcms_profile_from_memory(colorProfile.data(), colorProfile.size());
-        else
-            inputProfile = qcms_profile_sRGB();
-        if (!inputProfile)
-            return;
-
-        // We currently only support color profiles for RGB and RGBA images.
-        ASSERT(rgbData == qcms_profile_get_color_space(inputProfile));
-
-        if (qcms_profile_match(inputProfile, deviceProfile)) {
-            qcms_profile_release(inputProfile);
-            return;
-        }
-
-        // FIXME: Don't force perceptual intent if the image profile contains an intent.
-        qcms_data_type dataFormat = hasAlpha ? QCMS_DATA_RGBA_8 : QCMS_DATA_RGB_8;
-        m_transform = qcms_transform_create(inputProfile, dataFormat, deviceProfile, dataFormat, QCMS_INTENT_PERCEPTUAL);
-
-        qcms_profile_release(inputProfile);
-    }
 #endif
 
 private:
@@ -200,14 +156,12 @@ private:
     bool m_hasAlpha;
     OwnPtr<png_byte[]> m_interlaceBuffer;
 #if USE(QCMSLIB)
-    qcms_transform* m_transform;
     OwnPtr<png_byte[]> m_rowBuffer;
 #endif
 };
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes, size_t offset)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
-    , m_hasColorProfile(false)
     , m_offset(offset)
 {
 }
@@ -215,43 +169,6 @@ PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOp
 PNGImageDecoder::~PNGImageDecoder()
 {
 }
-
-#if USE(QCMSLIB)
-static void getColorProfile(png_structp png, png_infop info, ColorProfile& colorProfile, bool& sRGB)
-{
-#ifdef PNG_iCCP_SUPPORTED
-    ASSERT(colorProfile.isEmpty());
-    if (png_get_valid(png, info, PNG_INFO_sRGB)) {
-        sRGB = true;
-        return;
-    }
-
-    char* profileName;
-    int compressionType;
-#if (PNG_LIBPNG_VER < 10500)
-    png_charp profile;
-#else
-    png_bytep profile;
-#endif
-    png_uint_32 profileLength;
-    if (!png_get_iCCP(png, info, &profileName, &compressionType, &profile, &profileLength))
-        return;
-
-    // Only accept RGB color profiles from input class devices.
-    bool ignoreProfile = false;
-    char* profileData = reinterpret_cast<char*>(profile);
-    if (profileLength < ImageDecoder::iccColorProfileHeaderLength)
-        ignoreProfile = true;
-    else if (!ImageDecoder::rgbColorProfile(profileData, profileLength))
-        ignoreProfile = true;
-    else if (!ImageDecoder::inputDeviceColorProfile(profileData, profileLength))
-        ignoreProfile = true;
-
-    if (!ignoreProfile)
-        colorProfile.append(profileData, profileLength);
-#endif
-}
-#endif
 
 void PNGImageDecoder::headerAvailable()
 {
@@ -303,16 +220,28 @@ void PNGImageDecoder::headerAvailable()
         // do not similarly transform the color profile. We'd either need to transform
         // the color profile or we'd need to decode into a gray-scale image buffer and
         // hand that to CoreGraphics.
-        bool sRGB = false;
-        ColorProfile colorProfile;
-        getColorProfile(png, info, colorProfile, sRGB);
         bool imageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
-        m_reader->createColorTransform(colorProfile, imageHasAlpha, sRGB);
-        m_hasColorProfile = !!m_reader->colorTransform();
-    }
+#ifdef PNG_iCCP_SUPPORTED
+        if (png_get_valid(png, info, PNG_INFO_sRGB)) {
+            setColorProfileAndTransform(nullptr, 0, imageHasAlpha, true /* useSRGB */);
+        } else {
+            char* profileName = nullptr;
+            int compressionType = 0;
+#if (PNG_LIBPNG_VER < 10500)
+            png_charp profile = nullptr;
+#else
+            png_bytep profile = nullptr;
 #endif
+            png_uint_32 profileLength = 0;
+            if (png_get_iCCP(png, info, &profileName, &compressionType, &profile, &profileLength)) {
+                setColorProfileAndTransform(profile, profileLength, imageHasAlpha, false /* useSRGB */);
+            }
+        }
+#endif // PNG_iCCP_SUPPORTED
+    }
+#endif // USE(QCMSLIB)
 
-    if (!m_hasColorProfile) {
+    if (!hasColorProfile()) {
         // Deal with gamma and keep it under our control.
         const double inverseGamma = 0.45455;
         const double defaultGamma = 2.2;
@@ -376,7 +305,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
         }
 
 #if USE(QCMSLIB)
-        if (m_reader->colorTransform()) {
+        if (colorTransform()) {
             m_reader->createRowBuffer(colorChannels * size().width());
             if (!m_reader->rowBuffer()) {
                 longjmp(JMPBUF(png), 1);
@@ -441,7 +370,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
     }
 
 #if USE(QCMSLIB)
-    if (qcms_transform* transform = m_reader->colorTransform()) {
+    if (qcms_transform* transform = colorTransform()) {
         qcms_transform_data(transform, row, m_reader->rowBuffer(), size().width());
         row = m_reader->rowBuffer();
     }

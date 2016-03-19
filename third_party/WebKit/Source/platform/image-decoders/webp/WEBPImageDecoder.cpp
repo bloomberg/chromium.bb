@@ -126,10 +126,6 @@ WEBPImageDecoder::WEBPImageDecoder(AlphaOption alphaOption, GammaAndColorProfile
     , m_decoder(0)
     , m_formatFlags(0)
     , m_frameBackgroundHasAlpha(false)
-    , m_hasColorProfile(false)
-#if USE(QCMSLIB)
-    , m_transform(0)
-#endif
     , m_demux(0)
     , m_demuxState(WEBP_DEMUX_PARSING_HEADER)
     , m_haveAlreadyParsedThisData(false)
@@ -146,9 +142,6 @@ WEBPImageDecoder::~WEBPImageDecoder()
 
 void WEBPImageDecoder::clear()
 {
-#if USE(QCMSLIB)
-    clearColorTransform();
-#endif
     WebPDemuxDelete(m_demux);
     m_demux = 0;
     clearDecoder();
@@ -304,41 +297,6 @@ void WEBPImageDecoder::clearFrameBuffer(size_t frameIndex)
 
 #if USE(QCMSLIB)
 
-void WEBPImageDecoder::clearColorTransform()
-{
-    if (m_transform)
-        qcms_transform_release(m_transform);
-    m_transform = 0;
-}
-
-bool WEBPImageDecoder::createColorTransform(const char* data, size_t size)
-{
-    clearColorTransform();
-
-    qcms_profile* deviceProfile = ImageDecoder::qcmsOutputDeviceProfile();
-    if (!deviceProfile)
-        return false;
-    qcms_profile* inputProfile = qcms_profile_from_memory(data, size);
-    if (!inputProfile)
-        return false;
-
-    // We currently only support color profiles for RGB profiled images.
-    ASSERT(rgbData == qcms_profile_get_color_space(inputProfile));
-
-    if (qcms_profile_match(inputProfile, deviceProfile)) {
-        qcms_profile_release(inputProfile);
-        return false;
-    }
-
-    // The input image pixels are RGBA format.
-    qcms_data_type format = QCMS_DATA_RGBA_8;
-    // FIXME: Don't force perceptual intent if the image profile contains an intent.
-    m_transform = qcms_transform_create(inputProfile, format, deviceProfile, QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL);
-
-    qcms_profile_release(inputProfile);
-    return !!m_transform;
-}
-
 void WEBPImageDecoder::readColorProfile()
 {
     WebPChunkIterator chunkIterator;
@@ -350,17 +308,7 @@ void WEBPImageDecoder::readColorProfile()
     const char* profileData = reinterpret_cast<const char*>(chunkIterator.chunk.bytes);
     size_t profileSize = chunkIterator.chunk.size;
 
-    // Only accept RGB color profiles from input class devices.
-    bool ignoreProfile = false;
-    if (profileSize < ImageDecoder::iccColorProfileHeaderLength)
-        ignoreProfile = true;
-    else if (!ImageDecoder::rgbColorProfile(profileData, profileSize))
-        ignoreProfile = true;
-    else if (!ImageDecoder::inputDeviceColorProfile(profileData, profileSize))
-        ignoreProfile = true;
-
-    if (!ignoreProfile)
-        m_hasColorProfile = createColorTransform(profileData, profileSize);
+    setColorProfileAndTransform(profileData, profileSize, true /* hasAlpha */, false /* useSRGB */);
 
     WebPDemuxReleaseChunkIterator(&chunkIterator);
 }

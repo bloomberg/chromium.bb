@@ -43,9 +43,34 @@
 
 #if USE(QCMSLIB)
 #include "qcms.h"
-#endif
 
-typedef Vector<char> ColorProfile;
+namespace WTF {
+
+template <typename T>
+struct OwnedPtrDeleter;
+template <>
+struct OwnedPtrDeleter<qcms_transform> {
+    static void deletePtr(qcms_transform* transform)
+    {
+        if (transform)
+            qcms_transform_release(transform);
+    }
+};
+
+template <typename T>
+struct OwnedPtrDeleter;
+template <>
+struct OwnedPtrDeleter<qcms_profile> {
+    static void deletePtr(qcms_profile* profile)
+    {
+        if (profile)
+            qcms_profile_release(profile);
+    }
+};
+
+} // namespace WTF
+
+#endif // USE(QCMSLIB)
 
 namespace blink {
 
@@ -205,70 +230,11 @@ public:
     void setIgnoreGammaAndColorProfile(bool flag) { m_ignoreGammaAndColorProfile = flag; }
     bool ignoresGammaAndColorProfile() const { return m_ignoreGammaAndColorProfile; }
 
-    virtual bool hasColorProfile() const { return false; }
+    bool hasColorProfile() const;
 
 #if USE(QCMSLIB)
-    enum { iccColorProfileHeaderLength = 128 };
-
-    static bool rgbColorProfile(const char* profileData, unsigned profileLength)
-    {
-        ASSERT_UNUSED(profileLength, profileLength >= iccColorProfileHeaderLength);
-
-        return !memcmp(&profileData[16], "RGB ", 4);
-    }
-
-    static bool inputDeviceColorProfile(const char* profileData, unsigned profileLength)
-    {
-        ASSERT_UNUSED(profileLength, profileLength >= iccColorProfileHeaderLength);
-
-        return !memcmp(&profileData[12], "mntr", 4) || !memcmp(&profileData[12], "scnr", 4);
-    }
-
-    class OutputDeviceProfile final {
-        USING_FAST_MALLOC(OutputDeviceProfile);
-        WTF_MAKE_NONCOPYABLE(OutputDeviceProfile);
-    public:
-        OutputDeviceProfile()
-            : m_outputDeviceProfile(0)
-        {
-            ColorProfile profile = screenColorProfile();
-            if (!profile.isEmpty())
-                m_outputDeviceProfile = qcms_profile_from_memory(profile.data(), profile.size());
-
-            if (m_outputDeviceProfile && qcms_profile_is_bogus(m_outputDeviceProfile)) {
-                qcms_profile_release(m_outputDeviceProfile);
-                m_outputDeviceProfile = 0;
-            }
-
-            if (!m_outputDeviceProfile)
-                m_outputDeviceProfile = qcms_profile_sRGB();
-            if (m_outputDeviceProfile)
-                qcms_profile_precache_output_transform(m_outputDeviceProfile);
-        }
-
-        qcms_profile* profile() const { return m_outputDeviceProfile; }
-
-    private:
-        static ColorProfile screenColorProfile()
-        {
-            // FIXME: Add optional ICCv4 support and support for multiple monitors.
-            WebVector<char> profile;
-            Platform::current()->screenColorProfile(&profile);
-
-            ColorProfile colorProfile;
-            colorProfile.append(profile.data(), profile.size());
-            return colorProfile;
-        }
-
-        qcms_profile* m_outputDeviceProfile;
-    };
-
-    static qcms_profile* qcmsOutputDeviceProfile()
-    {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(OutputDeviceProfile, outputDeviceProfile, new OutputDeviceProfile);
-
-        return outputDeviceProfile.profile();
-    }
+    void setColorProfileAndTransform(const char* iccData, unsigned iccLength, bool hasAlpha, bool useSRGB);
+    qcms_transform* colorTransform() { return m_sourceToOutputDeviceColorTransform.get(); }
 #endif
 
     // Sets the "decode failure" flag.  For caller convenience (since so
@@ -371,6 +337,10 @@ private:
     bool m_sizeAvailable;
     bool m_isAllDataReceived;
     bool m_failed;
+
+#if USE(QCMSLIB)
+    OwnPtr<qcms_transform> m_sourceToOutputDeviceColorTransform;
+#endif
 };
 
 } // namespace blink

@@ -43,7 +43,6 @@ public:
 
     // ImageDecoder:
     String filenameExtension() const override { return "webp"; }
-    bool hasColorProfile() const override { return m_hasColorProfile; }
     void onSetData(SharedBuffer* data) override;
     int repetitionCount() const override;
     bool frameIsCompleteAtIndex(size_t) const override;
@@ -63,15 +62,9 @@ private:
     WebPDecBuffer m_decoderBuffer;
     int m_formatFlags;
     bool m_frameBackgroundHasAlpha;
-    bool m_hasColorProfile;
 
 #if USE(QCMSLIB)
-    qcms_transform* colorTransform() const { return m_transform; }
-    bool createColorTransform(const char* data, size_t);
-    void clearColorTransform();
     void readColorProfile();
-
-    qcms_transform* m_transform;
 #endif
 
     bool updateDemuxer();

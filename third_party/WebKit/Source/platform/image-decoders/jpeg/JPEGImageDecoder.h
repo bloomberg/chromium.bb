@@ -41,7 +41,6 @@ public:
     // ImageDecoder:
     String filenameExtension() const override { return "jpg"; }
     void onSetData(SharedBuffer* data) override;
-    bool hasColorProfile() const override { return m_hasColorProfile; }
     IntSize decodedSize() const override { return m_decodedSize; }
     bool setSize(unsigned width, unsigned height) override;
     IntSize decodedYUVSize(int component) const override;
@@ -56,7 +55,6 @@ public:
     void complete();
 
     void setOrientation(ImageOrientation orientation) { m_orientation = orientation; }
-    void setHasColorProfile(bool hasColorProfile) { m_hasColorProfile = hasColorProfile; }
     void setDecodedSize(unsigned width, unsigned height);
 
 private:
@@ -72,7 +70,6 @@ private:
     OwnPtr<JPEGImageReader> m_reader;
     OwnPtr<ImagePlanes> m_imagePlanes;
     IntSize m_decodedSize;
-    bool m_hasColorProfile;
 };
 
 } // namespace blink

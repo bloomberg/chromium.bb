@@ -205,34 +205,6 @@ static ImageOrientation readImageOrientation(jpeg_decompress_struct* info)
     return ImageOrientation();
 }
 
-#if USE(QCMSLIB)
-static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorProfile)
-{
-#if USE(ICCJPEG)
-    JOCTET* profile;
-    unsigned profileLength;
-
-    if (!read_icc_profile(info, &profile, &profileLength))
-        return;
-
-    // Only accept RGB color profiles from input class devices.
-    bool ignoreProfile = false;
-    char* profileData = reinterpret_cast_ptr<char*>(profile);
-    if (profileLength < ImageDecoder::iccColorProfileHeaderLength)
-        ignoreProfile = true;
-    else if (!ImageDecoder::rgbColorProfile(profileData, profileLength))
-        ignoreProfile = true;
-    else if (!ImageDecoder::inputDeviceColorProfile(profileData, profileLength))
-        ignoreProfile = true;
-
-    ASSERT(colorProfile.isEmpty());
-    if (!ignoreProfile)
-        colorProfile.append(profileData, profileLength);
-    free(profile);
-#endif
-}
-#endif
-
 static IntSize computeYUVSize(const jpeg_decompress_struct* info, int component)
 {
     return IntSize(info->cur_comp_info[component]->downsampled_width, info->cur_comp_info[component]->downsampled_height);
@@ -304,9 +276,6 @@ public:
         , m_lastSetByte(nullptr)
         , m_state(JPEG_HEADER)
         , m_samples(nullptr)
-#if USE(QCMSLIB)
-        , m_transform(0)
-#endif
     {
         memset(&m_info, 0, sizeof(jpeg_decompress_struct));
 
@@ -339,9 +308,6 @@ public:
 
     ~JPEGImageReader()
     {
-#if USE(QCMSLIB)
-        clearColorTransform();
-#endif
         jpeg_destroy_decompress(&m_info);
     }
 
@@ -479,20 +445,24 @@ public:
 #if USE(QCMSLIB)
             // Allow color management of the decoded RGBA pixels if possible.
             if (!m_decoder->ignoresGammaAndColorProfile()) {
-                ColorProfile colorProfile;
-                readColorProfile(info(), colorProfile);
-                createColorTransform(colorProfile, colorSpaceHasAlpha(m_info.out_color_space));
-                if (m_transform) {
+#if USE(ICCJPEG)
+                JOCTET* profile = nullptr;
+                unsigned profileLength = 0;
+                if (read_icc_profile(info(), &profile, &profileLength)) {
+                    decoder()->setColorProfileAndTransform(reinterpret_cast<char*>(profile), profileLength, colorSpaceHasAlpha(info()->out_color_space), false /* useSRGB */);
+                    free(profile);
+                }
+#endif // USE(ICCJPEG)
+                if (decoder()->colorTransform()) {
                     overrideColorSpace = JCS_UNKNOWN;
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
                     // Input RGBA data to qcms. Note: restored to BGRA on output.
                     if (m_info.out_color_space == JCS_EXT_BGRA)
                         m_info.out_color_space = JCS_EXT_RGBA;
-#endif
+#endif // defined(TURBO_JPEG_RGB_SWIZZLE)
                 }
-                m_decoder->setHasColorProfile(!!m_transform);
             }
-#endif
+#endif // USE(QCMSLIB)
             if (overrideColorSpace == JCS_YCbCr) {
                 m_info.out_color_space = JCS_YCbCr;
                 m_info.raw_data_out = TRUE;
@@ -629,44 +599,6 @@ public:
     JSAMPARRAY samples() const { return m_samples; }
     JPEGImageDecoder* decoder() { return m_decoder; }
     IntSize uvSize() const { return m_uvSize; }
-#if USE(QCMSLIB)
-    qcms_transform* colorTransform() const { return m_transform; }
-
-    void clearColorTransform()
-    {
-        if (m_transform)
-            qcms_transform_release(m_transform);
-        m_transform = 0;
-    }
-
-    void createColorTransform(const ColorProfile& colorProfile, bool hasAlpha)
-    {
-        clearColorTransform();
-
-        if (colorProfile.isEmpty())
-            return;
-        qcms_profile* deviceProfile = ImageDecoder::qcmsOutputDeviceProfile();
-        if (!deviceProfile)
-            return;
-        qcms_profile* inputProfile = qcms_profile_from_memory(colorProfile.data(), colorProfile.size());
-        if (!inputProfile)
-            return;
-
-        // We currently only support color profiles for RGB profiled images.
-        ASSERT(rgbData == qcms_profile_get_color_space(inputProfile));
-
-        if (qcms_profile_match(inputProfile, deviceProfile)) {
-            qcms_profile_release(inputProfile);
-            return;
-        }
-
-        // FIXME: Don't force perceptual intent if the image profile contains an intent.
-        qcms_data_type dataFormat = hasAlpha ? QCMS_DATA_RGBA_8 : QCMS_DATA_RGB_8;
-        m_transform = qcms_transform_create(inputProfile, dataFormat, deviceProfile, dataFormat, QCMS_INTENT_PERCEPTUAL);
-
-        qcms_profile_release(inputProfile);
-    }
-#endif
 
 private:
     JSAMPARRAY allocateSampleArray()
@@ -728,10 +660,6 @@ private:
 
     JSAMPARRAY m_samples;
     IntSize m_uvSize;
-
-#if USE(QCMSLIB)
-    qcms_transform* m_transform;
-#endif
 };
 
 void error_exit(j_common_ptr cinfo) // Decoding failed: return control to the setjmp point.
@@ -777,7 +705,6 @@ void term_source(j_decompress_ptr jd)
 
 JPEGImageDecoder::JPEGImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
-    , m_hasColorProfile(false)
 {
 }
 
@@ -906,8 +833,8 @@ template <J_COLOR_SPACE colorSpace> bool outputRows(JPEGImageReader* reader, Ima
         if (jpeg_read_scanlines(info, samples, 1) != 1)
             return false;
 #if USE(QCMSLIB)
-        if (reader->colorTransform() && colorSpace == JCS_RGB)
-            qcms_transform_data(reader->colorTransform(), *samples, *samples, width);
+        if (reader->decoder()->colorTransform() && colorSpace == JCS_RGB)
+            qcms_transform_data(reader->decoder()->colorTransform(), *samples, *samples, width);
 #endif
         ImageFrame::PixelData* pixel = buffer.getAddr(0, y);
         for (int x = 0; x < width; ++pixel, ++x)
@@ -1010,7 +937,7 @@ bool JPEGImageDecoder::outputScanlines()
             if (jpeg_read_scanlines(info, &row, 1) != 1)
                 return false;
 #if USE(QCMSLIB)
-            if (qcms_transform* transform = m_reader->colorTransform())
+            if (qcms_transform* transform = colorTransform())
                 qcms_transform_data_type(transform, row, row, info->output_width, rgbOutputColorSpace() == JCS_EXT_BGRA ? QCMS_OUTPUT_BGRX : QCMS_OUTPUT_RGBX);
 #endif
         }

@@ -77,6 +77,7 @@
         '<(DEPTH)/mojo/mojo_edk_tests.gyp:mojo_public_bindings_for_blink_tests',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
+        '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/url/url.gyp:url_lib',

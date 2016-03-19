@@ -40,7 +40,6 @@ public:
 
     // ImageDecoder:
     String filenameExtension() const override { return "png"; }
-    bool hasColorProfile() const override { return m_hasColorProfile; }
 
     // Callbacks from libpng
     void headerAvailable();
@@ -58,7 +57,6 @@ private:
     void decode(bool onlySize);
 
     OwnPtr<PNGImageReader> m_reader;
-    bool m_hasColorProfile;
     const unsigned m_offset;
 };
 

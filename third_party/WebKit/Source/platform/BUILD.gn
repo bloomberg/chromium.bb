@@ -464,6 +464,7 @@ source_set("test_support") {
     "//device/battery",
     "//device/battery:mojo_bindings",
     "//mojo/edk/system",
+    "//third_party/qcms",
   ]
   if (is_android) {
     deps -= [ "//device/battery" ]
