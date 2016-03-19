@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -1043,10 +1042,8 @@ int Node::WillSendMessage_Locked(Port* port,
 
     {
       for (size_t i = 0; i < message->num_ports(); ++i) {
-        PortName port_name = message->ports()[i];
-        base::debug::Alias(&port_name);
-        ports[i] = GetPort_Locked(port_name);
-        CHECK(ports[i]);
+        ports[i] = GetPort_Locked(message->ports()[i]);
+        DCHECK(ports[i]);
 
         ports[i]->lock.Acquire();
         int error = OK;
