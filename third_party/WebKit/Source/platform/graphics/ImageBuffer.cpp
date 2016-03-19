@@ -210,26 +210,26 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles
     mailbox->textureSize = WebSize(textureImage->width(), textureImage->height());
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
-    sharedContext->genMailboxCHROMIUM(mailbox->name);
-    sharedContext->produceTextureDirectCHROMIUM(textureInfo->fID, textureInfo->fTarget, mailbox->name);
+    sharedGL->GenMailboxCHROMIUM(mailbox->name);
+    sharedGL->ProduceTextureDirectCHROMIUM(textureInfo->fID, textureInfo->fTarget, mailbox->name);
     const GLuint64 sharedFenceSync = sharedGL->InsertFenceSyncCHROMIUM();
-    sharedContext->flush();
+    sharedGL->Flush();
 
     mailbox->validSyncToken = sharedContext->genSyncTokenCHROMIUM(sharedFenceSync, mailbox->syncToken);
     if (mailbox->validSyncToken)
         gl->WaitSyncTokenCHROMIUM(mailbox->syncToken);
 
-    Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(textureInfo->fTarget, mailbox->name);
+    Platform3DObject sourceTexture = gl->CreateAndConsumeTextureCHROMIUM(textureInfo->fTarget, mailbox->name);
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
-    context->copyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType, flipY ? GL_FALSE : GL_TRUE, GL_FALSE, premultiplyAlpha ? GL_FALSE : GL_TRUE);
+    gl->CopyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType, flipY ? GL_FALSE : GL_TRUE, GL_FALSE, premultiplyAlpha ? GL_FALSE : GL_TRUE);
 
     context->deleteTexture(sourceTexture);
 
     const GLuint64 contextFenceSync = gl->InsertFenceSyncCHROMIUM();
 
-    context->flush();
+    gl->Flush();
 
     WGC3Dbyte syncToken[24];
     if (context->genSyncTokenCHROMIUM(contextFenceSync, syncToken))
@@ -254,7 +254,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     if (!textureId)
         return false;
 
-    context3D->flush();
+    gl->Flush();
 
     return drawingBuffer->copyToPlatformTexture(context3D, gl, textureId, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false, sourceBuffer);

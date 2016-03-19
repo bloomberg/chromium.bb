@@ -25,6 +25,7 @@
 
 #include "modules/webgl/WebGLProgram.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLContextGroup.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 
@@ -170,17 +171,17 @@ bool WebGLProgram::detachShader(WebGLShader* shader)
     }
 }
 
-void WebGLProgram::cacheActiveAttribLocations(WebGraphicsContext3D* context3d)
+void WebGLProgram::cacheActiveAttribLocations(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
     m_activeAttribLocations.clear();
 
     GLint numAttribs = 0;
-    context3d->getProgramiv(m_object, GL_ACTIVE_ATTRIBUTES, &numAttribs);
+    gl->GetProgramiv(m_object, GL_ACTIVE_ATTRIBUTES, &numAttribs);
     m_activeAttribLocations.resize(static_cast<size_t>(numAttribs));
     for (int i = 0; i < numAttribs; ++i) {
         WebGraphicsContext3D::ActiveInfo info;
         context3d->getActiveAttrib(m_object, i, info);
-        m_activeAttribLocations[i] = context3d->getAttribLocation(m_object, info.name.utf8().data());
+        m_activeAttribLocations[i] = gl->GetAttribLocation(m_object, info.name.utf8().data());
     }
 }
 
@@ -197,11 +198,12 @@ void WebGLProgram::cacheInfoIfNeeded()
     WebGraphicsContext3D* context = contextGroup()->getAWebGraphicsContext3D();
     if (!context)
         return;
+    gpu::gles2::GLES2Interface* gl = context->getGLES2Interface();
     GLint linkStatus = 0;
-    context->getProgramiv(m_object, GL_LINK_STATUS, &linkStatus);
+    gl->GetProgramiv(m_object, GL_LINK_STATUS, &linkStatus);
     m_linkStatus = linkStatus;
     if (m_linkStatus)
-        cacheActiveAttribLocations(context);
+        cacheActiveAttribLocations(context, gl);
     m_infoValid = true;
 }
 

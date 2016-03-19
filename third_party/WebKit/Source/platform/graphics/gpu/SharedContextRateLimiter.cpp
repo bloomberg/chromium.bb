@@ -50,17 +50,17 @@ void SharedContextRateLimiter::tick()
     WebGraphicsContext3D* context = m_contextProvider->context3d();
     m_queries.append(m_canUseSyncQueries ? context->createQueryEXT() : 0);
     if (m_canUseSyncQueries) {
-        context->beginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, m_queries.last());
-        context->endQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+        gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, m_queries.last());
+        gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
     }
     if (m_queries.size() > m_maxPendingTicks) {
         if (m_canUseSyncQueries) {
             WGC3Duint result;
-            context->getQueryObjectuivEXT(m_queries.first(), GL_QUERY_RESULT_EXT, &result);
+            gl->GetQueryObjectuivEXT(m_queries.first(), GL_QUERY_RESULT_EXT, &result);
             context->deleteQueryEXT(m_queries.first());
             m_queries.removeFirst();
         } else {
-            context->finish();
+            gl->Finish();
             reset();
         }
     }

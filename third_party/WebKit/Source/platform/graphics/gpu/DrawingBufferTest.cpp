@@ -98,22 +98,50 @@ public:
         return GL_FRAMEBUFFER_COMPLETE;
     }
 
+    void GetIntegerv(GLenum pname, GLint* value) override
+    {
+        if (pname == GL_MAX_TEXTURE_SIZE)
+            *value = 1024;
+    }
+
+    void GenMailboxCHROMIUM(GLbyte* mailbox) override
+    {
+        ++m_currentMailboxByte;
+        WebExternalTextureMailbox temp;
+        memset(mailbox, m_currentMailboxByte, sizeof(temp.name));
+    }
+
+    void ProduceTextureDirectCHROMIUM(GLuint texture, GLenum target, const GLbyte* mailbox) override
+    {
+        ASSERT_EQ(target, drawingBufferTextureTarget(m_allowImageChromium));
+        ASSERT_TRUE(m_textureSizes.contains(texture));
+        m_mostRecentlyProducedSize = m_textureSizes.get(texture);
+    }
+
     uint32_t boundTexture() const { return m_boundTexture; }
     uint32_t boundTextureTarget() const { return m_boundTextureTarget; }
     uint32_t mostRecentlyWaitedSyncToken() const { return m_mostRecentlyWaitedSyncToken; }
+    IntSize mostRecentlyProducedSize() const { return m_mostRecentlyProducedSize; }
+    bool allowImageChromium() const { return m_allowImageChromium; }
+    HashMap<WebGLId, IntSize>& textureSizes() { return m_textureSizes; }
+    const HashMap<WebGLId, IntSize>& textureSizes() const { return m_textureSizes; }
+
+    void setAllowImageChromium(bool allow) { m_allowImageChromium = allow; }
 
 private:
     uint32_t m_boundTexture = 0;
     uint32_t m_boundTextureTarget = 0;
     uint32_t m_mostRecentlyWaitedSyncToken = 0;
+    HashMap<WebGLId, IntSize> m_textureSizes;
+    WGC3Dbyte m_currentMailboxByte = 0;
+    IntSize m_mostRecentlyProducedSize;
+    bool m_allowImageChromium = true;
 };
 
 class WebGraphicsContext3DForTests : public MockWebGraphicsContext3D {
 public:
     WebGraphicsContext3DForTests(PassOwnPtr<GLES2InterfaceForTests> contextGL)
-        : m_currentMailboxByte(0)
-        , m_currentImageId(1)
-        , m_allowImageChromium(true)
+        : m_currentImageId(1)
         , m_contextGL(std::move(contextGL))
     {
     }
@@ -121,27 +149,8 @@ public:
     void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels) override
     {
         if (target == GL_TEXTURE_2D && !level) {
-            m_textureSizes.set(m_contextGL->boundTexture(), IntSize(width, height));
+            m_contextGL->textureSizes().set(m_contextGL->boundTexture(), IntSize(width, height));
         }
-    }
-
-    void genMailboxCHROMIUM(WGC3Dbyte* mailbox) override
-    {
-        ++m_currentMailboxByte;
-        WebExternalTextureMailbox temp;
-        memset(mailbox, m_currentMailboxByte, sizeof(temp.name));
-    }
-
-    void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target, const WGC3Dbyte* mailbox) override
-    {
-        ASSERT_EQ(target, drawingBufferTextureTarget(m_allowImageChromium));
-        ASSERT_TRUE(m_textureSizes.contains(texture));
-        m_mostRecentlyProducedSize = m_textureSizes.get(texture);
-    }
-
-    IntSize mostRecentlyProducedSize()
-    {
-        return m_mostRecentlyProducedSize;
     }
 
     bool genSyncTokenCHROMIUM(WGC3Duint64 fenceSync, WGC3Dbyte* syncToken) override
@@ -152,7 +161,7 @@ public:
 
     WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) override
     {
-        if (!m_allowImageChromium)
+        if (!m_contextGL->allowImageChromium())
             return false;
         m_imageSizes.set(m_currentImageId, IntSize(width, height));
         return m_currentImageId++;
@@ -172,7 +181,7 @@ public:
     void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId)
     {
         if (target == imageTextureTarget()) {
-            m_textureSizes.set(m_contextGL->boundTexture(), m_imageSizes.find(imageId)->value);
+            m_contextGL->textureSizes().set(m_contextGL->boundTexture(), m_imageSizes.find(imageId)->value);
             m_imageToTextureMap.set(imageId, m_contextGL->boundTexture());
             bindTexImage2DMock(imageId);
         }
@@ -193,14 +202,15 @@ public:
         return m_contextGL->mostRecentlyWaitedSyncToken();
     }
 
+    IntSize mostRecentlyProducedSize()
+    {
+        return m_contextGL->mostRecentlyProducedSize();
+    }
+
+
     WGC3Duint nextImageIdToBeCreated()
     {
         return m_currentImageId;
-    }
-
-    void setAllowImageChromium(bool allow)
-    {
-        m_allowImageChromium = allow;
     }
 
     gpu::gles2::GLES2Interface* getGLES2Interface() override
@@ -209,13 +219,9 @@ public:
     }
 
 private:
-    HashMap<WebGLId, IntSize> m_textureSizes;
-    WGC3Dbyte m_currentMailboxByte;
-    IntSize m_mostRecentlyProducedSize;
     WGC3Duint m_currentImageId;
     HashMap<WGC3Duint, IntSize> m_imageSizes;
     HashMap<WGC3Duint, WebGLId> m_imageToTextureMap;
-    bool m_allowImageChromium;
     OwnPtr<GLES2InterfaceForTests> m_contextGL;
 };
 
@@ -599,6 +605,21 @@ public:
         return GL_FRAMEBUFFER_COMPLETE;
     }
 
+    void GetIntegerv(GLenum ptype, GLint* value) override
+    {
+        switch (ptype) {
+        case GL_DEPTH_BITS:
+            *value = (m_depthAttachment || m_depthStencilAttachment) ? 24 : 0;
+            return;
+        case GL_STENCIL_BITS:
+            *value = (m_stencilAttachment || m_depthStencilAttachment) ? 8 : 0;
+            return;
+        case GL_MAX_TEXTURE_SIZE:
+            *value = 1024;
+            return;
+        }
+    }
+
     uint32_t stencilAttachment() const { return m_stencilAttachment; }
     uint32_t depthAttachment() const { return m_depthAttachment; }
     uint32_t depthStencilAttachment() const { return m_depthStencilAttachment; }
@@ -630,19 +651,6 @@ public:
     WebGLId createRenderbuffer() override
     {
         return ++m_nextRenderBufferId;
-    }
-
-    void getIntegerv(WGC3Denum ptype, WGC3Dint* value) override
-    {
-        switch (ptype) {
-        case GL_DEPTH_BITS:
-            *value = (depthAttachment() || depthStencilAttachment()) ? 24 : 0;
-            return;
-        case GL_STENCIL_BITS:
-            *value = (stencilAttachment() || depthStencilAttachment()) ? 8 : 0;
-            return;
-        }
-        MockWebGraphicsContext3D::getIntegerv(ptype, value);
     }
 
     gpu::gles2::GLES2Interface* getGLES2Interface() override { return &m_contextGL; }
@@ -746,9 +754,9 @@ protected:
     void SetUp() override
     {
         OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
+        gl->setAllowImageChromium(false);
         m_gl = gl.get();
         OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests(gl.release()));
-        context->setAllowImageChromium(false);
         m_context = context.get();
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
         m_drawingBuffer = DrawingBufferForTests::create(context.release(), m_gl,

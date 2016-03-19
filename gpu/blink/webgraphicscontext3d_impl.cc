@@ -230,13 +230,6 @@ void WebGraphicsContext3DImpl::drawElements(WGC3Denum mode,
       reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
 }
 
-DELEGATE_TO_GL(finish, Finish)
-DELEGATE_TO_GL(flush, Flush)
-
-DELEGATE_TO_GL_1(frontFace, FrontFace, WGC3Denum)
-
-DELEGATE_TO_GL_1(generateMipmap, GenerateMipmap, WGC3Denum)
-
 bool WebGraphicsContext3DImpl::getActiveAttrib(
     WebGLId program, WGC3Duint index, ActiveInfo& info) {
   if (!program) {
@@ -295,17 +288,6 @@ bool WebGraphicsContext3DImpl::getActiveUniform(
   return true;
 }
 
-DELEGATE_TO_GL_4(getAttachedShaders, GetAttachedShaders,
-                 WebGLId, WGC3Dsizei, WGC3Dsizei*, WebGLId*)
-
-DELEGATE_TO_GL_2R(getAttribLocation, GetAttribLocation,
-                  WebGLId, const WGC3Dchar*, WGC3Dint)
-
-DELEGATE_TO_GL_2(getBooleanv, GetBooleanv, WGC3Denum, WGC3Dboolean*)
-
-DELEGATE_TO_GL_3(getBufferParameteriv, GetBufferParameteriv,
-                 WGC3Denum, WGC3Denum, WGC3Dint*)
-
 WGC3Denum WebGraphicsContext3DImpl::getError() {
   if (!synthetic_errors_.empty()) {
     std::vector<WGC3Denum>::iterator iter = synthetic_errors_.begin();
@@ -316,23 +298,6 @@ WGC3Denum WebGraphicsContext3DImpl::getError() {
 
   return gl_->GetError();
 }
-
-DELEGATE_TO_GL_2(getFloatv, GetFloatv, WGC3Denum, WGC3Dfloat*)
-
-DELEGATE_TO_GL_4(getFramebufferAttachmentParameteriv,
-                 GetFramebufferAttachmentParameteriv,
-                 WGC3Denum, WGC3Denum, WGC3Denum, WGC3Dint*)
-
-DELEGATE_TO_GL_2(getIntegerv, GetIntegerv, WGC3Denum, WGC3Dint*)
-
-DELEGATE_TO_GL_2(getInteger64v, GetInteger64v, WGC3Denum, WGC3Dint64*)
-
-DELEGATE_TO_GL_3(getIntegeri_v, GetIntegeri_v, WGC3Denum, WGC3Duint, WGC3Dint*)
-
-DELEGATE_TO_GL_3(getInteger64i_v, GetInteger64i_v,
-                 WGC3Denum, WGC3Duint, WGC3Dint64*)
-
-DELEGATE_TO_GL_3(getProgramiv, GetProgramiv, WebGLId, WGC3Denum, WGC3Dint*)
 
 blink::WebString WebGraphicsContext3DImpl::getProgramInfoLog(
     WebGLId program) {
@@ -352,11 +317,6 @@ blink::WebString WebGraphicsContext3DImpl::getProgramInfoLog(
   return res;
 }
 
-DELEGATE_TO_GL_3(getRenderbufferParameteriv, GetRenderbufferParameteriv,
-                 WGC3Denum, WGC3Denum, WGC3Dint*)
-
-DELEGATE_TO_GL_3(getShaderiv, GetShaderiv, WebGLId, WGC3Denum, WGC3Dint*)
-
 blink::WebString WebGraphicsContext3DImpl::getShaderInfoLog(
     WebGLId shader) {
   GLint logLength = 0;
@@ -374,9 +334,6 @@ blink::WebString WebGraphicsContext3DImpl::getShaderInfoLog(
       blink::WebString::fromUTF8(log.get(), returnedLogLength);
   return res;
 }
-
-DELEGATE_TO_GL_4(getShaderPrecisionFormat, GetShaderPrecisionFormat,
-                 WGC3Denum, WGC3Denum, WGC3Dint*, WGC3Dint*)
 
 blink::WebString WebGraphicsContext3DImpl::getShaderSource(
     WebGLId shader) {
@@ -434,25 +391,6 @@ void WebGraphicsContext3DImpl::getSynciv(blink::WGC3Dsync sync,
       reinterpret_cast<GLsync>(sync), pname, bufSize, length, params);
 }
 
-DELEGATE_TO_GL_3(getTexParameterfv, GetTexParameterfv,
-                 WGC3Denum, WGC3Denum, WGC3Dfloat*)
-
-DELEGATE_TO_GL_3(getTexParameteriv, GetTexParameteriv,
-                 WGC3Denum, WGC3Denum, WGC3Dint*)
-
-DELEGATE_TO_GL_3(getUniformfv, GetUniformfv, WebGLId, WGC3Dint, WGC3Dfloat*)
-
-DELEGATE_TO_GL_3(getUniformiv, GetUniformiv, WebGLId, WGC3Dint, WGC3Dint*)
-
-DELEGATE_TO_GL_2R(getUniformLocation, GetUniformLocation,
-                  WebGLId, const WGC3Dchar*, WGC3Dint)
-
-DELEGATE_TO_GL_3(getVertexAttribfv, GetVertexAttribfv,
-                 WGC3Duint, WGC3Denum, WGC3Dfloat*)
-
-DELEGATE_TO_GL_3(getVertexAttribiv, GetVertexAttribiv,
-                 WGC3Duint, WGC3Denum, WGC3Dint*)
-
 WGC3Dsizeiptr WebGraphicsContext3DImpl::getVertexAttribOffset(
     WGC3Duint index, WGC3Denum pname) {
   GLvoid* value = NULL;
@@ -462,62 +400,11 @@ WGC3Dsizeiptr WebGraphicsContext3DImpl::getVertexAttribOffset(
   return static_cast<WGC3Dsizeiptr>(reinterpret_cast<intptr_t>(value));
 }
 
-DELEGATE_TO_GL_2(hint, Hint, WGC3Denum, WGC3Denum)
-
-DELEGATE_TO_GL_1RB(isBuffer, IsBuffer, WebGLId, WGC3Dboolean)
-
-DELEGATE_TO_GL_1RB(isEnabled, IsEnabled, WGC3Denum, WGC3Dboolean)
-
-DELEGATE_TO_GL_1RB(isFramebuffer, IsFramebuffer, WebGLId, WGC3Dboolean)
-
-DELEGATE_TO_GL_1RB(isProgram, IsProgram, WebGLId, WGC3Dboolean)
-
-DELEGATE_TO_GL_1RB(isRenderbuffer, IsRenderbuffer, WebGLId, WGC3Dboolean)
-
-DELEGATE_TO_GL_1RB(isShader, IsShader, WebGLId, WGC3Dboolean)
-
-DELEGATE_TO_GL_1RB(isTexture, IsTexture, WebGLId, WGC3Dboolean)
-
-DELEGATE_TO_GL_1(lineWidth, LineWidth, WGC3Dfloat)
-
-DELEGATE_TO_GL_1(linkProgram, LinkProgram, WebGLId)
-
-DELEGATE_TO_GL_2(pixelStorei, PixelStorei, WGC3Denum, WGC3Dint)
-
-DELEGATE_TO_GL_2(polygonOffset, PolygonOffset, WGC3Dfloat, WGC3Dfloat)
-
-DELEGATE_TO_GL_7(readPixels, ReadPixels,
-                 WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei, WGC3Denum,
-                 WGC3Denum, void*)
-
-DELEGATE_TO_GL_4(renderbufferStorage, RenderbufferStorage,
-                 WGC3Denum, WGC3Denum, WGC3Dsizei, WGC3Dsizei)
-
-DELEGATE_TO_GL_2(sampleCoverage, SampleCoverage, WGC3Dfloat, WGC3Dboolean)
-
-DELEGATE_TO_GL_4(scissor, Scissor, WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei)
-
 void WebGraphicsContext3DImpl::shaderSource(
     WebGLId shader, const WGC3Dchar* string) {
   GLint length = strlen(string);
   gl_->ShaderSource(shader, 1, &string, &length);
 }
-
-DELEGATE_TO_GL_3(stencilFunc, StencilFunc, WGC3Denum, WGC3Dint, WGC3Duint)
-
-DELEGATE_TO_GL_4(stencilFuncSeparate, StencilFuncSeparate,
-                 WGC3Denum, WGC3Denum, WGC3Dint, WGC3Duint)
-
-DELEGATE_TO_GL_1(stencilMask, StencilMask, WGC3Duint)
-
-DELEGATE_TO_GL_2(stencilMaskSeparate, StencilMaskSeparate,
-                 WGC3Denum, WGC3Duint)
-
-DELEGATE_TO_GL_3(stencilOp, StencilOp,
-                 WGC3Denum, WGC3Denum, WGC3Denum)
-
-DELEGATE_TO_GL_4(stencilOpSeparate, StencilOpSeparate,
-                 WGC3Denum, WGC3Denum, WGC3Denum, WGC3Denum)
 
 DELEGATE_TO_GL_9(texImage2D, TexImage2D,
                  WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dsizei, WGC3Dsizei,
@@ -693,58 +580,6 @@ void WebGraphicsContext3DImpl::deleteQueryEXT(
   gl_->DeleteQueriesEXT(1, &query);
 }
 
-DELEGATE_TO_GL_1R(isQueryEXT, IsQueryEXT, WebGLId, WGC3Dboolean)
-DELEGATE_TO_GL_2(beginQueryEXT, BeginQueryEXT, WGC3Denum, WebGLId)
-DELEGATE_TO_GL_1(endQueryEXT, EndQueryEXT, WGC3Denum)
-DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivEXT, WGC3Denum, WGC3Denum, WGC3Dint*)
-DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
-                 WebGLId, WGC3Denum, WGC3Duint*)
-
-DELEGATE_TO_GL_2(queryCounterEXT, QueryCounterEXT, WebGLId, WGC3Denum)
-DELEGATE_TO_GL_3(getQueryObjectui64vEXT,
-                 GetQueryObjectui64vEXT,
-                 WebGLId,
-                 WGC3Denum,
-                 WGC3Duint64*)
-
-DELEGATE_TO_GL_7(copyTextureCHROMIUM,
-                 CopyTextureCHROMIUM,
-                 WebGLId,
-                 WebGLId,
-                 WGC3Denum,
-                 WGC3Denum,
-                 WGC3Dboolean,
-                 WGC3Dboolean,
-                 WGC3Dboolean);
-
-DELEGATE_TO_GL_11(copySubTextureCHROMIUM,
-                  CopySubTextureCHROMIUM,
-                  WebGLId,
-                  WebGLId,
-                  WGC3Dint,
-                  WGC3Dint,
-                  WGC3Dint,
-                  WGC3Dint,
-                  WGC3Dsizei,
-                  WGC3Dsizei,
-                  WGC3Dboolean,
-                  WGC3Dboolean,
-                  WGC3Dboolean);
-
-DELEGATE_TO_GL_1(genMailboxCHROMIUM, GenMailboxCHROMIUM, WGC3Dbyte*)
-DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,
-                 WGC3Denum, const WGC3Dbyte*)
-DELEGATE_TO_GL_3(produceTextureDirectCHROMIUM, ProduceTextureDirectCHROMIUM,
-                 WebGLId, WGC3Denum, const WGC3Dbyte*)
-DELEGATE_TO_GL_2R(createAndConsumeTextureCHROMIUM,
-                  CreateAndConsumeTextureCHROMIUM,
-                  WGC3Denum, const WGC3Dbyte*, WebGLId)
-
-DELEGATE_TO_GL_2(genValuebuffersCHROMIUM,
-                 GenValuebuffersCHROMIUM,
-                 WGC3Dsizei,
-                 WebGLId*);
-
 WebGLId WebGraphicsContext3DImpl::createValuebufferCHROMIUM() {
   GLuint o;
   gl_->GenValuebuffersCHROMIUM(1, &o);
@@ -760,10 +595,6 @@ void WebGraphicsContext3DImpl::deleteValuebufferCHROMIUM(WebGLId valuebuffer) {
   gl_->DeleteValuebuffersCHROMIUM(1, &valuebuffer);
 }
 
-DELEGATE_TO_GL_1RB(isValuebufferCHROMIUM,
-                   IsValuebufferCHROMIUM,
-                   WebGLId,
-                   WGC3Dboolean)
 DELEGATE_TO_GL_2(bindValuebufferCHROMIUM,
                  BindValuebufferCHROMIUM,
                  WGC3Denum,

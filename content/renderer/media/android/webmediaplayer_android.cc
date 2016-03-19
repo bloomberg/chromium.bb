@@ -739,7 +739,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
                           premultiply_alpha, false);
 
   gl->DeleteTextures(1, &src_texture);
-  web_graphics_context->flush();
+  gl->Flush();
 
   SyncTokenClientImpl client(gl);
   video_frame->UpdateReleaseSyncToken(&client);

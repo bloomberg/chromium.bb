@@ -4,6 +4,7 @@
 
 #include "modules/webgl/WebGLTimerQueryEXT.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "public/platform/Platform.h"
 
@@ -45,7 +46,7 @@ void WebGLTimerQueryEXT::resetCachedResult()
     registerTaskObserver();
 }
 
-void WebGLTimerQueryEXT::updateCachedResult(WebGraphicsContext3D* ctx)
+void WebGLTimerQueryEXT::updateCachedResult(gpu::gles2::GLES2Interface* gl)
 {
     if (m_queryResultAvailable)
         return;
@@ -59,11 +60,11 @@ void WebGLTimerQueryEXT::updateCachedResult(WebGraphicsContext3D* ctx)
     // We can only update the cached result when control returns to the browser.
     m_canUpdateAvailability = false;
     GLuint available = 0;
-    ctx->getQueryObjectuivEXT(object(), GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+    gl->GetQueryObjectuivEXT(object(), GL_QUERY_RESULT_AVAILABLE_EXT, &available);
     m_queryResultAvailable = !!available;
     if (m_queryResultAvailable) {
         GLuint64 result = 0;
-        ctx->getQueryObjectui64vEXT(object(), GL_QUERY_RESULT_EXT, &result);
+        gl->GetQueryObjectui64vEXT(object(), GL_QUERY_RESULT_EXT, &result);
         m_queryResult = result;
         unregisterTaskObserver();
     }

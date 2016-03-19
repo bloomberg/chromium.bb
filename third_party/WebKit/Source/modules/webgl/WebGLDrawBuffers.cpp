@@ -108,8 +108,8 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
     // This is called after we make sure GL_EXT_draw_buffers is supported.
     GLint maxDrawBuffers = 0;
     GLint maxColorAttachments = 0;
-    context->getIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &maxDrawBuffers);
-    context->getIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
+    gl->GetIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &maxDrawBuffers);
+    gl->GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
     if (maxDrawBuffers < 4 || maxColorAttachments < 4)
         return false;
 

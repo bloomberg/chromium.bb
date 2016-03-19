@@ -31,6 +31,12 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace blink {
 
 class WebGLProgram final : public WebGLSharedPlatform3DObject {
@@ -73,7 +79,7 @@ protected:
 private:
     bool isProgram() const override { return true; }
 
-    void cacheActiveAttribLocations(WebGraphicsContext3D*);
+    void cacheActiveAttribLocations(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*);
     void cacheInfoIfNeeded();
 
     Vector<GLint> m_activeAttribLocations;

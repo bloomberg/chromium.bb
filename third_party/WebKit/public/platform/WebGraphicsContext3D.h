@@ -160,63 +160,16 @@ public:
     // and: http://www.khronos.org/opengles/sdk/docs/man/
     virtual void drawElements(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset) = 0;
 
-    virtual void finish() = 0;
-    virtual void flush() = 0;
-    virtual void frontFace(WGC3Denum mode) = 0;
-    virtual void generateMipmap(WGC3Denum target) = 0;
-
     virtual bool getActiveAttrib(WebGLId program, WGC3Duint index, ActiveInfo&) = 0;
     virtual bool getActiveUniform(WebGLId program, WGC3Duint index, ActiveInfo&) = 0;
-    virtual void getAttachedShaders(WebGLId program, WGC3Dsizei maxCount, WGC3Dsizei* count, WebGLId* shaders) = 0;
-    virtual WGC3Dint getAttribLocation(WebGLId program, const WGC3Dchar* name) = 0;
-    virtual void getBooleanv(WGC3Denum pname, WGC3Dboolean* value) = 0;
-    virtual void getBufferParameteriv(WGC3Denum target, WGC3Denum pname, WGC3Dint* value) = 0;
     virtual WGC3Denum getError() = 0;
-    virtual void getFloatv(WGC3Denum pname, WGC3Dfloat* value) = 0;
-    virtual void getFramebufferAttachmentParameteriv(WGC3Denum target, WGC3Denum attachment, WGC3Denum pname, WGC3Dint* value) = 0;
-    virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value) = 0;
-    virtual void getProgramiv(WebGLId program, WGC3Denum pname, WGC3Dint* value) = 0;
     virtual WebString getProgramInfoLog(WebGLId program) = 0;
-    virtual void getRenderbufferParameteriv(WGC3Denum target, WGC3Denum pname, WGC3Dint* value) = 0;
-    virtual void getShaderiv(WebGLId shader, WGC3Denum pname, WGC3Dint* value) = 0;
     virtual WebString getShaderInfoLog(WebGLId shader) = 0;
-    virtual void getShaderPrecisionFormat(WGC3Denum shadertype, WGC3Denum precisiontype, WGC3Dint* range, WGC3Dint* precision) = 0;
     virtual WebString getShaderSource(WebGLId shader) = 0;
     virtual WebString getString(WGC3Denum name) = 0;
-    virtual void getTexParameterfv(WGC3Denum target, WGC3Denum pname, WGC3Dfloat* value) = 0;
-    virtual void getTexParameteriv(WGC3Denum target, WGC3Denum pname, WGC3Dint* value) = 0;
-    virtual void getUniformfv(WebGLId program, WGC3Dint location, WGC3Dfloat* value) = 0;
-    virtual void getUniformiv(WebGLId program, WGC3Dint location, WGC3Dint* value) = 0;
-    virtual WGC3Dint getUniformLocation(WebGLId program, const WGC3Dchar* name) = 0;
-    virtual void getVertexAttribfv(WGC3Duint index, WGC3Denum pname, WGC3Dfloat* value) = 0;
-    virtual void getVertexAttribiv(WGC3Duint index, WGC3Denum pname, WGC3Dint* value) = 0;
     virtual WGC3Dintptr getVertexAttribOffset(WGC3Duint index, WGC3Denum pname) = 0;
 
-    virtual void hint(WGC3Denum target, WGC3Denum mode) = 0;
-    virtual WGC3Dboolean isBuffer(WebGLId buffer) = 0;
-    virtual WGC3Dboolean isEnabled(WGC3Denum cap) = 0;
-    virtual WGC3Dboolean isFramebuffer(WebGLId framebuffer) = 0;
-    virtual WGC3Dboolean isProgram(WebGLId program) = 0;
-    virtual WGC3Dboolean isRenderbuffer(WebGLId renderbuffer) = 0;
-    virtual WGC3Dboolean isShader(WebGLId shader) = 0;
-    virtual WGC3Dboolean isTexture(WebGLId texture) = 0;
-    virtual void lineWidth(WGC3Dfloat) = 0;
-    virtual void linkProgram(WebGLId program) = 0;
-    virtual void pixelStorei(WGC3Denum pname, WGC3Dint param) = 0;
-    virtual void polygonOffset(WGC3Dfloat factor, WGC3Dfloat units) = 0;
-
-    virtual void readPixels(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, void* pixels) = 0;
-
-    virtual void renderbufferStorage(WGC3Denum target, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height) = 0;
-    virtual void sampleCoverage(WGC3Dclampf value, WGC3Dboolean invert) = 0;
-    virtual void scissor(WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) = 0;
     virtual void shaderSource(WebGLId shader, const WGC3Dchar* string) = 0;
-    virtual void stencilFunc(WGC3Denum func, WGC3Dint ref, WGC3Duint mask) = 0;
-    virtual void stencilFuncSeparate(WGC3Denum face, WGC3Denum func, WGC3Dint ref, WGC3Duint mask) = 0;
-    virtual void stencilMask(WGC3Duint mask) = 0;
-    virtual void stencilMaskSeparate(WGC3Denum face, WGC3Duint mask) = 0;
-    virtual void stencilOp(WGC3Denum fail, WGC3Denum zfail, WGC3Denum zpass) = 0;
-    virtual void stencilOpSeparate(WGC3Denum face, WGC3Denum fail, WGC3Denum zfail, WGC3Denum zpass) = 0;
 
     virtual void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels) = 0;
 
@@ -289,42 +242,15 @@ public:
     // GL_EXT_occlusion_query
     virtual WebGLId createQueryEXT() { return 0; }
     virtual void deleteQueryEXT(WebGLId query) { }
-    virtual WGC3Dboolean isQueryEXT(WebGLId query) { return false; }
-    virtual void beginQueryEXT(WGC3Denum target, WebGLId query) { }
-    virtual void endQueryEXT(WGC3Denum target) { }
-    virtual void getQueryivEXT(WGC3Denum target, WGC3Denum pname, WGC3Dint* params) { }
-    virtual void getQueryObjectuivEXT(WebGLId query, WGC3Denum pname, WGC3Duint* params) { }
-
-    // GL_EXT_disjoint_timer_query
-    virtual void queryCounterEXT(WebGLId query, WGC3Denum target) {}
-    virtual void getQueryObjectui64vEXT(WebGLId query, WGC3Denum pname, WGC3Duint64* params) {}
-
-    // GL_CHROMIUM_copy_texture
-    virtual void copyTextureCHROMIUM(WGC3Duint sourceId,
-        WGC3Duint destId, WGC3Denum internalFormat, WGC3Denum destType,
-        WGC3Dboolean unpackFlipY, WGC3Dboolean unpackPremultiplyAlpha, WGC3Dboolean unpackUnmultiplyAlpha) { }
-    virtual void copySubTextureCHROMIUM(WGC3Duint sourceId,
-        WGC3Duint destId, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint x,
-        WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height,
-        WGC3Dboolean unpackFlipY, WGC3Dboolean unpackPremultiplyAlpha, WGC3Dboolean unpackUnmultiplyAlpha) { }
 
     // GL_CHROMIUM_subscribe_uniform
-    virtual void genValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids) { }
     virtual WebGLId createValuebufferCHROMIUM() { return 0; }
     virtual void deleteValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids) { }
     virtual void deleteValuebufferCHROMIUM(WebGLId) { }
-    virtual WGC3Dboolean isValuebufferCHROMIUM(WebGLId renderbuffer) { return false; }
     virtual void bindValuebufferCHROMIUM(WGC3Denum target, WebGLId valuebuffer) { }
     virtual void subscribeValueCHROMIUM(WGC3Denum target, WGC3Denum subscription) { }
     virtual void populateSubscribedValuesCHROMIUM(WGC3Denum target) { }
     virtual void uniformValuebufferCHROMIUM(WGC3Dint location, WGC3Denum target, WGC3Denum subscription) { }
-
-    // GL_CHROMIUM_texture_mailbox
-    virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox) { }
-    virtual void produceTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox) { }
-    virtual void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target, const WGC3Dbyte* mailbox) { }
-
-    virtual WebGLId createAndConsumeTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox) { return 0; }
 
     // GL_EXT_debug_marker
     virtual void pushGroupMarkerEXT(const WGC3Dchar* marker) { }
@@ -385,9 +311,6 @@ public:
     virtual void getActiveUniformsiv(WebGLId program, WGC3Dsizei uniformCount, const WGC3Duint *uniformIndices, WGC3Denum pname, WGC3Dint *params) { }
     virtual void getBufferParameteri64v(WGC3Denum target, WGC3Denum pname, WGC3Dint64 *value) { }
     virtual WGC3Dint getFragDataLocation(WebGLId program, const WGC3Dchar *name) { return -1; }
-    virtual void getInteger64v(WGC3Denum pname, WGC3Dint64 *data) { }
-    virtual void getIntegeri_v(WGC3Denum target, WGC3Duint index, WGC3Dint *data) { }
-    virtual void getInteger64i_v(WGC3Denum target, WGC3Duint index, WGC3Dint64 *data) { }
     virtual void getInternalformativ(WGC3Denum target, WGC3Denum internalformat, WGC3Denum pname, WGC3Dsizei bufSize, WGC3Dint *params) { }
     virtual void getSamplerParameterfv(WebGLId sampler, WGC3Denum pname, WGC3Dfloat *params) { }
     virtual void getSamplerParameteriv(WebGLId sampler, WGC3Denum pname, WGC3Dint *params) { }

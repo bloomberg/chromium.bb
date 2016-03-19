@@ -219,12 +219,12 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, WebEx
 
     gpu::gles2::GLES2Interface* gl = contextGL();
     GLuint imageTexture = skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))->fID;
-    context()->copySubTextureCHROMIUM(imageTexture, imageInfo.m_textureId, 0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
+    gl->CopySubTextureCHROMIUM(imageTexture, imageInfo.m_textureId, 0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
 
     MailboxInfo& info = m_mailboxes.first();
     info.m_mailbox.textureTarget = GC3D_TEXTURE_RECTANGLE_ARB;
-    context()->genMailboxCHROMIUM(info.m_mailbox.name);
-    context()->produceTextureDirectCHROMIUM(imageInfo.m_textureId, info.m_mailbox.textureTarget, info.m_mailbox.name);
+    gl->GenMailboxCHROMIUM(info.m_mailbox.name);
+    gl->ProduceTextureDirectCHROMIUM(imageInfo.m_textureId, info.m_mailbox.textureTarget, info.m_mailbox.name);
     info.m_mailbox.allowOverlay = true;
 
     const WGC3Duint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
@@ -357,10 +357,10 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
         ASSERT(mailboxInfo.m_image->getTexture()->getCustomData()->size() == sizeof(mailboxInfo.m_mailbox.name));
         memcpy(&mailboxInfo.m_mailbox.name[0], mailboxInfo.m_image->getTexture()->getCustomData()->data(), sizeof(mailboxInfo.m_mailbox.name));
     } else {
-        context()->genMailboxCHROMIUM(mailboxInfo.m_mailbox.name);
+        gl->GenMailboxCHROMIUM(mailboxInfo.m_mailbox.name);
         RefPtr<SkData> mailboxNameData = adoptRef(SkData::NewWithCopy(&mailboxInfo.m_mailbox.name[0], sizeof(mailboxInfo.m_mailbox.name)));
         mailboxInfo.m_image->getTexture()->setCustomData(mailboxNameData.get());
-        webContext->produceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo.m_mailbox.name);
+        gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo.m_mailbox.name);
     }
 
     if (isHidden()) {
@@ -371,7 +371,7 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
         // FIXME: We'd rather insert a syncpoint than perform a flush here,
         // but currently the canvas will flicker if we don't flush here.
         const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
-        webContext->flush();
+        gl->Flush();
         mailboxInfo.m_mailbox.validSyncToken = webContext->genSyncTokenCHROMIUM(fenceSync, mailboxInfo.m_mailbox.syncToken);
     }
     gl->BindTexture(GL_TEXTURE_2D, 0);
@@ -707,9 +707,9 @@ void Canvas2DLayerBridge::flushGpu()
 {
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushGpu");
     flush();
-    WebGraphicsContext3D* webContext = context();
-    if (isAccelerated() && webContext)
-        webContext->flush();
+    gpu::gles2::GLES2Interface* gl = contextGL();
+    if (isAccelerated() && gl)
+        gl->Flush();
 }
 
 

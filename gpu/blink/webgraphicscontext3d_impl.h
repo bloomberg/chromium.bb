@@ -45,11 +45,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                     blink::WGC3Denum type,
                     blink::WGC3Dintptr offset) override;
 
-  void finish() override;
-  void flush() override;
-  void frontFace(blink::WGC3Denum mode) override;
-  void generateMipmap(blink::WGC3Denum target) override;
-
   bool getActiveAttrib(blink::WebGLId program,
                        blink::WGC3Duint index,
                        ActiveInfo&) override;
@@ -57,62 +52,9 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                         blink::WGC3Duint index,
                         ActiveInfo&) override;
 
-  void getAttachedShaders(blink::WebGLId program,
-                          blink::WGC3Dsizei maxCount,
-                          blink::WGC3Dsizei* count,
-                          blink::WebGLId* shaders) override;
-
-  blink::WGC3Dint getAttribLocation(blink::WebGLId program,
-                                    const blink::WGC3Dchar* name) override;
-
-  void getBooleanv(blink::WGC3Denum pname, blink::WGC3Dboolean* value) override;
-
-  void getBufferParameteriv(blink::WGC3Denum target,
-                            blink::WGC3Denum pname,
-                            blink::WGC3Dint* value) override;
-
   blink::WGC3Denum getError() override;
-
-  void getFloatv(blink::WGC3Denum pname, blink::WGC3Dfloat* value) override;
-
-  void getFramebufferAttachmentParameteriv(blink::WGC3Denum target,
-                                           blink::WGC3Denum attachment,
-                                           blink::WGC3Denum pname,
-                                           blink::WGC3Dint* value) override;
-
-  void getIntegerv(blink::WGC3Denum pname, blink::WGC3Dint* value) override;
-
-  void getInteger64v(blink::WGC3Denum pname, blink::WGC3Dint64* value) override;
-
-  void getIntegeri_v(blink::WGC3Denum target,
-                     blink::WGC3Duint index,
-                     blink::WGC3Dint *data) override;
-
-  void getInteger64i_v(blink::WGC3Denum pname,
-                       blink::WGC3Duint index,
-                       blink::WGC3Dint64* value) override;
-
-  void getProgramiv(blink::WebGLId program,
-                    blink::WGC3Denum pname,
-                    blink::WGC3Dint* value) override;
-
   blink::WebString getProgramInfoLog(blink::WebGLId program) override;
-
-  void getRenderbufferParameteriv(blink::WGC3Denum target,
-                                  blink::WGC3Denum pname,
-                                  blink::WGC3Dint* value) override;
-
-  void getShaderiv(blink::WebGLId shader,
-                   blink::WGC3Denum pname,
-                   blink::WGC3Dint* value) override;
-
   blink::WebString getShaderInfoLog(blink::WebGLId shader) override;
-
-  void getShaderPrecisionFormat(blink::WGC3Denum shadertype,
-                                blink::WGC3Denum precisiontype,
-                                blink::WGC3Dint* range,
-                                blink::WGC3Dint* precision) override;
-
   blink::WebString getShaderSource(blink::WebGLId shader) override;
   blink::WebString getString(blink::WGC3Denum name) override;
 
@@ -122,84 +64,11 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                  blink::WGC3Dsizei *length,
                  blink::WGC3Dint *params) override;
 
-  void getTexParameterfv(blink::WGC3Denum target,
-                         blink::WGC3Denum pname,
-                         blink::WGC3Dfloat* value) override;
-  void getTexParameteriv(blink::WGC3Denum target,
-                         blink::WGC3Denum pname,
-                         blink::WGC3Dint* value) override;
-
-  void getUniformfv(blink::WebGLId program,
-                    blink::WGC3Dint location,
-                    blink::WGC3Dfloat* value) override;
-  void getUniformiv(blink::WebGLId program,
-                    blink::WGC3Dint location,
-                    blink::WGC3Dint* value) override;
-
-  blink::WGC3Dint getUniformLocation(blink::WebGLId program,
-                                     const blink::WGC3Dchar* name) override;
-
-  void getVertexAttribfv(blink::WGC3Duint index,
-                         blink::WGC3Denum pname,
-                         blink::WGC3Dfloat* value) override;
-  void getVertexAttribiv(blink::WGC3Duint index,
-                         blink::WGC3Denum pname,
-                         blink::WGC3Dint* value) override;
-
   blink::WGC3Dsizeiptr getVertexAttribOffset(blink::WGC3Duint index,
                                              blink::WGC3Denum pname) override;
 
-  void hint(blink::WGC3Denum target, blink::WGC3Denum mode) override;
-  blink::WGC3Dboolean isBuffer(blink::WebGLId buffer) override;
-  blink::WGC3Dboolean isEnabled(blink::WGC3Denum cap) override;
-  blink::WGC3Dboolean isFramebuffer(blink::WebGLId framebuffer) override;
-  blink::WGC3Dboolean isProgram(blink::WebGLId program) override;
-  blink::WGC3Dboolean isRenderbuffer(blink::WebGLId renderbuffer) override;
-  blink::WGC3Dboolean isShader(blink::WebGLId shader) override;
-  blink::WGC3Dboolean isTexture(blink::WebGLId texture) override;
-  void lineWidth(blink::WGC3Dfloat) override;
-  void linkProgram(blink::WebGLId program) override;
-  void pixelStorei(blink::WGC3Denum pname, blink::WGC3Dint param) override;
-  void polygonOffset(blink::WGC3Dfloat factor,
-                     blink::WGC3Dfloat units) override;
-
-  void readPixels(blink::WGC3Dint x,
-                  blink::WGC3Dint y,
-                  blink::WGC3Dsizei width,
-                  blink::WGC3Dsizei height,
-                  blink::WGC3Denum format,
-                  blink::WGC3Denum type,
-                  void* pixels) override;
-
-  void renderbufferStorage(blink::WGC3Denum target,
-                           blink::WGC3Denum internalformat,
-                           blink::WGC3Dsizei width,
-                           blink::WGC3Dsizei height) override;
-  void sampleCoverage(blink::WGC3Dfloat value,
-                      blink::WGC3Dboolean invert) override;
-  void scissor(blink::WGC3Dint x,
-               blink::WGC3Dint y,
-               blink::WGC3Dsizei width,
-               blink::WGC3Dsizei height) override;
   void shaderSource(blink::WebGLId shader,
                     const blink::WGC3Dchar* string) override;
-  void stencilFunc(blink::WGC3Denum func,
-                   blink::WGC3Dint ref,
-                   blink::WGC3Duint mask) override;
-  void stencilFuncSeparate(blink::WGC3Denum face,
-                           blink::WGC3Denum func,
-                           blink::WGC3Dint ref,
-                           blink::WGC3Duint mask) override;
-  void stencilMask(blink::WGC3Duint mask) override;
-  void stencilMaskSeparate(blink::WGC3Denum face,
-                           blink::WGC3Duint mask) override;
-  void stencilOp(blink::WGC3Denum fail,
-                 blink::WGC3Denum zfail,
-                 blink::WGC3Denum zpass) override;
-  void stencilOpSeparate(blink::WGC3Denum face,
-                         blink::WGC3Denum fail,
-                         blink::WGC3Denum zfail,
-                         blink::WGC3Denum zpass) override;
 
   void texImage2D(blink::WGC3Denum target,
                   blink::WGC3Dint level,
@@ -374,63 +243,13 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   blink::WebGLId createQueryEXT() override;
   void deleteQueryEXT(blink::WebGLId query) override;
-  blink::WGC3Dboolean isQueryEXT(blink::WGC3Duint query) override;
-  void beginQueryEXT(blink::WGC3Denum target, blink::WebGLId query) override;
-  void endQueryEXT(blink::WGC3Denum target) override;
-  void getQueryivEXT(blink::WGC3Denum target,
-                     blink::WGC3Denum pname,
-                     blink::WGC3Dint* params) override;
-  void getQueryObjectuivEXT(blink::WebGLId query,
-                            blink::WGC3Denum pname,
-                            blink::WGC3Duint* params) override;
 
-  void queryCounterEXT(blink::WebGLId query, blink::WGC3Denum target) override;
-  void getQueryObjectui64vEXT(blink::WebGLId query,
-                              blink::WGC3Denum pname,
-                              blink::WGC3Duint64* params) override;
-
-  void copyTextureCHROMIUM(
-      blink::WebGLId source_id,
-      blink::WebGLId dest_id,
-      blink::WGC3Denum internal_format,
-      blink::WGC3Denum dest_type,
-      blink::WGC3Dboolean unpack_flip_y,
-      blink::WGC3Dboolean unpack_premultiply_alpha,
-      blink::WGC3Dboolean unpack_unmultiply_alpha) override;
-
-  void copySubTextureCHROMIUM(
-      blink::WebGLId source_id,
-      blink::WebGLId dest_id,
-      blink::WGC3Dint xoffset,
-      blink::WGC3Dint yoffset,
-      blink::WGC3Dint x,
-      blink::WGC3Dint y,
-      blink::WGC3Dsizei width,
-      blink::WGC3Dsizei height,
-      blink::WGC3Dboolean unpack_flip_y,
-      blink::WGC3Dboolean unpack_premultiply_alpha,
-      blink::WGC3Dboolean unpack_unmultiply_alpha) override;
-
-  void genMailboxCHROMIUM(blink::WGC3Dbyte* mailbox) override;
-  void produceTextureCHROMIUM(blink::WGC3Denum target,
-                              const blink::WGC3Dbyte* mailbox) override;
-  void produceTextureDirectCHROMIUM(blink::WebGLId texture,
-                                    blink::WGC3Denum target,
-                                    const blink::WGC3Dbyte* mailbox) override;
-  blink::WebGLId createAndConsumeTextureCHROMIUM(
-      blink::WGC3Denum target,
-      const blink::WGC3Dbyte* mailbox) override;
-
-  void genValuebuffersCHROMIUM(blink::WGC3Dsizei count,
-                               blink::WebGLId* ids) override;
   blink::WebGLId createValuebufferCHROMIUM() override;
   void deleteValuebuffersCHROMIUM(blink::WGC3Dsizei count,
                                   blink::WebGLId* ids) override;
   void deleteValuebufferCHROMIUM(blink::WebGLId) override;
   void bindValuebufferCHROMIUM(blink::WGC3Denum target,
                                blink::WebGLId valuebuffer) override;
-  blink::WGC3Dboolean isValuebufferCHROMIUM(
-      blink::WebGLId renderbuffer) override;
   void subscribeValueCHROMIUM(blink::WGC3Denum target,
                               blink::WGC3Denum subscription) override;
   void populateSubscribedValuesCHROMIUM(blink::WGC3Denum target) override;

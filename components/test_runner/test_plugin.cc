@@ -264,10 +264,10 @@ void TestPlugin::updateGeometry(
     DrawSceneGL();
 
     gpu::Mailbox mailbox;
-    context_->genMailboxCHROMIUM(mailbox.name);
-    context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    gl_->GenMailboxCHROMIUM(mailbox.name);
+    gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
-    context_->flush();
+    gl_->Flush();
 
     gpu::SyncToken sync_token;
     context_->genSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
@@ -463,9 +463,8 @@ bool TestPlugin::InitProgram() {
   if (!scene_.program)
     return false;
 
-  scene_.color_location = context_->getUniformLocation(scene_.program, "color");
-  scene_.position_location =
-      context_->getAttribLocation(scene_.program, "position");
+  scene_.color_location = gl_->GetUniformLocation(scene_.program, "color");
+  scene_.position_location = gl_->GetAttribLocation(scene_.program, "position");
   return true;
 }
 
@@ -512,7 +511,7 @@ unsigned TestPlugin::LoadShader(unsigned type, const std::string& source) {
     gl_->CompileShader(shader);
 
     int compiled = 0;
-    context_->getShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    gl_->GetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
     if (!compiled) {
       context_->deleteShader(shader);
       shader = 0;
@@ -529,10 +528,10 @@ unsigned TestPlugin::LoadProgram(const std::string& vertex_source,
   if (vertex_shader && fragment_shader && program) {
     gl_->AttachShader(program, vertex_shader);
     gl_->AttachShader(program, fragment_shader);
-    context_->linkProgram(program);
+    gl_->LinkProgram(program);
 
     int linked = 0;
-    context_->getProgramiv(program, GL_LINK_STATUS, &linked);
+    gl_->GetProgramiv(program, GL_LINK_STATUS, &linked);
     if (!linked) {
       context_->deleteProgram(program);
       program = 0;

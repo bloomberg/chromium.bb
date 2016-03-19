@@ -5,6 +5,7 @@
 #include "modules/webgl/EXTDisjointTimerQuery.h"
 
 #include "bindings/modules/v8/WebGLAny.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "modules/webgl/WebGLTimerQueryEXT.h"
 
@@ -64,7 +65,7 @@ GLboolean EXTDisjointTimerQuery::isQueryEXT(WebGLTimerQueryEXT* query)
         return false;
     }
 
-    return scoped.context()->webContext()->isQueryEXT(query->object());
+    return scoped.context()->contextGL()->IsQueryEXT(query->object());
 }
 
 void EXTDisjointTimerQuery::beginQueryEXT(GLenum target, WebGLTimerQueryEXT* query)
@@ -93,7 +94,7 @@ void EXTDisjointTimerQuery::beginQueryEXT(GLenum target, WebGLTimerQueryEXT* que
         return;
     }
 
-    scoped.context()->webContext()->beginQueryEXT(target, query->object());
+    scoped.context()->contextGL()->BeginQueryEXT(target, query->object());
     query->setTarget(target);
     m_currentElapsedQuery = query;
 }
@@ -114,7 +115,7 @@ void EXTDisjointTimerQuery::endQueryEXT(GLenum target)
         return;
     }
 
-    scoped.context()->webContext()->endQueryEXT(target);
+    scoped.context()->contextGL()->EndQueryEXT(target);
     m_currentElapsedQuery->resetCachedResult();
     m_currentElapsedQuery.clear();
 }
@@ -140,7 +141,7 @@ void EXTDisjointTimerQuery::queryCounterEXT(WebGLTimerQueryEXT* query, GLenum ta
         return;
     }
 
-    scoped.context()->webContext()->queryCounterEXT(query->object(), target);
+    scoped.context()->contextGL()->QueryCounterEXT(query->object(), target);
     query->setTarget(target);
     query->resetCachedResult();
 }
@@ -159,7 +160,7 @@ ScriptValue EXTDisjointTimerQuery::getQueryEXT(ScriptState* scriptState, GLenum 
             return ScriptValue::createNull(scriptState);
         case GL_QUERY_COUNTER_BITS_EXT: {
             GLint value = 0;
-            scoped.context()->webContext()->getQueryivEXT(target, pname, &value);
+            scoped.context()->contextGL()->GetQueryivEXT(target, pname, &value);
             return WebGLAny(scriptState, value);
         }
         default:
@@ -184,11 +185,11 @@ ScriptValue EXTDisjointTimerQuery::getQueryObjectEXT(ScriptState* scriptState, W
 
     switch (pname) {
     case GL_QUERY_RESULT_EXT: {
-        query->updateCachedResult(scoped.context()->webContext());
+        query->updateCachedResult(scoped.context()->contextGL());
         return WebGLAny(scriptState, query->getQueryResult());
     }
     case GL_QUERY_RESULT_AVAILABLE_EXT: {
-        query->updateCachedResult(scoped.context()->webContext());
+        query->updateCachedResult(scoped.context()->contextGL());
         return WebGLAny(scriptState, query->isQueryResultAvailable());
     }
     default:
