@@ -52,8 +52,6 @@ const char kChromeUINetworkErrorURL[] = "chrome://network-error";
 const char kChromeUINetworkErrorsListingURL[] = "chrome://network-errors";
 const char kChromeUIPpapiFlashCrashURL[] = "chrome://ppapiflashcrash";
 const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang";
-const char kChromeUIServiceWorkerInternalsURL[] =
-    "chrome://serviceworker-internals";
 
 // This error URL is loaded in normal web renderer processes, so it should not
 // have a chrome:// scheme that might let it be confused with a WebUI page.
