@@ -101,6 +101,15 @@
                 <a target="_blank" href$="[[i18n('easyUnlockLearnMoreURL')]]">
                   [[i18n('learnMore')]]
                 </a>
+                <template is="dom-if" if=[[easyUnlockEnabled_]]>
+                  <template is="dom-if"
+                      if=[[easyUnlockProximityDetectionAllowed_]]>
+                    <settings-checkbox
+                        pref="{{prefs.easy_unlock.proximity_required}}"
+                        i18n-values="label:easyUnlockRequireProximityLabel">
+                    </settings-checkbox>
+                  </template>
+                </template>
               </div>
             </div>
             <div class="secondary-action">

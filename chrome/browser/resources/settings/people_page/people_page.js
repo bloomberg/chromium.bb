@@ -46,13 +46,11 @@ Polymer({
 
     /**
      * The currently selected profile icon URL. May be a data URL.
-     * @private {string}
      */
     profileIconUrl_: String,
 
     /**
      * The current profile name.
-     * @private {string}
      */
     profileName_: String,
 
@@ -67,7 +65,6 @@ Polymer({
 
     /**
      * True if Easy Unlock is allowed on this machine.
-     * @private {boolean}
      */
     easyUnlockAllowed_: {
       type: Boolean,
@@ -79,13 +76,24 @@ Polymer({
 
     /**
      * True if Easy Unlock is enabled.
-     * @private {boolean}
      */
     easyUnlockEnabled_: {
       type: Boolean,
       value: function() {
         return loadTimeData.getBoolean('easyUnlockEnabled');
       },
+    },
+
+    /**
+     * True if Easy Unlock's proximity detection feature is allowed.
+     */
+    easyUnlockProximityDetectionAllowed_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('easyUnlockAllowed') &&
+            loadTimeData.getBoolean('easyUnlockProximityDetectionAllowed');
+      },
+      readOnly: true,
     },
 </if>
   },
