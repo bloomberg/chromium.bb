@@ -89,9 +89,6 @@ public:
 
     ~CSSAnimationUpdate()
     {
-        // For performance reasons, explicitly clear HeapVectors and
-        // HeapHashMaps to avoid giving a pressure on Oilpan's GC.
-        clear();
     }
 
     void copy(const CSSAnimationUpdate& update)

@@ -56,6 +56,9 @@ StyleResolverState::StyleResolverState(Document& document, Element* element, con
 
 StyleResolverState::~StyleResolverState()
 {
+    // For performance reasons, explicitly clear HeapVectors and
+    // HeapHashMaps to avoid giving a pressure on Oilpan's GC.
+    m_animationUpdate.clear();
 }
 
 CSSToLengthConversionData StyleResolverState::fontSizeConversionData() const
