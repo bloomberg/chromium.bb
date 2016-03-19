@@ -122,6 +122,7 @@ mojom("test_variant") {
 
   sources = [
     "test_variant.mojom",
+    "test_variant_import.mojom",
   ]
 
   variant = "variant_test"

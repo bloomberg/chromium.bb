@@ -515,6 +515,7 @@
         'mojom_variant': 'test_variant',
       },
       'sources': [
+        'public/interfaces/bindings/tests/test_variant_import.mojom',
         'public/interfaces/bindings/tests/test_variant.mojom',
       ],
       'includes': [ 'mojom_bindings_generator.gypi' ],

@@ -35,7 +35,11 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "{{variant_path}}-internal.h"
 {%- for import in imports %}
+{%-   if variant %}
+#include "{{"%s-%s.h"|format(import.module.path, variant)}}"
+{%-   else %}
 #include "{{import.module.path}}.h"
+{%-   endif %}
 {%- endfor %}
 {%- if not for_blink %}
 #include "mojo/public/cpp/bindings/array.h"

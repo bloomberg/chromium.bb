@@ -84,6 +84,8 @@ def GetNamePartsForKind(kind, add_same_module_namespaces, add_variant,
   parts = []
   if kind.imported_from:
     parts.extend(NamespaceToArray(kind.imported_from["namespace"]))
+    if _variant and add_variant:
+      parts.append(_variant)
   elif add_same_module_namespaces:
     if hasattr(kind, "module"):
       parts.extend(NamespaceToArray(kind.module.namespace))
@@ -97,7 +99,7 @@ def GetNamePartsForKind(kind, add_same_module_namespaces, add_variant,
   return parts
 
 def GetNameForKind(kind, internal=False):
-  parts = GetNamePartsForKind(kind, False, False, internal)
+  parts = GetNamePartsForKind(kind, False, True, internal)
   return "::".join(parts)
 
 def GetQualifiedNameForKind(kind, internal=False):
@@ -382,6 +384,8 @@ def TranslateConstants(token, kind):
     name = []
     if token.imported_from:
       name.extend(NamespaceToArray(token.namespace))
+    if _variant:
+      name.append(_variant)
     if token.parent_kind:
       name.append(token.parent_kind.name)
     if isinstance(token, mojom.EnumValue):

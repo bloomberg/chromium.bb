@@ -26,7 +26,11 @@
 {%- endfor %}
 
 {%- for import in imports %}
+{%-   if variant %}
+#include "{{"%s-%s-internal.h"|format(import.module.path, variant)}}"
+{%-   else %}
 #include "{{import.module.path}}-internal.h"
+{%-   endif %}
 {%- endfor %}
 
 namespace mojo {
