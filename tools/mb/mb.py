@@ -263,7 +263,7 @@ class MetaBuildWrapper(object):
 
     return ret
 
-  def CmdValidate(self):
+  def CmdValidate(self, print_ok=True):
     errs = []
 
     # Read the file to make sure it parses.
@@ -335,11 +335,16 @@ class MetaBuildWrapper(object):
       raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
                     '\n  ' + '\n  '.join(errs))
 
-    self.Print('mb config file %s looks ok.' % self.args.config_file)
+    if print_ok:
+      self.Print('mb config file %s looks ok.' % self.args.config_file)
     return 0
 
   def CmdAudit(self):
     """Track the progress of the GYP->GN migration on the bots."""
+
+    # First, make sure the config file is okay, but don't print anything
+    # if it is (it will throw an error if it isn't).
+    self.CmdValidate(print_ok=False)
 
     stats = OrderedDict()
     STAT_MASTER_ONLY = 'Master only'

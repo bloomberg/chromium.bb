@@ -107,9 +107,6 @@
       'Chromium Windows Buildrunner': 'tbd',
       'Chromium Windows Instant Extended': 'tbd',
       'ChromiumOS Linux Tests': 'tbd',
-      'Chromium_iOS_Device': 'tbd',
-      'Chromium_iOS_Device_(ninja)': 'tbd',
-      'Chromium_iOS_Simulator_(dbg)': 'tbd',
       'ClangToTAndroidASan': 'tbd',
       'ClangToTAndroidASan tester': 'tbd',
       'ClangToTLinux': 'tbd',
@@ -193,6 +190,9 @@
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CFI Linux': 'gn_cfi_release_bot',
+      'Chromium_iOS_Device': 'ios_gyp',
+      'Chromium_iOS_Device_(ninja)': 'ios_gyp',
+      'Chromium_iOS_Simulator_(dbg)': 'ios_gyp',
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
@@ -293,14 +293,14 @@
       'Mac10.11 Tests': 'tbd',
       'Mac10.9 Tests': 'tbd',
       'Mac10.9 Tests (dbg)': 'tbd',
-      'iOS_Device': 'tbd',
-      'iOS_Device_(ninja)': 'tbd',
-      'iOS_Device_GN': 'tbd',
-      'iOS_Simulator_(dbg)': 'tbd',
-      'iOS_Simulator_GN_(dbg)': 'tbd',
 
       'Mac GN (dbg)': 'gn_debug_static_bot',
       'Mac GN': 'gn_release_bot',
+      'iOS_Device': 'ios_gyp',
+      'iOS_Device_(ninja)': 'ios_gyp',
+      'iOS_Device_GN': 'ios_gn',
+      'iOS_Simulator_(dbg)': 'ios_gyp',
+      'iOS_Simulator_GN_(dbg)': 'ios_gn',
     },
 
     'chromium.memory.fyi': {
@@ -714,12 +714,6 @@
     },
 
     'tryserver.chromium.mac': {
-      'ios_dbg_simulator': 'tbd',
-      'ios_dbg_simulator_gn': 'tbd',
-      'ios_dbg_simulator_ninja': 'tbd',
-      'ios_rel_device': 'tbd',
-      'ios_rel_device_gn': 'tbd',
-      'ios_rel_device_ninja': 'tbd',
       'mac_chromium_10.10_rel_ng': 'tbd',
       'mac_chromium_archive_rel_ng': 'tbd',
       'mac_chromium_asan_rel_ng': 'tbd',
@@ -734,6 +728,12 @@
       'mac_nacl_sdk_build': 'tbd',
       'mac_optional_gpu_tests_rel': 'tbd',
 
+      'ios_dbg_simulator': 'ios_gyp',
+      'ios_dbg_simulator_gn': 'ios_gn',
+      'ios_dbg_simulator_ninja': 'ios_gyp',
+      'ios_rel_device': 'ios_gyp',
+      'ios_rel_device_gn': 'ios_gn',
+      'ios_rel_device_ninja': 'ios_gyp',
       'mac_chromium_clang_upload': 'gn_release_bot',
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
@@ -1057,6 +1057,15 @@
     'gyp_drmemory_shared_release_x64': [
       'gyp', 'drmemory', 'shared', 'release', 'x64',
     ],
+
+    # The 'ios' configs are just used for auditing. iOS bots
+    # actually use the ios recipes, not the chromium recipe, and look
+    # up their GYP or GN arguments via files checked in under //ios/build/bots.
+    # It is an error to actually use one of these configs to generate the
+    # build files.
+    'ios_gn': [ 'gn', 'error'],
+
+    'ios_gyp': ['gyp', 'error'],
 
     # This is used for tracking purposes; any bot that uses this config
     # should never actually run MB.
