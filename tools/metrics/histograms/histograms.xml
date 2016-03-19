@@ -18863,6 +18863,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LocalStorage.MojoSizeInKB" units="KB">
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Size of the HTML5 LocalStorage DB in KB in the renderer-side cache using
+    Mojo implementation.
+  </summary>
+</histogram>
+
+<histogram name="LocalStorage.MojoTimeToPrime" units="ms">
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Time (in ms) to load HTML5 LocalStorage into the renderer-side cache using
+    Mojo implementation.
+  </summary>
+</histogram>
+
+<histogram name="LocalStorage.MojoTimeToPrimeFor" units="ms">
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Time (in ms) to load HTML5 LocalStorage into the renderer-side cache using
+    Mojo implementation, split by size.
+  </summary>
+</histogram>
+
 <histogram name="LocalStorage.RendererLocalStorageSizeInKB" units="KB">
   <owner>michaeln@chromium.org</owner>
   <summary>
@@ -86841,6 +86865,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="100KBTo1MB" label="DB size between 100KB and 1MB"/>
   <suffix name="1MBTo5MB" label="DB size between 1MB and 5MB"/>
   <affected-histogram name="LocalStorage.BrowserTimeToPrimeLocalStorage"/>
+  <affected-histogram name="LocalStorage.MojoTimeToPrimeFor"/>
   <affected-histogram name="LocalStorage.RendererTimeToPrimeLocalStorage"/>
 </histogram_suffixes>
 

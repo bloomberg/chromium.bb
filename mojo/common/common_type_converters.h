@@ -36,18 +36,24 @@ struct MOJO_COMMON_EXPORT TypeConverter<base::string16, String> {
   static base::string16 Convert(const String& input);
 };
 
-// TODO(erg): In the very long term, we will want to remove conversion between
-// std::strings and arrays of unsigned bytes. However, there is too much code
-// across chrome which uses std::string as a bag of bytes that we probably
-// don't want to roll this function at each callsite.
 template <>
-struct MOJO_COMMON_EXPORT TypeConverter<std::string, Array<uint8_t> > {
+struct MOJO_COMMON_EXPORT TypeConverter<std::string, Array<uint8_t>> {
   static std::string Convert(const Array<uint8_t>& input);
 };
 
 template <>
 struct MOJO_COMMON_EXPORT TypeConverter<Array<uint8_t>, std::string> {
   static Array<uint8_t> Convert(const std::string& input);
+};
+
+template <>
+struct MOJO_COMMON_EXPORT TypeConverter<base::string16, Array<uint8_t>> {
+  static base::string16 Convert(const Array<uint8_t>& input);
+};
+
+template <>
+struct MOJO_COMMON_EXPORT TypeConverter<Array<uint8_t>, base::string16> {
+  static Array<uint8_t> Convert(const base::string16& input);
 };
 
 }  // namespace mojo

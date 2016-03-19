@@ -26,17 +26,20 @@ void LevelDBWrapperImpl::Put(mojo::Array<uint8_t> key,
                              mojo::Array<uint8_t> value,
                              const mojo::String& source,
                              const PutCallback& callback) {
+  // TODO(jam): call observers before running callback.
 }
 
 void LevelDBWrapperImpl::Delete(mojo::Array<uint8_t> key,
                                 const mojo::String& source,
                                 const DeleteCallback& callback) {
+  // TODO(jam): call observers before running callback.
 }
 
 void LevelDBWrapperImpl::DeleteAll(LevelDBObserverPtr observer,
                                    const mojo::String& source,
                                    const DeleteAllCallback& callback) {
   // TODO(jam): store observer and call it when changes occur.
+  // TODO(jam): call observers before running callback.
 }
 
 void LevelDBWrapperImpl::Get(mojo::Array<uint8_t> key,

@@ -39,9 +39,9 @@ base::string16 TypeConverter<base::string16, String>::Convert(
   return base::UTF8ToUTF16(input.To<base::StringPiece>());
 }
 
-std::string TypeConverter<std::string, Array<uint8_t> >::Convert(
+std::string TypeConverter<std::string, Array<uint8_t>>::Convert(
     const Array<uint8_t>& input) {
-  if (input.is_null() || input.size() == 0u)
+  if (input.is_null() || input.empty())
     return std::string();
 
   return std::string(reinterpret_cast<const char*>(&input.front()),
@@ -51,8 +51,25 @@ std::string TypeConverter<std::string, Array<uint8_t> >::Convert(
 Array<uint8_t> TypeConverter<Array<uint8_t>, std::string>::Convert(
     const std::string& input) {
   Array<uint8_t> result(input.size());
-  if (input.size() > 0)
+  if (!input.empty())
     memcpy(&result.front(), input.c_str(), input.size());
+  return result;
+}
+
+base::string16 TypeConverter<base::string16, Array<uint8_t>>::Convert(
+    const Array<uint8_t>& input) {
+  if (input.is_null() || input.empty())
+    return base::string16();
+
+  return base::string16(reinterpret_cast<const base::char16*>(&input.front()),
+                        input.size() / sizeof(base::char16));
+}
+
+Array<uint8_t> TypeConverter<Array<uint8_t>, base::string16>::Convert(
+    const base::string16& input) {
+  Array<uint8_t> result(input.size() * sizeof(base::char16));
+  if (!input.empty())
+    memcpy(&result.front(), input.c_str(), input.size() * sizeof(base::char16));
   return result;
 }
 

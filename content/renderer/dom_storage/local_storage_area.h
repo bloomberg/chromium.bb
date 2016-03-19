@@ -32,8 +32,13 @@ class LocalStorageArea : public blink::WebStorageArea {
                   const blink::WebURL& page_url) override;
   void clear(const blink::WebURL& url) override;
 
+  const std::string& id() const { return id_; }
+
  private:
   scoped_refptr<LocalStorageCachedArea> cached_area_;
+  // A globally unique identifier for this storage area. It's used to pass the
+  // source storage area, if any, in mutation events.
+  std::string id_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageArea);
 };

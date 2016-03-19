@@ -15,9 +15,9 @@ namespace content {
 class LocalStorageCachedArea;
 class StoragePartitionService;
 
-// Owns all the LocalStorageCachedArea objects in a renderer. This is needed
-// because we can have n LocalStorageArea objects for the same origin but we
-// want just one LocalStorageCachedArea to service them (no point in having
+// Keeps a map of all the LocalStorageCachedArea objects in a renderer. This is
+// needed because we can have n LocalStorageArea objects for the same origin but
+// we want just one LocalStorageCachedArea to service them (no point in having
 // multiple caches of the same data in the same process).
 class LocalStorageCachedAreas {
  public:
@@ -25,11 +25,12 @@ class LocalStorageCachedAreas {
       StoragePartitionService* storage_partition_service);
   ~LocalStorageCachedAreas();
 
-  scoped_refptr<LocalStorageCachedArea> GetLocalStorageCachedArea(
-      const url::Origin& origin);
+  // Returns, creating if necessary, a cached storage area for the given origin.
+  scoped_refptr<LocalStorageCachedArea>
+      GetCachedArea(const url::Origin& origin);
 
   // Called by LocalStorageCachedArea on destruction.
-  void LocalStorageCacheAreaClosed(LocalStorageCachedArea* cached_area);
+  void CacheAreaClosed(LocalStorageCachedArea* cached_area);
 
  private:
   StoragePartitionService* const storage_partition_service_;

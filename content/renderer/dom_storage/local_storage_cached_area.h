@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_DOM_STORAGE_LOCAL_STORAGE_CACHED_AREA_H_
 #define CONTENT_RENDERER_DOM_STORAGE_LOCAL_STORAGE_CACHED_AREA_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
@@ -14,6 +16,8 @@
 #include "url/origin.h"
 
 namespace content {
+class DOMStorageMap;
+class LocalStorageArea;
 class LocalStorageCachedAreas;
 class StoragePartitionService;
 
@@ -22,6 +26,8 @@ class StoragePartitionService;
 // access. The cache is primed on first access and changes are written to the
 // backend through the level db interface pointer. Mutations originating in
 // other processes are applied to the cache via LevelDBObserver callbacks.
+// There is one LocalStorageCachedArea for potentially many LocalStorageArea
+// objects.
 class LocalStorageCachedArea : public LevelDBObserver,
                                public base::RefCounted<LocalStorageCachedArea> {
  public:
@@ -35,10 +41,17 @@ class LocalStorageCachedArea : public LevelDBObserver,
   base::NullableString16 GetItem(const base::string16& key);
   bool SetItem(const base::string16& key,
                const base::string16& value,
-               const GURL& page_url);
+               const GURL& page_url,
+               const std::string& storage_area_id);
   void RemoveItem(const base::string16& key,
-                  const GURL& page_url);
-  void Clear(const GURL& page_url);
+                  const GURL& page_url,
+                  const std::string& storage_area_id);
+  void Clear(const GURL& page_url, const std::string& storage_area_id);
+
+  // Allow this object to keep track of the LocalStorageAreas corresponding to
+  // it, which is needed for mutation event notifications.
+  void AreaCreated(LocalStorageArea* area);
+  void AreaDestroyed(LocalStorageArea* area);
 
   const url::Origin& origin() { return origin_; }
 
@@ -52,6 +65,7 @@ class LocalStorageCachedArea : public LevelDBObserver,
                   mojo::Array<uint8_t> old_value,
                   const mojo::String& source) override;
   void KeyDeleted(mojo::Array<uint8_t> key,
+                  mojo::Array<uint8_t> old_value,
                   const mojo::String& source) override;
   void AllDeleted(const mojo::String& source) override;
 
@@ -59,11 +73,23 @@ class LocalStorageCachedArea : public LevelDBObserver,
   // fetched already.
   void EnsureLoaded();
 
+  void OnSetItemComplete(const base::string16& key,
+                         leveldb::DatabaseError result);
+  void OnRemoveItemComplete(const base::string16& key,
+                            leveldb::DatabaseError result);
+  void OnClearComplete(leveldb::DatabaseError result);
+
+  // Resets the object back to its newly constructed state.
+  void Reset();
+
   bool loaded_;
   url::Origin origin_;
+  scoped_refptr<DOMStorageMap> map_;
+  std::map<base::string16, int> ignore_key_mutations_;
   LevelDBWrapperPtr leveldb_;
   mojo::Binding<LevelDBObserver> binding_;
   LocalStorageCachedAreas* cached_areas_;
+  std::map<std::string, LocalStorageArea*> areas_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageCachedArea);
 };

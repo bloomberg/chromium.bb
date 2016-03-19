@@ -27,9 +27,8 @@ LocalStorageNamespace::~LocalStorageNamespace() {
 
 WebStorageArea* LocalStorageNamespace::createStorageArea(
     const WebString& origin) {
-  return new LocalStorageArea(
-      local_storage_cached_areas_->GetLocalStorageCachedArea(
-          url::Origin(blink::WebStringToGURL(origin))));
+  return new LocalStorageArea(local_storage_cached_areas_->GetCachedArea(
+      url::Origin(blink::WebStringToGURL(origin))));
 }
 
 bool LocalStorageNamespace::isSameNamespace(

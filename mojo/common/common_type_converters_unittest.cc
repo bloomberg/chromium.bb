@@ -108,6 +108,33 @@ TEST(CommonTypeConvertersTest, StdStringToArrayUint8) {
   EXPECT_EQ('a', data[3]);
 }
 
+TEST(CommonTypeConvertersTest, ArrayUint8ToString16) {
+  Array<uint8_t> data(8);
+  data[0] = 'd';
+  data[2] = 'a';
+  data[4] = 't';
+  data[6] = 'a';
+
+  EXPECT_EQ(base::ASCIIToUTF16("data"), data.To<base::string16>());
+}
+
+TEST(CommonTypeConvertersTest, String16ToArrayUint8) {
+  base::string16 input(base::ASCIIToUTF16("data"));
+  Array<uint8_t> data = Array<uint8_t>::From(input);
+
+  ASSERT_EQ(8ul, data.size());
+  EXPECT_EQ('d', data[0]);
+  EXPECT_EQ('a', data[2]);
+  EXPECT_EQ('t', data[4]);
+  EXPECT_EQ('a', data[6]);
+}
+
+TEST(CommonTypeConvertersTest, String16ToArrayUint8AndBack) {
+  base::string16 input(base::ASCIIToUTF16("data"));
+  Array<uint8_t> data = Array<uint8_t>::From(input);
+  EXPECT_EQ(input, data.To<base::string16>());
+}
+
 TEST(CommonTypeConvertersTest, EmptyStringToArrayUint8) {
   Array<uint8_t> data = Array<uint8_t>::From(std::string());
 

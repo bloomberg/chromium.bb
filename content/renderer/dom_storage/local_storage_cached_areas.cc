@@ -16,8 +16,7 @@ LocalStorageCachedAreas::LocalStorageCachedAreas(
 LocalStorageCachedAreas::~LocalStorageCachedAreas() {
 }
 
-scoped_refptr<LocalStorageCachedArea>
-LocalStorageCachedAreas::GetLocalStorageCachedArea(
+scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     const url::Origin& origin) {
   if (cached_areas_.find(origin) == cached_areas_.end()) {
     cached_areas_[origin] = new LocalStorageCachedArea(
@@ -27,7 +26,7 @@ LocalStorageCachedAreas::GetLocalStorageCachedArea(
   return make_scoped_refptr(cached_areas_[origin]);
 }
 
-void LocalStorageCachedAreas::LocalStorageCacheAreaClosed(
+void LocalStorageCachedAreas::CacheAreaClosed(
     LocalStorageCachedArea* cached_area) {
   DCHECK(cached_areas_.find(cached_area->origin()) != cached_areas_.end());
   cached_areas_.erase(cached_area->origin());

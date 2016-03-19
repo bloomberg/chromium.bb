@@ -11,10 +11,14 @@ import "components/leveldb/public/interfaces/leveldb.mojom";
 // being specified when opening a LevelDBWrapper, is to avoid the client getting
 // callbacks for changes that have already been applied to its database that
 // it's fetching via GetAll or it's clearing via DeleteAll.
+// In the methods below, |source| is a user-defined string which was passed to
+// the various LevelDBWrapper methods.
+// Note that observer methods are called before the callbacks for the
+// LevelDBWrapper methods are run.
 interface LevelDBObserver {
   KeyChanged(array<uint8> key, array<uint8> new_value, array<uint8> old_value,
              string source);
-  KeyDeleted(array<uint8> key, string source);
+  KeyDeleted(array<uint8> key, array<uint8> old_value, string source);
   AllDeleted(string source);
 };
 
@@ -26,20 +30,20 @@ struct KeyValue {
 // A wrapper around leveldb that supports giving notifications when values
 // change.
 interface LevelDBWrapper {
-  // Sets the database entry for "key" to "value". Returns OK on success.
+  // Sets the database entry for |key| to |value|. Returns OK on success.
   Put(array<uint8> key, array<uint8> value, string source)
     => (leveldb.DatabaseError status);
 
-  // Remove the database entry (if any) for "key".  Returns OK on
-  // success, and a non-OK status on error.  It is not an error if "key"
-  // did not exist in the database.
+  // Remove the database entry (if any) for |key|.  Returns OK on success, and a
+  // non-OK status on error.  It is not an error if |key| did not exist in the
+  // database.
   Delete(array<uint8> key, string source) => (leveldb.DatabaseError status);
 
   // Removes all the entries.
   DeleteAll(LevelDBObserver observer, string source)
     => (leveldb.DatabaseError status);
 
-  // Returns the value of the given key.
+  // Returns the value of the |key|.
   Get(array<uint8> key) => (leveldb.DatabaseError status, array<uint8> value);
 
   // Only used with small databases. Returns all key/value pairs.
