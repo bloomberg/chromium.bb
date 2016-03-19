@@ -938,6 +938,11 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   if (suppress_destruction_errors_)
     return;
 
+  // Release the delegate for player errors; this drops the media session and
+  // avoids idle suspension from ticking.
+  if (delegate_)
+    delegate_->PlayerGone(delegate_id_);
+
 #if defined(OS_ANDROID)
   // For 10% of pipeline decode failures log the playback URL. The URL is set
   // as the crash-key 'subresource_url' during DoLoad().
