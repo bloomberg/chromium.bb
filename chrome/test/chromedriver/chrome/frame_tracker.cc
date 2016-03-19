@@ -55,11 +55,24 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
       base::JSONWriter::Write(*context, &json);
       return Status(kUnknownError, method + " has invalid 'context': " + json);
     }
-    std::string type;
-    if (context->HasKey("type") && !context->GetString("type", &type))
-      return Status(kUnknownError, method + " has invalid 'context.type'");
-    if (type != "Extension")  // exclude content scripts
-      frame_to_context_map_[frame_id] = context_id;
+
+    if (context->HasKey("isDefault")) {
+      bool is_default = false;
+      if (!context->GetBoolean("isDefault", &is_default))
+        return Status(kUnknownError, method + " has invalid 'isDefault' value");
+      if (is_default)
+        frame_to_context_map_[frame_id] = context_id;
+    } else {
+      // Before crrev.com/381172, the optional |type| field can be used to
+      // determine whether we're looking at the default context.
+      // TODO(samuong): remove this when we stop supporting Chrome 50.
+      std::string type;
+      if (context->HasKey("type") && !context->GetString("type", &type))
+        return Status(kUnknownError, method + " has invalid 'context.type'");
+      if (type != "Extension")  // exclude content scripts
+        frame_to_context_map_[frame_id] = context_id;
+    }
+
   } else if (method == "Runtime.executionContextDestroyed") {
     int execution_context_id;
     if (!params.GetInteger("executionContextId", &execution_context_id))
