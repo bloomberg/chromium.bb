@@ -48,18 +48,6 @@ using llvm::StringRef;
 
 namespace {
 
-// Hack: prevent the custom isDefaulted() from conflicting with the one defined
-// in newer revisions of Clang.
-namespace internal_hack {
-
-// This is available in newer clang revisions... but alas, Chrome has not rolled
-// that far yet.
-AST_MATCHER(clang::FunctionDecl, isDefaulted) {
-  return Node.isDefaulted();
-}
-
-}  // namespace internal_hack
-
 const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
 const char kGeneratedFileRegex[] = "^gen/|/gen/";
@@ -203,7 +191,6 @@ std::string CamelCaseToUnderscoreCase(StringRef input) {
   std::string output;
   bool needs_underscore = false;
   bool was_lowercase = false;
-  bool was_number = false;
   bool was_uppercase = false;
   bool first_char = true;
   // Iterate in reverse to minimize the amount of backtracking.
@@ -211,7 +198,6 @@ std::string CamelCaseToUnderscoreCase(StringRef input) {
        --i) {
     char c = *i;
     bool is_lowercase = clang::isLowercase(c);
-    bool is_number = clang::isDigit(c);
     bool is_uppercase = clang::isUppercase(c);
     c = clang::toLowercase(c);
     // Transitioning from upper to lower case requires an underscore. This is
@@ -230,7 +216,6 @@ std::string CamelCaseToUnderscoreCase(StringRef input) {
     if (!first_char && was_lowercase && is_uppercase)
       needs_underscore = true;
     was_lowercase = is_lowercase;
-    was_number = is_number;
     was_uppercase = is_uppercase;
     first_char = false;
   }
@@ -400,6 +385,28 @@ bool GetNameForDecl(const clang::FunctionTemplateDecl& decl,
   return GetNameForDecl(*templated_function, context, name);
 }
 
+bool GetNameForDecl(const clang::NamedDecl& decl,
+                    const clang::ASTContext& context,
+                    std::string& name) {
+  // Note: CXXMethodDecl must be checked before FunctionDecl, because
+  // CXXMethodDecl is derived from FunctionDecl.
+  if (auto* method = clang::dyn_cast<clang::CXXMethodDecl>(&decl))
+    return GetNameForDecl(*method, context, name);
+  if (auto* function = clang::dyn_cast<clang::FunctionDecl>(&decl))
+    return GetNameForDecl(*function, context, name);
+  if (auto* var = clang::dyn_cast<clang::VarDecl>(&decl))
+    return GetNameForDecl(*var, context, name);
+  if (auto* field = clang::dyn_cast<clang::FieldDecl>(&decl))
+    return GetNameForDecl(*field, context, name);
+  if (auto* function_template =
+          clang::dyn_cast<clang::FunctionTemplateDecl>(&decl))
+    return GetNameForDecl(*function_template, context, name);
+  if (auto* enumc = clang::dyn_cast<clang::EnumConstantDecl>(&decl))
+    return GetNameForDecl(*enumc, context, name);
+
+  return false;
+}
+
 bool GetNameForDecl(const clang::UsingDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
@@ -409,24 +416,7 @@ bool GetNameForDecl(const clang::UsingDecl& decl,
   // functions, it can introduce multiple shadowed declarations. Just using the
   // first one is OK, since overloaded functions have the same name, by
   // definition.
-  clang::NamedDecl* shadowed_name = decl.shadow_begin()->getTargetDecl();
-  // Note: CXXMethodDecl must be checked before FunctionDecl, because
-  // CXXMethodDecl is derived from FunctionDecl.
-  if (auto* method = clang::dyn_cast<clang::CXXMethodDecl>(shadowed_name))
-    return GetNameForDecl(*method, context, name);
-  if (auto* function = clang::dyn_cast<clang::FunctionDecl>(shadowed_name))
-    return GetNameForDecl(*function, context, name);
-  if (auto* var = clang::dyn_cast<clang::VarDecl>(shadowed_name))
-    return GetNameForDecl(*var, context, name);
-  if (auto* field = clang::dyn_cast<clang::FieldDecl>(shadowed_name))
-    return GetNameForDecl(*field, context, name);
-  if (auto* function_template =
-          clang::dyn_cast<clang::FunctionTemplateDecl>(shadowed_name))
-    return GetNameForDecl(*function_template, context, name);
-  if (auto* enumc = clang::dyn_cast<clang::EnumConstantDecl>(shadowed_name))
-    return GetNameForDecl(*enumc, context, name);
-
-  return false;
+  return GetNameForDecl(*decl.shadow_begin()->getTargetDecl(), context, name);
 }
 
 template <typename Type>
@@ -434,44 +424,40 @@ struct TargetNodeTraits;
 
 template <>
 struct TargetNodeTraits<clang::NamedDecl> {
-  static const char kName[];
   static clang::SourceLocation GetLoc(const clang::NamedDecl& decl) {
     return decl.getLocation();
   }
+  static const char* GetName() { return "decl"; }
   static const char* GetType() { return "NamedDecl"; }
 };
-const char TargetNodeTraits<clang::NamedDecl>::kName[] = "decl";
 
 template <>
 struct TargetNodeTraits<clang::MemberExpr> {
-  static const char kName[];
   static clang::SourceLocation GetLoc(const clang::MemberExpr& expr) {
     return expr.getMemberLoc();
   }
+  static const char* GetName() { return "expr"; }
   static const char* GetType() { return "MemberExpr"; }
 };
-const char TargetNodeTraits<clang::MemberExpr>::kName[] = "expr";
 
 template <>
 struct TargetNodeTraits<clang::DeclRefExpr> {
-  static const char kName[];
   static clang::SourceLocation GetLoc(const clang::DeclRefExpr& expr) {
     return expr.getLocation();
   }
+  static const char* GetName() { return "expr"; }
   static const char* GetType() { return "DeclRefExpr"; }
 };
-const char TargetNodeTraits<clang::DeclRefExpr>::kName[] = "expr";
 
 template <>
 struct TargetNodeTraits<clang::CXXCtorInitializer> {
-  static const char kName[];
   static clang::SourceLocation GetLoc(const clang::CXXCtorInitializer& init) {
     assert(init.isWritten());
     return init.getSourceLocation();
   }
+  static const char* GetName() { return "initializer"; }
   static const char* GetType() { return "CXXCtorInitializer"; }
 };
-const char TargetNodeTraits<clang::CXXCtorInitializer>::kName[] = "initializer";
 
 template <typename DeclNode, typename TargetNode>
 class RewriterBase : public MatchFinder::MatchCallback {
@@ -506,7 +492,7 @@ class RewriterBase : public MatchFinder::MatchCallback {
       return;
     clang::SourceLocation loc = TargetNodeTraits<TargetNode>::GetLoc(
         *result.Nodes.getNodeAs<TargetNode>(
-            TargetNodeTraits<TargetNode>::kName));
+            TargetNodeTraits<TargetNode>::GetName()));
     clang::CharSourceRange range = clang::CharSourceRange::getTokenRange(loc);
     replacements_->emplace(*result.SourceManager, range, new_name);
     replacement_names_.emplace(old_name.str(), std::move(new_name));
@@ -608,7 +594,7 @@ int main(int argc, const char* argv[]) {
           // compiler, such as a synthesized copy constructor.
           // This skips explicitly defaulted functions as well, but that's OK:
           // there's nothing interesting to rewrite in those either.
-          unless(hasAncestor(functionDecl(internal_hack::isDefaulted())))));
+          unless(hasAncestor(functionDecl(isDefaulted())))));
   auto decl_ref_matcher = id("expr", declRefExpr(to(var_decl_matcher)));
   auto enum_member_ref_matcher =
       id("expr", declRefExpr(to(enum_member_decl_matcher)));
@@ -660,8 +646,10 @@ int main(int argc, const char* argv[]) {
   //   f();
   //   void (*p)() = &f;
   // matches |f()| and |&f|.
-  auto function_ref_matcher =
-      id("expr", declRefExpr(to(function_decl_matcher)));
+  auto function_ref_matcher = id(
+      "expr", declRefExpr(to(function_decl_matcher),
+                          // Ignore template substitutions.
+                          unless(hasAncestor(substNonTypeTemplateParmExpr()))));
   FunctionRefRewriter function_ref_rewriter(&replacements);
   match_finder.addMatcher(function_ref_matcher, &function_ref_rewriter);
 
@@ -685,8 +673,8 @@ int main(int argc, const char* argv[]) {
               // Overloaded operators have special names and should never be
               // renamed.
               isOverloadedOperator(),
-              // Similarly, constructors, destructors, and conversion functions
-              // should not be considered for renaming.
+              // Similarly, constructors, destructors, and conversion
+              // functions should not be considered for renaming.
               cxxConstructorDecl(), cxxDestructorDecl(), cxxConversionDecl())),
           // Check this last after excluding things, to avoid
           // asserts about overriding non-blink and blink for the
@@ -701,7 +689,10 @@ int main(int argc, const char* argv[]) {
   //   s.g();
   //   void (S::*p)() = &S::g;
   // matches |&S::g| but not |s.g()|.
-  auto method_ref_matcher = id("expr", declRefExpr(to(method_decl_matcher)));
+  auto method_ref_matcher = id(
+      "expr", declRefExpr(to(method_decl_matcher),
+                          // Ignore template substitutions.
+                          unless(hasAncestor(substNonTypeTemplateParmExpr()))));
 
   MethodRefRewriter method_ref_rewriter(&replacements);
   match_finder.addMatcher(method_ref_matcher, &method_ref_rewriter);
