@@ -168,10 +168,12 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   VideoDecodeAccelerator::Capabilities capabilities =
       factories_->GetVideoDecodeAcceleratorCapabilities();
-  if (!IsProfileSupported(capabilities, config.profile(),
-                          config.coded_size())) {
-    DVLOG(1) << "Profile " << config.profile() << " or coded size "
-             << config.coded_size().ToString() << " not supported.";
+  if (!IsProfileSupported(capabilities, config.profile(), config.coded_size(),
+                          config.is_encrypted())) {
+    DVLOG(1) << "Unsupported profile " << config.profile()
+             << ", unsupported coded size " << config.coded_size().ToString()
+             << ", or accelerator should only be used for encrypted content. "
+             << " is_encrypted: " << (config.is_encrypted() ? "yes." : "no.");
     bound_init_cb.Run(false);
     return;
   }
@@ -708,10 +710,14 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
 bool GpuVideoDecoder::IsProfileSupported(
     const VideoDecodeAccelerator::Capabilities& capabilities,
     VideoCodecProfile profile,
-    const gfx::Size& coded_size) {
+    const gfx::Size& coded_size,
+    bool is_encrypted) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   for (const auto& supported_profile : capabilities.supported_profiles) {
     if (profile == supported_profile.profile) {
+      if (supported_profile.encrypted_only && !is_encrypted)
+        continue;
+
       return IsCodedSizeSupported(coded_size,
                                   supported_profile.min_resolution,
                                   supported_profile.max_resolution);

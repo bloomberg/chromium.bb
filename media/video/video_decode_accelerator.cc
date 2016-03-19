@@ -45,7 +45,7 @@ GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
 }
 
 VideoDecodeAccelerator::SupportedProfile::SupportedProfile()
-    : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN) {}
+    : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN), encrypted_only(false) {}
 
 VideoDecodeAccelerator::SupportedProfile::~SupportedProfile() {}
 

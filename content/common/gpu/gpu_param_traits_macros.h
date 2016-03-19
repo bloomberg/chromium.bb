@@ -24,6 +24,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::VideoDecodeAcceleratorSupportedProfile)
   IPC_STRUCT_TRAITS_MEMBER(profile)
   IPC_STRUCT_TRAITS_MEMBER(max_resolution)
   IPC_STRUCT_TRAITS_MEMBER(min_resolution)
+  IPC_STRUCT_TRAITS_MEMBER(encrypted_only)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::VideoDecodeAcceleratorCapabilities)

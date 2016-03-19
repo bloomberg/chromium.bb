@@ -60,6 +60,7 @@ struct GPU_EXPORT VideoDecodeAcceleratorSupportedProfile {
   VideoCodecProfile profile;
   gfx::Size max_resolution;
   gfx::Size min_resolution;
+  bool encrypted_only;
 };
 
 using VideoDecodeAcceleratorSupportedProfiles =

@@ -317,15 +317,10 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   // Only use MediaCodec for VP8/9 if it's likely backed by hardware
   // or if the stream is encrypted.
-  if ((codec_ == media::kCodecVP8 || codec_ == media::kCodecVP9) &&
-      !is_encrypted_) {
-    if (media::VideoCodecBridge::IsKnownUnaccelerated(
-            codec_, media::MEDIA_CODEC_DECODER)) {
-      DVLOG(1) << "Initialization failed: "
-               << (codec_ == media::kCodecVP8 ? "vp8" : "vp9")
-               << " is not hardware accelerated";
-      return false;
-    }
+  if (codec_ == media::kCodecVP8 || codec_ == media::kCodecVP9) {
+    DCHECK(is_encrypted_ ||
+           !media::VideoCodecBridge::IsKnownUnaccelerated(
+               codec_, media::MEDIA_CODEC_DECODER));
   }
 
   if (!make_context_current_.Run()) {
@@ -1175,6 +1170,13 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
     profile.profile = media::VP8PROFILE_ANY;
     profile.min_resolution.SetSize(0, 0);
     profile.max_resolution.SetSize(1920, 1088);
+    // If we know MediaCodec will just create a software codec, prefer our
+    // internal software decoder instead. It's more up to date and secured
+    // within the renderer sandbox. However if the content is encrypted, we
+    // must use MediaCodec anyways since MediaDrm offers no way to decrypt
+    // the buffers and let us use our internal software decoders.
+    profile.encrypted_only = media::VideoCodecBridge::IsKnownUnaccelerated(
+        media::kCodecVP8, media::MEDIA_CODEC_DECODER);
     profiles.push_back(profile);
   }
 
@@ -1182,6 +1184,13 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
     profile.profile = media::VP9PROFILE_ANY;
     profile.min_resolution.SetSize(0, 0);
     profile.max_resolution.SetSize(1920, 1088);
+    // If we know MediaCodec will just create a software codec, prefer our
+    // internal software decoder instead. It's more up to date and secured
+    // within the renderer sandbox. However if the content is encrypted, we
+    // must use MediaCodec anyways since MediaDrm offers no way to decrypt
+    // the buffers and let us use our internal software decoders.
+    profile.encrypted_only = media::VideoCodecBridge::IsKnownUnaccelerated(
+        media::kCodecVP9, media::MEDIA_CODEC_DECODER);
     profiles.push_back(profile);
   }
 

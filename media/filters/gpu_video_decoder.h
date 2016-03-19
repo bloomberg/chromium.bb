@@ -142,11 +142,12 @@ class MEDIA_EXPORT GpuVideoDecoder
   void DestroyPictureBuffers(PictureBufferMap* buffers);
 
   // Returns true if the video decoder with |capabilities| can support
-  // |profile| and |coded_size|.
+  // |profile|, |coded_size|, and |is_encrypted|.
   bool IsProfileSupported(
       const VideoDecodeAccelerator::Capabilities& capabilities,
       VideoCodecProfile profile,
-      const gfx::Size& coded_size);
+      const gfx::Size& coded_size,
+      bool is_encrypted);
 
   // Assert the contract that this class is operated on the right thread.
   void DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent() const;

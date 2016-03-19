@@ -28,6 +28,7 @@ void EnumerateVideoDecodeAcceleratorSupportedProfile(
   enumerator->AddInt("maxResolutionHeight", profile.max_resolution.height());
   enumerator->AddInt("minResolutionWidth", profile.min_resolution.width());
   enumerator->AddInt("minResolutionHeight", profile.min_resolution.height());
+  enumerator->AddBool("encrypted_only", profile.encrypted_only);
   enumerator->EndVideoDecodeAcceleratorSupportedProfile();
 }
 

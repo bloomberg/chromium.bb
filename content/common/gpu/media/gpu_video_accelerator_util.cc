@@ -52,6 +52,7 @@ GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeProfiles(const
         static_cast<media::VideoCodecProfile>(gpu_profile.profile);
     profile.max_resolution = gpu_profile.max_resolution;
     profile.min_resolution = gpu_profile.min_resolution;
+    profile.encrypted_only = gpu_profile.encrypted_only;
     profiles.push_back(profile);
   }
   return profiles;
@@ -79,6 +80,7 @@ GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeProfiles(const
         static_cast<gpu::VideoCodecProfile>(media_profile.profile);
     profile.max_resolution = media_profile.max_resolution;
     profile.min_resolution = media_profile.min_resolution;
+    profile.encrypted_only = media_profile.encrypted_only;
     profiles.push_back(profile);
   }
   return profiles;
