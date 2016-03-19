@@ -34,7 +34,7 @@
 }
 
 #device-missing a {
-  color: rgba(33, 150, 243, 0.87);
+  color: rgb(25, 118, 210);
   margin: 8px 0;
   text-decoration: none;
 }
@@ -105,7 +105,7 @@
 }
 
 #no-search-matches {
-  color: rgb(150, 150, 150);
+  color: rgb(112, 112, 112);
   display: block;
   font-size: 1.2 em;
   padding-bottom: 20px;
