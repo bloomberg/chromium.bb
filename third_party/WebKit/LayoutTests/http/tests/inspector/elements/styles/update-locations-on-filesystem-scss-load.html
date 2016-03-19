@@ -36,7 +36,7 @@ function test()
         var header = event.data;
         var cssLocation = new WebInspector.CSSLocation(header, 0, 1);
         liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, function() {});
-        InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", afterBind);
+        InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.SourceMapAttached, afterBind);
         dumpLiveLocation();
     }
 

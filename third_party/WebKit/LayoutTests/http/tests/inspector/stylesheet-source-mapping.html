@@ -32,7 +32,6 @@ function test()
         join();
     }
 
-
     function createMockStyleSheetHeader(url, sourceMapURL)
     {
         const frame = InspectorTest.resourceTreeModel.mainFrame;
@@ -66,20 +65,15 @@ function test()
         InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(scssUISourceCodeAdded);
     }
 
-    function scssUISourceCodeAdded(uiSourceCode)
-    {
-        InspectorTest.addResult("Added SCSS uiSourceCode: " + uiSourceCode.url());
-        InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", afterStyleSheetAdded);
-    }
-
     function rawLocationToUILocation(line, column)
     {
         var header = cssModel.styleSheetHeaderForId(styleSheetId);
         return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(header, line, column));
     }
 
-    function afterStyleSheetAdded()
+    function scssUISourceCodeAdded(uiSourceCode)
     {
+        InspectorTest.addResult("Added SCSS uiSourceCode: " + uiSourceCode.url());
         var cssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL(styleSheetURL);
         var scssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL("http://localhost:8000/inspector/resources/example.scss");
 

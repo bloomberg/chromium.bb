@@ -20,18 +20,13 @@ function addStylesheet()
 
 function test()
 {
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, step1, this);
     InspectorTest.evaluateInPage("addStylesheet()");
+    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", sourceMappingSniffer, true);
 
-    function step1()
+    function sourceMappingSniffer(header, sourceMapping)
     {
-        InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", sourceMappingSniffer, true);
-
-        function sourceMappingSniffer(header, sourceMapping)
-        {
-            if (sourceMapping instanceof WebInspector.SASSSourceMapping) {
-                InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
-            }
+        if (sourceMapping instanceof WebInspector.SASSSourceMapping) {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
         }
     }
 
