@@ -534,11 +534,6 @@
       'target_name': 'gyp_remaining',
       'type': 'none',
       'conditions': [
-        ['remoting==1', {
-          'dependencies': [
-            '../remoting/app_remoting_webapp.gyp:ar_sample_app',  # crbug.com/471916
-          ],
-        }],
         ['test_isolation_mode!="noop"', {
           'dependencies': [
             '../base/base.gyp:base_unittests_run',

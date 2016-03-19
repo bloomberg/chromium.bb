@@ -597,7 +597,6 @@
           'variables': {
             'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.browsertest.v2',
             'zip_path': '<(PRODUCT_DIR)/remoting-webapp.browsertest.v2.zip',
-            'webapp_type': 'v2',
             'main_html_file': '<(SHARED_INTERMEDIATE_DIR)/browser_test/main.html',
             'extra_files': [
               'webapp/crd/remoting_client_pnacl.nmf.jinja2',

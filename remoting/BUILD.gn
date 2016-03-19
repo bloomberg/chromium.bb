@@ -29,8 +29,6 @@ group("remoting_all") {
     "//remoting/test:chromoting_test_driver",
 
     #"//remoting:remoting_webapp_unittests",
-    #"//app_remoting_test.gyp:ar_sample_test_driver",
-    "//remoting/webapp:ar_sample_app",
   ]
 
   # TODO(GYP): add is_mac

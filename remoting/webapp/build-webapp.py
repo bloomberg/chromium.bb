@@ -108,7 +108,7 @@ def processJinjaTemplate(input_file, include_paths, output_file, context):
 
 
 def buildWebApp(buildtype, version, destination, zip_path,
-                manifest_template, webapp_type, appid, app_client_id, app_name,
+                manifest_template, appid, app_client_id, app_name,
                 app_description, app_capabilities, manifest_key, files,
                 files_listfile, locales_listfile, jinja_paths,
                 service_environment, use_gcd):
@@ -121,9 +121,6 @@ def buildWebApp(buildtype, version, destination, zip_path,
     zipfile: A string with path to the zipfile to create containing the
              contents of |destination|.
     manifest_template: jinja2 template file for manifest.
-    webapp_type: webapp type:
-                 For DesktopRemoting: "desktop"
-                 For AppRemoting: "app_remoting" or "shared_module"
     appid: A string with the Remoting Application Id (only used for app
            remoting webapps). If supplied, it defaults to using the
            test API server.
@@ -163,7 +160,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
       for s in input:
         files.append(s.rstrip())
 
-  # Ensure a fresh directory.
+#Ensure a fresh directory.
   try:
     shutil.rmtree(destination)
   except OSError:
@@ -177,7 +174,6 @@ def buildWebApp(buildtype, version, destination, zip_path,
     raise Exception('Unknown buildtype: ' + buildtype)
 
   jinja_context = {
-    'webapp_type': webapp_type,
     'buildtype': buildtype,
   }
 
@@ -214,11 +210,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
     else:
       raise Exception('Unknown extension: ' + current_locale)
 
-  is_app_remoting_webapp = webapp_type == 'app_remoting'
-  is_app_remoting_shared_module = webapp_type == 'shared_module'
-  is_app_remoting = is_app_remoting_webapp or is_app_remoting_shared_module
   is_prod_service_environment = service_environment == 'prod'
-  is_desktop_remoting = not is_app_remoting
 
   # Allow host names for google services/apis to be overriden via env vars.
   oauth2AccountsHost = os.environ.get(
@@ -230,85 +222,16 @@ def buildWebApp(buildtype, version, destination, zip_path,
   remotingApiHost = os.environ.get(
       'REMOTING_API_HOST', 'https://remoting-pa.googleapis.com')
 
-  if is_app_remoting:
-    appRemotingApiHost = os.environ.get(
-        'APP_REMOTING_API_HOST', None)
-
-  if is_app_remoting_webapp:
-    appRemotingApplicationId = os.environ.get(
-        'APP_REMOTING_APPLICATION_ID', None)
-
-    # Release/Official builds are special because they are what we will upload
-    # to the web store.  The checks below will validate that prod builds are
-    # being generated correctly (no overrides) and with the correct buildtype.
-    # They also verify that folks are not accidentally building dev apps for
-    # Release (no impersonation) instead of Dev.
-    if is_prod_service_environment and buildtype == 'Dev':
-      raise Exception("Prod environment cannot be built for 'dev' builds")
-
-    if buildtype != 'Dev':
-      if not is_prod_service_environment:
-        raise Exception('Invalid service_environment targeted for '
-                        + buildtype + ': ' + service_environment)
-      if appid != None:
-        raise Exception('Cannot pass in an appid for '
-                        + buildtype + ' builds: ' + service_environment)
-      if appRemotingApiHost != None:
-        raise Exception('Cannot set APP_REMOTING_API_HOST env var for '
-                        + buildtype + ' builds')
-      if appRemotingApplicationId != None:
-        raise Exception('Cannot set APP_REMOTING_APPLICATION_ID env var for '
-                        + buildtype + ' builds')
-
-    # If an Application ID was set (either from service_environment variable or
-    # from a command line argument), hardcode it, otherwise get it at runtime.
-    effectiveAppId = appRemotingApplicationId or appid
-    if effectiveAppId:
-      appRemotingApplicationId = "'" + effectiveAppId + "'"
-    else:
-      appRemotingApplicationId = "chrome.i18n.getMessage('@@extension_id')"
-    findAndReplace(os.path.join(destination, 'arv_main.js'),
-                   "'APP_REMOTING_APPLICATION_ID'", appRemotingApplicationId)
-
   oauth2BaseUrl = oauth2AccountsHost + '/o/oauth2'
   oauth2ApiBaseUrl = oauth2ApiHost + '/oauth2'
   directoryApiBaseUrl = directoryApiHost + '/chromoting/v1'
   telemetryApiBaseUrl = remotingApiHost + '/v1/events'
 
-  if is_app_remoting:
-    # Set the base endpoint url first and then set the endpoint version.
-    if not appRemotingApiHost:
-      if is_prod_service_environment:
-        appRemotingApiHost = 'https://www.googleapis.com'
-      else:
-        appRemotingApiHost = 'https://www-googleapis-test.sandbox.google.com'
-
-    # TODO(garykac) Currently, the shared module is always set up for the
-    # dev service_environment. Update build so that the dev environment can
-    # be controlled by the app stub rather than hard-coded into the shared
-    # module.
-    if service_environment == 'dev' or is_app_remoting_shared_module:
-      appRemotingServicePath = '/appremoting/v1beta1_dev'
-    elif service_environment == 'prod':
-      appRemotingServicePath = '/appremoting/v1beta1'
-    else:
-      raise Exception('Unknown service environment: ' + service_environment)
-    appRemotingApiBaseUrl = appRemotingApiHost + appRemotingServicePath
-  else:
-    appRemotingApiBaseUrl = ''
-
-  # TODO(garykac) replaceString (et al.) implictly update plugin_settings.js,
-  # which doesn't exist for the app stub. We need to move app-specific
-  # AppRemoting options into arv_main.js.
-  if not is_app_remoting_webapp:
-    replaceBool(destination, 'USE_GCD', use_gcd)
-    replaceString(destination, 'OAUTH2_BASE_URL', oauth2BaseUrl)
-    replaceString(destination, 'OAUTH2_API_BASE_URL', oauth2ApiBaseUrl)
-    replaceString(destination, 'DIRECTORY_API_BASE_URL', directoryApiBaseUrl)
-    replaceString(destination, 'TELEMETRY_API_BASE_URL', telemetryApiBaseUrl)
-    if is_app_remoting:
-      replaceString(destination, 'APP_REMOTING_API_BASE_URL',
-                    appRemotingApiBaseUrl)
+  replaceBool(destination, 'USE_GCD', use_gcd)
+  replaceString(destination, 'OAUTH2_BASE_URL', oauth2BaseUrl)
+  replaceString(destination, 'OAUTH2_API_BASE_URL', oauth2ApiBaseUrl)
+  replaceString(destination, 'DIRECTORY_API_BASE_URL', directoryApiBaseUrl)
+  replaceString(destination, 'TELEMETRY_API_BASE_URL', telemetryApiBaseUrl)
 
   # Substitute hosts in the manifest's CSP list.
   # Ensure we list the API host only once if it's the same for multiple APIs.
@@ -348,24 +271,23 @@ def buildWebApp(buildtype, version, destination, zip_path,
   thirdPartyAuthUrlJson = oauth2RedirectBaseUrlJson + '/thirdpartyauth*'
   xmppServer = os.environ.get('XMPP_SERVER', 'talk.google.com:443')
 
-  if not is_app_remoting_webapp:
-    replaceString(destination, 'TALK_GADGET_URL', talkGadgetBaseUrl)
-    findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                   "'OAUTH2_REDIRECT_URL'", oauth2RedirectUrlJs)
+  replaceString(destination, 'TALK_GADGET_URL', talkGadgetBaseUrl)
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "'OAUTH2_REDIRECT_URL'", oauth2RedirectUrlJs)
 
-    # Configure xmpp server and directory bot settings in the plugin.
-    xmpp_server_user_tls = getenvBool('XMPP_SERVER_USE_TLS', True)
-    if (buildtype != 'Dev' and not xmpp_server_user_tls):
-      raise Exception('TLS can must be enabled in non Dev builds.')
+  # Configure xmpp server and directory bot settings in the plugin.
+  xmpp_server_user_tls = getenvBool('XMPP_SERVER_USE_TLS', True)
+  if (buildtype != 'Dev' and not xmpp_server_user_tls):
+    raise Exception('TLS can must be enabled in non Dev builds.')
 
-    replaceBool(
-        destination, 'XMPP_SERVER_USE_TLS', xmpp_server_user_tls)
-    replaceString(destination, 'XMPP_SERVER', xmppServer)
-    replaceString(destination, 'DIRECTORY_BOT_JID',
-                  os.environ.get('DIRECTORY_BOT_JID',
-                                 'remoting@bot.talk.google.com'))
-    replaceString(destination, 'THIRD_PARTY_AUTH_REDIRECT_URL',
-                  thirdPartyAuthUrlJs)
+  replaceBool(
+      destination, 'XMPP_SERVER_USE_TLS', xmpp_server_user_tls)
+  replaceString(destination, 'XMPP_SERVER', xmppServer)
+  replaceString(destination, 'DIRECTORY_BOT_JID',
+                os.environ.get('DIRECTORY_BOT_JID',
+                               'remoting@bot.talk.google.com'))
+  replaceString(destination, 'THIRD_PARTY_AUTH_REDIRECT_URL',
+                thirdPartyAuthUrlJs)
 
   # Set the correct API keys.
   # For overriding the client ID/secret via env vars, see google_api_keys.py.
@@ -373,42 +295,22 @@ def buildWebApp(buildtype, version, destination, zip_path,
   apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
   apiKey = google_api_keys.GetAPIKeyRemoting()
 
-  if is_app_remoting_webapp and buildtype != 'Dev':
-    if not app_client_id:
-      raise Exception('Invalid app_client_id passed in: "' +
-          app_client_id + '"')
-    apiClientIdV2 = app_client_id + '.apps.googleusercontent.com'
-  else:
-    apiClientIdV2 = os.environ.get(
-        'REMOTING_IDENTITY_API_CLIENT_ID',
-        google_api_keys.GetClientID('REMOTING_IDENTITY_API'))
+  apiClientIdV2 = os.environ.get(
+      'REMOTING_IDENTITY_API_CLIENT_ID',
+      google_api_keys.GetClientID('REMOTING_IDENTITY_API'))
 
-  if not is_app_remoting_webapp:
-    replaceString(destination, 'API_CLIENT_ID', apiClientId)
-    replaceString(destination, 'API_CLIENT_SECRET', apiClientSecret)
-    replaceString(destination, 'API_KEY', apiKey)
+  replaceString(destination, 'API_CLIENT_ID', apiClientId)
+  replaceString(destination, 'API_CLIENT_SECRET', apiClientSecret)
+  replaceString(destination, 'API_KEY', apiKey)
 
-  # Write the application capabilities.
-  if is_app_remoting_webapp:
-    appCapabilities = ','.join(
-        ['remoting.ClientSession.Capability.' + x for x in app_capabilities])
-    findAndReplace(os.path.join(destination, 'arv_main.js'),
-                   "'APPLICATION_CAPABILITIES'", appCapabilities)
-
-  # Official AppRemoting builds get the key from the gyp/gn build file. All
-  # other builds use a fixed key. For dev builds, this ensures that the app
-  # can be run directly from the output directory. For official CRD builds,
+  # Use a fixed key in the app manifest. For dev builds, this ensures that the
+  # app can be run directly from the output directory. For official CRD builds,
   # it allows QA to test the app without uploading it to Chrome Web Store.
-  if is_app_remoting_webapp and buildtype != 'Dev':
-    if not manifest_key:
-      raise Exception('No manifest_key passed in')
-  else:
-      manifest_key = 'remotingdevbuild'
+  manifest_key = 'remotingdevbuild'
 
   # Generate manifest.
   if manifest_template:
     context = {
-        'webapp_type': webapp_type,
         'FULL_APP_VERSION': version,
         'MANIFEST_KEY': manifest_key,
         'OAUTH2_REDIRECT_URL': oauth2RedirectUrlJson,
@@ -419,7 +321,6 @@ def buildWebApp(buildtype, version, destination, zip_path,
         'OAUTH2_API_BASE_URL': oauth2ApiBaseUrl,
         'DIRECTORY_API_BASE_URL': directoryApiBaseUrl,
         'TELEMETRY_API_BASE_URL':telemetryApiBaseUrl ,
-        'APP_REMOTING_API_BASE_URL': appRemotingApiBaseUrl,
         'CLOUD_PRINT_URL': '',
         'OAUTH2_ACCOUNTS_HOST': oauth2AccountsHost,
         'GOOGLE_API_HOSTS': googleApiHosts,
@@ -457,7 +358,6 @@ def main():
   parser.add_argument('destination')
   parser.add_argument('zip_path')
   parser.add_argument('manifest_template')
-  parser.add_argument('webapp_type')
   parser.add_argument('files', nargs='*', metavar='file', default=[])
   parser.add_argument('--app_name', metavar='NAME')
   parser.add_argument('--app_description', metavar='TEXT')

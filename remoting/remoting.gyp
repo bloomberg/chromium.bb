@@ -41,7 +41,6 @@
     'remoting_test.gypi',
     'remoting_version.gypi',
     'remoting_webapp_files.gypi',
-    'app_remoting_webapp_files.gypi',
   ],
 
   'target_defaults': {
@@ -132,8 +131,7 @@
           'host/win/host_messages.mc.jinja2',
           'host/win/version.rc.jinja2',
           'resources/play_store_resources.cc',
-          '<@(desktop_remoting_webapp_localizable_files)',
-          '<@(app_remoting_webapp_localizable_files)',
+          '<@(desktop_remoting_webapp_localizable_files )',
         ],
       },
       'actions': [

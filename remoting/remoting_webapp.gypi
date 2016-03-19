@@ -70,7 +70,6 @@
         '<(output_dir)',
         '<(zip_path)',
         'webapp/crd/manifest.json.jinja2',
-        '<(webapp_type)',
         '<@(generated_html_files)',
         '<(main_html_file)',
         '<@(remoting_webapp_crd_files)',
