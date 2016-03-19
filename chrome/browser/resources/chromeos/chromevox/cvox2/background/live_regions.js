@@ -129,7 +129,7 @@ LiveRegions.prototype = {
     output.withSpeech(range, range, Output.EventType.NAVIGATE);
 
     if (!output.hasSpeech && node.liveAtomic)
-      output.format('$descendants', node);
+      output.format('$joinedDescendants', node);
 
     output.withSpeechCategory(cvox.TtsCategory.LIVE);
 

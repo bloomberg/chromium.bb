@@ -609,3 +609,21 @@ TEST_F('OutputE2ETest', 'ToggleButton', function() {
       ]}, o.speechOutputForTest);
   });
 });
+
+TEST_F('OutputE2ETest', 'JoinDescendants', function() {
+  this.runWithLoadedTree(function() {/*!
+      <p>This</p>
+      <p>fragment</p>
+      <p>Should be separated</p>
+      <p>with spaces</p>
+    */},
+    function(root) {
+      var unjoined = new Output().format('$descendants', root);
+      assertEquals('This|fragment|Should be separated|with spaces'
+                   , unjoined.speechOutputForTest.string_);
+
+      var joined = new Output().format('$joinedDescendants', root);
+      assertEquals('This fragment Should be separated with spaces'
+                   , joined.speechOutputForTest.string_);
+  });
+});

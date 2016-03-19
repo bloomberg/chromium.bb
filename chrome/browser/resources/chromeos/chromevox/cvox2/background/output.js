@@ -1043,6 +1043,10 @@ Output.prototype = {
           if (node)
             prev = cursors.Range.fromNode(node);
           this.range_(subrange, prev, Output.EventType.NAVIGATE, buff);
+        } else if (token == 'joinedDescendants') {
+          var unjoined = [];
+          this.format_(node, '$descendants', unjoined);
+          this.append_(buff, unjoined.join(' '), options);
         } else if (token == 'role') {
           if (localStorage['useVerboseMode'] == 'false')
             return;
