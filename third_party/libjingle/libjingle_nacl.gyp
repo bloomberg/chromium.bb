@@ -73,6 +73,8 @@
         '<(webrtc_base)/base64.h',
         '<(webrtc_base)/buffer.cc',
         '<(webrtc_base)/buffer.h',
+        '<(webrtc_base)/copyonwritebuffer.cc',
+        '<(webrtc_base)/copyonwritebuffer.h',
         '<(webrtc_base)/bytebuffer.cc',
         '<(webrtc_base)/bytebuffer.h',
         '<(webrtc_base)/byteorder.h',

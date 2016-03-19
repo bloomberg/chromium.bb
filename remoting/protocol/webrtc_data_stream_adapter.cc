@@ -93,7 +93,7 @@ void WebrtcDataStreamAdapter::Channel::StartReceiving(
 void WebrtcDataStreamAdapter::Channel::Send(
     google::protobuf::MessageLite* message,
     const base::Closure& done) {
-  rtc::Buffer buffer;
+  rtc::CopyOnWriteBuffer buffer;
   buffer.SetSize(message->ByteSize());
   message->SerializeWithCachedSizesToArray(
       reinterpret_cast<uint8_t*>(buffer.data()));

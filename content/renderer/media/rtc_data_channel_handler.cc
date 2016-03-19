@@ -254,15 +254,14 @@ unsigned long RtcDataChannelHandler::bufferedAmount() {
 bool RtcDataChannelHandler::sendStringData(const blink::WebString& data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::string utf8_buffer = base::UTF16ToUTF8(base::StringPiece16(data));
-  rtc::Buffer buffer(utf8_buffer.c_str(), utf8_buffer.length());
-  webrtc::DataBuffer data_buffer(buffer, false);
+  webrtc::DataBuffer data_buffer(utf8_buffer);
   RecordMessageSent(data_buffer.size());
   return channel()->Send(data_buffer);
 }
 
 bool RtcDataChannelHandler::sendRawData(const char* data, size_t length) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  rtc::Buffer buffer(data, length);
+  rtc::CopyOnWriteBuffer buffer(data, length);
   webrtc::DataBuffer data_buffer(buffer, true);
   RecordMessageSent(data_buffer.size());
   return channel()->Send(data_buffer);
