@@ -703,6 +703,7 @@ if (is_android) {
 }
 
 bundle_data("ui_base_unittests_bundle_data") {
+  testonly = true
   sources = [
     "test/data/data_pack_unittest/truncated-header.pak",
   ]

@@ -690,6 +690,7 @@ source_set("test_support") {
 }
 
 bundle_data("gfx_unittests_bundle_data") {
+  testonly = true
   sources = [
     "test/data",
   ]

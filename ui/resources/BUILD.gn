@@ -76,6 +76,7 @@ if (is_ios || is_mac) {
   # wants the generate .pak file in the bundle to be named en.lpro/locale.pak
   # while components_unittests wants it to be named ui_test.pak.
   bundle_data("ui_test_pak_bundle_data") {
+    testonly = true
     public_deps = [
       ":ui_test_pak",
     ]

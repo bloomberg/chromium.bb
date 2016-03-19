@@ -1631,6 +1631,7 @@ if (is_win) {
 }
 
 bundle_data("base_unittests_bundle_data") {
+  testonly = true
   sources = [
     "test/data",
   ]
