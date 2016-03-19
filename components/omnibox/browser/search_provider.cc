@@ -175,6 +175,7 @@ int SearchProvider::CalculateRelevanceForKeywordVerbatim(
 }
 
 void SearchProvider::ResetSession() {
+  set_field_trial_triggered(false);
   set_field_trial_triggered_in_session(false);
 }
 

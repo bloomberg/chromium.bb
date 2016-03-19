@@ -2575,7 +2575,7 @@ TEST_F(SearchProviderTest, FieldTrialTriggeredParsing) {
     ProvidersInfo providers_info;
     provider_->AddProviderInfo(&providers_info);
     ASSERT_EQ(1U, providers_info.size());
-    EXPECT_EQ(1, providers_info[0].field_trial_triggered_size());
+    EXPECT_EQ(0, providers_info[0].field_trial_triggered_size());
     EXPECT_EQ(0, providers_info[0].field_trial_triggered_in_session_size());
   }
 }
