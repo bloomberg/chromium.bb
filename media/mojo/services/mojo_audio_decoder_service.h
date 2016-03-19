@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -33,6 +34,23 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
   void Reset(const ResetCallback& callback) final;
 
  private:
+  // Called by |decoder_| upon finishing initialization.
+  void OnInitialized(const InitializeCallback& callback, bool success);
+
+  // Called by |decoder_| when DecoderBuffer is accepted or rejected.
+  void OnDecodeStatus(const DecodeCallback& callback,
+                      media::AudioDecoder::Status status);
+
+  // Called by |decoder_| when reset sequence is finished.
+  void OnResetDone(const ResetCallback& callback);
+
+  // Called by |decoder_| for each decoded buffer.
+  void OnAudioBufferReady(const scoped_refptr<AudioBuffer>& audio_buffer);
+
+  // A helper method to read and deserialize DecoderBuffer from data pipe.
+  scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
+      interfaces::DecoderBufferPtr buffer);
+
   // A binding represents the association between the service and the
   // communication channel, i.e. the pipe.
   mojo::StrongBinding<interfaces::AudioDecoder> binding_;
@@ -42,6 +60,9 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
 
   // The destination for the decoded buffers.
   interfaces::AudioDecoderClientPtr client_;
+
+  base::WeakPtr<MojoAudioDecoderService> weak_this_;
+  base::WeakPtrFactory<MojoAudioDecoderService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioDecoderService);
 };
