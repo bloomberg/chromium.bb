@@ -319,7 +319,7 @@ template<>
 void drawFocusRingPrimitive<SkPath>(const SkPath& path, SkCanvas* canvas, const SkPaint& paint, float cornerRadius)
 {
     SkPaint pathPaint = paint;
-    pathPaint.setPathEffect(SkCornerPathEffect::Create(SkFloatToScalar(cornerRadius)))->unref();
+    pathPaint.setPathEffect(SkCornerPathEffect::Make(SkFloatToScalar(cornerRadius)));
     canvas->drawPath(path, pathPaint);
 }
 

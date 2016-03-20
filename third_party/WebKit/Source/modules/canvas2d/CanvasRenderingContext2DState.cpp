@@ -173,8 +173,7 @@ void CanvasRenderingContext2DState::updateLineDash() const
     } else {
         Vector<float> lineDash(m_lineDash.size());
         std::copy(m_lineDash.begin(), m_lineDash.end(), lineDash.begin());
-        RefPtr<SkPathEffect> dashPathEffect = adoptRef(SkDashPathEffect::Create(lineDash.data(), lineDash.size(), m_lineDashOffset));
-        m_strokePaint.setPathEffect(dashPathEffect.get());
+        m_strokePaint.setPathEffect(SkDashPathEffect::Make(lineDash.data(), lineDash.size(), m_lineDashOffset));
     }
 
     m_lineDashDirty = false;

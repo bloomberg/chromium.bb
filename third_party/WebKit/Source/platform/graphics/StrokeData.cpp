@@ -43,7 +43,7 @@ void StrokeData::setLineDash(const DashArray& dashes, float dashOffset)
         // If no dash is set, revert to solid stroke
         // FIXME: do we need to set NoStroke in some cases?
         m_style = SolidStroke;
-        m_dash.clear();
+        m_dash.reset();
         return;
     }
 
@@ -53,7 +53,7 @@ void StrokeData::setLineDash(const DashArray& dashes, float dashOffset)
     for (unsigned i = 0; i < count; i++)
         intervals[i] = dashes[i % dashLength];
 
-    m_dash = adoptRef(SkDashPathEffect::Create(intervals.get(), count, dashOffset));
+    m_dash = SkDashPathEffect::Make(intervals.get(), count, dashOffset);
 }
 
 void StrokeData::setupPaint(SkPaint* paint, int length) const
@@ -71,7 +71,7 @@ void StrokeData::setupPaintDashPathEffect(SkPaint* paint, int length) const
 {
     float width = m_thickness;
     if (m_dash) {
-        paint->setPathEffect(m_dash.get());
+        paint->setPathEffect(m_dash);
     } else {
         switch (m_style) {
         case NoStroke:
@@ -104,8 +104,7 @@ void StrokeData::setupPaintDashPathEffect(SkPaint* paint, int length) const
             }
             SkScalar dashLengthSk = SkIntToScalar(dashLength);
             SkScalar intervals[2] = { dashLengthSk, dashLengthSk };
-            RefPtr<SkPathEffect> pathEffect = adoptRef(SkDashPathEffect::Create(intervals, 2, SkIntToScalar(phase)));
-            paint->setPathEffect(pathEffect.get());
+            paint->setPathEffect(SkDashPathEffect::Make(intervals, 2, SkIntToScalar(phase)));
         }
     }
 }
