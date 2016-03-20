@@ -283,7 +283,7 @@ D. Local Modifications
 
 7. Fix 'bad cast' found in Transliterator with a cfi build
   - patches/xlit_badcast.patch
-  - upstream bug (yet to be resolved)
+  - upstream bug (fixed in the upstream. Will be in 57 release)
     http://bugs.icu-project.org/trac/ticket/11937
 
 8. Add back UTF-32 converters temporarily even when
@@ -301,6 +301,10 @@ D. Local Modifications
 
 10. Fix a bug in regex compiler.
   - patches/regexcmp.patch
-  - upstream bug
+  - upstream bug (fixed in the upstream. Will be in 57 release)
     http://bugs.icu-project.org/trac/ticket/12138
 
+11. Remove an unnecessary static initializer
+  - patches/remove_si.patch
+  - upstream bug
+    http://bugs.icu-project.org/trac/ticket/12408
