@@ -90,6 +90,10 @@ void ICUScriptData::getScripts(UChar32 ch, Vector<UScriptCode>& dst) const
 
     // The primary is inherited, and there are other scripts. Put inherited at
     // the front, the true primary next, and then the others in random order.
+    // TODO: Take into account the language of a document if available.
+    // Otherwise, use Unicode block as a tie breaker. Comparing
+    // ScriptCodes as integers is not meaningful because 'old' scripts are
+    // just sorted in alphabetic order.
     dst.append(dst.at(0));
     dst.at(0) = primaryScript;
     for (size_t i = 2; i < dst.size(); ++i) {
