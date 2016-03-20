@@ -720,12 +720,20 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   CHECK_PCM_INITIALIZED();
 
-  if (interleaved_.size() < static_cast<size_t>(frames * num_output_channels_) *
-                                BytesPerOutputFormatSample()) {
-    interleaved_.resize(frames * num_output_channels_ *
-                        BytesPerOutputFormatSample());
+  size_t interleaved_size = static_cast<size_t>(frames * num_output_channels_) *
+                            BytesPerOutputFormatSample();
+  if (interleaved_.size() < interleaved_size)
+    interleaved_.resize(interleaved_size);
+
+  int64_t expected_playback_time = rendering_delay_.timestamp_microseconds +
+                                   rendering_delay_.delay_microseconds;
+  mixed.ToInterleaved(frames, BytesPerOutputFormatSample(),
+                      interleaved_.data());
+  for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
+    observer->OnLoopbackAudio(expected_playback_time, kSampleFormatS32,
+                              output_samples_per_second_, num_output_channels_,
+                              interleaved_.data(), interleaved_size);
   }
-  mixed.ToInterleaved(frames, BytesPerOutputFormatSample(), &interleaved_[0]);
 
   // If the PCM has been drained it will be in SND_PCM_STATE_SETUP and need
   // to be prepared in order for playback to work.
@@ -770,6 +778,25 @@ void StreamMixerAlsa::UpdateRenderingDelay(int newly_pushed_frames) {
   rendering_delay_.delay_microseconds = static_cast<int64_t>(delay_frames) *
                                         base::Time::kMicrosecondsPerSecond /
                                         output_samples_per_second_;
+}
+
+void StreamMixerAlsa::AddLoopbackAudioObserver(
+    CastMediaShlib::LoopbackAudioObserver* observer) {
+  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::AddLoopbackAudioObserver, observer);
+  DCHECK(observer);
+  if (std::find(loopback_observers_.begin(), loopback_observers_.end(),
+                observer) != loopback_observers_.end()) {
+    return;  // Don't add the observer again if it is already in the list.
+  }
+  loopback_observers_.push_back(observer);
+}
+
+void StreamMixerAlsa::RemoveLoopbackAudioObserver(
+    CastMediaShlib::LoopbackAudioObserver* observer) {
+  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::RemoveLoopbackAudioObserver, observer);
+  loopback_observers_.erase(std::remove(loopback_observers_.begin(),
+                                        loopback_observers_.end(), observer),
+                            loopback_observers_.end());
 }
 
 }  // namespace media

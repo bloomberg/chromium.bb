@@ -12,6 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
+#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media_codec_support_shlib.h"
@@ -188,6 +189,15 @@ bool CastMediaShlib::SetMediaClockRate(double new_rate) {
 
 bool CastMediaShlib::SupportsMediaClockRateChange() {
   return g_rate_offset_element != nullptr;
+}
+
+void CastMediaShlib::AddLoopbackAudioObserver(LoopbackAudioObserver* observer) {
+  StreamMixerAlsa::Get()->AddLoopbackAudioObserver(observer);
+}
+
+void CastMediaShlib::RemoveLoopbackAudioObserver(
+    LoopbackAudioObserver* observer) {
+  StreamMixerAlsa::Get()->RemoveLoopbackAudioObserver(observer);
 }
 
 }  // namespace media

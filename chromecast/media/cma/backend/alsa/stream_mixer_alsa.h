@@ -18,6 +18,7 @@
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
+#include "chromecast/public/cast_media_shlib.h"
 
 namespace media {
 class AudioBus;
@@ -140,6 +141,12 @@ class StreamMixerAlsa {
   void WriteFramesForTest();  // Can be called on any thread.
   void ClearInputsForTest();  // Removes all inputs.
 
+  void AddLoopbackAudioObserver(
+      CastMediaShlib::LoopbackAudioObserver* observer);
+
+  void RemoveLoopbackAudioObserver(
+      CastMediaShlib::LoopbackAudioObserver* observer);
+
  protected:
   StreamMixerAlsa();
   virtual ~StreamMixerAlsa();
@@ -222,6 +229,8 @@ class StreamMixerAlsa {
 
   int check_close_timeout_;
   scoped_ptr<base::Timer> check_close_timer_;
+
+  std::vector<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsa);
 };

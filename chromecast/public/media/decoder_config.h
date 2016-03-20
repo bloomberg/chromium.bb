@@ -19,7 +19,7 @@ static const int kMaxBytesPerSample = 4;
 // Maximum audio sampling rate.
 static const int kMaxSampleRate = 192000;
 
-enum AudioCodec {
+enum AudioCodec : int {
   kAudioCodecUnknown = 0,
   kCodecAAC,
   kCodecMP3,
@@ -36,7 +36,7 @@ enum AudioCodec {
   kAudioCodecMax = kCodecFLAC,
 };
 
-enum SampleFormat {
+enum SampleFormat : int {
   kUnknownSampleFormat = 0,
   kSampleFormatU8,         // Unsigned 8-bit w/ bias of 128.
   kSampleFormatS16,        // Signed 16-bit.
@@ -51,7 +51,7 @@ enum SampleFormat {
   kSampleFormatMax = kSampleFormatS24,
 };
 
-enum VideoCodec {
+enum VideoCodec : int {
   kVideoCodecUnknown = 0,
   kCodecH264,
   kCodecVC1,
@@ -69,7 +69,7 @@ enum VideoCodec {
 };
 
 // Profile for Video codec.
-enum VideoProfile {
+enum VideoProfile : int {
   kVideoProfileUnknown = 0,
   kH264Baseline,
   kH264Main,
