@@ -16,7 +16,7 @@ class TracingWithDebugOverhead(perf_benchmark.PerfBenchmark):
   def CreateTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options(
         timeline_based_measurement.DEBUG_OVERHEAD_LEVEL)
-    options.SetTimelineBasedMetric('system_health/tracing_metric.html')
+    options.SetTimelineBasedMetric('tracingMetric')
     return options
 
   @classmethod
