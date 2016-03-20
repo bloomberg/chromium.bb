@@ -162,6 +162,7 @@ class XcodeSettings(object):
     self.spec = spec
 
     self.isIOS = False
+    self.header_map_path = None
 
     # Per-target 'xcode_settings' are pushed down into configs earlier by gyp.
     # This means self.xcode_settings[config] always contains all settings
@@ -221,6 +222,10 @@ class XcodeSettings(object):
     format = self.xcode_settings[configname].get('INFOPLIST_OUTPUT_FORMAT',
                                                  default)
     return format == "binary"
+
+  def IsIosFramework(self):
+    return self.spec['type'] == 'shared_library' and self._IsBundle() and \
+        self.isIOS
 
   def _IsBundle(self):
     return int(self.spec.get('mac_bundle', 0)) != 0 or self._IsXCTest()
@@ -488,6 +493,9 @@ class XcodeSettings(object):
     sdk_root = self._SdkPath()
     if 'SDKROOT' in self._Settings() and sdk_root:
       cflags.append('-isysroot %s' % sdk_root)
+
+    if self.header_map_path:
+      cflags.append('-I%s' % self.header_map_path)
 
     if self._Test('CLANG_WARN_CONSTANT_CONVERSION', 'YES', default='NO'):
       cflags.append('-Wconstant-conversion')
@@ -995,7 +1003,8 @@ class XcodeSettings(object):
     be deployed to a device.  This should be run as the very last step of the
     build."""
     if not (self.isIOS and
-        (self.spec['type'] == 'executable' or self._IsXCTest())):
+        (self.spec['type'] == 'executable' or self._IsXCTest()) or
+         self.IsIosFramework()):
       return []
 
     settings = self.xcode_settings[configname]
