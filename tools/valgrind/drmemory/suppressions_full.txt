@@ -2201,12 +2201,6 @@ base.dll!base::LaunchProcess
 base.dll!base::LaunchProcess
 content.dll!content::StartSandboxedProcess
 
-UNINITIALIZED READ
-name=bug_595052
-system call NtFsControlFile parameter #6
-KERNELBASE.dll!WaitNamedPipeW
-ipc.dll!IPC::ChannelWin::IsNamedServerInitialized
-
 HANDLE LEAK
 name=bug_595093a
 system call NtCreateFile
