@@ -481,6 +481,12 @@ crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibilit
 crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-alpha.html [ Pass ]
 crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-no-alpha.html [ Pass ]
 
+# ICU roll to 56.1 (revert)
+crbug.com/575007 [ Linux Android ] fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ NeedsRebaseline ]
+crbug.com/575007 [ Linux Android ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-locale-hebrew.html [ NeedsRebaseline ]
+crbug.com/575007 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsRebaseline ]
+crbug.com/575007 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ NeedsRebaseline ]
+
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.

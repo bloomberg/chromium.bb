@@ -542,28 +542,22 @@ TEST_F(ScriptRunIteratorTest, CommonWithPriority3)
     CHECK_MOCK_RUNS({ { "<ch><cl><cg>", USCRIPT_HAN } });
 }
 
-// UDatta (\xE0\xA5\x91) is inherited with LATIN, DEVANAGARI, BENGALI and
-// other Indic scripts. Since it has LATIN, and the
-// dotted circle U+25CC (\xE2\x97\x8C) is COMMON and has adopted the
-// preceding LATIN, it gets the LATIN. This is standard.
+// UDatta (\xE0\xA5\x91) is inherited with LATIN and DEVANAGARI extensions.
+// Since it has LATIN, and the dotted circle (\xE2\x97\x8C) is COMMON and has
+// adopted the preceding LATIN, it gets the LATIN. This is standard.
 TEST_F(ScriptRunIteratorTest, LatinDottedCircleUdatta)
 {
     CHECK_RUNS({ { "Latin \xE2\x97\x8C\xE0\xA5\x91", USCRIPT_LATIN } });
 }
 
-// In this situation, UDatta U+0951 (\xE0\xA5\x91) doesn't share a script
-// with the value inherited by the dotted circle U+25CC (\xE2\x97\x8C).
-// It captures the preceding dotted circle and breaks it from the run it would
-// normally have been in. U+0951 is used in multiple scripts (DEVA, BENG, LATN,
-// etc) and has multiple values for Script_Extension property. At the moment,
-// getScripts() treats the script with the lowest script code as 'true' primary,
-// and BENG comes before DEVA in the script enum so that we get BENGALI.
-// Taking into account a Unicode block and returning DEVANAGARI would be
-// slightly better.
+// In this situation, UDatta (\xE0\xA5\x91) doesn't share a script with the
+// value inherited by the dotted circle (\xE2\x97\x8C). It captures the
+// preceding dotted circle and breaks it from the run it would normally have
+// been in.
 TEST_F(ScriptRunIteratorTest, HanDottedCircleUdatta)
 {
     CHECK_RUNS({ { "萬國碼 ", USCRIPT_HAN },
-        { "\xE2\x97\x8C\xE0\xA5\x91", USCRIPT_BENGALI } });
+        { "\xE2\x97\x8C\xE0\xA5\x91", USCRIPT_DEVANAGARI } });
 }
 
 // Tatweel is \xD9\x80 Lm, Fathatan is \xD9\x8B Mn. The script of tatweel is
@@ -595,13 +589,12 @@ TEST_F(ScriptRunIteratorTest, HanUdatta)
     CHECK_RUNS({ { "萬國碼\xE0\xA5\x91", USCRIPT_HAN } });
 }
 
-// The Udatta U+0951 (\xE0\xA5\x91) is inherited, and will capture the space
-// and turn it into Bengali because SCRIPT_BENAGLI is 4 and SCRIPT_DEVANAGARI
-// is 10. See TODO comment for |getScripts| and HanDottedCircleUdatta.
+// The Udatta (\xE0\xA5\x91) is inherited, and will capture the space and turn
+// it into Devanagari.
 TEST_F(ScriptRunIteratorTest, HanSpaceUdatta)
 {
     CHECK_RUNS({ { "萬國碼", USCRIPT_HAN },
-        { " \xE0\xA5\x91", USCRIPT_BENGALI } });
+        { " \xE0\xA5\x91", USCRIPT_DEVANAGARI } });
 }
 
 // Corresponds to one test in RunSegmenter, where orientation of the

@@ -212,7 +212,7 @@ TEST_F(RunSegmenterTest, JapaneseSmallCaps)
 
 TEST_F(RunSegmenterTest, DingbatsMiscSymbolsModifier)
 {
-    CHECK_RUNS_HORIZONTAL_NORMAL({ { "⛹🏻✍🏻✊🏼", USCRIPT_COMMON, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::EmojiEmoji } });
+    CHECK_RUNS_HORIZONTAL_NORMAL({ { "⛹🏻✍🏻✊🏼", USCRIPT_UNKNOWN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::EmojiEmoji } });
 }
 
 
