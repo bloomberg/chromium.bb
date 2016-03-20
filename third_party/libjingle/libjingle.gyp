@@ -21,6 +21,7 @@
       'FEATURE_ENABLE_SSL',
       'GTEST_RELATIVE_PATH',
       'HAVE_OPENSSL_SSL_H',
+      'HAVE_SCTP',
       'HAVE_SRTP',
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
@@ -340,6 +341,8 @@
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoframefactory.cc',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoframefactory.h',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvoe.h',
+            '<(DEPTH)/third_party/webrtc/media/sctp/sctpdataengine.cc',
+            '<(DEPTH)/third_party/webrtc/media/sctp/sctpdataengine.h',
             '<(DEPTH)/third_party/webrtc/pc/audiomonitor.cc',
             '<(DEPTH)/third_party/webrtc/pc/audiomonitor.h',
             '<(DEPTH)/third_party/webrtc/pc/bundlefilter.cc',
@@ -363,23 +366,9 @@
             '<(DEPTH)/third_party/webrtc/pc/srtpfilter.h',
             '<(DEPTH)/third_party/webrtc/pc/voicechannel.h',
           ],
-          'conditions': [
-            # TODO(mallinath) - Enable SCTP for iOS.
-            ['OS!="ios"', {
-              'defines': [
-                'HAVE_SCTP',
-              ],
-              'sources': [
-                '<(DEPTH)/third_party/webrtc/media/sctp/sctpdataengine.cc',
-                '<(DEPTH)/third_party/webrtc/media/sctp/sctpdataengine.h',
-              ],
-              'dependencies': [
-                '<(DEPTH)/third_party/usrsctp/usrsctp.gyp:usrsctplib',
-              ],
-            }],
-          ],
           'dependencies': [
             '<(DEPTH)/third_party/libsrtp/libsrtp.gyp:libsrtp',
+            '<(DEPTH)/third_party/usrsctp/usrsctp.gyp:usrsctplib',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:media_file',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render',
