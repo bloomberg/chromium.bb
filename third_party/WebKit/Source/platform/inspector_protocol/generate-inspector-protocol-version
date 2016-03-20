@@ -416,10 +416,18 @@ def main():
     baseline_path = os.path.normpath(dir_name + "/Inspector-" + version + ".json")
     baseline_schema = load_json(baseline_path)
 
+    expected_errors = [
+        "Debugger.globalObjectCleared: event has been removed"
+    ]
+
     errors = compare_schemas(baseline_schema["domains"], schema["domains"], False)
-    if len(errors) > 0:
+    unexpected_errors = []
+    for i in range(len(errors)):
+        if errors[i] not in expected_errors:
+            unexpected_errors.append(errors[i])
+    if len(unexpected_errors) > 0:
         sys.stderr.write("  Compatibility with %s: FAILED\n" % version)
-        for error in errors:
+        for error in unexpected_errors:
             sys.stderr.write( "    %s\n" % error)
         return 1
 

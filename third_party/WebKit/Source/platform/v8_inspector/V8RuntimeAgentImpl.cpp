@@ -443,9 +443,7 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
     if (!m_enabled)
         return;
     m_enabled = false;
-    m_compiledScripts.clear();
-    clearInspectedObjects();
-    m_injectedScriptManager->discardInjectedScripts();
+    reset();
 }
 
 int V8RuntimeAgentImpl::ensureDefaultContextAvailable(v8::Local<v8::Context> context)
@@ -510,20 +508,20 @@ void V8RuntimeAgentImpl::addInspectedObject(PassOwnPtr<Inspectable> inspectable)
     m_injectedScriptManager->injectedScriptHost()->addInspectedObject(inspectable);
 }
 
-void V8RuntimeAgentImpl::clearInspectedObjects()
+void V8RuntimeAgentImpl::reset()
 {
+    m_compiledScripts.clear();
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
+    m_injectedScriptManager->discardInjectedScripts();
+    if (m_enabled)
+        m_frontend->executionContextsCleared();
 }
 
 void V8RuntimeAgentImpl::reportExecutionContextCreated(const V8ContextInfo& info)
 {
     if (!m_enabled)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(info.context);
-    if (!injectedScript)
-        return;
-    int contextId = injectedScript->contextId();
-    injectedScript->setOrigin(info.origin);
+    int contextId = V8Debugger::contextId(info.context);
     OwnPtr<protocol::Runtime::ExecutionContextDescription> description = protocol::Runtime::ExecutionContextDescription::create()
         .setId(contextId)
         .setIsDefault(info.isDefault)
@@ -531,14 +529,16 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(const V8ContextInfo& info
         .setOrigin(info.origin)
         .setFrameId(info.frameId).build();
     m_frontend->executionContextCreated(description.release());
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(info.context);
+    if (injectedScript)
+        injectedScript->setOrigin(info.origin);
 }
 
 void V8RuntimeAgentImpl::reportExecutionContextDestroyed(v8::Local<v8::Context> context)
 {
     int contextId = m_injectedScriptManager->discardInjectedScriptFor(context);
-    if (!m_enabled)
-        return;
-    m_frontend->executionContextDestroyed(contextId);
+    if (m_enabled && contextId)
+        m_frontend->executionContextDestroyed(contextId);
 }
 
 } // namespace blink

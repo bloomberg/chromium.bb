@@ -117,6 +117,7 @@ public:
     InjectedScriptManager* getInjectedScriptManager() { return m_injectedScriptManager.get(); }
     int contextGroupId() { return m_contextGroupId; }
 
+    void reset();
     void reportExecutionContextCreated(const V8ContextInfo&);
     void reportExecutionContextDestroyed(v8::Local<v8::Context>);
 
@@ -128,7 +129,6 @@ public:
     void disposeObjectGroup(const String16&) override;
     v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* groupName = nullptr) override;
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
-    void clearInspectedObjects() override;
 private:
     v8::MaybeLocal<v8::Value> evaluateInternal(InjectedScript*, bool doNotPauseOnExceptionsAndMuteConsole, const String& expression, v8::MaybeLocal<v8::Object> extension);
 

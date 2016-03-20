@@ -122,7 +122,6 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     if (frame != m_inspectedFrames->root())
         return;
     m_asyncCallTracker->resetAsyncOperations();
-    m_v8DebuggerAgent->reset();
 }
 
 } // namespace blink

@@ -174,7 +174,7 @@ public:
     bool trackingAsyncCalls() const override { return m_maxAsyncCallStackDepth; }
 
     void didUpdatePromise(const String16& eventType, PassOwnPtr<protocol::Debugger::PromiseDetails>);
-    void reset() override;
+    void reset();
 
     // Interface for V8DebuggerImpl
     SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection);

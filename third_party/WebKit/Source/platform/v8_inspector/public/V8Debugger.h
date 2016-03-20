@@ -44,6 +44,7 @@ public:
     // Context should have been already marked with |setContextDebugData| call.
     virtual void contextCreated(const V8ContextInfo&) = 0;
     virtual void contextDestroyed(v8::Local<v8::Context>) = 0;
+    virtual void resetContextGroup(int contextGroupId) = 0;
 
     static v8::Local<v8::Symbol> scopeExtensionSymbol(v8::Isolate*);
     static bool isCommandLineAPIMethod(const String16& name);

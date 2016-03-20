@@ -94,8 +94,11 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     v8::HandleScope handles(scriptState->isolate());
     DOMWrapperWorld& world = scriptState->world();
     V8Debugger::setContextDebugData(scriptState->context(), world.isMainWorld() ? "page" : "injected", contextGroupId(frame));
-    if (s_instance)
+    if (s_instance) {
+        if (frame->localFrameRoot() == frame && world.isMainWorld())
+            s_instance->debugger()->resetContextGroup(contextGroupId(frame));
         s_instance->debugger()->contextCreated(V8ContextInfo(scriptState->context(), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
+    }
 }
 
 void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)

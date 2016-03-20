@@ -86,14 +86,15 @@ void InjectedScriptManager::discardInjectedScripts()
 
 int InjectedScriptManager::discardInjectedScriptFor(v8::Local<v8::Context> context)
 {
-    int contextId = V8Debugger::contextId(context);
-    discardInjectedScript(contextId);
-    return contextId;
+    return discardInjectedScript(V8Debugger::contextId(context));
 }
 
-void InjectedScriptManager::discardInjectedScript(int contextId)
+int InjectedScriptManager::discardInjectedScript(int contextId)
 {
+    if (!m_idToInjectedScript.contains(contextId))
+        return 0;
     m_idToInjectedScript.remove(contextId);
+    return contextId;
 }
 
 void InjectedScriptManager::releaseObjectGroup(const String16& objectGroup)

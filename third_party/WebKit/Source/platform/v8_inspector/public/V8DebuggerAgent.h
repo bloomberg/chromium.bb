@@ -28,7 +28,6 @@ public:
     virtual void breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
     virtual void willExecuteScript(int scriptId) = 0;
     virtual void didExecuteScript() = 0;
-    virtual void reset() = 0;
 
     virtual bool isPaused() = 0;
     virtual bool enabled() = 0;

@@ -283,7 +283,6 @@ void V8DebuggerAgentImpl::clearFrontend()
 void V8DebuggerAgentImpl::restore()
 {
     ASSERT(!m_enabled);
-    m_frontend->globalObjectCleared();
     enable();
     ErrorString error;
 
@@ -1620,14 +1619,14 @@ void V8DebuggerAgentImpl::removeBreakpointAt(const String16& scriptId, int lineN
 
 void V8DebuggerAgentImpl::reset()
 {
+    if (!enabled())
+        return;
     m_scheduledDebuggerStep = NoStep;
     m_scripts.clear();
     m_blackboxedPositions.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     resetAsyncCallTracker();
     m_promiseTracker->clear();
-    if (m_frontend)
-        m_frontend->globalObjectCleared();
 }
 
 } // namespace blink

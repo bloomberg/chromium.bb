@@ -40,18 +40,17 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor)
     var MockTarget = function(name, connection, callback)
     {
         WebInspector.Target.call(this, InspectorTest.testTargetManager, name, WebInspector.Target.Type.Page, connection, null, callback);
-        this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
-        this._modelByConstructor.set(WebInspector.DebuggerModel, this.debuggerModel);
-        this.networkManager = new WebInspector.NetworkManager(this);
         this.consoleModel = new WebInspector.ConsoleModel(this);
+        this.networkManager = new WebInspector.NetworkManager(this);
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
         this.resourceTreeModel._inspectedPageURL = InspectorTest.resourceTreeModel._inspectedPageURL;
         this.resourceTreeModel._cachedResourcesProcessed = true;
         this.resourceTreeModel._frameAttached("42", 0);
+        this.runtimeModel = new WebInspector.RuntimeModel(this);
+        this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
+        this._modelByConstructor.set(WebInspector.DebuggerModel, this.debuggerModel);
         this.domModel = new WebInspector.DOMModel(this);
         this.cssModel = new WebInspector.CSSModel(this);
-        this.runtimeModel = new WebInspector.RuntimeModel(this);
-        this.consoleModel = new WebInspector.ConsoleModel(this);
     }
 
     MockTarget.prototype = {

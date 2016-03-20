@@ -53,9 +53,6 @@ PageRuntimeAgent::PageRuntimeAgent(Client* client, V8Debugger* debugger, Inspect
 
 PageRuntimeAgent::~PageRuntimeAgent()
 {
-#if !ENABLE(OILPAN)
-    m_instrumentingAgents->setPageRuntimeAgent(0);
-#endif
 }
 
 DEFINE_TRACE(PageRuntimeAgent)
@@ -67,7 +64,6 @@ DEFINE_TRACE(PageRuntimeAgent)
 void PageRuntimeAgent::init()
 {
     InspectorRuntimeAgent::init();
-    m_instrumentingAgents->setPageRuntimeAgent(this);
 }
 
 void PageRuntimeAgent::enable(ErrorString* errorString)
@@ -83,17 +79,6 @@ void PageRuntimeAgent::disable(ErrorString* errorString)
     if (!m_enabled)
         return;
     InspectorRuntimeAgent::disable(errorString);
-}
-
-void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
-{
-    if (!m_enabled)
-        return;
-    ASSERT(frontend());
-
-    if (frame == m_inspectedFrames->root())
-        m_v8RuntimeAgent->clearInspectedObjects();
-    frame->script().initializeMainWorld();
 }
 
 ScriptState* PageRuntimeAgent::defaultScriptState()

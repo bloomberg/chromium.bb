@@ -54,6 +54,7 @@ class InspectorResourceContentLoader;
 class LocalFrame;
 class Page;
 class PageConsoleAgent;
+class PageRuntimeAgent;
 class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;

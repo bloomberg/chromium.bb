@@ -42,7 +42,6 @@ public:
     virtual v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* objectGroup = nullptr) = 0;
     virtual void disposeObjectGroup(const String16&) = 0;
     virtual void addInspectedObject(PassOwnPtr<Inspectable>) = 0;
-    virtual void clearInspectedObjects() = 0;
 };
 
 } // namespace blink

@@ -878,6 +878,16 @@ void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
         agent->reportExecutionContextDestroyed(context);
 }
 
+void V8DebuggerImpl::resetContextGroup(int contextGroupId)
+{
+    V8DebuggerAgentImpl* debuggerAgent = m_debuggerAgentsMap.get(contextGroupId);
+    if (debuggerAgent)
+        debuggerAgent->reset();
+    V8RuntimeAgentImpl* runtimeAgent = m_runtimeAgentsMap.get(contextGroupId);
+    if (runtimeAgent)
+        runtimeAgent->reset();
+}
+
 PassOwnPtr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
 {
     V8DebuggerAgentImpl* agent = getDebuggerAgentForContext(m_isolate->GetCurrentContext());
