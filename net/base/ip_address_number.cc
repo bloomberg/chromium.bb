@@ -218,36 +218,6 @@ IPAddressNumber ConvertIPv4MappedToIPv4(const IPAddressNumber& address) {
                          address.end());
 }
 
-bool ParseCIDRBlock(const std::string& cidr_literal,
-                    IPAddressNumber* ip_number,
-                    size_t* prefix_length_in_bits) {
-  // We expect CIDR notation to match one of these two templates:
-  //   <IPv4-literal> "/" <number of bits>
-  //   <IPv6-literal> "/" <number of bits>
-
-  std::vector<base::StringPiece> parts = base::SplitStringPiece(
-      cidr_literal, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (parts.size() != 2)
-    return false;
-
-  // Parse the IP address.
-  if (!ParseIPLiteralToNumber(parts[0], ip_number))
-    return false;
-
-  // Parse the prefix length.
-  int number_of_bits = -1;
-  if (!base::StringToInt(parts[1], &number_of_bits))
-    return false;
-
-  // Make sure the prefix length is in a valid range.
-  if (number_of_bits < 0 ||
-      number_of_bits > static_cast<int>(ip_number->size() * 8))
-    return false;
-
-  *prefix_length_in_bits = static_cast<size_t>(number_of_bits);
-  return true;
-}
-
 bool IPNumberMatchesPrefix(const IPAddressNumber& ip_number,
                            const IPAddressNumber& ip_prefix,
                            size_t prefix_length_in_bits) {

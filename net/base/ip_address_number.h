@@ -81,20 +81,6 @@ NET_EXPORT_PRIVATE bool IsIPv4Mapped(const IPAddressNumber& address);
 NET_EXPORT_PRIVATE IPAddressNumber ConvertIPv4MappedToIPv4(
     const IPAddressNumber& address);
 
-// Parses an IP block specifier from CIDR notation to an
-// (IP address, prefix length) pair. Returns true on success and fills
-// |*ip_number| with the numeric value of the IP address and sets
-// |*prefix_length_in_bits| with the length of the prefix.
-//
-// CIDR notation literals can use either IPv4 or IPv6 literals. Some examples:
-//
-//    10.10.3.1/20
-//    a:b:c::/46
-//    ::1/128
-NET_EXPORT bool ParseCIDRBlock(const std::string& cidr_literal,
-                               IPAddressNumber* ip_number,
-                               size_t* prefix_length_in_bits);
-
 // Compares an IP address to see if it falls within the specified IP block.
 // Returns true if it does, false otherwise.
 //

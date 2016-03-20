@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/url_util.h"
 
 namespace net {
@@ -84,13 +84,12 @@ class BypassIPBlockRule : public ProxyBypassRules::Rule {
   // |ip_prefix| + |prefix_length| define the IP block to match.
   BypassIPBlockRule(const std::string& description,
                     const std::string& optional_scheme,
-                    const IPAddressNumber& ip_prefix,
+                    const IPAddress& ip_prefix,
                     size_t prefix_length_in_bits)
       : description_(description),
         optional_scheme_(optional_scheme),
         ip_prefix_(ip_prefix),
-        prefix_length_in_bits_(prefix_length_in_bits) {
-  }
+        prefix_length_in_bits_(prefix_length_in_bits) {}
 
   bool Matches(const GURL& url) const override {
     if (!url.HostIsIPAddress())
@@ -100,13 +99,13 @@ class BypassIPBlockRule : public ProxyBypassRules::Rule {
       return false;  // Didn't match scheme expectation.
 
     // Parse the input IP literal to a number.
-    IPAddressNumber ip_number;
-    if (!ParseIPLiteralToNumber(url.HostNoBrackets(), &ip_number))
+    IPAddress ip_address;
+    if (!ip_address.AssignFromIPLiteral(url.HostNoBrackets()))
       return false;
 
     // Test if it has the expected prefix.
-    return IPNumberMatchesPrefix(ip_number, ip_prefix_,
-                                 prefix_length_in_bits_);
+    return IPAddressMatchesPrefix(ip_address, ip_prefix_,
+                                  prefix_length_in_bits_);
   }
 
   std::string ToString() const override { return description_; }
@@ -121,7 +120,7 @@ class BypassIPBlockRule : public ProxyBypassRules::Rule {
  private:
   const std::string description_;
   const std::string optional_scheme_;
-  const IPAddressNumber ip_prefix_;
+  const IPAddress ip_prefix_;
   const size_t prefix_length_in_bits_;
 };
 
@@ -284,7 +283,7 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
   // If there is a forward slash in the input, it is probably a CIDR style
   // mask.
   if (raw.find('/') != std::string::npos) {
-    IPAddressNumber ip_prefix;
+    IPAddress ip_prefix;
     size_t prefix_length_in_bits;
 
     if (!ParseCIDRBlock(raw, &ip_prefix, &prefix_length_in_bits))

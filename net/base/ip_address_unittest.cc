@@ -238,6 +238,50 @@ TEST(IPAddressTest, ConvertIPv4MappedIPv6ToIPv4) {
   EXPECT_EQ(expected, result);
 }
 
+// Test parsing invalid CIDR notation literals.
+TEST(IPAddressTest, ParseCIDRBlock_Invalid) {
+  const char* const bad_literals[] = {"foobar",
+                                      "",
+                                      "192.168.0.1",
+                                      "::1",
+                                      "/",
+                                      "/1",
+                                      "1",
+                                      "192.168.1.1/-1",
+                                      "192.168.1.1/33",
+                                      "::1/-3",
+                                      "a::3/129",
+                                      "::1/x",
+                                      "192.168.0.1//11"};
+
+  for (const auto& bad_literal : bad_literals) {
+    IPAddress ip_address;
+    size_t prefix_length_in_bits;
+
+    EXPECT_FALSE(
+        ParseCIDRBlock(bad_literal, &ip_address, &prefix_length_in_bits));
+  }
+}
+
+// Test parsing a valid CIDR notation literal.
+TEST(IPAddressTest, ParseCIDRBlock_Valid) {
+  IPAddress ip_address;
+  size_t prefix_length_in_bits;
+
+  EXPECT_TRUE(
+      ParseCIDRBlock("192.168.0.1/11", &ip_address, &prefix_length_in_bits));
+
+  EXPECT_EQ("192,168,0,1", DumpIPAddress(ip_address));
+  EXPECT_EQ(11u, prefix_length_in_bits);
+
+  EXPECT_TRUE(ParseCIDRBlock("::ffff:192.168.0.1/112", &ip_address,
+                             &prefix_length_in_bits));
+
+  EXPECT_EQ("0,0,0,0,0,0,0,0,0,0,255,255,192,168,0,1",
+            DumpIPAddress(ip_address));
+  EXPECT_EQ(112u, prefix_length_in_bits);
+}
+
 TEST(IPAddressTest, IPAddressStartsWith) {
   IPAddress ipv4_address(192, 168, 10, 5);
 

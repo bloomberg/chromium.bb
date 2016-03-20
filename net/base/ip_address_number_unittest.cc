@@ -146,105 +146,29 @@ TEST(IpAddressNumberTest, ConvertIPv4MappedToIPv4) {
   EXPECT_EQ(expected, result);
 }
 
-// Test parsing invalid CIDR notation literals.
-TEST(IpAddressNumberTest, ParseCIDRBlock_Invalid) {
-  const char* const bad_literals[] = {
-      "foobar",
-      "",
-      "192.168.0.1",
-      "::1",
-      "/",
-      "/1",
-      "1",
-      "192.168.1.1/-1",
-      "192.168.1.1/33",
-      "::1/-3",
-      "a::3/129",
-      "::1/x",
-      "192.168.0.1//11"
-  };
-
-  for (size_t i = 0; i < arraysize(bad_literals); ++i) {
-    IPAddressNumber ip_number;
-    size_t prefix_length_in_bits;
-
-    EXPECT_FALSE(ParseCIDRBlock(bad_literals[i],
-                                     &ip_number,
-                                     &prefix_length_in_bits));
-  }
-}
-
-// Test parsing a valid CIDR notation literal.
-TEST(IpAddressNumberTest, ParseCIDRBlock_Valid) {
-  IPAddressNumber ip_number;
-  size_t prefix_length_in_bits;
-
-  EXPECT_TRUE(ParseCIDRBlock("192.168.0.1/11",
-                                  &ip_number,
-                                  &prefix_length_in_bits));
-
-  EXPECT_EQ("192,168,0,1", DumpIPNumber(ip_number));
-  EXPECT_EQ(11u, prefix_length_in_bits);
-}
-
 TEST(IpAddressNumberTest, IPNumberMatchesPrefix) {
   struct {
     const char* const cidr_literal;
+    size_t prefix_length_in_bits;
     const char* const ip_literal;
     bool expected_to_match;
   } tests[] = {
-    // IPv4 prefix with IPv4 inputs.
-    {
-      "10.10.1.32/27",
-      "10.10.1.44",
-      true
-    },
-    {
-      "10.10.1.32/27",
-      "10.10.1.90",
-      false
-    },
-    {
-      "10.10.1.32/27",
-      "10.10.1.90",
-      false
-    },
+      // IPv4 prefix with IPv4 inputs.
+      {"10.10.1.32", 27, "10.10.1.44", true},
+      {"10.10.1.32", 27, "10.10.1.90", false},
+      {"10.10.1.32", 27, "10.10.1.90", false},
 
-    // IPv6 prefix with IPv6 inputs.
-    {
-      "2001:db8::/32",
-      "2001:DB8:3:4::5",
-      true
-    },
-    {
-      "2001:db8::/32",
-      "2001:c8::",
-      false
-    },
+      // IPv6 prefix with IPv6 inputs.
+      {"2001:db8::", 32, "2001:DB8:3:4::5", true},
+      {"2001:db8::", 32, "2001:c8::", false},
 
-    // IPv6 prefix with IPv4 inputs.
-    {
-      "2001:db8::/33",
-      "192.168.0.1",
-      false
-    },
-    {
-      "::ffff:192.168.0.1/112",
-      "192.168.33.77",
-      true
-    },
+      // IPv6 prefix with IPv4 inputs.
+      {"2001:db8::", 33, "192.168.0.1", false},
+      {"::ffff:192.168.0.1", 112, "192.168.33.77", true},
 
-    // IPv4 prefix with IPv6 inputs.
-    {
-      "10.11.33.44/16",
-      "::ffff:0a0b:89",
-      true
-    },
-    {
-      "10.11.33.44/16",
-      "::ffff:10.12.33.44",
-      false
-    },
+      // IPv4 prefix with IPv6 inputs.
+      {"10.11.33.44", 16, "::ffff:0a0b:89", true},
+      {"10.11.33.44", 16, "::ffff:10.12.33.44", false},
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s, %s", i,
@@ -255,16 +179,12 @@ TEST(IpAddressNumberTest, IPNumberMatchesPrefix) {
     EXPECT_TRUE(ParseIPLiteralToNumber(tests[i].ip_literal, &ip_number));
 
     IPAddressNumber ip_prefix;
-    size_t prefix_length_in_bits;
 
-    EXPECT_TRUE(ParseCIDRBlock(tests[i].cidr_literal,
-                               &ip_prefix,
-                               &prefix_length_in_bits));
+    EXPECT_TRUE(ParseIPLiteralToNumber(tests[i].cidr_literal, &ip_prefix));
 
     EXPECT_EQ(tests[i].expected_to_match,
-              IPNumberMatchesPrefix(ip_number,
-                                    ip_prefix,
-                                    prefix_length_in_bits));
+              IPNumberMatchesPrefix(ip_number, ip_prefix,
+                                    tests[i].prefix_length_in_bits));
   }
 }
 

@@ -149,6 +149,20 @@ NET_EXPORT bool IPAddressMatchesPrefix(const IPAddress& ip_address,
                                        const IPAddress& ip_prefix,
                                        size_t prefix_length_in_bits);
 
+// Parses an IP block specifier from CIDR notation to an
+// (IP address, prefix length) pair. Returns true on success and fills
+// |*ip_address| with the numeric value of the IP address and sets
+// |*prefix_length_in_bits| with the length of the prefix.
+//
+// CIDR notation literals can use either IPv4 or IPv6 literals. Some examples:
+//
+//    10.10.3.1/20
+//    a:b:c::/46
+//    ::1/128
+NET_EXPORT bool ParseCIDRBlock(const std::string& cidr_literal,
+                               IPAddress* ip_address,
+                               size_t* prefix_length_in_bits);
+
 // Returns number of matching initial bits between the addresses |a1| and |a2|.
 unsigned CommonPrefixLength(const IPAddress& a1, const IPAddress& a2);
 

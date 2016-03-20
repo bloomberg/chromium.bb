@@ -4,6 +4,9 @@
 
 #include "net/base/ip_address.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "net/base/ip_address_number.h"
 #include "url/gurl.h"
 #include "url/url_canon_ip.h"
@@ -137,6 +140,36 @@ bool IPAddressMatchesPrefix(const IPAddress& ip_address,
                             size_t prefix_length_in_bits) {
   return IPNumberMatchesPrefix(ip_address.bytes(), ip_prefix.bytes(),
                                prefix_length_in_bits);
+}
+
+bool ParseCIDRBlock(const std::string& cidr_literal,
+                    IPAddress* ip_address,
+                    size_t* prefix_length_in_bits) {
+  // We expect CIDR notation to match one of these two templates:
+  //   <IPv4-literal> "/" <number of bits>
+  //   <IPv6-literal> "/" <number of bits>
+
+  std::vector<base::StringPiece> parts = base::SplitStringPiece(
+      cidr_literal, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (parts.size() != 2)
+    return false;
+
+  // Parse the IP address.
+  if (!ip_address->AssignFromIPLiteral(parts[0]))
+    return false;
+
+  // Parse the prefix length.
+  int number_of_bits = -1;
+  if (!base::StringToInt(parts[1], &number_of_bits))
+    return false;
+
+  // Make sure the prefix length is in a valid range.
+  if (number_of_bits < 0 ||
+      number_of_bits > static_cast<int>(ip_address->size() * 8))
+    return false;
+
+  *prefix_length_in_bits = static_cast<size_t>(number_of_bits);
+  return true;
 }
 
 unsigned CommonPrefixLength(const IPAddress& a1, const IPAddress& a2) {
