@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-
 from core import perf_benchmark
 
 from measurements import page_cycler
@@ -251,11 +249,6 @@ class PageCyclerBasicOopifIsolated(_PageCycler):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--site-per-process'])
-
-  @classmethod
-  def ShouldDisable(cls, possible_browser):  # http://crbug.com/596067
-    # This test is flaky on Zenbook laptops in the Chromium perf lab.
-    return 'Zenbook' in os.getenv('BUILDBOT_BUILDERNAME', '')
 
 
 @benchmark.Disabled('reference')  # crbug.com/523346
