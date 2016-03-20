@@ -1396,6 +1396,4 @@ crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
 
 crbug.com/592409 inspector-protocol/debugger/stepping-with-blackboxed-ranges.html [ NeedsManualRebaseline ]
 
-crbug.com/559258 [ Mac10.10 ] scrollbars/listbox-scrollbar-combinations.html [ Failure ]
-crbug.com/559258 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/listbox-scrollbar-combinations.html [ Failure ]
 crbug.com/594595 [ Linux ] http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Timeout Pass ]

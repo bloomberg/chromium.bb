@@ -46,8 +46,7 @@ public:
 
     bool hasBorder() const
     {
-        bool haveImage = m_image.hasImage();
-        return m_left.nonZero(!haveImage) || m_right.nonZero(!haveImage) || m_top.nonZero(!haveImage) || m_bottom.nonZero(!haveImage);
+        return m_left.nonZero() || m_right.nonZero() || m_top.nonZero() || m_bottom.nonZero();
     }
 
     bool hasBorderFill() const
@@ -70,28 +69,28 @@ public:
 
     int borderLeftWidth() const
     {
-        if (!m_image.hasImage() && (m_left.style() == BorderStyleNone || m_left.style() == BorderStyleHidden))
+        if (m_left.style() == BorderStyleNone || m_left.style() == BorderStyleHidden)
             return 0;
         return m_left.width();
     }
 
     int borderRightWidth() const
     {
-        if (!m_image.hasImage() && (m_right.style() == BorderStyleNone || m_right.style() == BorderStyleHidden))
+        if (m_right.style() == BorderStyleNone || m_right.style() == BorderStyleHidden)
             return 0;
         return m_right.width();
     }
 
     int borderTopWidth() const
     {
-        if (!m_image.hasImage() && (m_top.style() == BorderStyleNone || m_top.style() == BorderStyleHidden))
+        if (m_top.style() == BorderStyleNone || m_top.style() == BorderStyleHidden)
             return 0;
         return m_top.width();
     }
 
     int borderBottomWidth() const
     {
-        if (!m_image.hasImage() && (m_bottom.style() == BorderStyleNone || m_bottom.style() == BorderStyleHidden))
+        if (m_bottom.style() == BorderStyleNone || m_bottom.style() == BorderStyleHidden)
             return 0;
         return m_bottom.width();
     }

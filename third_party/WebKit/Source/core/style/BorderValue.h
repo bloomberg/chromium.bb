@@ -45,19 +45,14 @@ public:
     {
     }
 
-    bool nonZero(bool checkStyle = true) const
+    bool nonZero() const
     {
-        return width() && (!checkStyle || m_style != BorderStyleNone);
+        return width() && (m_style != BorderStyleNone);
     }
 
     bool isTransparent() const
     {
         return !m_colorIsCurrentColor && !m_color.alpha();
-    }
-
-    bool isVisible(bool checkStyle = true) const
-    {
-        return nonZero(checkStyle) && !isTransparent() && (!checkStyle || m_style != BorderStyleHidden);
     }
 
     bool operator==(const BorderValue& o) const

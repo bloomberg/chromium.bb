@@ -43,7 +43,7 @@
                 style.borderTopWidth = '10px';
 
                 runAfterLayoutAndPaint(function() {
-                    shouldBeTrue("window.internals.isUseCounted(document, BorderImageWithBorderStyleNone)");
+                    shouldBeFalse("window.internals.isUseCounted(document, BorderImageWithBorderStyleNone)");
                     finishJSTest();
                 });
             });
