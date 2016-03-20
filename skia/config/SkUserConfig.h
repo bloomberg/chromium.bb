@@ -247,6 +247,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_EVAL_CUBIC
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_MINOR_EFFECT_PTR
+#   define SK_SUPPORT_LEGACY_MINOR_EFFECT_PTR
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_PEEKPIXELS_PARMS
 #   define SK_SUPPORT_LEGACY_PEEKPIXELS_PARMS
 #endif
