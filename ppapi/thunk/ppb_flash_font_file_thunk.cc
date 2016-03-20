@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_flash_font_file.idl modified Thu Oct 22 22:02:40 2015.
-
-#include <stdint.h>
+// From private/ppb_flash_font_file.idl modified Wed Mar  9 12:48:51 2016.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_font_file.h"
+#include "ppapi/shared_impl/ppb_flash_font_file_shared.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
@@ -47,7 +46,7 @@ PP_Bool GetFontTable(PP_Resource font_file,
 
 PP_Bool IsSupportedForWindows(void) {
   VLOG(4) << "PPB_Flash_FontFile::IsSupportedForWindows()";
-  return PP_TRUE;
+  return PPB_Flash_FontFile_Shared::IsSupportedForWindows();
 }
 
 const PPB_Flash_FontFile_0_1 g_ppb_flash_fontfile_thunk_0_1 = {

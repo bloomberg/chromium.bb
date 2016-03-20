@@ -69,6 +69,7 @@
           'shared_impl/ppb_crypto_shared.cc',
           'shared_impl/ppb_device_ref_shared.cc',
           'shared_impl/ppb_device_ref_shared.h',
+          'shared_impl/ppb_flash_font_file_shared.h',
           'shared_impl/ppb_gamepad_shared.cc',
           'shared_impl/ppb_gamepad_shared.h',
           'shared_impl/ppb_graphics_3d_shared.cc',
