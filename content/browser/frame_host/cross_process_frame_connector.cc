@@ -63,7 +63,7 @@ void CrossProcessFrameConnector::set_view(
   if (view_) {
     view_->set_cross_process_frame_connector(this);
     SetDeviceScaleFactor(device_scale_factor_);
-    SetSize(child_frame_rect_);
+    SetRect(child_frame_rect_);
   }
 }
 
@@ -108,7 +108,7 @@ void CrossProcessFrameConnector::OnInitializeChildFrame(gfx::Rect frame_rect,
     SetDeviceScaleFactor(scale_factor);
 
   if (!frame_rect.size().IsEmpty())
-    SetSize(frame_rect);
+    SetRect(frame_rect);
 }
 
 gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
@@ -210,7 +210,7 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
 void CrossProcessFrameConnector::OnFrameRectChanged(
     const gfx::Rect& frame_rect) {
   if (!frame_rect.size().IsEmpty())
-    SetSize(frame_rect);
+    SetRect(frame_rect);
 }
 
 void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
@@ -246,10 +246,10 @@ void CrossProcessFrameConnector::SetDeviceScaleFactor(float scale_factor) {
   }
 }
 
-void CrossProcessFrameConnector::SetSize(gfx::Rect frame_rect) {
+void CrossProcessFrameConnector::SetRect(const gfx::Rect& frame_rect) {
   child_frame_rect_ = frame_rect;
   if (view_)
-    view_->SetSize(frame_rect.size());
+    view_->SetBounds(frame_rect);
 }
 
 RenderWidgetHostViewBase*

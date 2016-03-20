@@ -68,6 +68,11 @@ void RenderWidgetHostViewChildFrame::SetSize(const gfx::Size& size) {
 
 void RenderWidgetHostViewChildFrame::SetBounds(const gfx::Rect& rect) {
   SetSize(rect.size());
+
+  if (rect != last_screen_rect_) {
+    last_screen_rect_ = rect;
+    host_->SendScreenRects();
+  }
 }
 
 void RenderWidgetHostViewChildFrame::Focus() {

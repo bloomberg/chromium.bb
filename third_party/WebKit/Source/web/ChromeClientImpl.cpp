@@ -545,13 +545,24 @@ void ChromeClientImpl::scheduleAnimation(Widget* widget)
     }
 }
 
-IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport) const
+IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport, const Widget* widget) const
 {
     WebRect screenRect(rectInViewport);
 
-    if (m_webView->client()) {
-        m_webView->client()->convertViewportToWindow(&screenRect);
-        WebRect windowRect = m_webView->client()->windowRect();
+    ASSERT(widget->isFrameView());
+    const FrameView* view = toFrameView(widget);
+    LocalFrame* frame = view->frame().localFrameRoot();
+    WebWidgetClient* client = nullptr;
+
+    // TODO(kenrb): Consolidate this to a single case when WebViewFrameWidget refactor is complete.
+    if (WebLocalFrameImpl::fromFrame(frame) && WebLocalFrameImpl::fromFrame(frame)->frameWidget() && WebLocalFrameImpl::fromFrame(frame)->frameWidget()->forSubframe())
+        client = toWebFrameWidgetImpl(WebLocalFrameImpl::fromFrame(frame)->frameWidget())->client();
+    else
+        client = m_webView->client();
+
+    if (client) {
+        client->convertViewportToWindow(&screenRect);
+        WebRect windowRect = client->windowRect();
         screenRect.x += windowRect.x;
         screenRect.y += windowRect.y;
     }

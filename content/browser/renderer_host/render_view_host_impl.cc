@@ -978,8 +978,7 @@ void RenderViewHostImpl::OnShowView(int route_id,
 
 void RenderViewHostImpl::OnShowWidget(int route_id,
                                       const gfx::Rect& initial_rect) {
-  if (is_active_)
-    delegate_->ShowCreatedWidget(route_id, initial_rect);
+  delegate_->ShowCreatedWidget(route_id, initial_rect);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 

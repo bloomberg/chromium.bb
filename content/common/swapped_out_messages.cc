@@ -51,6 +51,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     // Used in layout tests; handled in BlinkTestController.
     case ShellViewHostMsg_PrintMessage::ID:
     case ShellViewHostMsg_LayoutDumpFlagsChanged::ID:
+    case ViewHostMsg_CreateWidget::ID:
       return true;
     default:
       break;

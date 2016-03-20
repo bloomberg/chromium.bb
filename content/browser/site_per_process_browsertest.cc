@@ -5121,6 +5121,114 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
   EXPECT_EQ(point.y(), params.y);
 }
 
+class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
+ public:
+  ShowWidgetMessageFilter()
+      : content::BrowserMessageFilter(ViewMsgStart),
+        message_loop_runner_(new content::MessageLoopRunner),
+        message_received_(false) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    IPC_BEGIN_MESSAGE_MAP(ShowWidgetMessageFilter, message)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  gfx::Rect last_initial_rect() const { return initial_rect_; }
+
+  void Wait() {
+    if (!message_received_) {
+      initial_rect_ = gfx::Rect();
+      message_loop_runner_->Run();
+    }
+  }
+
+  void Reset() {
+    message_received_ = false;
+    initial_rect_ = gfx::Rect();
+  }
+
+ private:
+  ~ShowWidgetMessageFilter() override {}
+
+  void OnShowWidget(int route_id, const gfx::Rect& initial_rect) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this, route_id,
+                   initial_rect));
+  }
+
+  void OnShowWidgetOnUI(int route_id, const gfx::Rect& initial_rect) {
+    initial_rect_ = initial_rect;
+    message_received_ = true;
+    message_loop_runner_->Quit();
+  }
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  gfx::Rect initial_rect_;
+  bool message_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShowWidgetMessageFilter);
+};
+
+// Test that clicking a select element in an out-of-process iframe creates
+// a popup menu in the correct position.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+// Page Popups work differently on Aura than on Android and Mac. This tests
+// only the Aura mechanism.
+#define MAYBE_PagePopupMenuTest DISABLED_PagePopupMenuTest
+#else
+#define MAYBE_PagePopupMenuTest PagePopupMenuTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PagePopupMenuTest) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/cross_site_iframe_factory.html?a(a)"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Position main window to ensure consistent screen coordinates.
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  rwhv_root->SetBounds(gfx::Rect(100, 100, 500, 500));
+  static_cast<WebContentsImpl*>(shell()->web_contents())->SendScreenRects();
+
+  content::TestNavigationObserver navigation_observer(shell()->web_contents());
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL(
+      "baz.com", "/site_isolation/page-with-select.html"));
+  NavigateFrameToURL(child_node, site_url);
+  navigation_observer.Wait();
+
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  scoped_refptr<ShowWidgetMessageFilter> filter = new ShowWidgetMessageFilter();
+  child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Target left-click event to child frame.
+  blink::WebMouseEvent click_event;
+  click_event.type = blink::WebInputEvent::MouseDown;
+  click_event.button = blink::WebPointerProperties::ButtonLeft;
+  click_event.x = 15;
+  click_event.y = 15;
+  click_event.clickCount = 1;
+  rwhv_child->ProcessMouseEvent(click_event);
+
+  filter->Wait();
+
+  gfx::Rect popup_rect = filter->last_initial_rect();
+
+  EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
+  EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 94);
+}
+
 // Test for https://crbug.com/526304, where a parent frame executes a
 // remote-to-local navigation on a child frame and immediately removes the same
 // child frame.  This test exercises the path where the detach happens before

@@ -3610,7 +3610,7 @@ IntRect FrameView::contentsToScreen(const IntRect& rect) const
     HostWindow* window = getHostWindow();
     if (!window)
         return IntRect();
-    return window->viewportToScreen(contentsToViewport(rect));
+    return window->viewportToScreen(contentsToViewport(rect), this);
 }
 
 IntRect FrameView::soonToBeRemovedContentsToUnscaledViewport(const IntRect& rectInContents) const

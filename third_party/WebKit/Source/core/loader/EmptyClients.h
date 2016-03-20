@@ -132,7 +132,7 @@ public:
     void invalidateRect(const IntRect&) override {}
     void scheduleAnimation(Widget*) override {}
 
-    IntRect viewportToScreen(const IntRect& r) const override { return r; }
+    IntRect viewportToScreen(const IntRect& r, const Widget*) const override { return r; }
     float windowToViewportScalar(const float s) const override { return s; }
     WebScreenInfo screenInfo() const override { return WebScreenInfo(); }
     void contentsSizeChanged(LocalFrame*, const IntSize&) const override {}

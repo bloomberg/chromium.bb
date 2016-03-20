@@ -101,7 +101,7 @@ void ColorChooserPopupUIController::writeDocument(SharedBuffer* data)
     Vector<String> suggestionValues;
     for (unsigned i = 0; i < suggestions.size(); i++)
         suggestionValues.append(suggestions[i].color.serialized());
-    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(m_client->elementRectRelativeToViewport());
+    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(m_client->elementRectRelativeToViewport(), m_frame->view());
 
     PagePopupClient::addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
     data->append(Platform::current()->loadResource("pickerCommon.css"));

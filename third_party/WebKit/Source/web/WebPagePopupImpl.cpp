@@ -94,7 +94,7 @@ private:
         return m_popup->m_windowRectInScreen;
     }
 
-    IntRect viewportToScreen(const IntRect& rect) const override
+    IntRect viewportToScreen(const IntRect& rect, const Widget* widget) const override
     {
         WebRect rectInScreen(rect);
         m_popup->widgetClient()->convertViewportToWindow(&rectInScreen);

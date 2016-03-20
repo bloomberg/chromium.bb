@@ -214,6 +214,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   uint32_t last_output_surface_id_;
   gfx::Size current_surface_size_;
   float current_surface_scale_factor_;
+  gfx::Rect last_screen_rect_;
   uint32_t ack_pending_count_;
   cc::ReturnedResourceArray surface_returned_resources_;
 

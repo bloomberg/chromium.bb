@@ -94,7 +94,7 @@ public:
     IntRect windowResizerRect() const override;
     void invalidateRect(const IntRect&) override;
     void scheduleAnimation(Widget*) override;
-    IntRect viewportToScreen(const IntRect&) const override;
+    IntRect viewportToScreen(const IntRect&, const Widget*) const override;
     float windowToViewportScalar(const float) const override;
     WebScreenInfo screenInfo() const override;
     void contentsSizeChanged(LocalFrame*, const IntSize&) const override;

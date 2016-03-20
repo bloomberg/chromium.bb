@@ -2226,8 +2226,10 @@ void WebContentsImpl::OnMoveValidationMessage(
 }
 
 void WebContentsImpl::SendScreenRects() {
-  RenderWidgetHostImpl::From(GetRenderViewHost()->GetWidget())
-      ->SendScreenRects();
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    if (node->current_frame_host()->GetRenderWidgetHost())
+      node->current_frame_host()->GetRenderWidgetHost()->SendScreenRects();
+  }
 
   RenderWidgetHostViewBase* rwhv =
       static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());

@@ -129,7 +129,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
                          const cc::SurfaceSequence& sequence);
 
   void SetDeviceScaleFactor(float scale_factor);
-  void SetSize(gfx::Rect frame_rect);
+  void SetRect(const gfx::Rect& frame_rect);
 
   // The RenderFrameProxyHost that routes messages to the parent frame's
   // renderer process.

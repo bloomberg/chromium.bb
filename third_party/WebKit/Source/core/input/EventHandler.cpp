@@ -2852,7 +2852,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
 
     m_frame->view()->setCursor(pointerCursor());
     IntPoint locationInViewport = visualViewport.rootFrameToViewport(locationInRootFrame);
-    IntPoint globalPosition = view->getHostWindow()->viewportToScreen(IntRect(locationInViewport, IntSize())).location();
+    IntPoint globalPosition = view->getHostWindow()->viewportToScreen(IntRect(locationInViewport, IntSize()), m_frame->view()).location();
 
     Node* targetNode = overrideTargetElement ? overrideTargetElement : doc->focusedElement();
     if (!targetNode)

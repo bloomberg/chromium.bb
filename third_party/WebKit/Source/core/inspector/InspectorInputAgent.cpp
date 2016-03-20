@@ -117,7 +117,7 @@ public:
 void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& pointInFrame, blink::IntPoint* convertedPoint, blink::IntPoint* globalPoint)
 {
     *convertedPoint = frame->view()->convertToRootFrame(pointInFrame);
-    *globalPoint = frame->page()->chromeClient().viewportToScreen(blink::IntRect(pointInFrame, blink::IntSize(0, 0))).location();
+    *globalPoint = frame->page()->chromeClient().viewportToScreen(blink::IntRect(pointInFrame, blink::IntSize(0, 0)), frame->view()).location();
 }
 
 } // namespace

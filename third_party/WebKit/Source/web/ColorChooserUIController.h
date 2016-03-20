@@ -67,7 +67,6 @@ protected:
     OwnPtr<WebColorChooser> m_chooser;
     RawPtrWillBeMember<ColorChooserClient> m_client;
 
-private:
     RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
