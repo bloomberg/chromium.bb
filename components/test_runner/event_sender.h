@@ -71,6 +71,10 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   WebTaskList* mutable_task_list() { return &task_list_; }
 
+  void set_send_wheel_gestures(bool send_wheel_gestures) {
+    send_wheel_gestures_ = send_wheel_gestures;
+  }
+
  private:
   friend class EventSenderBindings;
 
@@ -90,6 +94,8 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
     int milliseconds;                          // For LeapForward.
     int modifiers;
   };
+
+  enum class MouseScrollType { PIXEL, TICK };
 
   void EnableDOMUIEventLogging();
   void FireKeyboardEventsToElement();
@@ -135,9 +141,6 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void AddTouchPoint(float x, float y, gin::Arguments* args);
 
-  void MouseDragBegin();
-  void MouseDragEnd();
-
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
   void GestureScrollUpdate(gin::Arguments* args);
@@ -152,13 +155,9 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void GestureLongTap(gin::Arguments* args);
   void GestureTwoFingerTap(gin::Arguments* args);
 
-  void ContinuousMouseScrollBy(gin::Arguments* args);
+  void MouseScrollBy(gin::Arguments* args, MouseScrollType scroll_type);
   void MouseMoveTo(gin::Arguments* args);
   void MouseLeave();
-  void TrackpadScrollBegin();
-  void TrackpadScroll(gin::Arguments* args);
-  void TrackpadScrollEnd();
-  void MouseScrollBy(gin::Arguments* args);
   void ScheduleAsynchronousClick(int button_number, int modifiers);
   void ScheduleAsynchronousKeyDown(const std::string& code_str,
                                    int modifiers,
@@ -176,8 +175,9 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void UpdateClickCountForButton(blink::WebMouseEvent::Button);
 
   void InitMouseWheelEvent(gin::Arguments* args,
-                           bool continuous,
-                           blink::WebMouseWheelEvent* event);
+                           MouseScrollType scroll_type,
+                           blink::WebMouseWheelEvent* event,
+                           bool* send_gestures);
   void InitPointerProperties(gin::Arguments* args,
                              blink::WebPointerProperties* e,
                              float* radius_x,
@@ -190,6 +190,9 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void ReplaySavedEvents();
   blink::WebInputEventResult HandleInputEventOnViewOrPopup(
       const blink::WebInputEvent&);
+
+  void SendGesturesForMouseWheelEvent(
+      const blink::WebMouseWheelEvent wheel_event);
 
   double last_event_timestamp() { return last_event_timestamp_; }
 
@@ -246,6 +249,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   WebTestDelegate* delegate_;
   blink::WebView* view_;
 
+  bool send_wheel_gestures_;
   bool force_layout_on_events_;
 
   // When set to true (the default value), we batch mouse move and mouse up

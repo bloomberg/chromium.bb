@@ -44,6 +44,7 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   void SetTestIsRunning(bool running);
   void ConfigureForTestWithURL(const blink::WebURL& test_url,
                                bool generate_pixels);
+  void SetSendWheelGestures(bool send_gestures);
 
   WebTestRunner* TestRunner();
   blink::WebThemeEngine* ThemeEngine();

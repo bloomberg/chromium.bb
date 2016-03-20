@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/test_runner/app_banner_client.h"
+#include "components/test_runner/event_sender.h"
 #include "components/test_runner/mock_web_audio_device.h"
 #include "components/test_runner/mock_web_media_stream_center.h"
 #include "components/test_runner/mock_web_midi_accessor.h"
@@ -47,6 +48,10 @@ void WebTestInterfaces::SetTestIsRunning(bool running) {
 void WebTestInterfaces::ConfigureForTestWithURL(const WebURL& test_url,
                                                 bool generate_pixels) {
   interfaces_->ConfigureForTestWithURL(test_url, generate_pixels);
+}
+
+void WebTestInterfaces::SetSendWheelGestures(bool send_gestures) {
+  interfaces_->GetEventSender()->set_send_wheel_gestures(send_gestures);
 }
 
 WebTestRunner* WebTestInterfaces::TestRunner() {
