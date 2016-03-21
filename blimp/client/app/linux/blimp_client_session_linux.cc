@@ -30,6 +30,7 @@ class FakeNavigationFeatureDelegate
   void OnFaviconChanged(int tab_id, const SkBitmap& favicon) override;
   void OnTitleChanged(int tab_id, const std::string& title) override;
   void OnLoadingChanged(int tab_id, bool loading) override;
+  void OnPageLoadStatusUpdate(int tab_id, bool completed) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeNavigationFeatureDelegate);
@@ -55,6 +56,12 @@ void FakeNavigationFeatureDelegate::OnTitleChanged(int tab_id,
 
 void FakeNavigationFeatureDelegate::OnLoadingChanged(int tab_id, bool loading) {
   DVLOG(1) << "Loading status changed to " << loading << " in tab " << tab_id;
+}
+
+void FakeNavigationFeatureDelegate::OnPageLoadStatusUpdate(int tab_id,
+                                                           bool completed) {
+  DVLOG(1) << "Page Load Status changed to completed = " << completed <<
+      " in tab " << tab_id;
 }
 
 }  // namespace

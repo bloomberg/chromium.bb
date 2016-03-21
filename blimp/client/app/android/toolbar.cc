@@ -108,5 +108,14 @@ void Toolbar::OnLoadingChanged(int tab_id, bool loading) {
                                    static_cast<jboolean>(loading));
 }
 
+void Toolbar::OnPageLoadStatusUpdate(int tab_id, bool completed) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_Toolbar_onEngineSentPageLoadStatusUpdate(
+      env,
+      java_obj_.obj(),
+      static_cast<jboolean>(completed));
+}
+
 }  // namespace client
 }  // namespace blimp

@@ -32,6 +32,7 @@ class BLIMP_CLIENT_EXPORT NavigationFeature : public BlimpMessageProcessor {
     virtual void OnFaviconChanged(int tab_id, const SkBitmap& favicon) = 0;
     virtual void OnTitleChanged(int tab_id, const std::string& title) = 0;
     virtual void OnLoadingChanged(int tab_id, bool loading) = 0;
+    virtual void OnPageLoadStatusUpdate(int tab_id, bool completed) = 0;
   };
 
   NavigationFeature();

@@ -45,6 +45,7 @@ class Toolbar : public NavigationFeature::NavigationFeatureDelegate {
   void OnFaviconChanged(int tab_id, const SkBitmap& favicon) override;
   void OnTitleChanged(int tab_id, const std::string& title) override;
   void OnLoadingChanged(int tab_id, bool loading) override;
+  void OnPageLoadStatusUpdate(int tab_id, bool completed) override;
 
  private:
   virtual ~Toolbar();

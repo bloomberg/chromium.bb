@@ -106,6 +106,11 @@ void NavigationFeature::ProcessMessage(
       if (details.has_favicon()) {
         NOTIMPLEMENTED();
       }
+
+      if (details.has_page_load_completed()) {
+        delegate->OnPageLoadStatusUpdate(tab_id,
+                                         details.page_load_completed());
+      }
     } break;
     case NavigationMessage::LOAD_URL:
     case NavigationMessage::GO_BACK:

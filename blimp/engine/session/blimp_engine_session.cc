@@ -177,7 +177,8 @@ BlimpEngineSession::BlimpEngineSession(
     scoped_ptr<BlimpBrowserContext> browser_context,
     net::NetLog* net_log,
     BlimpEngineConfig* engine_config)
-    : browser_context_(std::move(browser_context)),
+    : last_page_load_completed_value_(false),
+      browser_context_(std::move(browser_context)),
       engine_config_(engine_config),
       screen_(new BlimpScreen),
       net_components_(
@@ -479,6 +480,33 @@ void BlimpEngineSession::NavigationStateChanged(
 
   navigation_message_sender_->ProcessMessage(std::move(message),
                                              net::CompletionCallback());
+}
+
+void BlimpEngineSession::LoadProgressChanged(
+    content::WebContents* source, double progress) {
+  if (source != web_contents_.get())
+    return;
+
+  bool page_load_completed = progress == 1.0 ? true : false;
+
+  // If the client has been notified of a page load completed change, avoid
+  // sending another message. For the first navigation, the initial value used
+  // by the client is already false.
+  if (last_page_load_completed_value_ == page_load_completed)
+    return;
+
+  NavigationMessage* navigation_message;
+  scoped_ptr<BlimpMessage> message =
+        CreateBlimpMessage(&navigation_message, kDummyTabId);
+  navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
+    NavigationStateChangeMessage* details =
+        navigation_message->mutable_navigation_state_changed();
+  details->set_page_load_completed(page_load_completed);
+
+  navigation_message_sender_->ProcessMessage(std::move(message),
+                                             net::CompletionCallback());
+
+  last_page_load_completed_value_ = page_load_completed;
 }
 
 void BlimpEngineSession::RenderViewCreated(

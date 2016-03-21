@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -29,6 +30,7 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
 
     private UrlBar mUrlBar;
     private ImageButton mReloadButton;
+    private ProgressBar mProgressBar;
 
     /**
      * A URL to load when this object is initialized.  This handles the case where there is a URL
@@ -106,6 +108,9 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
 
         mReloadButton = (ImageButton) findViewById(R.id.toolbar_reload_btn);
         mReloadButton.setOnClickListener(this);
+
+        mProgressBar = (ProgressBar) findViewById(R.id.page_load_progress);
+        mProgressBar.setVisibility(View.GONE);
     }
 
     // UrlBar.UrlBarObserver interface.
@@ -131,6 +136,19 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
         }
 
         nativeOnUrlTextEntered(mNativeToolbarPtr, text);
+
+        // When triggering a navigation to a new URL, show the progress bar.
+        // TODO(khushalsagar): We need more signals to hide the bar when the load might have failed.
+        // For instance, in the case of a wrong URL right now or if there is no network connection.
+        updateProgressBar(true);
+    }
+
+    private void updateProgressBar(boolean show) {
+        if (show) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mProgressBar.setVisibility(View.GONE);
+        }
     }
 
     // Methods that are called by native via JNI.
@@ -152,6 +170,12 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
     @CalledByNative
     private void onEngineSentLoading(boolean loading) {
         // TODO(dtrainor): Add a UI for the loading state.
+    }
+
+    @CalledByNative
+    private void onEngineSentPageLoadStatusUpdate(boolean completed) {
+        boolean show = !completed;
+        updateProgressBar(show);
     }
 
     private native long nativeInit(BlimpClientSession blimpClientSession);

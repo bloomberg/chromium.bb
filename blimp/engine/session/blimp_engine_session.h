@@ -136,6 +136,8 @@ class BlimpEngineSession
       const std::vector<uint8_t>& proto) override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
+  void LoadProgressChanged(content::WebContents* source,
+                           double progress) override;
 
   // content::WebContentsObserver implementation.
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
@@ -145,6 +147,10 @@ class BlimpEngineSession
 
   // Sets up and owns |new_contents|.
   void PlatformSetContents(scoped_ptr<content::WebContents> new_contents);
+
+  // Stores the value of the last page load completed update sent to the client.
+  // This field is used per tab.
+  bool last_page_load_completed_value_;
 
   // Content BrowserContext for this session.
   scoped_ptr<BlimpBrowserContext> browser_context_;

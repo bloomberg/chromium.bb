@@ -29,6 +29,13 @@
                 android:maxLines="1"
                 android:background="@drawable/textbox"
                 android:textColor="#333" />
+            <ProgressBar
+                android:id="@+id/page_load_progress"
+                android:visibility="invisible"
+                android:layout_marginStart="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@android:style/Widget.ProgressBar.Small" />
             <ImageButton
                 android:id="@+id/toolbar_reload_btn"
                 android:layout_width="48dp"
