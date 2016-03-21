@@ -192,6 +192,15 @@ void test_new_directory_access() {
   ASSERT_EQ(mkdir("test_dir", mode), 0);
   ASSERT_EQ(rmdir("test_dir"), 0);
 
+  // Test that directory contents cannot be accessed by relative path if the cwd
+  // is no longer valid.
+  ASSERT_EQ(mkdir("sub_dir", mode), 0);
+  ASSERT_EQ(chdir("sub_dir"), 0);
+  ASSERT_EQ(rmdir("../sub_dir"), 0);
+  ASSERT_EQ(open("xxx", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR), -1);
+  ASSERT_EQ(errno, ENOENT);
+  ASSERT_EQ(chdir("/"), 0);
+
   char file_name[PATH_MAX];
   snprintf(file_name, PATH_MAX, "%s/test_dir", g_temp_sub_dir_path);
   ASSERT_EQ(mkdir(file_name, mode), 0);
@@ -253,43 +262,47 @@ void test_rename_access() {
 
 void test_escape_attempt() {
   // Try to escape the directory -- should not be able to do so.
-  ASSERT_EQ(chdir("/.."), -1);
-  ASSERT_EQ(errno, EACCES);
 
+  // Attempting to leave the root directory via ".." places the cwd at the root
+  // of the mounted directory.
+  ASSERT_EQ(chdir("/.."), 0);
   char cwd[PATH_MAX];
   ASSERT_EQ(getcwd(cwd, PATH_MAX), cwd);
   ASSERT_EQ(strcmp(cwd, "/"), 0);
-
-  // Cannot create new links outside root.
-  ASSERT_EQ(link(g_temp_file_name, "./../../new_file"), -1);
-  ASSERT_EQ(errno, EACCES);
 
   char inaccessible_path[PATH_MAX];
   // Cannot open files outside root.
   snprintf(inaccessible_path, PATH_MAX, "../%s", g_temp_inaccessible_file_name);
   ASSERT_EQ(open(inaccessible_path, O_RDWR, S_IRUSR | S_IWUSR), -1);
-  ASSERT_EQ(errno, EACCES);
+  ASSERT_EQ(errno, ENOENT);
 
   snprintf(inaccessible_path, PATH_MAX, "/../%s",
            g_temp_inaccessible_file_name);
   ASSERT_EQ(open(inaccessible_path, O_RDWR, S_IRUSR | S_IWUSR), -1);
-  ASSERT_EQ(errno, EACCES);
+  ASSERT_EQ(errno, ENOENT);
 
   // Cannot open directories outside root.
-  ASSERT_EQ(opendir(".."), NULL);
-  ASSERT_EQ(errno, EACCES);
-  ASSERT_EQ(opendir("/.."), NULL);
-  ASSERT_EQ(errno, EACCES);
-  ASSERT_EQ(opendir("//.."), NULL);
-  ASSERT_EQ(errno, EACCES);
-  ASSERT_EQ(opendir("/../"), NULL);
-  ASSERT_EQ(errno, EACCES);
-  ASSERT_EQ(opendir("/..//"), NULL);
-  ASSERT_EQ(errno, EACCES);
+  struct stat buf;
+  ASSERT_EQ(stat(".", &buf), 0);
+  const ino_t root_inode = buf.st_ino;
+  ASSERT_EQ(stat("/", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+  ASSERT_EQ(stat("..", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+  ASSERT_EQ(stat("/..", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+  ASSERT_EQ(stat("//..", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+  ASSERT_EQ(stat("/../", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+  ASSERT_EQ(stat("/..//", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+  ASSERT_EQ(stat("/.././//../..", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
 
   snprintf(inaccessible_path, PATH_MAX, "../%s", g_temp_inaccessible_dir_name);
   ASSERT_EQ(opendir(inaccessible_path), NULL);
-  ASSERT_EQ(errno, EACCES);
+  ASSERT_EQ(errno, ENOENT);
 
   passed("test_escape_attempt", "all");
 }
@@ -301,39 +314,86 @@ void test_information_leak() {
   char path[PATH_MAX];
   struct stat buf;
 
+  ASSERT_EQ_MSG(chdir("/"), 0, "chdir() failed");
+
   // We should be able to access the root directory.
   ASSERT_EQ(stat("/", &buf), 0);
+  const ino_t root_inode = buf.st_ino;
   ASSERT_EQ(stat("//", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
   ASSERT_EQ(stat("/./.", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
   ASSERT_EQ(stat("/./////.", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
   ASSERT_EQ(stat(".", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
 
-  // We should not be able to access paths containing "..".
-  snprintf(path, PATH_MAX, "%s/..", g_temp_sub_dir_path);
-  ASSERT_EQ(stat(path, &buf), -1);
-  ASSERT_EQ(errno, EACCES);
-
-  // We should not be able to access the parent of the root directory.
-  ASSERT_EQ(stat("/..", &buf), -1);
-  ASSERT_EQ(errno, EACCES);
+  // '/..' should equal '/'.
+  ASSERT_EQ(stat("/..", &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
 
   // We should not be able to identify our mount point this way.
   snprintf(path, PATH_MAX, "/../%s", g_temp_dir_name);
   ASSERT_EQ(stat(path, &buf), -1);
-  ASSERT_EQ(errno, EACCES);
+  ASSERT_EQ(errno, ENOENT);
   snprintf(path, PATH_MAX, "//../%s", g_temp_dir_name);
   ASSERT_EQ(stat(path, &buf), -1);
-  ASSERT_EQ(errno, EACCES);
+  ASSERT_EQ(errno, ENOENT);
   snprintf(path, PATH_MAX, "/.//..//%s", g_temp_dir_name);
   ASSERT_EQ(stat(path, &buf), -1);
-  ASSERT_EQ(errno, EACCES);
+  ASSERT_EQ(errno, ENOENT);
+  snprintf(path, PATH_MAX, "../%s", g_temp_dir_name);
+  ASSERT_EQ(stat(path, &buf), -1);
+  ASSERT_EQ(errno, ENOENT);
+  snprintf(path, PATH_MAX, "%s/../..", g_temp_sub_dir_name);
+  ASSERT_EQ(stat(path, &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
 
   passed("test_information_leak", "all");
+}
+
+void test_parent_directory_access() {
+  // We should be able to access valid paths using "..", as long as they are
+  // within our root directory.
+  char path[PATH_MAX];
+  struct stat buf;
+  ASSERT_EQ_MSG(chdir("/"), 0, "chdir() failed");
+
+  ASSERT_EQ(stat("/", &buf), 0);
+  const ino_t root_inode = buf.st_ino;
+  snprintf(path, PATH_MAX, "%s", g_temp_sub_dir_path);
+  ASSERT_EQ(stat(path, &buf), 0);
+  const ino_t subdir_inode = buf.st_ino;
+  ASSERT_NE(root_inode, subdir_inode);
+
+  // Test valid absolute accesses with ".."
+  snprintf(path, PATH_MAX, "%s/..", g_temp_sub_dir_path);
+  ASSERT_EQ(stat(path, &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+  snprintf(path, PATH_MAX, "%s/../.", g_temp_sub_dir_path);
+  ASSERT_EQ(stat(path, &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+
+  // Test valid relative accesses with ".."
+  snprintf(path, PATH_MAX, "%s/../.", g_temp_sub_dir_name);
+  ASSERT_EQ(stat(path, &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+  snprintf(path, PATH_MAX, "./%s/../.", g_temp_sub_dir_name);
+  ASSERT_EQ(stat(path, &buf), 0);
+  ASSERT_EQ(root_inode, buf.st_ino);
+
+  // Test invalid relative accesses with "..".
+  snprintf(path, PATH_MAX, "%s/file_does_not_exist/..", g_temp_sub_dir_name);
+  ASSERT_EQ(stat(path, &buf), -1);
+  ASSERT_EQ(errno, ENOENT);
+
+  passed("test_parent_directory_access", "all");
 }
 
 void test_valid_file_access() {
   // Show that reads and writes to valid files work.
   char file_name[PATH_MAX];
+  ASSERT_EQ_MSG(chdir("/"), 0, "chdir() failed");
 
   // Absolute path
   snprintf(file_name, PATH_MAX, "%s", g_temp_file_path);
@@ -370,6 +430,9 @@ void test_new_file_access() {
   snprintf(file_name, PATH_MAX, "%s/newer_temp_file", g_temp_sub_dir_path);
   do_test_write_read_file(file_name, true);
 
+  snprintf(file_name, PATH_MAX, "%s/..newer_temp_file", g_temp_sub_dir_path);
+  do_test_write_read_file(file_name, true);
+
   passed("test_new_file_access", "all");
 }
 
@@ -387,6 +450,7 @@ void testSuite() {
   test_rename_access();
   test_escape_attempt();
   test_information_leak();
+  test_parent_directory_access();
   test_valid_file_access();
   test_new_file_access();
 }

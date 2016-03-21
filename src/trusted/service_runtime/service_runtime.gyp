@@ -16,6 +16,7 @@
         'sources': [
           'dyn_array.c',
           'elf_util.c',
+          'filename_util.cc',
           'load_file.c',
           'nacl_all_modules.c',
           'nacl_app_thread.c',

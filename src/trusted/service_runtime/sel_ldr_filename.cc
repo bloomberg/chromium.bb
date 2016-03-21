@@ -7,12 +7,16 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr_filename.h"
 
 #include <errno.h>
+#include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <string>
+#include <vector>
 
 #include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/service_runtime/filename_util.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -44,22 +48,38 @@ int PathContainsRootPrefix(const char *path, size_t path_len) {
 #if !NACL_WINDOWS
 /*
  * Given a |virtual_path| (a path supplied by the user with no knowledge of the
- * mounted directory) transform it into a |real_path|, which is either an
- * absolute path prefixed by the root mount directory, or a relative path.
+ * mounted directory) transform it into an |absolute_path|, which is a path that
+ * (while still virtual) is an absolute path inside the mounted directory.
  *
  * @param[in] virtual_path Virtual path supplied by user.
- * @param[out] real_path The real path referenced by the |virtual_path|.
+ * @param[out] absolute_path The absolute path referenced by the |virtual_path|.
+ * @return 0 on success, else a negated NaCl errno.
  */
-void VirtualToRealPath(const std::string &virtual_path,
-                       std::string *real_path) {
-  real_path->clear();
+uint32_t VirtualToAbsolutePath(const std::string &virtual_path,
+                               std::string *absolute_path) {
+  absolute_path->clear();
   CHECK(virtual_path.length() >= 1);
-  if (virtual_path[0] == '/') {
-    /* Absolute Path = Prefix + Absolute Virtual Path */
-    real_path->append(NaClRootDir);
+  if (virtual_path[0] != '/') {
+    /* Relative Path = Cwd + '/' + Relative Virtual Path */
+    char cwd_path[NACL_CONFIG_PATH_MAX];
+    int retval = NaClHostDescGetcwd(cwd_path, sizeof(cwd_path));
+    if (retval != 0) {
+      NaClLog(LOG_ERROR, "NaClHostDescGetcwd failed\n");
+      return retval;
+    }
+
+    /*
+     * This shouldn't fail unless someone outside of the restricted filesystem
+     * has moved the root directory.
+     */
+    if (!PathContainsRootPrefix(cwd_path, strlen(cwd_path)))
+      return (uint32_t) -NACL_ABI_EACCES;
+
+    absolute_path->append(cwd_path + NaClRootDirLen);
+    absolute_path->push_back('/');
   }
-  /* Relative Path = Relative Virtual Path */
-  real_path->append(virtual_path);
+  absolute_path->append(virtual_path);
+  return 0;
 }
 
 /*
@@ -75,19 +95,14 @@ int IsSymbolicLink(const char *path) {
 }
 
 /*
- * @param[in] path The path to be verified.
+ * Verify the absolute path contains the NaClRootDir prefix.
+ *
+ * @param[in] path The canonical path to be verified.
  * @return 0 if the path is valid, else a negated NaCl errno.
  */
 uint32_t ValidatePath(const std::string &path) {
-  if (path.find("..") != std::string::npos) {
-    NaClLog(LOG_WARNING, "Pathname contains ..: %s\n", path.c_str());
-    return -NACL_ABI_EACCES;
-  }
-
   CHECK(path.length() >= 1);
-  if (path[0] == '/') {
-    CHECK(PathContainsRootPrefix(path.c_str(), path.length()));
-  }
+  CHECK(PathContainsRootPrefix(path.c_str(), path.length()));
 
   /*
    * This is an informal check, and we still require the users of sel_ldr to
@@ -105,6 +120,20 @@ uint32_t ValidatePath(const std::string &path) {
    */
   if (IsSymbolicLink(path.c_str())) {
     return -NACL_ABI_EACCES;
+  }
+  return 0;
+}
+
+uint32_t ValidateSubpaths(std::vector<std::string> *required_subpaths) {
+  for (size_t i = 0; i != required_subpaths->size(); i++) {
+    (*required_subpaths)[i].insert(0, NaClRootDir);
+    struct stat buf;
+    int retval = stat((*required_subpaths)[i].c_str(), &buf);
+    if (retval != 0) {
+      if (errno == ELOOP || errno == EOVERFLOW || errno == ENOMEM)
+        NaClLog(LOG_FATAL, "Unexpected error validating path\n");
+      return -NaClXlateErrno(errno);
+    }
   }
   return 0;
 }
@@ -130,16 +159,27 @@ uint32_t CopyHostPathMounted(char *dest, size_t dest_max_size) {
   CHECK(dest_max_size == NACL_CONFIG_PATH_MAX);
   CHECK(raw_path.length() < NACL_CONFIG_PATH_MAX);
 
-  /*
-   * Transform the user's raw path into the actual path.
-   * The path will reference a file inside the mount directory once
-   * VirtualToRealPath returns successfully.
-   */
+  uint32_t retval;
+  std::string abs_path;
+  retval = VirtualToAbsolutePath(raw_path, &abs_path);
+  if (retval != 0)
+    return retval;
+
   std::string real_path;
-  VirtualToRealPath(raw_path, &real_path);
+  std::vector<std::string> required_subpaths;
+  CanonicalizeAbsolutePath(abs_path, &real_path, &required_subpaths);
+  retval = ValidateSubpaths(&required_subpaths);
+  if (retval != 0)
+    return retval;
+
+  /*
+   * Prefix the root directory, making 'real_path' canonical, absolute, and
+   * non-virtual.
+   */
+  real_path.insert(0, NaClRootDir);
 
   /* Verify that the path cannot escape root. */
-  uint32_t retval = ValidatePath(real_path);
+  retval = ValidatePath(real_path);
   if (retval != 0)
     return retval;
 

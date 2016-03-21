@@ -26,6 +26,7 @@ GENERATED='${TARGET_ROOT}/gen/native_client/src/trusted/service_runtime'
 ldr_inputs = [
     'dyn_array.c',
     'elf_util.c',
+    'filename_util.cc',
     'load_file.c',
     'nacl_all_modules.c',
     'nacl_app_thread.c',
@@ -446,6 +447,7 @@ if (env.Bit('linux') and not env.Bit('built_elsewhere')):
 gtest_env = env.MakeGTestEnv()
 
 unittest_inputs = [
+    'filename_util_test.cc',
     'mmap_unittest.cc',
     'unittest_main.cc',
     'sel_memory_unittest.cc',

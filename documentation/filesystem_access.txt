@@ -16,7 +16,6 @@ be guaranteed by the caller:
  * The mounted directory is assumed to not include any symlinks.
 
 These constraints will be enforced by sel_ldr:
- * Pathnames may not include the substring "..".
  * Access to filesystem within sel_ldr will behave as if as if the mounted
    directory is root.
 
@@ -67,11 +66,18 @@ Given that strategy, the following syscall changes were straightforward:
 
 ### Path sanitization
 
-Path sanitization checks that the cwd is within the mounted directory (set at
-initialization).
+Path sanitization does the following:
+ * It checks that the cwd is within the mounted directory (set at
+   initialization).
+ * If the user's path is relative, it prefixes the cwd (within the mounted
+   directory) to the relative path, making the path absolute.
+ * It canonicalizes the absolute path ("..", ".", and "//" parts are handled and
+   removed).
+ * It prefixes the canonicalized path with the path to the mounted directory.
 
-If the user's path is absolute, prefix the path to the mounted directory.
-Ensure that the path does not contain "..".
+As a consequence of relying on the cwd, if the cwd changes during a filename
+call on a relative path, the filename access can fail because the getcwd()-based
+path could become invalid.
 
 ### Symlinks
 
