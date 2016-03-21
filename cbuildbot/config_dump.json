@@ -19760,7 +19760,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: edgar, setzer, umaro)"
+        "description": "Release Builds (canary) (internal); Group config (boards: edgar, setzer, umaro)",
+        "important": true
     },
     "strago-chrome-pfq": {
         "_template": "chrome-pfq",

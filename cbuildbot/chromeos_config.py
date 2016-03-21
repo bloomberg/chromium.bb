@@ -663,7 +663,6 @@ _waterfall_config_map = {
         'nyan_freon-release',
         'smaug-release',
         'smaug-cheets-release',
-        'strago-c-release-group',
         'guado_moblab-release',
 
         # Incremental Builders.
@@ -2876,7 +2875,6 @@ def GetConfig():
           'setzer',
           'umaro',
       ),
-      important=False,
   )
 
   # oak-based boards
