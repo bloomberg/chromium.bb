@@ -44,6 +44,10 @@
 #include "mojo/shell/runner/host/linux_sandbox.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "mojo/shell/runner/host/mach_broker.h"
+#endif
+
 namespace mojo {
 namespace shell {
 
@@ -102,6 +106,11 @@ int ChildProcessMain() {
   base::i18n::InitializeICU();
   if (app_library)
     CallLibraryEarlyInitialization(app_library);
+
+#if defined(OS_MACOSX)
+  // Send our task port to the parent.
+  MachBroker::SendTaskPortToParent();
+#endif
 
 #if !defined(OFFICIAL_BUILD)
   // Initialize stack dumping just before initializing sandbox to make

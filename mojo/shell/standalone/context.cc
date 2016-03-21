@@ -43,6 +43,10 @@
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
 
+#if defined(OS_MACOSX)
+#include "mojo/shell/runner/host/mach_broker.h"
+#endif
+
 namespace mojo {
 namespace shell {
 namespace {
@@ -136,8 +140,12 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
   blocking_pool_ =
       new base::SequencedWorkerPool(kMaxBlockingPoolThreads, "blocking_pool");
 
-  if (!init_params || init_params->init_edk)
+  if (!init_params || init_params->init_edk) {
     edk::InitIPCSupport(this, io_thread_->task_runner().get());
+#if defined(OS_MACOSX)
+    edk::SetMachPortProvider(MachBroker::GetInstance()->port_provider());
+#endif
+  }
 
   scoped_ptr<NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kSingleProcess)) {

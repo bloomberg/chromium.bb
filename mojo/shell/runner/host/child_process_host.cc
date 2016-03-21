@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -31,6 +32,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "mojo/shell/runner/host/mach_broker.h"
 #endif
 
 namespace mojo {
@@ -179,7 +184,16 @@ void ChildProcessHost::DoLaunch(
     }
   } else
 #endif
+  {
+#if defined(OS_MACOSX)
+    MachBroker* mach_broker = MachBroker::GetInstance();
+    base::AutoLock locker(mach_broker->GetLock());
+#endif
     child_process_ = base::LaunchProcess(*child_command_line, options);
+#if defined(OS_MACOSX)
+    mach_broker->ExpectPid(child_process_.Handle());
+#endif
+  }
 
   if (child_process_.IsValid()) {
     if (mojo_ipc_channel_.get()) {

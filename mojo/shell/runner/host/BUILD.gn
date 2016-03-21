@@ -99,6 +99,13 @@ source_set("lib") {
       "//sandbox/linux:seccomp_bpf_helpers",
     ]
   }
+
+  if (is_mac) {
+    sources += [
+      "mach_broker.cc",
+      "mach_broker.h",
+    ]
+  }
 }
 
 test("mojo_runner_host_unittests") {

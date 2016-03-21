@@ -141,6 +141,12 @@
           '<(DEPTH)/sandbox/sandbox.gyp:seccomp_bpf_helpers',
         ],
       }],
+      ['OS=="mac"', {
+        'sources': [
+          'shell/runner/host/mach_broker.cc',
+          'shell/runner/host/mach_broker.h',
+        ],
+      }],
     ],
   }],
 }
