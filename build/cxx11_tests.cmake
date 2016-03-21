@@ -86,6 +86,39 @@ if (MSVC OR HAVE_CXX11)
         return 0;
       }"
       HAVE_RANGED_FOR)
+
+  # move constructors
+  check_cxx_source_compiles("
+      struct Foo {
+        Foo() {}
+        Foo(Foo&&) = default;
+        Foo(const Foo&) = delete;
+      };
+      int main() {
+        Foo bar;
+        (void)bar;
+        return 0;
+      }"
+      HAVE_MOVE_CONSTRUCTORS)
+
+  # member initializers
+  check_cxx_source_compiles("
+      struct Foo {
+        Foo() {}
+        Foo(int a_val, int b_val) : a(a_val), b(b_val) {}
+        int a;
+        int b;
+      };
+      struct Bar {
+        Bar() {}
+        Foo f = Foo(1, 2);
+      };
+      int main() {
+        Bar bar;
+        (void)bar;
+        return 0;
+      }"
+      HAVE_MEMBER_INITIALIZERS)
 endif ()
 
 if (NOT HAVE_UNIQUE_PTR
@@ -93,7 +126,9 @@ if (NOT HAVE_UNIQUE_PTR
     OR NOT HAVE_DEFAULTED_MEMBER_FUNCTIONS
     OR NOT HAVE_DELETED_MEMBER_FUNCTIONS
     OR NOT HAVE_AUTO_REF
-    OR NOT HAVE_RANGED_FOR)
+    OR NOT HAVE_RANGED_FOR
+    OR NOT HAVE_MOVE_CONSTRUCTORS
+    OR NOT HAVE_MEMBER_INITIALIZERS)
   # TODO(tomfinegan): Update settings at the include site instead of in here.
   set(ENABLE_TESTS OFF)
   set(ENABLE_WEBMTS OFF)
