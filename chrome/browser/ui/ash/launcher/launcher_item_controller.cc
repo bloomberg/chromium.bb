@@ -10,6 +10,10 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#endif  // defined(OS_CHROMEOS)
+
 LauncherItemController::LauncherItemController(
     Type type,
     const std::string& app_id,
@@ -33,6 +37,20 @@ base::string16 LauncherItemController::GetAppTitle() const {
   base::string16 title;
   if (app_id_.empty())
     return title;
+
+#if defined(OS_CHROMEOS)
+  // Get title if the app is an Arc app
+  ArcAppListPrefs* arc_prefs =
+      ArcAppListPrefs::Get(launcher_controller_->profile());
+  DCHECK(arc_prefs);
+  if (arc_prefs->IsRegistered(app_id_)) {
+    scoped_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(app_id_);
+    DCHECK(app_info.get());
+    if (app_info)
+      title = base::UTF8ToUTF16(app_info->name);
+    return title;
+  }
+#endif  // defined(OS_CHROMEOS)
 
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(
