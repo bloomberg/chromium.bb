@@ -308,7 +308,8 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     m_gl->ProduceTextureDirectCHROMIUM(frontColorBufferMailbox->textureInfo.textureId, frontColorBufferMailbox->textureInfo.parameters.target, frontColorBufferMailbox->mailbox.name);
     const GLuint64 fenceSync = m_gl->InsertFenceSyncCHROMIUM();
     m_gl->Flush();
-    frontColorBufferMailbox->mailbox.validSyncToken = m_context->genSyncTokenCHROMIUM(fenceSync, frontColorBufferMailbox->mailbox.syncToken);
+    m_gl->GenSyncTokenCHROMIUM(fenceSync, frontColorBufferMailbox->mailbox.syncToken);
+    frontColorBufferMailbox->mailbox.validSyncToken = true;
     frontColorBufferMailbox->mailbox.allowOverlay = frontColorBufferMailbox->textureInfo.imageId != 0;
     frontColorBufferMailbox->mailbox.textureTarget = frontColorBufferMailbox->textureInfo.parameters.target;
     frontColorBufferMailbox->mailbox.textureSize = WebSize(m_size.width(), m_size.height());
@@ -532,7 +533,8 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gl
         m_gl->ProduceTextureDirectCHROMIUM(textureId, target, mailbox.name);
         const GLuint64 fenceSync = m_gl->InsertFenceSyncCHROMIUM();
         m_gl->Flush();
-        mailbox.validSyncToken = m_context->genSyncTokenCHROMIUM(fenceSync, mailbox.syncToken);
+        m_gl->GenSyncTokenCHROMIUM(fenceSync, mailbox.syncToken);
+        mailbox.validSyncToken = true;
     }
 
     if (mailbox.validSyncToken)
@@ -554,8 +556,8 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gl
 
     gl->Flush();
     GLbyte syncToken[24];
-    if (context->genSyncTokenCHROMIUM(fenceSync, syncToken))
-        m_gl->WaitSyncTokenCHROMIUM(syncToken);
+    gl->GenSyncTokenCHROMIUM(fenceSync, syncToken);
+    m_gl->WaitSyncTokenCHROMIUM(syncToken);
 
     return true;
 }

@@ -163,6 +163,11 @@ public:
         }
     }
 
+    void GenSyncTokenCHROMIUM(GLuint64 fenceSync, GLbyte* syncToken) override
+    {
+        memcpy(syncToken, &fenceSync, sizeof(fenceSync));
+    }
+
     uint32_t boundTexture() const { return m_boundTexture; }
     uint32_t boundTextureTarget() const { return m_boundTextureTarget; }
     uint32_t mostRecentlyWaitedSyncToken() const { return m_mostRecentlyWaitedSyncToken; }
@@ -190,12 +195,6 @@ public:
     WebGraphicsContext3DForTests(PassOwnPtr<GLES2InterfaceForTests> contextGL)
         : m_contextGL(std::move(contextGL))
     {
-    }
-
-    bool genSyncTokenCHROMIUM(WGC3Duint64 fenceSync, WGC3Dbyte* syncToken) override
-    {
-        memcpy(syncToken, &fenceSync, sizeof(fenceSync));
-        return true;
     }
 
     WGC3Duint mostRecentlyWaitedSyncToken()
@@ -462,7 +461,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
     EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncToken());
 
     WGC3Duint64 waitSyncToken = 0;
-    webContext()->genSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    m_gl->GenSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
     memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
     mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
@@ -475,7 +474,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
     EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 
     m_drawingBuffer->beginDestruction();
-    webContext()->genSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    m_gl->GenSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
     memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
     mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
@@ -736,7 +735,8 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
 
-    mailbox.validSyncToken = webContext()->genSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), mailbox.syncToken);
+    m_gl->GenSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), mailbox.syncToken);
+    mailbox.validSyncToken = true;
     m_drawingBuffer->setIsHidden(true);
     m_drawingBuffer->mailboxReleased(mailbox);
     // m_drawingBuffer deletes mailbox immediately when hidden.

@@ -37,9 +37,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
 
-  bool genSyncTokenCHROMIUM(blink::WGC3Duint64 fenceSync,
-                            blink::WGC3Dbyte* syncToken) override;
-
   void drawElements(blink::WGC3Denum mode,
                     blink::WGC3Dsizei count,
                     blink::WGC3Denum type,

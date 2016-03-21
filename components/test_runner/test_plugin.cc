@@ -263,7 +263,7 @@ void TestPlugin::updateGeometry(
     gl_->Flush();
 
     gpu::SyncToken sync_token;
-    context_->genSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
     texture_mailbox_ = cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D);
   } else {
     scoped_ptr<cc::SharedBitmap> bitmap =

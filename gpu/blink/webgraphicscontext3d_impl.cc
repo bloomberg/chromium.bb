@@ -199,12 +199,6 @@ void WebGraphicsContext3DImpl::synthesizeGLError(WGC3Denum error) {
   }
 }
 
-bool WebGraphicsContext3DImpl::genSyncTokenCHROMIUM(WGC3Duint64 fenceSync,
-                                                    WGC3Dbyte* syncToken) {
-  gl_->GenSyncTokenCHROMIUM(fenceSync, syncToken);
-  return true;
-}
-
 blink::WebString WebGraphicsContext3DImpl::
     getRequestableExtensionsCHROMIUM() {
   return blink::WebString::fromUTF8(

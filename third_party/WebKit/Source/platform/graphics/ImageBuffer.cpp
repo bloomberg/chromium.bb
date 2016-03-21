@@ -203,7 +203,6 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles
     OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!provider)
         return false;
-    WebGraphicsContext3D* sharedContext = provider->context3d();
     gpu::gles2::GLES2Interface* sharedGL = provider->contextGL();
 
     OwnPtr<WebExternalTextureMailbox> mailbox = adoptPtr(new WebExternalTextureMailbox);
@@ -215,9 +214,9 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles
     const GLuint64 sharedFenceSync = sharedGL->InsertFenceSyncCHROMIUM();
     sharedGL->Flush();
 
-    mailbox->validSyncToken = sharedContext->genSyncTokenCHROMIUM(sharedFenceSync, mailbox->syncToken);
-    if (mailbox->validSyncToken)
-        gl->WaitSyncTokenCHROMIUM(mailbox->syncToken);
+    sharedGL->GenSyncTokenCHROMIUM(sharedFenceSync, mailbox->syncToken);
+    mailbox->validSyncToken = true;
+    gl->WaitSyncTokenCHROMIUM(mailbox->syncToken);
 
     Platform3DObject sourceTexture = gl->CreateAndConsumeTextureCHROMIUM(textureInfo->fTarget, mailbox->name);
 
@@ -232,8 +231,8 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles
     gl->Flush();
 
     WGC3Dbyte syncToken[24];
-    if (context->genSyncTokenCHROMIUM(contextFenceSync, syncToken))
-        sharedGL->WaitSyncTokenCHROMIUM(syncToken);
+    gl->GenSyncTokenCHROMIUM(contextFenceSync, syncToken);
+    sharedGL->WaitSyncTokenCHROMIUM(syncToken);
 
     // Undo grContext texture binding changes introduced in this function
     provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);

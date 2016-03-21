@@ -137,8 +137,6 @@ public:
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
-    virtual bool genSyncTokenCHROMIUM(WGC3Duint64, WGC3Dbyte*) { return false; }
-
     // Synthesizes an OpenGL error which will be returned from a
     // later call to getError. This is used to emulate OpenGL ES
     // 2.0 behavior on the desktop and to enforce additional error

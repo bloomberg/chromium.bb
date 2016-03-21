@@ -229,7 +229,8 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, WebEx
 
     const WGC3Duint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
     context()->flush();
-    info.m_mailbox.validSyncToken = context()->genSyncTokenCHROMIUM(fenceSync, info.m_mailbox.syncToken);
+    gl->GenSyncTokenCHROMIUM(fenceSync, info.m_mailbox.syncToken);
+    info.m_mailbox.validSyncToken = true;
 
     info.m_imageInfo = imageInfo;
     *outMailbox = info.m_mailbox;
@@ -343,7 +344,6 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
     mailboxInfo.m_image->getTexture()->textureParamsModified();
     mailboxInfo.m_mailbox.textureTarget = GL_TEXTURE_2D;
 
-    WebGraphicsContext3D* webContext = context();
     gpu::gles2::GLES2Interface* gl = contextGL();
     GLuint textureID = skia::GrBackendObjectToGrGLTextureInfo(mailboxInfo.m_image->getTextureHandle(true))->fID;
     gl->BindTexture(GL_TEXTURE_2D, textureID);
@@ -372,7 +372,8 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
         // but currently the canvas will flicker if we don't flush here.
         const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
         gl->Flush();
-        mailboxInfo.m_mailbox.validSyncToken = webContext->genSyncTokenCHROMIUM(fenceSync, mailboxInfo.m_mailbox.syncToken);
+        gl->GenSyncTokenCHROMIUM(fenceSync, mailboxInfo.m_mailbox.syncToken);
+        mailboxInfo.m_mailbox.validSyncToken = true;
     }
     gl->BindTexture(GL_TEXTURE_2D, 0);
     // Because we are changing the texture binding without going through skia,
