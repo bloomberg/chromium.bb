@@ -459,14 +459,13 @@ struct ExtentOfCharacterData : QueryData {
     FloatRect extent;
 };
 
-static inline void calculateGlyphBoundaries(const QueryData* queryData, const SVGTextFragment& fragment, int startPosition, FloatRect& extent)
+static inline FloatRect calculateGlyphBoundaries(const QueryData* queryData, const SVGTextFragment& fragment, int startPosition)
 {
     float scalingFactor = queryData->textLineLayout.scalingFactor();
     ASSERT(scalingFactor);
 
     FloatPoint glyphPosition = calculateGlyphPositionWithoutTransform(queryData, fragment, startPosition);
     glyphPosition.move(0, -queryData->textLineLayout.scaledFont().getFontMetrics().floatAscent() / scalingFactor);
-    extent.setLocation(glyphPosition);
 
     // Use the SVGTextMetrics computed by SVGTextMetricsBuilder (which spends
     // time attempting to compute more correct glyph bounds already, handling
@@ -477,20 +476,21 @@ static inline void calculateGlyphBoundaries(const QueryData* queryData, const SV
     // TODO(fs): Negative glyph extents seems kind of weird to have, but
     // presently it can occur in some cases (like Arabic.)
     FloatSize glyphSize(std::max<float>(metrics.width(), 0), std::max<float>(metrics.height(), 0));
-    extent.setSize(glyphSize);
 
     // If RTL, adjust the starting point to align with the LHS of the glyph bounding box.
     if (!queryData->textBox->isLeftToRightDirection()) {
         if (queryData->isVerticalText)
-            extent.move(0, -glyphSize.height());
+            glyphPosition.move(0, -glyphSize.height());
         else
-            extent.move(-glyphSize.width(), 0);
+            glyphPosition.move(-glyphSize.width(), 0);
     }
 
+    FloatRect extent(glyphPosition, glyphSize);
     if (fragment.isTransformed()) {
         AffineTransform fragmentTransform = fragment.buildFragmentTransform(SVGTextFragment::TransformIgnoringTextLength);
         extent = fragmentTransform.mapRect(extent);
     }
+    return extent;
 }
 
 static inline FloatRect calculateFragmentBoundaries(LineLayoutSVGInlineText textLineLayout, const SVGTextFragment& fragment)
@@ -510,7 +510,7 @@ static bool extentOfCharacterCallback(QueryData* queryData, const SVGTextFragmen
     if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment, startPosition, endPosition))
         return false;
 
-    calculateGlyphBoundaries(queryData, fragment, startPosition, data->extent);
+    data->extent = calculateGlyphBoundaries(queryData, fragment, startPosition);
     return true;
 }
 
@@ -585,12 +585,11 @@ static bool characterNumberAtPositionCallback(QueryData* queryData, const SVGTex
 
     // Iterate through the glyphs in this fragment, and check if their extents
     // contain the query point.
-    FloatRect extent;
     const Vector<SVGTextMetrics>& textMetrics = queryData->textLineLayout.layoutAttributes()->textMetricsValues();
     unsigned textMetricsOffset = fragment.metricsListOffset;
     unsigned fragmentOffset = 0;
     while (fragmentOffset < fragment.length) {
-        calculateGlyphBoundaries(queryData, fragment, fragmentOffset, extent);
+        FloatRect extent = calculateGlyphBoundaries(queryData, fragment, fragmentOffset);
         if (extent.contains(data->position)) {
             // Compute the character offset of the glyph within the text node.
             unsigned offsetInBox = fragment.characterOffset - queryData->textBox->start() + fragmentOffset;
