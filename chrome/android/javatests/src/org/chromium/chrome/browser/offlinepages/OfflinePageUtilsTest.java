@@ -173,8 +173,9 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
             @Override
             public void run() {
                 Log.d(TAG, "Showing offline snackbar from UI thread");
-                OfflinePageUtils.showOfflineSnackbarIfNecessary(
-                        getActivity(), getActivity().getActivityTab(), mockSnackbarController);
+                OfflinePageUtils.showOfflineSnackbarIfNecessary(getActivity().getBaseContext(),
+                        getActivity().getSnackbarManager(), getActivity().getActivityTab(),
+                        mockSnackbarController);
 
                 // Pretend that we went online, this should cause the snackbar to show.
                 // This call will set the isConnected call to return true.

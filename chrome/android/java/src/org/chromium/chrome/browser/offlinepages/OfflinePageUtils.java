@@ -12,8 +12,10 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.offlinepages.FeatureMode;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
@@ -126,7 +128,7 @@ public class OfflinePageUtils {
      * Whenever we reload an offline page, if we are online, load the online version of the page
      * instead, on the theory that the user prefers the online version of the page.
      */
-    public static void preferOnlineVersion(ChromeActivity activity, Tab tab, String newUrl) {
+    public static void preferOnlineVersion(Tab tab, String newUrl) {
         // If we are reloading an offline page, but are online, get the online version.
         if (newUrl.equals(tab.getUrl()) && isConnected()) {
             Log.i(TAG, "Refreshing to the online version of an offline page, since we are online");
@@ -160,18 +162,22 @@ public class OfflinePageUtils {
      * @param tab The current tab.
      */
     public static void showOfflineSnackbarIfNecessary(ChromeActivity activity, Tab tab) {
-        showOfflineSnackbarIfNecessary(activity, tab, null);
+        SnackbarController snackbarController =
+                createSnackbarController(activity.getTabModelSelector(), tab.getId());
+        showOfflineSnackbarIfNecessary(
+                activity.getBaseContext(), activity.getSnackbarManager(), tab, snackbarController);
     }
 
     /**
      * Shows the snackbar for the current tab to provide offline specific information if needed.
      * This method is used by testing for dependency injecting a snackbar controller.
-     * @param activity The activity owning the tab.
+     * @param context android context
+     * @param snackbarManager The snackbar manager to show and dismiss snackbars.
      * @param tab The current tab.
-     * @param snackbarController Class to show the snackbar.
+     * @param snackbarController The snackbar controller to control snackbar behavior.
      */
-    public static void showOfflineSnackbarIfNecessary(
-            ChromeActivity activity, Tab tab, SnackbarController snackbarController) {
+    static void showOfflineSnackbarIfNecessary(Context context, SnackbarManager snackbarManager,
+            Tab tab, SnackbarController snackbarController) {
         Log.d(TAG, "showOfflineSnackbarIfNecessary, controller is " + snackbarController);
         if (tab == null || tab.isFrozen()) return;
 
@@ -179,11 +185,6 @@ public class OfflinePageUtils {
 
         // We only show a snackbar if we are seeing an offline page.
         if (!tab.isOfflinePage()) return;
-
-        // Get a snackbar controller if we need one.
-        if (snackbarController == null) {
-            snackbarController = getSnackbarController(activity, tab);
-        }
 
         final boolean connected = isConnected();
 
@@ -195,12 +196,13 @@ public class OfflinePageUtils {
         // page, offer to reload it now.
         if (!tab.isHidden() && connected) {
             Log.d(TAG, "Offering to reload page, controller " + snackbarController);
-            showReloadSnackbar(activity, snackbarController);
+            showReloadSnackbar(context, snackbarManager, snackbarController);
             return;
         }
 
         // Set up the tab observer to watch for the tab being unhidden or connectivity.
-        OfflinePageTabObserver.addObserverForTab(activity, tab, connected, snackbarController);
+        OfflinePageTabObserver.addObserverForTab(
+                context, snackbarManager, tab, connected, snackbarController);
         return;
     }
 
@@ -209,25 +211,24 @@ public class OfflinePageUtils {
      * @param activity The activity owning the tab.
      * @param snackbarController Class to show the snackbar.
      */
-    public static void showReloadSnackbar(final ChromeActivity activity,
+    public static void showReloadSnackbar(Context context, SnackbarManager snackbarManager,
             final SnackbarController snackbarController) {
         Log.d(TAG, "showReloadSnackbar called with controller " + snackbarController);
-        Context context = activity.getBaseContext();
         final int snackbarTextId = getStringId(R.string.offline_pages_viewing_offline_page);
         Snackbar snackbar = Snackbar.make(context.getString(snackbarTextId), snackbarController,
                                             Snackbar.TYPE_ACTION)
                                     .setAction(context.getString(R.string.reload), RELOAD_BUTTON);
-        Log.d(TAG, "made snackbar with controller " + snackbarController);
         snackbar.setDuration(SNACKBAR_DURATION);
-        activity.getSnackbarManager().showSnackbar(snackbar);
+        snackbarManager.showSnackbar(snackbar);
     }
 
     /**
      * Gets a snackbar controller that we can use to show our snackbar.
+     * @param tabModelSelector used to retrieve a tab by ID
+     * @param tabId an ID of a tab that shows the snackbar
      */
-    private static SnackbarController getSnackbarController(
-            final ChromeActivity activity, final Tab tab) {
-        final int tabId = tab.getId();
+    private static SnackbarController createSnackbarController(
+            final TabModelSelector tabModelSelector, final int tabId) {
         Log.d(TAG, "building snackbar controller");
 
         return new SnackbarController() {
@@ -235,7 +236,7 @@ public class OfflinePageUtils {
             public void onAction(Object actionData) {
                 assert RELOAD_BUTTON == (int) actionData;
                 RecordUserAction.record("OfflinePages.ReloadButtonClicked");
-                Tab foundTab = activity.getTabModelSelector().getTabById(tabId);
+                Tab foundTab = tabModelSelector.getTabById(tabId);
                 if (foundTab == null) return;
 
                 LoadUrlParams params = new LoadUrlParams(

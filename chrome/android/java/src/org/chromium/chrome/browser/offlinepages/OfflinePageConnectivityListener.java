@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.content.Context;
+
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.net.NetworkChangeNotifier;
@@ -16,20 +18,24 @@ import org.chromium.net.NetworkChangeNotifier;
 public class OfflinePageConnectivityListener
         implements NetworkChangeNotifier.ConnectionTypeObserver {
     private static final String TAG = "OfflinePageCL";
+    private Context mContext;
+    private SnackbarManager mSnackbarManager;
     private Tab mTab;
-    private ChromeActivity mActivity;
     private boolean mSeen;
     private boolean mEnabled;
     private SnackbarController mSnackbarController;
 
     /**
      * Builds an offline page connectivity listener.
-     * @param activity The ChromeActivity that we are listening for.
+     * @param context android context
+     * @param snackbarManager The snackbar manager to show and dismiss snackbars.
      * @param tab The current tab that we are setting up a listener for.
+     * @param snackbarController The snackbar controller to control snackbar behavior.
      */
-    public OfflinePageConnectivityListener(
-            ChromeActivity activity, Tab tab, SnackbarController snackbarController) {
-        this.mActivity = activity;
+    public OfflinePageConnectivityListener(Context context, SnackbarManager snackbarManager,
+            Tab tab, SnackbarController snackbarController) {
+        this.mContext = context;
+        this.mSnackbarManager = snackbarManager;
         this.mTab = tab;
         this.mSeen = false;
         this.mEnabled = false;
@@ -53,7 +59,8 @@ public class OfflinePageConnectivityListener
         // several seconds.
         if (connected && mTab != null && !mSeen) {
             Log.d(TAG, "Connection became available, show reload snackbar.");
-            OfflinePageUtils.showOfflineSnackbarIfNecessary(mActivity, mTab, mSnackbarController);
+            OfflinePageUtils.showOfflineSnackbarIfNecessary(
+                    mContext, mSnackbarManager, mTab, mSnackbarController);
             // We can stop listening for online transitions once we go online.
             disable();
             mSeen = true;
@@ -62,6 +69,7 @@ public class OfflinePageConnectivityListener
 
     /**
      * Enable the listener when we have an offline page showing.
+     * @param snackbarController The snackbar controller to control snackbar behavior.
      */
     public void enable(SnackbarController snackbarController) {
         if (!mEnabled) {
