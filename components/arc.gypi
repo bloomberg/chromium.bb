@@ -50,6 +50,8 @@
         'arc/ime/arc_ime_ipc_host_impl.h',
         'arc/input/arc_input_bridge.cc',
         'arc/input/arc_input_bridge.h',
+        'arc/metrics/arc_metrics_service.cc',
+        'arc/metrics/arc_metrics_service.h',
         'arc/net/arc_net_host_impl.cc',
         'arc/net/arc_net_host_impl.h',
         'arc/power/arc_power_bridge.cc',

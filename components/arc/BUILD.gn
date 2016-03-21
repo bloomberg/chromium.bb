@@ -29,6 +29,8 @@ static_library("arc") {
     "ime/arc_ime_ipc_host_impl.h",
     "input/arc_input_bridge.cc",
     "input/arc_input_bridge.h",
+    "metrics/arc_metrics_service.cc",
+    "metrics/arc_metrics_service.h",
     "net/arc_net_host_impl.cc",
     "net/arc_net_host_impl.h",
     "power/arc_power_bridge.cc",

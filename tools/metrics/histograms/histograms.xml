@@ -825,6 +825,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.AppCount">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>
+    The number of ARC apps open at any given time. Collected every 5 minutes.
+    This indicates both how many users are engaging with apps and, when they do
+    engage, how many apps they are engaging with at a time.
+  </summary>
+</histogram>
+
 <histogram name="ArcRuntime.LowMemoryKiller.FreedSize" units="KB">
   <owner>elijahtaylor@google.com</owner>
   <summary>The memory size freed by each low memory kill event.</summary>
