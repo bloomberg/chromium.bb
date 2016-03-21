@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -69,8 +68,7 @@ void DailyEvent::CheckInterval() {
     // The first time we call CheckInterval, we read the time stored in prefs.
     last_fired_ = base::Time::FromInternalValue(
         pref_service_->GetInt64(pref_name_));
-    DVLOG(1) << "DailyEvent time loaded: "
-             << base::TimeFormatShortDateAndTime(last_fired_);
+    DVLOG(1) << "DailyEvent time loaded: " << last_fired_;
     if (last_fired_.is_null()) {
       DVLOG(1) << "DailyEvent first run.";
       RecordIntervalTypeHistogram(histogram_name_, FIRST_RUN);

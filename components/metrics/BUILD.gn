@@ -73,7 +73,6 @@ source_set("metrics") {
   deps = [
     "//base",
     "//base:base_static",
-    "//base:i18n",
     "//components/prefs",
     "//components/variations",
     "//third_party/zlib:compression_utils",

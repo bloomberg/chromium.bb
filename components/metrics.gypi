@@ -13,7 +13,6 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_i18n',
         '../third_party/zlib/google/zip.gyp:compression_utils',
         'component_metrics_proto',
         'prefs/prefs.gyp:prefs',
