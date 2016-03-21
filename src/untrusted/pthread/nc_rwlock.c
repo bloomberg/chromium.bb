@@ -23,6 +23,9 @@
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
+/* Number of rdlocks that the current thread holds. */
+static __thread unsigned int thread_rdlock_count = 0;
+
 int pthread_rwlockattr_init(pthread_rwlockattr_t *attr) {
   return 0;
 }
@@ -93,7 +96,7 @@ static inline int read_lock_available(pthread_rwlock_t *rwlock) {
    * rdlocks. See: http://stackoverflow.com/questions/2190090/
    * how-to-prevent-writer-starvation-in-a-read-write-lock-in-pthreads
    */
-  if (rwlock->writers_waiting > 0 && __nc_get_tdb()->rdlock_count == 0)
+  if (rwlock->writers_waiting > 0 && thread_rdlock_count == 0)
     return 0;
   return 1;
 }
@@ -135,7 +138,7 @@ static int rdlock_internal(pthread_rwlock_t *rwlock,
 
   /* Acquire the read lock. */
   rwlock->reader_count++;
-  __nc_get_tdb()->rdlock_count++;
+  thread_rdlock_count++;
 done:
   rc2 = pthread_mutex_unlock(&rwlock->mutex);
   return rc == 0 ? rc2 : rc;
@@ -248,7 +251,7 @@ int pthread_rwlock_unlock(pthread_rwlock_t *rwlock) {
 
     /* Release read lock. */
     rwlock->reader_count--;
-    __nc_get_tdb()->rdlock_count--;
+    thread_rdlock_count--;
     if (rwlock->reader_count == 0 && rwlock->writers_waiting > 0) {
       /* Wake a waiting writer. */
       rc = pthread_cond_signal(&rwlock->write_possible);

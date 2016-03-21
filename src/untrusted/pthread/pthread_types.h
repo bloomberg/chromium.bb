@@ -52,7 +52,6 @@ typedef struct nc_thread_descriptor {
   void *unused_dtv;  /* increase compatibility with glibc's tcbhead_t */
   int joinable;
   int join_waiting;
-  unsigned int rdlock_count;  /* number of rdlocks this thread holds */
   nc_thread_memory_block_t *stack_node;
   nc_thread_memory_block_t *tls_node;
   void *(*start_func)(void *thread_arg);
