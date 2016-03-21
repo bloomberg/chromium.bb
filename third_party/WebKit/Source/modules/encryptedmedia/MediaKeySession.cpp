@@ -845,7 +845,7 @@ void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
 
 void MediaKeySession::keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>& keys, bool hasAdditionalUsableKey)
 {
-    WTF_LOG(Media, "MediaKeySession(%p)::keysStatusesChange with %zu keys and usable key: %d", this, keys.size(), hasAdditionalUsableKey);
+    WTF_LOG(Media, "MediaKeySession(%p)::keysStatusesChange with %zu keys and hasAdditionalUsableKey is %s", this, keys.size(), hasAdditionalUsableKey ? "true" : "false");
 
     // From https://w3c.github.io/encrypted-media/#update-key-statuses:
     // The following steps are run:
