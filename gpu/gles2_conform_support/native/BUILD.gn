@@ -16,6 +16,7 @@ source_set("native") {
     "EGLAPIENTRY=",
   ]
   deps = [
+    ":windowless",
     "//base",
     "//gpu/gles2_conform_support/egl",
     "//ui/gl",
