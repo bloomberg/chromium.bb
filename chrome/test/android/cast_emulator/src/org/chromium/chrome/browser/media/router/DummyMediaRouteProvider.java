@@ -12,6 +12,8 @@ import android.support.v7.media.MediaRouteProviderDescriptor;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
+import org.chromium.base.Log;
+
 import java.util.ArrayList;
 
 /**
@@ -20,6 +22,8 @@ import java.util.ArrayList;
  * The Cast app id must be fixed to "CCCCCCCC" so that these sinks can be detected.
  */
 final class DummyMediaRouteProvider extends MediaRouteProvider {
+    private static final String TAG = "DummyMRP";
+
     private static final String DUMMY_ROUTE_ID1 = "test_sink_id_1";
     private static final String DUMMY_ROUTE_ID2 = "test_sink_id_2";
     private static final String DUMMY_ROUTE_NAME1 = "test-sink-1";
@@ -32,6 +36,7 @@ final class DummyMediaRouteProvider extends MediaRouteProvider {
     }
 
     private void publishRoutes() {
+        Log.i(TAG, "Registering DummyMediaRouteProvider");
         IntentFilter filter = new IntentFilter();
         filter.addCategory(CastMediaControlIntent.categoryForCast("CCCCCCCC"));
         filter.addDataScheme("http");
