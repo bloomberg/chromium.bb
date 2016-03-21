@@ -164,7 +164,8 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
 }
 
 // Multi-process mode.
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
+// Flaky on win and Linux: https://crbug.com/594884.
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_TestMemoryInfra) {
   PerformDumpMemoryTestActions();
 }
 
