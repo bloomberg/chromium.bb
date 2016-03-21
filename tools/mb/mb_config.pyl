@@ -33,7 +33,7 @@
       'Android Webview L (dbg)': 'tbd',
       'Android Webview M (dbg)': 'tbd',
 
-      'Android GN Builder (dbg)': 'android_gn_debug_bot',
+      'Android GN Builder (dbg)': 'android_gn_debug_bot_minimal_symbols',
       'Android MIPS Builder (dbg)': 'android_gn_debug_static_bot_mipsel',
       'Android Swarm Builder':
         'swarming_android_gn_release_bot_minimal_symbols',
@@ -270,8 +270,9 @@
         'swarming_android_gyp_debug_static_bot_arm64',
       'Android Builder (dbg)': 'swarming_android_gyp_debug_static_bot',
       'Android Builder': 'swarming_android_gyp_release_bot_minimal_symbols',
-      'Android Clang Builder (dbg)': 'android_clang_asan_findbugs_gyp_debug_bot',
-      'Android GN (dbg)': 'android_gn_debug_bot',
+      'Android Clang Builder (dbg)':
+        'android_clang_asan_findbugs_gyp_debug_bot_minimal_symbols',
+      'Android GN (dbg)': 'android_gn_debug_bot_minimal_symbols',
       'Android GN': 'android_gn_release_bot_minimal_symbols',
       'Android Tests (dbg)': 'swarming_android_gyp_debug_static_bot',
       'Android Tests': 'swarming_android_gyp_release_bot_minimal_symbols',
@@ -830,8 +831,9 @@
       'android', 'cast', 'gyp', 'debug_static_bot',
     ],
 
-    'android_clang_asan_findbugs_gyp_debug_bot': [
-      'android', 'clang', 'asan', 'findbugs', 'gyp', 'debug_bot',
+    'android_clang_asan_findbugs_gyp_debug_bot_minimal_symbols': [
+      'android', 'clang', 'asan', 'findbugs', 'gyp',
+      'debug_bot_minimal_symbols',
     ],
 
     'android_clang_asan_findbugs_gyp_debug_trybot': [
@@ -840,6 +842,10 @@
 
     'android_gn_debug_bot': [
       'android', 'gn', 'debug_bot',
+    ],
+
+    'android_gn_debug_bot_minimal_symbols': [
+      'android', 'gn', 'debug_bot_minimal_symbols',
     ],
 
     'android_gn_debug_static_bot': [
