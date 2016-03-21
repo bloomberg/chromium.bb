@@ -411,7 +411,7 @@ llvm-sb-install() {
   local objdir="${LLVM_SB_OBJDIR}"
 
   local tools="pnacl-llc"
-  if [[ "${arch}" == "i686" ]]; then
+  if [[ "${arch}" == "i686" ]] || [[ "${arch}" == "armv7" ]]; then
     tools+=" pnacl-sz"
   fi
   for toolname in ${tools}; do
