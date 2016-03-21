@@ -30,11 +30,6 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   test = power.Power
   page_set = page_sets.Typical10MobilePageSet
 
-  @classmethod
-  def ShouldDisable(cls, possible_browser):  # http://crbug.com/593152
-    return (possible_browser.browser_type == 'reference' and
-            possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
-
   def SetExtraBrowserOptions(self, options):
     options.full_performance_mode = False
 
