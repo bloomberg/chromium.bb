@@ -11,6 +11,7 @@ Polymer({
    * @private
    */
   onSelect_: function(e) {
+    this.fire('unselect-all');
     this.fire('switch-display', {display: e.detail.item.id});
   },
 });
