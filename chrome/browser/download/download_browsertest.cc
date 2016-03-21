@@ -1077,6 +1077,8 @@ class DownloadTest : public InProcessBrowserTest {
   scoped_ptr<DownloadTestFileActivityObserver> file_activity_observer_;
 };
 
+namespace {
+
 class FakeDownloadProtectionService
     : public safe_browsing::DownloadProtectionService {
  public:
@@ -1151,6 +1153,8 @@ class DownloadTestWithFakeSafeBrowsing : public DownloadTest {
  protected:
   scoped_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
 };
+
+}  // namespace
 
 // NOTES:
 //
