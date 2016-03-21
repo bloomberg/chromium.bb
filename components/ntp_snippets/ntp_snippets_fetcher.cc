@@ -26,7 +26,6 @@ using net::URLRequestStatus;
 
 namespace ntp_snippets {
 
-const char kSnippetSuggestionsFilename[] = "ntp_snippets.json";
 const char kApiScope[] = "https://www.googleapis.com/auth/webhistory";
 const char kContentSnippetsServer[] =
     "https://chromereader-pa.googleapis.com/v1/fetch";
@@ -54,22 +53,16 @@ const char kHostRestrictFormat[] =
     "        \"value\": \"%s\""
     "      }";
 
-base::FilePath GetSnippetsSuggestionsPath(const base::FilePath& base_dir) {
-  return base_dir.AppendASCII(kSnippetSuggestionsFilename);
-}
-
 NTPSnippetsFetcher::NTPSnippetsFetcher(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
-    scoped_refptr<URLRequestContextGetter> url_request_context_getter,
-    const base::FilePath& base_download_path)
+    scoped_refptr<URLRequestContextGetter> url_request_context_getter)
     : OAuth2TokenService::Consumer("NTP_snippets"),
       file_task_runner_(file_task_runner),
       url_request_context_getter_(url_request_context_getter),
       signin_manager_(signin_manager),
       token_service_(token_service),
-      download_path_(GetSnippetsSuggestionsPath(base_download_path)),
       waiting_for_refresh_token_(false),
       weak_ptr_factory_(this) {}
 
@@ -102,20 +95,6 @@ void NTPSnippetsFetcher::StartTokenRequest() {
   scopes.insert(kApiScope);
   oauth_request_ = token_service_->StartRequest(
       signin_manager_->GetAuthenticatedAccountId(), scopes, this);
-}
-
-void NTPSnippetsFetcher::OnFileMoveDone(bool success) {
-  if (!success) {
-    DLOG(WARNING) << "Could not move file to "
-                  << download_path_.LossyDisplayName();
-    return;
-  }
-
-  NotifyObservers();
-}
-
-void NTPSnippetsFetcher::NotifyObservers() {
-  callback_list_.Notify(download_path_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -181,14 +160,9 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
     return;
   }
 
-  base::FilePath response_path;
-  source->GetResponseAsFilePath(false, &response_path);
-
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(), FROM_HERE,
-      base::Bind(&base::Move, response_path, download_path_),
-      base::Bind(&NTPSnippetsFetcher::OnFileMoveDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+  std::string response;
+  source->GetResponseAsString(&response);
+  callback_list_.Notify(response);
 }
 
 }  // namespace ntp_snippets

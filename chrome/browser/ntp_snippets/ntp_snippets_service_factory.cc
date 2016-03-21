@@ -14,6 +14,7 @@
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -79,6 +80,6 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
       profile->GetPrefs(), suggestions_service, task_runner,
       g_browser_process->GetApplicationLocale(), scheduler,
       make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
-          task_runner, signin_manager, token_service, request_context,
-          profile->GetPath())));
+          task_runner, signin_manager, token_service, request_context)),
+      base::Bind(&safe_json::SafeJsonParser::Parse));
 }

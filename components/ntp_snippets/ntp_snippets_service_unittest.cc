@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,62 +21,7 @@
 
 namespace ntp_snippets {
 
-class SnippetObserver : public NTPSnippetsServiceObserver {
- public:
-  SnippetObserver() : loaded_(false), shutdown_(false) {}
-  ~SnippetObserver() override {}
-
-  void NTPSnippetsServiceLoaded(NTPSnippetsService* service) override {
-    loaded_ = true;
-  }
-
-  void NTPSnippetsServiceShutdown(NTPSnippetsService* service) override {
-    shutdown_ = true;
-    loaded_ = false;
-  }
-
-  bool loaded_;
-  bool shutdown_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SnippetObserver);
-};
-
-class NTPSnippetsServiceTest : public testing::Test {
- public:
-  NTPSnippetsServiceTest() {}
-  ~NTPSnippetsServiceTest() override {}
-
-  void SetUp() override {
-    signin_client_.reset(new TestSigninClient(nullptr));
-    account_tracker_.reset(new AccountTrackerService());
-  }
-
- protected:
-  scoped_ptr<NTPSnippetsService> CreateSnippetService() {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner(
-        base::ThreadTaskRunnerHandle::Get());
-    scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
-        new net::TestURLRequestContextGetter(task_runner.get());
-    FakeProfileOAuth2TokenService* token_service =
-        new FakeProfileOAuth2TokenService();
-    FakeSigninManagerBase* signin_manager =  new FakeSigninManagerBase(
-        signin_client_.get(), account_tracker_.get());
-
-    scoped_ptr<NTPSnippetsService> service(new NTPSnippetsService(
-        nullptr, nullptr, task_runner.get(), std::string("fr"), nullptr,
-        make_scoped_ptr(new NTPSnippetsFetcher(
-            task_runner.get(), signin_manager, token_service,
-            request_context_getter, base::FilePath()))));
-    return service;
-  }
-
- private:
-  scoped_ptr<AccountTrackerService> account_tracker_;
-  scoped_ptr<TestSigninClient> signin_client_;
-  base::MessageLoop message_loop_;
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
-};
+namespace {
 
 std::string GetTestJson(const std::string& content_creation_time_str,
                         const std::string& expiry_time_str) {
@@ -123,45 +69,123 @@ std::string GetTestExpiredJson(int64_t content_creation_time_sec) {
                      base::Int64ToString(expiry_time));
 }
 
+void ParseJson(
+    const std::string& json,
+    const ntp_snippets::NTPSnippetsService::SuccessCallback& success_callback,
+    const ntp_snippets::NTPSnippetsService::ErrorCallback& error_callback) {
+  base::JSONReader json_reader;
+  scoped_ptr<base::Value> value = json_reader.ReadToValue(json);
+  if (value) {
+    success_callback.Run(std::move(value));
+  } else {
+    error_callback.Run(json_reader.GetErrorMessage());
+  }
+}
+
+class SnippetObserver : public NTPSnippetsServiceObserver {
+ public:
+  SnippetObserver() : loaded_(false), shutdown_(false) {}
+  ~SnippetObserver() override {}
+
+  void NTPSnippetsServiceLoaded(NTPSnippetsService* service) override {
+    loaded_ = true;
+  }
+
+  void NTPSnippetsServiceShutdown(NTPSnippetsService* service) override {
+    shutdown_ = true;
+    loaded_ = false;
+  }
+
+  bool loaded_;
+  bool shutdown_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SnippetObserver);
+};
+
+}  // namespace
+
+class NTPSnippetsServiceTest : public testing::Test {
+ public:
+  NTPSnippetsServiceTest()
+      : signin_client_(new TestSigninClient(nullptr)),
+        account_tracker_(new AccountTrackerService()) {}
+  ~NTPSnippetsServiceTest() override {}
+
+  void SetUp() override {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner(
+        base::ThreadTaskRunnerHandle::Get());
+    scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
+        new net::TestURLRequestContextGetter(task_runner.get());
+    FakeSigninManagerBase* signin_manager =  new FakeSigninManagerBase(
+        signin_client_.get(), account_tracker_.get());
+    FakeProfileOAuth2TokenService* token_service =
+        new FakeProfileOAuth2TokenService();
+
+    service_.reset(new NTPSnippetsService(
+        nullptr, nullptr, task_runner, std::string("fr"), nullptr,
+        make_scoped_ptr(
+            new NTPSnippetsFetcher(task_runner, signin_manager, token_service,
+                                   std::move(request_context_getter))),
+        base::Bind(&ParseJson)));
+  }
+
+ protected:
+  NTPSnippetsService* service() {
+    return service_.get();
+  }
+
+  bool LoadFromJSONString(const std::string& json) {
+    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+    if (!value)
+      return false;
+
+    return service_->LoadFromValue(*value);
+  }
+
+ private:
+  base::MessageLoop message_loop_;
+  scoped_ptr<TestSigninClient> signin_client_;
+  scoped_ptr<AccountTrackerService> account_tracker_;
+  scoped_ptr<NTPSnippetsService> service_;
+
+  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
+};
+
 TEST_F(NTPSnippetsServiceTest, Create) {
-  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
-  EXPECT_FALSE(service->is_loaded());
+  EXPECT_FALSE(service()->is_loaded());
 }
 
 TEST_F(NTPSnippetsServiceTest, Loop) {
-  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
-
-  EXPECT_FALSE(service->is_loaded());
+  EXPECT_FALSE(service()->is_loaded());
 
   std::string json_str(
       "{ \"recos\": [ "
       "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
       "]}");
-  EXPECT_TRUE(service->LoadFromJSONString(json_str));
+  ASSERT_TRUE(LoadFromJSONString(json_str));
 
-  EXPECT_TRUE(service->is_loaded());
+  EXPECT_TRUE(service()->is_loaded());
 
   // The same for loop without the '&' should not compile.
-  for (auto& snippet : *service) {
+  for (auto& snippet : *service()) {
     // Snippet here is a const.
     EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
   }
   // Without the const, this should not compile.
-  for (const NTPSnippet& snippet : *service) {
+  for (const NTPSnippet& snippet : *service()) {
     EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
   }
 }
 
 TEST_F(NTPSnippetsServiceTest, Full) {
-  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
-
   std::string json_str(GetTestJson(1448459205));
 
-  EXPECT_TRUE(service->LoadFromJSONString(json_str));
-  EXPECT_EQ(service->size(), 1u);
+  ASSERT_TRUE(LoadFromJSONString(json_str));
+  EXPECT_EQ(service()->size(), 1u);
 
   // The same for loop without the '&' should not compile.
-  for (auto& snippet : *service) {
+  for (auto& snippet : *service()) {
     // Snippet here is a const.
     EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
     EXPECT_EQ(snippet.site_title(), "Site Title");
@@ -177,15 +201,13 @@ TEST_F(NTPSnippetsServiceTest, Full) {
 }
 
 TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
-  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
-
   std::string json_str(GetTestJson("aaa1448459205"));
 
-  EXPECT_TRUE(service->LoadFromJSONString(json_str));
-  EXPECT_EQ(service->size(), 1u);
+  ASSERT_TRUE(LoadFromJSONString(json_str));
+  EXPECT_EQ(service()->size(), 1u);
 
   // The same for loop without the '&' should not compile.
-  for (auto& snippet : *service) {
+  for (auto& snippet : *service()) {
     // Snippet here is a const.
     EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
     EXPECT_EQ(snippet.title(), "Title");
@@ -195,45 +217,40 @@ TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
 }
 
 TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
-  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
-
   std::string json_str(GetTestExpiredJson(1448459205));
 
-  EXPECT_TRUE(service->LoadFromJSONString(json_str));
-  EXPECT_EQ(service->size(), 0u);
+  ASSERT_TRUE(LoadFromJSONString(json_str));
+  EXPECT_EQ(service()->size(), 0u);
 }
 
 TEST_F(NTPSnippetsServiceTest, ObserverNotLoaded) {
-  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
-
   SnippetObserver observer;
-  service->AddObserver(&observer);
+  ScopedObserver<NTPSnippetsService, SnippetObserver> scoped_observer(
+      &observer);
+  scoped_observer.Add(service());
   EXPECT_FALSE(observer.loaded_);
 
   std::string json_str(
       "{ \"recos\": [ "
       "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
       "]}");
-  EXPECT_TRUE(service->LoadFromJSONString(json_str));
+  ASSERT_TRUE(LoadFromJSONString(json_str));
   EXPECT_TRUE(observer.loaded_);
-
-  service->RemoveObserver(&observer);
 }
 
 TEST_F(NTPSnippetsServiceTest, ObserverLoaded) {
-  scoped_ptr<NTPSnippetsService> service(CreateSnippetService());
-
   std::string json_str(
       "{ \"recos\": [ "
       "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
       "]}");
-  EXPECT_TRUE(service->LoadFromJSONString(json_str));
+  ASSERT_TRUE(LoadFromJSONString(json_str));
 
   SnippetObserver observer;
-  service->AddObserver(&observer);
+  ScopedObserver<NTPSnippetsService, SnippetObserver> scoped_observer(
+      &observer);
+  scoped_observer.Add(service());
 
   EXPECT_TRUE(observer.loaded_);
-
-  service->RemoveObserver(&observer);
 }
+
 }  // namespace ntp_snippets

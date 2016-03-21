@@ -64,13 +64,6 @@ base::TimeDelta GetFetchingIntervalFallback() {
                              kFetchingIntervalFallbackSeconds);
 }
 
-bool ReadFileToString(const base::FilePath& path, std::string* data) {
-  DCHECK(data);
-  bool success = base::ReadFileToString(path, data);
-  DLOG_IF(ERROR, !success) << "Error reading file " << path.LossyDisplayName();
-  return success;
-}
-
 std::vector<std::string> GetSuggestionsHosts(
     const SuggestionsProfile& suggestions) {
   std::vector<std::string> hosts;
@@ -93,7 +86,8 @@ NTPSnippetsService::NTPSnippetsService(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
-    scoped_ptr<NTPSnippetsFetcher> snippets_fetcher)
+    scoped_ptr<NTPSnippetsFetcher> snippets_fetcher,
+    const ParseJSONCallback& parse_json_callback)
     : pref_service_(pref_service),
       suggestions_service_(suggestions_service),
       loaded_(false),
@@ -101,6 +95,7 @@ NTPSnippetsService::NTPSnippetsService(
       application_language_code_(application_language_code),
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
+      parse_json_callback_(parse_json_callback),
       weak_ptr_factory_(this) {
   snippets_fetcher_callback_ = snippets_fetcher_->AddCallback(base::Bind(
       &NTPSnippetsService::OnSnippetsDownloaded, base::Unretained(this)));
@@ -192,40 +187,38 @@ void NTPSnippetsService::OnSuggestionsChanged(
 }
 
 void NTPSnippetsService::OnSnippetsDownloaded(
-    const base::FilePath& download_path) {
-  std::string* downloaded_data = new std::string;
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(), FROM_HERE,
-      base::Bind(&ReadFileToString, download_path, downloaded_data),
-      base::Bind(&NTPSnippetsService::OnFileReadDone,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(downloaded_data)));
+    const std::string& snippets_json) {
+  parse_json_callback_.Run(
+      snippets_json, base::Bind(&NTPSnippetsService::OnJsonParsed,
+                                weak_ptr_factory_.GetWeakPtr(), snippets_json),
+      base::Bind(&NTPSnippetsService::OnJsonError,
+                 weak_ptr_factory_.GetWeakPtr(), snippets_json));
 }
 
-void NTPSnippetsService::OnFileReadDone(const std::string* json, bool success) {
-  if (!success)
-    return;
-
-  DCHECK(json);
-  LoadFromJSONString(*json);
+void NTPSnippetsService::OnJsonParsed(const std::string& snippets_json,
+                                      scoped_ptr<base::Value> parsed) {
+  LOG_IF(WARNING, !LoadFromValue(*parsed)) << "Received invalid snippets: "
+                                           << snippets_json;
 }
 
-bool NTPSnippetsService::LoadFromJSONString(const std::string& str) {
-  scoped_ptr<base::Value> deserialized = base::JSONReader::Read(str);
-  if (!deserialized)
-    return false;
+void NTPSnippetsService::OnJsonError(const std::string& snippets_json,
+                                     const std::string& error) {
+  LOG(WARNING) << "Received invalid JSON (" << error << "): " << snippets_json;
+}
 
+bool NTPSnippetsService::LoadFromValue(const base::Value& value) {
   const base::DictionaryValue* top_dict = nullptr;
-  if (!deserialized->GetAsDictionary(&top_dict))
+  if (!value.GetAsDictionary(&top_dict))
     return false;
 
   const base::ListValue* list = nullptr;
   if (!top_dict->GetList("recos", &list))
     return false;
 
-  return LoadFromJSONList(*list);
+  return LoadFromListValue(*list);
 }
 
-bool NTPSnippetsService::LoadFromJSONList(const base::ListValue& list) {
+bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
   for (const base::Value* const value : list) {
     const base::DictionaryValue* dict = nullptr;
     if (!value->GetAsDictionary(&dict))
@@ -272,8 +265,8 @@ void NTPSnippetsService::LoadFromPrefs() {
   // |pref_service_| can be null in tests.
   if (!pref_service_)
     return;
-  if (!LoadFromJSONList(*pref_service_->GetList(prefs::kSnippets)))
-    LOG(ERROR) << "Failed to parse snippets from prefs";
+  bool success = LoadFromListValue(*pref_service_->GetList(prefs::kSnippets));
+  DCHECK(success) << "Failed to parse snippets from prefs";
 }
 
 void NTPSnippetsService::StoreToPrefs() {

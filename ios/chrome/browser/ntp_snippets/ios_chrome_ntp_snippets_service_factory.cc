@@ -4,7 +4,10 @@
 
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_ntp_snippets_service_factory.h"
 
+#include "base/json/json_reader.h"
 #include "base/memory/singleton.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
@@ -21,6 +24,25 @@
 
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
+
+namespace {
+
+void ParseJson(
+    const std::string& json,
+    const ntp_snippets::NTPSnippetsService::SuccessCallback& success_callback,
+    const ntp_snippets::NTPSnippetsService::ErrorCallback& error_callback) {
+  base::JSONReader json_reader;
+  scoped_ptr<base::Value> value = json_reader.ReadToValue(json);
+  if (value) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(success_callback, base::Passed(&value)));
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(error_callback, json_reader.GetErrorMessage()));
+  }
+}
+
+}  // namespace
 
 // static
 IOSChromeNTPSnippetsServiceFactory*
@@ -75,5 +97,6 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       GetApplicationContext()->GetApplicationLocale(), scheduler,
       make_scoped_ptr(new ntp_snippets::NTPSnippetsFetcher(
           task_runner, (SigninManagerBase*)signin_manager, token_service,
-          request_context, browser_state->GetStatePath()))));
+          request_context)),
+      base::Bind(&ParseJson)));
 }

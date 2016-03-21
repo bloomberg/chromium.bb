@@ -31,16 +31,15 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
                            public net::URLFetcherDelegate {
  public:
-  using SnippetsAvailableCallback = base::Callback<void(const base::FilePath&)>;
+  using SnippetsAvailableCallback = base::Callback<void(const std::string&)>;
   using SnippetsAvailableCallbackList =
-      base::CallbackList<void(const base::FilePath&)>;
+      base::CallbackList<void(const std::string&)>;
 
-  NTPSnippetsFetcher(scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-                     SigninManagerBase* signin_manager,
-                     OAuth2TokenService* oauth2_token_service,
-                     scoped_refptr<net::URLRequestContextGetter>
-                        url_request_context_getter,
-                     const base::FilePath& base_download_path);
+  NTPSnippetsFetcher(
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+      SigninManagerBase* signin_manager,
+      OAuth2TokenService* oauth2_token_service,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
   ~NTPSnippetsFetcher() override;
 
   // Adds a callback that is called when a new set of snippets are downloaded.
@@ -54,8 +53,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
 
  private:
   void StartTokenRequest();
-  void OnFileMoveDone(bool success);
-  void NotifyObservers();
 
   // OAuth2TokenService::Consumer overrides:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -83,7 +80,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   scoped_ptr<OAuth2TokenService> token_service_;
   scoped_ptr<OAuth2TokenService::Request> oauth_request_;
 
-  base::FilePath download_path_;
   bool waiting_for_refresh_token_;
 
   SnippetsAvailableCallbackList callback_list_;

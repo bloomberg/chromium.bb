@@ -25,8 +25,8 @@
 class PrefService;
 
 namespace base {
-class FilePath;
 class ListValue;
+class Value;
 }
 
 namespace suggestions {
@@ -48,6 +48,12 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   using const_iterator =
       InnerIterator<NTPSnippetStorage::const_iterator, const NTPSnippet>;
 
+  // Callbacks for JSON parsing.
+  using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
+  using ErrorCallback = base::Callback<void(const std::string&)>;
+  using ParseJSONCallback = base::Callback<
+      void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
+
   // |application_language_code| should be a ISO 639-1 compliant string. Aka
   // 'en' or 'en-US'. Note that this code should only specify the language, not
   // the locale, so 'en_US' (english language with US locale) and 'en-GB_US'
@@ -57,7 +63,8 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
                      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
-                     scoped_ptr<NTPSnippetsFetcher> snippets_fetcher);
+                     scoped_ptr<NTPSnippetsFetcher> snippets_fetcher,
+                     const ParseJSONCallback& parse_json_callback);
   ~NTPSnippetsService() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -100,18 +107,23 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   }
 
  private:
+  friend class NTPSnippetsServiceTest;
+
   void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
-  void OnSnippetsDownloaded(const base::FilePath& download_path);
-  void OnFileReadDone(const std::string* json, bool success);
+  void OnSnippetsDownloaded(const std::string& snippets_json);
+
+  void OnJsonParsed(const std::string& snippets_json,
+                    scoped_ptr<base::Value> parsed);
+  void OnJsonError(const std::string& snippets_json, const std::string& error);
 
   // Expects a top-level dictionary containing a "recos" list, which will be
-  // passed to |LoadFromJSONList|.
-  bool LoadFromJSONString(const std::string& str);
+  // passed to LoadFromListValue().
+  bool LoadFromValue(const base::Value& value);
 
   // Expects a list of dictionaries each containing a "contentInfo" dictionary
-  // with keys matching the properties of a  snippet (url, title, site_title,
-  // etc...). The url is the only mandatory value.
-  bool LoadFromJSONList(const base::ListValue& list);
+  // with keys matching the properties of a snippet (url, title, site_title,
+  // etc...). The URL is the only mandatory value.
+  bool LoadFromListValue(const base::ListValue& list);
 
   // TODO(treib): Investigate a better storage, maybe LevelDB or SQLite?
   void LoadFromPrefs();
@@ -158,15 +170,9 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   // Timer that calls us back when the next snippet expires.
   base::OneShotTimer expiry_timer_;
 
-  base::WeakPtrFactory<NTPSnippetsService> weak_ptr_factory_;
+  const ParseJSONCallback parse_json_callback_;
 
-  friend class NTPSnippetsServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, Loop);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, Full);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, CreationTimestampParseFail);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, RemoveExpiredContent);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, ObserverLoaded);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, ObserverNotLoaded);
+  base::WeakPtrFactory<NTPSnippetsService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
 };
