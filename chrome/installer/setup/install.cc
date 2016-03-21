@@ -253,6 +253,28 @@ installer::InstallStatus InstallNewVersion(
   return installer::INSTALL_FAILED;
 }
 
+// Returns the number of components in |file_path|.
+size_t GetNumPathComponents(const base::FilePath& file_path) {
+  std::vector<base::FilePath::StringType> components;
+  file_path.GetComponents(&components);
+  return components.size();
+}
+
+// Returns a path made with the |num_components| first components of
+// |file_path|. |file_path| is returned as-is if it contains less than
+// |num_components| components.
+base::FilePath TruncatePath(const base::FilePath& file_path,
+                            size_t num_components) {
+  std::vector<base::FilePath::StringType> components;
+  file_path.GetComponents(&components);
+  if (components.size() <= num_components)
+    return file_path;
+  base::FilePath truncated_file_path;
+  for (size_t i = 0; i < num_components; ++i)
+    truncated_file_path = truncated_file_path.Append(components[i]);
+  return truncated_file_path;
+}
+
 }  // namespace
 
 namespace installer {
@@ -261,7 +283,7 @@ void UpdatePerUserShortcutsInLocation(
     const ShellUtil::ShortcutLocation shortcut_location,
     BrowserDistribution* dist,
     const base::FilePath& old_target_dir,
-    const base::FilePath& old_target_path_suffix,
+    const base::FilePath& old_target_name_suffix,
     const base::FilePath& new_target_path) {
   base::FilePath shortcut_path;
   const bool get_shortcut_path_return = ShellUtil::GetShortcutPath(
@@ -278,18 +300,42 @@ void UpdatePerUserShortcutsInLocation(
     recursive = true;
   }
 
+  const size_t num_old_target_dir_components =
+      GetNumPathComponents(old_target_dir);
+  InstallUtil::ProgramCompare old_target_dir_comparator(
+      old_target_dir,
+      InstallUtil::ProgramCompare::ComparisonType::FILE_OR_DIRECTORY);
+
   base::FileEnumerator shortcuts_enum(shortcut_path, recursive,
                                       base::FileEnumerator::FILES);
   for (base::FilePath shortcut = shortcuts_enum.Next(); !shortcut.empty();
        shortcut = shortcuts_enum.Next()) {
-    base::FilePath existing_target_path;
-    if (!base::win::ResolveShortcut(shortcut, &existing_target_path, nullptr) ||
-        !base::StartsWith(existing_target_path.value(),
-                          old_target_dir.AsEndingWithSeparator().value(),
-                          base::CompareCase::INSENSITIVE_ASCII) ||
-        !base::EndsWith(existing_target_path.value(),
-                        old_target_path_suffix.value(),
-                        base::CompareCase::INSENSITIVE_ASCII)) {
+    base::win::ShortcutProperties shortcut_properties;
+    if (!base::win::ResolveShortcutProperties(
+            shortcut, (base::win::ShortcutProperties::PROPERTIES_TARGET |
+                       base::win::ShortcutProperties::PROPERTIES_ICON),
+            &shortcut_properties)) {
+      continue;
+    }
+
+    if (shortcut_properties.target.ReferencesParent() ||
+        shortcut_properties.icon.ReferencesParent()) {
+      continue;
+    }
+
+    // Skip shortcuts whose target isn't a file rooted at |old_target_dir| with
+    // a name ending in |old_target_name_suffix|. Except for shortcuts whose
+    // icon is rooted at |old_target_dir|. Note that there can be a false
+    // negative if the target path or the icon path is a symlink.
+    // TODO(fdoray): The second condition is only intended to fix Canary
+    // shortcuts broken by crbug.com/595374, remove it in May 2016.
+    if (!(old_target_dir_comparator.EvaluatePath(TruncatePath(
+              shortcut_properties.target, num_old_target_dir_components)) &&
+          base::EndsWith(shortcut_properties.target.BaseName().value(),
+                         old_target_name_suffix.value(),
+                         base::CompareCase::INSENSITIVE_ASCII)) &&
+        !old_target_dir_comparator.EvaluatePath(TruncatePath(
+            shortcut_properties.icon, num_old_target_dir_components))) {
       continue;
     }
 
@@ -464,8 +510,11 @@ void CreateOrUpdateShortcuts(
       ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
       start_menu_properties, shortcut_operation);
 
-  // Update the target path of existing per-user shortcuts.
-  if (install_operation == INSTALL_SHORTCUT_REPLACE_EXISTING) {
+  // Update the target path of existing per-user shortcuts. TODO(fdoray): This
+  // is only intended to fix Canary shortcuts broken by crbug.com/595374 and
+  // crbug.com/592040, remove it in May 2016.
+  if (InstallUtil::IsChromeSxSProcess() &&
+      install_operation == INSTALL_SHORTCUT_REPLACE_EXISTING) {
     const base::FilePath updated_prefix = target.DirName().DirName();
     const base::FilePath updated_suffix = target.BaseName();
 
