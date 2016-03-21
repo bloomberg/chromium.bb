@@ -218,7 +218,11 @@ void X11WindowBase::Minimize() {}
 
 void X11WindowBase::Restore() {}
 
-void X11WindowBase::MoveCursorTo(const gfx::Point& location) {}
+void X11WindowBase::MoveCursorTo(const gfx::Point& location) {
+  XWarpPointer(xdisplay_, None, xroot_window_, 0, 0, 0, 0,
+               confirmed_bounds_.x() + location.x(),
+               confirmed_bounds_.y() + location.y());
+}
 
 void X11WindowBase::ConfineCursorToBounds(const gfx::Rect& bounds) {}
 

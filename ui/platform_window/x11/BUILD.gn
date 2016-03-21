@@ -35,6 +35,8 @@ component("x11") {
     sources += [
       "x11_cursor_ozone.cc",
       "x11_cursor_ozone.h",
+      "x11_window_manager_ozone.cc",
+      "x11_window_manager_ozone.h",
       "x11_window_ozone.cc",
       "x11_window_ozone.h",
     ]

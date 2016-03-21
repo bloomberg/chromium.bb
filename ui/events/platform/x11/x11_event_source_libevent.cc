@@ -148,13 +148,7 @@ void X11EventSourceLibevent::RemoveXEventDispatcher(
 void X11EventSourceLibevent::ProcessXEvent(XEvent* xevent) {
   scoped_ptr<ui::Event> translated_event = TranslateXEventToEvent(*xevent);
   if (translated_event) {
-    // The ui::Events produced by TranslateXEventToEvent() don't use
-    // base::NativeEvent constructors. To trigger any additional checks that
-    // occur in the base::NativeEvent constructor (eg. check for double click)
-    // we create a copy here.
-    scoped_ptr<ui::Event> event_copy =
-        ui::EventFromNative(translated_event.get());
-    DispatchEvent(event_copy.get());
+    DispatchEvent(translated_event.get());
   } else {
     // Only if we can't translate XEvent into ui::Event, try to dispatch XEvent
     // directly to XEventDispatchers.

@@ -18,6 +18,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/x11/x11_window_manager_ozone.h"
 #include "ui/platform_window/x11/x11_window_ozone.h"
 
 namespace ui {
@@ -62,8 +63,8 @@ class OzonePlatformX11 : public OzonePlatform {
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    scoped_ptr<X11WindowOzone> window =
-        make_scoped_ptr(new X11WindowOzone(event_source_.get(), delegate));
+    scoped_ptr<X11WindowOzone> window = make_scoped_ptr(new X11WindowOzone(
+        event_source_.get(), window_manager_.get(), delegate));
     window->SetBounds(bounds);
     window->Create();
     return std::move(window);
@@ -78,6 +79,7 @@ class OzonePlatformX11 : public OzonePlatform {
   }
 
   void InitializeUI() override {
+    window_manager_.reset(new X11WindowManagerOzone);
     event_source_.reset(new X11EventSourceLibevent(gfx::GetXDisplay()));
     surface_factory_ozone_.reset(new X11SurfaceFactory());
     overlay_manager_.reset(new StubOverlayManager());
@@ -93,6 +95,7 @@ class OzonePlatformX11 : public OzonePlatform {
 
  private:
   // Objects in the Browser process.
+  scoped_ptr<X11WindowManagerOzone> window_manager_;
   scoped_ptr<X11EventSourceLibevent> event_source_;
   scoped_ptr<OverlayManagerOzone> overlay_manager_;
   scoped_ptr<InputController> input_controller_;
