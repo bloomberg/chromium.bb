@@ -3292,13 +3292,13 @@
 {
    bug_576259_a
    Memcheck:Uninitialized
-   fun:_ZN7GrGLGpu11bindTextureEiRK15GrTextureParamsP11GrGLTexture
+   fun:_ZN7GrGLGpu11bindTextureEiRK15GrTextureParamsbP11GrGLTexture
    fun:_ZN7GrGLGpu12flushGLStateERK10GrPipelineRK20GrPrimitiveProcessor
    fun:_ZN7GrGLGpu6onDrawERK10GrPipelineRK20GrPrimitiveProcessorPK6GrMeshi
    fun:_ZN5GrGpu4drawERK10GrPipelineRK20GrPrimitiveProcessorPK6GrMeshi
    fun:_ZN13GrVertexBatch6onDrawEP17GrBatchFlushState
    ...
-   fun:_ZN8SkCanvas5flushEv
+   fun:_ZN2cc17SingleThreadProxy36ScheduledActionDrawAndSwapIfPossibleEv
 }
 {
    bug_576259_b
