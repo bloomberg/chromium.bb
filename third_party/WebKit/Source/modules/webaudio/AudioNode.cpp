@@ -72,9 +72,9 @@ AudioHandler::~AudioHandler()
     ASSERT(!node());
     InstanceCounters::decrementCounter(InstanceCounters::AudioHandlerCounter);
 #if DEBUG_AUDIONODE_REFERENCES
-    --s_nodeCount[nodeType()];
+    --s_nodeCount[getNodeType()];
     fprintf(stderr, "%p: %2d: AudioNode::~AudioNode() %d [%d]\n",
-        this, nodeType(), m_connectionRefCount, s_nodeCount[nodeType()]);
+        this, getNodeType(), m_connectionRefCount, s_nodeCount[getNodeType()]);
 #endif
 }
 
@@ -174,7 +174,7 @@ void AudioHandler::setNodeType(NodeType type)
 
 #if DEBUG_AUDIONODE_REFERENCES
     ++s_nodeCount[type];
-    fprintf(stderr, "%p: %2d: AudioNode::AudioNode [%3d]\n", this, nodeType(), s_nodeCount[nodeType()]);
+    fprintf(stderr, "%p: %2d: AudioNode::AudioNode [%3d]\n", this, getNodeType(), s_nodeCount[getNodeType()]);
 #endif
 }
 
