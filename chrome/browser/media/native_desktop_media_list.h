@@ -21,9 +21,6 @@ class WindowCapturer;
 // native windows.
 class NativeDesktopMediaList : public DesktopMediaListBase {
  public:
-  typedef std::map<content::DesktopMediaID::Id, content::DesktopMediaID::Id>
-      NativeAuraIdMap;
-
   // Caller may pass NULL for either of the arguments in case when only some
   // types of sources the model should be populated with (e.g. it will only
   // contain windows, if |screen_capturer| is NULL).
@@ -38,16 +35,12 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   class Worker;
   friend class Worker;
 
-  // Refresh() posts a task for the |worker_| to update list of windows and get
-  // thumbnails. Then |worker_| first posts tasks for
-  // UpdateObserverSourcesList() with fresh list of sources, then follows with
-  // OnSourceThumbnail() for each changed thumbnail and then calls
-  // DelayLaunchNextRefersh() at the end.
+  // Refresh() posts a task for the |worker_| to update list of windows, get
+  // thumbnails and schedule next refresh.
   void Refresh() override;
 
-  void OnSourceThumbnailCaptured(int index, const gfx::ImageSkia& image);
-  void FinishRefreshOnUiThreadAndScheduleNext(
-      const std::vector<content::DesktopMediaID>& aura_ids);
+  void RefreshForAuraWindows(std::vector<SourceDescription> sources);
+  void UpdateNativeThumbnailsFinished();
 
 #if defined(USE_AURA)
   void CaptureAuraWindowThumbnail(const content::DesktopMediaID& id);
@@ -71,7 +64,8 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
   ImageHashesMap previous_aura_thumbnail_hashes_;
   ImageHashesMap new_aura_thumbnail_hashes_;
 
-  int pending_aura_capture_requests_;
+  int pending_aura_capture_requests_ = 0;
+  bool pending_native_thumbnail_capture_ = true;
 #endif
 
   base::WeakPtrFactory<NativeDesktopMediaList> weak_factory_;

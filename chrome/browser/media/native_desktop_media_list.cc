@@ -8,9 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/video_util.h"
@@ -20,10 +17,16 @@
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/snapshot/snapshot.h"
+
+#if defined(OS_WIN)
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
+#endif  // defined(OS_WIN)
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
+#endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 using content::DesktopMediaID;
@@ -74,33 +77,6 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
   return gfx::ImageSkia::CreateFrom1xBitmap(result);
 }
 
-#if defined(USE_AURA)
-
-NativeDesktopMediaList::NativeAuraIdMap GetBrowserNativeAuraIdMap() {
-  NativeDesktopMediaList::NativeAuraIdMap id_map;
-  for (auto* browser : *BrowserList::GetInstance()) {
-    aura::Window* aura_window = browser->window()->GetNativeWindow();
-    if (!aura_window)
-      continue;
-    aura::WindowTreeHost* host = aura_window->GetHost();
-    if (!host)
-      continue;
-    gfx::AcceleratedWidget widget = host->GetAcceleratedWidget();
-#if defined(OS_WIN)
-    DesktopMediaID::Id native_id = reinterpret_cast<DesktopMediaID::Id>(widget);
-#else
-    DesktopMediaID::Id native_id = widget;
-#endif
-    DesktopMediaID media_id = DesktopMediaID::RegisterAuraWindow(
-        DesktopMediaID::TYPE_WINDOW, aura_window);
-    id_map[native_id] = media_id.aura_id;
-  }
-
-  return id_map;
-}
-
-#endif  // defined(USE_AURA)
-
 }  // namespace
 
 class NativeDesktopMediaList::Worker
@@ -111,9 +87,10 @@ class NativeDesktopMediaList::Worker
          scoped_ptr<webrtc::WindowCapturer> window_capturer);
   ~Worker() override;
 
-  void Refresh(const gfx::Size& thumbnail_size,
-               const DesktopMediaID::Id& view_dialog_id,
-               const NativeAuraIdMap& native_aura_id_map);
+  void Refresh(const DesktopMediaID::Id& view_dialog_id);
+
+  void RefreshThumbnails(const std::vector<DesktopMediaID>& native_ids,
+                         const gfx::Size& thumbnail_size);
 
  private:
   typedef std::map<DesktopMediaID, uint32_t> ImageHashesMap;
@@ -149,11 +126,8 @@ NativeDesktopMediaList::Worker::Worker(
 NativeDesktopMediaList::Worker::~Worker() {}
 
 void NativeDesktopMediaList::Worker::Refresh(
-    const gfx::Size& thumbnail_size,
-    const DesktopMediaID::Id& view_dialog_id,
-    const NativeAuraIdMap& native_aura_id_map) {
+    const DesktopMediaID::Id& view_dialog_id) {
   std::vector<SourceDescription> sources;
-  std::vector<DesktopMediaID> aura_media_ids;
 
   if (screen_capturer_) {
     webrtc::ScreenCapturer::ScreenList screens;
@@ -181,49 +155,38 @@ void NativeDesktopMediaList::Worker::Refresh(
       for (webrtc::WindowCapturer::WindowList::iterator it = windows.begin();
            it != windows.end(); ++it) {
         // Skip the picker dialog window.
-        if (it->id != view_dialog_id) {
-          DesktopMediaID media_id(DesktopMediaID::TYPE_WINDOW, it->id);
-#if defined(USE_AURA)
-          // Associate aura id with native id.
-          auto aura_id = native_aura_id_map.find(media_id.id);
-          if (aura_id != native_aura_id_map.end()) {
-            media_id.aura_id = aura_id->second;
-            aura_media_ids.push_back(media_id);
-          }
-#endif
-          sources.push_back(
-              SourceDescription(media_id, base::UTF8ToUTF16(it->title)));
-        }
+        if (it->id == view_dialog_id)
+          continue;
+
+        DesktopMediaID media_id(DesktopMediaID::TYPE_WINDOW, it->id);
+        sources.push_back(
+            SourceDescription(media_id, base::UTF8ToUTF16(it->title)));
       }
     }
   }
 
-  // Update list of windows before updating thumbnails.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&NativeDesktopMediaList::UpdateSourcesList,
-                                     media_list_, sources));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&NativeDesktopMediaList::RefreshForAuraWindows, media_list_,
+                 sources));
+}
 
+void NativeDesktopMediaList::Worker::RefreshThumbnails(
+    const std::vector<DesktopMediaID>& native_ids,
+    const gfx::Size& thumbnail_size) {
   ImageHashesMap new_image_hashes;
 
-  // Get a thumbnail for each source.
-  for (size_t i = 0; i < sources.size(); ++i) {
-    SourceDescription& source = sources[i];
-
-    switch (source.id.type) {
+  // Get a thumbnail for each native source.
+  for (const auto& id : native_ids) {
+    switch (id.type) {
       case DesktopMediaID::TYPE_SCREEN:
-        if (!screen_capturer_->SelectScreen(source.id.id))
+        if (!screen_capturer_->SelectScreen(id.id))
           continue;
         screen_capturer_->Capture(webrtc::DesktopRegion());
         break;
 
       case DesktopMediaID::TYPE_WINDOW:
-#if defined(USE_AURA)
-        // Aura window thumbmail capture is skipped here. It will be done
-        // asynchronously in the UI thread.
-        if (source.id.aura_id > DesktopMediaID::kNullId)
-          continue;
-#endif
-        if (!window_capturer_->SelectWindow(source.id.id))
+        if (!window_capturer_->SelectWindow(id.id))
           continue;
         window_capturer_->Capture(webrtc::DesktopRegion());
         break;
@@ -237,30 +200,27 @@ void NativeDesktopMediaList::Worker::Refresh(
     // been closed).
     if (current_frame_) {
       uint32_t frame_hash = GetFrameHash(current_frame_.get());
-      new_image_hashes[source.id] = frame_hash;
+      new_image_hashes[id] = frame_hash;
 
       // Scale the image only if it has changed.
-      ImageHashesMap::iterator it = image_hashes_.find(source.id);
+      ImageHashesMap::iterator it = image_hashes_.find(id);
       if (it == image_hashes_.end() || it->second != frame_hash) {
         gfx::ImageSkia thumbnail =
             ScaleDesktopFrame(std::move(current_frame_), thumbnail_size);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&NativeDesktopMediaList::OnSourceThumbnailCaptured,
-                       media_list_, i, thumbnail));
+            base::Bind(&NativeDesktopMediaList::UpdateSourceThumbnail,
+                       media_list_, id, thumbnail));
       }
     }
   }
 
   image_hashes_.swap(new_image_hashes);
 
-  // Aura thumbnail captures have to be done in UI thread. After they are done,
-  // a refresh will be scheduled.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &NativeDesktopMediaList::FinishRefreshOnUiThreadAndScheduleNext,
-          media_list_, aura_media_ids));
+      base::Bind(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
+                 media_list_));
 }
 
 void NativeDesktopMediaList::Worker::OnCaptureCompleted(
@@ -288,41 +248,68 @@ NativeDesktopMediaList::~NativeDesktopMediaList() {
 }
 
 void NativeDesktopMediaList::Refresh() {
-  NativeAuraIdMap native_aura_id_map;
 #if defined(USE_AURA)
-  native_aura_id_map = GetBrowserNativeAuraIdMap();
   pending_aura_capture_requests_ = 0;
   new_aura_thumbnail_hashes_.clear();
+  pending_native_thumbnail_capture_ = true;
 #endif
 
   capture_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Worker::Refresh, base::Unretained(worker_.get()),
-                 thumbnail_size_, view_dialog_id_.id, native_aura_id_map));
+      FROM_HERE, base::Bind(&Worker::Refresh, base::Unretained(worker_.get()),
+                            view_dialog_id_.id));
 }
 
-void NativeDesktopMediaList::OnSourceThumbnailCaptured(
-    int index,
-    const gfx::ImageSkia& image) {
-  UpdateSourceThumbnail(GetSource(index).id, image);
-}
-
-void NativeDesktopMediaList::FinishRefreshOnUiThreadAndScheduleNext(
-    const std::vector<DesktopMediaID>& aura_ids) {
-  // Schedule a refresh here when there is no aura thumbanil capture or schedule
-  // a refresh in OnAuraThumbnailCaptured() after all aura thumbnails are
-  // captured.
-  if (aura_ids.size() == 0) {
-    ScheduleNextRefresh();
-    return;
-  }
-
+void NativeDesktopMediaList::RefreshForAuraWindows(
+    std::vector<SourceDescription> sources) {
 #if defined(USE_AURA)
-  DCHECK_EQ(pending_aura_capture_requests_, 0);
-  for (const auto& aura_id : aura_ids) {
-    CaptureAuraWindowThumbnail(aura_id);
+  for (auto& source : sources) {
+    aura::Window* aura_window = NULL;
+#if defined(OS_WIN)
+    aura_window = views::DesktopWindowTreeHostWin::GetContentWindowForHWND(
+        reinterpret_cast<HWND>(source.id.id));
+#elif defined(USE_X11) && !defined(OS_CHROMEOS)
+    aura_window =
+        views::DesktopWindowTreeHostX11::GetContentWindowForXID(source.id.id);
+#endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
+    // Associate aura id with native id.
+    if (aura_window) {
+      DesktopMediaID aura_id = DesktopMediaID::RegisterAuraWindow(
+          DesktopMediaID::TYPE_WINDOW, aura_window);
+      source.id.aura_id = aura_id.aura_id;
+    }
   }
-#endif
+#endif  // defined(USE_AURA)
+
+  UpdateSourcesList(sources);
+
+  std::vector<DesktopMediaID> native_ids;
+  for (const auto& source : sources) {
+#if defined(USE_AURA)
+    if (source.id.aura_id > DesktopMediaID::kNullId) {
+      CaptureAuraWindowThumbnail(source.id);
+      continue;
+    }
+#endif  // defined(USE_AURA)
+    native_ids.push_back(source.id);
+  }
+
+  capture_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&Worker::RefreshThumbnails, base::Unretained(worker_.get()),
+                 native_ids, thumbnail_size_));
+}
+
+void NativeDesktopMediaList::UpdateNativeThumbnailsFinished() {
+#if defined(USE_AURA)
+  DCHECK(pending_native_thumbnail_capture_);
+  pending_native_thumbnail_capture_ = false;
+  // Schedule next refresh if native thumbnail captures finished after aura
+  // thumbnail captures.
+  if (pending_aura_capture_requests_ == 0)
+    ScheduleNextRefresh();
+#else
+  ScheduleNextRefresh();
+#endif  // defined(USE_AURA)
 }
 
 #if defined(USE_AURA)
@@ -360,7 +347,10 @@ void NativeDesktopMediaList::OnAuraThumbnailCaptured(const DesktopMediaID& id,
   DCHECK_GE(pending_aura_capture_requests_, 0);
   if (pending_aura_capture_requests_ == 0) {
     previous_aura_thumbnail_hashes_ = std::move(new_aura_thumbnail_hashes_);
-    ScheduleNextRefresh();
+    // Schedule next refresh if aura thumbnail captures finished after native
+    // thumbnail captures.
+    if (!pending_native_thumbnail_capture_)
+      ScheduleNextRefresh();
   }
 }
 
