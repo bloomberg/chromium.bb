@@ -19,9 +19,11 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NavigationPopup;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.TintedImageButton;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * The Toolbar object for Tablet screens.
@@ -43,7 +45,8 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private boolean mIsInTabSwitcherMode = false;
 
     private boolean mShowTabStack;
-
+    private boolean mToolbarButtonsVisible;
+    private TintedImageButton[] mToolbarButtons;
 
     private NavigationPopup mNavigationPopup;
 
@@ -51,7 +54,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
 
     private Boolean mUseLightColorAssets;
-    private LocationBar mLocationBar;
+    private LocationBarTablet mLocationBar;
+
+    private final int mStartPaddingWithButtons;
+    private final int mStartPaddingWithoutButtons;
 
     /**
      * Constructs a ToolbarTablet object.
@@ -60,12 +66,16 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
      */
     public ToolbarTablet(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mStartPaddingWithButtons = getResources().getDimensionPixelOffset(
+                R.dimen.tablet_toolbar_start_padding);
+        mStartPaddingWithoutButtons = getResources().getDimensionPixelOffset(
+                R.dimen.tablet_toolbar_start_padding_no_buttons);
     }
 
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
-        mLocationBar = (LocationBar) findViewById(R.id.location_bar);
+        mLocationBar = (LocationBarTablet) findViewById(R.id.location_bar);
 
         mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
         mBackButton = (TintedImageButton) findViewById(R.id.back_button);
@@ -94,6 +104,11 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             ApiCompatibilityUtils.setPaddingRelative((View) mMenuButtonWrapper.getParent(), 0, 0,
                     getResources().getDimensionPixelSize(R.dimen.tablet_toolbar_end_padding), 0);
         }
+
+        // Initialize values needed for showing/hiding toolbar buttons when the activity size
+        // changes.
+        mToolbarButtonsVisible = true;
+        mToolbarButtons = new TintedImageButton[] {mBackButton, mForwardButton, mReloadButton};
     }
 
     /**
@@ -427,4 +442,34 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             setAppMenuUpdateBadgeToVisible(true);
         }
     }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // Hide or show toolbar buttons if needed. With the introduction of multi-window on
+        // Android N, the Activity can be < 600dp, in which case the toolbar buttons need to be
+        // moved into the menu so that the location bar is usable.
+        setToolbarButtonsVisible(MeasureSpec.getSize(widthMeasureSpec)
+                >= DeviceFormFactor.getMinimumTabletWidthPx(getContext()));
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    private void setToolbarButtonsVisible(boolean visible) {
+        if (mToolbarButtonsVisible == visible) return;
+
+        mToolbarButtonsVisible = visible;
+
+        for (TintedImageButton button : mToolbarButtons) {
+            button.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+
+        mLocationBar.setShouldShowButtonsWhenUnfocused(visible);
+
+        ApiCompatibilityUtils.setPaddingRelative(this,
+                visible ? mStartPaddingWithButtons : mStartPaddingWithoutButtons,
+                getPaddingTop(),
+                ApiCompatibilityUtils.getPaddingEnd(this),
+                getPaddingBottom());
+    }
+
 }

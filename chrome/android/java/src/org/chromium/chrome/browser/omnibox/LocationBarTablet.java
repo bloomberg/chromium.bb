@@ -56,11 +56,24 @@ public class LocationBarTablet extends LocationBarLayout {
     private View[] mTargets;
     private final Rect mCachedTargetBounds = new Rect();
 
+    // Whether the microphone and bookmark buttons should be shown in the location bar. These
+    // buttons are hidden if the window size is < 600dp.
+    private boolean mShouldShowButtonsWhenUnfocused;
+    private final int mUrlContainerEndPaddingWithButtons;
+    private final int mUrlContainerEndPaddingWithoutButtons;
+
     /**
      * Constructor used to inflate from XML.
      */
     public LocationBarTablet(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mShouldShowButtonsWhenUnfocused = true;
+
+        // mUrlContainer currently does not have any end padding when buttons are visible in the
+        // unfocused location bar.
+        mUrlContainerEndPaddingWithButtons = 0;
+        mUrlContainerEndPaddingWithoutButtons = getResources().getDimensionPixelOffset(
+                R.dimen.toolbar_edge_padding);
     }
 
     @Override
@@ -145,10 +158,14 @@ public class LocationBarTablet extends LocationBarLayout {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (mIsCancelled) return;
+                if (mIsCancelled) {
+                    setUrlFocusChangeInProgress(false);
+                    return;
+                }
                 finishUrlFocusChange(hasFocus);
             }
         });
+        setUrlFocusChangeInProgress(true);
         mUrlFocusChangeAnimator.start();
     }
 
@@ -178,6 +195,22 @@ public class LocationBarTablet extends LocationBarLayout {
                 postDelayed(mKeyboardResizeModeTask, KEYBOARD_MODE_CHANGE_DELAY_MS);
             }
         }
+        setUrlFocusChangeInProgress(false);
+    }
+
+    /**
+     * @param shouldShowButtons Whether buttons should be displayed in the URL bar when it's not
+     *                          focused.
+     */
+    public void setShouldShowButtonsWhenUnfocused(boolean shouldShowButtons) {
+        mShouldShowButtonsWhenUnfocused = shouldShowButtons;
+        updateButtonVisibility();
+        ApiCompatibilityUtils.setPaddingRelative(mUrlContainer,
+                ApiCompatibilityUtils.getPaddingStart(mUrlContainer),
+                mUrlContainer.getPaddingTop(),
+                mShouldShowButtonsWhenUnfocused ? mUrlContainerEndPaddingWithButtons :
+                        mUrlContainerEndPaddingWithoutButtons,
+                mUrlContainer.getPaddingBottom());
     }
 
     /**
@@ -192,10 +225,17 @@ public class LocationBarTablet extends LocationBarLayout {
     }
 
     @Override
-    protected void updateDeleteButtonVisibility() {
-        boolean enabled = shouldShowDeleteButton();
-        mDeleteButton.setVisibility(enabled ? VISIBLE : GONE);
-        mBookmarkButton.setVisibility(enabled ? View.GONE : View.VISIBLE);
+    protected void updateButtonVisibility() {
+        updateDeleteButtonVisibility();
+
+        boolean showBookmarkButton = mShouldShowButtonsWhenUnfocused && !shouldShowDeleteButton();
+        mBookmarkButton.setVisibility(showBookmarkButton ? View.VISIBLE : View.GONE);
+
+        if (!mShouldShowButtonsWhenUnfocused) {
+            updateMicButtonVisiblity(mUrlFocusChangePercent);
+        } else {
+            mMicButton.setVisibility(isVoiceSearchEnabled() ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override

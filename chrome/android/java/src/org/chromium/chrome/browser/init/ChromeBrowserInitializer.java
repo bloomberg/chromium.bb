@@ -50,6 +50,7 @@ import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.browser.SpeechRecognition;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.policy.CombinedPolicyProvider;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.LinkedList;
 import java.util.Locale;
@@ -181,7 +182,7 @@ public class ChromeBrowserInitializer {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(mApplication);
         ApplicationStatus.registerStateListenerForAllActivities(
-                createLocaleActivityStateListener());
+                createActivityStateListener());
 
         mPreInflationStartupComplete = true;
     }
@@ -405,7 +406,7 @@ public class ChromeBrowserInitializer {
         }
     }
 
-    private ActivityStateListener createLocaleActivityStateListener() {
+    private ActivityStateListener createActivityStateListener() {
         return new ActivityStateListener() {
             @Override
             public void onActivityStateChange(Activity activity, int newState) {
@@ -417,6 +418,8 @@ public class ChromeBrowserInitializer {
                         Log.e(TAG, "Killing process because of locale change.");
                         Process.killProcess(Process.myPid());
                     }
+
+                    DeviceFormFactor.resetValuesIfNeeded(mApplication);
                 }
             }
         };

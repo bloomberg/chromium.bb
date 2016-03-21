@@ -24,6 +24,8 @@ public class DeviceFormFactor {
 
     private static Boolean sIsTablet = null;
     private static Boolean sIsLargeTablet = null;
+    private static Integer sMinimumTabletWidthPx = null;
+    private static Float sDensity = null;
 
     /**
      * @param context {@link Context} used to get the Application Context.
@@ -76,5 +78,31 @@ public class DeviceFormFactor {
             // in getRealMetrics().
             return context.getResources().getConfiguration().smallestScreenWidthDp;
         }
+    }
+
+    /**
+     * @param context {@link Context} used to get the display density.
+     * @return The minimum width in px at which the device should be treated like a tablet for
+     *         layout.
+     */
+    public static int getMinimumTabletWidthPx(Context context) {
+        if (sMinimumTabletWidthPx == null) {
+            sMinimumTabletWidthPx = Math.round(MINIMUM_TABLET_WIDTH_DP
+                    * context.getResources().getDisplayMetrics().density);
+        }
+        return sMinimumTabletWidthPx;
+    }
+
+    /**
+     * Resets all cached values if the display density has changed.
+     */
+    public static void resetValuesIfNeeded(Context context) {
+        float currentDensity = context.getResources().getDisplayMetrics().density;
+        if (sDensity != null && sDensity != currentDensity) {
+            sIsTablet = null;
+            sIsLargeTablet = null;
+            sMinimumTabletWidthPx = null;
+        }
+        sDensity = currentDensity;
     }
 }

@@ -14,7 +14,6 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.text.Selection;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -52,8 +51,6 @@ public class LocationBarPhone extends LocationBarLayout {
     private ImageView mMenuBadge;
     private View mMenuButtonWrapper;
     private int mIncognitoBadgePadding;
-    private boolean mVoiceSearchEnabled;
-    private boolean mUrlFocusChangeInProgress;
     private float mUrlFocusChangePercent;
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
@@ -167,7 +164,7 @@ public class LocationBarPhone extends LocationBarLayout {
 
         if (percent > 0f && !hasVisibleViewsAfterUrlBarWhenUnfocused()) {
             mUrlActionsContainer.setVisibility(VISIBLE);
-        } else if (percent == 0f && !mUrlFocusChangeInProgress
+        } else if (percent == 0f && !isUrlFocusChangeInProgress()
                 && !hasVisibleViewsAfterUrlBarWhenUnfocused()) {
             // If a URL focus change is in progress, then it will handle setting the visibility
             // correctly after it completes.  If done here, it would cause the URL to jump due
@@ -179,7 +176,7 @@ public class LocationBarPhone extends LocationBarLayout {
         mMicButton.setAlpha(percent);
         if (showMenuButtonInOmnibox()) mMenuButtonWrapper.setAlpha(1f - percent);
 
-        updateDeleteButtonVisibility();
+        updateButtonVisibility();
     }
 
     @Override
@@ -194,7 +191,7 @@ public class LocationBarPhone extends LocationBarLayout {
             setFocusable(false);
             setFocusableInTouchMode(false);
         }
-        mUrlFocusChangeInProgress = true;
+        setUrlFocusChangeInProgress(true);
         super.onUrlFocusChange(hasFocus);
     }
 
@@ -220,11 +217,6 @@ public class LocationBarPhone extends LocationBarLayout {
             canvas.restore();
         }
         return retVal;
-    }
-
-    @Override
-    protected boolean isUrlFocusChangeInProgress() {
-        return mUrlFocusChangeInProgress;
     }
 
     /**
@@ -295,8 +287,7 @@ public class LocationBarPhone extends LocationBarLayout {
                 getSuggestionList().invalidateSuggestionViews();
             }
         }
-        mUrlFocusChangeInProgress = false;
-        updateDeleteButtonVisibility();
+        setUrlFocusChangeInProgress(false);
 
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
         if (hasFocus && ntp != null && ntp.isLocationBarShownInNTP()) {
@@ -305,27 +296,9 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
-    protected boolean shouldShowDeleteButton() {
-        boolean hasText = !TextUtils.isEmpty(mUrlBar.getText());
-        return hasText && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
-    }
-
-    @Override
-    protected void updateDeleteButtonVisibility() {
-        boolean enabled = shouldShowDeleteButton();
-        mDeleteButton.setEnabled(enabled);
-        mDeleteButton.setVisibility(enabled ? VISIBLE : INVISIBLE);
-
-        boolean showMicButton = mVoiceSearchEnabled && !enabled
-                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress
-                        || mUrlFocusChangePercent > 0f);
-        mMicButton.setVisibility(showMicButton ? VISIBLE : INVISIBLE);
-    }
-
-    @Override
-    public void updateMicButtonState() {
-        mVoiceSearchEnabled = isVoiceSearchEnabled();
+    protected void updateButtonVisibility() {
         updateDeleteButtonVisibility();
+        updateMicButtonVisiblity(mUrlFocusChangePercent);
     }
 
     @Override
@@ -373,7 +346,7 @@ public class LocationBarPhone extends LocationBarLayout {
 
     @Override
     protected boolean shouldAnimateIconChanges() {
-        return super.shouldAnimateIconChanges() || mUrlFocusChangeInProgress;
+        return super.shouldAnimateIconChanges() || isUrlFocusChangeInProgress();
     }
 
     @Override

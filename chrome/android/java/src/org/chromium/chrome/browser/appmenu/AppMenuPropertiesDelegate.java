@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.printing.PrintingController;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * App Menu helper that handles hiding and showing menu items based on activity state.
@@ -85,10 +86,13 @@ public class AppMenuPropertiesDelegate {
             String url = currentTab.getUrl();
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_SCHEME)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+            boolean shouldShowIconRow = !mActivity.isTablet()
+                    || mActivity.getWindow().getDecorView().getWidth()
+                            < DeviceFormFactor.getMinimumTabletWidthPx(mActivity);
 
-            // Update the icon row items (not shown on tablet).
-            menu.findItem(R.id.icon_row_menu_id).setVisible(!mActivity.isTablet());
-            if (!mActivity.isTablet()) {
+            // Update the icon row items (shown in narrow form factors).
+            menu.findItem(R.id.icon_row_menu_id).setVisible(shouldShowIconRow);
+            if (shouldShowIconRow) {
                 // Disable the "Forward" menu item if there is no page to go to.
                 MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
                 forwardMenuItem.setEnabled(currentTab.canGoForward());

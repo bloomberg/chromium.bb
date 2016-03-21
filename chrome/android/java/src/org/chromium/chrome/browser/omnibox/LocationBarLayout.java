@@ -197,7 +197,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     private boolean mSuggestionsShown;
     private boolean mUrlHasFocus;
+    private boolean mUrlFocusChangeInProgress;
     private boolean mUrlFocusedFromFakebox;
+
+    private boolean mVoiceSearchEnabled;
 
     // Set to true when the user has started typing new input in the omnibox, set to false
     // when the omnibox loses focus or becomes empty.
@@ -865,7 +868,17 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      *         a phone device.
      */
     protected boolean isUrlFocusChangeInProgress() {
-        return false;
+        return mUrlFocusChangeInProgress;
+    }
+
+    /**
+     * @param inProgress Whether a URL focus change is taking place.
+     */
+    protected void setUrlFocusChangeInProgress(boolean inProgress) {
+        mUrlFocusChangeInProgress = inProgress;
+        if (!inProgress) {
+            updateButtonVisibility();
+        }
     }
 
     /**
@@ -875,7 +888,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public void onUrlFocusChange(boolean hasFocus) {
         mUrlHasFocus = hasFocus;
         mUrlContainer.onUrlFocusChanged(hasFocus);
-        updateDeleteButtonVisibility();
+        updateButtonVisibility();
         updateNavigationButton();
         Tab currentTab = getCurrentTab();
         if (hasFocus) {
@@ -1374,14 +1387,16 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * @return Whether the delete button should be shown.
      */
     protected boolean shouldShowDeleteButton() {
-        // Show the delete button at the endon the right when the bar has focus and has some text.
-        return mUrlBar.hasFocus() && !TextUtils.isEmpty(mUrlBar.getText());
+        // Show the delete button at the end when the bar has focus and has some text.
+        boolean hasText = !TextUtils.isEmpty(mUrlBar.getText());
+        return hasText && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
     }
 
     /**
      * Updates the display of the delete URL content button.
      */
     protected void updateDeleteButtonVisibility() {
+        mDeleteButton.setVisibility(shouldShowDeleteButton() ? VISIBLE : GONE);
     }
 
     /**
@@ -2260,12 +2275,31 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
+     * Call to update the visibility of the buttons inside the location bar.
+     */
+    protected void updateButtonVisibility() {
+    }
+
+    /**
      * Call to notify the location bar that the state of the voice search microphone button may
      * need to be updated.
      */
     @Override
     public void updateMicButtonState() {
-        mMicButton.setVisibility(isVoiceSearchEnabled() ? View.VISIBLE : View.GONE);
+        mVoiceSearchEnabled = isVoiceSearchEnabled();
+        updateButtonVisibility();
+    }
+
+    /**
+     * Updates the display of the mic button.
+     * @param urlFocusChangePercent The completeion percentage of the URL focus change animation.
+     */
+    protected void updateMicButtonVisiblity(float urlFocusChangePercent) {
+        boolean visible = !shouldShowDeleteButton();
+        boolean showMicButton = mVoiceSearchEnabled && visible
+                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress
+                        || urlFocusChangePercent > 0f);
+        mMicButton.setVisibility(showMicButton ? VISIBLE : GONE);
     }
 
     /**
