@@ -489,9 +489,16 @@ TEST(BrokerProcess, OpenComplexFlagsNoClientCheck) {
   // expected.
 }
 
+#if defined(OS_LINUX)
+// Flaky on Linux NG bots: https://crbug.com/595199.
+#define MAYBE_RecvMsgDescriptorLeak DISABLED_RecvMsgDescriptorLeak
+#else
+#define MAYBE_RecvMsgDescriptorLeak RecvMsgDescriptorLeak
+#endif
+
 // We need to allow noise because the broker will log when it receives our
 // bogus IPCs.
-SANDBOX_TEST_ALLOW_NOISE(BrokerProcess, RecvMsgDescriptorLeak) {
+SANDBOX_TEST_ALLOW_NOISE(BrokerProcess, MAYBE_RecvMsgDescriptorLeak) {
   // Android creates a socket on first use of the LOG call.
   // We need to ensure this socket is open before we
   // begin the test.
