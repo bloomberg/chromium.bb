@@ -183,7 +183,7 @@ bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
   ServerWindow* window = GetWindowByClientId(client_window_id);
   WindowManagerState* wms = GetWindowManagerState(window);
   ServerWindow* current_capture_window = wms ? wms->capture_window() : nullptr;
-  if (window && wms && wms->IsActive() &&
+  if (window && window->IsDrawn() && wms && wms->IsActive() &&
       access_policy_->CanSetCapture(window) &&
       (!current_capture_window ||
        access_policy_->CanSetCapture(current_capture_window)) &&

@@ -678,6 +678,24 @@ TEST_F(WindowTreeTest, ExplicitSetCapture) {
   EXPECT_EQ(nullptr, GetCaptureWindow(display));
 }
 
+// Tests that while a client is interacting with input, that capture is not
+// allowed for invisible windows.
+TEST_F(WindowTreeTest, CaptureWindowMustBeVisible) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(
+      SetupEventTargeting(&embed_connection, &tree, &window));
+  tree->AddWindow(FirstRootId(tree), ClientWindowIdForWindow(tree, window));
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  ASSERT_TRUE(tree->GetDisplay(window));
+
+  DispatchEventWithoutAck(CreatePointerDownEvent(10, 10));
+  window->SetVisible(false);
+  EXPECT_FALSE(tree->SetCapture(ClientWindowIdForWindow(tree, window)));
+  EXPECT_NE(window, GetCaptureWindow(tree->GetDisplay(window)));
+}
+
 // Tests that showing a modal window releases the capture if the capture is on a
 // descendant of the modal parent.
 TEST_F(WindowTreeTest, ShowModalWindowWithDescendantCapture) {
