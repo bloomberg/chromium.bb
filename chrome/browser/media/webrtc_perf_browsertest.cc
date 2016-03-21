@@ -198,16 +198,6 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
 
 // This is manual for its long execution time.
 
-// The video codec name is now appended to result bucket (e.g. 'video_tx_VP8').
-// TODO(asapersson): Keep test below using the default video codec (which do
-// not have the codec name appended ('video_tx')) until new tests have been
-// running for some time.
-IN_PROC_BROWSER_TEST_F(
-    WebRtcPerfBrowserTest,
-    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsDefault) {
-  RunsAudioVideoCall60SecsAndLogsInternalMetrics("");
-}
-
 IN_PROC_BROWSER_TEST_F(
     WebRtcPerfBrowserTest,
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8) {

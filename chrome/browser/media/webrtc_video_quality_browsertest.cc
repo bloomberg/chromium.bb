@@ -358,15 +358,6 @@ INSTANTIATE_TEST_CASE_P(
     WebRtcVideoQualityBrowserTest,
     testing::ValuesIn(kVideoConfigurations));
 
-// The video codec name is now appended to the test label (e.g. '720p_VP8').
-// TODO(asapersson): Keep test below using the default video codec (which do
-// not have the codec name appended ('720p')) until new tests have been
-// running for some time.
-IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MANUAL_TestVideoQualityDefault) {
-  TestVideoQuality("");
-}
-
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityVp8) {
   TestVideoQuality("VP8");
