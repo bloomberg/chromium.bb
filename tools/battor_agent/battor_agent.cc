@@ -30,6 +30,9 @@ const uint8_t kReadRetryDelayMilliseconds = 1;
 // order to ensure that the sample we synced to doesn't get thrown out.
 const uint8_t kStopTracingClockSyncDelayMilliseconds = 100;
 
+// The number of seconds allowed for a given action before timing out.
+const uint8_t kBattOrTimeoutSeconds = 10;
+
 // Returns true if the specified vector of bytes decodes to a message that is an
 // ack for the specified control message type.
 bool IsAckOfControlCommand(BattOrMessageType message_type,
@@ -159,6 +162,11 @@ void BattOrAgent::BeginConnect() {
 }
 
 void BattOrAgent::OnConnectionOpened(bool success) {
+  // Return immediately if opening the connection already timed out.
+  if (timeout_callback_.IsCancelled())
+    return;
+  timeout_callback_.Cancel();
+
   if (!success) {
     CompleteCommand(BATTOR_ERROR_CONNECTION_FAILED);
     return;
@@ -185,6 +193,12 @@ void BattOrAgent::OnConnectionOpened(bool success) {
 
 void BattOrAgent::OnBytesSent(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Return immediately if whatever action we were trying to perform already
+  // timed out.
+  if (timeout_callback_.IsCancelled())
+    return;
+  timeout_callback_.Cancel();
 
   if (!success) {
     CompleteCommand(BATTOR_ERROR_SEND_ERROR);
@@ -231,6 +245,12 @@ void BattOrAgent::OnBytesSent(bool success) {
 void BattOrAgent::OnMessageRead(bool success,
                                 BattOrMessageType type,
                                 scoped_ptr<vector<char>> bytes) {
+  // Return immediately if whatever action we were trying to perform already
+  // timed out.
+  if (timeout_callback_.IsCancelled())
+    return;
+  timeout_callback_.Cancel();
+
   if (!success) {
     switch (last_action_) {
       case Action::READ_EEPROM:
@@ -366,6 +386,12 @@ void BattOrAgent::OnMessageRead(bool success,
 void BattOrAgent::PerformAction(Action action) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  timeout_callback_.Reset(
+      base::Bind(&BattOrAgent::OnActionTimeout, AsWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, timeout_callback_.callback(),
+      base::TimeDelta::FromSeconds(kBattOrTimeoutSeconds));
+
   last_action_ = action;
 
   switch (action) {
@@ -454,6 +480,11 @@ void BattOrAgent::PerformDelayedAction(Action action, base::TimeDelta delay) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&BattOrAgent::PerformAction, AsWeakPtr(), action),
       delay);
+}
+
+void BattOrAgent::OnActionTimeout() {
+  CompleteCommand(BATTOR_ERROR_TIMEOUT);
+  timeout_callback_.Cancel();
 }
 
 void BattOrAgent::SendControlMessage(BattOrControlMessageType type,

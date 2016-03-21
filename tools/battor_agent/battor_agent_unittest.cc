@@ -86,6 +86,8 @@ class TestableBattOrAgent : public BattOrAgent {
   MockBattOrConnection* GetConnection() {
     return static_cast<MockBattOrConnection*>(connection_.get());
   }
+
+  void OnActionTimeout() override {}
 };
 
 // BattOrAgentTest provides a BattOrAgent and captures the results of its

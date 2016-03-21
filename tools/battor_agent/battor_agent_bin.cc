@@ -57,7 +57,6 @@ namespace {
 const char kIoThreadName[] = "BattOr IO Thread";
 const char kFileThreadName[] = "BattOr File Thread";
 const char kUiThreadName[] = "BattOr UI Thread";
-const int32_t kBattOrCommandTimeoutSeconds = 10;
 
 const char kUsage[] =
     "Start the battor_agent shell with:\n"
@@ -168,7 +167,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgentBin::CreateAgent, base::Unretained(this), path));
-    AwaitResult();
+    done_.Wait();
   }
 
   // Performs any cleanup necessary after the BattOr binary is done running.
@@ -176,14 +175,14 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgentBin::DeleteAgent, base::Unretained(this)));
-    AwaitResult();
+    done_.Wait();
   }
 
   void StartTracing() {
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgent::StartTracing, base::Unretained(agent_.get())));
-    AwaitResult();
+    done_.Wait();
   }
 
   void OnStartTracingComplete(BattOrError error) override {
@@ -199,7 +198,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgent::StopTracing, base::Unretained(agent_.get())));
-    AwaitResult();
+    done_.Wait();
   }
 
   void OnStopTracingComplete(const std::string& trace,
@@ -218,7 +217,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     io_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&BattOrAgent::RecordClockSyncMarker,
                               base::Unretained(agent_.get()), marker));
-    AwaitResult();
+    done_.Wait();
   }
 
   void OnRecordClockSyncMarkerComplete(BattOrError error) override {
@@ -256,13 +255,6 @@ class BattOrAgentBin : public BattOrAgent::Listener {
   void DeleteAgent() {
     agent_.reset(nullptr);
     done_.Signal();
-  }
-
-  // Waits until the previously executed command has finished executing.
-  void AwaitResult() {
-    if (!done_.TimedWait(
-            base::TimeDelta::FromSeconds(kBattOrCommandTimeoutSeconds)))
-      HandleError(BATTOR_ERROR_TIMEOUT);
   }
 
  private:
