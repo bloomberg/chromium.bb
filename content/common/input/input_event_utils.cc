@@ -11,7 +11,7 @@ namespace content {
 
 bool UseGestureBasedWheelScrolling() {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  return cmd->HasSwitch(switches::kEnableWheelGestures);
+  return !cmd->HasSwitch(switches::kDisableWheelGestures);
 }
 
 }  // namespace content
