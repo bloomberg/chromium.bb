@@ -510,6 +510,13 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
       ui::CanvasPainter(&canvas, 1.f).context());
 }
 
+// To maximize consistency with the Cocoa browser (mac_views_browser=0), accept
+// mouse clicks immediately so that clicking on Chrome from an inactive window
+// will allow the event to be processed, rather than merely activate the window.
+- (BOOL)acceptsFirstMouse:(NSEvent*)theEvent {
+  return YES;
+}
+
 - (NSTextInputContext*)inputContext {
   // If the textInputClient_ does not exist, return nil since this view does not
   // conform to NSTextInputClient protocol.
