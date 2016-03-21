@@ -259,6 +259,13 @@ bool DictionaryValue::booleanProperty(const String16& name, bool defaultValue) c
     return result;
 }
 
+double DictionaryValue::numberProperty(const String16& name, double defaultValue) const
+{
+    double result = defaultValue;
+    getNumber(name, &result);
+    return result;
+}
+
 void DictionaryValue::remove(const String16& name)
 {
     m_data.remove(name);

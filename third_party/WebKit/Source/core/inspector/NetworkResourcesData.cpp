@@ -34,16 +34,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceResponse.h"
 
-namespace {
-// 100MB
-static size_t maximumResourcesContentSize = 100 * 1000 * 1000;
-
-// 10MB
-static size_t maximumSingleResourceContentSize = 10 * 1000 * 1000;
-}
-
 namespace blink {
-
 
 PassRefPtrWillBeRawPtr<XHRReplayData> XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
 {
@@ -150,10 +141,10 @@ size_t NetworkResourcesData::ResourceData::decodeDataToContent()
 }
 
 // NetworkResourcesData
-NetworkResourcesData::NetworkResourcesData()
+NetworkResourcesData::NetworkResourcesData(size_t totalBufferSize, size_t resourceBufferSize)
     : m_contentSize(0)
-    , m_maximumResourcesContentSize(maximumResourcesContentSize)
-    , m_maximumSingleResourceContentSize(maximumSingleResourceContentSize)
+    , m_maximumResourcesContentSize(totalBufferSize)
+    , m_maximumSingleResourceContentSize(resourceBufferSize)
 {
 }
 
@@ -335,6 +326,8 @@ Vector<String> NetworkResourcesData::removeResource(Resource* cachedResource)
 
 void NetworkResourcesData::clear(const String& preservedLoaderId)
 {
+    if (!m_requestIdToResourceDataMap.size())
+        return;
     m_requestIdsDeque.clear();
     m_contentSize = 0;
 
@@ -352,8 +345,6 @@ void NetworkResourcesData::clear(const String& preservedLoaderId)
     m_requestIdToResourceDataMap.swap(preservedMap);
 
     m_reusedXHRReplayDataRequestIds.clear();
-    m_maximumResourcesContentSize = maximumResourcesContentSize;
-    m_maximumSingleResourceContentSize = maximumSingleResourceContentSize;
 }
 
 void NetworkResourcesData::setResourcesDataSizeLimits(size_t resourcesContentSize, size_t singleResourceContentSize)
