@@ -43,14 +43,6 @@
         </settings-people-page>
       </settings-section>
     </template>
-    <template is="dom-if" if="[[showPage(pageVisibility.onStartup)]]" restamp>
-      <settings-section page-title="[[i18n('onStartup')]]"
-          current-route="[[currentRoute]]" section="onStartup">
-        <settings-on-startup-page prefs="{{prefs}}"
-            current-route="{{currentRoute}}">
-        </settings-on-startup-page>
-      </settings-section>
-    </template>
     <template is="dom-if" if="[[showPage(pageVisibility.appearance)]]" restamp>
       <settings-section page-title="[[i18n('appearancePageTitle')]]"
           current-route="[[currentRoute]]" section="appearance">
@@ -87,6 +79,14 @@
       </settings-section>
     </template>
 </if>
+    <template is="dom-if" if="[[showPage(pageVisibility.onStartup)]]" restamp>
+      <settings-section page-title="[[i18n('onStartup')]]"
+          current-route="[[currentRoute]]" section="onStartup">
+        <settings-on-startup-page prefs="{{prefs}}"
+            current-route="{{currentRoute}}">
+        </settings-on-startup-page>
+      </settings-section>
+    </template>
   </template>
   <script src="basic_page.js"></script>
 </dom-module>

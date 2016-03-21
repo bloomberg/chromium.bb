@@ -1,7 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
@@ -71,25 +73,21 @@
         <paper-menu class="menu-content">
 <if expr="chromeos">
           <div>
-            <iron-icon icon="settings-ethernet" item-icon></iron-icon>
+            <iron-icon icon="device:network-wifi" item-icon></iron-icon>
             <span i18n-content="internetPageTitle"></span>
           </div>
 </if>
           <div>
-            <iron-icon icon="social:person" item-icon></iron-icon>
+            <iron-icon icon="social:people" item-icon></iron-icon>
             <span i18n-content="peoplePageTitle"></span>
           </div>
           <div>
-            <iron-icon icon="flight-takeoff" item-icon></iron-icon>
-            <span i18n-content="onStartup"></span>
-          </div>
-          <div>
-            <iron-icon icon="home" item-icon></iron-icon>
+            <iron-icon icon="image:palette" item-icon></iron-icon>
             <span i18n-content="appearancePageTitle"></span>
           </div>
 <if expr="chromeos">
           <div>
-            <iron-icon icon="device:devices" item-icon></iron-icon>
+            <iron-icon icon="hardware:laptop-chromebook" item-icon></iron-icon>
             <span i18n-content="devicePageTitle"></span>
           </div>
 </if>
@@ -99,10 +97,14 @@
           </div>
 <if expr="not chromeos">
           <div>
-            <iron-icon icon="open-in-browser" item-icon></iron-icon>
+            <iron-icon icon="av:web" item-icon></iron-icon>
             <span i18n-content="defaultBrowser"></span>
           </div>
 </if>
+          <div>
+            <iron-icon icon="icons:power-settings-new" item-icon></iron-icon>
+            <span i18n-content="onStartup"></span>
+          </div>
         </paper-menu>
       </paper-submenu>
       <paper-submenu opened="{{advancedOpened_}}" data-page="advanced"
@@ -130,29 +132,29 @@
           </div>
 </if>
           <div>
-            <iron-icon icon="lock" item-icon></iron-icon>
+            <iron-icon icon="icons:assignment" item-icon></iron-icon>
             <span i18n-content="passwordsAndAutofillPageTitle"></span>
           </div>
           <div>
-            <iron-icon icon="language" item-icon></iron-icon>
+            <iron-icon icon="icons:language" item-icon></iron-icon>
             <span i18n-content="languagesPageTitle"></span>
           </div>
           <div>
-            <iron-icon icon="file-download" item-icon></iron-icon>
+            <iron-icon icon="icons:file-download" item-icon></iron-icon>
             <span i18n-content="downloadsPageTitle"></span>
           </div>
           <div>
-            <iron-icon icon="accessibility" item-icon></iron-icon>
+            <iron-icon icon="icons:accessibility" item-icon></iron-icon>
             <span i18n-content="a11yPageTitle"></span>
           </div>
 <if expr="not chromeos">
           <div>
-            <iron-icon icon="build" item-icon></iron-icon>
+            <iron-icon icon="icons:build" item-icon></iron-icon>
             <span i18n-content="systemPageTitle"></span>
           </div>
 </if>
           <div>
-            <iron-icon icon="settings-backup-restore" item-icon></iron-icon>
+            <iron-icon icon="icons:restore" item-icon></iron-icon>
             <span i18n-content="resetPageTitle"></span>
           </div>
         </paper-menu>
