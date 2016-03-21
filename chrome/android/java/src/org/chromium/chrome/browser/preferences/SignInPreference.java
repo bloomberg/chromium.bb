@@ -29,7 +29,7 @@ import org.chromium.sync.signin.ChromeSigninController;
  * the user's name, email, and profile image when the user is signed in.
  */
 public class SignInPreference extends Preference implements SignInAllowedObserver,
-        ProfileDownloader.Observer {
+        ProfileDownloader.Observer, AndroidSyncSettings.AndroidSyncSettingsObserver {
 
     private boolean mViewEnabled;
 
@@ -50,6 +50,7 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
         manager.addSignInAllowedObserver(this);
         ProfileDownloader.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone(getContext());
+        AndroidSyncSettings.registerObserver(getContext(), this);
     }
 
     /**
@@ -60,6 +61,7 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
         SigninManager manager = SigninManager.get(getContext());
         manager.removeSignInAllowedObserver(this);
         ProfileDownloader.removeObserver(this);
+        AndroidSyncSettings.unregisterObserver(getContext(), this);
     }
 
     /**
@@ -146,6 +148,12 @@ public class SignInPreference extends Preference implements SignInAllowedObserve
     public void onProfileDownloaded(String accountId, String fullName, String givenName,
             Bitmap bitmap) {
         AccountManagementFragment.updateUserNamePictureCache(accountId, fullName, bitmap);
+        update();
+    }
+
+    // AndroidSyncSettings.AndroidSyncSettingsObserver
+    @Override
+    public void androidSyncSettingsChanged() {
         update();
     }
 }
