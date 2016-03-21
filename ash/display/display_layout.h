@@ -14,14 +14,15 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-
-namespace gfx {
-class Display;
-}
+#include "base/strings/string_piece.h"
 
 namespace base {
 class Value;
 template <typename T> class JSONValueConverter;
+}
+
+namespace gfx {
+class Display;
 }
 
 namespace ash {
@@ -68,25 +69,15 @@ struct ASH_EXPORT DisplayPlacement {
 
   std::string ToString() const;
 
-  // Used by JSONValueConverter to generate DisplayPlacement from a
-  // JSON value.  See json_value_converter.h.
-  static void RegisterJSONConverter(
-      base::JSONValueConverter<DisplayPlacement>* converter);
+  static std::string PositionToString(Position position);
+  static bool StringToPosition(const base::StringPiece& string,
+                               Position* position);
 };
 
 class ASH_EXPORT DisplayLayout final {
  public:
   DisplayLayout();
   ~DisplayLayout();
-
-  // Converter functions to/from base::Value.
-  static bool ConvertFromValue(const base::Value& value, DisplayLayout* layout);
-  static bool ConvertToValue(const DisplayLayout& layout, base::Value* value);
-
-  // Used by JSONValueConverter to generate DisplayLayout from a
-  // JSON value.  See json_value_converter.h.
-  static void RegisterJSONConverter(
-      base::JSONValueConverter<DisplayLayout>* converter);
 
   // Validates the layout object.
   static bool Validate(const DisplayIdList& list, const DisplayLayout& layout);

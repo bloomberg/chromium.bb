@@ -10,6 +10,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
 #include "ash/display/display_util.h"
+#include "ash/display/json_converter.h"
 #include "ash/shell.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -118,7 +119,7 @@ void LoadDisplayLayouts() {
   for (base::DictionaryValue::Iterator it(*layouts);
        !it.IsAtEnd(); it.Advance()) {
     scoped_ptr<ash::DisplayLayout> layout(new ash::DisplayLayout);
-    if (!ash::DisplayLayout::ConvertFromValue(it.value(), layout.get())) {
+    if (!ash::JsonToDisplayLayout(it.value(), layout.get())) {
       LOG(WARNING) << "Invalid preference value for " << it.key();
       continue;
     }
@@ -226,7 +227,7 @@ void StoreDisplayLayoutPref(const ash::DisplayIdList& list,
     if (pref_data->Get(name, &value) && value != nullptr)
       layout_value.reset(value->DeepCopy());
   }
-  if (ash::DisplayLayout::ConvertToValue(display_layout, layout_value.get()))
+  if (ash::DisplayLayoutToJson(display_layout, layout_value.get()))
     pref_data->Set(name, layout_value.release());
 }
 

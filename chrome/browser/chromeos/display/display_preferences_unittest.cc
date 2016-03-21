@@ -13,6 +13,7 @@
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
+#include "ash/display/json_converter.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -120,7 +121,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
       if (pref_data->Get(name, &value) && value != nullptr)
         layout_value.reset(value->DeepCopy());
     }
-    if (ash::DisplayLayout::ConvertToValue(display_layout, layout_value.get()))
+    if (ash::DisplayLayoutToJson(display_layout, layout_value.get()))
       pref_data->Set(name, layout_value.release());
   }
 
@@ -306,8 +307,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(displays->GetDictionary(dummy_key, &layout_value));
 
   ash::DisplayLayout stored_layout;
-  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*layout_value,
-                                                   &stored_layout));
+  EXPECT_TRUE(ash::JsonToDisplayLayout(*layout_value, &stored_layout));
   ASSERT_EQ(1u, stored_layout.placement_list.size());
 
   EXPECT_EQ(dummy_layout->placement_list[0]->position,
@@ -401,8 +401,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   // The layout is swapped.
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
 
-  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*layout_value,
-                                                   &stored_layout));
+  EXPECT_TRUE(ash::JsonToDisplayLayout(*layout_value, &stored_layout));
   ASSERT_EQ(1u, stored_layout.placement_list.size());
   const ash::DisplayPlacement& stored_placement =
       *stored_layout.placement_list[0];
@@ -579,8 +578,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     const base::DictionaryValue* new_value = nullptr;
     EXPECT_TRUE(displays->GetDictionary(key, &new_value));
     ash::DisplayLayout stored_layout;
-    EXPECT_TRUE(
-        ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+    EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
     ASSERT_EQ(1u, stored_layout.placement_list.size());
     const ash::DisplayPlacement& stored_placement =
         *stored_layout.placement_list[0];
@@ -598,8 +596,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     const base::DictionaryValue* new_value = nullptr;
     EXPECT_TRUE(displays->GetDictionary(key, &new_value));
     ash::DisplayLayout stored_layout;
-    EXPECT_TRUE(
-        ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+    EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
     ASSERT_EQ(1u, stored_layout.placement_list.size());
     const ash::DisplayPlacement& stored_placement =
         *stored_layout.placement_list[0];
@@ -618,8 +615,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     ash::DisplayLayout stored_layout;
 
     EXPECT_TRUE(displays->GetDictionary(key, &new_value));
-    EXPECT_TRUE(
-        ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+    EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
     ASSERT_EQ(1u, stored_layout.placement_list.size());
     const ash::DisplayPlacement& stored_placement =
         *stored_layout.placement_list[0];
@@ -976,7 +972,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
       ash::DisplayIdListToString(list), &new_value));
 
   ash::DisplayLayout stored_layout;
-  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+  EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
   EXPECT_TRUE(stored_layout.default_unified);
   EXPECT_FALSE(stored_layout.mirrored);
 
@@ -996,14 +992,14 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   display_manager->SetMirrorMode(true);
   ASSERT_TRUE(secondary_displays->GetDictionary(
       ash::DisplayIdListToString(list), &new_value));
-  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+  EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
   EXPECT_TRUE(stored_layout.default_unified);
   EXPECT_TRUE(stored_layout.mirrored);
 
   display_manager->SetMirrorMode(false);
   ASSERT_TRUE(secondary_displays->GetDictionary(
       ash::DisplayIdListToString(list), &new_value));
-  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+  EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
   EXPECT_TRUE(stored_layout.default_unified);
   EXPECT_FALSE(stored_layout.mirrored);
 
@@ -1012,7 +1008,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
       ash::DisplayManager::EXTENDED);
   ASSERT_TRUE(secondary_displays->GetDictionary(
       ash::DisplayIdListToString(list), &new_value));
-  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+  EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
   EXPECT_FALSE(stored_layout.default_unified);
   EXPECT_FALSE(stored_layout.mirrored);
 }

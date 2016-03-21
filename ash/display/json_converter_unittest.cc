@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_layout.h"
+#include "ash/display/json_converter.h"
 
+#include "ash/display/display_layout.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
 
-typedef testing::Test DisplayLayoutTest;
-
-TEST_F(DisplayLayoutTest, ConvertFromToValue) {
+TEST(JsonConverterTest, JsonFromToDisplayLayout) {
   DisplayLayout layout;
   layout.primary_id = 1;
   layout.mirrored = true;
@@ -29,7 +28,7 @@ TEST_F(DisplayLayoutTest, ConvertFromToValue) {
   layout.placement_list[1]->offset = 30;
 
   base::DictionaryValue value;
-  DisplayLayout::ConvertToValue(layout, &value);
+  DisplayLayoutToJson(layout, &value);
 
   const char data[] =
       "{\n"
@@ -57,14 +56,14 @@ TEST_F(DisplayLayoutTest, ConvertFromToValue) {
   EXPECT_TRUE(value.Equals(read_value.get()));
 
   DisplayLayout read_layout;
-  EXPECT_TRUE(DisplayLayout::ConvertFromValue(*read_value, &read_layout));
+  EXPECT_TRUE(JsonToDisplayLayout(*read_value, &read_layout));
   EXPECT_EQ(read_layout.mirrored, layout.mirrored);
   EXPECT_EQ(read_layout.primary_id, layout.primary_id);
   EXPECT_EQ(read_layout.default_unified, layout.default_unified);
   EXPECT_TRUE(read_layout.HasSamePlacementList(layout));
 }
 
-TEST_F(DisplayLayoutTest, ConvertFromOldJSON) {
+TEST(JsonConverterTest, OldJsonToDisplayLayout) {
   const char data[] =
       "{\n"
       "  \"primary-id\": \"1\",\n"
@@ -81,7 +80,7 @@ TEST_F(DisplayLayoutTest, ConvertFromOldJSON) {
                            << error_column;
 
   DisplayLayout read_layout;
-  EXPECT_TRUE(DisplayLayout::ConvertFromValue(*read_value, &read_layout));
+  EXPECT_TRUE(JsonToDisplayLayout(*read_value, &read_layout));
   EXPECT_EQ(true, read_layout.mirrored);
   EXPECT_EQ(1, read_layout.primary_id);
   EXPECT_EQ(false, read_layout.default_unified);
