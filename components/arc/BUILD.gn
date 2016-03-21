@@ -88,6 +88,8 @@ static_library("arc_test_support") {
   sources = [
     "test/fake_app_instance.cc",
     "test/fake_app_instance.h",
+    "test/fake_arc_bridge_bootstrap.cc",
+    "test/fake_arc_bridge_bootstrap.h",
     "test/fake_arc_bridge_instance.cc",
     "test/fake_arc_bridge_instance.h",
     "test/fake_arc_bridge_service.cc",

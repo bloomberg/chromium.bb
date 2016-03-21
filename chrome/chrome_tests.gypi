@@ -2432,6 +2432,13 @@
         }],
         ['configuration_policy==1', {
           'sources': [ '<@(chrome_browser_tests_policy_sources)' ],
+          'conditions': [
+            ['chromeos==1', {
+              'dependencies': [
+                '../components/components.gyp:arc_test_support',
+              ]
+            }]
+          ]
         }],
         ['enable_web_speech==1', {
           'sources': [ '<@(chrome_browser_tests_speech_sources)' ],

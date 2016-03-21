@@ -16,8 +16,8 @@ namespace chromeos {
 FakeSessionManagerClient::FakeSessionManagerClient()
     : start_device_wipe_call_count_(0),
       notify_lock_screen_shown_call_count_(0),
-      notify_lock_screen_dismissed_call_count_(0) {
-}
+      notify_lock_screen_dismissed_call_count_(0),
+      arc_available_(false) {}
 
 FakeSessionManagerClient::~FakeSessionManagerClient() {
 }
@@ -153,19 +153,19 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
 
 void FakeSessionManagerClient::CheckArcAvailability(
     const ArcCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, false));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, arc_available_));
 }
 
 void FakeSessionManagerClient::StartArcInstance(const std::string& socket_path,
                                                 const ArcCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, false));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, arc_available_));
 }
 
 void FakeSessionManagerClient::StopArcInstance(const ArcCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, false));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, arc_available_));
 }
 
 const std::string& FakeSessionManagerClient::device_policy() const {

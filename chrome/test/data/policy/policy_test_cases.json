@@ -2436,7 +2436,10 @@
   "ArcEnabled": {
     "os": ["chromeos"],
     "can_be_recommended": false,
-    "test_policy": { "ArcEnabled": false }
+    "test_policy": { "ArcEnabled": false },
+    "pref_mappings": [
+      { "pref": "arc.enabled" }
+    ]
   },
 
   "ArcApplicationPolicy": {

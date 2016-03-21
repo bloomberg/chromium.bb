@@ -105,6 +105,8 @@ class FakeSessionManagerClient : public SessionManagerClient {
     return notify_lock_screen_dismissed_call_count_;
   }
 
+  void set_arc_available(bool available) { arc_available_ = available; }
+
  private:
   std::string device_policy_;
   std::map<cryptohome::Identification, std::string> user_policies_;
@@ -116,6 +118,8 @@ class FakeSessionManagerClient : public SessionManagerClient {
   int start_device_wipe_call_count_;
   int notify_lock_screen_shown_call_count_;
   int notify_lock_screen_dismissed_call_count_;
+
+  bool arc_available_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSessionManagerClient);
 };

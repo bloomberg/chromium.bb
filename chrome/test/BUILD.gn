@@ -1073,6 +1073,9 @@ if (!is_android) {
               chrome_tests_gypi_values.chrome_browser_tests_policy_sources,
               ".",
               "//chrome")
+      if (is_chromeos) {
+        deps += [ "//components/arc:arc_test_support" ]
+      }
     }
     if (enable_web_speech) {
       sources += rebase_path(
