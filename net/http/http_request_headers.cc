@@ -37,7 +37,7 @@ const char HttpRequestHeaders::kProxyConnection[] = "Proxy-Connection";
 const char HttpRequestHeaders::kRange[] = "Range";
 const char HttpRequestHeaders::kReferer[] = "Referer";
 const char HttpRequestHeaders::kTransferEncoding[] = "Transfer-Encoding";
-const char HttpRequestHeaders::kTokenBinding[] = "Token-Binding";
+const char HttpRequestHeaders::kTokenBinding[] = "Sec-Token-Binding";
 const char HttpRequestHeaders::kUserAgent[] = "User-Agent";
 
 HttpRequestHeaders::HeaderKeyValuePair::HeaderKeyValuePair() {
