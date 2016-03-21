@@ -132,7 +132,7 @@ crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-backgroun
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Failure ]
 
-crbug.com/591993 svg/W3C-SVG-1.1/painting-stroke-04-t.svg [ NeedsManualRebaseline ]
+crbug.com/591993 svg/W3C-SVG-1.1/painting-stroke-04-t.svg [ NeedsRebaseline ]
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
