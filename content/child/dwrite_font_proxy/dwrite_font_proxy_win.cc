@@ -71,7 +71,6 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
 
   if (!sender_.Run()->Send(
           new DWriteFontProxyMsg_FindFamily(name, &family_index))) {
-    CHECK(false);
     return E_FAIL;
   }
 
@@ -116,7 +115,6 @@ UINT32 DWriteFontCollectionProxy::GetFontFamilyCount() {
   uint32_t family_count = 0;
   if (!sender_.Run()->Send(
           new DWriteFontProxyMsg_GetFamilyCount(&family_count))) {
-    CHECK(false);
     return 0;
   }
   CHECK(family_count != 0);
@@ -166,7 +164,6 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
   std::vector<base::string16> file_names;
   if (!sender_.Run()->Send(
           new DWriteFontProxyMsg_GetFontFiles(*family_index, &file_names))) {
-    CHECK(false);
     return E_FAIL;
   }
 
@@ -256,7 +253,6 @@ bool DWriteFontCollectionProxy::LoadFamilyNames(
   std::vector<std::pair<base::string16, base::string16>> strings;
   if (!sender_.Run()->Send(
           new DWriteFontProxyMsg_GetFamilyNames(family_index, &strings))) {
-    CHECK(false);
     return false;
   }
 
