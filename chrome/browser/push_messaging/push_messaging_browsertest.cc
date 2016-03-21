@@ -44,6 +44,7 @@
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -97,6 +98,13 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 #endif
 
     InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Enable experiemntal features for subscription restrictions.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   // InProcessBrowserTest:
@@ -164,7 +172,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   void RequestAndDenyPermission();
 
   void TryToSubscribeSuccessfully(
-      const std::string& expected_push_subscription_id);
+      const std::string& expected_push_subscription_info,
+      bool use_key = true);
 
   std::string GetEndpointForSubscriptionId(const std::string& subscription_id) {
     return std::string(kPushMessagingEndpoint) + "/" + subscription_id;
@@ -246,7 +255,8 @@ void PushMessagingBrowserTest::RequestAndDenyPermission() {
 }
 
 void PushMessagingBrowserTest::TryToSubscribeSuccessfully(
-    const std::string& expected_push_subscription_id) {
+    const std::string& expected_push_subscription_info,
+    bool use_key) {
   std::string script_result;
 
   EXPECT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -254,8 +264,14 @@ void PushMessagingBrowserTest::TryToSubscribeSuccessfully(
 
   RequestAndAcceptPermission();
 
-  EXPECT_TRUE(RunScript("subscribePush()", &script_result));
-  EXPECT_EQ(GetEndpointForSubscriptionId(expected_push_subscription_id),
+  if (use_key) {
+    EXPECT_TRUE(RunScript("subscribePush()", &script_result));
+  } else {
+    // Test backwards compatibility with old ID based subscriptions.
+    EXPECT_TRUE(RunScript("subscribePushWithoutKey()", &script_result));
+  }
+
+  EXPECT_EQ(GetEndpointForSubscriptionId(expected_push_subscription_info),
             script_result);
 }
 
@@ -277,6 +293,16 @@ void PushMessagingBrowserTest::SendMessageAndWaitUntilHandled(
   push_service()->SetMessageCallbackForTesting(run_loop.QuitClosure());
   push_service()->OnMessage(app_identifier.app_id(), message);
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       SubscribeWithoutKeySuccessNotificationsGranted) {
+  TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */, false);
+
+  PushMessagingAppIdentifier app_identifier =
+      GetAppIdentifierForServiceWorkerRegistration(0LL);
+  EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
+  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
@@ -305,6 +331,21 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       GetAppIdentifierForServiceWorkerRegistration(0LL);
   EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeFailureBadKey) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  RequestAndAcceptPermission();
+
+  ASSERT_TRUE(RunScript("subscribePushBadKey()", &script_result));
+  EXPECT_EQ(
+      "InvalidAccessError - Failed to execute 'subscribe' on 'PushManager': "
+      "The provided applicationServerKey is not valid.",
+      script_result);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,

@@ -5,6 +5,8 @@
 #ifndef WebPushSubscriptionOptions_h
 #define WebPushSubscriptionOptions_h
 
+#include "public/platform/WebString.h"
+
 namespace blink {
 
 struct WebPushSubscriptionOptions {
@@ -16,6 +18,10 @@ struct WebPushSubscriptionOptions {
     // Indicates that the subscription will only be used for push messages
     // that result in UI visible to the user.
     bool userVisibleOnly;
+
+    // P-256 public key, in uncompressed form, of the app server that can send
+    // push messages to this subscription.
+    WebString applicationServerKey;
 };
 
 } // namespace blink

@@ -155,6 +155,7 @@ PresentationReceiver status=test
 PromiseRejectionEvent status=stable
 PushMessaging status=stable
 PushMessagingData status=stable
+PushSubscriptionRestrictions status=experimental
 QuotaPromise status=experimental
 ReducedReferrerGranularity
 RemotePlayback status=test

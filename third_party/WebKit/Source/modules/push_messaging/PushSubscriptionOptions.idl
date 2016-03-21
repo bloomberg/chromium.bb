@@ -6,4 +6,5 @@
 
 dictionary PushSubscriptionOptions {
     boolean userVisibleOnly = false;
+    [RuntimeEnabled=PushSubscriptionRestrictions] BufferSource applicationServerKey;
 };

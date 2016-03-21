@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/common/push_subscription_options.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_permission_manager.h"
@@ -67,22 +68,20 @@ GURL LayoutTestPushMessagingService::GetPushEndpoint() {
 void LayoutTestPushMessagingService::SubscribeFromDocument(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    const std::string& sender_id,
     int renderer_id,
     int render_frame_id,
-    bool user_visible,
+    const PushSubscriptionOptions& options,
     const PushMessagingService::RegisterCallback& callback) {
   SubscribeFromWorker(requesting_origin, service_worker_registration_id,
-                      sender_id, user_visible, callback);
+                      options, callback);
 }
 
 void LayoutTestPushMessagingService::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    const std::string& sender_id,
-    bool user_visible,
+    const PushSubscriptionOptions& options,
     const PushMessagingService::RegisterCallback& callback) {
-  if (GetPermissionStatus(requesting_origin, user_visible) ==
+  if (GetPermissionStatus(requesting_origin, options.user_visible_only) ==
       blink::WebPushPermissionStatusGranted) {
     std::vector<uint8_t> p256dh(
         kTestP256Key, kTestP256Key + arraysize(kTestP256Key));

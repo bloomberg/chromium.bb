@@ -17,6 +17,8 @@
 
 namespace content {
 
+struct PushSubscriptionOptions;
+
 class LayoutTestPushMessagingService : public PushMessagingService {
  public:
   LayoutTestPushMessagingService();
@@ -27,16 +29,14 @@ class LayoutTestPushMessagingService : public PushMessagingService {
   void SubscribeFromDocument(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
-      const std::string& sender_id,
       int renderer_id,
       int render_frame_id,
-      bool user_visible,
+      const PushSubscriptionOptions& options,
       const PushMessagingService::RegisterCallback& callback) override;
   void SubscribeFromWorker(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
-      const std::string& sender_id,
-      bool user_visible,
+      const PushSubscriptionOptions& options,
       const PushMessagingService::RegisterCallback& callback) override;
   void GetEncryptionInfo(
       const GURL& origin,
