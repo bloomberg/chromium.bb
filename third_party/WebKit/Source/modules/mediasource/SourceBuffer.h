@@ -31,6 +31,7 @@
 #ifndef SourceBuffer_h
 #define SourceBuffer_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "modules/EventTargetModules.h"
@@ -55,6 +56,7 @@ class WebSourceBuffer;
 
 class SourceBuffer final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<SourceBuffer>
+    , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public FileReaderLoaderClient
     , public WebSourceBufferClient {
@@ -91,8 +93,10 @@ public:
     void abortIfUpdating();
     void removedFromMediaSource();
 
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject interface
-    bool hasPendingActivity() const override;
     void suspend() override;
     void resume() override;
     void stop() override;

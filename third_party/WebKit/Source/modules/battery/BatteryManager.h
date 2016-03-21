@@ -5,6 +5,7 @@
 #ifndef BatteryManager_h
 #define BatteryManager_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -16,7 +17,7 @@
 
 namespace blink {
 
-class BatteryManager final : public RefCountedGarbageCollectedEventTargetWithInlineData<BatteryManager>, public ActiveDOMObject, public PlatformEventController {
+class BatteryManager final : public RefCountedGarbageCollectedEventTargetWithInlineData<BatteryManager>, public ActiveScriptWrappable, public ActiveDOMObject, public PlatformEventController {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BatteryManager);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
@@ -51,7 +52,9 @@ public:
     void suspend() override;
     void resume() override;
     void stop() override;
-    bool hasPendingActivity() const override;
+
+    // ActiveScriptWrappable implementation.
+    bool hasPendingActivity() const final;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -27,6 +27,7 @@
  */
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     NamedConstructor=Audio(
         DOMString stringArg,

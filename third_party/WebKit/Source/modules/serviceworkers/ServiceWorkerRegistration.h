@@ -5,6 +5,7 @@
 #ifndef ServiceWorkerRegistration_h
 #define ServiceWorkerRegistration_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
@@ -29,6 +30,7 @@ class WebServiceWorkerProvider;
 // via WebServiceWorkerRegistration::Handle object.
 class ServiceWorkerRegistration final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerRegistration>
+    , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public WebServiceWorkerRegistrationProxy
     , public HeapSupplementable<ServiceWorkerRegistration> {
@@ -72,8 +74,10 @@ public:
 private:
     ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration::Handle>);
 
+    // ActiveScriptWrappable overrides.
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject overrides.
-    bool hasPendingActivity() const override;
     void stop() override;
 
     // A handle to the registration representation in the embedder.

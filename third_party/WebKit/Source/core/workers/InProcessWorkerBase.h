@@ -5,6 +5,7 @@
 #ifndef InProcessWorkerBase_h
 #define InProcessWorkerBase_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/MessagePort.h"
@@ -26,7 +27,7 @@ class WorkerScriptLoader;
 
 // Base class for workers that operate in the same process as the document that
 // creates them.
-class CORE_EXPORT InProcessWorkerBase : public AbstractWorker {
+class CORE_EXPORT InProcessWorkerBase : public AbstractWorker, public ActiveScriptWrappable {
 public:
     ~InProcessWorkerBase() override;
 
@@ -35,7 +36,9 @@ public:
 
     // ActiveDOMObject
     void stop() override;
-    bool hasPendingActivity() const override;
+
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
 
     ContentSecurityPolicy* contentSecurityPolicy();
 

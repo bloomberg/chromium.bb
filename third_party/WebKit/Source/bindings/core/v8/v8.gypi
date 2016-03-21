@@ -13,6 +13,8 @@
             '<@(bindings_core_v8_custom_files)',
             'ActiveDOMCallback.cpp',
             'ActiveDOMCallback.h',
+            'ActiveScriptWrappable.cpp',
+            'ActiveScriptWrappable.h',
             'ArrayValue.cpp',
             'ArrayValue.h',
             'BindingSecurity.cpp',

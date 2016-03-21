@@ -74,7 +74,8 @@ IDBDatabase* IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDat
 }
 
 IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> backend, IDBDatabaseCallbacks* callbacks)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_backend(backend)
     , m_databaseCallbacks(callbacks)
 {

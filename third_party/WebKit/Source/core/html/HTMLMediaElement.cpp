@@ -309,6 +309,7 @@ bool HTMLMediaElement::isMediaStreamURL(const String& url)
 
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
+    , ActiveScriptWrappable(this)
     , ActiveDOMObject(&document)
     , m_loadTimer(this, &HTMLMediaElement::loadTimerFired)
     , m_progressEventTimer(this, &HTMLMediaElement::progressEventTimerFired)

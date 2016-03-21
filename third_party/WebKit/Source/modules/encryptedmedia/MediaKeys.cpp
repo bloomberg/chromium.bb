@@ -89,7 +89,8 @@ MediaKeys* MediaKeys::create(ExecutionContext* context, const WebVector<WebEncry
 }
 
 MediaKeys::MediaKeys(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_supportedSessionTypes(supportedSessionTypes)
     , m_cdm(cdm)
     , m_mediaElement(nullptr)
@@ -254,12 +255,11 @@ void MediaKeys::contextDestroyed()
 bool MediaKeys::hasPendingActivity() const
 {
     // Remain around if there are pending events.
-    WTF_LOG(Media, "MediaKeys(%p)::hasPendingActivity %s%s%s", this,
-        ScriptWrappable::hasPendingActivity() ? " ScriptWrappable::hasPendingActivity()" : "",
+    WTF_LOG(Media, "MediaKeys(%p)::hasPendingActivity %s%s", this,
         !m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "",
         m_reservedForMediaElement ? " m_reservedForMediaElement" : "");
 
-    return ScriptWrappable::hasPendingActivity() || !m_pendingActions.isEmpty() || m_reservedForMediaElement;
+    return !m_pendingActions.isEmpty() || m_reservedForMediaElement;
 }
 
 void MediaKeys::stop()

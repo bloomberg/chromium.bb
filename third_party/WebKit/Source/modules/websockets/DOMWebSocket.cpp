@@ -218,7 +218,8 @@ const char* DOMWebSocket::subprotocolSeperator()
 }
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_state(CONNECTING)
     , m_bufferedAmount(0)
     , m_consumedBufferedAmount(0)

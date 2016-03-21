@@ -26,6 +26,7 @@
 #ifndef HTMLMediaElement_h
 #define HTMLMediaElement_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -64,7 +65,7 @@ class WebAudioSourceProvider;
 class WebInbandTextTrack;
 class WebLayer;
 
-class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public ActiveDOMObject, private WebMediaPlayerClient {
+class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public ActiveScriptWrappable, public ActiveDOMObject, private WebMediaPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
     WILL_BE_USING_PRE_FINALIZER(HTMLMediaElement, dispose);
@@ -231,7 +232,7 @@ public:
     void sourceWasRemoved(HTMLSourceElement*);
     void sourceWasAdded(HTMLSourceElement*);
 
-    // ActiveDOMObject functions.
+    // ActiveScriptWrappable functions.
     bool hasPendingActivity() const final;
 
     AudioSourceProviderClient* audioSourceNode() { return m_audioSourceNode; }

@@ -138,14 +138,16 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
 }
 
 FontFace::FontFace(ExecutionContext* context)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_status(Unloaded)
 {
     suspendIfNeeded();
 }
 
 FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const FontFaceDescriptors& descriptors)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_family(family)
     , m_status(Unloaded)
 {

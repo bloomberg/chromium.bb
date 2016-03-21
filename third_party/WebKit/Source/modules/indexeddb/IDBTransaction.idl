@@ -35,9 +35,10 @@ enum IDBTransactionMode {
 // https://w3c.github.io/IndexedDB/#idl-def-IDBTransaction
 
 [
-    Exposed=(Window,Worker),
+    ActiveScriptWrappable,
     DependentLifetime,
-    GarbageCollected
+    Exposed=(Window,Worker),
+    GarbageCollected,
 ] interface IDBTransaction : EventTarget {
 
     // Properties

@@ -40,11 +40,12 @@ enum NotificationPermission {
 // https://notifications.spec.whatwg.org/#api
 
 [
-    GarbageCollected,
-    DependentLifetime,
-    Constructor(DOMString title, optional NotificationOptions options),
+    ActiveScriptWrappable,
     ConstructorCallWith=ExecutionContext,
+    Constructor(DOMString title, optional NotificationOptions options),
+    DependentLifetime,
     Exposed=(Window,Worker),
+    GarbageCollected,
     MeasureAs=NotificationCreated,
     RaisesException=Constructor,
     RuntimeEnabled=Notifications,

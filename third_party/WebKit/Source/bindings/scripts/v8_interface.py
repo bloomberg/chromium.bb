@@ -108,6 +108,9 @@ def interface_context(interface):
             'bindings/core/v8/V8Float64Array.h',
             'bindings/core/v8/V8DataView.h'))
 
+    # [ActiveScriptWrappable]
+    active_scriptwrappable = 'ActiveScriptWrappable' in extended_attributes
+
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
@@ -192,6 +195,7 @@ def interface_context(interface):
         'pass_cpp_type': cpp_template_type(
             cpp_ptr_type('PassRefPtr', 'RawPtr', this_gc_type),
             cpp_name(interface)),
+        'active_scriptwrappable': active_scriptwrappable,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
         'set_wrapper_reference_from': set_wrapper_reference_from,
         'set_wrapper_reference_to': set_wrapper_reference_to,

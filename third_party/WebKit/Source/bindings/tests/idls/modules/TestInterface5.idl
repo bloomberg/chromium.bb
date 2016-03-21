@@ -34,6 +34,7 @@
 enum TestEnumModules { "EnumModulesValue1", "EnumModulesValue2" };
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     Custom=LegacyCallAsFunction,
     DoNotCheckConstants,

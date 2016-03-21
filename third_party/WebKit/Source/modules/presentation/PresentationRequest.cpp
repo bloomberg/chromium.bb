@@ -153,7 +153,8 @@ DEFINE_TRACE(PresentationRequest)
 }
 
 PresentationRequest::PresentationRequest(ExecutionContext* executionContext, const KURL& url)
-    : ActiveDOMObject(executionContext)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(executionContext)
     , m_url(url)
 {
 }

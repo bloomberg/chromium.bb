@@ -51,7 +51,8 @@ MessagePort* MessagePort::create(ExecutionContext& executionContext)
 }
 
 MessagePort::MessagePort(ExecutionContext& executionContext)
-    : ActiveDOMObject(&executionContext)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(&executionContext)
     , m_started(false)
     , m_closed(false)
     , m_weakFactory(this)

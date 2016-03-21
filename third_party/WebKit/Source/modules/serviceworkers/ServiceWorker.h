@@ -31,6 +31,7 @@
 #ifndef ServiceWorker_h
 #define ServiceWorker_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/workers/AbstractWorker.h"
@@ -45,7 +46,7 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-class MODULES_EXPORT ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {
+class MODULES_EXPORT ServiceWorker final : public AbstractWorker, public ActiveScriptWrappable, public WebServiceWorkerProxy {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static ServiceWorker* from(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
@@ -75,8 +76,10 @@ private:
     static ServiceWorker* getOrCreate(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
     ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
 
+    // ActiveScriptWrappable overrides.
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject overrides.
-    bool hasPendingActivity() const override;
     void stop() override;
 
     // A handle to the service worker representation in the embedder.

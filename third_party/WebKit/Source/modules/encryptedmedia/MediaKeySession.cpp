@@ -308,7 +308,8 @@ MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* me
 }
 
 MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys, WebEncryptedMediaSessionType sessionType)
-    : ActiveDOMObject(scriptState->getExecutionContext())
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(scriptState->getExecutionContext())
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_mediaKeys(mediaKeys)
     , m_sessionType(sessionType)
@@ -894,14 +895,12 @@ bool MediaKeySession::hasPendingActivity() const
 {
     // Remain around if there are pending events or MediaKeys is still around
     // and we're not closed.
-    WTF_LOG(Media, "MediaKeySession(%p)::hasPendingActivity %s%s%s%s", this,
-        ScriptWrappable::hasPendingActivity() ? " ScriptWrappable::hasPendingActivity()" : "",
+    WTF_LOG(Media, "MediaKeySession(%p)::hasPendingActivity %s%s%s", this,
         !m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "",
         m_asyncEventQueue->hasPendingEvents() ? " m_asyncEventQueue->hasPendingEvents()" : "",
         (m_mediaKeys && !m_isClosed) ? " m_mediaKeys && !m_isClosed" : "");
 
-    return ScriptWrappable::hasPendingActivity()
-        || !m_pendingActions.isEmpty()
+    return !m_pendingActions.isEmpty()
         || m_asyncEventQueue->hasPendingEvents()
         || (m_mediaKeys && !m_isClosed);
 }

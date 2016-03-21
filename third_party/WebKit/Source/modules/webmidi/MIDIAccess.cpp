@@ -48,7 +48,8 @@ namespace blink {
 using PortState = MIDIAccessor::MIDIPortState;
 
 MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
-    : ActiveDOMObject(executionContext)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(executionContext)
     , m_accessor(accessor)
     , m_sysexEnabled(sysexEnabled)
     , m_hasPendingActivity(false)

@@ -5,6 +5,7 @@
 #ifndef MediaRecorder_h
 #define MediaRecorder_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "modules/EventTargetModules.h"
@@ -24,6 +25,7 @@ class ExceptionState;
 class MODULES_EXPORT MediaRecorder final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaRecorder>
     , public WebMediaRecorderHandlerClient
+    , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaRecorder);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
@@ -72,7 +74,9 @@ public:
     void suspend() override;
     void resume() override;
     void stop() override;
-    bool hasPendingActivity() const override { return !m_stopped; }
+
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final { return !m_stopped; }
 
     // WebMediaRecorderHandlerClient
     void writeData(const char* data, size_t length, bool lastInSlice) override;

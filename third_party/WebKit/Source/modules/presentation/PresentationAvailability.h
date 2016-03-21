@@ -5,6 +5,7 @@
 #ifndef PresentationAvailability_h
 #define PresentationAvailability_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/page/PageLifecycleObserver.h"
@@ -24,6 +25,7 @@ class ScriptPromiseResolver;
 // change. The object will only listen to changes when required.
 class MODULES_EXPORT PresentationAvailability final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>
+    , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public PageLifecycleObserver
     , public WebPresentationAvailabilityObserver {
@@ -42,8 +44,10 @@ public:
     void availabilityChanged(bool) override;
     const WebURL url() const override;
 
+    // ActiveScriptWrappable implementation.
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject implementation.
-    bool hasPendingActivity() const override;
     void suspend() override;
     void resume() override;
     void stop() override;

@@ -202,7 +202,8 @@ XMLHttpRequest* XMLHttpRequest::create(ExecutionContext* context)
 }
 
 XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOrigin> isolatedWorldSecurityOrigin)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_timeoutMilliseconds(0)
     , m_state(UNSENT)
     , m_lengthDownloadedToFile(0)

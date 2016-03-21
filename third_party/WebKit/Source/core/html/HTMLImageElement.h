@@ -24,6 +24,7 @@
 #ifndef HTMLImageElement_h
 #define HTMLImageElement_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/html/HTMLElement.h"
@@ -41,7 +42,7 @@ class ImageCandidate;
 class ShadowRoot;
 class ImageBitmapOptions;
 
-class CORE_EXPORT HTMLImageElement final : public HTMLElement, public CanvasImageSource, public ImageBitmapSource {
+class CORE_EXPORT HTMLImageElement final : public HTMLElement, public CanvasImageSource, public ImageBitmapSource, public ActiveScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class ViewportChangeListener;
@@ -83,7 +84,7 @@ public:
 
     bool complete() const;
 
-    bool hasPendingActivity() const override { return imageLoader().hasPendingActivity(); }
+    bool hasPendingActivity() const final { return imageLoader().hasPendingActivity(); }
 
     bool canContainRangeEndPoint() const override { return false; }
 

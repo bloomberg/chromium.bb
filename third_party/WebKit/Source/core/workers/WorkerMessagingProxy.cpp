@@ -67,7 +67,7 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
     MessagePortArray* ports = MessagePort::entanglePorts(*scriptContext, channels);
     globalScope->dispatchEvent(MessageEvent::create(ports, message));
-    workerObjectProxy->confirmMessageFromWorkerObject(V8GCController::hasPendingActivity(scriptContext));
+    workerObjectProxy->confirmMessageFromWorkerObject(V8GCController::hasPendingActivity(globalScope->thread()->isolate(), scriptContext));
 }
 
 } // namespace

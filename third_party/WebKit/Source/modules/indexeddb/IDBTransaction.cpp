@@ -84,7 +84,8 @@ private:
 } // namespace
 
 IDBTransaction::IDBTransaction(ScriptState* scriptState, int64_t id, const HashSet<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
-    : ActiveDOMObject(scriptState->getExecutionContext())
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(scriptState->getExecutionContext())
     , m_id(id)
     , m_database(db)
     , m_objectStoreNames(objectStoreNames)

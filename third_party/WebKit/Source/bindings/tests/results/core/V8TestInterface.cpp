@@ -45,7 +45,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::refObject, V8TestInterface::derefObject, V8TestInterface::trace, V8TestInterface::visitDOMWrapper, V8TestInterface::preparePrototypeAndInterfaceObject, V8TestInterface::installConditionallyEnabledProperties, "TestInterface", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
+WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::refObject, V8TestInterface::derefObject, V8TestInterface::trace, V8TestInterface::toActiveScriptWrappable, V8TestInterface::visitDOMWrapper, V8TestInterface::preparePrototypeAndInterfaceObject, V8TestInterface::installConditionallyEnabledProperties, "TestInterface", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -3199,6 +3199,11 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
         const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration = {"windowAndServiceWorkerExposedMethod", TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
         V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, defaultSignature, windowAndServiceWorkerExposedMethodMethodConfiguration);
     }
+}
+
+ActiveScriptWrappable* V8TestInterface::toActiveScriptWrappable(v8::Local<v8::Object> wrapper)
+{
+    return toImpl(wrapper);
 }
 
 void V8TestInterface::refObject(ScriptWrappable* scriptWrappable)

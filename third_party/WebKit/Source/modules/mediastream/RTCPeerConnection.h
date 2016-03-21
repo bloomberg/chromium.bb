@@ -31,6 +31,7 @@
 #ifndef RTCPeerConnection_h
 #define RTCPeerConnection_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -63,6 +64,7 @@ class VoidCallback;
 class RTCPeerConnection final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCPeerConnection>
     , public WebRTCPeerConnectionHandlerClient
+    , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCPeerConnection);
     DEFINE_WRAPPERTYPEINFO();
@@ -151,8 +153,10 @@ public:
     void suspend() override;
     void resume() override;
     void stop() override;
+
+    // ActiveScriptWrappable
     // We keep the this object alive until either stopped or closed.
-    bool hasPendingActivity() const override
+    bool hasPendingActivity() const final
     {
         return !m_closed && !m_stopped;
     }

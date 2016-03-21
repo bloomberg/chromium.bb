@@ -403,7 +403,8 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
 }
 
 RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, RTCConfiguration* configuration, WebMediaConstraints constraints, ExceptionState& exceptionState)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_signalingState(SignalingStateStable)
     , m_iceGatheringState(ICEGatheringStateNew)
     , m_iceConnectionState(ICEConnectionStateNew)

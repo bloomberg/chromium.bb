@@ -31,6 +31,7 @@
 #ifndef Animation_h
 #define Animation_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
@@ -54,6 +55,7 @@ class ExceptionState;
 
 class CORE_EXPORT Animation final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<Animation>
+    , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public CompositorAnimationDelegate
     , public CompositorAnimationPlayerClient {
@@ -115,7 +117,7 @@ public:
 
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
-    bool hasPendingActivity() const override;
+    bool hasPendingActivity() const final;
     void stop() override;
 
     double playbackRate() const;

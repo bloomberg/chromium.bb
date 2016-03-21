@@ -26,6 +26,7 @@
 #ifndef MediaKeys_h
 #define MediaKeys_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -49,7 +50,7 @@ class WebContentDecryptionModule;
 
 // References are held by JS and HTMLMediaElement.
 // The WebContentDecryptionModule has the same lifetime as this object.
-class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ActiveDOMObject, public ScriptWrappable {
+class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ActiveScriptWrappable, public ActiveDOMObject, public ScriptWrappable {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -82,11 +83,12 @@ public:
 
     // ActiveDOMObject implementation.
     // FIXME: This class could derive from ContextLifecycleObserver
-    // again once hasPendingActivity() is moved to ScriptWrappable
-    // (http://crbug.com/483722).
+    // again (http://crbug.com/483722).
     void contextDestroyed() override;
-    bool hasPendingActivity() const override;
     void stop() override;
+
+    // ActiveScriptWrappable implementation.
+    bool hasPendingActivity() const final;
 
 private:
     MediaKeys(ExecutionContext*, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);

@@ -5,6 +5,7 @@
 #ifndef Body_h
 #define Body_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -29,6 +30,7 @@ class ScriptState;
 class MODULES_EXPORT Body
     : public GarbageCollectedFinalized<Body>
     , public ScriptWrappable
+    , public ActiveScriptWrappable
     , public ActiveDOMObject {
     WTF_MAKE_NONCOPYABLE(Body);
     DEFINE_WRAPPERTYPEINFO();
@@ -49,7 +51,7 @@ public:
     virtual bool bodyUsed();
     bool isBodyLocked();
 
-    // ActiveDOMObject override.
+    // ActiveScriptWrappable override.
     bool hasPendingActivity() const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()

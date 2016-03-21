@@ -77,7 +77,8 @@ Animation* Animation::create(AnimationEffect* effect, AnimationTimeline* timelin
 }
 
 Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationEffect* content)
-    : ActiveDOMObject(executionContext)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(executionContext)
     , m_playState(Idle)
     , m_playbackRate(1)
     , m_startTime(nullValue())

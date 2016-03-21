@@ -31,6 +31,7 @@
 #ifndef FontFace_h
 #define FontFace_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -56,7 +57,7 @@ class StringOrArrayBufferOrArrayBufferView;
 class StylePropertySet;
 class StyleRuleFontFace;
 
-class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace>, public ScriptWrappable, public ActiveDOMObject {
+class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace>, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FontFace);
 public:
@@ -109,8 +110,8 @@ public:
     };
     void loadWithCallback(PassRefPtrWillBeRawPtr<LoadFontCallback>, ExecutionContext*);
 
-    // ActiveDOMObject
-    bool hasPendingActivity() const override;
+    // ActiveScriptWrappable.
+    bool hasPendingActivity() const final;
 
 private:
     static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors&);

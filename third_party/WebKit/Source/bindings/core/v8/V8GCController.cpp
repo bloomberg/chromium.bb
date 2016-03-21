@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/V8GCController.h"
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
@@ -119,7 +120,7 @@ public:
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        if (type != npObjectTypeInfo() && toScriptWrappable(wrapper)->hasPendingActivity()) {
+        if (type != npObjectTypeInfo() && type->hasPendingActivity(wrapper)) {
             v8::Persistent<v8::Object>::Cast(*value).MarkActive();
             return;
         }
@@ -164,7 +165,7 @@ public:
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
 
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        if (type != npObjectTypeInfo() && toScriptWrappable(wrapper)->hasPendingActivity()) {
+        if (type != npObjectTypeInfo() && type->hasPendingActivity(wrapper)) {
             // If you hit this assert, you'll need to add a [DependentiLifetime]
             // extended attribute to the DOM interface. A DOM interface that
             // overrides hasPendingActivity must be marked as [DependentiLifetime].
@@ -436,8 +437,9 @@ void V8GCController::traceDOMWrappers(v8::Isolate* isolate, Visitor* visitor)
 
 class PendingActivityVisitor : public v8::PersistentHandleVisitor {
 public:
-    explicit PendingActivityVisitor(ExecutionContext* executionContext)
-        : m_executionContext(executionContext)
+    PendingActivityVisitor(v8::Isolate* isolate, ExecutionContext* executionContext)
+        : m_isolate(isolate)
+        , m_executionContext(executionContext)
         , m_pendingActivityFound(false)
     {
     }
@@ -452,11 +454,12 @@ public:
         if (classId != WrapperTypeInfo::NodeClassId && classId != WrapperTypeInfo::ObjectClassId)
             return;
 
-        const v8::Persistent<v8::Object>& wrapper = v8::Persistent<v8::Object>::Cast(*value);
+        v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
+        ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
         // The ExecutionContext check is heavy, so it should be done at the last.
         if (type != npObjectTypeInfo()
-            && toScriptWrappable(wrapper)->hasPendingActivity()
+            && type->hasPendingActivity(wrapper)
             // TODO(haraken): Currently we don't have a way to get a creation
             // context from a wrapper. We should implement the way and enable
             // the following condition.
@@ -476,11 +479,12 @@ public:
     bool pendingActivityFound() const { return m_pendingActivityFound; }
 
 private:
+    v8::Isolate* m_isolate;
     RawPtrWillBePersistent<ExecutionContext> m_executionContext;
     bool m_pendingActivityFound;
 };
 
-bool V8GCController::hasPendingActivity(ExecutionContext* executionContext)
+bool V8GCController::hasPendingActivity(v8::Isolate* isolate, ExecutionContext* executionContext)
 {
     // V8GCController::hasPendingActivity is used only when a worker checks if
     // the worker contains any wrapper that has pending activities.
@@ -488,7 +492,8 @@ bool V8GCController::hasPendingActivity(ExecutionContext* executionContext)
 
     DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scanPendingActivityHistogram, new CustomCountHistogram("Blink.ScanPendingActivityDuration", 1, 1000, 50));
     double startTime = WTF::currentTimeMS();
-    PendingActivityVisitor visitor(executionContext);
+    v8::HandleScope scope(isolate);
+    PendingActivityVisitor visitor(isolate, executionContext);
     toIsolate(executionContext)->VisitHandlesWithClassIds(&visitor);
     scanPendingActivityHistogram.count(static_cast<int>(WTF::currentTimeMS() - startTime));
     return visitor.pendingActivityFound();

@@ -31,6 +31,7 @@
 #ifndef MediaSource_h
 #define MediaSource_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaSource.h"
@@ -50,6 +51,7 @@ class WebSourceBuffer;
 class MediaSource final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaSource>
     , public HTMLMediaSource
+    , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaSource);
     DEFINE_WRAPPERTYPEINFO();
@@ -92,8 +94,10 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
 
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject interface
-    bool hasPendingActivity() const override;
     void stop() override;
 
     // URLRegistrable interface

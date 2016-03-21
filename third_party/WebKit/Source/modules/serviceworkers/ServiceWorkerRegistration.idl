@@ -4,8 +4,9 @@
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-registration-obj
 [
-    Exposed=(Window,Worker),
+    ActiveScriptWrappable,
     DependentLifetime,
+    Exposed=(Window,Worker),
     GarbageCollected,
 ] interface ServiceWorkerRegistration : EventTarget {
     [Unforgeable] readonly attribute ServiceWorker? installing;

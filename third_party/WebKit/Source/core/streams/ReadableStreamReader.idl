@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 [
-    GarbageCollected,
+    ActiveScriptWrappable,
     DependentLifetime,
     Exposed=(Window,Worker),
+    GarbageCollected,
     NoInterfaceObject,
 ] interface ReadableStreamReader {
     // FIXME: Add constructor.

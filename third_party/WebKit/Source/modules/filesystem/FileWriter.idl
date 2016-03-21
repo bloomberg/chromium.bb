@@ -30,9 +30,10 @@
  */
 
 [
-    NoInterfaceObject,
+    ActiveScriptWrappable,
     DependentLifetime,
     GarbageCollected,
+    NoInterfaceObject,
 ] interface FileWriter : EventTarget {
     // ready states
     const unsigned short INIT = 0;

@@ -28,7 +28,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterface5::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface5::domTemplate, V8TestInterface5::refObject, V8TestInterface5::derefObject, V8TestInterface5::trace, V8TestInterface5::visitDOMWrapper, V8TestInterface5::preparePrototypeAndInterfaceObject, V8TestInterface5::installConditionallyEnabledProperties, "TestInterface5", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterface5::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface5::domTemplate, V8TestInterface5::refObject, V8TestInterface5::derefObject, V8TestInterface5::trace, V8TestInterface5::toActiveScriptWrappable, V8TestInterface5::visitDOMWrapper, V8TestInterface5::preparePrototypeAndInterfaceObject, V8TestInterface5::installConditionallyEnabledProperties, "TestInterface5", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -914,6 +914,11 @@ void V8TestInterface5::preparePrototypeAndInterfaceObject(v8::Local<v8::Context>
         const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration = {"windowAndServiceWorkerExposedMethod", TestInterface5ImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
         V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, defaultSignature, windowAndServiceWorkerExposedMethodMethodConfiguration);
     }
+}
+
+ActiveScriptWrappable* V8TestInterface5::toActiveScriptWrappable(v8::Local<v8::Object> wrapper)
+{
+    return toImpl(wrapper);
 }
 
 void V8TestInterface5::refObject(ScriptWrappable* scriptWrappable)

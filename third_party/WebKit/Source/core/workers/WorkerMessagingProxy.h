@@ -57,7 +57,7 @@ public:
     void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode) override;
     void terminateWorkerGlobalScope() override;
     void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) override;
-    bool hasPendingActivity() const override;
+    bool hasPendingActivity() const final;
     void workerObjectDestroyed() override;
 
     // These methods come from worker context thread via WorkerObjectProxy

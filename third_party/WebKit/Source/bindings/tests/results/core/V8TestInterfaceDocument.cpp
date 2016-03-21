@@ -27,7 +27,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceDocument::domTemplate, V8TestInterfaceDocument::refObject, V8TestInterfaceDocument::derefObject, V8TestInterfaceDocument::trace, 0, V8TestInterfaceDocument::preparePrototypeAndInterfaceObject, V8TestInterfaceDocument::installConditionallyEnabledProperties, "TestInterfaceDocument", &V8Document::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceDocument::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceDocument::domTemplate, V8TestInterfaceDocument::refObject, V8TestInterfaceDocument::derefObject, V8TestInterfaceDocument::trace, 0, 0, V8TestInterfaceDocument::preparePrototypeAndInterfaceObject, V8TestInterfaceDocument::installConditionallyEnabledProperties, "TestInterfaceDocument", &V8Document::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::WillBeGarbageCollectedObject };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif

@@ -39,6 +39,7 @@ enum FontFaceLoadStatus {
 
 // TODO(philipj): This interface should be [Exposed=Window,Worker].
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     // FIXME: This should be (DOMString or BinaryData), where BinaryData is typedef of (ArrayBuffer or ArrayBufferView)
     Constructor(DOMString family, (DOMString or ArrayBuffer or ArrayBufferView) source, optional FontFaceDescriptors descriptors),

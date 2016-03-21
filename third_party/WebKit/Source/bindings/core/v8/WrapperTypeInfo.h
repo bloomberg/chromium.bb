@@ -31,6 +31,7 @@
 #ifndef WrapperTypeInfo_h
 #define WrapperTypeInfo_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "gin/public/wrapper_info.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
@@ -54,6 +55,7 @@ typedef v8::Local<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
 typedef void (*RefObjectFunction)(ScriptWrappable*);
 typedef void (*DerefObjectFunction)(ScriptWrappable*);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
+typedef ActiveScriptWrappable* (*ToActiveScriptWrappableFunction)(v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
 typedef void (*PreparePrototypeAndInterfaceObjectFunction)(v8::Local<v8::Context>, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Local<v8::Object>, v8::Isolate*);
@@ -181,6 +183,18 @@ struct WrapperTypeInfo {
             installConditionallyEnabledPropertiesFunction(prototypeObject, isolate);
     }
 
+    ActiveScriptWrappable* toActiveScriptWrappable(v8::Local<v8::Object> object) const
+    {
+        if (!toActiveScriptWrappableFunction)
+            return nullptr;
+        return toActiveScriptWrappableFunction(object);
+    }
+
+    bool hasPendingActivity(v8::Local<v8::Object> object) const
+    {
+        return !toActiveScriptWrappableFunction ? false : toActiveScriptWrappableFunction(object)->hasPendingActivity();
+    }
+
     EventTarget* toEventTarget(v8::Local<v8::Object>) const;
 
     void visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper) const
@@ -198,6 +212,7 @@ struct WrapperTypeInfo {
     const RefObjectFunction refObjectFunction;
     const DerefObjectFunction derefObjectFunction;
     const TraceFunction traceFunction;
+    const ToActiveScriptWrappableFunction toActiveScriptWrappableFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
     PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction;
     const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;

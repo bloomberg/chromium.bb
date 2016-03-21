@@ -32,6 +32,7 @@
 #ifndef EventSource_h
 #define EventSource_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoader.h"
@@ -49,7 +50,7 @@ class EventSourceInit;
 class ExceptionState;
 class ResourceResponse;
 
-class CORE_EXPORT EventSource final : public RefCountedGarbageCollectedEventTargetWithInlineData<EventSource>, private ThreadableLoaderClient, public ActiveDOMObject, public EventSourceParser::Client {
+class CORE_EXPORT EventSource final : public RefCountedGarbageCollectedEventTargetWithInlineData<EventSource>, private ThreadableLoaderClient, public ActiveScriptWrappable, public ActiveDOMObject, public EventSourceParser::Client {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(EventSource);
     USING_GARBAGE_COLLECTED_MIXIN(EventSource);
@@ -87,7 +88,8 @@ public:
     // asynchronous events from the loader won't be invoked.
     void stop() override;
 
-    bool hasPendingActivity() const override;
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
 
     DECLARE_VIRTUAL_TRACE();
 

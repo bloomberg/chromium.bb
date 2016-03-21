@@ -40,7 +40,8 @@ PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* 
 }
 
 PresentationAvailability::PresentationAvailability(ExecutionContext* executionContext, const KURL& url, bool value)
-    : ActiveDOMObject(executionContext)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(executionContext)
     , PageLifecycleObserver(toDocument(executionContext)->page())
     , m_url(url)
     , m_value(value)

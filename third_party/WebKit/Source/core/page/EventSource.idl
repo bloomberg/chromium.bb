@@ -32,6 +32,7 @@
 // https://html.spec.whatwg.org/multipage/comms.html#the-eventsource-interface
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     Constructor(DOMString url, optional EventSourceInit eventSourceInitDict),
     ConstructorCallWith=ExecutionContext,

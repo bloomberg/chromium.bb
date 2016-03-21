@@ -32,6 +32,7 @@
 #ifndef SharedWorker_h
 #define SharedWorker_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/workers/AbstractWorker.h"
 #include "platform/Supplementable.h"
@@ -41,7 +42,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT SharedWorker final : public AbstractWorker, public HeapSupplementable<SharedWorker> {
+class CORE_EXPORT SharedWorker final : public AbstractWorker, public HeapSupplementable<SharedWorker>, public ActiveScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 public:
@@ -54,7 +55,7 @@ public:
 
     void setIsBeingConnected(bool b) { m_isBeingConnected = b; }
 
-    bool hasPendingActivity() const override;
+    bool hasPendingActivity() const final;
 
     DECLARE_VIRTUAL_TRACE();
 

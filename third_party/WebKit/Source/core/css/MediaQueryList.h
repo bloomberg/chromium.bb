@@ -20,6 +20,7 @@
 #ifndef MediaQueryList_h
 #define MediaQueryList_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -41,7 +42,7 @@ class MediaQuerySet;
 // retrieve the current value of the given media query and to add/remove listeners that
 // will be called whenever the value of the query changes.
 
-class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData, public RefCountedWillBeNoBase<MediaQueryList>, public ActiveDOMObject {
+class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData, public RefCountedWillBeNoBase<MediaQueryList>, public ActiveScriptWrappable, public ActiveDOMObject {
     REFCOUNTED_EVENT_TARGET(MediaQueryList);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
@@ -68,8 +69,10 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    // From ActiveScriptWrappable
+    bool hasPendingActivity() const final;
+
     // From ActiveDOMObject
-    bool hasPendingActivity() const override;
     void stop() override;
 
     const AtomicString& interfaceName() const override;

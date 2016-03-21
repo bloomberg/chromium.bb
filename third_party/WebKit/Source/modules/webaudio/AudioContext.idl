@@ -30,10 +30,11 @@ enum AudioContextState {
 };
 
 [
-    GarbageCollected,
-    DependentLifetime,
+    ActiveScriptWrappable,
     Constructor,
     ConstructorCallWith=Document,
+    DependentLifetime,
+    GarbageCollected,
     ImplementedAs=AbstractAudioContext,
     NoInterfaceObject,
     RaisesException=Constructor,

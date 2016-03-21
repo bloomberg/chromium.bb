@@ -119,8 +119,6 @@ ServiceWorker* ServiceWorker::from(ExecutionContext* executionContext, PassOwnPt
 
 bool ServiceWorker::hasPendingActivity() const
 {
-    if (AbstractWorker::hasPendingActivity())
-        return true;
     if (m_wasStopped)
         return false;
     return m_handle->serviceWorker()->state() != WebServiceWorkerStateRedundant;
@@ -149,6 +147,7 @@ ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, Pa
 
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
     : AbstractWorker(executionContext)
+    , ActiveScriptWrappable(this)
     , m_handle(handle)
     , m_wasStopped(false)
 {

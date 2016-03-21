@@ -33,6 +33,7 @@
 enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     NoInterfaceObject,
 ] interface Animation : EventTarget {

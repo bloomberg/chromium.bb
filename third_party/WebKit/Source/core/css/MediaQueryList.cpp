@@ -35,7 +35,8 @@ PassRefPtrWillBeRawPtr<MediaQueryList> MediaQueryList::create(ExecutionContext* 
 }
 
 MediaQueryList::MediaQueryList(ExecutionContext* context, PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_matcher(matcher)
     , m_media(media)
     , m_matchesDirty(true)

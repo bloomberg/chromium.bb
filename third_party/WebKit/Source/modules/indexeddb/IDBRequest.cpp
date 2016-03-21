@@ -60,7 +60,8 @@ IDBRequest* IDBRequest::create(ScriptState* scriptState, IDBAny* source, IDBTran
 }
 
 IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction* transaction)
-    : ActiveDOMObject(scriptState->getExecutionContext())
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(scriptState->getExecutionContext())
     , m_transaction(transaction)
     , m_scriptState(scriptState)
     , m_source(source)

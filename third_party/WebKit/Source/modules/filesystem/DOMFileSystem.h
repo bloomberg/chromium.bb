@@ -31,6 +31,7 @@
 #ifndef DOMFileSystem_h
 #define DOMFileSystem_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
@@ -48,7 +49,7 @@ class BlobCallback;
 class FileEntry;
 class FileWriterCallback;
 
-class MODULES_EXPORT DOMFileSystem final : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
+class MODULES_EXPORT DOMFileSystem final : public DOMFileSystemBase, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 public:
@@ -64,8 +65,8 @@ public:
     void removePendingCallbacks() override;
     void reportError(ErrorCallback*, FileError*) override;
 
-    // ActiveDOMObject overrides.
-    bool hasPendingActivity() const override;
+    // ActiveScriptWrappable overrides.
+    bool hasPendingActivity() const final;
 
     void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallback*);
     void createFile(const FileEntry*, BlobCallback*, ErrorCallback*);

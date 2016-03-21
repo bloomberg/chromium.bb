@@ -34,6 +34,7 @@
 // The more *minor* extended attribute should be put in this file.
 
 [
+    ActiveScriptWrappable, // Covered by [ActiveScriptWrappable]
     Constructor,
     DependentLifetime, // Covered by [DependentLifetime]
     SetWrapperReferenceFrom=ownerNode, // Conflicts with [SetWrapperReferenceTo]

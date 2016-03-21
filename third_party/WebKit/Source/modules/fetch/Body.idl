@@ -5,10 +5,11 @@
 // http://fetch.spec.whatwg.org/#body
 typedef object JSON;
 [
-    Exposed=ServiceWorker,
-    NoInterfaceObject,
+    ActiveScriptWrappable,
     DependentLifetime,
+    Exposed=ServiceWorker,
     GarbageCollected,
+    NoInterfaceObject,
 ] interface Body {
     readonly attribute boolean bodyUsed;
     [CallWith=ScriptState] Promise<ArrayBuffer> arrayBuffer();

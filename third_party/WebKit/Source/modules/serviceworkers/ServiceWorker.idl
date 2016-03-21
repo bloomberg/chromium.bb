@@ -39,6 +39,7 @@ enum ServiceWorkerState {
 };
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     GarbageCollected,
 ] interface ServiceWorker : EventTarget {

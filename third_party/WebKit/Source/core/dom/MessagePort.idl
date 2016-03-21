@@ -28,6 +28,7 @@
 // https://html.spec.whatwg.org/#message-ports
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     Exposed=(Window,Worker),
     GarbageCollected,

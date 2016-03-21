@@ -31,6 +31,7 @@
 #ifndef DOMWebSocket_h
 #define DOMWebSocket_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
@@ -58,7 +59,7 @@ class ExceptionState;
 class ExecutionContext;
 class StringOrStringSequence;
 
-class MODULES_EXPORT DOMWebSocket : public RefCountedGarbageCollectedEventTargetWithInlineData<DOMWebSocket>, public ActiveDOMObject, public WebSocketChannelClient {
+class MODULES_EXPORT DOMWebSocket : public RefCountedGarbageCollectedEventTargetWithInlineData<DOMWebSocket>, public ActiveScriptWrappable, public ActiveDOMObject, public WebSocketChannelClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(DOMWebSocket);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
@@ -115,12 +116,14 @@ public:
 
     // ActiveDOMObject functions.
     void contextDestroyed() override;
-    // Prevent this instance from being collected while it's not in CLOSED
-    // state.
-    bool hasPendingActivity() const override;
     void suspend() override;
     void resume() override;
     void stop() override;
+
+    // ActiveScriptWrappable
+    // Prevent this instance from being collected while it's not in CLOSED
+    // state.
+    bool hasPendingActivity() const final;
 
     // WebSocketChannelClient functions.
     void didConnect(const String& subprotocol, const String& extensions) override;

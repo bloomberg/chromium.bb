@@ -32,6 +32,7 @@
 // https://w3c.github.io/FileAPI/#APIASynch
 
 [
+    ActiveScriptWrappable,
     GarbageCollected,
     DependentLifetime,
     Constructor,

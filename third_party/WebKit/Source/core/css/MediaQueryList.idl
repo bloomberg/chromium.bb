@@ -20,6 +20,7 @@
 // http://dev.w3.org/csswg/cssom-view/#the-mediaquerylist-interface
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
 ] interface MediaQueryList : EventTarget {
     readonly attribute DOMString media;

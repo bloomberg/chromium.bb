@@ -202,7 +202,8 @@ FileReader* FileReader::create(ExecutionContext* context)
 }
 
 FileReader::FileReader(ExecutionContext* context)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_state(EMPTY)
     , m_loadingState(LoadingStateNone)
     , m_readType(FileReaderLoader::ReadAsBinaryString)

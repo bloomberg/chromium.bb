@@ -98,7 +98,8 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
 }
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
-    : ActiveDOMObject(executionContext)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(executionContext)
     , m_handle(handle)
     , m_provider(nullptr)
     , m_stopped(false)

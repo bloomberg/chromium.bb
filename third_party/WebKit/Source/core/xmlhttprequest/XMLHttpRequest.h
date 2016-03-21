@@ -22,6 +22,7 @@
 #ifndef XMLHttpRequest_h
 #define XMLHttpRequest_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptString.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -66,7 +67,7 @@ class XMLHttpRequestUpload;
 
 typedef int ExceptionCode;
 
-class XMLHttpRequest final : public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public DocumentParserClient, public ActiveDOMObject {
+class XMLHttpRequest final : public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public DocumentParserClient, public ActiveScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 public:
@@ -96,10 +97,12 @@ public:
     // ActiveDOMObject
     void contextDestroyed() override;
     ExecutionContext* getExecutionContext() const override;
-    bool hasPendingActivity() const override;
     void suspend() override;
     void resume() override;
     void stop() override;
+
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
 
     // XMLHttpRequestEventTarget
     const AtomicString& interfaceName() const override;

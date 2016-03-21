@@ -85,6 +85,7 @@ DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context
 
 DOMFileSystem::DOMFileSystem(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     : DOMFileSystemBase(context, name, type, rootURL)
+    , ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_numberOfPendingCallbacks(0)
     , m_rootEntry(DirectoryEntry::create(this, DOMFilePath::root))

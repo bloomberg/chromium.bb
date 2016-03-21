@@ -80,7 +80,8 @@ AbstractAudioContext* AbstractAudioContext::create(Document& document, Exception
 
 // Constructor for rendering to the audio hardware.
 AbstractAudioContext::AbstractAudioContext(Document* document)
-    : ActiveDOMObject(document)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(document)
     , m_destinationNode(nullptr)
     , m_isCleared(false)
     , m_isResolvingResumePromises(false)
@@ -102,7 +103,8 @@ AbstractAudioContext::AbstractAudioContext(Document* document)
 
 // Constructor for offline (non-realtime) rendering.
 AbstractAudioContext::AbstractAudioContext(Document* document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
-    : ActiveDOMObject(document)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(document)
     , m_destinationNode(nullptr)
     , m_isCleared(false)
     , m_isResolvingResumePromises(false)

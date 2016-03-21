@@ -30,7 +30,8 @@ PermissionStatus* PermissionStatus::createAndListen(ExecutionContext* executionC
 }
 
 PermissionStatus::PermissionStatus(ExecutionContext* executionContext, WebPermissionStatus status, WebPermissionType type)
-    : ActiveDOMObject(executionContext)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(executionContext)
     , m_status(status)
     , m_type(type)
     , m_listening(false)

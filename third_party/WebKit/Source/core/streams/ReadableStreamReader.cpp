@@ -15,7 +15,8 @@
 namespace blink {
 
 ReadableStreamReader::ReadableStreamReader(ExecutionContext* executionContext, ReadableStream* stream)
-    : ActiveDOMObject(executionContext)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(executionContext)
     , m_stream(stream)
     , m_closed(new ClosedPromise(executionContext, this, ClosedPromise::Closed))
 {

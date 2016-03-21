@@ -46,6 +46,7 @@ public:
     {
     }
     static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
+    static ActiveScriptWrappable* toActiveScriptWrappable(v8::Local<v8::Object>);
     static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;

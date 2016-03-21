@@ -29,6 +29,7 @@
 #ifndef IDBRequest_h
 #define IDBRequest_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -56,6 +57,7 @@ class IDBValue;
 
 class MODULES_EXPORT IDBRequest
     : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBRequest>
+    , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBRequest);
     DEFINE_WRAPPERTYPEINFO();
@@ -109,8 +111,10 @@ public:
     virtual void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) { ASSERT_NOT_REACHED(); }
     virtual void onSuccess(PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&) { ASSERT_NOT_REACHED(); }
 
-    // ActiveDOMObject
+    // ActiveScriptWrappable
     bool hasPendingActivity() const final;
+
+    // ActiveDOMObject
     void stop() final;
 
     // EventTarget

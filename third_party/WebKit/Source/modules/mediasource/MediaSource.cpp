@@ -93,7 +93,8 @@ MediaSource* MediaSource::create(ExecutionContext* context)
 }
 
 MediaSource::MediaSource(ExecutionContext* context)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_readyState(closedKeyword())
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_attachedElement(nullptr)

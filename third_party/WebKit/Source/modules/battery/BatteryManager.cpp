@@ -25,7 +25,8 @@ BatteryManager::~BatteryManager()
 }
 
 BatteryManager::BatteryManager(ExecutionContext* context)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , PlatformEventController(toDocument(context)->page())
 {
 }

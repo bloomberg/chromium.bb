@@ -61,12 +61,13 @@ enum RTCIceConnectionState {
 //  * Dictionary -> specific dictionary types like RTCConfiguration
 //  * VoidCallback -> VoidFunction
 [
-    GarbageCollected,
+    ActiveScriptWrappable,
     DependentLifetime,
     // TODO(guidou): There should only be one constructor argument, and it
     // should be optional.
     Constructor(Dictionary rtcConfiguration, optional Dictionary mediaConstraints),
     ConstructorCallWith=ExecutionContext,
+    GarbageCollected,
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface RTCPeerConnection : EventTarget {

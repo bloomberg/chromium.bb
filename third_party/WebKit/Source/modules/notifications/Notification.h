@@ -31,6 +31,7 @@
 #ifndef Notification_h
 #define Notification_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
@@ -57,7 +58,7 @@ class NotificationOptions;
 class NotificationPermissionCallback;
 class ScriptState;
 
-class MODULES_EXPORT Notification final : public RefCountedGarbageCollectedEventTargetWithInlineData<Notification>, public ActiveDOMObject, public WebNotificationDelegate {
+class MODULES_EXPORT Notification final : public RefCountedGarbageCollectedEventTargetWithInlineData<Notification>, public ActiveScriptWrappable, public ActiveDOMObject, public WebNotificationDelegate {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Notification);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
     DEFINE_WRAPPERTYPEINFO();
@@ -113,7 +114,9 @@ public:
 
     // ActiveDOMObject interface.
     void stop() override;
-    bool hasPendingActivity() const override;
+
+    // ActiveScriptWrappable interface.
+    bool hasPendingActivity() const final;
 
     DECLARE_VIRTUAL_TRACE();
 

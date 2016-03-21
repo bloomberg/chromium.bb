@@ -27,6 +27,7 @@
 
 enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
 [
+    ActiveScriptWrappable,
     DependentLifetime,
 ] interface HTMLMediaElement : HTMLElement {
 

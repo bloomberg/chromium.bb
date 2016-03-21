@@ -23,7 +23,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollected::domTemplate, V8TestInterfaceWillBeGarbageCollected::refObject, V8TestInterfaceWillBeGarbageCollected::derefObject, V8TestInterfaceWillBeGarbageCollected::trace, 0, V8TestInterfaceWillBeGarbageCollected::preparePrototypeAndInterfaceObject, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledProperties, "TestInterfaceWillBeGarbageCollected", &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollected::domTemplate, V8TestInterfaceWillBeGarbageCollected::refObject, V8TestInterfaceWillBeGarbageCollected::derefObject, V8TestInterfaceWillBeGarbageCollected::trace, 0, 0, V8TestInterfaceWillBeGarbageCollected::preparePrototypeAndInterfaceObject, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledProperties, "TestInterfaceWillBeGarbageCollected", &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -124,7 +124,7 @@ const V8DOMConfiguration::MethodConfiguration V8TestInterfaceWillBeGarbageCollec
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollectedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollectedConstructor::domTemplate, V8TestInterfaceWillBeGarbageCollected::refObject, V8TestInterfaceWillBeGarbageCollected::derefObject, V8TestInterfaceWillBeGarbageCollected::trace, 0, V8TestInterfaceWillBeGarbageCollected::preparePrototypeAndInterfaceObject, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledProperties, "TestInterfaceWillBeGarbageCollected", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollectedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollectedConstructor::domTemplate, V8TestInterfaceWillBeGarbageCollected::refObject, V8TestInterfaceWillBeGarbageCollected::derefObject, V8TestInterfaceWillBeGarbageCollected::trace, 0, 0, V8TestInterfaceWillBeGarbageCollected::preparePrototypeAndInterfaceObject, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledProperties, "TestInterfaceWillBeGarbageCollected", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif

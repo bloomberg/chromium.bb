@@ -219,7 +219,10 @@ bool Body::hasPendingActivity() const
     return bodyBuffer()->hasPendingActivity();
 }
 
-Body::Body(ExecutionContext* context) : ActiveDOMObject(context), m_opaque(false)
+Body::Body(ExecutionContext* context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
+    , m_opaque(false)
 {
     suspendIfNeeded();
 }

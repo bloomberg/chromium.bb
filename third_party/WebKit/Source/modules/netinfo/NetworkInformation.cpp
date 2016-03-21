@@ -159,7 +159,8 @@ void NetworkInformation::stopObserving()
 }
 
 NetworkInformation::NetworkInformation(ExecutionContext* context)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_type(networkStateNotifier().connectionType())
     , m_downlinkMaxMbps(networkStateNotifier().maxBandwidth())
     , m_observing(false)

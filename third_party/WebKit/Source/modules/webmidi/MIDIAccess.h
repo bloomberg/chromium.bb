@@ -31,6 +31,7 @@
 #ifndef MIDIAccess_h
 #define MIDIAccess_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
@@ -48,7 +49,7 @@ class MIDIInputMap;
 class MIDIOutput;
 class MIDIOutputMap;
 
-class MIDIAccess final : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIAccess>, public ActiveDOMObject, public MIDIAccessorClient {
+class MIDIAccess final : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIAccess>, public ActiveScriptWrappable, public ActiveDOMObject, public MIDIAccessorClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MIDIAccess);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
@@ -73,8 +74,10 @@ public:
     const AtomicString& interfaceName() const override { return EventTargetNames::MIDIAccess; }
     ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
 
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject
-    bool hasPendingActivity() const override;
     void stop() override;
 
     // MIDIAccessorClient

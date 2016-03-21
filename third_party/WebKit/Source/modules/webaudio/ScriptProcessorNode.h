@@ -26,6 +26,7 @@
 #define ScriptProcessorNode_h
 
 #include "base/gtest_prod_util.h"
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioBus.h"
 #include "wtf/Forward.h"
@@ -90,7 +91,7 @@ private:
     FRIEND_TEST_ALL_PREFIXES(ScriptProcessorNodeTest, BufferLifetime);
 };
 
-class ScriptProcessorNode final : public AudioNode {
+class ScriptProcessorNode final : public AudioNode, public ActiveScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // bufferSize must be one of the following values: 256, 512, 1024, 2048,
@@ -106,7 +107,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
     size_t bufferSize() const;
 
-    // ScriptWrappable
+    // ActiveScriptWrappable
     bool hasPendingActivity() const final;
 
 private:

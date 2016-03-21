@@ -4,7 +4,8 @@
 
 // https://dvcs.w3.org/hg/dap/raw-file/tip/battery/Overview.html#batterymanager-interface
 [
-    DependentLifetime
+    ActiveScriptWrappable,
+    DependentLifetime,
 ] interface BatteryManager : EventTarget {
     readonly attribute boolean charging;
     readonly attribute unrestricted double chargingTime;

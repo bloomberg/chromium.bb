@@ -5,6 +5,7 @@
 #ifndef ReadableStreamReader_h
 #define ReadableStreamReader_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -24,7 +25,7 @@ class ScriptState;
 
 // ReadableStreamReader corresponds to the same-name class in the Streams spec
 // https://streams.spec.whatwg.org/.
-class CORE_EXPORT ReadableStreamReader final : public GarbageCollectedFinalized<ReadableStreamReader>, public ScriptWrappable, public ActiveDOMObject {
+class CORE_EXPORT ReadableStreamReader final : public GarbageCollectedFinalized<ReadableStreamReader>, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamReader);
 public:
@@ -41,7 +42,7 @@ public:
     void close();
     void error();
 
-    bool hasPendingActivity() const override;
+    bool hasPendingActivity() const final;
     void stop() override;
 
     DECLARE_TRACE();

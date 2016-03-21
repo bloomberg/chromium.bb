@@ -60,8 +60,10 @@ public:
     // From Response.idl:
     Response* clone(ExceptionState&);
 
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject
-    bool hasPendingActivity() const override;
     void stop() override;
 
     // Does not call response.setBlobDataHandle().

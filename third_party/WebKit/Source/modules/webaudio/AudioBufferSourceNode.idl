@@ -23,6 +23,9 @@
  */
 
 // A cached (non-streamed), memory-resident audio source
+[
+    ActiveScriptWrappable,
+]
 interface AudioBufferSourceNode : AudioSourceNode {
     [RaisesException=Setter] attribute AudioBuffer buffer;
 

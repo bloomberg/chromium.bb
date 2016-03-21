@@ -32,10 +32,11 @@
 // https://html.spec.whatwg.org/#shared-workers-and-the-sharedworker-interface
 
 [
-    DependentLifetime,
+    ActiveScriptWrappable,
     // TODO(philipj): The name argument should not have a default null value.
     Constructor(DOMString scriptURL, optional DOMString name = null),
     ConstructorCallWith=ExecutionContext,
+    DependentLifetime,
     GarbageCollected,
     // TODO(philipj): Exposed=(Window,Worker),
     RaisesException=Constructor,

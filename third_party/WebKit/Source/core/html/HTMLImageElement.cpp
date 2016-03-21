@@ -87,6 +87,7 @@ private:
 
 HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bool createdByParser)
     : HTMLElement(imgTag, document)
+    , ActiveScriptWrappable(this)
     , m_imageLoader(HTMLImageLoader::create(this))
     , m_imageDevicePixelRatio(1.0f)
     , m_source(nullptr)

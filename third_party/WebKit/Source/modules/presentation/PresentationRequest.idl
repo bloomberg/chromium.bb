@@ -6,13 +6,14 @@
 // https://w3c.github.io/presentation-api/#interface-presentationrequest
 
 [
-    Constructor(DOMString url),
+    ActiveScriptWrappable,
     ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor,
+    Constructor(DOMString url),
     DependentLifetime,
     GarbageCollected,
+    MeasureAs=PresentationRequestConstructor,
+    RaisesException=Constructor,
     RuntimeEnabled=Presentation,
-    MeasureAs=PresentationRequestConstructor
 ] interface PresentationRequest : EventTarget {
     [CallWith=ScriptState, MeasureAs=PresentationRequestStart] Promise<PresentationConnection> start();
     [CallWith=ScriptState, MeasureAs=PresentationRequestReconnect] Promise<PresentationConnection> reconnect(DOMString id);

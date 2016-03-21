@@ -116,7 +116,8 @@ Notification* Notification::create(ExecutionContext* context, int64_t persistent
 }
 
 Notification::Notification(ExecutionContext* context, const WebNotificationData& data)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_data(data)
     , m_persistentId(kInvalidPersistentId)
     , m_state(NotificationStateIdle)

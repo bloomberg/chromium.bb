@@ -36,9 +36,10 @@ enum EndOfStreamError {
 };
 
 [
-    DependentLifetime,
+    ActiveScriptWrappable,
     Constructor,
     ConstructorCallWith=ExecutionContext,
+    DependentLifetime,
 ] interface MediaSource : EventTarget {
     // All the source buffers created by this object.
     readonly attribute SourceBufferList sourceBuffers;

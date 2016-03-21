@@ -45,6 +45,7 @@ enum MIDIPortType {
 };
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     GarbageCollected,
 ] interface MIDIPort : EventTarget {

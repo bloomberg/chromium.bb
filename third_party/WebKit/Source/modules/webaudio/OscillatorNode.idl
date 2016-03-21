@@ -31,6 +31,9 @@ enum OscillatorType {
 };
 
 // OscillatorNode is an audio generator of periodic waveforms.
+[
+    ActiveScriptWrappable,
+]
 interface OscillatorNode : AudioSourceNode {
 
     [RaisesException=Setter] attribute OscillatorType type;

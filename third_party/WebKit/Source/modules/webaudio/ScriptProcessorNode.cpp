@@ -238,6 +238,7 @@ void ScriptProcessorHandler::setChannelCountMode(const String& mode, ExceptionSt
 
 ScriptProcessorNode::ScriptProcessorNode(AbstractAudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
     : AudioNode(context)
+    , ActiveScriptWrappable(this)
 {
     setHandler(ScriptProcessorHandler::create(*this, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
 }

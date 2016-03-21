@@ -7,13 +7,14 @@
 enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredirect" };
 
 [
+    ActiveScriptWrappable,
     // TODO(yhirano): We use "any" for body because the IDL processor doesn't
     // recognize ReadableStream implemented with V8 extras. Fix it.
     Constructor(optional any body, optional Dictionary responseInitDict),
     ConstructorCallWith=ScriptState,
+    DependentLifetime,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
-    DependentLifetime,
     GarbageCollected,
 ] interface Response {
     [CallWith=ExecutionContext] static Response error();

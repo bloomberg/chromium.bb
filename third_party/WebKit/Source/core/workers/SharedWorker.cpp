@@ -49,6 +49,7 @@ namespace blink {
 
 inline SharedWorker::SharedWorker(ExecutionContext* context)
     : AbstractWorker(context)
+    , ActiveScriptWrappable(this)
     , m_isBeingConnected(false)
 {
 }

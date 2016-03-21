@@ -52,7 +52,8 @@ FileWriter* FileWriter::create(ExecutionContext* context)
 }
 
 FileWriter::FileWriter(ExecutionContext* context)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_readyState(INIT)
     , m_operationInProgress(OperationNone)
     , m_queuedOperation(OperationNone)

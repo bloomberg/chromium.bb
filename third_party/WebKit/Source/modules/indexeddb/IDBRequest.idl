@@ -37,8 +37,9 @@ enum IDBRequestReadyState {
 // http://www.w3.org/TR/IndexedDB/#idl-def-IDBRequest
 
 [
-    Exposed=(Window,Worker),
+    ActiveScriptWrappable,
     DependentLifetime,
+    Exposed=(Window,Worker),
     GarbageCollected,
 ] interface IDBRequest : EventTarget {
     [RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;

@@ -34,13 +34,14 @@
 enum BinaryType { "blob", "arraybuffer" };
 
 [
-    DependentLifetime,
+    ActiveScriptWrappable,
     Constructor(DOMString url, optional (DOMString or sequence<DOMString>) protocols),
     ConstructorCallWith=ExecutionContext,
+    DependentLifetime,
     Exposed=(Window,Worker),
-    RaisesException=Constructor,
     GarbageCollected,
     ImplementedAs=DOMWebSocket,
+    RaisesException=Constructor,
 ] interface WebSocket : EventTarget {
     readonly attribute DOMString url;
 

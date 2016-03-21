@@ -26,6 +26,7 @@
 #ifndef MediaStreamTrack_h
 #define MediaStreamTrack_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
@@ -43,6 +44,7 @@ class MediaStreamTrackSourcesCallback;
 
 class MODULES_EXPORT MediaStreamTrack
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>
+    , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public MediaStreamSource::Observer {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaStreamTrack);
@@ -83,8 +85,10 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
 
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject
-    bool hasPendingActivity() const override;
     void stop() override;
 
     PassOwnPtr<AudioSourceProvider> createWebAudioSource();

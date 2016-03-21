@@ -225,6 +225,7 @@ void AudioScheduledSourceHandler::notifyEnded()
 
 AudioScheduledSourceNode::AudioScheduledSourceNode(AbstractAudioContext& context)
     : AudioSourceNode(context)
+    , ActiveScriptWrappable(this)
 {
 }
 

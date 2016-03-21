@@ -29,6 +29,7 @@ enum MediaKeySessionType {
 };
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     GarbageCollected,
 ] interface MediaKeys {

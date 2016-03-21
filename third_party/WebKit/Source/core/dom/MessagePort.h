@@ -27,6 +27,7 @@
 #ifndef MessagePort_h
 #define MessagePort_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
@@ -57,6 +58,7 @@ typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MessagePort>
+    , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public WebMessagePortChannelClient {
     DEFINE_WRAPPERTYPEINFO();
@@ -89,8 +91,10 @@ public:
     ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
     MessagePort* toMessagePort() override { return this; }
 
+    // ActiveScriptWrappable implementation.
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject implementation.
-    bool hasPendingActivity() const override;
     void stop() override { close(); }
 
     void setOnmessage(PassRefPtrWillBeRawPtr<EventListener> listener)

@@ -99,7 +99,8 @@ SourceBuffer* SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, 
 }
 
 SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
-    : ActiveDOMObject(source->getExecutionContext())
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(source->getExecutionContext())
     , m_webSourceBuffer(webSourceBuffer)
     , m_source(source)
     , m_trackDefaults(TrackDefaultList::create())

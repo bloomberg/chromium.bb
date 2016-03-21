@@ -26,6 +26,7 @@
 #ifndef IDBDatabase_h
 #define IDBDatabase_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -55,6 +56,7 @@ class ExecutionContext;
 
 class MODULES_EXPORT IDBDatabase final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBDatabase>
+    , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBDatabase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
@@ -90,8 +92,10 @@ public:
     void onAbort(int64_t, DOMException*);
     void onComplete(int64_t);
 
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
+
     // ActiveDOMObject
-    bool hasPendingActivity() const override;
     void stop() override;
 
     // EventTarget

@@ -31,6 +31,7 @@
 #ifndef FileWriter_h
 #define FileWriter_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
@@ -53,6 +54,7 @@ class FileWriter final
     : public FileWriterBase
     , public EventTargetWithInlineData
 #endif
+    , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public WebFileWriterClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(FileWriterBase);
@@ -82,7 +84,9 @@ public:
 
     // ActiveDOMObject
     void stop() override;
-    bool hasPendingActivity() const override;
+
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const final;
 
     // EventTarget
     const AtomicString& interfaceName() const override;

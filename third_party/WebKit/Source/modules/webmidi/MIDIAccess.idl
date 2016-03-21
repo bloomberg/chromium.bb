@@ -29,6 +29,7 @@
  */
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
 ] interface MIDIAccess : EventTarget {
     readonly attribute MIDIInputMap inputs;

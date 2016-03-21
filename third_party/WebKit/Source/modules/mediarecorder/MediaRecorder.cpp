@@ -132,7 +132,8 @@ MediaRecorder* MediaRecorder::create(ExecutionContext* context, MediaStream* str
 }
 
 MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, const MediaRecorderOptions& options, ExceptionState& exceptionState)
-    : ActiveDOMObject(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_stream(stream)
     , m_streamAmountOfTracks(stream->getTracks().size())
     , m_mimeType(options.mimeType())
