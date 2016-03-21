@@ -75,6 +75,8 @@ class ChromeMetricsServiceClient
   base::TimeDelta GetStandardUploadInterval() override;
   base::string16 GetRegistryBackupKey() override;
   void OnPluginLoadingError(const base::FilePath& plugin_path) override;
+  bool IsReportingPolicyManaged() override;
+  EnableMetricsDefault GetDefaultOptIn() override;
 
  private:
   explicit ChromeMetricsServiceClient(

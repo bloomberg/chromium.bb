@@ -15,8 +15,9 @@ const char TestMetricsServiceClient::kBrandForTesting[] = "brand_for_testing";
 
 TestMetricsServiceClient::TestMetricsServiceClient()
     : version_string_("5.0.322.0-64-devel"),
-      product_(ChromeUserMetricsExtension::CHROME) {
-}
+      product_(ChromeUserMetricsExtension::CHROME),
+      reporting_is_managed_(false),
+      enable_default_(MetricsServiceClient::DEFAULT_UNKNOWN) {}
 
 TestMetricsServiceClient::~TestMetricsServiceClient() {
 }
@@ -78,6 +79,15 @@ scoped_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(
 
 base::TimeDelta TestMetricsServiceClient::GetStandardUploadInterval() {
   return base::TimeDelta::FromMinutes(5);
+}
+
+bool TestMetricsServiceClient::IsReportingPolicyManaged() {
+  return reporting_is_managed_;
+}
+
+MetricsServiceClient::EnableMetricsDefault
+TestMetricsServiceClient::GetDefaultOptIn() {
+  return enable_default_;
 }
 
 }  // namespace metrics

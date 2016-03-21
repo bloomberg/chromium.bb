@@ -1289,6 +1289,13 @@ const char kCrashReportingEnabled[] =
     "user_experience_metrics_crash.reporting_enabled";
 #endif
 
+// An enum value indicating the default value of the enable metrics reporting
+// checkbox shown during first-run. If it's opt-in, then the checkbox defaulted
+// to unchecked, if it's opt-out, then it defaulted to checked. This value is
+// only recorded during first-run, so older clients will not set it. The enum
+// used for the value is metrics::MetricsServiceClient::EnableMetricsDefault.
+const char kMetricsDefaultOptIn[] = "user_experience_metrics.default_opt_in";
+
 // This is the location of a list of dictionaries of plugin stability stats.
 const char kStabilityPluginStats[] =
     "user_experience_metrics.stability.plugin_stats2";

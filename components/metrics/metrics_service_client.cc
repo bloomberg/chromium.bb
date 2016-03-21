@@ -10,4 +10,13 @@ base::string16 MetricsServiceClient::GetRegistryBackupKey() {
   return base::string16();
 }
 
+bool MetricsServiceClient::IsReportingPolicyManaged() {
+  return false;
+}
+
+MetricsServiceClient::EnableMetricsDefault
+MetricsServiceClient::GetDefaultOptIn() {
+  return DEFAULT_UNKNOWN;
+}
+
 }  // namespace metrics

@@ -9,9 +9,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -122,11 +124,30 @@ void InitiateMetricsReportingChange(
       base::Bind(&SetMetricsReporting, enabled, callback_fn));
 }
 
+void RegisterMetricsReportingStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kMetricsDefaultOptIn,
+                                metrics::MetricsServiceClient::DEFAULT_UNKNOWN);
+}
+
 bool IsMetricsReportingPolicyManaged() {
   const PrefService* pref_service = g_browser_process->local_state();
   const PrefService::Preference* pref =
       pref_service->FindPreference(metrics::prefs::kMetricsReportingEnabled);
   return pref && pref->IsManaged();
+}
+
+void SetMetricsReportingDefaultOptIn(PrefService* local_state, bool opt_in) {
+  DCHECK(GetMetricsReportingDefaultOptIn(local_state) ==
+         metrics::MetricsServiceClient::DEFAULT_UNKNOWN);
+  local_state->SetInteger(prefs::kMetricsDefaultOptIn,
+                          opt_in ? metrics::MetricsServiceClient::OPT_IN
+                                 : metrics::MetricsServiceClient::OPT_OUT);
+}
+
+metrics::MetricsServiceClient::EnableMetricsDefault
+GetMetricsReportingDefaultOptIn(PrefService* local_state) {
+  return static_cast<metrics::MetricsServiceClient::EnableMetricsDefault>(
+      local_state->GetInteger(prefs::kMetricsDefaultOptIn));
 }
 
 // TODO(gayane): Add unittest which will check that observer on device settings

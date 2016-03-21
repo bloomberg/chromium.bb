@@ -23,6 +23,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -39,6 +40,7 @@
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics/metrics_service_client.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/net/version_utils.h"
@@ -211,6 +213,8 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 
   RegisterInstallerFileMetricsPreferences(registry);
 
+  RegisterMetricsReportingStatePrefs(registry);
+
 #if BUILDFLAG(ANDROID_JAVA_UI)
   AndroidMetricsProvider::RegisterPrefs(registry);
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
@@ -329,6 +333,15 @@ void ChromeMetricsServiceClient::OnPluginLoadingError(
 #else
   NOTREACHED();
 #endif  // defined(ENABLE_PLUGINS)
+}
+
+bool ChromeMetricsServiceClient::IsReportingPolicyManaged() {
+  return IsMetricsReportingPolicyManaged();
+}
+
+metrics::MetricsServiceClient::EnableMetricsDefault
+ChromeMetricsServiceClient::GetDefaultOptIn() {
+  return GetMetricsReportingDefaultOptIn(g_browser_process->local_state());
 }
 
 void ChromeMetricsServiceClient::Initialize() {

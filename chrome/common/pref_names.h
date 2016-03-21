@@ -439,6 +439,8 @@ extern const char kGLVersionString[];
 extern const char kCrashReportingEnabled[];
 #endif
 
+extern const char kMetricsDefaultOptIn[];
+
 extern const char kDeviceOpenNetworkConfiguration[];
 
 extern const char kProfileLastUsed[];

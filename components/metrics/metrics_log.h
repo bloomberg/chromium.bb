@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/metrics/metrics_service_client.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
 class PrefRegistrySimple;
@@ -160,6 +161,11 @@ class MetricsLog {
   // Returns true if the environment has already been filled in by a call to
   // RecordEnvironment() or LoadSavedEnvironmentFromPrefs().
   bool HasEnvironment() const;
+
+  // Write the default state of the enable metrics checkbox.
+  void WriteMetricsEnableDefault(
+      MetricsServiceClient::EnableMetricsDefault metrics_default,
+      SystemProfileProto* system_profile);
 
   // Returns true if the stability metrics have already been filled in by a
   // call to RecordStabilityMetrics().

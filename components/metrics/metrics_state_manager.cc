@@ -199,6 +199,8 @@ scoped_ptr<MetricsStateManager> MetricsStateManager::Create(
 // static
 void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kMetricsResetIds, false);
+  // registry->RegisterIntegerPref(prefs::kMetricsDefaultOptIn,
+  // DEFAULT_UNKNOWN);
   registry->RegisterStringPref(prefs::kMetricsClientID, std::string());
   registry->RegisterInt64Pref(prefs::kMetricsReportingEnabledTimestamp, 0);
   registry->RegisterIntegerPref(prefs::kMetricsLowEntropySource,

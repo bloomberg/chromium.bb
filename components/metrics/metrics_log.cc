@@ -252,6 +252,31 @@ bool MetricsLog::HasEnvironment() const {
   return uma_proto()->system_profile().has_uma_enabled_date();
 }
 
+void MetricsLog::WriteMetricsEnableDefault(
+    MetricsServiceClient::EnableMetricsDefault metrics_default,
+    SystemProfileProto* system_profile) {
+  if (client_->IsReportingPolicyManaged()) {
+    // If it's managed, then it must be reporting, otherwise we wouldn't be
+    // sending metrics.
+    system_profile->set_uma_default_state(
+        SystemProfileProto_UmaDefaultState_POLICY_FORCED_ENABLED);
+    return;
+  }
+
+  switch (metrics_default) {
+    case MetricsServiceClient::DEFAULT_UNKNOWN:
+      // Don't set the field if it's unknown.
+      break;
+    case MetricsServiceClient::OPT_IN:
+      system_profile->set_uma_default_state(
+          SystemProfileProto_UmaDefaultState_OPT_IN);
+      break;
+    case MetricsServiceClient::OPT_OUT:
+      system_profile->set_uma_default_state(
+          SystemProfileProto_UmaDefaultState_OPT_OUT);
+  }
+}
+
 bool MetricsLog::HasStabilityMetrics() const {
   return uma_proto()->system_profile().stability().has_launch_count();
 }
@@ -299,6 +324,8 @@ void MetricsLog::RecordEnvironment(
   DCHECK(!HasEnvironment());
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
+
+  WriteMetricsEnableDefault(client_->GetDefaultOptIn(), system_profile);
 
   std::string brand_code;
   if (client_->GetBrand(&brand_code))

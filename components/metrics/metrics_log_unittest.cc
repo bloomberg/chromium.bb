@@ -253,8 +253,7 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   synthetic_trials.push_back(kSyntheticTrials[0]);
   synthetic_trials.push_back(kSyntheticTrials[1]);
 
-  log.RecordEnvironment(std::vector<MetricsProvider*>(),
-                        synthetic_trials,
+  log.RecordEnvironment(std::vector<MetricsProvider*>(), synthetic_trials,
                         kInstallDate, kEnabledDate);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());
@@ -328,6 +327,45 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     EXPECT_TRUE(prefs_.GetString(kSystemProfilePref).empty());
     EXPECT_TRUE(prefs_.GetString(kSystemProfileHashPref).empty());
   }
+}
+
+TEST_F(MetricsLogTest, RecordEnvironmentEnableDefault) {
+  TestMetricsServiceClient client;
+  TestMetricsLog log_unknown(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
+                             &client, &prefs_);
+
+  std::vector<variations::ActiveGroupId> synthetic_trials;
+
+  log_unknown.RecordEnvironment(std::vector<MetricsProvider*>(),
+                                synthetic_trials, kInstallDate, kEnabledDate);
+  EXPECT_FALSE(log_unknown.system_profile().has_uma_default_state());
+
+  client.set_enable_default(MetricsServiceClient::OPT_IN);
+  TestMetricsLog log_opt_in(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
+                            &client, &prefs_);
+  log_opt_in.RecordEnvironment(std::vector<MetricsProvider*>(),
+                               synthetic_trials, kInstallDate, kEnabledDate);
+  EXPECT_TRUE(log_opt_in.system_profile().has_uma_default_state());
+  EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_IN,
+            log_opt_in.system_profile().uma_default_state());
+
+  client.set_enable_default(MetricsServiceClient::OPT_OUT);
+  TestMetricsLog log_opt_out(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
+                             &client, &prefs_);
+  log_opt_out.RecordEnvironment(std::vector<MetricsProvider*>(),
+                                synthetic_trials, kInstallDate, kEnabledDate);
+  EXPECT_TRUE(log_opt_out.system_profile().has_uma_default_state());
+  EXPECT_EQ(SystemProfileProto_UmaDefaultState_OPT_OUT,
+            log_opt_out.system_profile().uma_default_state());
+
+  client.set_reporting_is_managed(true);
+  TestMetricsLog log_managed(kClientId, kSessionId, MetricsLog::ONGOING_LOG,
+                             &client, &prefs_);
+  log_managed.RecordEnvironment(std::vector<MetricsProvider*>(),
+                                synthetic_trials, kInstallDate, kEnabledDate);
+  EXPECT_TRUE(log_managed.system_profile().has_uma_default_state());
+  EXPECT_EQ(SystemProfileProto_UmaDefaultState_POLICY_FORCED_ENABLED,
+            log_managed.system_profile().uma_default_state());
 }
 
 TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {

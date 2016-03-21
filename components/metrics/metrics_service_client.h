@@ -27,6 +27,19 @@ class MetricsService;
 // environment.
 class MetricsServiceClient {
  public:
+  // Default value of the enable metrics recording. This relates to the state of
+  // the enable checkbox shown on first-run. This enum is used to store values
+  // in a pref, and shouldn't be renumbered.
+  enum EnableMetricsDefault {
+    // We only record the value during first-run. The default of existing
+    // installs is considered unknown.
+    DEFAULT_UNKNOWN,
+    // The first-run checkbox was unchecked by default.
+    OPT_IN,
+    // The first-run checkbox was checked by default.
+    OPT_OUT,
+  };
+
   virtual ~MetricsServiceClient() {}
 
   // Returns the MetricsService instance that this client is associated with.
@@ -97,6 +110,13 @@ class MetricsServiceClient {
   // //content and thus do not have //content's notification system available
   // as a mechanism for observing renderer crashes).
   virtual void OnRendererProcessCrash() {}
+
+  // Returns whether metrics reporting is managed by policy.
+  virtual bool IsReportingPolicyManaged();
+
+  // Gets information about the default value for the enable metrics reporting
+  // checkbox shown during first-run.
+  virtual EnableMetricsDefault GetDefaultOptIn();
 };
 
 }  // namespace metrics

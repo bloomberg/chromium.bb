@@ -13,7 +13,7 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
-// Next tag: 21
+// Next tag: 23
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -756,4 +756,20 @@ message SystemProfileProto {
     HAS_OFFSTORE = 3;
   }
   optional ExtensionsState offstore_extensions_state = 19;
+
+  // The nature of the choice the user was given concerning metrics recording.
+  // Specifically, whether the enable metrics/crash reporting checkbox that was
+  // shown on first run was checked or unchecked by default.
+  // This state is recorded on first run, and uploaded in every UMA log.
+  // Consequently this should only be defined for clients that were installed
+  // after the recording code was implemented.
+  enum UmaDefaultState {
+    // The enable checkbox was unchecked by default.
+    OPT_IN = 0;
+    // The enable checkbox was checked by default.
+    OPT_OUT = 1;
+    // Policy mandated that UMA be enaled, the user had no choice.
+    POLICY_FORCED_ENABLED = 2;
+  }
+  optional UmaDefaultState uma_default_state = 22;
 }
