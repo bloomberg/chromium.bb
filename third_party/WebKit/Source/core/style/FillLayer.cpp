@@ -21,6 +21,7 @@
 
 #include "core/style/FillLayer.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/style/DataEquivalency.h"
 
 namespace blink {
@@ -370,27 +371,42 @@ bool FillLayer::imagesAreLoaded() const
     return true;
 }
 
-bool FillLayer::hasOpaqueImage(const LayoutObject* layoutObject) const
+bool FillLayer::imageIsOpaque(const LayoutObject& layoutObject) const
 {
-    if (!m_image)
-        return false;
-
-    // TODO(trchen): Should check blend mode before composite mode.
-    if (m_composite == CompositeClear || m_composite == CompositeCopy)
-        return true;
-
-    if (m_blendMode != WebBlendModeNormal)
-        return false;
-
-    if (m_composite == CompositeSourceOver)
-        return m_image->knownToBeOpaque(*layoutObject);
-
-    return false;
+    // Returns true if we have an image that will cover the content below it when
+    // m_composite == CompositeSourceOver && m_blendMode == WebBlendModeNormal.
+    // Otherwise false.
+    return m_image->knownToBeOpaque(layoutObject)
+        && !m_image->imageSize(layoutObject, layoutObject.style()->effectiveZoom(), LayoutSize()).isEmpty();
 }
 
-bool FillLayer::hasRepeatXY() const
+bool FillLayer::imageTilesLayer() const
 {
-    return m_repeatX == RepeatFill && m_repeatY == RepeatFill;
+    // Returns true if an image will be tiled such that it covers any sized rectangle.
+    // TODO(schenney) We could relax the repeat mode requirement if we also knew the rect we
+    // had to fill, and the portion of the image we need to use, and know that the latter
+    // covers the former
+    return (m_repeatX == RepeatFill || m_repeatX == RoundFill)
+        && (m_repeatY == RepeatFill || m_repeatY == RoundFill);
+
+}
+
+bool FillLayer::imageOccludesNextLayers(const LayoutObject& layoutObject) const
+{
+    // We can't cover without an image, regardless of other parameters
+    if (!m_image || !m_image->canRender())
+        return false;
+
+    switch (m_composite) {
+    case CompositeClear:
+    case CompositeCopy:
+        return imageTilesLayer();
+    case CompositeSourceOver:
+        return (m_blendMode == WebBlendModeNormal) && imageTilesLayer() && imageIsOpaque(layoutObject);
+    default: { }
+    }
+
+    return false;
 }
 
 static inline bool layerImagesIdentical(const FillLayer& layer1, const FillLayer& layer2)

@@ -60,7 +60,7 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
             // need the bleed avoidance because we will not paint anything behind the top layer.
             // But only if we need to draw something underneath.
             const FillLayer& fillLayer = layoutBox.style()->backgroundLayers();
-            if ((backgroundColor.alpha() || fillLayer.next()) && !BoxPainter::isFillLayerOpaque(fillLayer, layoutBox))
+            if ((backgroundColor.alpha() || fillLayer.next()) && !fillLayer.imageOccludesNextLayers(layoutBox))
                 return BackgroundBleedClipLayer;
         }
         return BackgroundBleedNone;

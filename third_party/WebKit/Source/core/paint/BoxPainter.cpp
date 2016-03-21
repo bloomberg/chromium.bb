@@ -134,16 +134,6 @@ void BoxPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& p
     paintFillLayers(paintInfo, backgroundColor, m_layoutBox.style()->backgroundLayers(), paintRect, bleedAvoidance);
 }
 
-bool BoxPainter::isFillLayerOpaque(const FillLayer& layer, const LayoutObject& imageClient)
-{
-    // The default object size passed down to imageSize is empty with the implication that images
-    // with no intrinsic size are treated as empty.
-    return layer.hasOpaqueImage(&imageClient)
-        && layer.image()->canRender()
-        && !layer.image()->imageSize(imageClient, imageClient.style()->effectiveZoom(), LayoutSize()).isEmpty()
-        && layer.hasRepeatXY();
-}
-
 bool BoxPainter::calculateFillLayerOcclusionCulling(FillLayerOcclusionOutputList &reversedPaintList, const FillLayer& fillLayer)
 {
     bool isNonAssociative = false;
@@ -163,7 +153,7 @@ bool BoxPainter::calculateFillLayerOcclusionCulling(FillLayerOcclusionOutputList
         // TODO(trchen): A fill layer cannot paint if the calculated tile size is empty.
         // This occlusion check can be wrong.
         if (currentLayer->clipOccludesNextLayers()
-            && isFillLayerOpaque(*currentLayer, m_layoutBox)) {
+            && currentLayer->imageOccludesNextLayers(m_layoutBox)) {
             if (currentLayer->clip() == BorderFillBox)
                 isNonAssociative = false;
             break;
@@ -433,7 +423,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
     if (isBottomLayer) {
         IntRect backgroundRect(pixelSnappedIntRect(scrolledPaintRect));
         bool boxShadowShouldBeAppliedToBackground = obj.boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
-        bool backgroundImageOccludesBackgroundColor = shouldPaintBackgroundImage && isFillLayerOpaque(bgLayer, obj);
+        bool backgroundImageOccludesBackgroundColor = shouldPaintBackgroundImage && bgLayer.imageOccludesNextLayers(obj);
         if (boxShadowShouldBeAppliedToBackground || !backgroundImageOccludesBackgroundColor)  {
             GraphicsContextStateSaver shadowStateSaver(context, boxShadowShouldBeAppliedToBackground);
             if (boxShadowShouldBeAppliedToBackground)

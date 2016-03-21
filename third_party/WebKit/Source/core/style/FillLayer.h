@@ -175,7 +175,7 @@ public:
         return m_next ? m_next->hasFixedImage() : false;
     }
 
-    bool hasOpaqueImage(const LayoutObject*) const;
+    bool imageOccludesNextLayers(const LayoutObject&) const;
     bool hasRepeatXY() const;
     bool clipOccludesNextLayers() const;
 
@@ -210,6 +210,9 @@ private:
     friend class ComputedStyle;
 
     FillLayer() { }
+
+    bool imageIsOpaque(const LayoutObject&) const;
+    bool imageTilesLayer() const;
 
     FillLayer* m_next;
 
