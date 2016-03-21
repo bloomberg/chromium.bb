@@ -146,6 +146,9 @@ SoftwareImageDecodeController::SoftwareImageDecodeController(
       locked_images_budget_(kLockedMemoryLimitBytes),
       format_(format) {}
 
+SoftwareImageDecodeController::SoftwareImageDecodeController()
+    : SoftwareImageDecodeController(RGBA_8888) {}
+
 SoftwareImageDecodeController::~SoftwareImageDecodeController() {
   DCHECK_EQ(0u, decoded_images_ref_counts_.size());
   DCHECK_EQ(0u, at_raster_decoded_images_ref_counts_.size());

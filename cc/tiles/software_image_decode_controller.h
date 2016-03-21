@@ -96,7 +96,8 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   using ImageKey = ImageDecodeControllerKey;
   using ImageKeyHash = ImageDecodeControllerKeyHash;
 
-  explicit SoftwareImageDecodeController(ResourceFormat format = RGBA_8888);
+  explicit SoftwareImageDecodeController(ResourceFormat format);
+  SoftwareImageDecodeController();
   ~SoftwareImageDecodeController() override;
 
   // ImageDecodeController overrides.
