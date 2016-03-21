@@ -39,3 +39,7 @@ MessageLoopTestTypeUI.RecursiveDenial3
 # https://crbug.com/577417
 # Too slow under Dr. Memory (times out tests).
 AllocationRegisterTest.OverflowDeathTest
+
+# https://crbug.com/592753
+# TODO(wfh): Times out under Dr. Memory. Creates 200 threads in child process.
+ScopedHandleTest.MultiProcess
