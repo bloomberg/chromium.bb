@@ -20,41 +20,13 @@ using gpu_blink::WebGraphicsContext3DImpl;
 
 namespace content {
 
-namespace {
-
-// Singleton used to initialize and terminate the gles2 library.
-class GLES2Initializer {
- public:
-  GLES2Initializer() { gles2::Initialize(); }
-
-  ~GLES2Initializer() { gles2::Terminate(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GLES2Initializer);
-};
-
-base::LazyInstance<GLES2Initializer> g_gles2_initializer =
-    LAZY_INSTANCE_INITIALIZER;
-
-void BindWebGraphicsContext3DGLContextCallback(const GrGLInterface* interface) {
-  gles2::SetGLContext(static_cast<const GrGLInterfaceForWebGraphicsContext3D*>(
-                          interface)->WebContext3D()->GetGLInterface());
-}
-
-}  // namespace anonymous
-
 GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
     skia::RefPtr<GrGLInterfaceForWebGraphicsContext3D> gr_interface) {
   if (!gr_interface || !gr_interface->WebContext3D())
     return;
 
-  // Ensure the gles2 library is initialized first in a thread safe way.
-  g_gles2_initializer.Get();
-  gles2::SetGLContext(gr_interface->WebContext3D()->GetGLInterface());
-
-  skia_bindings::InitCommandBufferSkiaGLBinding(gr_interface.get());
-
-  gr_interface->fCallback = BindWebGraphicsContext3DGLContextCallback;
+  skia_bindings::InitGLES2InterfaceBindings(
+      gr_interface.get(), gr_interface->WebContext3D()->GetGLInterface());
 
   gr_context_ = skia::AdoptRef(GrContext::Create(
       kOpenGL_GrBackend,

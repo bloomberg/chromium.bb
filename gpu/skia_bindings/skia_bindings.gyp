@@ -12,7 +12,7 @@
       'target_name': 'gpu_skia_bindings',
       'type': 'static_library',
       'dependencies': [
-        '../gpu.gyp:gles2_c_lib',
+        '../gpu.gyp:gles2_implementation',
         '../../skia/skia.gyp:skia',
       ],
       'sources': [

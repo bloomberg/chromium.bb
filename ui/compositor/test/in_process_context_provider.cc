@@ -20,24 +20,6 @@
 
 namespace ui {
 
-namespace {
-
-// Singleton used to initialize and terminate the gles2 library.
-class GLES2Initializer {
- public:
-  GLES2Initializer() { gles2::Initialize(); }
-
-  ~GLES2Initializer() { gles2::Terminate(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GLES2Initializer);
-};
-
-base::LazyInstance<GLES2Initializer> g_gles2_initializer =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 // static
 scoped_refptr<InProcessContextProvider> InProcessContextProvider::Create(
     const gpu::gles2::ContextCreationAttribHelper& attribs,
@@ -144,28 +126,14 @@ gpu::ContextSupport* InProcessContextProvider::ContextSupport() {
   return context_->GetImplementation();
 }
 
-static void BindGrContextCallback(const GrGLInterface* interface) {
-  cc::ContextProvider* context_provider =
-      reinterpret_cast<InProcessContextProvider*>(interface->fCallbackData);
-
-  gles2::SetGLContext(context_provider->ContextGL());
-}
-
 class GrContext* InProcessContextProvider::GrContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
     return gr_context_.get();
 
-  // The GrGLInterface factory will make GL calls using the C GLES2 interface.
-  // Make sure the gles2 library is initialized first on exactly one thread.
-  g_gles2_initializer.Get();
-  gles2::SetGLContext(ContextGL());
-
   skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(new GrGLInterface);
-  skia_bindings::InitCommandBufferSkiaGLBinding(interface.get());
-  interface->fCallback = BindGrContextCallback;
-  interface->fCallbackData = reinterpret_cast<GrGLInterfaceCallbackData>(this);
+  skia_bindings::InitGLES2InterfaceBindings(interface.get(), ContextGL());
 
   gr_context_ = skia::AdoptRef(GrContext::Create(
       kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));

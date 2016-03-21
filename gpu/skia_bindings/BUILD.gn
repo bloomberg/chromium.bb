@@ -9,7 +9,7 @@ source_set("skia_bindings") {
   ]
   deps = [
     "//base",
-    "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_interface",
     "//skia",
   ]
 }
