@@ -144,14 +144,6 @@ class BrowserWindow : public ui::BaseWindow {
   // Returns true if the fullscreen bubble is visible.
   virtual bool IsFullscreenBubbleVisible() const = 0;
 
-#if defined(OS_WIN)
-  // Sets state for entering or exiting Win8 Metro snap mode.
-  virtual void SetMetroSnapMode(bool enable) = 0;
-
-  // Returns whether the window is currently in Win8 Metro snap mode.
-  virtual bool IsInMetroSnapMode() const = 0;
-#endif
-
   // Returns the size of WebContents in the browser. This may be called before
   // the TabStripModel has an active tab.
   virtual gfx::Size GetContentsSize() const = 0;

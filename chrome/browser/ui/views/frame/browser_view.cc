@@ -964,15 +964,14 @@ void BrowserView::EnterFullscreen(const GURL& url,
   if (IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(true, NORMAL_FULLSCREEN, url, bubble_type);
+  ProcessFullscreen(true, url, bubble_type);
 }
 
 void BrowserView::ExitFullscreen() {
   if (!IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(false, NORMAL_FULLSCREEN, GURL(),
-                    EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
+  ProcessFullscreen(false, GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
 void BrowserView::UpdateExclusiveAccessExitBubbleContent(
@@ -1013,18 +1012,6 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
   return exclusive_access_bubble_ != nullptr;
 }
 
-#if defined(OS_WIN)
-void BrowserView::SetMetroSnapMode(bool enable) {
-  LOCAL_HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);
-  ProcessFullscreen(enable, METRO_SNAP_FULLSCREEN, GURL(),
-                    EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
-}
-
-bool BrowserView::IsInMetroSnapMode() const {
-  return false;
-}
-#endif  // defined(OS_WIN)
-
 void BrowserView::RestoreFocus() {
   WebContents* selected_web_contents = GetActiveWebContents();
   if (selected_web_contents)
@@ -1033,8 +1020,7 @@ void BrowserView::RestoreFocus() {
 
 void BrowserView::FullscreenStateChanged() {
   CHECK(!IsFullscreen());
-  ProcessFullscreen(false, NORMAL_FULLSCREEN, GURL(),
-                    EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
+  ProcessFullscreen(false, GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
@@ -2310,7 +2296,6 @@ void BrowserView::UpdateUIForContents(WebContents* contents) {
 }
 
 void BrowserView::ProcessFullscreen(bool fullscreen,
-                                    FullscreenMode mode,
                                     const GURL& url,
                                     ExclusiveAccessBubbleType bubble_type) {
   if (in_process_fullscreen_)
@@ -2323,7 +2308,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   //     thus are slow and look ugly (enforced via |in_process_fullscreen_|).
   LocationBarView* location_bar = GetLocationBarView();
 
-  if (mode == METRO_SNAP_FULLSCREEN || !fullscreen) {
+  if (!fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
     exclusive_access_bubble_.reset();
@@ -2342,13 +2327,12 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   frame_->SetFullscreen(fullscreen);
 
   // Enable immersive before the browser refreshes its list of enabled commands.
-  if (mode != METRO_SNAP_FULLSCREEN && ShouldUseImmersiveFullscreenForUrl(url))
+  if (ShouldUseImmersiveFullscreenForUrl(url))
     immersive_mode_controller_->SetEnabled(fullscreen);
 
   browser_->WindowFullscreenStateChanged();
 
-  if (fullscreen && !chrome::IsRunningInAppMode() &&
-      mode != METRO_SNAP_FULLSCREEN) {
+  if (fullscreen && !chrome::IsRunningInAppMode()) {
     UpdateExclusiveAccessExitBubbleContent(url, bubble_type);
   }
 

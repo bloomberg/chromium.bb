@@ -64,14 +64,6 @@ class ExclusiveAccessContext {
   // internal timers and/or re-display the bubble.
   virtual void OnExclusiveAccessUserInput() = 0;
 
-#if defined(OS_WIN)
-  // Sets state for entering or exiting Win8 Metro snap mode.
-  virtual void SetMetroSnapMode(bool enable);
-
-  // Returns whether the window is currently in Win8 Metro snap mode.
-  virtual bool IsInMetroSnapMode() const;
-#endif  // defined(OS_WIN)
-
   // Returns the currently active WebContents, or nullptr if there is none.
   virtual content::WebContents* GetActiveWebContents() = 0;
 

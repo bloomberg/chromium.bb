@@ -67,10 +67,6 @@ class TestBrowserWindow : public BrowserWindow {
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
-#if defined(OS_WIN)
-  void SetMetroSnapMode(bool enable) override {}
-  bool IsInMetroSnapMode() const override;
-#endif
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}

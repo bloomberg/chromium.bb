@@ -289,10 +289,6 @@ class BrowserView : public BrowserWindow,
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
-#if defined(OS_WIN)
-  void SetMetroSnapMode(bool enable) override;
-  bool IsInMetroSnapMode() const override;
-#endif  // defined(OS_WIN)
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;
   void UpdateReloadStopState(bool is_loading, bool force) override;
@@ -475,11 +471,6 @@ class BrowserView : public BrowserWindow,
   friend class BrowserViewLayoutDelegateImpl;
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
 
-  enum FullscreenMode {
-    NORMAL_FULLSCREEN,
-    METRO_SNAP_FULLSCREEN
-  };
-
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
   // can be traversed using F6, in the order they should be traversed.
   void GetAccessiblePanes(std::vector<views::AccessiblePaneView*>* panes);
@@ -542,7 +533,6 @@ class BrowserView : public BrowserWindow,
   // |bubble_type| determines what should be shown in the fullscreen exit
   // bubble.
   void ProcessFullscreen(bool fullscreen,
-                         FullscreenMode mode,
                          const GURL& url,
                          ExclusiveAccessBubbleType bubble_type);
 

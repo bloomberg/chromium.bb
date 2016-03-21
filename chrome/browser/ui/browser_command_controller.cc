@@ -93,10 +93,6 @@ enum WindowState {
 
   // Fullscreen mode, occupying the whole screen.
   WINDOW_STATE_FULLSCREEN,
-
-  // Fullscreen mode for metro snap, occupying the full height and 20% of
-  // the screen width.
-  WINDOW_STATE_METRO_SNAP,
 };
 
 // Returns |true| if entry has an internal chrome:// URL, |false| otherwise.
@@ -1108,10 +1104,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   WindowState window_state = WINDOW_STATE_NOT_FULLSCREEN;
   if (window() && window()->IsFullscreen()) {
     window_state = WINDOW_STATE_FULLSCREEN;
-#if defined(OS_WIN)
-    if (window()->IsInMetroSnapMode())
-      window_state = WINDOW_STATE_METRO_SNAP;
-#endif
   }
   bool show_main_ui = IsShowingMainUI();
   bool main_not_fullscreen =
@@ -1166,8 +1158,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   if (base::debug::IsProfilingSupported())
     command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 
-  // Disable explicit fullscreen toggling when in metro snap mode.
-  bool fullscreen_enabled = window_state != WINDOW_STATE_METRO_SNAP;
+  bool fullscreen_enabled = true;
 #if !defined(OS_MACOSX)
   if (window_state == WINDOW_STATE_NOT_FULLSCREEN &&
       !profile()->GetPrefs()->GetBoolean(prefs::kFullscreenAllowed)) {

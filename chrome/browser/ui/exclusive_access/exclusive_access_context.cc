@@ -25,13 +25,3 @@ void ExclusiveAccessContext::UpdateFullscreenToolbar() {
 bool ExclusiveAccessContext::IsFullscreenWithToolbar() const {
   return false;
 }
-
-#if defined(OS_WIN)
-void ExclusiveAccessContext::SetMetroSnapMode(bool enable) {
-  NOTIMPLEMENTED();
-}
-
-bool ExclusiveAccessContext::IsInMetroSnapMode() const {
-  return false;
-}
-#endif  // defined(OS_WIN)

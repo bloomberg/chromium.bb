@@ -118,12 +118,6 @@ bool TestBrowserWindow::IsFullscreenBubbleVisible() const {
   return false;
 }
 
-#if defined(OS_WIN)
-bool TestBrowserWindow::IsInMetroSnapMode() const {
-  return false;
-}
-#endif
-
 LocationBar* TestBrowserWindow::GetLocationBar() const {
   return const_cast<TestLocationBar*>(&location_bar_);
 }
