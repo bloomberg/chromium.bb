@@ -4887,9 +4887,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #endif  // defined(USE_AURA)
 
 // Ensure that a cross-process subframe can receive keyboard events when in
-// focus.
+// focus. Flaky: https://crbug.com/596508.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       SubframeKeyboardEventRouting) {
+                       DISABLED_SubframeKeyboardEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
