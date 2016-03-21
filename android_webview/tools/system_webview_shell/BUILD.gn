@@ -8,7 +8,7 @@ import("//testing/test.gni")
 # Mark all targets as test only.
 testonly = true
 
-group("tools") {
+group("system_webview_shell") {
   deps = [
     ":system_webview_shell_apk",
     ":system_webview_shell_layout_test_apk",
@@ -19,8 +19,16 @@ group("tools") {
 # GYP: //android_webview/android_webview_shell.gypi:system_webview_shell_apk
 android_apk("system_webview_shell_apk") {
   apk_name = "SystemWebViewShell"
-  DEPRECATED_java_in_dir = "WebViewShell/src"
-  android_manifest = "WebViewShell/AndroidManifest.xml"
+  java_files = [
+    "apk/src/org/chromium/webview_shell/JankActivity.java",
+    "apk/src/org/chromium/webview_shell/PageCyclerTestActivity.java",
+    "apk/src/org/chromium/webview_shell/StartupTimeActivity.java",
+    "apk/src/org/chromium/webview_shell/TelemetryActivity.java",
+    "apk/src/org/chromium/webview_shell/TelemetryMemoryPressureActivity.java",
+    "apk/src/org/chromium/webview_shell/WebViewBrowserActivity.java",
+    "apk/src/org/chromium/webview_shell/WebViewLayoutTestActivity.java",
+  ]
+  android_manifest = "apk/AndroidManifest.xml"
   deps = [
     ":system_webview_shell_apk_resources",
     "//base:base_java",
@@ -28,7 +36,7 @@ android_apk("system_webview_shell_apk") {
 }
 
 android_resources("system_webview_shell_apk_resources") {
-  resource_dirs = [ "WebViewShell/res" ]
+  resource_dirs = [ "apk/res" ]
   custom_package = "org.chromium.webview_shell"
 }
 
@@ -36,8 +44,11 @@ android_resources("system_webview_shell_apk_resources") {
 instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
   apk_name = "SystemWebViewShellPageCycler"
   apk_under_test = ":system_webview_shell_apk"
-  android_manifest = "PageCycler/AndroidManifest.xml"
-  DEPRECATED_java_in_dir = "PageCycler/src"
+  android_manifest = "page_cycler/AndroidManifest.xml"
+  java_files = [
+    "page_cycler/src/org/chromium/webview_shell/page_cycler/PageCyclerTest.java",
+    "page_cycler/src/org/chromium/webview_shell/page_cycler/WebViewPageCyclerTestRunner.java",
+  ]
   deps = [
     "//base:base_java",
     "//base:base_java_test_support",
@@ -51,9 +62,12 @@ instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
 instrumentation_test_apk("system_webview_shell_layout_test_apk") {
   apk_name = "SystemWebViewShellLayoutTest"
   apk_under_test = ":system_webview_shell_apk"
-  android_manifest = "WebViewShellTest/AndroidManifest.xml"
-  DEPRECATED_java_in_dir = "WebViewShellTest/src"
-  isolate_file = "../system_webview_shell_test_apk.isolate"
+  android_manifest = "layout_tests/AndroidManifest.xml"
+  java_files = [
+    "layout_tests/src/org/chromium/webview_shell/test/WebViewLayoutTest.java",
+    "layout_tests/src/org/chromium/webview_shell/test/WebViewLayoutTestRunner.java",
+  ]
+  isolate_file = "../../system_webview_shell_test_apk.isolate"
   deps = [
     "//base:base_java",
     "//base:base_java_test_support",

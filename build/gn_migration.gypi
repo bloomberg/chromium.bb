@@ -253,6 +253,9 @@
         }],
         ['OS=="android" and chromecast==0', {
           'dependencies': [
+            '../android_webview/android_webview_shell.gyp:system_webview_shell_apk',
+            '../android_webview/android_webview_shell.gyp:system_webview_shell_layout_test_apk',
+            '../android_webview/android_webview_shell.gyp:system_webview_shell_page_cycler_apk',
             '../chrome/android/chrome_apk.gyp:chrome_public_apk',
             '../chrome/android/chrome_apk.gyp:chrome_public_test_apk',
             '../chrome/android/chrome_apk.gyp:chrome_sync_shell_apk',
@@ -766,9 +769,6 @@
             '../android_webview/android_webview.gyp:android_webview_test_apk',
             '../android_webview/android_webview.gyp:android_webview_unittests',
             '../android_webview/android_webview.gyp:android_webview_unittests_apk',
-            '../android_webview/android_webview_shell.gyp:system_webview_shell_apk',
-            '../android_webview/android_webview_shell.gyp:system_webview_shell_layout_test_apk',
-            '../android_webview/android_webview_shell.gyp:system_webview_shell_page_cycler_apk',
           ],
         }],
         ['OS=="android" and chromecast==0 and use_webview_internal_framework==0', {

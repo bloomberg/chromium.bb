@@ -7,7 +7,7 @@
     ['OS=="android"', {
       'variables': {
         'files': [
-          '<(DEPTH)/android_webview/tools/WebViewShell/test/',
+          '<(DEPTH)/android_webview/tools/system_webview_shell/test/data/',
           '<(DEPTH)/third_party/WebKit/LayoutTests/virtual/stable/webexposed/global-interface-listing-expected.txt',
           '<(DEPTH)/third_party/WebKit/LayoutTests/webexposed/global-interface-listing.html',
           '<(DEPTH)/third_party/WebKit/LayoutTests/webexposed/global-interface-listing-expected.txt',

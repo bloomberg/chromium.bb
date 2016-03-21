@@ -9,9 +9,9 @@
       'type': 'none',
       'variables': {
         'apk_name': 'SystemWebViewShell',
-        'java_in_dir': 'tools/WebViewShell',
-        'resource_dir': 'tools/WebViewShell/res',
-        'android_manifest_path': 'tools/WebViewShell/AndroidManifest.xml', # for lint
+        'java_in_dir': 'tools/system_webview_shell/apk',
+        'resource_dir': 'tools/system_webview_shell/apk/res',
+        'android_manifest_path': 'tools/system_webview_shell/apk/AndroidManifest.xml', # for lint
       },
       'includes': [
         '../build/java_apk.gypi',
@@ -41,10 +41,10 @@
       ],
       'variables': {
         'apk_name': 'SystemWebViewShellPageCycler',
-        'java_in_dir': '../android_webview/tools/PageCycler',
+        'java_in_dir': '../android_webview/tools/system_webview_shell/page_cycler',
         'is_test_apk': 1,
         'test_type': 'instrumentation',
-        'android_manifest_path': '../android_webview/tools/PageCycler/AndroidManifest.xml',
+        'android_manifest_path': '../android_webview/tools/system_webview_shell/page_cycler/AndroidManifest.xml',
       },
       'includes': [
         '../build/java_apk.gypi',
@@ -63,11 +63,11 @@
       ],
       'variables': {
         'apk_name': 'SystemWebViewShellLayoutTest',
-        'java_in_dir': '../android_webview/tools/WebViewShellTest',
+        'java_in_dir': '../android_webview/tools/system_webview_shell/layout_tests',
         'is_test_apk': 1,
         'test_type': 'instrumentation',
         'isolate_file': 'system_webview_shell_test_apk.isolate',
-        'android_manifest_path': '../android_webview/tools/WebViewShellTest/AndroidManifest.xml',
+        'android_manifest_path': '../android_webview/tools/system_webview_shell/layout_tests/AndroidManifest.xml',
       },
       'includes': [
         '../build/java_apk.gypi',

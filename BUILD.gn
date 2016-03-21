@@ -309,7 +309,7 @@ group("both_gn_and_gyp") {
       deps += [
         "//android_webview",
         "//android_webview/test",
-        "//android_webview/tools",
+        "//android_webview/tools/system_webview_shell",
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
