@@ -511,7 +511,7 @@ public class TabPersistentStore extends TabPersister {
 
     public void clearState() {
         deleteFileAsync(SAVED_STATE_FILE);
-        cleanupPersistentData();
+        cleanUpPersistentData();
         onStateLoaded();
     }
 
@@ -939,7 +939,7 @@ public class TabPersistentStore extends TabPersister {
         if (mTabsToRestore.isEmpty()) {
             mNormalTabsRestored = null;
             mIncognitoTabsRestored = null;
-            cleanupPersistentData();
+            cleanUpPersistentData();
             onStateLoaded();
             mLoadTabTask = null;
             Log.d(TAG, "Loaded tab lists; counts: " + mTabModelSelector.getModel(false).getCount()
@@ -951,38 +951,11 @@ public class TabPersistentStore extends TabPersister {
         }
     }
 
-    private void cleanupPersistentData() {
-        String[] files = getStateDirectory().list();
-        if (files != null) {
-            for (String file : files) {
-                Pair<Integer, Boolean> data = TabState.parseInfoFromFilename(file);
-                if (data != null) {
-                    TabModel model = mTabModelSelector.getModel(data.second);
-                    if (TabModelUtils.getTabById(model, data.first) == null) {
-                        deleteFileAsync(file);
-                    }
-                }
-            }
-        }
+    private void cleanUpPersistentData() {
+        new CleanUpTabStateDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         if (mTabContentManager != null) {
-            mTabContentManager.cleanupPersistentData(mTabModelSelector);
-        }
-    }
-
-    private void cleanupPersistentDataAtAndAboveId(int minForbiddenId)  {
-        String[] files = getStateDirectory().list();
-        if (files != null) {
-            for (String file : files) {
-                Pair<Integer, Boolean> data = TabState.parseInfoFromFilename(file);
-                if (data != null && data.first >= minForbiddenId) {
-                    deleteFileAsync(file);
-                }
-            }
-        }
-
-        if (mTabContentManager != null) {
-            mTabContentManager.cleanupPersistentDataAtAndAboveId(minForbiddenId);
+            mTabContentManager.cleanUpPersistentData(mTabModelSelector);
         }
     }
 
@@ -1018,6 +991,34 @@ public class TabPersistentStore extends TabPersister {
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         // Explicitly serializing file mutations (save & delete) to ensure they occur in order.
+    }
+
+    private class CleanUpTabStateDataTask extends AsyncTask<Void, Void, String[]> {
+        @Override
+        protected String[] doInBackground(Void... voids) {
+            if (mDestroyed) {
+                return null;
+            }
+            return getStateDirectory().list();
+        }
+
+        @Override
+        protected void onPostExecute(String[] fileNames) {
+            if (mDestroyed || fileNames == null) {
+                return;
+            }
+            for (String fileName : fileNames) {
+                Pair<Integer, Boolean> data = TabState.parseInfoFromFilename(fileName);
+                if (data != null) {
+                    TabModel model = mTabModelSelector.getModel(data.second);
+                    if (TabModelUtils.getTabById(model, data.first) == null) {
+                        // It might be more efficient to use a single task for all files, but
+                        // the number of files is expected to be very small.
+                        deleteFileAsync(fileName);
+                    }
+                }
+            }
+        }
     }
 
     private class LoadTabTask extends AsyncTask<Void, Void, TabState> {

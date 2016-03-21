@@ -15,7 +15,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
 
-import java.io.File;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -24,15 +23,14 @@ import java.util.concurrent.TimeUnit;
  */
 @MainDex
 public abstract class PathUtils {
-    private static final String THUMBNAIL_DIRECTORY = "textures";
+    private static final String THUMBNAIL_DIRECTORY_NAME = "textures";
 
     private static final int DATA_DIRECTORY = 0;
-    private static final int DATABASE_DIRECTORY = 1;
-    private static final int CACHE_DIRECTORY = 2;
-    private static final int NUM_DIRECTORIES = 3;
+    private static final int THUMBNAIL_DIRECTORY = 1;
+    private static final int DATABASE_DIRECTORY = 2;
+    private static final int CACHE_DIRECTORY = 3;
+    private static final int NUM_DIRECTORIES = 4;
     private static AsyncTask<Void, Void, String[]> sDirPathFetchTask;
-
-    private static File sThumbnailDirectory;
 
     // In setPrivateDataDirectorySuffix(), we store the app's context. If the AsyncTask started in
     // setPrivateDataDirectorySuffix() fails to complete by the time we need the values, we will
@@ -103,6 +101,8 @@ public abstract class PathUtils {
         String[] paths = new String[NUM_DIRECTORIES];
         paths[DATA_DIRECTORY] = sDataDirectoryAppContext.getDir(sDataDirectorySuffix,
                 Context.MODE_PRIVATE).getPath();
+        paths[THUMBNAIL_DIRECTORY] = sDataDirectoryAppContext.getDir(
+                THUMBNAIL_DIRECTORY_NAME, Context.MODE_PRIVATE).getPath();
         paths[DATABASE_DIRECTORY] = sDataDirectoryAppContext.getDatabasePath("foo").getParent();
         if (sDataDirectoryAppContext.getCacheDir() != null) {
             paths[CACHE_DIRECTORY] = sDataDirectoryAppContext.getCacheDir().getPath();
@@ -169,26 +169,10 @@ public abstract class PathUtils {
         return getDirectoryPath(CACHE_DIRECTORY);
     }
 
-    public static File getThumbnailCacheDirectory(Context appContext) {
-        if (sThumbnailDirectory == null) {
-            // Temporarily allowing disk access while fixing. TODO: http://crbug.com/473356
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            StrictMode.allowThreadDiskWrites();
-            try {
-                long time = SystemClock.elapsedRealtime();
-                sThumbnailDirectory = appContext.getDir(THUMBNAIL_DIRECTORY, Context.MODE_PRIVATE);
-                RecordHistogram.recordTimesHistogram("Android.StrictMode.ThumbnailCacheDir",
-                        SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
-        }
-        return sThumbnailDirectory;
-    }
-
     @CalledByNative
-    public static String getThumbnailCacheDirectoryPath(Context appContext) {
-        return getThumbnailCacheDirectory(appContext).getAbsolutePath();
+    public static String getThumbnailCacheDirectory(Context appContext) {
+        assert sDirPathFetchTask != null : "setDataDirectorySuffix must be called first.";
+        return getDirectoryPath(THUMBNAIL_DIRECTORY);
     }
 
     /**

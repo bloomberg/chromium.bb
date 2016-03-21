@@ -329,13 +329,6 @@ void TabContentManager::RemoveTabThumbnail(JNIEnv* env,
   thumbnail_cache_->Remove(tab_id);
 }
 
-void TabContentManager::RemoveTabThumbnailFromDiskAtAndAboveId(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint min_forbidden_id) {
-  thumbnail_cache_->RemoveFromDiskAtAndAboveId(min_forbidden_id);
-}
-
 void TabContentManager::GetDecompressedThumbnail(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

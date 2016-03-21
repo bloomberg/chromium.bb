@@ -224,14 +224,6 @@ Thumbnail* ThumbnailCache::Get(TabId tab_id,
   return NULL;
 }
 
-void ThumbnailCache::RemoveFromDiskAtAndAboveId(TabId min_id) {
-  base::Closure remove_task =
-      base::Bind(&ThumbnailCache::RemoveFromDiskAtAndAboveIdTask,
-                 min_id);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE, remove_task);
-}
-
 void ThumbnailCache::InvalidateThumbnailIfChanged(TabId tab_id,
                                                   const GURL& url) {
   ThumbnailMetaDataMap::iterator meta_data_iter =
@@ -341,21 +333,6 @@ void ThumbnailCache::RemoveFromDiskTask(TabId tab_id) {
   base::FilePath file_path = GetFilePath(tab_id);
   if (base::PathExists(file_path))
     base::DeleteFile(file_path, false);
-}
-
-void ThumbnailCache::RemoveFromDiskAtAndAboveIdTask(TabId min_id) {
-  base::FilePath dir_path = GetCacheDirectory();
-  base::FileEnumerator enumerator(dir_path, false, base::FileEnumerator::FILES);
-  while (true) {
-    base::FilePath path = enumerator.Next();
-    if (path.empty())
-      break;
-    base::FileEnumerator::FileInfo info = enumerator.GetInfo();
-    TabId tab_id;
-    bool success = base::StringToInt(info.GetName().value(), &tab_id);
-    if (success && tab_id >= min_id)
-      base::DeleteFile(path, false);
-  }
 }
 
 void ThumbnailCache::WriteThumbnailIfNecessary(

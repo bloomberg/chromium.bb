@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.layouts.content;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.os.AsyncTask;
 import android.util.SparseArray;
 import android.view.View;
 
@@ -312,36 +313,41 @@ public class TabContentManager {
     }
 
     /**
-     * Clean up any on-disk thumbnail at and above a given tab id.
-     * @param minForbiddenId The Id by which all tab thumbnails with ids greater and equal to it
-     *                       will be removed from disk.
-     */
-    public void cleanupPersistentDataAtAndAboveId(int minForbiddenId) {
-        if (mNativeTabContentManager != 0) {
-            nativeRemoveTabThumbnailFromDiskAtAndAboveId(mNativeTabContentManager, minForbiddenId);
-        }
-    }
-
-    /**
      * Remove on-disk thumbnails that are no longer needed.
      * @param modelSelector The selector that answers whether a tab is currently present.
      */
-    public void cleanupPersistentData(TabModelSelector modelSelector) {
+    public void cleanUpPersistentData(final TabModelSelector modelSelector) {
         if (mNativeTabContentManager == 0) return;
-        File[] files = PathUtils.getThumbnailCacheDirectory(mContext).listFiles();
-        if (files == null) return;
 
-        for (File file : files) {
-            try {
-                int id = Integer.parseInt(file.getName());
-                if (TabModelUtils.getTabById(modelSelector.getModel(false), id) == null
-                        && TabModelUtils.getTabById(modelSelector.getModel(true), id) == null) {
-                    nativeRemoveTabThumbnail(mNativeTabContentManager, id);
-                }
-            } catch (NumberFormatException expected) {
-                // This is an unknown file name, we'll leave it there.
+        // BUG: We support multiple tab model selectors, and they all share the same thumbnail
+        // directory. This cleanup code checks only the current model selector to see if the
+        // thumbnails are no longer used. It should instead:
+        // a) consult with *all* tab model selectors (which may not even be in memory)
+        // b) use separate thumbnail directories for each tab model (perhaps using hardlink to
+        //    eliminate disk overhead)
+        new AsyncTask<Void, Void, String[]>() {
+            @Override
+            protected String[] doInBackground(Void... voids) {
+                String thumbnailDirectory = PathUtils.getThumbnailCacheDirectory(mContext);
+                return new File(thumbnailDirectory).list();
             }
-        }
+
+            @Override
+            protected void onPostExecute(String[] fileNames) {
+                for (String fileName : fileNames) {
+                    try {
+                        int id = Integer.parseInt(fileName);
+                        if (TabModelUtils.getTabById(modelSelector.getModel(false), id) == null
+                                && TabModelUtils.getTabById(modelSelector.getModel(true), id)
+                                        == null) {
+                            nativeRemoveTabThumbnail(mNativeTabContentManager, id);
+                        }
+                    } catch (NumberFormatException expected) {
+                        // This is an unknown file name, we'll leave it there.
+                    }
+                }
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @CalledByNative
@@ -363,8 +369,6 @@ public class TabContentManager {
             String url);
     private native void nativeUpdateVisibleIds(long nativeTabContentManager, int[] priority);
     private native void nativeRemoveTabThumbnail(long nativeTabContentManager, int tabId);
-    private native void nativeRemoveTabThumbnailFromDiskAtAndAboveId(long nativeTabContentManager,
-            int minForbiddenId);
     private native void nativeGetDecompressedThumbnail(long nativeTabContentManager, int tabId);
     private static native void nativeDestroy(long nativeTabContentManager);
 }

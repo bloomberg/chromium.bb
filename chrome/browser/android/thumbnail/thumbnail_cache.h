@@ -63,7 +63,6 @@ class ThumbnailCache : ThumbnailDelegate {
   void Remove(TabId tab_id);
   Thumbnail* Get(TabId tab_id, bool force_disk_read, bool allow_approximation);
 
-  void RemoveFromDiskAtAndAboveId(TabId min_id);
   void InvalidateThumbnailIfChanged(TabId tab_id, const GURL& url);
   bool CheckAndUpdateThumbnailMetaData(TabId tab_id, const GURL& url);
   void UpdateVisibleIds(const TabIdList& priority);
@@ -99,7 +98,6 @@ class ThumbnailCache : ThumbnailDelegate {
 
   void RemoveFromDisk(TabId tab_id);
   static void RemoveFromDiskTask(TabId tab_id);
-  static void RemoveFromDiskAtAndAboveIdTask(TabId min_id);
   void WriteThumbnailIfNecessary(TabId tab_id,
                                  skia::RefPtr<SkPixelRef> compressed_data,
                                  float scale,
