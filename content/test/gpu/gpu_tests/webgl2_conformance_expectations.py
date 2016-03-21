@@ -387,6 +387,23 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['linux', 'amd'], bug=295792)
 
+    self.Fail('deqp/data/gles3/shaders/conversions.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/buffercopy.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/clipping.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/samplerobject.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/misc/uninitialized-test-2.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['linux', 'amd'], bug=483282)
+
     # Linux Intel: driver is GL 3.0 and doesn't support features needed for ES3.
     self.Skip('*', ['linux', 'intel'], bug=540543)
 
