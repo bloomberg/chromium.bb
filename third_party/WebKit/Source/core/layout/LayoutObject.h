@@ -925,6 +925,8 @@ public:
 
     void firstLineStyleDidChange(const ComputedStyle& oldStyle, const ComputedStyle& newStyle);
 
+    void clearBaseComputedStyle();
+
     // This function returns an enclosing non-anonymous LayoutBlock for this
     // element.
     // This function is not always returning the containing block as defined by

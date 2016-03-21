@@ -27,6 +27,7 @@
 #include "core/layout/LayoutObject.h"
 
 #include "core/HTMLNames.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ElementTraversal.h"
@@ -2070,6 +2071,16 @@ void LayoutObject::styleWillChange(StyleDifference diff, const ComputedStyle& ne
         else
             registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEventBlocking);
     }
+}
+
+void LayoutObject::clearBaseComputedStyle()
+{
+    if (!node())
+        return;
+    if (!node()->isElementNode())
+        return;
+    if (ElementAnimations* animations = toElement(node())->elementAnimations())
+        animations->clearBaseComputedStyle();
 }
 
 static bool areNonIdenticalCursorListsEqual(const ComputedStyle* a, const ComputedStyle* b)
