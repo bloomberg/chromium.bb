@@ -50,10 +50,11 @@ def _ExtractImportantEnvironment(output_of_set):
           setting = os.path.dirname(sys.executable) + os.pathsep + setting
         env[var.upper()] = setting
         break
-  for required in ('SYSTEMROOT', 'TEMP', 'TMP'):
-    if required not in env:
-      raise Exception('Environment variable "%s" '
-                      'required to be set to valid path' % required)
+  if sys.platform in ('win32', 'cygwin'):
+    for required in ('SYSTEMROOT', 'TEMP', 'TMP'):
+      if required not in env:
+        raise Exception('Environment variable "%s" '
+                        'required to be set to valid path' % required)
   return env
 
 
@@ -108,9 +109,10 @@ def _LoadToolchainEnv(cpu, sdk_dir):
     variables = '\n'.join(varlines)
 
     # Check that the json file contained the same environment as the .cmd file.
-    script = os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.cmd'))
-    assert _ExtractImportantEnvironment(variables) == \
-           _ExtractImportantEnvironment(_LoadEnvFromBat([script, '/' + cpu]))
+    if sys.platform in ('win32', 'cygwin'):
+      script = os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.cmd'))
+      assert _ExtractImportantEnvironment(variables) == \
+             _ExtractImportantEnvironment(_LoadEnvFromBat([script, '/' + cpu]))
   else:
     if 'GYP_MSVS_OVERRIDE_PATH' not in os.environ:
       os.environ['GYP_MSVS_OVERRIDE_PATH'] = _DetectVisualStudioPath()
@@ -171,7 +173,7 @@ def main():
   for cpu in cpus:
     # Extract environment variables for subprocesses.
     env = _LoadToolchainEnv(cpu, win_sdk_path)
-    env['PATH'] = runtime_dirs + os.path.pathsep + env['PATH']
+    env['PATH'] = runtime_dirs + os.pathsep + env['PATH']
 
     if cpu == target_cpu:
       for path in env['PATH'].split(os.pathsep):
@@ -179,18 +181,6 @@ def main():
           vc_bin_dir = os.path.realpath(path)
           break
 
-    # Add extra include directories here that need to be in front of the
-    # installed and packaged include directories. This may be needed in
-    # order to force a particular SDK version, such as to get VS 2013 to use
-    # the Windows 10 SDK. Beware of making the INCLUDE variable excessively
-    # long and be sure to make corresponding changes to build\common.gypi.
-    # Not currently used.
-    #if win_sdk_path:
-    #  additional_includes = [
-    #    os.path.join(win_sdk_path, 'Include', '10.0.10586.0', p)
-    #    for p in ['shared', 'um', 'winrt']]
-    #  additional_includes = os.path.pathsep.join(additional_includes)
-    #  env['INCLUDE'] = additional_includes + os.path.pathsep + env['INCLUDE']
     env_block = _FormatAsEnvironmentBlock(env)
     with open('environment.' + cpu, 'wb') as f:
       f.write(env_block)
