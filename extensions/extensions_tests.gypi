@@ -171,6 +171,7 @@
       'utility/unpacker_unittest.cc',
     ],
     'extensions_unittests_sources_wifi_display': [
+      'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor_unittest.cc',
       'renderer/api/display_source/wifi_display/wifi_display_media_packetizer_unittest.cc',
     ],
   },
