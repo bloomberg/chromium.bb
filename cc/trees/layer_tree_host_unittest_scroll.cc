@@ -949,13 +949,17 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     switch (layer_tree_host()->source_frame_number()) {
       case 0:
-        EXPECT_TRUE(scroll_layer->needs_push_properties());
+        EXPECT_TRUE(
+            scroll_layer->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+                scroll_layer));
         break;
       case 1:
         // Even if this layer doesn't need push properties, it should
         // still pick up scrolls that happen on the active layer during
         // commit.
-        EXPECT_FALSE(scroll_layer->needs_push_properties());
+        EXPECT_FALSE(
+            scroll_layer->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+                scroll_layer));
         break;
     }
   }

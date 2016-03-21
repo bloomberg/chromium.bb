@@ -466,7 +466,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
-    TreeSynchronizer::PushProperties(root_layer(), sync_tree->root_layer());
+
+    TreeSynchronizer::PushLayerProperties(this, sync_tree);
 
     TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
     DCHECK(host_impl->animation_host());
@@ -1222,6 +1223,23 @@ Layer* LayerTreeHost::LayerById(int id) const {
   return iter != layer_id_map_.end() ? iter->second : NULL;
 }
 
+void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
+  layers_that_should_push_properties_.insert(layer);
+}
+
+void LayerTreeHost::RemoveLayerShouldPushProperties(Layer* layer) {
+  layers_that_should_push_properties_.erase(layer);
+}
+
+std::unordered_set<Layer*>& LayerTreeHost::LayersThatShouldPushProperties() {
+  return layers_that_should_push_properties_;
+}
+
+bool LayerTreeHost::LayerNeedsPushPropertiesForTesting(Layer* layer) {
+  return layers_that_should_push_properties_.find(layer) !=
+         layers_that_should_push_properties_.end();
+}
+
 void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
@@ -1233,6 +1251,7 @@ void LayerTreeHost::UnregisterLayer(Layer* layer) {
   DCHECK(LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
   animation_host_->UnregisterLayer(layer->id(), LayerTreeType::ACTIVE);
+  RemoveLayerShouldPushProperties(layer);
   layer_id_map_.erase(layer->id());
 }
 
@@ -1394,8 +1413,8 @@ bool LayerTreeHost::IsRemoteClient() const {
          task_runner_provider_->HasImplThread();
 }
 
-void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) const {
-  // Not all fields are serialized, as they are eiher not needed for a commit,
+void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
+  // Not all fields are serialized, as they are either not needed for a commit,
   // or implementation isn't ready yet.
   // Unsupported items:
   // - animations
@@ -1422,7 +1441,11 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) const {
       meta_information_sequence_number_);
   LayerProtoConverter::SerializeLayerHierarchy(root_layer_,
                                                proto->mutable_root_layer());
-  LayerProtoConverter::SerializeLayerProperties(root_layer_.get(),
+  // layers_that_should_push_properties_ should be serialized before layer
+  // properties because it is cleared during the properties serialization.
+  for (auto layer : layers_that_should_push_properties_)
+    proto->add_layers_that_should_push_properties(layer->id());
+  LayerProtoConverter::SerializeLayerProperties(this,
                                                 proto->mutable_layer_updates());
   proto->set_hud_layer_id(hud_layer_ ? hud_layer_->id() : Layer::INVALID_ID);
   debug_state_.ToProtobuf(proto->mutable_debug_state());
@@ -1491,6 +1514,8 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
   LayerTreeHostCommon::CallFunctionForSubtree(
       root_layer(),
       [this](Layer* layer) { layer_id_map_[layer->id()] = layer; });
+  for (auto layer_id : proto.layers_that_should_push_properties())
+    layers_that_should_push_properties_.insert(layer_id_map_[layer_id]);
 
   LayerProtoConverter::DeserializeLayerProperties(root_layer_.get(),
                                                   proto.layer_updates());

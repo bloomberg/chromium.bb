@@ -12,6 +12,7 @@
 namespace cc {
 
 class LayerImpl;
+class LayerTreeHost;
 class LayerTreeImpl;
 class Layer;
 
@@ -28,20 +29,13 @@ class CC_EXPORT TreeSynchronizer {
       LayerImpl* layer_root,
       scoped_ptr<LayerImpl> old_layer_impl_root,
       LayerTreeImpl* tree_impl);
-
-  // Pushes properties from a Layer or LayerImpl tree to a structurally
-  // equivalent LayerImpl tree.
-  static void PushProperties(Layer* layer_root,
-                             LayerImpl* layer_impl_root);
-  static void PushProperties(LayerImpl* layer_root, LayerImpl* layer_impl_root);
+  static void PushLayerProperties(LayerTreeImpl* pending_tree,
+                                  LayerTreeImpl* active_tree);
+  static void PushLayerProperties(LayerTreeHost* host_tree,
+                                  LayerTreeImpl* impl_tree);
 
  private:
   TreeSynchronizer();  // Not instantiable.
-
-  static void PushPropertiesInternal(
-      Layer* layer,
-      LayerImpl* layer_impl,
-      int* num_dependents_need_push_properties_for_parent);
 
   DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
 };

@@ -2737,8 +2737,9 @@ class PushPropertiesCountingLayer : public Layer {
   void PushPropertiesTo(LayerImpl* layer) override {
     Layer::PushPropertiesTo(layer);
     push_properties_count_++;
-    if (persist_needs_push_properties_)
-      needs_push_properties_ = true;
+    if (persist_needs_push_properties_) {
+      layer_tree_host()->AddLayerShouldPushProperties(this);
+    }
   }
 
   // Something to make this layer push properties, but no other layer.
@@ -2823,32 +2824,36 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
 
     // The scrollbar layer always needs to be pushed.
     if (root_->layer_tree_host()) {
-      EXPECT_TRUE(root_->descendant_needs_push_properties());
-      EXPECT_FALSE(root_->needs_push_properties());
+      EXPECT_FALSE(root_->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+          root_.get()));
     }
     if (child2_->layer_tree_host()) {
-      EXPECT_TRUE(child2_->descendant_needs_push_properties());
-      EXPECT_FALSE(child2_->needs_push_properties());
+      EXPECT_FALSE(
+          child2_->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+              child2_.get()));
     }
     if (leaf_always_pushing_layer_->layer_tree_host()) {
-      EXPECT_FALSE(
-          leaf_always_pushing_layer_->descendant_needs_push_properties());
-      EXPECT_TRUE(leaf_always_pushing_layer_->needs_push_properties());
+      EXPECT_TRUE(leaf_always_pushing_layer_->layer_tree_host()
+                      ->LayerNeedsPushPropertiesForTesting(
+                          leaf_always_pushing_layer_.get()));
     }
 
     // child_ and grandchild_ don't persist their need to push properties.
     if (child_->layer_tree_host()) {
-      EXPECT_FALSE(child_->descendant_needs_push_properties());
-      EXPECT_FALSE(child_->needs_push_properties());
+      EXPECT_FALSE(
+          child_->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+              child_.get()));
     }
     if (grandchild_->layer_tree_host()) {
-      EXPECT_FALSE(grandchild_->descendant_needs_push_properties());
-      EXPECT_FALSE(grandchild_->needs_push_properties());
+      EXPECT_FALSE(
+          grandchild_->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+              grandchild_.get()));
     }
 
     if (other_root_->layer_tree_host()) {
-      EXPECT_FALSE(other_root_->descendant_needs_push_properties());
-      EXPECT_FALSE(other_root_->needs_push_properties());
+      EXPECT_FALSE(
+          other_root_->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+              other_root_.get()));
     }
 
     switch (num_commits_) {
@@ -3203,8 +3208,8 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
 
         scrollbar_layer_->SetBounds(gfx::Size(30, 30));
 
-        EXPECT_TRUE(scrollbar_layer_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            scrollbar_layer_.get()));
         layer_tree_host()->SetNeedsCommit();
 
         scrollbar_layer_->reset_push_properties_count();
@@ -3248,8 +3253,10 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
         // avoid causing a second commit to be scheduled. If a property change
         // is made during this, however, it needs to be pushed in the upcoming
         // commit.
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
         EXPECT_EQ(0, root_->NumDescendantsThatDrawContent());
         root_->reset_push_properties_count();
         child_->reset_push_properties_count();
@@ -3257,15 +3264,19 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
         EXPECT_EQ(1, root_->NumDescendantsThatDrawContent());
         EXPECT_EQ(0u, root_->push_properties_count());
         EXPECT_EQ(0u, child_->push_properties_count());
-        EXPECT_TRUE(root_->needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
+        EXPECT_TRUE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
         break;
       }
       case 2:
         EXPECT_EQ(1u, root_->push_properties_count());
         EXPECT_EQ(1u, child_->push_properties_count());
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
         EndTest();
         break;
     }
@@ -3330,24 +3341,18 @@ class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
     int last_source_frame_number = layer_tree_host()->source_frame_number() - 1;
     switch (last_source_frame_number) {
       case 0:
-        // All layers except root will need push properties as they are added
-        // as a child to some other layer which changes their stacking order.
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
-
+        // All layers will need push properties as we set their layer tree host
         layer_tree_host()->SetRootLayer(root_);
-
-        // Now, even the root will need to push properties.
-        EXPECT_TRUE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
+        EXPECT_TRUE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
         break;
       case 1:
         EndTest();
@@ -3368,71 +3373,71 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
         grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         child_->AddChild(grandchild1_);
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         // grandchild2_ will still need a push properties.
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         // grandchild3_ does not need a push properties, so recursing should
         // no longer be needed.
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
         EndTest();
         break;
     }
@@ -3453,33 +3458,33 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
         grandchild2_->set_persist_needs_push_properties(true);
         break;
       case 1:
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         // grandchild2_ will still need a push properties.
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         // grandchild3_ does not need a push properties, so recursing should
         // no longer be needed.
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
         EndTest();
         break;
     }
@@ -3499,16 +3504,16 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         // Change grandchildren while their parent is not in the tree.
         child_->RemoveFromParent();
@@ -3516,37 +3521,37 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
         root_->AddChild(child_);
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         grandchild3_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         EndTest();
         break;
@@ -3567,50 +3572,50 @@ class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         child_->SetPosition(gfx::PointF(1.f, 1.f));
         grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         child_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
 
         EndTest();
         break;
@@ -3631,50 +3636,50 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
-        EXPECT_FALSE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
         child_->SetPosition(gfx::PointF(1.f, 1.f));
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild1_->needs_push_properties());
-        EXPECT_FALSE(grandchild1_->descendant_needs_push_properties());
-        EXPECT_TRUE(grandchild2_->needs_push_properties());
-        EXPECT_FALSE(grandchild2_->descendant_needs_push_properties());
-        EXPECT_FALSE(grandchild3_->needs_push_properties());
-        EXPECT_FALSE(grandchild3_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild1_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild2_.get()));
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_TRUE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_TRUE(root_->descendant_needs_push_properties());
-        EXPECT_TRUE(child_->needs_push_properties());
-        EXPECT_FALSE(child_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
+        EXPECT_TRUE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_.get()));
 
         child_->RemoveFromParent();
 
-        EXPECT_FALSE(root_->needs_push_properties());
-        EXPECT_FALSE(root_->descendant_needs_push_properties());
+        EXPECT_FALSE(
+            layer_tree_host()->LayerNeedsPushPropertiesForTesting(root_.get()));
 
         EndTest();
         break;
@@ -3858,7 +3863,8 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The layer type used does not need to push properties every frame.
-        EXPECT_FALSE(child_layer_->needs_push_properties());
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_layer_.get()));
 
         // Change the bounds of the child layer, but make it skipped
         // by CalculateDrawProperties.
@@ -3867,7 +3873,8 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
         break;
       case 2:
         // The bounds of the child layer were pushed to the impl side.
-        EXPECT_FALSE(child_layer_->needs_push_properties());
+        EXPECT_FALSE(layer_tree_host()->LayerNeedsPushPropertiesForTesting(
+            child_layer_.get()));
 
         EndTest();
         break;

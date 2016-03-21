@@ -13,6 +13,8 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 
@@ -129,55 +131,6 @@ scoped_ptr<LayerImpl> SynchronizeTreesRecursive(
       new_layers, old_layers, layer, tree_impl);
 }
 
-void TreeSynchronizer::PushPropertiesInternal(
-    Layer* layer,
-    LayerImpl* layer_impl,
-    int* num_dependents_need_push_properties_for_parent) {
-  if (!layer) {
-    DCHECK(!layer_impl);
-    return;
-  }
-
-  DCHECK_EQ(layer->id(), layer_impl->id());
-
-  bool push_layer = layer->needs_push_properties();
-  bool recurse_on_children_and_dependents =
-      layer->descendant_needs_push_properties();
-
-  if (push_layer)
-    layer->PushPropertiesTo(layer_impl);
-
-  int num_dependents_need_push_properties = 0;
-  if (recurse_on_children_and_dependents) {
-    PushPropertiesInternal(layer->mask_layer(),
-                           layer_impl->mask_layer(),
-                           &num_dependents_need_push_properties);
-    PushPropertiesInternal(layer->replica_layer(),
-                           layer_impl->replica_layer(),
-                           &num_dependents_need_push_properties);
-
-    const OwnedLayerImplList& impl_children = layer_impl->children();
-    DCHECK_EQ(layer->children().size(), impl_children.size());
-
-    for (size_t i = 0; i < layer->children().size(); ++i) {
-      PushPropertiesInternal(layer->child_at(i), impl_children[i].get(),
-                             &num_dependents_need_push_properties);
-    }
-
-    // When PushPropertiesTo completes for a layer, it may still keep
-    // its needs_push_properties() state if the layer must push itself
-    // every PushProperties tree walk. Here we keep track of those layers, and
-    // ensure that their ancestors know about them for the next PushProperties
-    // tree walk.
-    layer->num_dependents_need_push_properties_ =
-        num_dependents_need_push_properties;
-  }
-
-  bool add_self_to_parent = num_dependents_need_push_properties > 0 ||
-                            layer->needs_push_properties();
-  *num_dependents_need_push_properties_for_parent += add_self_to_parent ? 1 : 0;
-}
-
 static void CheckScrollAndClipPointersRecursive(Layer* layer,
                                                 LayerImpl* layer_impl) {
   DCHECK_EQ(!!layer, !!layer_impl);
@@ -234,13 +187,32 @@ static void CheckScrollAndClipPointersRecursive(Layer* layer,
   }
 }
 
-void TreeSynchronizer::PushProperties(Layer* layer,
-                                      LayerImpl* layer_impl) {
-  int num_dependents_need_push_properties = 0;
-  PushPropertiesInternal(
-      layer, layer_impl, &num_dependents_need_push_properties);
+template <typename LayerType>
+static void PushLayerPropertiesInternal(
+    std::unordered_set<LayerType*> layers_that_should_push_properties,
+    LayerTreeImpl* impl_tree) {
+  for (auto layer : layers_that_should_push_properties) {
+    LayerImpl* layer_impl = impl_tree->LayerById(layer->id());
+    DCHECK(layer_impl);
+    layer->PushPropertiesTo(layer_impl);
+  }
+}
+
+void TreeSynchronizer::PushLayerProperties(LayerTreeImpl* pending_tree,
+                                           LayerTreeImpl* active_tree) {
+  PushLayerPropertiesInternal(pending_tree->LayersThatShouldPushProperties(),
+                              active_tree);
+}
+
+void TreeSynchronizer::PushLayerProperties(LayerTreeHost* host_tree,
+                                           LayerTreeImpl* impl_tree) {
+  PushLayerPropertiesInternal(host_tree->LayersThatShouldPushProperties(),
+                              impl_tree);
+
 #if DCHECK_IS_ON()
-  CheckScrollAndClipPointersRecursive(layer, layer_impl);
+  if (host_tree->root_layer() && impl_tree->root_layer())
+    CheckScrollAndClipPointersRecursive(host_tree->root_layer(),
+                                        impl_tree->root_layer());
 #endif
 }
 

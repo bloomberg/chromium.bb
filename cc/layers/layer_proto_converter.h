@@ -35,11 +35,11 @@ class CC_EXPORT LayerProtoConverter {
       const scoped_refptr<Layer> existing_root,
       const proto::LayerNode& root_node);
 
-  // Starting at |root_layer|, serializes the properties of all the dirty nodes
-  // in the Layer hierarchy. The proto::LayerUpdate will contain all nodes that
-  // either are dirty or have dirty descendants. Only nodes that are dirty will
-  // contain the list of dirty properties.
-  static void SerializeLayerProperties(Layer* root_layer,
+  // Serializes the properties of all the dirty nodes in the Layer hierarchy.
+  // The proto::LayerUpdate will contain all nodes that are dirty. These nodes
+  // will contain the list of dirty properties. This function also resets the
+  // layers that need push properties set.
+  static void SerializeLayerProperties(LayerTreeHost* host,
                                        proto::LayerUpdate* layer_update);
 
   // Iterate over all updated layers from the LayerUpdate, and update the

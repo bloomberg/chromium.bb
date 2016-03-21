@@ -45,9 +45,7 @@ scoped_refptr<Layer> Layer::Create() {
 }
 
 Layer::Layer()
-    : needs_push_properties_(false),
-      num_dependents_need_push_properties_(0),
-      // Layer IDs start from 1.
+    :  // Layer IDs start from 1.
       layer_id_(g_next_layer_id.GetNext() + 1),
       ignore_set_needs_commit_(false),
       sorting_context_id_(0),
@@ -134,9 +132,8 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     host->RegisterLayer(this);
   }
 
-  InvalidatePropertyTreesIndices();
-
   layer_tree_host_ = host;
+  InvalidatePropertyTreesIndices();
 
   // When changing hosts, the layer needs to commit its properties to the impl
   // side for the new host.
@@ -202,28 +199,12 @@ void Layer::SetNextCommitWaitsForActivation() {
 }
 
 void Layer::SetNeedsPushProperties() {
-  if (needs_push_properties_)
-    return;
-  if (!parent_should_know_need_push_properties() && parent_)
-    parent_->AddDependentNeedsPushProperties();
-  needs_push_properties_ = true;
+  if (layer_tree_host_)
+    layer_tree_host_->AddLayerShouldPushProperties(this);
 }
 
-void Layer::AddDependentNeedsPushProperties() {
-  DCHECK_GE(num_dependents_need_push_properties_, 0);
-
-  if (!parent_should_know_need_push_properties() && parent_)
-    parent_->AddDependentNeedsPushProperties();
-
-  num_dependents_need_push_properties_++;
-}
-
-void Layer::RemoveDependentNeedsPushProperties() {
-  num_dependents_need_push_properties_--;
-  DCHECK_GE(num_dependents_need_push_properties_, 0);
-
-  if (!parent_should_know_need_push_properties() && parent_)
-      parent_->RemoveDependentNeedsPushProperties();
+void Layer::ResetNeedsPushPropertiesForTesting() {
+  layer_tree_host_->RemoveLayerShouldPushProperties(this);
 }
 
 bool Layer::IsPropertyChangeAllowed() const {
@@ -242,13 +223,6 @@ skia::RefPtr<SkPicture> Layer::GetPicture() const {
 
 void Layer::SetParent(Layer* layer) {
   DCHECK(!layer || !layer->HasAncestor(this));
-
-  if (parent_should_know_need_push_properties()) {
-    if (parent_)
-      parent_->RemoveDependentNeedsPushProperties();
-    if (layer)
-      layer->AddDependentNeedsPushProperties();
-  }
 
   parent_ = layer;
   SetLayerTreeHost(parent_ ? parent_->layer_tree_host() : nullptr);
@@ -1310,8 +1284,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   subtree_property_changed_ = false;
   update_rect_ = gfx::Rect();
 
-  needs_push_properties_ = false;
-  num_dependents_need_push_properties_ = 0;
+  layer_tree_host()->RemoveLayerShouldPushProperties(this);
 }
 
 void Layer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
@@ -1401,41 +1374,16 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
   }
 }
 
-bool Layer::ToLayerPropertiesProto(proto::LayerUpdate* layer_update) {
-  if (!needs_push_properties_ && num_dependents_need_push_properties_ == 0)
-    return false;
-
+void Layer::ToLayerPropertiesProto(proto::LayerUpdate* layer_update) {
   // Always set properties metadata for serialized layers.
   proto::LayerProperties* proto = layer_update->add_layers();
   proto->set_id(layer_id_);
-  proto->set_needs_push_properties(needs_push_properties_);
-  proto->set_num_dependents_need_push_properties(
-      num_dependents_need_push_properties_);
-
-  if (needs_push_properties_)
-    LayerSpecificPropertiesToProto(proto);
-
-  needs_push_properties_ = false;
-
-  bool descendant_needs_push_properties =
-      num_dependents_need_push_properties_ > 0;
-  num_dependents_need_push_properties_ = 0;
-
-  return descendant_needs_push_properties;
+  LayerSpecificPropertiesToProto(proto);
 }
 
 void Layer::FromLayerPropertiesProto(const proto::LayerProperties& proto) {
   DCHECK(proto.has_id());
   DCHECK_EQ(layer_id_, proto.id());
-  DCHECK(proto.has_needs_push_properties());
-  needs_push_properties_ = proto.needs_push_properties();
-  DCHECK(proto.has_num_dependents_need_push_properties());
-  num_dependents_need_push_properties_ =
-      proto.num_dependents_need_push_properties();
-
-  if (!needs_push_properties_)
-    return;
-
   FromLayerSpecificPropertiesProto(proto);
 }
 

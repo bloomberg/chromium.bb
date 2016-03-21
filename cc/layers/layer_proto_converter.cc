@@ -10,6 +10,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/proto/layer.pb.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
 
@@ -47,9 +48,11 @@ scoped_refptr<Layer> LayerProtoConverter::DeserializeLayerHierarchy(
 
 // static
 void LayerProtoConverter::SerializeLayerProperties(
-    Layer* root_layer,
+    LayerTreeHost* host,
     proto::LayerUpdate* layer_update) {
-  RecursivelySerializeLayerProperties(root_layer, layer_update);
+  for (auto layer : host->LayersThatShouldPushProperties())
+    layer->ToLayerPropertiesProto(layer_update);
+  host->LayersThatShouldPushProperties().clear();
 }
 
 // static
@@ -69,23 +72,6 @@ void LayerProtoConverter::DeserializeLayerProperties(
 
     iter->second->FromLayerPropertiesProto(layer_properties);
   }
-}
-
-// static
-void LayerProtoConverter::RecursivelySerializeLayerProperties(
-    Layer* layer,
-    proto::LayerUpdate* layer_update) {
-  bool serialize_descendants = layer->ToLayerPropertiesProto(layer_update);
-  if (!serialize_descendants)
-    return;
-
-  for (const auto& child : layer->children()) {
-    RecursivelySerializeLayerProperties(child.get(), layer_update);
-  }
-  if (layer->mask_layer())
-    RecursivelySerializeLayerProperties(layer->mask_layer(), layer_update);
-  if (layer->replica_layer())
-    RecursivelySerializeLayerProperties(layer->replica_layer(), layer_update);
 }
 
 // static

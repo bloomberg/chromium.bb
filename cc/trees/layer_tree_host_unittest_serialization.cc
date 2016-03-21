@@ -49,6 +49,9 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
   void VerifySerializationAndDeserialization() {
     proto::LayerTreeHost proto;
+
+    std::unordered_set<Layer*> layers_that_should_push_properties_src =
+        layer_tree_host_src_->LayersThatShouldPushProperties();
     layer_tree_host_src_->ToProtobufForCommit(&proto);
     layer_tree_host_dst_->FromProtobufForCommit(proto);
 
@@ -102,6 +105,10 @@ class LayerTreeHostSerializationTest : public testing::Test {
     EXPECT_EQ(layer_tree_host_src_->id_, layer_tree_host_dst_->id_);
     EXPECT_EQ(layer_tree_host_src_->next_commit_forces_redraw_,
               layer_tree_host_dst_->next_commit_forces_redraw_);
+    for (auto layer : layers_that_should_push_properties_src) {
+      EXPECT_TRUE(layer_tree_host_dst_->LayerNeedsPushPropertiesForTesting(
+          layer_tree_host_dst_->LayerById(layer->id())));
+    }
 
     if (layer_tree_host_src_->hud_layer_) {
       EXPECT_EQ(layer_tree_host_src_->hud_layer_->id(),

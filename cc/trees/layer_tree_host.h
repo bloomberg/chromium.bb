@@ -357,6 +357,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
 
   Layer* LayerById(int id) const;
+
+  void AddLayerShouldPushProperties(Layer* layer);
+  void RemoveLayerShouldPushProperties(Layer* layer);
+  std::unordered_set<Layer*>& LayersThatShouldPushProperties();
+  bool LayerNeedsPushPropertiesForTesting(Layer* layer);
+
   void RegisterLayer(Layer* layer);
   void UnregisterLayer(Layer* layer);
   // LayerTreeMutatorsClient implementation.
@@ -401,7 +407,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Serializes the parts of this LayerTreeHost that is needed for a commit to a
   // protobuf message. Not all members are serialized as they are not helpful
   // for remote usage.
-  void ToProtobufForCommit(proto::LayerTreeHost* proto) const;
+  void ToProtobufForCommit(proto::LayerTreeHost* proto);
 
   // Deserializes the protobuf into this LayerTreeHost before a commit. The
   // expected input is a serialized remote LayerTreeHost. After deserializing
@@ -580,6 +586,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   using LayerIdMap = std::unordered_map<int, Layer*>;
   LayerIdMap layer_id_map_;
+  // Set of layers that need to push properties.
+  std::unordered_set<Layer*> layers_that_should_push_properties_;
 
   uint32_t surface_id_namespace_;
   uint32_t next_surface_sequence_;
