@@ -792,7 +792,7 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(Element
         Element* elementToAdjust = this;
         for (; elementToAdjust; elementToAdjust = FlatTreeTraversal::parentElement(*elementToAdjust)) {
             if (elementAffectsDirectionality(elementToAdjust)) {
-                elementToAdjust->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
+                elementToAdjust->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
                 return;
             }
         }
@@ -803,7 +803,7 @@ void HTMLElement::calculateAndAdjustDirectionality()
 {
     TextDirection textDirection = directionality();
     if (layoutObject() && layoutObject()->style() && layoutObject()->style()->direction() != textDirection)
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
 }
 
 void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange& change)
