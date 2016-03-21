@@ -490,7 +490,7 @@ TEST_F(MapCoordinatesTest, MulticolWithText)
     LayoutBox* multicol = toLayoutBox(getLayoutObjectByElementId("multicol"));
 
     FloatPoint mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint(10, 70));
-    EXPECT_EQ(FloatPoint(220, 20), mappedPoint);
+    EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
 
     mappedPoint = mapLocalToAncestor(flowThread, multicol, mappedPoint);
     EXPECT_EQ(FloatPoint(225, 25), mappedPoint);
@@ -515,7 +515,7 @@ TEST_F(MapCoordinatesTest, MulticolWithInline)
     LayoutBox* multicol = toLayoutBox(getLayoutObjectByElementId("multicol"));
 
     FloatPoint mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint(10, 70));
-    EXPECT_EQ(FloatPoint(220, 20), mappedPoint);
+    EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
 
     mappedPoint = mapLocalToAncestor(flowThread, multicol, mappedPoint);
     EXPECT_EQ(FloatPoint(225, 25), mappedPoint);
@@ -548,7 +548,7 @@ TEST_F(MapCoordinatesTest, MulticolWithBlock)
     ASSERT_TRUE(flowThread->isLayoutFlowThread());
 
     mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint());
-    EXPECT_EQ(FloatPoint(110, 20), mappedPoint);
+    EXPECT_EQ(FloatPoint(10, 120), mappedPoint);
 
     mappedPoint = mapLocalToAncestor(flowThread, container, mappedPoint);
     EXPECT_EQ(FloatPoint(125, 35), mappedPoint);
@@ -587,7 +587,7 @@ TEST_F(MapCoordinatesTest, MulticolWithAbsPosInRelPos)
     EXPECT_EQ(FloatPoint(25, 25), mappedPoint);
 
     mappedPoint = mapLocalToAncestor(relpos, flowThread, mappedPoint);
-    EXPECT_EQ(FloatPoint(129, 39), mappedPoint);
+    EXPECT_EQ(FloatPoint(29, 139), mappedPoint);
 
     mappedPoint = mapLocalToAncestor(flowThread, multicol, mappedPoint);
     EXPECT_EQ(FloatPoint(144, 54), mappedPoint);

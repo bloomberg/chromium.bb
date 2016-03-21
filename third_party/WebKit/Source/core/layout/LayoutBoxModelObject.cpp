@@ -866,8 +866,8 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutBox
 
     LayoutSize containerOffset = offsetFromContainer(container);
     bool offsetDependsOnPoint;
-    if (container->isLayoutFlowThread()) {
-        containerOffset += container->columnOffset(toLayoutPoint(containerOffset));
+    if (isLayoutFlowThread()) {
+        containerOffset += columnOffset(LayoutPoint());
         offsetDependsOnPoint = true;
     } else {
         offsetDependsOnPoint = container->style()->isFlippedBlocksWritingMode() && container->isBox();

@@ -83,12 +83,6 @@ static void mapCaretRectToCaretPainter(LayoutItem caretLayoutItem, LayoutBlockIt
             break;
         }
         caretRect.move(caretLayoutItem.offsetFromContainer(containerItem));
-
-        // TODO(mstensho): Fix crbug.com/596070 and get rid of this flowthread/multicol thing
-        // here. It was added to keep the same behavior as before flowthread-to-visual coordinate
-        // space conversion was moved out from offsetFromContainer() to mapLocalToAncestor().
-        caretRect.move(containerItem.columnOffset(caretRect.location()));
-
         caretLayoutItem = containerItem;
     }
 

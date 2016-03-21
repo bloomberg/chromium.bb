@@ -149,11 +149,6 @@ public:
         return m_layoutObject->offsetFromContainer(item.layoutObject());
     }
 
-    LayoutSize columnOffset(const LayoutPoint& point) const
-    {
-        return m_layoutObject->columnOffset(point);
-    }
-
     FrameView* frameView() const
     {
         return m_layoutObject->document().view();
