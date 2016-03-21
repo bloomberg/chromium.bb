@@ -372,6 +372,14 @@
    fun:_ZN4base15SparseHistogram*
 }
 {
+   Intentional leak for PersistentSampleMap (stores SparseHistogram counts).
+   Memcheck:Leak
+   ...
+   fun:_ZN4base19PersistentSampleMap10AccumulateEii
+   ...
+   fun:_ZN4base15SparseHistogram*
+}
+{
    Intentional leak for BucketRanges.
    Memcheck:Leak
    fun:_Znw*
