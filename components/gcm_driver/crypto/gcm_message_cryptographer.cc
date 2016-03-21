@@ -170,7 +170,8 @@ bool GCMMessageCryptographer::Decrypt(const base::StringPiece& ciphertext,
   // 65535 bytes of padding. Padding bytes must be zero but, since AES-GCM
   // authenticates the plaintext, checking and removing padding need not be done
   // in constant-time.
-  uint16_t padding_length = (decrypted_record[0] << 8) | decrypted_record[1];
+  uint16_t padding_length = (static_cast<uint8_t>(decrypted_record[0]) << 8) |
+                            static_cast<uint8_t>(decrypted_record[1]);
   decrypted_record.remove_prefix(sizeof(uint16_t));
 
   if (padding_length > decrypted_record.size()) {
