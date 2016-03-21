@@ -233,11 +233,18 @@ class LocalChromeController(ChromeControllerBase):
       profile_dir = tempfile.mkdtemp()
     flags = ['--user-data-dir=%s' % profile_dir] + flags
     chrome_out = None if OPTIONS.local_noisy else file('/dev/null', 'w')
-    process = subprocess.Popen(
-        [binary_filename] + flags, shell=False, stderr=chrome_out)
+    environment = os.environ.copy()
+    if OPTIONS.headless:
+      environment['DISPLAY'] = 'localhost:99'
+      xvfb_process = subprocess.Popen(
+          ['Xvfb', ':99', '-screen', '0', '1600x1200x24'], shell=False,
+          stderr=chrome_out)
+    chrome_process = subprocess.Popen(
+        [binary_filename] + flags, shell=False, stderr=chrome_out,
+        env=environment)
     try:
       time.sleep(10)
-      process_result = process.poll()
+      process_result = chrome_process.poll()
       if process_result is not None:
         logging.error('Unexpected process exit: %s', process_result)
       else:
@@ -246,6 +253,8 @@ class LocalChromeController(ChromeControllerBase):
         self._StartConnection(connection)
         yield connection
     finally:
-      process.kill()
+      chrome_process.kill()
+      if OPTIONS.headless:
+        xvfb_process.kill()
       if using_temp_profile_dir:
         shutil.rmtree(profile_dir)

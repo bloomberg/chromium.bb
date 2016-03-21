@@ -314,6 +314,8 @@ def main():
       'prefetch_delay_seconds', 5,
       'delay after requesting load of prefetch page '
       '(only when running full fetch)')
+  OPTIONS.AddGlobalArgument(
+      'headless', False, 'Do not display Chrome UI (only works in local mode).')
 
   parser = argparse.ArgumentParser(description='Analyzes loading')
   parser.add_argument('command', help=' '.join(COMMAND_MAP.keys()))
