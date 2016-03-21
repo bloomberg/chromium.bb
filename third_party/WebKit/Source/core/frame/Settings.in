@@ -80,7 +80,6 @@ allowScriptsToCloseWindows initial=false
 downloadableBinaryFontsEnabled initial=true
 
 xssAuditorEnabled initial=false
-unsafePluginPastingEnabled initial=false
 
 preferCompositingToLCDTextEnabled initial=false, invalidate=AcceleratedCompositing
 

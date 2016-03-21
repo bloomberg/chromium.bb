@@ -427,11 +427,6 @@ void WebSettingsImpl::setTextTrackTextSize(const WebString& size)
     m_settings->setTextTrackTextSize(size);
 }
 
-void WebSettingsImpl::setUnsafePluginPastingEnabled(bool enabled)
-{
-    m_settings->setUnsafePluginPastingEnabled(enabled);
-}
-
 void WebSettingsImpl::setDNSPrefetchingEnabled(bool enabled)
 {
     m_settings->setDNSPrefetchingEnabled(enabled);

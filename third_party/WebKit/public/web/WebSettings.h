@@ -236,7 +236,6 @@ public:
     virtual void setThreadedScrollingEnabled(bool) = 0;
     virtual void setTouchDragDropEnabled(bool) = 0;
     virtual void setUnifiedTextCheckerEnabled(bool) = 0;
-    virtual void setUnsafePluginPastingEnabled(bool) = 0;
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool) = 0;
     virtual void setUseMobileViewportStyle(bool) = 0;
     virtual void setUseSolidColorScrollbars(bool) = 0;

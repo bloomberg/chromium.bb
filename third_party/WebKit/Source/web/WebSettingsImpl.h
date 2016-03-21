@@ -176,7 +176,6 @@ public:
     void setThreadedScrollingEnabled(bool) override;
     void setTouchDragDropEnabled(bool) override;
     void setUnifiedTextCheckerEnabled(bool) override;
-    void setUnsafePluginPastingEnabled(bool) override;
     void setUsesEncodingDetector(bool) override;
     void setUseLegacyBackgroundSizeShorthandBehavior(bool) override;
     void setUseMobileViewportStyle(bool) override;

@@ -1027,7 +1027,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setShouldRespectImageOrientation(
       prefs.should_respect_image_orientation);
 
-  settings->setUnsafePluginPastingEnabled(false);
   settings->setEditingBehavior(
       static_cast<WebSettings::EditingBehavior>(prefs.editing_behavior));
 
