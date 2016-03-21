@@ -52,7 +52,7 @@ username='test-username'
 # ported from the javascript at:
 #
 #     http://gerrit-releases.storage.googleapis.com/index.html
-url='https://www.googleapis.com/storage/v1beta2/b/gerrit-releases/o?projection=noAcl'
+url='https://www.googleapis.com/storage/v1/b/gerrit-releases/o?projection=noAcl'
 curl --retry 30 --ssl-reqd -s $url | python <(cat <<EOF
 # Receives Gerrit version via command line and reads json-encoded
 # text from stdin in the format:
