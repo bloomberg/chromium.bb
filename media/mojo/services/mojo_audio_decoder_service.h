@@ -11,6 +11,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
 
@@ -27,6 +28,8 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
                   interfaces::AudioDecoderConfigPtr config,
                   int32_t cdm_id,
                   const InitializeCallback& callback) final;
+
+  void SetDataSource(mojo::ScopedDataPipeConsumerHandle receive_pipe) final;
 
   void Decode(interfaces::DecoderBufferPtr buffer,
               const DecodeCallback& callback) final;
@@ -54,6 +57,9 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
   // A binding represents the association between the service and the
   // communication channel, i.e. the pipe.
   mojo::StrongBinding<interfaces::AudioDecoder> binding_;
+
+  // DataPipe for serializing the data section of DecoderBuffer.
+  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
   // The AudioDecoder that does actual decoding work.
   scoped_ptr<media::AudioDecoder> decoder_;

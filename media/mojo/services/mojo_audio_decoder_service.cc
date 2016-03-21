@@ -50,6 +50,12 @@ void MojoAudioDecoderService::Initialize(
       base::Bind(&MojoAudioDecoderService::OnAudioBufferReady, weak_this_));
 }
 
+void MojoAudioDecoderService::SetDataSource(
+    mojo::ScopedDataPipeConsumerHandle receive_pipe) {
+  DVLOG(1) << __FUNCTION__;
+  consumer_handle_ = std::move(receive_pipe);
+}
+
 void MojoAudioDecoderService::Decode(interfaces::DecoderBufferPtr buffer,
                                      const DecodeCallback& callback) {
   DVLOG(3) << __FUNCTION__;
@@ -99,7 +105,9 @@ void MojoAudioDecoderService::OnResetDone(const ResetCallback& callback) {
 void MojoAudioDecoderService::OnAudioBufferReady(
     const scoped_refptr<AudioBuffer>& audio_buffer) {
   DVLOG(1) << __FUNCTION__;
-  NOTIMPLEMENTED();
+
+  // TODO(timav): Use DataPipe.
+  client_->OnBufferDecoded(interfaces::AudioBuffer::From(audio_buffer));
 }
 
 scoped_refptr<DecoderBuffer> MojoAudioDecoderService::ReadDecoderBuffer(
@@ -107,7 +115,26 @@ scoped_refptr<DecoderBuffer> MojoAudioDecoderService::ReadDecoderBuffer(
   scoped_refptr<DecoderBuffer> media_buffer(
       buffer.To<scoped_refptr<DecoderBuffer>>());
 
-  NOTIMPLEMENTED();
+  if (media_buffer->end_of_stream())
+    return media_buffer;
+
+  // Wait for the data to become available in the DataPipe.
+  MojoHandleSignalsState state;
+  CHECK_EQ(MOJO_RESULT_OK,
+           MojoWait(consumer_handle_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                    MOJO_DEADLINE_INDEFINITE, &state));
+  CHECK_EQ(MOJO_HANDLE_SIGNAL_READABLE, state.satisfied_signals);
+
+  // Read the inner data for the DecoderBuffer from our DataPipe.
+  uint32_t bytes_to_read =
+      base::checked_cast<uint32_t>(media_buffer->data_size());
+  DCHECK_GT(bytes_to_read, 0u);
+  uint32_t bytes_read = bytes_to_read;
+  CHECK_EQ(ReadDataRaw(consumer_handle_.get(), media_buffer->writable_data(),
+                       &bytes_read, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
+           MOJO_RESULT_OK);
+  CHECK_EQ(bytes_to_read, bytes_read);
+
   return media_buffer;
 }
 

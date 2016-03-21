@@ -21,6 +21,9 @@ interface AudioDecoder {
   Initialize(AudioDecoderClient client, AudioDecoderConfig config, int32 cdm_id)
      => (bool success, bool needs_bitstream_conversion);
 
+  // Established data connection. Should be called before Decode().
+  SetDataSource(handle<data_pipe_consumer> receive_pipe);
+
   // Sends the |buffer| to the underlying codec. Should be called only after
   // Initialize() succeeds. The callback with the status is called after the
   // decoder has accepted corresponding DecoderBuffer, indicating that the

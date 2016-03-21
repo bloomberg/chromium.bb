@@ -10,6 +10,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -52,15 +53,29 @@ class MojoAudioDecoder : public AudioDecoder,
   // called when |remote_decoder_| finished Reset() sequence.
   void OnResetDone();
 
+  // A helper method that creates data pipe and sets the data connection to
+  // the service.
+  void CreateDataPipe();
+
+  // A helper method to serialize the data section of DecoderBuffer into pipe.
+  interfaces::DecoderBufferPtr TransferDecoderBuffer(
+      const scoped_refptr<DecoderBuffer>& media_buffer);
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   interfaces::AudioDecoderPtr remote_decoder_;
 
+  // DataPipe for serializing the data section of DecoderBuffer.
+  mojo::ScopedDataPipeProducerHandle producer_handle_;
+
   // Binding for AudioDecoderClient, bound to the |task_runner_|.
   mojo::Binding<AudioDecoderClient> binding_;
 
-  // We call these callbacks to pass the information to the pipeline.
+  // We call the following callbacks to pass the information to the pipeline.
+  // |output_cb_| is permanent while other three are called only once,
+  // |decode_cb_| and |reset_cb_| are replaced by every by Decode() and Reset().
   InitCB init_cb_;
+  OutputCB output_cb_;
   DecodeCB decode_cb_;
   base::Closure reset_cb_;
 
