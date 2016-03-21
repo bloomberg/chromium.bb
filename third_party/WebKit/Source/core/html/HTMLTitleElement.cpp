@@ -82,10 +82,11 @@ void HTMLTitleElement::setText(const String &value)
     RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
     ChildListMutationScope mutation(*this);
 
-    // Avoid calling Document::setTitleElement() during intermediate steps.
-    m_ignoreTitleUpdatesWhenChildrenChange = !value.isEmpty();
-    removeChildren(OmitSubtreeModifiedEvent);
-    m_ignoreTitleUpdatesWhenChildrenChange = false;
+    {
+        // Avoid calling Document::setTitleElement() during intermediate steps.
+        TemporaryChange<bool> inhibitTitleUpdateScope(m_ignoreTitleUpdatesWhenChildrenChange, !value.isEmpty());
+        removeChildren(OmitSubtreeModifiedEvent);
+    }
 
     if (!value.isEmpty())
         appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
