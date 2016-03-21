@@ -9718,10 +9718,6 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
                        "unsupported texture format");
     return error::kNoError;
   }
-  if (image_state != Texture::BOUND) {
-    // No-op case for pass-through overlays (such as on Chromecast).
-    return error::kNoError;
-  }
   gfx::OverlayTransform transform = GetGFXOverlayTransform(c.plane_transform);
   if (transform == gfx::OVERLAY_TRANSFORM_INVALID) {
     LOCAL_SET_GL_ERROR(GL_INVALID_ENUM,
