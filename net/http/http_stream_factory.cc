@@ -98,6 +98,11 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   bool is_valid = true;
   for (size_t i = 0; i < alternate_protocol_values.size(); ++i) {
     base::StringPiece alternate_protocol_str = alternate_protocol_values[i];
+    if (base::StartsWith(alternate_protocol_str, "p=",
+                         base::CompareCase::SENSITIVE)) {
+      // Ignore deprecated probability.
+      continue;
+    }
     std::vector<base::StringPiece> port_protocol_vector =
         base::SplitStringPiece(alternate_protocol_str, ":",
                                base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
