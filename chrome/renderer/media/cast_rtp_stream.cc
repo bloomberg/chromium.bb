@@ -122,6 +122,10 @@ bool IsHardwareH264EncodingSupported() {
   }
 
   // Query for hardware H.264 encoder support.
+  //
+  // TODO(miu): Look into why H.264 hardware encoder on MacOS is broken.
+  // http://crbug.com/596674
+#if !defined(OS_MACOSX)
   const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
       vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
   for (const auto& vea_profile : vea_profiles) {
@@ -130,6 +134,7 @@ bool IsHardwareH264EncodingSupported() {
       return true;
     }
   }
+#endif  // !defined(OS_MACOSX)
   return false;
 }
 

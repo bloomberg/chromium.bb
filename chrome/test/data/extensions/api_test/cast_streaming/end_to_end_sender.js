@@ -158,7 +158,6 @@ chrome.test.runTests([
                 videoParams.payload.maxFrameRate = frameRate;
                 videoParams.payload.aesKey = aesKey;
                 videoParams.payload.aesIvMask = aesIvMask;
-                videoParams.payload.codecName = 'VP8';
                 rtpStream.start(videoId, videoParams);
                 renderTestPatternLoop();
                 chrome.test.succeed();
