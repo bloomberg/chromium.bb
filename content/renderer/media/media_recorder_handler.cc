@@ -134,16 +134,18 @@ bool MediaRecorderHandler::start(int timeslice) {
     return false;
   }
 
+  const bool use_video_tracks =
+      !video_tracks.isEmpty() && video_tracks[0].isEnabled();
   const bool use_audio_tracks =
-      !audio_tracks.isEmpty() && MediaStreamAudioTrack::From(audio_tracks[0]);
+      !audio_tracks.isEmpty() && MediaStreamAudioTrack::From(audio_tracks[0])
+       && audio_tracks[0].isEnabled();
 
   webm_muxer_.reset(new media::WebmMuxer(
-      use_vp9_ ? media::kCodecVP9 : media::kCodecVP8,
-      video_tracks.size() > 0, use_audio_tracks,
-      base::Bind(&MediaRecorderHandler::WriteData,
-                 weak_factory_.GetWeakPtr())));
+      use_vp9_ ? media::kCodecVP9 : media::kCodecVP8, use_video_tracks,
+      use_audio_tracks, base::Bind(&MediaRecorderHandler::WriteData,
+                                   weak_factory_.GetWeakPtr())));
 
-  if (!video_tracks.isEmpty()) {
+  if (use_video_tracks) {
     // TODO(mcasas): The muxer API supports only one video track. Extend it to
     // several video tracks, see http://crbug.com/528523.
     LOG_IF(WARNING, video_tracks.size() > 1u)
