@@ -47,8 +47,10 @@ function runTest() {
 
         // Scroll 1 more tick down.
         eventSender.mouseScrollBy(0, -1);
-        shouldBe("internals.getScrollAnimationState(document)",
-          "RUNNING_ON_COMPOSITOR_BUT_NEEDS_UPDATE");
+        // It is possible the previous scroll animation finished before this
+        // next mouse scroll event was processed; so just assert the event
+        // is running on the compositor.
+        shouldBeTrue("needsUpdateOrRunningOnCompositor(document)");
 
         requestAnimationFrame(function() {
             // Check that the temporary main thread scrolling is still there

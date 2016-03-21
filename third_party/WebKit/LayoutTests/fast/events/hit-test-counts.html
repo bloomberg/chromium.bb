@@ -101,7 +101,7 @@ function sendEvents(targetX, targetY, documents, multiTapNotification)
     });
 
     logCounts('Wheel', documents, multiTapNotification, function() {
-        eventSender.mouseScrollBy(0, 5);
+        eventSender.mouseScrollBy(0, 5, false, false, 0, false);
     });
 
     logCounts('TouchStart', documents, multiTapNotification, function() {
