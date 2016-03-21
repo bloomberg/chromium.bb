@@ -11,6 +11,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+if (is_ios) {
+  import("//ios/build/config.gni")
+}
+
 # To add a unit test to this target, make a "unit_test" source_set in your
 # component (it's important to use a source_set instead of a static library or
 # no tests will run) and add a reference here. You can add more than one unit
@@ -263,6 +267,10 @@ test("components_unittests") {
 
   if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing_db:unit_tests_mobile" ]
+  }
+
+  if (is_ios) {
+    assert_no_deps = ios_assert_no_deps
   }
 }
 

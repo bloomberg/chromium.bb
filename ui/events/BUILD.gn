@@ -10,6 +10,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+if (is_ios) {
+  import("//ios/build/config.gni")
+}
+
 static_library("dom_keycode_converter") {
   sources = [
     "keycodes/dom/dom_code.h",
@@ -458,6 +462,10 @@ test("events_unittests") {
 
   if (is_android) {
     sources += [ "android/motion_event_android_unittest.cc" ]
+  }
+
+  if (is_ios) {
+    assert_no_deps = ios_assert_no_deps
   }
 }
 

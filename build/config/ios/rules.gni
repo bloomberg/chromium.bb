@@ -100,11 +100,12 @@ template("app") {
     forward_variables_from(invoker,
                            "*",
                            [
-                             "output_name",
+                             "assert_no_deps",
                              "code_signing_identity",
                              "data_deps",
                              "entitlements_path",
                              "info_plist",
+                             "output_name",
                              "visibility",
                            ])
 

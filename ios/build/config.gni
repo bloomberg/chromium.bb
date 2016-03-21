@@ -1,0 +1,23 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Global list of dependencies that are conceptually bad on iOS and should
+# never be added (they will never be supported).
+_ios_conceptually_bad_dependencies = [
+  "//cc/*",
+  "//content/*",
+  "//dbus/*",
+  "//ipc/*",
+  "//jingle/*",
+  "//media/*",
+  "//third_party/webrtc/*",
+  "//third_party/WebKit/*",
+]
+
+# Global list of conceptually fine dependencies but currently unsupported
+# on iOS. exclusions will be removed when the dependencies are fixed.
+_ios_transient_bad_dependencies = [ "//mojo/edk/*" ]
+
+ios_assert_no_deps =
+    _ios_conceptually_bad_dependencies + _ios_transient_bad_dependencies
