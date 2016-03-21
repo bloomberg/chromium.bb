@@ -97,7 +97,7 @@ using NSViewComparatorValue = __kindof NSView*;
 
 const CGFloat kMavericksMenuOpacity = 251.0 / 255.0;
 const CGFloat kYosemiteMenuOpacity = 194.0 / 255.0;
-const int kYosemiteMenuBlur = 80;
+// const int kYosemiteMenuBlur = 80;
 
 // Margin at edge and corners of the window that trigger resizing. These match
 // actual Cocoa resize margins.
@@ -1216,8 +1216,11 @@ void BridgedNativeWidget::AddCompositorSuperview() {
     // solid background, but make the CALayer transparent.
     if (base::mac::IsOSYosemiteOrLater()) {
       [background_layer setOpacity:kYosemiteMenuOpacity];
-      CGSSetWindowBackgroundBlurRadius(
-          _CGSDefaultConnection(), [window_ windowNumber], kYosemiteMenuBlur);
+
+      // TODO(erikchen): Temporarily disabled. https://crbug.com/515627.
+      // CGSSetWindowBackgroundBlurRadius(
+      //     _CGSDefaultConnection(), [window_ windowNumber],
+      //     kYosemiteMenuBlur);
       // The blur effect does not occur with a fully transparent (or fully
       // layer-backed) window. Setting a window background will use square
       // corners, so ask the contentView to draw one instead.

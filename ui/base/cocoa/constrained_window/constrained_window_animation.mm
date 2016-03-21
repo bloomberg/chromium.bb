@@ -76,55 +76,60 @@ struct KeyFrame {
 // Most Cocoa APIs use a coordinate system where the screen origin is the
 // bottom left. The various CGSSetWindow* APIs use a coordinate system where
 // the screen origin is the top left.
-NSPoint GetCGSWindowScreenOrigin(NSWindow* window) {
-  NSArray* screens = [NSScreen screens];
-  if ([screens count] == 0)
-    return NSZeroPoint;
-  // Origin is relative to the screen with the menu bar (the screen at index 0).
-  // Note, this is not the same as mainScreen which is the screen with the key
-  // window.
-  NSScreen* main_screen = [screens objectAtIndex:0];
-
-  NSRect window_frame = [window frame];
-  NSRect screen_frame = [main_screen frame];
-  return NSMakePoint(NSMinX(window_frame),
-                     NSHeight(screen_frame) - NSMaxY(window_frame));
-}
+// NSPoint GetCGSWindowScreenOrigin(NSWindow* window) {
+//   NSArray* screens = [NSScreen screens];
+//   if ([screens count] == 0)
+//     return NSZeroPoint;
+//   // Origin is relative to the screen with the menu bar (the screen at index
+//   0).
+//   // Note, this is not the same as mainScreen which is the screen with the
+//   key
+//   // window.
+//   NSScreen* main_screen = [screens objectAtIndex:0];
+//
+//   NSRect window_frame = [window frame];
+//   NSRect screen_frame = [main_screen frame];
+//   return NSMakePoint(NSMinX(window_frame),
+//                      NSHeight(screen_frame) - NSMaxY(window_frame));
+// }
 
 // Set the transparency of the window.
 void SetWindowAlpha(NSWindow* window, float alpha) {
-  CGSConnection cid = _CGSDefaultConnection();
-  CGSSetWindowAlpha(cid, [window windowNumber], alpha);
+  // TODO(erikchen): Temporarily disabled. https://crbug.com/515627.
+  // CGSConnection cid = _CGSDefaultConnection();
+  // CGSSetWindowAlpha(cid, [window windowNumber], alpha);
 }
 
 // Scales the window and translates it so that it stays centered relative
 // to its original position.
 void SetWindowScale(NSWindow* window, float scale) {
-  CGFloat scale_delta = 1.0 - scale;
-  CGFloat cur_scale = 1.0 + scale_delta;
-  CGAffineTransform transform =
-      CGAffineTransformMakeScale(cur_scale, cur_scale);
+  // TODO(erikchen): Temporarily disabled. https://crbug.com/515627.
+  // CGFloat scale_delta = 1.0 - scale;
+  // CGFloat cur_scale = 1.0 + scale_delta;
+  // CGAffineTransform transform =
+  //     CGAffineTransformMakeScale(cur_scale, cur_scale);
 
-  // Translate the window to keep it centered at the original location.
-  NSSize window_size = [window frame].size;
-  CGFloat scale_offset_x = window_size.width * (1 - cur_scale) / 2.0;
-  CGFloat scale_offset_y = window_size.height * (1 - cur_scale) / 2.0;
+  // // Translate the window to keep it centered at the original location.
+  // NSSize window_size = [window frame].size;
+  // CGFloat scale_offset_x = window_size.width * (1 - cur_scale) / 2.0;
+  // CGFloat scale_offset_y = window_size.height * (1 - cur_scale) / 2.0;
 
-  NSPoint origin = GetCGSWindowScreenOrigin(window);
-  CGFloat new_x = -origin.x + scale_offset_x;
-  CGFloat new_y = -origin.y + scale_offset_y;
-  transform = CGAffineTransformTranslate(transform, new_x, new_y);
+  // NSPoint origin = GetCGSWindowScreenOrigin(window);
+  // CGFloat new_x = -origin.x + scale_offset_x;
+  // CGFloat new_y = -origin.y + scale_offset_y;
+  // transform = CGAffineTransformTranslate(transform, new_x, new_y);
 
-  CGSConnection cid = _CGSDefaultConnection();
-  CGSSetWindowTransform(cid, [window windowNumber], transform);
+  // CGSConnection cid = _CGSDefaultConnection();
+  // CGSSetWindowTransform(cid, [window windowNumber], transform);
 }
 
 // Unsets any window warp that may have been previously applied.
 // Window warp prevents other effects such as CGSSetWindowTransform from
 // being applied.
 void ClearWindowWarp(NSWindow* window) {
-  CGSConnection cid = _CGSDefaultConnection();
-  CGSSetWindowWarp(cid, [window windowNumber], 0, 0, NULL);
+  // TODO(erikchen): Temporarily disabled. https://crbug.com/515627.
+  // CGSConnection cid = _CGSDefaultConnection();
+  // CGSSetWindowWarp(cid, [window windowNumber], 0, 0, NULL);
 }
 
 // Applies various transformations using a warp effect. The window is
@@ -135,43 +140,44 @@ void SetWindowWarp(NSWindow* window,
                    float y_offset,
                    float scale,
                    float perspective_offset) {
-  NSRect win_rect = [window frame];
-  win_rect.origin = NSZeroPoint;
-  NSRect screen_rect = win_rect;
-  screen_rect.origin = GetCGSWindowScreenOrigin(window);
+  // TODO(erikchen): Temporarily disabled. https://crbug.com/515627.
+  // NSRect win_rect = [window frame];
+  // win_rect.origin = NSZeroPoint;
+  // NSRect screen_rect = win_rect;
+  // screen_rect.origin = GetCGSWindowScreenOrigin(window);
 
-  // Apply a vertical translate.
-  screen_rect.origin.y -= y_offset;
+  // // Apply a vertical translate.
+  // screen_rect.origin.y -= y_offset;
 
-  // Apply a scale and translate to keep the window centered.
-  screen_rect.origin.x += (NSWidth(win_rect) - NSWidth(screen_rect)) / 2.0;
-  screen_rect.origin.y += (NSHeight(win_rect) - NSHeight(screen_rect)) / 2.0;
+  // // Apply a scale and translate to keep the window centered.
+  // screen_rect.origin.x += (NSWidth(win_rect) - NSWidth(screen_rect)) / 2.0;
+  // screen_rect.origin.y += (NSHeight(win_rect) - NSHeight(screen_rect)) / 2.0;
 
-  // A 2 x 2 mesh that maps each corner of the window to a location in screen
-  // coordinates. Note that the origin of the coordinate system is top, left.
-  CGPointWarp mesh[2][2] = {
-      {{
-        // Top left.
-        {NSMinX(win_rect), NSMinY(win_rect)},
-        {NSMinX(screen_rect) + perspective_offset, NSMinY(screen_rect)},
-       },
-       {
-        // Top right.
-        {NSMaxX(win_rect), NSMinY(win_rect)},
-        {NSMaxX(screen_rect) - perspective_offset, NSMinY(screen_rect)}, }},
-      {{
-        // Bottom left.
-        {NSMinX(win_rect), NSMaxY(win_rect)},
-        {NSMinX(screen_rect), NSMaxY(screen_rect)},
-       },
-       {
-        // Bottom right.
-        {NSMaxX(win_rect), NSMaxY(win_rect)},
-        {NSMaxX(screen_rect), NSMaxY(screen_rect)}, }},
-  };
+  // // A 2 x 2 mesh that maps each corner of the window to a location in screen
+  // // coordinates. Note that the origin of the coordinate system is top, left.
+  // CGPointWarp mesh[2][2] = {
+  //     {{
+  //       // Top left.
+  //       {NSMinX(win_rect), NSMinY(win_rect)},
+  //       {NSMinX(screen_rect) + perspective_offset, NSMinY(screen_rect)},
+  //      },
+  //      {
+  //       // Top right.
+  //       {NSMaxX(win_rect), NSMinY(win_rect)},
+  //       {NSMaxX(screen_rect) - perspective_offset, NSMinY(screen_rect)}, }},
+  //     {{
+  //       // Bottom left.
+  //       {NSMinX(win_rect), NSMaxY(win_rect)},
+  //       {NSMinX(screen_rect), NSMaxY(screen_rect)},
+  //      },
+  //      {
+  //       // Bottom right.
+  //       {NSMaxX(win_rect), NSMaxY(win_rect)},
+  //       {NSMaxX(screen_rect), NSMaxY(screen_rect)}, }},
+  // };
 
-  CGSConnection cid = _CGSDefaultConnection();
-  CGSSetWindowWarp(cid, [window windowNumber], 2, 2, &(mesh[0][0]));
+  // CGSConnection cid = _CGSDefaultConnection();
+  // CGSSetWindowWarp(cid, [window windowNumber], 2, 2, &(mesh[0][0]));
 }
 
 // Sets the various effects that are a part of the Show/Hide animation.
