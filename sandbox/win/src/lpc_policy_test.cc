@@ -128,10 +128,6 @@ SBOX_TESTS_COMMAND int Lpc_GetUserDefaultLocaleName(int argc, wchar_t** argv) {
 }
 
 TEST(LpcPolicyTest, GetUserDefaultLocaleName) {
-  // GetUserDefaultLocaleName is not available before Vista.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return;
-  }
   static GetUserDefaultLocaleNameFunction GetUserDefaultLocaleName_func = NULL;
   if (!GetUserDefaultLocaleName_func) {
     // GetUserDefaultLocaleName is not available on WIN XP.  So we'll

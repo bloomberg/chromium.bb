@@ -42,11 +42,7 @@ TEST(HandleInheritanceTests, TestStdoutInheritance) {
   std::string data;
   ASSERT_TRUE(base::ReadFileToString(base::FilePath(temp_file_name), &data));
   // Redirection uses a feature that was added in Windows Vista.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    ASSERT_EQ("Example output to stdout\r\n", data);
-  } else {
-    ASSERT_EQ("", data);
-  }
+  ASSERT_EQ("Example output to stdout\r\n", data);
 }
 
 }  // namespace sandbox

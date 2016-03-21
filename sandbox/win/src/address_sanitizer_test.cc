@@ -88,17 +88,13 @@ TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
     std::string data;
     ASSERT_TRUE(base::ReadFileToString(base::FilePath(temp_file_name), &data));
     // Redirection uses a feature that was added in Windows Vista.
-    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-      ASSERT_TRUE(
-          strstr(data.c_str(), "ERROR: AddressSanitizer: heap-buffer-overflow"))
-          << "There doesn't seem to be an ASan report:\n" << data;
-      ASSERT_TRUE(strstr(data.c_str(), "AddressSanitizerTests_Report"))
-          << "The ASan report doesn't appear to be symbolized:\n" << data;
-      ASSERT_TRUE(strstr(data.c_str(), strrchr(__FILE__, '\\')))
-          << "The stack trace doesn't have a correct filename:\n" << data;
-    } else {
-      LOG(WARNING) << "Pre-Vista versions are not supported.";
-    }
+    ASSERT_TRUE(
+        strstr(data.c_str(), "ERROR: AddressSanitizer: heap-buffer-overflow"))
+        << "There doesn't seem to be an ASan report:\n" << data;
+    ASSERT_TRUE(strstr(data.c_str(), "AddressSanitizerTests_Report"))
+        << "The ASan report doesn't appear to be symbolized:\n" << data;
+    ASSERT_TRUE(strstr(data.c_str(), strrchr(__FILE__, '\\')))
+        << "The stack trace doesn't have a correct filename:\n" << data;
   } else {
     LOG(WARNING) << "Not an AddressSanitizer build, skipping the run.";
   }

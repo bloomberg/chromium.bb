@@ -475,8 +475,7 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   // not already low enough for our process.
   if (alternate_desktop_handle_ && use_alternate_desktop_ &&
       integrity_level_ != INTEGRITY_LEVEL_LAST &&
-      alternate_desktop_integrity_level_label_ < integrity_level_ &&
-      base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA) {
+      alternate_desktop_integrity_level_label_ < integrity_level_) {
     // Integrity label enum is reversed (higher level is a lower value).
     static_assert(INTEGRITY_LEVEL_SYSTEM < INTEGRITY_LEVEL_UNTRUSTED,
                   "Integrity level ordering reversed.");

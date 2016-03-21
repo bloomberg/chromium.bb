@@ -23,7 +23,6 @@
 #include "sandbox/win/src/service_resolver.h"
 #include "sandbox/win/src/target_interceptions.h"
 #include "sandbox/win/src/target_process.h"
-#include "sandbox/win/src/wow64.h"
 
 namespace sandbox {
 
@@ -466,12 +465,6 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
     if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
                                GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                            loader_get, &ntdll_base))
-      return false;
-  }
-
-  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
-    Wow64 WowHelper(child_, ntdll_base);
-    if (!WowHelper.WaitForNtdll())
       return false;
   }
 

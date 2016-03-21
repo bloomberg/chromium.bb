@@ -141,7 +141,6 @@ static_library("sandbox") {
 
   if (current_cpu == "x64") {
     sources += [
-      "src/Wow64_64.cc",
       "src/interceptors_64.cc",
       "src/interceptors_64.h",
       "src/resolver_64.cc",
@@ -149,8 +148,6 @@ static_library("sandbox") {
     ]
   } else if (current_cpu == "x86") {
     sources += [
-      "src/Wow64.cc",
-      "src/Wow64.h",
       "src/resolver_32.cc",
       "src/service_resolver_32.cc",
       "src/sidestep/ia32_modrm_map.cpp",

@@ -347,85 +347,83 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   bool inherit_handles = false;
 
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    int attribute_count = 0;
-    const AppContainerAttributes* app_container =
-        policy_base->GetAppContainer();
-    if (app_container)
-      ++attribute_count;
+  int attribute_count = 0;
+  const AppContainerAttributes* app_container =
+      policy_base->GetAppContainer();
+  if (app_container)
+    ++attribute_count;
 
-    size_t mitigations_size;
-    ConvertProcessMitigationsToPolicy(policy_base->GetProcessMitigations(),
-                                      &mitigations, &mitigations_size);
-    if (mitigations)
-      ++attribute_count;
+  size_t mitigations_size;
+  ConvertProcessMitigationsToPolicy(policy_base->GetProcessMitigations(),
+                                    &mitigations, &mitigations_size);
+  if (mitigations)
+    ++attribute_count;
 
-    bool restrict_child_process_creation = false;
-    if (base::win::GetVersion() >= base::win::VERSION_WIN10_TH2 &&
-        policy_base->GetJobLevel() <= JOB_LIMITED_USER) {
-      restrict_child_process_creation = true;
-      ++attribute_count;
-    }
+  bool restrict_child_process_creation = false;
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10_TH2 &&
+      policy_base->GetJobLevel() <= JOB_LIMITED_USER) {
+    restrict_child_process_creation = true;
+    ++attribute_count;
+  }
 
-    HANDLE stdout_handle = policy_base->GetStdoutHandle();
-    HANDLE stderr_handle = policy_base->GetStderrHandle();
+  HANDLE stdout_handle = policy_base->GetStdoutHandle();
+  HANDLE stderr_handle = policy_base->GetStderrHandle();
 
-    if (stdout_handle != INVALID_HANDLE_VALUE)
-      inherited_handle_list.push_back(stdout_handle);
+  if (stdout_handle != INVALID_HANDLE_VALUE)
+    inherited_handle_list.push_back(stdout_handle);
 
-    // Handles in the list must be unique.
-    if (stderr_handle != stdout_handle && stderr_handle != INVALID_HANDLE_VALUE)
-      inherited_handle_list.push_back(stderr_handle);
+  // Handles in the list must be unique.
+  if (stderr_handle != stdout_handle && stderr_handle != INVALID_HANDLE_VALUE)
+    inherited_handle_list.push_back(stderr_handle);
 
-    const base::HandlesToInheritVector& policy_handle_list =
-        policy_base->GetHandlesBeingShared();
+  const base::HandlesToInheritVector& policy_handle_list =
+      policy_base->GetHandlesBeingShared();
 
-    for (HANDLE handle : policy_handle_list)
-      inherited_handle_list.push_back(handle);
+  for (HANDLE handle : policy_handle_list)
+    inherited_handle_list.push_back(handle);
 
-    if (inherited_handle_list.size())
-      ++attribute_count;
+  if (inherited_handle_list.size())
+    ++attribute_count;
 
-    if (!startup_info.InitializeProcThreadAttributeList(attribute_count))
+  if (!startup_info.InitializeProcThreadAttributeList(attribute_count))
+    return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
+
+  if (app_container) {
+    result = app_container->ShareForStartup(&startup_info);
+    if (SBOX_ALL_OK != result)
+      return result;
+  }
+
+  if (mitigations) {
+    if (!startup_info.UpdateProcThreadAttribute(
+              PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY, &mitigations,
+              mitigations_size)) {
       return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
-
-    if (app_container) {
-      result = app_container->ShareForStartup(&startup_info);
-      if (SBOX_ALL_OK != result)
-        return result;
     }
+  }
 
-    if (mitigations) {
-      if (!startup_info.UpdateProcThreadAttribute(
-               PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY, &mitigations,
-               mitigations_size)) {
-        return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
-      }
+  if (restrict_child_process_creation) {
+    if (!startup_info.UpdateProcThreadAttribute(
+            PROC_THREAD_ATTRIBUTE_CHILD_PROCESS_POLICY,
+            &child_process_creation, sizeof(child_process_creation))) {
+      return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
     }
+  }
 
-    if (restrict_child_process_creation) {
-      if (!startup_info.UpdateProcThreadAttribute(
-              PROC_THREAD_ATTRIBUTE_CHILD_PROCESS_POLICY,
-              &child_process_creation, sizeof(child_process_creation))) {
-        return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
-      }
+  if (inherited_handle_list.size()) {
+    if (!startup_info.UpdateProcThreadAttribute(
+            PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+            &inherited_handle_list[0],
+            sizeof(HANDLE) * inherited_handle_list.size())) {
+      return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
     }
-
-    if (inherited_handle_list.size()) {
-      if (!startup_info.UpdateProcThreadAttribute(
-              PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-              &inherited_handle_list[0],
-              sizeof(HANDLE) * inherited_handle_list.size())) {
-        return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
-      }
-      startup_info.startup_info()->dwFlags |= STARTF_USESTDHANDLES;
-      startup_info.startup_info()->hStdInput = INVALID_HANDLE_VALUE;
-      startup_info.startup_info()->hStdOutput = stdout_handle;
-      startup_info.startup_info()->hStdError = stderr_handle;
-      // Allowing inheritance of handles is only secure now that we
-      // have limited which handles will be inherited.
-      inherit_handles = true;
-    }
+    startup_info.startup_info()->dwFlags |= STARTF_USESTDHANDLES;
+    startup_info.startup_info()->hStdInput = INVALID_HANDLE_VALUE;
+    startup_info.startup_info()->hStdOutput = stdout_handle;
+    startup_info.startup_info()->hStdError = stderr_handle;
+    // Allowing inheritance of handles is only secure now that we
+    // have limited which handles will be inherited.
+    inherit_handles = true;
   }
 
   // Construct the thread pool here in case it is expensive.

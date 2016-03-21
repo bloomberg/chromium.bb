@@ -121,9 +121,6 @@ TEST(ValidationSuite, TestDesktop) {
 // Tests that the permissions on the Windowstation does not allow the sandbox
 // to get to the interactive desktop or to make the sbox desktop interactive.
 TEST(ValidationSuite, TestAlternateDesktop) {
-  base::win::Version version = base::win::GetVersion();
-  if (version < base::win::VERSION_WIN7)
-    return;
 
   TestRunner runner;
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"EnumAlternateWinsta NULL"));
@@ -167,9 +164,6 @@ TEST(ValidationSuite, TestProcessDenyLockdown) {
 // Tests that a low-integrity process cannot open a locked-down process (due
 // to the integrity label changing after startup via SetDelayedIntegrityLevel).
 TEST(ValidationSuite, TestProcessDenyLowIntegrity) {
-  // This test applies only to Vista and above.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
 
   TestRunner runner;
   TestRunner target;
@@ -188,9 +182,6 @@ TEST(ValidationSuite, TestProcessDenyLowIntegrity) {
 
 // Tests that a locked-down process cannot open a low-integrity process.
 TEST(ValidationSuite, TestProcessDenyBelowLowIntegrity) {
-  //  This test applies only to Vista and above.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
 
   TestRunner runner;
   TestRunner target;

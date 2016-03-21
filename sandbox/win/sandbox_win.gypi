@@ -148,7 +148,6 @@
               'src/interceptors_64.h',
               'src/resolver_64.cc',
               'src/service_resolver_64.cc',
-              'src/Wow64_64.cc',
             ],
           }],
           ['target_arch=="ia32"', {
@@ -164,8 +163,6 @@
               'src/sidestep\mini_disassembler.h',
               'src/sidestep\preamble_patcher_with_stub.cpp',
               'src/sidestep\preamble_patcher.h',
-              'src/Wow64.cc',
-              'src/Wow64.h',
             ],
           }],
         ],
