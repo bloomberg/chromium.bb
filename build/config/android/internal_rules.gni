@@ -32,6 +32,7 @@ template("android_lint") {
   base_path = "$target_gen_dir/$target_name"
 
   action(target_name) {
+    deps = []
     forward_variables_from(invoker,
                            [
                              "deps",
@@ -53,6 +54,8 @@ template("android_lint") {
       config_path,
       result_path,
     ]
+
+    deps += [ "//build/android:prepare_android_lint_cache" ]
 
     rebased_java_files = rebase_path(java_files, root_build_dir)
 

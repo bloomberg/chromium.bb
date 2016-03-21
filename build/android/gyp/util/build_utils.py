@@ -152,7 +152,7 @@ class CalledProcessError(Exception):
 # This can be used in most cases like subprocess.check_output(). The output,
 # particularly when the command fails, better highlights the command's failure.
 # If the command fails, raises a build_utils.CalledProcessError.
-def CheckOutput(args, cwd=None,
+def CheckOutput(args, cwd=None, env=None,
                 print_stdout=False, print_stderr=True,
                 stdout_filter=None,
                 stderr_filter=None,
@@ -161,7 +161,7 @@ def CheckOutput(args, cwd=None,
     cwd = os.getcwd()
 
   child = subprocess.Popen(args,
-      stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+      stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
   stdout, stderr = child.communicate()
 
   if stdout_filter is not None:

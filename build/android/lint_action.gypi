@@ -11,9 +11,9 @@
   'variables': {
     'conditions': [
       ['chromium_code != 0 and android_lint != 0 and never_lint == 0', {
-        'is_enabled': '--enable',
+        'additional_args': ['--enable'],
       }, {
-        'is_enabled': '',
+        'additional_args': [],
       }]
     ],
     'android_manifest_path%': '<(DEPTH)/build/android/AndroidManifest.xml',
@@ -24,14 +24,16 @@
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
     '<(DEPTH)/build/android/gyp/lint.py',
     '<(android_manifest_path)',
-    '<(suppressions_file)',
     '<(lint_jar_path)',
+    '<(suppressions_file)',
   ],
   'action': [
     'python', '<(DEPTH)/build/android/gyp/lint.py',
     '--lint-path=<(android_sdk_root)/tools/lint',
     '--config-path=<(suppressions_file)',
     '--processed-config-path=<(config_path)',
+    '--cache-dir', '<(PRODUCT_DIR)/android_lint_cache',
+    '--build-tools-version', '<(android_sdk_build_tools_version)',
     '--manifest-path=<(android_manifest_path)',
     '--result-path=<(result_path)',
     '--resource-dir=<(resource_dir)',
@@ -40,6 +42,6 @@
     '--jar-path=<(lint_jar_path)',
     '--can-fail-build',
     '--stamp=<(stamp_path)',
-    '<(is_enabled)',
+    '<@(additional_args)',
   ],
 }

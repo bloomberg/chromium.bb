@@ -1769,6 +1769,7 @@
           'android_ndk_absolute_root%': '<(android_ndk_absolute_root)',
           'android_sdk_root%': '<(android_sdk_root)',
           'android_sdk_version%': '<(android_sdk_version)',
+          'android_sdk_build_tools_version%': '<(android_sdk_build_tools_version)',
           'android_libcpp_root': '<(android_ndk_root)/sources/cxx-stl/llvm-libc++',
           'android_libcpp_library': '<(android_libcpp_library)',
           'android_must_copy_system_libraries': '<(android_must_copy_system_libraries)',
@@ -1843,6 +1844,7 @@
 
         'android_ndk_include': '<(android_ndk_sysroot)/usr/include',
         'android_ndk_lib': '<(android_ndk_sysroot)/<(android_ndk_lib_dir)',
+        'android_sdk_build_tools_version%': '<(android_sdk_build_tools_version)',
         'android_sdk_tools%': '<(android_sdk_tools)',
         'android_aapt_path%': '<(android_sdk_tools)/aapt',
         'android_sdk%': '<(android_sdk)',

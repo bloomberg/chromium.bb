@@ -856,6 +856,7 @@
     }],
   ],
   'dependencies': [
+    '<(DEPTH)/build/android/android_lint_cache.gyp:android_lint_cache',
     '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',
   ],
   'actions': [

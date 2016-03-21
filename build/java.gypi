@@ -48,7 +48,8 @@
 
 {
   'dependencies': [
-    '<(DEPTH)/build/android/setup.gyp:build_output_dirs'
+    '<(DEPTH)/build/android/android_lint_cache.gyp:android_lint_cache',
+    '<(DEPTH)/build/android/setup.gyp:build_output_dirs',
   ],
   'variables': {
     'add_to_dependents_classpaths%': 1,
