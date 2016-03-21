@@ -188,6 +188,7 @@
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CFI Linux': 'gn_cfi_release_bot',
+      'LTO Linux Perf': 'gn_official_goma_lto',
       'Chromium_iOS_Device': 'ios_gyp',
       'Chromium_iOS_Device_(ninja)': 'ios_gyp',
       'Chromium_iOS_Simulator_(dbg)': 'ios_gyp',
@@ -964,6 +965,8 @@
       'gn', 'official', 'goma',
     ],
 
+    'gn_official_goma_lto': ['gn', 'official', 'goma', 'lto'],
+
     'gn_official_goma_minimal_symbols_android': [
       'gn', 'official', 'goma', 'minimal_symbols', 'android',
     ],
@@ -1515,6 +1518,11 @@
       'gn_args': 'is_lsan=true',
       'gyp_defines': 'lsan=1',
     },
+
+    'lto': {
+       'gn_args': 'is_lto=true',
+       'gyp_defines': 'use_lto=1',
+     },
 
     'mac_strip': {
       'gn_args': 'error', # TODO(GYP): Port mac_strip_release
