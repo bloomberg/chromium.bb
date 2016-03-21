@@ -102,6 +102,11 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
     Join();
   }
 
+  void RunShellCallback(const BackgroundShell::ShellThreadCallback& callback) {
+    DCHECK_EQ(message_loop_, base::MessageLoop::current());
+    callback.Run(context_->shell());
+  }
+
   // base::SimpleThread:
   void Start() override {
     DCHECK(!message_loop_);
@@ -113,12 +118,6 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
     // in the order here.
     scoped_ptr<base::MessageLoop> message_loop(message_loop_);
 
-    Context::EnsureEmbedderIsInitialized();
-
-    message_loop_->BindToCurrentThread();
-
-    scoped_ptr<Context> context(new Context);
-    context_ = context.get();
     scoped_ptr<mojo::shell::Context::InitParams> context_init_params(
         new mojo::shell::Context::InitParams);
     if (init_params_) {
@@ -126,7 +125,15 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
           std::move(init_params_->catalog_store);
       context_init_params->native_runner_delegate =
           init_params_->native_runner_delegate;
+      context_init_params->init_edk = init_params_->init_edk;
     }
+    if (context_init_params->init_edk)
+      Context::EnsureEmbedderIsInitialized();
+
+    message_loop_->BindToCurrentThread();
+
+    scoped_ptr<Context> context(new Context);
+    context_ = context.get();
     context_->Init(std::move(context_init_params));
 
     message_loop_->Run();
@@ -189,6 +196,13 @@ mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
                             base::Passed(&params), &request));
   signal.Wait();
   return request;
+}
+
+void BackgroundShell::ExecuteOnShellThread(
+    const ShellThreadCallback& callback) {
+  thread_->message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MojoThread::RunShellCallback,
+                            base::Unretained(thread_.get()), callback));
 }
 
 }  // namespace shell

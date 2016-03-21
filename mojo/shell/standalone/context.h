@@ -37,6 +37,8 @@ class Context : public edk::ProcessDelegate {
 
     NativeRunnerDelegate* native_runner_delegate = nullptr;
     scoped_ptr<catalog::Store> catalog_store;
+    // If true the edk is initialized.
+    bool init_edk = true;
   };
 
   Context();

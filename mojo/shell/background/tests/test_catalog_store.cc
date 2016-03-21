@@ -28,14 +28,20 @@ scoped_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
   scoped_ptr<base::DictionaryValue> app(new base::DictionaryValue);
   app->SetString(Store::kNameKey, name);
   app->SetString(Store::kDisplayNameKey, display_name);
+  app->SetInteger(Store::kManifestVersionKey, 1);
 
   scoped_ptr<base::DictionaryValue> capabilities(new base::DictionaryValue);
-  scoped_ptr<base::ListValue> interfaces(new base::ListValue);
-  interfaces->AppendString("*");
-  capabilities->Set("*", std::move(interfaces));
-
+  scoped_ptr<base::DictionaryValue> required_capabilities(
+      new base::DictionaryValue);
+  scoped_ptr<base::DictionaryValue> interfaces_dictionary(
+      new base::DictionaryValue);
+  scoped_ptr<base::ListValue> interfaces_list(new base::ListValue);
+  interfaces_list->AppendString("*");
+  interfaces_dictionary->Set("interfaces", std::move(interfaces_list));
+  required_capabilities->Set("*", std::move(interfaces_dictionary));
+  capabilities->Set(Store::kCapabilities_RequiredKey,
+                    std::move(required_capabilities));
   app->Set(Store::kCapabilitiesKey, std::move(capabilities));
-
   return app;
 }
 

@@ -129,13 +129,15 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
         "mojo_runner.trace");
   }
 
-  EnsureEmbedderIsInitialized();
+  if (!init_params || init_params->init_edk)
+    EnsureEmbedderIsInitialized();
 
   shell_runner_ = base::MessageLoop::current()->task_runner();
   blocking_pool_ =
       new base::SequencedWorkerPool(kMaxBlockingPoolThreads, "blocking_pool");
 
-  edk::InitIPCSupport(this, io_thread_->task_runner().get());
+  if (!init_params || init_params->init_edk)
+    edk::InitIPCSupport(this, io_thread_->task_runner().get());
 
   scoped_ptr<NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kSingleProcess)) {

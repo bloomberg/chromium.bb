@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/environment.h"
@@ -114,6 +115,13 @@ void PrintUsage() {
           "    Sets the shard index to run to N (from 0 to TOTAL - 1).\n");
 }
 
+void CallChildProcessLaunched(TestState* test_state,
+                              base::ProcessHandle handle,
+                              base::ProcessId pid) {
+  if (test_state)
+    test_state->ChildProcessLaunched(handle, pid);
+}
+
 // Implementation of base::TestLauncherDelegate. This is also a test launcher,
 // wrapping a lower-level test launcher with content-specific code.
 class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
@@ -144,14 +152,14 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
                         const base::TestResult& pre_test_result);
 
   // Callback to receive result of a test.
-  void GTestCallback(
-      base::TestLauncher* test_launcher,
-      const std::vector<std::string>& test_names,
-      const std::string& test_name,
-      int exit_code,
-      const base::TimeDelta& elapsed_time,
-      bool was_timeout,
-      const std::string& output);
+  void GTestCallback(base::TestLauncher* test_launcher,
+                     const std::vector<std::string>& test_names,
+                     const std::string& test_name,
+                     scoped_ptr<TestState> test_state,
+                     int exit_code,
+                     const base::TimeDelta& elapsed_time,
+                     bool was_timeout,
+                     const std::string& output);
 
   content::TestLauncherDelegate* launcher_delegate_;
 
@@ -341,6 +349,11 @@ void WrapperTestLauncherDelegate::DoRunTests(
   std::string test_name_no_pre(RemoveAnyPrePrefixes(test_name));
 
   base::CommandLine cmd_line(*base::CommandLine::ForCurrentProcess());
+  base::TestLauncher::LaunchOptions test_launch_options;
+  test_launch_options.flags = base::TestLauncher::USE_JOB_OBJECTS |
+                              base::TestLauncher::ALLOW_BREAKAWAY_FROM_JOB;
+  scoped_ptr<TestState> test_state_ptr =
+      launcher_delegate_->PreRunTest(&cmd_line, &test_launch_options);
   CHECK(launcher_delegate_->AdjustChildProcessCommandLine(
             &cmd_line, user_data_dir_map_[test_name_no_pre]));
 
@@ -364,16 +377,14 @@ void WrapperTestLauncherDelegate::DoRunTests(
 
   char* browser_wrapper = getenv("BROWSER_WRAPPER");
 
-  base::TestLauncher::LaunchOptions test_launch_options;
-  test_launch_options.flags = base::TestLauncher::USE_JOB_OBJECTS |
-                              base::TestLauncher::ALLOW_BREAKAWAY_FROM_JOB;
+  TestState* test_state = test_state_ptr.get();
   test_launcher->LaunchChildGTestProcess(
       new_cmd_line, browser_wrapper ? browser_wrapper : std::string(),
       TestTimeouts::action_max_timeout(), test_launch_options,
       base::Bind(&WrapperTestLauncherDelegate::GTestCallback,
                  base::Unretained(this), test_launcher, test_names_copy,
-                 test_name),
-      base::TestLauncher::GTestProcessLaunchedCallback());
+                 test_name, base::Passed(&test_state_ptr)),
+      base::Bind(&CallChildProcessLaunched, base::Unretained(test_state)));
 }
 
 void WrapperTestLauncherDelegate::RunDependentTest(
@@ -404,6 +415,7 @@ void WrapperTestLauncherDelegate::GTestCallback(
     base::TestLauncher* test_launcher,
     const std::vector<std::string>& test_names,
     const std::string& test_name,
+    scoped_ptr<TestState> test_state,
     int exit_code,
     const base::TimeDelta& elapsed_time,
     bool was_timeout,
@@ -454,6 +466,11 @@ const char kRunManualTestsFlag[] = "run-manual";
 
 const char kSingleProcessTestsFlag[]   = "single_process";
 
+scoped_ptr<TestState> TestLauncherDelegate::PreRunTest(
+    base::CommandLine* command_line,
+    base::TestLauncher::LaunchOptions* test_launch_options) {
+  return nullptr;
+}
 
 TestLauncherDelegate::~TestLauncherDelegate() {
 }

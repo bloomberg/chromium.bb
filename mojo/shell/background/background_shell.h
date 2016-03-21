@@ -21,6 +21,7 @@ namespace mojo {
 namespace shell {
 
 class NativeRunnerDelegate;
+class Shell;
 
 // BackgroundShell starts up the mojo shell on a background thread, and
 // destroys the thread in the destructor. Once created use CreateApplication()
@@ -34,6 +35,8 @@ class BackgroundShell {
 
     NativeRunnerDelegate* native_runner_delegate = nullptr;
     scoped_ptr<catalog::Store> catalog_store;
+    // If true the edk is initialized.
+    bool init_edk = true;
   };
 
   BackgroundShell();
@@ -46,6 +49,11 @@ class BackgroundShell {
   // Obtains an InterfaceRequest for the specified name.
   mojom::ShellClientRequest CreateShellClientRequest(
       const std::string& name);
+
+  // Use to do processing on the thread running the shell. The callback is
+  // supplied a pointer to the Shell. The callback does *not* own the Shell.
+  using ShellThreadCallback = base::Callback<void(Shell*)>;
+  void ExecuteOnShellThread(const ShellThreadCallback& callback);
 
  private:
   class MojoThread;

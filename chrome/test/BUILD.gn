@@ -1306,6 +1306,24 @@ if (!is_android) {
     if (use_x11) {
       deps += [ "//tools/xdisplaycheck" ]
     }
+
+    if (use_aura) {
+      sources += [
+        "base/mash_browser_tests_main.cc",
+        "base/mash_browser_tests_main.h",
+        "base/mojo_test_connector.cc",
+        "base/mojo_test_connector.h",
+      ]
+
+      deps += [
+        "//mojo/shell/background:lib",
+        "//mojo/shell/background/tests:test_support",
+      ]
+
+      data_deps += [ "//mash/session" ]
+
+      defines += [ "MOJO_SHELL_CLIENT" ]
+    }
   }
 
   test("sync_integration_tests") {
