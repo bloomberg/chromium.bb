@@ -585,8 +585,15 @@ bool InputImeDeleteSurroundingTextFunction::RunSync() {
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
+  chromeos::input_method::InputMethodDescriptor current_input_method =
+      chromeos::input_method::InputMethodManager::Get()
+          ->GetActiveIMEState()
+          ->GetCurrentInputMethod();
+  std::string active_extension_id =
+      chromeos::extension_ime_util::GetExtensionIDFromInputMethodID(
+          current_input_method.id());
   InputMethodEngine* engine = GetActiveEngine(
-      Profile::FromBrowserContext(browser_context()), extension_id());
+      Profile::FromBrowserContext(browser_context()), active_extension_id);
   if (!engine)
     return RespondNow(Error(kErrorEngineNotAvailable));
 
