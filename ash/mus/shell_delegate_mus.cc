@@ -8,6 +8,7 @@
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
+#include "ash/mus/context_menu_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
@@ -95,6 +96,7 @@ class MediaDelegateStub : public MediaDelegate {
 }  // namespace
 
 ShellDelegateMus::ShellDelegateMus() {}
+
 ShellDelegateMus::~ShellDelegateMus() {}
 
 bool ShellDelegateMus::IsFirstRunAfterBoot() const {
@@ -199,8 +201,7 @@ MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
 
 ui::MenuModel* ShellDelegateMus::CreateContextMenu(ash::Shelf* shelf,
                                                    const ShelfItem* item) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return new ContextMenuMus(shelf);
 }
 
 GPUSupport* ShellDelegateMus::CreateGPUSupport() {

@@ -33,7 +33,7 @@ class Screenlock : public mojo::ShellClient,
                   const mojo::Identity& identity,
                   uint32_t id) override;
 
-  // mash::shell::mojom::ScreenlockStateListener:
+  // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;
 
   mojo::TracingImpl tracing_;

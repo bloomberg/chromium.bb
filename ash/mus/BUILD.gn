@@ -10,6 +10,8 @@ import("//tools/grit/repack.gni")
 
 source_set("lib") {
   sources = [
+    "context_menu_mus.cc",
+    "context_menu_mus.h",
     "keyboard_ui_mus.cc",
     "keyboard_ui_mus.h",
     "shelf_delegate_mus.cc",

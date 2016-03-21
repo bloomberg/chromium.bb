@@ -3,7 +3,7 @@ include_rules = [
   "+cc",
   "+components/mus/common",
   "+components/mus/public",
-  "+mash/wm",
+  "+mash/wm/public/interfaces",
   "+mojo/common",
   "+mojo/converters",
   "+mojo/public",

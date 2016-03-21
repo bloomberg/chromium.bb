@@ -503,8 +503,7 @@ void ShelfView::UpdatePanelIconPosition(ShelfID id,
 }
 
 bool ShelfView::IsShowingMenu() const {
-  return (launcher_menu_runner_.get() &&
-       launcher_menu_runner_->IsRunning());
+  return launcher_menu_runner_.get() && launcher_menu_runner_->IsRunning();
 }
 
 bool ShelfView::IsShowingOverflowBubble() const {
@@ -1763,7 +1762,7 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   }
 }
 
-bool ShelfView::ShowListMenuForView(const ShelfItem& item,
+void ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     views::View* source,
                                     const ui::Event& event) {
   ShelfItemDelegate* item_delegate =
@@ -1774,39 +1773,29 @@ bool ShelfView::ShowListMenuForView(const ShelfItem& item,
   // Make sure we have a menu and it has at least two items in addition to the
   // application title and the 3 spacing separators.
   if (!list_menu_model.get() || list_menu_model->GetItemCount() <= 5)
-    return false;
+    return;
 
-  ShowMenu(list_menu_model.get(),
-           source,
-           gfx::Point(),
-           false,
+  context_menu_id_ = item.id;
+  ShowMenu(list_menu_model.get(), source, gfx::Point(), false,
            ui::GetMenuSourceTypeForEvent(event));
-  return true;
 }
 
 void ShelfView::ShowContextMenuForView(views::View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
-  int view_index = view_model_->GetIndexOfView(source);
-  if (view_index == -1) {
+  const ShelfItem* item = ShelfItemForView(source);
+  if (!item) {
     Shell::GetInstance()->ShowContextMenu(point, source_type);
     return;
   }
 
-  context_menu_model_.reset(Shell::GetInstance()->delegate()->CreateContextMenu(
-      shelf_, &model_->items()[view_index]));
-  if (!context_menu_model_)
+  scoped_ptr<ui::MenuModel> context_menu_model(
+      Shell::GetInstance()->delegate()->CreateContextMenu(shelf_, item));
+  if (!context_menu_model)
     return;
 
-  base::AutoReset<ShelfID> reseter(
-      &context_menu_id_,
-      view_index == -1 ? 0 : model_->items()[view_index].id);
-
-  ShowMenu(context_menu_model_.get(),
-           source,
-           point,
-           true,
-           source_type);
+  context_menu_id_ = item ? item->id : 0;
+  ShowMenu(context_menu_model.get(), source, point, true, source_type);
 }
 
 void ShelfView::ShowMenu(ui::MenuModel* menu_model,
@@ -1818,77 +1807,54 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
   launcher_menu_runner_.reset(new views::MenuRunner(
       menu_model, context_menu ? views::MenuRunner::CONTEXT_MENU : 0));
 
-  ScopedTargetRootWindow scoped_target(
-      source->GetWidget()->GetNativeView()->GetRootWindow());
+  aura::Window* window = source->GetWidget()->GetNativeWindow();
+  ScopedTargetRootWindow scoped_target(window->GetRootWindow());
 
-  // Determine the menu alignment dependent on the shelf.
   views::MenuAnchorPosition menu_alignment = views::MENU_ANCHOR_TOPLEFT;
-  gfx::Rect anchor_point = gfx::Rect(click_point, gfx::Size());
+  gfx::Rect anchor = gfx::Rect(click_point, gfx::Size());
 
   if (!context_menu) {
     // Application lists use a bubble.
-    ShelfAlignment align = shelf_->alignment();
-    anchor_point = source->GetBoundsInScreen();
-
     // It is possible to invoke the menu while it is sliding into view. To cover
     // that case, the screen coordinates are offsetted by the animation delta.
-    gfx::Vector2d offset =
-        source->GetWidget()->GetNativeWindow()->bounds().origin() -
-        source->GetWidget()->GetNativeWindow()->GetTargetBounds().origin();
-    anchor_point.set_x(anchor_point.x() - offset.x());
-    anchor_point.set_y(anchor_point.y() - offset.y());
+    anchor = source->GetBoundsInScreen() +
+             (window->GetTargetBounds().origin() - window->bounds().origin());
 
-    // Shelf items can have an asymmetrical border for spacing reasons.
-    // Adjust anchor location for this.
+    // Adjust the anchor location for shelf items with asymmetrical borders.
     if (source->border())
-      anchor_point.Inset(source->border()->GetInsets());
+      anchor.Inset(source->border()->GetInsets());
 
-    switch (align) {
-      case SHELF_ALIGNMENT_BOTTOM:
-        menu_alignment = views::MENU_ANCHOR_BUBBLE_ABOVE;
-        break;
-      case SHELF_ALIGNMENT_LEFT:
-        menu_alignment = views::MENU_ANCHOR_BUBBLE_RIGHT;
-        break;
-      case SHELF_ALIGNMENT_RIGHT:
-        menu_alignment = views::MENU_ANCHOR_BUBBLE_LEFT;
-        break;
-      case SHELF_ALIGNMENT_TOP:
-        menu_alignment = views::MENU_ANCHOR_BUBBLE_BELOW;
-        break;
-    }
+    // Determine the menu alignment dependent on the shelf.
+    menu_alignment = shelf_->SelectValueForShelfAlignment(
+        views::MENU_ANCHOR_BUBBLE_ABOVE, views::MENU_ANCHOR_BUBBLE_RIGHT,
+        views::MENU_ANCHOR_BUBBLE_LEFT, views::MENU_ANCHOR_BUBBLE_BELOW);
   }
-  // If this gets deleted while we are in the menu, the shelf will be gone
-  // as well.
+  // If this is deleted while the menu is running, the shelf will also be gone.
   bool got_deleted = false;
   got_deleted_ = &got_deleted;
 
   ShelfWidget* shelf_widget = shelf_->shelf_widget();
   shelf_widget->ForceUndimming(true);
-  // NOTE: if you convert to HAS_MNEMONICS be sure and update menu building
-  // code.
-  if (launcher_menu_runner_->RunMenuAt(source->GetWidget(),
-                                       NULL,
-                                       anchor_point,
-                                       menu_alignment,
-                                       source_type) ==
+  // NOTE: if you convert to HAS_MNEMONICS be sure to update menu building code.
+  if (launcher_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, anchor,
+                                       menu_alignment, source_type) ==
       views::MenuRunner::MENU_DELETED) {
     if (!got_deleted) {
-      got_deleted_ = NULL;
+      got_deleted_ = nullptr;
+      context_menu_id_ = 0;
       shelf_widget->ForceUndimming(false);
     }
     return;
   }
-  got_deleted_ = NULL;
+  got_deleted_ = nullptr;
+  context_menu_id_ = 0;
   shelf_widget->ForceUndimming(false);
 
-  // If it is a context menu and we are showing overflow bubble
-  // we want to hide overflow bubble.
+  // Hide the hide overflow bubble after showing a context menu for its items.
   if (owner_overflow_bubble_)
     owner_overflow_bubble_->HideBubbleAndRefreshButton();
 
-  // Unpinning an item will reset the |launcher_menu_runner_| before coming
-  // here.
+  // Unpinning an item will reset |launcher_menu_runner_| before coming here.
   if (launcher_menu_runner_)
     closing_event_time_ = launcher_menu_runner_->closing_event_time();
   Shell::GetInstance()->UpdateShelfVisibility();
@@ -1934,10 +1900,8 @@ bool ShelfView::IsRepostEvent(const ui::Event& event) {
 }
 
 const ShelfItem* ShelfView::ShelfItemForView(const views::View* view) const {
-  int view_index = view_model_->GetIndexOfView(view);
-  if (view_index == -1)
-    return NULL;
-  return &(model_->items()[view_index]);
+  const int view_index = view_model_->GetIndexOfView(view);
+  return (view_index < 0) ? nullptr : &(model_->items()[view_index]);
 }
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {

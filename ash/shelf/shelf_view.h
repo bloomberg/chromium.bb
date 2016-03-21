@@ -274,12 +274,11 @@ class ASH_EXPORT ShelfView : public views::View,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Show the list of all running items for this |item|. It will return true
-  // when the menu was shown and false if there were no possible items to
-  // choose from. |source| specifies the view which is responsible for showing
-  // the menu, and the bubble will point towards it.
+  // Show a list of all running items for this shelf |item|; it only shows a
+  // menu if there are multiple running items. |source| specifies the view
+  // responsible for showing the menu, and the bubble will point towards it.
   // The |event_flags| are the flags of the event which triggered this menu.
-  bool ShowListMenuForView(const ShelfItem& item,
+  void ShowListMenuForView(const ShelfItem& item,
                            views::View* source,
                            const ui::Event& event);
 
@@ -365,8 +364,6 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfID context_menu_id_;
 
   scoped_ptr<views::FocusSearch> focus_search_;
-
-  scoped_ptr<ui::MenuModel> context_menu_model_;
 
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;
 
