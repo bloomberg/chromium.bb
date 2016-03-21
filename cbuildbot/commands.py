@@ -282,22 +282,6 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
                  chroot_args=chroot_args, extra_env=extra_env)
 
 
-def SyncPackageStatus(buildroot, debug):
-  """Wrapper around sync_package_status."""
-  # Run sync_package_status to create Tracker issues for outdated
-  # packages.  At the moment, this runs only for groups that have opted in.
-  basecmd = ['sync_package_status']
-  if debug:
-    basecmd.extend(['--pretend', '--test-spreadsheet'])
-
-  cmdargslist = [['--team=build'],
-                 ['--team=kernel', '--default-owner=arscott']]
-
-  for cmdargs in cmdargslist:
-    cmd = basecmd + cmdargs
-    RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
-
-
 def SetSharedUserPassword(buildroot, password):
   """Wrapper around set_shared_user_password.sh"""
   if password is not None:

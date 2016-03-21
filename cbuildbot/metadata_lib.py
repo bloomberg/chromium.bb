@@ -6,13 +6,10 @@
 
 from __future__ import print_function
 
-import collections
 import datetime
 import json
 import math
-import multiprocessing
 import os
-import re
 
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
@@ -20,7 +17,6 @@ from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
-from chromite.lib import parallel
 
 
 # Number of parallel processes used when uploading/downloading GS files.
@@ -36,12 +32,6 @@ LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
 GerritPatchTuple = clactions.GerritPatchTuple
 GerritChangeTuple = clactions.GerritChangeTuple
-CLActionTuple = collections.namedtuple('CLActionTuple',
-                                       ['change', 'action', 'timestamp',
-                                        'reason'])
-CLActionWithBuildTuple = collections.namedtuple(
-    'CLActionWithBuildTuple',
-    ['change', 'action', 'timestamp', 'reason', 'bot_type', 'build'])
 
 
 class _DummyLock(object):
@@ -338,38 +328,10 @@ NICE_TIME_FORMAT = '%H:%M:%S'
 NICE_DATETIME_FORMAT = NICE_DATE_FORMAT + ' ' + NICE_TIME_FORMAT
 
 
-# TODO(akeshet): Merge this class into CBuildbotMetadata.
+# TODO(akeshet): Delete this class once last remaining hackish caller in
+# ReportStage is updated.
 class BuildData(object):
-  """Class for examining metadata from a prior run.
-
-  The raw metadata dict can be accessed at self.metadata_dict or via []
-  and get() on a BuildData object.  Some values from metadata_dict are
-  also surfaced through the following list of supported properties:
-
-  build_id
-  build_number
-  stages
-  slaves
-  chromeos_version
-  chrome_version
-  bot_id
-  status
-  start_datetime
-  finish_datetime
-  start_date_str
-  start_time_str
-  start_datetime_str
-  finish_date_str
-  finish_time_str
-  finish_datetime_str
-  runtime_seconds
-  runtime_minutes
-  epoch_time_seconds
-  count_changes
-  run_date
-  failure_message
-  """
-
+  """Mostly obsolete helper class for interacting with build metadata."""
   __slots__ = (
       'gathered_dict',  # Dict with gathered data (sheets version).
       'gathered_url',   # URL to metadata.json.gathered location in GS.
@@ -377,111 +339,7 @@ class BuildData(object):
       'metadata_url',   # URL to metadata.json location in GS.
   )
 
-  # Regexp for parsing datetimes as stored in metadata.json.  Example text:
-  # Fri, 14 Feb 2014 17:00:49 -0800 (PST)
-  DATETIME_RE = re.compile(r'^(.+)\s-\d\d\d\d\s\(P\wT\)$')
-
   SHEETS_VER_KEY = 'sheets_version'
-
-  @staticmethod
-  def ReadMetadataURLs(urls, gs_ctx=None, exclude_running=True,
-                       get_sheets_version=False):
-    """Read a list of metadata.json URLs and return BuildData objects.
-
-    Args:
-      urls: List of metadata.json GS URLs.
-      gs_ctx: A GSContext object to use.  If not provided gs.GSContext will
-        be called to get a GSContext to use.
-      exclude_running: If True the metadata for builds that are still running
-        will be skipped.
-      get_sheets_version: Whether to try to figure out the last sheets version
-        that was gathered. This requires an extra gsutil request and is only
-        needed if you are writing the metadata to the Google Sheets
-        spreadsheet.
-
-    Returns:
-      List of BuildData objects.
-    """
-    gs_ctx = gs_ctx or gs.GSContext()
-    logging.info('Reading %d metadata URLs using %d processes now.', len(urls),
-                 MAX_PARALLEL)
-
-    build_data_per_url = {}
-    def _ReadMetadataURL(url):
-      # Read the metadata.json URL and parse json into a dict.
-      metadata_dict = json.loads(gs_ctx.Cat(url, print_cmd=False))
-
-      # Read the file next to url which indicates whether the metadata has
-      # been gathered before, and with what stats version.
-      if get_sheets_version:
-        gathered_dict = {}
-        gathered_url = url + '.gathered'
-        if gs_ctx.Exists(gathered_url, print_cmd=False):
-          gathered_dict = json.loads(gs_ctx.Cat(gathered_url,
-                                                print_cmd=False))
-
-        sheets_version = gathered_dict.get(BuildData.SHEETS_VER_KEY)
-      else:
-        sheets_version = None
-
-      bd = BuildData(url, metadata_dict, sheets_version=sheets_version)
-
-      if bd.build_number is None:
-        logging.warning('Metadata at %s was missing build number.', url)
-        m = re.match(r'.*-b([0-9]*)/.*', url)
-        if m:
-          inferred_number = int(m.groups()[0])
-          logging.warning('Inferred build number %d from metadata url.',
-                          inferred_number)
-          bd.metadata_dict['build-number'] = inferred_number
-      if sheets_version is not None:
-        logging.debug('Read %s:\n  build_number=%d, sheets v%d', url,
-                      bd.build_number, sheets_version)
-      else:
-        logging.debug('Read %s:\n  build_number=%d, ungathered', url,
-                      bd.build_number)
-
-      build_data_per_url[url] = bd
-
-    with multiprocessing.Manager() as manager:
-      build_data_per_url = manager.dict()
-      parallel.RunTasksInProcessPool(_ReadMetadataURL, [[url] for url in urls],
-                                     processes=MAX_PARALLEL)
-      builds = [build_data_per_url[url] for url in urls]
-
-    if exclude_running:
-      builds = [b for b in builds if b.status != 'running']
-    return builds
-
-  @staticmethod
-  def MarkBuildsGathered(builds, sheets_version, gs_ctx=None):
-    """Mark specified |builds| as processed for the given stats versions.
-
-    Args:
-      builds: List of BuildData objects.
-      sheets_version: The Google Sheets version these builds are now processed
-        for.
-      gs_ctx: A GSContext object to use, if set.
-    """
-    gs_ctx = gs_ctx or gs.GSContext()
-
-    # Filter for builds that were not already on these versions.
-    builds = [b for b in builds if b.sheets_version != sheets_version]
-    if builds:
-      log_ver_str = 'Sheets v%d' % sheets_version
-      logging.info('Marking %d builds gathered (for %s) using %d processes'
-                   ' now.', len(builds), log_ver_str, MAX_PARALLEL)
-
-      def _MarkGathered(build):
-        build.MarkGathered(sheets_version)
-        json_text = json.dumps(build.gathered_dict.copy())
-        gs_ctx.Copy('-', build.gathered_url, input=json_text, print_cmd=False)
-        logging.debug('Marked build_number %d processed for %s.',
-                      build.build_number, log_ver_str)
-
-      inputs = [[build] for build in builds]
-      parallel.RunTasksInProcessPool(_MarkGathered, inputs,
-                                     processes=MAX_PARALLEL)
 
   def __init__(self, metadata_url, metadata_dict, sheets_version=None):
     self.metadata_url = metadata_url
@@ -494,10 +352,6 @@ class BuildData(object):
         self.SHEETS_VER_KEY: -1 if sheets_version is None else sheets_version,
     }
 
-  def MarkGathered(self, sheets_version):
-    """Mark this build as processed for the given stats versions."""
-    self.gathered_dict[self.SHEETS_VER_KEY] = sheets_version
-
   def __getitem__(self, key):
     """Relay dict-like access to self.metadata_dict."""
     return self.metadata_dict[key]
@@ -507,17 +361,6 @@ class BuildData(object):
     return self.metadata_dict.get(key, default)
 
   @property
-  def sheets_version(self):
-    return self.gathered_dict[self.SHEETS_VER_KEY]
-
-  @property
-  def build_number(self):
-    try:
-      return int(self['build-number'])
-    except KeyError:
-      return None
-
-  @property
   def stages(self):
     return self['results']
 
@@ -525,67 +368,6 @@ class BuildData(object):
   def slaves(self):
     return self.get('slave_targets', {})
 
-  @property
-  def chromeos_version(self):
-    try:
-      return self['version']['full']
-    except KeyError:
-      return None
-
-  @property
-  def chrome_version(self):
-    try:
-      return self['version']['chrome']
-    except KeyError:
-      return None
-
-  @property
-  def bot_id(self):
-    return self['bot-config']
-
-  @property
-  def status(self):
-    return self.get('status', {}).get('status', None)
-
-  @classmethod
-  def _ToDatetime(cls, time_str):
-    match = cls.DATETIME_RE.search(time_str)
-    if match:
-      return datetime.datetime.strptime(match.group(1), '%a, %d %b %Y %H:%M:%S')
-    else:
-      raise ValueError('Unexpected metadata datetime format: %s' % time_str)
-
-  @property
-  def start_datetime(self):
-    return self._ToDatetime(self['time']['start'])
-
-  @property
-  def finish_datetime(self):
-    return self._ToDatetime(self['time']['finish'])
-
-  @property
-  def start_date_str(self):
-    return self.start_datetime.strftime(NICE_DATE_FORMAT)
-
-  @property
-  def start_time_str(self):
-    return self.start_datetime.strftime(NICE_TIME_FORMAT)
-
-  @property
-  def start_datetime_str(self):
-    return self.start_datetime.strftime(NICE_DATETIME_FORMAT)
-
-  @property
-  def finish_date_str(self):
-    return self.finish_datetime.strftime(NICE_DATE_FORMAT)
-
-  @property
-  def finish_time_str(self):
-    return self.finish_datetime.strftime(NICE_TIME_FORMAT)
-
-  @property
-  def finish_datetime_str(self):
-    return self.finish_datetime.strftime(NICE_DATETIME_FORMAT)
 
   @property
   def failure_message(self):
@@ -612,27 +394,6 @@ class BuildData(object):
 
     return ' | '.join(message_list)
 
-  def GetFailedStages(self, with_urls=False):
-    """Get names of all failed stages, optionally with URLs for each.
-
-    Args:
-      with_urls: If True then also return URLs.  See Returns.
-
-    Returns:
-      If with_urls is False, return list of stage names.  Otherwise, return list
-        of tuples (stage name, stage URL).
-    """
-    def _Failed(stage):
-      # This can be more discerning in the future, such as for optional stages.
-      return stage['status'] == 'failed'
-
-    if with_urls:
-      # The "log" url includes "/logs/stdio" on the end.  Strip that off.
-      return [(s['name'], os.path.dirname(os.path.dirname(s['log'])))
-              for s in self.stages if _Failed(s)]
-    else:
-      return [s['name'] for s in self.stages if _Failed(s)]
-
   def GetFailedSlaves(self, with_urls=False):
     def _Failed(slave):
       return slave['status'] == 'fail'
@@ -646,45 +407,6 @@ class BuildData(object):
       return [name for name, slave in slaves.iteritems() if _Failed(slave)]
 
     return []
-
-  @property
-  def runtime_seconds(self):
-    return (self.finish_datetime - self.start_datetime).seconds
-
-  @property
-  def runtime_minutes(self):
-    return self.runtime_seconds / 60
-
-  @property
-  def epoch_time_seconds(self):
-    # End time seconds since 1/1/1970, for some reason.
-    return int((self.finish_datetime - EPOCH_START).total_seconds())
-
-  @property
-  def patches(self):
-    return [GerritPatchTuple(gerrit_number=int(change['gerrit_number']),
-                             patch_number=int(change['patch_number']),
-                             internal=change['internal'])
-            for change in self.metadata_dict.get('changes', [])]
-
-  @property
-  def count_changes(self):
-    if not self.metadata_dict.get('changes', None):
-      return 0
-
-    return len(self.metadata_dict['changes'])
-
-  @property
-  def build_id(self):
-    return self.metadata_dict['build_id']
-
-  @property
-  def run_date(self):
-    return self.finish_datetime.strftime('%d.%m.%Y')
-
-  def Passed(self):
-    """Return True if this represents a successful run."""
-    return 'passed' == self.metadata_dict['status']['status'].strip()
 
 
 class MetadataException(Exception):
