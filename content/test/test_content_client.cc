@@ -22,7 +22,6 @@ namespace content {
 TestContentClient::TestContentClient()
     : data_pack_(ui::SCALE_FACTOR_100P) {
   // content_shell.pak is not built on iOS as it is not required.
-#if !defined(OS_IOS)
   base::FilePath content_shell_pack_path;
   base::File pak_file;
   base::MemoryMappedFile::Region pak_region;
@@ -47,7 +46,6 @@ TestContentClient::TestContentClient()
         FILE_PATH_LITERAL("content_shell.pak"));
     data_pack_.LoadFromPath(content_shell_pack_path);
   }
-#endif  // !defined(OS_IOS)
 }
 
 TestContentClient::~TestContentClient() {

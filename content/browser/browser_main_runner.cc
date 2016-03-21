@@ -79,10 +79,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 
       SkGraphics::Init();
 
-#if !defined(OS_IOS)
       if (parameters.command_line.HasSwitch(switches::kWaitForDebugger))
         base::debug::WaitForDebugger(60, true);
-#endif
 
 #if defined(OS_WIN)
       if (base::win::GetVersion() < base::win::VERSION_VISTA) {

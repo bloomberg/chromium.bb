@@ -14,8 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
-
-#if !defined(OS_IOS)
 #include "components/profile_service/profile_app.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
@@ -35,14 +33,11 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
-#endif // !OS_IOS
 
 using base::UserDataAdapter;
 
 namespace content {
 
-// Only ~BrowserContext() is needed on iOS.
-#if !defined(OS_IOS)
 namespace {
 
 base::LazyInstance<std::set<std::string>> g_used_user_ids =
@@ -365,17 +360,13 @@ const std::string& BrowserContext::GetMojoUserIdFor(
   return it->second;
 }
 
-#endif  // !OS_IOS
-
 BrowserContext::~BrowserContext() {
   CHECK(GetUserData(kMojoWasInitialized))
       << "Attempting to destroy a BrowserContext that never called "
       << "Initialize()";
 
-#if !defined(OS_IOS)
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();
-#endif
 }
 
 }  // namespace content

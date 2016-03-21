@@ -14,7 +14,7 @@
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_sender.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
 #include "base/process/port_provider_mac.h"
 #endif
 
@@ -85,7 +85,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // nullptr if no service registry exists.
   virtual ServiceRegistry* GetServiceRegistry() = 0;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   // Returns a PortProvider used to get the task port for child processes.
   static base::PortProvider* GetPortProvider();
 #endif

@@ -120,7 +120,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
 
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   const gfx::Size dimensions = frame_format.frame_size;
   base::SharedMemoryHandle out_handle = out_buffer->AsPlatformFile();
   scoped_refptr<media::VideoFrame> out_frame =

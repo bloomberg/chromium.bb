@@ -1540,7 +1540,7 @@ void RenderViewImpl::ApplyWebPreferencesInternal(
     blink::WebView* web_view,
     CompositorDependencies* compositor_deps) {
   ApplyWebPreferences(prefs, web_view);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   DCHECK(compositor_deps);
   bool is_elastic_overscroll_enabled =
       compositor_deps->IsElasticOverscrollEnabled();
@@ -2120,7 +2120,7 @@ void RenderViewImpl::initializeLayerTreeView() {
     return;
 
   bool use_threaded_event_handling = true;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   // Disable threaded event handling if content is not handling the elastic
   // overscroll effect. This includes the cases where the elastic overscroll
   // effect is being handled by Blink (because of command line flags) and older

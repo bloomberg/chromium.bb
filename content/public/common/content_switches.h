@@ -286,7 +286,7 @@ CONTENT_EXPORT extern const char kDisableVaapiAcceleratedVideoEncode[];
 CONTENT_EXPORT extern const char kEnableSpeechDispatcher[];
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
 extern const char kDisableCoreAnimationPlugins[];
 extern const char kDisableThreadedEventHandlingMac[];
 #endif

@@ -55,7 +55,7 @@ struct {
 } const kDefaultAudioConstraints[] = {
   { MediaAudioConstraints::kEchoCancellation, true },
   { MediaAudioConstraints::kGoogEchoCancellation, true },
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   { MediaAudioConstraints::kGoogExperimentalEchoCancellation, false },
 #else
   // Enable the extended filter mode AEC on all non-mobile platforms.
@@ -148,7 +148,7 @@ void SetIfNotSet(rtc::Optional<bool>* field, bool value) {
 void MediaAudioConstraints::ApplyFixedAudioConstraints(
     cricket::AudioOptions* options) {
   SetIfNotSet(&options->echo_cancellation, true);
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   SetIfNotSet(&options->extended_filter_aec, false);
 #else
   // Enable the extended filter mode AEC on all non-mobile platforms.
@@ -349,7 +349,7 @@ void EchoInformation::UpdateAecDelayStats(
 }
 
 void EnableEchoCancellation(AudioProcessing* audio_processing) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   // Mobile devices are using AECM.
   CHECK_EQ(0, audio_processing->echo_control_mobile()->set_routing_mode(
                   webrtc::EchoControlMobile::kSpeakerphone));
@@ -408,7 +408,7 @@ void StopEchoCancellationDump(AudioProcessing* audio_processing) {
 }
 
 void EnableAutomaticGainControl(AudioProcessing* audio_processing) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   const webrtc::GainControl::Mode mode = webrtc::GainControl::kFixedDigital;
 #else
   const webrtc::GainControl::Mode mode = webrtc::GainControl::kAdaptiveAnalog;

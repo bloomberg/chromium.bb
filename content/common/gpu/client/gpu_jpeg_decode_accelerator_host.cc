@@ -164,7 +164,7 @@ void GpuJpegDecodeAcceleratorHost::Decode(
       channel_->ShareToGpuProcess(video_frame->shared_memory_handle());
   if (!base::SharedMemory::IsHandleValid(output_handle)) {
     DLOG(ERROR) << "Failed to duplicate handle of VideoFrame";
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     if (input_handle.auto_close) {
       // Defer closing task to the ScopedFD.
       base::ScopedFD(input_handle.fd);

@@ -50,7 +50,7 @@ class CONTENT_EXPORT ContentMainDelegate {
   // Called right before the process exits.
   virtual void ProcessExiting(const std::string& process_type) {}
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   // Returns true if the process registers with the system monitor, so that we
   // can allocate an IO port for it before the sandbox is initialized. Embedders
   // are called only for process types that content doesn't know about.
@@ -67,7 +67,7 @@ class CONTENT_EXPORT ContentMainDelegate {
   // want it at all.
   virtual bool DelaySandboxInitialization(const std::string& process_type);
 
-#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
   // Tells the embedder that the zygote process is starting, and allows it to
   // specify one or more zygote delegates if it wishes by storing them in
   // |*delegates|.

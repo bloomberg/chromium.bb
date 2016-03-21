@@ -426,7 +426,7 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int sample_rate,
                                               int audio_delay_milliseconds) {
   DCHECK(render_thread_checker_.CalledOnValidThread());
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
   DCHECK(audio_processing_->echo_control_mobile()->is_enabled());
   DCHECK(!audio_processing_->echo_cancellation()->is_enabled());
 #else
@@ -482,17 +482,11 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // disabled.
   audio_mirroring_ = audio_constraints.GetGoogAudioMirroring();
 
-#if defined(OS_IOS)
-  // On iOS, VPIO provides built-in AGC and AEC.
-  const bool echo_cancellation = false;
-  const bool goog_agc = false;
-#else
   const bool echo_cancellation =
       audio_constraints.GetEchoCancellationProperty();
   const bool goog_agc = audio_constraints.GetGoogAutoGainControl();
-#endif
 
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   const bool goog_experimental_aec = false;
   const bool goog_typing_detection = false;
 #else

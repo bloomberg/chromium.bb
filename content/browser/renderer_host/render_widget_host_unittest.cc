@@ -37,7 +37,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #endif
 
-#if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(USE_AURA) || defined(OS_MACOSX)
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #endif
 
@@ -457,7 +457,7 @@ class RenderWidgetHostTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
-#if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(USE_AURA) || defined(OS_MACOSX)
     ImageTransportFactory::InitializeForUnitTests(
         scoped_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
@@ -487,7 +487,7 @@ class RenderWidgetHostTest : public testing::Test {
     gfx::Screen::SetScreenInstance(nullptr);
     screen_.reset();
 #endif
-#if defined(USE_AURA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(USE_AURA) || defined(OS_MACOSX)
     ImageTransportFactory::Terminate();
 #endif
 

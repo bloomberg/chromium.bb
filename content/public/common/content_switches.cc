@@ -982,7 +982,7 @@ const char kDisableVaapiAcceleratedVideoEncode[] =
 const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
 // Disables support for Core Animation plugins. This is triggered when
 // accelerated compositing is disabled. See http://crbug.com/122430.
 const char kDisableCoreAnimationPlugins[] =

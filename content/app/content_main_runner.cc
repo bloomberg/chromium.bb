@@ -38,7 +38,11 @@
 #include "components/tracing/trace_config_file.h"
 #include "components/tracing/trace_to_console.h"
 #include "components/tracing/tracing_switches.h"
+#include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_main.h"
+#include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/utility_process_host_impl.h"
 #include "content/common/set_process_title.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
@@ -51,6 +55,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/gpu/content_gpu_client.h"
+#include "content/public/plugin/content_plugin_client.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/utility/content_utility_client.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "ipc/ipc_descriptors.h"
@@ -64,17 +72,6 @@
 #include "gin/v8_initializer.h"
 #endif
 
-#if !defined(OS_IOS)
-#include "content/app/mojo/mojo_init.h"
-#include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/utility_process_host_impl.h"
-#include "content/public/gpu/content_gpu_client.h"
-#include "content/public/plugin/content_plugin_client.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/public/utility/content_utility_client.h"
-#endif
-
 #if defined(OS_WIN)
 #include <malloc.h>
 #include <cstring>
@@ -85,12 +82,10 @@
 #include "ui/gfx/win/dpi.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#if !defined(OS_IOS)
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "content/app/mac/mac_init.h"
 #include "content/browser/mach_broker_mac.h"
 #include "content/common/sandbox_init_mac.h"
-#endif  // !OS_IOS
 #endif  // OS_WIN
 
 #if defined(OS_POSIX)
@@ -135,7 +130,7 @@ base::LazyInstance<ContentBrowserClient>
     g_empty_content_browser_client = LAZY_INSTANCE_INITIALIZER;
 #endif  //  !CHROME_MULTIPLE_DLL_CHILD
 
-#if !defined(OS_IOS) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 base::LazyInstance<ContentGpuClient>
     g_empty_content_gpu_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentPluginClient>
@@ -144,7 +139,7 @@ base::LazyInstance<ContentRendererClient>
     g_empty_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentUtilityClient>
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
-#endif  // !OS_IOS && !CHROME_MULTIPLE_DLL_BROWSER
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
@@ -156,7 +151,7 @@ base::LazyInstance<ContentUtilityClient>
 #endif
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_IOS)
+#if defined(OS_POSIX)
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
 void SetupSignalHandlers() {
@@ -180,7 +175,7 @@ void SetupSignalHandlers() {
   CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
 }
 
-#endif  // OS_POSIX && !OS_IOS
+#endif  // OS_POSIX
 
 void CommonSubprocessInit(const std::string& process_type) {
 #if defined(OS_WIN)
@@ -231,7 +226,7 @@ class ContentClientInitializer {
     }
 #endif  // !CHROME_MULTIPLE_DLL_CHILD
 
-#if !defined(OS_IOS) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
     if (process_type == switches::kGpuProcess ||
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSingleProcess)) {
@@ -266,7 +261,7 @@ class ContentClientInitializer {
       if (!content_client->utility_)
         content_client->utility_ = &g_empty_content_utility_client.Get();
     }
-#endif  // !OS_IOS && !CHROME_MULTIPLE_DLL_BROWSER
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
   }
 };
 
@@ -328,7 +323,6 @@ int RunZygote(const MainFunctionParams& main_function_params,
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
-#if !defined(OS_IOS)
 static void RegisterMainThreadFactories() {
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(
@@ -414,7 +408,6 @@ int RunNamedProcessTypeMain(
   NOTREACHED() << "Unknown process type: " << process_type;
   return 1;
 }
-#endif  // !OS_IOS
 
 class ContentMainRunnerImpl : public ContentMainRunner {
  public:
@@ -452,9 +445,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     TRACE_EVENT0("startup,benchmark", "ContentMainRunnerImpl::Initialize");
 #endif  // OS_ANDROID
 
-#if !defined(OS_IOS)
     base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
-#endif
 
     // On Android,
     // - setlocale() is not supported.
@@ -462,7 +453,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     //   stack trace when crashing.
     // - The ipc_fd is passed through the Java service.
     // Thus, these are all disabled.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
     // Set C library locale to make sure CommandLine can parse argument values
     // in correct encoding.
     setlocale(LC_ALL, "");
@@ -472,7 +463,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
                kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
     g_fds->Set(kMojoIPCChannel,
                kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
-#endif  // !OS_ANDROID && !OS_IOS
+#endif  // !OS_ANDROID
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
     g_fds->Set(kCrashDumpSignal,
@@ -487,22 +478,18 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
     // The exit manager is in charge of calling the dtors of singleton objects.
     // On Android, AtExitManager is set up when library is loaded.
-    // On iOS, it's set up in main(), which can't call directly through to here.
     // A consequence of this is that you can't use the ctor/dtor-based
     // TRACE_EVENT methods on Linux or iOS builds till after we set this up.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
     if (!ui_task_) {
       // When running browser tests, don't create a second AtExitManager as that
       // interfers with shutdown when objects created before ContentMain is
       // called are destructed when it returns.
       exit_manager_.reset(new base::AtExitManager);
     }
-#endif  // !OS_ANDROID && !OS_IOS
+#endif  // !OS_ANDROID
 
-    // Don't create this loop on iOS, since the outer loop is already handled
-    // and a loop that's destroyed in shutdown interleaves badly with the event
-    // loop pool on iOS.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
     // We need this pool for all the objects created before we get to the
     // event loop, but we don't want to leave them hanging around until the
     // app quits. Each "main" needs to flush this pool right before it goes into
@@ -534,9 +521,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     if (delegate_ && delegate_->ShouldEnableProfilerRecording())
       tracked_objects::ScopedTracker::Enable();
 
-#if !defined(OS_IOS)
     SetProcessTitleFromCommandLine(argv);
-#endif
 #endif  // !OS_ANDROID
 
     int exit_code = 0;
@@ -550,10 +535,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
 
-#if !defined(OS_IOS)
     // Initialize mojo here so that services can be registered.
     InitializeMojo();
-#endif
 
 #if defined(OS_WIN)
     if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
@@ -619,7 +602,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     TRACE_EVENT0("startup,benchmark", "ContentMainRunnerImpl::Initialize");
 #endif  // !OS_ANDROID
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
     // We need to allocate the IO Ports before the Sandbox is initialized or
     // the first instance of PowerMonitor is created.
     // It's important not to allocate the ports for processes which don't
@@ -732,7 +715,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
 #if defined(OS_WIN)
     CHECK(InitializeSandbox(params.sandbox_info));
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MACOSX)
     if (process_type == switches::kRendererProcess ||
         process_type == switches::kPpapiPluginProcess ||
         (delegate_ && delegate_->DelaySandboxInitialization(process_type))) {
@@ -768,11 +751,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     main_params.autorelease_pool = autorelease_pool_.get();
 #endif
 
-#if !defined(OS_IOS)
     return RunNamedProcessTypeMain(process_type, main_params, delegate_);
-#else
-    return 1;
-#endif
   }
 
   void Shutdown() override {
@@ -794,7 +773,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif  // _CRTDBG_MAP_ALLOC
 #endif  // OS_WIN
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
     autorelease_pool_.reset(NULL);
 #endif
 

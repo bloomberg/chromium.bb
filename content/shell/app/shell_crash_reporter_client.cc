@@ -35,7 +35,7 @@ void ShellCrashReporterClient::GetProductNameAndVersion(
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 void ShellCrashReporterClient::GetProductNameAndVersion(
     const char** product_name,
     const char** version) {

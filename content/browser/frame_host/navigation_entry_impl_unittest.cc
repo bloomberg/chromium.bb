@@ -24,9 +24,7 @@ class NavigationEntryTest : public testing::Test {
   void SetUp() override {
     entry1_.reset(new NavigationEntryImpl);
 
-#if !defined(OS_IOS)
     instance_ = static_cast<SiteInstanceImpl*>(SiteInstance::Create(NULL));
-#endif
     entry2_.reset(new NavigationEntryImpl(
           instance_, 3,
           GURL("test:url"),

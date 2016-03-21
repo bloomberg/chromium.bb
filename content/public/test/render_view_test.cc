@@ -367,12 +367,10 @@ void RenderViewTest::SetUp() {
   view_params.min_size = gfx::Size();
   view_params.max_size = gfx::Size();
 
-#if !defined(OS_IOS)
   InitializeMojo();
   test_io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
   ipc_support_.reset(
       new mojo::edk::test::ScopedIPCSupport(test_io_thread_->task_runner()));
-#endif
 
   // This needs to pass the mock render thread to the view.
   RenderViewImpl* view =

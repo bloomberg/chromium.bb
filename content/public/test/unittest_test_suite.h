@@ -32,9 +32,7 @@ class UnitTestTestSuite {
  private:
   scoped_ptr<base::TestSuite> test_suite_;
 
-#if !defined(OS_IOS)
   scoped_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);
 };

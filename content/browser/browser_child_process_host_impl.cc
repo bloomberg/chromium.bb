@@ -134,12 +134,12 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   // child process. This ensures that when a test is being run in one of the
   // single process modes, the global attachment broker is the privileged
   // attachment broker, rather than an unprivileged attachment broker.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded(
       MachBroker::GetInstance());
 #else
   IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MACOSX)
 #endif  // USE_ATTACHMENT_BROKER
 
   child_process_host_.reset(ChildProcessHost::Create(this));

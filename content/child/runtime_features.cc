@@ -48,8 +48,8 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableCompositedSelectionUpdate(true);
 #endif
 
-#if !(defined OS_ANDROID || defined OS_CHROMEOS || defined OS_IOS)
-    // Only Android, ChromeOS, and IOS support NetInfo right now.
+#if !(defined OS_ANDROID || defined OS_CHROMEOS)
+    // Only Android, ChromeOS support NetInfo right now.
     WebRuntimeFeatures::enableNetworkInformation(false);
 #endif
 }

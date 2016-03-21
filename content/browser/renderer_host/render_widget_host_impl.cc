@@ -677,7 +677,7 @@ void RenderWidgetHostImpl::DispatchColorProfile() {
       FROM_HERE,
       base::Bind(&RenderWidgetHostImpl::SendColorProfile,
                  weak_factory_.GetWeakPtr()));
-#elif !defined(OS_CHROMEOS) && !defined(OS_IOS) && !defined(OS_ANDROID)
+#elif !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // Only support desktop Mac and Linux at this time.
   SendColorProfile();
 #endif

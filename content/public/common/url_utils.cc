@@ -16,10 +16,7 @@ const char* const* GetSavableSchemes() {
 }
 
 bool HasWebUIScheme(const GURL& url) {
-  return
-#if !defined(OS_IOS)
-         url.SchemeIs(kChromeDevToolsScheme) ||
-#endif
+  return url.SchemeIs(kChromeDevToolsScheme) ||
          url.SchemeIs(kChromeUIScheme);
 }
 

@@ -88,7 +88,7 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 #endif
 
 #if USE_ATTACHMENT_BROKER
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   // On Mac, the privileged AttachmentBroker needs a reference to the Mach port
   // Provider, which is only available in the chrome/ module. The attachment
   // broker must already be created.
@@ -97,7 +97,7 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
   // Construct the privileged attachment broker early in the life cycle of a
   // child process.
   IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MACOSX)
 #endif  // USE_ATTACHMENT_BROKER
 }
 

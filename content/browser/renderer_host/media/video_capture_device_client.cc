@@ -47,7 +47,7 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
   ClientBuffer AsClientBuffer(int plane) override {
     return buffer_handle_->AsClientBuffer(plane);
   }
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptor AsPlatformFile() override {
     return buffer_handle_->AsPlatformFile();
   }

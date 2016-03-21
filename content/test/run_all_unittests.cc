@@ -25,13 +25,11 @@ int main(int argc, char** argv) {
 #endif
   content::UnitTestTestSuite test_suite(
       new content::ContentTestSuite(argc, argv));
-#if !defined(OS_IOS)
   content::InitializeMojo();
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
   scoped_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support;
   ipc_support.reset(
       new mojo::edk::test::ScopedIPCSupport(test_io_thread.task_runner()));
-#endif
 
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&content::UnitTestTestSuite::Run,

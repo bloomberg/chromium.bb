@@ -395,9 +395,7 @@ class NavigationController {
 
   // Random --------------------------------------------------------------------
 
-  // Session storage depends on dom_storage that depends on blink::WebString,
-  // which cannot be used on iOS.
-#if !defined(OS_IOS)
+  // Session storage depends on dom_storage that depends on blink::WebString.
   // Returns all the SessionStorageNamespace objects that this
   // NavigationController knows about, the map key is a StoragePartition id.
   virtual const SessionStorageNamespaceMap&
@@ -406,7 +404,6 @@ class NavigationController {
   // TODO(ajwong): Remove this once prerendering, instant, and session restore
   // are migrated.
   virtual SessionStorageNamespace* GetDefaultSessionStorageNamespace() = 0;
-#endif
 
   // Sets the max restored page ID this NavigationController has seen, if it
   // was restored from a previous session.

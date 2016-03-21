@@ -6,15 +6,13 @@
 
 #include "build/build_config.h"
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-#include "content/public/browser/content_browser_client.h"
-#endif
-
-#if !defined(OS_IOS)
 #include "content/public/gpu/content_gpu_client.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+#include "content/public/browser/content_browser_client.h"
 #endif
 
 namespace content {
@@ -29,7 +27,7 @@ int ContentMainDelegate::RunProcess(
   return -1;
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
 
 bool ContentMainDelegate::ProcessRegistersWithSystemProcess(
     const std::string& process_type) {
@@ -45,7 +43,7 @@ bool ContentMainDelegate::DelaySandboxInitialization(
   return false;
 }
 
-#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 
 void ContentMainDelegate::ZygoteStarting(
     ScopedVector<ZygoteForkDelegate>* delegates) {
@@ -66,7 +64,7 @@ ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
 }
 
 ContentGpuClient* ContentMainDelegate::CreateContentGpuClient() {
-#if defined(OS_IOS) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
   return new ContentGpuClient();
@@ -74,7 +72,7 @@ ContentGpuClient* ContentMainDelegate::CreateContentGpuClient() {
 }
 
 ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
-#if defined(OS_IOS) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
   return new ContentPluginClient();
@@ -82,7 +80,7 @@ ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
 }
 
 ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
-#if defined(OS_IOS) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
   return new ContentRendererClient();
@@ -90,7 +88,7 @@ ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
 }
 
 ContentUtilityClient* ContentMainDelegate::CreateContentUtilityClient() {
-#if defined(OS_IOS) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
   return new ContentUtilityClient();

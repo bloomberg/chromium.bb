@@ -66,12 +66,10 @@ void BrowserProcessSubThread::IOThreadPreCleanUp() {
   // Destroy all URLRequests started by URLFetchers.
   net::URLFetcher::CancelAll();
 
-#if !defined(OS_IOS)
   // If any child processes are still running, terminate them and
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
   BrowserChildProcessHostImpl::TerminateAll();
-#endif  // !defined(OS_IOS)
 
   // Unregister GpuMemoryBuffer dump provider before IO thread is shut down.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(

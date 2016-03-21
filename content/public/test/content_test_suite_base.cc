@@ -12,6 +12,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/utility_process_host_impl.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/common/content_client.h"
@@ -20,13 +23,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
 
-#if !defined(OS_IOS)
-#include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/utility_process_host_impl.h"
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #include "gin/v8_initializer.h"
-#endif
 #endif
 
 #if defined(OS_ANDROID)
@@ -78,7 +76,7 @@ void ContentTestSuiteBase::Initialize() {
   // by tests.
   base::StatisticsRecorder::Initialize();
 
-#if !defined(OS_IOS) && defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot();
   gin::V8Initializer::LoadV8Natives();
 #endif
@@ -118,13 +116,11 @@ void ContentTestSuiteBase::RegisterContentSchemes(
 }
 
 void ContentTestSuiteBase::RegisterInProcessThreads() {
-#if !defined(OS_IOS)
   UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(
       CreateInProcessUtilityThread);
   RenderProcessHostImpl::RegisterRendererMainThreadFactory(
       CreateInProcessRendererThread);
   GpuProcessHost::RegisterGpuMainThreadFactory(CreateInProcessGpuThread);
-#endif
 }
 
 }  // namespace content

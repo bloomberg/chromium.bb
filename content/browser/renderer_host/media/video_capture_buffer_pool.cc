@@ -24,7 +24,7 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
                      base::SharedMemoryHandle handle)
       : data_(data),
         mapped_size_(mapped_size)
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
         ,
         handle_(handle)
 #endif
@@ -45,7 +45,7 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
     NOTREACHED();
     return nullptr;
   }
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptor AsPlatformFile() override {
     return handle_;
   }
@@ -54,7 +54,7 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
  private:
   void* const data_;
   const size_t mapped_size_;
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   const base::SharedMemoryHandle handle_;
 #endif
 };
@@ -85,7 +85,7 @@ class GpuMemoryBufferBufferHandle final
     DCHECK_LT(plane, static_cast<int>(gmbs_->size()));
     return (*gmbs_)[plane]->AsClientBuffer();
   }
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   base::FileDescriptor AsPlatformFile() override {
     NOTREACHED();
     return base::FileDescriptor();

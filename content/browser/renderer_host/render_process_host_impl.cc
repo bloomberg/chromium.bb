@@ -196,7 +196,7 @@
 #include "ui/gfx/win/dpi.h"
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/mach_broker_mac.h"
 #endif
@@ -614,12 +614,12 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   // render process. This ensures that when a test is being run in one of the
   // single process modes, the global attachment broker is the privileged
   // attachment broker, rather than an unprivileged attachment broker.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded(
       MachBroker::GetInstance());
 #else
   IPC::AttachmentBrokerPrivileged::CreateBrokerIfNeeded();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MACOSX)
 #endif  // USE_ATTACHMENT_BROKER
 }
 

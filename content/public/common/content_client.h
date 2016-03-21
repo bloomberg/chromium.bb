@@ -125,7 +125,7 @@ class CONTENT_EXPORT ContentClient {
   // doesn't know about because they're from the embedder.
   virtual std::string GetProcessTypeNameInEnglish(int type);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
   // Allows the embedder to define a new |sandbox_type| by mapping it to the
   // resource ID corresponding to the sandbox profile to use. The legal values
   // for |sandbox_type| are defined by the embedder and should start with

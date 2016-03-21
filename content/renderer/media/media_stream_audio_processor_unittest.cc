@@ -122,7 +122,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
       // |audio_processor| does nothing when the audio processing is off in
       // the processor.
       webrtc::AudioProcessing* ap = audio_processor->audio_processing_.get();
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
       const bool is_aec_enabled = ap && ap->echo_control_mobile()->is_enabled();
       // AEC should be turned off for mobiles.
       DCHECK(!ap || !ap->echo_cancellation()->is_enabled());
@@ -169,7 +169,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     EXPECT_TRUE(audio_processing->echo_control_mobile()->routing_mode() ==
         webrtc::EchoControlMobile::kSpeakerphone);
     EXPECT_FALSE(audio_processing->echo_cancellation()->is_enabled());
-#elif !defined(OS_IOS)
+#else
     EXPECT_TRUE(audio_processing->echo_cancellation()->is_enabled());
     EXPECT_TRUE(audio_processing->echo_cancellation()->suppression_level() ==
         webrtc::EchoCancellation::kHighSuppression);
@@ -183,7 +183,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
         webrtc::NoiseSuppression::kHigh);
     EXPECT_TRUE(audio_processing->high_pass_filter()->is_enabled());
     EXPECT_TRUE(audio_processing->gain_control()->is_enabled());
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
     EXPECT_TRUE(audio_processing->gain_control()->mode() ==
         webrtc::GainControl::kFixedDigital);
     EXPECT_FALSE(audio_processing->voice_detection()->is_enabled());
