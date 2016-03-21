@@ -86167,6 +86167,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="70"/>
   <suffix name="80"/>
   <suffix name="90"/>
+  <suffix name="100"/>
   <affected-histogram name="SiteEngagementService.EngagementScoreBucket"/>
 </histogram_suffixes>
 
