@@ -108,8 +108,8 @@
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutBoxItem.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -687,10 +687,10 @@ int Element::clientWidth()
     bool inQuirksMode = document().inQuirksMode();
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
-        if (LayoutView* layoutView = document().layoutView()) {
+        if (LayoutViewItem layoutView = LayoutViewItem(document().layoutView())) {
             if (document().page()->settings().forceZeroLayoutHeight())
-                return adjustLayoutUnitForAbsoluteZoom(layoutView->overflowClipRect(LayoutPoint()).width(), layoutView->styleRef()).round();
-            return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutView->layoutSize().width()), layoutView->styleRef()).round();
+                return adjustLayoutUnitForAbsoluteZoom(layoutView.overflowClipRect(LayoutPoint()).width(), layoutView.styleRef()).round();
+            return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutView.layoutSize().width()), layoutView.styleRef()).round();
         }
     }
 
@@ -709,10 +709,10 @@ int Element::clientHeight()
 
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
-        if (LayoutView* layoutView = document().layoutView()) {
+        if (LayoutViewItem layoutView = LayoutViewItem(document().layoutView())) {
             if (document().page()->settings().forceZeroLayoutHeight())
-                return adjustLayoutUnitForAbsoluteZoom(layoutView->overflowClipRect(LayoutPoint()).height(), layoutView->styleRef()).round();
-            return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutView->layoutSize().height()), layoutView->styleRef()).round();
+                return adjustLayoutUnitForAbsoluteZoom(layoutView.overflowClipRect(LayoutPoint()).height(), layoutView.styleRef()).round();
+            return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutView.layoutSize().height()), layoutView.styleRef()).round();
         }
     }
 

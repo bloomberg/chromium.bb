@@ -33,6 +33,16 @@ public:
         return toView()->documentRect();
     }
 
+    IntSize layoutSize(IncludeScrollbarsInRect scrollbars = ExcludeScrollbars) const
+    {
+        return toView()->layoutSize(scrollbars);
+    }
+
+    LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy scrollbars = IgnoreOverlayScrollbarSize) const
+    {
+        return toView()->overflowClipRect(location, scrollbars);
+    }
+
 private:
     LayoutView* toView() { return toLayoutView(layoutObject()); }
     const LayoutView* toView() const { return toLayoutView(layoutObject()); }
