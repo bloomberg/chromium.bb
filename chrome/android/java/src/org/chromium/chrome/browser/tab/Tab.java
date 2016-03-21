@@ -27,6 +27,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -602,10 +603,6 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mWindowAndroid = window;
         mLaunchType = type;
         if (mThemedApplicationContext != null) {
-            if (getSnackbarManager() != null) {
-                mLoFiBarController = new LofiBarController(
-                        mThemedApplicationContext, getSnackbarManager());
-            }
             Resources resources = mThemedApplicationContext.getResources();
             mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
             mDefaultThemeColor = mIncognito
@@ -1541,7 +1538,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         mIsFullscreenWaitingForLoad = !DomDistillerUrlUtils.isDistilledPage(validatedUrl);
 
-        if (mLoFiBarController != null) {
+        if (getLoFiBarController() != null) {
             mLoFiBarController.resetLoFiPopupShownForPageLoad();
         }
 
@@ -2279,6 +2276,15 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         return getActivity().getSnackbarManager();
     }
 
+    private LofiBarController getLoFiBarController() {
+        ThreadUtils.assertOnUiThread();
+        if (mLoFiBarController == null && getSnackbarManager() != null) {
+            mLoFiBarController =
+                    new LofiBarController(mThemedApplicationContext, getSnackbarManager());
+        }
+        return mLoFiBarController;
+    }
+
     /**
      * @return The native pointer representing the native side of this {@link Tab} object.
      */
@@ -2734,7 +2740,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     @CalledByNative
     public void onLoFiResponseReceived(boolean isPreview) {
-        if (mLoFiBarController != null) {
+        if (getLoFiBarController() != null) {
             mLoFiBarController.maybeCreateLoFiBar(this, isPreview);
         }
     }
