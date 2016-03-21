@@ -371,8 +371,6 @@
       'common/gpu/ca_layer_tree_mac.mm',
       'common/gpu/child_window_surface_win.cc',
       'common/gpu/child_window_surface_win.h',
-      'common/gpu/establish_channel_params.cc',
-      'common/gpu/establish_channel_params.h',
       'common/gpu/gpu_host_messages.h',
       'common/gpu/gpu_channel.cc',
       'common/gpu/gpu_channel.h',

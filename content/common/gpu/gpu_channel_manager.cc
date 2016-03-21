@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/common/gpu/establish_channel_params.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
@@ -159,13 +158,16 @@ scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
 }
 
 IPC::ChannelHandle GpuChannelManager::EstablishChannel(
-    const EstablishChannelParams& params) {
-  scoped_ptr<GpuChannel> channel(CreateGpuChannel(
-      params.client_id, params.client_tracing_id, params.preempts,
-      params.allow_view_command_buffers, params.allow_real_time_streams));
+    int client_id,
+    uint64_t client_tracing_id,
+    bool preempts,
+    bool allow_view_command_buffers,
+    bool allow_real_time_streams) {
+  scoped_ptr<GpuChannel> channel(
+      CreateGpuChannel(client_id, client_tracing_id, preempts,
+                       allow_view_command_buffers, allow_real_time_streams));
   IPC::ChannelHandle channel_handle = channel->Init(shutdown_event_);
-
-  gpu_channels_.set(params.client_id, std::move(channel));
+  gpu_channels_.set(client_id, std::move(channel));
   return channel_handle;
 }
 

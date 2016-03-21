@@ -62,7 +62,6 @@ class GpuChannel;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferFactory;
 class GpuWatchdog;
-struct EstablishChannelParams;
 #if defined(OS_MACOSX)
 struct BufferPresentedParams;
 #endif
@@ -88,7 +87,12 @@ class CONTENT_EXPORT GpuChannelManager {
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
 
-  IPC::ChannelHandle EstablishChannel(const EstablishChannelParams& params);
+  IPC::ChannelHandle EstablishChannel(int client_id,
+                                      uint64_t client_tracing_id,
+                                      bool preempts,
+                                      bool allow_view_command_buffers,
+                                      bool allow_real_time_streams);
+
   void PopulateShaderCache(const std::string& shader);
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,

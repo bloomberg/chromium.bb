@@ -27,6 +27,8 @@ source_set("gpu_sources") {
   sources = [
     "content_gpu_message_generator.cc",
     "content_gpu_message_generator.h",
+    "establish_channel_params.cc",
+    "establlish_channel_params.h",
     "gpu_child_thread.cc",
     "gpu_child_thread.h",
     "gpu_host_messages.h",

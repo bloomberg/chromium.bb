@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_GPU_GPU_MEMORY_UMA_STATS_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 namespace content {
 

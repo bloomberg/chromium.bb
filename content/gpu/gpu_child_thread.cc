@@ -14,12 +14,12 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/gpu/establish_channel_params.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/gpu/media/media_service.h"
+#include "content/gpu/establish_channel_params.h"
 #include "content/gpu/gpu_host_messages.h"
 #include "content/gpu/gpu_process_control_impl.h"
 #include "content/gpu/gpu_watchdog_thread.h"
@@ -514,8 +514,9 @@ void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
   if (!gpu_channel_manager_)
     return;
 
-  IPC::ChannelHandle channel_handle =
-      gpu_channel_manager_->EstablishChannel(params);
+  IPC::ChannelHandle channel_handle = gpu_channel_manager_->EstablishChannel(
+      params.client_id, params.client_tracing_id, params.preempts,
+      params.allow_view_command_buffers, params.allow_real_time_streams);
   media_service_->AddChannel(params.client_id);
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }

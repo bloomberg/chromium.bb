@@ -14,6 +14,8 @@
   'sources': [
     'gpu/content_gpu_message_generator.cc',
     'gpu/content_gpu_message_generator.h',
+    'gpu/establish_channel_params.cc',
+    'gpu/establish_channel_params.h',
     'gpu/gpu_child_thread.cc',
     'gpu/gpu_child_thread.h',
     'gpu/gpu_host_messages.h',

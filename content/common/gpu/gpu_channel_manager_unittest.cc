@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "content/common/gpu/establish_channel_params.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_test_common.h"
@@ -30,14 +29,10 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
 
   ASSERT_TRUE(channel_manager());
 
-  EstablishChannelParams params;
-  params.client_id = kClientId;
-  params.client_tracing_id = kClientTracingId;
-  params.preempts = false;
-  params.allow_view_command_buffers = false;
-  params.allow_real_time_streams = false;
-  IPC::ChannelHandle channel_handle =
-      channel_manager()->EstablishChannel(params);
+  IPC::ChannelHandle channel_handle = channel_manager()->EstablishChannel(
+      kClientId, kClientTracingId, false /* preempts */,
+      false /* allow_view_command_buffers */,
+      false /* allow_real_time_streams */);
   EXPECT_NE("", channel_handle.name);
 
   GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
@@ -64,19 +59,17 @@ TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
   ASSERT_TRUE(channel_manager());
 
   // Initialize gpu channels
-  EstablishChannelParams params;
-  params.client_id = kClientId1;
-  params.client_tracing_id = kClientTracingId1;
-  params.preempts = false;
-  params.allow_view_command_buffers = false;
-  params.allow_real_time_streams = false;
-  channel_manager()->EstablishChannel(params);
+  channel_manager()->EstablishChannel(kClientId1, kClientTracingId1,
+                                      false /* preempts */,
+                                      false /* allow_view_command_buffer */,
+                                      false /* allow_real_time_streams */);
   GpuChannel* channel1 = channel_manager()->LookupChannel(kClientId1);
   ASSERT_TRUE(channel1);
 
-  params.client_id = kClientId2;
-  params.client_tracing_id = kClientTracingId2;
-  channel_manager()->EstablishChannel(params);
+  channel_manager()->EstablishChannel(kClientId2, kClientTracingId2,
+                                      false /* preempts */,
+                                      false /* allow_view_command_buffers */,
+                                      false /* allow_real_time_streams */);
   GpuChannel* channel2 = channel_manager()->LookupChannel(kClientId2);
   ASSERT_TRUE(channel2);
 
