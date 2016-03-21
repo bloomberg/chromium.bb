@@ -121,9 +121,6 @@ CSSSelectorList CSSSelectorParser::consumeCompoundSelectorList(CSSParserTokenRan
         return CSSSelectorList();
     selectorList.append(selector.release());
     while (!range.atEnd() && range.peek().type() == CommaToken) {
-        // FIXME: This differs from the spec grammar:
-        // Spec: compound_selector S* [ COMMA S* compound_selector ]* S*
-        // Impl: compound_selector S* [ COMMA S* compound_selector S* ]*
         range.consumeIncludingWhitespace();
         selector = consumeCompoundSelector(range);
         range.consumeWhitespace();
