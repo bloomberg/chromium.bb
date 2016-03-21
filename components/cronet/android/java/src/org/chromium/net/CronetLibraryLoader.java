@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
@@ -20,6 +21,7 @@ class CronetLibraryLoader {
      * Synchronize access to sInitTaskPosted and initialization routine.
      */
     private static final Object sLoadLock = new Object();
+    private static final String TAG = "CronetLibraryLoader";
     private static boolean sInitTaskPosted = false;
 
     /**
@@ -40,6 +42,8 @@ class CronetLibraryLoader {
                       Version.CRONET_VERSION,
                       nativeGetCronetVersion()));
             }
+            Log.i(TAG, "Cronet version: %s, arch: %s",
+                    Version.CRONET_VERSION, System.getProperty("os.arch"));
             ContextUtils.initApplicationContext(context.getApplicationContext());
             // Init native Chromium CronetEngine on Main UI thread.
             Runnable task = new Runnable() {
