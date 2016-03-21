@@ -25,11 +25,6 @@ bool LevelDBApp::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
-void LevelDBApp::ShellConnectionLost() {
-  // TODO: This should exit cleanly.
-  _exit(1);
-}
-
 void LevelDBApp::Create(mojo::Connection* connection,
                         leveldb::LevelDBServiceRequest request) {
   if (!service_)

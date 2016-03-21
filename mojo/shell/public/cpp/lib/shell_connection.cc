@@ -86,7 +86,8 @@ void ShellConnection::OnConnectionError() {
   // Note that the ShellClient doesn't technically have to quit now, it may live
   // on to service existing connections. All existing Connectors however are
   // invalid.
-  client_->ShellConnectionLost();
+  if (client_->ShellConnectionLost() && !connection_lost_closure_.is_null())
+    connection_lost_closure_.Run();
   // We don't reset the connector as clients may have taken a raw pointer to it.
   // Connect() will return nullptr if they try to connect to anything.
 }

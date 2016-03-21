@@ -168,11 +168,6 @@ bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
   return true;
 }
 
-void MandolineUIServicesApp::ShellConnectionLost() {
-  // TODO: This should exit cleanly.
-  _exit(1);
-}
-
 void MandolineUIServicesApp::OnFirstDisplayReady() {
   PendingRequests requests;
   requests.swap(pending_requests_);

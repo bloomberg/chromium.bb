@@ -16,7 +16,6 @@
 #include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/mus/public/cpp/property_type_converters.h"
@@ -287,10 +286,6 @@ void SysUIApplication::Initialize(mojo::Connector* connector,
 
 bool SysUIApplication::AcceptConnection(mojo::Connection* connection) {
   return true;
-}
-
-void SysUIApplication::ShellConnectionLost() {
-  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace sysui

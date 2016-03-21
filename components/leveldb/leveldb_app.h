@@ -25,7 +25,6 @@ class LevelDBApp : public mojo::ShellClient,
                   const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
-  void ShellConnectionLost() override;
 
   // |InterfaceFactory<LevelDBService>| implementation:
   void Create(mojo::Connection* connection,

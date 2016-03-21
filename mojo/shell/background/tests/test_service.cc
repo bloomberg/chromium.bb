@@ -25,8 +25,8 @@ class TestClient : public ShellClient,
     connection->AddInterface(this);
     return true;
   }
-  void ShellConnectionLost() override {
-    base::MessageLoop::current()->QuitWhenIdle();
+  bool ShellConnectionLost() override {
+    return true;
   }
 
   // InterfaceFactory<mojom::TestService>:

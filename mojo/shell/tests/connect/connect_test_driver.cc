@@ -37,8 +37,9 @@ class Driver : public mojo::ShellClient,
     connection->AddInterface<ClientProcessTest>(this);
     return true;
   }
-  void ShellConnectionLost() override {
-    // TODO: This should exit cleanly.
+  bool ShellConnectionLost() override {
+    // TODO(rockot): http://crbug.com/596621. Should be able to remove this
+    // override entirely.
     _exit(1);
   }
 

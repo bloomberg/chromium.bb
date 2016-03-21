@@ -42,8 +42,12 @@ bool TracingApp::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
-void TracingApp::ShellConnectionLost() {
+bool TracingApp::ShellConnectionLost() {
+  // TODO(beng): This is only required because TracingApp isn't run by
+  // ApplicationRunner - instead it's launched automatically by the standalone
+  // shell. It shouldn't be.
   base::MessageLoop::current()->QuitWhenIdle();
+  return false;
 }
 
 void TracingApp::Create(mojo::Connection* connection,
