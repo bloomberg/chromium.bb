@@ -146,7 +146,7 @@ deps = {
     Var('chromium_git') + '/external/snappy.git' + '@' + '762bb32f0c9d2f31ba4958c7c0933d22e80c20bf',
 
   'src/tools/gyp':
-    Var('chromium_git') + '/external/gyp.git' + '@' + '61259d585ce99d9de8b35188cd0025bdbcb58411',
+    Var('chromium_git') + '/external/gyp.git' + '@' + '133eaf70b3720b7413017ef3f9c42f6811ef9347',
 
   'src/tools/swarming_client':
    Var('chromium_git') + '/external/swarming.client.git' + '@' +  Var('swarming_revision'),
