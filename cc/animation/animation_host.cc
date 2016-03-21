@@ -167,42 +167,34 @@ AnimationHost::~AnimationHost() {
 }
 
 AnimationTimeline* AnimationHost::GetTimelineById(int timeline_id) const {
-  for (auto& timeline : timelines_)
-    if (timeline->id() == timeline_id)
-      return timeline.get();
-  return nullptr;
+  auto f = id_to_timeline_map_.find(timeline_id);
+  return f == id_to_timeline_map_.end() ? nullptr : f->second.get();
 }
 
 void AnimationHost::ClearTimelines() {
-  EraseTimelines(timelines_.begin(), timelines_.end());
+  for (auto& kv : id_to_timeline_map_)
+    EraseTimeline(kv.second);
+  id_to_timeline_map_.clear();
 }
 
-void AnimationHost::EraseTimelines(AnimationTimelineList::iterator begin,
-                                   AnimationTimelineList::iterator end) {
-  for (auto i = begin; i != end; ++i) {
-    auto& timeline = *i;
-    timeline->ClearPlayers();
-    timeline->SetAnimationHost(nullptr);
-  }
-
-  timelines_.erase(begin, end);
+void AnimationHost::EraseTimeline(scoped_refptr<AnimationTimeline> timeline) {
+  timeline->ClearPlayers();
+  timeline->SetAnimationHost(nullptr);
 }
 
 void AnimationHost::AddAnimationTimeline(
     scoped_refptr<AnimationTimeline> timeline) {
+  DCHECK(timeline->id());
   timeline->SetAnimationHost(this);
-  timelines_.push_back(timeline);
+  id_to_timeline_map_.insert(
+      std::make_pair(timeline->id(), std::move(timeline)));
 }
 
 void AnimationHost::RemoveAnimationTimeline(
     scoped_refptr<AnimationTimeline> timeline) {
-  for (auto iter = timelines_.begin(); iter != timelines_.end(); ++iter) {
-    if (iter->get() != timeline)
-      continue;
-
-    EraseTimelines(iter, iter + 1);
-    break;
-  }
+  DCHECK(timeline->id());
+  EraseTimeline(timeline);
+  id_to_timeline_map_.erase(timeline->id());
 }
 
 void AnimationHost::RegisterLayer(int layer_id, LayerTreeType tree_type) {
@@ -280,7 +272,8 @@ void AnimationHost::PushPropertiesTo(AnimationHost* host_impl) {
 }
 
 void AnimationHost::PushTimelinesToImplThread(AnimationHost* host_impl) const {
-  for (auto& timeline : timelines_) {
+  for (auto& kv : id_to_timeline_map_) {
+    auto& timeline = kv.second;
     AnimationTimeline* timeline_impl =
         host_impl->GetTimelineById(timeline->id());
     if (timeline_impl)
@@ -293,22 +286,25 @@ void AnimationHost::PushTimelinesToImplThread(AnimationHost* host_impl) const {
 
 void AnimationHost::RemoveTimelinesFromImplThread(
     AnimationHost* host_impl) const {
-  AnimationTimelineList& timelines_impl = host_impl->timelines_;
+  IdToTimelineMap& timelines_impl = host_impl->id_to_timeline_map_;
 
-  auto to_erase =
-      std::partition(timelines_impl.begin(), timelines_impl.end(),
-                     [this](AnimationTimelineList::value_type timeline_impl) {
-                       return timeline_impl->is_impl_only() ||
-                              GetTimelineById(timeline_impl->id());
-                     });
-
-  host_impl->EraseTimelines(to_erase, timelines_impl.end());
+  // Erase all the impl timelines which |this| doesn't have.
+  for (auto it = timelines_impl.begin(); it != timelines_impl.end();) {
+    auto& timeline_impl = it->second;
+    if (timeline_impl->is_impl_only() || GetTimelineById(timeline_impl->id())) {
+      ++it;
+    } else {
+      host_impl->EraseTimeline(it->second);
+      it = timelines_impl.erase(it);
+    }
+  }
 }
 
 void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
   // Firstly, sync all players with impl thread to create ElementAnimations and
   // layer animation controllers.
-  for (auto& timeline : timelines_) {
+  for (auto& kv : id_to_timeline_map_) {
+    AnimationTimeline* timeline = kv.second.get();
     AnimationTimeline* timeline_impl =
         host_impl->GetTimelineById(timeline->id());
     if (timeline_impl)

@@ -38,7 +38,7 @@ void AnimationTimeline::AttachPlayer(scoped_refptr<AnimationPlayer> player) {
   DCHECK(player->id());
   player->SetAnimationHost(animation_host_);
   player->SetAnimationTimeline(this);
-  id_to_player_map_.insert(std::make_pair(player->id(), player));
+  id_to_player_map_.insert(std::make_pair(player->id(), std::move(player)));
 }
 
 void AnimationTimeline::DetachPlayer(scoped_refptr<AnimationPlayer> player) {

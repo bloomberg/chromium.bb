@@ -6,7 +6,6 @@
 #define CC_ANIMATION_ANIMATION_HOST_H_
 
 #include <unordered_map>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -33,8 +32,6 @@ class LayerAnimationController;
 class LayerTreeHost;
 
 enum class ThreadInstance { MAIN, IMPL };
-
-typedef std::vector<scoped_refptr<AnimationTimeline>> AnimationTimelineList;
 
 // An AnimationHost contains all the state required to play animations.
 // Specifically, it owns all the AnimationTimelines objects.
@@ -161,8 +158,7 @@ class CC_EXPORT AnimationHost {
   void RemoveTimelinesFromImplThread(AnimationHost* host_impl) const;
   void PushPropertiesToImplThread(AnimationHost* host_impl);
 
-  void EraseTimelines(AnimationTimelineList::iterator begin,
-                      AnimationTimelineList::iterator end);
+  void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
   // TODO(loyso): For now AnimationPlayers share LayerAnimationController object
   // if they are attached to the same element(layer). Note that Element can
@@ -171,7 +167,11 @@ class CC_EXPORT AnimationHost {
       std::unordered_map<int, scoped_ptr<ElementAnimations>>;
   LayerToElementAnimationsMap layer_to_element_animations_map_;
 
-  AnimationTimelineList timelines_;
+  // A list of all timelines which this host owns.
+  using IdToTimelineMap =
+      std::unordered_map<int, scoped_refptr<AnimationTimeline>>;
+  IdToTimelineMap id_to_timeline_map_;
+
   scoped_ptr<AnimationRegistrar> animation_registrar_;
   MutatorHostClient* mutator_host_client_;
 
