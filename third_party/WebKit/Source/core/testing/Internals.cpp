@@ -2573,12 +2573,11 @@ void Internals::triggerAutoplayViewportCheck(HTMLMediaElement* element)
     element->triggerAutoplayViewportCheckForTesting();
 }
 
-int Internals::getScrollAnimationState(Node* node) const
+String Internals::getScrollAnimationState(Node* node) const
 {
-    // TODO(ymalik): Use runStateAsText instead of returning an integer.
     if (ScrollableArea* scrollableArea = scrollableAreaForNode(node))
-        return static_cast<int>(scrollableArea->scrollAnimator().m_runState);
-    return -1;
+        return scrollableArea->scrollAnimator().runStateAsText();
+    return String();
 }
 
 String Internals::getProgrammaticScrollAnimationState(Node* node) const

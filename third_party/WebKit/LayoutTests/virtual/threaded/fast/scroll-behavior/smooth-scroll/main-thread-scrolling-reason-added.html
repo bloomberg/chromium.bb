@@ -14,8 +14,8 @@ description("This test verifies that smooth scrolls initiated on the main " +
             "thread add the appropriate main thread scrolling reason.");
 
 // From ScrollingCoordinator::mainThreadScrollingReasonsAsText.
-var ANIMATING_TEXT = 'Animating scroll on main thread';
-var RUNNING_ON_COMPOSITOR = 2;
+var ANIMATING_TEXT = "Animating scroll on main thread";
+var RUNNING_ON_COMPOSITOR = "RunningOnCompositor";
 
 function finishTest() {
   requestAnimationFrame(function() {
@@ -30,11 +30,11 @@ function runTest() {
         requestAnimationFrame(runTest);
     } else {
         // Check that initiated by main thread and running on the compositor.
-        shouldBeTrue("internals.getScrollAnimationState(document) " +
-          "== RUNNING_ON_COMPOSITOR");
+        shouldBe("internals.getScrollAnimationState(document)",
+          "RUNNING_ON_COMPOSITOR");
         // Check that main thread scrolling reason is added.
-        shouldBeTrue("internals.mainThreadScrollingReasons(document) " +
-          "== ANIMATING_TEXT");
+        shouldBe("internals.mainThreadScrollingReasons(document)",
+          "ANIMATING_TEXT");
         shouldBecomeEqual("document.scrollingElement.scrollTop == 40",
           "true", finishTest);
     }

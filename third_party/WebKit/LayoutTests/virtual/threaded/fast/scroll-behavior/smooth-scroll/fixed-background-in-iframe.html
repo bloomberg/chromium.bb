@@ -33,7 +33,7 @@ description("This test verifies that smooth scrolls run on the main thread " +
             "when there are fixed backgrounds on the page.");
 
 // From ScrollAnimatorCompositorCoordinator::RunState.
-var RUNNING_ON_MAIN_THREAD = 4;
+var RUNNING_ON_MAIN_THREAD = "RunningOnMainThread";
 function isScrollAnimatingOnMainThread(node) {
     return internals.getScrollAnimationState(node) == RUNNING_ON_MAIN_THREAD;
 }

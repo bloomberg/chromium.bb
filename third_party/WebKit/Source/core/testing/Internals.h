@@ -400,7 +400,7 @@ public:
 
     // Returns the run state of the node's scroll animator (see ScrollAnimatorCompositorCoordinater::RunState),
     // or -1 if the node does not have a scrollable area.
-    int getScrollAnimationState(Node*) const;
+    String getScrollAnimationState(Node*) const;
 
     // Returns the run state of the node's programmatic scroll animator (see ScrollAnimatorCompositorCoordinater::RunState),
     // or -1 if the node does not have a scrollable area.
